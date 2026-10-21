@@ -412,6 +412,47 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     // region parity:L2 — SG-05 `setGeometry(spec)` / `updateAttribute(name,
     // update)`: per-frame partial upload, no realloc when vertex count is
     // unchanged (owner lane L2, do not edit outside this region).
+    //
+    // Sync channel: the normalized spec + queued attribute writes live on the
+    // handle as `__parityL2*` members; `resolveProductionPrimitiveRuntimeState`
+    // (compiler/primitives.ts) reads + drains them each frame, then
+    // `selectProductionPrimitiveResource` writes into the live VertexBuffer —
+    // same vertex count ⇒ dirty-range upload only, no GPU realloc.
+    setGeometry(spec: import("../nodes/types.js").AuraDynamicGeometrySpec): AuraRuntimeNodeHandle {
+      if (!spec || spec.positions === undefined || spec.positions.length === 0) {
+        throw new AuraRuntimeError("missing-asset", "Aura3D setGeometry requires a non-empty positions array.");
+      }
+      // Stored as a dynamic custom-geometry spec; flat/tuple/typed attributes
+      // normalize at the compiler sync point (normalizeGeometryAttributes).
+      const normalized = {
+        kind: "aura-custom-geometry",
+        dynamic: true,
+        ...spec
+      } as import("../RootGeometry.js").AuraCustomGeometrySpec;
+      (node as { geometry?: import("../RootGeometry.js").AuraCustomGeometrySpec }).geometry = normalized;
+      (this as unknown as { __parityL2Geometry?: import("../RootGeometry.js").AuraCustomGeometrySpec }).__parityL2Geometry = normalized;
+      bumpVersion();
+      return this;
+    },
+    updateAttribute(name: string, update: import("../nodes/types.js").AuraAttributeUpdate): AuraRuntimeNodeHandle {
+      if (typeof name !== "string" || name.trim().length === 0) {
+        throw new AuraRuntimeError("missing-asset", "Aura3D updateAttribute requires an attribute name.");
+      }
+      if (!update || update.array === undefined || update.array.length === 0) {
+        throw new AuraRuntimeError("missing-asset", `Aura3D updateAttribute("${name}") requires a non-empty array.`);
+      }
+      const raw = update.array;
+      const array = raw instanceof Float32Array || raw instanceof Uint16Array || raw instanceof Uint32Array
+        ? raw
+        : Float32Array.from(raw as readonly number[] | Int32Array);
+      const pending = { name, array, offset: Math.max(0, Math.floor(update.offset ?? 0)) };
+      const self = this as unknown as {
+        __parityL2AttributeUpdates?: { name: string; array: Float32Array | Uint16Array | Uint32Array; offset: number }[];
+      };
+      (self.__parityL2AttributeUpdates ??= []).push(pending);
+      bumpVersion();
+      return this;
+    },
     // endregion parity:L2
     // region parity:L7 — SG-09/SR-04 transform/graph members: `renderOrder`,
     // `frustumCulled`, `layers` (AuraLayerMask), `userData`, `traverse`,

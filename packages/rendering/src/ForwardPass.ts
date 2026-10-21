@@ -1043,8 +1043,13 @@ function validateMaterialGeometryContract(item: RenderItem, material: Material, 
 
 function resolveDrawRange(geometry: Geometry, range: RenderItemDrawRange | undefined): { readonly start: number; readonly count: number } {
   const available = geometry.indexBuffer?.count ?? geometry.vertexBuffer.vertexCount;
+  // threejs-parity L2: three's `geometry.setDrawRange` clamps every draw to the
+  // authored [start, start+count) window; a RenderItem override intersects it.
+  const authored = geometry.drawRange;
+  const authoredStart = authored ? Math.max(0, authored.start) : 0;
+  const authoredEnd = authored ? Math.min(available, Math.max(authoredStart, authoredStart + Math.max(0, authored.count))) : available;
   if (!range) {
-    return { start: 0, count: available };
+    return { start: authoredStart, count: Math.max(0, authoredEnd - authoredStart) };
   }
   if (!Number.isInteger(range.start) || range.start < 0 || !Number.isInteger(range.count) || range.count <= 0) {
     throw new RenderDeviceError("Render item drawRange must contain non-negative integer start and positive integer count", "RENDER_ITEM_DRAW_RANGE_INVALID", {
@@ -1060,7 +1065,9 @@ function resolveDrawRange(geometry: Geometry, range: RenderItemDrawRange | undef
       available
     });
   }
-  return range;
+  const start = Math.max(range.start, authoredStart);
+  const end = Math.min(range.start + range.count, authoredEnd);
+  return { start, count: Math.max(0, end - start) };
 }
 
 const warnedBindings = new WeakMap<Material, Set<string>>();

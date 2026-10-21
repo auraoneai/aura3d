@@ -8,6 +8,25 @@ export interface Bounds3 {
   readonly max: readonly [number, number, number];
 }
 
+/** SG-05 (threejs-parity L2): three's `GeometryGroup` — a contiguous index range with a material slot. */
+export interface GeometryGroup {
+  readonly start: number;
+  readonly count: number;
+  readonly materialIndex?: number;
+}
+
+/** SG-05 (L2): three's `setDrawRange` — the subset of the index/vertex stream a draw submits. */
+export interface GeometryDrawRange {
+  readonly start: number;
+  readonly count: number;
+}
+
+/** SG-05 (L2): authored morph-target position data carried on a geometry (deltas applied by the morph path). */
+export interface GeometryMorphTarget {
+  readonly name?: string;
+  readonly positions: Float32Array | readonly number[];
+}
+
 export interface CylinderGeometryOptions {
   /** Legacy shorthand: sets both radii. `radiusTop`/`radiusBottom` win when set. */
   readonly radius?: number;
@@ -81,6 +100,27 @@ export class Geometry {
     public readonly topology: PrimitiveTopology = "triangles",
     public readonly bounds: Bounds3 = computeBounds(vertexBuffer)
   ) {}
+
+  /**
+   * SG-05 (threejs-parity L2): three's `geometry.groups` — material-index
+   * segments over the index stream. Mutable so `handle.setGeometry` can
+   * refresh them on an in-place update.
+   */
+  public groups?: readonly GeometryGroup[];
+
+  /**
+   * SG-05 (L2): three's `geometry.drawRange` — when set, the forward/depth
+   * draws submit only this index (or vertex) range instead of the full
+   * buffer. Mutable so `handle.setGeometry` can re-clamp without realloc.
+   */
+  public drawRange?: GeometryDrawRange;
+
+  /**
+   * SG-05 (L2): authored morph targets carried with the geometry (three's
+   * `morphAttributes.position` set). Data survives spec round-trips; the
+   * renderer consumes deltas through the morph-target pipeline.
+   */
+  public morphTargets?: readonly GeometryMorphTarget[];
 
   static triangle(): Geometry {
     const vertices = new VertexBuffer(VertexFormat.P3, 3);
@@ -363,8 +403,14 @@ export class Geometry {
     const segments = options.segments ?? 48;
     const heightSegments = Math.max(1, Math.floor(options.heightSegments ?? 1));
     const capped = options.openEnded !== undefined ? !options.openEnded : (options.capped ?? true);
-    validatePositiveFinite(radiusTop, "Cylinder radiusTop");
-    validatePositiveFinite(radiusBottom, "Cylinder radiusBottom");
+    // threejs-parity L2: `CylinderGeometry` permits a zero radius at either
+    // end — that is exactly how three's `ConeGeometry` builds (radiusTop 0).
+    // Keep rejecting negatives and the fully-degenerate 0/0 case.
+    validateNonNegativeFinite(radiusTop, "Cylinder radiusTop");
+    validateNonNegativeFinite(radiusBottom, "Cylinder radiusBottom");
+    if (radiusTop <= 0 && radiusBottom <= 0) {
+      throw new Error("Cylinder requires at least one non-zero radius");
+    }
     validatePositiveFinite(height, "Cylinder height");
     validateSegments(segments, "Cylinder segments", 3);
     const half = height / 2;
@@ -430,6 +476,15 @@ export class Geometry {
     }
 
     return generatedGeometry(vertices, indices, textured);
+  }
+
+  /**
+   * threejs-parity L2-01: a cone is the cylinder path with `radiusTop: 0`
+   * (the `radiusTop`/`radiusBottom` options at `:30-36`). For three-exact
+   * `ConeGeometry` buffers use `coneParityMesh` in `geometry/Cone`.
+   */
+  static cone(options: Omit<CylinderGeometryOptions, "radiusTop"> = {}): Geometry {
+    return Geometry.cylinder({ ...options, radiusTop: 0 });
   }
 
   static capsule(options: CapsuleGeometryOptions = {}): Geometry {
@@ -738,6 +793,12 @@ function makeGeneratedVertex(position: Vec3, normal: Vec3, uv: Vec2, tangent: Ve
 function validatePositiveFinite(value: number, label: string): void {
   if (!Number.isFinite(value) || value <= 0) {
     throw new Error(`${label} must be finite and positive`);
+  }
+}
+
+function validateNonNegativeFinite(value: number, label: string): void {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error(`${label} must be finite and non-negative`);
   }
 }
 

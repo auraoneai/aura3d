@@ -2,9 +2,11 @@
 // above the Q-15-2 section (flag-gated `createQrPrimitiveMesh`, appended).
 
 import type { GltfBounds } from "../nodes/types/runtime.js";
+import type { AuraPrimitiveParams } from "../nodes/types.js";
 import type { ProductionPrimitiveMesh } from "./primitives.js";
 import { tilingSecondUnwrap } from "./primitives.js";
 import { createPrimitiveGeometry, Geometry } from "@aura3d/rendering";
+import type { AuraPrimitiveKind, AuraParityPrimitiveParams } from "@aura3d/rendering";
 
 export function createPlaneGeometry(): ProductionPrimitiveMesh {
   const uvs = new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]);
@@ -196,7 +198,7 @@ export function createTorusGeometry(): { readonly positions: Float32Array; reado
   };
 }
 
-export function createCapsuleApproxGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+export function createCapsuleApproxGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array | Uint32Array; readonly bounds: GltfBounds } {
   return createSphereGeometry();
 }
 
@@ -278,10 +280,32 @@ class QrSharedPrimitiveGeometry extends Geometry {
 export function qrPrimitiveGeometryKey(
   primitive: string,
   size: readonly [number, number, number],
-  options: QrPrimitiveGeometryOptions
+  options: QrPrimitiveGeometryOptions,
+  params?: AuraPrimitiveParams
 ): string {
   const segments = options.primitiveSegments ?? "full";
-  return primitive === "capsule" ? `capsule|${segments}|${size.map((v) => Math.abs(v)).join(",")}` : `${primitive}|${segments}`;
+  const paramsKey = params === undefined ? "" : `|${stableParamsKey(params)}`;
+  return primitive === "capsule"
+    ? `capsule|${segments}${paramsKey}|${size.map((v) => Math.abs(v)).join(",")}`
+    : `${primitive}|${segments}${paramsKey}`;
+}
+
+/**
+ * threejs-parity L2: JSON-serializable params may pool their geometry (two
+ * `primitives.cone({ params: { radius: 2 } })` nodes share an upload). Params
+ * carrying opaque payloads — `path`/`shape`/`extrudePath` curves and `points`
+ * arrays — opt out: they may embed live Curve objects that must never key a
+ * shared cache entry.
+ */
+export function qrPrimitiveParamsPoolable(params: AuraPrimitiveParams | undefined): boolean {
+  if (params === undefined) return true;
+  return params.path === undefined && params.shape === undefined && params.extrudePath === undefined && params.points === undefined;
+}
+
+function stableParamsKey(params: AuraPrimitiveParams): string {
+  const keys = Object.keys(params).sort() as readonly (keyof AuraPrimitiveParams)[];
+  const entries = keys.map((key) => `${String(key)}:${JSON.stringify(params[key])}`);
+  return entries.join(",");
 }
 
 const scopedOptions = new WeakMap<object, QrPrimitiveGeometryOptions>();
@@ -304,8 +328,13 @@ export function qrPrimitiveGeometryOptions(
   return options;
 }
 
-/** Narrower than `AuraBuiltinPrimitive` until threejs-parity lane L2 registers the new generators here. */
-export type QrBuiltinPrimitive = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
+/**
+ * threejs-parity L2: the full builtin union minus `"custom"` (custom geometry
+ * resolves through `createProductionGeometryFromCustomSpec`, not a generator).
+ * Mirrors `AuraBuiltinPrimitive`/`AuraPrimitiveKind`; kept structural so the
+ * compiler file does not depend on the nodes-types import order.
+ */
+export type QrBuiltinPrimitive = AuraPrimitiveKind;
 
 function hasSemantic(geometry: Geometry, semantic: string): boolean {
   return geometry.vertexBuffer.format.attributes.some((attribute) => attribute.semantic === semantic);
@@ -325,11 +354,17 @@ function hasSemantic(geometry: Geometry, semantic: string): boolean {
 export function createQrPrimitiveMesh(
   primitive: QrBuiltinPrimitive,
   size: readonly [number, number, number],
-  options: QrPrimitiveGeometryOptions
+  options: QrPrimitiveGeometryOptions,
+  params?: AuraPrimitiveParams
 ): ProductionPrimitiveMesh {
   const dims = [Math.max(1e-6, Math.abs(size[0])), Math.max(1e-6, Math.abs(size[1])), Math.max(1e-6, Math.abs(size[2]))] as const;
   const fold = primitive === "capsule";
-  const source = createPrimitiveGeometry(primitive, undefined, { primitiveSegments: options.primitiveSegments ?? "full" }, fold ? dims : undefined);
+  const source = createPrimitiveGeometry(
+    primitive,
+    params as AuraParityPrimitiveParams | undefined,
+    { primitiveSegments: options.primitiveSegments ?? "full" },
+    fold ? dims : undefined
+  );
   const vertexBuffer = source.vertexBuffer;
   const count = vertexBuffer.vertexCount;
   const textured = hasSemantic(source, "uv") && hasSemantic(source, "tangent");
@@ -368,10 +403,14 @@ export function createQrPrimitiveMesh(
       tangents[index * 4 + 3] = t[3]!;
     }
   }
-  // Default tessellations stay far below 65,536 vertices (sphere 64×32 = 2,145).
-  if (count > 0xffff) throw new Error(`createQrPrimitiveMesh: ${primitive} has ${count} vertices; 16-bit indices required`);
   const indexData = source.indexBuffer?.data;
-  const indices = indexData ? Uint16Array.from(indexData) : Uint16Array.from({ length: count }, (_, index) => index);
+  const indices: Uint16Array | Uint32Array = indexData instanceof Uint32Array
+    ? Uint32Array.from(indexData)
+    : indexData !== undefined
+      ? Uint16Array.from(indexData)
+      : count > 0xffff
+        ? Uint32Array.from({ length: count }, (_, index) => index)
+        : Uint16Array.from({ length: count }, (_, index) => index);
   const bounds: GltfBounds = {
     min: [source.bounds.min[0] / sx, source.bounds.min[1] / sy, source.bounds.min[2] / sz],
     max: [source.bounds.max[0] / sx, source.bounds.max[1] / sy, source.bounds.max[2] / sz]
@@ -381,6 +420,9 @@ export function createQrPrimitiveMesh(
     normals,
     indices,
     bounds,
+    topology: source.topology === "lines" || source.topology === "points" ? source.topology : "triangles",
+    ...(source.groups ? { groups: [...source.groups] } : {}),
+    ...(source.drawRange ? { drawRange: { ...source.drawRange } } : {}),
     ...(uvs && tangents ? { uvs, uv1s: tilingSecondUnwrap(uvs), tangents } : {})
   };
 }

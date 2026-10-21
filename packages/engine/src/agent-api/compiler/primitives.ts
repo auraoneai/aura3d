@@ -43,6 +43,10 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
       sourceNode: node,
       ...blankProductionPrimitiveTextureState()
     };
+    // threejs-parity L2: the spec object the resource geometry was built from.
+    // `handle.setGeometry` mutates `node.geometry` in place, so the applied
+    // marker must be captured here rather than re-read from `sourceNode`.
+    (fallback as ProductionRuntimePrimitiveResource & L2ResourceTrack).__parityL2AppliedGeometry = node.geometry;
     // Sampler failures stay visible on the fallback resource (surfaced via
     // texturedMaterials diagnostics), never swallowed by the mesh swap.
     fallback.textureWarnings.push(...sdfWarnings);
@@ -70,6 +74,7 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
       sourceNode: levelNode,
       ...blankProductionPrimitiveTextureState()
     };
+    (levelFallback as ProductionRuntimePrimitiveResource & L2ResourceTrack).__parityL2AppliedGeometry = levelNode.geometry;
     levelFallback.textureWarnings.push(...levelWarnings);
     return levelFallback;
   });
@@ -86,6 +91,10 @@ export function selectProductionPrimitiveResource(entry: ProductionRuntimePrimit
       mutableResource.materialSpec = node.material;
       mutableResource.material = createProductionPrimitiveMaterial(node);
     }
+    // threejs-parity L2 (SG-05): `handle.setGeometry`/`updateAttribute` —
+    // in-place buffer writes when the vertex count is unchanged, replace
+    // otherwise. Tracked per resource so unchanged frames cost nothing.
+    syncRuntimePrimitiveGeometry(resource, node);
     return resource;
   }
   const position = node.position ?? [0, 0, 0];
@@ -132,7 +141,14 @@ export function resolveProductionPrimitiveRuntimeState(
 ): ProductionRuntimePrimitiveState {
   const runtimeId = entry.node.runtime?.id;
   if (!runtimeId) return { node: entry.node, visible: true };
-  const runtimeSnapshot = runtimeNodes?.get(runtimeId)?.snapshot() as (ReturnType<NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>>["snapshot"]> & {
+  const runtimeHandle = runtimeNodes?.get(runtimeId) as (NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>> & {
+    // threejs-parity L2 (SG-05): set inside `region parity:L2` on the handle —
+    // `setGeometry` stores the normalized spec, `updateAttribute` queues
+    // partial writes; both drain per frame in `selectProductionPrimitiveResource`.
+    readonly __parityL2Geometry?: AuraCustomGeometrySpec;
+    __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[];
+  }) | undefined;
+  const runtimeSnapshot = runtimeHandle?.snapshot() as (ReturnType<NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>>["snapshot"]> & {
     readonly material?: AuraPrimitiveNode["material"];
     readonly instances?: AuraPrimitiveNode["instances"];
     readonly instanceColors?: AuraPrimitiveNode["instanceColors"];
@@ -149,19 +165,26 @@ export function resolveProductionPrimitiveRuntimeState(
     }
   }
   if (!runtimeSnapshot) return { node: entry.node, visible: true };
-  return {
-    node: {
-      ...entry.node,
-      position: runtimeSnapshot.position,
-      rotation: runtimeSnapshot.rotation,
-      scale: runtimeSnapshot.scale,
-      material: runtimeSnapshot.material ?? entry.node.material,
-      animation: runtimeSnapshot.animation ?? entry.node.animation,
-      ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
-      ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {})
-    },
-    visible: runtimeSnapshot.visible
-  };
+  // L2: drain the queued attribute writes so they apply exactly once.
+  const pendingAttributes = runtimeHandle?.__parityL2AttributeUpdates;
+  if (runtimeHandle && pendingAttributes && pendingAttributes.length > 0) {
+    runtimeHandle.__parityL2AttributeUpdates = [];
+  }
+  const resolvedNode = {
+    ...entry.node,
+    position: runtimeSnapshot.position,
+    rotation: runtimeSnapshot.rotation,
+    scale: runtimeSnapshot.scale,
+    material: runtimeSnapshot.material ?? entry.node.material,
+    animation: runtimeSnapshot.animation ?? entry.node.animation,
+    ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
+    ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {}),
+    ...(runtimeHandle?.__parityL2Geometry !== undefined ? { geometry: runtimeHandle.__parityL2Geometry } : {})
+  } as AuraPrimitiveNode & { __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[] };
+  if (pendingAttributes && pendingAttributes.length > 0) {
+    resolvedNode.__parityL2AttributeUpdates = pendingAttributes;
+  }
+  return { node: resolvedNode, visible: runtimeSnapshot.visible };
 }
 
 export interface TextureStreamingTableEntry {
@@ -240,7 +263,7 @@ export async function upgradeProductionEnvironmentHdri(
 }
 
 import { Geometry, IndexBuffer, InstancedPBRMaterial, PBRMaterial, VertexBuffer, VertexFormat } from "@aura3d/rendering";
-import { defineAuraCustomGeometry } from "../RootGeometry.js";
+import { computeAuraGeometryBounds, computeAuraGeometryNormals, defineAuraCustomGeometry, normalizeGeometryAttributes } from "../RootGeometry.js";
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { instances } from "../nodes/instances.js";
 import type { AuraMaterialSpec, AuraBuiltinPrimitive } from "../nodes/types.js";
@@ -248,7 +271,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, qrPrimitiveGeometryKey, type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
 /**
@@ -411,19 +434,20 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
 }
 
 /**
- * threejs-parity (§5.0 B-01): `AuraBuiltinPrimitive` is wider than the QR
- * factory union until lane L2 registers the new generators. New kinds fail
- * closed with a `parity-not-implemented` error instead of silently rendering
- * the wrong shape.
+ * threejs-parity L2 (§6 L2-01/02): every `AuraBuiltinPrimitive` kind now maps
+ * onto a real `createPrimitiveGeometry` generator — no fail-closed dispatch
+ * remains. `"custom"` still resolves through the geometry-spec path.
  */
 function qrBuiltinPrimitive(primitive: AuraBuiltinPrimitive): import("./geometry.js").QrBuiltinPrimitive {
   switch (primitive) {
     case "box": case "sphere": case "plane": case "cylinder": case "capsule": case "torus":
+    case "cone": case "circle": case "ring": case "tube": case "lathe": case "extrude": case "shape":
+    case "torusKnot": case "polyhedron": case "roundedBox":
       return primitive;
     default:
       throw new AuraRuntimeError(
         "parity-not-implemented",
-        `Aura3D primitive "${primitive}" is not yet implemented (A3D_PARITY_GEOMETRY). See docs/workflows/threejs-parity-gaps.md.`
+        `Aura3D primitive "${String(primitive)}" is not implemented (A3D_PARITY_GEOMETRY). See docs/workflows/threejs-parity-gaps.md.`
       );
   }
 }
@@ -431,34 +455,35 @@ function qrBuiltinPrimitive(primitive: AuraBuiltinPrimitive): import("./geometry
 /** Q-15-2: the flag-on mesh for a builtin primitive node; undefined = legacy path (flag off, custom, geometry spec). */
 export function qrPrimitiveMeshFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined): ProductionPrimitiveMesh | undefined {
   if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
-  return createQrPrimitiveMesh(qrBuiltinPrimitive(node.primitive), primitiveSize(node), qr);
+  return createQrPrimitiveMesh(qrBuiltinPrimitive(node.primitive), primitiveSize(node), qr, node.params);
 }
 
 /** Q-15-2: flag-on geometry + bounds, pooled per mount when `qr.pool` is set (#545). */
 export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
   if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
   const size = primitiveSize(node);
-  if (!qr.pool) {
-    const mesh = createQrPrimitiveMesh(qrBuiltinPrimitive(node.primitive), size, qr);
+  // L2: params carrying live curve/shape objects can't key a shared pool entry.
+  if (!qr.pool || !qrPrimitiveParamsPoolable(node.params)) {
+    const mesh = createQrPrimitiveMesh(qrBuiltinPrimitive(node.primitive), size, qr, node.params);
     return { geometry: createProductionGeometryFromPrimitiveMesh(mesh), bounds: mesh.bounds };
   }
   const primitive = qrBuiltinPrimitive(node.primitive);
-  const geometry = qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr), () =>
-    createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr)));
+  const geometry = qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr, node.params), () =>
+    createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params)));
   return { geometry, bounds: geometry.bounds };
 }
 
 export function createProductionPrimitiveGeometry(node: AuraPrimitiveNode): Geometry {
   if (node.geometry) return createProductionGeometryFromCustomSpec(node.geometry);
   if (node.primitive === "custom") throw new Error("Aura3D custom primitive requires geometry.");
-  return createProductionGeometryFromPrimitiveMesh(createProductionPrimitiveMesh(node.primitive));
+  return createProductionGeometryFromPrimitiveMesh(createProductionPrimitiveMesh(node.primitive, node));
 }
 
 export function primitiveGeometryBounds(nodeOrPrimitive: AuraPrimitiveNode | AuraBuiltinPrimitive): GltfBounds {
   if (typeof nodeOrPrimitive === "object" && nodeOrPrimitive.geometry) return customGeometryBounds(nodeOrPrimitive.geometry);
   const primitive = typeof nodeOrPrimitive === "string" ? nodeOrPrimitive : nodeOrPrimitive.primitive;
   if (primitive === "custom") throw new Error("Aura3D custom primitive requires geometry.");
-  return createProductionPrimitiveMesh(primitive).bounds;
+  return createProductionPrimitiveMesh(primitive, typeof nodeOrPrimitive === "object" ? nodeOrPrimitive : undefined).bounds;
 }
 
 /**
@@ -470,8 +495,14 @@ export function primitiveGeometryBounds(nodeOrPrimitive: AuraPrimitiveNode | Aur
 export interface ProductionPrimitiveMesh {
   readonly positions: Float32Array;
   readonly normals: Float32Array;
-  readonly indices: Uint16Array;
+  readonly indices: Uint16Array | Uint32Array;
   readonly bounds: GltfBounds;
+  /** threejs-parity L2: `"lines"`/`"points"` topologies (edges/wireframe paths). Default `"triangles"`. */
+  readonly topology?: "triangles" | "lines" | "points";
+  /** threejs-parity L2: three's geometry.groups — material-index index ranges. */
+  readonly groups?: readonly { readonly start: number; readonly count: number; readonly materialIndex?: number }[];
+  /** threejs-parity L2: three's setDrawRange. */
+  readonly drawRange?: { readonly start: number; readonly count: number };
   readonly uvs?: Float32Array;
   readonly uv1s?: Float32Array;
   /**
@@ -487,52 +518,60 @@ export function tilingSecondUnwrap(uvs: Float32Array): Float32Array {
   return uv1s;
 }
 
-function createProductionPrimitiveMesh(primitive: AuraBuiltinPrimitive): ProductionPrimitiveMesh {
+/**
+ * Legacy (flag-off) primitive mesh. The six original kinds keep their bespoke
+ * generators byte-for-byte; the ten threejs-parity L2 kinds route through the
+ * shared `createPrimitiveGeometry` factory with the node's params.
+ */
+function createProductionPrimitiveMesh(primitive: AuraBuiltinPrimitive, node?: AuraPrimitiveNode): ProductionPrimitiveMesh {
   if (primitive === "sphere") return createSphereGeometry();
   if (primitive === "capsule") return createCapsuleApproxGeometry();
   if (primitive === "torus") return createTorusGeometry();
   if (primitive === "box") return createBoxGeometry();
   if (primitive === "cylinder") return createCylinderGeometry();
   if (primitive === "plane") return createPlaneGeometry();
-  // threejs-parity (§5.0 B-01): widened union members land with lane L2;
-  // until then they fail closed instead of silently drawing a plane.
-  throw new AuraRuntimeError(
-    "parity-not-implemented",
-    `Aura3D primitive "${primitive}" is not yet implemented (A3D_PARITY_GEOMETRY). See docs/workflows/threejs-parity-gaps.md.`
-  );
+  // threejs-parity L2: the ten new kinds share the QR generator path (full
+  // segments — the C-27 tier halving only applies under A3D_QR_CORE).
+  const size = node ? primitiveSize(node) : [1, 1, 1] as const;
+  return createQrPrimitiveMesh(qrBuiltinPrimitive(primitive), size, { core: true, primitiveSegments: "full" }, node?.params);
 }
 
+/**
+ * SG-05 (threejs-parity L2): custom/dynamic specs normalize flat or tuple
+ * attributes, optional colors, `"lines"` topology (edges/wireframe), groups,
+ * drawRange and morph targets onto the production `Geometry`.
+ */
 function createProductionGeometryFromCustomSpec(spec: AuraCustomGeometrySpec): Geometry {
-  const normalized = defineAuraCustomGeometry(spec);
-  const normals = normalized.normals ?? calculateCustomGeometryNormals(normalized);
-  const vertexCount = normalized.positions.length;
-  const vertices = new VertexBuffer(VertexFormat.P3N3, vertexCount);
-  normalized.positions.forEach((position, index) => {
-    vertices.setAttribute(index, "position", position);
-    vertices.setAttribute(index, "normal", normals[index] ?? [0, 1, 0]);
-  });
-  return new Geometry(vertices, new IndexBuffer(normalized.indices, vertexCount), "triangles", customGeometryBounds(normalized));
+  const normalized = normalizeGeometryAttributes(spec);
+  const normals = normalized.normals ?? computeAuraGeometryNormals({ positions: normalized.positions, indices: normalized.indices });
+  const vertexCount = normalized.vertexCount;
+  const attributes: { semantic: "position" | "normal" | "uv" | "color"; components: 2 | 3 | 4; offset: number }[] = [
+    { semantic: "position", components: 3, offset: 0 },
+    { semantic: "normal", components: 3, offset: 12 }
+  ];
+  let cursor = 24;
+  if (normalized.uvs) { attributes.push({ semantic: "uv", components: 2, offset: cursor }); cursor += 8; }
+  if (normalized.colors) { attributes.push({ semantic: "color", components: 4, offset: cursor }); cursor += 16; }
+  const vertices = new VertexBuffer(new VertexFormat(attributes), vertexCount);
+  for (let index = 0; index < vertexCount; index += 1) {
+    vertices.setAttribute(index, "position", [normalized.positions[index * 3]!, normalized.positions[index * 3 + 1]!, normalized.positions[index * 3 + 2]!]);
+    vertices.setAttribute(index, "normal", [normals[index * 3]!, normals[index * 3 + 1]!, normals[index * 3 + 2]!]);
+    if (normalized.uvs) vertices.setAttribute(index, "uv", [normalized.uvs[index * 2]!, normalized.uvs[index * 2 + 1]!]);
+    if (normalized.colors) vertices.setAttribute(index, "color", [normalized.colors[index * 4]!, normalized.colors[index * 4 + 1]!, normalized.colors[index * 4 + 2]!, normalized.colors[index * 4 + 3]!]);
+  }
+  const indexList = normalized.indices ?? Uint32Array.from({ length: vertexCount }, (_, i) => i);
+  const indexBuffer = indexList.length > 0 ? new IndexBuffer(Array.from(indexList), vertexCount) : null;
+  const geometry = new Geometry(vertices, indexBuffer, spec.topology === "lines" ? "lines" : "triangles", customGeometryBounds(spec));
+  if (spec.groups) geometry.groups = [...spec.groups];
+  if (spec.drawRange) geometry.drawRange = { ...spec.drawRange };
+  if (spec.morphTargets) geometry.morphTargets = spec.morphTargets.map((target) => ({ ...target }));
+  return geometry;
 }
 
 function customGeometryBounds(spec: AuraCustomGeometrySpec): GltfBounds {
   if (spec.bounds) return { min: spec.bounds.min, max: spec.bounds.max };
-  const min: [number, number, number] = [Infinity, Infinity, Infinity];
-  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
-  spec.positions.forEach((position) => { for (let axis = 0; axis < 3; axis += 1) { min[axis] = Math.min(min[axis], position[axis]!); max[axis] = Math.max(max[axis], position[axis]!); } });
-  return { min, max };
-}
-
-function calculateCustomGeometryNormals(spec: AuraCustomGeometrySpec): readonly AuraVec3[] {
-  const totals = Array.from({ length: spec.positions.length }, () => [0, 0, 0] as [number, number, number]);
-  for (let offset = 0; offset < spec.indices.length; offset += 3) {
-    const ia = spec.indices[offset]!, ib = spec.indices[offset + 1]!, ic = spec.indices[offset + 2]!;
-    const a = spec.positions[ia]!, b = spec.positions[ib]!, c = spec.positions[ic]!;
-    const ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]] as const;
-    const ac = [c[0] - a[0], c[1] - a[1], c[2] - a[2]] as const;
-    const normal = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]] as const;
-    for (const index of [ia, ib, ic]) for (let axis = 0; axis < 3; axis += 1) totals[index]![axis] += normal[axis]!;
-  }
-  return totals.map((normal) => { const length = Math.hypot(...normal) || 1; return [normal[0] / length, normal[1] / length, normal[2] / length] as const; });
+  const computed = computeAuraGeometryBounds({ positions: spec.positions });
+  return { min: computed.min, max: computed.max };
 }
 
 function createProductionGeometryFromPrimitiveMesh(mesh: ProductionPrimitiveMesh): Geometry {
@@ -558,7 +597,155 @@ function createProductionGeometryFromPrimitiveMesh(mesh: ProductionPrimitiveMesh
       vertices.setAttribute(index, "uv1", [uv1[uvBase] ?? 0, uv1[uvBase + 1] ?? 0]);
     }
   }
-  return new Geometry(vertices, new IndexBuffer(Array.from(mesh.indices), vertexCount), "triangles", mesh.bounds);
+  const geometry = new Geometry(
+    vertices,
+    new IndexBuffer(Array.from(mesh.indices), vertexCount),
+    mesh.topology ?? "triangles",
+    mesh.bounds
+  );
+  // threejs-parity L2: carry three's groups/drawRange through to the draw path.
+  if (mesh.groups) geometry.groups = [...mesh.groups];
+  if (mesh.drawRange) geometry.drawRange = { ...mesh.drawRange };
+  return geometry;
+}
+
+// ── threejs-parity L2 (SG-05): runtime dynamic geometry ──────────────────────
+
+/** Queued partial attribute write produced by `handle.updateAttribute` (region parity:L2). */
+export interface AuraL2AttributeUpdate {
+  readonly name: string;
+  readonly array: Float32Array | Uint16Array | Uint32Array;
+  readonly offset: number;
+}
+
+/** Per-resource tracking for the runtime geometry/attribute channels. */
+interface L2ResourceTrack {
+  __parityL2AppliedGeometry?: AuraCustomGeometrySpec | undefined;
+}
+
+const L2_UPDATE_SEMANTICS: Record<string, "position" | "normal" | "uv" | "uv1" | "color" | "tangent"> = {
+  position: "position",
+  positions: "position",
+  normal: "normal",
+  normals: "normal",
+  uv: "uv",
+  uv0: "uv",
+  uvs: "uv",
+  uv1: "uv1",
+  color: "color",
+  colors: "color",
+  tangent: "tangent",
+  tangents: "tangent"
+};
+
+/**
+ * SG-05: apply `handle.setGeometry` + `handle.updateAttribute` writes to the
+ * live resource. Same vertex count + same attribute set ⇒ write into the
+ * existing `VertexBuffer` (dirty ranges flush on the next `upload()` — the
+ * GPU allocation is never re-created). A different vertex count or attribute
+ * footprint rebuilds the `Geometry` once (realloc allowed then).
+ */
+function syncRuntimePrimitiveGeometry(
+  resource: ProductionRuntimePrimitiveResource,
+  node: AuraPrimitiveNode & { readonly __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[] }
+): void {
+  const tracked = resource as ProductionRuntimePrimitiveResource & L2ResourceTrack & {
+    geometry?: Geometry;
+    bounds?: GltfBounds;
+    sourceNode?: AuraPrimitiveNode;
+  };
+  const spec = node.geometry;
+  // `__parityL2AppliedGeometry` is tagged at resource build — `handle.setGeometry`
+  // also mutates `node.geometry` in place, so `sourceNode.geometry` can NOT
+  // serve as the applied marker (it already holds the new spec).
+  if (spec !== undefined && spec !== tracked.__parityL2AppliedGeometry) {
+    applyDynamicGeometrySpec(resource, spec);
+    tracked.__parityL2AppliedGeometry = spec;
+    if (tracked.sourceNode) tracked.sourceNode = { ...tracked.sourceNode, geometry: spec };
+  }
+  const updates = node.__parityL2AttributeUpdates;
+  if (updates) {
+    for (const update of updates) applyAttributeUpdateToGeometry(resource.geometry, update);
+  }
+}
+
+function applyDynamicGeometrySpec(resource: ProductionRuntimePrimitiveResource, spec: AuraCustomGeometrySpec): void {
+  const tracked = resource as ProductionRuntimePrimitiveResource & L2ResourceTrack & {
+    geometry?: Geometry;
+    bounds?: GltfBounds;
+  };
+  const normalized = normalizeGeometryAttributes(spec);
+  const geometry = resource.geometry;
+  const vertexBuffer = geometry.vertexBuffer;
+  const has = (semantic: "position" | "normal" | "uv" | "uv1" | "color" | "tangent") => vertexBuffer.format.hasAttribute(semantic);
+  const sameFootprint = vertexBuffer.vertexCount === normalized.vertexCount
+    && has("uv") === (normalized.uvs !== undefined)
+    && has("color") === (normalized.colors !== undefined)
+    && geometry.topology === (spec.topology ?? "triangles")
+    && vertexBuffer.format.hasAttribute("normal")
+    && !has("tangent");
+  const normals = normalized.normals ?? computeAuraGeometryNormals({ positions: normalized.positions, indices: normalized.indices });
+
+  if (sameFootprint) {
+    // In-place path (L2-04): attribute writes mark byte ranges dirty; the next
+    // upload() flushes only those ranges — no new GPU buffer.
+    for (let index = 0; index < normalized.vertexCount; index += 1) {
+      vertexBuffer.setAttribute(index, "position", [normalized.positions[index * 3]!, normalized.positions[index * 3 + 1]!, normalized.positions[index * 3 + 2]!]);
+      vertexBuffer.setAttribute(index, "normal", [normals[index * 3]!, normals[index * 3 + 1]!, normals[index * 3 + 2]!]);
+      if (normalized.uvs) vertexBuffer.setAttribute(index, "uv", [normalized.uvs[index * 2]!, normalized.uvs[index * 2 + 1]!]);
+      if (normalized.colors) vertexBuffer.setAttribute(index, "color", [normalized.colors[index * 4]!, normalized.colors[index * 4 + 1]!, normalized.colors[index * 4 + 2]!, normalized.colors[index * 4 + 3]!]);
+    }
+    if (normalized.indices && geometry.indexBuffer && normalized.indices.length === geometry.indexBuffer.count) {
+      geometry.indexBuffer.setIndices(0, normalized.indices);
+    } else if (normalized.indices) {
+      // Same vertex count but a different index count still fits the existing
+      // vertex allocation; only the index buffer is swapped.
+      geometry.indexBuffer?.dispose();
+      (geometry as { indexBuffer?: IndexBuffer | null }).indexBuffer = new IndexBuffer(Array.from(normalized.indices), normalized.vertexCount);
+    }
+    const bounds = spec.bounds ? { min: spec.bounds.min, max: spec.bounds.max } : computeAuraGeometryBounds({ positions: normalized.positions });
+    (geometry as { bounds: GltfBounds }).bounds = { min: [...bounds.min] as AuraVec3, max: [...bounds.max] as AuraVec3 };
+    geometry.groups = spec.groups ? [...spec.groups] : undefined;
+    geometry.drawRange = spec.drawRange ? { ...spec.drawRange } : undefined;
+    geometry.morphTargets = spec.morphTargets ? spec.morphTargets.map((target) => ({ ...target })) : undefined;
+    tracked.bounds = { min: [...bounds.min] as AuraVec3, max: [...bounds.max] as AuraVec3 };
+    return;
+  }
+
+  // Realloc path: different vertex count, attribute footprint, or topology.
+  const next = createProductionGeometryFromCustomSpec(spec);
+  geometry.dispose();
+  tracked.geometry = next;
+  tracked.bounds = { min: [...next.bounds.min] as AuraVec3, max: [...next.bounds.max] as AuraVec3 };
+}
+
+/** SG-05 `updateAttribute`: partial write by element offset — dirty-ranged, never reallocates. */
+function applyAttributeUpdateToGeometry(geometry: Geometry, update: AuraL2AttributeUpdate): void {
+  const semantic = L2_UPDATE_SEMANTICS[update.name.toLowerCase()];
+  if (!semantic) {
+    throw new Error(`Aura3D updateAttribute name "${update.name}" is not a writable vertex semantic (position/normal/uv/uv1/color/tangent).`);
+  }
+  const vertexBuffer = geometry.vertexBuffer;
+  if (!vertexBuffer.format.hasAttribute(semantic)) {
+    throw new Error(`Aura3D updateAttribute("${update.name}") — the live geometry has no "${semantic}" attribute.`);
+  }
+  const components = vertexBuffer.format.getAttribute(semantic).components;
+  const data = update.array;
+  if (data.length % components !== 0) {
+    throw new Error(`Aura3D updateAttribute("${update.name}") array length must be a multiple of ${components}.`);
+  }
+  const start = Math.max(0, Math.floor(update.offset));
+  const elements = data.length / components;
+  if (start + elements > vertexBuffer.vertexCount) {
+    throw new Error(`Aura3D updateAttribute("${update.name}") overruns the vertex buffer (${vertexBuffer.vertexCount} vertices).`);
+  }
+  const scratch: number[] = new Array(components);
+  for (let element = 0; element < elements; element += 1) {
+    for (let component = 0; component < components; component += 1) {
+      scratch[component] = data[element * components + component] ?? 0;
+    }
+    vertexBuffer.setAttribute(start + element, semantic, scratch);
+  }
 }
 
 
