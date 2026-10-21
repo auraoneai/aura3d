@@ -32,7 +32,17 @@ const SHORT_NAMES: Readonly<Record<string, QrFlagName>> = {
   strict: "A3D_QR_STRICT"
 };
 
-const LANE_FLAGS = Object.values(SHORT_NAMES) as QrFlagName[];
+/** threejs-parity lane flags (threejs-parity-gaps PRD §5.0) — dev gates, so `all`/`none` blankets cover them. */
+const PARITY_FLAGS: readonly QrFlagName[] = [
+  "A3D_PARITY_SHADING",
+  "A3D_PARITY_GEOMETRY",
+  "A3D_PARITY_TEXTURES",
+  "A3D_PARITY_BATCHING",
+  "A3D_PARITY_LINES",
+  "A3D_PARITY_RUNTIME"
+];
+
+const LANE_FLAGS = [...(Object.values(SHORT_NAMES) as QrFlagName[]), ...PARITY_FLAGS];
 
 /**
  * #266 (Q-15-6) — sub-flags whose PRD declares them ON BY DEFAULT under their
@@ -77,7 +87,14 @@ function propagateSubFlags(out: Record<string, QrFlagValue>): void {
 function flagNameFor(short: string): QrFlagName | null {
   const lower = short.toLowerCase();
   if (lower in SHORT_NAMES) return SHORT_NAMES[lower];
+  // threejs-parity: a full `A3D_PARITY_*` name is a valid list token
+  // (`?a3d-qr=A3D_PARITY_LINES`), as is the `parity.<area>` short form.
+  const upper = short.toUpperCase();
+  if (/^A3D_PARITY_[A-Z0-9_]+$/.test(upper)) return upper as QrFlagName;
   const sub = lower.split(/[._]/).filter((s) => s.length > 0);
+  if (sub.length >= 2 && sub[0] === "parity") {
+    return `A3D_PARITY_${sub.slice(1).join("_").toUpperCase()}` as QrFlagName;
+  }
   // #72: multi-segment names — `core.shadows.cascade` →
   // `A3D_QR_CORE_SHADOWS_CASCADE`; `route.demo.alpha` → `A3D_QR_ROUTE_DEMO_ALPHA`.
   if (sub.length >= 2 && sub[0] in SHORT_NAMES) {
@@ -139,7 +156,7 @@ function applyInput(out: Record<string, QrFlagValue>, input: QrFlagInput): void 
 
 function applyPerFlagEnv(out: Record<string, QrFlagValue>, env: Readonly<Record<string, string | undefined>>): void {
   for (const [name, raw] of Object.entries(env)) {
-    if (!name.startsWith("A3D_QR_") || name === "A3D_QR" || raw === undefined) continue;
+    if ((!name.startsWith("A3D_QR_") && !name.startsWith("A3D_PARITY_")) || name === "A3D_QR" || raw === undefined) continue;
     const value: QrFlagValue = raw === "0" || raw === "off" || raw === "false" ? false : raw === "1" || raw === "on" || raw === "true" ? true : raw;
     setEntry(out, name as QrFlagName, value);
   }

@@ -21,7 +21,18 @@ export interface AuraPostPreset { readonly id: AuraPostPresetId; readonly output
  */
 export { prd03PostPresets as postPresets } from "../agent-api/postPresets.js";
 
-export interface AuraCustomPostPass { readonly name: string; readonly insertAt: PostInsertAt; readonly fragment: { readonly glsl: string; readonly wgsl?: string }; readonly uniforms?: Readonly<Record<string, number | readonly number[]>>; readonly inputs?: readonly ("color" | "depth" | "velocity")[]; }
+/**
+ * threejs-parity SH-03 (§5.0, task B-01): named order slots for custom passes.
+ * A number is an absolute order key (sorted ascending); the named slots map to
+ * fixed stages of the v2 post graph.
+ */
+export type AuraPostPassOrder = "before-bloom" | "after-bloom" | "before-tonemap" | "after-tonemap" | number;
+export interface AuraCustomPostPass { readonly name: string; readonly insertAt: PostInsertAt; readonly fragment: { readonly glsl: string; readonly wgsl?: string }; readonly uniforms?: Readonly<Record<string, number | readonly number[]>>; readonly inputs?: readonly ("color" | "depth" | "velocity")[];
+  /** threejs-parity SH-03: ordering inside the chosen insertAt stage; omitted = registration order (today's behavior). */
+  readonly order?: AuraPostPassOrder;
+  /** threejs-parity SH-03: `false` keeps the pass registered but skips execution. */
+  readonly enabled?: boolean;
+}
 export interface AuraPostSurface { addPostPass(p: AuraCustomPostPass): () => void; setQualityTier(t: AuraQualityTier | "auto"): void; }
 export interface AuraPostDiagnostics { readonly tier: AuraQualityTier; readonly antiAlias: AuraAntiAliasMode; readonly renderPixels: number; readonly pixelRatio: number; readonly renderScale: number; readonly stages: PostGraphReport["stages"]; readonly skipped: PostGraphReport["skipped"]; readonly velocityCoverage: { readonly items: number; readonly withVelocity: number }; }
 // effects factories (bloom, ambientOcclusion, antiAlias, colorGrade, vignette, filmGrain, chromaticAberration, depthOfField, motionBlur): field lists frozen in PRD 03 §APIs; unknown fields throw AuraRuntimeError("POST_FIELD_UNSUPPORTED") before first frame when A3D_QR_POST is on, warn (option-ignored) when off.

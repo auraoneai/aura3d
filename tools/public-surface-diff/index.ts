@@ -23,7 +23,7 @@ interface PackageSurface {
 }
 
 const migrationText = [
-  readFileSync("MIGRATION-2.0.md", "utf8"),
+  readFileSync("docs/migration/2.0.md", "utf8"),
   readFileSync("docs/migration/physics-rapier-2.0.md", "utf8"),
   readFileSync("docs/migration/navigation-recast-2.0.md", "utf8"),
   readFileSync("docs/migration/ecs-scripting-compatibility.md", "utf8")

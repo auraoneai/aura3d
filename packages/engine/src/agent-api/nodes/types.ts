@@ -72,7 +72,7 @@ export interface AuraProceduralTextureSpec {
   readonly colorB?: AuraColor;
 }
 
-export type AuraMaterialTextureInput = AuraAssetRef<"texture"> | AuraProceduralTextureSpec;
+export type AuraMaterialTextureInput = AuraAssetRef<"texture"> | AuraProceduralTextureSpec | AuraTextureRef;
 
 /**
  * Per-map UV transform for the C1 textured-PBR slots (muse3jsparity-PRD C1).
@@ -158,6 +158,15 @@ export interface AuraTransformSpec {
   readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder;
   /** C-06 (PR 0a): wins over `rotation` when set. */
   readonly quaternion?: import("../../contracts/sceneGraph").AuraQuat;
+  // ── threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0) — SG-09/SR-04 base-node fields, frozen at B; L7 lands the impl.
+  /** Draw-order override; higher renders later (three's Object3D.renderOrder). */
+  readonly renderOrder?: number;
+  /** Opt out of frustum culling for this node (three's Object3D.frustumCulled). */
+  readonly frustumCulled?: boolean;
+  /** Camera/raycast layer membership as a bitmask (three's Layers.mask). */
+  readonly layers?: number;
+  /** Free-form author metadata carried on the node (three's Object3D.userData). */
+  readonly userData?: Record<string, unknown>;
 }
 
 export interface AuraMaterialSpec {
@@ -278,6 +287,13 @@ export interface AuraMaterialSpec {
   readonly slotSampling?: Partial<Record<import("../../contracts/materials").AuraMaterialTextureSlot, import("@aura3d/rendering/contracts").AuraTextureSampling>>;
   /** PRD 10: emissive practical light scale. */
   readonly practical?: boolean;
+  // ── threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0) — SR-02/SH-02, frozen at B.
+  /** Per-material fog opt-out (SR-02): `false` excludes the material from scene fog (three's Material.fog). */
+  readonly fog?: boolean;
+  /** SH-02 discriminator: `material.custom` emits `kind: "custom"` so the compiler routes to the portable-shader path. */
+  readonly kind?: "custom";
+  /** SH-02 payload: the portable custom-shader spec (see AuraCustomMaterialSpec). */
+  readonly custom?: AuraCustomMaterialSpec;
 }
 
 export interface AuraEditableMaterialParameters {
@@ -437,9 +453,70 @@ export interface AuraPrimitiveOptions extends AuraTransformSpec {
   readonly geometry?: AuraCustomGeometrySpec;
   readonly text3D?: Omit<AuraText3DGeometry, "geometry">;
   readonly lod?: AuraRootLodSpec;
+  /** threejs-parity SG-03: per-kind generator params for the widened primitive union. */
+  readonly params?: AuraPrimitiveParams;
 }
 
-export type AuraBuiltinPrimitive = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
+/**
+ * threejs-parity SG-03 (docs/workflows/threejs-parity-gaps.md §5.0): union
+ * widened at B. Kinds past `"torus"` compile to a `parity-not-implemented`
+ * (A3D_PARITY_GEOMETRY) validate error until lane L2 lands the generators.
+ */
+export type AuraBuiltinPrimitive =
+  | "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus"
+  | "cone" | "circle" | "ring" | "tube" | "lathe" | "extrude" | "shape"
+  | "torusKnot" | "polyhedron" | "roundedBox";
+
+/**
+ * threejs-parity SG-03: per-kind generator parameters for the widened
+ * `AuraBuiltinPrimitive` union (three's constructor args, mapped to named
+ * fields). Frozen at B; lane L2 consumes them in `R/geometry/*` generators.
+ */
+export interface AuraPrimitiveParams {
+  readonly radius?: number;
+  readonly radiusTop?: number;
+  readonly radiusBottom?: number;
+  readonly height?: number;
+  readonly radialSegments?: number;
+  readonly heightSegments?: number;
+  readonly widthSegments?: number;
+  readonly innerRadius?: number;
+  readonly outerRadius?: number;
+  readonly thetaStart?: number;
+  readonly thetaLength?: number;
+  readonly thetaSegments?: number;
+  readonly phiStart?: number;
+  readonly phiLength?: number;
+  readonly phiSegments?: number;
+  readonly tubularSegments?: number;
+  /** torusKnot tube radius (three's `tube` arg — renamed to avoid colliding with the `"tube"` kind). */
+  readonly tubeRadius?: number;
+  /** torusKnot winding parameters. */
+  readonly p?: number;
+  readonly q?: number;
+  /** polyhedron subdivision detail. */
+  readonly detail?: number;
+  /** polyhedron variant (covers tetra/octa/icosa/dodecahedron). */
+  readonly variant?: "tetrahedron" | "octahedron" | "icosahedron" | "dodecahedron";
+  /** tube/extrude path — a frozen `Curve` (M/Curves.ts) or an explicit point list. */
+  readonly path?: unknown;
+  /** extrude path override (three's `extrudePath`). */
+  readonly extrudePath?: unknown;
+  /** lathe profile / shape outline points. */
+  readonly points?: readonly AuraVec3[];
+  /** `shape` kind outline — a frozen `Shape` (L3) or point list. */
+  readonly shape?: unknown;
+  /** extrude settings. */
+  readonly depth?: number;
+  readonly steps?: number;
+  readonly bevelEnabled?: boolean;
+  readonly bevelThickness?: number;
+  readonly bevelSize?: number;
+  readonly bevelOffset?: number;
+  readonly bevelSegments?: number;
+  /** closed loop for `tube`. */
+  readonly closed?: boolean;
+}
 
 export interface AuraRootLodLevelSpec {
   readonly name: string;
@@ -664,7 +741,14 @@ export type AuraSceneNode =
   | AuraEffectNode
   | AuraInteractionNode
   | AuraLabelNode
-  | AuraEnvironmentNode;
+  | AuraEnvironmentNode
+  // threejs-parity (§5.0): frozen at B; each kind compiles to a
+  // `parity-not-implemented` (A3D_PARITY_LINES / A3D_PARITY_BATCHING) validate
+  // error until lanes L5/L6 land real handlers.
+  | AuraLineNode
+  | AuraPointsNode
+  | AuraSpriteNode
+  | AuraBatchedNode;
 
 export interface AuraModelNode extends AuraTransformSpec {
   readonly kind: "model";
@@ -715,6 +799,8 @@ export interface AuraPrimitiveNode extends AuraTransformSpec {
   readonly geometry?: AuraCustomGeometrySpec;
   readonly text3D?: Omit<AuraText3DGeometry, "geometry">;
   readonly lod?: AuraRootLodSpec;
+  /** threejs-parity SG-03: per-kind generator params for the widened primitive union. */
+  readonly params?: AuraPrimitiveParams;
 }
 
 export interface AuraGroupNode extends AuraTransformSpec {
@@ -2371,6 +2457,195 @@ export interface AuraAssetLoadState {
   readonly provenance?: AuraAssetProvenance;
   readonly message?: string;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// threejs-parity frozen types (docs/workflows/threejs-parity-gaps.md §5.0,
+// task B-01). Written once by lane B; read-only for every other lane until the
+// §7.3 integration checkpoint. Each lane compiles its kind to a
+// `parity-not-implemented` validate error until its real path lands.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** ST-01/ST-02 (L4): live texture handle returned by `texture.*`. Field writes apply on the next upload; `needsUpdate` bumps the device revision exactly once. */
+export type AuraTextureWrapMode = "clamp" | "repeat" | "mirror";
+export type AuraTextureMinFilter = "nearest" | "linear" | "nearest-mipmap-nearest" | "linear-mipmap-nearest" | "nearest-mipmap-linear" | "linear-mipmap-linear";
+export type AuraTextureMagFilter = "nearest" | "linear";
+export type AuraTextureColorSpace = "srgb" | "linear";
+
+export interface AuraTextureRef {
+  readonly kind: "aura-texture-ref";
+  /** Stable handle id — also usable anywhere an `AuraAssetRef<"texture">` id is accepted. */
+  readonly id: string;
+  wrapS: AuraTextureWrapMode;
+  wrapT: AuraTextureWrapMode;
+  repeat: readonly [number, number];
+  offset: readonly [number, number];
+  /** UV rotation in radians around `center`. */
+  rotation: number;
+  center: readonly [number, number];
+  anisotropy: number;
+  minFilter: AuraTextureMinFilter;
+  magFilter: AuraTextureMagFilter;
+  generateMipmaps: boolean;
+  colorSpace: AuraTextureColorSpace;
+  flipY: boolean;
+  /** Set true after mutating pixels/source; cleared by the device once the revision uploads. */
+  needsUpdate: boolean;
+  dispose(): void;
+}
+
+/** ST-03 (L4): create opts per `texture.*` factory; `source` is the live canvas/video/image. */
+export interface AuraTextureDataOptions {
+  readonly width: number;
+  readonly height: number;
+  readonly data: Uint8Array | Uint8ClampedArray | Float32Array | Uint16Array | Uint32Array;
+  readonly format?: "rgba8" | "rgb8" | "r8" | "rgba16f" | "rgba32f" | "depth24";
+  readonly colorSpace?: AuraTextureColorSpace;
+}
+export interface AuraTextureCanvasOptions { readonly canvas: unknown; readonly colorSpace?: AuraTextureColorSpace; readonly flipY?: boolean; }
+export interface AuraTextureVideoOptions { readonly video: unknown; readonly colorSpace?: AuraTextureColorSpace; }
+export interface AuraTextureCompressedOptions { readonly mipmaps: readonly { readonly data: Uint8Array; readonly width: number; readonly height: number }[]; readonly format: string; }
+export interface AuraTextureDepthOptions { readonly width: number; readonly height: number; }
+export interface AuraTextureCubeOptions { readonly faces: readonly unknown[]; readonly colorSpace?: AuraTextureColorSpace; }
+export interface AuraTextureDataArrayOptions extends Omit<AuraTextureDataOptions, "width" | "height" | "data"> { readonly width: number; readonly height: number; readonly depth: number; readonly data: Uint8Array | Float32Array | Uint16Array; }
+export interface AuraTextureLoadOptions { readonly colorSpace?: AuraTextureColorSpace; readonly flipY?: boolean; readonly anisotropy?: number; }
+
+// ── SH-02 custom material (L1) ─────────────────────────────────────────────
+
+export type AuraCustomUniformType = "f32" | "i32" | "bool" | "vec2" | "vec3" | "vec4" | "color3" | "mat3" | "mat4" | "texture2d";
+/** Uniform spec: bare type name, or `{ type, value }` for an initial value. */
+export type AuraCustomUniformSpec = AuraCustomUniformType | { readonly type: AuraCustomUniformType; readonly value?: unknown };
+/** Runtime uniform write (handle.setUniform / setPassUniform). */
+export type AuraUniformValue = number | boolean | readonly number[] | AuraVec3 | readonly AuraVec3[] | readonly [number, number] | readonly [number, number, number, number] | Float32Array | Int32Array | AuraTextureRef;
+
+/**
+ * SH-02 (L1): `material.custom(spec)` payload. GLSL is required —
+ * `createAuraApp` mounts WebGL2 (PRD C2); `wgsl` is optional and runs only on
+ * the WebGPU backend. A WGSL-only spec must fail `validate` (binding rule
+ * 1.4.2). `patch` (SH-09) replaces named shader chunks and salts the cache key.
+ */
+export interface AuraCustomMaterialSpec {
+  readonly glsl: { readonly vertex?: string; readonly fragment: string };
+  readonly wgsl?: { readonly vertex?: string; readonly fragment?: string };
+  readonly uniforms?: Readonly<Record<string, AuraCustomUniformSpec>>;
+  readonly defines?: Readonly<Record<string, string | number | boolean>>;
+  readonly transparent?: boolean;
+  readonly depthWrite?: boolean;
+  readonly depthTest?: boolean;
+  readonly side?: "front" | "back" | "double";
+  readonly blending?: "normal" | "additive" | "subtractive" | "multiply" | "custom";
+  readonly fog?: boolean;
+  /** SH-09: `#include <name>` chunk replacement map; salts the program cache key. */
+  readonly patch?: Readonly<Record<string, string>>;
+}
+
+// ── SG-05 dynamic geometry (L2) ────────────────────────────────────────────
+
+export type AuraIndexArray = Uint16Array | Uint32Array | readonly number[];
+export type AuraAttributeArray = Float32Array | readonly number[] | readonly AuraVec3[] | readonly (readonly [number, number])[];
+
+/** SG-05 (L2): `geometry.dynamic(spec)` / `handle.setGeometry(spec)` — accepts typed arrays or tuples. */
+export interface AuraDynamicGeometrySpec {
+  readonly positions: Float32Array | readonly number[] | readonly AuraVec3[];
+  readonly normals?: Float32Array | readonly number[] | readonly AuraVec3[];
+  readonly uvs?: Float32Array | readonly (readonly [number, number])[];
+  readonly colors?: Float32Array | readonly AuraColor[];
+  readonly indices?: AuraIndexArray;
+  readonly groups?: readonly { readonly start: number; readonly count: number; readonly materialIndex?: number }[];
+  readonly drawRange?: { readonly start: number; readonly count: number };
+  readonly morphTargets?: readonly { readonly name?: string; readonly positions: Float32Array | readonly number[] }[];
+}
+/** SG-05: per-frame partial attribute write; never reallocates when length is unchanged. */
+export interface AuraAttributeUpdate {
+  readonly array: Float32Array | Uint16Array | Uint32Array | Int32Array | readonly number[];
+  /** Element offset into the attribute (default 0). */
+  readonly offset?: number;
+}
+
+// ── SG-09 / SR-04 handle + spec members (L7) ───────────────────────────────
+
+/** three's `Layers` shape, frozen for the node handle (SR-04). */
+export interface AuraLayerMask {
+  mask: number;
+  set(channel: number): void;
+  enable(channel: number): void;
+  enableAll(): void;
+  disable(channel: number): void;
+  disableAll(): void;
+  toggle(channel: number): void;
+  test(layers: AuraLayerMask): boolean;
+  isEnabled(channel: number): boolean;
+}
+
+// ── New node kinds (L5/L6) ─────────────────────────────────────────────────
+
+/** SG-06/AD-08 (L6): `lines.line/loop/segments/fat`. Compile → `parity-not-implemented` until L6 lands. */
+export interface AuraLineNode extends AuraTransformSpec {
+  readonly kind: "line";
+  readonly line: "line" | "loop" | "segments" | "fat";
+  readonly name?: string;
+  readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
+  /** Per-point colors; presence enables vertex coloring. */
+  readonly colors?: readonly AuraColor[];
+  readonly material?: AuraMaterialSpec;
+  /** `fat` only: pixel width (worldUnits:false) or world width (true). */
+  readonly width?: number;
+  readonly worldUnits?: boolean;
+  readonly dashed?: boolean;
+  readonly dashSize?: number;
+  readonly gapSize?: number;
+  readonly dashOffset?: number;
+  readonly visible?: boolean;
+  readonly runtime?: AuraRuntimeNodeSpec;
+}
+
+/** SG-07 (L6): `points({...})`. Compile → `parity-not-implemented` until L6 lands. */
+export interface AuraPointsNode extends AuraTransformSpec {
+  readonly kind: "points";
+  readonly name?: string;
+  readonly positions: readonly AuraVec3[] | readonly number[] | Float32Array;
+  readonly colors?: readonly AuraColor[];
+  readonly size?: number;
+  readonly sizeAttenuation?: boolean;
+  readonly map?: AuraMaterialTextureInput;
+  readonly alphaTest?: number;
+  readonly transparent?: boolean;
+  readonly material?: AuraMaterialSpec;
+  readonly visible?: boolean;
+  readonly runtime?: AuraRuntimeNodeSpec;
+}
+
+/** SG-08 (L6): `sprites.sprite({...})`. Compile → `parity-not-implemented` until L6 lands. */
+export interface AuraSpriteNode extends AuraTransformSpec {
+  readonly kind: "sprite";
+  readonly name?: string;
+  readonly map?: AuraMaterialTextureInput;
+  /** Anchor point in [0,1]² (three's Sprite.center; default [0.5, 0.5]). */
+  readonly center?: readonly [number, number];
+  /** Screen-plane rotation in radians (three's SpriteMaterial.rotation). */
+  readonly spriteRotation?: number;
+  readonly sizeAttenuation?: boolean;
+  readonly color?: AuraColor;
+  readonly material?: AuraMaterialSpec;
+  readonly visible?: boolean;
+  readonly runtime?: AuraRuntimeNodeSpec;
+}
+
+/** SG-02 (L5): `batched.mesh({...})` — multi-geometry instancing. Compile → `parity-not-implemented` until L5 lands. */
+export interface AuraBatchedNode extends AuraTransformSpec {
+  readonly kind: "batched";
+  readonly name?: string;
+  readonly maxInstances: number;
+  readonly maxVertices?: number;
+  readonly maxIndices?: number;
+  readonly material?: AuraMaterialSpec;
+  /** Initial geometry pool entries (primitives by name, or custom geometry). */
+  readonly geometries?: readonly (AuraBuiltinPrimitive | AuraCustomGeometrySpec)[];
+  readonly instances?: readonly AuraTransformSpec[];
+  readonly instanceColors?: readonly AuraColor[];
+  readonly visible?: boolean;
+  readonly runtime?: AuraRuntimeNodeSpec;
+}
+
 import type {
   AuraApp,
   AuraAppRegistry,

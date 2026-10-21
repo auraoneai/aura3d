@@ -9,6 +9,7 @@
 import type { AnyNodeHandler, AuraNodeKindMap, NodeHandler } from "../../contracts/compiler.js";
 import { nodeHandlerFor } from "../../contracts/compiler.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
+import { AuraRuntimeError } from "./errors.js";
 
 export type NodeKindHandlers = {
   readonly [K in keyof AuraNodeKindMap]: NodeHandler<{ readonly kind: K & string }>;
@@ -21,6 +22,26 @@ function bridgeCompiled<K extends string>(kind: K): NodeHandler<{ readonly kind:
     // No contributions: the legacy bridge consumes this node kind directly;
     // the entry exists so the table is exhaustive and resolution is explicit.
     compile(): void {}
+  };
+}
+
+/**
+ * threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): a parity node
+ * kind whose lane has not landed fails closed — the default catalog entry for
+ * the kind throws a `parity-not-implemented` validate error. The lane's real
+ * handler, registered via `registerNodeHandler` with its `A3D_PARITY_*` flag,
+ * wins resolution once the flag is on (resolveNodeHandler).
+ */
+function parityPending<K extends string>(kind: K, flag: string): NodeHandler<{ readonly kind: K }> {
+  return {
+    kind: kind as { readonly kind: K }["kind"],
+    owner: "prd15",
+    compile(): never {
+      throw new AuraRuntimeError(
+        "parity-not-implemented",
+        `Aura3D scene node kind "${kind}" is not yet implemented (${flag}). See docs/workflows/threejs-parity-gaps.md.`
+      );
+    }
   };
 }
 
@@ -42,7 +63,11 @@ export const nodeHandlers: NodeKindHandlers = {
   terrain: bridgeCompiled("terrain"),
   water: bridgeCompiled("water"),
   scatter: bridgeCompiled("scatter"),
-  grass: bridgeCompiled("grass")
+  grass: bridgeCompiled("grass"),
+  line: parityPending("line", "A3D_PARITY_LINES"),
+  points: parityPending("points", "A3D_PARITY_LINES"),
+  sprite: parityPending("sprite", "A3D_PARITY_LINES"),
+  batched: parityPending("batched", "A3D_PARITY_BATCHING")
 };
 
 /** True when `kind` is a declared node kind (a key of the C-36 AuraNodeKindMap). */

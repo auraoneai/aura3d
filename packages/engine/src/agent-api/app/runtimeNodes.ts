@@ -394,6 +394,19 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       bumpVersion();
       return this;
     },
+    // region parity:L1 — SH-02 `setUniform(name, value)`: write into the
+    // material's uniform block without recompiling (frozen in
+    // nodes/types/runtime.ts; owner lane L1, do not edit outside this region).
+    // endregion parity:L1
+    // region parity:L2 — SG-05 `setGeometry(spec)` / `updateAttribute(name,
+    // update)`: per-frame partial upload, no realloc when vertex count is
+    // unchanged (owner lane L2, do not edit outside this region).
+    // endregion parity:L2
+    // region parity:L7 — SG-09/SR-04 transform/graph members: `renderOrder`,
+    // `frustumCulled`, `layers` (AuraLayerMask), `userData`, `traverse`,
+    // `getWorldPosition/Quaternion/Scale`, `attach`, `morphTargetDictionary`
+    // (SA-05, lane L8) (owner lane L7, do not edit outside this region).
+    // endregion parity:L7
     bounds() {
       return getBounds();
     },

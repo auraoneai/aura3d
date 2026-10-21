@@ -44,6 +44,10 @@ import { assets } from "../AssetDecoders.js";
 import { round } from "../GameRuntime.js";
 
 export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
+  // region parity:L4 — ST-06 options `options.onAssetProgress` /
+  // `options.onAssetError` are wired to the asset manager here (owner lane L4,
+  // do not edit outside this region).
+  // endregion parity:L4
   // T0-12: mount-phase timing marks consumed by the bench harness's
   // payload.extra.mountTiming (see markTiming in ./platform).
   markTiming("a3d:mount:create-app-start");
@@ -473,6 +477,10 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     markRouteReady(snapshot, diagnosticsState);
   };
   mountCurrentScene();
+  // region parity:L7 — SR-01/03/05/07 + SH-05 runtime members land here:
+  // `app.info`, `app.setPixelRatio`, `app.setClearColor`, `app.precompile`
+  // (owner lane L7, do not edit outside this region).
+  // endregion parity:L7
   const app: AuraApp & { resetRuntimeClock(): void } = {
     canvas,
     get scene() {

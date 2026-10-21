@@ -15,7 +15,9 @@ export function migrateThreeToA3D(source: string): ThreeCompatMigrationResult {
     code = code.replaceAll(`from "${from}"`, `from "${to}"`).replaceAll(`from '${from}'`, `from '${to}'`);
     if (code !== before) rewrittenImports += 1;
   }
-  code = code.replaceAll("new THREE.WebGLRenderer", "createThreeCompatRenderer");
+  // threejs-parity B-04 (C15): the deleted three-compat package owned
+  // `createThreeCompatRenderer`; `WebGLRenderer` maps to the app entry point.
+  code = code.replaceAll("new THREE.WebGLRenderer", "createAuraApp");
   code = code.replaceAll("renderer.setSize", "renderer.resize");
   return {
     code,

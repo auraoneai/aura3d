@@ -25,7 +25,11 @@ export interface NodeHandler<N extends { readonly kind: string }> {
 export interface RenderSourceContributions { addItems(items: readonly unknown[] /* RenderItem */): void; addLights(lights: readonly unknown[] /* CollectedLight */): void; set<K extends string>(field: K, value: unknown): void; feature(f: AuraCompiledFeature): void; }
 /** Node kinds: open registry via declaration merging (PR 0a declares every kind in the catalog). */
 export interface AuraNodeKindMap { model: unknown; primitive: unknown; group: unknown; light: unknown; effect: unknown; interaction: unknown; label: unknown; environment: unknown;  // existing (index.ts:1474-1482)
-  sky: unknown; look: unknown; probe: unknown; biome: unknown; "time-of-day": unknown; wind: unknown; terrain: unknown; water: unknown; scatter: unknown; grass: unknown; }
+  sky: unknown; look: unknown; probe: unknown; biome: unknown; "time-of-day": unknown; wind: unknown; terrain: unknown; water: unknown; scatter: unknown; grass: unknown;
+  // threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): declared so a
+  // lane's registerNodeHandler can win; the default handlers fail closed with
+  // "parity-not-implemented" until the lane's real handler lands.
+  line: unknown; points: unknown; sprite: unknown; batched: unknown; }
 
 export interface AnyNodeHandler {
   readonly kind: string;

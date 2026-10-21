@@ -72,7 +72,8 @@ export interface Disposition {
   readonly kind: "value" | "type";
   readonly from: ".";
   readonly to: string;
-  readonly disposition: "live" | "deprecated" | "drop";
+  /** "planned" reserves a not-yet-landed name (threejs-parity §5.0); it never emits — integration flips it to "live". */
+  readonly disposition: "live" | "deprecated" | "drop" | "planned";
   readonly reason: string;
   readonly consumers: readonly string[];
   readonly owners: readonly string[];
@@ -182,7 +183,7 @@ export function emitPublicIndex(dispositions: readonly Disposition[]): string {
 }
 
 export function emitSubpathEntry(dispositions: readonly Disposition[], subpath: "./renderer" | "./devtools"): string {
-  const moved = dispositions.filter((d) => d.to === subpath);
+  const moved = dispositions.filter((d) => d.to === subpath && d.disposition !== "planned");
   const values = moved.filter((d) => d.kind === "value").map((d) => d.name);
   const types = moved.filter((d) => d.kind === "type").map((d) => d.name);
   const title = subpath === "./renderer" ? "@aura3d/engine/renderer" : "@aura3d/engine/devtools";
@@ -208,6 +209,10 @@ export function emitSubpathEntry(dispositions: readonly Disposition[], subpath: 
       'export type { MeshOptions, Object3DOptions, RenderableDescriptor } from "@aura3d/scene";',
       'export { Geometry, Material, PBRMaterial, UnlitMaterial, TexturedPBRMaterial, TexturedUnlitMaterial, SkinnedLitMaterial, InstancedPBRMaterial, TextureBinding } from "@aura3d/rendering";',
       'export type { RenderMaterial } from "@aura3d/rendering";',
+      "",
+      '// threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): reserved as',
+      '// type-only exports until their lanes ship the value exports.',
+      'export type { PortableShaderMaterial, ShaderPreprocessor, RenderTarget, Texture, Sampler } from "@aura3d/rendering";',
       "",
       '/** @deprecated 3.1.0, kept at 4.0.0 — removes in the next minor. Alias of Renderer. */',
       'export { Renderer as A3DRenderer } from "@aura3d/rendering";',
@@ -239,7 +244,8 @@ export function emitSubpathEntry(dispositions: readonly Disposition[], subpath: 
     "Renderable", "MeshOptions", "Object3DOptions", "RenderableDescriptor",
     "Geometry", "Material", "PBRMaterial", "UnlitMaterial", "TexturedPBRMaterial",
     "TexturedUnlitMaterial", "SkinnedLitMaterial", "InstancedPBRMaterial", "TextureBinding",
-    "RenderMaterial", "A3DRenderer", "A3DRendererOptions"
+    "RenderMaterial", "A3DRenderer", "A3DRendererOptions",
+    "PortableShaderMaterial", "ShaderPreprocessor", "RenderTarget", "Texture", "Sampler"
   ]);
   const restValues = values.filter((n) => !alreadyExported.has(n) && !devOnlyCurated.has(n));
   const restTypes = types.filter((n) => !alreadyExported.has(n) && !devOnlyCurated.has(n));
@@ -253,7 +259,16 @@ function main(): void {
   const args = process.argv.slice(2);
   const inv = JSON.parse(readFileSync(INVENTORY_PATH, "utf8")) as Inventory;
   const dispositions = computeDispositions(inv);
-  const byDisp = { live: 0, deprecated: 0, drop: 0 };
+  // threejs-parity (§5.0): hand-reserved "planned" rows survive regeneration —
+  // the inventory only knows landed names, so they are merged back in.
+  const prevLedgerText = (() => { try { return readFileSync(DISPOSITIONS_PATH, "utf8"); } catch { return null; } })();
+  if (prevLedgerText) {
+    const known = new Set(dispositions.map((d) => d.name));
+    const planned = (JSON.parse(prevLedgerText) as { entries?: Disposition[] }).entries?.filter((d) => d.disposition === "planned") ?? [];
+    for (const d of planned) if (!known.has(d.name)) dispositions.push(d);
+    dispositions.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  const byDisp: Record<string, number> = { live: 0, deprecated: 0, drop: 0, planned: 0 };
   const byTo = new Map<string, number>();
   for (const d of dispositions) {
     byDisp[d.disposition]++;

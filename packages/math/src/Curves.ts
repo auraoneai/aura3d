@@ -1,4 +1,43 @@
 import { Vector3 } from "./Vector3.js";
+import type { Vector2 } from "./Vector2.js";
+
+/**
+ * threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0, task B-06) —
+ * frozen `Curve` contract so lane L2's Tube/Extrude/Shape generators can code
+ * against it while L3 restructures the implementation. three.js semantics:
+ * `getPoint(t)` is the raw parametric lookup; `getPointAt(u)` is uniform in
+ * arc length via the cached arc-length table (`getUtoTmapping`).
+ */
+export interface FrenetFrame {
+  readonly tangents: readonly Vector3[];
+  readonly normals: readonly Vector3[];
+  readonly binormals: readonly Vector3[];
+}
+
+export interface Curve<V extends Vector2 | Vector3> {
+  /** Parametric point at t ∈ [0,1] — NOT arc-length uniform. */
+  getPoint(t: number): V;
+  /** Arc-length-uniform point: `u` is the fraction of total length. */
+  getPointAt(u: number): V;
+  /** Unit tangent at parametric t (not arc-length corrected). */
+  getTangent(t: number): V;
+  /** Unit tangent at arc-length fraction u. */
+  getTangentAt(u: number): V;
+  /** Total arc length, from the cached arc-length table. */
+  getLength(): number;
+  /** Arc-length table slice: `getLengths(divisions)` cumulative lengths at divisions+1 spaced t. */
+  getLengths(divisions?: number): readonly number[];
+  /** Map arc-length fraction u → parametric t (binary search on the cached table). */
+  getUtoTmapping(u: number): number;
+  /** `divisions`+1 evenly spaced points (by arc length). */
+  getSpacedPoints(divisions?: number): readonly V[];
+  /** `divisions`+1 parametric (non-uniform) points. */
+  getPoints(divisions?: number): readonly V[];
+  /** Rotation-minimising (or Frenet) frames at `segments` evenly spaced parameters. */
+  computeFrenetFrames(segments: number, closed?: boolean): FrenetFrame;
+  /** Rebuild the arc-length cache after control data mutates. */
+  updateArcLengths(): void;
+}
 
 export interface CurveSample {
   readonly position: Vector3;

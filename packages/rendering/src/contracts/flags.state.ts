@@ -43,7 +43,17 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   // Promoted 2026-10-13 (owner rule): GPU L4 promote run 38455588100 on
   // 0b97a9305, PASS, mean LPIPS vs three.js 0.0368 -> 0.0367 over 19 scenes, 0 regressed.
   A3D_QR_COMPILER: "default-on",
-  A3D_QR_STRICT: "dev"
+  A3D_QR_STRICT: "dev",
+  // threejs-parity lanes (docs/workflows/threejs-parity-gaps.md §5.0). Each new
+  // node kind/material/texture/runtime surface compiles to a
+  // "not yet implemented (A3D_PARITY_*)" validate error until its lane lands
+  // and the flag promotes per the §7.3 integration checkpoint.
+  A3D_PARITY_SHADING: "dev",
+  A3D_PARITY_GEOMETRY: "dev",
+  A3D_PARITY_TEXTURES: "dev",
+  A3D_PARITY_BATCHING: "dev",
+  A3D_PARITY_LINES: "dev",
+  A3D_PARITY_RUNTIME: "dev"
 };
 
 /** §5.4 — flags removed after two consecutive default-on checkpoints. */

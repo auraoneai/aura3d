@@ -16,6 +16,10 @@ export type { MeshOptions, Object3DOptions, RenderableDescriptor } from "@aura3d
 export { Geometry, Material, PBRMaterial, UnlitMaterial, TexturedPBRMaterial, TexturedUnlitMaterial, SkinnedLitMaterial, InstancedPBRMaterial, TextureBinding } from "@aura3d/rendering";
 export type { RenderMaterial } from "@aura3d/rendering";
 
+// threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): reserved as
+// type-only exports until their lanes ship the value exports.
+export type { PortableShaderMaterial, ShaderPreprocessor, RenderTarget, Texture, Sampler } from "@aura3d/rendering";
+
 /** @deprecated 3.1.0, removed 4.0.0. Alias of Renderer. */
 export { Renderer as A3DRenderer } from "@aura3d/rendering";
 /**

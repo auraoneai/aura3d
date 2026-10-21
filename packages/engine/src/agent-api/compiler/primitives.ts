@@ -11,6 +11,7 @@ import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { evaluateDistancePrioritizedMipResidency, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
 import { createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
+import { AuraRuntimeError } from "./errors.js";
 import { blankProductionPrimitiveTextureState, createSdfTextPrimitiveResource } from "./textures.js";
 import { material } from "../nodes/material.js";
 
@@ -392,10 +393,28 @@ export function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRM
   });
 }
 
+/**
+ * threejs-parity (§5.0 B-01): `AuraBuiltinPrimitive` is wider than the QR
+ * factory union until lane L2 registers the new generators. New kinds fail
+ * closed with a `parity-not-implemented` error instead of silently rendering
+ * the wrong shape.
+ */
+function qrBuiltinPrimitive(primitive: AuraBuiltinPrimitive): import("./geometry.js").QrBuiltinPrimitive {
+  switch (primitive) {
+    case "box": case "sphere": case "plane": case "cylinder": case "capsule": case "torus":
+      return primitive;
+    default:
+      throw new AuraRuntimeError(
+        "parity-not-implemented",
+        `Aura3D primitive "${primitive}" is not yet implemented (A3D_PARITY_GEOMETRY). See docs/workflows/threejs-parity-gaps.md.`
+      );
+  }
+}
+
 /** Q-15-2: the flag-on mesh for a builtin primitive node; undefined = legacy path (flag off, custom, geometry spec). */
 export function qrPrimitiveMeshFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined): ProductionPrimitiveMesh | undefined {
   if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
-  return createQrPrimitiveMesh(node.primitive, primitiveSize(node), qr);
+  return createQrPrimitiveMesh(qrBuiltinPrimitive(node.primitive), primitiveSize(node), qr);
 }
 
 /** Q-15-2: flag-on geometry + bounds, pooled per mount when `qr.pool` is set (#545). */
@@ -403,10 +422,10 @@ export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, qr: QrPrimitiveG
   if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
   const size = primitiveSize(node);
   if (!qr.pool) {
-    const mesh = createQrPrimitiveMesh(node.primitive, size, qr);
+    const mesh = createQrPrimitiveMesh(qrBuiltinPrimitive(node.primitive), size, qr);
     return { geometry: createProductionGeometryFromPrimitiveMesh(mesh), bounds: mesh.bounds };
   }
-  const primitive = node.primitive;
+  const primitive = qrBuiltinPrimitive(node.primitive);
   const geometry = qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr), () =>
     createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr)));
   return { geometry, bounds: geometry.bounds };
@@ -457,7 +476,13 @@ function createProductionPrimitiveMesh(primitive: AuraBuiltinPrimitive): Product
   if (primitive === "torus") return createTorusGeometry();
   if (primitive === "box") return createBoxGeometry();
   if (primitive === "cylinder") return createCylinderGeometry();
-  return createPlaneGeometry();
+  if (primitive === "plane") return createPlaneGeometry();
+  // threejs-parity (§5.0 B-01): widened union members land with lane L2;
+  // until then they fail closed instead of silently drawing a plane.
+  throw new AuraRuntimeError(
+    "parity-not-implemented",
+    `Aura3D primitive "${primitive}" is not yet implemented (A3D_PARITY_GEOMETRY). See docs/workflows/threejs-parity-gaps.md.`
+  );
 }
 
 function createProductionGeometryFromCustomSpec(spec: AuraCustomGeometrySpec): Geometry {

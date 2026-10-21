@@ -9,6 +9,9 @@ export class AuraRuntimeError extends Error {
     | "unsupported-texture"
     | "backend-fallback"
     | "unknown-node-kind"
+    // threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): a parity
+    // node kind / material / API whose lane has not landed yet fails closed.
+    | "parity-not-implemented"
     // CCR-03-8 (additive): PRD-03 §7.1 — v2 post-bridge field rejection.
     | "POST_FIELD_UNSUPPORTED"
     // T4.1 (PRD-15): strict degrade() throws the C-36 degradation codes,

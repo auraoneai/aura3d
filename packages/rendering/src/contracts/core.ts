@@ -19,6 +19,11 @@ export type QrFlagName =
   | "A3D_QR_CORE" | "A3D_QR_LIGHTING" | "A3D_QR_POST" | "A3D_QR_MATERIALS" | "A3D_QR_ASSETS"
   | "A3D_QR_ANIMATION" | "A3D_QR_VFX" | "A3D_QR_CAMERA" | "A3D_QR_GAME" | "A3D_QR_WORLD"
   | "A3D_QR_TIERS" | "A3D_QR_WEBGPU" | "A3D_QR_LOOKS" | "A3D_QR_COMPILER" | "A3D_QR_STRICT"
+  // threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): per-lane dev
+  // gates — a flag flips to default-on only after its browser fixtures pass on
+  // the remote GPU runner with 0 LPIPS regressions.
+  | "A3D_PARITY_SHADING" | "A3D_PARITY_GEOMETRY" | "A3D_PARITY_TEXTURES"
+  | "A3D_PARITY_BATCHING" | "A3D_PARITY_LINES" | "A3D_PARITY_RUNTIME"
   | `A3D_QR_${string}_${string}`; // sub-flags, e.g. A3D_QR_POST_TAA
 
 export type QrFlagValue = boolean | string; // string only for multi-valued flags (A3D_QR_CORE = "v2")

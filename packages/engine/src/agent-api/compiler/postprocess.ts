@@ -17,6 +17,24 @@ import {
   type PostFieldDiagnostic
 } from "../postBridge.js";
 
+/**
+ * threejs-parity (§5.0 B-01): `AuraToneMappingOperator` admits "cineon" so the
+ * public option compiles, but the renderer's ToneMappingOperator union only
+ * names operators with a shipped GLSL chunk. "cineon" fails closed here until
+ * lane L7-02 lands the operator.
+ */
+type RendererToneMappingOperator = "linear" | "reinhard" | "aces" | "agx" | "neutral";
+function toneMappingOperatorFor(op: string | undefined): RendererToneMappingOperator | undefined {
+  if (op === undefined || op === "none") return undefined;
+  if (op === "cineon") {
+    throw new AuraRuntimeError(
+      "parity-not-implemented",
+      'Aura3D toneMapping "cineon" is not yet implemented (A3D_PARITY_RUNTIME). See docs/workflows/threejs-parity-gaps.md.'
+    );
+  }
+  return op as RendererToneMappingOperator;
+}
+
 export function createProductionRuntimePostprocess(
   snapshot: AuraSceneSnapshot,
   lights: readonly CollectedLight[] = [],
@@ -187,9 +205,7 @@ export function createProductionRuntimePostprocess(
           : 1,
         whitePoint: 1,
         operator: postFlagOn
-          ? (authoredPostContext?.output?.toneMapping && authoredPostContext.output.toneMapping !== "none"
-            ? authoredPostContext.output.toneMapping
-            : "aces")
+          ? (toneMappingOperatorFor(authoredPostContext?.output?.toneMapping) ?? "aces")
           : "aces",
         inputColorSpace: "linear",
         outputColorSpace: "srgb"

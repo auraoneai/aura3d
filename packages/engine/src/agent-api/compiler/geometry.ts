@@ -304,7 +304,8 @@ export function qrPrimitiveGeometryOptions(
   return options;
 }
 
-type QrBuiltinPrimitive = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
+/** Narrower than `AuraBuiltinPrimitive` until threejs-parity lane L2 registers the new generators here. */
+export type QrBuiltinPrimitive = "box" | "sphere" | "plane" | "cylinder" | "capsule" | "torus";
 
 function hasSemantic(geometry: Geometry, semantic: string): boolean {
   return geometry.vertexBuffer.format.attributes.some((attribute) => attribute.semantic === semantic);

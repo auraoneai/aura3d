@@ -28,16 +28,19 @@ import type { assets } from "../../AssetDecoders.js";
 import type {
   AuraAnimationSpec,
   AuraAssetProvenance,
+  AuraAttributeUpdate,
   AuraBackend,
   AuraCameraMode,
   AuraColor,
   AuraCreateAppRendererOptions,
   AuraDiagnostics,
+  AuraDynamicGeometrySpec,
   AuraEffectNode,
   AuraHelperBudgetId,
   AuraHelperPerformanceBudget,
   AuraInteractionNode,
   AuraLabelNode,
+  AuraLayerMask,
   AuraLightType,
   AuraMaterialSpec,
   AuraModelNode,
@@ -46,6 +49,7 @@ import type {
   AuraSceneNode,
   AuraSceneSnapshot,
   AuraTransformSpec,
+  AuraUniformValue,
   AuraVec3
 } from "../types.js";
 
@@ -162,6 +166,31 @@ export interface AuraRuntimeNodeHandle {
   attachEffect(effect: AuraRuntimeNodeEffectAttachment): this;
   effects(): readonly AuraRuntimeNodeEffectAttachment[];
   snapshot(): AuraRuntimeNodeSnapshot;
+  // ── threejs-parity (§5.0, task B-01) — frozen handle members; optional until the owning lane lands (C-38 convention).
+  /** SG-09 (L7): three's Object3D.renderOrder — draw-order override applied at collect time. */
+  renderOrder?: number;
+  /** SG-09 (L7): three's Object3D.frustumCulled. */
+  frustumCulled?: boolean;
+  /** SG-09/SR-04 (L7): three's Object3D.layers — bitmask tested against the camera's mask. */
+  readonly layers?: AuraLayerMask;
+  /** SG-09 (L7): three's Object3D.userData — free-form author metadata. */
+  readonly userData?: Record<string, unknown>;
+  /** SG-09 (L7): depth-first visit of this node's subtree (self included). */
+  traverse?(callback: (handle: AuraRuntimeNodeHandle) => boolean | void): void;
+  /** SG-09 (L7): world-space transforms resolved through the parent chain. */
+  getWorldPosition?(): AuraVec3;
+  getWorldQuaternion?(): import("../../../contracts/sceneGraph").AuraQuat;
+  getWorldScale?(): AuraVec3;
+  /** SG-09 (L7): re-parent `child` under this node preserving its world transform (three's Object3D.attach). */
+  attach?(child: AuraRuntimeNodeHandle): this;
+  /** SH-02 (L1): write a `material.custom` uniform without recompiling the program. */
+  setUniform?(name: string, value: AuraUniformValue): this;
+  /** SG-05 (L2): replace the node's geometry; reallocates only when vertex count changes. */
+  setGeometry?(geometry: AuraDynamicGeometrySpec): this;
+  /** SG-05 (L2): per-frame partial attribute upload ("position" | "normal" | "color" | "uv" | custom name). */
+  updateAttribute?(name: string, update: AuraAttributeUpdate): this;
+  /** SA-05 (L8): morph-target name → index dictionary (three's morphTargetDictionary). */
+  morphTargetDictionary?(): Record<string, number>;
 }
 
 export interface AuraRuntimeNodeImportedAssetEvidence {
@@ -374,7 +403,14 @@ export interface AuraApp {
   addPostPass?(p: import("../../../contracts/post").AuraCustomPostPass): () => void;
   setQualityTier?(t: import("@aura3d/rendering/contracts").AuraQualityTier | "auto"): void;
   cutCamera?(): void;
-  precompile?(snapshot: AuraSceneSnapshot): Promise<unknown>;
+  precompile?(snapshot?: AuraSceneSnapshot): Promise<AuraPrecompileResult>;
+  // ── threejs-parity (§5.0, task B-01) — frozen app members; optional until L7 lands them.
+  /** SR-05 (L7): three's WebGLRenderer.info — render counters + resource memory. */
+  readonly info?: AuraRendererInfo;
+  /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
+  setPixelRatio?(ratio: number): void;
+  /** SH-05 (L7): default clear color/alpha used when the scene has no background. */
+  setClearColor?(color: AuraColor, alpha?: number): void;
   lookSignature?(): Promise<string>;
   lookManifest?(): unknown /* AuraLookManifest (prd09) */;
   onRender?(cb: (f: { readonly alpha: number; readonly realDt: number; readonly simTime: number }) => void): () => void;
@@ -426,6 +462,52 @@ export interface AuraCreateAppOptions {
   readonly onDegradation?: (d: import("../../../contracts/compiler").AuraDegradation) => void;
   readonly compat?: { readonly post?: "3.0" };
   readonly loop?: import("../../../contracts/time").AuraLoopOptions;
+  // ── threejs-parity (§5.0, task B-01) — ST-06 (L4): asset load progress/error callbacks over AssetManager.
+  readonly onAssetProgress?: (event: AuraAssetProgressEvent) => void;
+  readonly onAssetError?: (event: AuraAssetErrorEvent) => void;
+}
+
+/** ST-06 (L4): per-item asset load progress (three's LoadingManager onProgress). */
+export interface AuraAssetProgressEvent {
+  readonly url?: string;
+  readonly assetId?: string;
+  readonly loaded: number;
+  readonly total: number;
+  readonly item?: string;
+}
+
+/** ST-06 (L4): per-item asset load failure (three's LoadingManager onError). */
+export interface AuraAssetErrorEvent {
+  readonly url?: string;
+  readonly assetId?: string;
+  readonly error: unknown;
+  readonly message?: string;
+}
+
+// ── threejs-parity (§5.0, task B-01) — SR-05/SR-07 frozen result types.
+
+/** SR-05 (L7): three's `WebGLRenderer.info` — per-frame render counters + live resource counts. */
+export interface AuraRendererInfo {
+  readonly render: {
+    readonly calls: number;
+    readonly triangles: number;
+    readonly points: number;
+    readonly lines: number;
+    readonly frame: number;
+  };
+  readonly memory: {
+    readonly geometries: number;
+    readonly textures: number;
+    readonly renderTargets?: number;
+    readonly programs?: number;
+  };
+  readonly approximateGpuMemoryBytes?: number;
+}
+
+/** SR-07 (L7): `app.precompile()` result — how many programs/materials compiled ahead of first frame. */
+export interface AuraPrecompileResult {
+  readonly compiledPrograms: number;
+  readonly durationMs: number;
 }
 
 export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
