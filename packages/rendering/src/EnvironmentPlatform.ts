@@ -288,15 +288,19 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "decodeRgbeEnvironmentMap converts RGBE pixels to linear HDR data.",
     "loadProductionHdrEnvironmentFile is root-exported and accepts URL or Blob sources, validates HTTP failures, and returns disposable renderer-ready HDR, cubemap PMREM, and BRDF resources.",
     "Browser proof fetches a retained 1024x512 Radiance fixture through the public API and renders an HDR-lit metallic sphere."
-  ], "The production-runtime public Radiance HDR file path is implemented; HDRLoaderThreeCompat remains diagnostic-only and EXR is explicitly unsupported.", "Retain real-fixture URL/Blob, HTTP-error, disposal, root-export, and browser render gates."),
+  ], "The production-runtime public Radiance HDR file path is implemented; HDRLoaderThreeCompat remains diagnostic-only (EXR moved to the real exr-parser capability below).", "Retain real-fixture URL/Blob, HTTP-error, disposal, root-export, and browser render gates."),
   capability(
     "exr-parser",
     "EXR Parser",
-    "unsupported",
-    false,
-    [],
-    "Documented unsupported: Aura3D does not decode OpenEXR pixels. The diagnostic-only assets-package EXR loader shells were removed so file presence cannot be mistaken for decode support.",
-    "Keep EXR loading and OpenEXR decode out of accepted claims; convert source environments to a supported format before ingestion."
+    "implemented",
+    true,
+    [
+      "@aura3d/assets EXRLoader decodes OpenEXR scanline and single-tile files for NO_COMPRESSION, RLE, ZIPS, ZIP and PIZ — the PIZ path ports the full bitmap/Huffman/wavelet pipeline.",
+      "HALF and FLOAT channels decode to Uint16Array half or Float32Array RGBA (plus RG/Red layouts), with three-compatible luminance expansion and Rec.709 YCbCr reconstruction.",
+      "parseEXR is exported for buffer-in/pixels-out use; texture.load routes .exr URLs to rgba16f/rgba32f device textures."
+    ],
+    "PXR24, B44/A, DWA/B compression and deep-image data remain explicitly unsupported (loud errors, not silent mis-decode); multi-part scanline files decode their first part.",
+    "Retain unit-fixture decode gates (dimension + channel-value parity with three's EXRLoader on none/RLE/ZIP/PIZ encodes) before broadening claims."
   ),
   capability("cube-camera-reflections", "Cube Camera Reflections", "implemented", true, [
     "CubeCameraReflectionCapture owns and refreshes six canonical cubemap render targets.",

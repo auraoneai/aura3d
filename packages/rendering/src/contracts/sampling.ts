@@ -10,7 +10,36 @@ import type { AuraQualityTier } from "./quality";
 //   readonly addressW?: TextureAddressMode;
 //   readonly mirror?: boolean;                                // maps "mirror" wrap for glTF MIRRORED_REPEAT (33648)
 export type AuraTextureWrap = "repeat" | "clamp" | "mirror";
-export interface AuraTextureSampling { readonly wrap?: AuraTextureWrap; readonly filter?: "trilinear" | "bilinear" | "nearest"; readonly anisotropy?: number; }
+
+/**
+ * threejs-parity ST-02/ST-04 (L4): three-style min/mag filter names. These are
+ * the same strings `AuraTextureMinFilter`/`AuraTextureMagFilter` use in
+ * `agent-api/nodes/types.ts`; the numeric form accepted here is three's filter
+ * enum (NearestFilter 1003 … LinearMipmapLinearFilter 1008).
+ */
+export type AuraTextureMinFilterName = "nearest" | "linear" | "nearest-mipmap-nearest" | "linear-mipmap-nearest" | "nearest-mipmap-linear" | "linear-mipmap-linear";
+export type AuraTextureMagFilterName = "nearest" | "linear";
+export type AuraTextureFilterInput = AuraTextureMinFilterName | number;
+
+/**
+ * C-12 sampling descriptor (material.sampling / material.slotSampling).
+ *
+ * threejs-parity ST-02/ST-04 (L4) additions — all optional and additive:
+ * `wrapS`/`wrapT` are the per-axis wrap modes (they win over the shared
+ * `wrap`); `minFilter`/`magFilter` accept three's filter names or numeric
+ * enum values and win over the legacy `filter` shorthand; `generateMipmaps`
+ * asks the device for a full mip chain after upload.
+ */
+export interface AuraTextureSampling {
+  readonly wrap?: AuraTextureWrap;
+  readonly wrapS?: AuraTextureWrap;
+  readonly wrapT?: AuraTextureWrap;
+  readonly filter?: "trilinear" | "bilinear" | "nearest";
+  readonly minFilter?: AuraTextureFilterInput;
+  readonly magFilter?: AuraTextureMagFilterName | number;
+  readonly anisotropy?: number;
+  readonly generateMipmaps?: boolean;
+}
 
 /** R9 table: L4 / M8 / H16 / U16, clamped to the device maximum. */
 const TIER_ANISOTROPY: Readonly<Record<AuraQualityTier, number>> = { low: 4, medium: 8, high: 16, ultra: 16 };

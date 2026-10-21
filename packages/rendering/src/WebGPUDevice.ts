@@ -39,7 +39,7 @@ import {
 import { DEFAULT_DEPTH_SHADER_MARKER } from "./ShaderLibraryCore";
 import { reflectShaderSources } from "./ShaderReflection";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
-import { Texture, bytesPerPixel, isCompressedTextureFormat, type TextureFormat } from "./Texture";
+import { Texture, bytesPerPixel, isCompressedTextureFormat, type TextureCubeFace, type TextureFormat } from "./Texture";
 import { isTextureBinding, TextureBinding } from "./TextureBinding";
 import { type VertexFormat } from "./VertexFormat";
 
@@ -161,7 +161,13 @@ export interface WebGPUTextureDescriptorLike {
 }
 
 export interface WebGPUTextureLike {
-  createView(): unknown;
+  createView(descriptor?: {
+    readonly dimension?: string;
+    readonly mipLevelCount?: number;
+    readonly arrayLayerCount?: number;
+    readonly baseMipLevel?: number;
+    readonly baseArrayLayer?: number;
+  }): unknown;
   destroy(): void;
 }
 
@@ -469,6 +475,14 @@ export class WebGPUDevice implements RenderDevice {
   private readonly shaders = new Set<WebGPUShaderProgram>();
   private readonly renderTargets = new Set<WebGPURenderTarget>();
   private readonly nativeSampledTextures = new Map<Texture, { readonly texture: WebGPUTextureLike; readonly view: unknown }>();
+  /**
+   * threejs-parity ST-03 (L4): `Texture.revision` recorded at the last native
+   * upload. A mismatch on a cached binding re-uploads the texture in place —
+   * the same revision gate WebGL2 has in `webgl2/TextureUpload.ts` — so
+   * canvas/video/data textures bound through `texture.*` handles refresh
+   * on `needsUpdate` instead of staying frozen at the first upload.
+   */
+  private readonly nativeSampledTextureRevisions = new Map<Texture, number>();
   private activeRenderTarget: WebGPURenderTarget | null = null;
   private canvasDepthTexture: WebGPUTextureLike | null = null;
   private canvasDepthView: unknown | null = null;
@@ -1553,6 +1567,7 @@ export class WebGPUDevice implements RenderDevice {
     for (const target of this.renderTargets) target.dispose();
     for (const resource of this.nativeSampledTextures.values()) resource.texture.destroy();
     this.nativeSampledTextures.clear();
+    this.nativeSampledTextureRevisions.clear();
     this.canvasDepthTexture?.destroy();
     this.canvasDepthTexture = null;
     this.canvasDepthView = null;
@@ -1876,20 +1891,71 @@ export class WebGPUDevice implements RenderDevice {
         actual: true
       };
     }
+    // ST-03 (L4): live sources (video) may mark a new frame before the
+    // revision comparison runs.
+    texture.pollContentRevision?.();
     let resource = this.nativeSampledTextures.get(texture);
+    if (resource && this.nativeSampledTextureRevisions.get(texture) !== texture.revision) {
+      // ST-03: revision-bumped content (Texture.update / handle needsUpdate /
+      // a video frame) — re-upload into the same GPUTexture so every binding
+      // built on it refreshes without re-allocating.
+      if (this.uploadNativeSampledTextureRevision(texture, resource.texture)) {
+        this.nativeSampledTextureRevisions.set(texture, texture.revision);
+      }
+    }
     if (!resource) {
-      if (texture.source) {
-        const sourceLevels = nativeTextureSourceLevels(texture);
-        if (sourceLevels.length === 0) return null;
-        const nativeTexture = this.device.createTexture({
-          label: texture.label,
-          size: { width: texture.width, height: texture.height, depthOrArrayLayers: 1 },
-          format: webgpuSampledTextureFormat(texture, "rgba8"),
-          usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST,
-          mipLevelCount: sourceLevels.length
-        });
+      const created = this.createNativeSampledTextureResource(texture);
+      if (!created) return null;
+      resource = created;
+      this.nativeSampledTextures.set(texture, created);
+      this.nativeSampledTextureRevisions.set(texture, texture.revision);
+    }
+    return {
+      view: resource.view,
+      sampler: this.device.createSampler(webgpuSamplerDescriptor(binding.sampler)),
+      actual: true
+    };
+  }
+
+  /**
+   * threejs-parity ST-01/ST-02/ST-03 (L4): allocate and upload the native
+   * texture for a `Texture`. Source-backed textures prefer
+   * `queue.copyExternalImageToTexture` (the level-0 external-image copy
+   * replaces the draw-to-canvas readback entirely); when a mip chain is
+   * requested — or the queue predates the copy — the canvas readback path
+   * still produces real downsized levels so mipmap samplers stay complete.
+   * `2d-array` textures upload every layer in a single writeTexture and cube
+   * textures write all six faces at `origin.z = face`.
+   */
+  private createNativeSampledTextureResource(texture: Texture): { readonly texture: WebGPUTextureLike; readonly view: unknown } | null {
+    if (!this.device.createTexture) return null;
+    if (texture.source) {
+      const copyExternalImageToTexture = this.device.queue.copyExternalImageToTexture;
+      const useExternalCopy = typeof copyExternalImageToTexture === "function" && !texture.generateMipmaps;
+      const sourceLevels = useExternalCopy ? [] : nativeTextureSourceLevels(texture);
+      if (!useExternalCopy && sourceLevels.length === 0) return null;
+      const nativeTexture = this.device.createTexture({
+        label: texture.label,
+        size: { width: texture.width, height: texture.height, depthOrArrayLayers: 1 },
+        format: webgpuSampledTextureFormat(texture, "rgba8"),
+        // copyExternalImageToTexture additionally requires RENDER_ATTACHMENT.
+        usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST | (useExternalCopy ? TEXTURE_USAGE.RENDER_ATTACHMENT : 0),
+        mipLevelCount: useExternalCopy ? 1 : sourceLevels.length
+      });
+      if (useExternalCopy) {
+        copyExternalImageToTexture.call(
+          this.device.queue,
+          { source: texture.source, flipY: texture.flipY },
+          { texture: nativeTexture },
+          { width: texture.width, height: texture.height, depthOrArrayLayers: 1 }
+        );
+        this.nativeTextureUploads += 1;
+      } else {
         const writeTexture = this.device.queue.writeTexture;
-        if (!writeTexture) return null;
+        if (!writeTexture) {
+          nativeTexture.destroy();
+          return null;
+        }
         sourceLevels.forEach((level, mipLevel) => {
           writeTexture.call(
             this.device.queue,
@@ -1900,40 +1966,137 @@ export class WebGPUDevice implements RenderDevice {
           );
           this.nativeTextureUploads += 1;
         });
-        resource = { texture: nativeTexture, view: nativeTexture.createView() };
-      } else {
-        const sampledTexture = nativeSampledTextureLevels(texture);
-        if (!sampledTexture) return null;
-        const { levels, format } = sampledTexture;
-        const baseLevel = levels[0];
-        if (!baseLevel) return null;
-        const levelBytesPerPixel = bytesPerPixel(format);
-        if (levels.some((level) => level.data.byteLength < level.width * level.height * levelBytesPerPixel)) return null;
-        const nativeTexture = this.device.createTexture({
-          label: texture.label,
-          size: { width: baseLevel.width, height: baseLevel.height, depthOrArrayLayers: 1 },
-          format: webgpuSampledTextureFormat(texture, format),
-          usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST,
-          mipLevelCount: levels.length
-        });
-        for (const [mipLevel, level] of levels.entries()) {
-          this.device.queue.writeTexture(
-            { texture: nativeTexture, mipLevel },
-            level.data,
-            { bytesPerRow: level.width * levelBytesPerPixel, rowsPerImage: level.height },
-            { width: level.width, height: level.height, depthOrArrayLayers: 1 }
-          );
-          this.nativeTextureUploads += 1;
-        }
-        resource = { texture: nativeTexture, view: nativeTexture.createView() };
       }
-      this.nativeSampledTextures.set(texture, resource);
+      return { texture: nativeTexture, view: nativeTexture.createView() };
     }
-    return {
-      view: resource.view,
-      sampler: this.device.createSampler(webgpuSamplerDescriptor(binding.sampler)),
-      actual: true
-    };
+    if (texture.dimension === "cube") {
+      const faces = texture.cubeFaces;
+      if (faces.length !== 6) return null;
+      const mipLevelCount = faces[0]?.mipLevels.length ?? 0;
+      if (mipLevelCount === 0) return null;
+      const nativeTexture = this.device.createTexture({
+        label: texture.label,
+        size: { width: texture.width, height: texture.height, depthOrArrayLayers: 6 },
+        format: webgpuSampledTextureFormat(texture, texture.format),
+        usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST,
+        mipLevelCount
+      });
+      if (!this.writeNativeCubeFaceLevels(texture, nativeTexture)) {
+        nativeTexture.destroy();
+        return null;
+      }
+      return { texture: nativeTexture, view: nativeTexture.createView({ dimension: "cube" }) };
+    }
+    const sampledTexture = nativeSampledTextureLevels(texture);
+    if (!sampledTexture) return null;
+    const { levels, format } = sampledTexture;
+    const baseLevel = levels[0];
+    if (!baseLevel) return null;
+    const levelBytesPerPixel = bytesPerPixel(format);
+    if (levels.some((level) => level.data.byteLength < level.width * level.height * levelBytesPerPixel)) return null;
+    const depthOrArrayLayers = texture.dimension === "2d-array" ? texture.layers : 1;
+    const nativeTexture = this.device.createTexture({
+      label: texture.label,
+      size: { width: baseLevel.width, height: baseLevel.height, depthOrArrayLayers },
+      format: webgpuSampledTextureFormat(texture, format),
+      usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST,
+      mipLevelCount: levels.length
+    });
+    if (!this.writeNativeTextureLevels(texture, nativeTexture, levels, format)) {
+      nativeTexture.destroy();
+      return null;
+    }
+    return { texture: nativeTexture, view: nativeTexture.createView() };
+  }
+
+  /**
+   * threejs-parity ST-01/ST-03 (L4): push every mip level of `levels` into
+   * `nativeTexture`; for `2d-array` textures a single writeTexture covers all
+   * `texture.layers` slices (the level data is stored layer-contiguous).
+   */
+  private writeNativeTextureLevels(
+    texture: Texture,
+    nativeTexture: WebGPUTextureLike,
+    levels: readonly { readonly width: number; readonly height: number; readonly data: ArrayBufferView }[],
+    format: TextureFormat
+  ): boolean {
+    const writeTexture = this.device.queue.writeTexture;
+    if (!writeTexture) return false;
+    const levelBytesPerPixel = bytesPerPixel(format);
+    for (const [mipLevel, level] of levels.entries()) {
+      writeTexture.call(this.device.queue,
+        { texture: nativeTexture, mipLevel },
+        level.data,
+        { bytesPerRow: level.width * levelBytesPerPixel, rowsPerImage: level.height },
+        { width: level.width, height: level.height, depthOrArrayLayers: texture.dimension === "2d-array" ? texture.layers : 1 }
+      );
+      this.nativeTextureUploads += 1;
+    }
+    return true;
+  }
+
+  /** threejs-parity ST-01 (L4): per-face per-level writeTexture for cube textures. */
+  private writeNativeCubeFaceLevels(texture: Texture, nativeTexture: WebGPUTextureLike): boolean {
+    if (!this.device.queue.writeTexture) return false;
+    const faceOrder: readonly TextureCubeFace[] = ["px", "nx", "py", "ny", "pz", "nz"];
+    const levelBytesPerPixel = bytesPerPixel(texture.format);
+    for (const [faceIndex, face] of faceOrder.entries()) {
+      const faceData = texture.cubeFaces.find((candidate) => candidate.face === face);
+      if (!faceData) return false;
+      for (const [mipLevel, level] of faceData.mipLevels.entries()) {
+        this.device.queue.writeTexture(
+          { texture: nativeTexture, mipLevel, origin: { z: faceIndex } },
+          level.data,
+          { bytesPerRow: level.width * levelBytesPerPixel, rowsPerImage: level.height },
+          { width: level.width, height: level.height, depthOrArrayLayers: 1 }
+        );
+        this.nativeTextureUploads += 1;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * threejs-parity ST-03 (L4): in-place re-upload for a revision-bumped
+   * texture. Mirrors the create paths — external-image copy for source
+   * textures (the video per-frame path), whole-chain writeTexture otherwise.
+   * Returns false when the queue lacks the needed upload entry point so the
+   * cached binding keeps its last-good content instead of corrupting it.
+   */
+  private uploadNativeSampledTextureRevision(texture: Texture, nativeTexture: WebGPUTextureLike): boolean {
+    texture.pendingUpdateRegion = null;
+    texture.needsUpdate = false;
+    if (texture.source) {
+      const copyExternalImageToTexture = this.device.queue.copyExternalImageToTexture;
+      if (typeof copyExternalImageToTexture === "function" && !texture.generateMipmaps) {
+        copyExternalImageToTexture.call(
+          this.device.queue,
+          { source: texture.source, flipY: texture.flipY },
+          { texture: nativeTexture },
+          { width: texture.width, height: texture.height, depthOrArrayLayers: 1 }
+        );
+        this.nativeTextureUploads += 1;
+        return true;
+      }
+      const sourceLevels = nativeTextureSourceLevels(texture);
+      if (sourceLevels.length === 0 || !this.device.queue.writeTexture) return false;
+      sourceLevels.forEach((level, mipLevel) => {
+        this.device.queue.writeTexture!(
+          { texture: nativeTexture, mipLevel },
+          level.data,
+          { bytesPerRow: level.bytesPerRow, rowsPerImage: level.height },
+          { width: level.width, height: level.height, depthOrArrayLayers: 1 }
+        );
+        this.nativeTextureUploads += 1;
+      });
+      return true;
+    }
+    if (texture.dimension === "cube") {
+      return this.writeNativeCubeFaceLevels(texture, nativeTexture);
+    }
+    const sampledTexture = nativeSampledTextureLevels(texture);
+    if (!sampledTexture) return false;
+    return this.writeNativeTextureLevels(texture, nativeTexture, sampledTexture.levels, sampledTexture.format);
   }
 
   private releaseDisposedNativeSampledTextures(): void {
@@ -1941,6 +2104,7 @@ export class WebGPUDevice implements RenderDevice {
       if (texture instanceof Texture && texture.disposed) {
         resource.texture.destroy();
         this.nativeSampledTextures.delete(texture);
+        this.nativeSampledTextureRevisions.delete(texture);
       }
     }
   }
@@ -2418,7 +2582,17 @@ function nativeTextureSourceLevels(texture: Texture): readonly {
     const context = canvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
     if (!context) return levels;
     context.clearRect(0, 0, levelWidth, levelHeight);
-    context.drawImage(source as CanvasImageSource, 0, 0, levelWidth, levelHeight);
+    if (texture.flipY) {
+      // threejs-parity ST-02 (L4): flip the source at draw time so the CPU
+      // readback matches UNPACK_FLIP_Y / copyExternalImageToTexture flipY.
+      context.save();
+      context.translate(0, levelHeight);
+      context.scale(1, -1);
+      context.drawImage(source as CanvasImageSource, 0, 0, levelWidth, levelHeight);
+      context.restore();
+    } else {
+      context.drawImage(source as CanvasImageSource, 0, 0, levelWidth, levelHeight);
+    }
     const pixels = context.getImageData(0, 0, levelWidth, levelHeight).data;
     const sourceBytesPerRow = levelWidth * 4;
     const bytesPerRow = alignTo(sourceBytesPerRow, 256);

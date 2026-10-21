@@ -1,6 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraAssetRef, AuraMaterialSpec, AuraMaterialTextureInput, AuraPrimitiveNode, AuraProceduralTextureSpec, AuraTextureTransform, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../nodes/types.js";
+import type { AuraAssetRef, AuraMaterialSpec, AuraMaterialTextureInput, AuraPrimitiveNode, AuraProceduralTextureSpec, AuraTextureRef, AuraTextureTransform, ProductionRuntimePrimitiveEntry, ProductionRuntimePrimitiveResource } from "../nodes/types.js";
+import { auraTextureRefTexture } from "../nodes/texture.js";
 import { AuraRuntimeError } from "./errors.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import { createProductionPrimitiveMaterial, resolveProductionPrimitiveScalars } from "../compiler/primitives.js";
@@ -51,6 +52,17 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
   readonly metalnessUrl?: string;
   readonly occlusionUrl?: string;
   readonly emissiveUrl?: string;
+  // threejs-parity ST-01 (L4): live `texture.*` handles land here — material
+  // texture slots typed `AuraMaterialTextureInput` carry `AuraTextureRef`
+  // alongside asset refs; the extension-slot fields below keep the same
+  // contract for the extension-only `AuraAssetRef` slots (refs pass runtime).
+  readonly baseColorRef?: AuraTextureRef;
+  readonly normalRef?: AuraTextureRef;
+  readonly roughnessRef?: AuraTextureRef;
+  readonly metalnessRef?: AuraTextureRef;
+  readonly occlusionRef?: AuraTextureRef;
+  readonly emissiveRef?: AuraTextureRef;
+  readonly extensionRefs?: Readonly<Partial<Record<RootExtensionTextureSlot, AuraTextureRef>>>;
   readonly extensionMaps?: Readonly<Partial<Record<RootExtensionTextureSlot, {
     readonly url: string;
     readonly colorSpace: "srgb" | "linear";
@@ -63,6 +75,8 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
     input && typeof input === "object" && (input as { kind?: string }).kind === "aura-asset-ref"
       ? (input as AuraAssetRef<"texture">).url ?? undefined
       : undefined;
+  const textureRef = (input: AuraMaterialTextureInput | AuraAssetRef<"texture"> | undefined): AuraTextureRef | undefined =>
+    isAuraTextureRef(input) ? input : undefined;
   const procedurals: string[] = [];
   const noteProcedural = (slot: string, input: AuraMaterialTextureInput | AuraAssetRef<"texture"> | undefined): void => {
     if (input && typeof input === "object" && (input as { kind?: string }).kind === "aura-procedural-texture") {
@@ -80,10 +94,17 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
   const metalnessUrl = refUrl(materialSpec?.metalnessMap);
   const occlusionUrl = refUrl(materialSpec?.occlusionMap);
   const emissiveUrl = refUrl(materialSpec?.emissiveMap);
+  const extensionRefs: Partial<Record<RootExtensionTextureSlot, AuraTextureRef>> = {};
   const extensionMaps: NonNullable<ReturnType<typeof createProductionPrimitiveTextureIntent>["extensionMaps"]> = Object.fromEntries(
     ROOT_EXTENSION_TEXTURE_SLOTS.flatMap((slot) => {
       const input = materialSpec?.[`${slot}Map`];
       if (input === undefined) return [];
+      // threejs-parity ST-01 (L4): a live texture handle in an extension slot
+      // binds its device texture directly — no fetchable URL needed.
+      if (isAuraTextureRef(input)) {
+        extensionRefs[slot] = input;
+        return [];
+      }
       if (!input || typeof input !== "object" || input.kind !== "aura-asset-ref" || input.type !== "texture") {
         throw new AuraRuntimeError("unsupported-texture", `${slot}Map requires a typed texture asset reference`);
       }
@@ -99,6 +120,12 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
       return [[slot, { url: input.url, colorSpace: slot === "sheenColor" ? "srgb" : "linear", texCoord, ...(transform ? { transform } : {}) }]];
     })
   );
+  const baseColorRef = textureRef(materialSpec?.texture);
+  const normalRef = textureRef(materialSpec?.normal);
+  const roughnessRef = textureRef(materialSpec?.roughnessMap);
+  const metalnessRef = textureRef(materialSpec?.metalnessMap);
+  const occlusionRef = textureRef(materialSpec?.occlusionMap);
+  const emissiveRef = textureRef(materialSpec?.emissiveMap);
   return {
     ...(baseColorUrl ? { baseColorUrl } : {}),
     ...(normalUrl ? { normalUrl } : {}),
@@ -106,6 +133,13 @@ export function createProductionPrimitiveTextureIntent(materialSpec: AuraMateria
     ...(metalnessUrl ? { metalnessUrl } : {}),
     ...(occlusionUrl ? { occlusionUrl } : {}),
     ...(emissiveUrl ? { emissiveUrl } : {}),
+    ...(baseColorRef ? { baseColorRef } : {}),
+    ...(normalRef ? { normalRef } : {}),
+    ...(roughnessRef ? { roughnessRef } : {}),
+    ...(metalnessRef ? { metalnessRef } : {}),
+    ...(occlusionRef ? { occlusionRef } : {}),
+    ...(emissiveRef ? { emissiveRef } : {}),
+    ...(Object.keys(extensionRefs).length ? { extensionRefs } : {}),
     ...(Object.keys(extensionMaps).length ? { extensionMaps } : {}),
     proceduralInputs: procedurals
   };
@@ -188,7 +222,11 @@ export async function upgradeProductionPrimitiveTextures(
       // flag-on never rasterized it and the frame equalled flag-off bit for bit.
       // Flag-on, a procedural input alone is enough to run the textured upgrade.
       const proceduralOnly = qrMaterials && intent.proceduralInputs.length > 0;
-      if (urls.length === 0 && !proceduralOnly) continue;
+      // threejs-parity ST-01 (L4): live `texture.*` handles carry no URL.
+      const hasTextureRef = Boolean(
+        intent.baseColorRef ?? intent.normalRef ?? intent.roughnessRef ?? intent.metalnessRef ?? intent.occlusionRef ?? intent.emissiveRef
+      ) || Object.keys(intent.extensionRefs ?? {}).length > 0;
+      if (urls.length === 0 && !proceduralOnly && !hasTextureRef) continue;
       if (resource.textureStatus !== "none") continue;
       resource.textureStatus = "pending";
       try {
@@ -227,6 +265,21 @@ export async function upgradeProductionPrimitiveResource(
   const ownedBitmaps: ImageBitmap[] = [];
   const ownedTextures: Texture[] = [];
   const bitmapLoads = new Map<string, Promise<ImageBitmap>>();
+  // threejs-parity ST-01 (L4): resolved `texture.*` handles per slot — their
+  // textures are handle-owned (NOT pushed into ownedTextures; dispose comes
+  // from `handle.dispose()`), and their sampler/transform come from the
+  // handle's own three-`Texture` fields.
+  const refBindings = new Map<string, AuraTextureRefBinding>();
+  const refBindingFor = (slot: string, ref: AuraTextureRef | undefined): AuraTextureRefBinding | undefined => {
+    if (!ref) return undefined;
+    let binding = refBindings.get(slot);
+    if (!binding) {
+      binding = resolveAuraTextureRef(ref);
+      refBindings.set(slot, binding);
+    }
+    return binding;
+  };
+  const slotWarn = (w: string): void => { resource.textureWarnings.push(w); };
   const load = (url: string): Promise<ImageBitmap> => {
     let pending = bitmapLoads.get(url);
     if (!pending) {
@@ -271,24 +324,50 @@ export async function upgradeProductionPrimitiveResource(
       if (map.transform) extensionOptions[`${slot}TextureTransform`] = { ...map.transform };
       slots.push(slot);
     }
+    // threejs-parity ST-01 (L4): `texture.*` handles in extension slots bind
+    // directly — handle-owned textures, handle sampler, handle transform.
+    for (const [slot, ref] of Object.entries(intent.extensionRefs ?? {}) as [RootExtensionTextureSlot, AuraTextureRef][]) {
+      const binding = refBindingFor(`ext:${slot}`, ref)!;
+      if (needsScalarAtlas && (["clearcoat", "clearcoatRoughness", "sheenRoughness", "iridescence", "iridescenceThickness"] as readonly string[]).includes(slot)) {
+        const pixels = auraTextureRefPixels(ref);
+        if (!pixels) throw fail(`"${resource.name}" extension slot ${slot}Map texture handle has no CPU-readable pixels for the scalar atlas`);
+        Object.assign(atlasPixels, { [slot]: pixels });
+      }
+      extensionOptions[`${slot}Texture`] = binding.texture;
+      extensionOptions[`${slot}Sampler`] = binding.sampler;
+      extensionOptions[`${slot}TextureTransform`] = { ...binding.transform };
+      slots.push(slot);
+    }
     if (needsScalarAtlas) {
       const { createExtensionScalarAtlas } = await import("@aura3d/rendering/extension-scalar-atlas");
       const atlas = createExtensionScalarAtlas(atlasPixels, maxTextureSize);
       own(atlas.texture);
       extensionOptions.extensionScalarAtlas = atlas;
     }
-    const baseColorTexture = baseColorSource
+    const baseColorRefBinding = refBindingFor("baseColor", intent.baseColorRef);
+    const baseColorTexture = baseColorRefBinding?.texture ?? (baseColorSource
       ? own(new Texture({ width: baseColorSource.width, height: baseColorSource.height, source: baseColorSource, colorSpace: "srgb", label: `${resource.name}-basecolor` }))
-      : undefined;
+      : undefined);
     if (baseColorTexture) slots.push("baseColor");
-    let normalTexture = normalSource
+    const normalRefBinding = refBindingFor("normal", intent.normalRef);
+    let normalTexture = normalRefBinding?.texture ?? (normalSource
       ? own(new Texture({ width: normalSource.width, height: normalSource.height, source: normalSource, colorSpace: "linear", label: `${resource.name}-normal` }))
-      : undefined;
+      : undefined);
     if (normalTexture) slots.push("normal");
     let metallicRoughnessTexture: Texture | undefined;
-    if (roughnessSource ?? metalnessSource) {
-      const base = roughnessSource ?? metalnessSource!;
-      const size = { width: base.width, height: base.height };
+    const roughnessRefBinding = refBindingFor("roughnessMap", intent.roughnessRef);
+    const metalnessRefBinding = refBindingFor("metalnessMap", intent.metalnessRef);
+    const roughnessRefPixels = roughnessRefBinding ? auraTextureRefPixels(intent.roughnessRef!) : undefined;
+    const metalnessRefPixels = metalnessRefBinding ? auraTextureRefPixels(intent.metalnessRef!) : undefined;
+    if ((roughnessRefBinding && !roughnessRefPixels) || (metalnessRefBinding && !metalnessRefPixels)) {
+      // Fail closed (threejs-parity ST-01): a G/B-composited metal-rough map
+      // built from unreadable pixels would silently drop the authored channel.
+      throw fail(`"${resource.name}" uses a texture handle for roughness/metalness whose pixels are not CPU-readable (needs data, ImageBitmap, or canvas source)`);
+    }
+    if (roughnessSource ?? metalnessSource ?? roughnessRefPixels ?? metalnessRefPixels) {
+      const base = roughnessSource ?? metalnessSource;
+      const refSize = roughnessRefPixels ?? metalnessRefPixels;
+      const size = base ? { width: base.width, height: base.height } : { width: refSize!.width, height: refSize!.height };
       const readPixels = (bitmap: ImageBitmap | undefined): Uint8Array | undefined => {
         if (!bitmap) return undefined;
         const decoded = bitmapRgbaPixels(bitmap);
@@ -303,9 +382,16 @@ export async function upgradeProductionPrimitiveResource(
         }
         return decoded.data;
       };
+      const readRefPixels = (pixels: typeof roughnessRefPixels): Uint8Array | undefined => {
+        if (!pixels) return undefined;
+        if (pixels.width !== size.width || pixels.height !== size.height) {
+          throw fail(`"${resource.name}" roughness/metalness texture handles must match the composite size ${size.width}x${size.height} (got ${pixels.width}x${pixels.height})`);
+        }
+        return pixels.data instanceof Uint8Array ? pixels.data : new Uint8Array(pixels.data.buffer, pixels.data.byteOffset, pixels.data.byteLength);
+      };
       const composited = compositeMetallicRoughnessPixels(
-        readPixels(roughnessSource),
-        readPixels(metalnessSource),
+        readPixels(roughnessSource) ?? readRefPixels(roughnessRefPixels),
+        readPixels(metalnessSource) ?? readRefPixels(metalnessRefPixels),
         size.width * size.height,
         spec?.roughness ?? 0.58,
         spec?.metallic ?? spec?.metalness ?? 0
@@ -313,13 +399,15 @@ export async function upgradeProductionPrimitiveResource(
       metallicRoughnessTexture = own(new Texture({ width: size.width, height: size.height, data: composited, colorSpace: "linear", label: `${resource.name}-metallicroughness` }));
       slots.push("metallicRoughness");
     }
-    let occlusionTexture = occlusionSource
+    const occlusionRefBinding = refBindingFor("occlusion", intent.occlusionRef);
+    let occlusionTexture = occlusionRefBinding?.texture ?? (occlusionSource
       ? own(new Texture({ width: occlusionSource.width, height: occlusionSource.height, source: occlusionSource, colorSpace: "linear", label: `${resource.name}-occlusion` }))
-      : undefined;
+      : undefined);
     if (occlusionTexture) slots.push("occlusion");
-    let emissiveTexture = emissiveSource
+    const emissiveRefBinding = refBindingFor("emissive", intent.emissiveRef);
+    let emissiveTexture = emissiveRefBinding?.texture ?? (emissiveSource
       ? own(new Texture({ width: emissiveSource.width, height: emissiveSource.height, source: emissiveSource, colorSpace: "srgb", label: `${resource.name}-emissive` }))
-      : undefined;
+      : undefined);
     if (emissiveTexture) slots.push("emissive");
     // PRD-04 P2-9 (A3D_QR_MATERIALS on): authored procedural specs rasterize via
     // generateProceduralMaterialTexture and bind into their declared slots. Flag-off keeps the
@@ -446,16 +534,37 @@ export async function upgradeProductionPrimitiveResource(
         depthWrite: scalars.opacity >= 0.999,
         cullMode: node.primitive === "plane" || scalars.opacity < 0.999 ? "none" : "back"
       },
-      ...(baseColorTexture ? { baseColorTexture, baseColorSampler: slotSamplerFor("baseColor") } : {}),
-      ...(normalTexture ? { normalTexture, normalSampler: slotSamplerFor("normal"), normalScale: spec?.normalScale ?? 1 } : {}),
+      // threejs-parity ST-01 (L4): a live handle's sampler/transform wins over the
+      // declarative default — three binds each `Texture`'s own sampling state, so
+      // `handle.wrapS`/`minFilter`/`repeat`/`offset`/`rotation`/`center` carry the
+      // per-slot params. An explicit `spec.texTransforms.<slot>` composes over the
+      // handle transform like glTF's KHR_texture_transform over `texture.matrix`.
+      ...(baseColorTexture ? {
+        baseColorTexture,
+        baseColorSampler: baseColorRefBinding?.sampler ?? slotSamplerFor("baseColor"),
+        ...(mergedTransform(slotWarn, "baseColor", spec?.texTransforms?.baseColor, baseColorRefBinding?.transform)
+          ? { baseColorTextureTransform: mergedTransform(slotWarn, "baseColor", spec?.texTransforms?.baseColor, baseColorRefBinding?.transform)! } : {})
+      } : {}),
+      ...(normalTexture ? {
+        normalTexture,
+        normalSampler: normalRefBinding?.sampler ?? slotSamplerFor("normal"),
+        normalScale: spec?.normalScale ?? 1,
+        ...(mergedTransform(slotWarn, "normal", spec?.texTransforms?.normal, normalRefBinding?.transform)
+          ? { normalTextureTransform: mergedTransform(slotWarn, "normal", spec?.texTransforms?.normal, normalRefBinding?.transform)! } : {})
+      } : {}),
       ...(metallicRoughnessTexture ? { metallicRoughnessTexture, metallicRoughnessSampler: slotSamplerFor("metallicRoughness") } : {}),
-      ...(occlusionTexture ? { occlusionTexture, occlusionSampler: slotSamplerFor("occlusion") } : {}),
-      ...(emissiveTexture ? { emissiveTexture, emissiveSampler: slotSamplerFor("emissive") } : {}),
-      ...(spec?.texTransforms?.baseColor ? { baseColorTextureTransform: { ...spec.texTransforms.baseColor } } : {}),
-      ...(spec?.texTransforms?.normal ? { normalTextureTransform: { ...spec.texTransforms.normal } } : {}),
-      ...(spec?.texTransforms?.metallicRoughness ? { metallicRoughnessTextureTransform: { ...spec.texTransforms.metallicRoughness } } : {}),
-      ...(spec?.texTransforms?.occlusion ? { occlusionTextureTransform: { ...spec.texTransforms.occlusion } } : {}),
-      ...(spec?.texTransforms?.emissive ? { emissiveTextureTransform: { ...spec.texTransforms.emissive } } : {}),
+      ...(occlusionTexture ? {
+        occlusionTexture,
+        occlusionSampler: occlusionRefBinding?.sampler ?? slotSamplerFor("occlusion"),
+        ...(mergedTransform(slotWarn, "occlusion", spec?.texTransforms?.occlusion, occlusionRefBinding?.transform)
+          ? { occlusionTextureTransform: mergedTransform(slotWarn, "occlusion", spec?.texTransforms?.occlusion, occlusionRefBinding?.transform)! } : {})
+      } : {}),
+      ...(emissiveTexture ? {
+        emissiveTexture,
+        emissiveSampler: emissiveRefBinding?.sampler ?? slotSamplerFor("emissive"),
+        ...(mergedTransform(slotWarn, "emissive", spec?.texTransforms?.emissive, emissiveRefBinding?.transform)
+          ? { emissiveTextureTransform: mergedTransform(slotWarn, "emissive", spec?.texTransforms?.emissive, emissiveRefBinding?.transform)! } : {})
+      } : {}),
       ...((texCoords?.baseColor ?? 0) > 0 || (texCoords?.normal ?? 0) > 0 || (texCoords?.metallicRoughness ?? 0) > 0 || (texCoords?.occlusion ?? 0) > 0 || (texCoords?.emissive ?? 0) > 0 || extensionEntries.length > 0
         ? {
           textureTexCoords: {
@@ -619,4 +728,164 @@ export function mipChainBytesCoarseToFine(width: number, height: number): readon
     h = Math.max(1, Math.floor(h / 2));
   }
   return levels;
+}
+
+// ── threejs-parity (§6 lane L4, ST-01/ST-02) ────────────────────────────────
+// AuraTextureRef (the live `texture.*` handle contract, nodes/types.ts) →
+// device bindings. The handle's mutable three-`Texture` fields — wrapS/wrapT,
+// minFilter/magFilter, anisotropy, repeat/offset/rotation/center — are the
+// authored sampling + transform state for every slot the handle binds into.
+
+export interface AuraTextureRefBinding {
+  readonly texture: Texture;
+  readonly sampler: Sampler;
+  readonly transform: AuraTextureTransform;
+}
+
+export function isAuraTextureRef(input: unknown): input is AuraTextureRef {
+  return typeof input === "object" && input !== null && (input as { kind?: string }).kind === "aura-texture-ref";
+}
+
+/**
+ * ST-02: three's per-texture sampler fields → `Sampler`. Wrap S/T stay
+ * separate (no single-wrap collapse), min/mag map through
+ * `Sampler.fromThree`, anisotropy is preserved. `generateMipmaps` is a
+ * texture-storage property (it decides whether mip storage exists) and is
+ * applied at Texture construction in `nodes/texture.ts`, not here.
+ */
+export function auraTextureRefSampler(ref: AuraTextureRef): Sampler {
+  return Sampler.fromThree({
+    wrapS: ref.wrapS,
+    wrapT: ref.wrapT,
+    minFilter: ref.minFilter,
+    magFilter: ref.magFilter,
+    anisotropy: ref.anisotropy
+  });
+}
+
+/**
+ * ST-02: three `texture.matrix` semantics → engine `AuraTextureTransform`.
+ *
+ * three applies `uv' = offset + center + L·(uv − center)` where
+ * `L = R_three(rotation)·S(repeat)` and `R_three = [[c, −s],[s, c]]` in
+ * bottom-left UV space. The engine applies `uv' = offset' + L'·uv` with
+ * `L' = R_gltf(rot')·S` where `R_gltf(φ) = [[cosφ, sinφ],[−sinφ, cosφ]]` in
+ * glTF's top-left UV space (materials/features.ts `uvTransformMatrix`) —
+ * numerically `R_gltf(φ) = R_three(−φ)`, so the authored rotation negates.
+ * Folding the center anchor into the offset:
+ *   offset' = offset + center − L·center
+ */
+export function auraTextureRefTransform(ref: AuraTextureRef): AuraTextureTransform {
+  const [sx, sy] = ref.repeat;
+  const [cx, cy] = ref.center;
+  const [ox, oy] = ref.offset;
+  const c = Math.cos(ref.rotation);
+  const s = Math.sin(ref.rotation);
+  // L·center with three's matrix (L = [[c·sx, −s·sy],[s·sx, c·sy]]):
+  const lcx = c * sx * cx - s * sy * cy;
+  const lcy = s * sx * cx + c * sy * cy;
+  return {
+    offset: [ox + cx - lcx, oy + cy - lcy],
+    scale: [sx, sy],
+    rotation: -ref.rotation
+  };
+}
+
+/**
+ * Resolve a live handle to its device binding. Throws `unsupported-texture`
+ * (fail-closed — a dropped handle would silently render magenta/white rather
+ * than the authored image) when the handle has no backing texture, e.g. after
+ * `dispose()`.
+ */
+export function resolveAuraTextureRef(ref: AuraTextureRef): AuraTextureRefBinding {
+  const texture = auraTextureRefTexture(ref);
+  if (!texture) {
+    throw new AuraRuntimeError(
+      "unsupported-texture",
+      `texture handle "${ref.id}" has no backing device texture (disposed or never uploaded)`
+    );
+  }
+  return { texture, sampler: auraTextureRefSampler(ref), transform: auraTextureRefTransform(ref) };
+}
+
+/**
+ * CPU-readable RGBA pixels for a handle's texture — needed where the compiler
+ * packs authored channels into a composite (metallicRoughness G/B, extension
+ * scalar atlas). Returns undefined for float/half data textures, video
+ * sources, and cube/array textures; the caller fails closed.
+ */
+export function auraTextureRefPixels(
+  ref: AuraTextureRef
+): { readonly width: number; readonly height: number; readonly data: Uint8Array | Uint8ClampedArray } | undefined {
+  const texture = auraTextureRefTexture(ref);
+  if (!texture || texture.dimension !== "2d") return undefined;
+  const data = texture.data;
+  if (data instanceof Uint8ClampedArray) {
+    // Uint8Clamped → Uint8 view (composite pixels expect the unclamped type).
+    return { width: texture.width, height: texture.height, data: new Uint8Array(data.buffer, data.byteOffset, data.byteLength) };
+  }
+  if (data instanceof Uint8Array) return { width: texture.width, height: texture.height, data };
+  const source = texture.source;
+  if (!source) return undefined;
+  if (typeof ImageBitmap !== "undefined" && source instanceof ImageBitmap) {
+    return bitmapRgbaPixels(source);
+  }
+  // Canvas sources read back through a 2d canvas (browser path only).
+  if (typeof document !== "undefined" && typeof HTMLCanvasElement !== "undefined" && source instanceof HTMLCanvasElement) {
+    const canvas = document.createElement("canvas");
+    canvas.width = texture.width;
+    canvas.height = texture.height;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    if (!context) return undefined;
+    context.drawImage(source, 0, 0);
+    return { width: texture.width, height: texture.height, data: context.getImageData(0, 0, texture.width, texture.height).data };
+  }
+  return undefined;
+}
+
+/**
+ * Compose an authored `texTransforms.<slot>` over a handle transform
+ * (`spec · ref`, spec applied last — the KHR_texture_transform-over-
+ * `texture.matrix` ordering). Both are engine-convention
+ * `{offset, scale, rotation}`; the composition is exact when the combined
+ * linear part stays in the `R(φ)·S` family (orthogonal columns, positive
+ * determinant). A sheared result can't be expressed losslessly — the caller
+ * surfaces a textureWarning and the authored spec transform wins.
+ */
+export function mergedTransform(
+  warn: (warning: string) => void,
+  slot: string,
+  authored: AuraTextureTransform | undefined,
+  handleTransform: AuraTextureTransform | undefined
+): AuraTextureTransform | undefined {
+  if (!handleTransform) return authored;
+  if (!authored) return handleTransform;
+  const linear = (t: AuraTextureTransform): [[number, number], [number, number]] => {
+    const [sx, sy] = t.scale ?? [1, 1];
+    const rot = t.rotation ?? 0;
+    const c = Math.cos(rot);
+    const s = Math.sin(rot);
+    return [[c * sx, s * sy], [-s * sx, c * sy]];
+  };
+  const A = linear(authored);
+  const B = linear(handleTransform);
+  const m00 = A[0][0] * B[0][0] + A[0][1] * B[1][0];
+  const m01 = A[0][0] * B[0][1] + A[0][1] * B[1][1];
+  const m10 = A[1][0] * B[0][0] + A[1][1] * B[1][0];
+  const m11 = A[1][0] * B[0][1] + A[1][1] * B[1][1];
+  const tB = handleTransform.offset ?? [0, 0];
+  const tA = authored.offset ?? [0, 0];
+  const ox = A[0][0] * tB[0] + A[0][1] * tB[1] + tA[0];
+  const oy = A[1][0] * tB[0] + A[1][1] * tB[1] + tA[1];
+  // Orthogonality + positive determinant ⇔ composed map stays R(φ)·S.
+  const cross = m00 * m01 + m10 * m11;
+  const det = m00 * m11 - m01 * m10;
+  if (Math.abs(cross) > 1e-9 || det <= 0) {
+    warn(`texTransforms.${slot} does not compose with the texture handle transform (shear/negative scale); the authored slot transform wins`);
+    return authored;
+  }
+  const sx = Math.hypot(m00, m10);
+  const sy = Math.hypot(m01, m11);
+  const rotation = Math.atan2(-m10, m00);
+  return { offset: [ox, oy], scale: [sx, sy], rotation };
 }

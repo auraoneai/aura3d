@@ -47,8 +47,28 @@ export interface TextureDescriptor {
    * `update()`-driven re-uploads. Devices allocate immutable storage once
    * (`texStorage2D`) and refresh it via `texSubImage2D`; non-dynamic textures
    * keep the legacy `texImage2D` path.
+   *
+   * threejs-parity ST-03 (L4): `dynamic` may be combined with `source` for
+   * canvas/video textures — the source image is re-uploaded in place whenever
+   * `markNeedsUpdate()`/`needsUpdate` bumps `revision`.
    */
   readonly dynamic?: boolean;
+  /**
+   * threejs-parity ST-02 (L4): vertical flip applied to `source` uploads
+   * (three's `Texture.flipY`). WebGL2 applies it through
+   * `UNPACK_FLIP_Y_WEBGL`; WebGPU through `copyExternalImageToTexture`'s
+   * `flipY` option or the canvas readback path. Ignored for raw data,
+   * compressed, cube and depth textures (three applies flipY only to image
+   * uploads as well).
+   */
+  readonly flipY?: boolean;
+  /**
+   * threejs-parity ST-02 (L4): whether the device generates a full mip chain
+   * after uploading (three's `Texture.generateMipmaps`, default true).
+   * Source-backed textures honour it on every revision upload; flat data
+   * textures honour it on the initial upload.
+   */
+  readonly generateMipmaps?: boolean;
   /**
    * Render-target attachment created by a device's `createRenderTarget`. The
    * GPU storage is allocated by the device (texStorage2D for cube faces), so
@@ -73,12 +93,21 @@ export class Texture {
   public readonly height: number;
   public readonly dimension: TextureDimension;
   public readonly format: TextureFormat;
-  public readonly colorSpace: TextureColorSpace;
+  /**
+   * threejs-parity ST-02 (L4): mutable — a handle may re-point the colour
+   * interpretation; writers must also mark `needsUpdate` so the next upload
+   * re-uploads with the new transfer function.
+   */
+  public colorSpace: TextureColorSpace;
   public readonly label: string;
   public readonly data: TexturePixelData | null;
   public readonly mipLevels: readonly TextureMipLevel[];
   public readonly cubeFaces: readonly TextureCubeFaceLevel[];
   public readonly source: TexImageSource | null;
+  /** threejs-parity ST-02 (L4): see {@link TextureDescriptor.flipY}. */
+  public flipY: boolean;
+  /** threejs-parity ST-02 (L4): see {@link TextureDescriptor.generateMipmaps}. */
+  public generateMipmaps: boolean;
   public readonly fallbackData: Uint8Array | null;
   public readonly fallbackMipLevels: readonly TextureMipLevel[];
   /** C-18: layer count for `2d-array` textures; 1 for 2d/cube. */
@@ -116,6 +145,8 @@ export class Texture {
     this.mipLevels = descriptor.mipLevels ? cloneMipLevels(descriptor.mipLevels, "mipLevels") : [];
     this.cubeFaces = descriptor.cubeFaces ? cloneCubeFaces(descriptor.cubeFaces) : [];
     this.source = descriptor.source ?? null;
+    this.flipY = descriptor.flipY === true;
+    this.generateMipmaps = descriptor.generateMipmaps ?? true;
     this.fallbackData = descriptor.fallbackData ? new Uint8Array(descriptor.fallbackData) : null;
     this.fallbackMipLevels = descriptor.fallbackMipLevels ? cloneMipLevels(descriptor.fallbackMipLevels, "fallbackMipLevels") : [];
     this.dynamic = descriptor.dynamic === true;
@@ -123,8 +154,10 @@ export class Texture {
     if (this.dimension === "2d-array" && (!Number.isInteger(this.layers) || this.layers < 1)) {
       throw new Error("2d-array textures require layers to be a positive integer");
     }
-    if (this.dynamic && (this.dimension !== "2d" || this.mipLevels.length > 0 || this.source || isCompressedTextureFormat(this.format) || this.format === "depth24")) {
-      throw new Error("dynamic textures must be flat, non-compressed 2D textures without an image source");
+    // threejs-parity ST-03 (L4): `dynamic` + `source` is the canvas/video
+    // combination — re-uploaded in place from the live source on each revision.
+    if (this.dynamic && (this.dimension !== "2d" || this.mipLevels.length > 0 || isCompressedTextureFormat(this.format) || this.format === "depth24")) {
+      throw new Error("dynamic textures must be flat, non-compressed 2D textures (an image source is allowed for canvas/video re-uploads)");
     }
     if (this.dimension === "cube") {
       if (this.data || this.mipLevels.length > 0 || this.source || this.fallbackData || this.fallbackMipLevels.length > 0) {
@@ -233,6 +266,46 @@ export class Texture {
   public revision = 0;
 
   /**
+   * threejs-parity ST-02/ST-03 (L4): dirty flag mirroring three's
+   * `Texture.needsUpdate`. Setting it true bumps {@link revision} exactly once
+   * per dirty cycle (repeated `true` writes while still dirty do not bump
+   * again); devices clear it once the revision has been uploaded, so a
+   * canvas/video texture only re-uploads after a fresh mark.
+   */
+  private _needsUpdate = false;
+
+  get needsUpdate(): boolean {
+    return this._needsUpdate;
+  }
+
+  set needsUpdate(value: boolean) {
+    if (value) {
+      this.markNeedsUpdate();
+    } else {
+      this._needsUpdate = false;
+    }
+  }
+
+  /**
+   * Mark the texture's content changed for the next upload. Idempotent while
+   * a previous mark is still unconsumed — the second+ `needsUpdate = true`
+   * before an upload does not produce extra revisions.
+   */
+  public markNeedsUpdate(): void {
+    if (this.disposed || this._needsUpdate) return;
+    this._needsUpdate = true;
+    this.revision += 1;
+  }
+
+  /**
+   * threejs-parity ST-03 (L4): optional source-driven poll for live sources
+   * (video textures). Devices call it before comparing `revision` on the
+   * cached handle, letting a source mark `needsUpdate` when a new frame is
+   * ready — per-frame video upload without an app-level driver.
+   */
+  public pollContentRevision?: () => void;
+
+  /**
    * C-18: the pending sub-region recorded by the last `update`. Consumed by the
    * device's texture upload path and cleared after the re-upload is issued.
    */
@@ -273,6 +346,7 @@ export class Texture {
     }
     (this as { data: TexturePixelData | null }).data = data;
     this.pendingUpdateRegion = region ?? null;
+    this._needsUpdate = true;
     this.revision += 1;
   }
 }
