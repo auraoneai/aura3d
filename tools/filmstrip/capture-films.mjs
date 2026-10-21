@@ -118,6 +118,10 @@ async function filmGame(baseUrl, key, cfg, outDir) {
   const browser = await chromium.launch({ timeout: 45000 });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 2 });
   const page = await context.newPage();
+  // CDP captureScreenshot is the only path proven to return real WebGL pixels
+  // on the CI runner (page.screenshot times out; toDataURL is black until the
+  // first presented frame). Open the session up front.
+  const cdp = await context.newCDPSession(page);
   const console_ = [];
   const errors = [];
   page.on("console", (m) => console_.push(m.type() + ": " + m.text()));
@@ -137,56 +141,44 @@ async function filmGame(baseUrl, key, cfg, outDir) {
     }
     const grabStart = Date.now();
     const samples = [];
+    const nonBlackBuf = (buf) => {
+      const head = buf.subarray(64, 4096);
+      let n = 0;
+      for (let b = 0; b < head.length; b += 17) {
+        if (head[b] > 26 || head[b + 1] > 26 || head[b + 2] > 26) n += 1;
+      }
+      return n > 3;
+    };
     for (let i = 0; i < frames; i++) {
       const grab = await page.evaluate(() => {
-        const c = document.querySelector("canvas");
         const ev = (window.__AURA3D_GAME_EVIDENCE__ ?? window.__AURA3D_GAME__ ?? null);
-        let dataUrl = null;
-        try { dataUrl = c ? c.toDataURL("image/png") : null; } catch { /* fallthrough */ }
-        return { dataUrl, evidence: ev ? JSON.parse(JSON.stringify(ev)) : null, t: performance.now() };
+        return { evidence: ev ? JSON.parse(JSON.stringify(ev)) : null, t: performance.now() };
       });
       samples.push({ i, wallMs: Date.now() - grabStart, pageT: grab.t, evidence: grab.evidence });
       let wrote = false;
-      if (grab.dataUrl && grab.dataUrl.startsWith("data:image/png")) {
-        const buf = Buffer.from(grab.dataUrl.slice(22), "base64");
-        // Black-frame guard: under SwiftShader the engine's game-flag render
-        // path can leave the drawing buffer un-presented to toDataURL; a
-        // uniformly black grab is not evidence.
-        const head = buf.subarray(32, 1600);
-        let nonBlack = 0;
-        for (let b = 0; b < head.length; b += 13) {
-          if (head[b] > 24 || head[b + 1] > 24 || head[b + 2] > 24) nonBlack += 1;
-        }
-        if (nonBlack > 3) {
+      // 1) CDP compositor capture (probe-verified real pixels)
+      try {
+        const shot = await cdp.send("Page.captureScreenshot", { format: "png", fromSurface: true });
+        const buf = Buffer.from(shot.data, "base64");
+        if (nonBlackBuf(buf)) {
           fs.writeFileSync(path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`), buf);
           wrote = true;
         }
-      }
+      } catch { /* fall through */ }
+      // 2) canvas readback once the first frame presented
       if (!wrote) {
-        // Compositor fallback — FULL-PAGE (clipped screenshots of the canvas
-        // region come back black under SwiftShader; the unclipped page shot
-        // is the path the visual-QA harness uses and it carries real pixels,
-        // HUD included, which the rubric wants anyway).
-        for (let attempt = 0; attempt < 2 && !wrote; attempt += 1) {
-          try {
-            await page.screenshot({
-              path: path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`),
-              timeout: 45000
-            });
-            const shot = fs.readFileSync(path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`));
-            const head = shot.subarray(64, 2048);
-            let nonBlack = 0;
-            for (let b = 0; b < head.length; b += 17) {
-              if (head[b] > 26 || head[b + 1] > 26 || head[b + 2] > 26) nonBlack += 1;
+        try {
+          const dataUrl = await page.evaluate(() => document.querySelector("canvas")?.toDataURL("image/png") ?? null);
+          if (dataUrl && dataUrl.startsWith("data:image/png")) {
+            const buf = Buffer.from(dataUrl.slice(22), "base64");
+            if (nonBlackBuf(buf)) {
+              fs.writeFileSync(path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`), buf);
+              wrote = true;
             }
-            if (nonBlack > 3) wrote = true;
-            else if (attempt === 0) await new Promise((r) => setTimeout(r, 300));
-          } catch {
-            errors.push(`film-${i} screenshot attempt ${attempt} failed`);
           }
-        }
-        if (!wrote) errors.push(`film-${i} grab failed (toDataURL + screenshot both black/failed)`);
+        } catch { /* fall through */ }
       }
+      if (!wrote) errors.push(`film-${i} grab failed (CDP + toDataURL both black/failed)`);
       const elapsed = Date.now() - grabStart - i * FRAME_INTERVAL;
       await new Promise((r) => setTimeout(r, Math.max(0, FRAME_INTERVAL - elapsed)));
     }
