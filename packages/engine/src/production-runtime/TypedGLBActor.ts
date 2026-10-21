@@ -17,7 +17,7 @@ import {
   type AuthoredMaterialSnapshot,
   type TypedGLBActorMaterialOverride
 } from "./ModelMaterialOverrides";
-import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence } from "./actor/TypedGLBActorAnimation";
+import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence, type TypedGLBActorMorphApplyOptions } from "./actor/TypedGLBActorAnimation";
 import { typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
 import "./actor/TypedGLBActorLod.js";
 
@@ -89,6 +89,12 @@ export interface TypedGLBActorOptions {
   readonly maxTextureSize?: number;
   /** Optional LOD selection policy consumed by the lane-05 LOD extension (declaration-only seam, C-17). */
   readonly lod?: AuraModelLodOption;
+  /**
+   * SA-04 (lane L8): shared GPU-texture cache for skinned clones. Clones built
+   * by `cloneSkinned`/`characters.clone` pass the same cache so each glTF image
+   * decodes and uploads once for the whole clone set.
+   */
+  readonly sharedTextures?: import("@aura3d/assets").GLTFSharedTextureCache;
 }
 
 export interface TypedGLBActorTintOptions {
@@ -192,7 +198,7 @@ export interface TypedGLBActor {
    * for callers that drive the actor frame-by-frame from a retargeted clip pose.
    */
   playRetargetedClip(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
-  applyMorphTargets(weights: Readonly<Record<string, number>>): TypedGLBActorMorphApplyResult;
+  applyMorphTargets(weights: Readonly<Record<string, number>>, options?: TypedGLBActorMorphApplyOptions): TypedGLBActorMorphApplyResult;
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
   /**
@@ -264,7 +270,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       ...(qrMaterials ? { materialsR185: true } : {}),
       ...(qrTransmission ? { materialsTransmission: true } : {}),
       ...(transmission !== undefined ? { transmission } : {}),
-      ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
+      ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {}),
+      ...(options.sharedTextures ? { sharedTextures: options.sharedTextures } : {})
     });
   } catch (error) {
     if (error instanceof Error && error.name === "AssetDecoderUnavailable") {
@@ -372,8 +379,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     playRetargetedClip(pose, time = 0) {
       return animationTrack.playRetargetedClip(pose, time);
     },
-    applyMorphTargets(weights) {
-      return animationTrack.applyMorphTargets(weights);
+    applyMorphTargets(weights, options) {
+      return animationTrack.applyMorphTargets(weights, options);
     },
     collectRenderItems(transformOptions = {}) {
       let items = collectTypedGLBActorRenderItems(actor, transformOptions);

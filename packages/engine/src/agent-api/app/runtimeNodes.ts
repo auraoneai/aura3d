@@ -6,7 +6,7 @@ import type { AuraQuat } from "../../contracts/sceneGraph.js";
 import type { AuraNodeBuilder } from "../nodes/builder.js";
 import { animation } from "../nodes/animation.js";
 import { effects } from "../nodes/effects.composite.js";
-import { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, sanitizeRuntimeMorphWeight } from "../runtimeEvidence.js";
+import { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, runtimeMorphWeightSanitizer } from "../runtimeEvidence.js";
 import { AuraRuntimeError } from "./errors.js";
 import { calculateRuntimeNodeBounds, type AuraRuntimeNodeAnimationBindingMetadata, type AuraRuntimeNodeAnimationPoseBindingMetadata, type AuraRuntimeNodeEffectAttachment } from "../RuntimeNodeHandle.js";
 import type { AnimationPose } from "@aura3d/animation";
@@ -306,6 +306,8 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   const tags = runtime.tags ?? [];
   const attachedEffects: AuraRuntimeNodeEffectAttachment[] = [];
   const morphTargetWeights = new Map<string, number>();
+  // SA-05: nodes tagged `aura:morph-unclamped` keep negative/over-1 influences.
+  const sanitizeMorphWeight = runtimeMorphWeightSanitizer(tags);
   let animationBinding: AuraRuntimeNodeAnimationBindingMetadata | undefined;
   let animationPose: AnimationPose | undefined;
   let animationPoseBinding: AuraRuntimeNodeAnimationPoseBindingMetadata | undefined;
@@ -422,7 +424,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
         for (const [name, weight] of Object.entries(pose.morphTargets)) {
           const normalizedName = name.trim();
           if (normalizedName) {
-            morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+            morphTargetWeights.set(normalizedName, sanitizeMorphWeight(weight));
           }
         }
       }
@@ -444,7 +446,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       if (!normalizedName) {
         throw new AuraRuntimeError("missing-asset", "Aura3D morph target name is required.");
       }
-      morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+      morphTargetWeights.set(normalizedName, sanitizeMorphWeight(weight));
       bumpVersion();
       return this;
     },
@@ -454,7 +456,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       for (const [name, weight] of Object.entries(weights)) {
         const normalizedName = name.trim();
         if (normalizedName) {
-          morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+          morphTargetWeights.set(normalizedName, sanitizeMorphWeight(weight));
         }
       }
       return this;
@@ -470,7 +472,7 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       if (weight === undefined) {
         return morphTargetWeights.get(normalizedName) ?? 0;
       }
-      morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+      morphTargetWeights.set(normalizedName, sanitizeMorphWeight(weight));
       bumpVersion();
       return this;
     },
@@ -657,6 +659,33 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
       return this;
     },
     // endregion parity:L7
+    /**
+     * SA-05 (lane L8): three's `morphTargetDictionary` — morph-target name →
+     * index into the node's influence array. Names come from the imported
+     * asset's morph evidence (mesh order); before evidence attaches, the
+     * dictionary reports the weight map's insertion order so early writes stay
+     * addressable.
+     */
+    morphTargetDictionary() {
+      const dictionary: Record<string, number> = {};
+      const evidenceTargets = importedAssetEvidence?.morphTargets;
+      if (evidenceTargets && evidenceTargets.length > 0) {
+        evidenceTargets.forEach((name, index) => {
+          if (dictionary[name] === undefined) {
+            dictionary[name] = index;
+          }
+        });
+      } else {
+        let index = 0;
+        for (const name of morphTargetWeights.keys()) {
+          if (dictionary[name] === undefined) {
+            dictionary[name] = index;
+          }
+          index++;
+        }
+      }
+      return dictionary;
+    },
     bounds() {
       return getBounds();
     },

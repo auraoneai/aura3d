@@ -233,3 +233,5 @@ export type {
   GLTFDracoStatus,
   GLTFMeshoptDecoderModule
 } from "./GLTFCompressionDecoders";
+export { GLTFSharedTextureCache } from "./GLTFSharedTextureCache.js";
+export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";

@@ -273,6 +273,8 @@ export { animation, animationStudio } from "./nodes/animation.js";
 export { defineAuraAssets } from "./nodes/assets.js";
 export { AuraNodeBuilder } from "./nodes/builder.js";
 export { distance3, character } from "./nodes/character.js";
+export { cloneSkinned, characters } from "./characters/clone.js";
+export type { CloneSkinnedModelInput, CloneSkinnedOptions, ClonedSkinnedModel } from "./characters/clone.js";
 export { charts } from "./nodes/charts.js";
 export { makeCityCrosswalk, makeCityRoadMarkings, makeBuildingWindowRows, makeBuildingDetails, makeCityVehicle, makeCityProps, collectCityInstancingPlan, city } from "./nodes/city.js";
 export { editor } from "./nodes/editor.js";

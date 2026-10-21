@@ -52,7 +52,12 @@ export interface TypedGLBActorAnimationTrack {
   ): ReturnType<GLTFSceneAnimationRuntime["applyRootMotionClips"]>;
   applyRetargetedPose(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
   playRetargetedClip(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
-  applyMorphTargets(weights: Readonly<Record<string, number>>): TypedGLBActorMorphApplyResult;
+  applyMorphTargets(weights: Readonly<Record<string, number>>, options?: TypedGLBActorMorphApplyOptions): TypedGLBActorMorphApplyResult;
+}
+
+/** SA-05: `clampWeights: false` passes finite out-of-range influences through (opt-in). */
+export interface TypedGLBActorMorphApplyOptions {
+  readonly clampWeights?: boolean;
 }
 
 /** lastApply collection — the animation-driving methods, verbatim from the actor literal. */
@@ -87,8 +92,8 @@ export function createTypedGLBActorAnimationTrack(
       lastApply = animation.applyPose(pose, "retargeted-clip", time);
       return lastApply;
     },
-    applyMorphTargets(weights) {
-      lastMorphApply = applyTypedGLBActorMorphTargets(actor, weights);
+    applyMorphTargets(weights, options) {
+      lastMorphApply = applyTypedGLBActorMorphTargets(actor, weights, options?.clampWeights !== false);
       return lastMorphApply;
     }
   };
@@ -143,9 +148,10 @@ export function createTypedGLBActorEvidence(
 
 function applyTypedGLBActorMorphTargets(
   actor: TypedGLBActor,
-  weights: Readonly<Record<string, number>>
+  weights: Readonly<Record<string, number>>,
+  clampWeights = true
 ): TypedGLBActorMorphApplyResult {
-  const requested = normalizeTypedGLBActorMorphWeights(weights);
+  const requested = normalizeTypedGLBActorMorphWeights(weights, clampWeights);
   const requestedTargets = [...requested.keys()];
   const appliedTargets = new Set<string>();
   const activeWeights: Record<string, number> = {};
@@ -188,14 +194,19 @@ function applyTypedGLBActorMorphTargets(
   };
 }
 
-function normalizeTypedGLBActorMorphWeights(weights: Readonly<Record<string, number>>): Map<string, number> {
+function normalizeTypedGLBActorMorphWeights(weights: Readonly<Record<string, number>>, clampWeights = true): Map<string, number> {
   const normalized = new Map<string, number>();
   for (const [name, weight] of Object.entries(weights)) {
     const target = name.trim();
     if (!target) continue;
-    normalized.set(target, clampTypedGLBActorMorphWeight(weight));
+    normalized.set(target, clampWeights ? clampTypedGLBActorMorphWeight(weight) : sanitizeTypedGLBActorMorphWeightUnclamped(weight));
   }
   return normalized;
+}
+
+/** SA-05 opt-in: finite values pass through (negative and >1 influences allowed). */
+function sanitizeTypedGLBActorMorphWeightUnclamped(weight: number): number {
+  return Number.isFinite(weight) ? weight : 0;
 }
 
 function clampTypedGLBActorMorphWeight(weight: number): number {

@@ -92,6 +92,15 @@ export interface GLTFRenderResourceOptions {
    */
   readonly failOnMissingTexture?: boolean;
   /**
+   * SA-04: shared GPU-texture ownership for skinned clones. When set, decoded
+   * `Texture` objects are leased from this cache (keyed by
+   * `imageIndex:colorSpace`) instead of being created per call, so N clones of
+   * one GLB decode and upload each image once. `dispose()` on the returned
+   * resources releases the lease rather than disposing the textures; the cache
+   * frees them when the last lease releases.
+   */
+  readonly sharedTextures?: import("./GLTFSharedTextureCache.js").GLTFSharedTextureCache;
+  /**
    * Share a single runtime material instance across glTF materials whose definitions are identical
    * apart from their name.
    *
@@ -491,6 +500,7 @@ export async function createGLTFRenderResources(
   const morphTargetLibrary = new Map<string, readonly MorphTargetDelta[]>();
   const textureLibrary = new Map<string, Texture>();
   const textureByImage = new Map<string, Promise<Texture>>();
+  const sharedTextureLease = options.sharedTextures?.acquire() ?? null;
   const scene = asset.createScene({
     ...(options.materialVariant ? { materialVariant: options.materialVariant } : {}),
     ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
@@ -524,13 +534,48 @@ export async function createGLTFRenderResources(
       throw new Error(`glTF material texture ${info.texture} references missing image ${info.image}`);
     }
     const cacheKey = textureCacheKey(info.image, colorSpace);
+    const decoder = options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, decodeOptionsForImage(imageIndex)));
+    if (sharedTextureLease) {
+      try {
+        const texture = await sharedTextureLease.getOrCreate(cacheKey, async () => {
+          const decoded = await decoder(image, info.image, asset);
+          const texture = new Texture({
+            width: decoded.width,
+            height: decoded.height,
+            ...(decoded.format ? { format: decoded.format } : {}),
+            colorSpace,
+            label: textureAsset.name,
+            ...(decoded.mipLevels ? { mipLevels: decoded.mipLevels } : decoded.data ? { data: decoded.data } : { source: decoded.source }),
+            ...(decoded.fallbackData ? { fallbackData: decoded.fallbackData } : {}),
+            ...(decoded.fallbackMipLevels ? { fallbackMipLevels: decoded.fallbackMipLevels } : {})
+          });
+          if (options.textureBudget !== undefined || options.maxTextureSize !== undefined) {
+            return applyTextureBudget(texture, {
+              ...(options.textureBudget !== undefined ? { textureBudgetBytes: options.textureBudget } : {}),
+              ...(options.maxTextureSize !== undefined ? { maxTextureSize: options.maxTextureSize } : {})
+            });
+          }
+          return texture;
+        });
+        setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
+        return texture;
+      } catch (error) {
+        if (options.failOnMissingTexture) {
+          throw error;
+        }
+        const reason = error instanceof Error ? error.message : String(error);
+        warnMissingGLTFTexture(textureAsset.name, image.uri, reason);
+        const fallback = createFallbackTexture(textureAsset.name, colorSpace);
+        setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, fallback);
+        return fallback;
+      }
+    }
     const existing = textureByImage.get(cacheKey);
     if (existing) {
       const texture = await existing;
       setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
       return texture;
     }
-    const decoder = options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, decodeOptionsForImage(imageIndex)));
     const texturePromise = (async () => {
       const decoded = await decoder(image, info.image, asset);
       const texture = new Texture({
@@ -658,7 +703,7 @@ export async function createGLTFRenderResources(
       }
     }
   } catch (error) {
-    disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary);
+    disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary, sharedTextureLease);
     throw error;
   }
   const bounds = computeGLTFRenderResourceBounds(scene, geometryLibrary, morphTargetLibrary);
@@ -712,7 +757,7 @@ export async function createGLTFRenderResources(
     },
     setMaterialVariant: (variant) =>
       applyGLTFMaterialVariant({ asset, scene, materialLibrary, renderableBindings, buildMaterial, variant }),
-    dispose: () => disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary)
+    dispose: () => disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary, sharedTextureLease)
   };
 }
 
@@ -1340,9 +1385,16 @@ function toMat4(values: Float32Array | readonly number[]): Mat4 {
 
 function disposeGLTFRenderResourceMaps(
   geometryLibrary: ReadonlyMap<string, Geometry>,
-  textureLibrary: ReadonlyMap<string, Texture>
+  textureLibrary: ReadonlyMap<string, Texture>,
+  sharedTextureLease?: { release(): void } | null
 ): void {
   for (const geometry of geometryLibrary.values()) geometry.dispose();
+  if (sharedTextureLease) {
+    // Shared textures belong to the clone cache — release this pipeline's pin;
+    // the cache disposes them when the last lease releases.
+    sharedTextureLease.release();
+    return;
+  }
   for (const texture of textureLibrary.values()) texture.dispose();
 }
 

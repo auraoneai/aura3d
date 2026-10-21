@@ -62,6 +62,12 @@ export interface ProductionGLTFRenderPipelineOptions {
    * `GLTFRenderResourceOptions.deduplicateIdenticalMaterials`.
    */
   readonly deduplicateIdenticalMaterials?: boolean;
+  /**
+   * SA-04: shared GPU-texture cache for clone pipelines. All clones built from
+   * one model pass the same cache, so each image is decoded and uploaded once
+   * regardless of clone count; `dispose()` releases the clone's lease.
+   */
+  readonly sharedTextures?: import("../GLTFSharedTextureCache.js").GLTFSharedTextureCache;
 }
 
 export interface ProductionGLTFRenderMetadata {
@@ -239,7 +245,8 @@ export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRe
       ...(options.materialsR185 ? { materialsR185: true } : {}),
       ...(options.materialsTransmission ? { materialsTransmission: true } : {}),
       ...(options.transmission !== undefined ? { transmission: options.transmission } : {}),
-      ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
+      ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {}),
+      ...(options.sharedTextures ? { sharedTextures: options.sharedTextures } : {})
     });
     rendererInput = resources.toRendererInput(
       { width: options.width ?? 512, height: options.height ?? 512 },

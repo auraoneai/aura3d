@@ -325,3 +325,5 @@ export { WorkerAssetJobs } from "./WorkerAssetJobs";
 export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
 export * from "./HDRLoader.js";
 export * from "./TextureStreaming.js";
+export { GLTFSharedTextureCache } from "./GLTFSharedTextureCache.js";
+export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";

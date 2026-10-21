@@ -15,3 +15,5 @@ export type {
 } from "./GLTFAnimationRuntime.js";
 export { loadProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
 export type { ProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
+export { GLTFSharedTextureCache } from "./GLTFSharedTextureCache.js";
+export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";

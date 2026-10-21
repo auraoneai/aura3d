@@ -1,6 +1,10 @@
-import { cloneAnimationValue, deserializeKeyframe, lerpNumber, lerpVec3, serializeKeyframe, slerpQuat, validateKeyframes, type AnimationValue, type Keyframe, type SerializedKeyframe } from "./Keyframe.js";
+import { cloneAnimationValue, deserializeKeyframe, lerpNumber, lerpVec3, serializeKeyframe, slerpQuat, validateKeyframes, type AnimationValue, type InterpolationMode, type Keyframe, type NumberArray, type Quat, type SerializedKeyframe, type Vec3 } from "./Keyframe.js";
 
-export type TrackValueType = "scalar" | "vector3" | "quaternion" | "number-array" | "boolean" | "string";
+/**
+ * SM-03: `color` is a first-class track channel (three's `ColorKeyframeTrack`),
+ * sampled as an `[r, g, b]` tuple and interpolated like `vector3`.
+ */
+export type TrackValueType = "scalar" | "vector3" | "quaternion" | "color" | "number-array" | "boolean" | "string";
 
 export type AnimationTrackDescriptor<T extends AnimationValue = AnimationValue> = {
   readonly target: string;
@@ -95,6 +99,7 @@ function interpolateCubicSpline(
     case "scalar":
       return cubicScalar(a as number, b as number, outTangent as number, inTangent as number, t, deltaTime);
     case "vector3":
+    case "color":
       return [
         cubicScalar((a as [number, number, number])[0], (b as [number, number, number])[0], (outTangent as [number, number, number])[0], (inTangent as [number, number, number])[0], t, deltaTime),
         cubicScalar((a as [number, number, number])[1], (b as [number, number, number])[1], (outTangent as [number, number, number])[1], (inTangent as [number, number, number])[1], t, deltaTime),
@@ -160,6 +165,7 @@ function interpolate(type: TrackValueType, a: AnimationValue, b: AnimationValue,
     case "scalar":
       return lerpNumber(a as number, b as number, t);
     case "vector3":
+    case "color":
       return lerpVec3(a as [number, number, number], b as [number, number, number], t);
     case "quaternion":
       return slerpQuat(a as [number, number, number, number], b as [number, number, number, number], t);
@@ -177,6 +183,7 @@ const ANIMATION_TRACK_VALUE_TYPES: ReadonlySet<string> = new Set([
   "scalar",
   "vector3",
   "quaternion",
+  "color",
   "number-array",
   "boolean",
   "string"
@@ -187,4 +194,75 @@ function interpolateNumberArray(a: readonly number[], b: readonly number[], t: n
     throw new Error("number-array animation keyframes require matching lengths.");
   }
   return a.map((value, index) => lerpNumber(value, b[index]!, t));
+}
+
+type NumericTrackValue = number | Vec3 | Quat | NumberArray;
+
+function assertFiniteTimes(api: string, times: readonly number[]): void {
+  if (times.length === 0) {
+    throw new Error(`${api}: times must contain at least one entry.`);
+  }
+  for (const time of times) {
+    if (!Number.isFinite(time)) {
+      throw new Error(`${api}: times must be finite, got ${time}.`);
+    }
+  }
+}
+
+function tupleKeyframes<T extends NumericTrackValue>(api: string, target: string, times: readonly number[], values: readonly number[] | readonly T[], stride: number, interpolation?: InterpolationMode): readonly Keyframe<T>[] {
+  assertFiniteTimes(api, times);
+  const isTupleList = values.length > 0 && Array.isArray(values[0]);
+  const count = isTupleList ? (values as readonly T[]).length : (values as readonly number[]).length / stride;
+  if (count !== times.length || !Number.isInteger(count)) {
+    throw new Error(`${api}: expected ${times.length} value${times.length === 1 ? "" : "s"} (${stride} component${stride === 1 ? "" : "s"} each) for target "${target}", got ${isTupleList ? count : (values as readonly number[]).length} number${(values as readonly number[]).length === 1 ? "" : "s"}.`);
+  }
+  const keyframes: Keyframe<T>[] = [];
+  for (let index = 0; index < times.length; index += 1) {
+    const value = isTupleList
+      ? (values as readonly T[])[index]!
+      : (stride === 1 ? (values as readonly number[])[index]! : (values as readonly number[]).slice(index * stride, index * stride + stride)) as T;
+    keyframes.push({ time: times[index]!, value, ...(interpolation ? { interpolation } : {}) });
+  }
+  return keyframes;
+}
+
+function discreteKeyframes<T extends AnimationValue>(api: string, target: string, times: readonly number[], values: readonly T[]): readonly Keyframe<T>[] {
+  assertFiniteTimes(api, times);
+  if (values.length !== times.length) {
+    throw new Error(`${api}: expected ${times.length} values for target "${target}", got ${values.length}.`);
+  }
+  return times.map((time, index) => ({ time, value: values[index]!, interpolation: "step" as const }));
+}
+
+/**
+ * SM-03 typed track factories matching three's `*KeyframeTrack` constructors:
+ * `(name, times, values, interpolation?)`, with `values` accepted either flat
+ * (component-major, `stride` numbers per key) or as per-key tuples.
+ */
+export function NumberKeyframeTrack(target: string, times: readonly number[], values: readonly number[], interpolation: InterpolationMode = "linear"): AnimationTrack<number> {
+  return new AnimationTrack({ target, valueType: "scalar", keyframes: tupleKeyframes<number>("NumberKeyframeTrack", target, times, values, 1, interpolation) });
+}
+
+export function ScalarKeyframeTrack(target: string, times: readonly number[], values: readonly number[], interpolation: InterpolationMode = "linear"): AnimationTrack<number> {
+  return NumberKeyframeTrack(target, times, values, interpolation);
+}
+
+export function VectorKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly Vec3[], interpolation: InterpolationMode = "linear"): AnimationTrack<Vec3> {
+  return new AnimationTrack({ target, valueType: "vector3", keyframes: tupleKeyframes<Vec3>("VectorKeyframeTrack", target, times, values, 3, interpolation) });
+}
+
+export function QuaternionKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly Quat[], interpolation: InterpolationMode = "linear"): AnimationTrack<Quat> {
+  return new AnimationTrack({ target, valueType: "quaternion", keyframes: tupleKeyframes<Quat>("QuaternionKeyframeTrack", target, times, values, 4, interpolation) });
+}
+
+export function ColorKeyframeTrack(target: string, times: readonly number[], values: readonly number[] | readonly Vec3[], interpolation: InterpolationMode = "linear"): AnimationTrack<Vec3> {
+  return new AnimationTrack({ target, valueType: "color", keyframes: tupleKeyframes<Vec3>("ColorKeyframeTrack", target, times, values, 3, interpolation) });
+}
+
+export function BooleanKeyframeTrack(target: string, times: readonly number[], values: readonly boolean[]): AnimationTrack<boolean> {
+  return new AnimationTrack({ target, valueType: "boolean", keyframes: discreteKeyframes<boolean>("BooleanKeyframeTrack", target, times, values) });
+}
+
+export function StringKeyframeTrack(target: string, times: readonly number[], values: readonly string[]): AnimationTrack<string> {
+  return new AnimationTrack({ target, valueType: "string", keyframes: discreteKeyframes<string>("StringKeyframeTrack", target, times, values) });
 }
