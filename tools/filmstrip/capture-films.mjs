@@ -66,7 +66,7 @@ const GAMES = {
   siege: {
     route: "showcase-slingshot-siege",
     // arm at the draw so the strip catches hold → release → snap → flight
-    ready: `(() => { const e = window.__AURA3D_GAME__; const a = e && e.aim; return !!a && a.drawing === true && a.drawT > 0.35; })()`,
+    ready: `(() => { const e = window.__AURA3D_GAME__; const a = e && (e.aim ?? (e["showcase-slingshot-siege"] && e["showcase-slingshot-siege"].aim)); return !!a && a.drawing === true && a.drawT > 0.2; })()`,
     frames: 40
   },
   ironcrown: {
@@ -125,14 +125,15 @@ async function filmGame(browser, baseUrl, key, cfg, outDir) {
     await page.goto(url, { waitUntil: "load", timeout: 60000 });
     await page.waitForSelector("canvas", { timeout: 60000 });
     // settle: boot gate, GLB loads, autopilot starts
-    await page.waitForTimeout(9000);
+    await page.waitForTimeout(15000);
     try {
-      await page.waitForFunction(new Function(`return (${cfg.ready})`), null, { timeout: 90000, polling: 250 });
+      await page.waitForFunction(new Function(`return (${cfg.ready})`), null, { timeout: 240000, polling: 250 });
     } catch {
       errors.push(`ready predicate never satisfied for ${key} — filming anyway`);
     }
     const grabStart = Date.now();
     const samples = [];
+    let canvasBox = null;
     for (let i = 0; i < frames; i++) {
       const grab = await page.evaluate(() => {
         const c = document.querySelector("canvas");
@@ -142,10 +143,34 @@ async function filmGame(browser, baseUrl, key, cfg, outDir) {
         return { dataUrl, evidence: ev ? JSON.parse(JSON.stringify(ev)) : null, t: performance.now() };
       });
       samples.push({ i, wallMs: Date.now() - grabStart, pageT: grab.t, evidence: grab.evidence });
+      let wrote = false;
       if (grab.dataUrl && grab.dataUrl.startsWith("data:image/png")) {
-        fs.writeFileSync(path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`), Buffer.from(grab.dataUrl.slice(22), "base64"));
-      } else {
-        errors.push(`film-${i} grab failed`);
+        const buf = Buffer.from(grab.dataUrl.slice(22), "base64");
+        // Black-frame guard: under SwiftShader the engine's game-flag render
+        // path can leave the drawing buffer un-presented to toDataURL; a
+        // uniformly black grab is not evidence. Compositor shot as fallback.
+        const head = buf.subarray(32, 1600);
+        let nonBlack = 0;
+        for (let b = 0; b < head.length; b += 13) {
+          if (head[b] > 24 || head[b + 1] > 24 || head[b + 2] > 24) nonBlack += 1;
+        }
+        if (nonBlack > 3 || grab.dataUrl.length > 60000) {
+          fs.writeFileSync(path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`), buf);
+          wrote = true;
+        }
+      }
+      if (!wrote) {
+        try {
+          canvasBox ??= await page.locator("canvas").boundingBox();
+          await page.screenshot({
+            path: path.join(gameDir, `film-${String(i).padStart(2, "0")}.png`),
+            clip: canvasBox ?? undefined,
+            timeout: 30000
+          });
+          wrote = true;
+        } catch {
+          errors.push(`film-${i} grab failed (toDataURL black + screenshot failed)`);
+        }
       }
       const elapsed = Date.now() - grabStart - i * FRAME_INTERVAL;
       await new Promise((r) => setTimeout(r, Math.max(0, FRAME_INTERVAL - elapsed)));
