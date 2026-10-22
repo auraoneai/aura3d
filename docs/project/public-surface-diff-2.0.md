@@ -4,8 +4,8 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12482**
-- Classified removals: **2121**; unclassified removals: **0**
+- Baseline symbols: **13007**; current symbols: **12484**
+- Classified removals: **2120**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
 - Public schema identifiers: **25** baseline; **33** current
@@ -390,7 +390,6 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine` | runtime-symbol | `promptAnimationFrameAtTime` | documented-prd15-6.6-root-drop-to-deleted |
 | `@aura3d/engine` | runtime-symbol | `promptAnimationLegacyContractVersion` | documented-prd15-6.6-root-drop-to-deleted |
 | `@aura3d/engine` | runtime-symbol | `promptAnimationTimeAtFrame` | documented-prd15-6.6-root-drop-to-deleted |
-| `@aura3d/engine` | runtime-symbol | `promptRecipes` | documented-prd15-6.6-root-drop-to-deleted |
 | `@aura3d/engine` | runtime-symbol | `promptSubjectIsResolved` | documented-prd15-6.6-root-drop-to-deleted |
 | `@aura3d/engine` | runtime-symbol | `raycastPhysicsWorld` | documented-prd15-6.6-root-drop-to-deleted |
 | `@aura3d/engine` | runtime-symbol | `raycastSceneTargets` | documented-prd15-6.6-root-drop-to-deleted |
@@ -2165,6 +2164,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/assets:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:HDRLoader` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:HDRLoaderThreeCompat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets:runtime:LoadContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:renderStateForGLTFMaterial` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:resolveGLTFClipName` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets:runtime:TextureLoaderThreeCompat` — reviewed-2.0-public-declaration-contract-change
@@ -2181,6 +2181,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/assets:type:ProductionGLTFRenderPipelineOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/assets/browser:runtime:LoadContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:runtime:resolveGLTFClipName` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:type:GLTFMeshoptDecoderModule` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/assets/browser:type:GLTFRenderResourceOptions` — reviewed-2.0-public-declaration-contract-change
@@ -2302,6 +2303,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/assets:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:HDRLoader` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:HDRLoaderThreeCompat` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets:runtime:LoadContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:renderStateForGLTFMaterial` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:resolveGLTFClipName` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets:runtime:TextureLoaderThreeCompat` — reviewed-2.0-public-declaration-contract-change
@@ -2318,6 +2320,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/assets:type:ProductionGLTFRenderPipelineOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:runtime:GLTFSceneAnimationMixerBinding` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:runtime:GLTFSceneAnimationRuntime` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/assets/browser:runtime:LoadContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:runtime:resolveGLTFClipName` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:type:GLTFMeshoptDecoderModule` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/assets/browser:type:GLTFRenderResourceOptions` — reviewed-2.0-public-declaration-contract-change
