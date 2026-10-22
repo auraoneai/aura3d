@@ -24,7 +24,7 @@ import {
   type TextureFormat,
   type TexturePixelData
 } from "@aura3d/rendering";
-import { AssetManager, EXRLoader, ImageLoader, TextureLoader as AssetTextureLoader, type AuraEXRTextureData, type TextureDescriptorAsset } from "@aura3d/assets";
+import { AssetManager, EXRLoader, ImageLoader, TextureLoader as AssetTextureLoader, type AuraEXRTextureData, type TextureDescriptorAsset } from "@aura3d/assets/browser";
 import { emitAppAssetError, emitAppAssetProgress } from "../assetEvents.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
 import { lazyNamespace } from "../lazyNamespace.js";

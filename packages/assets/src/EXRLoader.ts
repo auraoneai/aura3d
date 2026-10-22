@@ -75,7 +75,11 @@ async function inflateZlib(compressed: Uint8Array): Promise<Uint8Array> {
     const stream = new Blob([compressed as BlobPart]).stream().pipeThrough(new DecompressionStream("deflate"));
     return new Uint8Array(await new Response(stream).arrayBuffer());
   }
-  const zlib = await import("node:zlib");
+  // Runtime-only Node fallback. The specifier is a variable so bundlers
+  // (esbuild/vite/rollup) cannot resolve it — browser entries must never
+  // graph a Node builtin even behind a capability probe (bundle-size gate).
+  const zlibModule = "node:zlib";
+  const zlib = (await import(zlibModule)) as { inflateSync(input: Uint8Array): Uint8Array };
   const out = zlib.inflateSync(compressed);
   return new Uint8Array(out.buffer, out.byteOffset, out.byteLength);
 }

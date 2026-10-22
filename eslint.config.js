@@ -35,6 +35,8 @@ export default [
       "archive/**",
       "benchmark/**/context/**",
       "public/**",
+      "**/public/**",
+      "**/.vercel/**",
       "**/.vite/**",
       "**/*.d.ts"
     ]

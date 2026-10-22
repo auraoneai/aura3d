@@ -1,4 +1,4 @@
-import { GLTFSharedTextureCache } from "@aura3d/assets";
+import { GLTFSharedTextureCache } from "@aura3d/assets/browser";
 import { createTypedGLBActor, type TypedGLBActor, type TypedGLBActorAsset, type TypedGLBActorOptions } from "../../production-runtime/TypedGLBActor.js";
 import type { AuraAssetRef } from "../nodes/types.js";
 

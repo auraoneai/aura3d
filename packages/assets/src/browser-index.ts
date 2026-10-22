@@ -148,6 +148,13 @@ export { LoadContext } from "./LoadContext";
 export type { LoadContextOptions } from "./LoadContext";
 export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
+export { DataTextureLoader } from "./DataTextureLoader";
+export { FileLoader } from "./FileLoader";
+export type { FileLoaderResponseType } from "./FileLoader";
+export { ImageBitmapLoader } from "./ImageBitmapLoader";
+export type { ImageBitmapLoaderOptions } from "./ImageBitmapLoader";
+export { EXRLoader, EXRLoaderThreeCompat, parseEXR } from "./EXRLoader";
+export type { AuraEXRDataType, AuraEXROutputFormat, AuraEXRParseOptions, AuraEXRTextureData } from "./EXRLoader";
 export {
   assertValidGLTFCorpusManifest,
   createGLTFCorpusReport,
