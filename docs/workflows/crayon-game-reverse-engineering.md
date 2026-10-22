@@ -91,7 +91,7 @@ files.
 | 1 | Last Train to the Sea | 317,182 | 1,391,655 | external blob, 1 line | inlined (inferred) | ok |
 | 2 | Where the Wind Wanders | 305,649 | 645,204 | external blob, 1 line | inlined (inferred) | ok |
 | 3 | Saiyan through the Snake way! | 120,284 | 513,393 | external blob, 211 lines | inlined (inferred) | ok |
-| 4 | HEATSINK | 236,808 | 1,641,373 | external blob, 722 lines | inlined (**measured**, r186 webgpu) | ok |
+| 4 | HEATSINK | 236,808 | 1,641,373 | external blob, 722 lines | inlined (**measured**, r186 webgpu) | ok · runtime verified |
 | 5 | Silt & Signal | 172,679 | — | dynamic import, not in DOM | unknown | CDP script enumeration |
 | 6 | Drift & Deliver | 124,643 | 1,332,481 | external blob, 1 line | inlined (inferred) | ok |
 | 7 | Strange Orbit | 152,499 | 19,300 | external blob, 1 line | importmap (inferred) | ok |
@@ -149,8 +149,8 @@ nodes (`POS`, `LAP`, `TIME`, `SPEED`, `BOOST`, `HEAT`, `SHIELD`, `LASER`,
 `TD`). The fix throttles heavy 3D drawing during a race while keeping
 `g.hud.update` instant, steps `hold_ms` at 1/60 s, holds `KeyW` automatically
 for action keys (`ShiftLeft`, `Space`, `KeyF`), and freezes idle physics between
-agent calls. Measured on the deployed build: every action returned in 2.0–4.9 s
-with zero timeouts, and HUD gauges did not decay between calls.
+agent calls. Measured in this run: menu clicks 5.4–9.0 s, race actions 2.0–4.9 s,
+zero timeouts, and HUD time/gauges did not advance between calls.
 
 Two operational notes. First, use the `browser_click` / `browser_press`
 response's `nodes` as a read: it is the same accessibility tree and is usually
@@ -734,10 +734,11 @@ runtime contract. Boot reaches `Tap to start`; `Play` opens the mode select
 The HUD also exposes `ITEM X`, `SHOCK E`, `ROLL Q`, and `MINE G` as control
 hints. `Escape` opens `Resume / Restart / Settings / Controls / Exit to Menu`.
 
-**Control contract (from in-game Controls).** Throttle `W`, brake `S`, steer
-`A`/`D`, fire lasers `F`, boost `Space`, overdrive `Shift`, drift `C`,
+**Control contract (declared in in-game Controls).** Throttle `W`, brake `S`,
+steer `A`/`D`, fire lasers `F`, boost `Space`, overdrive `Shift`, drift `C`,
 shockwave `E`, dodge roll `Q`, drop mine `G`, use item `X`, pause `Esc`,
-toggle HUD `H`.
+toggle HUD `H`. Runtime-verified: `W`, `Shift`, `Space`, `F`, and
+`Escape`/`Resume`; the rest are declared but not yet exercised.
 
 **Mechanic contract.** Armed drone racing through a rain-soaked megacity; the
 Ramjet has a heat budget; shoot rivals; win only if you do not melt first. The

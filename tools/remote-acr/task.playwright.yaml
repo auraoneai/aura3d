@@ -1,9 +1,19 @@
 version: v1.1.0
 # Executed by `az acr run -f tools/remote-acr/task.playwright.yaml /dev/null`
 # (see run.sh). {{.Values.*}} come from --set, {{.Secrets.*}} from
-# --set-secret so the SAS is masked in run logs.
+# --set-secret so the SAS is masked in run logs. NOTE: `az acr run` does NOT
+# interpolate secrets into `env:` (verified empirically — they arrive empty),
+# so the SAS rides in via a secret volume file at /run/secrets/artifacts-sas
+# and task-run.sh decodes it.
+volumes:
+  - name: artifacts-sas
+    secret:
+      sas: "{{.Secrets.AURA3D_ARTIFACTS_SAS | b64enc}}"
 steps:
   - id: playwright
+    volumeMounts:
+      - name: artifacts-sas
+        mountPath: /run/secrets
     # In acr-task.yaml a `cmd` step's value IS the docker-run remainder —
     # `cmd: <image-ref> [args...]`. There is no separate img field (earlier
     # attempts that treated cmd as a shell command string or used
@@ -22,5 +32,4 @@ steps:
       # JSON report lands in tests/reports/ only when a json reporter is in
       # AURA3D_REPORTER (e.g. "line,json"); harmless otherwise.
       - PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/remote-acr-report.json
-      - AURA3D_ARTIFACTS_SAS={{.Secrets.AURA3D_ARTIFACTS_SAS}}
     timeout: 3600

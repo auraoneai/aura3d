@@ -42,6 +42,9 @@ test.describe("parity shader post passes (SH-03)", () => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+    page.on("response", (response) => {
+      if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
+    });
     const source = readFileSync(resolve(EXAMPLE), "utf8");
     expect(source).toContain("effects.shaderPass");
     expect(source).toContain("addPostPass");
