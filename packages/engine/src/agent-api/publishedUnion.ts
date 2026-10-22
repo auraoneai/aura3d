@@ -162,3 +162,170 @@ export { Renderer } from "@aura3d/rendering";
 export { resolveA3DAppQualityPreset } from "@aura3d/apps";
 /** @deprecated Deleted from "." in 4.0.0. */
 export { summarizeExternalParityGLTFCorpus } from "@aura3d/assets/browser";
+
+// ── Lane & contract union growth (CONTRACTS.md §3.8 / T5.1) ──
+// The lane barrels (`src/lanes/prdNN.ts`) are intended "." members — engine's
+// in-repo index re-exports them via `export * from "./lanes/index.js"`, and
+// these names reach "." through that path. They are mirrored here so the
+// published barrel stays the union of the in-repo index (T1.4). Names are
+// grouped by declaring module; re-exports stay plain (contract/lane surface,
+// not deprecated).
+
+// C-16 asset decoders (lane 05) — registry builders + typed-actor options.
+export { WEBGPU_COMPRESSED_CAPS, createAppAssetDecoders, prepareModelDecoders, sniffGLBRequiredDecoders, typedGLBActorDecoderOptions } from "./AssetDecoders.js";
+export type { AppAssetDecoders, TypedGLBActorDecoderOptions } from "./AssetDecoders.js";
+export type { FrameLoopTick, FrameLoopTickCallback } from "./FrameLoop.js";
+export { AuraClipMapMissingError, characterAnimation, setCharacterAnimationAppTimeScale, validateClipMap } from "./GameCharacterAnimation.js";
+export type { AnimationHandleLike, AuraCharacterAnimationBinding, AuraCharacterAnimationSnapshot, AuraCharacterAnimationSpec, AuraCharacterAnimationWeight, AuraCharacterControllerLike, AuraCharacterControllerSnapshot, AuraClipMapEntry, AuraClipMapMissingEntry, AuraClipMapValidationOptions, AuraClipMapValidationReport, AuraLocomotionClipEntry } from "./GameCharacterAnimation.js";
+// Lane 08 camera surface — controller, probe, spline/spring math, collision,
+// framing, layers, quat helpers, and the rig factories.
+export { createCameraController, presentedViewProjection } from "./camera/CameraController.js";
+export type { AuraCameraControllerDeps, AuraCameraControllerImpl } from "./camera/CameraController.js";
+export { createOccluderFade, createOccluderFadeContributor } from "./camera/OccluderFade.js";
+export type { AuraOccluderFade, AuraOccluderFadeOptions } from "./camera/OccluderFade.js";
+export { CAMERA_PROBE_TIER_BUDGETS, cameraProbeBudgetForTier, createCameraProbe } from "./camera/Probe.js";
+export type { AuraBudgetedCameraProbe, AuraCameraProbeBudget, AuraCameraProbeDeps, AuraCameraProbeFrameStats, AuraCameraProbeTier, ProbeBoundsEntry, ProbePhysicsEntry } from "./camera/Probe.js";
+export { AuraCameraSpline, catmullRom, catmullRomDerivative, createSpline } from "./camera/Spline.js";
+export type { AuraSplineOptions } from "./camera/Spline.js";
+export { smoothingToHalflife, springDamp, springDampVec3, springStep, springStepVec3 } from "./camera/Spring.js";
+export type { AuraSpringState, AuraSpringVec3State } from "./camera/Spring.js";
+export { createCollisionDamper } from "./camera/collision.js";
+export type { CollisionDamper, CollisionDamperOptions } from "./camera/collision.js";
+export { ease } from "./camera/ease.js";
+export { createAuraCameraController } from "./camera/extension.js";
+export { distanceForFraction, distanceForFractionInContext, effectiveAxisFov, fractionForDistance, fractionForDistanceInContext } from "./camera/framing.js";
+export type { AuraFramingContext } from "./camera/framing.js";
+export { LETTERBOX_BLACKBOARD_KEY, createCinematicBarsLayer, createLetterboxContributor } from "./camera/layers/cinematicBars.js";
+export type { AuraCinematicBarsLayer, AuraCinematicBarsOptions } from "./camera/layers/cinematicBars.js";
+export { createFovKickLayer } from "./camera/layers/fovKick.js";
+export { createLookAtLayer } from "./camera/layers/lookAt.js";
+export type { AuraLookAtLayer } from "./camera/layers/lookAt.js";
+export { createPunchLayer } from "./camera/layers/punch.js";
+export { createTraumaLayer } from "./camera/layers/trauma.js";
+export { createLeanCameraRigAdapter, createLeanGameFeelAdapter } from "./camera/leanAdapters.js";
+export type { LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions } from "./camera/leanAdapters.js";
+export { cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ } from "./camera/quat.js";
+export { createAltitudeRig } from "./camera/rigs/altitude.js";
+export type { AltitudeRigOptions } from "./camera/rigs/altitude.js";
+export { createChaseRig } from "./camera/rigs/chase.js";
+export type { ChaseRigOptions } from "./camera/rigs/chase.js";
+export { createFightingRig } from "./camera/rigs/fighting.js";
+export type { FightingRigOptions } from "./camera/rigs/fighting.js";
+export { createFlightRig } from "./camera/rigs/flight.js";
+export type { FlightRigOptions } from "./camera/rigs/flight.js";
+export { createFollow2dRig } from "./camera/rigs/follow2d.js";
+export type { Follow2dRigOptions } from "./camera/rigs/follow2d.js";
+export { LegacySpecRig, createFromSpecRig } from "./camera/rigs/fromSpec.js";
+export type { LegacyCameraSpec, LegacySpecRigDeps, LegacyTargetSource } from "./camera/rigs/fromSpec.js";
+export { bindOrbitPointer, createOrbitRig } from "./camera/rigs/orbit.js";
+export type { AuraOrbitRig, OrbitRigOptions } from "./camera/rigs/orbit.js";
+export { createRailRig } from "./camera/rigs/rail.js";
+export { createShoulderRig } from "./camera/rigs/shoulder.js";
+export type { ShoulderRigOptions } from "./camera/rigs/shoulder.js";
+export { CAMERA_DEFAULT_POSE, staticRig } from "./camera/rigs/static.js";
+export { createTopDownRig } from "./camera/rigs/topDown.js";
+export type { TopDownRigOptions } from "./camera/rigs/topDown.js";
+// Lane 02/03/04/07 compiler plumbing — lighting/shadow resolvers, env probes,
+// post surfaces, diagnostic-only field tables, sky node handler.
+export { PRD03_DIAGNOSTIC_ONLY_FIELDS, PRD03_OPTION_COVERAGE } from "./compiler/diagnosticOnly.prd03.js";
+export { DIAGNOSTIC_ONLY_PRD04_FIELDS, registerPrd04OptionCoverage } from "./compiler/diagnosticOnly.prd04.js";
+export { PRD07_DIAGNOSTIC_ONLY_FIELDS } from "./compiler/diagnosticOnly.prd07.js";
+export { bindPrd02EnvironmentProbe, explicitEnvironmentResolution, prd02AmbientTerm, registerPrd02EnvironmentSources } from "./compiler/environment.js";
+export type { Prd02EnvironmentBindOptions, Prd02EnvironmentBinding } from "./compiler/environment.js";
+export { collectPrd02Lights, descriptorToAuraLightData, physicalLightDescriptor, prd02LightingOn, readLightingKillSwitches, readLightingModelFromUrl, resolveLightingModel, resolveLightingTier, selectShadowedLights } from "./compiler/lights.js";
+export type { HemisphereIrradiance, PhysicalLightDescriptor, Prd02CollectedLights, Prd02LightingKillSwitches, ShadowedLightSelection } from "./compiler/lights.js";
+export { createProductionRuntimePostprocess } from "./compiler/postprocess.js";
+export { createPrd02ShadowOptions, prd02ResolveTier, resolveShadowSystemConfig, sceneShadowRadius } from "./compiler/shadows.js";
+export type { Prd02ShadowOptions, ShadowSystemConfig } from "./compiler/shadows.js";
+export { skyNodeHandler } from "./compiler/sky.js";
+// Lane 08 feel bus — noise, screen overlay, combat feel, presets, sound binding.
+export { createFeelBus } from "./feel/FeelBus.js";
+export type { AuraFeelBusDeps, AuraFeelBusImpl, FeelChannel } from "./feel/FeelBus.js";
+export { createNoise1D, perlin1 } from "./feel/Noise.js";
+export { createScreenOverlay } from "./feel/ScreenOverlay.js";
+export type { AuraScreenOverlay } from "./feel/ScreenOverlay.js";
+export { bindFeelSound } from "./feel/bindFeelSound.js";
+export type { FeelSoundListener } from "./feel/bindFeelSound.js";
+export { combatFeelEvent, emitCombatFeel } from "./feel/combatFeel.js";
+export type { CombatFeelEvent, CombatFeelMove } from "./feel/combatFeel.js";
+export { SCREEN_FEEL_KEY, createAuraFeelBus, screenFeelTier } from "./feel/extension.js";
+export type { AuraFeelExtensionOptions } from "./feel/extension.js";
+export { FEEL_PRESETS, FEEL_PRESET_EVENTS, feelPresets } from "./feel/presets.js";
+export type { AuraFeelPresetName } from "./feel/presets.js";
+// Lane 07/13 look surface — fake-effect detection, presets, lint wiring,
+// structural QA, look node handler + expansion resolvers.
+export { FAKE_EFFECT_NAMES, FAKE_EFFECT_PATTERN, FAKE_EFFECT_STEMS, isFakeEffectName } from "./looks/fakeEffectNames.js";
+export { collectGeneratedCodeWarnings } from "./looks/generatedCodeWarnings.js";
+export type { GeneratedCodeWarningsContext } from "./looks/generatedCodeWarnings.js";
+export { lookDiagnosticsSection } from "./looks/lookDiagnostics.js";
+export { authoredLookIds, installLookLintDefaults } from "./looks/lookLint.js";
+export { lookNodeHandler } from "./looks/lookNodeHandler.js";
+export { lookPresetIds, lookPresets } from "./looks/lookPresets.js";
+export type { AuraLookPreset, AuraLookV0Expansion } from "./looks/lookPresets.js";
+export { clampLookOverrides, resolveLookExpansion, stubLookContractRequirements } from "./looks/looks.js";
+export type { AuraLookBuildOptions, LooksApi, ResolvedLookExpansion } from "./looks/looks.js";
+export { structuralQA } from "./looks/structuralQA.js";
+export type { AuraDeprecatedVisualQA, AuraStructuralQAResult } from "./looks/structuralQA.js";
+// Node builders — env v2 presets, irradiance/reflection probes, prompt-plan
+// mapping tables, kit lighting.
+export { prd02EnvironmentBuilders } from "./nodes/environments.js";
+export type { AuraEnvironmentNodeV2, AuraEnvironmentPresetName } from "./nodes/environments.js";
+export { probes } from "./nodes/probes.js";
+export type { AuraIrradianceVolumeOptions, AuraProbeNode, AuraReflectionProbeOptions } from "./nodes/probes.js";
+export { PROMPT_PLAN_CAMERA_TO_RIG, PROMPT_PLAN_EFFECT_MAP, PROMPT_PLAN_ENVIRONMENT_KEYWORDS, PROMPT_PLAN_LIGHTING_TO_LOOK, PROMPT_PLAN_SCENE_DEFAULT_LOOK, PROMPT_PLAN_STYLE_TO_GRADE } from "./nodes/prompt/promptPlanMappings.js";
+export type { PromptPlanCameraMapping, PromptPlanEffectKind, PromptPlanEffectMapping, PromptPlanEnvironmentKeywordRow, PromptPlanLightingMapping, PromptPlanStyleGrade, PromptPlanStyleRow } from "./nodes/prompt/promptPlanMappings.js";
+export { prd02KitLighting } from "./nodes/sceneKits.js";
+// Lane 03 post bridge — field tables, authored-context recording, submission
+// ledger, root post pipeline.
+export { POST_EFFECT_COMMON_FIELDS, POST_EFFECT_DEPRECATED_FIELDS, POST_EFFECT_FIELDS, Prd03PostSurface, collectExposureSection, collectPostSection, createPrd03PostSurface, createRootPostPipeline, latestAuthoredPostContext, latestSubmittedPostprocess, mapBloomOptionsV2, recordAuthoredPostContext, recordSubmittedPostprocess, resetAuthoredPostContext, resetSubmittedPostprocess, validatePostEffectNode } from "./postBridge.js";
+export type { PostFieldDiagnostic } from "./postBridge.js";
+// Lane 08 time surface — fixed-step driver, interpolation store, time controller.
+export { FixedStepDriver, createFixedStepDriver } from "./time/FixedStepDriver.js";
+export type { AuraRenderCallback, AuraRenderFrame, FixedStepDriverApp, FixedStepDriverOptions } from "./time/FixedStepDriver.js";
+export { InterpolationStore, createInterpolationStore } from "./time/Interpolation.js";
+export type { AuraInterpolableHandle, AuraInterpolationTransform } from "./time/Interpolation.js";
+export { TimeController, createTimeController } from "./time/TimeController.js";
+export type { TimeControllerOptions, TimeControllerScopeEntry } from "./time/TimeController.js";
+// Lane 08 vehicle — arcade bicycle model.
+export { BicycleModel, createBicycleModel } from "./vehicle/BicycleModel.js";
+export type { BicycleModelInput, BicycleModelOptions, BicycleModelState, BicycleTyreParams } from "./vehicle/BicycleModel.js";
+// Lane 07/12 vfx — atlas manifest, bridge, atmosphere/effects extensions,
+// diagnostics sections, look-lint rules.
+export { AURA_VFX_BUILTIN_SEQUENCES, validateVfxAtlasManifest, vfxAtlasPageForTier } from "./vfx/atlas.js";
+export type { AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence } from "./vfx/atlas.js";
+export { createAtmosphereExtension } from "./vfx/atmosphere-api.js";
+export { attachVfxBridge } from "./vfx/bridge.js";
+export type { VfxBridge } from "./vfx/bridge.js";
+export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnostics.js";
+export { createAppEffects, createEffectsExtension, prd07SystemFor, registerPrd07System } from "./vfx/effects-api.js";
+export { registerPrd07LookLintRules } from "./vfx/lookLint.js";
+// Contract-surface names that grew in contracts/ after T1.4.
+export type { AuraSkyBand } from "../contracts/atmosphere.js";
+export type { AuraColorRamp, AuraCurve, AuraLegacyParticleFields, AuraParticleEmitterOptions, AuraRange, AuraVfxShading, AuraVfxSpriteSource } from "../contracts/effects.js";
+export { qrFlagsWithAnimationMixer } from "../contracts/flags.js";
+export type { GameJuice } from "../contracts/game.js";
+export { lookLintRegisteredCodes, registerLookLintDefaults, setLookLintDefaultsProvider } from "../contracts/looks.js";
+export type { AuraPostPassOrder } from "../contracts/post.js";
+// Lane 04/05/06 production-runtime — material overrides, QR flags,
+// shader-warmup + decoder hooks.
+export { applyMaterialOverrides, lowerModelMaterialOverrides, snapshotMaterials } from "../production-runtime/ModelMaterialOverrides.js";
+export type { AuthoredMaterialSnapshot, TypedGLBActorMaterialOverride } from "../production-runtime/ModelMaterialOverrides.js";
+export { setTypedGLBActorQrTransmissionMode, typedGLBActorQrTransmissionMode } from "../production-runtime/TypedGLBActor.js";
+export { setPrd06ShaderWarmupCompiler } from "../production-runtime/actor/TypedGLBActorAnimation.js";
+export type { Prd06ShaderWarmupCompiler } from "../production-runtime/actor/TypedGLBActorAnimation.js";
+export { registerPrd04TypedGLBActorMaterials, registeredTypedGLBActors, typedGLBActorForNode } from "../production-runtime/actor/TypedGLBActorMaterials.js";
+export { setTypedGLBActorQrFlags } from "../production-runtime/actor/extensions.js";
+export { collectPrd04MaterialDiagnostics, registerPrd04MaterialDiagnostics } from "../production-runtime/actor/materialDiagnostics.js";
+// Lane 09 game surface — audio listener pose type.
+export type { GameAudioListenerPose } from "../game/GameAudio.js";
+// Names declared in the lane barrels themselves (CONTRACTS.md §3.8 leaves).
+export { readAura3dTonemapQuery } from "../lanes/prd01/outputSurface.js";
+export { Prd02LightingRuntime } from "../lanes/prd02.js";
+export { PRD05_DEBUG_VIEW_CHANNELS, applyPrd05DebugViewToMaterialLibrary, attachAppAssetDecoders, getAppAssetDecoders, setPrd05DebugView } from "../lanes/prd05.js";
+export type { Prd05DebugViewName } from "../lanes/prd05.js";
+export { installPrd06ShaderWarmup, prd06RenderingLaneReady } from "../lanes/prd06.js";
+export type { AuraBatchPlanReport, AuraFrameTimingReport, AuraQualityDiagnosticsReport } from "../lanes/prd11.js";
+export { appliedLookSection, frameTimingSection } from "../lanes/prd12.js";
+export { providePrd13Contracts } from "../lanes/prd13.js";
+// C-16 decoder error — re-exported through lanes/prd05 from @aura3d/assets.
+export { AssetDecoderUnavailable } from "@aura3d/assets/browser";

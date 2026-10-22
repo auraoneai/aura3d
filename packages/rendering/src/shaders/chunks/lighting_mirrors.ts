@@ -5,7 +5,7 @@
  * `getHemisphereLightIrradiance` within 1e-6.
  */
 
-type V3 = readonly [number, number, number];
+type Vec3Tuple = readonly [number, number, number];
 
 /** three r185 `getDistanceAttenuation` verbatim. */
 export function a3dDistanceFalloff(lightDistance: number, cutoffDistance: number, decayExponent: number): number {
@@ -17,8 +17,8 @@ export function a3dDistanceFalloff(lightDistance: number, cutoffDistance: number
   return distanceFalloff;
 }
 
-const dot3 = (a: V3, b: V3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const normalize = (v: V3): V3 => {
+const dot3 = (a: Vec3Tuple, b: Vec3Tuple) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const normalize = (v: Vec3Tuple): Vec3Tuple => {
   const l = Math.hypot(v[0], v[1], v[2]) || 1;
   return [v[0] / l, v[1] / l, v[2] / l];
 };
@@ -30,11 +30,11 @@ const normalize = (v: V3): V3 => {
  * intensity-premultiplied host-side — pass premultiplied colours here).
  */
 export function a3dHemisphereIrradiance(
-  skyColor: V3,
-  groundColor: V3,
-  direction: V3,
-  normal: V3
-): V3 {
+  skyColor: Vec3Tuple,
+  groundColor: Vec3Tuple,
+  direction: Vec3Tuple,
+  normal: Vec3Tuple
+): Vec3Tuple {
   const w = 0.5 * dot3(normalize(normal), normalize(direction)) + 0.5;
   return [
     groundColor[0] + (skyColor[0] - groundColor[0]) * w,

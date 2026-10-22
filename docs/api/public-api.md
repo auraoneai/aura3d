@@ -13,12 +13,12 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `4.0.3` | `packages/animation/src/index.ts` | 46 |
+| `@aura3d/animation` | `4.0.3` | `packages/animation/src/index.ts` | 49 |
 | `@aura3d/apps` | `4.0.3` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/asset-index` | `4.0.3` | `packages/asset-index/src/index.ts` | 35 |
-| `@aura3d/assets` | `4.0.3` | `packages/assets/src/index.ts` | 82 |
-| `@aura3d/assets/gltf-runtime` | `4.0.3` | `packages/assets/src/gltf-runtime.ts` | 4 |
-| `@aura3d/audio` | `4.0.3` | `packages/audio/src/index.ts` | 47 |
+| `@aura3d/assets` | `4.0.3` | `packages/assets/src/index.ts` | 93 |
+| `@aura3d/assets/gltf-runtime` | `4.0.3` | `packages/assets/src/gltf-runtime.ts` | 6 |
+| `@aura3d/audio` | `4.0.3` | `packages/audio/src/index.ts` | 49 |
 | `@aura3d/cli` | `4.0.3` | `packages/aura3d-cli/src/index.ts` | 37 |
 | `@aura3d/controls` | `4.0.3` | `packages/controls/src/index.ts` | 46 |
 | `@aura3d/core` | `4.0.3` | `packages/core/src/index.ts` | 14 |
@@ -28,7 +28,7 @@ pnpm verify:api-docs
 | `@aura3d/editor-runtime` | `4.0.3` | `packages/editor-runtime/src/index.ts` | 82 |
 | `@aura3d/engine` | `4.0.3` | `packages/engine/src/index.ts` | 21 |
 | `@aura3d/input` | `4.0.3` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/math` | `4.0.3` | `packages/math/src/index.ts` | 18 |
+| `@aura3d/math` | `4.0.3` | `packages/math/src/index.ts` | 30 |
 | `@aura3d/navigation-recast` | `4.0.3` | `packages/navigation-recast/src/index.ts` | 16 |
 | `@aura3d/physics` | `4.0.3` | `packages/physics/src/index.ts` | 24 |
 | `@aura3d/physics-rapier` | `4.0.3` | `packages/physics-rapier/src/index.ts` | 26 |
@@ -36,7 +36,7 @@ pnpm verify:api-docs
 | `@aura3d/physics/world` | `4.0.3` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `4.0.3` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `4.0.3` | `packages/react/src/index.ts` | 39 |
-| `@aura3d/rendering` | `4.0.3` | `packages/rendering/src/index.ts` | 387 |
+| `@aura3d/rendering` | `4.0.3` | `packages/rendering/src/index.ts` | 413 |
 | `@aura3d/rendering/extension-scalar-atlas` | `4.0.3` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
 | `@aura3d/rendering/reflection-surfaces` | `4.0.3` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
 | `@aura3d/rendering/webgpu` | `4.0.3` | `packages/rendering/src/webgpu.ts` | 8 |
@@ -74,6 +74,9 @@ export * from "./LocomotionEvidence.js";
 export * from "./MotionQuality.js";
 export * from "./LocomotionController.js";
 export * from "./SceneAnimationBridge.js";
+export * from "./PropertyBinding.js";
+export * from "./AnimationObjectGroup.js";
+export { AnimationUtils, arraySlice, convertArray, isTypedArray, getKeyframeOrder, sortedArray, subclip, optimize, merge, makeClipAdditive, isClipAdditive, type AdditiveReference } from "./AnimationUtils.js";
 export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
 export * from "./FootIk.js";
@@ -255,10 +258,21 @@ export { createTextureMipGenerationStage, generateTextureMipChain, resolveAnisot
 export type { AnisotropyRequest, AnisotropyResolution, TextureMipGenerationInput, TextureMipGenerationResult, TextureMipGenerationStageOptions, TextureMipLevel } from "./TexturePipeline";
 export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
+export { FileLoader } from "./FileLoader";
+export type { FileLoaderResponseType } from "./FileLoader";
+export { ImageBitmapLoader } from "./ImageBitmapLoader";
+export type { ImageBitmapLoaderOptions } from "./ImageBitmapLoader";
+export { DataTextureLoader } from "./DataTextureLoader";
+export { EXRLoader, EXRLoaderThreeCompat, parseEXR } from "./EXRLoader";
+export type { AuraEXRDataType, AuraEXROutputFormat, AuraEXRParseOptions, AuraEXRTextureData } from "./EXRLoader";
+export { fetchBytes } from "./LoaderFetch";
+export type { AuraLoaderProgress } from "./LoaderFetch";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";
 export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
 export * from "./HDRLoader.js";
 export * from "./TextureStreaming.js";
+export { GLTFSharedTextureCache } from "./GLTFSharedTextureCache.js";
+export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";
 ```
 
 ## @aura3d/assets/gltf-runtime
@@ -274,6 +288,8 @@ export { createGLTFSceneAnimationRuntime } from "./GLTFAnimationRuntime.js";
 export type { AddClipsFromRuntimeOptions, GLTFootPlantingApplyResult, GLTFootPlantingConfig, GLTFootPlantingLegConfig, GLTFSceneAnimationApplyResult, GLTFSceneAnimationMaterialSink, GLTFPoseConstraint, GLTFSceneAnimationRuntime, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFScenePose } from "./GLTFAnimationRuntime.js";
 export { loadProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
 export type { ProductionGLTFRenderPipeline } from "./asset-corpus/ProductionGLTFRenderPipeline.js";
+export { GLTFSharedTextureCache } from "./GLTFSharedTextureCache.js";
+export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";
 ```
 
 ## @aura3d/audio
@@ -298,13 +314,15 @@ export { AudioContextManager } from "./AudioContextManager";
 export type { AudioContextLike, AudioContextManagerOptions, AudioContextState } from "./AudioContextManager";
 export type { AudioEffect } from "./AudioEffect";
 export { AudioListener } from "./AudioListener";
-export type { Vec3Like } from "./AudioListener";
+export type { AudioListenerOptions, Vec3Like } from "./AudioListener";
+export { AudioAnalyser, createAudioAnalyser } from "./AudioAnalyser";
+export type { AudioAnalyserOptions } from "./AudioAnalyser";
 export { AudioMixer, createAudioMixerEvidence, createAnimationAudioMixer } from "./AudioMixer";
 export type { AudioMixerBusEvidence, AudioMixerEvidence, AnimationAudioMixer, AnimationAudioMixerOptions } from "./AudioMixer";
 export { AudioSource } from "./AudioSource";
 export type { AudioSourceOptions, AudioSourceState } from "./AudioSource";
-export { PositionalEmitter, applyOcclusionToGain, computeDistanceAttenuation, computeDopplerShift, occlusionLowpassFrequency, resolveOcclusion } from "./PositionalEmitter";
-export type { DistanceAttenuationModel, DistanceAttenuationOptions, DopplerOptions, OcclusionHook, PositionalEmitterEvidence, PositionalEmitterOptions } from "./PositionalEmitter";
+export { PositionalEmitter, applyOcclusionToGain, computeConeGain, computeDistanceAttenuation, computeDopplerShift, occlusionLowpassFrequency, resolveOcclusion } from "./PositionalEmitter";
+export type { ConeOptions, DistanceAttenuationModel, DistanceAttenuationOptions, DopplerOptions, OcclusionHook, PositionalEmitterEvidence, PositionalEmitterOptions } from "./PositionalEmitter";
 export { attachFocusPolicy, createGameMixer, focusHandlersForMixer } from "./GameMixer";
 export type { FocusEventTargetLike, FocusMutePolicy, FocusPolicyHandlers, GameMixer, GameMixerBusLevel, GameMixerEvidence, GameMixerOptions } from "./GameMixer";
 export { FootstepPlayer } from "./Footsteps";
@@ -769,11 +787,23 @@ export * from "./Matrix4.js";
 export * from "./Quaternion.js";
 export * from "./Euler.js";
 export * from "./Color.js";
+export * as MathUtils from "./MathUtils.js";
+export { generateUUID, euclideanModulo, mapLinear, damp, pingpong, smootherstep, randInt, randFloat, randFloatSpread, seededRandom, degToRad, radToDeg, isPowerOfTwo, ceilPowerOfTwo, floorPowerOfTwo } from "./MathUtils.js";
+export * from "./Line3.js";
+export * from "./Triangle.js";
+export * from "./Spherical.js";
+export * from "./Cylindrical.js";
 export * from "./Ray.js";
 export * from "./Plane.js";
 export * from "./Box3.js";
 export * from "./Sphere.js";
 export * from "./Frustum.js";
+export * from "./ShapeUtils.js";
+export * from "./SphericalHarmonics3.js";
+export * from "./OBB.js";
+export * from "./Capsule.js";
+export * from "./ConvexHull.js";
+export * from "./Octree.js";
 export * from "./Transform.js";
 export * from "./Interpolation.js";
 export * from "./Easing.js";
@@ -1020,9 +1050,35 @@ export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttribut
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
 export { Geometry, computeBounds } from "./Geometry";
-export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeometryOptions, PlaneGeometryOptions, ScreenSpaceLineSegment, TorusGeometryOptions, UVSphereGeometryOptions } from "./Geometry";
+export type { Bounds3, BoxGeometryOptions, CapsuleGeometryOptions, CylinderGeometryOptions, GeometryDrawRange, GeometryGroup, GeometryMorphTarget, PlaneGeometryOptions, ScreenSpaceLineSegment, TorusGeometryOptions, UVSphereGeometryOptions } from "./Geometry";
 export { createPrimitiveGeometry, clearPrimitiveGeometryCache, primitiveGeometryCacheSize } from "./geometry/Primitives";
-export type { AuraPrimitiveKind } from "./geometry/Primitives";
+export type { AuraPrimitiveKind, AuraParityPrimitiveParams } from "./geometry/Primitives";
+export { parityMeshToGeometry, resolveCurve3, resolveShape2D, triangulateShape, isClockWise, shapeArea, earcut, Curve3Adapter, computeVertexNormals, computeParityBounds } from "./geometry/Support";
+export type { ParityMesh, ParityBounds, ResolvedShape2D } from "./geometry/Support";
+export { coneParityMesh, cylinderParityMesh } from "./geometry/Cone";
+export type { ConeParityParams, CylinderParityParams } from "./geometry/Cone";
+export { circleParityMesh } from "./geometry/Circle";
+export type { CircleParityParams } from "./geometry/Circle";
+export { ringParityMesh } from "./geometry/Ring";
+export type { RingParityParams } from "./geometry/Ring";
+export { torusKnotParityMesh } from "./geometry/TorusKnot";
+export type { TorusKnotParityParams } from "./geometry/TorusKnot";
+export { polyhedronParityMesh, polyhedronParityMeshFromBase } from "./geometry/Polyhedron";
+export type { PolyhedronParityParams, PolyhedronVariant } from "./geometry/Polyhedron";
+export { roundedBoxParityMesh, boxParityMesh, meshToNonIndexed } from "./geometry/RoundedBox";
+export type { RoundedBoxParityParams } from "./geometry/RoundedBox";
+export { tubeParityMesh } from "./geometry/Tube";
+export type { TubeParityParams } from "./geometry/Tube";
+export { latheParityMesh } from "./geometry/Lathe";
+export type { LatheParityParams } from "./geometry/Lathe";
+export { extrudeParityMesh } from "./geometry/Extrude";
+export type { ExtrudeParityParams } from "./geometry/Extrude";
+export { shapeParityMesh } from "./geometry/Shape";
+export type { ShapeParityParams } from "./geometry/Shape";
+export { edgesParityMesh } from "./geometry/Edges";
+export type { EdgesInput } from "./geometry/Edges";
+export { wireframeParityMesh } from "./geometry/Wireframe";
+export type { WireframeInput } from "./geometry/Wireframe";
 export { InstanceBuffer } from "./resources/InstanceBuffer";
 export { UniformBlock, FrameUniforms, layoutStd140, uniformBlockGlsl, AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
 export type { Std140Field, Std140Layout } from "./resources/UniformBlock";
@@ -1117,7 +1173,7 @@ export type { SortableRenderItem, RenderQueueBucket, RenderQueuePlan, RenderQueu
 export { createDefaultPerformanceLodLevels, selectPerformanceLodLevel } from "./performance/LOD";
 export type { PerformanceLodLevel } from "./performance/LOD";
 export type { BrdfLutDescriptor, DiffuseIrradianceGenerationOptions, EnvironmentColorSpace, EnvironmentHdrEncodeOptions, EnvironmentInputEncoding, EnvironmentMapResourceInput, EnvironmentMapResourceSet, EnvironmentMipGenerationOptions, EnvironmentResourceSetOptions, EnvironmentToneMappingOperator, LinearHdrEnvironmentMapSource, Rgba8EnvironmentMapSource, RgbeEnvironmentMapSource } from "./EnvironmentMapResources";
-export { DEFAULT_SAMPLER_ANISOTROPY, resolveSamplerAnisotropy, SAMPLER_ANISOTROPY_STEPS, Sampler } from "./Sampler";
+export { auraWrapMode, DEFAULT_SAMPLER_ANISOTROPY, resolveSamplerAnisotropy, SAMPLER_ANISOTROPY_STEPS, Sampler, threeToMagFilter, threeToMinFilter, threeToWrapMode } from "./Sampler";
 export type { SamplerAnisotropyRequest, SamplerAnisotropyResolution, SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
 export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
@@ -1132,7 +1188,7 @@ export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
 export { ShaderPreprocessor } from "./ShaderPreprocessor";
 export type { ShaderPreprocessOptions, ShaderPreprocessResult, ShaderSourceMapEntry } from "./ShaderPreprocessor";
-export { DEFAULT_DEPTH_SHADER_MARKER, DEFAULT_DEPTH_SHADER_NAME, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME, DEFAULT_INSTANCED_PBR_SHADER_MARKER, DEFAULT_INSTANCED_PBR_SHADER_NAME, DEFAULT_INSTANCED_UNLIT_SHADER_MARKER, DEFAULT_INSTANCED_UNLIT_SHADER_NAME, DEFAULT_MORPH_UNLIT_SHADER_MARKER, DEFAULT_MORPH_UNLIT_SHADER_NAME, DEFAULT_NORMAL_MAPPED_PBR_SHADER_MARKER, DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SHADER_MARKER, DEFAULT_TEXTURED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_SKINNED_LIT_SHADER_MARKER, DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_MARKER, DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_LIT_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_MARKER, DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_MARKER, DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_NAME, DEFAULT_TEXTURED_UNLIT_SHADER_MARKER, DEFAULT_TEXTURED_UNLIT_SHADER_NAME, DEFAULT_UNLIT_SHADER_MARKER, DEFAULT_UNLIT_SHADER_NAME, ShaderLibrary, createDefaultShaderLibrary } from "./ShaderLibrary";
+export { DEFAULT_DEPTH_SHADER_MARKER, DEFAULT_DEPTH_SHADER_NAME, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME, DEFAULT_INSTANCED_PBR_SHADER_MARKER, DEFAULT_INSTANCED_PBR_SHADER_NAME, DEFAULT_INSTANCED_UNLIT_SHADER_MARKER, DEFAULT_INSTANCED_UNLIT_SHADER_NAME, DEFAULT_MORPH_UNLIT_SHADER_MARKER, DEFAULT_MORPH_UNLIT_SHADER_NAME, DEFAULT_NORMAL_MAPPED_PBR_SHADER_MARKER, DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SHADER_MARKER, DEFAULT_TEXTURED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_SKINNED_LIT_SHADER_MARKER, DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER, DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME, DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_MARKER, DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_LIT_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_MARKER, DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_MARKER, DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_NAME, DEFAULT_TEXTURED_UNLIT_SHADER_MARKER, DEFAULT_TEXTURED_UNLIT_SHADER_NAME, DEFAULT_UNLIT_SHADER_MARKER, DEFAULT_UNLIT_SHADER_NAME, ShaderLibrary, createDefaultShaderLibrary, registerShaderChunk, globalShaderChunkRevision, globalShaderChunkNames, registerGlobalShaderSource, unregisterGlobalShaderSource, globalShaderSource, globalShaderChunkEntries, globalShaderWgslChunkSource } from "./ShaderLibrary";
 export type { CompiledShaderSource, ShaderSourcePair } from "./ShaderLibrary";
 export type { ShaderVariantDescriptor } from "./ShaderLibrary";
 export { MAX_UNIFORM_SKINNING_JOINTS, SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
@@ -1322,8 +1378,8 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
-export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DrawDataTexture, buildMultiDrawBatch, multiDrawCommands, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
-export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem } from "./batching/index.js";
+export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
+export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
 export type { DecalBasis, DecalBox, DecalGeometryResult, DecalRay, DecalRaycastHit, DecalRaycastOptions, DecalRaycastResult, DecalShape, DecalTriangleMesh } from "./DecalGeometry.js";
 export { createMatrixInstanceAttribute } from "./Instancing.js";
@@ -1542,160 +1598,350 @@ export type * from "./WorkflowTypes";
 
 ---
 
-## Reserved and planned exports (threejs-parity)
+## Three.js parity surface
 
 **Status legend.** This appendix is hand-maintained for the parity workstream
-and appended verbatim by `tools/api-docs` — edit this file, then run
-`pnpm verify:api-docs -- --write`. Verdicts: `closed/public` (real GPU path
-today), `partial/internal` (exists internally, not public), `gap/public`
-(frozen contract, no implementation), `excluded` (deliberately out of scope —
-never shipped). Lane verdicts live in
-`docs/workflows/threejs-parity-gaps.md`.
+and appended verbatim by `tools/api-docs` — edit this file, then regenerate
+with `pnpm exec tsx --tsconfig tsconfig.base.json tools/api-docs/index.ts --write`.
+Verdicts: **LIVE** — a real value export on the named surface today, verified
+against the source barrels and exercised by a `tests/unit/parity/*` fixture —
+and **NOT YET** — the remaining gaps, listed in "Not yet" below.
+Lane-by-lane verdicts live in `docs/workflows/threejs-parity-gaps.md`; the
+fixture suite lives in `tests/unit/parity/` (each file header names the parity
+IDs it covers).
 
-Nothing in this section is importable today unless a row says otherwise.
-Items marked **landing** are owned by a parity lane and merge with that lane —
-the codemod (`aura3d migrate three`) emits `parityPending` markers that name
-the same target so generated code and this doc stay in sync.
+Unless a row names another surface, exports resolve from the published
+`@aura3d/engine` "." barrel (`packages/engine/src/public/index.ts`). Math,
+audio, and animation parity ship from their own packages: `@aura3d/math`,
+`@aura3d/audio`, `@aura3d/animation`.
 
-### `curve.*` — SM-02 (lane L3, landing)
+### Math breadth — SM-01/03/04, AD-14 (lane L3 — LIVE)
 
 ```ts
-// @aura3d/engine — planned namespace over the frozen Curve<V> interface
-// (M/Curves.ts exports CatmullRomCurve3 + CubicBezierCurve3 as math classes).
-curve.catmullRom({ points, closed?, curveType? })
-curve.cubicBezier({ v0, v1, v2, v3 })   // + quadraticBezier, line, spline,
-curve.path()                            //   ellipse, arc, CurvePath,
-curve.shape()                           //   Path/Shape with holes
+// @aura3d/math
+Vector2, Vector3, Vector4, Matrix3, Matrix4, Quaternion, Color,
+Ray, Plane, Sphere, Box3, Frustum, Line3, Triangle,
+Spherical, Cylindrical, SphericalHarmonics3, OBB, Capsule,
+ConvexHull, Octree, ShapeUtils, Transform, Interpolation, Easing, Random
+MathUtils                                   // namespace export; the
+  // non-colliding helpers are also top-level: generateUUID, euclideanModulo,
+  // mapLinear, damp, pingpong, smootherstep, randInt, randFloat,
+  // randFloatSpread, seededRandom, degToRad, radToDeg, isPowerOfTwo,
+  // ceilPowerOfTwo, floorPowerOfTwo
+Euler — all six orders: "XYZ" | "YXZ" | "ZXY" | "ZYX" | "YZX" | "XZY"
+Color.setHSL / getHSL / offsetHSL / lerpHSL
 ```
 
-### `texture.*` — ST-01/02/07 (lane L4, landing)
+Fixture: `tests/unit/parity/math.test.ts`.
+
+### Curve family — SM-02 (lane L3 — LIVE)
 
 ```ts
-// @aura3d/engine — planned; AuraTextureRef fields are frozen.
-texture.load(url, opts): Promise<TextureHandle>
-texture.data / canvas / video / compressed / depth / cube / dataArray
-// handle: colorSpace, flipY, wrapS/wrapT, repeat/offset/rotation/center,
-//         anisotropy, min/magFilter, generateMipmaps, needsUpdate, dispose
+// @aura3d/math — real classes (Curves.ts), not a facade namespace.
+abstract class Curve<V>          // CurveBase: getPoint / getPointAt /
+                                 //   getTangent / getTangentAt / getLength /
+                                 //   getLengths / getUtoTmapping /
+                                 //   updateArcLengths / getPoints /
+                                 //   getSpacedPoints / computeFrenetFrames
+CatmullRomCurve3(points, closed?, curveType?, tension?)
+CubicBezierCurve3, QuadraticBezierCurve3, LineCurve3
+LineCurve, QuadraticBezierCurve, CubicBezierCurve, SplineCurve   // 2D
+EllipseCurve, ArcCurve                          // ArcCurve extends EllipseCurve
+CurvePath<V>   // closePath, getCurveLengths, cacheLengths
+Path           // moveTo, lineTo, quadraticCurveTo, bezierCurveTo,
+               // splineThru, arc/absarc, ellipse/absellipse, setFromPoints
+Shape extends Path                            // holes, getPointsHoles
 ```
 
-### `lines.*`, `points.*`, `sprites.*` — SG-06/07/08 (lane L6, landing)
+`primitives.tube`/`extrude`/`lathe`/`shape` consume frozen `Curve`/`Shape`
+instances through `options.params.path` / `.points` / `.shape`.
+Fixture: `tests/unit/parity/curves.test.ts`.
+
+### Textures — ST-01/02/03/05/06/07, AD-03 (lane L4 — LIVE)
 
 ```ts
-// @aura3d/engine — planned scene nodes.
-lines.line({ points })
-lines.loop / lines.segments / lines.fat({ dashed })
-points({ positions, size, sizeAttenuation?, map?, alphaTest? })
-sprites({ map?, center?, rotation?, sizeAttenuation? })
+// @aura3d/engine — `texture` namespace + `TextureHandle` are "." exports.
+texture.load(url, options?: AuraTextureLoadOptions): Promise<TextureHandle>
+texture.data({ width, height, data, format?, colorSpace? })
+texture.canvas({ canvas, colorSpace?, flipY? })
+texture.video({ video, colorSpace? })
+texture.compressed({ mipmaps: [{ data, width, height }], format })
+texture.depth({ width, height })
+texture.cube({ faces, colorSpace? })
+texture.dataArray({ width, height, depth, data, format? })
+
+class TextureHandle implements AuraTextureRef
+  // live, mutable write-through fields: wrapS, wrapT, repeat, offset,
+  // rotation, center, anisotropy, minFilter, magFilter, generateMipmaps,
+  // colorSpace, flipY, needsUpdate; plus dispose()
 ```
 
-### `batched.*` — SG-02 (lane L5, probe-gated on P-2)
+`texture.load` routes through `@aura3d/assets` and decodes `.exr` (AD-03);
+per-item progress/failures surface via `createAuraApp({ onAssetProgress,
+onAssetError })` (ST-06). `AuraTextureRef` and every `AuraTexture*Options`
+type are exported from ".". GLTF decoder plumbing (draco/ktx2/meshopt) is
+covered by ST-05.
+Fixtures: `tests/unit/parity/texture.test.ts`, `exr.test.ts`,
+`gltf-decoders.test.ts`.
+
+### Lines, points, sprites, helpers — SG-06/07/08, AD-08, SC-03 (lane L6 — LIVE)
 
 ```ts
-// @aura3d/engine — planned; promotion to ● needs a BatchedMesh probe hit.
-batched.mesh({ maxInstances, maxVertices, material? })
+// @aura3d/engine — scene-node factories returning AuraNodeBuilder
+// (.runtime({ id }) binds a live AuraRuntimeNodeHandle).
+lines.line({ points|positions, colors?, material?, dashed?, dashSize?,
+             gapSize?, dashOffset?, ...transforms })
+lines.loop({...})  lines.segments({...})
+lines.fat({ ...lineOptions, width?, worldUnits? })   // instanced ribbon mesh;
+                                                     // worldUnits ⨯ dashed
+// top-level aliases: line, loop, segments, fat
+computeLineDistances(positions, "line" | "loop" | "segments")  // AD-08
+
+points({ points|positions, colors?, size?, sizeAttenuation?, map?,
+         alphaTest?, transparent?, material?, ...transforms })  // SG-07
+
+sprites.sprite({ map?, center?, rotation?, sizeAttenuation?, color? })  // SG-08
+// `sprite` is also a top-level export; `sprites` = { sprite }
+
+helpers.axes / grid / polarGrid / box / box3 / arrow / camera /
+        directionalLight / spotLight / pointLight / skeleton      // SC-03 —
+        // each emits a real line-segment node builder
 ```
 
-### `instances.mesh` — SG-01 (lane L5, landing)
+Fixture: `tests/unit/parity/lines.test.ts`.
+
+### Instancing and batching — SG-01/02 (lane L5 — LIVE)
 
 ```ts
-// @aura3d/engine — extends the live instances.* factories with a handle:
-//   setMatrixAt / setColorAt / count / needsUpdate over the GPU instance
-//   buffer write path.
+// @aura3d/engine
+instances.mesh(geometry, material, count): AuraInstancedMeshHandle
+  // geometry: @aura3d/rendering Geometry | builtin primitive name |
+  //           AuraCustomGeometrySpec
+  // handle: setMatrixAt / getMatrixAt / setColorAt / getColorAt / count /
+  //         capacity / needsUpdate / instanceMatrix / instanceColor /
+  //         computeBoundingSphere / computeBoundingBox / dispose
+instances.box / sphere / plane / cylinder / capsule / torus / cone / circle /
+          ring / tube / lathe / extrude / shape / torusKnot / polyhedron /
+          roundedBox / model / custom    // pre-existing factories — the L2
+                                         // kinds share primitives.* params
+
+batched.mesh({ maxInstances, maxVertices?, maxIndices?, material?,
+               multiDraw?: "auto" | "multi-draw" | "loop" | "instanced",
+               name?, geometries? }): AuraBatchedMeshHandle
+  // handle: addGeometry(geo) → geometryId, addInstance(geometryId) → index,
+  //         setMatrixAt / getMatrixAt / setColorAt / getColorAt /
+  //         setVisibleAt / deleteInstance / count / needsUpdate /
+  //         computeBoundingSphere
 ```
 
-### `helpers.*` — SC-03 (lane L6, P2)
+The `batched.mesh` API and dense store are live today — `"auto"` packs a
+multi-draw where the generated path supports it and falls back to
+per-geometry instancing otherwise. Promotion of the SG-02 row to ● stays
+probe-gated on P-2 (see "Not yet").
+Fixture: `tests/unit/parity/instancing.test.ts`.
+
+### Surfaces, cameras, scene backgrounds — SC-01, AD-15, SG-10 (lane L7 — LIVE)
 
 ```ts
-// @aura3d/engine — planned debug helpers over lines.*.
-helpers.axes / grid / polarGrid / box / box3 / camera / arrow / plane
-helpers.directionalLight / pointLight / spotLight / skeleton
+// @aura3d/engine
+surfaces.mirror({ name?, size?, resolution?, tint?, position?, runtime? })
+  // horizontal Reflector plane at position[1]; captures via the renderer's
+  // planar-reflection target
+cameras.cube({ name?, resolution?, near?, far?, updateEvery?, position?,
+               runtime? })
+  // cube-camera node; rendered via Renderer.renderProbeFace once per
+  // `updateEvery` frames — consume via material envMap: { cubeCamera: name }
+
+scene().background(color | { texture, intensity?, rotation? } |
+                   { cube: { faces: [6], intensity? } })          // SG-10 —
+                   // color, image, or cubemap backdrop; never enables IBL
 ```
 
-### `surfaces.*` — AD-15 (lane L7)
+Fixture: `tests/unit/parity/runtime.test.ts`.
+
+### Custom materials and shader passes — SH-02/03, SH-10 (lane L1 — LIVE)
 
 ```ts
-// @aura3d/engine — planned over R/PlanarReflection.
-surfaces.mirror({ size, resolution?, tint? })
-```
-
-### `Clock`, `raycast`, cameras — SR-01/03, SC-01 (lane L7)
-
-```ts
-// @aura3d/engine — planned.
-new Clock()                        // getDelta/getElapsedTime/start/stop
-raycast({ origin, direction } | { camera, ndc }, { firstHitOnly?, recursive?, layers?, near?, far? })
-cameras.cube({ resolution, near, far })   // via Renderer.renderProbeFace
-cameras.array / cameras.stereo            // P2 — needs viewport/scissor
-```
-
-### `material.custom` — SH-02 (lane L1, spec frozen)
-
-```ts
-// @aura3d/engine — AuraCustomMaterialSpec is frozen in contracts.
+// @aura3d/engine
 material.custom({
-  glsl: { fragment },        // required — WebGL2 is the live backend
-  wgsl?,                     // optional — WebGPU only (A3D_QR_WEBGPU)
-  uniforms?, defines?, transparent?, depthWrite?, side?, blending?, patch?
-})
+  glsl: { vertex?, fragment },     // fragment required — WebGL2 is the live
+                                   // backend; a WGSL-only spec fails validate
+  wgsl?: { vertex?, fragment? },   // used only on the WebGPU backend
+  uniforms?, defines?, transparent?, depthWrite?, depthTest?,
+  side?, blending?, fog?           // AuraCustomMaterialSpec
+}): AuraMaterialSpec
+
+effects.shaderPass({
+  name?, glsl? | fragment?: { glsl?, wgsl? }, wgsl?,
+  uniforms?,                                    // numeric uniforms by name
+  inputs?: ("color" | "depth" | "velocity")[],
+  insertAt?: "after-depth" | "before-taa" | "after-taa" |
+             "before-tonemap" | "after-tonemap",     // v2 graph anchor
+  order?: "before-bloom" | "after-bloom" | "before-tonemap" |
+          "after-tonemap" | number,                  // named slot → anchor
+  enabled?
+}): AuraCustomPostPass
+
+app.addPostPass(pass)                            // registers a custom pass
+app.setPassUniform(passName, key, value)         // mutate without rebuild
+handle.setUniform(name, value)                   // material.custom uniform
+                                                 // write, no recompile
+
+// @aura3d/engine/renderer
+registerShaderChunk(name, glsl)    // SH-10 registry — resolves #include in
+                                   // material.custom / effects.shaderPass
 ```
 
-### `effects.shaderPass` — SH-03 (lane L1)
+Fixtures: `tests/unit/parity/shader-material.test.ts`,
+`shader-pass-order.test.ts`.
+
+### Geometry breadth and authoring — SG-03/04/05 (lane L2 — LIVE)
 
 ```ts
-// @aura3d/engine — planned scene node. TODAY'S live GPU path for a custom
-// pass is already public:
-app.addPostPass({ name, insertAt, fragment: { glsl }, uniforms? })  // ships
-effects.shaderPass({ /* same shape */ })                           // landing
-```
-
-### Geometry breadth / authoring — SG-03/04/05 (lane L2, landing)
-
-```ts
-// kinds exist in the frozen AuraBuiltinPrimitive union; generators land L2.
+// @aura3d/engine — AuraBuiltinPrimitive union is fully generated.
 primitives.cone / circle / ring / tube / lathe / extrude / shape /
-           torusKnot / polyhedron({variant}) / roundedBox   // landing
-geometry.dynamic(spec)                    // typed-array attributes — landing
-geometry.edges(src, thresholdAngle?)      // landing
-geometry.wireframe(src)                   // landing
-geometry.merge / toNonIndexed             // AD-06 — landing
+           torusKnot / polyhedron / roundedBox        // (options.params:
+                                                     //  AuraPrimitiveParams)
+geometry.dynamic(spec: AuraDynamicGeometrySpec)      // typed-array attributes;
+  // validated + tagged so handle.setGeometry / updateAttribute rewrite the
+  // live buffers in place (no realloc while vertex count is stable)
+geometry.edges(source: AuraCustomGeometrySpec, thresholdAngle = 1)
+  // three's EdgesGeometry → a "lines"-topology spec
+geometry.wireframe(source: AuraCustomGeometrySpec)
+  // three's WireframeGeometry → a "lines"-topology spec
+geometry.merge(specs: readonly AuraCustomGeometrySpec[])
+  // BufferGeometryUtils.mergeGeometries over specs
 ```
 
-### Math breadth — SM-01/04, AD-14 (lane L3, landing)
+`geometry.toNonIndexed` does not exist as a public member — the equivalent
+`auraGeometryToNonIndexed` helper is internal-only (parity-tested, but not
+re-exported through either barrel). The public `geometry` namespace ships
+`define / custom / dynamic / edges / wireframe / merge`.
+Fixtures: `tests/unit/parity/geometry-counts.test.ts`,
+`geometry-dynamic.test.ts`.
+
+### Runtime surface — SG-09, SR-03/04/05/06/07, SH-05/06 (lane L7 — LIVE)
 
 ```ts
-// @aura3d/engine/math — planned additions to the live math classes.
-Line3, Triangle, Spherical, Cylindrical, MathUtils,
-Color.setHSL/getHSL/offsetHSL/lerpHSL, SphericalHarmonics3, Octree
-// all 6 Euler orders; finish Box3/Sphere/Plane/Ray/Frustum/Matrix3 method set
+// @aura3d/engine — AuraRuntimeNodeHandle members (type exported from "."):
+renderOrder: number                 // draw-order override, default 0
+frustumCulled: boolean              // default true
+layers: AuraLayerMask               // mask/set/enable/enableAll/disable/
+                                    // disableAll/toggle/test/isEnabled
+userData: Record<string, unknown>
+traverse(cb)                        // depth-first, self included
+getWorldPosition / getWorldQuaternion / getWorldScale
+attach(child)                       // re-parent preserving world transform
+setUniform(name, value)             // SH-02 write path
+setGeometry(spec) / updateAttribute(name, { array, offset? })   // SG-05
+morphTargetDictionary(): Record<string, number>                 // SA-05
+// plus pre-existing morphInfluence / setMorphTarget(s)
+
+// AuraApp members:
+app.info: AuraRendererInfo          // render{calls,triangles,points,lines,
+                                    // frame} + memory{geometries,textures,
+                                    // renderTargets?,programs?} +
+                                    // approximateGpuMemoryBytes?
+app.setPixelRatio(ratio)            // applies on the next frame
+app.setClearColor(color, alpha?)
+app.precompile(snapshot?): Promise<{ compiledPrograms, durationMs }>
+
+new Clock({ now?, autoStart? })     // SR-06 — getDelta / getElapsedTime /
+                                    // start / stop / running / elapsedTime
+
+raycast(input, options?)            // SR-03 — input is a world ray
+  // { origin, direction, maxDistance? } or an NDC pick { camera, ndc };
+  // options: targets? | nodes?, firstHitOnly?, recursive?, layers?,
+  //          near?, far? → hits nearest-first (AABB targets)
+raycastFirst(input, options?)       // nearest-hit shorthand
+
+// SH-06 — @aura3d/engine/renderer: RenderTarget (type) +
+renderer.render({ source, camera?, target? })   // render into a target at
+                                                // its own dimensions
 ```
 
-### Runtime surface — SH-05/06, SR-04/05/07, SG-09 (lane L7, landing)
+`AuraToneMappingOperator` is `"none" | "linear" | "reinhard" | "aces" |
+"agx" | "neutral" | "cineon"` — all six operators map to shipped GLSL
+chunks, including Cineon (landed L7).
+Fixture: `tests/unit/parity/runtime.test.ts`.
+
+### Animation — SA-01/02/03/04/05/06, SM-03 (lane L8 — LIVE)
 
 ```ts
-app.setPixelRatio / setClearColor / info / precompile      // typed, unassigned
-RenderTarget + renderer.render({ target })               // type reserved on
-                                                         // @aura3d/engine/renderer
-node handle: renderOrder, frustumCulled, layers, userData, traverse,
-             getWorldPosition/Quaternion, attach         // fields frozen
+// @aura3d/animation
+AnimationMixer + AnimationAction + AnimationClip + AnimationTrack
+  // mixer depth: per-action loop/timeScale/weight, "loop"/"finished"
+  // events (AnimationMixerLoopEvent / AnimationMixerFinishedEvent)
+AnimationObjectGroup                                   // SA-02
+PropertyBinding, parseTrackName, findNode, sanitizeNodeName
+  // SA-03 — node.prop[index] and morphTargetInfluences[name] binding paths
+BooleanKeyframeTrack, ColorKeyframeTrack, NumberKeyframeTrack,
+  QuaternionKeyframeTrack, StringKeyframeTrack, VectorKeyframeTrack  // SM-03
+AnimationUtils (+ named: subclip, optimize, merge,
+                makeClipAdditive, isClipAdditive)                    // SA-06
+SceneAnimationBridge                                  // runtime bridge
+
+// @aura3d/engine
+cloneSkinned(source, count?)                          // SA-04 —
+  // SkeletonUtils.clone argument order; returns typed skeleton/skinning
+  // evidence
+characters.clone                                      // namespace twin
 ```
 
-### Animation — SA-02/03/04/06, SM-03 (lane L8)
+Morph-target depth: `handle.morphTargetDictionary()`,
+`handle.morphInfluence(name, weight?)`, `setMorphTarget(s)` — unclamped
+weights supported (SA-05).
+Fixture: `tests/unit/parity/animation.test.ts`.
+
+### Audio — AU-01/02/03 (lane L9 — LIVE)
 
 ```ts
-// @aura3d/engine(/animation) — planned; AN/* internals exist.
-AnimationObjectGroup, characters.clone (cloneSkinned),
-PropertyBinding parser (node.prop[index], morphTargetInfluences[name]),
-KeyframeTrack typed factories, AnimationUtils.subclip/optimize/merge/
-  makeClipAdditive
+// @aura3d/audio
+new AudioListener(ctx?)        // AU-03 — binds and writes into
+                               // ctx.listener
+new PositionalEmitter(...)     // AU-01/02 — panner distanceModel +
+                               // distance params and cone
+                               // (innerAngle/outerAngle/outerGain) map to a
+                               // real PannerNode; distance/cone attenuation
+                               // is applied exactly once (no double
+                               // attenuation)
+createAudioAnalyser(node, fftSize?) / new AudioAnalyser(...)
+  // wraps a real AnalyserNode: frequency + time-domain data,
+  // getAverageFrequency, disconnect
 ```
 
-### Audio — AU-01/02/03 (lane L9, partial)
+Coverage: `tests/unit/audio/*` (no dedicated parity fixture — L9 merged the
+attenuation fix, listener wiring, and analyser together).
+
+### Not yet — the only remaining gaps
 
 ```ts
-// @aura3d/engine/audio — AudioSource/PositionalEmitter/AudioListener ship;
-// lane L9 fixes AU-02 double attenuation, wires the listener to ctx.listener,
-// adds panner distanceModel/cone and AudioAnalyser.
+// batched.mesh promotion to ● — probe-gated on P-2 (native multi-draw/
+//   GPU-residency probe). The API and per-geometry-instancing path are
+//   LIVE today; the ● verdict waits on the probe.
+// cameras.array / cameras.stereo (P2) — need viewport/scissor support in
+//   the frame graph.
+// SH-01 TSL subset — three's WebGPU node-material language; P2 /
+//   probe-gated.
+// SH-04 compute — behind the A3D_QR_WEBGPU backend.
+// material.custom `patch` (SH-09) — the field is typed on
+//   AuraCustomMaterialSpec and the compiler include-bakes named chunks,
+//   but promotion to public parity is intentionally deferred; treat patch
+//   as not-yet.
+// SG-11 mixed-child LOD — `distanceLod` ships root LOD (one primitive or
+//   geometry per level); three's LOD object with mixed child sets per
+//   level is not yet.
+// SC-04 XR controller buttons.
+// AD-16 rectArea/LightProbe — `lights.rectArea` (alias of lights.rect)
+//   ships and compiles to a real "rect-area" render light; three's
+//   RectAreaLight uniforms-lib fidelity and LightProbe (spherical-
+//   harmonics probe) are not yet.
 ```
+
+Dev gates: the parity lanes sit behind `A3D_PARITY_SHADING`,
+`A3D_PARITY_GEOMETRY`, `A3D_PARITY_TEXTURES`, `A3D_PARITY_BATCHING`,
+`A3D_PARITY_LINES`, `A3D_PARITY_RUNTIME` (or the `parity.<area>` short form —
+`?a3d-qr=parity.lines`). Fixture: `tests/unit/parity/l0-flags.test.ts`.
 
 ### Excluded by contract — never lands
 

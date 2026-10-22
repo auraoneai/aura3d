@@ -73,6 +73,11 @@ registerLookLintRule({
 // ---------- PRD-02 Phase 2 — C-09/C-36/C-38/C-31 registrations ----------
 
 import { registerPrd02EnvironmentSources, explicitEnvironmentResolution, prd02AmbientTerm } from "../agent-api/compiler/environment.js";
+// Ordering guarantee: the registration flag lives in this leaf so the
+// self-registration below cannot touch uninitialised `let` state when a
+// cyclic import order runs this lane while compiler/environment.ts is
+// still mid-initialisation. Importing it here pins it live before our body.
+import "../agent-api/compiler/environmentSourcesState.js";
 import { registerNodeHandler, registerOptionCoverage, type OptionCoverageRow, type SceneCompileContext, type RenderSourceContributions } from "../contracts/compiler.js";
 import { registerAppExtension } from "../contracts/app.js";
 import { registerDiagnosticsSection } from "../contracts/diagnostics.js";

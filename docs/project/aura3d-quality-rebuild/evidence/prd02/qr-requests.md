@@ -22,7 +22,7 @@ Non-blocking requests lane 02 has raised. Per CONTRACTS §6.5 the owner has
 - **Raised**: 2026-10-06, PR-B (`qr/prd02-math-modules`). Until it lands the
   lane impl shadows the contract export via `@aura3d/rendering/lanes`.
 
-## qr-request to:prd15 — `AuraSceneNode` union + `AuraEnvironmentNode` V2 fields (CCR-02-2) — filed: #753
+## qr-request to:prd15 — `AuraSceneNode` union + `AuraEnvironmentNode` version-2 fields (CCR-02-2) — filed: #753
 
 - **File**: `packages/engine/src/agent-api/index.ts` (lane 15)
 - **Contract**: C-10 / §7 node surface

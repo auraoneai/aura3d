@@ -79,17 +79,17 @@ const BASE: Record<PolyhedronVariant, { readonly vertices: readonly number[]; re
   }
 };
 
-type V3 = readonly [number, number, number];
+type Vec3Tuple = readonly [number, number, number];
 
-function lerp3(a: V3, b: V3, t: number): V3 {
+function lerp3(a: Vec3Tuple, b: Vec3Tuple, t: number): Vec3Tuple {
   return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 }
 
-function azimuth(vector: V3): number {
+function azimuth(vector: Vec3Tuple): number {
   return Math.atan2(vector[2], -vector[0]);
 }
 
-function inclination(vector: V3): number {
+function inclination(vector: Vec3Tuple): number {
   return Math.atan2(-vector[1], Math.sqrt(vector[0] * vector[0] + vector[2] * vector[2]));
 }
 
@@ -98,18 +98,18 @@ export function polyhedronParityMeshFromBase(vertices: readonly number[], indice
   const vertexBuffer: number[] = [];
   const uvBuffer: number[] = [];
 
-  const pushVertex = (vertex: V3): void => {
+  const pushVertex = (vertex: Vec3Tuple): void => {
     vertexBuffer.push(vertex[0], vertex[1], vertex[2]);
   };
 
-  const getVertexByIndex = (index: number): V3 => {
+  const getVertexByIndex = (index: number): Vec3Tuple => {
     const stride = index * 3;
     return [vertices[stride]!, vertices[stride + 1]!, vertices[stride + 2]!];
   };
 
-  const subdivideFace = (a: V3, b: V3, c: V3, d: number): void => {
+  const subdivideFace = (a: Vec3Tuple, b: Vec3Tuple, c: Vec3Tuple, d: number): void => {
     const cols = d + 1;
-    const v: V3[][] = [];
+    const v: Vec3Tuple[][] = [];
     for (let i = 0; i <= cols; i += 1) {
       v[i] = [];
       const aj = lerp3(a, c, i / cols);
@@ -157,7 +157,7 @@ export function polyhedronParityMeshFromBase(vertices: readonly number[], indice
 
   // generateUVs
   for (let i = 0; i < vertexBuffer.length; i += 3) {
-    const vertex: V3 = [vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!];
+    const vertex: Vec3Tuple = [vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!];
     const u = azimuth(vertex) / 2 / Math.PI + 0.5;
     const v = inclination(vertex) / Math.PI + 0.5;
     uvBuffer.push(u, 1 - v);
@@ -165,12 +165,12 @@ export function polyhedronParityMeshFromBase(vertices: readonly number[], indice
 
   // correctUVs
   for (let i = 0, j = 0; i < vertexBuffer.length; i += 9, j += 6) {
-    const a: V3 = [vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!];
-    const b: V3 = [vertexBuffer[i + 3]!, vertexBuffer[i + 4]!, vertexBuffer[i + 5]!];
-    const c: V3 = [vertexBuffer[i + 6]!, vertexBuffer[i + 7]!, vertexBuffer[i + 8]!];
-    const centroid: V3 = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
+    const a: Vec3Tuple = [vertexBuffer[i]!, vertexBuffer[i + 1]!, vertexBuffer[i + 2]!];
+    const b: Vec3Tuple = [vertexBuffer[i + 3]!, vertexBuffer[i + 4]!, vertexBuffer[i + 5]!];
+    const c: Vec3Tuple = [vertexBuffer[i + 6]!, vertexBuffer[i + 7]!, vertexBuffer[i + 8]!];
+    const centroid: Vec3Tuple = [(a[0] + b[0] + c[0]) / 3, (a[1] + b[1] + c[1]) / 3, (a[2] + b[2] + c[2]) / 3];
     const azi = azimuth(centroid);
-    const correctUV = (stride: number, vector: V3): void => {
+    const correctUV = (stride: number, vector: Vec3Tuple): void => {
       if (azi < 0 && uvBuffer[stride] === 1) {
         uvBuffer[stride] = uvBuffer[stride]! - 1;
       }

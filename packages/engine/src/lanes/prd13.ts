@@ -94,7 +94,10 @@ import { registerDiagnosticsSection, diagnosticsSectionsAll } from "../contracts
 import { registerNodeHandler, nodeHandlerFor } from "../contracts/compiler.js";
 import { lookDiagnosticsSection as prd13LookDiagnosticsSection } from "../agent-api/looks/lookDiagnostics.js";
 import { lookNodeHandler as prd13LookNodeHandler, lowerLookNodeChildren } from "../agent-api/looks/lookNodeHandler.js";
-import { setLookLowering } from "../agent-api/sceneMath.js";
+// The slot lives in a leaf (sceneMath.lookLowering) so this lane's
+// module-scope install below cannot touch uninitialised `let` state when a
+// cyclic import order runs it while sceneMath.ts is still mid-initialisation.
+import { setLookLowering } from "../agent-api/sceneMath.lookLowering.js";
 
 let prd13Provided = false;
 export function providePrd13Contracts(): void {

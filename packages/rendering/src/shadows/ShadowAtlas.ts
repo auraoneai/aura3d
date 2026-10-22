@@ -41,9 +41,9 @@ const POINT_FACES: readonly { readonly dir: readonly [number, number, number]; r
   { dir: [0, 0, -1], up: [0, -1, 0] }
 ];
 
-type V3 = readonly [number, number, number];
+type Vec3Tuple = readonly [number, number, number];
 
-function normalize(v: V3): V3 {
+function normalize(v: Vec3Tuple): Vec3Tuple {
   const l = Math.hypot(v[0], v[1], v[2]) || 1;
   return [v[0] / l, v[1] / l, v[2] / l];
 }
@@ -59,10 +59,10 @@ function perspective(fovRadians: number, aspect: number, near: number, far: numb
   ]);
 }
 
-function lookAt(eye: V3, dir: V3, up: V3): Float32Array {
+function lookAt(eye: Vec3Tuple, dir: Vec3Tuple, up: Vec3Tuple): Float32Array {
   const f = normalize(dir);
   const r = normalize([f[1] * up[2] - f[2] * up[1], f[2] * up[0] - f[0] * up[2], f[0] * up[1] - f[1] * up[0]]);
-  const u: V3 = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]];
+  const u: Vec3Tuple = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]];
   return new Float32Array([
     r[0], u[0], -f[0], 0,
     r[1], u[1], -f[1], 0,
@@ -91,7 +91,7 @@ function toTileUv(m: Float32Array): Float32Array {
 }
 
 /** Unbiased clip-space VP for one point-light cube face (90° fov, square). */
-function pointFaceClip(position: V3, range: number, face: number): Float32Array {
+function pointFaceClip(position: Vec3Tuple, range: number, face: number): Float32Array {
   const f = POINT_FACES[face];
   if (!f) throw new Error(`point shadow face must be 0..5, got ${face}`);
   const near = Math.max(0.01, range * 0.005);
@@ -100,20 +100,20 @@ function pointFaceClip(position: V3, range: number, face: number): Float32Array 
 }
 
 /** Perspective VP for one point-light cube face (90° fov, square aspect). */
-export function pointShadowFaceMatrix(position: V3, range: number, face: number): Float32Array {
+export function pointShadowFaceMatrix(position: Vec3Tuple, range: number, face: number): Float32Array {
   return toTileUv(pointFaceClip(position, range, face));
 }
 
-function spotClip(position: V3, direction: V3, range: number, outerAngleRadians: number): Float32Array {
+function spotClip(position: Vec3Tuple, direction: Vec3Tuple, range: number, outerAngleRadians: number): Float32Array {
   const near = Math.max(0.01, range * 0.005);
   const far = Math.max(near + 0.01, range);
   const fov = Math.min(Math.PI - 1e-3, Math.max(1e-3, outerAngleRadians * 2));
-  const up: V3 = Math.abs(normalize(direction)[1]!) > 0.999 ? [1, 0, 0] : [0, 1, 0];
+  const up: Vec3Tuple = Math.abs(normalize(direction)[1]!) > 0.999 ? [1, 0, 0] : [0, 1, 0];
   return multiply(perspective(fov, 1, near, far), lookAt(position, normalize(direction), up));
 }
 
 /** Perspective VP for a spot light (cone angle = full outer angle, square). */
-export function spotShadowMatrix(position: V3, direction: V3, range: number, outerAngleRadians: number): Float32Array {
+export function spotShadowMatrix(position: Vec3Tuple, direction: Vec3Tuple, range: number, outerAngleRadians: number): Float32Array {
   return toTileUv(spotClip(position, direction, range, outerAngleRadians));
 }
 
@@ -143,8 +143,8 @@ export function atlasTileClipMatrix(alloc: ShadowAtlasAllocation, atlasSize: num
  */
 export function planLocalShadowAtlas(
   lights: readonly (AtlasLightRequest & {
-    readonly position: V3;
-    readonly direction: V3;
+    readonly position: Vec3Tuple;
+    readonly direction: Vec3Tuple;
     readonly range: number;
     readonly outerAngleRadians?: number;
   })[],

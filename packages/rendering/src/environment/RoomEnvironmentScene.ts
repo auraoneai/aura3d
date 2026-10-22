@@ -73,25 +73,25 @@ export function createRoomEnvironmentScene(): RoomEnvironmentSceneDescriptor {
 
 /* ---------------- analytic sampling (CPU prefilter input) ---------------- */
 
-type V3 = [number, number, number];
-const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const scale = (a: V3, s: number): V3 => [a[0] * s, a[1] * s, a[2] * s];
-const dot = (a: V3, b: V3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+type Vec3Tuple = [number, number, number];
+const sub = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const add = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const scale = (a: Vec3Tuple, s: number): Vec3Tuple => [a[0] * s, a[1] * s, a[2] * s];
+const dot = (a: Vec3Tuple, b: Vec3Tuple): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 
 /**
  * World → box-local for a box with three's `rotation.y = angle`. three's
  * `makeRotationY(a)` maps local → world as x' = c·x + s·z, z' = −s·x + c·z,
  * so the inverse is x = c·x' − s·z', z = s·x' + c·z'.
  */
-function rotateYInv(p: V3, angle: number): V3 {
+function rotateYInv(p: Vec3Tuple, angle: number): Vec3Tuple {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
   return [p[0] * c - p[2] * s, p[1], p[0] * s + p[2] * c];
 }
 
 /** Slab test vs an axis-aligned box (in the box's local frame). Returns hit t or -1. */
-function slabHit(origin: V3, dir: V3, half: V3): number {
+function slabHit(origin: Vec3Tuple, dir: Vec3Tuple, half: Vec3Tuple): number {
   let tMin = -Infinity;
   let tMax = Infinity;
   for (let i = 0; i < 3; i += 1) {
@@ -111,8 +111,8 @@ function slabHit(origin: V3, dir: V3, half: V3): number {
   return tMin > 0 ? tMin : tMax;
 }
 
-function boxHit(origin: V3, dir: V3, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): number {
-  const o = rotateYInv(sub(origin, box.position as V3), box.rotationY);
+function boxHit(origin: Vec3Tuple, dir: Vec3Tuple, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): number {
+  const o = rotateYInv(sub(origin, box.position as Vec3Tuple), box.rotationY);
   const d = rotateYInv(dir, box.rotationY);
   return slabHit(o, d, [box.scale[0]! / 2, box.scale[1]! / 2, box.scale[2]! / 2]);
 }
@@ -129,14 +129,14 @@ function distanceAttenuation(d: number, cutoff: number, decay: number): number {
 
 interface SurfaceHit {
   readonly t: number;
-  readonly normal: V3;
+  readonly normal: Vec3Tuple;
 }
 
 /** Ray vs a Y-rotated box: hit distance and the world-space normal facing the ray. */
-function boxSurfaceHit(origin: V3, dir: V3, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): SurfaceHit | null {
-  const o = rotateYInv(sub(origin, box.position as V3), box.rotationY);
+function boxSurfaceHit(origin: Vec3Tuple, dir: Vec3Tuple, box: { position: readonly number[]; scale: readonly number[]; rotationY: number }): SurfaceHit | null {
+  const o = rotateYInv(sub(origin, box.position as Vec3Tuple), box.rotationY);
   const d = rotateYInv(dir, box.rotationY);
-  const half: V3 = [box.scale[0]! / 2, box.scale[1]! / 2, box.scale[2]! / 2];
+  const half: Vec3Tuple = [box.scale[0]! / 2, box.scale[1]! / 2, box.scale[2]! / 2];
   const t = slabHit(o, d, half);
   if (t <= 0) return null;
   // The hit face is the slab whose plane the local hit point lies on.
@@ -148,7 +148,7 @@ function boxSurfaceHit(origin: V3, dir: V3, box: { position: readonly number[]; 
     if (gap < best) { best = gap; axis = i; }
   }
   // Facing the ray: outside faces (props) and the room's inner faces (BackSide) alike.
-  const local: V3 = [0, 0, 0];
+  const local: Vec3Tuple = [0, 0, 0];
   local[axis] = d[axis]! > 0 ? -1 : 1;
   const c = Math.cos(box.rotationY);
   const s = Math.sin(box.rotationY);
@@ -172,13 +172,13 @@ let cachedScene: RoomEnvironmentSceneDescriptor | null = null;
  * Deterministic. Used by `environments bake` for the neutral preset, by the
  * neutral floor constants, and by tests against the pinned three file.
  */
-export function sampleRoomEnvironment(dir: readonly [number, number, number]): V3 {
+export function sampleRoomEnvironment(dir: readonly [number, number, number]): Vec3Tuple {
   const scene = (cachedScene ??= createRoomEnvironmentScene());
-  const origin: V3 = [0, -ROOM_ENVIRONMENT_SCENE_OFFSET_Y, 0];
+  const origin: Vec3Tuple = [0, -ROOM_ENVIRONMENT_SCENE_OFFSET_Y, 0];
   const len = Math.hypot(dir[0], dir[1], dir[2]) || 1;
-  const ray: V3 = [dir[0] / len, dir[1] / len, dir[2] / len];
+  const ray: Vec3Tuple = [dir[0] / len, dir[1] / len, dir[2] / len];
   let bestT = Infinity;
-  let radiance: V3 = [0, 0, 0];
+  let radiance: Vec3Tuple = [0, 0, 0];
   for (const panel of scene.panels) {
     const t = boxHit(origin, ray, panel);
     if (t > 0 && t < bestT) {
@@ -196,7 +196,7 @@ export function sampleRoomEnvironment(dir: readonly [number, number, number]): V
   }
   if (surface) {
     const p = add(origin, scale(ray, surface.hit.t));
-    const toLight = sub(scene.light.position as V3, p);
+    const toLight = sub(scene.light.position as Vec3Tuple, p);
     const d = Math.hypot(toLight[0], toLight[1], toLight[2]);
     const nDotL = Math.max(0, dot(surface.hit.normal, scale(toLight, 1 / d)));
     const e = scene.light.intensity * nDotL * distanceAttenuation(d, scene.light.distance, scene.light.decay);

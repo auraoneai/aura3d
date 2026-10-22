@@ -5,7 +5,7 @@
  * Kit placements resolve to world-space instance matrices on the CPU and emit
  * ONE `scatter` node with explicit `placements` per unique asset (§7.1.5) —
  * never `group()` hierarchies and never `createProductionInstanceTransforms`
- * (the V4 size bug does not apply to this path). Piece lights emit `light`
+ * (the version-4 size bug does not apply to this path). Piece lights emit `light`
  * nodes (room/street practicals) alongside the scatter nodes.
  */
 import type { AuraAssetRef, AuraLightNode, AuraLightType, AuraSceneNode, AuraVec3 } from "../index.js";

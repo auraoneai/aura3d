@@ -94,7 +94,7 @@ function ndcToWorld(inv: Float32Array, x: number, y: number, z: number): [number
   ];
 }
 
-type V3 = readonly [number, number, number];
+type Vec3Tuple = readonly [number, number, number];
 
 /**
  * #1141: near/far of a perspective camera known only by its view-projection
@@ -114,16 +114,16 @@ export function clipRangeFromViewProjection(
   return Number.isFinite(near) && Number.isFinite(far) && far > near && near > 0 ? { near, far } : null;
 }
 
-function lightBasis(direction: V3): { right: V3; up: V3; forward: V3 } {
+function lightBasis(direction: Vec3Tuple): { right: Vec3Tuple; up: Vec3Tuple; forward: Vec3Tuple } {
   const len = Math.hypot(direction[0], direction[1], direction[2]) || 1;
-  const fwd: V3 = [direction[0] / len, direction[1] / len, direction[2] / len];
-  const ref: V3 = Math.abs(fwd[1]) > 0.999 ? [1, 0, 0] : [0, 1, 0];
+  const fwd: Vec3Tuple = [direction[0] / len, direction[1] / len, direction[2] / len];
+  const ref: Vec3Tuple = Math.abs(fwd[1]) > 0.999 ? [1, 0, 0] : [0, 1, 0];
   const right = normalize(cross(fwd, ref));
   return { right, up: cross(right, fwd), forward: fwd };
 }
-function normalize(v: V3): V3 { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
-function cross(a: V3, b: V3): V3 { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
-function lerp3(a: V3, b: V3, t: number): V3 { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+function normalize(v: Vec3Tuple): Vec3Tuple { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
+function cross(a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function lerp3(a: Vec3Tuple, b: Vec3Tuple, t: number): Vec3Tuple { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
 
 /**
  * World AABB of a caster for the cascade fit. 02-S4: instanced casters cover
@@ -131,7 +131,7 @@ function lerp3(a: V3, b: V3, t: number): V3 { return [a[0] + (b[0] - a[0]) * t, 
  * envelope — the base-geometry box alone let the caster-rect clamp crop most
  * instances out of the ortho (prd02-16b IoU 0.34, 6 of 16 instance shadows).
  */
-function itemWorldBounds(item: RenderItem): { min: V3; max: V3 } | null {
+function itemWorldBounds(item: RenderItem): { min: Vec3Tuple; max: Vec3Tuple } | null {
   const b = item.skinning && item.geometry
     ? skinnedItemLocalBounds(item.geometry as Geometry, item.skinning)
     : item.geometry?.bounds;
@@ -144,7 +144,7 @@ function itemWorldBounds(item: RenderItem): { min: V3; max: V3 } | null {
     [b.min[0], b.max[1], b.max[2]], [b.max[0], b.max[1], b.max[2]]
   ] as const;
   const out = { min: [Infinity, Infinity, Infinity] as number[], max: [-Infinity, -Infinity, -Infinity] as number[] };
-  const apply = (t: ArrayLike<number>, p: readonly number[]): V3 => [
+  const apply = (t: ArrayLike<number>, p: readonly number[]): Vec3Tuple => [
     t[0]! * p[0]! + t[4]! * p[1]! + t[8]! * p[2]! + t[12]!,
     t[1]! * p[0]! + t[5]! * p[1]! + t[9]! * p[2]! + t[13]!,
     t[2]! * p[0]! + t[6]! * p[1]! + t[10]! * p[2]! + t[14]!
@@ -155,7 +155,7 @@ function itemWorldBounds(item: RenderItem): { min: V3; max: V3 } | null {
     for (const p of pts) {
       // Instance matrices are model-local (gl_Position = VP · model · instance · p).
       const local = instances ? apply(Array.prototype.slice.call(instances, k * 16, k * 16 + 16) as number[], p) : p;
-      const w: V3 = m ? apply(m, local) : [local[0]!, local[1]!, local[2]!];
+      const w: Vec3Tuple = m ? apply(m, local) : [local[0]!, local[1]!, local[2]!];
       for (let i = 0; i < 3; i += 1) {
         out.min[i] = Math.min(out.min[i]!, w[i]!);
         out.max[i] = Math.max(out.max[i]!, w[i]!);
@@ -163,12 +163,12 @@ function itemWorldBounds(item: RenderItem): { min: V3; max: V3 } | null {
     }
   }
   if (!out.min.every(Number.isFinite) || !out.max.every(Number.isFinite)) return null;
-  return { min: out.min as unknown as V3, max: out.max as unknown as V3 };
+  return { min: out.min as unknown as Vec3Tuple, max: out.max as unknown as Vec3Tuple };
 }
 
-type LightBasis = { right: V3; up: V3; forward: V3 };
+type LightBasis = { right: Vec3Tuple; up: Vec3Tuple; forward: Vec3Tuple };
 
-function toLight(p: V3, basis: LightBasis): V3 {
+function toLight(p: Vec3Tuple, basis: LightBasis): Vec3Tuple {
   return [
     p[0] * basis.right[0] + p[1] * basis.right[1] + p[2] * basis.right[2],
     p[0] * basis.up[0] + p[1] * basis.up[1] + p[2] * basis.up[2],
@@ -182,8 +182,8 @@ function toLight(p: V3, basis: LightBasis): V3 {
  * covering the casters and every in-slice receiver they can shadow.
  */
 export function casterRectClamp(
-  slicePts: readonly V3[],
-  casterBounds: readonly { min: V3; max: V3 }[],
+  slicePts: readonly Vec3Tuple[],
+  casterBounds: readonly { min: Vec3Tuple; max: Vec3Tuple }[],
   basis: LightBasis,
   padding: number
 ): { extent: number; centerX: number; centerY: number; zMin: number; zMax: number } | null {
@@ -233,7 +233,7 @@ const SLICE_FACES: readonly (readonly [number, number, number])[] = [
  * the prism, slice edges crossing a prism wall, and the four prism edges
  * clipped by the slice faces. Null when the slice misses the prism.
  */
-export function sliceDepthWithinRect(pts: readonly V3[], rect: LightRect): { zMin: number; zMax: number } | null {
+export function sliceDepthWithinRect(pts: readonly Vec3Tuple[], rect: LightRect): { zMin: number; zMax: number } | null {
   const inside = (x: number, y: number): boolean =>
     x >= rect.minX - 1e-9 && x <= rect.maxX + 1e-9 && y >= rect.minY - 1e-9 && y <= rect.maxY + 1e-9;
   let zMin = Infinity;
@@ -251,7 +251,7 @@ export function sliceDepthWithinRect(pts: readonly V3[], rect: LightRect): { zMi
       if (inside(hit[0], hit[1])) add(hit[2]);
     }
   }
-  const centroid = pts.reduce<V3>((s, p) => [s[0] + p[0] / pts.length, s[1] + p[1] / pts.length, s[2] + p[2] / pts.length], [0, 0, 0]);
+  const centroid = pts.reduce<Vec3Tuple>((s, p) => [s[0] + p[0] / pts.length, s[1] + p[1] / pts.length, s[2] + p[2] / pts.length], [0, 0, 0]);
   const planes = SLICE_FACES.map(([a, b, c]) => {
     const pa = pts[a]!, pb = pts[b]!, pc = pts[c]!;
     let n = cross([pb[0] - pa[0], pb[1] - pa[1], pb[2] - pa[2]], [pc[0] - pa[0], pc[1] - pa[1], pc[2] - pa[2]]);
@@ -296,12 +296,12 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
   const padding = options.padding ?? 0.25;
   const casterBounds = options.casters
     .map(itemWorldBounds)
-    .filter((b): b is { min: V3; max: V3 } => b !== null);
+    .filter((b): b is { min: Vec3Tuple; max: Vec3Tuple } => b !== null);
 
   return splits.map((split, index) => {
     const t0 = (split.near - near) / (far - near);
     const t1 = (split.far - near) / (far - near);
-    const frustumPts: V3[] = nearCorners.flatMap((nc, i) => [
+    const frustumPts: Vec3Tuple[] = nearCorners.flatMap((nc, i) => [
       lerp3(nc, farCorners[i]!, t0),
       lerp3(nc, farCorners[i]!, t1)
     ]);
@@ -324,7 +324,7 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     let cx0 = 0, cy0 = 0, cz0 = 0;
     for (const p of allPts) { cx0 += p[0]; cy0 += p[1]; cz0 += p[2]; }
     const n = allPts.length;
-    const centroid: V3 = [cx0 / n, cy0 / n, cz0 / n];
+    const centroid: Vec3Tuple = [cx0 / n, cy0 / n, cz0 / n];
     let radius = 0;
     for (const p of allPts) {
       radius = Math.max(radius, Math.hypot(p[0] - centroid[0], p[1] - centroid[1], p[2] - centroid[2]));

@@ -25,7 +25,7 @@ export interface AuraEnvironmentBackgroundOptions {
  * `AuraEnvironmentNodeV2` carries the additive fields and widened
  * `environment` union. The C-36 environment handler reads this type.
  * Builders below cast the literal into the frozen `AuraEnvironmentNode`;
- * the runtime object keeps the V2 fields verbatim.
+ * the runtime object keeps the version-2 fields verbatim.
  */
 export interface AuraEnvironmentNodeV2 extends Omit<AuraEnvironmentNode, "environment"> {
   readonly environment:
@@ -59,7 +59,7 @@ export interface AuraEnvironmentOptionsV2 {
 }
 
 function envV2<T extends AuraEnvironmentNodeV2>(node: T): AuraNodeBuilder<AuraEnvironmentNode> {
-  // The frozen AuraEnvironmentNode type does not know the V2 members yet
+  // The frozen AuraEnvironmentNode type does not know the version-2 members yet
   // (CCR-02-2); the emitted object keeps them verbatim for the C-36 handler.
   return new AuraNodeBuilder<AuraEnvironmentNode>(node as unknown as AuraEnvironmentNode);
 }

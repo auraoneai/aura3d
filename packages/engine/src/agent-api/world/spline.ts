@@ -21,22 +21,22 @@ import { terrainRecordFor, type AuraTerrainHandle } from "./terrain.js";
 
 // -------------------------------------------------------------- vectors ----
 
-type V3 = [number, number, number];
-const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const scale = (a: V3, s: number): V3 => [a[0] * s, a[1] * s, a[2] * s];
-const dot = (a: V3, b: V3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-const cross = (a: V3, b: V3): V3 => [
+type Vec3Tuple = [number, number, number];
+const add = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const sub = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const scale = (a: Vec3Tuple, s: number): Vec3Tuple => [a[0] * s, a[1] * s, a[2] * s];
+const dot = (a: Vec3Tuple, b: Vec3Tuple): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [
   a[1] * b[2] - a[2] * b[1],
   a[2] * b[0] - a[0] * b[2],
   a[0] * b[1] - a[1] * b[0]
 ];
-const len = (a: V3): number => Math.hypot(a[0], a[1], a[2]);
-const norm = (a: V3): V3 => {
+const len = (a: Vec3Tuple): number => Math.hypot(a[0], a[1], a[2]);
+const norm = (a: Vec3Tuple): Vec3Tuple => {
   const l = len(a);
   return l > 1e-12 ? scale(a, 1 / l) : [0, 0, 1];
 };
-const lerp = (a: V3, b: V3, t: number): V3 => [
+const lerp = (a: Vec3Tuple, b: Vec3Tuple, t: number): Vec3Tuple => [
   a[0] + (b[0] - a[0]) * t,
   a[1] + (b[1] - a[1]) * t,
   a[2] + (b[2] - a[2]) * t
@@ -50,27 +50,27 @@ const lerp = (a: V3, b: V3, t: number): V3 => [
 // real spans evaluate with the identical four-point neighbourhoods (and the
 // added end spans are zero-length, so arc length is unchanged).
 
-const toV3 = (p: MathVector3): V3 => [p.x, p.y, p.z];
+const toV3 = (p: MathVector3): Vec3Tuple => [p.x, p.y, p.z];
 
 // --------------------------------------------------------------- handle ----
 
 export interface AuraSplineFrame {
-  readonly right: V3;
-  readonly up: V3;
-  readonly forward: V3;
+  readonly right: Vec3Tuple;
+  readonly up: Vec3Tuple;
+  readonly forward: Vec3Tuple;
 }
 
 export interface AuraSplineHandle {
   /** Arc length in metres. */
   readonly length: number;
   /** Position at t ∈ [0,1] (t = arc-length fraction). */
-  pointAt(t: number): V3;
+  pointAt(t: number): Vec3Tuple;
   /** Unit tangent at t ∈ [0,1]. */
-  tangentAt(t: number): V3;
+  tangentAt(t: number): Vec3Tuple;
   /** Rotation-minimizing orthonormal frame at t ∈ [0,1] (banking applied). */
   frameAt(t: number): AuraSplineFrame;
   /** t of the closest curve point to `point` (coarse + refined). */
-  closestT(point: V3): number;
+  closestT(point: Vec3Tuple): number;
 }
 
 export interface AuraSplineOptions {
@@ -91,7 +91,7 @@ export function worldSpline(points: readonly (readonly [number, number, number])
 
   // Sample the curve densely (16 sub-steps per span) and build the arc-length
   // table. All queries then operate on the table — deterministic and O(1)-ish.
-  const pts = points.map((p): V3 => [p[0], p[1], p[2]]);
+  const pts = points.map((p): Vec3Tuple => [p[0], p[1], p[2]]);
   const spanCount = closed ? pts.length : pts.length - 1;
   const v3 = pts.map((p) => new MathVector3(p[0], p[1], p[2]));
   const curvePoints = closed ? v3 : [v3[0]!, ...v3, v3[v3.length - 1]!];
@@ -101,7 +101,7 @@ export function worldSpline(points: readonly (readonly [number, number, number])
   const curveT = (s: number, u: number): number =>
     closed ? (s + u) / spanCount : (s + 1 + u) / (spanCount + 2);
 
-  const samples: V3[] = [];
+  const samples: Vec3Tuple[] = [];
   for (let s = 0; s < spanCount; s += 1) {
     const n = s === spanCount - 1 ? SAMPLES_PER_SPAN + 1 : SAMPLES_PER_SPAN;
     for (let i = 0; i < n; i += 1) {
@@ -124,15 +124,15 @@ export function worldSpline(points: readonly (readonly [number, number, number])
     }
     return Math.max(1, lo);
   };
-  const pointAtDistance = (s: number): V3 => {
+  const pointAtDistance = (s: number): Vec3Tuple => {
     const i = indexAt(s);
     const s0 = cum[i - 1]!, s1 = cum[i]!;
     const f = s1 > s0 ? (Math.max(0, Math.min(length, s)) - s0) / (s1 - s0) : 0;
     return lerp(samples[i - 1]!, samples[i]!, f);
   };
-  const pointAt = (t: number): V3 => pointAtDistance(Math.max(0, Math.min(1, t)) * length);
+  const pointAt = (t: number): Vec3Tuple => pointAtDistance(Math.max(0, Math.min(1, t)) * length);
 
-  const tangentAt = (t: number): V3 => {
+  const tangentAt = (t: number): Vec3Tuple => {
     const s = Math.max(0, Math.min(1, t)) * length;
     const ds = Math.max(length * 1e-4, 1e-4);
     return norm(sub(pointAtDistance(s + ds), pointAtDistance(s - ds)));
@@ -143,7 +143,7 @@ export function worldSpline(points: readonly (readonly [number, number, number])
   // stations (option bankDeg[i] applies at control point i's t).
   const frames: AuraSplineFrame[] = new Array(N);
   const initialT = norm(sub(samples[1]!, samples[0]!));
-  let right: V3 = Math.abs(initialT[1]) > 0.999 ? norm(cross([1, 0, 0], initialT)) : norm(cross([0, 1, 0], initialT));
+  let right: Vec3Tuple = Math.abs(initialT[1]) > 0.999 ? norm(cross([1, 0, 0], initialT)) : norm(cross([0, 1, 0], initialT));
   for (let i = 0; i < N; i += 1) {
     const t_i = norm(sub(samples[Math.min(i + 1, N - 1)]!, samples[Math.max(i - 1, 0)]!));
     // project previous right onto the plane ⟂ tangent → parallel transport
@@ -181,7 +181,7 @@ export function worldSpline(points: readonly (readonly [number, number, number])
     return { right: r, up: u, forward };
   };
 
-  const closestT = (point: V3): number => {
+  const closestT = (point: Vec3Tuple): number => {
     let best = 0, bestD = Infinity;
     for (let i = 0; i < N; i += 1) {
       const d = len(sub(samples[i]!, point));
@@ -326,8 +326,8 @@ export function worldExtrude(spline: AuraSplineHandle, options: AuraExtrudeOptio
   }
   const S = stations.length;
 
-  const positions: V3[] = [];
-  const normals: V3[] = [];
+  const positions: Vec3Tuple[] = [];
+  const normals: Vec3Tuple[] = [];
   const uvs: number[] = [];
   const indices: number[] = [];
   const uScale = options.uv?.uScale ?? 1;

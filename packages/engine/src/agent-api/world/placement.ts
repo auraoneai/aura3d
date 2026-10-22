@@ -13,7 +13,7 @@ import { scatterChecksum, scatterRng, SCATTER_CELL_SIZE, type AuraScatterNode, t
 import type { AuraKitPieceSpec } from "./kits.js";
 import type { AuraSplineHandle } from "./spline.js";
 
-type V3 = [number, number, number];
+type Vec3Tuple = [number, number, number];
 
 export type AuraPlaceItem = AuraAssetRef<"model"> | AuraKitPieceSpec | (() => AuraSceneNode);
 
@@ -29,7 +29,7 @@ const itemAsset = (item: AuraPlaceItem): AuraAssetRef<"model"> | null => {
 };
 
 /** mat3x4 row-major: full 3×3 basis (columns right/up/forward) + translate. */
-const pushBasisMatrix = (rows: number[], right: V3, up: V3, forward: V3, position: V3, scl: number): void => {
+const pushBasisMatrix = (rows: number[], right: Vec3Tuple, up: Vec3Tuple, forward: Vec3Tuple, position: Vec3Tuple, scl: number): void => {
   rows.push(
     right[0] * scl, right[1] * scl, right[2] * scl, position[0],
     up[0] * scl, up[1] * scl, up[2] * scl, position[1],
@@ -37,7 +37,7 @@ const pushBasisMatrix = (rows: number[], right: V3, up: V3, forward: V3, positio
   );
 };
 
-const pushYawMatrix = (rows: number[], position: V3, yawDeg: number, scl: number): void => {
+const pushYawMatrix = (rows: number[], position: Vec3Tuple, yawDeg: number, scl: number): void => {
   const c = Math.cos((yawDeg * Math.PI) / 180) * scl;
   const s = Math.sin((yawDeg * Math.PI) / 180) * scl;
   rows.push(c, 0, s, position[0], 0, scl, 0, position[1], -s, 0, c, position[2]);
@@ -62,8 +62,8 @@ const terrainHeight = (record: TerrainRecord & { grid: NonNullable<TerrainRecord
 const emitInstance = (
   ctx: EmitContext,
   item: AuraPlaceItem,
-  basis: { right: V3; up: V3; forward: V3 } | null,
-  position: V3,
+  basis: { right: Vec3Tuple; up: Vec3Tuple; forward: Vec3Tuple } | null,
+  position: Vec3Tuple,
   yawDeg: number,
   scale: number
 ): void => {
@@ -167,7 +167,7 @@ export function worldPlaceAlong(spline: AuraSplineHandle, item: AuraPlaceItem, o
     const center = spline.pointAt(t);
     const frame = spline.frameAt(t);
     const lat = lateral + (rng() - 0.5) * 2 * jLat;
-    const pos: V3 = [
+    const pos: Vec3Tuple = [
       center[0] + frame.right[0] * lat,
       center[1] + frame.right[1] * lat,
       center[2] + frame.right[2] * lat
@@ -264,8 +264,8 @@ export function worldPlacePoisson(items: readonly AuraPlaceItem[], options: Aura
   const gw = Math.max(1, Math.ceil((bounds.maxX - bounds.minX) / cell));
   const gh = Math.max(1, Math.ceil((bounds.maxZ - bounds.minZ) / cell));
   const grid = new Int32Array(gw * gh).fill(-1);
-  const accepted: V3[] = [];
-  const active: V3[] = [];
+  const accepted: Vec3Tuple[] = [];
+  const active: Vec3Tuple[] = [];
   const gridIndex = (x: number, z: number): number => {
     const gx = Math.min(gw - 1, Math.max(0, Math.floor((x - bounds.minX) / cell)));
     const gz = Math.min(gh - 1, Math.max(0, Math.floor((z - bounds.minZ) / cell)));

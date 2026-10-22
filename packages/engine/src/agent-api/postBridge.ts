@@ -646,7 +646,7 @@ export function validatePostEffectNode(node: AuraEffectNode): readonly PostField
   return diagnostics;
 }
 
-/* V2 option bags ---------------------------------------------------------- */
+/* version-2 option bags ---------------------------------------------------------- */
 
 const V2_BLOOM_DEFAULTS = { threshold: 1.0, knee: 0.25, intensity: 0.25, scatter: 0.7, clampLuminance: 64 } as const;
 

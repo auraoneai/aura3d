@@ -1,6 +1,77 @@
+# Aura3D
+
+> Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through `@aura3d/engine` plus the `@aura3d/cli` toolchain, for browser 3D apps and interactive websites.
+
+Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks.
+
+## Facts
+
+- Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
+- Website: https://aura3d.auraone.ai
+- Current release: Aura3D 4.0.3 (per the repo manifest — the same source the build's version guard uses)
+- Docs: https://aura3d.auraone.ai/docs/api.html
+- Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
+- Sitemap: https://aura3d.auraone.ai/sitemap.xml
+- Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
+- Last updated: 2026-10-20
+
+## Pages
+
+- [Home](https://aura3d.auraone.ai/): Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks.
+
+### Docs
+
+- [Aura3D Agent Quickstart for TypeScript 3D Apps](https://aura3d.auraone.ai/docs/agent-quickstart.html): Create an Aura3D browser 3D app with Vite, scene kits, typed assets, diagnostics, and AI-assisted TypeScript development.
+- [Aura3D Agent Setup for AI Coding Assistants](https://aura3d.auraone.ai/docs/agent-rules.html): Set up AI coding assistants to generate Aura3D TypeScript scenes with public SDK imports, scene kits, primitives, typed assets, and Vite templates.
+- [Aura3D TypeScript API for Agent-Written 3D Scenes](https://aura3d.auraone.ai/docs/api.html): Aura3D TypeScript API overview for scenes, models, cameras, lights, materials, primitives, scene kits, interactions, diagnostics, screenshots, and typed assets.
+- [Aura3D Typed GLB and glTF Asset Workflow](https://aura3d.auraone.ai/docs/assets.html): Register GLB and glTF assets with the Aura3D CLI, import generated typed asset references, and build product viewers without string asset IDs.
+- [Aura3D Vite Templates for Browser 3D Apps](https://aura3d.auraone.ai/docs/templates.html): Use create-aura3d Vite templates for product viewers, cinematic 3D scenes, mini-games, typed assets, diagnostics, and AI-assisted browser 3D development.
+- [Aura3D Prompt-to-3D Recipes for AI Agents](https://aura3d.auraone.ai/docs/prompt-recipes.html): Prompt-to-3D recipes for Aura3D scene kits, primitives, particles, physics, materials, city scenes, data visualization, mini-games, and typed GLB product viewers.
+- [Aura3D Deployment Checks for Static Browser 3D Sites](https://aura3d.auraone.ai/docs/deployment.html): Deploy Aura3D browser 3D apps with static builds, route checks, asset validation, browser-safe paths, and production hosting guidance.
+- [Aura3D Guide for Claude-Assisted 3D Apps](https://aura3d.auraone.ai/docs/claude.html): Use Claude with Aura3D to generate TypeScript browser 3D scenes from scene kits, primitives, typed GLB/glTF assets, and Vite templates.
+- [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor.html): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
+- [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence.html): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
+- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.0.3 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
+- [Aura3D 4.0.3 vs. Raw Three.js — Open-Source TypeScript 3D Engine](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Stop assembling 14 fragile npm packages to render a 3D scene. Compare Aura3D 4.0.3 (@aura3d/engine@4.0.3) against raw Three.js across architecture, asset type safety, WebGPU compute, physics, and 18-line scene boot.
+- [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase.html): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
+
+### Showcase
+
+
+
+### Example apps
+
+- [Aura3D Concept Car Cinema: Typed GLB Product Configurator Example](https://aura3d.auraone.ai/apps/wow-concept-car-cinema/)
+- [Aura3D Damaged Helmet PBR Detail: Typed GLB Asset Viewer Example](https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/)
+- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/)
+- [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/)
+- [Aura Slam 3D — Championship 3D Tennis (Second Edition) on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis-v2/)
+- [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
+- [Apex Overdrive — 3D Sky-Lane Highway Racer (Second Edition) on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/)
+- [THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink/)
+- [THERMAL DRIFT — High-Velocity Combat Drone Racer (Second Edition) · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink-v2/)
+- [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase (Aura3D 4.0.3)](https://aura3d.auraone.ai/apps/showcase-teleoperator/)
+- [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase (Second Edition, Aura3D 4.0.3)](https://aura3d.auraone.ai/apps/showcase-teleoperator-v2/)
+- [IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-iron-crown/)
+- [PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-pips-big-leap/)
+- [Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/): Aura Hoops 3D: NBA-Jam-pace 3v3 streetball on the Aura3D engine — check-ball, shot meter, Jam Meter dunk packages, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour.
+- [Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/): Aura Diamond 3D: broadcast-grade 3D baseball — real at-bats with PCI hitting, 4 pitch arsenals, 6 ballparks from Harbor Sandlot to Lunar Park, a 10-out Derby Lab, Bullpen Lab pitch-recognition drills, and a 32-team World Classic.
+- [Aura FC 3D — Street &amp; Stadium Football · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/): Aura FC 3D: five-a-side broadcast football on the Aura3D engine — six venues from a favela cage to a glacier dome, Shootout &amp; Touch Labs, a 32-team World Circuit, and a Player Studio.
+- [Red Zone 3D — Prime-Time Football on Aura3D](https://aura3d.auraone.ai/apps/showcase-red-zone-3d/): Red Zone 3D: broadcast-grade 3D American football — 7v7 arcade play-calling, six stadiums, Route Lab, Tackle Lab, and a 32-team Gridiron Series, rendered by the Aura3D engine.
+- [Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-links-3d/): Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range &amp; Putting Labs, and a 32-player Pro Circuit.
+- [Bunker Zero — Retro Corridor FPS on Aura3D](https://aura3d.auraone.ai/apps/showcase-bunker-zero/): Bunker Zero: a six-floor retro corridor shooter in the Wolfenstein mold — grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D engine.
+- [Aura3D - Slingshot Siege](https://aura3d.auraone.ai/apps/showcase-slingshot-siege/): Aura3D Slingshot Siege prototype: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower.
+- [Dot Dash 3D — Neon Maze Chase · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/): Aura3D Dot Dash 3D showcase, a neon maze-chase arcade game: dash through six glowing circuits gobbling light-dots while four Specters hunt with distinct AI personalities.
+- [Cross Hop — Aura3D Endless Lane Hopper](https://aura3d.auraone.ai/apps/showcase-cross-hop/): Aura3D Cross Hop showcase, an endless lane-hopping game: dodge cars, trams, trains, rivers and lava across 6 remixed themes, rescue critters, chase the high score.
+
+## Notes
+
+- Domain: https://aura3d.auraone.ai is a placeholder — swap AURA3D_SITE_URL (or the generator's ORIGIN) at deploy time; every URL in robots.txt, sitemap.xml, and this file follows.
+
+<!-- agent-guide: everything below this marker is the long-form agent guide; gen-seo.mjs preserves it verbatim -->
 Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,
 lighting, materials, typed assets, camera rigs, gameFeel, SDF text, decals, rigid bodies, and gameplay through
-`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.1 (succeeding 4.0.0).
+`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.3 (succeeding 4.0.1).
 
 Hello world: every scene gets a look first.
 
@@ -153,4 +224,8 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
+
+
+
 

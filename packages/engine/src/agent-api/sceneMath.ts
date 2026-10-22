@@ -1,5 +1,11 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
+// FIRST import: the lane-13 look-lowering slot lives in this leaf. It must
+// stay ahead of every other import here — `lanes/prd13.ts` installs the
+// lowering at module scope, and a cyclic import order can run that lane
+// body while this module is still mid-initialisation; keeping the binding
+// first means it is live before any later import can suspend us.
+import { getLookLowering } from "./sceneMath.lookLowering.js";
 import type { AuraVec3, AuraColor, AuraTransformSpec, AuraSceneNode, AuraModelNode, AuraPrimitiveNode, AuraEffectNode, AuraLabelNode, AuraSceneSnapshot, AuraRuntimeNodeRegistry } from "./nodes/types.js";
 import type { GltfBounds } from "./nodes/types/runtime.js";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION } from "./SceneGroundingUtils.js";
@@ -345,18 +351,15 @@ export function flattenSceneSnapshot(snapshot: AuraSceneSnapshot): AuraSceneSnap
  * flattened consumer (compiler, legacy mount, frame source) renders them.
  * Registered from the prd13 barrel to keep sceneMath free of looks imports.
  */
-export type AuraLookLowering = (node: AuraSceneNode) => readonly AuraSceneNode[] | undefined;
+export type { AuraLookLowering } from "./sceneMath.lookLowering.js";
 const LOWERED_LOOK = Symbol.for("@aura3d/lowered-look");
 /** Keep the diagnostic look node without expanding it again on a second flatten. */
 export function markLookNodeLowered(node: AuraSceneNode): AuraSceneNode {
   return Object.assign({}, node, { [LOWERED_LOOK]: true });
 }
-let lookLowering: AuraLookLowering | undefined;
-export function setLookLowering(lowering: AuraLookLowering | undefined): void {
-  lookLowering = lowering;
-}
+export { setLookLowering } from "./sceneMath.lookLowering.js";
 export function lowerLookNode(node: AuraSceneNode): readonly AuraSceneNode[] | undefined {
-  return (node as { kind?: string }).kind === "look" && !(node as unknown as Record<symbol, unknown>)[LOWERED_LOOK] ? lookLowering?.(node) : undefined;
+  return (node as { kind?: string }).kind === "look" && !(node as unknown as Record<symbol, unknown>)[LOWERED_LOOK] ? getLookLowering()?.(node) : undefined;
 }
 
 export function flattenSceneNodes(nodes: readonly AuraSceneNode[], parentTransform: AuraTransformSpec = {}): AuraSceneNode[] {

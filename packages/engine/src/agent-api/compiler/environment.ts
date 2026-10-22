@@ -1,5 +1,11 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
+// FIRST import: this leaf carries the lane-02 source-registration flag. It
+// must stay ahead of every other import here — `lanes/prd02.ts`
+// self-registers at module scope, and a cyclic import order can run that
+// lane body while this module is still mid-initialisation; keeping the
+// binding first means it is live before any later import can suspend us.
+import { prd02SourcesState } from "./environmentSourcesState.js";
 import type { AuraAssetRef, AuraColor, AuraEnvironmentNode, AuraLightNode, AuraSceneSnapshot } from "../nodes/types.js";
 import type { AuraEnvironmentNodeV2, AuraEnvironmentPresetName } from "../nodes/environments.js";
 import { registerEnvironmentSource, type AuraEnvironmentSourceResolution } from "../../contracts/environment.js";
@@ -50,7 +56,7 @@ export function createProductionRuntimeEnvironment(
       // B3: HDRI first frames render the honest studio procedural fallback;
       // the post-mount upgrade swaps in the HDR chain (hdriUrl below).
       "hdri": "studio",
-      // PRD-02 V2 kinds with the flag OFF degrade to the closest legacy
+      // PRD-02 version-2 kinds with the flag OFF degrade to the closest legacy
       // preset (additive keys; previously they could not appear).
       "preset": "studio",
       "neutral": "studio",
@@ -280,7 +286,7 @@ export function explicitEnvironmentResolution(
  * E3 stage-2b (step 3): intensities the C-09 probe bind carries to the
  * renderer. Under the conjunction with an explicit (authored-environment)
  * resolution, the stage-2a knob object is the single source — both terms
- * equal the knob, even when a V2 node authored separate diffuse/specular
+ * equal the knob, even when a version-2 node authored separate diffuse/specular
  * intensities into the resolution. Neutral-room resolutions and every
  * conjunction-off bind keep the resolution intensities verbatim (the
  * pre-stage-2b behavior compileScene had when it discarded the knob).
@@ -429,8 +435,6 @@ export function bindPrd02EnvironmentProbe(
   return { probe: floor, pending: null, resolution, pmremMode };
 }
 
-let prd02SourcesRegistered = false;
-
 /**
  * Registers the lane's two C-09 sources (idempotent):
  *  - `prd02.explicit` (400): an authored `environments.*`/`environment` node
@@ -441,8 +445,8 @@ let prd02SourcesRegistered = false;
  * are untouched — they only run under the flag-off "legacy" source.
  */
 export function registerPrd02EnvironmentSources(): void {
-  if (prd02SourcesRegistered) return;
-  prd02SourcesRegistered = true;
+  if (prd02SourcesState.registered) return;
+  prd02SourcesState.registered = true;
   registerEnvironmentSource({
     id: "prd02.explicit",
     owner: "prd02",
