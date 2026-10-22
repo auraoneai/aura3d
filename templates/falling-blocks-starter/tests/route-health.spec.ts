@@ -37,7 +37,7 @@ test("Aura3D falling-blocks starter reaches ready state with instanced board evi
   expect(routeState.lookId).toBe("neon-arcade");
   expect(routeState.rendering).toBe("instanced-model");
   expect(routeState.filledCells).toBeGreaterThan(0);
-  expect(routeState.cellAssetId).toBe("blockCell");
+  expect(routeState.cellAssetId).toBe("quaterniusCubeCrate");
   expect(routeState.flashModelBased).toBe(true);
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/route-health.json"), `${JSON.stringify({ ready: true, drawCalls, routeState }, null, 2)}\n`);

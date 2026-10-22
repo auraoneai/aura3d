@@ -380,15 +380,17 @@ test("release matrix retains a visible Aura3D canvas", async ({ page }) => {
   await page.goto("/");
   // Compositor-free readiness + bounds: toBeVisible/boundingBox poll through
   // the compositor and starve behind a continuously-rendering software-GL
-  // page. waitForFunction polls inside the page's own animation frame and
-  // getBoundingClientRect is a plain DOM read.
+  // page. waitForFunction runs an interval poll inside the page — the
+  // fighting-game init shim caps requestAnimationFrame, so rAF polling
+  // would die after eight ticks — and getBoundingClientRect is a plain DOM
+  // read.
   await page.waitForFunction(() => {
     const element = document.querySelector("canvas");
     if (!(element instanceof HTMLCanvasElement)) return false;
     const style = getComputedStyle(element);
     const rect = element.getBoundingClientRect();
     return style.display !== "none" && style.visibility !== "hidden" && rect.width > 100 && rect.height > 100;
-  }, undefined, { timeout: 120_000 });
+  }, undefined, { timeout: 120_000, polling: 500 });
   const box = await page.evaluate(() => {
     const element = document.querySelector("canvas");
     if (!element) return null;

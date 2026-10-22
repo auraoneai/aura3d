@@ -1,31 +1,6 @@
-/* Fighting game starter — licensed UI face committed with the template
-   (public/fonts/graphik). The canvas keeps its dark scene backdrop (content);
-   the floating HUD panels are light chrome: 12px floor, 400/500 weights,
-   sentence case. */
 @font-face {
-  font-family: "Graphik";
-  src: url("/fonts/graphik/Graphik-Regular-Web.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Graphik";
-  src: url("/fonts/graphik/Graphik-RegularItalic-Web.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Graphik";
-  src: url("/fonts/graphik/Graphik-Medium-Web.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-:root {
-  color-scheme: light;
+  font-family: "AuraFight";
+  src: local("Impact");
 }
 
 html,
@@ -35,15 +10,11 @@ body,
   height: 100%;
   margin: 0;
   overflow: hidden;
-  /* Dark scene backdrop is content, not chrome. */
   background:
     radial-gradient(circle at 50% 8%, rgba(0, 255, 191, 0.2), transparent 36%),
     linear-gradient(135deg, #020705, #071d14 55%, #020504);
-  color: #1c2530;
-  font-family: "Graphik", system-ui, -apple-system, sans-serif;
-  font-synthesis: none;
-  font-size: 13px;
-  line-height: 1.45;
+  color: #eafff5;
+  font-family: AuraFight, "Arial Narrow", sans-serif;
 }
 
 canvas {
@@ -57,14 +28,14 @@ canvas {
   grid-template-columns: minmax(260px, 1.1fr) minmax(210px, 0.8fr) minmax(260px, 1fr);
   gap: 10px;
   pointer-events: none;
-  letter-spacing: 0;
+  letter-spacing: 0.02em;
 }
 
 .hud__panel {
-  border: 1px solid rgba(28, 37, 48, 0.18);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: 0 12px 32px rgba(10, 18, 14, 0.18);
+  border: 1px solid rgba(71, 255, 190, 0.36);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(2, 9, 6, 0.82), rgba(9, 31, 23, 0.68));
+  box-shadow: 0 0 36px rgba(0, 255, 191, 0.14), inset 0 0 24px rgba(85, 255, 197, 0.05);
   backdrop-filter: blur(14px);
   pointer-events: auto;
   padding: 12px 14px;
@@ -72,17 +43,18 @@ canvas {
 
 .hud__eyebrow {
   margin: 0 0 4px;
-  color: #566272;
-  font-size: 12px;
-  letter-spacing: 0;
+  color: #98ffdb;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .hud h1 {
   margin: 0 0 10px;
-  color: #1c2530;
-  font-size: clamp(1.2rem, 2.6vw, 1.75rem);
-  font-weight: 500;
-  line-height: 1.15;
+  color: #eafff5;
+  font-size: clamp(1.2rem, 2.6vw, 2rem);
+  line-height: 0.95;
+  text-transform: uppercase;
 }
 
 .hud__bars,
@@ -101,45 +73,43 @@ canvas {
   gap: 8px;
   align-items: center;
   min-height: 28px;
-  padding: 4px 9px;
-  border: 1px solid rgba(28, 37, 48, 0.14);
+  padding: 5px 9px;
   border-radius: 999px;
-  background: #f7f9fb;
-  color: #1c2530;
-  font-size: 12.5px;
+  background: rgba(6, 24, 17, 0.72);
+  color: #d8fff0;
+  font-size: 0.85rem;
 }
 
 .hud__bar b {
-  font-weight: 500;
-  color: #0d5c3f;
+  color: #55ffc5;
 }
 
 .hud__bar--meter b {
-  color: #b45309;
+  color: #ffd166;
 }
 
 .hud button {
-  min-height: 32px;
+  min-height: 34px;
   padding: 0 12px;
-  border: 1px solid rgba(28, 37, 48, 0.22);
+  border: 1px solid rgba(85, 255, 197, 0.42);
   border-radius: 999px;
-  background: #ffffff;
-  color: #1c2530;
+  background: #103726;
+  color: #eafff5;
   cursor: pointer;
   font: inherit;
-  font-weight: 500;
+  text-transform: uppercase;
 }
 
 .hud button:hover,
 .hud button:focus-visible {
-  outline: 2px solid #0e7490;
+  outline: 2px solid #55ffc5;
   outline-offset: 2px;
-  background: #f0f4f8;
+  background: #155039;
 }
 
 .hud button[aria-pressed="true"] {
-  border-color: #b45309;
-  background: #fdf3e3;
+  border-color: #ffd166;
+  background: #4c3410;
 }
 
 @media (max-width: 720px) {
@@ -149,6 +119,6 @@ canvas {
   }
 
   .hud__panel {
-    border-radius: 12px;
+    border-radius: 14px;
   }
 }

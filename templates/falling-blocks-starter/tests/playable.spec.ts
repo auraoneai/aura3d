@@ -11,7 +11,7 @@ test("falling-blocks starter responds to keyboard input and clears a line", asyn
   expect(initial.active?.kind).toBe("I");
   expect(initial.active?.x).toBe(3);
   expect(initial.board.rendering).toBe("instanced-model");
-  expect(initial.board.cellAsset.id).toBe("blockCell");
+  expect(initial.board.cellAsset.id).toBe("quaterniusCubeCrate");
   expect(initial.board.filledCells).toBeGreaterThanOrEqual(4);
   expect(initial.flash.modelBased).toBe(true);
 

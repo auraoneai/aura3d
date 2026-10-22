@@ -7,7 +7,7 @@ Keyboard-playable falling-block starter using only the public
   key light, fog and grade are supplied by the look (no ambient fill,
   no `.background` override).
 - The arcade cabinet is a typed GLB asset in `src/aura-assets.ts`.
-- Every cell renders as an instance of the typed `blockCell` bevelled-cube
+- Every cell renders as an instance of the typed `quaterniusCubeCrate` bevelled-cube
   GLB: the settled board is a single `instances.model` mesh rebuilt on
   lock/line-clear/reset, while the four active cells, the board frame, the
   hold preview and the line-clear flash are runtime `model()` nodes of the
