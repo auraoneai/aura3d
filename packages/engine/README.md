@@ -337,7 +337,7 @@ const app = createAuraApp("#app", {
 
 // Physical sky & wet surface response
 atmosphere.setSky(app, { mode: "preetham", turbidity: 2.4, rayleigh: 1.8, sunElevation: 14, sunAzimuth: 195 });
-atmosphere.setWetness(app, { wetness: 0.65, puddleCoverage: 0.45, puddleRoughness: 0.06, rippleIntensity: 0.5 });
+atmosphere.setWetness(app, 0.65, { transitionSeconds: 0.4 });
 ```
 
 ### Complete Effects Reference (`@aura3d/engine@4.0.1`)

@@ -165,6 +165,11 @@ function main(): void {
 
   const entry = moduleExports(ENTRY);
   const contracts = new Set(moduleExports("packages/engine/src/contracts/index.ts").map((r) => r.name));
+  // tools/public-api-contract's requiredEngineExports is itself a "." contract —
+  // feed it into the keep-set so `scaffold --write` can never drop a gated name.
+  const requiredBlock = readFileSync(join(REPO_ROOT, "tools/public-api-contract/index.ts"), "utf8")
+    .match(/requiredEngineExports\s*=\s*\[([\s\S]*?)\]/);
+  for (const m of requiredBlock?.[1].matchAll(/"([^"]+)"/g) ?? []) contracts.add(m[1]);
   const lanes = new Set(moduleExports("packages/engine/src/lanes/index.ts").map((r) => r.name));
   const consumers = collectConsumers();
 

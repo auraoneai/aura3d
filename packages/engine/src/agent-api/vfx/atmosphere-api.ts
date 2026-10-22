@@ -35,3 +35,28 @@ export function createAtmosphereExtension(app: AuraApp, ctx: { flags: QrFlags })
     state: () => atmosphere.state()
   };
 }
+
+/**
+ * Top-level `atmosphere` namespace — app-first delegates over the C-38
+ * `app.atmosphere` member (same object the extension installs). Exported
+ * alongside `effects`/`environments`/`shadows` per the consolidated
+ * public-surface contract.
+ */
+function requireAppAtmosphere(app: AuraApp): import("../../contracts/atmosphere").AuraAppAtmosphere {
+  const member = app.atmosphere;
+  if (member === undefined) {
+    throw new Error("aura3d: app.atmosphere is not installed — create the app via createAuraApp (C-38 extension) before using atmosphere.*");
+  }
+  return member;
+}
+
+export const atmosphere = {
+  setFog: (app: AuraApp, spec: AuraHeightFogSpec | null, o?: { transitionSeconds?: number }): void =>
+    requireAppAtmosphere(app).setFog(spec, o),
+  setSky: (app: AuraApp, spec: Partial<AuraSkySpec>, o?: { transitionSeconds?: number }): void =>
+    requireAppAtmosphere(app).setSky(spec, o),
+  setWetness: (app: AuraApp, value: number, o?: { transitionSeconds?: number }): void =>
+    requireAppAtmosphere(app).setWetness(value, o),
+  state: (app: AuraApp): ReturnType<import("../../contracts/atmosphere").AuraAppAtmosphere["state"]> =>
+    requireAppAtmosphere(app).state()
+} as const;

@@ -301,7 +301,7 @@ export type { BicycleModelInput, BicycleModelOptions, BicycleModelState, Bicycle
 // diagnostics sections, look-lint rules.
 export { AURA_VFX_BUILTIN_SEQUENCES, validateVfxAtlasManifest, vfxAtlasPageForTier } from "./vfx/atlas.js";
 export type { AuraVfxAtlasManifest, AuraVfxAtlasPage, AuraVfxAtlasSequenceEntry, AuraVfxBuiltinSequence } from "./vfx/atlas.js";
-export { createAtmosphereExtension } from "./vfx/atmosphere-api.js";
+export { atmosphere, createAtmosphereExtension } from "./vfx/atmosphere-api.js";
 export { attachVfxBridge } from "./vfx/bridge.js";
 export type { VfxBridge } from "./vfx/bridge.js";
 export { collectAtmosphereSection, collectEffectsSection } from "./vfx/diagnostics.js";
