@@ -21,18 +21,10 @@ AURA3D_SPECS="${AURA3D_SPECS:-${AURA3D_SPECS_CSV//,/ }}"
 : "${AURA3D_RUN_ID:?AURA3D_RUN_ID must stamp this run}"
 REPORTER="${AURA3D_REPORTER:-line}"
 
-# `az acr run` does not interpolate secrets into env (verified empirically);
-# the SAS arrives base64-encoded via the secret volume at /run/secrets/sas.
-if [ -z "${AURA3D_ARTIFACTS_SAS:-}" ]; then
-  if [ -f /run/secrets/sas ]; then
-    echo "[task-run] sas file present ($(wc -c < /run/secrets/sas | tr -d ' ') bytes)"
-    AURA3D_ARTIFACTS_SAS="$(base64 -d /run/secrets/sas 2>/dev/null || cat /run/secrets/sas)"
-    export AURA3D_ARTIFACTS_SAS
-    echo "[task-run] sas decoded: ${#AURA3D_ARTIFACTS_SAS} chars"
-  else
-    echo "[task-run] /run/secrets/sas missing: $(ls /run/secrets 2>/dev/null || echo 'no dir')"
-  fi
-fi
+# NOTE: `az acr run` cannot carry CLI-provided secrets — AURA3D_ARTIFACTS_SAS
+# only arrives when the task yaml runs under `az acr task` with a declared
+# keyvault secret. Blob artifact upload skips otherwise; failure evidence is
+# dumped to the run log below regardless.
 
 echo "[task-run] run_id=${AURA3D_RUN_ID}"
 echo "[task-run] node=$(node --version) pnpm=$(pnpm --version)"

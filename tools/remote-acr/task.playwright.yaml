@@ -1,19 +1,12 @@
 version: v1.1.0
 # Executed by `az acr run -f tools/remote-acr/task.playwright.yaml /dev/null`
-# (see run.sh). {{.Values.*}} come from --set, {{.Secrets.*}} from
-# --set-secret so the SAS is masked in run logs. NOTE: `az acr run` does NOT
-# interpolate secrets into `env:` (verified empirically — they arrive empty),
-# so the SAS rides in via a secret volume file at /run/secrets/artifacts-sas
-# and task-run.sh decodes it.
-volumes:
-  - name: artifacts-sas
-    secret:
-      sas: "{{.Secrets.AURA3D_ARTIFACTS_SAS | b64enc}}"
+# (see run.sh). {{.Values.*}} come from --set. NOTE: `az acr run` cannot carry
+# CLI-provided secrets — {{.Secrets.*}} only resolves for declared keyvault/
+# MSI ids (empirically verified: env interpolates empty; declared ids without
+# keyvault fail validation). Failure evidence therefore dumps into the run
+# log (task-run.sh) rather than uploading to blob storage.
 steps:
   - id: playwright
-    volumeMounts:
-      - name: artifacts-sas
-        mountPath: /run/secrets
     # In acr-task.yaml a `cmd` step's value IS the docker-run remainder —
     # `cmd: <image-ref> [args...]`. There is no separate img field (earlier
     # attempts that treated cmd as a shell command string or used
