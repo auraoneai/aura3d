@@ -5,7 +5,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-browser%203D-3178c6.svg)](https://www.typescriptlang.org/)
 
-**The batteries-included, agent-native 3D engine & game platform for the web.**
+**The batteries-included, agent-native 3D engine & game platform for the web — the practical default for agent-written browser 3D.**
 
 Licensed under MIT, `@aura3d/engine@4.0.1` unifies declarative scene authoring (`scene()`, `model()`, `primitives`, `lights`, `effects`, `camera`), deterministic Rapier 3D physics (`game.collisionWorld`), genre game kits (`game.platformer`, `game.racing`, `game.arcadeKart`, `game.grandPrixRoad`, `game.carSoccer`, `game.carSoccerPitch`, `game.racketSports`, `game.fallingBlocks`, `game.fighting`, `game.input`, `game.hud`), automatic glTF skeletal skinning & foot-planting IK, SHA-256 typed asset provenance (`src/aura-assets.ts` + Meshy 3D CLI pipeline), and automated release certification (`check-deploy`) in **one cohesive TypeScript SDK**.
 

@@ -67,13 +67,13 @@ const characterReadme = readFileSync(resolve(templateRoot, "character-controller
 checks.push(
   {
     id: "product-template-lean-product-entry",
-    pass: productSource.includes('from "@aura3d/lean/product"'),
-    detail: "product viewer imports @aura3d/lean/product"
+    pass: productSource.includes('from "@aura3d/engine"'),
+    detail: "product viewer imports @aura3d/engine"
   },
   {
     id: "arcade-template-lean-game-entry",
-    pass: gameSource.includes('from "@aura3d/lean/game"'),
-    detail: "mini-game imports @aura3d/lean/game"
+    pass: gameSource.includes('from "@aura3d/engine/game"'),
+    detail: "mini-game imports @aura3d/engine/game"
   },
   {
     id: "physical-character-opt-in-installs-selected-packages",

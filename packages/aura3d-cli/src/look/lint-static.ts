@@ -238,7 +238,7 @@ export const lookFromAmbientCodemod: AuraCodemod = {
         edits.push({ start: node.getStart(sourceFile), end, text: "" });
         rows.push({ file: fileName, line: lineOf(sourceFile, node), construct: 'renderer.qualityProfile: "safe-basic"', mapping: "exact", note: "safe-basic removed; the look sets the render profile" });
       }
-      // report.visualSystems → report.appliedEffects (V2 consumers).
+      // report.visualSystems → report.appliedEffects (version-2 consumers).
       if (ts.isPropertyAccessExpression(node) && node.name.text === "visualSystems") {
         edits.push({ start: node.name.getStart(sourceFile), end: node.name.getEnd(), text: "appliedEffects" });
         rows.push({ file: fileName, line: lineOf(sourceFile, node), construct: ".visualSystems", mapping: "approximate", target: ".appliedEffects", note: "apply when the consumer moves to compilePromptPlanV2" });

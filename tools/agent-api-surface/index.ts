@@ -29,7 +29,7 @@ const checks: ReleaseCheck[] = [
     pass:
       rootPackage.name === "@aura3d/engine" &&
       typeof rootEngineExport === "object" &&
-      rootEngineExport.browser === "./dist/engine/agent-api/index.js" &&
+      rootEngineExport.browser === "./dist/engine/public/index.js" &&
       enginePackage.private === true &&
       publicApiDocs.includes("## @aura3d/engine") &&
       !publicApiDocs.includes("## @aura3d/engine-runtime"),

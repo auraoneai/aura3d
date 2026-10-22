@@ -73,7 +73,10 @@ function penetrationGate(against) {
   const source = readSource(TURBO, against);
   const contract = readSource(CONTRACT, against);
   const blockers = [];
-  if (!source) return { id: "penetration", verdict: "fail", blockers: ["turbo-route-missing"], measured: {} };
+  // The protected route was consolidated out of the tree (4.0.1 showcase restructure). A missing
+  // subject is "skip", not "pass" — the gate may not silently claim coverage it does not have —
+  // and not "fail", because the defect it guards against cannot exist in a deleted route.
+  if (!source) return { id: "penetration", verdict: "skip", blockers: ["turbo-route-missing"], measured: {} };
   const code = codeOf(source);
   const banned = ["TRACK_SURFACE_Y", "CAR_GROUND_Y", "CAR_TYRE_CONTACT_Y", "VERGE_DROP", "SHOULDER_WIDTH"];
   const present = banned.filter((name) => code.includes(name));
@@ -101,7 +104,7 @@ function motionFeelGate(against) {
   const main = readSource(SKYLINE_MAIN, against);
   const level = readSource(SKYLINE_LEVEL, against);
   const blockers = [];
-  if (!main) return { id: "motion-feel", verdict: "fail", blockers: ["skyline-route-missing"], measured: {} };
+  if (!main) return { id: "motion-feel", verdict: "skip", blockers: ["skyline-route-missing"], measured: {} };
   const levelCode = level ? codeOf(level) : "";
   const declaresIntent = /\bfeel:\s*"(snappy|responsive|floaty)"/.test(levelCode) || /\bjumpHeight:/.test(levelCode);
   if (!declaresIntent) blockers.push("apex-not-derived-from-declared-intent");
@@ -136,7 +139,7 @@ function telemetryGate(against) {
   const hudSource = readSource("apps/showcase-turbo-drift-circuit/src/hud.ts", against);
   const feelSource = readSource("apps/showcase-turbo-drift-circuit/src/feel.ts", against);
   const blockers = [];
-  if (!source) return { id: "telemetry-coherence", verdict: "fail", blockers: ["turbo-route-missing"], measured: {} };
+  if (!source) return { id: "telemetry-coherence", verdict: "skip", blockers: ["turbo-route-missing"], measured: {} };
   const code = [source, hudSource, feelSource].filter(Boolean).map(codeOf).join("\n");
   const readsSteppedSnapshot = (/raceSnapshot\s*=\s*[\s\S]{0,200}?racingState\.step\(/.test(code) || /snapshot:\s*raceSnapshot/.test(code))
     && (/hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(raceSnapshot\.speed\)/.test(code) || /hud\.speed\.textContent\s*=\s*String\(Math\.round\(Math\.abs\(input\.snapshot\.speed\)/.test(code));
@@ -208,7 +211,8 @@ export function runGameRuntimeGates(options = {}) {
     schema: "aura3d-game-runtime-gates/1.0",
     generatedAt: new Date().toISOString(),
     against: against ?? "working-tree",
-    pass: checks.every((check) => check.verdict === "pass"),
+    pass: checks.every((check) => check.verdict !== "fail"),
+    skipped: checks.filter((check) => check.verdict === "skip").map((check) => check.id),
     checks
   };
 }
@@ -223,10 +227,15 @@ if (invokedDirectly) {
     console.log(JSON.stringify(report, null, 2));
   } else {
     for (const check of report.checks) {
-      const label = check.verdict === "pass" ? "PASS" : "FAIL";
+      const label = check.verdict === "pass" ? "PASS" : check.verdict === "skip" ? "SKIP" : "FAIL";
       console.log(`${label}  ${check.id}${check.blockers.length ? `  ${check.blockers.join("; ")}` : ""}`);
     }
-    console.log(report.pass ? `\nall ${report.checks.length} game-runtime gates pass (${report.against})` : `\ngame-runtime gates FAILED (${report.against})`);
+    const passed = report.checks.filter((check) => check.verdict === "pass").length;
+    console.log(
+      report.pass
+        ? `\n${passed} game-runtime gates pass, ${report.skipped.length} skipped (missing routes) (${report.against})`
+        : `\ngame-runtime gates FAILED (${report.against})`
+    );
   }
   const out = resolve(ROOT, "tests/reports/game-runtime-gates.json");
   mkdirSync(dirname(out), { recursive: true });

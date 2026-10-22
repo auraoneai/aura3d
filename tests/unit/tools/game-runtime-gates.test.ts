@@ -20,12 +20,15 @@ describe("game-runtime gates were failing on 1.5.2 and pass now", () => {
     expect(failing.sort()).toEqual(["motion-feel", "opaque-asset", "penetration", "telemetry-coherence"]);
   });
 
-  it("every gate passes on the current tree", () => {
+  it("no gate fails on the current tree; deleted routes report skip, not pass", () => {
     const failing = current.checks
       .filter((check) => check.verdict === "fail")
       .map((check) => `${check.id}: ${check.blockers.join(", ")}`);
     expect(failing).toEqual([]);
     expect(current.pass).toBe(true);
+    // The 4.0.1 showcase consolidation deleted the protected games. Their gates must report
+    // "skip" so the report never claims coverage it does not have.
+    expect(current.skipped?.sort()).toEqual(["motion-feel", "penetration", "telemetry-coherence"]);
   });
 
   it("the 1.5.2 penetration failure names the route-local constants that caused it", () => {

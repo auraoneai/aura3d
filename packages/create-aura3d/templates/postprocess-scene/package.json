@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@aura3d/engine": "4.0.3",
-    "@aura3d/navigation-recast": "4.0.2",
     "@aura3d/assets": "4.0.3"
   },
   "devDependencies": {

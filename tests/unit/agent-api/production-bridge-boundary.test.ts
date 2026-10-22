@@ -89,7 +89,9 @@ describe("createAuraApp production bridge boundary", () => {
     // PRD-03 §6.4 (flag-on): the operator resolves from authored
     // `output.toneMapping` with an "aces" fallback; flag-off stays "aces".
     expect(postprocess).toContain("operator: postFlagOn");
-    expect(postprocess).toContain("authoredPostContext.output.toneMapping");
+    // The context is optional (no attach canvas ⇒ undefined), so the authored
+    // read is optional-chained through `toneMappingOperatorFor`.
+    expect(postprocess).toContain("toneMappingOperatorFor(authoredPostContext?.output?.toneMapping)");
     // muse3jsparity-PRD A3: color-grade / outline / fxaa / ssr / depth-of-field
     // submit real native options. R02 now binds temporal history for supported
     // geometry; motion blur/TAA remain gated rather than submitted unconditionally.

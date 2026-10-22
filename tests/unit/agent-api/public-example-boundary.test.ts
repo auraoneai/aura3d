@@ -43,6 +43,10 @@ function walkSourceFiles(root: string): string[] {
       // review URL into a false boundary violation.
       const directoryName = current.split(/[\\/]/).at(-1) ?? "";
       if (current !== absoluteRoot && ["art-candidates", "art-review", ".candidate-assets"].includes(directoryName)) return;
+      // `public/` holds served payloads — vendored engine bundles, decoder
+      // workers, audio/textures — shipped artifacts like `dist/` output, not
+      // authored source the import boundary polices.
+      if (current !== absoluteRoot && directoryName === "public") return;
       for (const entry of readdirSync(current)) visit(join(current, entry));
       return;
     }
@@ -60,6 +64,14 @@ function stripComments(source: string): string {
     .replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
 
+// A raw GLB/glTF literal is sanctioned only inside a typed-asset definition —
+// the `url`/`colliderUrl`/`source`/`mobile` fields of a `defineAuraAssets`
+// manifest (whether the manifest lives in `aura-assets*.ts`/`aura-catalog.ts`
+// or inline in the route source). The same literal anywhere else — a loader
+// argument, a concatenated path, a `model("…")` payload — stays a violation.
+const RAW_ASSET_URL = /["'`](?:https?:\/\/|\/|\.{1,2}\/)[^"'`]*\.(?:glb|gltf)(?:[?#][^"'`]*)?["'`]/gi;
+const TYPED_ASSET_FIELD = /(?:url|colliderUrl|source|mobile)\s*:\s*$/;
+
 describe("public example source boundary", () => {
   it("does not import renderer internals or raw model assets for public showcase/template visuals", () => {
     const files = publicSourceRoots().flatMap(walkSourceFiles);
@@ -75,15 +87,21 @@ describe("public example source boundary", () => {
         ],
         [/\bGLTFLoader\b/, "GLTFLoader usage"],
         [/\bunsafeModelUrl\s*\(/, "unsafeModelUrl usage"],
-        [/\bmodel\s*\(\s*["'`]/, "raw string model asset"],
-        [
-          /["'`](?:https?:\/\/|\/|\.{1,2}\/)[^"'`]*\.(?:glb|gltf)(?:[?#][^"'`]*)?["'`]/i,
-          "raw GLB/glTF URL outside generated typed assets"
-        ]
+        [/\bmodel\s*\(\s*["'`]/, "raw string model asset"]
       ];
 
       for (const [pattern, label] of checks) {
         if (pattern.test(source)) violations.push(`${file}: ${label}`);
+      }
+
+      RAW_ASSET_URL.lastIndex = 0;
+      let rawUrl: RegExpExecArray | null;
+      while ((rawUrl = RAW_ASSET_URL.exec(source)) !== null) {
+        const lineStart = source.lastIndexOf("\n", rawUrl.index) + 1;
+        if (!TYPED_ASSET_FIELD.test(source.slice(lineStart, rawUrl.index))) {
+          violations.push(`${file}: raw GLB/glTF URL outside generated typed assets`);
+          break;
+        }
       }
     }
 

@@ -240,7 +240,11 @@ async function writeClipboard(text: string): Promise<boolean> {
   return copied;
 }
 
-for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-text], [data-copy-target]")) {
+const copyButtons = [
+  ...document.querySelectorAll<HTMLButtonElement>("[data-copy][data-copy-text]"),
+  ...document.querySelectorAll<HTMLButtonElement>("[data-copy-target]")
+];
+for (const button of copyButtons) {
   let resetTimer: number | undefined;
 
   button.addEventListener("click", async () => {
@@ -287,7 +291,7 @@ const searchItems = searchRoot
   : [];
 let searchTrackTimer: number | undefined;
 
-function updateSearch(): void {
+function updateDocsSearch(): void {
   if (!searchInput || !searchResults || !searchStatus) return;
   const rawQuery = searchInput.value.trim();
   const query = rawQuery.toLowerCase();
@@ -322,7 +326,7 @@ function updateSearch(): void {
   }, 500);
 }
 
-searchInput?.addEventListener("input", updateSearch);
+searchInput?.addEventListener("input", updateDocsSearch);
 
 // ─────────────────────────────────────────────────────────────
 // Lightweight analytics bridge + scroll depth

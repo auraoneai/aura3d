@@ -12,19 +12,7 @@ const root = join(__dirname, "..", "..", "..");
 const ENGINE_INDEX = join(root, "packages/engine/src/index.ts");
 const AGENT_API_INDEX = join(root, "packages/engine/src/agent-api/index.ts");
 
-function exportNames(entry: string): string[] {
-  const program = ts.createProgram({
-    rootNames: [entry],
-    options: {
-      target: ts.ScriptTarget.ESNext,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      strict: false,
-      noEmit: true,
-      skipLibCheck: true,
-      allowJs: true
-    }
-  });
+function exportNames(program: ts.Program, entry: string): string[] {
   const checker = program.getTypeChecker();
   const source = program.getSourceFile(entry);
   if (!source) throw new Error(`${entry} not in program`);
@@ -34,9 +22,24 @@ function exportNames(entry: string): string[] {
 }
 
 describe("published union (PRD-15 T1.4)", () => {
-  it("in-repo and published \".\" export identical name sets", () => {
-    const inRepo = exportNames(ENGINE_INDEX);
-    const published = exportNames(AGENT_API_INDEX);
+  // One shared program: the two barrels resolve the same module graph, so a
+  // single program avoids paying module resolution twice over the (now much
+  // larger) union surface.
+  it("in-repo and published \".\" export identical name sets", { timeout: 30000 }, () => {
+    const program = ts.createProgram({
+      rootNames: [ENGINE_INDEX, AGENT_API_INDEX],
+      options: {
+        target: ts.ScriptTarget.ESNext,
+        module: ts.ModuleKind.ESNext,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        strict: false,
+        noEmit: true,
+        skipLibCheck: true,
+        allowJs: true
+      }
+    });
+    const inRepo = exportNames(program, ENGINE_INDEX);
+    const published = exportNames(program, AGENT_API_INDEX);
     const missing = inRepo.filter((name) => !published.includes(name));
     const extra = published.filter((name) => !inRepo.includes(name));
     expect({ missing, extra }).toEqual({ missing: [], extra: [] });

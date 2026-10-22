@@ -998,6 +998,12 @@
   color: var(--ink-3);
 }
 .home .search-status:empty { display: none; }
+.home .search-hint {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
 .home .search-results {
   margin-top: 10px;
   padding: 8px;
@@ -1030,6 +1036,7 @@
   color: var(--ink-2);
 }
 .home .install-bar-templates { max-width: 700px; margin-bottom: 26px; }
+.home .install-bar-deploy { max-width: 700px; margin-top: 20px; margin-bottom: 0; }
 
 .home .template-grid {
   display: grid;
@@ -1173,6 +1180,12 @@
   font-weight: 600;
   line-height: 1.25;
   letter-spacing: -0.015em;
+}
+.home .whatsnew-live {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-3);
 }
 .home .whatsnew ul {
   margin: 0;

@@ -44,11 +44,17 @@ describe("agent API line-count acceptance", () => {
 
     expect(source).toContain("createGame");
     expect(source).toContain("game.platformer");
-    expect(source).toContain("game.input");
-    expect(source).toContain("model(assets.showcaseKenneyOobiPlatformerHero");
+    // QR-09: input is runtime-owned — `createGame({ input })` mounts it and the
+    // `miniGame.input` handle drives the loop; `game.input(...)` is the pre-PRD-09
+    // standalone builder other templates still use.
+    expect(source).toContain("input: inputOptions");
+    expect(source).toContain("miniGame.input");
+    // PRD-13 #481: the certified hero is the library-starter KayKit barbarian.
+    expect(source).toContain("model(assets.kaykitBarbarian");
     expect(source).toContain("__AURA3D_MINI_GAME__");
     expect(source).toContain("routeEvents");
-    // createGame evidence plumbing pushed the starter to 267 app lines.
-    expect(countAppLines(path)).toBeLessThanOrEqual(280);
+    // createGame + runtime-owned input + library hero swap pushed the starter
+    // to 308 app lines.
+    expect(countAppLines(path)).toBeLessThanOrEqual(320);
   });
 });

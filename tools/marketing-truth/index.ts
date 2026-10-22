@@ -1,5 +1,22 @@
-import { statSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, statSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { fileIncludes, noFileMatches, writeReport, type ReleaseCheck } from "../check-common";
+
+// The release copy is pinned to the canonical release manifest, not to a
+// hard-coded version. `check:version` enforces that every version claim on the
+// page matches the root package.json version; this checker does the same.
+const canonicalVersion = (JSON.parse(readFileSync("package.json", "utf8")) as { version?: string }).version ?? "0.0.0";
+// Published tarball count mirrors collectPublishablePackages() in
+// tools/release/publish-all.mjs: the root @aura3d/engine package plus every
+// non-private packages/* manifest.
+const publishedPackageCount =
+  1 +
+  readdirSync("packages").filter((dir) => {
+    const manifestPath = join("packages", dir, "package.json");
+    if (!existsSync(manifestPath)) return false;
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { private?: boolean };
+    return manifest.private !== true;
+  }).length;
 
 const files = ["README.md", "marketing/index.html", "docs/project/status/current-state.md", "docs/project/go-to-market-strategy.md"];
 const publicSiteFiles = ["index.html", "marketing/index.html", "marketing/src/main.ts", "marketing/src/styles.css"];
@@ -34,8 +51,8 @@ const publicDraftLanguageTerms = [
 
 const checks: ReleaseCheck[] = [
   fileIncludes("marketing/index.html", ["Aura3D", "agent-written browser 3D", "assets add", "check-deploy", "The agent writes code. You bring the assets.", "not a hidden runtime generator"], "marketing truthful product copy"),
-  fileIncludes("marketing/index.html", ["Aura3D 3.0.1 is live", "50 apps, games, and focused examples", "29 coordinated packages at 3.0.1", "Rapier physics", "Recast navigation", "Build your first scene"], "marketing product-first release copy"),
-  fileIncludes("marketing/docs/aura3d-vs-threejs.html", ["15 / 15", "29", "exact installed Aura3D tarballs", "Frozen r185 workload set", "The set proves these named outcomes"], "technical comparison retains scoped evidence"),
+  fileIncludes("marketing/index.html", [`Aura3D ${canonicalVersion} is live`, "50 apps, games, and focused examples", `${publishedPackageCount} coordinated packages at ${canonicalVersion}`, "Rapier physics", "Recast navigation", "Build your first scene"], "marketing product-first release copy"),
+  fileIncludes("marketing/docs/aura3d-vs-threejs.html", ["15 / 15", `${publishedPackageCount}`, "exact installed Aura3D tarballs", "Frozen r185 workload set", "The set proves these named outcomes"], "technical comparison retains scoped evidence"),
   fileIncludes("marketing/index.html", ["npm package", "GitHub source", "2.0 migration", "Public API", "50 live experiences", "Templates", "Asset pipeline", "Deployment"], "marketing release reference links"),
   fileIncludes("README.md", ["agent-written browser 3D", "assets add", "create-aura3d"], "README product positioning"),
   noFileMatches(publicSiteFiles, versionCycleTerms, "public site no version-cycle language"),

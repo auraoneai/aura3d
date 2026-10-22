@@ -2,6 +2,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
 
+// Marketing copy pins install commands to the canonical release version —
+// marketing/scripts/check-version.mjs rejects any other version claim — so a
+// valid copy command uses either @latest or the exact current release pin.
+// Anything else (stale pins, unknown templates, other CLIs) still fails.
+const canonicalVersion = (JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { version?: string }).version ?? "0.0.0";
+const releaseTag = `(?:latest|${canonicalVersion.replace(/\./g, "\\.")})`;
+
 const html = readFileSync("marketing/index.html", "utf8");
 const hrefs = [...html.matchAll(/\s(?:href|src)="([^"]+)"/g)].map((match) => match[1]).filter(Boolean);
 const copyCommands = [...html.matchAll(/data-copy-text="([^"]+)"/g)].map((match) => decodeHtml(match[1] ?? ""));
@@ -81,8 +88,8 @@ writeReport("tests/reports/marketing-link-audit.json", "aura3d-marketing-link-au
 });
 
 function isValidCopyCommand(command: string): boolean {
-  if (command.includes("create-aura3d")) return /npx\s+create-aura3d@latest\s+\S+\s+--template\s+(product-viewer|cinematic-scene|mini-game)/.test(command);
-  if (command.includes("@aura3d/cli")) return /npx\s+@aura3d\/cli@latest\s+(assets|check-deploy|doctor|init)/.test(command);
+  if (command.includes("create-aura3d")) return new RegExp(`npx\\s+create-aura3d@${releaseTag}\\s+\\S+\\s+--template\\s+(product-viewer|cinematic-scene|mini-game)`).test(command);
+  if (command.includes("@aura3d/cli")) return new RegExp(`npx\\s+@aura3d\\/cli@${releaseTag}\\s+(assets|check-deploy|doctor|init)`).test(command);
   if (command.includes("pnpm")) return /pnpm\s+run\s+check:release/.test(command);
   return false;
 }
