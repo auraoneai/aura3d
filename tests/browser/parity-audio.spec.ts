@@ -129,6 +129,23 @@ test.describe("parity-audio", () => {
     expect(result.exponential.ratio).toBeGreaterThan(0.05);
     expect(result.exponential.ratio).toBeLessThan(0.15);
     writeFileSync(resolve(REPORT_ROOT, "distance-models.json"), `${JSON.stringify(result, null, 2)}\n`);
+
+    // §8/§11.3: route-health names the parity IDs this port exercised. The
+    // audio port has no renderable content — a bare app mounts the diagnostic
+    // backend; the snapshot still carries the AU IDs the suite proved.
+    const parityIds = await page.evaluate(async () => {
+      const m = await import("/packages/engine/src/public/index.ts");
+      const canvas = document.createElement("canvas");
+      document.body.append(canvas);
+      const app = m.createAuraApp(canvas, { scene: m.scene().background("#000"), pixelRatio: 1, resize: false });
+      try {
+        await app.ready();
+        return m.createAuraRouteHealthSnapshot(app, { parityIds: ["AU-01", "AU-02", "AU-03"] }).parityIds;
+      } finally {
+        app.dispose();
+      }
+    });
+    expect(parityIds).toEqual(["AU-01", "AU-02", "AU-03"]);
   });
 
   test("cone attenuates a listener outside the outer cone; AudioListener drives ctx.listener", async ({ page }) => {

@@ -1,6 +1,7 @@
 import {
   camera,
   createAuraApp,
+  createAuraRouteHealthSnapshot,
   helpers,
   lines,
   points,
@@ -67,6 +68,8 @@ interface ParityLinesEvidence {
   };
   readonly helpers?: Record<string, number>;
   readonly flagOff?: { readonly threwParityNotImplemented: boolean; readonly error?: string };
+  /** §8 route-health: the port's snapshot names the parity IDs it exercised. */
+  readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
 }
 
 declare global {
@@ -133,12 +136,15 @@ function canvasFor(cssWidth: number, cssHeight: number, pixelRatio: number, id: 
   return canvas;
 }
 
+/** §8 route-health: IDs this fixture proves against real GPU frames. */
+const PARITY_LINE_IDS = ["AD-08", "SG-07", "SG-08", "SC-03", "B-01"] as const;
+
 async function captureScene(
   id: string,
   pixelRatio: number,
   build: () => ReturnType<typeof scene>,
   css = 320
-): Promise<{ stats: PixelStats; image: ImageData; app: AuraApp }> {
+): Promise<{ stats: PixelStats; image: ImageData; app: AuraApp; routeHealth?: { status: string; parityIds: readonly string[] } }> {
   const canvas = canvasFor(css, css, pixelRatio, id);
   const app = createAuraApp(canvas, {
     scene: build(),
@@ -149,7 +155,11 @@ async function captureScene(
   await app.ready();
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
   const image = await decodeShot(app);
-  const out = { stats: stats(image), image, app };
+  // Snapshot route-health inside the live app before disposal (§8 parityIds).
+  const routeHealth = id === "fat-dpr1"
+    ? createAuraRouteHealthSnapshot(app, { parityIds: PARITY_LINE_IDS })
+    : undefined;
+  const out = { stats: stats(image), image, app, routeHealth };
   app.dispose();
   return out;
 }
@@ -178,6 +188,7 @@ async function run(): Promise<void> {
         })
       );
   const dpr1 = await captureScene("fat-dpr1", 1, () => fatScene());
+  evidence.routeHealth = dpr1.routeHealth;
   const dpr2 = await captureScene("fat-dpr2", 2, () => fatScene());
   const dpr1Css = dpr1.stats.widestRun;
   const dpr2Css = dpr2.stats.widestRun / 2;

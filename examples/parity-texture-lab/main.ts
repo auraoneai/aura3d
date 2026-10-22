@@ -16,6 +16,7 @@
 import {
   camera,
   createAuraApp,
+  createAuraRouteHealthSnapshot,
   lights,
   material,
   primitives,
@@ -40,6 +41,8 @@ interface ParityTextureLabState {
   loadedWidth: number;
   loadedFormat: string;
   errors: string[];
+  /** §8 route-health: snapshot naming the parity IDs this port exercised. */
+  routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   error?: string;
 }
 
@@ -210,6 +213,10 @@ async function run(): Promise<void> {
     state.texturedMaterials = textured.length;
     state.pixelBackedMaterials = textured.filter((m) => m.pixelBacked).length;
     state.errors = diagnostics.errors.slice(0, 8);
+    // §8 route-health inside the live app (ST-01/02/03/06/07 per lane L4).
+    state.routeHealth = createAuraRouteHealthSnapshot(app, {
+      parityIds: ["ST-01", "ST-02", "ST-03", "ST-06", "ST-07"]
+    });
     state.status = "ready";
   } catch (error) {
     state.status = "error";

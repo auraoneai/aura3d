@@ -14,7 +14,7 @@
  * `window.__AURA3D_PARITY_INSTANCING__` carries the verdict.
  */
 
-import { batched, camera, createAuraApp, instances, lights, material, scene } from "@aura3d/engine";
+import { batched, camera, createAuraApp, createAuraRouteHealthSnapshot, instances, lights, material, scene } from "@aura3d/engine";
 
 interface HarnessResult {
   readonly status: "ready" | "error";
@@ -25,6 +25,8 @@ interface HarnessResult {
   readonly compiledFeatures?: readonly string[];
   readonly rendererBatching?: unknown;
   readonly multiDrawExtension?: boolean;
+  /** §8 route-health: snapshot naming the parity IDs this port exercised. */
+  readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   readonly image?: {
     readonly nonDarkPixels: number;
     readonly colorBuckets: number;
@@ -122,6 +124,8 @@ async function run(): Promise<void> {
   // C-05 sanctioned readback — app.screenshot()'s toDataURL is unreliable on
   // preserveDrawingBuffer:false contexts.
   const image = analyzeImage(await app.capture({ type: "image-bitmap" }) as ImageBitmap);
+  // §8 route-health inside the live app, before dispose (SG-01/SG-02 per lane L5).
+  const routeHealth = createAuraRouteHealthSnapshot(app, { parityIds: ["SG-01", "SG-02"] });
   window.__AURA3D_PARITY_INSTANCING__ = {
     status: "ready",
     drawCalls: diagnostics.drawCalls,
@@ -130,6 +134,7 @@ async function run(): Promise<void> {
     compiledFeatures: diagnostics.compiledFeatures,
     rendererBatching: diagnostics["renderer.batching"],
     multiDrawExtension: multiDrawExtensionPresent(),
+    routeHealth,
     image
   };
   app.dispose();

@@ -25,6 +25,7 @@ interface ParityAnimationState {
   readonly litPixels?: number;
   readonly actorIds?: readonly string[];
   readonly clipsAvailable?: readonly string[];
+  readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   readonly error?: string;
 }
 
@@ -83,6 +84,9 @@ test.describe("L8 parity — animation", () => {
     // A real frame was submitted: non-zero draw calls and lit pixels.
     expect(state?.drawCalls ?? 0).toBeGreaterThan(0);
     expect(state?.litPixels ?? 0).toBeGreaterThan(1_000);
+
+    // §8/§11.3: route-health names the parity IDs this port exercised.
+    expect(state?.routeHealth?.parityIds).toEqual(["SA-01", "SA-02", "SA-03", "SA-04", "SA-05", "SA-06", "SM-03"]);
   });
 });
 

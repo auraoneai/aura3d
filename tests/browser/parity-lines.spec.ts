@@ -139,6 +139,9 @@ test.describe("parity-lines (L6)", () => {
     // B-01: flag-off fail-closed.
     expect(evidence.flagOff?.threwParityNotImplemented, evidence.flagOff?.error).toBe(true);
 
+    // §8/§11.3: route-health names the parity IDs this port exercised.
+    expect(evidence.routeHealth?.parityIds).toEqual(["AD-08", "SG-07", "SG-08", "SC-03", "B-01"]);
+
     // The flag-off negative control above deliberately fails its strict mount —
     // that rejection surfaces one pageerror by design. Everything else must be clean.
     expect(errors.filter((e) => !e.includes("not yet implemented (A3D_PARITY_LINES)"))).toEqual([]);

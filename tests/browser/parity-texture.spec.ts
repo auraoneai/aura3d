@@ -60,6 +60,8 @@ test("parity-texture-lab uploads public texture.* handles and fires asset events
     // ST-06: progress fired for the successful load; error fired for the 404.
     expect(lab.progressEvents).toBeGreaterThanOrEqual(1);
     expect(lab.errorEvents).toBeGreaterThanOrEqual(1);
+    // §8/§11.3: route-health names the parity IDs this port exercised.
+    expect(lab.routeHealth?.parityIds).toEqual(["ST-01", "ST-02", "ST-03", "ST-06", "ST-07"]);
     expect(consoleErrors.filter((e) => !e.includes("404") && !e.includes("parity-lab-does-not-exist"))).toEqual([]);
   } finally {
     await server.close();

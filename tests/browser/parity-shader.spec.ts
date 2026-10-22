@@ -17,6 +17,7 @@ interface LabState {
   readonly chunkRegistered: boolean;
   readonly publicApiOnly: boolean;
   readonly errors: readonly string[];
+  readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   readonly error?: string;
 }
 
@@ -78,6 +79,8 @@ test.describe("parity shader material (SH-02, SH-10)", () => {
       setUniformApplied: true,
       publicApiOnly: true
     });
+    // §8/§11.3: route-health names the parity IDs this port exercised.
+    expect(ready.routeHealth?.parityIds).toEqual(["SH-02", "SH-03", "SH-09", "SH-10"]);
 
     const canvas = page.locator("#stage");
     await page.evaluate(() => (window as unknown as { __AURA_CUSTOM_SHADER_LAB_SET_TIME__: (v: number) => void }).__AURA_CUSTOM_SHADER_LAB_SET_TIME__(0));

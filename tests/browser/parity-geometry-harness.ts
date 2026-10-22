@@ -8,6 +8,7 @@
 import {
   camera,
   createAuraApp,
+  createAuraRouteHealthSnapshot,
   geometry,
   lights,
   material,
@@ -43,6 +44,8 @@ interface ParityGeometryResult {
   readonly status: "ready" | "error" | "waiting";
   readonly captures?: readonly KindCapture[];
   readonly dynamic?: DynamicEvidence;
+  /** §8 route-health: snapshot naming the parity IDs this port exercised. */
+  readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   readonly error?: string;
 }
 
@@ -137,7 +140,10 @@ function analyzeImage(image: CanvasImageSource & { readonly width: number; reado
   return { nonDarkPixels, nonLightPixels, colorBuckets: buckets.size };
 }
 
-async function captureKind(id: keyof typeof primitives, options: AuraPrimitiveOptions): Promise<KindCapture> {
+/** §8 route-health: IDs this fixture proves (SG-03/04/05 per lane L2). */
+const PARITY_GEOMETRY_IDS = ["SG-03", "SG-04", "SG-05"] as const;
+
+async function captureKind(id: keyof typeof primitives, options: AuraPrimitiveOptions): Promise<KindCapture & { routeHealth?: { status: string; parityIds: readonly string[] } }> {
   const canvas = document.createElement("canvas");
   canvas.width = 480;
   canvas.height = 270;
@@ -149,9 +155,12 @@ async function captureKind(id: keyof typeof primitives, options: AuraPrimitiveOp
   // preserveDrawingBuffer:false contexts.
   const metrics = analyzeImage(await app.capture({ type: "image-bitmap" }) as ImageBitmap);
   const diagnostics = app.diagnostics();
+  const routeHealth = id === KINDS[0]!.id
+    ? createAuraRouteHealthSnapshot(app, { parityIds: PARITY_GEOMETRY_IDS })
+    : undefined;
   app.dispose();
   canvas.remove();
-  return { id, drawCalls: diagnostics.drawCalls, image: metrics };
+  return { id, drawCalls: diagnostics.drawCalls, image: metrics, routeHealth };
 }
 
 /** Sine ribbon strip — `size` column pairs, positions regenerated per phase. */
@@ -251,7 +260,7 @@ async function runHarness(): Promise<void> {
     captures.push(await captureKind(kind.id, kind.options));
   }
   const dynamic = await exerciseDynamic();
-  window.__AURA3D_PARITY_GEOMETRY__ = { status: "ready", captures, dynamic };
+  window.__AURA3D_PARITY_GEOMETRY__ = { status: "ready", captures, dynamic, routeHealth: captures[0]?.routeHealth };
 }
 
 if (!mount || !start) {

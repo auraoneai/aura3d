@@ -1,6 +1,7 @@
 import {
   camera,
   createAuraApp,
+  createAuraRouteHealthSnapshot,
   effects,
   lights,
   material,
@@ -37,6 +38,8 @@ interface LabEvidence {
   postUniformApplied: boolean;
   readonly publicApiOnly: boolean;
   readonly errors: readonly string[];
+  /** §8 route-health: snapshot naming the parity IDs this port exercised. */
+  routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   error?: string;
 }
 
@@ -237,6 +240,11 @@ void main() { vec4 c = texture(u_color, v_uv); outColor = vec4(mix(c.rgb, 1.0 - 
     });
   };
   evidence.status = "ready";
+  // §8 route-health inside the live app (SH-02 custom material, SH-03 post
+  // passes, SH-09 patch, SH-10 chunk registry — all exercised above).
+  evidence.routeHealth = app
+    ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SH-03", "SH-09", "SH-10"] })
+    : undefined;
   await renderFrame();
 };
 

@@ -3,6 +3,7 @@ import {
   characters,
   cloneSkinned,
   createAuraApp,
+  createAuraRouteHealthSnapshot,
   lights,
   looks,
   material,
@@ -52,6 +53,8 @@ interface ParityAnimationLabState {
   readonly litPixels?: number;
   readonly actorIds?: readonly string[];
   readonly clipsAvailable?: readonly string[];
+  /** §8 route-health: snapshot naming the parity IDs this port exercised. */
+  readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   readonly error?: string;
 }
 
@@ -177,8 +180,13 @@ async function boot(): Promise<void> {
         if (data[i]! + data[i + 1]! + data[i + 2]! > 24) litPixels += 1;
       }
       bitmap.close();
+      // §8 route-health inside the live app, before dispose (L8 IDs).
+      const routeHealth = createAuraRouteHealthSnapshot(app, {
+        parityIds: ["SA-01", "SA-02", "SA-03", "SA-04", "SA-05", "SA-06", "SM-03"]
+      });
       publish({
         status: "ready",
+        routeHealth,
         backend: diagnostics.renderer?.runtime.backend,
         cloneCount: actors.length,
         clipName,

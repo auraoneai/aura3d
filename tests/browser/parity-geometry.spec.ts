@@ -57,5 +57,8 @@ test.describe("threejs-parity L2 geometry breadth", () => {
     // ribbon (the in-place dirty-range path — no recompile, no realloc).
     expect(dynamic?.updateAttributeMsP50 ?? Infinity).toBeLessThan(2);
     expect(dynamic?.setGeometryMsP50 ?? Infinity).toBeLessThan(8);
+
+    // §8/§11.3: route-health names the parity IDs this port exercised.
+    expect(result?.routeHealth?.parityIds).toEqual(["SG-03", "SG-04", "SG-05"]);
   });
 });

@@ -13,6 +13,7 @@ interface LabState {
   readonly passNames: readonly string[];
   readonly postUniformApplied: boolean;
   readonly errors: readonly string[];
+  readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
   readonly error?: string;
 }
 
@@ -68,6 +69,8 @@ test.describe("parity shader post passes (SH-03)", () => {
 
     const ready = await state(page);
     expect(ready.passNames).toEqual(["lab-posterize", "lab-invert"]);
+    // §8/§11.3: route-health names the parity IDs this port exercised.
+    expect(ready.routeHealth?.parityIds).toEqual(["SH-02", "SH-03", "SH-09", "SH-10"]);
 
     const canvas = page.locator("#stage");
     const shot = async (name: string) => {

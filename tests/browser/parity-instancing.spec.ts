@@ -62,5 +62,8 @@ test.describe("parity-L5 instancing + batching", () => {
       const mode = (result.rendererBatching as { multiDrawMode?: string }).multiDrawMode;
       expect(mode === undefined || ["multi-draw", "none", "unavailable"].includes(mode)).toBe(true);
     }
+
+    // §8/§11.3: route-health names the parity IDs this port exercised.
+    expect(result?.routeHealth?.parityIds).toEqual(["SG-01", "SG-02"]);
   });
 });
