@@ -49,28 +49,32 @@ describe("aura3d migrate three", () => {
     TransformControls: { source: `new TransformControls(camera, el)`, expectContains: ["new TransformControls({})", "TransformControlsOptions", "@aura3d/engine/controls"], mapping: "approximate" },
     PositionalAudio: { source: `new THREE.PositionalAudio(listener)`, expectContains: ["a3d: PositionalAudio → PositionalEmitter", "PositionalEmitterOptions", "@aura3d/engine/audio"], mapping: "approximate" },
     SkinnedMesh: { source: `new THREE.SkinnedMesh(geo, mat)`, expectContains: ["a3d: SkinnedMesh → model"], mapping: "approximate" },
-    Clock: { source: `const c = new THREE.Clock();`, expectContains: ["a3d: Clock → createAuraApp({ onFrame })", "lane L7 (SR-01)"], mapping: "approximate" },
+    Clock: { source: `const c = new THREE.Clock();`, expectContains: ["a3d: Clock → Clock", "SR-06"], mapping: "exact" },
     Vector2: { source: `new THREE.Vector2(1, 2)`, expectContains: ["new Vector2(1, 2)", "@aura3d/engine/math"], mapping: "approximate" },
     Matrix4: { source: `new THREE.Matrix4()`, expectContains: ["new Matrix4()", "@aura3d/engine/math"], mapping: "approximate" },
     WebGPURenderer: { source: `new THREE.WebGPURenderer()`, expectContains: ["createAuraApp({ resize: true })"], mapping: "approximate" },
 
-    // ── L10: pending rows — reserved targets, lane-owned, parityPending ──
-    ShaderMaterial: { source: `new THREE.ShaderMaterial({ uniforms: {} })`, expectContains: ["parityPending ShaderMaterial → material.custom", "lane L1 (SH-02)"], mapping: "pending" },
-    RawShaderMaterial: { source: `new THREE.RawShaderMaterial()`, expectContains: ["parityPending RawShaderMaterial → material.custom"], mapping: "pending" },
-    CatmullRomCurve3: { source: `new THREE.CatmullRomCurve3(pts)`, expectContains: ["parityPending CatmullRomCurve3 → curve.catmullRom", "lane L3 (SM-02)"], mapping: "pending" },
-    BatchedMesh: { source: `new THREE.BatchedMesh(10, 1000, 5000, mat)`, expectContains: ["parityPending BatchedMesh → batched.mesh", "lane L5 (SG-02)"], mapping: "pending" },
-    Line: { source: `new THREE.Line(geo, mat)`, expectContains: ["parityPending Line → lines.line", "lane L6 (SG-06)"], mapping: "pending" },
-    Points: { source: `new THREE.Points(geo, mat)`, expectContains: ["parityPending Points → points", "lane L6 (SG-07)"], mapping: "pending" },
-    Sprite: { source: `new THREE.Sprite(mat)`, expectContains: ["parityPending Sprite → sprites", "lane L6 (SG-08)"], mapping: "pending" },
-    ConeGeometry: { source: `new THREE.ConeGeometry(1, 2)`, expectContains: ["parityPending ConeGeometry → primitives.cone", "lane L2 (SG-03)"], mapping: "pending" },
-    TubeGeometry: { source: `new THREE.TubeGeometry(curve, 20, 0.5)`, expectContains: ["parityPending TubeGeometry → primitives.tube", "lane L2 (SG-03)"], mapping: "pending" },
-    Raycaster: { source: `new THREE.Raycaster()`, expectContains: ["parityPending Raycaster → raycast", "lane L7 (SR-03)"], mapping: "pending" },
-    CubeCamera: { source: `new THREE.CubeCamera(0.1, 100, rt)`, expectContains: ["parityPending CubeCamera → cameras.cube", "lane L7 (SC-01)"], mapping: "pending" },
-    WebGLRenderTarget: { source: `new THREE.WebGLRenderTarget(512, 512)`, expectContains: ["parityPending WebGLRenderTarget → RenderTarget", "lane L7 (SH-06)"], mapping: "pending" },
-    AxesHelper: { source: `new THREE.AxesHelper(5)`, expectContains: ["parityPending AxesHelper → helpers.axes", "SC-03"], mapping: "pending" },
-    TextureLoader: { source: `const t = new THREE.TextureLoader();`, expectContains: ["parityPending TextureLoader → texture.load", "lane L4 (ST-07)"], mapping: "pending" },
+    // ── L10: graduated pending rows — targets now public, a3d guidance ──
+    ShaderMaterial: { source: `new THREE.ShaderMaterial({ uniforms: {} })`, expectContains: ["a3d: ShaderMaterial → material.custom", "SH-02"], mapping: "approximate" },
+    RawShaderMaterial: { source: `new THREE.RawShaderMaterial()`, expectContains: ["a3d: RawShaderMaterial → material.custom"], mapping: "approximate" },
+    CatmullRomCurve3: { source: `new THREE.CatmullRomCurve3(pts)`, expectContains: ["a3d: CatmullRomCurve3 → CatmullRomCurve3", "@aura3d/engine/math"], mapping: "exact" },
+    BatchedMesh: { source: `new THREE.BatchedMesh(10, 1000, 5000, mat)`, expectContains: ["a3d: BatchedMesh → batched.mesh", "SG-02"], mapping: "approximate" },
+    Line: { source: `new THREE.Line(geo, mat)`, expectContains: ["a3d: Line → lines.line", "SG-06"], mapping: "approximate" },
+    Points: { source: `new THREE.Points(geo, mat)`, expectContains: ["a3d: Points → points", "SG-07"], mapping: "approximate" },
+    Sprite: { source: `new THREE.Sprite(mat)`, expectContains: ["a3d: Sprite → sprites", "SG-08"], mapping: "approximate" },
+    ConeGeometry: { source: `new THREE.ConeGeometry(1, 2)`, expectContains: ["a3d: ConeGeometry → primitives.cone", "SG-03"], mapping: "approximate" },
+    TubeGeometry: { source: `new THREE.TubeGeometry(curve, 20, 0.5)`, expectContains: ["a3d: TubeGeometry → primitives.tube", "SG-03"], mapping: "approximate" },
+    Raycaster: { source: `new THREE.Raycaster()`, expectContains: ["a3d: Raycaster → raycast", "SR-03"], mapping: "approximate" },
+    CubeCamera: { source: `new THREE.CubeCamera(0.1, 100, rt)`, expectContains: ["a3d: CubeCamera → cameras.cube", "SC-01"], mapping: "approximate" },
+    WebGLRenderTarget: { source: `new THREE.WebGLRenderTarget(512, 512)`, expectContains: ["a3d: WebGLRenderTarget → RenderTarget", "SH-06"], mapping: "approximate" },
+    AxesHelper: { source: `new THREE.AxesHelper(5)`, expectContains: ["a3d: AxesHelper → helpers.axes", "SC-03"], mapping: "approximate" },
+    TextureLoader: { source: `const t = new THREE.TextureLoader();`, expectContains: ["a3d: TextureLoader → texture.load", "ST-07"], mapping: "approximate" },
     "TextureLoader.load": { source: `const t = new THREE.TextureLoader();\nt.load("wood.png");`, expectContains: ["a3d: TextureLoader.load → assets"], mapping: "approximate" },
-    Reflector: { source: `new THREE.Reflector(geo)`, expectContains: ["parityPending Reflector → surfaces.mirror", "lane L7 (AD-15)"], mapping: "pending" },
+    Reflector: { source: `new THREE.Reflector(geo)`, expectContains: ["a3d: Reflector → surfaces.mirror", "AD-15"], mapping: "approximate" },
+
+    // ── pending rows that remain — targets reserved, not yet public ─────
+    NodeMaterial: { source: `new THREE.NodeMaterial()`, expectContains: ["parityPending NodeMaterial → material.custom", "SH-01"], mapping: "pending" },
+    Layers: { source: `const l = new THREE.Layers();`, expectContains: ["parityPending Layers → layers", "not yet public"], mapping: "pending" },
 
     // ── L10: deliberate exclusions (AD-04 loaders, AD-05 exporters) ──────
     FBXLoader: { source: `new THREE.FBXLoader()`, expectContains: ["a3d: FBXLoader — excluded (AD-04)"], mapping: "none" },
@@ -111,12 +115,12 @@ describe("aura3d migrate three", () => {
   });
 
   it("report carries {construct,line,mapping,note} rows and counts incl. pending", () => {
-    const { rows } = emitMigratedSource(`import * as THREE from "three";\nnew THREE.Scene();\nnew THREE.CSS3DRenderer()\nnew THREE.ShaderMaterial()`);
+    const { rows } = emitMigratedSource(`import * as THREE from "three";\nnew THREE.Scene();\nnew THREE.CSS3DRenderer()\nnew THREE.NodeMaterial()`);
     const report = buildMigrateReport(rows);
     expect(report.counts.none).toBe(1);
     expect(report.counts.pending).toBe(1);
     expect(report.rows.some((r) => r.construct === "CSS3DRenderer" && r.line === 3)).toBe(true);
-    expect(report.rows.some((r) => r.construct === "ShaderMaterial" && r.mapping === "pending")).toBe(true);
+    expect(report.rows.some((r) => r.construct === "NodeMaterial" && r.mapping === "pending")).toBe(true);
   });
 
   // ── Golden: a Crayon-style module shaped like Strange Orbit ────────────

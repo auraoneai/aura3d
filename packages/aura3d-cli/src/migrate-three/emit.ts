@@ -390,7 +390,7 @@ function mapPostPassArgs(construct: string, target: string): EmitArgs {
         const kind = geoMatch ? geoMatch[1]!.toLowerCase() : "box";
         return {
           call: `instances.${kind}({ transforms: [] })`,
-          comment: `a3d: ${count ?? "?"} instances — transforms/instanceColors populate the arrays from the update loop; ${geoMatch ? "factory inferred from the geometry arg" : "geometry is a variable — pick the instances.* factory matching it"}; the setMatrixAt handle lands as instances.mesh with lane L5 (SG-01)`
+          comment: `a3d: ${count ?? "?"} instances — transforms/instanceColors populate the arrays from the update loop; ${geoMatch ? "factory inferred from the geometry arg" : "geometry is a variable — pick the instances.* factory matching it"}; the setMatrixAt/setColorAt handle ships as instances.mesh (SG-01)`
         };
       }
       case "BokehPass": {
