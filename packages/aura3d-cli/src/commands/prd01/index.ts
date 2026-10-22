@@ -7,7 +7,7 @@
 
 import { readFileSync } from "node:fs";
 import { registerCliCommand, registerCodemod } from "../../contracts/commands.js";
-import { transformCoreV2 } from "../../../../../tools/quality-rebuild-codemods/core-v2.js";
+import { transformCoreV2 } from "../../codemods/core-v2.js";
 
 registerCodemod({
   name: "core-v2",
