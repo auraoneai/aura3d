@@ -48,7 +48,13 @@ test.describe("parity-L5 instancing + batching", () => {
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.errors ?? []).toEqual([]);
-    expect(result?.drawCalls).toBeGreaterThan(0);
+    const diag = () => JSON.stringify({
+      warnings: result?.warnings,
+      compiledFeatures: result?.compiledFeatures,
+      rendererBatching: result?.rendererBatching,
+      multiDrawExtension: result?.multiDrawExtension
+    });
+    expect(result?.drawCalls, diag()).toBeGreaterThan(0);
     // Four instanced boxes (red/green/blue/white) + two batched shapes
     // (amber/cyan) ⇒ several distinct color buckets. A broken instance path
     // renders one flat color or nothing.

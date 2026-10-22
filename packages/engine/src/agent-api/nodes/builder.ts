@@ -1,9 +1,6 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraVec3, AuraMaterialSpec, AuraAnimationSpec, AuraRuntimeNodeSpec, AuraInteractionSpec, AuraSceneNode, AuraNodePhysicsSpec } from "./types.js";
-import { animation } from "./animation.js";
-import { material } from "./material.js";
-import { physics } from "./physics.js";
 
 export class AuraNodeBuilder<TNode extends AuraSceneNode> {
   constructor(private readonly value: TNode) {}

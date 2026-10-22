@@ -392,8 +392,12 @@ function runMissingAssetOutputCheck(appDir: string, assetId: string): CommandRes
   if (!asset?.outputPath) {
     return { ok: false, output: `Missing manifest outputPath for ${assetId}`, seconds: 0 };
   }
-  if (asset?.outputPath) rmSync(resolve(appDir, asset.outputPath), { force: true });
-  return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
+  const assetPath = resolve(appDir, asset.outputPath);
+  const backup = existsSync(assetPath) ? readFileSync(assetPath) : undefined;
+  rmSync(assetPath, { force: true });
+  const result = run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
+  if (backup) writeFileSync(assetPath, backup);
+  return result;
 }
 
 function runInventedAssetIdCheck(appDir: string, assetId: string): CommandResult {

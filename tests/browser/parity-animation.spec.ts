@@ -63,7 +63,7 @@ test.describe("L8 parity — animation", () => {
     const residual = captured.errors.filter((e) => !e.includes("404"));
     const unexplained404s = captured.errors.length - residual.length - captured.benign404s();
     expect(residual).toEqual([]);
-    expect(unexplained404s).toBeLessThanOrEqual(0);
+    expect(unexplained404s, `non-env 404 urls: ${JSON.stringify(captured.urls404())}`).toBeLessThanOrEqual(0);
     expect(state?.status, state?.error).toBe("ready");
 
     // SA-04: ten independent clones, one clip, staggered phases.
@@ -95,15 +95,20 @@ test.describe("L8 parity — animation", () => {
   });
 });
 
-function captureErrors(page: Page): { errors: string[]; benign404s: () => number } {
+function captureErrors(page: Page): { errors: string[]; benign404s: () => number; urls404: () => string[] } {
   const errors: string[] = [];
   let env404s = 0;
+  const missing: string[] = [];
   // The engine's environment probe first fetches the relative manifest URL
   // (404), then retries from root — a benign console error on the dev server.
-  page.on("response", (r) => { if (r.status() === 404 && r.url().includes("/aura-environments/")) env404s += 1; });
+  page.on("response", (r) => {
+    if (r.status() !== 404) return;
+    if (r.url().includes("/aura-environments/")) env404s += 1;
+    else missing.push(r.url());
+  });
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
-  return { errors, benign404s: () => env404s };
+  return { errors, benign404s: () => env404s, urls404: () => missing };
 }
