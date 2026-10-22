@@ -157,6 +157,16 @@ async function run(): Promise<void> {
   (window as unknown as { __PARITY_TEXTURE_APP__?: unknown }).__PARITY_TEXTURE_APP__ = app;
 
   try {
+    // Mount is async — a step() taken while pending renders nothing and
+    // leaves drawCalls 0 (software GL can hold the first real frame past
+    // the texture wait below). Await the mount, then drive bounded
+    // production frames until one draws.
+    await app.ready().catch(() => undefined);
+    const drawWaitStart = performance.now();
+    while ((app.diagnostics().drawCalls ?? 0) === 0 && performance.now() - drawWaitStart < 45_000) {
+      app.step(1 / 60);
+      await new Promise((r) => setTimeout(r, 100));
+    }
     // Wait for the post-mount texture upgrade to mark materials pixel-backed.
     const deadline = performance.now() + 20_000;
     while (performance.now() < deadline) {
