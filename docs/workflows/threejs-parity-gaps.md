@@ -1,9 +1,11 @@
 # PRD — three.js → Aura3D Parity
 
-**Status:** v3 · code audit on 2026-10-22 (`main` @ `1cb364c2b`). The §10
-checklist was re-ticked against source and tests; open work is in **§12**.
-**Not complete:** 21 open tasks in §12, all four phase exits open, all six
-`A3D_PARITY_*` flags still `"dev"`.
+**Status:** v4 · execution run on 2026-10-22 (`main` @ `1cb364c2b` plus uncommitted
+work). Tasks R-01..R-23 are done or reported with a precise blocker (§12.4).
+**Not fully complete:** 4 phase exits (R-20) open, all six `A3D_PARITY_*` flags
+still `"dev"` (R-17 blocked on the L4 gate), HEATSINK TSL decision open (R-24),
+and the Crayon fixed-input/pixel-diff fixture open (R-25; Roadster Hours and
+Silt & Signal are blocked).
 **Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
 (the ten Crayon ports this PRD unblocks)
@@ -1031,6 +1033,10 @@ SR-03, SR-05, SG-09, SG-11, AD-16; L10-04, L10-05; public-api docs.
 | **R-19** | L10 | M | L10-06: the golden input is a hand-written stand-in, not the real Strange Orbit module | `tests/unit/aura3d-cli/migrate-three.test.ts`; `tests/fixtures/crayon/strange-orbit/` | Real captured module (19 KB) migrated with 0 `TODO(a3d-migrate)` in game logic |
 | **R-20** | ports | L | Phase exits A–D (§7.2) never attempted | per-game ports | As in §7.2. Phase A needs R-01 first; B needs R-03/R-04/R-10 and flag flips (R-17) for SHADING/BATCHING |
 | **R-21** | L10 | S | `cameras` exported with no entry in `root-export-dispositions.json` | `docs/architecture/root-export-dispositions.json` | Entry added; `check:public-api` green |
+| **R-22** | L10 | M | WebGPU canvas presentation is unproven on the remote runner. Headless Chromium + SwiftShader destroys the `GPUDevice` at the first presented frame; `material.custom` is only proven through offscreen readback | `tests/browser/parity-shader.spec.ts`; remote runner config | Canvas-presented pixel proof on a GPU runner, or an explicit offscreen-readback waiver recorded in §8 and route-health |
+| **R-23** | L2 | S | Custom vertex attributes had no public field; five were required by the real Strange Orbit module | `AA/nodes/geometry.ts`; `AA/RootGeometry.ts`; `tests/fixtures/crayon/strange-orbit/` | **DONE** — `attributes` on `geometry.define/custom/dynamic`, `topology:"points"`; ACR run `r23c-20261022T195658Z` |
+| **R-24** | L1 | M | HEATSINK authors 49 live node materials (`WebGPURenderer`); there is no TSL subset, and `SH-01` is not met as a general feature | `AA/nodes/material.ts`; `tests/fixtures/crayon/heatsink/`; L1-11 design | Decide: hand-port HEATSINK to `material.custom` or build the L1-11 TSL subset. Either path must pass a HEATSINK material fixture before Phase B |
+| **R-25** | L10 | M | Crayon capture stops at menus/HUD for eight games; no game has a fixed-input Stage 5 run plus pixel diff. Roadster Hours' start click times out and Silt & Signal's child frame evaluation times out | `docs/workflows/crayon-game-reverse-engineering.md`; `evidence/crayon-runtime/*`; `tools/crayon-probe/index.ts` | All ten games have a fixed-input capture and pixel diff, or an explicit route-health limit. Roadster start and Silt child-frame blockers are resolved or waived with evidence |
 
 Still deferred by design (unchanged): **SH-04** compute (after `A3D_QR_WEBGPU`),
 **SC-04** XR buttons and render target (post-D), **L1-11** TSL subset (pending
@@ -1039,6 +1045,71 @@ R-02).
 ### 12.3 Parallel lanes
 
 R-01→R-02→R-20 is the only chain. Everything else can start now in parallel,
-grouped by owning lane: L1 {R-03, R-04, R-05}, L2 {R-12 (after R-11), R-13},
-L3 {R-11, R-14}, L4 {R-15}, L5 {R-10}, L7 {R-06, R-07, R-08, R-09}, L9 {R-18},
-L10 {R-01, R-16, R-19, R-21}. R-17 follows each lane's remote fixtures.
+grouped by owning lane: L1 {R-03, R-04, R-05, R-24}, L2 {R-12 (after R-11), R-13
+(R-23 done)}, L3 {R-11, R-14}, L4 {R-15}, L5 {R-10}, L7 {R-06, R-07, R-08, R-09},
+L9 {R-18}, L10 {R-01, R-16, R-19, R-21, R-22, R-25}. R-17 follows each lane's
+remote fixtures.
+
+
+### 12.4 Status after the 2026-10-22 execution run
+
+Verification at the end of the run: `pnpm typecheck` clean; `pnpm vitest run
+tests/unit/parity tests/unit/audio tests/unit/aura3d-cli tests/unit/tooling
+tests/unit/rendering/batch-multidraw.test.ts tests/qr/prd08/unit tests/qr/prd11`
+= 124 files, 1,457 tests, all passing; remote ACR run `r17-20261022T204448Z`
+passed all 16 tests across all 11 `parity-*.spec.ts` files. Work is uncommitted.
+
+| Task | Status | Evidence |
+| --- | --- | --- |
+| R-01 probes | DONE | 10 files re-recorded, `contextFound:true` everywhere; ACR run `cc1an`; `crayon-probe.test.ts` 30 tests |
+| R-02 re-rank | DONE | §7.1 and §9 rewritten from the probe files |
+| R-03 named slots | DONE (premise corrected) | Slots already sorted; WebGL2 bloom-order bug found and fixed as **R-03b**, ACR run `r03b2-20261022T192944Z` |
+| R-04 WGSL post | DONE | Already implemented in `WebGPUDevice.ts`; fixed a before-bloom/no-TAA ordering bug; `webgpu-custom-pass.test.ts` 12 tests |
+| R-05 WebGPU material | DONE with limit | Passes via offscreen readback; canvas presentation unproven on the runner (**R-22**: root cause is headless Chromium + SwiftShader destroying the device at the first presented frame) |
+| R-06..R-09 runtime | DONE | `parity-runtime.spec.ts`, `parity-disposal.spec.ts`, `tone-mapping.test.ts`; three engine bugs fixed (batching dropped cube binding, zero environment knobs, camera `layers`) |
+| R-10 multi-draw gate | DONE | `batch-multidraw.test.ts` 17 tests. Gap: a shader that blocks merging at draw time can make `outputDraws` undercount |
+| R-11..R-14, R-21 | DONE | math/geometry tests against three; `geometry.convex`, `geometry.toNonIndexed`, `ClampedCatmullRomCurve3`, `cameras` disposition |
+| R-15 glTF fixtures | DONE | real Draco/Meshopt/KTX2 GLBs; KTX2 transcoding not covered (needs GPU) |
+| R-16 codemod targets | DONE | `migrate-three-mapping-targets.test.ts`; fixed bad `assets` import |
+| R-18 audio | DONE | `tests/unit/audio` 97 tests. `occlusionHz` formula changed in `4995fb7c8` (C-25, #208), not `9c8761647` as first reported; the test was stale |
+| R-19 Strange Orbit | DONE with caveat | Real game captured (ACR run `cc1ap`); 0 TODOs after R-23; shaders still need hand-porting to GLSL 300 es |
+| **R-23** custom vertex attributes | DONE | `attributes` on `geometry.define/custom/dynamic`, `topology:"points"`; ACR run `r23c-20261022T195658Z` |
+| **R-25** Crayon capture | **OPEN** | Eight games at menu/start/HUD or journal; Roadster start and Silt child frame blocked; no fixed-input/pixel diff |
+| **R-17** flag flips | **BLOCKED** | See below |
+| **R-20** phase exits A-D | **NOT STARTED** | Needs full ports plus human-judged captures |
+| **R-24** HEATSINK TSL | **DECISION OPEN** | 49 live node materials; hand-port to `material.custom` or build L1-11 |
+
+**R-17 blocker.** §7.3 step 3 requires the L4 LPIPS-vs-three gate, which is
+`.github/workflows/qr-azure-gpu.yml` on a self-hosted L4 runner. Machine policy
+prohibits GitHub Actions and standing runners, serverless ACR has no GPU, and the
+runbook forbids mixing GPU classes, so no valid gate result can be produced here.
+Findings from the audit: `A3D_PARITY_SHADING`, `GEOMETRY`, `TEXTURES` and
+`RUNTIME` are read nowhere (flipping them changes nothing); `BATCHING` and
+`LINES` gate only the new `batched`, `line`, `points` and `sprite` nodes, which
+fail closed with `parity-not-implemented` at defaults, so `instances.mesh`,
+`batched.mesh`, `lines.*`, `points`, `sprites` and `helpers.*` are unusable in a
+default app until those two flip. `default-flags.test.ts` (8 tests) pins this.
+Engine edits from this run (`ForwardPass`, `Renderer`, `CullingBatching`,
+`LegacyPost`/`v2Stages`, `WebGPUDevice`) apply to existing scenes regardless of
+any flag; the L4 gate is what would validate them.
+
+**Failures present at HEAD, not caused by this run** (verified by testing with
+and without this run's changes):
+`tests/unit/rendering/renderer.test.ts` 23 WebGPU tests ("No WGSL program");
+`tests/unit/workstream5-runtime.test.ts` 2 GLTFLoader rejection tests;
+`tests/qr` 42 tests; a `hero-validator` test needing a missing
+`skylineArcticRunner.glb`.
+
+**Known limits:** `roadster-hours` and `silt-and-signal` probe scenes had not
+settled (counts are lower bounds); the stale `AudioListener` note in
+`CLI/migrate-three/emit.ts:506` was corrected at the end of the run;
+`packages/math/src/` contains untracked-in-git build maps next to sources;
+`tools/export-surface/scaffold.ts --check` reports `public/index.ts`,
+`renderer.ts`, `devtools.ts` and the dispositions file as stale, so
+`--write` was deliberately not run (dispositions were edited by hand).
+
+**Capture gaps (R-25):** no Crayon game has a complete fixed-input Stage 5
+fixture or pixel diff. Roadster Hours' `Drive Sunbreak Coast` click times out
+and loses the game iframe; Silt & Signal's child frame times out, leaving only
+its 205,683-char `iframe.srcdoc`. Eight games have live menu/start/HUD or journal
+evidence, and exact tuning is limited to Splat Rush and Drift & Deliver.
