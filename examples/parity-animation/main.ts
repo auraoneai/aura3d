@@ -87,10 +87,11 @@ const jointTranslation = (actor: TypedGLBActor, jointName: string): readonly [nu
 async function boot(): Promise<void> {
   const canvas = document.querySelector<HTMLCanvasElement>("#stage");
   if (!canvas) throw new Error("parity-animation lab: #stage canvas missing");
-  // preserveDrawingBuffer before the app mounts so the rendered frame stays
-  // readable for the litPixels evidence (same context is reused by the app).
-  const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true, antialias: false });
-  if (!gl) throw new Error("parity-animation lab: WebGL2 unavailable");
+  // Early context check: the app mounts its own WebGL2 context; bail before
+  // cloning 10 actors when no WebGL2 exists at all.
+  if (!document.createElement("canvas").getContext("webgl2")) {
+    throw new Error("parity-animation lab: WebGL2 unavailable");
+  }
 
   const asset = { url: SOLDIER_URL, type: "model" as const, format: "glb" };
   const viewport = { width: canvas.width, height: canvas.height };
@@ -101,8 +102,13 @@ async function boot(): Promise<void> {
   const refsAfterOne = first.sharedTextures.refCount;
 
   // 9 more clones built *through the first actor* join its cache — texture
-  // entries must stay flat while the pin count grows to ten.
-  const rest = await characters.clone(first.actors[0]!, CLONE_COUNT - 1, { ...viewport, idPrefix: "soldier" });
+  // entries must stay flat while the pin count grows to ten. `cloneId`
+  // continues the same sequence from index 1 so ids never collide with the
+  // first actor's `soldier-clone-0`.
+  const rest = await characters.clone(first.actors[0]!, CLONE_COUNT - 1, {
+    ...viewport,
+    cloneId: (index) => `soldier-clone-${index + 1}`
+  });
   const actors = [...first.actors, ...rest.actors];
   const entriesAfterTen = rest.sharedTextures.size;
   const refsAfterTen = rest.sharedTextures.refCount;
@@ -156,14 +162,21 @@ async function boot(): Promise<void> {
       await app.ready();
       await app.stepAsync(1 / 60);
       const diagnostics = app.diagnostics();
-      const width = canvas.width;
-      const height = canvas.height;
-      const pixels = new Uint8Array(width * height * 4);
-      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      // C-05 sanctioned readback: `app.capture()` renders + reads in-task, so
+      // the frame is real regardless of preserveDrawingBuffer state — reading
+      // the backbuffer after compositing returns a cleared/undefined buffer.
+      const bitmap = await app.capture({ type: "image-bitmap" }) as ImageBitmap;
+      const probe = document.createElement("canvas");
+      probe.width = bitmap.width;
+      probe.height = bitmap.height;
+      const probeCtx = probe.getContext("2d")!;
+      probeCtx.drawImage(bitmap, 0, 0);
+      const data = probeCtx.getImageData(0, 0, probe.width, probe.height).data;
       let litPixels = 0;
-      for (let i = 0; i < pixels.length; i += 4) {
-        if (pixels[i]! + pixels[i + 1]! + pixels[i + 2]! > 24) litPixels += 1;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i]! + data[i + 1]! + data[i + 2]! > 24) litPixels += 1;
       }
+      bitmap.close();
       publish({
         status: "ready",
         backend: diagnostics.renderer?.runtime.backend,

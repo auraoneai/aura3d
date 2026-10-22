@@ -14,7 +14,7 @@ import {
  * §5.6, L6-01..L6-04 + the `parity-lines` acceptance fixture). Remote-only —
  * never run under local Playwright.
  *
- * Proves, against real GPU frames captured through `app.screenshot()`:
+ * Proves, against real GPU frames captured through `app.capture()` (C-05):
  *  1. `lines.fat({width})` keeps its CSS-pixel stroke width across
  *     devicePixelRatio 1 and 2 (screen-space projection, AD-08).
  *  2. `dashed` lines lose stroke coverage vs a solid stroke (dash gaps render).
@@ -79,8 +79,9 @@ declare global {
 const mountEl = document.querySelector<HTMLElement>("#mount");
 
 async function decodeShot(app: AuraApp): Promise<ImageData> {
-  const shot = await app.screenshot();
-  const img = await createImageBitmap(await (await fetch(shot.dataUrl)).blob());
+  // C-05 sanctioned readback — app.screenshot()'s toDataURL is unreliable on
+  // preserveDrawingBuffer:false contexts (reads a cleared buffer).
+  const img = await app.capture({ type: "image-bitmap" }) as ImageBitmap;
   const c = document.createElement("canvas");
   c.width = img.width;
   c.height = img.height;
@@ -289,10 +290,20 @@ async function run(): Promise<void> {
     evidence.flagOff = { threwParityNotImplemented: false, error: "mounted without a parity error" };
     app.dispose();
   } catch (error) {
+    // strict mount wraps the parity throw as `renderer-mount-failed` with the
+    // real AuraRuntimeError on `.cause` — walk the chain for the code.
+    const hasParityCode = (e: unknown): boolean => {
+      let cur: unknown = e;
+      for (let i = 0; i < 4 && cur instanceof Error; i += 1) {
+        if ((cur as { code?: string }).code === "parity-not-implemented") return true;
+        cur = (cur as { cause?: unknown }).cause;
+      }
+      return false;
+    };
     evidence.flagOff = {
       threwParityNotImplemented:
         error instanceof Error &&
-        (error.message.includes("parity-not-implemented") || (error as { code?: string }).code === "parity-not-implemented"),
+        (error.message.includes("parity-not-implemented") || hasParityCode(error)),
       error: error instanceof Error ? error.message : String(error)
     };
   }

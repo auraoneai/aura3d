@@ -8,7 +8,7 @@ import { primitive } from "../nodes/primitives.js";
 import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
-import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countWorldContentNodes, isRenderableModelNode } from "./observations.js";
+import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, isRenderableModelNode } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
 import { Renderer, webGL2MaxTextureSize, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
@@ -369,7 +369,7 @@ export async function createProductionRuntimeSceneRenderer(
    * mesh primitives. Without this, a world-only scene failed "requires at least
    * one real mesh primitive" and never ran a frame.
    */
-  const contributorContent = { contributorDrawnNodes: countWorldContentNodes(snapshot.nodes) };
+  const contributorContent = { contributorDrawnNodes: countContributorContentNodes(flattened) };
   const validateFrameInput = (input: ProductionRendererInput): void => validateProductionRendererInput(input, contributorContent);
   const takePreparedFrame = (time: number): ProductionRendererInput => {
       const prepared = preparedFrame?.time === time ? preparedFrame.input : undefined;

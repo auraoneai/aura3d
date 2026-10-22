@@ -734,7 +734,7 @@ fixture green", even if other lanes are still running.
 | `parity-audio` | `tests/unit/audio/*.test.ts`, `tests/browser/parity-audio.spec.ts` | Single attenuation; cone; analyser | vitest + remote |
 | `parity-runtime` | `tests/browser/parity-runtime.spec.ts` | Fog opt-out, background, cube camera, mirror | remote Playwright |
 | `parity-disposal` | `tests/browser/parity-disposal.spec.ts` | 20 cycles within 5% | remote Playwright |
-| `crayon-capture` | REA shell capture + Prism in-frame HUD/control fixture + raw-CDP internals probe + `tools/webgpu-visual-parity/` | Declared scenario matches observable artifacts (HUD text, URL, storage, pixels). HEATSINK HUD/control path verified 2026-10-22; nine game fixtures pending | remote |
+| `crayon-capture` | REA shell capture + Prism in-frame HUD/control fixture + raw-CDP internals probe + `tools/webgpu-visual-parity/` | Declared scenario matches observable artifacts (HUD text, URL, storage, pixels). HEATSINK title snapshot, HUD convergence, and control path verified 2026-10-22; nine game fixtures pending | remote |
 
 Browser fixtures follow the `tests/browser/portable-custom-materials.spec.ts`
 pattern: `startExampleDevServer()`, an `examples/<lab>/main.ts` page exposing
@@ -762,10 +762,11 @@ These probes **cannot run through REA**, for two independent reasons:
    JavaScript, and the scenario action set has no `evaluate`.
 
 Prism's `browser_observe` can capture the HUD and `browser_press` can drive the
-controls; on HEATSINK this was verified on 2026-10-22 with 1/60 s `hold_ms`
-steps, automatic `KeyW` for action keys, and idle physics frozen between calls.
-Prism still has no `Runtime.evaluate`, so it cannot inspect `scene.traverse`,
-material nodes, or renderer internals.
+controls; on HEATSINK this was verified on 2026-10-22 with a 1.39 s title
+snapshot, 1/60 s `hold_ms` steps, automatic `KeyW` for action keys, idle physics
+frozen between calls, and fully converged HUD values (`Escape` → `Resume` and
+idle observe byte-identical). Prism still has no `Runtime.evaluate`, so it
+cannot inspect `scene.traverse`, material nodes, or renderer internals.
 
 Run each probe with raw CDP `Runtime.evaluate` on the iframe's own session
 (`/json/list` → `webSocketDebuggerUrl` for the `iframe` target), after the scene

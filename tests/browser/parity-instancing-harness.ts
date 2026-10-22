@@ -48,13 +48,10 @@ function waitForFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-async function analyzeDataUrl(dataUrl: string): Promise<HarnessResult["image"]> {
-  const image = new Image();
-  image.src = dataUrl;
-  await image.decode();
+function analyzeImage(image: CanvasImageSource & { readonly width: number; readonly height: number }): HarnessResult["image"] {
   const canvas = document.createElement("canvas");
-  canvas.width = image.naturalWidth;
-  canvas.height = image.naturalHeight;
+  canvas.width = image.width;
+  canvas.height = image.height;
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) return undefined;
   ctx.drawImage(image, 0, 0);
@@ -122,7 +119,9 @@ async function run(): Promise<void> {
   for (let i = 0; i < 4; i += 1) await waitForFrame();
 
   const diagnostics = app.diagnostics();
-  const image = await analyzeDataUrl(app.screenshot().dataUrl);
+  // C-05 sanctioned readback — app.screenshot()'s toDataURL is unreliable on
+  // preserveDrawingBuffer:false contexts.
+  const image = analyzeImage(await app.capture({ type: "image-bitmap" }) as ImageBitmap);
   window.__AURA3D_PARITY_INSTANCING__ = {
     status: "ready",
     drawCalls: diagnostics.drawCalls,

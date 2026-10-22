@@ -120,6 +120,14 @@ export class ProgramCache implements ProgramCacheLike {
           this.noteCompiled();
         })
         .catch((error: unknown) => {
+          // DEVICE_LOST (app dispose or a real context loss) is not a compile
+          // failure — keep the entry pending so acquire() retries under the
+          // restored context instead of permanently poisoning the key with a
+          // program-compile-failed degradation + console.error at teardown.
+          if ((error as { code?: string }).code === "DEVICE_LOST" || this.disposed) {
+            entry.pending = undefined;
+            return;
+          }
           entry.status = "failed";
           entry.error = describeCompileError(error);
           this.reportCompileFailure(entry);

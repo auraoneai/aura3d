@@ -128,7 +128,7 @@ Two entry paths; they are not mutually exclusive.
 
 ```text
 browser_open  https://app.usecrayon.ai/play/<project_id>
-# wait ~20 s for boot
+# wait ~18 s for boot
 browser_click  role=button name="Tap to start"   # pierces srcdoc; returns nodes
 browser_click  role=button name="Play"
 browser_click  role=button name="Start Race"     # click payload contains live HUD
@@ -142,23 +142,31 @@ browser_close
 ```
 
 Verified on HEATSINK with the 10-tool Prism build and the deployed
-`browser-session.ts` fix (Cloudflare `2953bef0-06a7-4116-8919-8daed4c6bc29`,
-`kiro-prism` `ae2dc6b`): `browser_click` and `browser_press` pierce the srcdoc
-frame and return a node snapshot, and `browser_observe` returns live `status`
-nodes (`POS`, `LAP`, `TIME`, `SPEED`, `BOOST`, `HEAT`, `SHIELD`, `LASER`,
-`TD`). The fix throttles heavy 3D drawing during a race while keeping
-`g.hud.update` instant, steps `hold_ms` at 1/60 s, holds `KeyW` automatically
-for action keys (`ShiftLeft`, `Space`, `KeyF`), and freezes idle physics between
-agent calls. Measured in this run: menu clicks 5.4–9.0 s, race actions 2.0–4.9 s,
-zero timeouts, and HUD time/gauges did not advance between calls.
+`browser-session.ts` fixes (Cloudflare `2953bef0-06a7-4116-8919-8daed4c6bc29`
+then `ef6e506d-2153-46ec-b874-7db86978c4b2`; `kiro-prism` `ae2dc6b` then
+`42b2f6b`): `browser_click` and `browser_press` pierce the srcdoc frame and
+return a node snapshot, and `browser_observe` returns live `status` nodes
+(`POS`, `LAP`, `TIME`, `SPEED`, `BOOST`, `HEAT`, `SHIELD`, `LASER`, `TD`).
 
-Two operational notes. First, use the `browser_click` / `browser_press`
-response's `nodes` as a read: it is the same accessibility tree and is usually
-faster than a separate snapshot. Second, on this MCP path `browser_observe` on
-the title screen can still hit the 60 s snapshot timeout while `browser_click`
-returns that same tree in ~9 s; click `Tap to start` first and observe once the
-menu or race HUD is active. Refs are session-scoped; sessions can expire if left
-idle, so capture evidence promptly. There is no `Runtime.evaluate`.
+The current build also makes the title screen capturable. `window.game` is
+hooked as soon as async module boot creates it; `g.frame` is throttled to 5 s on
+title/menu, `g.render` to 15 s, and WebGPU `GPUQueue.submit` is throttled after
+the first two submissions. Snapshot collection is DOM-first, and
+`Accessibility.getFullAXTree` is bounded to 4 s. Title `browser_observe` returned
+in **1.39 s** with the `Tap to start` node. Measured in this run: menu/race
+actions 1.0–4.6 s, zero timeouts, and HUD time/gauges unchanged between calls.
+
+The HUD is fully converged per turn: `flushHud(g)` runs 24 ×
+`g.hud.update(0.1, g)` after stepping, and `syncGame(false)` no longer lerps
+during a race. `Escape` → `Resume` and idle `browser_observe` therefore return
+identical numbers. `hold_ms` is stepped at 1/60 s with `KeyW` held for action
+keys (`ShiftLeft`, `Space`, `KeyF`), and idle physics is frozen between agent
+calls.
+
+Operational note: use the `browser_click` / `browser_press` response's `nodes`
+as a read; it is the same accessibility tree and is usually faster than a
+separate snapshot. Refs are session-scoped; sessions can expire if left idle, so
+capture evidence promptly. There is no `Runtime.evaluate`.
 
 **Extraction path: local Chrome + CDP.** Required for Stage 2 and for
 `window.game` internals.
@@ -177,12 +185,12 @@ A Docker or remote browser will not work — the endpoint must be on this machin
 ### Stage 1 — Discover targets (Prism first, raw CDP for extraction)
 
 **Prism path.** `browser_open` the play URL and wait for the game to boot
-(~20 s). On the current build the title screen is the one place
-`browser_observe` can stall, so click `Tap to start` by role/name first; the
-click response returns the same node tree (canvas, overlay buttons, live HUD
-`status` nodes). From the landing menu onward, `browser_observe` and the
-click/press payloads both pierce the srcdoc frame. Refs are session-scoped —
-re-read after every transition.
+(~18 s), then `browser_observe` with `include_refs: true`. On the current build
+the title snapshot is bounded and returns the canvas and `Tap to start` node
+without stalling. Click `Tap to start` by role/name; the click response returns
+the same node tree (canvas, overlay buttons, live HUD `status` nodes). From the
+landing menu onward, `browser_observe` and the click/press payloads all pierce
+the srcdoc frame. Refs are session-scoped — re-read after every transition.
 
 **Raw CDP path.** Required for `Runtime.evaluate`, `window.game`, and bundle
 extraction. REA's browser tools still accept only HTTP(S) page targets:
@@ -403,35 +411,37 @@ cannot be aimed at a frame element. Treat the REA scenario as the
 **Prism's action surface crosses the frame.** `browser_click` and
 `browser_press` pierce the srcdoc iframe, and their responses — like
 `browser_observe` — return the live HUD `status` nodes. The deployed
-`browser-session.ts` fix (`2953bef0-06a7-4116-8919-8daed4c6bc29`, `ae2dc6b`)
-makes this practical during a race: heavy `g.render` is throttled on CPU
-SwiftShader, `g.hud.update` stays instant, `hold_ms` is stepped at 1/60 s with
-`KeyW` held for action keys, and idle physics is frozen between agent calls.
+`browser-session.ts` fix (`ef6e506d-2153-46ec-b874-7db86978c4b2`, `42b2f6b`)
+adds title/menu loop throttling (`g.frame` 5 s, `g.render` 15 s, WebGPU
+`GPUQueue.submit` 15 s after the first two submissions), a DOM-first
+`Accessibility.getFullAXTree` call bounded to 4 s, and full HUD convergence via
+`flushHud(g)` (24 × `g.hud.update(0.1, g)`). Heavy rendering no longer pins CPU
+SwiftShader; title `browser_observe` measured **1.39 s**.
 
 Verified sequence on HEATSINK (2026-10-22, fresh Prism session; all HTTP 200,
 zero timeouts):
 
 | Step | Action | Wall time | HUD after the action |
 | --- | --- | --- | --- |
-| 1 | `browser_click` `Start Race` | 3.3 s | `POS 7/12 · LAP 1/3 · TIME 00:00.400 · SPEED 18 · BOOST 100% · HEAT 0% · SHIELD 100% · LASER 0% · TD 0` |
-| 2 | `browser_press` `KeyW` 1500 ms | 2.5 s | `TIME 00:01.900 · SPEED 70 · BOOST 100%` |
-| 3 | `browser_press` `ShiftLeft` 1200 ms | 2.3 s | `TIME 00:03.100 · SPEED 184 · HEAT 11%` |
-| 4 | `browser_press` `Space` 1000 ms | 2.1 s | `TIME 00:04.100 · SPEED 303 · BOOST 83% · HEAT 12% · TD 2` |
-| 5 | `browser_press` `KeyF` 900 ms | 2.3 s | `TIME 00:05.000 · SPEED 363 · BOOST 81% · HEAT 4% · LASER 12% · TD 3` |
-| 6 | `browser_press` `Escape` 100 ms | 4.9 s | pause menu: `Resume`, `Restart`, `Settings`, `Controls`, `Exit to Menu` |
-| 7 | `browser_click` `Resume` | 2.0 s | `TIME 00:05.000 · SPEED 384 · BOOST 95% · HEAT 1% · LASER 27% · TD 3` |
+| 1 | `browser_click` `Start Race` | 1.1 s | `POS 7/12 · LAP 1/3 · TIME 00:00.400 · SPEED 49 · BOOST 100% · HEAT 0% · SHIELD 100% · LASER 0% · TD 0` |
+| 2 | `browser_press` `KeyW` 1500 ms | 1.6 s | `TIME 00:01.900 · SPEED 210 · BOOST 100%` |
+| 3 | `browser_press` `ShiftLeft` 1500 ms | 3.1 s | `TIME 00:03.400 · SPEED 349 · HEAT 42%` |
+| 4 | `browser_press` `Space` 1000 ms | 2.0 s | `TIME 00:04.400 · SPEED 465 · BOOST 55% · HEAT 36% · TD 1` |
+| 5 | `browser_press` `KeyF` 1000 ms | 1.4 s | `TIME 00:05.400 · SPEED 395 · BOOST 59% · HEAT 30% · LASER 35% · TD 2` |
+| 6 | `browser_press` `Escape` 100 ms | 1.3 s | pause menu: `Resume`, `Restart`, `Settings`, `Controls`, `Exit to Menu` |
+| 7 | `browser_click` `Resume` | 1.1 s | `TIME 00:05.400 · SPEED 395 · BOOST 59% · HEAT 30% · LASER 35% · TD 2` |
+| 8 | `browser_observe` after Resume | 0.48 s | identical to step 7 |
 
-An independent run on the same build produced the same deltas within the
-expected variance (`ShiftLeft` → `203 KM/H`, `HEAT 11%`; `Space` → `345 KM/H`,
-`BOOST 82%`, `TD 2`; `KeyF` → `398 KM/H`, `LASER 12%`, `TD 3`; `Resume` →
-`403 KM/H`, `LASER 22%`). The important assertion is the direction and the
-gauge field, not the exact speed.
+An independent run on the same build produced `ShiftLeft` → `414 KM/H`,
+`HEAT 42%`; `Space` → `430 KM/H`, `BOOST 55%`; `KeyF` → `423 KM/H`,
+`LASER 35%`; `Resume` identical. Speed and `TD` vary with race dynamics; the
+gauge values and the Resume identity are the assertions.
 
 Two timing facts belong in a fixture. Weapons have a start grace of 3.0 s of
 race time, so a `KeyF` press before `TIME 00:03.000` may not fire; wait past it.
-Gauges can still change during a long hold — e.g. `HEAT` fell from 12% to 4%
-across the 0.9 s `KeyF` hold — but that is in-hold simulation, not decay while
-the agent is idle. Assert the post-hold HUD immediately.
+`HEAT` decays gently across non-`Shift` holds (`42% → 36% → 30%`) by design, so
+assert the band and direction, not a frozen value. `Escape` → `Resume` and any
+idle `browser_observe` must be byte-identical to the pre-pause HUD.
 
 Use Prism as the **in-game fixture** for observable HUD and controls, and keep
 raw CDP for `window.game` internals and extraction.
@@ -521,10 +531,11 @@ pnpm check:release
 | `403 client_not_allowed` | Origin gate on `api.usecrayon.ai` | Browser context only; never curl |
 | `target_unavailable`, `reason: target_not_allowed`, *"must be an HTTP(S) page in the selected origin scope"* | REA browser tools (`list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, `capture-web-screenshot`) reject the game's `about:srcdoc` iframe | Discover it with raw `/json/list` for extraction; drive it with Prism `browser_click` / `browser_press`, or raw `Runtime.evaluate` / `Input.dispatch*` |
 | Scenario locator never matches the game | Locators resolve in the shell page, not the srcdoc frame | Keep REA for shell-level steps; use Prism `browser_click` / `browser_press` for in-frame actions, raw CDP for internals |
-| `browser_click` / `browser_press` takes 30 s+ or times out during a race | Pre-fix: the 3D loop pinned CPU SwiftShader (2–4 s/frame) while each press made 8 CDP round-trips | Fixed in `browser-session.ts` (Cloudflare `2953bef0-06a7-4116-8919-8daed4c6bc29`, `kiro-prism` `ae2dc6b`). If it recurs, confirm the worker build and use the click/press node payload |
-| `session_not_found` (404) during a race | Pre-fix: the pinned tab crashed after ~2 min | Fixed by the same render throttling. Open a fresh session if an old one is already gone; refs are session-scoped |
+| `browser_click` / `browser_press` takes 30 s+ or times out during a race | Pre-fix: the 3D loop pinned CPU SwiftShader (2–4 s/frame) while each press made 8 CDP round-trips | Fixed in `browser-session.ts` (Cloudflare `2953bef0-06a7-4116-8919-8daed4c6bc29`, `ae2dc6b`; current worker `ef6e506d-2153-46ec-b874-7db86978c4b2`, `42b2f6b`). If it recurs, confirm the worker build and use the click/press node payload |
+| `session_not_found` (404) during a race | Pre-fix: the pinned tab crashed after ~2 min | Fixed by render throttling. Open a fresh session if an old one is already gone; refs are session-scoped |
 | Gauges read 0% after a press | Pre-fix: the unpaused loop kept simulating with no keys while the agent waited; boost/overdrive also need `KeyW` held | Fixed by the idle physics freeze and automatic `KeyW` hold. If seen, the session is on an old worker; reopen and confirm the build |
-| `browser_observe` times out at 60 s on the title screen | Residual on this MCP path; `browser_click` returns the same node tree in ~9 s | Click `Tap to start` and read the click payload; use `browser_observe` after the menu/race is active |
+| `browser_observe` times out at 60 s on the title screen | Pre-fix: the 1.64 MB module booted after the hydration loop exited, so the unhooked title/menu loop saturated SwiftShader while `Accessibility.getFullAXTree` had no timeout | Fixed in the current worker (`ef6e506d-2153-46ec-b874-7db86978c4b2`, `42b2f6b`): title/menu `g.frame` and `g.render` throttling, WebGPU submit throttle, DOM-first snapshot, 4 s AX bound. Title observe measured 1.39 s. If it recurs, confirm the worker build |
+| HUD drifts after `Escape` → `Resume` or an idle observe | Pre-fix: `syncGame(false)` called `g.hud.update` again, so exponential smoothing continued between agent turns | Fixed by `flushHud(g)` (24 × `g.hud.update(0.1, g)`) and removing the race-state `hud.update` from `syncGame(false)`. Resume and idle observe must be byte-identical; if not, the session is on an old worker |
 | Parity assertion reads `undefined` | REA is passive and never evaluates JavaScript | Assert HUD text, DOM/accessibility, URL, storage, or pixels; read internal state with a separate CDP probe |
 | Module extract returns 0 bytes | Dynamic import, no DOM script, no blob perf entry | Stage 2 CDP enumeration |
 | `source_maps: not_requested`, no maps found | Publisher ships none | Drop `--fetch-source-maps` |
@@ -771,11 +782,15 @@ via `instances.*` and `BatchedMesh` when it lands.
 **Look.** Night, rain, sodium-orange and cyan neon, wet specular streets, heavy
 bloom with a high threshold; heat shimmer only above 70% heat.
 
-**Verified telemetry.** A 1.5 s `W` took `SPEED` 18 → 70; a 1.2 s `ShiftLeft`
-took it to 184 with `HEAT 11%`; a 1.0 s `Space` to 303 with `BOOST` 100% → 83%
-and `TD` 0 → 2; a 0.9 s `KeyF` to 363 with `LASER 12%` and `TD 3`; `Escape`
-paused and `Resume` returned at 384 with `LASER 27%`. These are the shape of
-the parity fixture, not tuning constants.
+**Verified telemetry (current build).** `Start Race` showed `SPEED 49`,
+`BOOST 100%`, `HEAT 0%`; a 1.5 s `W` took `SPEED` to 210; a 1.5 s `ShiftLeft`
+to 349 with `HEAT 42%`; a 1.0 s `Space` to 465 with `BOOST 55%`, `HEAT 36%`,
+`TD 1`; a 1.0 s `KeyF` to 395 with `BOOST 59%`, `HEAT 30%`, `LASER 35%`,
+`TD 2`. `Escape` paused and `Resume` returned the identical HUD; a following
+idle `browser_observe` returned in 0.48 s with the same numbers. An independent
+run produced 414/430/423 KM/H with the same `HEAT 42 → 36 → 30` and
+`LASER 35%`; speed and `TD` vary with race dynamics. These are the shape of the
+parity fixture, not tuning constants.
 
 **Acceptance (plan).** Three laps, two rival kills, one overheat fail and
 recovery. Capture diff passes on lap, checkpoint, heat band, and score.

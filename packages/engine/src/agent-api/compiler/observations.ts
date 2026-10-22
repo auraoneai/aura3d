@@ -53,7 +53,16 @@ export function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNod
 }
 
 export function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode {
-  return isRenderableModelNode(node) || node.kind === "primitive";
+  return isRenderableModelNode(node)
+    || node.kind === "primitive"
+    // threejs-parity L5/L6: these kinds compile to real RenderItems through
+    // the C-36 handlers (lines.ts / batched.ts). Without them here a scene
+    // built only of lines/points/sprites mounted the canvas2d diagnostic
+    // preview and drew a gradient schematic instead of the authored nodes.
+    || node.kind === "line"
+    || node.kind === "points"
+    || node.kind === "sprite"
+    || node.kind === "batched";
 }
 
 /**
@@ -76,6 +85,26 @@ export function declaresWebGLContent(nodes: readonly AuraSceneNode[]): boolean {
 /** Number of PRD-10 world content nodes (terrain/water/grass) — real renderable content drawn by the prd10 contributor. */
 export function countWorldContentNodes(nodes: readonly AuraSceneNode[]): number {
   return nodes.filter((node) => WEBGL_WORLD_NODE_KINDS.has((node as { readonly kind: string }).kind)).length;
+}
+
+/**
+ * threejs-parity L5/L6 kinds whose handlers emit their own RenderItems
+ * through compile contributions — they draw without adding to
+ * `primitiveCount`/`meshCount`, exactly like the prd10 contributor.
+ */
+const PARITY_CONTRIBUTOR_KINDS: ReadonlySet<string> = new Set(["line", "points", "sprite", "batched"]);
+
+/**
+ * Nodes whose draws arrive through a contributor rather than the mesh-
+ * primitive list: PRD-10 world nodes plus parity line/points/sprite/batched
+ * nodes. A scene made only of these previously failed "requires at least one
+ * real mesh primitive" at frame validation and never ran a frame.
+ */
+export function countContributorContentNodes(nodes: readonly AuraSceneNode[]): number {
+  return nodes.filter((node) => {
+    const kind = (node as { readonly kind: string }).kind;
+    return WEBGL_WORLD_NODE_KINDS.has(kind) || PARITY_CONTRIBUTOR_KINDS.has(kind);
+  }).length;
 }
 
 /**

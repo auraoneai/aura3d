@@ -11,7 +11,6 @@ import {
   geometry,
   lights,
   material,
-  primitive,
   primitives,
   scene,
   type AuraNodeBuilder,
@@ -119,10 +118,7 @@ async function waitForFrames(count: number): Promise<void> {
   }
 }
 
-async function analyzeDataUrl(dataUrl: string): Promise<ImageMetrics> {
-  const image = new Image();
-  image.src = dataUrl;
-  await image.decode();
+function analyzeImage(image: CanvasImageSource & { readonly width: number; readonly height: number }): ImageMetrics {
   const canvas = document.createElement("canvas");
   canvas.width = image.width;
   canvas.height = image.height;
@@ -148,7 +144,10 @@ async function captureKind(id: keyof typeof primitives, options: AuraPrimitiveOp
   mount!.append(canvas);
   const app = createAuraApp(canvas, { scene: kindScene(primitives[id], options), pixelRatio: 1, resize: false });
   await waitForFrames(4);
-  const metrics = await analyzeDataUrl(app.screenshot().dataUrl);
+  // app.capture() is the sanctioned C-05 readback (sync render + readPixels) —
+  // app.screenshot()'s toDataURL reads a cleared buffer on
+  // preserveDrawingBuffer:false contexts.
+  const metrics = analyzeImage(await app.capture({ type: "image-bitmap" }) as ImageBitmap);
   const diagnostics = app.diagnostics();
   app.dispose();
   canvas.remove();
@@ -192,8 +191,7 @@ async function exerciseDynamic(): Promise<DynamicEvidence> {
   const app = createAuraApp(canvas, {
     scene: scene()
       .background("#081018")
-      .add(primitive("custom", {
-        geometry: geometry.dynamic(initial),
+      .add(geometry.custom(geometry.dynamic(initial), {
         material: material.pbr({ color: "#22d3ee", emissive: "#164e63", roughness: 0.4 })
       }).runtime({ id: "ribbon" }))
       .add(lights.studio({ intensity: 1.2 }))
