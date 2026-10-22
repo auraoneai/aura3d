@@ -153,7 +153,13 @@ async function captureScene(
     qualityRebuild: { flags: ["A3D_PARITY_LINES"], allowUrlFlags: false }
   });
   await app.ready();
-  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+  // Static scene → no continuous loop; on software GL the lone mount frame
+  // lands before programs compile. Step real frames until a draw lands.
+  const drawWaitStart = Date.now();
+  while ((app.diagnostics().drawCalls ?? 0) === 0 && Date.now() - drawWaitStart < 30_000) {
+    app.step(1 / 60);
+    await new Promise((r) => setTimeout(r, 50));
+  }
   const image = await decodeShot(app);
   // Snapshot route-health inside the live app before disposal (§8 parityIds).
   const routeHealth = id === "fat-dpr1"

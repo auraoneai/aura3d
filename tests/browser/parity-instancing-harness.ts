@@ -46,10 +46,6 @@ function translation(x: number, y: number, z: number): readonly number[] {
   return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
 }
 
-function waitForFrame(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
-}
-
 function analyzeImage(image: CanvasImageSource & { readonly width: number; readonly height: number }): HarnessResult["image"] {
   const canvas = document.createElement("canvas");
   canvas.width = image.width;
@@ -113,19 +109,22 @@ async function run(): Promise<void> {
     qualityRebuild: { flags: "parity.batching,tiers.batching,core" }
   });
 
-  // Let several frames settle, then flip visibility once to prove updates.
-  // On software GL the async program compile can outlast a fixed rAF count —
-  // poll diagnostics until the first real draw lands (bounded).
+  // A fully static scene gets no continuous rAF loop — the mount submits one
+  // frame and the loop stops, so on software GL that lone frame can land
+  // before the program finishes compiling and drawCalls stays 0 forever.
+  // `app.step()` renders real production frames explicitly; drive it until the
+  // first real draw lands (bounded), then use it again around the visibility
+  // flip so slot lifecycle is exercised on real submissions.
   await app.ready().catch(() => undefined);
-  for (let i = 0; i < 12; i += 1) await waitForFrame();
   const drawWaitStart = Date.now();
   while ((app.diagnostics().drawCalls ?? 0) === 0 && Date.now() - drawWaitStart < 45_000) {
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    app.step(1 / 60);
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
   bat.setVisibleAt(s1, false);
-  for (let i = 0; i < 4; i += 1) await waitForFrame();
+  for (let i = 0; i < 4; i += 1) app.step(1 / 60);
   bat.setVisibleAt(s1, true);
-  for (let i = 0; i < 4; i += 1) await waitForFrame();
+  for (let i = 0; i < 4; i += 1) app.step(1 / 60);
 
   const diagnostics = app.diagnostics();
   // C-05 sanctioned readback — app.screenshot()'s toDataURL is unreliable on

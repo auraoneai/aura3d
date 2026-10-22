@@ -93,7 +93,7 @@ rsync -a --exclude '*/node_modules' \
         packages "$CTX/"
 rsync -a --exclude '*/node_modules' workers "$CTX/"
 mkdir -p "$CTX/tests"
-rsync -a tests/browser tests/support "$CTX/tests/"
+rsync -a tests/browser tests/support tests/fixtures "$CTX/tests/"
 rsync -a examples "$CTX/"
 mkdir -p "$CTX/tools"
 rsync -a tools/naming-taxonomy tools/remote-acr "$CTX/tools/"

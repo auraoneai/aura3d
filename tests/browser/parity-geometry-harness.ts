@@ -149,7 +149,15 @@ async function captureKind(id: keyof typeof primitives, options: AuraPrimitiveOp
   canvas.height = 270;
   mount!.append(canvas);
   const app = createAuraApp(canvas, { scene: kindScene(primitives[id], options), pixelRatio: 1, resize: false });
-  await waitForFrames(4);
+  await app.ready().catch(() => undefined);
+  // Static scenes get no continuous loop — one mount frame is all they get,
+  // which on software GL lands before programs finish compiling. Drive real
+  // frames via step() until the scene actually submits (bounded).
+  const drawWaitStart = Date.now();
+  while ((app.diagnostics().drawCalls ?? 0) === 0 && Date.now() - drawWaitStart < 30_000) {
+    app.step(1 / 60);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
   // app.capture() is the sanctioned C-05 readback (sync render + readPixels) —
   // app.screenshot()'s toDataURL reads a cleared buffer on
   // preserveDrawingBuffer:false contexts.
