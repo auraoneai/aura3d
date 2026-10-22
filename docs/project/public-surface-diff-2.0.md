@@ -4,8 +4,8 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12516**
-- Classified removals: **2087**; unclassified removals: **0**
+- Baseline symbols: **13007**; current symbols: **12482**
+- Classified removals: **2121**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
 - Public schema identifiers: **25** baseline; **33** current
@@ -1515,14 +1515,31 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine` | export-subpath | `./engine` | documented-major-removal-or-migration |
 | `@aura3d/engine` | export-subpath | `./engine-runtime` | documented-major-removal-or-migration |
 | `@aura3d/engine` | export-subpath | `./environments` | documented-major-removal-or-migration |
+| `@aura3d/engine/input` | runtime-symbol | `CameraRig` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | runtime-symbol | `createSceneCameraControlAdapter` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | runtime-symbol | `DEFAULT_ORBIT_MAX_POLAR` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | runtime-symbol | `EditorFlyControls` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | runtime-symbol | `FirstPersonControls` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | runtime-symbol | `OrbitControls` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | runtime-symbol | `PointerLockControls` | relocated-to-@aura3d/controls |
 | `@aura3d/engine/input` | runtime-symbol | `sampleGestureHapticsFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | runtime-symbol | `sampleInputActionBindingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | runtime-symbol | `sampleXRRuntimeFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/engine/input` | runtime-symbol | `ThirdPersonFollowControls` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `CameraRigState` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `CameraTransformLike` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `EditorFlyControlsOptions` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `EulerLike` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `FirstPersonControlsOptions` | relocated-to-@aura3d/controls |
 | `@aura3d/engine/input` | type-symbol | `GestureHapticsFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | type-symbol | `GestureHapticsFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | type-symbol | `GestureHapticsGestureType` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | type-symbol | `GestureHapticsPatternName` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | type-symbol | `InputActionBindingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/engine/input` | type-symbol | `OrbitControlsOptions` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `SceneCameraControlAdapter` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `ThirdPersonFollowControlsOptions` | relocated-to-@aura3d/controls |
+| `@aura3d/engine/input` | type-symbol | `Vec3Like` | relocated-to-@aura3d/audio |
 | `@aura3d/engine/input` | type-symbol | `XRFixtureLodLevel` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | type-symbol | `XRFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/input` | type-symbol | `XRFixtureSessionMode` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -1667,8 +1684,8 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine/rendering` | runtime-symbol | `TrailThreeCompatRenderer` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/rendering` | runtime-symbol | `UniformsThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/rendering` | runtime-symbol | `VignettePassThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/engine/rendering` | runtime-symbol | `WebGPUDevice` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/engine/rendering` | runtime-symbol | `WebGPUPipelineCache` | documented-2.0-webgpu-pipeline-cache-moved-to-webgpu-subpath |
+| `@aura3d/engine/rendering` | runtime-symbol | `WebGPUDevice` | relocated-to-@aura3d/rendering/webgpu |
+| `@aura3d/engine/rendering` | runtime-symbol | `WebGPUPipelineCache` | relocated-to-@aura3d/rendering/webgpu |
 | `@aura3d/engine/rendering` | type-symbol | `AdvancedRendererOptions` | documented-4.0-advanced-renderer-alias-removed-use-renderer |
 | `@aura3d/engine/rendering` | type-symbol | `ArchitecturalInteriorLight` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/engine/rendering` | type-symbol | `ArchitecturalLightingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -1825,14 +1842,31 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/engine` | export-subpath | `./three-compat` | broken-1.5.2-root-alias-replaced-by-@aura3d/three-compat |
 | `@aura3d/engine` | export-subpath | `./workflows/production-runtime` | documented-major-removal-or-migration |
 | `@aura3d/environments` | package | `@aura3d/environments` | documented-prd15-6-honest-packages-deleted |
+| `@aura3d/input` | runtime-symbol | `CameraRig` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | runtime-symbol | `createSceneCameraControlAdapter` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | runtime-symbol | `DEFAULT_ORBIT_MAX_POLAR` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | runtime-symbol | `EditorFlyControls` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | runtime-symbol | `FirstPersonControls` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | runtime-symbol | `OrbitControls` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | runtime-symbol | `PointerLockControls` | relocated-to-@aura3d/controls |
 | `@aura3d/input` | runtime-symbol | `sampleGestureHapticsFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | runtime-symbol | `sampleInputActionBindingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | runtime-symbol | `sampleXRRuntimeFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/input` | runtime-symbol | `ThirdPersonFollowControls` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `CameraRigState` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `CameraTransformLike` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `EditorFlyControlsOptions` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `EulerLike` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `FirstPersonControlsOptions` | relocated-to-@aura3d/controls |
 | `@aura3d/input` | type-symbol | `GestureHapticsFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `GestureHapticsFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `GestureHapticsGestureType` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `GestureHapticsPatternName` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `InputActionBindingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/input` | type-symbol | `OrbitControlsOptions` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `SceneCameraControlAdapter` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `ThirdPersonFollowControlsOptions` | relocated-to-@aura3d/controls |
+| `@aura3d/input` | type-symbol | `Vec3Like` | relocated-to-@aura3d/audio |
 | `@aura3d/input` | type-symbol | `XRFixtureLodLevel` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `XRFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/input` | type-symbol | `XRFixtureSessionMode` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -1976,8 +2010,8 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/rendering` | runtime-symbol | `TrailThreeCompatRenderer` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/rendering` | runtime-symbol | `UniformsThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/rendering` | runtime-symbol | `VignettePassThreeCompat` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/rendering` | runtime-symbol | `WebGPUDevice` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
-| `@aura3d/rendering` | runtime-symbol | `WebGPUPipelineCache` | documented-2.0-webgpu-pipeline-cache-moved-to-webgpu-subpath |
+| `@aura3d/rendering` | runtime-symbol | `WebGPUDevice` | relocated-to-@aura3d/rendering/webgpu |
+| `@aura3d/rendering` | runtime-symbol | `WebGPUPipelineCache` | relocated-to-@aura3d/rendering/webgpu |
 | `@aura3d/rendering` | type-symbol | `AdvancedRendererOptions` | documented-4.0-advanced-renderer-alias-removed-use-renderer |
 | `@aura3d/rendering` | type-symbol | `ArchitecturalInteriorLight` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/rendering` | type-symbol | `ArchitecturalLightingFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
@@ -2311,14 +2345,9 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/controls:type:ControlPickMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/controls:type:OrbitCameraLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/engine/input:runtime:FirstPersonControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/engine/input:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/engine/input:runtime:PointerLockControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/engine/input:type:FirstPersonControlsOptions` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/engine/input:type:OrbitControlsOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:PointerEventLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:WebXRFrameSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/math:runtime:Box3` — reviewed-2.0-public-declaration-contract-change
@@ -2509,14 +2538,9 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/scripting:type:VisualGraphExecutionContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scripting:type:VisualNodeCategory` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/input:runtime:FirstPersonControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/input:runtime:OrbitControls` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/input:runtime:PointerLockControls` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/input:type:FirstPersonControlsOptions` — reviewed-2.0-public-declaration-contract-change
-- `@aura3d/input:type:OrbitControlsOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:PointerEventLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:WebXRFrameSample` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/math:runtime:Box3` — reviewed-2.0-public-declaration-contract-change

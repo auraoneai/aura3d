@@ -6,12 +6,11 @@ Machine-enforced by `pnpm check:package-graph` (`tools/package-graph/index.ts`),
 `tests/reports/package-graph.json` and `docs/architecture/package-graph.dot`. **This document is
 descriptive; the tool is authoritative.** If they disagree, the tool is right and this file is stale.
 
-Measured 2026-10-21 · 25 workspace packages · 0 undeclared dependencies · **1 known cycle and layer
-violation: `input -> controls`** — `packages/input/src/controls/*` are deprecated re-export shims
-left over from the PRD-15 T6.9 move of camera controls into `@aura3d/controls` ("remove in 4.0.0").
-Deleting the shim files, their `index.ts` re-exports, and the `@aura3d/controls` dependency in
-`packages/input/package.json` removes the edge and restores acyclicity; that deletion drops
-published `@aura3d/input` exports and is tracked as consumer-visible surface work, not a gate bug.
+Measured 2026-10-21 · 25 workspace packages · 0 undeclared dependencies · **0 cycles — the graph is
+acyclic.** The former `input -> controls` upward edge is resolved: `packages/input/src/controls/*`
+deprecated `@aura3d/controls` re-export shims (PRD-15 T6.9, "remove in 4.0.0") were deleted along
+with the `@aura3d/controls` dependency in `packages/input/package.json`. Consumers import camera
+controls from `@aura3d/controls` directly.
 
 ## How the graph is measured
 
@@ -64,7 +63,7 @@ Nothing may depend on tier 5 or 6 except tier 6.
 | `scene` | 1 | 1,832 | `@aura3d/scene` | scene graph, transforms, traversal | `core`, `math` |
 | `animation` | 2 | 14,927 | `@aura3d/animation` | clips, mixers, blending, skinning, morphs | `math` |
 | `rendering` | 2 | 123,050 | `@aura3d/rendering` | WebGL2 + WebGPU devices, materials, shaders, lighting, shadows, postprocess | `math`, `scene` |
-| `input` | 2 | 2,362 | `@aura3d/input` | keyboard/pointer/touch/gamepad/XR, action maps, replay. **`controls/*` are deprecated `@aura3d/controls` re-export shims (PRD-15 T6.9) — the sole upward edge** | `controls`, `math`, `scene` |
+| `input` | 2 | 2,362 | `@aura3d/input` | keyboard/pointer/touch/gamepad/XR, action maps, replay. | `math`, `scene` |
 | `audio` | 2 | 5,080 | `@aura3d/audio` | sole browser-standard Web Audio graph, buses, effects, positional audio | `scene` |
 | `ecs` | 2 | 1,480 | `@aura3d/ecs` | entity/component store. **One consumer — WS-3.3** | `core`, `math` |
 | `assets` | 3 | 22,852 | `@aura3d/assets` | glTF/GLB/KTX2/Draco loading, provenance, admission | `animation`, `rendering`, `scene` |

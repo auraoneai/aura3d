@@ -80,3 +80,17 @@ export type {
 // Aura3D Quality Rebuild contract surface (CONTRACTS.md §3.8).
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+// Wildcard disambiguation: lanes/prd08 aliased these camera helpers to the public
+// `cameraQuat*`/`CAMERA_DEFAULT_POSE` names first; agent-api's published union now
+// re-exports the same aliases — pin the canonical binding so the two star exports
+// do not collide (TS2308).
+export {
+  CAMERA_DEFAULT_POSE,
+  cameraQuatFromAxisAngle,
+  cameraQuatFromEulerXYZ,
+  cameraQuatMultiply,
+  cameraQuatNormalize,
+  cameraQuatRotateVec3,
+  cameraQuatSlerp,
+  cameraQuatToEulerXYZ
+} from "./lanes/prd08.js";

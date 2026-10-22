@@ -9,7 +9,7 @@
  */
 export interface GameRuntimeGateCheck {
   readonly id: "penetration" | "motion-feel" | "telemetry-coherence" | "opaque-asset";
-  readonly verdict: "pass" | "fail";
+  readonly verdict: "pass" | "fail" | "skip";
   /** Named causes. Empty on a pass; each entry identifies one specific defect. */
   readonly blockers: readonly string[];
   /** Raw values the verdict was derived from, so a failure is auditable. */
@@ -22,6 +22,8 @@ export interface GameRuntimeGateReport {
   /** The git revision measured, or `"working-tree"`. */
   readonly against: string;
   readonly pass: boolean;
+  /** Ids of gates skipped because their protected route is absent from the tree. */
+  readonly skipped: readonly string[];
   readonly checks: readonly GameRuntimeGateCheck[];
 }
 

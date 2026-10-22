@@ -17,3 +17,6 @@ minimumReleaseAgeExclude:
 
 overrides:
   "@loaders.gl/textures>ktx-parse": "1.0.1"
+
+patchedDependencies:
+  '@gltf-transform/core@4.5.1': patches/@gltf-transform__core@4.5.1.patch

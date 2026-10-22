@@ -469,6 +469,12 @@ try {
       return "unclassified";
     }
     if (scope === "@aura3d/physics" || scope === "@aura3d/engine/physics") return "documented-2.0-physics-navigation-owner-removal";
+    // A name removed from a non-root subpath that still resolves in another
+    // published package is a relocation, not a deletion — e.g. the @aura3d/input
+    // controls re-export shims deleted at 4.0 (PRD-15 T6.9 "remove in 4.0.0")
+    // whose implementations live in @aura3d/controls.
+    const relocated = otherPackageLocations.get(name);
+    if (relocated) return `relocated-to-${relocated}`;
     return classifyRemoval(scope, name);
   };
   const removals: Array<{ scope: string; category: string; name: string; classification: string }> = [];

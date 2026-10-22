@@ -59,7 +59,6 @@ digraph aura3d {
   "game" -> "math";
   "game" -> "rendering";
   "input" [label="input\ntier 2"];
-  "input" -> "controls" [color=red];
   "input" -> "math";
   "input" -> "scene";
   "math" [label="math\ntier 0"];

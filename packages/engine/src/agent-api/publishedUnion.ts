@@ -204,7 +204,15 @@ export { createPunchLayer } from "./camera/layers/punch.js";
 export { createTraumaLayer } from "./camera/layers/trauma.js";
 export { createLeanCameraRigAdapter, createLeanGameFeelAdapter } from "./camera/leanAdapters.js";
 export type { LeanCameraRigAdapter, LeanCameraRigAdapterOptions, LeanGameFeelAdapter, LeanGameFeelAdapterOptions } from "./camera/leanAdapters.js";
-export { cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ } from "./camera/quat.js";
+export {
+  quatFromAxisAngle as cameraQuatFromAxisAngle,
+  quatFromEulerXYZ as cameraQuatFromEulerXYZ,
+  quatMultiply as cameraQuatMultiply,
+  quatNormalize as cameraQuatNormalize,
+  quatRotateVec3 as cameraQuatRotateVec3,
+  quatSlerp as cameraQuatSlerp,
+  quatToEulerXYZ as cameraQuatToEulerXYZ
+} from "./camera/quat.js";
 export { createAltitudeRig } from "./camera/rigs/altitude.js";
 export type { AltitudeRigOptions } from "./camera/rigs/altitude.js";
 export { createChaseRig } from "./camera/rigs/chase.js";
@@ -222,7 +230,7 @@ export type { AuraOrbitRig, OrbitRigOptions } from "./camera/rigs/orbit.js";
 export { createRailRig } from "./camera/rigs/rail.js";
 export { createShoulderRig } from "./camera/rigs/shoulder.js";
 export type { ShoulderRigOptions } from "./camera/rigs/shoulder.js";
-export { CAMERA_DEFAULT_POSE, staticRig } from "./camera/rigs/static.js";
+export { DEFAULT_POSE as CAMERA_DEFAULT_POSE, staticRig } from "./camera/rigs/static.js";
 export { createTopDownRig } from "./camera/rigs/topDown.js";
 export type { TopDownRigOptions } from "./camera/rigs/topDown.js";
 // Lane 02/03/04/07 compiler plumbing — lighting/shadow resolvers, env probes,

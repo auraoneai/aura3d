@@ -7,6 +7,9 @@ settings:
 overrides:
   '@loaders.gl/textures>ktx-parse': 1.0.1
 
+patchedDependencies:
+  '@gltf-transform/core@4.5.1': 2e0c91225a9da4926a0e7651b5ab9d0376b44bba28f49a35b9d182e7228e591b
+
 importers:
 
   .:
@@ -16,7 +19,7 @@ importers:
         version: 0.20.0
       '@gltf-transform/core':
         specifier: 4.5.1
-        version: 4.5.1
+        version: 4.5.1(patch_hash=2e0c91225a9da4926a0e7651b5ab9d0376b44bba28f49a35b9d182e7228e591b)
       '@gltf-transform/extensions':
         specifier: 4.5.1
         version: 4.5.1
@@ -399,9 +402,6 @@ importers:
 
   packages/input:
     dependencies:
-      '@aura3d/controls':
-        specifier: workspace:*
-        version: link:../controls
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math
@@ -430,7 +430,7 @@ importers:
         version: 0.20.0
       '@gltf-transform/core':
         specifier: 4.5.1
-        version: 4.5.1
+        version: 4.5.1(patch_hash=2e0c91225a9da4926a0e7651b5ab9d0376b44bba28f49a35b9d182e7228e591b)
       '@gltf-transform/extensions':
         specifier: 4.5.1
         version: 4.5.1
@@ -3202,18 +3202,18 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@gltf-transform/core@4.5.1':
+  '@gltf-transform/core@4.5.1(patch_hash=2e0c91225a9da4926a0e7651b5ab9d0376b44bba28f49a35b9d182e7228e591b)':
     dependencies:
       property-graph: 4.1.0
 
   '@gltf-transform/extensions@4.5.1':
     dependencies:
-      '@gltf-transform/core': 4.5.1
+      '@gltf-transform/core': 4.5.1(patch_hash=2e0c91225a9da4926a0e7651b5ab9d0376b44bba28f49a35b9d182e7228e591b)
       ktx-parse: 1.1.0
 
   '@gltf-transform/functions@4.5.1(@types/node@22.19.17)':
     dependencies:
-      '@gltf-transform/core': 4.5.1
+      '@gltf-transform/core': 4.5.1(patch_hash=2e0c91225a9da4926a0e7651b5ab9d0376b44bba28f49a35b9d182e7228e591b)
       '@gltf-transform/extensions': 4.5.1
       ktx-parse: 1.1.0
       ndarray: 1.1.1

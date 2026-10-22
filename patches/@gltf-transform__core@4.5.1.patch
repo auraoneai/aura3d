@@ -1,0 +1,13 @@
+diff --git a/dist/index.js b/dist/index.js
+index e6309823e56ea2cb68ca7f44e7ca3bf1620cc380..b3d57c4fef7d67726e5a2780b5a646767c9b46ed 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -5524,7 +5524,7 @@ var NodeIO = class extends PlatformIO {
+ 	}
+ 	async init() {
+ 		if (this._init) return this._init;
+-		return Promise.all([import("node:fs"), import("node:path")]).then(([fs, path]) => {
++		const _nfs="node:fs",_npath="node:path";return Promise.all([import(_nfs), import(_npath)]).then(([fs, path]) => {
+ 			this._fs = fs.promises;
+ 			this._path = path;
+ 		});

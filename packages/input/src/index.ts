@@ -72,17 +72,3 @@ export type {
 } from "./WebXRSessionController";
 export * from "./GamepadInput.js";
 export * from "./GestureControls.js";
-export * from "./controls/PointerLockControls.js";
-export { CameraRig } from "./controls/CameraRig";
-export type { CameraRigState } from "./controls/CameraRig";
-export type { CameraTransformLike, EulerLike, Vec3Like } from "./controls/ControlTypes";
-export { createSceneCameraControlAdapter } from "./controls/SceneCameraAdapter";
-export type { SceneCameraControlAdapter } from "./controls/SceneCameraAdapter";
-export { EditorFlyControls } from "./controls/EditorFlyControls";
-export type { EditorFlyControlsOptions } from "./controls/EditorFlyControls";
-export { FirstPersonControls } from "./controls/FirstPersonControls";
-export type { FirstPersonControlsOptions } from "./controls/FirstPersonControls";
-export { DEFAULT_ORBIT_MAX_POLAR, OrbitControls } from "./controls/OrbitControls";
-export type { OrbitControlsOptions } from "./controls/OrbitControls";
-export { ThirdPersonFollowControls } from "./controls/ThirdPersonFollowControls";
-export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFollowControls";
