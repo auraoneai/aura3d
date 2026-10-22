@@ -1,0 +1,160 @@
+{
+  "schema": "a3d-crayon-probe/1",
+  "game": "heatsink",
+  "url": "https://app.usecrayon.ai/play/4698c657-3950-438a-9b64-b5fe778fcfda",
+  "probedAt": "2026-10-22T05:26:20.871Z",
+  "frame": {
+    "index": 1,
+    "url": "",
+    "pickReason": "best score 12 — canvas=2 importmap=true threeImport=true __THREE__=string"
+  },
+  "dom": {
+    "title": "Play Labs runtime",
+    "canvases": [
+      {
+        "w": 966,
+        "h": 543,
+        "engine": "three.js r186 webgpu",
+        "webgl2": false,
+        "webgpu": true
+      },
+      {
+        "w": 220,
+        "h": 220,
+        "engine": null,
+        "webgl2": false,
+        "webgpu": false
+      }
+    ],
+    "hasImportmap": true,
+    "importmap": "\n    {\n      \"imports\": {\n        \"three\":                       \"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js\",\n        \"three/addons/\":               \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"three/examples/jsm/\":         \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"@dimforge/rapier3d-compat\":   \"https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js\",\n        \"playlabs-boot\":               \"data:text/javascript;base64,aW1wb3J0KmFzIGUgZnJvbSJ0aHJlZSI7aW1wb3J0e3ZveGVsVG9NZXNoIGFzIHQsdGlja1ZveGVscyBhcyBuLHRhZ0Fzc2V0IGFzIG8sY3JlYXRlTW90aW9uUm9vdCBhcyByLHJlbGVhc2VBc3NldCBhcyBhLGRpc3Bvc2VQb29sIGFzIHN9ZnJvbSJwbGF5bGFicy12b3hlbCI7ZXhwb3J0e3QgYXMgdm94ZWxUb01lc2gsbiBhcyB0aWNrVm94ZWxzLG8gYXMgdGFnQXNzZXQsciBhcyBjcmVhdGVNb3Rpb25Sb290LGEgYXMgcmVsZWFzZUFzc2V0LHMgYXMgZGlzcG9zZVBvb2x9O2V4cG9ydCBmdW5jdGlvbiBzYXZlU2xvdChlPSJnYW1lIil7Y29uc3QgdD1gY3JheW9uLXNhdmU6JHtlfWA7bGV0IG49bnVsbDtjb25zdCBvPSgoKT0+e3RyeXtyZXR1cm4gbG9jYWxTdG9yYWdlLnNldEl0ZW0odCsiOnQiLCIxIiksbG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCsiOnQiKSwhMH1jYXRjaHtyZXR1cm4hMX19KSgpO3JldHVybntsb2FkKCl7aWYoIW8pcmV0dXJuIG47dHJ5e2NvbnN0IGU9bG9jYWxTdG9yYWdlLmdldEl0ZW0odCk7cmV0dXJuIGU/SlNPTi5wYXJzZShlKTpudWxsfWNhdGNoe3JldHVybiBufX0sc2F2ZShlKXtpZihuPWUsbyl0cnl7bG9jYWxTdG9yYWdlLnNldEl0ZW0odCxKU09OLnN0cmluZ2lmeShlKSl9Y2F0Y2h7fX0sY2xlYXIoKXtpZihuPW51bGwsbyl0cnl7bG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCl9Y2F0Y2h7fX19fWV4cG9ydCBmdW5jdGlvbiBiZW5kVG9Ib3Jpem9uKGUsdD0yNDAsbj0wKXtjb25zdCBvPWUudXNlckRhdGE7dm9pZCAwIT09by5fX2JlbnRZJiZlLnBvc2l0aW9uLnk9PT1vLl9fYmVudFl8fChvLl9fZmxhdFk9ZS5wb3NpdGlvbi55KTtjb25zdCByPWUucG9zaXRpb24uei1uO28uX19iZW50WT1vLl9fZmxhdFktcipyLygyKnQpLGUucG9zaXRpb24ueT1vLl9fYmVudFl9ZXhwb3J0IGZ1bmN0aW9uIGF1ZGlvUmVhZHkoZSl7Y29uc3QgdD13aW5kb3cuQXVkaW9Db250ZXh0fHx3aW5kb3cud2Via2l0QXVkaW9Db250ZXh0O2lmKCF0KXJldHVybjtsZXQgbj0hMTtjb25zdCBvPSgpPT57aWYoIW4pe249ITA7dHJ5e2NvbnN0IG49bmV3IHQsbz0oKT0+e3RyeXtlKG4pfWNhdGNoKGUpe2NvbnNvbGUud2FybigiW3BsYXlsYWJzXSBhdWRp",
+    "threeGlobal": "184",
+    "threeResources": [
+      "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js",
+      "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/geometries/RoundedBoxGeometry.js",
+      "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.core.min.js",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/position.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/marker-player.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/lockon.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/marker-gate.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/marker-rival.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/lap.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/shield.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/upgrade.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/afterburner.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/mine.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/trial.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/grand.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/fonts/heatsink-0.ttf",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/fonts/heatsink-7.ttf",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/fonts/heatsink-5.ttf",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/fonts/heatsink-6.ttf",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/upgrades-r3/booster.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/upgrades-r3/weapon.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/upgrades-r3/armor.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/custom-r6/aero-crest.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/custom-r6/sticker-1.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/custom-r6/sticker-4.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/custom-r6/sticker-2.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/custom-r6/sticker-3.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/custom-r6/sticker-5.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/custom-r6/sticker-6.webp",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/concrete_wall_008_nor.jpg",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/concrete_wall_008_diff.jpg",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/concrete_wall_008_rough.jpg",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_orion.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_volt.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_bastion.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_spectre.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_razor.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_nighthawk.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_wraith.glb",
+      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/asphalt_02_diff.jpg"
+    ],
+    "scripts": 5
+  },
+  "module": {
+    "revision": "184",
+    "hasThree": true,
+    "hasComposerProto": true,
+    "hasPassProto": true,
+    "hasWebgpu": false,
+    "hasPostProcessingProto": false,
+    "protoNames": [
+      "Scene",
+      "Object3D",
+      "Mesh",
+      "ShaderMaterial",
+      "Material",
+      "WebGLRenderer",
+      "InstancedMesh",
+      "EffectComposer",
+      "Pass"
+    ],
+    "importmap": "\n    {\n      \"imports\": {\n        \"three\":                       \"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js\",\n        \"three/addons/\":               \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"three/examples/jsm/\":         \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"@dimforge/rapier3d-compat\":   \"https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js\",\n        \"playlabs-boot\":               \"data:text/javascript;base64,aW1wb3J0KmFzIGUgZnJvbSJ0aHJlZSI7aW1wb3J0e3ZveGVsVG9NZXNoIGFzIHQsdGlja1ZveGVscyBhcyBuLHRhZ0Fzc2V0IGFzIG8sY3JlYXRlTW90aW9uUm9vdCBhcyByLHJlbGVhc2VBc3NldCBhcyBhLGRpc3Bvc2VQb29sIGFzIHN9ZnJvbSJwbGF5bGFicy12b3hlbCI7ZXhwb3J0e3QgYXMgdm94ZWxUb01lc2gsbiBhcyB0aWNrVm94ZWxzLG8gYXMgdGFnQXNzZXQsciBhcyBjcmVhdGVNb3Rpb25Sb290LGEgYXMgcmVsZWFzZUFzc2V0LHMgYXMgZGlzcG9zZVBvb2x9O2V4cG9ydCBmdW5jdGlvbiBzYXZlU2xvdChlPSJnYW1lIil7Y29uc3QgdD1gY3JheW9uLXNhdmU6JHtlfWA7bGV0IG49bnVsbDtjb25zdCBvPSgoKT0+e3RyeXtyZXR1cm4gbG9jYWxTdG9yYWdlLnNldEl0ZW0odCsiOnQiLCIxIiksbG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCsiOnQiKSwhMH1jYXRjaHtyZXR1cm4hMX19KSgpO3JldHVybntsb2FkKCl7aWYoIW8pcmV0dXJuIG47dHJ5e2NvbnN0IGU9bG9jYWxTdG9yYWdlLmdldEl0ZW0odCk7cmV0dXJuIGU/SlNPTi5wYXJzZShlKTpudWxsfWNhdGNoe3JldHVybiBufX0sc2F2ZShlKXtpZihuPWUsbyl0cnl7bG9jYWxTdG9yYWdlLnNldEl0ZW0odCxKU09OLnN0cmluZ2lmeShlKSl9Y2F0Y2h7fX0sY2xlYXIoKXtpZihuPW51bGwsbyl0cnl7bG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCl9Y2F0Y2h7fX19fWV4cG9ydCBmdW5jdGlvbiBiZW5kVG9Ib3Jpem9uKGUsdD0yNDAsbj0wKXtjb25zdCBvPWUudXNlckRhdGE7dm9pZCAwIT09by5fX2JlbnRZJiZlLnBvc2l0aW9uLnk9PT1vLl9fYmVudFl8fChvLl9fZmxhdFk9ZS5wb3NpdGlvbi55KTtjb25zdCByPWUucG9zaXRpb24uei1uO28uX19iZW50WT1vLl9fZmxhdFktcipyLygyKnQpLGUucG9zaXRpb24ueT1vLl9fYmVudFl9ZXhwb3J0IGZ1bmN0aW9uIGF1ZGlvUmVhZHkoZSl7Y29uc3QgdD13aW5kb3cuQXVkaW9Db250ZXh0fHx3aW5kb3cud2Via2l0QXVkaW9Db250ZXh0O2lmKCF0KXJldHVybjtsZXQgbj0hMTtjb25zdCBvPSgpPT57aWYoIW4pe249ITA7dHJ5e2NvbnN0IG49bmV3IHQsbz0oKT0+e3RyeXtlKG4pfWNhdGNoKGUpe2NvbnNvbGUud2FybigiW3BsYXlsYWJzXSBhdWRp",
+    "errors": [
+      "webgpu:TypeError: Failed to resolve module specifier 'three/webgpu'"
+    ]
+  },
+  "heap": {
+    "BatchedMesh": 1,
+    "NodeMaterial": 0,
+    "ShaderMaterial": 1,
+    "RawShaderMaterial": 1,
+    "EffectComposer": 0,
+    "PostProcessing": 0,
+    "WebGLRenderer": 1,
+    "WebGPURenderer": 0,
+    "InstancedMesh": 1,
+    "PMREMGenerator": 1,
+    "CSM": 0
+  },
+  "liveObjects": {
+    "contextFound": false
+  },
+  "probes": {
+    "p1_nodeMaterials": {
+      "answer": "no",
+      "value": {
+        "liveTraversal": 0,
+        "heapClasses": 0,
+        "webgpuModuleReachable": false
+      },
+      "detail": "no NodeMaterial instances or classes observed"
+    },
+    "p2_batchedMesh": {
+      "answer": "yes",
+      "value": {
+        "liveTraversal": 0,
+        "heapClasses": 1
+      },
+      "detail": "BatchedMesh observed"
+    },
+    "p3_pipeline": {
+      "answer": "no",
+      "value": {
+        "effectComposers": 0,
+        "postProcessingInstances": 0,
+        "heapEffectComposer": 0,
+        "heapPostProcessing": 0,
+        "passRoster": []
+      },
+      "detail": "no composer/post-processing pipeline observed"
+    },
+    "p4_shaderMaterials": {
+      "answer": "yes",
+      "value": {
+        "liveTraversal": {
+          "shader": 0,
+          "rawShader": 0
+        },
+        "heapClasses": {
+          "shader": 1,
+          "rawShader": 1
+        }
+      },
+      "detail": "0 live isShaderMaterial, 0 isRawShaderMaterial (+heap classes)"
+    }
+  },
+  "errors": []
+}

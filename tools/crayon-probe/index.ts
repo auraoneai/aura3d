@@ -52,6 +52,12 @@
  *   --frame-index <n>    force frame index instead of auto-detect
  *   --out <dir>          output dir (default evidence/crayon-probes)
  *   --stdout             also print the report JSON
+ *   --channel <name>     playwright channel (e.g. "chromium" = full Google
+ *                        Chrome for Testing binary; escapes the local
+ *                        agent-process-reaper's chrome-headless-shell pattern
+ *                        and uses hardware GPU instead of SwiftShader)
+ *   --headed             launch headed (default headless)
+ *   --launch-arg <arg>   extra chromium launch arg (repeatable)
  */
 
 import fs from "node:fs";
@@ -70,7 +76,7 @@ const { chromium } = requireFromRepo("playwright") as {
 
 // Minimal playwright types (tool runs un-built; keep local shapes).
 type Browser = { newContext: (o: Record<string, unknown>) => Promise<BrowserContext>; close: () => Promise<void>; contexts: () => BrowserContext[] };
-type BrowserContext = { newPage: () => Promise<Page>; newCDPSession: (o: Page) => Promise<CdpSession>; pages: () => Page[]; close: () => Promise<void> };
+type BrowserContext = { newPage: () => Promise<Page>; newCDPSession: (o: Page | Frame) => Promise<CdpSession>; pages: () => Page[]; close: () => Promise<void> };
 type Page = { goto: (u: string, o: Record<string, unknown>) => Promise<unknown>; waitForTimeout: (ms: number) => Promise<void>; frames: () => Frame[]; evaluate: (fn: unknown, arg?: unknown) => Promise<unknown>; url: () => string; on: (ev: string, cb: (e: unknown) => void) => void; context: () => BrowserContext };
 type Frame = { evaluate: (fn: unknown, arg?: unknown) => Promise<unknown>; name: () => string; url: () => string };
 type CdpSession = { send: (method: string, params?: Record<string, unknown>) => Promise<Record<string, unknown>>; on: (ev: string, cb: (p: Record<string, unknown>) => void) => void; detach: () => Promise<void> };
@@ -86,10 +92,13 @@ interface Args {
   readonly outDir: string;
   readonly stdout: boolean;
   readonly cdpEndpoint?: string;
+  readonly channel?: string;
+  readonly headed?: boolean;
+  readonly launchArgs: readonly string[];
 }
 
 function parseArgs(argv: readonly string[]): Args {
-  const out: Record<string, string | boolean | number | undefined> = { waitMs: 20000, outDir: path.join(repoRoot, "evidence", "crayon-probes") };
+  const out: Record<string, string | boolean | number | undefined | string[]> = { waitMs: 20000, outDir: path.join(repoRoot, "evidence", "crayon-probes"), launchArgs: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -102,6 +111,9 @@ function parseArgs(argv: readonly string[]): Args {
       case "--out": out.outDir = path.resolve(String(next())); break;
       case "--stdout": out.stdout = true; break;
       case "--connect": out.cdpEndpoint = next(); break;
+      case "--channel": out.channel = next(); break;
+      case "--headed": out.headed = true; break;
+      case "--launch-arg": out.launchArgs = [...(out.launchArgs as string[] | undefined ?? []), next()]; break;
       default:
         if (a?.startsWith("--")) throw new Error(`unknown arg ${a}`);
     }
@@ -315,12 +327,40 @@ async function pickGameFrame(page: Page, forcedIndex: number | undefined): Promi
   return { frame: best.frame, index: best.index, reason: `best score ${best.score} — ${best.why}` };
 }
 
-async function probeGame(page: Page, cdp: CdpSession, game: string, url: string, waitMs: number, forcedFrameIndex: number | undefined, errors: string[]): Promise<ProbeReport> {
+interface ExecCtxInfo {
+  readonly id: number;
+  readonly frameId?: string;
+  readonly isDefault: boolean;
+}
+
+async function probeGame(page: Page, cdp: CdpSession, context: BrowserContext, game: string, url: string, waitMs: number, forcedFrameIndex: number | undefined, errors: string[]): Promise<ProbeReport> {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
   await page.waitForTimeout(waitMs);
 
   const pick = await pickGameFrame(page, forcedFrameIndex);
   const frame = pick.frame;
+
+  // Frame-scoped CDP session: Crayon runs games in a sandboxed srcdoc iframe
+  // (`sandbox="allow-scripts …"` without allow-same-origin → opaque origin →
+  // OOPIF with its own process and CDP target). The page-level session cannot
+  // see the game frame's execution contexts or heap, so live-object queries
+  // and the heap snapshot must go through a session attached to the frame
+  // target itself. Falls back to the page session when the frame attach fails.
+  let gameCdp: CdpSession | undefined;
+  try {
+    gameCdp = await context.newCDPSession(frame);
+  } catch (e) {
+    errors.push(`framecdp:${String(e).slice(0, 140)}`);
+  }
+  const session = gameCdp ?? cdp;
+  const contexts: ExecCtxInfo[] = [];
+  if (gameCdp) {
+    gameCdp.on("Runtime.executionContextCreated", (p) => {
+      const c = (p as { context?: { id?: number; auxData?: { frameId?: string; isDefault?: boolean } } }).context;
+      if (c?.id !== undefined) contexts.push({ id: c.id, frameId: c.auxData?.frameId, isDefault: c.auxData?.isDefault === true });
+    });
+    await gameCdp.send("Runtime.enable").catch((e: unknown) => errors.push(`rt:${String(e).slice(0, 120)}`));
+  }
 
   // DOM/global scan (strategy 3)
   const dom = (await frame.evaluate(`(() => {
@@ -345,57 +385,60 @@ async function probeGame(page: Page, cdp: CdpSession, game: string, url: string,
   // importmap import resolves the same module record the game uses).
   const boot = (await frame.evaluate(PROBE_BOOT).catch((e: unknown) => ({ error: String(e).slice(0, 160) }))) as Record<string, unknown>;
 
-  // For queryObjects we need the frame's execution context id. Mark the
-  // picked frame, then find its context over CDP Page.createIsolatedWorld.
-  await frame.evaluate(`window.__a3dProbeMark = ${JSON.stringify(game)};`).catch(() => undefined);
-  interface FrameNode { readonly frame: { readonly id: string; readonly url?: string }; readonly childFrames?: readonly FrameNode[] }
-  const tree = (await cdp.send("Page.getFrameTree")) as { frameTree?: FrameNode };
-  const flatFrames: { id: string; url: string }[] = [];
-  const walk = (node: FrameNode): void => {
-    flatFrames.push({ id: node.frame.id, url: node.frame.url ?? "" });
-    for (const child of node.childFrames ?? []) walk(child);
-  };
-  if (tree.frameTree) walk(tree.frameTree);
+  // For queryObjects we need the game frame's MAIN-world execution context id.
+  // Isolated worlds (Page.createIsolatedWorld) do NOT see main-world window
+  // globals — __a3dProbe lives on the main world — so instead mark the DOM
+  // (document.documentElement attributes are shared by every world bound to
+  // that frame) and match it against the contexts Runtime.enable replayed.
+  const markToken = `${game}-${Date.now()}`;
+  await frame.evaluate(`document.documentElement.setAttribute("data-a3d-probe-mark", ${JSON.stringify(markToken)});`).catch(() => undefined);
 
   let contextId: number | undefined;
-  for (const f of flatFrames) {
+  const candidates = [...contexts.filter((c) => c.isDefault), ...contexts.filter((c) => !c.isDefault)];
+  for (const ctx of candidates) {
     try {
-      const world = (await cdp.send("Page.createIsolatedWorld", { frameId: f.id, worldName: "a3d-probe", grantUniveralAccess: true })) as { executionContextId?: number };
-      if (world.executionContextId === undefined) continue;
-      const marked = (await cdp.send("Runtime.evaluate", {
-        expression: "window.__a3dProbeMark ?? null",
-        contextId: world.executionContextId,
+      const marked = (await session.send("Runtime.evaluate", {
+        expression: `document.documentElement.getAttribute("data-a3d-probe-mark")`,
+        contextId: ctx.id,
         returnByValue: true
       })) as { result?: { value?: unknown } };
-      if (marked.result?.value === game) {
-        contextId = world.executionContextId;
-        break;
+      if (marked.result?.value === markToken) {
+        // Prefer the main-world context (the one where PROBE_BOOT stashed
+        // __a3dProbe); keep scanning if this is a utility world.
+        const hasProbe = (await session.send("Runtime.evaluate", {
+          expression: `"object" === typeof window.__a3dProbe`,
+          contextId: ctx.id,
+          returnByValue: true
+        })) as { result?: { value?: unknown } };
+        contextId = ctx.id;
+        if (hasProbe.result?.value === true) break;
       }
     } catch {
-      /* frame may be unreachable/cross-origin — keep scanning */
+      /* context may be destroyed or cross-origin — keep scanning */
     }
   }
+  await frame.evaluate(`document.documentElement.removeAttribute("data-a3d-probe-mark");`).catch(() => undefined);
 
-  const liveObjects: Record<string, unknown> = { contextFound: contextId !== undefined };
+  const liveObjects: Record<string, unknown> = { contextFound: contextId !== undefined, frameSession: gameCdp !== undefined };
   const liveCounts = { nodeMaterials: 0, batchedMeshes: 0, shaderMaterials: 0, rawShaderMaterials: 0, composerInstances: 0, postProcessingInstances: 0, passes: [] as unknown[] };
 
   if (contextId !== undefined && boot.hasThree === true) {
     const evalObj = async (expression: string): Promise<string | undefined> => {
-      const r = (await cdp.send("Runtime.evaluate", { expression, contextId, returnByValue: false, awaitPromise: true })) as { result?: { objectId?: string } };
+      const r = (await session.send("Runtime.evaluate", { expression, contextId, returnByValue: false, awaitPromise: true })) as { result?: { objectId?: string } };
       return r.result?.objectId;
     };
     const queryObjects = async (protoExpr: string): Promise<unknown[] | undefined> => {
       const protoId = await evalObj(protoExpr);
       if (!protoId) return undefined;
-      const res = (await cdp.send("Runtime.queryObjects", { prototypeObjectId: protoId, executionContextId: contextId })) as { objects?: { objectId?: string } };
+      const res = (await session.send("Runtime.queryObjects", { prototypeObjectId: protoId, executionContextId: contextId })) as { objects?: { objectId?: string } };
       const arrId = res.objects?.objectId;
       if (!arrId) return undefined;
-      const summary = (await cdp.send("Runtime.callFunctionOn", {
+      const summary = (await session.send("Runtime.callFunctionOn", {
         objectId: arrId,
         functionDeclaration: `function () { return this.length; }`,
         returnByValue: true
       })) as { result?: { value?: number } };
-      await cdp.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
+      await session.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
       return [summary.result?.value ?? 0];
     };
     // Scenes — traverse each live Scene for the full material/object census.
@@ -404,10 +447,10 @@ async function probeGame(page: Page, cdp: CdpSession, game: string, url: string,
     liveObjects.scenes = sceneTotal ?? 0;
     if (sceneTotal && sceneTotal > 0) {
       const protoId = await evalObj("window.__a3dProbe.protos.Scene");
-      const res = (await cdp.send("Runtime.queryObjects", { prototypeObjectId: protoId!, executionContextId: contextId })) as { objects?: { objectId?: string } };
+      const res = (await session.send("Runtime.queryObjects", { prototypeObjectId: protoId!, executionContextId: contextId })) as { objects?: { objectId?: string } };
       const arrId = res.objects?.objectId;
       if (arrId) {
-        const agg = (await cdp.send("Runtime.callFunctionOn", {
+        const agg = (await session.send("Runtime.callFunctionOn", {
           objectId: arrId,
           functionDeclaration: `function () {
             const out = { objects: 0, meshes: 0, instancedMeshes: 0, batchedMeshes: 0, shaderMaterials: 0, rawShaderMaterials: 0, nodeMaterials: 0, materialCtorCounts: {}, objectCtorCounts: {} };
@@ -428,7 +471,7 @@ async function probeGame(page: Page, cdp: CdpSession, game: string, url: string,
           liveCounts.rawShaderMaterials += v.rawShaderMaterials ?? 0;
           liveCounts.nodeMaterials += v.nodeMaterials ?? 0;
         }
-        await cdp.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
+        await session.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
       }
     }
     // Composer instances — live EffectComposer objects and their pass rosters.
@@ -437,17 +480,17 @@ async function probeGame(page: Page, cdp: CdpSession, game: string, url: string,
     liveCounts.composerInstances = (composerCount?.[0] as number | undefined) ?? 0;
     if (liveCounts.composerInstances > 0) {
       const protoId = await evalObj("window.__a3dProbe.addons.EffectComposer");
-      const res = (await cdp.send("Runtime.queryObjects", { prototypeObjectId: protoId!, executionContextId: contextId })) as { objects?: { objectId?: string } };
+      const res = (await session.send("Runtime.queryObjects", { prototypeObjectId: protoId!, executionContextId: contextId })) as { objects?: { objectId?: string } };
       const arrId = res.objects?.objectId;
       if (arrId) {
-        const passRoster = (await cdp.send("Runtime.callFunctionOn", {
+        const passRoster = (await session.send("Runtime.callFunctionOn", {
           objectId: arrId,
           functionDeclaration: `function () { return this.map(function (c) { return (${PIPELINE_SUMMARIZE.replace(/\n/g, " ")}).call(c); }); }`,
           returnByValue: true
         })) as { result?: { value?: { passes?: unknown[] }[] } };
         liveObjects.composerPasses = passRoster.result?.value ?? [];
         liveCounts.passes = (passRoster.result?.value ?? []).flatMap((c) => c.passes ?? []);
-        await cdp.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
+        await session.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
       }
     }
     // r186 node pipeline — PostProcessing instances (three/webgpu builds).
@@ -465,7 +508,7 @@ async function probeGame(page: Page, cdp: CdpSession, game: string, url: string,
   }
 
   // Strategy 2: heap snapshot — constructor-name census.
-  const heap = await heapClassCounts(cdp);
+  const heap = await heapClassCounts(session);
   if (heap.error) errors.push(`heap:${heap.error}`);
 
   // ── verdicts ──────────────────────────────────────────────────────────
@@ -548,7 +591,17 @@ async function main(): Promise<void> {
   fs.mkdirSync(args.outDir, { recursive: true });
   const browser = args.cdpEndpoint
     ? await chromium.connectOverCDP(args.cdpEndpoint)
-    : await chromium.launch({ timeout: 60000 });
+    : await chromium.launch({
+        timeout: 60000,
+        // The local AuraOne reaper (ai.auraone.agent-process-reaper) SIGSTOPs
+        // chrome-headless-shell trees under load; --channel chromium launches
+        // the full "Google Chrome for Testing" binary (not matched by the
+        // reaper pattern) and uses the real GPU via ANGLE/Metal instead of
+        // SwiftShader. Omit --channel on the remote runner.
+        ...(args.channel ? { channel: args.channel } : {}),
+        ...(args.headed ? { headless: false } : {}),
+        ...(args.launchArgs.length ? { args: [...args.launchArgs] } : {})
+      });
 
   for (const game of games) {
     const errors: string[] = [];
@@ -562,7 +615,7 @@ async function main(): Promise<void> {
       page.on("pageerror", (e) => errors.push(`pageerror:${String(e).slice(0, 160)}`));
       const cdp = await context.newCDPSession(page);
       try {
-        report = await probeGame(page, cdp, game.id, game.url, args.waitMs, args.frameIndex, errors);
+        report = await probeGame(page, cdp, context, game.id, game.url, args.waitMs, args.frameIndex, errors);
       } catch (e) {
         errors.push(`probe:${String(e).slice(0, 200)}`);
       } finally {

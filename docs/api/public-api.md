@@ -1913,6 +1913,25 @@ createAudioAnalyser(node, fftSize?) / new AudioAnalyser(...)
 Coverage: `tests/unit/audio/*` (no dedicated parity fixture — L9 merged the
 attenuation fix, listener wiring, and analyser together).
 
+### Root "." additions beyond the parity lanes
+
+```ts
+import { atmosphere, promptRecipes } from "@aura3d/engine";
+
+// atmosphere — app-first weather namespace delegating to the C-38
+// app.atmosphere member; every call throws a clear error if the
+// atmosphere extension is not installed on the app.
+atmosphere.setWetness(app, 0.8);          // number, not an options object
+atmosphere.setFog(app, { height: 12, density: 0.4 });
+atmosphere.setSky(app, { model: "gradient", zenith: "#2a3550", horizon: "#7f9fd0" });
+atmosphere.state(app);                    // current resolved atmosphere state
+
+// promptRecipes — the prompt-plan recipe table keyed by plan.sceneType;
+// consumed internally by promptPlanToScene / compilePromptPlanV2 and
+// exported for parity inspection and custom-scene extension.
+promptRecipes[plan.sceneType];            // (asset, plan, lookId?) => AuraSceneBuilder
+```
+
 ### Not yet — the only remaining gaps
 
 ```ts

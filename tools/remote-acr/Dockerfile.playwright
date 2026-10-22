@@ -1,0 +1,63 @@
+# Azure ACR Tasks browser/Playwright runner for the aura3d workspace.
+#
+# Chromium-capable base matching the repo's pinned Playwright version
+# (package.json devDeps: playwright / @playwright/test 1.59.1). The image
+# already carries linux browser binaries + system deps under /ms-playwright
+# and sets PLAYWRIGHT_BROWSERS_PATH, so no `playwright install` is needed.
+#
+# Built by tools/remote-acr/run.sh against a *staged* context (the repo is far
+# too large to ship wholesale). The context contains: root manifests, the
+# whole packages/ + workers/ workspace (minus per-package node_modules and
+# create-aura3d's 100MB of template/hdri payloads), tests/browser,
+# tests/support, examples/, tools/naming-taxonomy, and this directory.
+FROM mcr.microsoft.com/playwright:v1.59.1-noble
+
+ENV CI=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+WORKDIR /repo
+
+# Repo pins pnpm@11.1.3 via package.json#packageManager; .gitlab-ci.yml uses
+# `npm install -g pnpm@$PNPM_VERSION` — do the same (corepack also works but
+# npm -g matches the repo's proven CI path and needs no shim juggling).
+RUN npm install -g "pnpm@11.1.3" >/dev/null && pnpm --version
+
+# 1) Workspace manifests + patches first so the dependency layer stays
+#    cacheable across source-only changes (staged context includes all of
+#    packages/ and workers/, so every workspace package.json is present and
+#    `pnpm install --frozen-lockfile` validates against pnpm-lock.yaml).
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches/ ./patches/
+COPY packages/ ./packages/
+COPY workers/ ./workers/
+
+# 2) Hermetic linux install from the lockfile (same command as
+#    .gitlab-ci.yml). pnpm-workspace.yaml is shipped verbatim, so its
+#    overrides / patchedDependencies / allowBuilds / minimumReleaseAgeExclude
+#    all apply identically to a local install. NOTE: `minimumReleaseAge`
+#    itself is not currently enabled in any repo or global config on the
+#    build host (verified 2026-10-21) — only the Exclude list exists; the
+#    Exclude list travels with the workspace file if a floor is enabled later.
+RUN pnpm install --frozen-lockfile
+
+# 3) Sources the tests actually serve/execute. tests/browser/example-dev-
+#    server.ts transpiles packages/*/src on the fly (esbuild + typescript)
+#    and resolves @aura3d/* specifiers to src entry points, falling back to
+#    node_modules resolution (package.json exports -> dist/) for unmapped
+#    subpaths — so both src/ and dist/ ship for every workspace package.
+COPY tests/browser/ ./tests/browser/
+COPY tests/support/ ./tests/support/
+COPY examples/ ./examples/
+COPY tools/naming-taxonomy/ ./tools/naming-taxonomy/
+COPY tools/remote-acr/ ./tools/remote-acr/
+COPY playwright.config.ts tsconfig.base.json index.html favicon.svg ./
+
+# Fail the build, not the run, if the runner script failed to land.
+RUN chmod +x tools/remote-acr/task-run.sh && test -f tools/remote-acr/task-run.sh
+
+# Exec-form ENTRYPOINT+CMD: `az acr run` executes `docker run <img>` for
+# cmd-less steps, so argv lands as exactly [/bin/bash, task-run.sh] with no
+# node docker-entrypoint shimming in between (ACB rewrites cmd tokens in the
+# task yaml — keeping them out of the yaml avoids that entirely).
+ENTRYPOINT ["/bin/bash"]
+CMD ["/repo/tools/remote-acr/task-run.sh"]

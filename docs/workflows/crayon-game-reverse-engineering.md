@@ -113,10 +113,38 @@ minified line.
 
 ## 2. The flow
 
-Eight stages (0–7). Stages 0–5 are reverse engineering: raw CDP for the game
-frame, REA for the page and for local analysis. Stages 6–7 are Aura3D.
+Eight stages (0–7). Stages 0–5 are reverse engineering. Prism Browser now
+pierces the `about:srcdoc` frame for clicks, key presses, and live HUD capture;
+raw CDP remains for JavaScript evaluation, `window.game` internals, and bundle
+extraction; REA covers the page shell and local static analysis. Stages 6–7 are
+Aura3D.
 
 ### Stage 0 — Prerequisites
+
+Two entry paths; they are not mutually exclusive.
+
+**Capture path (recommended): Prism Browser.** No local Chrome and no CDP.
+
+```text
+browser_open  https://app.usecrayon.ai/play/<project_id>
+browser_observe                     # wait for boot; capture refs
+browser_click  ref=<Tap to start>   # pierces srcdoc
+browser_click  ref=<Play>
+browser_click  ref=<Start Race>
+browser_observe                     # live HUD status nodes
+browser_press  key=KeyW hold_ms=1500
+browser_observe                     # verify speed/time delta
+```
+
+Verified on HEATSINK with the 10-tool Prism build: `browser_click` and
+`browser_press` pierce the srcdoc frame, and `browser_observe` returns live
+`status` nodes (`POS`, `LAP`, `TIME`, `SPEED`, `BOOST`, `HEAT`, `SHIELD`,
+`LASER`, `TD`). Caveats: a click or press can return a client timeout even when
+the action landed — always verify with a fresh `browser_observe`; sessions are
+short-lived, so capture evidence promptly; there is no `Runtime.evaluate`.
+
+**Extraction path: local Chrome + CDP.** Required for Stage 2 and for
+`window.game` internals.
 
 ```bash
 rea --version                      # expect 6.7.0
@@ -129,13 +157,18 @@ rea --version                      # expect 6.7.0
 REA only accepts loopback: `http://127.0.0.1:9222` or the `ws://` browser URL.
 A Docker or remote browser will not work — the endpoint must be on this machine.
 
-### Stage 1 — Discover targets (raw CDP, not REA)
+### Stage 1 — Discover targets (Prism first, raw CDP for extraction)
 
-REA's browser tools accept only HTTP(S) page targets inside an allowed origin.
+**Prism path.** `browser_open` the play URL, wait for the game to boot (~20 s),
+then `browser_observe` with `include_refs: true`. The updated snapshot pierces
+the srcdoc frame and returns the game canvas, overlay buttons, and live HUD
+`status` nodes. Refs are session-scoped — re-observe after every transition.
+
+**Raw CDP path.** Required for `Runtime.evaluate`, `window.game`, and bundle
+extraction. REA's browser tools still accept only HTTP(S) page targets:
 `about:srcdoc` is rejected with `target_unavailable` / `target_not_allowed` by
 `list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, and
-`capture-web-screenshot` — CLI and MCP alike. Discovery of the game frame is raw
-CDP:
+`capture-web-screenshot` — CLI and MCP alike. Discover the frame with raw CDP:
 
 ```bash
 curl -s http://127.0.0.1:9222/json/list | node -e 'let s="";
@@ -146,8 +179,9 @@ process.stdin.on("data",d=>s+=d).on("end",()=>{
 
 You will see a `page` with the app URL and an `iframe` with `about:srcdoc`. Keep
 the iframe ID — that is the game. REA is then used on the **page** (captures,
-scenarios, screenshots) and on **local files** (static analysis). It never touches
-the frame.
+scenarios, screenshots) and on **local files** (static analysis); it still does
+not touch the frame. Prism is the in-frame interaction/capture path; raw CDP is
+the evaluation/extraction path.
 
 ### Stage 2 — Extract from the frame (CDP evaluate)
 
@@ -340,16 +374,23 @@ rea compare-web-screenshots /abs/before-shot.json /abs/after-shot.json \
   --channel-threshold 8
 ```
 
-**The frame is outside this surface.** The scenario schema has no frame selector,
-and `about:srcdoc` targets are rejected. Locator actions resolve on the shell
-page, and scenario keyboard events go to the page's focused element — they cannot
-be aimed at a frame element. Drive in-game input through the iframe session with
-`Input.dispatchKeyEvent` / `Input.dispatchMouseEvent`, or Playwright's
-`frameLocator`. Treat the REA scenario as the **shell-level** fixture (load,
-start, pause, restart) and the raw CDP script as the **in-game** fixture.
+**REA's scenario surface stops at the shell.** The scenario schema has no frame
+selector, and `about:srcdoc` targets are rejected. Locator actions resolve on the
+shell page, and scenario keyboard events go to the page's focused element — they
+cannot be aimed at a frame element. Treat the REA scenario as the
+**shell-level** fixture (load, start, pause, restart).
 
-Input on the iframe session was verified against HEATSINK — the frame's own
-`keydown`/`keyup` listeners received both events:
+**Prism's action surface crosses the frame.** `browser_click` and
+`browser_press` pierce the srcdoc iframe, and `browser_observe` returns the live
+HUD. Verified on HEATSINK: after `Start Race`, the snapshot contained
+`POS 8/12`, `LAP 1/3`, `TIME 00:00.800`, `SPEED 8 KM/H`, `BOOST 100%`,
+`HEAT 0%`, `SHIELD 100%`, `LASER 0%`; a 1.5 s `KeyW` hold changed `SPEED` to
+`190 KM/H` and `TIME` to `00:03.400`. Use Prism as the **in-game fixture** for
+observable HUD and controls, and keep raw CDP for `window.game` internals and
+extraction.
+
+Raw CDP input remains a fallback and was verified against HEATSINK — the
+frame's own `keydown`/`keyup` listeners received both events:
 
 ```js
 // same send() helper as Stage 2, on the iframe target
@@ -364,12 +405,13 @@ await send("Input.dispatchKeyEvent", {
 });
 ```
 
-**Assert only what is observable.** REA does not evaluate JavaScript, so a
-fixture cannot read `lap`, `heat`, or `pickupCount` from game memory. It can read
-HUD text through DOM/accessibility, the URL, storage, console events, and pixels.
-Write acceptance as "HUD shows `LAP 2/7`", not "lap === 2". Where the original
-game has no DOM HUD (canvas-only), the observable artifact is the screenshot, and
-the assertion must be a frame-to-frame structural comparison — not identity.
+**Assert only what is observable.** Neither REA nor Prism evaluates JavaScript,
+so a fixture cannot read `lap`, `heat`, or `pickupCount` from game memory.
+Prism's `browser_observe` exposes the HUD's `status` nodes; REA exposes DOM /
+accessibility, the URL, storage, console events, and pixels. Write acceptance as
+"HUD shows `LAP 2/7`", not "lap === 2". Where the original game has no DOM HUD
+(canvas-only), the observable artifact is the screenshot, and the assertion must
+be a frame-to-frame structural comparison — not identity.
 
 Comparison is normalized (step timing, event order, local network IDs) and reports
 per-artifact diffs. `start_url` host differences between Crayon and the Aura3D
@@ -430,8 +472,10 @@ pnpm check:release
 | CLI exit 134, `Scavenge ... 4080 MB` | 4 GB default heap | `NODE_OPTIONS=--max-old-space-size=8192` (peak observed 7.3 GB) |
 | 45 s → 0-byte output | Same OOM, output truncated | same |
 | `403 client_not_allowed` | Origin gate on `api.usecrayon.ai` | Browser context only; never curl |
-| `target_unavailable`, `reason: target_not_allowed`, *"must be an HTTP(S) page in the selected origin scope"* | REA browser tools (`list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, `capture-web-screenshot`) reject the game's `about:srcdoc` iframe | Discover it with raw `/json/list`; drive it with `Runtime.evaluate` and `Input.dispatch*`, or Playwright `frameLocator` |
-| Scenario locator never matches the game | Locators resolve in the shell page, not the srcdoc frame | Keep REA for shell-level steps; send in-game input through the frame session |
+| `target_unavailable`, `reason: target_not_allowed`, *"must be an HTTP(S) page in the selected origin scope"* | REA browser tools (`list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, `capture-web-screenshot`) reject the game's `about:srcdoc` iframe | Discover it with raw `/json/list` for extraction; drive it with Prism `browser_click` / `browser_press`, or raw `Runtime.evaluate` / `Input.dispatch*` |
+| Scenario locator never matches the game | Locators resolve in the shell page, not the srcdoc frame | Keep REA for shell-level steps; use Prism `browser_click` / `browser_press` for in-frame actions, raw CDP for internals |
+| `browser_click` / `browser_press` returns `browser request timed out` | Prism client timeout; the action often lands | Re-run `browser_observe` and check the HUD delta before retrying; do not assume failure |
+| `session_not_found` (404) | Prism session expired or closed | Open a new session and capture evidence promptly; refs are session-scoped |
 | Parity assertion reads `undefined` | REA is passive and never evaluates JavaScript | Assert HUD text, DOM/accessibility, URL, storage, or pixels; read internal state with a separate CDP probe |
 | Module extract returns 0 bytes | Dynamic import, no DOM script, no blob perf entry | Stage 2 CDP enumeration |
 | `source_maps: not_requested`, no maps found | Publisher ships none | Drop `--fetch-source-maps` |

@@ -200,7 +200,7 @@ codemod row). The "Remaining work" column is what §5 and §6 implement.
 | ID | Pri | Verdict | Evidence | Remaining work | Lane |
 | --- | --- | --- | --- | --- | --- |
 | SG-01 InstancedMesh | P1 | **DONE (L5)** | `AA/nodes/instancedMesh.ts`; `AA/nodes/batched.ts` (`BatchedMeshState` dense store); `AA/nodes/game/instanceTransforms.ts:directBatchedSetInstanceTransforms` writes the retained `matrices`/`colors` flat arrays the renderer uploads verbatim (L5-01); `instances.mesh` handle: `setMatrixAt`/`getMatrixAt`/`setColorAt`/`count`/`needsUpdate`/`computeBoundingSphere` | none for the public API; primitive-node `instances` still use the spec path by design | L5 |
-| SG-02 BatchedMesh | P1 (probe-gated) | **DONE (L5) — promotion P-2 gated** | `AA/nodes/batched.ts` (`batched.mesh` handle + real `batchedNodeHandler` under `A3D_PARITY_BATCHING`); `R/renderer/CullingBatching.ts` `BatchPlanCache.apply` routes `plan.multiDrawGroups` → `buildMultiDrawBatch` + `synthesizeMultiDrawItems`; `R/batching/*` pooled arenas, `DrawDataTexture` flags (visible bit + geometryId), stable texture object; `DrawSubmit` enqueues marker runs → `multiDrawElementsInstanced`; honest fallback = per-geometry instanced items with `fallbackReason` + `multiDrawMode:"unavailable"` in `renderer.batching` diagnostics | **Promotion to ● still needs probe P-2** (runtime `isBatchedMesh` evidence per game — L5-05); implementation does not wait on it | L5 |
+| SG-02 BatchedMesh | P1 (probe-gated) | **DONE (L5) — probe P-2 resolved** | `AA/nodes/batched.ts` (`batched.mesh` handle + real `batchedNodeHandler` under `A3D_PARITY_BATCHING`); `R/renderer/CullingBatching.ts` `BatchPlanCache.apply` routes `plan.multiDrawGroups` → `buildMultiDrawBatch` + `synthesizeMultiDrawItems`; `R/batching/*` pooled arenas, `DrawDataTexture` flags (visible bit + geometryId), stable texture object; `DrawSubmit` enqueues marker runs → `multiDrawElementsInstanced`; honest fallback = per-geometry instanced items with `fallbackReason` + `multiDrawMode:"unavailable"` in `renderer.batching` diagnostics | **Probe P-2 resolved**: `isBatchedMesh` live in 0 of 10 games (heap-class only via the shared playlabs bundle, §9) — stays unpromoted per-game; implementation shipped under `A3D_PARITY_BATCHING` regardless | L5 |
 | SG-03 geometry breadth | **P0** | GAP | `AA/nodes/types.ts:442` (6 kinds); `R/geometry/Primitives.ts:20`; internal pieces `AA/world/spline.ts:215-302` | cone, circle, ring, tube, lathe, extrude, shape, torusKnot, polyhedron(tetra/octa/icosa/dodeca), roundedBox | L2 |
 | SG-04 Edges/Wireframe | P1 | GAP | `R/Geometry.ts:93` line topology only | `geometry.edges(src, thresholdAngle)`, `geometry.wireframe(src)` | L2 |
 | SG-05 geometry authoring | **P0** | PARTIAL | `AA/RootGeometry.ts:6-14,84`; `R/MeshConsolidation.ts:109,233` | Typed arrays, `colors`, `groups`, `drawRange`, per-frame `handle.setGeometry()` / `updateAttribute()`, `computeNormals/Bounds`, `applyMatrix4`, `merge` | L2 |
@@ -734,7 +734,7 @@ fixture green", even if other lanes are still running.
 | `parity-audio` | `tests/unit/audio/*.test.ts`, `tests/browser/parity-audio.spec.ts` | Single attenuation; cone; analyser | vitest + remote |
 | `parity-runtime` | `tests/browser/parity-runtime.spec.ts` | Fog opt-out, background, cube camera, mirror | remote Playwright |
 | `parity-disposal` | `tests/browser/parity-disposal.spec.ts` | 20 cycles within 5% | remote Playwright |
-| `crayon-capture` | REA `compare_web_captures` on the shell + raw-CDP in-frame probe + `tools/webgpu-visual-parity/` | Declared scenario matches observable artifacts (HUD text, URL, storage, pixels) | remote |
+| `crayon-capture` | REA shell capture + Prism in-frame HUD/control fixture + raw-CDP internals probe + `tools/webgpu-visual-parity/` | Declared scenario matches observable artifacts (HUD text, URL, storage, pixels) | remote |
 
 Browser fixtures follow the `tests/browser/portable-custom-materials.spec.ts`
 pattern: `startExampleDevServer()`, an `examples/<lab>/main.ts` page exposing
@@ -760,6 +760,10 @@ These probes **cannot run through REA**, for two independent reasons:
 2. REA is passive by contract — `inspect-web-page` explicitly does not evaluate
    JavaScript, and the scenario action set has no `evaluate`.
 
+Prism's `browser_observe` can capture the HUD and `browser_press` can drive the
+controls, but it also has no `Runtime.evaluate`, so it cannot inspect
+`scene.traverse`, material nodes, or renderer internals.
+
 Run each probe with raw CDP `Runtime.evaluate` on the iframe's own session
 (`/json/list` → `webSocketDebuggerUrl` for the `iframe` target), after the scene
 has booted. Store the returned JSON under `evidence/crayon-probes/<game>.json`.
@@ -776,7 +780,35 @@ Stage 2.
 
 | Game | P-1 | P-2 | P-3 | P-4 | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| *(fill from `evidence/crayon-probes/*.json`)* | | | | | |
+| Strange Orbit | yes* | yes* | yes* | yes (1 live ShaderMaterial) | `evidence/crayon-probes/strange-orbit.json` |
+| Splat Rush | no | yes* | no | yes* | `evidence/crayon-probes/splat-rush.json` |
+| Saiyan Snake Way | no | yes* | no | yes* | `evidence/crayon-probes/saiyan-snake-way.json` |
+| HEATSINK | no | yes* | no | yes* | `evidence/crayon-probes/heatsink.json` |
+| Drift & Deliver | no | yes* | no | yes* | `evidence/crayon-probes/drift-and-deliver.json` |
+| Roadster Hours | no | yes* | no | yes* | `evidence/crayon-probes/roadster-hours.json` |
+| Ninja Runner | no | yes* | no | yes* | `evidence/crayon-probes/ninja-runner.json` |
+| Where the Wind Wanders | no | yes* | no | yes* | `evidence/crayon-probes/where-the-wind-wanders.json` |
+| Silt & Signal | no | yes* | no | yes* | `evidence/crayon-probes/silt-and-signal.json` |
+| Last Train to the Sea | no | yes* | no | yes* | `evidence/crayon-probes/last-train-to-the-sea.json` |
+
+`*` = heap-class evidence only: the constructor is present in the shared
+playlabs runtime bundle (all ten games load an identical importmap), but zero
+live instances were found by traversal in the probed window. Strange Orbit is
+the only game with live hits (1 ShaderMaterial); every other game's `yes*`
+means "the shared bundle can do it", not "this game does it".
+
+Probe-driven decisions (L10-02 re-rank):
+
+- **P-1**: 0 games with live node materials (1 heap hit). The ≥3 trigger is
+  not met — L1-11 stays unstarted and SH-01 is not promoted.
+- **P-2**: `isBatchedMesh` was found **live** in 0 games; the class is heap-
+  present in all ten via the shared bundle. SG-02 stays at its shipped-but-
+  not-● level: implemented (`A3D_PARITY_BATCHING`), not promoted per-game.
+- **P-3**: no live `EffectComposer`/`PostProcessing` anywhere (1 heap
+  EffectComposer in Strange Orbit). SH-03 order slots need no node-graph
+  mapping.
+- **P-4**: ≥1 live `isShaderMaterial` (Strange Orbit) — the L10 GLSL-
+  passthrough codemod row for `material.custom` is required.
 
 ---
 
@@ -849,8 +881,8 @@ Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 - [ ] AD-16 `lights.rectArea`, LightProbe
 
 ### Probes and migration
-- [ ] P-1..P-4 recorded for all 10 games
-- [ ] §7.1 matrix re-ranked from probe evidence
+- [x] P-1..P-4 recorded for all 10 games (`evidence/crayon-probes/*.json`)
+- [x] §7.1 matrix re-ranked from probe evidence (§9 decisions: no live BatchedMesh/TSL/composer usage found; only Strange Orbit has a live ShaderMaterial → GLSL-passthrough row required)
 - [ ] Every newly public API has an honest codemod row
 - [ ] Strange Orbit golden migration has 0 `TODO(a3d-migrate)` in game logic
 - [ ] `docs/api/public-api.md` documents every new export

@@ -1,0 +1,26 @@
+version: v1.1.0
+# Executed by `az acr run -f tools/remote-acr/task.playwright.yaml /dev/null`
+# (see run.sh). {{.Values.*}} come from --set, {{.Secrets.*}} from
+# --set-secret so the SAS is masked in run logs.
+steps:
+  - id: playwright
+    # In acr-task.yaml a `cmd` step's value IS the docker-run remainder —
+    # `cmd: <image-ref> [args...]`. There is no separate img field (earlier
+    # attempts that treated cmd as a shell command string or used
+    # img/entryPoint produced reference-format/ENOENT failures). The image's
+    # exec-form ENTRYPOINT ["/bin/bash"] + CMD ["/repo/tools/remote-acr/
+    # task-run.sh"] supplies the process; cmd carries only the image ref.
+    cmd: {{.Values.LOGIN_SERVER}}/{{.Values.IMAGE}}
+    workingDirectory: /repo
+    env:
+      - CI=1
+      - AURA3D_RUN_ID={{.Values.RUN_ID}}
+      # Comma-separated: `az acr run --set` tokenizes values on whitespace,
+      # so a space-separated spec list leaks tokens into the step's `img`.
+      - AURA3D_SPECS_CSV={{.Values.SPECS_CSV}}
+      - AURA3D_REPORTER={{.Values.REPORTER}}
+      # JSON report lands in tests/reports/ only when a json reporter is in
+      # AURA3D_REPORTER (e.g. "line,json"); harmless otherwise.
+      - PLAYWRIGHT_JSON_OUTPUT_NAME=tests/reports/remote-acr-report.json
+      - AURA3D_ARTIFACTS_SAS={{.Secrets.AURA3D_ARTIFACTS_SAS}}
+    timeout: 3600
