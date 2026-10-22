@@ -1,0 +1,152 @@
+{
+  "id": "strange-orbit",
+  "title": "Strange Orbit",
+  "url": "https://app.usecrayon.ai/play/47df78e2-1410-45d1-833c-196e1161c0b8",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2",
+    "source": "importmap + live canvas"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_256422b722f64f99b376006c54f43ffc",
+      "role": "race capture (session later reused by Splat Rush)"
+    },
+    {
+      "id": "bs_a5540efccdb04f88b970cb898ab6db67",
+      "role": "fresh title/importmap verification"
+    }
+  ],
+  "menus": [
+    "ORBITAL CYCLING CLUB / STRANGE ORBIT",
+    "BIKE / SKATE",
+    "Garage",
+    "Settings",
+    "RACE ↗",
+    "Race setup: Explorer (5 rescues, relaxed rivals), Racer (3 rescues, competitive rivals), Expert (2 rescues, relentless rivals)",
+    "7 orbits · one continuous world · five rivals",
+    "LET’S RIDE ↗"
+  ],
+  "start_flow": [
+    "RACE ↗",
+    "select Racer (default)",
+    "LET’S RIDE ↗",
+    "countdown",
+    "racing"
+  ],
+  "controls": {
+    "declared_from_settings": [
+      "W pedal",
+      "S brake",
+      "A left",
+      "D right",
+      "Shift boost",
+      "Space jump",
+      "G gravity",
+      "C camera",
+      "Esc pause"
+    ],
+    "gamepad": "left stick steer · RT accelerate · LT brake · A jump · X boost · B gravity · Y camera · Start pause",
+    "runtime_exercised": [
+      "W (1200 ms hold)"
+    ],
+    "notes": [
+      "Settings exposes a remap button per action.",
+      "Skate mode: jump, then tap jump again to kickflip.",
+      "In space: steer left/right, hold Jump to rise, Brake to descend."
+    ]
+  },
+  "hud": {
+    "before": {
+      "position": "06/06",
+      "lap": "1 / 7",
+      "race_time": "0:00.00",
+      "stardust": "55%",
+      "speed": "0 KM/H",
+      "gravity_charges": 3
+    },
+    "after_w_1200ms": {
+      "position": "06/06",
+      "lap": "1 / 7",
+      "race_time": "0:01.52",
+      "stardust": "67%",
+      "speed": "46 KM/H",
+      "gravity_charges": 3
+    },
+    "state_after": {
+      "phase": "racing",
+      "speed_internal": 2.0649858241200802,
+      "time": 1.9666666666666646,
+      "lap": 1,
+      "place": 6,
+      "energy": 67.23999999999987,
+      "score": 10.000000000000004
+    }
+  },
+  "state": {
+    "exposed_via": "window.__game.state and window.__orbit.state",
+    "keys": [
+      "phase",
+      "courseId",
+      "mode",
+      "difficulty",
+      "vehicle",
+      "s",
+      "lane",
+      "speed",
+      "time",
+      "lap",
+      "laps",
+      "place",
+      "gravityTime",
+      "gravityCharges",
+      "flight",
+      "air",
+      "loop",
+      "tricks",
+      "loops",
+      "stunts",
+      "energy",
+      "score",
+      "dust",
+      "surge",
+      "boostTime",
+      "boosting",
+      "lean",
+      "respawns",
+      "ready",
+      "fps"
+    ],
+    "observed": {
+      "courseId": "painted",
+      "mode": "cup",
+      "difficulty": "racer",
+      "vehicle": "bike",
+      "laps": 7
+    }
+  },
+  "tuning_observed": {
+    "difficulty_rescues": {
+      "explorer": 5,
+      "racer": 3,
+      "expert": 2
+    },
+    "laps_hud": 7,
+    "rivals": 5,
+    "stardust_start_percent": 55,
+    "gravity_charges_start": 3,
+    "gravity_rescue_window": "6 s grip / zero-G rescue (help text)",
+    "gravity_recharge": "one charge returns every lap (help text)"
+  },
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/strange-orbit/srcdoc.html",
+    "srcdoc_original_attempt": "evidence/crayon-runtime/strange-orbit/srcdoc.original.html"
+  },
+  "limitations": [
+    "Game module is a blob: module source and numeric physics constants were not readable through fetch.",
+    "The original race session was later reused by Splat Rush; the HUD/state rows above were recorded before the reuse.",
+    "Only W was exercised at runtime; the other bindings are declared by the settings UI."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

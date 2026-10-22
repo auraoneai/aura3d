@@ -1,0 +1,88 @@
+{
+  "id": "last-train-to-the-sea",
+  "title": "Last Train to the Sea",
+  "url": "https://app.usecrayon.ai/play/bda1b910-b840-48cb-bb4c-28d0cde29107",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2",
+    "source": "live canvas + importmap"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_7c5264d411f54b5e9f78642bcb33f8d6",
+      "role": "title, Driver ID, first departure HUD"
+    }
+  ],
+  "menus": [
+    "HEARTHWING — A little magic on rails.",
+    "Last Train to the Sea",
+    "Six little towns above the clouds.",
+    "Start journey",
+    "Garage",
+    "Your Driver ID"
+  ],
+  "start_flow": [
+    "Start journey",
+    "Driver ID",
+    "choose Tavi/Mira/Bram/Lumi + Original/Warm/Cool",
+    "Issue ID & start driving ↗",
+    "Mango Tide first departure"
+  ],
+  "controls": {
+    "declared_by_ui": [
+      "W faster",
+      "S slower / reverse (hold at a stop)",
+      "Space brake",
+      "A/D balance left/right",
+      "C camera",
+      "E open doors",
+      "J line map",
+      "R receipt",
+      "F wing boost"
+    ],
+    "touch": [
+      "Pace: Easy/Brisk",
+      "Go button",
+      "Camera chase toggle"
+    ],
+    "runtime_exercised": [
+      "Start journey click",
+      "Issue ID & start driving click",
+      "E (doors opening)",
+      "W (2000 ms)"
+    ]
+  },
+  "hud": {
+    "first_departure": {
+      "speed_multiplier": "×1.0",
+      "speed": "0",
+      "station": "Mango Tide",
+      "next": "Folded Gardens",
+      "aboard": "0 / 12",
+      "actions": "Explore town · Open doors E"
+    },
+    "after_e": {
+      "status": "Doors opening · Mango Tide",
+      "aboard": "0 / 12"
+    },
+    "after_w": {
+      "speed": "0",
+      "status": "Doors opening · Mango Tide"
+    }
+  },
+  "mechanic_notes": [
+    "Six towns above the clouds; the first departure is Mango Tide.",
+    "Tram capacity is 12 passengers; the opening objective is to open the doors and board the first passengers.",
+    "The Driver ID is local-only: “Free to issue. Yours to keep. No account needed.”",
+    "Passengers get off first; steps and door latch before departure (in-game help text)."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/last-train-to-the-sea/srcdoc.html"
+  },
+  "limitations": [
+    "No window.__game state exposed; exact passenger/tip/lantern formulas not captured.",
+    "The doors animation was still “Please wait…” at the end of the capture."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

@@ -1,7 +1,10 @@
 # PRD — three.js → Aura3D Parity
 
-**Status:** v2 · re-verified against source on 2026-10-21 (`main` @ `94c85e8ad`)
-**Supersedes:** the v1 "Parity Backlog" draft of the same date
+**Status:** v3 · code audit on 2026-10-22 (`main` @ `1cb364c2b`). The §10
+checklist was re-ticked against source and tests; open work is in **§12**.
+**Not complete:** 21 open tasks in §12, all four phase exits open, all six
+`A3D_PARITY_*` flags still `"dev"`.
+**Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
 (the ten Crayon ports this PRD unblocks)
 
@@ -129,12 +132,13 @@ default app backend (that belongs to PRD 11 / `A3D_QR_WEBGPU`).
 
 ### 2.2 What the games run
 
-Unchanged from v1: renderer `three.js r186 webgpu`; importmap three 0.184.0 +
-Rapier 0.12.0; modules > 500 KB inline three, < 100 KB import it; HEATSINK
-bundle shows `WebGPURenderer` ×12, `BatchedMesh` ×12, `InstancedMesh` ×10,
-`SkinnedMesh` ×11, `PMREMGenerator` ×6, `NodeMaterial` ×4. **Symbol presence is
-not usage.** None of the §9 runtime probes have been run; no answers exist in
-`evidence/`, `artifacts/` or `docs/`.
+Measured per game: nine titles load three **0.184.0 / WebGL2**; HEATSINK loads
+three **r186 with `WebGPURenderer`**. Importmap also pins Rapier 0.12.0; modules
+> 500 KB inline three, < 100 KB import it; HEATSINK's bundle shows
+`WebGPURenderer` ×12, `BatchedMesh` ×12, `InstancedMesh` ×10, `SkinnedMesh` ×11,
+`PMREMGenerator` ×6, `NodeMaterial` ×4. **Symbol presence is not usage.** §9
+P-1..P-4 are now recorded for all ten games (R-01/R-02), and the live capture
+table records the observable HUD/control evidence.
 
 ### 2.3 Aura3D surface (verified)
 
@@ -679,21 +683,23 @@ marked; each one has a stub, so no lane waits.
 ### 7.1 Dependency matrix
 
 `●` = blocking, `○` = useful, blank = not needed. Columns are the IDs still
-open after verification. SH-07, SR-09 and ST-05 are closed and dropped. Every
-cell is **inferred** until L10-01 records probe evidence.
+open after verification. SH-07, SR-09 and ST-05 are closed and dropped.
+**SH-01, SH-02, SH-03 and SG-02 were re-ranked from live probe evidence
+(R-02, 2026-10-22).** The other columns are still **inferred**: no probe covers
+geometry, textures, animation, audio or fog.
 
-| Game | SH-02 | SH-03 | SG-02 | SG-03 | SG-05 | SM-02 | ST-01/03 | SA-04 | AU-02 | SR-02 opt-out | First phase |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Strange Orbit | ○ | ○ | ○ | ● | ● | ● | ● |  | ○ | ○ | A |
-| Splat Rush |  |  |  | ○ | ○ | ○ | ● |  | ○ |  | A |
-| Saiyan Snake Way | ○ |  |  | ● | ● | ● | ○ |  | ○ | ○ | A |
-| HEATSINK | ● | ● | ● | ● | ● | ● | ● | ○ | ● | ● | B |
-| Drift & Deliver | ● | ● | ● | ● | ● | ● | ● | ○ | ● | ● | B |
-| Roadster Hours | ● | ● | ● | ● | ● | ● | ● | ○ | ● | ● | B |
-| Ninja Runner | ● | ○ |  | ● | ● | ● | ● | ● | ● | ● | C |
-| Where the Wind Wanders | ● | ○ | ○ | ● | ● | ● | ● |  | ● | ● | C |
-| Silt & Signal | ● | ● | ○ | ● | ● | ● | ● | ● | ● | ● | D |
-| Last Train to the Sea | ● | ● | ○ | ● | ● | ● | ● | ○ | ● | ● | D |
+| Game | SH-01 | SH-02 | SH-03 | SG-02 | SG-03 | SG-05 | SM-02 | ST-01/03 | SA-04 | AU-02 | SR-02 opt-out | First phase |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Strange Orbit |  | ● |  |  | ● | ● | ● | ● |  | ○ | ○ | A |
+| Splat Rush |  |  |  |  | ○ | ○ | ○ | ● |  | ○ |  | A |
+| Saiyan Snake Way |  | ● |  |  | ● | ● | ● | ○ |  | ○ | ○ | A |
+| HEATSINK | ● |  | ● |  | ● | ● | ● | ● | ○ | ● | ● | B |
+| Drift & Deliver |  |  | ○ |  | ● | ● | ● | ● | ○ | ● | ● | B |
+| Roadster Hours |  | ● |  | ● | ● | ● | ● | ● | ○ | ● | ● | B |
+| Ninja Runner |  | ● |  |  | ● | ● | ● | ● | ● | ● | ● | C |
+| Where the Wind Wanders |  | ● |  |  | ● | ● | ● | ● |  | ● | ● | C |
+| Silt & Signal |  | ● |  |  | ● | ● | ● | ● | ● | ● | ● | D |
+| Last Train to the Sea |  | ● |  |  | ● | ● | ● | ● | ○ | ● | ● | D |
 
 A game may start its Aura3D build when every `●` column is "engine path public +
 fixture green", even if other lanes are still running.
@@ -734,17 +740,20 @@ fixture green", even if other lanes are still running.
 | `parity-audio` | `tests/unit/audio/*.test.ts`, `tests/browser/parity-audio.spec.ts` | Single attenuation; cone; analyser | vitest + remote |
 | `parity-runtime` | `tests/browser/parity-runtime.spec.ts` | Fog opt-out, background, cube camera, mirror | remote Playwright |
 | `parity-disposal` | `tests/browser/parity-disposal.spec.ts` | 20 cycles within 5% | remote Playwright |
-| `crayon-capture` | REA shell capture + Prism in-frame HUD/control fixture + raw-CDP internals probe + `tools/webgpu-visual-parity/` | Declared scenario matches observable artifacts (HUD text, URL, storage, pixels). HEATSINK title snapshot, HUD convergence, and control path verified 2026-10-22; nine game fixtures pending | remote |
+| `crayon-capture` | REA shell capture + Prism `browser_eval` HUD/control fixture + raw-CDP internals probe + `tools/webgpu-visual-parity/` | Declared scenario matches observable artifacts (HUD text, URL, storage, pixels). On 2026-10-22 HEATSINK plus eight games were captured at title/menu/start/HUD or journal level; Splat Rush and Drift & Deliver also yielded exact `window.__game.CONFIG`. Roadster Hours' start click and Silt & Signal's child frame remain blocked. A fixed-input run and pixel diff are still required for every game | remote |
 
 Browser fixtures follow the `tests/browser/portable-custom-materials.spec.ts`
 pattern: `startExampleDevServer()`, an `examples/<lab>/main.ts` page exposing
 `window.__AURA_*__` hooks, `?backend=webgl2|webgpu`, screenshot hashes into
 `tests/reports/<name>/`, and assertions on `diagnostics.drawCalls`.
 
-`route-health` (`E/testing/routeHealth.ts`, `createAuraRouteHealthSnapshot`)
-must name, for each port: renderer backend, fallback, primary assets, primitive
-count, **parity IDs claimed**, custom passes, and known limits. Add a
-`parityIds: string[]` field there (owner L10).
+`route-health` (`createAuraRouteHealthSnapshot` in
+`AA/devtools/routeHealth.ts`; `E/testing/routeHealth.ts` holds the separate
+`createAuraRouteHealth` and has no parity field) must name, for each port:
+renderer backend, fallback, primary assets, primitive count, **parity IDs
+claimed**, custom passes, and known limits. `parityIds` ships at
+`AA/devtools/routeHealth.ts:13-27`. It is caller-supplied, not derived from
+what the scene actually uses.
 
 ---
 
@@ -765,13 +774,23 @@ Prism's `browser_observe` can capture the HUD and `browser_press` can drive the
 controls; on HEATSINK this was verified on 2026-10-22 with a 1.39 s title
 snapshot, 1/60 s `hold_ms` steps, automatic `KeyW` for action keys, idle physics
 frozen between calls, and fully converged HUD values (`Escape` → `Resume` and
-idle observe byte-identical). Prism still has no `Runtime.evaluate`, so it
-cannot inspect `scene.traverse`, material nodes, or renderer internals.
+idle observe byte-identical). **Update (2026-10-22): Prism now exposes
+`browser_eval(session_id, expression, frame_index?, await_promise?)`.** It can
+evaluate `window.__game`, `window.__orbit`, HUD DOM, and `window.__prism_srcdoc`
+inside the game's `about:srcdoc` frame, so runtime capture no longer needs raw
+CDP. Use `frame_index: null` to auto-target the child frame, or an explicit index
+when several frames exist. `browser_eval` alone can leave countdowns and timers
+frozen; pair it with `browser_press` to step the WebGL2 RAF bridge. Silt &
+Signal is the exception: its child frame times out, and
+`document.querySelector('iframe').srcdoc` from frame 0 is the only usable
+fallback (205,683 chars captured).
 
-Run each probe with raw CDP `Runtime.evaluate` on the iframe's own session
+Run P-1..P-4 with raw CDP `Runtime.evaluate` on the iframe's own session
 (`/json/list` → `webSocketDebuggerUrl` for the `iframe` target), after the scene
-has booted. Store the returned JSON under `evidence/crayon-probes/<game>.json`.
-The probe script is in
+has booted, because the probe must inject a `renderer.render` hook before boot.
+Use `browser_eval` for the visible HUD/control fixture. Store probe JSON under
+`evidence/crayon-probes/<game>.json` and capture JSON under
+`evidence/crayon-runtime/<game>/session.json`. The probe script is in
 [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
 Stage 2.
 
@@ -784,41 +803,91 @@ Stage 2.
 
 | Game | P-1 | P-2 | P-3 | P-4 | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| Strange Orbit | yes* | yes* | yes* | yes (1 live ShaderMaterial) | `evidence/crayon-probes/strange-orbit.json` |
-| Splat Rush | no | yes* | no | yes* | `evidence/crayon-probes/splat-rush.json` |
-| Saiyan Snake Way | no | yes* | no | yes* | `evidence/crayon-probes/saiyan-snake-way.json` |
-| HEATSINK | no | yes* | no | yes* | `evidence/crayon-probes/heatsink.json` |
-| Drift & Deliver | no | yes* | no | yes* | `evidence/crayon-probes/drift-and-deliver.json` |
-| Roadster Hours | no | yes* | no | yes* | `evidence/crayon-probes/roadster-hours.json` |
-| Ninja Runner | no | yes* | no | yes* | `evidence/crayon-probes/ninja-runner.json` |
-| Where the Wind Wanders | no | yes* | no | yes* | `evidence/crayon-probes/where-the-wind-wanders.json` |
-| Silt & Signal | no | yes* | no | yes* | `evidence/crayon-probes/silt-and-signal.json` |
-| Last Train to the Sea | no | yes* | no | yes* | `evidence/crayon-probes/last-train-to-the-sea.json` |
+| Strange Orbit | no (module) | no (live) | no (module) | **yes, 6 live ShaderMaterial** | `evidence/crayon-probes/strange-orbit.json` |
+| Splat Rush | no (module) | no (live) | no (module) | no (0 live) | `evidence/crayon-probes/splat-rush.json` |
+| Saiyan Snake Way | no (module) | no (live) | no (module) | **yes, 3 live** | `evidence/crayon-probes/saiyan-snake-way.json` |
+| HEATSINK | **yes, 49 live node materials** (three r184+r186, `WebGPURenderer`) | no (live) | inconclusive | no (0 live) | `evidence/crayon-probes/heatsink.json` |
+| Drift & Deliver | no (module) | no (live) | **yes (module)**: `EffectComposer.js` fetched, instance not reachable | no (0 live) | `evidence/crayon-probes/drift-and-deliver.json` |
+| Roadster Hours | no (module) | **yes, 68 live BatchedMesh** | no (module) | **yes, 29 live** | `evidence/crayon-probes/roadster-hours.json` |
+| Ninja Runner | no (module) | no (live) | no (module) | **yes, 11 live** | `evidence/crayon-probes/ninja-runner.json` |
+| Where the Wind Wanders | no (module) | no (live) | no (module) | **yes, 67 live** | `evidence/crayon-probes/where-the-wind-wanders.json` |
+| Silt & Signal | no (module) | no (live) | no (module) | **yes, 14 live** | `evidence/crayon-probes/silt-and-signal.json` |
+| Last Train to the Sea | no (module) | no (live) | no (module) | **yes, 6 live** | `evidence/crayon-probes/last-train-to-the-sea.json` |
 
-`*` = heap-class evidence only: the constructor is present in the shared
-playlabs runtime bundle (all ten games load an identical importmap), but zero
-live instances were found by traversal in the probed window. Strange Orbit is
-the only game with live hits (1 ShaderMaterial); every other game's `yes*`
-means "the shared bundle can do it", not "this game does it".
+**Basis** (schema `a3d-crayon-probe/2`): `live` means a populated scene
+traversal counted it; `module` means the game's module and importmap prove the
+class cannot be constructed (for example, no `three/webgpu` or `three/tsl` was
+requested). Each verdict carries its `basis` in the JSON.
 
-Probe-driven decisions (L10-02 re-rank):
+> **R-01 (2026-10-22) replaced the earlier probe run.** The first run found no
+> live scene in 9 of 10 games (`contextFound:false`) and 0 scenes in Strange
+> Orbit, so its "0 live" answers were unverified. The new probe injects a hook
+> before game boot (`context.addInitScript`, which reaches the `about:srcdoc`
+> frame) that captures the live `Scene` from three's constructors, then
+> traverses it. All 10 games now report `contextFound:true`, 1-3 scenes and
+> 494-10,724 objects, no errors (ACR Tasks run `cc1an`, serverless). Heap-class
+> hits are no longer used as evidence. The old heap `EffectComposer` hit in
+> Strange Orbit came from the probe loading the addon itself.
+>
+> **Caveats:** `roadster-hours` and `silt-and-signal` had `sceneSettled:false`,
+> so their object counts (and the BatchedMesh count) are lower bounds. HEATSINK
+> P-3 is inconclusive: its WebGPU path may use a node `PostProcessing` pipeline
+> the probe cannot see.
 
-- **P-1**: 0 games with live node materials (1 heap hit). The ≥3 trigger is
-  not met — L1-11 stays unstarted and SH-01 is not promoted.
-- **P-2**: `isBatchedMesh` was found **live** in 0 games; the class is heap-
-  present in all ten via the shared bundle. SG-02 stays at its shipped-but-
-  not-● level: implemented (`A3D_PARITY_BATCHING`), not promoted per-game.
-- **P-3**: no live `EffectComposer`/`PostProcessing` anywhere (1 heap
-  EffectComposer in Strange Orbit). SH-03 order slots need no node-graph
-  mapping.
-- **P-4**: ≥1 live `isShaderMaterial` (Strange Orbit) — the L10 GLSL-
-  passthrough codemod row for `material.custom` is required.
+**Live capture coverage (Prism `browser_eval`, 2026-10-22).** This is visible
+behaviour, not parity proof; every row still needs a fixed-input run and pixel
+diff.
+
+| Game | Menu/title | Start | HUD/state | Exact tuning | Capture evidence |
+| --- | --- | --- | --- | --- | --- |
+| Last Train to the Sea | yes | Driver ID → first departure | `Mango Tide`, `0 / 12 aboard` | no | `evidence/crayon-runtime/last-train-to-the-sea/session.json` |
+| Where the Wind Wanders | yes | direct boot | `0 / 3`, full journal | no | `evidence/crayon-runtime/where-the-wind-wanders/session.json` |
+| Saiyan Snake Way | yes | `Enter` | `27,649 km`, `360 DAYS`, `RUN SCORE 110` | no | `evidence/crayon-runtime/saiyan-snake-way/session.json` |
+| HEATSINK | yes | `Start Race` | converged telemetry | HUD only | existing HEATSINK fixture |
+| Silt & Signal | outer page only | **blocked** | **blocked** | no | `evidence/crayon-runtime/silt-and-signal/session.json` |
+| Drift & Deliver | yes | cutscene skip | `15 KM/H`, `x0 STREAK`, `BUSTED` | `window.__game.CONFIG` | `evidence/crayon-runtime/drift-and-deliver/session.json` |
+| Strange Orbit | yes | `RACE` → `Racer` → `LET’S RIDE` | `Lap 1 / 7`, `46 KM/H` | rescue budget only | `evidence/crayon-runtime/strange-orbit/session.json` |
+| Roadster Hours | yes | **click timeout** | **blocked** | no | `evidence/crayon-runtime/roadster-hours/session.json` |
+| Splat Rush | yes | `PLAY NOW` | `SCORE 27` | full `CONFIG` | `evidence/crayon-runtime/splat-rush/session.json` |
+| Ninja Runner | yes | `Enter the Village` | `59 m`, `265 / 300`, 4 health | ability costs | `evidence/crayon-runtime/ninja-runner/session.json` |
+
+Probe-driven decisions (R-02 re-rank, 2026-10-22). These replace the earlier
+provisional ones:
+
+- **P-1 (TSL):** 1 game (HEATSINK, 49 live node materials). The ≥3-game trigger
+  for L1-11 is **not met**, so L1-11 stays unstarted as a general feature. But
+  HEATSINK is a Phase B game, so **SH-01 is a blocker for Phase B** unless its
+  materials are hand-ported to `material.custom`. That choice is open (R-24).
+- **P-2 (BatchedMesh):** 1 game (Roadster Hours, 68 live). SG-02 is promoted to
+  ● for Roadster Hours only. HEATSINK and Drift & Deliver no longer need it.
+  Implementation exists behind `A3D_PARITY_BATCHING` (L5-05 satisfied for the
+  promotion decision).
+- **P-3 (post pipeline):** no live composer anywhere. Drift & Deliver's module
+  loads `EffectComposer` but no instance was reachable. HEATSINK is
+  inconclusive. SH-03 is needed by Drift & Deliver (useful) and possibly
+  HEATSINK; the other eight games need no post graph mapping.
+- **P-4 (ShaderMaterial):** 7 of 10 games use live GLSL `ShaderMaterial`
+  (Strange Orbit 6, Saiyan 3, Last Train 6, Ninja 11, Roadster 29, Silt 14,
+  Wind 67). The `ShaderMaterial` → `material.custom` codemod row
+  (`mappings.ts:104-105`) is **required**. SH-02 is ● for those seven, not
+  for HEATSINK, Drift & Deliver or Splat Rush.
 
 ---
 
 ## 10. Checklist
 
 Tick only with evidence: a test path, a CI run ID, or a probe JSON.
+
+**2026-10-22 audit:** every box below was re-checked against source. A box was
+unticked when the code exists but the §6 acceptance evidence does not, or
+when the evidence cited was wrong. Each unticked box names its §12 task.
+Unit suites run for the audit: `tests/unit/parity/*` all green (≈330 tests);
+browser specs were not re-run (remote-only).
+
+**Global caveat:** all six `A3D_PARITY_*` flags are still `"dev"`
+(`R/contracts/flags.state.ts:51-56`). A ticked box means "implemented and
+tested", **not** "on by default". For example, `instances.mesh` throws "not
+yet implemented" in a default app (`AA/nodes/batched.ts:357,371`). See R-17.
 
 ### Bootstrap
 - [x] B-01 contracts frozen; `pnpm typecheck` green
@@ -829,8 +898,8 @@ Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 - [x] B-06 `Curve<V>` interface frozen (`packages/math`; `curves.test.ts`)
 
 ### P0 — blocks every port
-- [x] SH-02 `material.custom` renders on WebGL2 (`parity-shader` green on ACR; WGSL/WebGPU remains optional per §C2/`A3D_QR_WEBGPU`)
-- [x] SH-03 `effects.shaderPass` with order slots (`parity-post` green on ACR)
+- [x] SH-02 `material.custom` renders on WebGL2 (`parity-shader` green on ACR; routing `AA/compiler/primitives.ts:374`, `modelMaterials.ts:27`; `setUniform` without recompile `customMaterial.ts:584`). WebGPU case (R-05): the remote runner's headless Chromium/SwiftShader destroys a `GPUDevice` at the first frame presented to a WebGPU canvas (reproduced without any Aura3D code; none of 8 flag variants helped), so the spec renders to an offscreen target and checks GPU readback pixels there (ACR run `r22f-20261022T201913Z`: 3 passed). Canvas presentation on WebGPU is **not proven** on this runner (R-22)
+- [x] SH-03 `effects.shaderPass` with order slots (`shader-pass-order.test.ts` 18 tests; WebGL2 bloom-order bug R-03b fixed in `v2Stages.ts`/`LegacyPost.ts`, proven by `parity-post` on ACR run `r03b2-20261022T192944Z`: halo luma 197.6 before-bloom vs 8 after-bloom/before-tonemap; WGSL custom pass + `WGSL_PROGRAM_MISSING` diagnostic in `WebGPUDevice.ts`, `webgpu-custom-pass.test.ts` 12 tests; R-03, R-04)
 - [x] SG-03 all 10 new primitive kinds equal three counts (`geometry-counts`; `parity-geometry` green — all kinds pixel-verified)
 - [x] SG-05 typed-array geometry + per-frame update < 2 ms (`geometry-dynamic`; `parity-geometry` live `updateAttribute`/`setGeometry` proven)
 - [x] SM-01 four new math types + Euler orders + method parity (`math`)
@@ -840,16 +909,18 @@ Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 
 ### P1 — blocks at least one game
 - [x] SH-05 / SR-07 `setPixelRatio`, `setClearColor`, `precompile` (`runtime.test.ts`)
-- [x] SH-06 public `RenderTarget` + `render({target})` (`public/renderer.ts` re-exports; codemod row "approximate")
-- [x] SH-08 Cineon (`ToneMappingOperators.glsl.ts:212` + `contracts/output.ts` union)
+- [x] SH-06 public `RenderTarget` + `render({target})` (`createRenderTarget` value export in `E/public/renderTarget.ts`; a triangle rendered into a target is sampled as a material map in `parity-runtime.spec.ts`, ACR run `g4-runtime-20261022T202038Z`; R-06)
+- [x] SH-08 Cineon (`tone-mapping.test.ts`: shipped GLSL within 1/255 of `ToneOperators.ts:39` and within 1e-9 of three's chunk; R-07)
 - [x] SH-10 `registerShaderChunk` (proven in `parity-shader`: `chunkRegistered: true`)
 - [x] SG-01 `instances.mesh` handle on a real GPU write path (parity-L5)
-- [x] SG-02 `batched.mesh` implemented (parity-L5); promotion to ● still gated on probe P-2 (L5-05)
+- [x] SG-02 `batched.mesh` implemented (parity-L5). Multi-draw availability now needs real device support (`WEBGL_multi_draw`); the report says `multiDrawMode:"unavailable"` otherwise and `outputDraws` equals device submissions (`batch-multidraw.test.ts` 17 tests; R-10). Promoted to ● for Roadster Hours only (P-2: 68 live BatchedMesh). Known gap: a shader that blocks merging at draw time still makes the device loop, so `outputDraws` can undercount there
 - [x] SG-04 edges / wireframe (`geometry-counts.test.ts`; public `geometry.edges`/`wireframe`)
+- [x] AD-06 `geometry.merge` and `geometry.toNonIndexed` public (`AA/nodes/geometry.ts`; tested against three; R-13)
+- [x] AD-07 `primitives.roundedBox` and `geometry.convex(points)` (`R/geometry/Convex.ts`; counts, positions and normals equal three's `ConvexGeometry` on 3 seeded clouds; R-12)
 - [x] SG-06 / AD-08 `lines.*` incl. fat + dashed (`parity-lines` green — fat DPR-stable, dash coverage drop)
 - [x] SG-07 `points` attenuation/map/alphaTest (`parity-lines` green — attenuation pixel-proven)
 - [x] SG-09 handle graph members (`runtime.test.ts` — layers/renderOrder/frustumCulled/traverse/attach)
-- [x] SG-10 / SR-06 texture/cube background (`runtime.test.ts`)
+- [x] SG-10 / SR-06 texture/cube background (`runtime.test.ts` plus pixel case in `parity-runtime.spec.ts`; R-08)
 - [x] SM-03 colour tracks + typed factories (`animation.test.ts`)
 - [x] SM-04 MathUtils, HSL, SH3 (`math.test.ts`)
 - [x] ST-03 runtime canvas/video upload on both backends (`parity-texture` live repaint proven)
@@ -862,35 +933,37 @@ Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 - [x] AU-01 listener writes `ctx.listener` (`parity-audio` green)
 - [x] AU-02 double attenuation fixed; cone + distanceModel (`parity-audio` green — C10 regression)
 - [x] SR-01 Clock (`runtime.test.ts`)
-- [x] SR-02 per-material fog opt-out (`types.ts:297` `fog?: boolean` + ForwardPass uniform)
+- [x] SR-02 per-material fog opt-out (`ForwardPass.ts:438,648`; fog-off mesh pixel case in `parity-runtime.spec.ts`; R-08)
 - [x] SR-03 public raycast with options (`runtime.test.ts` — layers filter proven)
 - [x] SR-05 `app.info` (`runtime.test.ts`)
-- [x] SR-08 disposal soak green (`resource-soak-u1.spec.ts` — 50 mount/step/dispose cycles, calibrated gates)
-- [x] SC-01 `cameras.cube` (`runtime.test.ts`)
-- [x] AD-14 OBB / Capsule / ConvexHull / Octree (`math.test.ts`)
-- [x] AD-15 `surfaces.mirror` (`runtime.test.ts`)
+- [x] SR-08 disposal (`tests/browser/parity-disposal.spec.ts`: 20 cycles, zero drift for app mount/dispose and a long-lived renderer, device counters 0 after release; ACR run `g4-runtime-20261022T202038Z`; R-09)
+- [x] SC-01 `cameras.cube` (pixel case in `parity-runtime.spec.ts`: reflection changes when a coloured object moves. Needed three engine fixes: static batching dropped the cube binding, zero scene environment knobs scaled the reflection to nothing in `ForwardPass.ts`, camera `layers` never hid nodes; R-08)
+- [x] AD-14 OBB / Capsule / ConvexHull / Octree (`math.test.ts`: hull face counts and vertex sets and Octree node/triangle counts plus capsule/sphere/box/ray queries equal three's, with minimum-hit-count guards; R-11)
+- [x] AD-15 `surfaces.mirror` (pixel case in `parity-runtime.spec.ts`; R-08)
+- [x] ST-05 GLTF decoder parity (`tests/fixtures/gltf/{draco,meshopt,ktx2}-spheres.glb`; Aura's loader and three's `GLTFLoader` give equal per-primitive vertex counts, index counts and positions for Draco and Meshopt; KTX2 matches on geometry and extension handling only, as texture transcoding needs a GPU; R-15)
+- [x] L3-03 camera `Spline.ts` consumes `M/curves` (new `ClampedCatmullRomCurve3`, any alpha; duplicate derivative and `curveTypeFor` fallback deleted; also fixed an arc-length test that was failing at HEAD; R-14)
 
 ### P2 — completeness
-- [x] SH-01 TSL subset — closed by P-1..P-4 probe evidence (no live TSL usage in any of the 10 games)
+- [ ] SH-01 TSL subset. Re-probed (R-01): 1 of 10 games authors node materials (HEATSINK, 49 live; three r184+r186, `WebGPURenderer`). The ≥3-game trigger is not met, so there is no general TSL emitter, but HEATSINK is a Phase B game and needs either hand-ported `material.custom` materials or L1-11 → **R-24 (decision)**
 - [ ] SH-04 compute (after `A3D_QR_WEBGPU`)
 - [x] SH-09 material `patch` (`shader-material.test.ts` — patch chunks hash into program key)
 - [x] SG-08 sprites (`parity-lines` green — billboard + rotation pixel-proven)
 - [x] SG-11 mixed-child LOD — `groups.lod({levels, hysteresis})` ships arbitrary subtrees per level (`lodMarkers.ts` + renderInput per-frame visibility; `runtime.test.ts` SG-11 block)
 - [x] SA-02, SA-06 (`animation.test.ts`)
 - [x] AU-03 analyser (`AudioAnalyser.ts` + `parity-audio` spec)
-- [x] SR-04 layers (`runtime.test.ts` — handle layer masks + raycast layer filter)
+- [x] SR-04 layers (`camera.perspective({ layers })` now hides non-intersecting nodes; pixel case in `parity-runtime.spec.ts` plus unit tests that fail without the fix; R-08)
 - [x] SC-03 helpers (`parity-lines` green — helper glyphs pixel-proven)
 - [ ] SC-04 XR buttons + render target (post-D; `WebXRSessionController` exists, no public XR buttons)
 - [x] ST-04 / ST-06 loaders + progress (`FileLoader`/`ImageBitmapLoader`/`DataTextureLoader` shipped; progress events wired e2e)
 - [x] AD-16 `lights.rectArea` + `lights.lightProbe` — LightProbe ships public: `sh` (27 SH9 coeffs, three's band-major packing) evaluates ±direction into the hemisphere-irradiance channel (`runtime.test.ts` AD-16 block; codemod rows LightProbe/AmbientLightProbe/HemisphereLightProbe → `lights.lightProbe` approximate)
 
 ### Probes and migration
-- [x] P-1..P-4 recorded for all 10 games (`evidence/crayon-probes/*.json`)
-- [x] §7.1 matrix re-ranked from probe evidence (§9 decisions: no live BatchedMesh/TSL/composer usage found; only Strange Orbit has a live ShaderMaterial → GLSL-passthrough row required)
-- [x] Every newly public API has an honest codemod row (`mappings.ts`: pending rows name reserved targets only — nothing claims a missing GPU path)
-- [ ] Strange Orbit golden migration has 0 `TODO(a3d-migrate)` in game logic
-- [x] `docs/api/public-api.md` documents every new export
-- [x] route-health reports `parityIds` (all 8 parity ports publish snapshots; specs assert exact ID lists)
+- [x] P-1..P-4 recorded for all 10 games from live scene traversal (`evidence/crayon-probes/*.json`, schema `a3d-crayon-probe/2`, all `contextFound:true`; ACR run `cc1an`; R-01). Caveat: `roadster-hours` and `silt-and-signal` scenes had not settled, so their counts are lower bounds
+- [x] §7.1 matrix re-ranked from probe evidence for SH-01/SH-02/SH-03/SG-02 (R-02; see §9)
+- [x] Every newly public API has an honest codemod row (`mappings.ts`; `migrate-three-mapping-targets.test.ts` now fails on any `engineImport` that is not exported; found and fixed a bad `assets` import in the `TextureLoader.load`/`AudioLoader.load` rows; stale AU-01/AU-02 notes corrected; R-16)
+- [x] Strange Orbit golden migration has 0 `TODO(a3d-migrate)` in game logic (real game captured via ACR run `cc1ap`: 19,300-byte bootstrap shell plus the 864 KB logic bundle demangled to `tests/fixtures/crayon/strange-orbit/game-logic.demangled.js`, 39 three constructs, codemod row counts equal an independent census; the five custom vertex attributes are mapped to the new `attributes` geometry field, R-23). Caveat: the game's shaders still use `varying`/`texture2D`/`gl_FragColor` and need hand-porting to GLSL 300 es; the hand-written stand-in test is kept alongside the real fixture
+- [x] `docs/api/public-api.md` documents every new export (texture, lines, points, sprites, batched, helpers, surfaces, Clock, raycast all `live` in dispositions; `curve` is `drop`, shipping via `@aura3d/engine/math`). Minor: `cameras` is exported with no disposition entry → **R-21**
+- [x] route-health reports `parityIds` (`AA/devtools/routeHealth.ts:13-27`; caller-supplied, browser specs assert exact ID lists)
 
 ### Phase exits
 - [ ] A — Strange Orbit 7-lap capture matches
@@ -912,3 +985,60 @@ An ID is done when **all** of these are true:
 6. `pnpm check:release` is green.
 
 Anything less is the WS-3.4 defect with a new name.
+
+---
+
+## 12. Remaining tasks (2026-10-22 code audit)
+
+Source audit of every §10 box at `main` @ `1cb364c2b`. Lane ownership follows
+§5.11. Sizes follow §6. Browser specs run remotely (§1.4 rule 5).
+
+### 12.1 What the audit confirmed as done
+
+Lane B (B-01..B-06); SH-02 (WebGL2), SH-09, SH-10; SG-03 (all 10 kinds, counts
+compared live against three 0.185.1), SG-04, SG-05 (in-place upload when the
+footprint is unchanged, `AA/compiler/primitives.ts:693-720`); SG-01 write path;
+SM-01, SM-02, SM-03, SM-04 (1000 seeded cases per group against three); all of
+L8 (SA-01..06); ST-01, ST-02, ST-03 (WebGPU revision check, external-image
+copy and all-layer upload in `R/WebGPUDevice.ts:2050-2183`), ST-04, ST-06,
+ST-07, AD-03 (10 real EXR fixtures against three's `EXRLoader`); AU-01..03
+(double attenuation removed, `AU/PositionalEmitter.ts:384-388`); all of L6;
+SH-05/SR-07 (`app.precompile` really assigned, `createAuraApp.ts:544`), SR-01,
+SR-03, SR-05, SG-09, SG-11, AD-16; L10-04, L10-05; public-api docs.
+
+### 12.2 Task list
+
+| Task | Lane | Size | Gap | Files | Acceptance |
+| --- | --- | --- | --- | --- | --- |
+| **R-01** | L10 | M | Probes never reached a live scene: `contextFound:false` in 9/10, `scenes:0` in Strange Orbit. P-1..P-4 "no" answers are unverified | `tools/crayon-probe/index.ts`; `evidence/crayon-probes/*.json` | Fix scene discovery: inject before game boot on the iframe target (`Page.addScriptToEvaluateOnNewDocument` with `flatten:true`) to capture the `Scene` passed to `renderer.render`, rather than searching `window`. Each JSON has `contextFound:true`, `scenes ≥ 1`, and per-probe live counts. Run remotely |
+| **R-02** | L10 | S | §7.1 matrix and §9 decisions rest on inconclusive probes | this doc §7.1, §9, §10 | Re-rank SH-01 (L1-11 trigger), SG-02 (L5-05 promotion), P-3 (node-graph post) and P-4 from R-01 output. Each decision cites a JSON path and a live count |
+| **R-03** | L1 | S | Named post slots `"after-bloom"` and `"before-tonemap"` map to the same anchor and fall back to registration order | `AA/nodes/effects.post.ts:199-203`; `R/post/v2Stages.ts:336-344` | Give named slots a sort key within the anchor (`after-bloom` < numeric < `before-tonemap`) or a separate anchor. `shader-pass-order.test.ts` asserts `after-bloom` runs before `before-tonemap` when registered in reverse |
+| **R-04** | L1 | M | L1-06: custom post passes compile GLSL only (`v2Stages.ts:404`); `R/webgpu/WebGPUPostProcess.ts` has no custom-pass or WGSL path and no "missing WGSL" diagnostic | `R/webgpu/WebGPUPostProcess.ts`; `R/post/v2Stages.ts` | On WebGPU, a pass with `wgsl` executes; one without emits a named diagnostic instead of being skipped. WebGPU case added to `parity-post.spec.ts` |
+| **R-05** | L1 | S | L1-04: no WebGPU proof for `material.custom` WGSL | `tests/browser/parity-shader.spec.ts` | `?backend=webgpu` case: same spec, pixel delta between two uniform values, on the remote GPU runner |
+| **R-06** | L7 | M | SH-06: `RenderTarget`/`Texture`/`Sampler` are type-only exports; no render-to-texture test | `E/public/renderer.ts:26`; dispositions; `tests/browser/parity-runtime.spec.ts` | Value export of `RenderTarget` (or a documented factory). Test renders to a target and samples it as a `material.*` map; the pixel differs from the no-target baseline |
+| **R-07** | L7 | S | SH-08: Cineon has no acceptance test | `tests/unit/parity/runtime.test.ts` (or a new `tone-mapping.test.ts`) | GLSL Cineon output (evaluated via the shader's CPU twin or a GPU readback) is within 1/255 of `R/post/ToneOperators.ts:39` across a 64-step ramp |
+| **R-08** | L7 | M | `tests/browser/parity-runtime.spec.ts` (§5.7) does not exist. SR-02, SG-10, SC-01, AD-15, SR-04 and SH-06 have only spec-shape unit tests | `tests/browser/parity-runtime.spec.ts`; `examples/parity-runtime-lab/main.ts` | Pixel cases: fog-off mesh equals no-fog baseline; texture and cube background without IBL; cube-camera reflection changes when a coloured object moves; mirror shows the reflected object; layer-masked node absent from the frame; render-to-target (R-06) |
+| **R-09** | L7 | S | SR-08: `tests/browser/parity-disposal.spec.ts` does not exist; `resource-soak-u1.spec.ts` was substituted | `tests/browser/parity-disposal.spec.ts`, or amend §5.7/§8 | Either write the spec (20 load/unload cycles, `getDiagnostics()` memory/textures/buffers/renderTargets within 5% of cycle 1), or record in §5.7 that `resource-soak-u1` is the accepted fixture and show it asserts the same four counters |
+| **R-10** | L5 | S | Multi-draw availability comes from `qrGeneratedProgramsOn` (`R/renderer/CullingBatching.ts:377`), not the `WEBGL_multi_draw` extension. Without the extension, the plan reports multi-draw while the device loops (`webgl2/MultiDraw.ts:651-653`) | `R/renderer/CullingBatching.ts`; `R/webgl2/MultiDraw.ts` | Device capability feeds `multiDrawAvailable`. With the extension stubbed absent, the report says `multiDrawMode:"unavailable"` and the draw count matches actual submissions. Case added to `tests/unit/rendering/batch-multidraw.test.ts` |
+| **R-11** | L3 | M | AD-14 / L3-07: `M/ConvexHull.ts` and `M/Octree.ts` have zero tests | `tests/unit/parity/math.test.ts` | Hull of a seeded 1k-point cloud has three's face count. Octree capsule sweep, sphere and ray results equal three's `Octree` on a fixture level |
+| **R-12** | L2 | S | L2-07 / AD-07: no convex-hull geometry | `AA/nodes/geometry.ts`; `R/geometry/Convex.ts` | `geometry.convex(points)` built on `M/ConvexHull`; face/vertex counts equal three's `ConvexGeometry`. Depends on R-11 |
+| **R-13** | L2 | S | AD-06: `toNonIndexed` is internal only (`AA/RootGeometry.ts:424`) | `AA/nodes/geometry.ts`; dispositions; `docs/api/public-api.md` | `geometry.toNonIndexed(src)` public and documented; existing three comparison test points at the public call |
+| **R-14** | L3 | S | L3-03: camera `Spline.ts` keeps its own `catmullRomDerivative` (`:224-240`) and a null fallback for unsupported alpha (`:39-44`) | `AA/camera/Spline.ts`; `M/curves/CatmullRomCurve3.ts` | Support arbitrary alpha in `M/curves` (or restrict camera alpha to the three types); delete the duplicate derivative; existing camera tests unchanged |
+| **R-15** | L4 | S | ST-05: only the plain GLB is checked against three on real bytes; Draco/Meshopt use capture stubs, KTX2 only a flag | `tests/unit/parity/gltf-decoders.test.ts`; `tests/fixtures/gltf/` | Three real compressed GLBs (Draco, Meshopt, KTX2) decoded by both loaders; vertex and index counts equal |
+| **R-16** | L10 | S | L10-03: no test enforces "every mapping target exists in `aura.exports.json`". Stale notes at `CLI/migrate-three/mappings.ts:186-187` (AU-01 and AU-02 were fixed) | `tests/unit/aura3d-cli/`; `mappings.ts` | New test resolves every `engineImport` against the export manifest and fails on a missing name. Notes corrected |
+| **R-17** | all | per lane | §7.3 step 3 never run: all six `A3D_PARITY_*` flags are `"dev"` (`R/contracts/flags.state.ts:51-56`), so e.g. `instances.mesh` throws in a default app | `R/contracts/flags.state.ts` | Per lane, flip to `default-on` only after its browser fixtures pass on the remote runner **and** the LPIPS-vs-three gate shows 0 regressions. Record the CI run ID next to each flip |
+| **R-18** | L9 | S | Regressions outside the parity suite. `audio-context-ownership.test.ts` fails: 3 new `AudioContext` owners (`CLI/.../prd09/codemods/audio-wrapper.ts`, `apps/showcase-heatsink/src/main.ts`, `apps/showcase-heatsink-v2/src/main.ts`) plus a reference to the deleted `apps/aura-clash-showcase/...`. `loop-engine.test.ts` fails: `occlusionHz(0)` = 20400 after `9c8761647` changed the formula (`SpatialVoice.ts:39`) | those files; `tests/unit/audio/*` | Owners use `AudioContextManager` or are enumerated; the deleted path is removed from the test; `occlusionHz` test matches the intended formula. `pnpm vitest run tests/unit/audio` green |
+| **R-19** | L10 | M | L10-06: the golden input is a hand-written stand-in, not the real Strange Orbit module | `tests/unit/aura3d-cli/migrate-three.test.ts`; `tests/fixtures/crayon/strange-orbit/` | Real captured module (19 KB) migrated with 0 `TODO(a3d-migrate)` in game logic |
+| **R-20** | ports | L | Phase exits A–D (§7.2) never attempted | per-game ports | As in §7.2. Phase A needs R-01 first; B needs R-03/R-04/R-10 and flag flips (R-17) for SHADING/BATCHING |
+| **R-21** | L10 | S | `cameras` exported with no entry in `root-export-dispositions.json` | `docs/architecture/root-export-dispositions.json` | Entry added; `check:public-api` green |
+
+Still deferred by design (unchanged): **SH-04** compute (after `A3D_QR_WEBGPU`),
+**SC-04** XR buttons and render target (post-D), **L1-11** TSL subset (pending
+R-02).
+
+### 12.3 Parallel lanes
+
+R-01→R-02→R-20 is the only chain. Everything else can start now in parallel,
+grouped by owning lane: L1 {R-03, R-04, R-05}, L2 {R-12 (after R-11), R-13},
+L3 {R-11, R-14}, L4 {R-15}, L5 {R-10}, L7 {R-06, R-07, R-08, R-09}, L9 {R-18},
+L10 {R-01, R-16, R-19, R-21}. R-17 follows each lane's remote fixtures.

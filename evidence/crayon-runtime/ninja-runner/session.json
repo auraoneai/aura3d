@@ -1,0 +1,93 @@
+{
+  "id": "ninja-runner",
+  "title": "Ninja Runner",
+  "url": "https://app.usecrayon.ai/play/e049e3e4-677f-42d5-8c34-3aa4af454068",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2",
+    "source": "live canvas + importmap"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_c0ad975c2f6f4780a53ab30795d6db08",
+      "role": "title, start, HUD, keyboard hints"
+    }
+  ],
+  "menus": [
+    "NINJA RUNNER",
+    "Race through a leafy village, over the rooftop, through the forest and across the water.",
+    "Enter the Village →",
+    "Learn Controls"
+  ],
+  "start_flow": [
+    "Enter the Village →",
+    "Hidden Leaf Village run"
+  ],
+  "controls": {
+    "keyboard_hints_from_hud": [
+      "A/D move",
+      "W jump",
+      "S slide",
+      "Esc pause",
+      "P photo mode",
+      "1 Shadow clones",
+      "2 Rasengan",
+      "Shift Chakra dash",
+      "3 Rasenshuriken"
+    ],
+    "runtime_exercised": [
+      "Start button",
+      "Space (1200 ms)"
+    ]
+  },
+  "hud": {
+    "after_start": {
+      "distance": "59 m",
+      "shinobi_defeated": "00",
+      "chakra": "265 / 300",
+      "health_aria": "265 chakra, 4 health",
+      "forms": "Naruto · Sage 600 m · Kurama 1,620 m",
+      "biome": "Hidden Leaf Village"
+    }
+  },
+  "abilities": {
+    "shadow_clones": {
+      "key": "1",
+      "cost": 60,
+      "status": "Ready"
+    },
+    "rasengan": {
+      "key": "2",
+      "cost": 14,
+      "status": "Ready"
+    },
+    "chakra_dash": {
+      "key": "Shift",
+      "cost": 38,
+      "status": "Ready",
+      "note": "short protected burst forward; still must jump gaps"
+    },
+    "rasenshuriken": {
+      "key": "3",
+      "cost": 75,
+      "status": "Ready",
+      "note": "charge briefly, then throw a piercing wind attack down the route"
+    }
+  },
+  "mechanic_notes": [
+    "Blue ring = chakra, orange ring = health.",
+    "A hit costs health and 35 chakra and briefly slows the runner.",
+    "Leaf flames restore chakra.",
+    "Sage form unlocks at 600 m; Kurama at 1,620 m.",
+    "The HUD starts at 300 chakra / 5 health; after 1.2 s of run it read 265 chakra / 4 health."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/ninja-runner/srcdoc.html"
+  },
+  "limitations": [
+    "No window.__game state exposed; exact forward speed/gravity constants not extracted.",
+    "Abilities were not fired; cooldown/health deltas are declared/observed only from the HUD."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

@@ -1,0 +1,46 @@
+{
+  "id": "silt-and-signal",
+  "title": "Silt & Signal",
+  "url": "https://app.usecrayon.ai/play/b42413e5-669e-4fb3-87d3-a3285567736c",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2",
+    "source": "outer page + iframe srcdoc"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_26e70fabbed74d6eb6489623b88789d8",
+      "role": "first eval timeout"
+    },
+    {
+      "id": "bs_0f414f61d3cf43afbe09817e13069b4a",
+      "role": "outer observe + iframe.srcdoc extraction (205,683 chars)"
+    }
+  ],
+  "page_copy": "Carry Neri through seven living worlds to restore the old crossings. A cinematic hover-bike journey through cliff villages, broken aqueducts, midnight forests and sky orchards, with voiced scenes, music and water that reacts to the ride.",
+  "menus": [],
+  "controls": {
+    "declared_in_plan": [
+      "W/S accelerate/reverse",
+      "A/D steer",
+      "E/Q rise/fall"
+    ],
+    "runtime_exercised": []
+  },
+  "hud": {},
+  "mechanic_notes": [
+    "Cinematic hover-bike journey; seven worlds; restore old crossings; voiced scenes; water reacts to the ride."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/silt-and-signal/srcdoc.html",
+    "srcdoc_source": "document.querySelector(\"iframe\").srcdoc from frame 0",
+    "harness_module": "evidence/crayon-runtime/silt-and-signal/module.js"
+  },
+  "limitations": [
+    "browser_eval in the child frame returns “Timed out evaluating expression in child frame”.",
+    "The iframe is cross-origin to the parent, so contentWindow.__getGameState is blocked.",
+    "The 205,683-char srcdoc contains the PlayLabs harness and boot code, not the game module; no live HUD/state captured."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

@@ -116,15 +116,17 @@ minified line.
 
 Eight stages (0–7). Stages 0–5 are reverse engineering. Prism Browser now
 pierces the `about:srcdoc` frame for clicks, key presses, and live HUD capture;
-raw CDP remains for JavaScript evaluation, `window.game` internals, and bundle
-extraction; REA covers the page shell and local static analysis. Stages 6–7 are
-Aura3D.
+`browser_eval` reads `window.game`/`window.__game`, HUD DOM, and
+`window.__prism_srcdoc`; raw CDP remains only for pre-boot scene probes and
+revoked-blob enumeration; REA covers the page shell and local static analysis.
+Stages 6–7 are Aura3D.
 
 ### Stage 0 — Prerequisites
 
 Two entry paths; they are not mutually exclusive.
 
-**Capture path (recommended): Prism Browser.** No local Chrome and no CDP.
+**Capture path (recommended): Prism Browser.** No local Chrome; raw CDP only for
+the pre-boot probes and revoked-blob enumeration in Stage 2.
 
 ```text
 browser_open  https://app.usecrayon.ai/play/<project_id>
@@ -138,10 +140,11 @@ browser_press  key=Space hold_ms=1000 ref=n1
 browser_press  key=KeyF hold_ms=900 ref=n1
 browser_press  key=Escape hold_ms=100 ref=n1     # pause menu
 browser_click  role=button name="Resume"
+browser_eval   expression="window.__game.state"  # child frame; JSON result
 browser_close
 ```
 
-Verified on HEATSINK with the 10-tool Prism build and the deployed
+Verified on HEATSINK with the 11-tool Prism build (including `browser_eval`) and the deployed
 `browser-session.ts` fixes (Cloudflare `2953bef0-06a7-4116-8919-8daed4c6bc29`
 then `ef6e506d-2153-46ec-b874-7db86978c4b2`; `kiro-prism` `ae2dc6b` then
 `42b2f6b`): `browser_click` and `browser_press` pierce the srcdoc frame and
@@ -166,23 +169,21 @@ calls.
 Operational note: use the `browser_click` / `browser_press` response's `nodes`
 as a read; it is the same accessibility tree and is usually faster than a
 separate snapshot. Refs are session-scoped; sessions can expire if left idle, so
-capture evidence promptly. There is no `Runtime.evaluate`.
+capture evidence promptly. Prism now exposes
+`browser_eval(session_id, expression, frame_index?, await_promise?)`; use it for
+`window.__game`, HUD DOM, and `window.__prism_srcdoc`. Do not launch local Chrome
+or Docker for normal capture.
 
-**Extraction path: local Chrome + CDP.** Required for Stage 2 and for
-`window.game` internals.
+**Extraction path: Prism `browser_eval` first; raw CDP only for pre-boot hooks
+and script enumeration.** `browser_eval` targets the game's `about:srcdoc` frame
+with `frame_index: null` (or an explicit index). It accepts multiline async
+IIFEs, returns JSON-serializable values, and caps `window.__prism_srcdoc` at
+250,000 chars per call, so fetch larger docs in slices. Only the four scene
+probes that must hook `renderer.render` before boot still need the remote CDP
+runner in `tools/crayon-probe/`; the loopback endpoint there is an SSM
+port-forward to that runner, not a browser on this Mac.
 
-```bash
-rea --version                      # expect 6.7.0
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --headless=new --remote-debugging-port=9222 \
-  --user-data-dir="$TMPDIR/crayon-chrome" --no-first-run \
-  "https://app.usecrayon.ai/play/<project_id>" &
-```
-
-REA only accepts loopback: `http://127.0.0.1:9222` or the `ws://` browser URL.
-A Docker or remote browser will not work — the endpoint must be on this machine.
-
-### Stage 1 — Discover targets (Prism first, raw CDP for extraction)
+### Stage 1 — Discover targets (Prism first; CDP only for pre-boot probes)
 
 **Prism path.** `browser_open` the play URL and wait for the game to boot
 (~18 s), then `browser_observe` with `include_refs: true`. On the current build
@@ -192,11 +193,14 @@ the same node tree (canvas, overlay buttons, live HUD `status` nodes). From the
 landing menu onward, `browser_observe` and the click/press payloads all pierce
 the srcdoc frame. Refs are session-scoped — re-read after every transition.
 
-**Raw CDP path.** Required for `Runtime.evaluate`, `window.game`, and bundle
-extraction. REA's browser tools still accept only HTTP(S) page targets:
-`about:srcdoc` is rejected with `target_unavailable` / `target_not_allowed` by
-`list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, and
-`capture-web-screenshot` — CLI and MCP alike. Discover the frame with raw CDP:
+**Raw CDP path (fallback).** Still required for the pre-boot
+`Page.addScriptToEvaluateOnNewDocument` scene probes and for script enumeration
+when a blob has already been revoked; run it against the remote runner's SSM
+port-forward, never local Chrome. REA's browser tools still accept only HTTP(S)
+page targets: `about:srcdoc` is rejected with `target_unavailable` /
+`target_not_allowed` by `list-browser-targets`, `analyze-web-bundle`,
+`inspect-web-page`, and `capture-web-screenshot` — CLI and MCP alike. Discover
+the frame with raw CDP:
 
 ```bash
 curl -s http://127.0.0.1:9222/json/list | node -e 'let s="";
@@ -208,10 +212,10 @@ process.stdin.on("data",d=>s+=d).on("end",()=>{
 You will see a `page` with the app URL and an `iframe` with `about:srcdoc`. Keep
 the iframe ID — that is the game. REA is then used on the **page** (captures,
 scenarios, screenshots) and on **local files** (static analysis); it still does
-not touch the frame. Prism is the in-frame interaction/capture path; raw CDP is
-the evaluation/extraction path.
+not touch the frame. Prism is now both the in-frame interaction and evaluation
+path; raw CDP is only the pre-boot-hook and script-enumeration fallback.
 
-### Stage 2 — Extract from the frame (CDP evaluate)
+### Stage 2 — Extract from the frame (Prism eval, CDP fallback)
 
 `analyze-web-bundle` cannot see the frame, and running it on the page analyzes the
 shell: in the recorded HEATSINK capture `target_url` is the app page,
@@ -219,10 +223,16 @@ shell: in the recorded HEATSINK capture `target_url` is the app page,
 vendor chunk — the 1.34 MB analyzer workload, and the OOM. It contains no game
 code.
 
-Attach to the iframe target and evaluate in its own context:
+Use Prism first: a `browser_eval` async IIFE in the child frame can list
+`script[type="module"]`, read inline `textContent`, and fetch a still-live
+`blob:` URL. The CDP script below is the fallback for script enumeration after a
+revocation or when a pre-boot hook is required; its loopback URL is the remote
+runner's SSM port-forward, not a browser on this Mac. Attach to the iframe target
+and evaluate in its own context:
 
 ```js
-// probe.mjs — Node 18+, no dependencies
+// probe.mjs — Node 18+, no dependencies; run on the remote runner
+// 127.0.0.1:9222 is the SSM port-forward to that runner, not local Chrome.
 const CDP = "http://127.0.0.1:9222";
 const list = await (await fetch(`${CDP}/json/list`)).json();
 const frame = list.find(t => t.type === "iframe" && t.url === "about:srcdoc");
@@ -283,10 +293,11 @@ of what actually renders (see §1).
 
 While the frame is still open, run the four runtime probes in
 [`threejs-parity-gaps.md`](./threejs-parity-gaps.md) §9: node-material usage,
-`BatchedMesh`, `EffectComposer`, and GLSL `ShaderMaterial`. They need
-`Runtime.evaluate` on the iframe session — REA is passive by contract and cannot
-do this. One session per game answers all four and decides whether SH-01 and
-SH-02 are really P0 for that title.
+`BatchedMesh`, `EffectComposer`, and GLSL `ShaderMaterial`. Use Prism
+`browser_eval` for anything reachable from `window`; P-1..P-4 themselves still
+need raw CDP because they inject a `renderer.render` hook before boot, and REA is
+passive by contract. One session per game answers all four and decides whether
+SH-01 and SH-02 are really P0 for that title.
 
 The automated runner is [`tools/crayon-probe/`](../../tools/crayon-probe/index.ts)
 (**remote runner only** — it drives a real browser against live endpoints;
@@ -443,8 +454,9 @@ race time, so a `KeyF` press before `TIME 00:03.000` may not fire; wait past it.
 assert the band and direction, not a frozen value. `Escape` → `Resume` and any
 idle `browser_observe` must be byte-identical to the pre-pause HUD.
 
-Use Prism as the **in-game fixture** for observable HUD and controls, and keep
-raw CDP for `window.game` internals and extraction.
+Use Prism as the **in-game fixture** for observable HUD, controls, and
+`window.game` internals via `browser_eval`; keep raw CDP only for pre-boot hooks
+and revoked-blob enumeration.
 
 Raw CDP input remains a fallback and was verified against HEATSINK — the
 frame's own `keydown`/`keyup` listeners received both events:
@@ -602,11 +614,33 @@ Effort assumes one engineer who knows Aura3D, **after** the parity gate is green
 Each plan lists: the mechanic contract to reproduce (never the art), the RE seeds
 to trace, the parity items that must exist, the Aura3D mapping, and the proof.
 
-**Evidence status.** Only §6.4 (HEATSINK) has a verified runtime contract,
-captured 2026-10-22. The other nine sections are plans built from page copy,
-genre, frame/module shape, and static seeds; they are not observed specs. Do not
-label them "reverse engineered" until their Stage 5 fixture records menus,
-controls, HUD, and a fixed-input run.
+**Evidence status (2026-10-22).** All ten games have at least a page or in-game
+title capture, and eight have a live start plus HUD or journal evidence. Roadster
+Hours' start click timed out and its child iframe was lost; Silt & Signal's child
+frame times out, so only its outer page and 205,683-char `iframe.srcdoc` were
+captured. No game yet has a complete Stage 5 fixture with a fixed-input run and
+pixel diff. These captures are observed behaviour, not parity proof, and none of
+the sections below should be labelled "reverse engineered" until its fixture
+passes.
+
+| Game | Title/menu | Live start | HUD/state | Exact tuning | Capture status |
+| --- | --- | --- | --- | --- | --- |
+| Last Train to the Sea | yes | yes (Driver ID) | first departure | no | partial |
+| Where the Wind Wanders | yes | direct boot | journal + count | no | partial |
+| Saiyan through the Snake way! | yes | yes (`Enter`) | yes | no | partial |
+| HEATSINK | yes | yes | converged | HUD telemetry only | strongest |
+| Silt & Signal | outer page | **blocked** | **blocked** | no | blocked |
+| Drift & Deliver | yes | yes (cutscene skip) | yes | `window.__game.CONFIG` | partial |
+| Strange Orbit | yes | yes | yes | rescue budget only | strong |
+| Roadster Hours | yes | **blocked** | **blocked** | no | blocked |
+| Splat Rush | yes | yes (`PLAY NOW`) | yes | full `CONFIG` | strong |
+| Ninja Runner | yes | yes | yes | ability costs | strong |
+
+Per-game JSON evidence lives at `evidence/crayon-runtime/<game>/session.json`;
+the raw `srcdoc` and extracted harness files sit beside it. Exact numeric tuning
+is available only for Splat Rush and Drift & Deliver; Strange Orbit exposes its
+difficulty rescue budgets, and HEATSINK exposes converging HUD telemetry but not
+its heat/boost rates.
 
 **Capture scenario.** Each game declares one scenario: start URL, a fixed input
 sequence, and the artifacts to record (`lap`, `checkpoint`, `score`, `heat`,
@@ -619,7 +653,18 @@ artifacts that must match.
 **Shape.** 1,391,655 B, external blob, one line, three inlined. The catalog's #1
 game by a wide margin.
 
-**Mechanic contract.** Drive a tram through five towns above the clouds; keep its
+**Runtime status (verified 2026-10-22).** Title and the six-town premise were read
+from the live page. `Start journey` opens the Driver ID overlay with presets
+`Tavi`, `Mira`, `Bram`, `Lumi` and styles `Original`, `Warm`, `Cool`; it states
+“Free to issue. Yours to keep. No account needed.” `Issue ID & start driving ↗`
+enters the first departure at `Mango Tide`, with `Folded Gardens` next, `0 / 12
+aboard`, and `Open doors E`. `E` changed the status to `Doors opening · Mango
+Tide`; `W` did not move the tram while the doors were cycling. Live controls:
+`W` faster, `S` slower/reverse, `Space` brake, `A/D` balance, `C` camera, `E`
+doors, `J` line map, `R` receipt, `F` wing boost. Runtime-exercised: start, ID
+issue, `E`, and `W`; the rest are declared.
+
+**Mechanic contract.** Drive a tram through six towns above the clouds; keep its
 wings balanced; collect travellers; earn tips; three rescue lanterns act as lives;
 day/night cycle; collectible tickets; unlockable decorations; one-hand phone
 controls.
@@ -638,7 +683,7 @@ AU-02 (PARTIAL, L9).
 
 **Build.**
 
-1. Author the five-town route as one `curve.catmullRom`, with town boundaries as
+1. Author the six-town route as one `curve.catmullRom`, with town boundaries as
    distance ranges.
 2. Build the tram rig: chassis + two wing pivots + balance torque from lateral
    acceleration.
@@ -656,7 +701,7 @@ shadows above the cloud deck.
 day→night transition, tip awarded. Capture diff passes on route progress, pickup
 count, and lantern state. Route-health names streaming chunks and cloud limits.
 
-**Effort.** XL — five authored towns and a meta loop.
+**Effort.** XL — six authored towns and a meta loop.
 
 ---
 
@@ -664,8 +709,19 @@ count, and lantern state. Route-health names streaming chunks and cloud limits.
 
 **Shape.** 645,204 B, external blob, one line, inlined.
 
+**Runtime status (verified 2026-10-22).** The game boots directly into the valley
+with `Where the Wind Wanders.`, `Find the three wind letters`, `0 / 3 discovered`,
+`Journal`, `Move`, `Hop`, and `Interact`. `J` opens the journal; `Escape` closes
+it. The journal names three letters — The Old Oak Grove, The Sleeping Windmill,
+The Glasswater Shore — and three reflections — The Fern Rest, The Open Ridge, The
+Listening Tree — with location hints for each. The srcdoc's own aria text says
+“Move with WASD or arrow keys, E to interact”; the journal button carries `J`.
+`W` and `E` were sent, but the HUD does not expose player position, so movement
+has no observable delta in the capture.
+
 **Mechanic contract.** A peaceful 2.5D free-roam through a sunlit valley; gather
-wind letters; no fail state; the "quiet moments" are the reward.
+three wind letters and three reflections; no fail state; the "quiet moments" are
+the reward.
 
 **RE seeds.** `wind`, `letter`, `valley`, `breeze`, `grass`, `collect`.
 
@@ -688,8 +744,9 @@ grass; `particles` for wind; no combat, no timer.
 **Look.** High-key sunlight, long soft shadows, height fog, pastel greens; the
 reference is a painting, not a photograph.
 
-**Acceptance.** 60 s of play, 5 letters collected, zero fail states, wind visibly
-moves grass and particles. Capture diff passes on letter count and player path.
+**Acceptance.** 60 s of play, one letter and one reflection collected, zero fail
+states, wind visibly moves grass and particles. Capture diff passes on collection
+count and player path.
 
 **Effort.** M.
 
@@ -700,8 +757,21 @@ moves grass and particles. Capture diff passes on letter count and player path.
 **Shape.** 513,393 B, external blob, **211 lines** — the most readable mid-size
 module in the set.
 
-**Mechanic contract.** Race against time along a serpentine path to reach a
-destination planet; the path is the level, the clock is the enemy.
+**Runtime status (verified 2026-10-22).** The live title is `CHECK-IN / STAMPED,
+AND POINTED AT THE DOOR` with `Start the run — ENTER`, `How to play — H`, and
+`Full screen — F`. `H` exposes the full control contract; `Enter` starts the run.
+After a 1.5 s `W`, the HUD read `OUTBOUND — KM COVERED 27,649`, `Son Goku`,
+`KAIO-KEN ×1`, `360 DAYS`, `MISSION ACTIVE`, and `RUN SCORE 110`; `Shift` turned
+Kaio-ken on. The two unlabelled numbers `35` and `0` are likely speed and Ki, but
+the HUD does not name them. No health bar or lives counter exists. Runtime-
+exercised: `H`, `Escape`, `Enter`, `W`, `Shift`; the remaining bindings are from
+the in-game How to Play overlay.
+
+**Mechanic contract.** Runner journey along Snake Way inside a 365-day budget;
+there is no health bar. Reach King Kai, train, then fly the road home before the
+Saiyans land. Stumbles, falls, and Kaio-ken spend days. Falling lands the runner
+in Hell, where an ogre gives chase and only gains when something knocks the
+runner down.
 
 **RE seeds.** `snake`, `time`, `speed`, `distance`, `gate`, `checkpoint`, `finish`.
 
@@ -714,18 +784,19 @@ lane logic only if the path branches. No runner kit needed for a single path.
 
 **Build.**
 
-1. Extract the path control points and the time budget; both are small data.
+1. Extract the path control points and the 365-day budget; both are small data.
 2. Build the tube/ribbon mesh and a scrolled UV material.
-3. On-rails controller: forward speed, lateral offset, jump/dodge.
+3. On-rails controller: forward speed, lateral offset, jump/slide, flight toggle.
 4. Obstacle gates spawned by distance; collision via `game.planarCollisionWorld`.
-5. Par-time HUD and fail/retry at the last checkpoint.
+5. Day-budget HUD, King Kai transition, and Hell ogre fail/retry.
 6. Camera: chase with look-ahead along the tangent.
 
 **Look.** Saturated sky, speed lines at high velocity, mild chromatic aberration
 at boost — the only post the source appears to need.
 
-**Acceptance.** Finish the path under par, fail once and retry from checkpoint.
-Capture diff passes on distance, checkpoint order, and finish time.
+**Acceptance.** Reach King Kai, finish the road home with days remaining, and fail
+once into the Hell ogre chase. Capture diff passes on distance, day budget,
+Kaio-ken state, and finish time.
 
 **Effort.** M.
 
@@ -736,8 +807,9 @@ Capture diff passes on distance, checkpoint order, and finish time.
 **Shape.** 1,641,373 B, external blob, 722 lines, **three r186 WebGPU inlined**.
 Largest and most technically demanding module measured.
 
-**Runtime status (verified 2026-10-22).** The only one of the ten with a verified
-runtime contract. Boot reaches `Tap to start`; `Play` opens the mode select
+**Runtime status (verified 2026-10-22).** The strongest runtime contract of the
+ten: every menu and HUD path below was exercised, not just observed. Boot reaches
+`Tap to start`; `Play` opens the mode select
 (`Race`, `Time Trial`, `Elimination`, `Change Map`, `Change Drone`,
 `Customize Drone`, `Start Race`); `Start Race` enters the live HUD: `POS`,
 `LAP`, `TIME`, `BEST`, `SPEED`, `BOOST`, `HEAT` (overdrive), `SHIELD`,
@@ -802,12 +874,24 @@ Route-health names the batched prop count and the rain-particle budget.
 
 ### 6.5 Silt & Signal — 2,750 plays · racing · Aniket
 
-**Shape.** Dynamic import — **not in the DOM**; requires CDP script enumeration.
-Size unknown until Stage 3 completes.
+**Shape.** The outer page exposes a 205,683-char `iframe.srcdoc` containing the
+PlayLabs runtime and a 79,711-char harness module; the game's own module is still
+a dynamic/blob import, so its size is unknown.
+
+**Runtime status (2026-10-22, blocked).** The Crayon page loads and its copy reads
+“Carry Neri through seven living worlds to restore the old crossings. A
+cinematic hover-bike journey through cliff villages, broken aqueducts, midnight
+forests and sky orchards, with voiced scenes, music and water that reacts to the
+ride.” `browser_eval` in the child frame returns `Timed out evaluating expression
+in child frame`; the iframe is cross-origin to the parent, so
+`contentWindow.__getGameState` is blocked. The only durable capture is
+`iframe.srcdoc` read from frame 0. No in-game title/menu, start, HUD, or control
+path is verified.
 
 **Mechanic contract.** Carry a companion through seven living worlds to restore
 old crossings; hover-bike; cinematic, voiced scenes; water reacts to the ride.
-Declared controls: W/S accelerate/reverse, A/D steer, E/Q rise/fall.
+Declared controls, not yet exercised: W/S accelerate/reverse, A/D steer, E/Q
+rise/fall.
 
 **RE seeds.** `hover`, `bike`, `companion`, `world`, `aqueduct`, `water`, `voice`,
 `scene`, `crossing`, `altitude`.
@@ -843,8 +927,24 @@ reaction. Capture diff passes on crossing state and dialogue index.
 
 **Shape.** 1,332,481 B, external blob, one line, inlined.
 
-**Mechanic contract.** Cruise a sun-soaked city, drift through corners, complete
-courier runs before the clock.
+**Runtime status (verified 2026-10-22).** The live build is `PORTOLA NIGHTS`,
+`CHAPTER 1 · THE NAME HE KEPT`, with `START`, `JUMP TO A MISSION`, and the control
+line `WASD drive · SPACE drift · SHIFT nitro · E in/out of cars · M map`. Eight
+`Space` presses advanced the voiced cutscene into `playing`. The HUD then read
+`NITRO 15`, `15 KM/H`, `x0 STREAK`, `LOSE THE HEAT — 95m to the edge of the zone`,
+and an all-units radio line; without steering, the run ended on `BUSTED — THE
+NIGHT ENDS EARLY`. `window.__game.CONFIG` gave the exact constants below, and
+`window.__game.state` exposed the drift/boost/collectible keys. No clean delivery
+run was completed. Runtime-exercised: `START`, cutscene `Space`, and `W`.
+
+**Mechanic contract.** Night courier run through Portola City; drift through
+corners, manage nitro, lose the police heat, and collect the route's items before
+the night ends.
+
+**Captured tuning.** `CAR_MAX_SPEED 58`, `CAR_ACCELERATION 26`, `CAR_BRAKE 40`,
+`GRIP 12`, `DRIFT_GRIP 2.6`, `TURN_RATE 2.15`, `BOOST_MULTIPLIER 1.75`,
+`BOOST_DRAIN_RATE 0.32`, `DRIFT_REFILL_RATE 0.3`, `CAMERA_CHASE 2.7`; the route
+had `174` collectibles.
 
 **RE seeds.** `drift`, `courier`, `delivery`, `corner`, `combo`, `timer`, `traffic`.
 
@@ -860,15 +960,17 @@ SM-02 (PARTIAL, L3). SH-07 is **CLOSED** — no longer a gate.
 1. City grid with delivery nodes and a corner-heavy route.
 2. Kart drift tuning: slip angle, counter-steer, drift score multiplier.
 3. Courier loop: pick up → deliver → next node; timer per run.
-4. Traffic as simple spline agents with avoidance.
-5. Combo HUD and fail/retry.
-6. Sunlit grade with warm bounce and light bloom.
+4. Police heat: distance to the zone edge, escalation, and `BUSTED` fail state.
+5. Traffic as simple spline agents with avoidance.
+6. Combo HUD, nitro resource, and fail/retry.
+7. Night grade with sodium streetlights, wet asphalt, and light bloom.
 
-**Look.** LA midday, high sun, warm asphalt, strong specular highlights, mild
-heat haze in the distance.
+**Look.** Portola at night, sodium and neon spill, wet asphalt, strong specular
+highlights, mild bloom in the distance.
 
-**Acceptance.** Three deliveries, one drift combo above threshold, one timer
-fail. Capture diff passes on delivery count, combo, and remaining time.
+**Acceptance.** One clean pickup/delivery, one drift combo above threshold, one
+heat bust and restart. Capture diff passes on delivery count, combo, and heat
+distance.
 
 **Effort.** M — the kit does most of the driving.
 
@@ -880,6 +982,18 @@ fail. Capture diff passes on delivery count, combo, and remaining time.
 importmap**. Small enough to read directly; the best pilot. Confirm it is the
 whole game and not a loader — if it dynamically imports level chunks, enumerate
 them before trusting the effort estimate.
+
+**Runtime status (verified 2026-10-22).** Title/menu shows `ORBITAL CYCLING
+CLUB / STRANGE ORBIT`, `BIKE / SKATE`, `Garage`, `Settings`, `RACE ↗`, the
+difficulty cards, and `7 orbits · one continuous world · five rivals`. `RACE` →
+`Racer` → `LET’S RIDE ↗` ran a countdown into `racing`. HUD before input:
+`Position 06/06`, `Lap 1 / 7`, `Stardust 55%`, `0 KM/H`, `Gravity 3`. After a 1.2 s
+`W`: `46 KM/H`, `Stardust 67%`, race time `0:01.52`; internals read `phase racing`,
+`speed 2.065`, `energy 67.24`, `score 10`, `place 6`, `lap 1`. Settings declares
+`W` pedal, `S` brake, `A/D` steer, `Shift` boost, `Space` jump, `G` gravity, `C`
+camera, `Esc` pause; only `W` was exercised. Difficulty rescues are Explorer 5,
+Racer 3, Expert 2; one gravity charge returns per lap. The game module remains a
+revoked blob, so exact physics constants are still unavailable.
 
 **Mechanic contract.** Race around one continuous painted planetary ring on bikes
 or skateboards; three difficulties (Explorer, Racer, Expert); seven laps; branching
@@ -921,10 +1035,19 @@ finish time. This is the Phase A exit fixture.
 
 **Shape.** Dynamic import — not in the DOM. Recover at Stage 3.
 
+**Runtime status (2026-10-22, blocked).** The menu is verified: `Ready · Sunbreak
+Coast`, `Drive Sunbreak Coast`, `Routes & tuning — 3 routes · 9.3 km of road and
+air`, `Records`, `Upgrades`, `Vehicle studio`, and `Sound`. A `Drive Sunbreak
+Coast` click timed out and the child game iframe was lost; a fresh session
+reproduced the menu but the same click timed out. No live speed, trick, or
+upgrade HUD was captured. The controls below are declared by the plan and page
+copy, not runtime-exercised.
+
 **Mechanic contract.** Fly a rocket-equipped roadster across three zones; clear
 traffic; ride trailer roofs and facade banks; chain aerial tricks; earn tuning
-upgrades. Controls: W/S drive, A/D steer, Space thrust, Shift nitro, Q/E roll; in
-the air A/D spin and a fresh W/S press flips; Esc pauses.
+upgrades. Declared controls, unverified: W/S drive, A/D steer, Space thrust,
+Shift nitro, Q/E roll; in the air A/D spin and a fresh W/S press flips; Esc
+pauses.
 
 **RE seeds.** `roadster`, `nitro`, `thrust`, `traffic`, `trick`, `flip`, `spin`,
 `tune`, `zone`.
@@ -961,6 +1084,18 @@ Capture diff passes on zone progress, trick count, and currency.
 **Shape.** 43,212 B, external blob, one line, **importmap**. Smallest full game in
 the set.
 
+**Runtime status (verified 2026-10-22).** `PLAY NOW` entered `playing`; a 1.2 s
+step moved the HUD from `SCORE: 0` to `SCORE: 27`. Internals read `distance
+27.41`, `speed 16.44`, `lives 3`, `multiplier 1`, `playerColorIndex 0`. The full
+`window.__game.CONFIG` was captured: `BALL_RADIUS 0.55`, `FORWARD_SPEED_INIT 16`,
+`MAX_SPEED 29`, `SPEED_INCREMENT 0.26`, `STEER_SPEED 10`, `LANE_HALF_WIDTH 3`,
+`GATE_SPACING 15`, `SHRINK_FACTOR 0.8`, `GROW_FACTOR 1.1`, `MAX_LIVES 3`,
+`RAINBOW_DURATION 5`, `TRAIL_DURATION 6`, `SCORE_PER_METER 1`, `SEGMENT_LENGTH 1`,
+`CURVE_AMPLITUDE 3`, `POINTS_GATE 40`, `POINTS_PERFECT 60`, `PERFECT_WINDOW 0.55`,
+`MAX_MULT 5`, `COMBO_PER_MULT 3`, `SCOREX2_DURATION 7`, `MILESTONE_SCORE 750`.
+Runtime-exercised: `PLAY NOW` and a `Space` step; pointer drag steering was not
+exercised.
+
 **Mechanic contract.** Roll a paint ball down an endless ramp; match incoming
 colour gates; never burst.
 
@@ -995,9 +1130,21 @@ Capture diff passes on score, gate index, and colour state.
 **Shape.** 867,109 B, external blob, **4,447 lines**, inlined. The most readable
 large module; use it to trace runner mechanics.
 
+**Runtime status (verified 2026-10-22).** Title `NINJA RUNNER`, `Enter the
+Village →`, and `Learn Controls` were live. Starting showed `DISTANCE 59 m`,
+`SHINOBI DEFEATED 00`, `NARUTO UZUMAKI 265 / 300`, `Hidden Leaf Village`, and the
+forms `Naruto`, `Sage 600 m`, `Kurama 1,620 m`. The status control's aria label
+read `265 chakra, 4 health`; the run had started at 300 chakra and 5 health.
+Ability slots and their `<kbd>` hints: `1` Shadow clones (60 chakra), `2` Rasengan
+(14), `Shift` Chakra dash (38), `3` Rasenshuriken (75); all read `Ready` at the
+capture. The same HUD declares `A/D` move, `W` jump, `S` slide, `Esc` pause, and
+`P` photo mode. Runtime-exercised: start and `Space`; no ability was fired.
+
 **Mechanic contract.** Race through village, rooftops, forest, and water; dodge
-masked ninjas; jump gaps; summon shadow clones; spinning energy attacks; unlock
-stronger forms. Controls: WASD, Shift, 1–3, or swipe/tap.
+masked ninjas; jump gaps; summon shadow clones; use spinning energy attacks;
+unlock stronger forms. Declared controls: `A/D` move, `W` jump, `S` slide, `1`
+Shadow clones, `2` Rasengan, `Shift` Chakra dash, `3` Rasenshuriken, `Esc` pause,
+`P` photo mode.
 
 **RE seeds.** `ninja`, `clone`, `form`, `spin`, `attack`, `gap`, `roof`, `water`,
 `unlock`, `energy`.

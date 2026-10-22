@@ -1,0 +1,84 @@
+{
+  "id": "saiyan-snake-way",
+  "title": "Saiyan through the Snake way!",
+  "url": "https://app.usecrayon.ai/play/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2 (canvas 800x384)",
+    "source": "live canvas + importmap"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_e08cf704075b4be18e8e6540922c8ed3",
+      "role": "title, How to play, start, HUD"
+    }
+  ],
+  "menus": [
+    "CHECK-IN",
+    "STAMPED, AND POINTED AT THE DOOR",
+    "OTHER WORLD ARCADE RUN",
+    "SNAKE WAY",
+    "Start the run — ENTER",
+    "How to play — H",
+    "Full screen — F",
+    "W / S TO MOVE · ENTER TO SELECT"
+  ],
+  "start_flow": [
+    "Enter",
+    "OUTBOUND run HUD"
+  ],
+  "controls": {
+    "declared_in_how_to_play": [
+      "Change lane: A/D or ←/→",
+      "Jump: Space or W",
+      "Slide: S or ↓",
+      "Kaio-ken: Shift toggles on/off",
+      "Flight: E to take off and land",
+      "In flight: W/S climb/dive, A/D steer",
+      "End of Snake Way: Space to jump to King Kai’s world",
+      "King Kai’s world: W/S walk, A/D turn, Space jump, E go home",
+      "Road home: already flying; Ki brings you down; Shift is twice the speed of the white aura",
+      "Pause: P or Esc",
+      "If you fall: land in Hell, run to the light; the ogre catches you if knocked down"
+    ],
+    "runtime_exercised": [
+      "H (How to play)",
+      "Esc (close)",
+      "Enter (start)",
+      "W (1500 ms)",
+      "Shift (Kaio-ken)"
+    ]
+  },
+  "hud": {
+    "after_start_w": {
+      "outbound_km": "27,649",
+      "runner": "Son Goku",
+      "kaio_ken": "×1",
+      "unlabelled_1": 35,
+      "unlabelled_2": 0,
+      "earth_countdown_days": 360,
+      "mission": "ACTIVE",
+      "run_score": 110
+    },
+    "initial_after_enter": {
+      "outbound_km": "7,790",
+      "earth_countdown_days": 363,
+      "run_score": 49
+    }
+  },
+  "mechanic_notes": [
+    "No lives and no health bar; a 365-day calendar is the run budget.",
+    "Every stumble, fall, and minute of Kaio-ken spends days.",
+    "The route has a flight phase, King Kai’s world on foot, and a road-home flight phase.",
+    "Falling sends the runner to Hell; the ogre only gains when something knocks the runner down."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/saiyan-snake-way/srcdoc.html"
+  },
+  "limitations": [
+    "HUD values 35 and 0 have no visible label; they are likely speed/ki but are unconfirmed.",
+    "No window.__game state exposed; exact time/speed constants not extracted."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

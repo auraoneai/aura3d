@@ -1,0 +1,97 @@
+{
+  "id": "where-the-wind-wanders",
+  "title": "Where the Wind Wanders",
+  "url": "https://app.usecrayon.ai/play/a9a3c165-74b3-4ff6-9588-ad97f829ddb5",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2",
+    "source": "live canvas + importmap"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_e08faf72b37d4233b4775c47880b8620",
+      "role": "HUD, journal, movement presses"
+    }
+  ],
+  "menus": [
+    "Where the Wind Wanders.",
+    "Find the three wind letters",
+    "0 / 3 discovered",
+    "Journal",
+    "Move",
+    "Hop",
+    "Interact"
+  ],
+  "start_flow": [
+    "boots directly into the valley"
+  ],
+  "controls": {
+    "from_srcdoc_aria": [
+      "WASD or arrow keys to walk",
+      "E to interact",
+      "J to open the journal"
+    ],
+    "declared_by_ui": [
+      "Move joystick",
+      "Hop button",
+      "Interact button"
+    ],
+    "runtime_exercised": [
+      "J (journal)",
+      "Esc (close)",
+      "W (1200 ms)",
+      "E (interact)"
+    ],
+    "keyboard_space_hop": "not runtime-exercised; the Hop button exists but no keyboard hint was observed"
+  },
+  "hud": {
+    "before": "0 / 3 discovered",
+    "after_journal": "journal overlay open",
+    "after_movement": "0 / 3 discovered"
+  },
+  "journal_entries": [
+    {
+      "id": "01",
+      "title": "The Old Oak Grove · Letter",
+      "hint": "The first letter is beneath the large oak, west of the meadow."
+    },
+    {
+      "id": "02",
+      "title": "The Sleeping Windmill · Letter",
+      "hint": "Look for the next letter beside the windmill, east of the cottage."
+    },
+    {
+      "id": "03",
+      "title": "The Glasswater Shore · Letter",
+      "hint": "Follow the shore northeast. The third letter is by the little jetty."
+    },
+    {
+      "id": "04",
+      "title": "The Fern Rest · Reflection",
+      "hint": "Take the boat to Stillwater Isle, then follow the trail to the Fern Rest."
+    },
+    {
+      "id": "05",
+      "title": "The Open Ridge · Reflection",
+      "hint": "Keep climbing until you reach the Open Ridge."
+    },
+    {
+      "id": "06",
+      "title": "The Listening Tree · Reflection",
+      "hint": "The last reflection is beside the listening tree at the top of the trail."
+    }
+  ],
+  "mechanic_notes": [
+    "No fail state; collect three wind letters and six journal entries.",
+    "The journal lists three letters and three reflections; each letter adds a story part."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/where-the-wind-wanders/srcdoc.html"
+  },
+  "limitations": [
+    "No window.__game or state object; player position and letter proximity are not inspectable.",
+    "The same session later timed out in the child frame; no pixel capture."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

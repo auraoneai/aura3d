@@ -1,0 +1,69 @@
+{
+  "id": "roadster-hours",
+  "title": "Roadster Hours",
+  "url": "https://app.usecrayon.ai/play/0394c9e9-577c-4bfa-8baa-68860a3612fb",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2",
+    "source": "live canvas + importmap"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_02e7533facab4c48a346015ed513b181",
+      "role": "first menu capture (session later blank)"
+    },
+    {
+      "id": "bs_1746d0513c494489a8e25397d785afb5",
+      "role": "fresh menu + Drive click attempt"
+    },
+    {
+      "id": "bs_ece95d6d9ec24767933e0ea092828aa0",
+      "role": "menu re-verification"
+    }
+  ],
+  "menus": [
+    "Roadster Hours",
+    "Ready · Sunbreak Coast",
+    "Drive Sunbreak Coast",
+    "Routes & tuning — 3 routes · 9.3 km of road and air",
+    "Records",
+    "Upgrades",
+    "Vehicle studio",
+    "Sound"
+  ],
+  "start_flow_attempted": [
+    "Drive Sunbreak Coast click",
+    "game iframe lost / click timed out",
+    "no live HUD captured"
+  ],
+  "controls": {
+    "declared_in_plan": [
+      "W/S drive",
+      "A/D steer",
+      "Space thrust",
+      "Shift nitro",
+      "Q/E roll",
+      "in air: A/D spin, fresh W/S flips",
+      "Esc pauses"
+    ],
+    "runtime_exercised": [
+      "menu only"
+    ]
+  },
+  "hud": {
+    "menu": "Ready · Sunbreak Coast, 100%, 3 routes · 9.3 km"
+  },
+  "mechanic_notes": [
+    "Three routes: Sunbreak Coast, Redline Canyon, Halo Skyway.",
+    "Hybrid drive/fly with traffic, trailer roofs, facade banks, aerial tricks, and tuning upgrades."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/roadster-hours/srcdoc.html"
+  },
+  "limitations": [
+    "Start button click timed out and the child iframe was lost; no live speed/trick/upgrade HUD.",
+    "Controls are declared by the plan/page copy, not runtime-verified."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

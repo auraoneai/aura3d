@@ -1,0 +1,110 @@
+{
+  "id": "drift-and-deliver",
+  "title": "Drift & Deliver",
+  "url": "https://app.usecrayon.ai/play/54a355cc-d8e4-4d14-bab4-1b6db1618242",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2",
+    "source": "live canvas + importmap"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_7c6b8e56313f4419ac7c8934ed427458",
+      "role": "menu, story skip, HUD, CONFIG/state"
+    }
+  ],
+  "menus": [
+    "PORTOLA NIGHTS",
+    "CHAPTER 1 · THE NAME HE KEPT",
+    "START",
+    "JUMP TO A MISSION",
+    "WASD drive · SPACE drift · SHIFT nitro · E in/out of cars · M map"
+  ],
+  "start_flow": [
+    "START",
+    "story cutscene",
+    "8 × Space to advance/skip",
+    "playing"
+  ],
+  "controls": {
+    "declared": [
+      "WASD drive",
+      "Space drift",
+      "Shift nitro",
+      "E in/out of cars",
+      "M map"
+    ],
+    "runtime_exercised": [
+      "START click",
+      "Space (cutscene advance)",
+      "W (1800 ms)"
+    ]
+  },
+  "hud": {
+    "during_cutscene": {
+      "nitro": "0",
+      "speed": "0 KM/H",
+      "streak": "x1",
+      "prompt": "HOLD SPACE — SKIP",
+      "chapter": "CHAPTER 1 · THE NAME HE KEPT"
+    },
+    "after_skip": {
+      "nitro": "15",
+      "speed": "15 KM/H",
+      "streak": "x0 STREAK",
+      "objective": "LOSE THE HEAT — 95m to the edge of the zone",
+      "radio": "ALL UNITS — 2-11 IN PROGRESS, MARLOW PAWN, MERIDIAN & 2ND",
+      "overlay": "BUSTED — THE NIGHT ENDS EARLY"
+    }
+  },
+  "config_exact": {
+    "CAR_MAX_SPEED": 58,
+    "CAR_ACCELERATION": 26,
+    "CAR_BRAKE": 40,
+    "GRIP": 12,
+    "DRIFT_GRIP": 2.6,
+    "TURN_RATE": 2.15,
+    "BOOST_MULTIPLIER": 1.75,
+    "BOOST_DRAIN_RATE": 0.32,
+    "DRIFT_REFILL_RATE": 0.3,
+    "CAMERA_CHASE": 2.7
+  },
+  "state_keys": [
+    "phase",
+    "boost",
+    "drifting",
+    "boosting",
+    "speed",
+    "heading",
+    "shake",
+    "score",
+    "combo",
+    "comboTimer",
+    "collected",
+    "total"
+  ],
+  "state_observed": {
+    "phase": "playing",
+    "speed": 4.149887498982457,
+    "boost": 1,
+    "drifting": false,
+    "boosting": false,
+    "collected": 0,
+    "total": 174
+  },
+  "mechanic_notes": [
+    "Nitro is a 0–1 resource: BOOST_DRAIN_RATE 0.32 while boosting, DRIFT_REFILL_RATE 0.3 while drifting.",
+    "Drift grip is 2.6 versus 12 for normal grip; turn rate 2.15.",
+    "174 total collectibles in the current build.",
+    "The chapter opens with a long voiced story; Space advances/skips it."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/drift-and-deliver/srcdoc.html"
+  },
+  "limitations": [
+    "The capture ended in a BUSTED overlay after the cutscene; a clean delivery run was not completed.",
+    "CONFIG values were captured from window.__game.CONFIG before the session frame was recycled."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}

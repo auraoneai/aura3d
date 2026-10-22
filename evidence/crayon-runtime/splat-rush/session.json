@@ -1,0 +1,128 @@
+{
+  "id": "splat-rush",
+  "title": "Splat Rush",
+  "url": "https://app.usecrayon.ai/play/e53a6e07-a4a1-465e-b546-0fb6c9b787c0",
+  "engine": {
+    "three": "r184",
+    "renderer": "WebGL2 (canvas 800x384)",
+    "source": "live canvas + importmap"
+  },
+  "prism_sessions": [
+    {
+      "id": "bs_ace0274d691f4ba1ba5631b482f01456",
+      "role": "first start/HUD capture (session later expired)"
+    },
+    {
+      "id": "bs_56ba2b72b089468da7c7f1b09fc52f04",
+      "role": "fresh exact CONFIG + start/HUD verification"
+    }
+  ],
+  "menus": [
+    "SPLAT RUSH",
+    "SCORE: 0",
+    "Drag left/right to steer.",
+    "Match colors for combos & big scores.",
+    "Grab 🌈 Rainbow · 🛡 Shield · ✦ 2x · 🎨 Switch!",
+    "PLAY NOW"
+  ],
+  "start_flow": [
+    "PLAY NOW",
+    "playing"
+  ],
+  "controls": {
+    "declared": [
+      "Drag left/right to steer",
+      "pointer/touch drag"
+    ],
+    "runtime_exercised": [
+      "PLAY NOW click",
+      "Space press to step RAF"
+    ],
+    "notes": [
+      "Keyboard steering is not declared in the UI; the game is pointer/touch driven."
+    ]
+  },
+  "hud": {
+    "before": "SCORE: 0",
+    "after_1200ms": "SCORE: 27",
+    "state_after": {
+      "phase": "playing",
+      "score": 27.406214313960767,
+      "distance": 27.406214313960767,
+      "speed": 16.439397573333334,
+      "lives": 3,
+      "multiplier": 1,
+      "playerColorIndex": 0
+    }
+  },
+  "config_exact": {
+    "BALL_RADIUS": 0.55,
+    "FORWARD_SPEED_INIT": 16,
+    "MAX_SPEED": 29,
+    "SPEED_INCREMENT": 0.26,
+    "STEER_SPEED": 10,
+    "LANE_HALF_WIDTH": 3,
+    "GATE_SPACING": 15,
+    "SHRINK_FACTOR": 0.8,
+    "GROW_FACTOR": 1.1,
+    "MAX_LIVES": 3,
+    "RAINBOW_DURATION": 5,
+    "TRAIL_DURATION": 6,
+    "SCORE_PER_METER": 1,
+    "SEGMENT_LENGTH": 1,
+    "CURVE_AMPLITUDE": 3,
+    "POINTS_GATE": 40,
+    "POINTS_PERFECT": 60,
+    "PERFECT_WINDOW": 0.55,
+    "MAX_MULT": 5,
+    "COMBO_PER_MULT": 3,
+    "SCOREX2_DURATION": 7,
+    "MILESTONE_SCORE": 750
+  },
+  "state_keys": [
+    "phase",
+    "score",
+    "distance",
+    "lives",
+    "speed",
+    "laneOffset",
+    "rainbowTimer",
+    "trailTimer",
+    "scoreX2Timer",
+    "scoreX2Active",
+    "shieldActive",
+    "milestone",
+    "squashT",
+    "frameCount",
+    "segmentCounter",
+    "lastSegmentZ",
+    "lastGateZ",
+    "playerColorIndex",
+    "ballScale",
+    "lastCollisionRole",
+    "shakeTimer",
+    "isRainbowActive",
+    "_rainbowVisual",
+    "combo",
+    "multiplier",
+    "introT",
+    "_fovPunch"
+  ],
+  "mechanics": [
+    "Endless ramp; lateral steering; match the ball colour to the incoming gate.",
+    "Correct gate: POINTS_GATE 40; perfect window 0.55 s awards POINTS_PERFECT 60.",
+    "Combo multiplier: 1 + floor(combo / COMBO_PER_MULT), capped at MAX_MULT 5.",
+    "Pickups: Rainbow (5 s), Shield, 2x score (7 s), Switch colour.",
+    "Wrong gate shrinks the ball (SHRINK_FACTOR 0.8); MAX_LIVES 3.",
+    "Speed rises by SPEED_INCREMENT 0.26 per segment from 16 toward MAX_SPEED 29."
+  ],
+  "evidence": {
+    "srcdoc": "evidence/crayon-runtime/splat-rush/srcdoc.html"
+  },
+  "limitations": [
+    "Pointer drag steering was not exercised; no pixel capture.",
+    "Exact gate colour sequence/RNG is not exposed."
+  ],
+  "schema": "a3d-crayon-runtime-capture/1",
+  "captured_at": "2026-10-22"
+}
