@@ -1,9 +1,21 @@
 import type * as Rapier from "@dimforge/rapier3d-compat";
 import { toRapierHeightfieldHeights } from "./HeightfieldLayout.js";
 
-const defaultRapierModule = await import("@dimforge/rapier3d-compat");
-const defaultRapierInit = (defaultRapierModule as unknown as { init?: (input?: unknown) => Promise<unknown> }).init;
-if (defaultRapierInit) await defaultRapierInit({});
+// `@dimforge/rapier3d-compat` is an OPTIONAL peer: it must be absent-tolerant
+// at module evaluation so `import { createAuraApp } from "@aura3d/engine"`
+// works in consumers that never use physics. Failure defers to call time.
+const defaultRapierModule = await import("@dimforge/rapier3d-compat").catch(() => null);
+const defaultRapierInit = (defaultRapierModule as unknown as { init?: (input?: unknown) => Promise<unknown> } | null)?.init;
+if (defaultRapierModule && defaultRapierInit) await defaultRapierInit({});
+
+function requireRapierModule(): RapierModule {
+  if (!defaultRapierModule) {
+    throw new Error(
+      "@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics."
+    );
+  }
+  return defaultRapierModule;
+}
 
 export type RapierModule = typeof import("@dimforge/rapier3d-compat");
 export type PhysicsVec3 = readonly [number, number, number];
@@ -663,7 +675,15 @@ function flattenVertices(vertices: readonly PhysicsVec3[]): Float32Array {
 }
 
 export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> {
-  const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))();
+  const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))()
+    .catch((error: unknown) => {
+      if ((error as { code?: string })?.code === "ERR_MODULE_NOT_FOUND") {
+        throw new Error(
+          "@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics."
+        );
+      }
+      throw error;
+    });
   // The official compat build exposes explicit async WASM initialization and
   // avoids forcing each consuming bundler to configure a raw `.wasm` loader.
   const explicitInit = (module as unknown as { init?: (input?: unknown) => Promise<unknown> }).init;
@@ -677,7 +697,7 @@ export async function createRapierPhysics(options: RapierPhysicsOptions = {}): P
  * JavaScript solver behind the synchronous API.
  */
 export function createRapierPhysicsSync(options: Omit<RapierPhysicsOptions, "moduleLoader"> = {}): RapierPhysicsWorld {
-  return new RapierPhysicsWorld(defaultRapierModule, options.gravity ?? [0, -9.81, 0]);
+  return new RapierPhysicsWorld(requireRapierModule(), options.gravity ?? [0, -9.81, 0]);
 }
 
 /**

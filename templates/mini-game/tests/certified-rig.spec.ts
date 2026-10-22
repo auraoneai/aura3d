@@ -17,7 +17,7 @@ test.setTimeout(240_000);
  * No raw GLB URL literal lives in this file (public-example-boundary): the
  * expected url is read from the template's own generated typed assets.
  */
-const CERTIFIED_ROSTER = ["showcaseKenneyOobiPlatformerHero"] as const;
+const CERTIFIED_ROSTER = ["kaykitBarbarian", "showcaseKenneyOobiPlatformerHero"] as const;
 function certifiedHeroFromTypedAssets(): { assetId: string; url: string } {
   const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "src", "aura-assets.ts"), "utf8");
   for (const assetId of CERTIFIED_ROSTER) {

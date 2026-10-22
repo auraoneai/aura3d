@@ -22,6 +22,13 @@ export async function fetchBytes(
   if (!response.ok) {
     throw new Error(`Request for ${url} failed with ${response.status}`);
   }
+  // Dev-server SPA fallbacks answer missing asset requests with `200 text/html`
+  // — never a valid asset payload. Reject up front so loaders surface the real
+  // fetch failure instead of an opaque decode error downstream.
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("text/html")) {
+    throw new Error(`Request for ${url} failed with ${response.status} (text/html — likely a dev-server SPA fallback, not an asset)`);
+  }
   const totalHeader = response.headers.get("content-length");
   const total = totalHeader ? Number.parseInt(totalHeader, 10) : undefined;
   const body = response.body;

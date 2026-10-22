@@ -162,12 +162,17 @@ export interface BakedEnvironmentManifest {
 }
 
 async function fetchBytes(url: string): Promise<Uint8Array> {
+  // Dev servers with SPA fallback answer unknown asset paths with
+  // `text/html` + 200 — a poisoned payload must count as a fetch failure so
+  // the neutral-floor fallback engages instead of crashing on parse.
+  const isHtmlPayload = (res: Response) =>
+    (res.headers.get("content-type") ?? "").includes("text/html");
   let res = await fetch(url);
-  if (!res.ok && !url.startsWith("/") && !/^https?:\/\//.test(url)) {
+  if ((!res.ok || isHtmlPayload(res)) && !url.startsWith("/") && !/^https?:\/\//.test(url)) {
     const rootRes = await fetch(`/${url}`);
-    if (rootRes.ok) res = rootRes;
+    if (rootRes.ok && !isHtmlPayload(rootRes)) res = rootRes;
   }
-  if (!res.ok) throw new Error(`ENV_FETCH_FAILED:${url}:${res.status}`);
+  if (!res.ok || isHtmlPayload(res)) throw new Error(`ENV_FETCH_FAILED:${url}:${res.status}`);
   return new Uint8Array(await res.arrayBuffer());
 }
 

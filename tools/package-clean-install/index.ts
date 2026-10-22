@@ -368,10 +368,10 @@ function replaceTemplateAsset(appDir: string, template: string, assetId: string)
       return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
     }
     // J3 template shape: the player is already a certified-hero model
-    // (`model(assets.showcaseKenneyOobiPlatformerHero, ...)` via the engine
+    // (`model(assets.kaykitBarbarian, ...)` via the engine
     // `"."`), so replacement swaps the hero for the newly
     // added real asset instead of the retired primitive-player anchors.
-    const next = source.replace("model(assets.showcaseKenneyOobiPlatformerHero", "model(assets.playerModel");
+    const next = source.replace("model(assets.kaykitBarbarian", "model(assets.playerModel");
     if (next === source || !next.includes("model(assets.playerModel")) {
       return { ok: false, output: "mini-game asset replacement did not update src/main.ts", seconds: 0 };
     }
