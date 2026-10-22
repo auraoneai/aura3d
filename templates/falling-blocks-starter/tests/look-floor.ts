@@ -166,7 +166,20 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
      * run in the same task as the stepped render, before compositing clears the
      * drawing buffer. That also removes the composited element screenshot that
      * software-GL runners could not produce inside a test timeout.
+     *
+     * The final settle frame is therefore a *synchronous* step with no await
+     * between it and readPixels: an awaited stepAsync can resume in a fresh
+     * task — after compositing has already cleared the drawing buffer — and
+     * read back an all-black canvas on an otherwise correctly rendered scene.
      */
+    for (const app of apps) {
+      try {
+        app.step?.(0);
+      } catch {
+        // A synchronous step may reject while async work settles; the awaited
+        // stepAsync settle above already produced a best-effort frame.
+      }
+    }
     const target = [...document.querySelectorAll("canvas")]
       .map((element) => ({
         element,

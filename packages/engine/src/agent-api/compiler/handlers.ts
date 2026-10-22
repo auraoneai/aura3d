@@ -8,7 +8,7 @@
 
 import type { AnyNodeHandler, AuraNodeKindMap, NodeHandler } from "../../contracts/compiler.js";
 import { nodeHandlerFor } from "../../contracts/compiler.js";
-import type { QrFlags } from "@aura3d/rendering/contracts";
+import type { QrFlagName, QrFlags } from "@aura3d/rendering/contracts";
 import { AuraRuntimeError } from "./errors.js";
 import { lineNodeHandler, pointsNodeHandler, spriteNodeHandler } from "./lines.js";
 
@@ -33,10 +33,14 @@ function bridgeCompiled<K extends string>(kind: K): NodeHandler<{ readonly kind:
  * handler, registered via `registerNodeHandler` with its `A3D_PARITY_*` flag,
  * wins resolution once the flag is on (resolveNodeHandler).
  */
-function parityPending<K extends string>(kind: K, flag: string): NodeHandler<{ readonly kind: K }> {
+function parityPending<K extends string>(kind: K, flag: QrFlagName): NodeHandler<{ readonly kind: K }> {
   return {
     kind: kind as { readonly kind: K }["kind"],
     owner: "prd15",
+    // Marker for the compileScene gate: pending entries are NOT bridge
+    // defaults — their compile throws `parity-not-implemented` and must run
+    // whenever resolution selects them (i.e. the real handler's flag is off).
+    flag,
     compile(): never {
       throw new AuraRuntimeError(
         "parity-not-implemented",

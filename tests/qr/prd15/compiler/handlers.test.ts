@@ -6,11 +6,13 @@ import { registerNodeHandler, nodeHandlerFor } from "../../../../packages/engine
 import { resolveQrFlags } from "../../../../packages/engine/src/contracts/flags";
 
 describe("C-36 nodeHandlers table", () => {
-  it("is exhaustive over the C-36 catalog (18 kinds)", () => {
+  it("is exhaustive over the C-36 catalog (22 kinds)", () => {
     expect(Object.keys(nodeHandlers).sort()).toEqual([
       "biome", "effect", "environment", "grass", "group", "interaction", "label",
       "light", "look", "model", "primitive", "probe", "scatter", "sky",
-      "terrain", "time-of-day", "water", "wind"
+      "terrain", "time-of-day", "water", "wind",
+      // threejs-parity L6 (real handlers) + L5 (batched, registered handler).
+      "line", "points", "sprite", "batched"
     ].sort());
     for (const kind of Object.keys(nodeHandlers)) {
       expect(isKnownNodeKind(kind)).toBe(true);

@@ -52,6 +52,7 @@ test.describe("parity-L5 instancing + batching", () => {
       warnings: result?.warnings,
       compiledFeatures: result?.compiledFeatures,
       rendererBatching: result?.rendererBatching,
+      collection: result?.collection,
       multiDrawExtension: result?.multiDrawExtension
     });
     expect(result?.drawCalls, diag()).toBeGreaterThan(0);

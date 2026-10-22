@@ -94,6 +94,9 @@ rsync -a --exclude '*/node_modules' \
 rsync -a --exclude '*/node_modules' workers "$CTX/"
 mkdir -p "$CTX/tests"
 rsync -a tests/browser tests/support tests/fixtures "$CTX/tests/"
+# Browser labs fetch fixture GLBs from the repo-root `fixtures/` tree
+# (`/fixtures/threejs-parity/assets/...`), served by the example dev server.
+rsync -a fixtures "$CTX/"
 rsync -a examples "$CTX/"
 mkdir -p "$CTX/tools"
 rsync -a tools/naming-taxonomy tools/remote-acr "$CTX/tools/"

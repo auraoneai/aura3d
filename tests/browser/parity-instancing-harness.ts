@@ -24,6 +24,7 @@ interface HarnessResult {
   readonly warnings?: readonly string[];
   readonly compiledFeatures?: readonly string[];
   readonly rendererBatching?: unknown;
+  readonly collection?: { readonly submittedObjects: number | null; readonly visibleObjects: number | null; readonly culledObjects: number | null; readonly frustumTestedObjects: number | null };
   readonly multiDrawExtension?: boolean;
   /** §8 route-health: snapshot naming the parity IDs this port exercised. */
   readonly routeHealth?: { readonly status: string; readonly parityIds: readonly string[] };
@@ -139,6 +140,12 @@ async function run(): Promise<void> {
     warnings: diagnostics.warnings,
     compiledFeatures: diagnostics.compiledFeatures,
     rendererBatching: diagnostics["renderer.batching"],
+    collection: {
+      submittedObjects: diagnostics.renderer?.runtime?.submittedObjects ?? null,
+      visibleObjects: diagnostics.renderer?.runtime?.visibleObjects ?? null,
+      culledObjects: diagnostics.renderer?.runtime?.culledObjects ?? null,
+      frustumTestedObjects: diagnostics.renderer?.runtime?.frustumTestedObjects ?? null
+    },
     multiDrawExtension: multiDrawExtensionPresent(),
     routeHealth,
     image

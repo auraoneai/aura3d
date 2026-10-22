@@ -226,7 +226,10 @@ export class CompiledSceneImpl implements CompiledScene {
         continue;
       }
       const handler = resolveNodeHandler(kind, ctx.flags);
-      if (handler && handler.owner !== "prd15") {
+      // Bridge defaults (owner "prd15", no flag) keep the legacy path. A
+      // resolved lane handler always runs; a flagged default is the
+      // parityPending sentinel whose compile throws `parity-not-implemented`.
+      if (handler && (handler.owner !== "prd15" || handler.flag !== undefined)) {
         this.handledNodes.push({ node: flatNode, handler });
         void handler.compile(flatNode, ctx, out);
       }
@@ -375,7 +378,9 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
     const handler = resolveNodeHandler(kind, ctx.flags);
     // Defaults are bridge markers (kind stays on the legacy path); only a
     // lane handler distinct from the default runs its compile/update hooks.
-    if (handler && handler.owner !== "prd15") {
+    // A flagged default is the parityPending sentinel — it is not a bridge,
+    // and its compile must run so flag-off fails closed (parity-not-implemented).
+    if (handler && (handler.owner !== "prd15" || handler.flag !== undefined)) {
       handledNodes.push({ node, handler });
       await handler.compile(node, ctx, new SourceContributions(contributions));
     }

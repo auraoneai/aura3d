@@ -37,6 +37,7 @@ import { qrCoreGeneratorOn } from "@aura3d/rendering";
 import { registerShaderChunk, registerShaderFeature, registerDepthVariantFeature } from "@aura3d/rendering/contracts";
 import type { NodeHandler, RenderSourceContributions, SceneCompileContext } from "../../contracts/compiler.js";
 import { registerNodeHandler } from "../../contracts/compiler.js";
+import { AuraRuntimeError } from "../compiler/errors.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 import { colorToRgba } from "../colorUtils.js";
@@ -348,11 +349,26 @@ function multiplyMat4Into(out: Float32Array, a: ArrayLike<number>, b: ArrayLike<
   }
 }
 
+const L5_FLAG = "A3D_PARITY_BATCHING" as const;
+/** Any non-"prd15" owner runs: "prd15" is the C-36 bridge/skip sentinel. */
+const L5_OWNER = "prd11" as const;
+
+/** Fail closed while the lane flag is off (identical code path to parityPending). */
+function assertL5Flag(ctx: SceneCompileContext): void {
+  if (!ctx.flags.on(L5_FLAG)) {
+    throw new AuraRuntimeError(
+      "parity-not-implemented",
+      `Aura3D scene node kind "batched" is not yet implemented (${L5_FLAG}). See docs/workflows/threejs-parity-gaps.md.`
+    );
+  }
+}
+
 export const batchedNodeHandler: NodeHandler<{ readonly kind: "batched" }> = {
   kind: "batched",
-  owner: "prd15",
+  owner: L5_OWNER,
   flag: "A3D_PARITY_BATCHING",
   compile(node, ctx, out) {
+    assertL5Flag(ctx);
     registerBatchedDrawShader();
     const batchedNode = node as unknown as AuraBatchedNode;
     const state = batchedStateForNode(batchedNode);

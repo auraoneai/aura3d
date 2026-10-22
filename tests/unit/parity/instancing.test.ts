@@ -46,7 +46,7 @@ function translate(x: number, y = 0, z = 0): Float32Array {
   return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]);
 }
 
-function compileCtx(options: "all" | "none" = "all") {
+function compileCtx(options: "all" | "none" | (string & {}) = "all") {
   return {
     flags: resolveQrFlags({ options }),
     renderer: undefined,
@@ -292,7 +292,8 @@ describe("batchedNodeHandler — compiled route selection (L5-03)", () => {
   it("generated-programs off → honest instanced fallback (one item per geometry bucket)", () => {
     const node = authoredNode();
     const out = collectOut();
-    batchedNodeHandler.compile(node as never, compileCtx("none"), out as never);
+    // Lane flag on, generated-program core off — the honest instanced route.
+    batchedNodeHandler.compile(node as never, compileCtx("parity.batching,-core"), out as never);
     const report = out.fields.get("parityBatched") as { mode: string; fallbackReason?: string };
     expect(report.mode).toBe("instanced");
     expect(report.fallbackReason).toBe("generated-programs-off");
