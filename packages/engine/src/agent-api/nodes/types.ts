@@ -537,6 +537,24 @@ export interface AuraRootLodSpec {
   readonly hysteresis?: number;
 }
 
+/**
+ * threejs-parity L7/SG-11: mixed-child LOD — each level is an arbitrary node
+ * subtree (primitives, models, nested groups), not just a primitive swap.
+ * Consumed by `groups.lod`; visibility switches per frame in the production
+ * render input (see `lodMarkers.ts`).
+ */
+export interface AuraLodLevelSpec {
+  readonly name?: string;
+  readonly maxDistance?: number;
+  readonly children: readonly AuraNodeInput[];
+}
+
+export interface AuraLodGroupSpec extends AuraTransformSpec {
+  readonly name?: string;
+  readonly levels: readonly AuraLodLevelSpec[];
+  readonly hysteresis?: number;
+}
+
 export interface AuraAnimationSpec {
   readonly clip?: string;
   readonly loop?: boolean;

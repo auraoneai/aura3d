@@ -27,6 +27,7 @@ import {
   surfaces
 } from "../../../packages/engine/src";
 import { isAuraCubeCameraNode } from "../../../packages/engine/src/agent-api/nodes/cameras";
+import { lodLevelVisible, lodMarkerOf } from "../../../packages/engine/src/agent-api/lodMarkers";
 import { isAuraMirrorSurfaceNode } from "../../../packages/engine/src/agent-api/nodes/surfaces";
 import type { AuraPrimitiveNode } from "../../../packages/engine/src/agent-api/nodes/types";
 
@@ -306,5 +307,43 @@ describe("parity L7 — runtime node graph (SG-09)", () => {
     const visited: string[] = [];
     parent.traverse((node) => { if (node.name) visited.push(node.name); });
     expect(visited).toEqual(["parent", "child"]);
+  });
+});
+
+describe("parity L7 — mixed-child LOD (SG-11)", () => {
+  it("groups.lod tags every level's subtree; lodLevelVisible selects by camera distance with hysteresis", () => {
+    const lod = groups.lod({
+      name: "city-block",
+      position: [10, 0, 0],
+      hysteresis: 2,
+      levels: [
+        { maxDistance: 10, children: [primitives.box({ name: "near" }), group("near-detail", [primitives.sphere({ name: "nested" })])] },
+        { maxDistance: 50, children: [primitives.box({ name: "mid" })] },
+        { children: [primitives.box({ name: "far" })] }
+      ]
+    });
+    const node = lod.toJSON();
+    expect(node.kind).toBe("group");
+    // All 4 level-children flatten; the nested group keeps its marker deep.
+    const flat = groups.flatten([node]);
+    expect(flat.length).toBe(4);
+    expect(lodMarkerOf(flat[0])?.levelIndex).toBe(0);
+    expect(lodMarkerOf(flat[1])?.levelIndex).toBe(0); // nested group child tagged
+    expect(lodMarkerOf(flat[2])?.levelIndex).toBe(1);
+    expect(lodMarkerOf(flat[3])?.levelIndex).toBe(2);
+    // Camera 5m from root (position [10,0,0]) -> level 0; 30m -> level 1; 80m -> level 2.
+    expect(flat.map((n) => lodLevelVisible(n, [15, 0, 0]))).toEqual([true, true, false, false]);
+    expect(flat.map((n) => lodLevelVisible(n, [40, 0, 0]))).toEqual([false, false, true, false]);
+    expect(flat.map((n) => lodLevelVisible(n, [90, 0, 0]))).toEqual([false, false, false, true]);
+    // Hysteresis hold: 30->12 is still inside level1's nearer band (10-2=8) only above 8; at 9 keep level1.
+    expect(flat.map((n) => lodLevelVisible(n, [19, 0, 0]))).toEqual([false, false, true, false]);
+    // Untagged node always visible.
+    expect(lodLevelVisible(boxNode("free", [0, 0, 0]), [0, 0, 0])).toBe(true);
+  });
+
+  it("rejects empty levels and validates threshold ordering at build time", () => {
+    expect(() => groups.lod({ levels: [] })).toThrowError(/at least one level/);
+    expect(() => groups.lod({ levels: [{ children: [] }, { maxDistance: 5, children: [primitives.box({})] }] })).toThrowError(/final/);
+    expect(() => groups.lod({ levels: [{ maxDistance: 20, children: [primitives.box({})] }, { maxDistance: 5, children: [primitives.box({})] }] })).toThrowError(/strictly increasing/);
   });
 });

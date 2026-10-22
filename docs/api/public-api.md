@@ -1947,9 +1947,10 @@ promptRecipes[plan.sceneType];            // (asset, plan, lookId?) => AuraScene
 //   AuraCustomMaterialSpec and the compiler include-bakes named chunks,
 //   but promotion to public parity is intentionally deferred; treat patch
 //   as not-yet.
-// SG-11 mixed-child LOD — `distanceLod` ships root LOD (one primitive or
-//   geometry per level); three's LOD object with mixed child sets per
-//   level is not yet.
+// SG-11 mixed-child LOD — SHIPPED as `groups.lod({ levels, hysteresis })`:
+//   each level takes arbitrary children (primitives, models, nested groups)
+//   and the production path shows exactly one level's subtree per frame by
+//   camera distance. `distanceLod` remains the single-primitive swap.
 // SC-04 XR controller buttons.
 // AD-16 rectArea/LightProbe — `lights.rectArea` (alias of lights.rect)
 //   ships and compiles to a real "rect-area" render light; three's

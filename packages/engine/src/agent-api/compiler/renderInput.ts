@@ -17,6 +17,7 @@ import { identityMat4 } from "@aura3d/scene/math";
 import { applyProductionActorAnimation, applySpecRootMotionTransform } from "./animation.js";
 import { resolveActorBoneAttachments } from "../app/actorAnimationHandle.js";
 import { createProductionRuntimeEnvironmentFog } from "./fog.js";
+import { lodLevelVisible } from "../lodMarkers.js";
 import { createProductionRuntimePostprocess } from "./postprocess.js";
 import { authoredPostContextFor } from "../postBridge.js";
 import { createProductionInstanceColors, createProductionInstanceTransforms, createProductionModelInstanceTransforms, resolveProductionPrimitiveRuntimeState, selectProductionPrimitiveResource } from "./primitives.js";
@@ -170,7 +171,8 @@ export function createProductionRuntimeRendererInput(
   for (const [actorIndex, entry] of actorEntries.entries()) {
     let currentState = resolveProductionActorRuntimeState(entry, runtimeNodes);
     let currentNode = currentState.node;
-    if (currentNode.visible === false) continue;
+    // threejs-parity L7/SG-11: `groups.lod` — deselected levels skip this frame.
+    if (currentNode.visible === false || !lodLevelVisible(currentNode, cameraPosition)) continue;
     const actorBounds = productionActorModelBounds(currentNode.asset, entry.actor);
     const actorNormalize = shouldNormalizeModelNode(currentNode);
     let modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBounds, actorNormalize, time) ?? createModelMatrix(currentNode, actorBounds, actorNormalize, time))];
@@ -282,7 +284,8 @@ export function createProductionRuntimeRendererInput(
     : undefined;
   for (const [primitiveIndex, entry] of primitiveEntries.entries()) {
     const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
-    if (!currentState.visible) continue;
+    // threejs-parity L7/SG-11: `groups.lod` — deselected levels skip this frame.
+    if (!currentState.visible || !lodLevelVisible(currentState.node, cameraPosition)) continue;
     const resource = selectProductionPrimitiveResource(entry, currentState.node, cameraPosition, getRootPerformanceQuality(canvas)?.lodBias ?? 1);
     if (resource.sdfText && resource.texturedMaterial) {
       // G1 per-frame SDF opacity: LOD fade from the live camera distance

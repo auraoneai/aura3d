@@ -875,7 +875,7 @@ Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 - [ ] SH-04 compute (after `A3D_QR_WEBGPU`)
 - [x] SH-09 material `patch` (`shader-material.test.ts` — patch chunks hash into program key)
 - [x] SG-08 sprites (`parity-lines` green — billboard + rotation pixel-proven)
-- [ ] SG-11 mixed-child LOD (`distanceLod` levels accept only primitive/geometry — no arbitrary groups yet)
+- [x] SG-11 mixed-child LOD — `groups.lod({levels, hysteresis})` ships arbitrary subtrees per level (`lodMarkers.ts` + renderInput per-frame visibility; `runtime.test.ts` SG-11 block)
 - [x] SA-02, SA-06 (`animation.test.ts`)
 - [x] AU-03 analyser (`AudioAnalyser.ts` + `parity-audio` spec)
 - [x] SR-04 layers (`runtime.test.ts` — handle layer masks + raycast layer filter)
