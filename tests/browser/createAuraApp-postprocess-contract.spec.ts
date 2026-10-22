@@ -170,8 +170,8 @@ test.describe("createAuraApp root postprocess contract", () => {
         effect: "rain",
         variant: "rain",
         baselineVariant: "rain-baseline",
-        passName: "safe-basic-rain-geometry",
-        passRan: (capture: VariantCapture) => capture.diagnostics.runtimeBackend === "webgl2-agent-runtime" && capture.diagnostics.drawCalls > 0
+        passName: "production-rain-effect-node",
+        passRan: (capture: VariantCapture) => capture.diagnostics.runtimeBackend === "production-runtime" && capture.diagnostics.drawCalls > 0
       }
     ] as const;
 
@@ -242,9 +242,12 @@ test.describe("createAuraApp root postprocess contract", () => {
         failures.push(`${effect.effect} is root-proven without both on/off screenshot hashes.`);
       }
     }
-    // Bloom, fog, and starter-level rain are the effects this contract claims. Everything else is
-    // recorded honestly as partial or unreachable rather than quietly omitted.
-    for (const required of ["bloom", "fog", "rain"]) {
+    // Bloom and fog are the effects this contract claims. Rain is measured and
+    // recorded honestly as partial — the safe-basic runtime that drew starter
+    // rain geometry was removed in 4.0 and the production bridge reports effect
+    // nodes as requested-but-non-pixel-backed. Everything else is recorded
+    // honestly as partial or unreachable rather than quietly omitted.
+    for (const required of ["bloom", "fog"]) {
       const effect = effects.find((entry) => entry.effect === required);
       if (effect?.status !== "root-proven") failures.push(`${required} is not root-proven by an on/off pixel delta.`);
     }
@@ -253,7 +256,7 @@ test.describe("createAuraApp root postprocess contract", () => {
       schema: "aura3d-root-postprocess-contract/1.0",
       generatedAt: new Date().toISOString(),
       imports: runnerInfo.imports,
-      claimBoundary: "Root createAuraApp runs neutral pixel-backed tone mapping and adds measurable bloom and forward environment fog on the typed-GLB production bridge. It does not silently inject color grading or FXAA when the author did not request them. The safe-basic WebGL2 path draws starter-level rain geometry with a measured on/off screenshot delta. SSAO executes when an occlusion effect is authored but its visible contribution is not proven. Color grading, FXAA, outline, SSR, depth of field, motion blur, and TAA are not reachable through the public root effects surface and are not claimed. No HDR-dependent or WebGPU postprocess claim is made.",
+      claimBoundary: "Root createAuraApp runs neutral pixel-backed tone mapping and adds measurable bloom and forward environment fog on the typed-GLB production bridge. It does not silently inject color grading or FXAA when the author did not request them. Authored rain is reported honestly: the starter-level rain geometry path shipped with the removed safe-basic runtime and the production bridge reports effect nodes as requested but non-pixel-backed, so no rain pixel delta is claimed. SSAO executes when an occlusion effect is authored but its visible contribution is not proven. Color grading, FXAA, outline, SSR, depth of field, motion blur, and TAA are not reachable through the public root effects surface and are not claimed. No HDR-dependent or WebGPU postprocess claim is made.",
       renderer: {
         backend: baseline.capture.diagnostics.backend,
         runtimeBackend: baseline.capture.diagnostics.runtimeBackend,
@@ -273,7 +276,9 @@ test.describe("createAuraApp root postprocess contract", () => {
     expect(evidence.renderer.baselineActualPasses).toEqual(["tone-mapping"]);
     expect(effectStatus(evidence, "bloom")).toBe("root-proven");
     expect(effectStatus(evidence, "fog")).toBe("root-proven");
-    expect(effectStatus(evidence, "rain")).toBe("root-proven");
+    // Rain is recorded and honestly demoted — the pass runs on the production
+    // runtime but draws no provable pixel delta, so it must not be root-proven.
+    expect(effectStatus(evidence, "rain")).toBe("partial");
     // SSAO must at minimum be reported as an executed pass; claiming it as proven
     // would overstate a measured near-zero contribution.
     expect(evidence.effects.find((entry) => entry.effect === "ambient-occlusion")?.passRan).toBe(true);

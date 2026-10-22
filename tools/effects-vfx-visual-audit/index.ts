@@ -132,13 +132,19 @@ function createPromptEffectEvidence(): readonly PromptEffectEvidence[] {
 
 function auditPromptFacingEffects(effects: readonly PromptEffectEvidence[]): void {
   const evidenceFor = (effect: string): PromptEffectEvidence | undefined => effects.find((entry) => entry.effect === effect);
-  const addPromptFinding = (effect: "fog" | "bloom" | "rain", summary: string, requiredAction: string): void => {
+  const addPromptFinding = (effect: "fog" | "bloom" | "rain", summary: string, requiredAction: string, expectProven = true): void => {
     const evidence = evidenceFor(effect);
     const comparison = evidence?.comparison;
+    // For effects the public surface claims, evidence must be root-proven. For
+    // honestly demoted effects (rain), the gate verifies the demotion instead:
+    // pass only when the evidence exists and does NOT claim a pixel delta.
+    const status = expectProven
+      ? (evidence?.status === "root-proven" ? "pass" : "fail")
+      : (evidence !== undefined && evidence.status !== "root-proven" ? "pass" : "fail");
     addFinding({
       id: `prompt-effect-${effect}`,
       surface: `Public prompt API / effects.${effect}`,
-      status: evidence?.status === "root-proven" ? "pass" : "fail",
+      status,
       severity: "blocker",
       summary,
       evidence: evidence ? [
@@ -165,8 +171,9 @@ function auditPromptFacingEffects(effects: readonly PromptEffectEvidence[]): voi
   );
   addPromptFinding(
     "rain",
-    "Rain has starter-level renderer-owned WebGL2 geometry and an on/off screenshot delta through the public root API.",
-    "Keep rain scoped as starter-level geometry and retain route screenshot review before any premium weather claim."
+    "Rain is authored and reported through the public root API but non-pixel-backed: the starter rain geometry path shipped with the removed safe-basic runtime and the production bridge records effect nodes as requested-but-unproven. No on/off delta is claimed.",
+    "Wire effects.rain to a renderer-owned path (e.g. RainParticleSystem) before any weather pixel claim; until then the evidence must keep reporting it as non-root-proven.",
+    false
   );
 }
 
@@ -730,11 +737,9 @@ function writeMarkdown(path: string, report: {
     "",
     "## Immediate Corrections",
     "",
-    "- Public `effects.rain()` has been upgraded from sparse line segments to layered instanced rain streaks, splash ripples, and mist in the primary Three renderer, plus richer Canvas2D fallback.",
-    "- Public `effects.bloom()` now creates renderer-owned additive glow in the primary Three renderer instead of being ignored.",
-    "- `packages/rendering/src/cinematic/RainParticleSystem.ts` now emits wide rain streak, splash ripple, and mist bank geometry instead of point-only rain.",
-    "- Production-runtime named postprocess classes now execute real pixel kernels instead of only storing options.",
-    "- Three-compat postprocess adapters now execute real pixel kernels when the frame includes pixels.",
+    "- `packages/rendering/src/cinematic/RainParticleSystem.ts` emits renderer-owned wide rain streak, splash ripple, and mist bank geometry — but the public `effects.rain()` node does not reach it on the production bridge, so the root surface makes no rain pixel claim until that wiring lands.",
+    "- Public `effects.bloom()` creates a pixel-backed renderer pass on the production runtime with a measured on/off delta.",
+    "- Production-runtime named postprocess classes execute real pixel kernels instead of only storing options.",
     "",
     "## Remaining Scope Limits",
     "",
