@@ -840,7 +840,7 @@ export interface AuraGroupNode extends AuraTransformSpec {
   readonly runtime?: AuraRuntimeNodeSpec;
 }
 
-export type AuraLightType = "ambient" | "directional" | "point" | "studio" | "rect" | "softbox" | "spot" | "hemisphere";
+export type AuraLightType = "ambient" | "directional" | "point" | "studio" | "rect" | "softbox" | "spot" | "hemisphere" | "probe";
 
 export interface AuraLightNode extends AuraTransformSpec {
   readonly kind: "light";
@@ -857,6 +857,13 @@ export interface AuraLightNode extends AuraTransformSpec {
   readonly decay?: number;
   /** C-10 (PR 0a): source power in lumens (point/spot). */
   readonly power?: number;
+  /**
+   * threejs-parity AD-16 (LightProbe): 27 SH9 radiance coefficients,
+   * band-major packing (three's `Vector3[9]` flattened: `sh[band*3+ch]`).
+   * Evaluated along `position`/`target` into a
+   * hemisphere-irradiance contribution by the lighting collector.
+   */
+  readonly sh?: readonly number[];
   /** C-10 (PR 0a): shadow options; boolean stays accepted. */
   readonly shadow?: boolean | import("../../contracts/lighting").AuraLocalShadowOptions | import("../../contracts/lighting").AuraDirectionalShadowOptions;
 }

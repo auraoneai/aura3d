@@ -12,6 +12,8 @@ import { DirectionalLight, PointLight, RectAreaLight, SpotLight, type Light } fr
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
 // Deep import (lane-15 package export map untouched; FlagshipFoundation pattern).
 import type { AuraLightData } from "../../../../rendering/src/LightUniforms.js";
+// threejs-parity AD-16: LightProbe SH9 evaluation (same deep-import pattern).
+import { evaluateSH9Radiance } from "../../../../rendering/src/environment/SphericalHarmonics.js";
 
 export function createProductionRuntimeFallbackLights(flags?: { on(name: string): boolean }): readonly CollectedLight[] {
   // PRD-02: under A3D_QR_LIGHTING the authored-defaults fallback light rig is
@@ -491,6 +493,27 @@ export function collectPrd02Lights(snapshot: AuraSceneSnapshot): Prd02CollectedL
         ...(node.name !== undefined ? { name: node.name } : {}),
         skyColor: colorToLinearRgb(node.color ?? "#bcd7ff"),
         groundColor: colorToLinearRgb((node as { groundColor?: AuraColor }).groundColor ?? "#352f28"),
+        intensity: node.intensity ?? 1,
+        direction: direction as readonly [number, number, number]
+      });
+      return;
+    }
+    // threejs-parity AD-16: LightProbe — SH9 radiance evaluated ±direction
+    // becomes the hemisphere irradiance pair; no `sh` = colour pair direct.
+    if (node.light === "probe") {
+      const direction = normalize3((node.position ?? [0, 1, 0]) as AuraVec3);
+      let skyColor = colorToLinearRgb(node.color ?? "#ffffff");
+      let groundColor = colorToLinearRgb((node as { groundColor?: AuraColor }).groundColor ?? "#352f28");
+      const sh = node.sh;
+      if (sh && sh.length === 27) {
+        const coeffs = Float32Array.from(sh);
+        skyColor = evaluateSH9Radiance(coeffs, direction[0], direction[1], direction[2]);
+        groundColor = evaluateSH9Radiance(coeffs, -direction[0], -direction[1], -direction[2]);
+      }
+      hemisphere.push({
+        ...(node.name !== undefined ? { name: node.name } : {}),
+        skyColor,
+        groundColor,
         intensity: node.intensity ?? 1,
         direction: direction as readonly [number, number, number]
       });

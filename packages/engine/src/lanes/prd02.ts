@@ -116,6 +116,15 @@ registerNodeHandler({
       out.feature("lights.ambient");
       return;
     }
+    // threejs-parity AD-16: LightProbe rides the hemisphere channel (SH9
+    // evaluated ±direction inside collectPrd02Lights).
+    if (light.light === "probe") {
+      const collected = collectPrd02Lights({ nodes: [light] } as never);
+      const hemi = collected.hemisphere[0];
+      if (hemi) out.set("prd02.hemisphere", hemi);
+      out.feature("lights.hemisphere");
+      return;
+    }
     const descriptor = physicalLightDescriptor(light, name);
     if (!descriptor) return;
     // T0-09: single light path — `createProductionRuntimeCollectedLights`

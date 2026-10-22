@@ -1953,9 +1953,11 @@ promptRecipes[plan.sceneType];            // (asset, plan, lookId?) => AuraScene
 //   camera distance. `distanceLod` remains the single-primitive swap.
 // SC-04 XR controller buttons.
 // AD-16 rectArea/LightProbe — `lights.rectArea` (alias of lights.rect)
-//   ships and compiles to a real "rect-area" render light; three's
-//   RectAreaLight uniforms-lib fidelity and LightProbe (spherical-
-//   harmonics probe) are not yet.
+//   ships and compiles to a real "rect-area" render light;
+//   `lights.lightProbe({ sh: [27], intensity })` ships three's LightProbe:
+//   SH9 coefficients evaluated ±direction into the hemisphere-irradiance
+//   channel (approximate vs full SH9 uniforms-lib; codemod rows say so).
+//   RectAreaLight uniforms-lib fidelity remains open.
 ```
 
 Dev gates: the parity lanes sit behind `A3D_PARITY_SHADING`,

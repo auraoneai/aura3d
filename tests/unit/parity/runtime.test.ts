@@ -347,3 +347,26 @@ describe("parity L7 — mixed-child LOD (SG-11)", () => {
     expect(() => groups.lod({ levels: [{ maxDistance: 20, children: [primitives.box({})] }, { maxDistance: 5, children: [primitives.box({})] }] })).toThrowError(/strictly increasing/);
   });
 });
+
+describe("parity L7 — LightProbe (AD-16)", () => {
+  it("lights.lightProbe emits a probe light; SH9 coefficients evaluate into the hemisphere channel", async () => {
+    const { collectPrd02Lights } = await import("../../../packages/engine/src/agent-api/compiler/lights");
+    const probe = lights.lightProbe({ intensity: 2, skyColor: "#88aaff", groundColor: "#403020" }).toJSON();
+    expect(probe.light).toBe("probe");
+    const collected = collectPrd02Lights({ nodes: [probe] } as never);
+    expect(collected.descriptors.length).toBe(0); // non-punctual: no direct-light descriptor
+    expect(collected.hemisphere.length).toBe(1);
+    expect(collected.hemisphere[0]!.intensity).toBe(2);
+    // DC-only SH9, band-major packing (three's Vector3[9] flattened):
+    // indices 0/1/2 = band0 R/G/B.
+    const dcSh = new Array(27).fill(0);
+    dcSh[0] = 1; dcSh[1] = 0.5; dcSh[2] = 0.25;
+    const shProbe = lights.lightProbe({ sh: dcSh }).toJSON();
+    const collected2 = collectPrd02Lights({ nodes: [shProbe] } as never);
+    expect(collected2.hemisphere.length).toBe(1);
+    const h = collected2.hemisphere[0]!;
+    expect(h.skyColor[0]).toBeGreaterThan(0);
+    expect(h.groundColor[1]).toBeGreaterThan(0);
+    expect(h.skyColor[0]).not.toBe(h.skyColor[1]); // channel-separated evaluation
+  });
+});

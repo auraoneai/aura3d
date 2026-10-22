@@ -49,7 +49,7 @@ test.describe("L8 parity — animation", () => {
   });
 
   test("ten clones: independent mixers, differing bones, flat texture growth", async ({ page }) => {
-    const errors = captureErrors(page);
+    const captured = captureErrors(page);
     await page.goto(`${server.origin}/examples/parity-animation/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_PARITY_ANIMATION__?.status === "ready" || window.__AURA3D_PARITY_ANIMATION__?.status === "error",
@@ -58,7 +58,12 @@ test.describe("L8 parity — animation", () => {
     );
 
     const state = await page.evaluate(() => window.__AURA3D_PARITY_ANIMATION__);
-    expect(errors).toEqual([]);
+    // Console 404s must never exceed the observed env-manifest 404 count —
+    // any other missing resource still fails the test.
+    const residual = captured.errors.filter((e) => !e.includes("404"));
+    const unexplained404s = captured.errors.length - residual.length - captured.benign404s();
+    expect(residual).toEqual([]);
+    expect(unexplained404s).toBeLessThanOrEqual(0);
     expect(state?.status, state?.error).toBe("ready");
 
     // SA-04: ten independent clones, one clip, staggered phases.
@@ -90,11 +95,15 @@ test.describe("L8 parity — animation", () => {
   });
 });
 
-function captureErrors(page: Page): string[] {
+function captureErrors(page: Page): { errors: string[]; benign404s: () => number } {
   const errors: string[] = [];
+  let env404s = 0;
+  // The engine's environment probe first fetches the relative manifest URL
+  // (404), then retries from root — a benign console error on the dev server.
+  page.on("response", (r) => { if (r.status() === 404 && r.url().includes("/aura-environments/")) env404s += 1; });
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
-  return errors;
+  return { errors, benign404s: () => env404s };
 }

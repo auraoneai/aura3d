@@ -116,9 +116,9 @@ export const THREE_TO_A3D_MAPPINGS: readonly ThreeMapping[] = [
   { construct: "AmbientLight", target: "lights.ambient", engineImport: "lights", mapping: "approximate", note: "color/intensity map to lights.ambient options." },
   { construct: "HemisphereLight", target: "lights.ambient", engineImport: "lights", mapping: "approximate", note: "sky/ground two-tone shading approximates to ambient until the lights.hemisphere contract lands; keep the pair of tints in the TODO comment." },
   { construct: "RectAreaLight", target: "lights.rectArea", emit: "comment", engineImport: "lights", mapping: "approximate", note: "lights.rectArea is public (AD-16) — an alias over lights.rect (width/height, position/target, twoSided)." },
-  { construct: "LightProbe", target: "lights.lightProbe", emit: "comment", mapping: "pending", note: "reserved for lights.lightProbe — not yet public; the SH9 math ships as SphericalHarmonics3 on @aura3d/engine/math." },
-  { construct: "AmbientLightProbe", target: "lights.lightProbe", emit: "comment", mapping: "pending", note: "reserved for lights.lightProbe — not yet public; ambient SH approximates to lights.hemisphere today." },
-  { construct: "HemisphereLightProbe", target: "lights.lightProbe", emit: "comment", mapping: "pending", note: "reserved for lights.lightProbe — not yet public; sky/ground tint approximates to lights.hemisphere today." },
+  { construct: "LightProbe", target: "lights.lightProbe", engineImport: "lights", mapping: "approximate", note: "THREE.LightProbe (SH9 ambient) → lights.lightProbe({sh:[27],intensity}) — SH9 evaluated ±direction into the hemisphere-irradiance channel (AD-16)." },
+  { construct: "AmbientLightProbe", target: "lights.lightProbe", engineImport: "lights", mapping: "approximate", note: "AmbientLightProbe → lights.lightProbe — ambient SH irradiance; sky/ground colours also accepted (AD-16)." },
+  { construct: "HemisphereLightProbe", target: "lights.lightProbe", engineImport: "lights", mapping: "approximate", note: "HemisphereLightProbe → lights.lightProbe({skyColor,groundColor}) — the two-lobe hemisphere channel (AD-16)." },
   { construct: "CSM", target: "lights.directional", emit: "comment", engineImport: "lights", mapping: "approximate", note: "three/addons CSM collapses into lights.directional({ shadow: { cascades: 1-4|\"auto\", maxDistance, splitLambda } }) — CascadedShadowMaps is wired in ShadowOrchestration (AD-12)." },
 
   // ── Loaders and assets ───────────────────────────────────────────────

@@ -27,9 +27,9 @@ export const lodMarkerOf = (node: unknown): AuraLodMarker | undefined =>
 
 /** Tag `node` (and its group descendants) with `marker`; an existing inner marker wins (nested LOD). */
 export function tagLodLevel(node: AuraSceneNode, marker: AuraLodMarker): AuraSceneNode {
-  const tagged = { ...node, __lod: lodMarkerOf(node) ?? marker } as AuraSceneNode;
+  const tagged = Object.assign({}, node, { __lod: lodMarkerOf(node) ?? marker }) as unknown as AuraSceneNode;
   if (node.kind === "group") {
-    return { ...tagged, children: node.children.map((child) => tagLodLevel(child, marker)) } as AuraSceneNode;
+    return Object.assign({}, tagged, { children: node.children.map((child) => tagLodLevel(child, marker)) }) as unknown as AuraSceneNode;
   }
   return tagged;
 }

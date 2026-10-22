@@ -25,6 +25,22 @@ export const lights = {
       // CCR-02-2 additive field: the C-36 handler reads groundColor.
       ...(options.groundColor !== undefined ? { groundColor: options.groundColor } : {})
     } as AuraLightNode),
+  /**
+   * threejs-parity AD-16: three's `LightProbe` — ambient irradiance authored
+   * as 27 SH9 coefficients (e.g. from `LightProbeGenerator`) or as plain
+   * sky/ground colours. Compiles to the hemisphere-irradiance channel.
+   */
+  lightProbe: (options: { readonly name?: string; readonly sh?: readonly number[]; readonly skyColor?: AuraColor; readonly groundColor?: AuraColor; readonly intensity?: number; readonly position?: AuraVec3 } = {}) =>
+    new AuraNodeBuilder<AuraLightNode>({
+      kind: "light",
+      light: "probe",
+      name: options.name ?? "light probe",
+      position: options.position ?? [0, 1, 0],
+      intensity: options.intensity ?? 1,
+      color: options.skyColor ?? "#ffffff",
+      ...(options.groundColor !== undefined ? { groundColor: options.groundColor } : {}),
+      ...(options.sh !== undefined ? { sh: options.sh } : {})
+    } as AuraLightNode),
   directional: (options: { readonly name?: string; readonly position?: AuraVec3; readonly target?: AuraVec3; readonly intensity?: number; readonly color?: AuraColor; readonly shadow?: boolean | AuraDirectionalShadowOptions } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",

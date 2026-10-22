@@ -882,7 +882,7 @@ Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 - [x] SC-03 helpers (`parity-lines` green — helper glyphs pixel-proven)
 - [ ] SC-04 XR buttons + render target (post-D; `WebXRSessionController` exists, no public XR buttons)
 - [x] ST-04 / ST-06 loaders + progress (`FileLoader`/`ImageBitmapLoader`/`DataTextureLoader` shipped; progress events wired e2e)
-- [ ] AD-16 `lights.rectArea`, LightProbe (rectArea shipped/public; LightProbe still pending)
+- [x] AD-16 `lights.rectArea` + `lights.lightProbe` — LightProbe ships public: `sh` (27 SH9 coeffs, three's band-major packing) evaluates ±direction into the hemisphere-irradiance channel (`runtime.test.ts` AD-16 block; codemod rows LightProbe/AmbientLightProbe/HemisphereLightProbe → `lights.lightProbe` approximate)
 
 ### Probes and migration
 - [x] P-1..P-4 recorded for all 10 games (`evidence/crayon-probes/*.json`)

@@ -319,6 +319,11 @@ function createProductionRuntimeLightDescriptors(
     // environment-lighting intent and does not masquerade as a directional light.
     return [];
   }
+  if (node.light === "probe") {
+    // threejs-parity AD-16: LightProbe is non-punctual irradiance — it rides
+    // the hemisphere channel (collectPrd02Lights), not a direct descriptor.
+    return [];
+  }
   if (node.light === "directional") {
     return [{
       kind: "directional",

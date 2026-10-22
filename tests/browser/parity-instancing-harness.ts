@@ -114,7 +114,14 @@ async function run(): Promise<void> {
   });
 
   // Let several frames settle, then flip visibility once to prove updates.
+  // On software GL the async program compile can outlast a fixed rAF count —
+  // poll diagnostics until the first real draw lands (bounded).
+  await app.ready().catch(() => undefined);
   for (let i = 0; i < 12; i += 1) await waitForFrame();
+  const drawWaitStart = Date.now();
+  while ((app.diagnostics().drawCalls ?? 0) === 0 && Date.now() - drawWaitStart < 45_000) {
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
   bat.setVisibleAt(s1, false);
   for (let i = 0; i < 4; i += 1) await waitForFrame();
   bat.setVisibleAt(s1, true);
