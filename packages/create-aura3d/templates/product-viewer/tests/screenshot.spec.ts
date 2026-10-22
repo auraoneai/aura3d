@@ -44,6 +44,12 @@ test("Aura3D product viewer screenshot clears the look floor", async ({ page }) 
   const screenshot = Buffer.from(pngBase64, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
-  writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor, profile: floor.profile }, null, 2)}\n`);
+  // The clean-install harness gates this template on its own scene classes
+  // (sceneProfilePass) and requires the starters' profiles to be distinct.
+  const profile = Object.fromEntries(
+    (["metalPixels", "warmAccentPixels", "centerObjectPixels", "saturatedStudioPixels", "uniqueBuckets"] as const)
+      .map((key) => [key, floor.profile[key] ?? 0])
+  );
+  writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor, profile }, null, 2)}\n`);
   expect(screenshot.byteLength).toBeGreaterThan(1000);
 });

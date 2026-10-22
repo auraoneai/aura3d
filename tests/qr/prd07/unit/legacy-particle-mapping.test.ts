@@ -7,10 +7,19 @@ import { lowerEffectNode } from "../../../../packages/engine/src/production-runt
 const base = { kind: "effect", name: "fx", effect: "particles" } as const;
 
 describe("P1-T13 effect-node lowering", () => {
-  it("particles/rain/snow/flipbook-sprite lower to cpu emitters; fog/post/beam do not", () => {
+  it("particles/flipbook-sprite lower to cpu emitters, rain/snow to §8.2 volumes; fog/post/beam do not", () => {
     expect(lowerEffectNode({ ...base, effect: "particles" })?.type).toBe("emitter");
-    expect(lowerEffectNode({ ...base, effect: "rain" })?.type).toBe("emitter");
-    expect(lowerEffectNode({ ...base, effect: "snow" })?.type).toBe("emitter");
+    const rain = lowerEffectNode({ ...base, effect: "rain" });
+    expect(rain?.type).toBe("volume");
+    expect(rain?.consumer).toBe("particle-pass");
+    if (rain?.type === "volume") {
+      expect(rain.count).toBeGreaterThanOrEqual(200);
+      expect(rain.volume.fallVelocity[1]).toBeLessThan(0);
+      expect(rain.batch.stretch).toBe(true);
+    }
+    const snow = lowerEffectNode({ ...base, effect: "snow" });
+    expect(snow?.type).toBe("volume");
+    if (snow?.type === "volume") expect(snow.batch.stretch).toBe(false);
     expect(lowerEffectNode({ ...base, effect: "flipbook-sprite" })?.type).toBe("emitter");
     expect(lowerEffectNode({ ...base, effect: "fog" })?.consumer).toBe("scene-fog");
     expect(lowerEffectNode({ ...base, effect: "bloom" })?.consumer).toBe("post");

@@ -33,7 +33,7 @@ test("Aura3D cinematic scene reaches ready state", async ({ page }) => {
   expect(proof!.look.from).toBe("plan.environment");
   expect(proof!.camera.preset).toBe("cinematic-dolly");
   expect(proof!.rejected).toEqual([]);
-  expect(proof!.appliedEffects.sort()).toEqual(["bloom", "fog"]);
+  expect(proof!.appliedEffects.sort()).toEqual(["bloom", "fog", "rain", "wet-reflection"]);
   expect(proof!.visualSystems.length).toBeGreaterThanOrEqual(4);
   for (const system of proof!.visualSystems) {
     expect(system, `visualSystems entry "${system}" is outside the v2 census`).toMatch(CENSUS);

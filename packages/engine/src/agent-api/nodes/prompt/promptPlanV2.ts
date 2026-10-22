@@ -259,7 +259,11 @@ export function compilePromptPlanV2(
       }
       case "pixel-backed":
         if (pixelBackedEffectsAvailable(flags)) {
-          if (effect === "rain") builder.add(effects.rain({ name: "prompt rain" }));
+          // Rain tuning is cinematic-authored: §8.2 volume streaks must read
+          // against a black sky, so the plan's rain emits brighter, wider,
+          // faster streaks than the builder defaults (measured against the
+          // look-floor's pale-pixel classifier).
+          if (effect === "rain") builder.add(effects.rain({ name: "prompt rain", intensity: 1.0, density: 1.0, color: "#e2f2ff", speed: 1.3 }));
           if (effect === "particles") builder.add(effects.particles({ name: "prompt particles" }));
           // motion-trail is a C-20 runtime trail (app.effects.trail) — accepted,
           // the trail attaches to the subject at run time; no scene node.
@@ -272,7 +276,7 @@ export function compilePromptPlanV2(
       case "contract":
         if ((mapping.requires ?? []).every((contract) => promptContractAvailable(contract, flags))) {
           if (effect === "wet-reflection") {
-            builder.add(effects.screenSpaceReflections({ name: "prompt wet reflection" }));
+            builder.add(effects.screenSpaceReflections({ name: "prompt wet reflection", intensity: 2.0 }));
           }
           appliedEffects.push(effect);
         } else {

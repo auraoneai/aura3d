@@ -8,10 +8,10 @@ import { Texture } from "@aura3d/rendering";
 import type { ParticleBatchDescriptor, ParticleBatchHandle, ParticleRenderHook } from "@aura3d/rendering/contracts";
 import { QUALITY_TIERS, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import type { ParticlePassDiagnostics } from "@aura3d/rendering";
-import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
+import { MeshParticleBatch, RibbonBatch, RibbonTrail, DecalBatch, DECAL_TIER_CAP, decalQuadGeometry, ribbonStripToDecalGeometry, PARTICLE_GPU_BUDGET_MS, ProceduralVolumeEmitter, type BeamDrawSpec, type MeshParticleFeed, type DecalVertexData, type GpuSimSpec } from "@aura3d/rendering";
 import { createEmitter, stepEmitter, writeEmitterInstances, type EmitterDescriptor, type EmitterState } from "./CpuEmitter";
 import { proceduralFireballSheet } from "./FlipbookAtlas";
-import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type EffectNodeLike } from "./EffectNodeLowering";
+import { lowerEffectNode, srgbChannelToLinear, type LoweredEffect, type LoweredVolumeEffect, type EffectNodeLike } from "./EffectNodeLowering";
 import { EffectDiagnostics } from "./EffectDiagnostics";
 import { LiveAtmosphere } from "./LiveAtmosphere";
 import { TransientLightPool, type TransientLightFlash } from "./TransientLightPool";
@@ -44,6 +44,13 @@ function flipbookTexture(fb: NonNullable<EmitterDescriptor["flipbook"]>): Textur
 interface EmitterBinding {
   readonly lowered: Extract<LoweredEffect, { type: "emitter" }>;
   readonly state: EmitterState;
+  scratch: Float32Array;
+}
+
+/** §8.2 weather volume binding — stateless positions, packed fresh in feed. */
+interface VolumeBinding {
+  readonly lowered: LoweredVolumeEffect;
+  readonly emitter: ProceduralVolumeEmitter;
   scratch: Float32Array;
 }
 
@@ -255,6 +262,9 @@ export class ProductionEffectSystem {
   private readonly budgetCap: number;
   private culledTotal = 0;
   private readonly emitters = new Map<string, EmitterBinding>();
+  private readonly volumes = new Map<string, VolumeBinding>();
+  /** C-27 budget share applied to stateless weather volumes in feed (1 = full). */
+  private volumeScale = 1;
   private readonly batchHandles = new Map<string, ParticleBatchHandle>();
   private readonly groupScratch = new Map<string, Float32Array>();
   private readonly frameBatchMembers = new Map<string, string[]>();
@@ -438,12 +448,14 @@ export class ProductionEffectSystem {
         nodeId: lowered.nodeId,
         effect: lowered.effect,
         consumer: lowered.consumer,
-        live: 0,
+        live: lowered.type === "volume" ? lowered.count : 0,
         sim: lowered.sim,
-        softDepth: lowered.type === "emitter" ? lowered.batch.softDepth : false
+        softDepth: lowered.type === "emitter" || lowered.type === "volume" ? lowered.batch.softDepth : false
       });
       if (lowered.type === "emitter") {
         this.attachEmitter(lowered);
+      } else if (lowered.type === "volume") {
+        this.attachVolume(lowered);
       } else {
         this.attachNonEmitter(node, lowered);
       }
@@ -613,6 +625,17 @@ export class ProductionEffectSystem {
     return binding;
   }
 
+  /** §8.2 weather volume: ProceduralVolumeEmitter around the spec + a scratch. */
+  private attachVolume(lowered: LoweredVolumeEffect): VolumeBinding {
+    const binding: VolumeBinding = {
+      lowered,
+      emitter: new ProceduralVolumeEmitter(lowered.volume, lowered.count),
+      scratch: new Float32Array(Math.max(64, lowered.count) * 16)
+    };
+    this.volumes.set(lowered.nodeId, binding);
+    return binding;
+  }
+
   /** Add a transient effect-instance emitter (effects.burst/spawn). */
   addInstance(nodeId: string, node: EffectNodeLike): string {
     const lowered = lowerEffectNode(node);
@@ -620,12 +643,14 @@ export class ProductionEffectSystem {
       nodeId,
       effect: lowered.effect,
       consumer: lowered.consumer,
-      live: 0,
+      live: lowered.type === "volume" ? lowered.count : 0,
       sim: lowered.sim,
-      softDepth: lowered.type === "emitter" ? lowered.batch.softDepth : false
+      softDepth: lowered.type === "emitter" || lowered.type === "volume" ? lowered.batch.softDepth : false
     });
     if (lowered.type === "emitter") {
       this.attachEmitter({ ...lowered, nodeId });
+    } else if (lowered.type === "volume") {
+      this.attachVolume({ ...lowered, nodeId });
     } else {
       this.attachNonEmitter(node, lowered);
     }
@@ -645,6 +670,7 @@ export class ProductionEffectSystem {
   removeInstance(nodeId: string): void {
     const binding = this.emitters.get(nodeId);
     if (!binding) {
+      this.volumes.delete(nodeId);
       this.beams.delete(nodeId);
       this.decalNodes.delete(nodeId);
       const trail = this.trails.get(nodeId);
@@ -699,22 +725,39 @@ export class ProductionEffectSystem {
         softDepth: binding.lowered.batch.softDepth
       });
     }
+    // §8.2 weather volumes are stateless (positions are pure functions of
+    // time + camera) — nothing to step; keep the per-frame accounting live.
+    for (const binding of this.volumes.values()) {
+      this.diagnostics.track({
+        nodeId: binding.lowered.nodeId,
+        effect: binding.lowered.effect,
+        consumer: binding.lowered.consumer,
+        live: binding.lowered.count,
+        sim: binding.lowered.sim,
+        softDepth: binding.lowered.batch.softDepth
+      });
+    }
     // C-27 budget cap: when total live exceeds the tier's particleBudget,
     // shrink every emitter proportionally and report the refused count as
-    // `budget.culled` (PRD-07 §7.4 "pooled per spec").
+    // `budget.culled` (PRD-07 §7.4 "pooled per spec"). Stateless weather
+    // volumes can't drop live particles — the feed truncates their
+    // submitted count by the same scale instead.
     const live = this.liveCount();
+    this.volumeScale = 1;
     if (live > this.budgetCap) {
       const scale = this.budgetCap / live;
+      this.volumeScale = scale;
       let kept = 0;
       for (const binding of this.emitters.values()) {
         binding.state.live = Math.floor(binding.state.live * scale);
         kept += binding.state.live;
       }
+      for (const binding of this.volumes.values()) kept += Math.floor(binding.lowered.count * scale);
       this.culledTotal += live - kept;
     }
     for (const batch of this.meshBatches.values()) batch.step(dt);
     this.transientLights.step(dt);
-    this.diagnostics.setFrameStats(this.emitters.size, this.liveCount());
+    this.diagnostics.setFrameStats(this.emitters.size + this.volumes.size, this.liveCount());
     this.diagnostics.setBudget({ tier: this.tier, cap: this.budgetCap, culled: this.culledTotal });
   }
 
@@ -802,6 +845,36 @@ export class ProductionEffectSystem {
       hook.writeInstances(handle, data, totalLive);
       this.frameBatchMembers.set(key, group.parts.filter((p) => p.live > 0).map((p) => p.binding.lowered.nodeId));
     }
+    // §8.2 weather volumes — one batch per node (specs are per-node); the
+    // camera pose arrives via the prd07.fog contributor's noteCamera hookup.
+    const volumeCam = this.atmosphere.cameraPose().position;
+    for (const binding of this.volumes.values()) {
+      const b = binding.lowered.batch;
+      const key = `eff.vol.${binding.lowered.nodeId}`;
+      seenKeys.add(key);
+      const live = Math.max(0, Math.floor(binding.lowered.count * this.volumeScale));
+      const desc: ParticleBatchDescriptor = {
+        key,
+        capacity: binding.lowered.count,
+        source: "cpu",
+        atlas: softDotTexture(),
+        blend: b.blend,
+        shading: b.shading,
+        softDepth: b.softDepth,
+        ...(b.softDistance !== undefined ? { softDistance: b.softDistance } : {}),
+        ...(b.nearFade !== undefined ? { nearFade: b.nearFade } : {}),
+        stretch: b.stretch,
+        frameBlend: b.frameBlend,
+        ...(b.lowRes === true ? { lowRes: true } : {})
+      };
+      this.lastHook = hook;
+      const handle = hook.upsertBatch(desc);
+      this.batchHandles.set(key, handle);
+      const { data } = binding.emitter.instanceData(this.time, volumeCam, binding.scratch);
+      hook.writeInstances(handle, data, live);
+      this.frameLive.set(binding.lowered.nodeId, live);
+      this.frameBatchMembers.set(key, live > 0 ? [binding.lowered.nodeId] : []);
+    }
     // Retire batches whose key no emitter fed this frame.
     for (const [key, handle] of this.batchHandles) {
       if (!seenKeys.has(key)) {
@@ -862,11 +935,12 @@ export class ProductionEffectSystem {
   liveCount(): number {
     let total = 0;
     for (const binding of this.emitters.values()) total += binding.state.live;
+    for (const binding of this.volumes.values()) total += Math.floor(binding.lowered.count * this.volumeScale);
     return total;
   }
 
   emitterIds(): readonly string[] {
-    return [...this.emitters.keys()];
+    return [...this.emitters.keys(), ...this.volumes.keys()];
   }
 
   dispose(): void {
@@ -874,5 +948,6 @@ export class ProductionEffectSystem {
     this.disposed = true;
     this.offFrame();
     this.emitters.clear();
+    this.volumes.clear();
   }
 }

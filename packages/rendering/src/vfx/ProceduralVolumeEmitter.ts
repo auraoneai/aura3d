@@ -140,6 +140,11 @@ export function proceduralVolumeEdgeFade(
 export class ProceduralVolumeEmitter {
   constructor(private readonly spec: VolumeEmitterSpec, private readonly count: number) {}
 
+  /** Particle count the emitter fills each frame (diagnostics/budget). */
+  get particleCount(): number {
+    return this.count;
+  }
+
   /** Deterministic positions for all `count` ids at camera `cam`, time `t`. */
   positions(t: number, cam: Vec3Tuple): Float32Array {
     const out = new Float32Array(this.count * 3);
@@ -153,12 +158,13 @@ export class ProceduralVolumeEmitter {
   }
 
   /**
-   * Fill a ParticleInstanceRing with this frame's wrapped positions (alpha
-   * scaled by the edge fade). Positions feed the same instanced draw as
-   * emitter-driven particles — §6.2.1 layout, 16 floats per particle.
+   * §6.2.1-packed instance data for this frame's wrapped positions (alpha
+   * scaled by the edge fade). `out` may be a reusable scratch of at least
+   * `count * 16` floats; otherwise one is allocated.
    */
-  fillInstanceRing(ring: ParticleInstanceRing, t: number, cam: Vec3Tuple): void {
-    const data = new Float32Array(this.count * PARTICLE_INSTANCE_FLOATS);
+  instanceData(t: number, cam: Vec3Tuple, out?: Float32Array): { readonly data: Float32Array; readonly live: number } {
+    const required = this.count * PARTICLE_INSTANCE_FLOATS;
+    const data = out && out.length >= required ? out : new Float32Array(required);
     for (let id = 0; id < this.count; id += 1) {
       const p = proceduralVolumePos(id, t, this.spec, cam);
       const fade = proceduralVolumeEdgeFade(p, this.spec, cam);
@@ -178,6 +184,16 @@ export class ProceduralVolumeEmitter {
       data[i + 14] = fade; // near-fade seed
       data[i + 15] = 0;
     }
-    ring.write(data, this.count);
+    return { data, live: this.count };
+  }
+
+  /**
+   * Fill a ParticleInstanceRing with this frame's wrapped positions (alpha
+   * scaled by the edge fade). Positions feed the same instanced draw as
+   * emitter-driven particles — §6.2.1 layout, 16 floats per particle.
+   */
+  fillInstanceRing(ring: ParticleInstanceRing, t: number, cam: Vec3Tuple): void {
+    const { data, live } = this.instanceData(t, cam);
+    ring.write(data, live);
   }
 }

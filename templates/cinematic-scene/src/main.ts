@@ -13,9 +13,9 @@ const plan = definePromptPlan({
   environment: "rainy neon alley at night",
   camera: { preset: "cinematic-dolly" },
   lighting: { preset: "neon-practicals" },
-  // Flag-off census applies fog (look-fog) and bloom (look post pipeline);
-  // pixel-backed emitters and C-21/C-13 contracts are intentionally absent.
-  effects: ["fog", "bloom"],
+  // Full cinematic census: rain is a §8.2 camera-following particle volume,
+  // wet-reflection rides the C-21/C-13 SSR post pass — both pixel-backed.
+  effects: ["rain", "fog", "bloom", "wet-reflection"],
   interaction: "orbit",
   acceptanceCriteria: [
     "hero asset is framed in a neon alley",

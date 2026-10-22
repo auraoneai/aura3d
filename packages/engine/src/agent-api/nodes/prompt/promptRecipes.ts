@@ -58,7 +58,7 @@ const cinematicSceneLookRecipe = (asset: AuraAssetRef<"model">, plan: AuraPrompt
     .background(looks.describe(look).v0.background)
     .add(lookNode(look))
     .add(primitives.plane({ name: "rainy alley back wall", material: material.fabric({ color: "#101722", roughness: 0.9 }) }).position(0, 1.06, -2.55).rotate(1.5708, 0, 0).scale([6.25, 1, 3.1]))
-    .add(primitives.plane({ name: "textured asphalt ground", material: material.blackRubber({ color: "#0c1119", roughness: 0.62 }) }).position(0, -0.07, -0.55).scale([7.0, 1, 5.9]))
+    .add(primitives.plane({ name: "textured asphalt ground", material: material.blackRubber({ color: "#0c1119", roughness: 0.32 }) }).position(0, -0.07, -0.55).scale([7.0, 1, 5.9]))
     .add(primitives.box({ name: "left alley slab", material: material.matteClay({ color: "#121a26" }) }).position(-2.9, 0.9, -0.95).rotate(0, 0.18, 0).scale([0.42, 2.25, 3.25]))
     .add(primitives.box({ name: "right alley slab", material: material.matteClay({ color: "#101723" }) }).position(2.95, 0.92, -1.05).rotate(0, -0.16, 0).scale([0.42, 2.35, 3.15]))
     .add(primitives.box({ name: "foreground left occluder frame", material: material.matteClay({ color: "#070b12" }) }).position(-3.35, 0.72, 1.0).rotate(0, -0.18, 0).scale([0.5, 1.72, 1.65]))
@@ -68,6 +68,12 @@ const cinematicSceneLookRecipe = (asset: AuraAssetRef<"model">, plan: AuraPrompt
     .add(primitives.box({ name: "short cyan practical fixture", material: material.glowingEmissive({ color: "#63eaff", emissiveIntensity: 2.2 }) }).position(-1.82, 0.74, -1.85).rotate(0.05, 0, 0.12).scale([0.045, 0.76, 0.12]))
     .add(primitives.sphere({ name: "warm street practical lamp", material: material.glowingEmissive({ color: "#ffbd68", emissiveIntensity: 2.4 }) }).position(1.86, 0.78, -1.28).scale(0.34))
     .add(model(asset, { name: plan.subject.label ?? "cinematic subject" }).position(-0.08, 0.02, -0.86).rotate(-0.08, -0.74, 0.02).scale(1.48))
+    // Neon practicals: real point lights whose specular pools on the wet
+    // asphalt are the scene's wet-reflection cue — the authored alley's rim,
+    // key and floor bounce restored for the look recipe.
+    .add(lights.point({ name: "hard cyan rim", position: [-2.35, 2.65, 0.85], color: "#38d6ff", intensity: 4.0 }))
+    .add(lights.point({ name: "warm practical key", position: [2.35, 1.7, -0.25], color: "#ffd08a", intensity: 1.6 }))
+    .add(lights.point({ name: "low floor bounce", position: [0.1, 0.45, 1.1], color: "#7edfff", intensity: 1.5 }))
     .add(interactionNode(plan.interaction ?? "orbit"))
     .camera(camera.dolly({ from: [0.46, 1.05, 4.28], to: [0.08, 0.86, 3.14], target: [-0.08, 0.56, -0.86], seconds: 8, fov: 39 }))
     .timeline(timeline.loop({ seconds: 8 }));

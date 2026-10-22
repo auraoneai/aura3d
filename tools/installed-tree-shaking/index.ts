@@ -28,11 +28,32 @@ const temporaryDirectory = mkdtempSync(join(tmpdir(), "aura3d-installed-tree-sha
 const checks: Check[] = [];
 const measurements: Record<string, unknown> = {};
 
+/*
+ * Post-T8.1 reality: `@aura3d/lean` is gone — every former lean specifier
+ * resolves to `@aura3d/engine` (product surface on ".", game surface on
+ * "/game"). Tree-shaking now has to be proven inside the single flat package:
+ * the public "." barrel pulls the whole §6.6 surface into the module graph,
+ * so the gate measures RETAINED bytes (metafile output.inputs bytesInOutput)
+ * per dist subtree rather than import-graph presence alone.
+ *
+ * `external` models the clean consumer install: optional native peers
+ * (@dimforge rapier wasm) are absent from the scaffolded demos' node_modules —
+ * without the marker esbuild would resolve them through the repository root's
+ * dev dependencies and report bytes a real consumer bundle never sees.
+ * `node:*` covers server-only paths inside asset tooling (mirrors how Vite
+ * externalises builtins for browser builds).
+ */
+const OPTIONAL_NATIVE_EXTERNALS = [
+  "node:*",
+  "@dimforge/rapier3d-compat",
+  "@dimforge/*"
+];
+
 try {
   for (const profile of ["product-viewer", "mini-game"] as const) {
     const projectRoot = resolve(templateRoot, profile, "demo");
     if(exactPlan)installedIdentity.push(inspectInstalledRelease(root,projectRoot,exactPlan));
-    const packageRoot = resolve(projectRoot, "node_modules/@aura3d/lean");
+    const packageRoot = resolve(projectRoot, "node_modules/@aura3d/engine");
     const manifest = JSON.parse(readFileSync(resolve(packageRoot, "package.json"), "utf8")) as {
       readonly name: string;
       readonly version: string;
@@ -47,6 +68,7 @@ try {
       format: "esm",
       minify: true,
       platform: "browser",
+      external: OPTIONAL_NATIVE_EXTERNALS,
       outfile: outputFile,
       metafile: true,
       treeShaking: true,
@@ -55,62 +77,80 @@ try {
     });
     if (!result.metafile) throw new Error(`Missing esbuild metafile for ${profile}.`);
 
-    const retained = retainedLeanInputs(result.metafile);
-    const inputNames = Object.keys(result.metafile.inputs).filter((path) => path.includes("node_modules/@aura3d/lean/dist/"));
+    const outputEntry = Object.values(result.metafile.outputs).find((output) => output.entryPoint);
+    if (!outputEntry) throw new Error(`Missing esbuild output entry for ${profile}.`);
+    const retained = retainedEngineInputs(result.metafile);
+    const inputNames = Object.keys(result.metafile.inputs).filter((path) => path.includes("node_modules/@aura3d/engine/dist/"));
     const packageBytes = Object.fromEntries(inputNames.map((path) => [
-      basename(path),
+      path,
       statSync(resolve(root, path)).size
     ]));
     const outputBytes = statSync(outputFile).size;
-    const outputSource = readFileSync(outputFile, "utf8");
+
+    const retainedFor = (suffix: string): number => {
+      const inputPath = inputNames.find((path) => path.endsWith(suffix));
+      return inputPath ? outputEntry.inputs[inputPath]?.bytesInOutput ?? 0 : 0;
+    };
+    const packagedFor = (suffix: string): number => {
+      const inputPath = inputNames.find((path) => path.endsWith(suffix));
+      return inputPath ? statSync(resolve(root, inputPath)).size : 0;
+    };
+    const retainedBySubtree = subtreeBytes(result.metafile, outputEntry);
+    const zeroRetainedSubtrees = Object.keys(retainedBySubtree).filter((dir) => retainedBySubtree[dir] === 0);
+    const nativeRetainedBytes = Object.entries(outputEntry.inputs)
+      .filter(([path, contribution]) => /@dimforge\/|recast-navigation|three-compat|three\//.test(path) && contribution.bytesInOutput > 0)
+      .reduce((sum, [, contribution]) => sum + contribution.bytesInOutput, 0);
 
     checks.push({
       id: `${profile}-exact-packed-version`,
-      pass: manifest.name === "@aura3d/lean" && manifest.version === expectedPackedVersion,
+      pass: manifest.name === "@aura3d/engine" && manifest.version === expectedPackedVersion,
       detail: `${manifest.name}@${manifest.version} from the fresh clean-install project (need ${expectedPackedVersion})`
     });
     checks.push({
       id: `${profile}-documented-subpath`,
-      pass: entrySource.includes(profile === "product-viewer" ? 'from "@aura3d/lean/product"' : 'from "@aura3d/lean/game"'),
-      detail: profile === "product-viewer" ? "uses @aura3d/lean/product" : "uses @aura3d/lean/game"
+      pass: entrySource.includes(profile === "product-viewer" ? 'from "@aura3d/engine"' : 'from "@aura3d/engine/game"'),
+      detail: profile === "product-viewer" ? "uses @aura3d/engine" : "uses @aura3d/engine/game"
     });
 
     if (profile === "product-viewer") {
       checks.push({
         id: "product-excludes-game-runtime",
-        pass: !inputNames.some((path) => /\/(?:game|ArcadeRuntime)\.js$/u.test(path)),
-        detail: `retained lean inputs: ${Object.keys(retained).join(", ")}`
+        pass: !inputNames.some((path) => /\/dist\/game\//u.test(path)),
+        detail: `retained engine inputs: ${Object.keys(retained).join(", ")}`
       });
       checks.push({
-        id: "product-removes-unused-lean-code",
+        id: "product-removes-unused-engine-code",
         pass:
-          (retained["base.js"] ?? Number.POSITIVE_INFINITY) < (packageBytes["base.js"] ?? 0) &&
-          (retained["product.js"] ?? Number.POSITIVE_INFINITY) < (packageBytes["product.js"] ?? 0),
-        detail: `base ${retained["base.js"] ?? 0}/${packageBytes["base.js"] ?? 0} bytes; product ${retained["product.js"] ?? 0}/${packageBytes["product.js"] ?? 0} bytes retained`
+          retainedFor("/engine/public/index.js") < packagedFor("/engine/public/index.js") &&
+          retainedFor("/engine/agent-api/index.js") < packagedFor("/engine/agent-api/index.js"),
+        detail: `public/index ${retainedFor("/engine/public/index.js")}/${packagedFor("/engine/public/index.js")} bytes; agent-api/index ${retainedFor("/engine/agent-api/index.js")}/${packagedFor("/engine/agent-api/index.js")} bytes retained`
       });
     } else {
       checks.push({
         id: "game-retains-deterministic-arcade-runtime",
-        pass: inputNames.some((path) => path.endsWith("/ArcadeRuntime.js")) && inputNames.some((path) => path.endsWith("/game.js")),
-        detail: `retained lean inputs: ${Object.keys(retained).join(", ")}`
+        pass: inputNames.some((path) => path.endsWith("/dist/game/createGame.js")) && (retainedBySubtree["game"] ?? 0) > 0,
+        detail: `retained engine inputs: ${Object.keys(retained).join(", ")}`
       });
     }
 
     checks.push({
       id: `${profile}-excludes-optional-subsystems`,
       pass:
-        !Object.keys(result.metafile.inputs).some((path) => /@aura3d\/(?:engine|physics|physics-rapier|navigation-recast|editor|editor-runtime|three-compat)/u.test(path)) &&
-        !/@dimforge\/rapier|recast-navigation|three-compat/u.test(outputSource),
-      detail: "engine compatibility, physics, Rapier, navigation, editor, and Three compatibility are absent from the emitted graph"
+        nativeRetainedBytes === 0 &&
+        ["editor", "editor-runtime", "three-compat", "scripting", "apps", "debug", "aura3d-cli", "create-aura3d"].every(
+          (dir) => (retainedBySubtree[dir] ?? 0) === 0
+        ),
+      detail: `zero-retained subtrees: ${zeroRetainedSubtrees.join(", ") || "none"}; native-dep retained bytes: ${nativeRetainedBytes}`
     });
 
     measurements[profile] = {
       entry: entryPath.slice(root.length + 1),
       installedPackage: `${manifest.name}@${manifest.version}`,
       outputBytes,
-      retainedLeanBytes: retained,
-      leanInputBytes: packageBytes,
-      leanInputs: inputNames
+      retainedEngineBytes: retained,
+      engineInputBytes: packageBytes,
+      engineInputs: inputNames,
+      retainedBySubtree
     };
   }
 } finally {
@@ -138,14 +178,29 @@ if (!report.pass) {
   process.exitCode = 1;
 }
 
-function retainedLeanInputs(metafile: Metafile): Record<string, number> {
+function retainedEngineInputs(metafile: Metafile): Record<string, number> {
   const retained: Record<string, number> = {};
   for (const output of Object.values(metafile.outputs)) {
     for (const [path, contribution] of Object.entries(output.inputs)) {
-      if (!path.includes("node_modules/@aura3d/lean/dist/")) continue;
+      if (!path.includes("node_modules/@aura3d/engine/dist/")) continue;
       const name = basename(path);
       retained[name] = (retained[name] ?? 0) + contribution.bytesInOutput;
     }
   }
   return retained;
+}
+
+function subtreeBytes(metafile: Metafile, outputEntry: Metafile["outputs"][string]): Record<string, number> {
+  const subtree: Record<string, number> = {};
+  for (const path of Object.keys(metafile.inputs)) {
+    const match = /node_modules\/@aura3d\/engine\/dist\/([^/]+)\//u.exec(path);
+    if (!match) continue;
+    subtree[match[1]!] = subtree[match[1]!] ?? 0;
+  }
+  for (const [path, contribution] of Object.entries(outputEntry.inputs)) {
+    const match = /node_modules\/@aura3d\/engine\/dist\/([^/]+)\//u.exec(path);
+    if (!match) continue;
+    subtree[match[1]!] = (subtree[match[1]!] ?? 0) + contribution.bytesInOutput;
+  }
+  return subtree;
 }

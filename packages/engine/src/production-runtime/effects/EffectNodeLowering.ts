@@ -1,10 +1,14 @@
 // PRD-07 P1-T13 — Aura effect-node lowering (PRD-07 §6.3.1 + §11 mapping).
-// Particles / rain / snow / flipbook-sprite lower to CpuEmitter descriptors;
-// beam (light-beam) lowers to a beam record; every other kind maps to `null`
-// (post/other consumer — reported in diagnostics as non-particle kinds).
+// Particles / flipbook-sprite lower to CpuEmitter descriptors; rain / snow
+// lower to a §8.2 camera-following ProceduralVolumeEmitter spec (a point
+// emitter cannot fill a weather volume — it collapsed to a 5 cm needle at
+// the node origin and drew nothing); beam (light-beam) lowers to a beam
+// record; every other kind maps to `null` (post/other consumer — reported
+// in diagnostics as non-particle kinds).
 
 import type { EmitterDescriptor } from "./CpuEmitter";
 import type { AuraVec3 } from "./CpuEmitter";
+import { VOLUME_PRESETS, type VolumeEmitterSpec } from "@aura3d/rendering";
 
 export interface EffectNodeLike {
   readonly kind: string;
@@ -29,6 +33,8 @@ export interface EffectNodeLike {
   /** flipbook-sprite: wrap frames (default true) or play once over life. */
   readonly loop?: boolean;
   readonly intensity?: number;
+  /** weather density (0..1) — scales the rain/snow volume particle count. */
+  readonly density?: number;
   readonly mist?: boolean;
   readonly splashes?: boolean;
   readonly seed?: number;
@@ -112,6 +118,22 @@ export interface LoweredBeamEffect {
   readonly sim: "procedural";
 }
 
+/**
+ * §8.2 procedural weather volume (rain/snow): camera-following wrapped box
+ * whose positions are a pure function of (id, t, camera) — no stepped sim.
+ * `count` is the fixed live count submitted to the instanced particle pass.
+ */
+export interface LoweredVolumeEffect {
+  readonly type: "volume";
+  readonly nodeId: string;
+  readonly effect: string;
+  readonly batch: LoweredBatchSpec;
+  readonly volume: VolumeEmitterSpec;
+  readonly count: number;
+  readonly consumer: "particle-pass";
+  readonly sim: "procedural";
+}
+
 export interface LoweredOtherEffect {
   readonly type: "other";
   readonly nodeId: string;
@@ -120,7 +142,7 @@ export interface LoweredOtherEffect {
   readonly sim: "none";
 }
 
-export type LoweredEffect = LoweredParticleEffect | LoweredBeamEffect | LoweredOtherEffect;
+export type LoweredEffect = LoweredParticleEffect | LoweredBeamEffect | LoweredVolumeEffect | LoweredOtherEffect;
 
 export interface LoweredBatchSpec {
   readonly blend: "alpha" | "premultiplied" | "additive" | "multiply";
@@ -292,15 +314,44 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
     }
     case "rain":
     case "snow": {
+      // §8.2 procedural weather volume: a camera-following wrapped box
+      // (ProceduralVolumeEmitter). The old CpuEmitter lowering spawned a
+      // ~5 cm disc at the node origin firing straight down — a needle of
+      // particles below the floor that no camera ever saw (zero-pixel
+      // frames). `intensity` scales alpha + count, `density` scales count,
+      // `wind` shears the fall, `speed` scales the fall velocity, and
+      // `size`/`color`/`particleCount`/`seed` override the §14 preset.
       const isRain = effect === "rain";
-      const count = Math.max(1, Math.min(20000, Math.round(node.particleCount ?? (isRain ? 3000 : 1500))));
+      const intensity = Math.min(1, Math.max(0, node.intensity ?? 0.4));
+      const density = Math.min(1, Math.max(0, node.density ?? 1));
       const wind = node.wind ?? [0, 0, 0];
+      const speed = typeof node.speed === "number" && node.speed > 0 ? node.speed : 1;
+      const base = isRain ? VOLUME_PRESETS.rain : VOLUME_PRESETS.snow;
+      const size = asRange(node.size);
+      const count = Math.max(200, Math.min(20000, Math.round(
+        node.particleCount ?? node.maxParticles ?? (isRain ? 4000 : 2400) * (0.3 + intensity * 0.7) * (0.25 + density * 0.75)
+      )));
+      const volume: VolumeEmitterSpec = {
+        ...base,
+        extent: node.radius !== undefined && node.radius > 0
+          ? [node.radius * 2, base.extent[1], node.radius * 2]
+          : base.extent,
+        fallVelocity: [
+          base.fallVelocity[0] * speed + wind[0] * (isRain ? 1.6 : 0.5),
+          base.fallVelocity[1] * speed * (0.6 + intensity * 0.8) + wind[1] * (isRain ? 0.4 : 0.1),
+          base.fallVelocity[2] * speed + wind[2] * (isRain ? 1.6 : 0.5)
+        ],
+        alpha: base.alpha * (0.5 + intensity * 0.5),
+        ...(size !== undefined ? { size: (size[0] + size[1]) / 2 } : {}),
+        color: nodeColor(node),
+        seed: seedOverride ?? (node.seed ?? hashSeed(nodeId))
+      };
       return {
-        type: "emitter",
+        type: "volume",
         nodeId,
         effect,
         consumer: "particle-pass",
-        sim: simFor(node, count),
+        sim: "procedural",
         batch: {
           blend: "alpha",
           shading: "unlit",
@@ -310,25 +361,8 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           atlasKey: isRain ? "streak" : "soft-dot",
           ...(node.lowRes === true ? { lowRes: true } : {})
         },
-        emitter: {
-          key: `eff.alpha.${isRain ? "streak" : "soft-dot"}.1.${isRain}.${node.lowRes === true ? 1 : 0}`,
-          nodeId,
-          origin: position,
-          capacity: count,
-          emissionRate: node.emissionRate ?? count / 3,
-          life: isRain ? [0.6, 1.0] : [4, 8],
-          speed: isRain ? [18, 24] : [0.8, 1.6],
-          spread: 0.06,
-          direction: [wind[0] * 0.15 - 0.02, -1, wind[2] * 0.15],
-          gravity: isRain ? -9.8 : -0.5,
-          size: isRain ? [0.02, 0.035] : [0.06, 0.14],
-          color: nodeColor(node),
-          alpha: isRain ? 0.5 : 0.9,
-          spin: isRain ? 0 : 0.8,
-          stretch: isRain ? 0.028 : 0,
-          drag: isRain ? 0 : 0.6,
-          seed: seedOverride ?? (node.seed ?? hashSeed(nodeId))
-        }
+        volume,
+        count
       };
     }
     case "flipbook-sprite": {
