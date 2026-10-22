@@ -1,16 +1,93 @@
 {
   "schema": "a3d-crayon-probe-games/1",
-  "$comment": "The ten Crayon Arcade candidates from docs/workflows/crayon-game-reverse-engineering.md. Fill `url` with the game's play-page URL (https://app.usecrayon.ai/play/<project-id>) before probing — entries without a url are skipped. Module-shape/three-source columns are the doc's measurements; the probe records P-1..P-4 per game into evidence/crayon-probes/<id>.json.",
+  "$comment": "The ten Crayon Arcade candidates from docs/workflows/crayon-game-reverse-engineering.md. Fill `url` with the game's play-page URL (https://app.usecrayon.ai/play/<project-id>) before probing \u2014 entries without a url are skipped. Module-shape/three-source columns are the doc's measurements; the probe records P-1..P-4 per game into evidence/crayon-probes/<id>.json.",
   "games": [
-    { "id": "strange-orbit", "title": "Strange Orbit", "url": "", "moduleBytes": 19300, "moduleShape": "external blob, 1 line", "threeSource": "importmap (inferred)", "priority": 1 },
-    { "id": "splat-rush", "title": "Splat Rush", "url": "", "moduleBytes": 43212, "moduleShape": "external blob, 1 line", "threeSource": "importmap (inferred)", "priority": 2 },
-    { "id": "saiyan-snake-way", "title": "Saiyan through the Snake way!", "url": "", "moduleBytes": 513393, "moduleShape": "external blob, 211 lines", "threeSource": "inlined (inferred)", "priority": 3 },
-    { "id": "drift-and-deliver", "title": "Drift & Deliver", "url": "", "moduleBytes": 1332481, "moduleShape": "external blob, 1 line", "threeSource": "inlined (inferred)", "priority": 4 },
-    { "id": "heatsink", "title": "HEATSINK", "url": "", "moduleBytes": 1641373, "moduleShape": "external blob, 722 lines", "threeSource": "inlined (measured, r186 webgpu)", "priority": 5 },
-    { "id": "where-the-wind-wanders", "title": "Where the Wind Wanders", "url": "", "moduleBytes": 645204, "moduleShape": "external blob, 1 line", "threeSource": "inlined (inferred)", "priority": 6 },
-    { "id": "ninja-runner", "title": "Ninja Runner", "url": "", "moduleShape": "unknown", "threeSource": "unknown", "priority": 7 },
-    { "id": "roadster-hours", "title": "Roadster Hours", "url": "", "moduleShape": "dynamic import, not in DOM", "threeSource": "unknown", "priority": 8 },
-    { "id": "last-train-to-the-sea", "title": "Last Train to the Sea", "url": "", "moduleBytes": 1391655, "moduleShape": "external blob, 1 line", "threeSource": "inlined (inferred)", "priority": 9 },
-    { "id": "silt-and-signal", "title": "Silt & Signal", "url": "", "moduleShape": "dynamic import, not in DOM", "threeSource": "unknown", "priority": 10 }
+    {
+      "id": "strange-orbit",
+      "title": "Strange Orbit",
+      "url": "https://app.usecrayon.ai/play/47df78e2-1410-45d1-833c-196e1161c0b8",
+      "moduleBytes": 19300,
+      "moduleShape": "external blob, 1 line",
+      "threeSource": "importmap (inferred)",
+      "priority": 1
+    },
+    {
+      "id": "splat-rush",
+      "title": "Splat Rush",
+      "url": "https://app.usecrayon.ai/play/e53a6e07-a4a1-465e-b546-0fb6c9b787c0",
+      "moduleBytes": 43212,
+      "moduleShape": "external blob, 1 line",
+      "threeSource": "importmap (inferred)",
+      "priority": 2
+    },
+    {
+      "id": "saiyan-snake-way",
+      "title": "Saiyan through the Snake way!",
+      "url": "https://app.usecrayon.ai/play/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6",
+      "moduleBytes": 513393,
+      "moduleShape": "external blob, 211 lines",
+      "threeSource": "inlined (inferred)",
+      "priority": 3
+    },
+    {
+      "id": "drift-and-deliver",
+      "title": "Drift & Deliver",
+      "url": "https://app.usecrayon.ai/play/54a355cc-d8e4-4d14-bab4-1b6db1618242",
+      "moduleBytes": 1332481,
+      "moduleShape": "external blob, 1 line",
+      "threeSource": "inlined (inferred)",
+      "priority": 4
+    },
+    {
+      "id": "heatsink",
+      "title": "HEATSINK",
+      "url": "https://app.usecrayon.ai/play/4698c657-3950-438a-9b64-b5fe778fcfda",
+      "moduleBytes": 1641373,
+      "moduleShape": "external blob, 722 lines",
+      "threeSource": "inlined (measured, r186 webgpu)",
+      "priority": 5
+    },
+    {
+      "id": "where-the-wind-wanders",
+      "title": "Where the Wind Wanders",
+      "url": "https://app.usecrayon.ai/play/a9a3c165-74b3-4ff6-9588-ad97f829ddb5",
+      "moduleBytes": 645204,
+      "moduleShape": "external blob, 1 line",
+      "threeSource": "inlined (inferred)",
+      "priority": 6
+    },
+    {
+      "id": "ninja-runner",
+      "title": "Ninja Runner",
+      "url": "https://app.usecrayon.ai/play/e049e3e4-677f-42d5-8c34-3aa4af454068",
+      "moduleShape": "unknown",
+      "threeSource": "unknown",
+      "priority": 7
+    },
+    {
+      "id": "roadster-hours",
+      "title": "Roadster Hours",
+      "url": "https://app.usecrayon.ai/play/0394c9e9-577c-4bfa-8baa-68860a3612fb",
+      "moduleShape": "dynamic import, not in DOM",
+      "threeSource": "unknown",
+      "priority": 8
+    },
+    {
+      "id": "last-train-to-the-sea",
+      "title": "Last Train to the Sea",
+      "url": "https://app.usecrayon.ai/play/bda1b910-b840-48cb-bb4c-28d0cde29107",
+      "moduleBytes": 1391655,
+      "moduleShape": "external blob, 1 line",
+      "threeSource": "inlined (inferred)",
+      "priority": 9
+    },
+    {
+      "id": "silt-and-signal",
+      "title": "Silt & Signal",
+      "url": "https://app.usecrayon.ai/play/b42413e5-669e-4fb3-87d3-a3285567736c",
+      "moduleShape": "dynamic import, not in DOM",
+      "threeSource": "unknown",
+      "priority": 10
+    }
   ]
 }
