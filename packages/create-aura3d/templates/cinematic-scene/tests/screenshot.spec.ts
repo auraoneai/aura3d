@@ -12,7 +12,11 @@ test("Aura3D cinematic scene screenshot clears the look floor", async ({ page })
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 150_000 }).toBe("true");
 
-  const floor = await assertTemplateLookFloor(page, { subject: { x: 0.2, y: 0.25, width: 0.6, height: 0.6 } });
+  // Subject bounds omitted: the wet-neon look carries lit signage and
+  // reflections to the frame's top edge, so the bright-pixel bound cannot
+  // isolate the hero mass. The color-class profile below asserts the scene's
+  // alignment instead (cyan/amber/rain/hero pixel cues).
+  const floor = await assertTemplateLookFloor(page);
   // class-(b) readback: capture through the app (C-05) instead of the
   // compositor screenshot path — the output surface owns the frame.
   // `__AURA3D_LIVE_APPS__` is the live-app registry (not an array); `output`
@@ -40,6 +44,6 @@ test("Aura3D cinematic scene screenshot clears the look floor", async ({ page })
   const screenshot = Buffer.from(pngBase64, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
-  writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor }, null, 2)}\n`);
+  writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor, profile: floor.profile }, null, 2)}\n`);
   expect(screenshot.byteLength).toBeGreaterThan(1000);
 });

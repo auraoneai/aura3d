@@ -50,6 +50,14 @@ export interface LookFloorReport {
   readonly sampledPixels: number;
   readonly brightPixels: number;
   readonly uniqueBuckets: number;
+  /**
+   * Scene-class pixel counts from the same readback — consumed by the
+   * package-clean-install `sceneProfilePass` gate via the template's
+   * `screenshot.json` (`{ profile }`). Counts are a fixed superset across
+   * templates: each gated template's harness thresholds pick the classes
+   * that scene's prompt should produce; ungated classes are report-only.
+   */
+  readonly profile: Record<string, number>;
   readonly subjectBounds: LookFloorSubjectBounds | null;
   readonly appliedLook: {
     readonly specularIntensity: number;
@@ -92,6 +100,7 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
       sampledPixels: 0,
       brightPixels: 0,
       uniqueBuckets: 0,
+      profile: {},
       subjectBounds: null,
       appliedLook: null,
       lookLintErrors: [code],
@@ -205,6 +214,21 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
     let sampled = 0;
     let bright = 0;
     const bucketCounts = new Map<number, number>();
+    // Scene-class counters for the harness's `sceneProfilePass` gate. The
+    // bottom-right quadrant is blind (HUD watermark zone — matches the
+    // calibrated thresholds from when these classifiers were spec-authored).
+    let metalPixels = 0;
+    let warmAccentPixels = 0;
+    let centerObjectPixels = 0;
+    let saturatedStudioPixels = 0;
+    let cyanPixels = 0;
+    let amberPixels = 0;
+    let rainPixels = 0;
+    let wetReflectionPixels = 0;
+    let centerHeroPixels = 0;
+    let darkAlleyPixels = 0;
+    let warmPixels = 0;
+    let redPixels = 0;
     // Central-region lit-pixel bbox: edges carry floor/backdrop, the subject
     // mass is what every §6.4 template frames mid-frame.
     const x0 = Math.floor(width * 0.1);
@@ -225,6 +249,22 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
         const bucket = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
         bucketCounts.set(bucket, (bucketCounts.get(bucket) ?? 0) + 1);
         const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        if (!(x > width * 0.76 && y > height * 0.74)) {
+          const inProductWindow = x > width * 0.34 && x < width * 0.68 && y > height * 0.24 && y < height * 0.78;
+          const inHeroWindow = x > width * 0.32 && x < width * 0.68 && y > height * 0.26 && y < height * 0.78;
+          if (inProductWindow && r > 145 && g > 145 && b > 138 && Math.abs(r - g) < 32 && Math.abs(g - b) < 40) metalPixels += 1;
+          if (r > 70 && g > 45 && b < 120 && r >= g && g >= b * 0.75) warmAccentPixels += 1;
+          if (inProductWindow && luma > 32) centerObjectPixels += 1;
+          if (Math.max(r, g, b) - Math.min(r, g, b) > 32 && luma > 38) saturatedStudioPixels += 1;
+          if (b > 110 && g > 90 && b > r * 1.22) cyanPixels += 1;
+          if (r > 160 && g > 105 && b < 125) amberPixels += 1;
+          if (r > 165 && g > 185 && b > 205) rainPixels += 1;
+          if (y < height * 0.36 && ((b > 95 && g > 65 && b > r * 1.12) || (r > 105 && g > 62 && b < 95))) wetReflectionPixels += 1;
+          if (inHeroWindow && luma > 75) centerHeroPixels += 1;
+          if (luma > 8 && luma < 36 && b >= r && x > width * 0.08 && x < width * 0.92) darkAlleyPixels += 1;
+          if (r > 130 && g > 105 && b < 155 && r >= g * 0.9) warmPixels += 1;
+          if (r > 120 && g < 150 && b < 180 && r > g * 1.03) redPixels += 1;
+        }
         if (luma > BRIGHT_LUMA) {
           bright += 1;
           if (x >= x0 && x <= x1 && y >= y0 && y <= y1) {
@@ -247,6 +287,22 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
       sampledPixels: sampled,
       brightPixels: bright,
       uniqueBuckets: bucketCounts.size,
+      profile: {
+        brightPixels: bright,
+        uniqueBuckets: bucketCounts.size,
+        metalPixels,
+        warmAccentPixels,
+        centerObjectPixels,
+        saturatedStudioPixels,
+        cyanPixels,
+        amberPixels,
+        rainPixels,
+        wetReflectionPixels,
+        centerHeroPixels,
+        darkAlleyPixels,
+        warmPixels,
+        redPixels
+      },
       subjectBounds,
       appliedLook,
       lookLintErrors,

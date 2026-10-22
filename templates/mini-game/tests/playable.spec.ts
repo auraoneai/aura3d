@@ -50,17 +50,20 @@ test("Aura3D mini game responds to keyboard input, scoring, and reset", async ({
   console.log(`[mini-game] hero tracksApplied=${tracks} clip=${moved?.animation.clip}`);
 
   await page.keyboard.press("Space");
-  await page.waitForFunction(
+  // Wait for the jump CLIP while still airborne and capture the state inside
+  // the poll: y rises a frame before the clip flips, and a follow-up evaluate
+  // can land after the hero has already touched down (clip back to walk/idle).
+  const jumpHandle = await page.waitForFunction(
     (baseY) => {
       const state = (window as unknown as { readonly __AURA3D_MINI_GAME__?: MiniGameState }).__AURA3D_MINI_GAME__;
-      return (state?.player.y ?? 0) > baseY;
+      return (state?.player.y ?? 0) > baseY && state?.animation.clip === "jump" ? state : false;
     },
     moved?.player.y ?? 0,
     { timeout: 60_000 }
   );
-  const jumped = await page.evaluate(readMiniGameState);
-  expect(jumped?.player.y ?? 0).toBeGreaterThan(moved?.player.y ?? 0);
-  expect(jumped?.animation.clip).toBe("jump");
+  const jumped = (await jumpHandle.jsonValue()) as MiniGameState;
+  expect(jumped.player.y).toBeGreaterThan(moved?.player.y ?? 0);
+  expect(jumped.animation.clip).toBe("jump");
 
   await page.keyboard.down("ArrowRight");
   await page.waitForFunction(

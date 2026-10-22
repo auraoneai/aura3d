@@ -44,6 +44,6 @@ test("Aura3D product viewer screenshot clears the look floor", async ({ page }) 
   const screenshot = Buffer.from(pngBase64, "base64");
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
-  writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor }, null, 2)}\n`);
+  writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, floor, profile: floor.profile }, null, 2)}\n`);
   expect(screenshot.byteLength).toBeGreaterThan(1000);
 });

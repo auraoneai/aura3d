@@ -245,6 +245,41 @@ export function createRuntimeNodeImportedAssetEvidence(
   };
 }
 
+export interface RuntimeNodeModelBoundsInput {
+  /** Model-space box (e.g. loaded GLB bounds or manifest `boundsMetadata`). */
+  readonly min: RuntimeNodeVec3;
+  readonly max: RuntimeNodeVec3;
+  readonly position?: RuntimeNodeVec3;
+  readonly scale?: number | RuntimeNodeVec3;
+}
+
+/**
+ * World-space bounds from a model-space {min,max} box under a live transform.
+ * Unlike `calculateRuntimeNodeBounds` (a size centered on the position), this
+ * preserves the real model-box anchor — a GLB authored min-Y-at-zero keeps its
+ * feet at the node position instead of sinking half its height below it.
+ */
+export function calculateRuntimeNodeModelBounds(input: RuntimeNodeModelBoundsInput): AuraRuntimeNodeBounds {
+  const center = vec3(input.position, [0, 0, 0]);
+  const scale = scaleToVec3(input.scale, [1, 1, 1]);
+  const min = [0, 1, 2].map((axis) =>
+    Math.min(center[axis] + input.min[axis] * scale[axis], center[axis] + input.max[axis] * scale[axis])
+  ) as unknown as RuntimeNodeVec3;
+  const max = [0, 1, 2].map((axis) =>
+    Math.max(center[axis] + input.min[axis] * scale[axis], center[axis] + input.max[axis] * scale[axis])
+  ) as unknown as RuntimeNodeVec3;
+  const size: RuntimeNodeVec3 = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+  const half: RuntimeNodeVec3 = [size[0] / 2, size[1] / 2, size[2] / 2];
+  return {
+    kind: "aura-runtime-node-bounds",
+    center: [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2],
+    size,
+    min,
+    max,
+    radius: Math.sqrt(half[0] * half[0] + half[1] * half[1] + half[2] * half[2])
+  };
+}
+
 export function calculateRuntimeNodeBounds(input: RuntimeNodeBoundsInput): AuraRuntimeNodeBounds {
   const center = vec3(input.position, [0, 0, 0]);
   const size = multiplyVec3(scaleToVec3(input.size, [1, 1, 1]), scaleToVec3(input.scale, [1, 1, 1])).map((value) =>

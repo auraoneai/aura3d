@@ -1,7 +1,8 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AnimationPose } from "@aura3d/animation";
-import type { AuraRuntimeNodeAnimationBindingMetadata, RuntimeNodeMorphTargetWeights } from "../RuntimeNodeHandle";
+import type { AuraRuntimeNodeAnimationBindingMetadata, AuraRuntimeNodeBounds, RuntimeNodeMorphTargetWeights } from "../RuntimeNodeHandle";
+import { calculateRuntimeNodeModelBounds } from "../RuntimeNodeHandle.js";
 import type { AuraVec3, AuraAnimationSpec, AuraModelNode, AuraRuntimeNodeImportedAssetEvidence, AuraRuntimeNodeRegistry, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry } from "../nodes/types.js";
 import type { GLTFootPlantingConfig } from "@aura3d/assets/browser";
 import type { GltfBounds } from "../nodes/types/runtime.js";
@@ -140,6 +141,16 @@ export function attachProductionActorEvidence(
   runtimeNodes.get(node.runtime.id)?.setImportedAssetEvidence(evidence);
 }
 
+function runtimeModelWorldBounds(node: AuraModelNode, actor: TypedGLBActor): AuraRuntimeNodeBounds {
+  const modelBounds = productionActorModelBounds(node.asset, actor);
+  return calculateRuntimeNodeModelBounds({
+    min: modelBounds.min,
+    max: modelBounds.max,
+    position: node.position,
+    scale: node.scale
+  });
+}
+
 function createRuntimeEvidenceFromTypedGLBActor(
   node: AuraModelNode,
   actor: TypedGLBActor,
@@ -165,11 +176,10 @@ function createRuntimeEvidenceFromTypedGLBActor(
     morphTargets,
     activeMorphTargets: morphApply?.activeWeights ?? {},
     missingMorphTargets: morphApply?.missingTargets ?? [],
-    bounds: {
-      position: node.position,
-      scale: node.scale,
-      size: node.asset.bounds
-    },
+    // Live world box of the resolved model bounds (loaded GLB wins over the
+    // manifest — `productionActorModelBounds`), re-emitted every frame so the
+    // runtime handle's `bounds()` reports the geometry that is actually drawn.
+    bounds: runtimeModelWorldBounds(node, actor),
     renderItemCount: renderItems.length,
     skinnedRenderItemCount: renderItems.filter((item) => item.skinning).length,
     morphRenderItemCount: renderItems.filter((item) => item.morphTargets && item.morphTargets.length > 0).length,

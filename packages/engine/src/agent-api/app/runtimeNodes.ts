@@ -8,7 +8,7 @@ import { animation } from "../nodes/animation.js";
 import { effects } from "../nodes/effects.composite.js";
 import { cloneRuntimeAnimationPose, cloneRuntimeImportedAssetEvidence, runtimeMorphWeightSanitizer } from "../runtimeEvidence.js";
 import { AuraRuntimeError } from "./errors.js";
-import { calculateRuntimeNodeBounds, type AuraRuntimeNodeAnimationBindingMetadata, type AuraRuntimeNodeAnimationPoseBindingMetadata, type AuraRuntimeNodeEffectAttachment } from "../RuntimeNodeHandle.js";
+import { calculateRuntimeNodeBounds, calculateRuntimeNodeModelBounds, type AuraRuntimeNodeAnimationBindingMetadata, type AuraRuntimeNodeAnimationPoseBindingMetadata, type AuraRuntimeNodeEffectAttachment, type RuntimeNodeVec3 } from "../RuntimeNodeHandle.js";
 import type { AnimationPose } from "@aura3d/animation";
 import { material } from "../nodes/material.js";
 import type { QrFlags } from "@aura3d/rendering/contracts";
@@ -302,6 +302,33 @@ export function collectRuntimeNodeHandles(snapshot: AuraSceneSnapshot): Map<stri
   return next;
 }
 
+const asVec3 = (value: readonly number[] | undefined): RuntimeNodeVec3 | undefined =>
+  Array.isArray(value) && value.length === 3 ? [value[0], value[1], value[2]] : undefined;
+
+/**
+ * Declared model-space box for a model node, in `boundsFromAuraAsset` order:
+ * manifest `boundsMetadata` min/max, then size+center, then the flat `bounds`
+ * size triple (a min-Y-at-zero box per the actor bridge's convention).
+ */
+const declaredModelBounds = (
+  node: { readonly asset?: { readonly bounds?: AuraVec3; readonly metadata?: { readonly boundsMetadata?: { readonly min?: readonly number[]; readonly max?: readonly number[]; readonly size?: readonly number[]; readonly center?: readonly number[] } } } }
+): { readonly min: RuntimeNodeVec3; readonly max: RuntimeNodeVec3 } | undefined => {
+  const metadata = node.asset?.metadata?.boundsMetadata;
+  const metaMin = asVec3(metadata?.min);
+  const metaMax = asVec3(metadata?.max);
+  if (metaMin && metaMax) return { min: metaMin, max: metaMax };
+  const metaSize = asVec3(metadata?.size);
+  if (metaSize) {
+    const center = asVec3(metadata?.center) ?? [0, metaSize[1] / 2, 0];
+    return {
+      min: [center[0] - metaSize[0] / 2, center[1] - metaSize[1] / 2, center[2] - metaSize[2] / 2],
+      max: [center[0] + metaSize[0] / 2, center[1] + metaSize[1] / 2, center[2] + metaSize[2] / 2]
+    };
+  }
+  const flat = asVec3(node.asset?.bounds);
+  return flat ? { min: [-flat[0] / 2, 0, -flat[2] / 2], max: [flat[0] / 2, flat[1], flat[2] / 2] } : undefined;
+};
+
 export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runtime: AuraRuntimeNodeSpec): AuraRuntimeNodeHandle {
   const tags = runtime.tags ?? [];
   const attachedEffects: AuraRuntimeNodeEffectAttachment[] = [];
@@ -315,16 +342,34 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   let nodeVersion = 0;
   const bumpVersion = () => { nodeVersion += 1; };
   const getVisible = () => node.kind === "model" ? node.visible !== false : node.visible !== false;
-  const getBounds = () =>
-    calculateRuntimeNodeBounds({
+  const getBounds = () => {
+    if (node.kind === "model") {
+      // The render-input pass pushes the loaded GLB's real world box into the
+      // evidence every frame, so it wins over the declared manifest box.
+      const evidence = importedAssetEvidence?.bounds;
+      if (evidence) return evidence;
+      const declared = declaredModelBounds(node);
+      if (declared) {
+        return calculateRuntimeNodeModelBounds({
+          min: declared.min,
+          max: declared.max,
+          position: node.position,
+          scale: node.scale
+        });
+      }
+    }
+    return calculateRuntimeNodeBounds({
       position: node.position,
       scale: node.scale,
       // L7: `"size" in node` also matches surfaces.mirror's 2-element extent —
-      // bounds wants a vec3, so only forward 3-element sizes.
-      size: "size" in node && typeof node.size === "object" && node.size !== undefined && node.size.length === 3
-        ? node.size as readonly [number, number, number]
+      // bounds wants a scalar or vec3: forward both, skip 2-element extents.
+      // Model nodes have no `size`; without a resolved model box the unit-cube
+      // fallback would under-frame every camera rig that reads subjectHeight.
+      size: "size" in node && node.size !== undefined
+        ? (typeof node.size === "number" || node.size.length === 3 ? node.size : undefined)
         : undefined
     });
+  };
   const handle: AuraRuntimeNodeHandle = {
     id: runtime.id,
     kind: node.kind,
