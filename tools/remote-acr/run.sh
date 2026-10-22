@@ -88,6 +88,9 @@ echo "== staging context in ${CTX}"
 rsync -a package.json pnpm-lock.yaml pnpm-workspace.yaml \
         playwright.config.ts tsconfig.base.json index.html favicon.svg "$CTX/"
 rsync -a patches "$CTX/"
+# public/ mirrors at the origin root in the dev server (vite contract) —
+# /aura-environments/*.manifest.json are lazily fetched by the engine.
+rsync -a public "$CTX/"
 rsync -a --exclude '*/node_modules' \
         --exclude 'create-aura3d/templates' \
         --exclude 'create-aura3d/hdri' \

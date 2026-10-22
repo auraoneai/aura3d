@@ -48,6 +48,9 @@ RUN pnpm install --frozen-lockfile
 COPY tests/browser/ ./tests/browser/
 COPY tests/support/ ./tests/support/
 COPY examples/ ./examples/
+# Repo public/ mirrors at the origin root in the dev server — the engine
+# lazily fetches /aura-environments/*.manifest.json for the baked presets.
+COPY public/ ./public/
 COPY tools/naming-taxonomy/ ./tools/naming-taxonomy/
 COPY tools/remote-acr/ ./tools/remote-acr/
 COPY playwright.config.ts tsconfig.base.json index.html favicon.svg ./
