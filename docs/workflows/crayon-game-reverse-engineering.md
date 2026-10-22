@@ -99,9 +99,10 @@ files.
 | 9 | Splat Rush | 120,284 | 43,212 | external blob, 1 line | importmap (inferred) | ok |
 | 10 | Ninja Runner | 160,987 | 867,109 | external blob, 4,447 lines | inlined (inferred) | ok |
 
-Only HEATSINK's renderer was verified at runtime. The rest of the "three source"
-column is inferred from module size against the 365 KB / 668 KB builds; confirm
-with the same one-line probe during Stage 2 before relying on it.
+Only HEATSINK has been verified at runtime — renderer, menus, control contract,
+HUD, and input. The rest of the "three source" column is inferred from module
+size against the 365 KB / 668 KB builds; confirm with the same one-line probe
+during Stage 2 before relying on it.
 
 Backups measured: Cube Dash 21,579 B · Fleet Week (dynamic import).
 
@@ -127,21 +128,37 @@ Two entry paths; they are not mutually exclusive.
 
 ```text
 browser_open  https://app.usecrayon.ai/play/<project_id>
-browser_observe                     # wait for boot; capture refs
-browser_click  ref=<Tap to start>   # pierces srcdoc
-browser_click  ref=<Play>
-browser_click  ref=<Start Race>
-browser_observe                     # live HUD status nodes
-browser_press  key=KeyW hold_ms=1500
-browser_observe                     # verify speed/time delta
+# wait ~20 s for boot
+browser_click  role=button name="Tap to start"   # pierces srcdoc; returns nodes
+browser_click  role=button name="Play"
+browser_click  role=button name="Start Race"     # click payload contains live HUD
+browser_press  key=KeyW hold_ms=1500 ref=n1      # press payload contains live HUD
+browser_press  key=ShiftLeft hold_ms=1200 ref=n1
+browser_press  key=Space hold_ms=1000 ref=n1
+browser_press  key=KeyF hold_ms=900 ref=n1
+browser_press  key=Escape hold_ms=100 ref=n1     # pause menu
+browser_click  role=button name="Resume"
+browser_close
 ```
 
-Verified on HEATSINK with the 10-tool Prism build: `browser_click` and
-`browser_press` pierce the srcdoc frame, and `browser_observe` returns live
-`status` nodes (`POS`, `LAP`, `TIME`, `SPEED`, `BOOST`, `HEAT`, `SHIELD`,
-`LASER`, `TD`). Caveats: a click or press can return a client timeout even when
-the action landed — always verify with a fresh `browser_observe`; sessions are
-short-lived, so capture evidence promptly; there is no `Runtime.evaluate`.
+Verified on HEATSINK with the 10-tool Prism build and the deployed
+`browser-session.ts` fix (Cloudflare `2953bef0-06a7-4116-8919-8daed4c6bc29`,
+`kiro-prism` `ae2dc6b`): `browser_click` and `browser_press` pierce the srcdoc
+frame and return a node snapshot, and `browser_observe` returns live `status`
+nodes (`POS`, `LAP`, `TIME`, `SPEED`, `BOOST`, `HEAT`, `SHIELD`, `LASER`,
+`TD`). The fix throttles heavy 3D drawing during a race while keeping
+`g.hud.update` instant, steps `hold_ms` at 1/60 s, holds `KeyW` automatically
+for action keys (`ShiftLeft`, `Space`, `KeyF`), and freezes idle physics between
+agent calls. Measured on the deployed build: every action returned in 2.0–4.9 s
+with zero timeouts, and HUD gauges did not decay between calls.
+
+Two operational notes. First, use the `browser_click` / `browser_press`
+response's `nodes` as a read: it is the same accessibility tree and is usually
+faster than a separate snapshot. Second, on this MCP path `browser_observe` on
+the title screen can still hit the 60 s snapshot timeout while `browser_click`
+returns that same tree in ~9 s; click `Tap to start` first and observe once the
+menu or race HUD is active. Refs are session-scoped; sessions can expire if left
+idle, so capture evidence promptly. There is no `Runtime.evaluate`.
 
 **Extraction path: local Chrome + CDP.** Required for Stage 2 and for
 `window.game` internals.
@@ -159,10 +176,13 @@ A Docker or remote browser will not work — the endpoint must be on this machin
 
 ### Stage 1 — Discover targets (Prism first, raw CDP for extraction)
 
-**Prism path.** `browser_open` the play URL, wait for the game to boot (~20 s),
-then `browser_observe` with `include_refs: true`. The updated snapshot pierces
-the srcdoc frame and returns the game canvas, overlay buttons, and live HUD
-`status` nodes. Refs are session-scoped — re-observe after every transition.
+**Prism path.** `browser_open` the play URL and wait for the game to boot
+(~20 s). On the current build the title screen is the one place
+`browser_observe` can stall, so click `Tap to start` by role/name first; the
+click response returns the same node tree (canvas, overlay buttons, live HUD
+`status` nodes). From the landing menu onward, `browser_observe` and the
+click/press payloads both pierce the srcdoc frame. Refs are session-scoped —
+re-read after every transition.
 
 **Raw CDP path.** Required for `Runtime.evaluate`, `window.game`, and bundle
 extraction. REA's browser tools still accept only HTTP(S) page targets:
@@ -381,13 +401,40 @@ cannot be aimed at a frame element. Treat the REA scenario as the
 **shell-level** fixture (load, start, pause, restart).
 
 **Prism's action surface crosses the frame.** `browser_click` and
-`browser_press` pierce the srcdoc iframe, and `browser_observe` returns the live
-HUD. Verified on HEATSINK: after `Start Race`, the snapshot contained
-`POS 8/12`, `LAP 1/3`, `TIME 00:00.800`, `SPEED 8 KM/H`, `BOOST 100%`,
-`HEAT 0%`, `SHIELD 100%`, `LASER 0%`; a 1.5 s `KeyW` hold changed `SPEED` to
-`190 KM/H` and `TIME` to `00:03.400`. Use Prism as the **in-game fixture** for
-observable HUD and controls, and keep raw CDP for `window.game` internals and
-extraction.
+`browser_press` pierce the srcdoc iframe, and their responses — like
+`browser_observe` — return the live HUD `status` nodes. The deployed
+`browser-session.ts` fix (`2953bef0-06a7-4116-8919-8daed4c6bc29`, `ae2dc6b`)
+makes this practical during a race: heavy `g.render` is throttled on CPU
+SwiftShader, `g.hud.update` stays instant, `hold_ms` is stepped at 1/60 s with
+`KeyW` held for action keys, and idle physics is frozen between agent calls.
+
+Verified sequence on HEATSINK (2026-10-22, fresh Prism session; all HTTP 200,
+zero timeouts):
+
+| Step | Action | Wall time | HUD after the action |
+| --- | --- | --- | --- |
+| 1 | `browser_click` `Start Race` | 3.3 s | `POS 7/12 · LAP 1/3 · TIME 00:00.400 · SPEED 18 · BOOST 100% · HEAT 0% · SHIELD 100% · LASER 0% · TD 0` |
+| 2 | `browser_press` `KeyW` 1500 ms | 2.5 s | `TIME 00:01.900 · SPEED 70 · BOOST 100%` |
+| 3 | `browser_press` `ShiftLeft` 1200 ms | 2.3 s | `TIME 00:03.100 · SPEED 184 · HEAT 11%` |
+| 4 | `browser_press` `Space` 1000 ms | 2.1 s | `TIME 00:04.100 · SPEED 303 · BOOST 83% · HEAT 12% · TD 2` |
+| 5 | `browser_press` `KeyF` 900 ms | 2.3 s | `TIME 00:05.000 · SPEED 363 · BOOST 81% · HEAT 4% · LASER 12% · TD 3` |
+| 6 | `browser_press` `Escape` 100 ms | 4.9 s | pause menu: `Resume`, `Restart`, `Settings`, `Controls`, `Exit to Menu` |
+| 7 | `browser_click` `Resume` | 2.0 s | `TIME 00:05.000 · SPEED 384 · BOOST 95% · HEAT 1% · LASER 27% · TD 3` |
+
+An independent run on the same build produced the same deltas within the
+expected variance (`ShiftLeft` → `203 KM/H`, `HEAT 11%`; `Space` → `345 KM/H`,
+`BOOST 82%`, `TD 2`; `KeyF` → `398 KM/H`, `LASER 12%`, `TD 3`; `Resume` →
+`403 KM/H`, `LASER 22%`). The important assertion is the direction and the
+gauge field, not the exact speed.
+
+Two timing facts belong in a fixture. Weapons have a start grace of 3.0 s of
+race time, so a `KeyF` press before `TIME 00:03.000` may not fire; wait past it.
+Gauges can still change during a long hold — e.g. `HEAT` fell from 12% to 4%
+across the 0.9 s `KeyF` hold — but that is in-hold simulation, not decay while
+the agent is idle. Assert the post-hold HUD immediately.
+
+Use Prism as the **in-game fixture** for observable HUD and controls, and keep
+raw CDP for `window.game` internals and extraction.
 
 Raw CDP input remains a fallback and was verified against HEATSINK — the
 frame's own `keydown`/`keyup` listeners received both events:
@@ -474,8 +521,10 @@ pnpm check:release
 | `403 client_not_allowed` | Origin gate on `api.usecrayon.ai` | Browser context only; never curl |
 | `target_unavailable`, `reason: target_not_allowed`, *"must be an HTTP(S) page in the selected origin scope"* | REA browser tools (`list-browser-targets`, `analyze-web-bundle`, `inspect-web-page`, `capture-web-screenshot`) reject the game's `about:srcdoc` iframe | Discover it with raw `/json/list` for extraction; drive it with Prism `browser_click` / `browser_press`, or raw `Runtime.evaluate` / `Input.dispatch*` |
 | Scenario locator never matches the game | Locators resolve in the shell page, not the srcdoc frame | Keep REA for shell-level steps; use Prism `browser_click` / `browser_press` for in-frame actions, raw CDP for internals |
-| `browser_click` / `browser_press` returns `browser request timed out` | Prism client timeout; the action often lands | Re-run `browser_observe` and check the HUD delta before retrying; do not assume failure |
-| `session_not_found` (404) | Prism session expired or closed | Open a new session and capture evidence promptly; refs are session-scoped |
+| `browser_click` / `browser_press` takes 30 s+ or times out during a race | Pre-fix: the 3D loop pinned CPU SwiftShader (2–4 s/frame) while each press made 8 CDP round-trips | Fixed in `browser-session.ts` (Cloudflare `2953bef0-06a7-4116-8919-8daed4c6bc29`, `kiro-prism` `ae2dc6b`). If it recurs, confirm the worker build and use the click/press node payload |
+| `session_not_found` (404) during a race | Pre-fix: the pinned tab crashed after ~2 min | Fixed by the same render throttling. Open a fresh session if an old one is already gone; refs are session-scoped |
+| Gauges read 0% after a press | Pre-fix: the unpaused loop kept simulating with no keys while the agent waited; boost/overdrive also need `KeyW` held | Fixed by the idle physics freeze and automatic `KeyW` hold. If seen, the session is on an old worker; reopen and confirm the build |
+| `browser_observe` times out at 60 s on the title screen | Residual on this MCP path; `browser_click` returns the same node tree in ~9 s | Click `Tap to start` and read the click payload; use `browser_observe` after the menu/race is active |
 | Parity assertion reads `undefined` | REA is passive and never evaluates JavaScript | Assert HUD text, DOM/accessibility, URL, storage, or pixels; read internal state with a separate CDP probe |
 | Module extract returns 0 bytes | Dynamic import, no DOM script, no blob perf entry | Stage 2 CDP enumeration |
 | `source_maps: not_requested`, no maps found | Publisher ships none | Drop `--fetch-source-maps` |
@@ -541,6 +590,12 @@ Effort assumes one engineer who knows Aura3D, **after** the parity gate is green
 
 Each plan lists: the mechanic contract to reproduce (never the art), the RE seeds
 to trace, the parity items that must exist, the Aura3D mapping, and the proof.
+
+**Evidence status.** Only §6.4 (HEATSINK) has a verified runtime contract,
+captured 2026-10-22. The other nine sections are plans built from page copy,
+genre, frame/module shape, and static seeds; they are not observed specs. Do not
+label them "reverse engineered" until their Stage 5 fixture records menus,
+controls, HUD, and a fixed-input run.
 
 **Capture scenario.** Each game declares one scenario: start URL, a fixed input
 sequence, and the artifacts to record (`lap`, `checkpoint`, `score`, `heat`,
@@ -670,8 +725,24 @@ Capture diff passes on distance, checkpoint order, and finish time.
 **Shape.** 1,641,373 B, external blob, 722 lines, **three r186 WebGPU inlined**.
 Largest and most technically demanding module measured.
 
+**Runtime status (verified 2026-10-22).** The only one of the ten with a verified
+runtime contract. Boot reaches `Tap to start`; `Play` opens the mode select
+(`Race`, `Time Trial`, `Elimination`, `Change Map`, `Change Drone`,
+`Customize Drone`, `Start Race`); `Start Race` enters the live HUD: `POS`,
+`LAP`, `TIME`, `BEST`, `SPEED`, `BOOST`, `HEAT` (overdrive), `SHIELD`,
+`LASER` (gun heat), and `TD` (label exposed; semantics not yet confirmed).
+The HUD also exposes `ITEM X`, `SHOCK E`, `ROLL Q`, and `MINE G` as control
+hints. `Escape` opens `Resume / Restart / Settings / Controls / Exit to Menu`.
+
+**Control contract (from in-game Controls).** Throttle `W`, brake `S`, steer
+`A`/`D`, fire lasers `F`, boost `Space`, overdrive `Shift`, drift `C`,
+shockwave `E`, dodge roll `Q`, drop mine `G`, use item `X`, pause `Esc`,
+toggle HUD `H`.
+
 **Mechanic contract.** Armed drone racing through a rain-soaked megacity; the
-Ramjet has a heat budget; shoot rivals; win only if you do not melt first.
+Ramjet has a heat budget; shoot rivals; win only if you do not melt first. The
+page copy and HUD confirm the heat/boost/weapon loop; the exact heat rates,
+rival AI, and win conditions still need the CDP tuning pass.
 
 **RE seeds.** `overheat`, `heat`, `drone`, `ramjet`, `rival`, `weapon`, `lap`,
 `checkpoint`, `boost`, `cool`.
@@ -699,9 +770,15 @@ via `instances.*` and `BatchedMesh` when it lands.
 **Look.** Night, rain, sodium-orange and cyan neon, wet specular streets, heavy
 bloom with a high threshold; heat shimmer only above 70% heat.
 
-**Acceptance.** Three laps, two rival kills, one overheat fail and recovery.
-Capture diff passes on lap, checkpoint, heat band, and score. Route-health names
-the batched prop count and the rain-particle budget.
+**Verified telemetry.** A 1.5 s `W` took `SPEED` 18 → 70; a 1.2 s `ShiftLeft`
+took it to 184 with `HEAT 11%`; a 1.0 s `Space` to 303 with `BOOST` 100% → 83%
+and `TD` 0 → 2; a 0.9 s `KeyF` to 363 with `LASER 12%` and `TD 3`; `Escape`
+paused and `Resume` returned at 384 with `LASER 27%`. These are the shape of
+the parity fixture, not tuning constants.
+
+**Acceptance (plan).** Three laps, two rival kills, one overheat fail and
+recovery. Capture diff passes on lap, checkpoint, heat band, and score.
+Route-health names the batched prop count and the rain-particle budget.
 
 **Effort.** L — the look and the rival AI are the cost, not the track.
 

@@ -13,6 +13,7 @@ interface LabState {
   readonly passNames: readonly string[];
   readonly postUniformApplied: boolean;
   readonly errors: readonly string[];
+  readonly error?: string;
 }
 
 const state = (page: import("@playwright/test").Page): Promise<LabState> =>
@@ -56,18 +57,37 @@ test.describe("parity shader post passes (SH-03)", () => {
         return lab?.status === "ready" && lab.frame >= 1;
       },
       undefined,
-      { timeout: 30_000 }
-    ).catch(() => { throw new Error(`custom-shader-lab post did not become ready: ${errors.join(" | ") || "no browser diagnostic"}`); });
+      { timeout: 90_000 }
+    ).catch(async () => {
+      const lab = await state(page).catch(() => undefined);
+      throw new Error(`custom-shader-lab post did not become ready: ${errors.join(" | ") || lab?.error || lab?.status || "no browser diagnostic"}`);
+    });
 
     const ready = await state(page);
     expect(ready.passNames).toEqual(["lab-posterize", "lab-invert"]);
 
     const canvas = page.locator("#stage");
     const shot = async (name: string) => {
+      const before = (await state(page)).frame;
       await page.evaluate(() => (window as unknown as { __AURA_CUSTOM_SHADER_LAB_SET_TIME__: (v: number) => void }).__AURA_CUSTOM_SHADER_LAB_SET_TIME__(1));
-      return canvas.screenshot({ path: resolve(REPORT_DIRECTORY, name) });
+      // SET_TIME schedules an async renderFrame — wait for the frame counter
+      // to advance so the screenshot always captures the new frame.
+      await page.waitForFunction(
+        (prev) => {
+          const lab = (window as unknown as { __AURA_CUSTOM_SHADER_LAB__?: LabState }).__AURA_CUSTOM_SHADER_LAB__;
+          return (lab?.frame ?? 0) > prev;
+        },
+        before,
+        { timeout: 60_000 }
+      );
+      await canvas.screenshot({ path: resolve(REPORT_DIRECTORY, name) });
+      // Hash the engine's own readback — a composited canvas.screenshot can
+      // capture a stale presented frame on slow software rasterisers.
+      return page.evaluate(() =>
+        (window as unknown as { __AURA_CUSTOM_SHADER_LAB_SHOT__?: () => Promise<string> }).__AURA_CUSTOM_SHADER_LAB_SHOT__?.() ?? Promise.resolve("")
+      );
     };
-    const hash = (shot: Buffer) => createHash("sha256").update(shot).digest("hex");
+    const hash = (dataUrl: string) => createHash("sha256").update(dataUrl).digest("hex");
 
     const baseline = hash(await shot("post-baseline.png"));
     // Posterize gain 1 → 4: the before-tonemap pass visibly quantises harder.
@@ -75,9 +95,33 @@ test.describe("parity shader post passes (SH-03)", () => {
     const gained = hash(await shot("post-gain4.png"));
     expect(gained).not.toBe(baseline);
     expect((await state(page)).postUniformApplied).toBe(true);
-    // The disabled pass (flat red) never ran — the canvas is not solid red.
+    // The disabled pass (flat red) never ran — count near-pure-red pixels in
+    // the real readback; a solid-red frame would saturate the count. Successive
+    // captures render fresh frames, so an exact-hash compare is not stable.
     const disabled = await shot("post-disabled-proof.png");
-    expect(hash(disabled)).toBe(gained);
+    const redStats = await page.evaluate(async (dataUrl: string) => {
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+      const probe = document.createElement("canvas");
+      probe.width = img.width;
+      probe.height = img.height;
+      const ctx = probe.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+      const px = ctx.getImageData(0, 0, probe.width, probe.height).data;
+      let red = 0;
+      let lit = 0;
+      for (let i = 0; i < px.length; i += 4) {
+        if (px[i]! > 240 && px[i + 1]! < 20 && px[i + 2]! < 20) red += 1;
+        if (px[i]! + px[i + 1]! + px[i + 2]! > 60) lit += 1;
+      }
+      return { red, lit, total: px.length / 4 };
+    }, disabled);
+    expect(redStats.lit).toBeGreaterThan(0);
+    expect(redStats.red).toBeLessThan(redStats.total * 0.9);
     expect(errors).toEqual([]);
   });
 });

@@ -8,6 +8,7 @@
     "cli": "dist/cli.js"
   },
   "files": [
+    "data",
     "README.md",
     "skills",
     "!skills/AUTHORING.md",

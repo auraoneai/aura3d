@@ -35,6 +35,18 @@ set -e
 
 echo "[task-run] PLAYWRIGHT_EXIT=${PW_EXIT}"
 
+# Dump failure evidence into the run log — error-context snapshots carry the
+# DOM state (lab status/error text) and do not depend on blob egress.
+for ctx in test-results/*/error-context.md; do
+  [ -f "$ctx" ] || continue
+  echo "[task-run] ===== ${ctx} ====="
+  cat "$ctx"
+done
+if [ -f tests/reports/remote-acr-report.json ]; then
+  echo "[task-run] ===== tests/reports/remote-acr-report.json ====="
+  cat tests/reports/remote-acr-report.json
+fi
+
 # Always attempt artifact egress — failure evidence matters most on red runs.
 if [ -n "${AURA3D_ARTIFACTS_SAS:-}" ]; then
   echo "[task-run] uploading artifacts to blob prefix ${AURA3D_RUN_ID}/"

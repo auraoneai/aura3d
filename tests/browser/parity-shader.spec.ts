@@ -60,8 +60,11 @@ test.describe("parity shader material (SH-02, SH-10)", () => {
         return lab?.status === "ready" && lab.frame >= 1;
       },
       undefined,
-      { timeout: 30_000 }
-    ).catch(() => { throw new Error(`custom-shader-lab did not become ready: ${errors.join(" | ") || "no browser diagnostic"}`); });
+      { timeout: 90_000 }
+    ).catch(async () => {
+      const lab = await state(page).catch(() => undefined);
+      throw new Error(`custom-shader-lab did not become ready: ${errors.join(" | ") || lab?.error || lab?.status || "no browser diagnostic"}`);
+    });
 
     const ready = await state(page);
     expect(ready).toMatchObject({

@@ -49,6 +49,8 @@ declare global {
     __AURA_CUSTOM_SHADER_LAB_SET_PASS_GAIN__?: (value: number) => void;
     /** Recompiles nothing — writes the rim plane's authored `strength`. */
     __AURA_CUSTOM_SHADER_LAB_SET_STRENGTH__?: (value: number) => void;
+    /** Engine-readback data URL of the current frame (C-05 in-task readPixels). */
+    __AURA_CUSTOM_SHADER_LAB_SHOT__?: () => Promise<string>;
   }
 }
 
@@ -146,7 +148,7 @@ const labMaterial = (fragment: string, tint: string, patch?: Record<string, stri
 const buildScene = () =>
   scene()
     .background("#080a18")
-    .camera(camera({ position: [0, 1.6, 6.2], lookAt: [0, 0.4, 0], fov: 46 }))
+    .camera(camera.perspective({ position: [0, 1.6, 6.2], target: [0, 0.4, 0], fov: 46 }))
     .add(lights.directional({ name: "lab key", position: [4, 7, 5], intensity: 1.4 }))
     .add(primitives.box({ name: "pulse-box", material: labMaterial(PULSE_FRAGMENT, "#54e0c7") })
       .runtime({ id: "pulse-box" })
@@ -221,6 +223,18 @@ void main() { vec4 c = texture(u_color, v_uv); outColor = vec4(mix(c.rgb, 1.0 - 
     passGain = value;
     app?.post?.setPassUniform?.("lab-posterize", "u_gain", passGain);
     evidence.postUniformApplied = true;
+  };
+  window.__AURA_CUSTOM_SHADER_LAB_SHOT__ = async () => {
+    // C-05 capture(): synchronous render + in-task readPixels — reliable on a
+    // non-preserved drawing buffer (toDataURL reads a cleared buffer on
+    // software rasterisers).
+    const blob = (await app?.capture?.({ type: "png-blob" })) as Blob | undefined;
+    if (!blob) return "";
+    return new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.readAsDataURL(blob);
+    });
   };
   evidence.status = "ready";
   await renderFrame();

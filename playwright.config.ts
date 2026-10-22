@@ -6,7 +6,15 @@ const chromiumExecutablePath = process.env.A3D_WEBGPU_BROWSER_EXECUTABLE ||
   (process.env.A3D_DISABLE_SYSTEM_WEBGPU_BROWSER === "true" ? undefined : existsSync(defaultMacChromePath) ? defaultMacChromePath : undefined);
 const chromiumLaunchOptions = {
   ...(chromiumExecutablePath ? { executablePath: chromiumExecutablePath } : {}),
-  args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist"],
+  args: [
+    "--enable-unsafe-webgpu",
+    "--ignore-gpu-blocklist",
+    "--enable-unsafe-swiftshader",
+    // AURA3D_FORCE_SWIFTSHADER=1 reproduces the CPU-only-runner GL stack locally.
+    ...(process.env.AURA3D_FORCE_SWIFTSHADER === "true"
+      ? ["--use-gl=angle", "--use-angle=swiftshader"]
+      : [])
+  ],
 };
 
 export default defineConfig({

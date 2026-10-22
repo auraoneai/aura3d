@@ -53,7 +53,7 @@ test("parity-texture-lab uploads public texture.* handles and fires asset events
     expect(lab.shotBeforeUpdate).not.toBe("");
     expect(lab.shotAfterUpdate).not.toBe("");
     expect(lab.shotAfterUpdate).not.toBe(lab.shotBeforeUpdate);
-    // ST-07: data-URI PNG decoded to a real GPU texture (64x64 rgba8).
+    // ST-07: fetched PNG decoded to a real GPU texture (64x64 rgba8).
     expect(lab.loadedHandle).toBe(true);
     expect(lab.loadedWidth).toBe(64);
     expect(lab.loadedFormat).toBe("rgba8");

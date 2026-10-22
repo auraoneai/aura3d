@@ -1,5 +1,6 @@
 import type { AssetLoadRequest, AssetLoader } from "./AssetLoader";
 import type { LoadContext } from "./LoadContext";
+import { fetchBytes } from "./LoaderFetch";
 
 export interface ImageAsset {
   readonly url: string;
@@ -19,12 +20,17 @@ export class ImageLoader implements AssetLoader<ImageAsset> {
     context.throwIfAborted(request.url);
 
     if (typeof createImageBitmap === "function" && typeof fetch === "function") {
-      const response = await fetch(request.url, { signal: request.signal });
-      if (!response.ok) {
-        throw new Error(`Image request failed with ${response.status}`);
-      }
-
-      const bitmap = await createImageBitmap(await response.blob());
+      // fetchBytes streams the body so request.onProgress receives real byte
+      // counts (three's FileLoader progress parity).
+      const bytes = await fetchBytes(request.url, request.signal, request.onProgress
+        ? (p) => request.onProgress!({
+            url: request.url,
+            phase: "buffer",
+            loadedBytes: p.loaded,
+            ...(p.total !== undefined ? { totalBytes: p.total } : {})
+          })
+        : undefined);
+      const bitmap = await createImageBitmap(new Blob([bytes]));
       return { url: request.url, width: bitmap.width, height: bitmap.height, source: bitmap };
     }
 

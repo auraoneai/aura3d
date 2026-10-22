@@ -24,12 +24,12 @@ import type { AuraCodemod } from "../contracts/commands.js";
 
 export type CodemodRow = NonNullable<ReturnType<AuraCodemod["transform"]>["rows"]>[number];
 
-const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const DATA_DIR = join(dirname(fileURLToPath(import.meta.url)), "../../data");
 
 function dispositionMap(): { map: ReadonlyMap<string, string>; to: ReadonlyMap<string, string> } {
   const map = new Map<string, string>();
   const to = new Map<string, string>();
-  const ledger = JSON.parse(readFileSync(join(REPO_ROOT, "docs/architecture/root-export-dispositions.json"), "utf8")) as {
+  const ledger = JSON.parse(readFileSync(join(DATA_DIR, "root-export-dispositions.json"), "utf8")) as {
     entries: { name: string; to: string; disposition: string }[];
   };
   for (const e of ledger.entries) {
@@ -42,7 +42,7 @@ function dispositionMap(): { map: ReadonlyMap<string, string>; to: ReadonlyMap<s
 }
 
 function deprecatedSubpathTargets(): ReadonlyMap<string, string> {
-  const spec = JSON.parse(readFileSync(join(REPO_ROOT, "aura.exports.json"), "utf8")) as {
+  const spec = JSON.parse(readFileSync(join(DATA_DIR, "aura.exports.json"), "utf8")) as {
     deprecated?: Record<string, { target?: string }>;
   };
   const map = new Map<string, string>();

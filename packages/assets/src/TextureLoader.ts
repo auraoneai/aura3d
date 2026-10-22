@@ -18,7 +18,9 @@ export class TextureLoader implements AssetLoader<TextureDescriptorAsset> {
   }
 
   async load(request: AssetLoadRequest, context: LoadContext): Promise<TextureDescriptorAsset> {
-    const image = await context.loadDependency<ImageAsset>(request.url, "image");
+    const image = await context.loadDependency<ImageAsset>(request.url, "image", {
+      ...(request.onProgress ? { onProgress: request.onProgress } : {})
+    });
     return {
       url: request.url,
       width: image.value.width,

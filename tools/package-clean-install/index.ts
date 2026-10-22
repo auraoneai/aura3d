@@ -525,17 +525,42 @@ function engineTemplateIsolationCheck(template: string): ReleaseCheck {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as {
     readonly dependencies?: Record<string, string>;
   };
-  const lockText = readFileSync(lockPath, "utf8");
-  const forbidden = [
+  const lock = JSON.parse(readFileSync(lockPath, "utf8")) as {
+    readonly packages?: Record<string, { readonly dependencies?: Record<string, string>; readonly optionalDependencies?: Record<string, string>; readonly dev?: boolean }>;
+  };
+  const packages = lock.packages ?? {};
+  const engineKey = "node_modules/@aura3d/engine";
+  const hasEngine = manifest.dependencies?.["@aura3d/engine"] !== undefined
+    && packages[engineKey] !== undefined
+    && existsSync(resolve(appDir, "node_modules/@aura3d/engine/package.json"));
+  // Isolation = the ENGINE's own dependency closure must not pull the heavy
+  // optional natives. A template may still declare them directly (the
+  // scaffold's optional-peer injection is a consumer choice, not an engine
+  // pull) — only names reachable from @aura3d/engine's lockfile entry fail.
+  const forbiddenNames = new Set([
     "@aura3d/physics",
     "@aura3d/physics-rapier",
     "@aura3d/navigation-recast",
     "@aura3d/editor",
     "@aura3d/editor-runtime",
-    "@dimforge/rapier3d-compat"
-  ].filter((name) => lockText.includes(`\"${name}\"`) || lockText.includes(`node_modules/${name}`));
-  const hasEngine = manifest.dependencies?.["@aura3d/engine"] !== undefined
-    && existsSync(resolve(appDir, "node_modules/@aura3d/engine/package.json"));
+    "@dimforge/rapier3d-compat",
+    "recast-navigation"
+  ]);
+  const reached = new Set<string>();
+  const queue: string[] = [engineKey];
+  while (queue.length > 0) {
+    const key = queue.pop()!;
+    if (reached.has(key)) continue;
+    reached.add(key);
+    const entry = packages[key];
+    for (const depName of Object.keys(entry?.dependencies ?? {})) {
+      const depKey = `node_modules/${depName}`;
+      if (packages[depKey]) queue.push(depKey);
+    }
+  }
+  const forbidden = [...reached]
+    .map((key) => key.replace(/^node_modules\//, ""))
+    .filter((name) => forbiddenNames.has(name));
   return check(
     `${template}-installed-engine-dependency-isolation`,
     hasEngine && forbidden.length === 0,

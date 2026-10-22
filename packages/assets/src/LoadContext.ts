@@ -1,4 +1,4 @@
-import { AssetLoadError } from "./AssetLoader";
+import { AssetLoadError, type AssetLoadRequest } from "./AssetLoader";
 import type { AssetHandle } from "./AssetHandle";
 import type { AssetManager } from "./AssetManager";
 
@@ -50,11 +50,20 @@ export class LoadContext {
     });
   }
 
-  async loadDependency<T = unknown>(url: string, type?: string): Promise<AssetHandle<T>> {
+  async loadDependency<T = unknown>(
+    url: string,
+    type?: string,
+    options: { readonly onProgress?: AssetLoadRequest["onProgress"] } = {}
+  ): Promise<AssetHandle<T>> {
     if (!this.manager) {
       throw new AssetLoadError("Cannot load dependency without an AssetManager", url, this.dependencyChain);
     }
 
-    return this.manager.load<T>(url, { type, signal: this.signal, dependencyChain: this.dependencyChain });
+    return this.manager.load<T>(url, {
+      type,
+      signal: this.signal,
+      dependencyChain: this.dependencyChain,
+      ...(options.onProgress ? { onProgress: options.onProgress } : {})
+    });
   }
 }

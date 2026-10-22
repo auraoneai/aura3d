@@ -20,7 +20,8 @@ import {
   material,
   primitives,
   scene,
-  texture
+  texture,
+  type AuraApp
 } from "@aura3d/engine";
 
 interface ParityTextureLabState {
@@ -104,6 +105,19 @@ function hash(dataUrl: string): string {
   return h.toString(16);
 }
 
+// C-05 capture(): synchronous render + in-task readPixels — reliable on a
+// non-preserved drawing buffer (canvas.toDataURL reads a cleared buffer on
+// software rasterisers and a stale one under hardware).
+async function captureDataUrl(app: AuraApp): Promise<string> {
+  const blob = (await app.capture?.({ type: "png-blob" })) as Blob | undefined;
+  if (!blob) return "";
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsDataURL(blob);
+  });
+}
+
 async function run(): Promise<void> {
   const canvas = document.querySelector<HTMLCanvasElement>("#stage");
   if (!canvas) throw new Error("parity-texture-lab canvas missing");
@@ -121,15 +135,17 @@ async function run(): Promise<void> {
     onAssetError: () => { state.errorEvents += 1; },
     scene: scene()
       .background("#0b1020")
-      .camera(camera.perspective({ position: [0, 0.4, 4.2], target: [0, 0, 0], fov: 42 }))
+      .camera(camera.perspective({ position: [0, 0.3, 3.1], target: [0, 0, 0], fov: 38 }))
       .add(primitives.plane({
         name: "tex-data",
-        position: [-1.3, 0, 0],
+        position: [-1.15, 0, 0],
+        size: 2.4,
         material: material.pbr({ color: "#ffffff", roughness: 0.85, texture: dataTex })
       }))
       .add(primitives.plane({
         name: "tex-canvas",
-        position: [1.3, 0, 0],
+        position: [1.15, 0, 0],
+        size: 2.4,
         material: material.pbr({ color: "#ffffff", roughness: 0.85, texture: canvasTex })
       }))
       .add(lights.directional({ position: [2, 4, 3], intensity: 2.4 }))
@@ -147,10 +163,10 @@ async function run(): Promise<void> {
     }
     await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    // ST-07: real async decode — a browser-encoded PNG run back through
-    // texture.load with the app's asset events live.
-    const pngUrl = paintedCanvas("#16a34a", "B").toDataURL("image/png");
-    const loadedTex = await texture.load(pngUrl, { colorSpace: "srgb" });
+    // ST-07: real async decode — a fetched PNG run back through
+    // texture.load with the app's asset events live. A real URL (not a data
+    // URI) so the LoadingManager emits byte-progress events (ST-06).
+    const loadedTex = await texture.load("probe.png", { colorSpace: "srgb" });
     state.loadedHandle = true;
     state.loadedWidth = loadedTex.texture.width;
     state.loadedFormat = loadedTex.texture.format;
@@ -160,13 +176,15 @@ async function run(): Promise<void> {
 
     // ST-3 evidence: repaint the live canvas source and mark needsUpdate —
     // the next rendered frame must sample different pixels.
-    state.shotBeforeUpdate = hash(app.screenshot().dataUrl);
+    const beforeDataUrl = await captureDataUrl(app);
+    state.shotBeforeUpdate = hash(beforeDataUrl);
     const ctx = live.getContext("2d")!;
     ctx.fillStyle = "#2563eb";
     ctx.fillRect(0, 0, 64, 64);
     canvasTex.needsUpdate = true;
     app.step(1 / 60);
-    state.shotAfterUpdate = hash(app.screenshot().dataUrl);
+    const lastShotDataUrl = await captureDataUrl(app);
+    state.shotAfterUpdate = hash(lastShotDataUrl);
 
     // Cheap non-dark pixel count over the app's own screenshot data URL.
     const probe = document.createElement("canvas");
@@ -176,7 +194,7 @@ async function run(): Promise<void> {
     const img = new Image();
     await new Promise<void>((resolve) => {
       img.onload = () => resolve();
-      img.src = app.screenshot().dataUrl;
+      img.src = lastShotDataUrl;
     });
     pctx.drawImage(img, 0, 0, 160, 90);
     const px = pctx.getImageData(0, 0, 160, 90).data;
