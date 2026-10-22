@@ -118,7 +118,15 @@ registerCliCommand({
   summary: "Bake octahedral impostor atlases (albedo+alpha, normal+depth) for a model asset",
   usage: "aura3d assets bake-impostor --asset <id> [--views 8] [--size 256] [--out <dir>] [--execute]",
   async run(argv, io) {
-    const { runImpostorBake } = await import("../../../../../tools/impostor-bake/index.js");
+    let runImpostorBake;
+    try {
+      ({ runImpostorBake } = await import("../../../../../tools/impostor-bake/index.js"));
+    } catch (error) {
+      throw new Error(
+        "aura3d assets bake-impostor: implementation module tools/impostor-bake/index.js is not reachable " +
+        `(${(error as Error).message}). This command is only available from the monorepo source tree.`
+      );
+    }
     return runImpostorBake(argv, io);
   }
 });

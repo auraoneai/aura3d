@@ -12,14 +12,13 @@ import { join, resolve } from "node:path";
 import { createHash } from "node:crypto";
 
 /**
- * Lane-02 math lives in `packages/rendering/src/environment/**`. aura3d-cli
- * may not depend on `@aura3d/rendering` (lane-05 package.json) and the
- * package's exports map has no `./lanes` subpath (lane-15), so the bake
- * runner resolves the lane barrel relative to the source tree — identical
- * layout under `packages/` in src and the tsc-emitted dist mirror.
+ * Lane-02 math lives in `packages/rendering/src/environment/**`; the packed
+ * CLI resolves it through the declared `@aura3d/rendering` dependency and the
+ * package's `./lanes` subpath export — no source-tree relative imports, so
+ * the command works from a packed install too.
  */
-type Lanes = typeof import("../../../../rendering/src/lanes/prd02.js");
-const lanes = (): Promise<Lanes> => import("../../../../rendering/src/lanes/prd02.js");
+type Lanes = typeof import("@aura3d/rendering/lanes");
+const lanes = (): Promise<Lanes> => import("@aura3d/rendering/lanes");
 
 interface BakeArgs {
   source: "room" | "hdr";

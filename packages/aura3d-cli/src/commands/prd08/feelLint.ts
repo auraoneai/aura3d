@@ -4,7 +4,7 @@
  * Math.random heuristics from the original rule. Registered from
  * `commands/prd08/index.ts`; hosted by `aura3d doctor --look` (PRD 13).
  */
-import { scanFeelSource } from "../../../../engine/src/agent-api/feel/lint/feelSourceScan.js";
+import { scanFeelSource } from "../../lint/feelSourceScan.js";
 
 export const feelLintRule: {
   readonly code: string;

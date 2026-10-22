@@ -6,7 +6,7 @@
  * and `prd08 motion-report` (S9: renders the motion-scene capture report).
  */
 import { registerCliCommand, registerCodemod, registerDoctorRule } from "../../contracts/commands.js";
-import { cameraCastCodemod } from "../../../../../tools/camera-cast-codemod/index.js";
+import { cameraCastCodemod } from "../../codemods/camera-cast.js";
 import { feelLintRule } from "./feelLint.js";
 import { motionReportCommand } from "./motionReport.js";
 
