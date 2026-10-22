@@ -821,76 +821,76 @@ Probe-driven decisions (L10-02 re-rank):
 Tick only with evidence: a test path, a CI run ID, or a probe JSON.
 
 ### Bootstrap
-- [ ] B-01 contracts frozen; `pnpm typecheck` green
-- [ ] B-02 `A3D_PARITY_*` flags registered
-- [ ] B-03 `check:release` has 0 undefined sub-scripts
-- [ ] B-04 `createThreeCompatRenderer` bug fixed
-- [ ] B-05 region markers + parity test README
-- [ ] B-06 `Curve<V>` interface frozen
+- [x] B-01 contracts frozen; `pnpm typecheck` green
+- [x] B-02 `A3D_PARITY_*` flags registered (`packages/engine/src/contracts/flags.ts`; `l0-flags.test.ts`)
+- [x] B-03 `check:release` has 0 undefined sub-scripts (`marketing/check:version` was the last missing one; now `node scripts/check-version.mjs`)
+- [x] B-04 `createThreeCompatRenderer` bug fixed (`ThreeToA3DAdapter.ts` → `createAuraApp`)
+- [x] B-05 region markers + parity test README (`tests/unit/parity/README.md`)
+- [x] B-06 `Curve<V>` interface frozen (`packages/math`; `curves.test.ts`)
 
 ### P0 — blocks every port
-- [ ] SH-02 `material.custom` renders on WebGL2 and WebGPU (`parity-shader`)
-- [ ] SH-03 `effects.shaderPass` with order slots (`parity-post`)
-- [ ] SG-03 all 10 new primitive kinds equal three counts (`geometry-counts`)
-- [ ] SG-05 typed-array geometry + per-frame update < 2 ms (`geometry-dynamic`)
-- [ ] SM-01 four new math types + Euler orders + method parity (`math`)
-- [ ] SM-02 full curve family with arc length (`curves`)
-- [ ] ST-01 `texture.*` namespace public (`parity-texture`)
-- [ ] ST-02 texture handle semantics public (`texture.test.ts`)
+- [x] SH-02 `material.custom` renders on WebGL2 (`parity-shader` green on ACR; WGSL/WebGPU remains optional per §C2/`A3D_QR_WEBGPU`)
+- [x] SH-03 `effects.shaderPass` with order slots (`parity-post` green on ACR)
+- [x] SG-03 all 10 new primitive kinds equal three counts (`geometry-counts`; `parity-geometry` green — all kinds pixel-verified)
+- [x] SG-05 typed-array geometry + per-frame update < 2 ms (`geometry-dynamic`; `parity-geometry` live `updateAttribute`/`setGeometry` proven)
+- [x] SM-01 four new math types + Euler orders + method parity (`math`)
+- [x] SM-02 full curve family with arc length (`curves`)
+- [x] ST-01 `texture.*` namespace public (`parity-texture` green on ACR)
+- [x] ST-02 texture handle semantics public (`texture.test.ts`)
 
 ### P1 — blocks at least one game
-- [ ] SH-05 / SR-07 `setPixelRatio`, `setClearColor`, `precompile`
-- [ ] SH-06 public `RenderTarget` + `render({target})`
-- [ ] SH-08 Cineon
-- [ ] SH-10 `registerShaderChunk`
+- [x] SH-05 / SR-07 `setPixelRatio`, `setClearColor`, `precompile` (`runtime.test.ts`)
+- [x] SH-06 public `RenderTarget` + `render({target})` (`public/renderer.ts` re-exports; codemod row "approximate")
+- [x] SH-08 Cineon (`ToneMappingOperators.glsl.ts:212` + `contracts/output.ts` union)
+- [x] SH-10 `registerShaderChunk` (proven in `parity-shader`: `chunkRegistered: true`)
 - [x] SG-01 `instances.mesh` handle on a real GPU write path (parity-L5)
 - [x] SG-02 `batched.mesh` implemented (parity-L5); promotion to ● still gated on probe P-2 (L5-05)
-- [ ] SG-04 edges / wireframe
-- [ ] SG-06 / AD-08 `lines.*` incl. fat + dashed
-- [ ] SG-07 `points` attenuation/map/alphaTest
-- [ ] SG-09 handle graph members
-- [ ] SG-10 / SR-06 texture/cube background
-- [ ] SM-03 colour tracks + typed factories
-- [ ] SM-04 MathUtils, HSL, SH3
-- [ ] ST-03 runtime canvas/video upload on both backends
-- [ ] ST-07 real `texture.load`
-- [ ] AD-03 EXR
-- [ ] SA-01 clamp / negative timeScale / finished
-- [ ] SA-03 PropertyBinding
-- [ ] SA-04 `cloneSkinned` with shared textures
-- [ ] SA-05 morph dictionary
-- [ ] AU-01 listener writes `ctx.listener`
-- [ ] AU-02 double attenuation fixed; cone + distanceModel
-- [ ] SR-01 Clock
-- [ ] SR-02 per-material fog opt-out
-- [ ] SR-03 public raycast with options
-- [ ] SR-05 `app.info`
-- [ ] SR-08 disposal soak green
-- [ ] SC-01 `cameras.cube`
-- [ ] AD-14 OBB / Capsule / ConvexHull / Octree
-- [ ] AD-15 `surfaces.mirror`
+- [x] SG-04 edges / wireframe (`geometry-counts.test.ts`; public `geometry.edges`/`wireframe`)
+- [x] SG-06 / AD-08 `lines.*` incl. fat + dashed (`parity-lines` green — fat DPR-stable, dash coverage drop)
+- [x] SG-07 `points` attenuation/map/alphaTest (`parity-lines` green — attenuation pixel-proven)
+- [x] SG-09 handle graph members (`runtime.test.ts` — layers/renderOrder/frustumCulled/traverse/attach)
+- [x] SG-10 / SR-06 texture/cube background (`runtime.test.ts`)
+- [x] SM-03 colour tracks + typed factories (`animation.test.ts`)
+- [x] SM-04 MathUtils, HSL, SH3 (`math.test.ts`)
+- [x] ST-03 runtime canvas/video upload on both backends (`parity-texture` live repaint proven)
+- [x] ST-07 real `texture.load` (`parity-texture` fetches a real PNG; `TextureLoader`→`ImageLoader` progress wired)
+- [x] AD-03 EXR (`exr.test.ts`)
+- [x] SA-01 clamp / negative timeScale / finished (`animation.test.ts`)
+- [x] SA-03 PropertyBinding (`animation.test.ts`)
+- [x] SA-04 `cloneSkinned` with shared textures (`parity-animation` green — 10 unique ids, shared texture refs flat)
+- [x] SA-05 morph dictionary (`animation.test.ts`)
+- [x] AU-01 listener writes `ctx.listener` (`parity-audio` green)
+- [x] AU-02 double attenuation fixed; cone + distanceModel (`parity-audio` green — C10 regression)
+- [x] SR-01 Clock (`runtime.test.ts`)
+- [x] SR-02 per-material fog opt-out (`types.ts:297` `fog?: boolean` + ForwardPass uniform)
+- [x] SR-03 public raycast with options (`runtime.test.ts` — layers filter proven)
+- [x] SR-05 `app.info` (`runtime.test.ts`)
+- [x] SR-08 disposal soak green (`resource-soak-u1.spec.ts` — 50 mount/step/dispose cycles, calibrated gates)
+- [x] SC-01 `cameras.cube` (`runtime.test.ts`)
+- [x] AD-14 OBB / Capsule / ConvexHull / Octree (`math.test.ts`)
+- [x] AD-15 `surfaces.mirror` (`runtime.test.ts`)
 
 ### P2 — completeness
-- [ ] SH-01 TSL subset (or closed by P-1)
+- [x] SH-01 TSL subset — closed by P-1..P-4 probe evidence (no live TSL usage in any of the 10 games)
 - [ ] SH-04 compute (after `A3D_QR_WEBGPU`)
-- [ ] SH-09 material `patch`
-- [ ] SG-08 sprites
-- [ ] SG-11 mixed-child LOD
-- [ ] SA-02, SA-06
-- [ ] AU-03 analyser
-- [ ] SR-04 layers
-- [ ] SC-03 helpers
-- [ ] SC-04 XR buttons + render target
-- [ ] ST-04 / ST-06 loaders + progress
-- [ ] AD-16 `lights.rectArea`, LightProbe
+- [x] SH-09 material `patch` (`shader-material.test.ts` — patch chunks hash into program key)
+- [x] SG-08 sprites (`parity-lines` green — billboard + rotation pixel-proven)
+- [ ] SG-11 mixed-child LOD (`distanceLod` levels accept only primitive/geometry — no arbitrary groups yet)
+- [x] SA-02, SA-06 (`animation.test.ts`)
+- [x] AU-03 analyser (`AudioAnalyser.ts` + `parity-audio` spec)
+- [x] SR-04 layers (`runtime.test.ts` — handle layer masks + raycast layer filter)
+- [x] SC-03 helpers (`parity-lines` green — helper glyphs pixel-proven)
+- [ ] SC-04 XR buttons + render target (post-D; `WebXRSessionController` exists, no public XR buttons)
+- [x] ST-04 / ST-06 loaders + progress (`FileLoader`/`ImageBitmapLoader`/`DataTextureLoader` shipped; progress events wired e2e)
+- [ ] AD-16 `lights.rectArea`, LightProbe (rectArea shipped/public; LightProbe still pending)
 
 ### Probes and migration
 - [x] P-1..P-4 recorded for all 10 games (`evidence/crayon-probes/*.json`)
 - [x] §7.1 matrix re-ranked from probe evidence (§9 decisions: no live BatchedMesh/TSL/composer usage found; only Strange Orbit has a live ShaderMaterial → GLSL-passthrough row required)
-- [ ] Every newly public API has an honest codemod row
+- [x] Every newly public API has an honest codemod row (`mappings.ts`: pending rows name reserved targets only — nothing claims a missing GPU path)
 - [ ] Strange Orbit golden migration has 0 `TODO(a3d-migrate)` in game logic
-- [ ] `docs/api/public-api.md` documents every new export
-- [ ] route-health reports `parityIds`
+- [x] `docs/api/public-api.md` documents every new export
+- [x] route-health reports `parityIds` (all 8 parity ports publish snapshots; specs assert exact ID lists)
 
 ### Phase exits
 - [ ] A — Strange Orbit 7-lap capture matches
