@@ -11,8 +11,17 @@
  * bounds transformed by every live instance matrix.
  */
 import { AuraNodeBuilder } from "./builder.js";
-import { BatchedMeshState, registerBatchedState, type AuraBatchedGeometryInput } from "./batched.js";
-import type { AuraBatchedNode, AuraColor, AuraMaterialSpec } from "./types.js";
+import {
+  BatchedMeshState,
+  registerBatchedState,
+  registerBatchedColorConverter,
+  registerBatchedGeometryResolver,
+  registerInstancedMeshFactory,
+  type AuraBatchedGeometryInput
+} from "./batchedState.js";
+import { createProductionPrimitiveGeometry } from "../compiler/primitives.js";
+import { colorToRgba } from "../colorUtils.js";
+import type { AuraBatchedNode, AuraColor, AuraMaterialSpec, AuraPrimitiveNode } from "./types.js";
 
 /** `instances.mesh` geometry input: pooled `Geometry`, builtin name, or custom spec. */
 export type AuraInstancedGeometryInput = AuraBatchedGeometryInput;
@@ -176,3 +185,17 @@ export function instancedMesh(
   registerBatchedState(state);
   return new AuraInstancedMeshHandle(node, state);
 }
+
+// Registered into the batchedState leaf so `instances.mesh` can reach the
+// factory without `instances.ts` statically importing this module — that edge
+// closed the builder→physics→primitives→instances→instancedMesh→builder
+// eval cycle (see batchedState.ts header). The resolver registration mirrors
+// batched.ts so deep imports of this module still resolve geometry inputs.
+registerInstancedMeshFactory(instancedMesh);
+registerBatchedColorConverter(colorToRgba);
+registerBatchedGeometryResolver((input) => {
+  if (typeof input === "string") {
+    return createProductionPrimitiveGeometry({ kind: "primitive", primitive: input } as AuraPrimitiveNode);
+  }
+  return createProductionPrimitiveGeometry({ kind: "primitive", primitive: "custom", geometry: input } as AuraPrimitiveNode);
+});

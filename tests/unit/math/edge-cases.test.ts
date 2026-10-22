@@ -20,7 +20,10 @@ describe("math edge cases", () => {
     expect(empty.isEmpty()).toBe(true);
     expect(empty.containsPoint(Vector3.zero.clone())).toBe(false);
     expect(empty.intersectsBox(occupied)).toBe(false);
-    expect(empty.union(occupied)).toBe(occupied);
+    // three.js parity: union is unconditional componentwise min/max, so the
+    // ±Inf empty box passes the occupied bounds through — equal values, not
+    // identity (identity shortcuts diverged on finite-empty operands).
+    expect(empty.union(occupied)).toEqual(occupied);
     expect(new Ray(Vector3.zero.clone(), Vector3.forward).intersectBox(empty)).toBeUndefined();
     expect(empty.getCenter().equals(Vector3.zero.clone())).toBe(true);
     expect(empty.getSize().equals(Vector3.zero.clone())).toBe(true);

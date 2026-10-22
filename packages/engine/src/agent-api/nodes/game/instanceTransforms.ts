@@ -21,7 +21,7 @@
  */
 import type { AuraApp, AuraBatchedNode, AuraPrimitiveNode, AuraRuntimeNodeHandle, AuraSceneNode, AuraTransformSpec } from "../../index.js";
 import type { NodeHandleExtension } from "../../../contracts/runtimeNodes.js";
-import { batchedStateForNode } from "../batched.js";
+import { batchedStateForNode } from "../batchedState.js";
 
 export type SceneNodeWithRuntime = AuraSceneNode & {
   instances?: readonly AuraTransformSpec[];

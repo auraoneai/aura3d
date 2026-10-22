@@ -14,7 +14,7 @@ import { primitive } from "../nodes/primitives.js";
 import { createInstancedModelNode, type InstancedModelVec3 } from "../../instances-model/InstancedModel.js";
 import { defineAuraCustomGeometry, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { material } from "./material.js";
-import { instancedMesh as instancedMeshFactory } from "./instancedMesh.js";
+import { instancedMeshFactory } from "./batchedState.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 
 
@@ -48,7 +48,7 @@ export const instances = lazyNamespace(() => ({
     geometry: import("./instancedMesh.js").AuraInstancedGeometryInput,
     material: AuraMaterialSpec | undefined,
     count: number
-  ) => instancedMeshFactory(geometry, material, count),
+  ) => instancedMeshFactory()(geometry, material, count),
   custom: (
     spec: AuraCustomGeometrySpec,
     options: Omit<AuraPrimitiveOptions, "geometry"> & {
