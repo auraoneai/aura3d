@@ -10,7 +10,9 @@ describe("math geometry and scalar helpers", () => {
   });
 
   it("rejects invalid sphere radius and ray direction", () => {
-    expect(() => new Sphere(Vector3.zero.clone(), -1)).toThrow(/radius/i);
+    expect(() => new Sphere(Vector3.zero.clone(), Number.NaN)).toThrow(/radius/i);
+    // three.js parity: a negative radius is the empty-sphere sentinel, not an error.
+    expect(new Sphere(Vector3.zero.clone(), -1).isEmpty()).toBe(true);
     expect(() => new Ray(Vector3.zero.clone(), Vector3.zero.clone())).toThrow(/direction/i);
   });
 

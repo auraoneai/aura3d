@@ -121,8 +121,10 @@ export class Box3 {
     return this.union(transformed);
   }
 
-  /** three.js `Box3.union` — pure componentwise min/max (±Inf empty boxes compose correctly). */
+  /** three.js `Box3.union` — componentwise min/max; empty operands short-circuit to the other box. */
   union(box: Box3): Box3 {
+    if (this.isEmpty()) return box;
+    if (box.isEmpty()) return this;
     return new Box3(this.min.min(box.min), this.max.max(box.max));
   }
 

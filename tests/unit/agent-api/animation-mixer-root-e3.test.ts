@@ -95,7 +95,7 @@ describe("E3 root animation mixer breadth", () => {
     setAnimationTimeScale(action, 0.5);
     mixer.update(0.25);
     expect(action.time).toBeCloseTo(0.75, 10);
-    expect(() => setAnimationTimeScale(mixer, -1)).toThrow(/setAnimationTimeScale/);
+    expect(() => setAnimationTimeScale(mixer, Number.NaN)).toThrow(/setAnimationTimeScale/);
     expect(() => setAnimationTimeScale({} as never, 1)).toThrow(/setAnimationTimeScale/);
   });
 

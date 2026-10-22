@@ -8,12 +8,12 @@ export type AnimationEvent = AnimationEventMarker & {
   readonly clipName: string;
 };
 
-export function eventsBetween(markers: readonly AnimationEventMarker[], clipName: string, fromTime: number, toTime: number, duration: number, looped: boolean): readonly AnimationEvent[] {
+export function eventsBetween(markers: readonly AnimationEventMarker[], clipName: string, fromTime: number, toTime: number, duration: number, looped: boolean, forward = true): readonly AnimationEvent[] {
   const events: AnimationEvent[] = [];
   if (duration <= 0) {
     return events;
   }
-  if (toTime >= fromTime) {
+  if (forward) {
     if (!looped) {
       for (const marker of markers) {
         if (marker.time > fromTime && marker.time <= toTime) {

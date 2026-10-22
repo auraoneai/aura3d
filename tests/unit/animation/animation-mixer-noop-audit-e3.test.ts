@@ -136,7 +136,7 @@ describe("E3 mixer no-op audit", () => {
 
   test("setTimeScale with a bad value throws naming AnimationMixer.setTimeScale", () => {
     const mixer = new AnimationMixer();
-    expect(() => mixer.setTimeScale(-1)).toThrow(/AnimationMixer\.setTimeScale/);
+    expect(() => mixer.setTimeScale(Number.NaN)).toThrow(/AnimationMixer\.setTimeScale/);
   });
 });
 

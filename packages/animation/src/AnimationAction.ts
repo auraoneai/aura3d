@@ -144,12 +144,12 @@ export class AnimationAction {
   }
 
   seek(time: number): this {
-    if (!Number.isFinite(time)) {
-      throw new Error("AnimationAction.seek: time must be finite.");
+    if (!Number.isFinite(time) || time < 0) {
+      throw new Error("AnimationAction.seek: time must be finite and non-negative.");
     }
-    const clamped = this.clip.duration > 0 ? Math.max(0, Math.min(time, this.clip.duration)) : 0;
-    if (this.clip.duration > 0 && (time < 0 || time > this.clip.duration)) {
-      console.warn(`AnimationAction.seek: time ${time} outside clip "${this.clip.name}" range [0, ${this.clip.duration}]; clamped to ${clamped}.`);
+    const clamped = this.clip.duration > 0 ? Math.min(time, this.clip.duration) : 0;
+    if (this.clip.duration > 0 && time > this.clip.duration) {
+      console.warn(`AnimationAction.seek: time ${time} exceeds clip "${this.clip.name}" duration ${this.clip.duration}; clamped to the duration.`);
     }
     this.time = clamped;
     return this;
@@ -203,6 +203,7 @@ export class AnimationAction {
     const scaledDelta = delta * this.timeScale;
     const duration = this.clip.duration;
     let looped = false;
+    let finishedThisUpdate = false;
     let next: number;
     if (this.loopMode === "repeat") {
       next = previous + scaledDelta;
@@ -213,6 +214,7 @@ export class AnimationAction {
         looped = true;
         if (this.loopsCompleted >= this.repetitions) {
           next = scaledDelta >= 0 ? duration : 0;
+          finishedThisUpdate = true;
           this.finish(scaledDelta >= 0 ? 1 : -1);
         } else {
           // three dispatches 'loop' for intermediate wraps but 'finished'
@@ -273,7 +275,9 @@ export class AnimationAction {
     if (this.clip.events.length === 0) {
       return [];
     }
-    return eventsBetween(this.clip.events, this.clip.name, previous, next, this.clip.duration, looped);
+    // A wrap that exhausts `repetitions` clamps the playhead to the boundary —
+    // for marker purposes that is a single un-wrapped span from `previous`.
+    return eventsBetween(this.clip.events, this.clip.name, previous, next, this.clip.duration, looped && !finishedThisUpdate, scaledDelta >= 0);
   }
 
   /**

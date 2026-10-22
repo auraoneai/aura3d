@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(22);
-    expect(report.implementedCount).toBe(11);
+    expect(report.implementedCount).toBe(12);
     expect(report.partialCount).toBe(0);
     expect(report.helperCount).toBe(9);
     expect(report.missingCount).toBe(0);
-    expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(11);
-    expect(report.nonProductionReadyCount).toBe(11);
-    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "analytical-studio-box", "linear-fog", "exponential-fog", "rgbe-hdr-parser", "cube-camera-reflections", "volumetric-weather-enclosure", "terrain-heightfield"]);
-    expect(report.backlog).toHaveLength(11);
+    expect(report.unsupportedCount).toBe(1);
+    expect(report.productionReadyCount).toBe(12);
+    expect(report.nonProductionReadyCount).toBe(10);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "analytical-studio-box", "linear-fog", "exponential-fog", "rgbe-hdr-parser", "exr-parser", "cube-camera-reflections", "volumetric-weather-enclosure", "terrain-heightfield"]);
+    expect(report.backlog).toHaveLength(10);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -71,8 +71,8 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("transmission-refraction")?.gap).toMatch(/depth ray marching.*not claimed/i);
     expect(byId.get("volumetric-weather-enclosure")?.status).toBe("implemented");
     expect(byId.get("volumetric-weather-enclosure")?.gap).toMatch(/multiple scattering.*unsupported/i);
-    expect(byId.get("exr-parser")?.status).toBe("unsupported");
-    expect(byId.get("exr-parser")?.gap).toMatch(/loader shells were removed/i);
+    expect(byId.get("exr-parser")?.status).toBe("implemented");
+    expect(byId.get("exr-parser")?.gap).toMatch(/PXR24.*explicitly unsupported/i);
     expect(byId.get("cube-camera-reflections")?.status).toBe("implemented");
     expect(byId.get("linear-fog")?.status).toBe("implemented");
     expect(byId.get("linear-fog")?.evidence.join(" ")).toMatch(/more than 1,000 changed pixels/i);
