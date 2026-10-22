@@ -28,10 +28,20 @@ test("Aura3D mini game responds to keyboard input, scoring, and reset", async ({
   expect(initial?.animation.clip).toBe("idle");
 
   await page.keyboard.down("ArrowRight");
-  await page.waitForTimeout(650);
-  await page.keyboard.up("ArrowRight");
-
+  // Hold ArrowRight until the hero actually crosses the threshold rather than
+  // a fixed wall-clock hold: under software-GL or load the frame loop ticks
+  // slower than real time (dt clamp), so a fixed hold is meaningless on slow
+  // runners. waitForFunction polls inside the page's own animation frame.
+  await page.waitForFunction(
+    (startX) => {
+      const state = (window as unknown as { readonly __AURA3D_MINI_GAME__?: MiniGameState }).__AURA3D_MINI_GAME__;
+      return (state?.player.x ?? 0) > startX + 1.2;
+    },
+    initial?.player.x ?? 0,
+    { timeout: 120_000 }
+  );
   const moved = await page.evaluate(readMiniGameState);
+  await page.keyboard.up("ArrowRight");
   expect(moved?.player.x ?? 0).toBeGreaterThan((initial?.player.x ?? 0) + 1.2);
   expect(["walk", "sprint"]).toContain(moved?.animation.clip);
   // Report-only while the C-19 handle is a stub: tracksApplied is read into the
@@ -40,29 +50,61 @@ test("Aura3D mini game responds to keyboard input, scoring, and reset", async ({
   console.log(`[mini-game] hero tracksApplied=${tracks} clip=${moved?.animation.clip}`);
 
   await page.keyboard.press("Space");
-  await page.waitForTimeout(180);
+  await page.waitForFunction(
+    (baseY) => {
+      const state = (window as unknown as { readonly __AURA3D_MINI_GAME__?: MiniGameState }).__AURA3D_MINI_GAME__;
+      return (state?.player.y ?? 0) > baseY;
+    },
+    moved?.player.y ?? 0,
+    { timeout: 60_000 }
+  );
   const jumped = await page.evaluate(readMiniGameState);
   expect(jumped?.player.y ?? 0).toBeGreaterThan(moved?.player.y ?? 0);
   expect(jumped?.animation.clip).toBe("jump");
 
   await page.keyboard.down("ArrowRight");
-  await page.waitForTimeout(1600);
-  await page.keyboard.up("ArrowRight");
+  await page.waitForFunction(
+    () => {
+      const state = (window as unknown as { readonly __AURA3D_MINI_GAME__?: MiniGameState }).__AURA3D_MINI_GAME__;
+      return (state?.score ?? 0) >= 50;
+    },
+    undefined,
+    { timeout: 120_000 }
+  );
   const progressed = await page.evaluate(readMiniGameState);
+  await page.keyboard.up("ArrowRight");
   expect(progressed?.score ?? 0).toBeGreaterThanOrEqual(50);
   expect(progressed?.events.length ?? 0).toBeGreaterThan(0);
 
   // Hazard death path: dash right into the spike lane resets position and
   // records a hazard/respawn event.
   await page.keyboard.down("ArrowRight");
-  await page.waitForTimeout(2000);
-  await page.keyboard.up("ArrowRight");
+  // Best-effort: the assertion below also accepts collect events, so a slow
+  // walk to the spike lane must not time out the spec outright.
+  await page
+    .waitForFunction(
+      () => {
+        const state = (window as unknown as { readonly __AURA3D_MINI_GAME__?: MiniGameState }).__AURA3D_MINI_GAME__;
+        return (state?.events ?? []).some((event) => event.includes("hazard") || event.includes("respawn"));
+      },
+      undefined,
+      { timeout: 90_000 }
+    )
+    .catch(() => undefined);
   const hazard = await page.evaluate(readMiniGameState);
+  await page.keyboard.up("ArrowRight");
   const deathsOrEvents = hazard?.events ?? [];
   expect(deathsOrEvents.some((event) => event.includes("hazard") || event.includes("respawn") || event.includes("collect"))).toBe(true);
 
   await page.keyboard.press("KeyR");
-  await page.waitForTimeout(120);
+  await page.waitForFunction(
+    () => {
+      const state = (window as unknown as { readonly __AURA3D_MINI_GAME__?: MiniGameState }).__AURA3D_MINI_GAME__;
+      return (state?.events ?? []).some((event) => event.includes("reset"));
+    },
+    undefined,
+    { timeout: 60_000 }
+  );
   const reset = await page.evaluate(readMiniGameState);
   expect(reset?.player.x ?? 99).toBeLessThan(0.3);
   expect(reset?.events.some((event) => event.includes("reset"))).toBe(true);

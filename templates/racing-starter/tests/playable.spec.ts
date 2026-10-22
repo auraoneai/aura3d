@@ -51,24 +51,38 @@ test("racing starter responds to keyboard input, reports real geometry certifica
   expect(rows.every((row) => row.category === "racing")).toBe(true);
   expect(initial?.geometry.report).toBe("tests/geometry-certification.json");
 
+  // Threshold holds, not wall-clock holds: on slow software-GL runners the
+  // frame loop ticks slower than real time, so a fixed hold is meaningless.
   await page.keyboard.down("KeyW");
-  await page.waitForTimeout(650);
-  await page.keyboard.up("KeyW");
+  await page.waitForFunction(
+    (baseSpeed) => ((window as unknown as { readonly __AURA3D_RACING_STARTER__?: { speed: number } }).__AURA3D_RACING_STARTER__?.speed ?? 0) > baseSpeed + 0.5,
+    initial?.speed ?? 0,
+    { timeout: 60_000 }
+  );
   const accelerated = await page.evaluate(readRacingState);
+  await page.keyboard.up("KeyW");
   expect(accelerated?.speed ?? 0).toBeGreaterThan((initial?.speed ?? 0) + 0.5);
   expect(accelerated?.progress).not.toBe(initial?.progress);
 
   await page.keyboard.down("KeyW");
   await page.keyboard.down("KeyA");
-  await page.waitForTimeout(400);
+  await page.waitForFunction(
+    (baseHeading) => Math.abs(((window as unknown as { readonly __AURA3D_RACING_STARTER__?: { heading: number } }).__AURA3D_RACING_STARTER__?.heading ?? baseHeading) - baseHeading) > 0.01,
+    accelerated?.heading ?? 0,
+    { timeout: 60_000 }
+  );
+  const steered = await page.evaluate(readRacingState);
   await page.keyboard.up("KeyA");
   await page.keyboard.up("KeyW");
-  const steered = await page.evaluate(readRacingState);
   expect(steered?.heading).not.toBe(accelerated?.heading);
   expect(steered?.events.length ?? 0).toBeGreaterThanOrEqual(initial?.events.length ?? 0);
 
   await page.keyboard.press("KeyR");
-  await page.waitForTimeout(120);
+  await page.waitForFunction(
+    () => ((window as unknown as { readonly __AURA3D_RACING_STARTER__?: { events: readonly string[] } }).__AURA3D_RACING_STARTER__?.events ?? []).some((event) => event.includes("reset")),
+    undefined,
+    { timeout: 60_000 }
+  );
   const reset = await page.evaluate(readRacingState);
   expect(reset?.status).toBe("running");
   expect(reset?.checkpoint).toBe(0);

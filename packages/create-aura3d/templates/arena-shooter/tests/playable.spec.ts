@@ -18,11 +18,18 @@ test("arena shooter is playable: move, fire, waves, reset", async ({ page }) => 
   const initial = await readProof();
   expect(["playing", "wave-cleared"]).toContain(initial!.status);
 
-  // WASD moves the ship.
+  // WASD moves the ship — hold until the position actually crosses the
+  // threshold; a fixed wall-clock hold is meaningless on slow software-GL
+  // runners where the frame loop ticks slower than real time.
+  const beforeX = initial!.ship.position[0] ?? 0;
   await page.keyboard.down("KeyD");
-  await page.waitForTimeout(400);
-  await page.keyboard.up("KeyD");
+  await page.waitForFunction(
+    (startX) => ((window as unknown as { __AURA3D_ARENA_SHOOTER__?: { ship: { position: readonly number[] } } }).__AURA3D_ARENA_SHOOTER__?.ship.position[0] ?? 0) > startX + 0.05,
+    beforeX,
+    { timeout: 60_000 }
+  );
   const moved = await readProof();
+  await page.keyboard.up("KeyD");
   expect(moved!.ship.position[0]).toBeGreaterThan(initial!.ship.position[0] + 0.05);
 
   // Space fires a live bolt.
@@ -42,7 +49,12 @@ test("arena shooter is playable: move, fire, waves, reset", async ({ page }) => 
   // Reset restores score/shield and restarts wave 1.
   const scored = await readProof();
   await page.keyboard.press("KeyR");
-  await page.waitForTimeout(300);
+  await page.waitForFunction(
+    () => ((window as unknown as { __AURA3D_ARENA_SHOOTER__?: { score: number; shield: number } }).__AURA3D_ARENA_SHOOTER__?.shield ?? 0) === 5
+      && ((window as unknown as { __AURA3D_ARENA_SHOOTER__?: { score: number } }).__AURA3D_ARENA_SHOOTER__?.score ?? 1) === 0,
+    undefined,
+    { timeout: 60_000 }
+  );
   const reset = await readProof();
   expect(reset!.status).not.toBe("game-over");
   expect(reset!.shield).toBe(5);

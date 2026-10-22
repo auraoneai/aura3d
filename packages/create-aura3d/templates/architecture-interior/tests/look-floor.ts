@@ -204,7 +204,7 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
     const stride = 4; // pixels — 16×16 sample grid
     let sampled = 0;
     let bright = 0;
-    const buckets = new Set<number>();
+    const bucketCounts = new Map<number, number>();
     // Central-region lit-pixel bbox: edges carry floor/backdrop, the subject
     // mass is what every §6.4 template frames mid-frame.
     const x0 = Math.floor(width * 0.1);
@@ -222,7 +222,8 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
         const g = pixels[offset + 1] ?? 0;
         const b = pixels[offset + 2] ?? 0;
         sampled += 1;
-        buckets.add(((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4));
+        const bucket = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+        bucketCounts.set(bucket, (bucketCounts.get(bucket) ?? 0) + 1);
         const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
         if (luma > BRIGHT_LUMA) {
           bright += 1;
@@ -245,7 +246,7 @@ export async function assertTemplateLookFloor(page: Page, options: LookFloorOpti
     return {
       sampledPixels: sampled,
       brightPixels: bright,
-      uniqueBuckets: buckets.size,
+      uniqueBuckets: bucketCounts.size,
       subjectBounds,
       appliedLook,
       lookLintErrors,

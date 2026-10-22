@@ -66,9 +66,13 @@ test("arena shooter route exposes a live gameplay proof", async ({ page }) => {
   // Movement drives the ship position in the proof.
   const before = await page.evaluate(() => (window as unknown as { __AURA3D_ARENA_SHOOTER__?: { ship: { position: readonly number[] } } }).__AURA3D_ARENA_SHOOTER__?.ship.position ?? [0, 0, 0]);
   await page.keyboard.down("KeyD");
-  await page.waitForTimeout(600);
-  await page.keyboard.up("KeyD");
+  await page.waitForFunction(
+    (startX) => ((window as unknown as { __AURA3D_ARENA_SHOOTER__?: { ship: { position: readonly number[] } } }).__AURA3D_ARENA_SHOOTER__?.ship.position[0] ?? 0) > startX + 0.05,
+    before[0] ?? 0,
+    { timeout: 60_000 }
+  );
   const moved = await page.evaluate(() => (window as unknown as { __AURA3D_ARENA_SHOOTER__?: { ship: { position: readonly number[] } } }).__AURA3D_ARENA_SHOOTER__?.ship.position ?? [0, 0, 0]);
+  await page.keyboard.up("KeyD");
   expect(moved[0]).toBeGreaterThan((before[0] ?? 0) + 0.05);
 
   expect(errors).toEqual([]);
