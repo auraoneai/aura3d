@@ -1,5 +1,5 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, extname, join, normalize, relative, resolve } from "node:path";
 import ts from "typescript";
 import * as esbuild from "esbuild";
@@ -284,11 +284,12 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
 
       if (file.endsWith(".ts")) {
         // Entries under tests/browser (and the PRD-09 packages/game/fixtures/*
-        // page entries, which the game-shell specs load as routes) are
+        // page entries, which the game-shell specs load as routes, and apps/*
+        // showcase entries embedded by marketing/demo-stage iframes) are
         // page-level module scripts: serve them as a single esbuild bundle so
         // the browser evaluates one module instead of ~1,300 transformed files.
         const servedPath = normalize(pathname).replace(/\\/g, "/");
-        const bundled = servedPath.startsWith("/tests/browser/") || /^\/packages\/game\/fixtures\/[^/]+\/src\/main\.ts$/.test(servedPath)
+        const bundled = servedPath.startsWith("/tests/browser/") || /^\/packages\/game\/fixtures\/[^/]+\/src\/main\.ts$/.test(servedPath) || /^\/apps\/[^/]+\/src\/main\.ts$/.test(servedPath)
           ? await bundleForBrowser(file)
           : undefined;
         const output = bundled ?? transformed(file, () => transpileForBrowser(readFileSync(file, "utf8"), file, root));
@@ -335,6 +336,21 @@ function resolveDirectoryModuleRedirect(root: string, pathname: string): string 
   return undefined;
 }
 
+let appPublicDirsCache: string[] | undefined;
+function appPublicDirs(root: string): string[] {
+  if (appPublicDirsCache === undefined) {
+    const appsDir = join(root, "apps");
+    appPublicDirsCache = existsSync(appsDir)
+      ? readdirSync(appsDir, { withFileTypes: true })
+          .filter((entry) => entry.isDirectory())
+          .map((entry) => join(appsDir, entry.name, "public"))
+          .filter((dir) => existsSync(dir))
+          .sort()
+      : [];
+  }
+  return appPublicDirsCache;
+}
+
 function resolveRequest(root: string, pathname: string): string | undefined {
   const normalizedPath = normalize(contextualPathForLegacyPath(pathname)).replace(/^(\.\.[/\\])+/, "");
   const candidates: string[] = [];
@@ -367,6 +383,13 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     // contract so route assets such as /favicon.svg do not become harness-only
     // 404s while production and preview builds resolve them correctly.
     candidates.push(join(root, "public", normalizedPath.replace(/^[/\\]?/, "")));
+    // App-level public/ dirs merge at the origin root the same way — the
+    // deploy output (.vercel/output/static/) flattens every app's public
+    // tree (e.g. /toptennis/* from apps/showcase-top-tennis/public/toptennis).
+    // Scan lazily so apps added later still resolve without a restart.
+    for (const appPublic of appPublicDirs(root)) {
+      candidates.push(join(appPublic, normalizedPath.replace(/^[/\\]?/, "")));
+    }
   }
 
   if (!extname(normalizedPath)) {

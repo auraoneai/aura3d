@@ -14,6 +14,21 @@ export function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: Mutable
   markRouteState("error", snapshot, diagnostics);
 }
 
+/*
+ * Ready is marked at mount-settle, which can precede the first rendered frame;
+ * without a live mirror `data-aura3d-draw-calls` would stay at the mount-time
+ * snapshot (often 0) forever, and route-health consumers would read a stale
+ * count on every route. The frame loop calls this after each render so the
+ * diagnostics attributes always reflect the last real frame.
+ */
+export function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void {
+  if (typeof document !== "undefined" && document.body.dataset.aura3dReady !== undefined) {
+    document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
+    document.body.dataset.aura3dRuntimeBackend = diagnostics.renderer.runtime.backend;
+    document.body.dataset.aura3dRendererMode = diagnostics.renderer.rendererMode;
+  }
+}
+
 function markRouteState(status: "ready" | "error", snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void {
   if (typeof document !== "undefined") {
     document.body.dataset.aura3dReady = status === "ready" ? "true" : "error";

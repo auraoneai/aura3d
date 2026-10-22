@@ -1,7 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
-import { expect, test, type Page } from "@playwright/test";
+import { inflateSync } from "node:zlib";
+import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const routes = [
@@ -61,6 +62,12 @@ test.describe("starter examples", () => {
     for (const { route, slug, asserts } of routes) {
       await page.goto(`${server.origin}${route}`);
       await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
+      // drawCalls/backend attributes are mirrored live by the frame loop; the
+      // first post-ready frames still report the mount-time snapshot, so poll
+      // until a real frame has been recorded.
+      await expect.poll(() =>
+        page.locator("body").getAttribute("data-aura3d-draw-calls").then((value) => Number(value))
+      ).toBeGreaterThan(0);
       const drawCalls = Number(await page.locator("body").getAttribute("data-aura3d-draw-calls"));
       const runtimeBackend = await page.locator("body").getAttribute("data-aura3d-runtime-backend");
       const rendererMode = await page.locator("body").getAttribute("data-aura3d-renderer-mode");
@@ -68,9 +75,15 @@ test.describe("starter examples", () => {
       expect(runtimeBackend).toBe("production-runtime");
       expect(rendererMode).toBe("production");
       const canvas = page.locator("canvas");
+      // Route-ready can precede async asset/streamed-model attach; every route
+      // asserts a rendered center object, so wait for it to appear before
+      // taking the report screenshot and canvas profile. Profiling reads the
+      // composited screenshot: the 4.0 renderer does not preserve the drawing
+      // buffer, so raw gl.readPixels on the canvas context returns zeros.
+      await expect.poll(async () => profileCanvasPng(await canvas.screenshot()).centerObjectPixels, { timeout: 60_000 }).toBeGreaterThan(0);
       const screenshotPath = resolve(screenshotDir, `${slug}.png`);
       const screenshot = await canvas.screenshot({ path: screenshotPath });
-      const profile = await readCanvasProfile(page);
+      const profile = profileCanvasPng(screenshot);
       asserts(profile);
       expect(screenshot.byteLength).toBeGreaterThan(1000);
       results.push({
@@ -102,24 +115,65 @@ interface CanvasProfile {
   readonly uniqueBuckets: number;
 }
 
-async function readCanvasProfile(page: Page): Promise<CanvasProfile> {
-  return page.locator("canvas").evaluate((element) => {
-    const canvas = element as HTMLCanvasElement;
-    const gl = canvas.getContext("webgl2", { preserveDrawingBuffer: true });
-    if (!gl) {
-      return {
-        centerObjectPixels: 0,
-        cyanPixels: 0,
-        amberPixels: 0,
-        magentaPixels: 0,
-        yellowPixels: 0,
-        brightNeutralPixels: 0,
-        darkDetailPixels: 0,
-        uniqueBuckets: 0
-      };
+function profileCanvasPng(bytes: Buffer): CanvasProfile {
+  const empty: CanvasProfile = {
+    centerObjectPixels: 0,
+    cyanPixels: 0,
+    amberPixels: 0,
+    magentaPixels: 0,
+    yellowPixels: 0,
+    brightNeutralPixels: 0,
+    darkDetailPixels: 0,
+    uniqueBuckets: 0
+  };
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  if (!bytes.subarray(0, signature.byteLength).equals(signature)) return empty;
+  let offset = signature.byteLength;
+  let width = 0;
+  let height = 0;
+  let colorType = 0;
+  const idatChunks: Buffer[] = [];
+  while (offset + 12 <= bytes.byteLength) {
+    const length = bytes.readUInt32BE(offset);
+    offset += 4;
+    const type = bytes.subarray(offset, offset + 4).toString("ascii");
+    offset += 4;
+    const data = bytes.subarray(offset, offset + length);
+    offset += length + 4;
+    if (type === "IHDR") {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      colorType = data[9] ?? 0;
+    } else if (type === "IDAT") {
+      idatChunks.push(Buffer.from(data));
+    } else if (type === "IEND") {
+      break;
     }
-    const pixels = new Uint8Array(canvas.width * canvas.height * 4);
-    gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  }
+  const bytesPerPixel = colorType === 6 ? 4 : colorType === 2 ? 3 : 0;
+  if (width <= 0 || height <= 0 || bytesPerPixel === 0) return empty;
+  const inflated = inflateSync(Buffer.concat(idatChunks));
+  const rowLength = width * bytesPerPixel;
+  const rows = new Uint8Array(width * height * bytesPerPixel);
+  let previous = new Uint8Array(rowLength);
+  for (let y = 0; y < height; y += 1) {
+    const rowOffset = y * (rowLength + 1);
+    const filter = inflated[rowOffset] ?? 0;
+    // PNG rows are top-down; the metric loop below uses GL readPixels-style
+    // bottom-up coordinates, so store each decoded row flipped.
+    const row = rows.subarray((height - 1 - y) * rowLength, (height - y) * rowLength);
+    for (let x = 0; x < rowLength; x += 1) {
+      const raw = inflated[rowOffset + 1 + x] ?? 0;
+      const left = x >= bytesPerPixel ? row[x - bytesPerPixel] ?? 0 : 0;
+      const up = previous[x] ?? 0;
+      const upLeft = x >= bytesPerPixel ? previous[x - bytesPerPixel] ?? 0 : 0;
+      row[x] = (raw + pngFilterPredictor(filter, left, up, upLeft)) & 0xff;
+    }
+    previous = row;
+  }
+  {
+    const pixels = rows;
+    const canvas = { width, height };
     const buckets = new Set<string>();
     let centerObjectPixels = 0;
     let cyanPixels = 0;
@@ -132,7 +186,7 @@ async function readCanvasProfile(page: Page): Promise<CanvasProfile> {
     for (let y = 0; y < canvas.height; y += 4) {
       for (let x = 0; x < canvas.width; x += 4) {
         if (x > canvas.width * 0.76 && y > canvas.height * 0.74) continue;
-        const offset = (y * canvas.width + x) * 4;
+        const offset = (y * canvas.width + x) * bytesPerPixel;
         const r = pixels[offset] ?? 0;
         const g = pixels[offset + 1] ?? 0;
         const b = pixels[offset + 2] ?? 0;
@@ -158,5 +212,23 @@ async function readCanvasProfile(page: Page): Promise<CanvasProfile> {
       darkDetailPixels,
       uniqueBuckets: buckets.size
     };
-  });
+  }
+}
+
+function pngFilterPredictor(filter: number, left: number, up: number, upLeft: number): number {
+  if (filter === 0) return 0;
+  if (filter === 1) return left;
+  if (filter === 2) return up;
+  if (filter === 3) return Math.floor((left + up) / 2);
+  if (filter === 4) return paethPredictor(left, up, upLeft);
+  throw new Error(`unsupported PNG filter ${filter}`);
+}
+
+function paethPredictor(left: number, up: number, upLeft: number): number {
+  const prediction = left + up - upLeft;
+  const leftDistance = Math.abs(prediction - left);
+  const upDistance = Math.abs(prediction - up);
+  const upLeftDistance = Math.abs(prediction - upLeft);
+  if (leftDistance <= upDistance && leftDistance <= upLeftDistance) return left;
+  return upDistance <= upLeftDistance ? up : upLeft;
 }

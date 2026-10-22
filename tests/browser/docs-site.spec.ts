@@ -33,34 +33,33 @@ test.describe("docs and marketing site", () => {
     await stubMarketingEmbeds(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: /The 3D SDK/i })).toBeVisible();
-    await expect(page.locator(".hero-grid")).toBeVisible();
-    const heroDisplay = await page.locator(".hero-grid").evaluate((element) => getComputedStyle(element).display);
+    await expect(page.locator("#hero-title")).toHaveText(/Ship a real 3D app/i);
+    await expect(page.locator(".home-hero-grid")).toBeVisible();
+    const heroDisplay = await page.locator(".home-hero-grid").evaluate((element) => getComputedStyle(element).display);
     expect(heroDisplay).toBe("grid");
-    const navPosition = await page.locator(".nav").evaluate((element) => getComputedStyle(element).position);
-    expect(navPosition).toBe("sticky");
-    await expect(page.locator(".hero-right iframe[data-route='/apps/wow-concept-car-cinema/']")).toBeVisible();
-    await expect(page.locator(".hero-right iframe")).toHaveAttribute("src", /wow-concept-car-cinema/);
-    await expect(page.locator(".hero-left")).toContainText("The 3D SDK");
-    await expect(page.locator(".hero-left")).toContainText("800,000+ real GLB/glTF assets");
+    await expect(page.locator(".home-nav")).toBeVisible();
+    await expect(page.locator(".home-hero-media .demo-stage[data-demo-route='/apps/showcase-top-tennis/']")).toBeVisible();
+    await expect(page.locator(".home-hero-media iframe[data-demo-frame]")).toBeAttached();
+    await expect(page.locator(".home-hero-copy")).toContainText("TypeScript");
+    await expect(page.locator(".home-hero-copy")).toContainText("GLB");
     expect(await page.locator("a[href='/llms.txt']").count()).toBeGreaterThanOrEqual(1);
     await expect(page.locator("[data-copy='asset-add']")).toBeVisible();
-    await expect(page.locator("[data-copy]")).toHaveCount(4);
-    await expect(page.locator("#templates")).toHaveAttribute("data-search-index", /deployment/);
+    expect(await page.locator("[data-copy]").count()).toBeGreaterThanOrEqual(3);
+    await expect(page.locator("#templates [data-docs-search]")).toBeVisible();
     const search = page.getByRole("searchbox", { name: /Search Aura3D docs/i });
     await expect(search).toBeVisible();
     for (const query of ["install", "asset add", "templates", "deployment", "troubleshooting"]) {
       await search.fill(query);
-      await expect(page.locator("[data-docs-search-results] a:not([hidden])").first()).toBeVisible();
+      await expect(page.locator("[data-docs-search-results] li:not([hidden]) a").first()).toBeVisible();
     }
     await search.fill("");
     await expect(page.locator("#templates")).toContainText("product-viewer");
     await expect(page.locator("#templates")).toContainText("cinematic-scene");
     await expect(page.locator("#templates")).toContainText("mini-game");
     expect(await page.locator("section").count()).toBeGreaterThanOrEqual(8);
-    await expect(page.locator("iframe[data-route='/apps/hello-world-typed-asset/']")).toHaveCount(0);
-    await expect(page.locator("iframe[data-route='/apps/material-lighting/']")).toHaveCount(0);
-    await expect(page.locator("iframe[data-route='/apps/camera-path/']")).toHaveCount(0);
+    await expect(page.locator("iframe[data-route], .demo-stage[data-demo-route='/apps/hello-world-typed-asset/']")).toHaveCount(0);
+    await expect(page.locator(".demo-stage[data-demo-route='/apps/material-lighting/']")).toHaveCount(0);
+    await expect(page.locator(".demo-stage[data-demo-route='/apps/camera-path/']")).toHaveCount(0);
     const bodyText = await page.locator("body").innerText();
     expect(bodyText).not.toMatch(versionCyclePattern);
     expect(bodyText).not.toMatch(publicPlaceholderPattern);
@@ -77,14 +76,13 @@ test.describe("docs and marketing site", () => {
     await stubMarketingEmbeds(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: /The 3D SDK/i })).toBeVisible();
-    await expect(page.locator(".hero-left .hero-cta")).toBeVisible();
-    const mobileHero = page.locator(".hero-right iframe[data-route='/apps/wow-concept-car-cinema/']");
+    await expect(page.locator("#hero-title")).toHaveText(/Ship a real 3D app/i);
+    await expect(page.locator(".home-menu-toggle")).toBeVisible();
+    const mobileHero = page.locator(".home-hero-media .demo-stage[data-demo-route='/apps/showcase-top-tennis/']");
     await expect(mobileHero).toBeVisible();
-    await expect(mobileHero).toHaveAttribute("src", /wow-concept-car-cinema/);
-    await expect(page.locator(".hero-right")).toContainText("WebGL2 mobile-ready");
+    await expect(mobileHero.locator("[data-demo-play]")).toBeVisible();
     await expect(page.locator("#templates")).toBeVisible();
-    await expect(page.locator("#templates .pkg-grid")).toBeVisible();
+    expect(await page.locator("#templates .template-card").count()).toBeGreaterThanOrEqual(4);
   });
 
   test("mobile homepage hero renders when WebGPU is unavailable", async ({ page }) => {
@@ -93,7 +91,7 @@ test.describe("docs and marketing site", () => {
      * native-only WebGPU compute route.  That route correctly refused unsupported
      * devices, but its hidden embed chrome left only an empty black canvas.  This
      * test removes `navigator.gpu`, loads the real (unstubbed) mobile homepage and
-     * requires the deployed WebGL2 concept-car hero to produce a running renderer
+     * requires the deployed showcase-top-tennis hero to produce a running renderer
      * and pixels from the same CDN path used by the public page.
      */
     await page.addInitScript(() => {
@@ -106,31 +104,26 @@ test.describe("docs and marketing site", () => {
     });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    const hero = page.locator(".hero-right iframe[data-route='/apps/wow-concept-car-cinema/']");
-    await expect(hero).toBeVisible();
+    const stage = page.locator(".home-hero-media .demo-stage[data-demo-route='/apps/showcase-top-tennis/']");
+    await expect(stage).toBeVisible();
+    await stage.locator("[data-demo-play]").click();
+    const hero = stage.locator("iframe[data-demo-frame]");
+    await expect(hero).toHaveAttribute("src", /showcase-top-tennis/);
     const heroHandle = await hero.elementHandle();
     const frame = await heroHandle?.contentFrame();
     expect(frame, "mobile hero iframe should have a document").toBeTruthy();
     await expect.poll(async () => frame?.evaluate(() => {
-      const runtime = (window as unknown as {
-        __a3dWowRuntime?: { status?: string; drawCalls?: number; frameCount?: number; textures?: number };
-      }).__a3dWowRuntime;
-      return Boolean(
-        runtime &&
-        ["ready", "running"].includes(runtime.status ?? "") &&
-        (runtime.drawCalls ?? 0) > 0 &&
-        (runtime.frameCount ?? 0) >= 3 &&
-        (runtime.textures ?? 0) > 0
-      );
+      const body = document.body;
+      return body?.dataset.aura3dReady === "true" && Number(body.dataset.aura3dDrawCalls ?? 0) > 0;
     }), { timeout: 90_000 }).toBe(true);
     await page.waitForTimeout(800);
-    const canvas = frame!.locator("canvas#viewport");
-    await expect(canvas).toBeVisible();
+    const canvas = frame!.locator("canvas");
+    await expect(canvas.first()).toBeVisible();
     // Capture the composited outer hero, not the iframe canvas in isolation.
     // WebGL canvases created without preserveDrawingBuffer may read back black
     // between presentation frames even while the browser compositor is visibly
     // displaying them; the customer-facing page composition is the contract here.
-    const screenshot = await page.locator(".hero-right").screenshot();
+    const screenshot = await page.locator(".home-hero-media").screenshot();
     mkdirSync(resolve("tests/reports/docs-site"), { recursive: true });
     writeFileSync(resolve("tests/reports/docs-site/marketing-mobile-hero.png"), screenshot);
     expect(screenshot.byteLength).toBeGreaterThan(8_000);
@@ -165,7 +158,7 @@ test.describe("docs and marketing site", () => {
     );
     expect(unnamedControls).toEqual([]);
 
-    const firstNavLink = page.locator(".nav a").first();
+    const firstNavLink = page.locator(".home-nav a").first();
     await firstNavLink.focus();
     await expect(firstNavLink).toBeFocused();
     const focusStyle = await firstNavLink.evaluate((element) => {

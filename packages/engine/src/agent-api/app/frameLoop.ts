@@ -20,6 +20,7 @@ import { qrFlagsWithAnimationMixer, resolveQrFlags } from "../../contracts/flags
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { renderer } from "../rendererDiagnostics.js";
 import { resolveCameraFrame } from "../compiler/camera.js";
+import { updateRouteDiagnostics } from "./routeState.js";
 import { text3D } from "../nodes/text3d.js";
 import { timeline } from "../nodes/timeline.js";
 import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusionTest } from "../compiler/labels.js";
@@ -177,6 +178,7 @@ export async function startProductionRender(
     diagnosticsState.renderSize = [canvas.width, canvas.height];
     diagnosticsState.evidence = collectAuraSceneEvidence(snapshot);
     diagnosticsState.renderer = renderer.diagnostics;
+    updateRouteDiagnostics(diagnosticsState);
     if (labelLayer) {
       // Reproject every frame against the renderer's own camera so labels track
       // their anchors while the camera moves.
