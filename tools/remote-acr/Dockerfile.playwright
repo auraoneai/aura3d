@@ -47,6 +47,9 @@ RUN pnpm install --frozen-lockfile
 #    subpaths — so both src/ and dist/ ship for every workspace package.
 COPY tests/browser/ ./tests/browser/
 COPY tests/support/ ./tests/support/
+# Repo-root fixtures/ — parity labs fetch /fixtures/threejs-parity/assets/*
+# (soldier.glb et al.) from the example dev server's origin-root resolution.
+COPY fixtures/ ./fixtures/
 COPY examples/ ./examples/
 # Repo public/ mirrors at the origin root in the dev server — the engine
 # lazily fetches /aura-environments/*.manifest.json for the baked presets.
