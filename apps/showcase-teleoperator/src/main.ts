@@ -13,6 +13,9 @@ import {
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
 import { assets as rootAssets } from "../../../src/aura-assets";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 type Vec3 = [number, number, number];
 
@@ -1351,7 +1354,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
     renderer: { quality: "high" },
-    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
+    qualityRebuild: { flags: ["game"] }
   });
 
   const req = (id: string) => auraApp.nodes.require(id);

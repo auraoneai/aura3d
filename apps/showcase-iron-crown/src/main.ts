@@ -47,6 +47,9 @@ import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/s
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 type IronCrownWindow = Window & {
   __AURA3D_GAME__?: { readonly state?: string };
@@ -331,11 +334,7 @@ const fightingGame = createGame({
     dash: { punch: { fovDeg: 1.1, ms: 120 } },
     ko: { hitStop: 0.12, shake: 0.65, punch: { fovDeg: 3.2, ms: 500 }, flash: { color: "#ff4f46", peak: 0.3, ms: 420 }, rumble: { strong: 1, ms: 600 } }
   },
-  // A3D_QR_POST is default-on engine-wide, but its LegacyPost lane loses
-  // its render targets after any device lifecycle event (remount, resize)
-  // on ANGLE/Vulkan and kills presentation — repro'd on aura-links-3d too.
-  // Pin it off until the engine-side LDR postprocess defect is fixed.
-  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+  qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
     sections: {

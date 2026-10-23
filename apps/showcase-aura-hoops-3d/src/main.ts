@@ -43,6 +43,9 @@ import {
   mountTouchControls,
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 type Vec3 = [number, number, number];
 type AnyHandle = AuraRuntimeNodeHandle | undefined;
@@ -772,7 +775,7 @@ try {
   auraApp = createAuraApp("#app", {
     scene: buildScene(venue),
     ...looks.appOptions(venue.look),
-    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+    qualityRebuild: { flags: ["game"] },
     diagnostics: false
   } as any);
 } catch (err) {

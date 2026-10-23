@@ -23,17 +23,9 @@ import {
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
   puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
 } from "./game/stage";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
-// Ensure A3D_QR_COMPILER and VFX fog are disabled by default so environment lighting
-// and crisp coastal contrast are preserved without milky atmospheric haze.
-{
-  const url = new URL(window.location.href);
-  const qr = url.searchParams.get("a3d-qr") ?? "";
-  if (!qr.includes("compiler") || !qr.includes("vfxFog")) {
-    url.searchParams.set("a3d-qr", qr ? `${qr},-compiler,-vfxFog,-vfx.fog,-vfx` : "game,-compiler,-vfxFog,-vfx.fog,-vfx");
-    window.history.replaceState(null, "", url.toString());
-  }
-}
+installBlackFrameGuard();
 
 // ---------------------------------------------------------------- params --
 
@@ -68,7 +60,7 @@ const chapter = CHAPTERS[levelById(START_LEVEL).chapter]!;
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   renderer: { qualityProfile: "production" },
-  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+  qualityRebuild: { flags: ["game"] },
   input: {
     actions: {
       ability: ["Space", "KeyQ", "Enter"],

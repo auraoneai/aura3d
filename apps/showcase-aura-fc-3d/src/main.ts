@@ -25,6 +25,9 @@ import { createHud, clubFor } from "./game/hud";
 import { createModes } from "./game/modes";
 import { VENUES, VENUE_ORDER } from "./game/content";
 import type { UserInputFrame, PlayerState, SimEvent } from "./game/types";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 type Vec3 = [number, number, number];
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -45,7 +48,7 @@ function boot(): void {
     app = createAuraApp("#app", {
       scene: buildFcScene(),
       ...looks.appOptions(LOOK_ID),
-      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
+      qualityRebuild: { flags: ["game"] }
     } as any);
   } catch (e) {
     console.error("[fc3d] createAuraApp failed", e);

@@ -6,17 +6,11 @@ import { st, frame, startRun, evidenceExtra, GHOST_LABEL } from "./game/sim";
 import { mountUI, tickUI, isPaused } from "./game/hud";
 import type { MazeId } from "./game/mazes";
 import "./styles.css";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 const params = new URLSearchParams(window.location.search);
-if (!params.has("a3d-qr")) {
-  params.set("a3d-qr", "game,materials,-compiler");
-  try {
-    const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
-    window.history.replaceState(null, "", newUrl);
-  } catch {
-    // ignore history errors
-  }
-}
 const AUTOSTART = params.get("autostart") !== "0";
 const PROBE = params.get("probe"); // capture-bisect: "dom" mounts the shell without the engine
 
@@ -82,7 +76,7 @@ const g = createGame({
     dash: { punch: { fovDeg: 1.6, ms: 190 } },
     ready: { punch: { fovDeg: 1.4, ms: 240 }, flash: { color: "#ffffff", peak: 0.1, ms: 220 } }
   },
-  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+  qualityRebuild: { flags: ["game", "materials"] },
   evidence: {
     schema: 1,
     sections: {

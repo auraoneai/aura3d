@@ -42,6 +42,9 @@ import {
   mountTouchControls
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 /* ================================================================== *
  *  Types + small math helpers                                         *
@@ -1243,7 +1246,7 @@ function boot(): void {
   try {
     auraApp = createAuraApp("#app", {
       scene: buildParkScene(PARKS.sandlot),
-      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+      qualityRebuild: { flags: ["game"] },
       renderer: { quality: "high" }
     } as any);
   } catch (err) {

@@ -17,23 +17,15 @@ import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, type FloorDef } from "./maps"
 import {
   createSim, cellCenter, WEAPONS, type Sim, type SimInput, type WeaponId
 } from "./sim";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 declare global {
   interface Window {
     __gameEvidence?: unknown;
     __AURA3D_GAME_EVIDENCE__?: unknown;
     __AURA3D_ROUTE_READY__?: unknown;
-  }
-}
-
-// Ensure A3D_QR_COMPILER is disabled by default so environment lighting is preserved
-// without requiring ?a3d-qr=-compiler in the browser URL.
-{
-  const url = new URL(window.location.href);
-  const qr = url.searchParams.get("a3d-qr") ?? "";
-  if (!qr.includes("compiler")) {
-    url.searchParams.set("a3d-qr", qr ? `${qr},-compiler` : "game,-compiler");
-    window.history.replaceState(null, "", url.toString());
   }
 }
 
@@ -475,7 +467,7 @@ const mg = createGame({
     secret: { punch: { fovDeg: 1.6, ms: 280 }, flash: { color: "#ffb648", peak: 0.12, ms: 300 } },
     win: { punch: { fovDeg: 2.6, ms: 420 }, flash: { color: "#ffd76a", peak: 0.2, ms: 500 } }
   },
-  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+  qualityRebuild: { flags: ["game"] },
   evidence: { schema: 1, sections: { bunkerZero: () => window.__gameEvidence ?? { status: "unbound" } } }
 });
 const app = mg.app;

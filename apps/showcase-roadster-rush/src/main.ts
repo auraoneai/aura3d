@@ -14,6 +14,9 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 type Vec3 = [number, number, number];
 
@@ -773,7 +776,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
     renderer: { quality: "high" },
-    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
+    qualityRebuild: { flags: ["game"] }
   });
 
   const req = (id: string) => auraApp.nodes.require(id);

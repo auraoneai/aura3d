@@ -83,6 +83,9 @@ import {
   suggestClub
 } from "./game/sim";
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 /* ------------------------------------------------------------------ *
  *  Small math helpers                                                 *
@@ -2427,7 +2430,7 @@ function boot(): void {
   auraApp = createAuraApp("#app", {
     scene: buildHoleScene(state.course, state.hole, state.terrain, null),
     ...looks.appOptions(state.course.look),
-    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
+    qualityRebuild: { flags: ["game"] }
   } as any);
 
   bootStage("audio");

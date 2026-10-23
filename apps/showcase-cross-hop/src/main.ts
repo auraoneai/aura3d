@@ -4,17 +4,11 @@ import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { buildScene, probeScene, bindApp, frame, syncVisuals, st, startRun, evidenceExtra } from "./game/core";
 import { mountUI, tickUI } from "./game/ui";
 import "./styles.css";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 const params = new URLSearchParams(window.location.search);
-if (!params.has("a3d-qr")) {
-  params.set("a3d-qr", "-compiler,-post,-vfxFog");
-  try {
-    const newUrl = `${window.location.pathname}?${params.toString()}${window.location.hash}`;
-    window.history.replaceState(null, "", newUrl);
-  } catch {
-    // ignore history errors
-  }
-}
 const AUTOPLAY = params.get("autoplay") === "1" || params.get("demo") === "1";
 const AUTOSTART = params.get("autostart") !== "0";
 
@@ -87,7 +81,7 @@ const g = createGame({
     rescue: { punch: { fovDeg: 2.6, ms: 320 }, flash: { color: "#ff9ed2", peak: 0.22, ms: 300 }, rumble: { strong: 0.6, ms: 300 } },
     theme: { punch: { fovDeg: 2, ms: 280 }, flash: { color: "#ffffff", peak: 0.14, ms: 240 } }
   },
-  qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+  qualityRebuild: { flags: ["game"] },
   evidence: {
     schema: 1,
     sections: {

@@ -12,6 +12,9 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 type Vec3 = [number, number, number];
 
@@ -1284,7 +1287,7 @@ function installAura3DTopTennisRenderer(): void {
       auraApp = createAuraApp(canvas, {
         scene: buildTennisScene(),
         renderer: { quality: "high" },
-        qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
+        qualityRebuild: { flags: ["game"] }
       });
       auraAppInstance = auraApp;
 

@@ -38,6 +38,9 @@ import { createDirector } from "./game/director";
 import { createHud, renderPlayCards, showHud, updateHud, updateVenueBanner, banner, bigCall, ticker } from "./game/hud";
 import { publishEvidence } from "./game/evidence";
 import * as series from "./game/series";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 type Vec3 = [number, number, number];
 type JuiceCamera = { readonly shake: { add(n: number): void }; readonly punch: { trigger(o: Record<string, unknown>): void }; evidence(): unknown };
@@ -122,7 +125,7 @@ try {
   auraApp = createAuraApp(canvas, {
     scene: buildScene(),
     ...looks.appOptions(LOOK_ID),
-    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+    qualityRebuild: { flags: ["game"] },
     ...(LITE ? { pixelRatio: 1 } : {})
   } as any);
 } catch (e) {

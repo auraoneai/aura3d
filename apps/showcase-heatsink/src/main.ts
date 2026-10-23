@@ -16,6 +16,9 @@ import {
 } from "@aura3d/engine";
 import { AudioContextManager } from "@aura3d/engine/audio";
 import { assets as catalogAssets } from "../../../src/aura-assets";
+import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+installBlackFrameGuard();
 
 const heatsinkFallbackDefinitions = {
   heatsinkArch: {
@@ -918,7 +921,7 @@ async function bootThermalDriftShowcase(): Promise<void> {
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(),
     renderer: { quality: "high" },
-    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] },
+    qualityRebuild: { flags: ["game"] },
     diagnostics: false
   });
 
