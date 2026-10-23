@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { injectedEngine, pristineEngine } from "./oracle";
+import { injectedEngine, pristineEngine, shippedEngine, useShipped } from "./oracle";
 import { humanPolicy, mulberry32 } from "./scenario";
 
 const DIFFICULTIES = ["beginner", "club", "ace", "pro", "legend"] as const;
@@ -86,7 +86,7 @@ function attempt(fn: (...a: any[]) => any, args: any[]): { ok: true; value: stri
 describe("M-AI/swipe: every owned function matches the original on randomised engine states", () => {
   const snaps = captureSnapshots(40);
   const Pristine = pristineEngine();
-  const Injected = injectedEngine();
+  const Injected = useShipped ? shippedEngine() : injectedEngine();
   const names = Object.keys(GEN);
   const stats: string[] = [];
   afterAll(() => { console.log("FUZZSTATS\n" + stats.join("\n")); });

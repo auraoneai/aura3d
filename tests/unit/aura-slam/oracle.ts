@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import ts from "typescript";
 import { AI_ENV_NAMES, AI_OWNED_NAMES, createAiModule } from "../../../examples/aura-slam/sim/ai";
+import { createMatchEngine } from "../../../examples/aura-slam/sim/create";
 import { SWIPE_ENV_NAMES, SWIPE_OWNED_NAMES, createSwipeModule } from "../../../examples/aura-slam/sim/swipe";
 
 const EXPOSE_NAMES = () => [...AI_OWNED_NAMES, ...SWIPE_OWNED_NAMES].join(",");
@@ -88,4 +89,10 @@ export function injectedEngine(hooks?: InjectedHooks): OracleFactory {
     },
   };
   return { create: (options = {}) => Engine.create({ ...options, __aiInject: aiInject }) };
+}
+
+/** The shipped engine (sim/create.ts: engine.ts wired to ai.ts, swipe.ts, serve.ts and the typed physics/strokes). Set SLAM_ENGINE=shipped to run the M-AI suites against it. */
+export const useShipped = process.env.SLAM_ENGINE === "shipped";
+export function shippedEngine(): OracleFactory {
+  return { create: (options = {}) => (createMatchEngine as any)({ ...options, exposeInternals: true }) };
 }

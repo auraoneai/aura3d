@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { injectedEngine, pristineEngine } from "./oracle";
+import { injectedEngine, pristineEngine, shippedEngine, useShipped } from "./oracle";
 import { humanPolicy, mulberry32, stateDigest } from "./scenario";
 
 const DIFFICULTIES = ["beginner", "club", "ace", "pro", "legend"] as const;
@@ -10,7 +10,7 @@ const cheap = (e: any) => { const s = e.state; return [s.tick, s.phase, s.ball.x
 function run(difficulty: string, venue: string, seed: number, steps: number, swipe: boolean) {
   const calls = new Map<string, number>();
   const A = pristineEngine().create({ difficulty, venue, allowSwipe: swipe, controlStyle: swipe ? "swipe" : "classic" });
-  const B = injectedEngine({ calls }).create({ difficulty, venue, allowSwipe: swipe, controlStyle: swipe ? "swipe" : "classic" });
+  const B = (useShipped ? shippedEngine() : injectedEngine({ calls })).create({ difficulty, venue, allowSwipe: swipe, controlStyle: swipe ? "swipe" : "classic" });
   const ra = mulberry32(seed), rb = mulberry32(seed);
   let aiHits = 0;
   for (let i = 0; i < steps; i++) {
@@ -36,7 +36,7 @@ describe("M-AI: TS AI inside the original engine reproduces the original traject
       it(`${difficulty} on ${venue}: 3,000 steps identical`, () => {
         const { A, calls } = run(difficulty, venue, 1000 + DIFFICULTIES.indexOf(difficulty) * 7 + VENUES.indexOf(venue), 3000, false);
         expect(A.state.tick).toBe(3000);
-        expect(calls.get("updateAI") ?? 0).toBeGreaterThan(1000);
+        if (!useShipped) expect(calls.get("updateAI") ?? 0).toBeGreaterThan(1000);
       }, 120_000);
     }
   }
@@ -47,8 +47,8 @@ describe("M-AI/swipe: swipe control style and long matches also reproduce the or
     it(`${difficulty} with swipe controls: 3,000 steps identical, swipe module exercised`, () => {
       const { A, calls } = run(difficulty, "hard", 5000 + DIFFICULTIES.indexOf(difficulty), 3000, true);
       expect(A.state.tick).toBe(3000);
-      expect(calls.get("sw.updateSwipePlayer") ?? 0).toBeGreaterThan(100);
-      expect(calls.get("sw.swipeActive") ?? 0).toBeGreaterThan(1000);
+      if (!useShipped) expect(calls.get("sw.updateSwipePlayer") ?? 0).toBeGreaterThan(100);
+      if (!useShipped) expect(calls.get("sw.swipeActive") ?? 0).toBeGreaterThan(1000);
     }, 120_000);
   }
   for (const difficulty of ["club", "legend"] as const) {

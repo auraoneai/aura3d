@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { createAiController } from "../../../examples/aura-slam/sim/aiController";
-import { injectedEngine, pristineEngine } from "./oracle";
+import { injectedEngine, pristineEngine, shippedEngine, useShipped } from "./oracle";
 import { humanPolicy, mulberry32 } from "./scenario";
 
 describe("AiController facade (ported TS) agrees with the original's own decisions on identical states", () => {
   it("planShot, steer and planServe", () => {
     const Pristine = pristineEngine();
-    const Injected = injectedEngine();
+    const Injected = useShipped ? shippedEngine() : injectedEngine();
     let shots = 0, steers = 0, serves = 0;
     for (const difficulty of ["beginner", "club", "ace", "pro", "legend"] as const) {
       const A = Pristine.create({ difficulty, venue: "hard" });
