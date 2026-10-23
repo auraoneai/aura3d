@@ -413,6 +413,14 @@ export interface CameraLike {
   readonly projectionMatrix?: Float32Array | readonly number[];
   readonly viewMatrix?: Float32Array | readonly number[];
   readonly viewProjectionMatrix?: Float32Array | readonly number[];
+  /**
+   * Real view and projection matrices for `material.custom` programs only (their `viewMatrix` /
+   * `projectionMatrix` built-ins). A camera that exposes just `viewProjectionMatrix` (the engine app
+   * path) would otherwise leave those built-ins at identity, drawing custom vertex stages in NDC.
+   * Deliberately NOT used for frame uniforms or shadow selection, so existing scenes are unchanged.
+   */
+  readonly shaderViewMatrix?: Float32Array | readonly number[];
+  readonly shaderProjectionMatrix?: Float32Array | readonly number[];
   /** threejs-parity SR-04: three's `camera.layers` — nodes whose layers do not intersect this mask are absent from the frame. */
   readonly layerMask?: number;
   resize?(width: number, height: number): void;
@@ -1219,6 +1227,7 @@ export class Renderer {
           cameraViewProjectionMatrix: rasterViewProjection,
           // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
           auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          customFrameCamera: resolvedCamera?.shaderViewMatrix || resolvedCamera?.shaderProjectionMatrix ? { viewMatrix: resolvedCamera.shaderViewMatrix, projectionMatrix: resolvedCamera.shaderProjectionMatrix } : undefined,
           timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
@@ -1262,6 +1271,7 @@ export class Renderer {
           cameraViewProjectionMatrix: rasterViewProjection,
           // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
           auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          customFrameCamera: resolvedCamera?.shaderViewMatrix || resolvedCamera?.shaderProjectionMatrix ? { viewMatrix: resolvedCamera.shaderViewMatrix, projectionMatrix: resolvedCamera.shaderProjectionMatrix } : undefined,
           timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: postprocess ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary
@@ -1607,6 +1617,7 @@ export class Renderer {
           cameraViewProjectionMatrix: rasterViewProjection,
           // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
           auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          customFrameCamera: resolvedCamera?.shaderViewMatrix || resolvedCamera?.shaderProjectionMatrix ? { viewMatrix: resolvedCamera.shaderViewMatrix, projectionMatrix: resolvedCamera.shaderProjectionMatrix } : undefined,
           timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: "linear",
           shaderLibrary: this.shaderLibrary,
@@ -1650,6 +1661,7 @@ export class Renderer {
           cameraViewProjectionMatrix: rasterViewProjection,
           // SH-02: `material.custom` frame built-ins (u_projectionMatrix, u_time).
           auraFrameCamera: resolvedCamera?.projectionMatrix ? { projectionMatrix: resolvedCamera.projectionMatrix } : undefined,
+          customFrameCamera: resolvedCamera?.shaderViewMatrix || resolvedCamera?.shaderProjectionMatrix ? { viewMatrix: resolvedCamera.shaderViewMatrix, projectionMatrix: resolvedCamera.shaderProjectionMatrix } : undefined,
           timeSeconds: typeof performance !== "undefined" ? performance.now() / 1000 : Date.now() / 1000,
           outputColorSpace: postprocess ? "linear" : "srgb",
           shaderLibrary: this.shaderLibrary
@@ -2807,7 +2819,7 @@ function resolveCamera(
   camera?: CameraLike,
   viewport?: { readonly width: number; readonly height: number },
   options: { readonly allowSceneCamera?: boolean } = {}
-): { readonly viewProjectionMatrix: Mat4; readonly viewMatrix?: Mat4; readonly projectionMatrix?: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number]; readonly layerMask?: number } | undefined {
+): { readonly viewProjectionMatrix: Mat4; readonly viewMatrix?: Mat4; readonly projectionMatrix?: Mat4; readonly shaderViewMatrix?: Mat4; readonly shaderProjectionMatrix?: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number]; readonly layerMask?: number } | undefined {
   const resolved = camera ?? (options.allowSceneCamera === false ? undefined : resolveSceneCamera(source));
   if (!resolved) {
     return undefined;
@@ -2820,10 +2832,13 @@ function resolveCamera(
   resolved.updateCameraMatrices?.();
   if (resolved.viewProjectionMatrix) {
     const viewMatrix = resolved.viewMatrix ? toMat4(resolved.viewMatrix, "viewMatrix") : undefined;
+    const { shaderViewMatrix: shaderView, shaderProjectionMatrix: shaderProjection } = resolved as CameraLike;
     return {
       viewProjectionMatrix: toMat4(resolved.viewProjectionMatrix, "viewProjectionMatrix"),
       ...resolvedLayerMask,
       ...(viewMatrix ? { viewMatrix } : {}),
+      ...(shaderView ? { shaderViewMatrix: toMat4(shaderView, "shaderViewMatrix") } : {}),
+      ...(shaderProjection ? { shaderProjectionMatrix: toMat4(shaderProjection, "shaderProjectionMatrix") } : {}),
       // threejs-parity SH-02: custom-shader `u_projectionMatrix` source.
       ...(resolved.projectionMatrix ? { projectionMatrix: toMat4(resolved.projectionMatrix, "projectionMatrix") } : {}),
       ...(resolved instanceof Camera

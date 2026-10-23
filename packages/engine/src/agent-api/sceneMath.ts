@@ -130,12 +130,17 @@ export function mergeBounds(a: GltfBounds, b: GltfBounds): GltfBounds {
   };
 }
 
-export function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): Float32Array {
+/** The camera's view, projection and combined matrices (column-major) for one frame. */
+export function createCameraMatrices(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): { readonly view: Float32Array; readonly projection: Float32Array; readonly viewProjection: Float32Array } {
   const cameraSpec = snapshot.camera;
   const { target, eye } = resolveCameraFrame(snapshot, cameraSpec, time, runtimeNodes);
   const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
   const projection = createCameraProjection(cameraSpec, aspect);
-  return new Float32Array(multiplyMat4(projection, view));
+  return { view: new Float32Array(view), projection: new Float32Array(projection), viewProjection: new Float32Array(multiplyMat4(projection, view)) };
+}
+
+export function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time: number, runtimeNodes?: AuraRuntimeNodeRegistry): Float32Array {
+  return createCameraMatrices(snapshot, aspect, time, runtimeNodes).viewProjection;
 }
 
 export function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | AuraEffectNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean, time = 0): Float32Array {

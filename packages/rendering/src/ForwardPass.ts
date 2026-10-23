@@ -136,6 +136,11 @@ export interface ForwardPassOptions {
    * wiring Q-15-*); defaults to the High tier when unset.
    */
   readonly qualityTier?: AuraQualityTierSettings;
+  /** `material.custom` view/projection built-ins when the camera only exposed a combined view-projection (see `CameraLike.shaderViewMatrix`). */
+  readonly customFrameCamera?: {
+    readonly viewMatrix?: Float32Array | readonly number[];
+    readonly projectionMatrix?: Float32Array | readonly number[];
+  };
   /** C-08: fields of the AuraFrame UBO the options above do not already carry. */
   readonly auraFrameCamera?: {
     readonly projectionMatrix?: Float32Array | readonly number[];
@@ -1963,10 +1968,10 @@ function applyCustomShaderFrameUniforms(
     uniforms.set("u_resolution", [Math.max(1, frameWidth), Math.max(1, frameHeight)]);
   }
   if (reflected.has("u_viewMatrix") && !uniforms.has("u_viewMatrix")) {
-    uniforms.set("u_viewMatrix", toMat4Uniform(options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"));
+    uniforms.set("u_viewMatrix", toMat4Uniform(options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"));
   }
   if (reflected.has("u_projectionMatrix") && !uniforms.has("u_projectionMatrix")) {
-    uniforms.set("u_projectionMatrix", toMat4Uniform(options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"));
+    uniforms.set("u_projectionMatrix", toMat4Uniform(options.customFrameCamera?.projectionMatrix ?? options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"));
   }
 }
 

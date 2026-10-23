@@ -5,7 +5,7 @@ import type { AuraDegradation } from "../../contracts/compiler.js";
 import { geometry } from "../nodes/geometry.js";
 import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
-import { createModelMatrix, createViewProjection, shouldNormalizeModelNode } from "../sceneMath.js";
+import { createCameraMatrices, createModelMatrix, shouldNormalizeModelNode } from "../sceneMath.js";
 import { applyProductionActorFootPlanting, applyProductionActorMorphTargets, attachProductionActorEvidence, createProductionRuntimeMetadata, productionActorModelBounds, resolveProductionActorRuntimeState } from "./actors.js";
 import { resolveCameraFrame } from "./camera.js";
 import { createSceneLabelOcclusionTest } from "./labels.js";
@@ -161,7 +161,8 @@ export function createProductionRuntimeRendererInput(
   const attachedItems: readonly RenderItem[] = compatibility ? [...(compatibility.source.collectRenderItems?.() ?? compatibility.source.renderItems ?? [])] : [];
   const items: RenderItem[] = [...attachedItems];
   prd01ModelMatrixCache?.beginFrame();
-  const viewProjectionMatrix = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
+  const cameraMatrices = createCameraMatrices(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
+  const viewProjectionMatrix = cameraMatrices.viewProjection;
   const cameraPosition = resolveCameraFrame(snapshot, snapshot.camera, time, runtimeNodes).eye;
   for (const node of groups.flatten(snapshot.nodes)) {
     if (isRenderableModelNode(node) && createAssetProvenance(node.asset).source === "inline-definition") {
@@ -374,7 +375,7 @@ export function createProductionRuntimeRendererInput(
     environmentFog: compatibility?.source.environmentFog ?? createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
     ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { cameraPosition })
   };
-  const cameraLike: CameraLike = { viewProjectionMatrix, ...(snapshot.camera.layers !== undefined ? { layerMask: snapshot.camera.layers >>> 0 } : {}) };
+  const cameraLike: CameraLike = { viewProjectionMatrix, shaderViewMatrix: cameraMatrices.view, shaderProjectionMatrix: cameraMatrices.projection, ...(snapshot.camera.layers !== undefined ? { layerMask: snapshot.camera.layers >>> 0 } : {}) };
   return {
     source,
     ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { camera: cameraLike }),

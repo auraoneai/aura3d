@@ -571,3 +571,62 @@ void main() { outColor = vec4(beamColor, beamAmount); }`;
     expect(draw({}, mirrored)[0]!.renderState!.cullMode).toBe("front");
   });
 });
+
+describe("custom shader camera built-ins (viewMatrix / projectionMatrix)", () => {
+  const IDENTITY = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  const VIEW = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -4.3, 10.6, 1]);
+  const PROJECTION = new Float32Array([1.88, 0, 0, 0, 0, 1.88, 0, 0, 0, 0, -1.0003, -1, 0, 0, -0.8, 0]);
+  const VERTEX = "void main() { gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0); }";
+  const FRAGMENT = "out vec4 outColor; void main() { outColor = vec4(1.0, 0.2, 0.1, 1.0); }";
+  const uniformsOf = (passOptions: Record<string, unknown>) => {
+    const device = new MockRenderDevice();
+    const instance = createCustomShaderMaterial({ glsl: { vertex: VERTEX, fragment: FRAGMENT } });
+    device.beginFrame(8, 8);
+    new ForwardPass({ items: [{ geometry: Geometry.triangle(), material: instance, modelMatrix: IDENTITY, label: "cam" }], ...passOptions } as never)
+      .execute({ device, width: 8, height: 8 });
+    device.endFrame();
+    const command = device.drawCommands.find((c) => c.label === "cam");
+    instance.dispose();
+    return command!.uniforms!;
+  };
+  const same = (a: unknown, b: Float32Array) => Array.from(a as ArrayLike<number>).every((value, i) => Math.abs(value - b[i]!) < 1e-6);
+
+  it("customFrameCamera supplies the real view and projection to a custom vertex stage", () => {
+    const uniforms = uniformsOf({ customFrameCamera: { viewMatrix: VIEW, projectionMatrix: PROJECTION } });
+    expect(same(uniforms.get("u_viewMatrix"), VIEW)).toBe(true);
+    expect(same(uniforms.get("u_projectionMatrix"), PROJECTION)).toBe(true);
+  });
+
+  it("without customFrameCamera the earlier sources still apply (cameraViewMatrix, auraFrameCamera.projectionMatrix)", () => {
+    const uniforms = uniformsOf({ cameraViewMatrix: VIEW, auraFrameCamera: { projectionMatrix: PROJECTION } });
+    expect(same(uniforms.get("u_viewMatrix"), VIEW)).toBe(true);
+    expect(same(uniforms.get("u_projectionMatrix"), PROJECTION)).toBe(true);
+  });
+
+  it("customFrameCamera wins over the generic camera options, and a camera with neither stays identity", () => {
+    const winner = uniformsOf({ cameraViewMatrix: IDENTITY, customFrameCamera: { viewMatrix: VIEW } });
+    expect(same(winner.get("u_viewMatrix"), VIEW)).toBe(true);
+    const none = uniformsOf({});
+    expect(same(none.get("u_viewMatrix"), IDENTITY)).toBe(true);
+    expect(same(none.get("u_projectionMatrix"), IDENTITY)).toBe(true);
+  });
+});
+
+describe("engine app path: the camera handed to the renderer carries real matrices for custom shaders", () => {
+  it("createCameraMatrices: view and projection multiply to the view-projection createViewProjection returns", async () => {
+    const { createCameraMatrices, createViewProjection } = await import("../../../packages/engine/src/agent-api/sceneMath.js");
+    const { camera, scene } = await import("../../../packages/engine/src/index.js");
+    const snapshot = scene().camera(camera.perspective({ position: [0, 4.3, -10.6], target: [0, 1.25, 5], fov: 56, near: 0.4, far: 2400 })).toJSON() as never;
+    const m = createCameraMatrices(snapshot, 16 / 9, 0);
+    const vp = createViewProjection(snapshot, 16 / 9, 0);
+    expect(Array.from(m.viewProjection)).toEqual(Array.from(vp));
+    const product = new Float32Array(16);
+    for (let c = 0; c < 4; c += 1) for (let r = 0; r < 4; r += 1) {
+      let sum = 0;
+      for (let k = 0; k < 4; k += 1) sum += m.projection[k * 4 + r]! * m.view[c * 4 + k]!;
+      product[c * 4 + r] = sum;
+    }
+    expect(Array.from(product).every((value, i) => Math.abs(value - vp[i]!) < 1e-4)).toBe(true);
+    expect(Array.from(m.view)).not.toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  });
+});
