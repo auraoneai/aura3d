@@ -4,7 +4,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-strange-orbit-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-strange-orbit-port-BvtiThSh.js"
+   "/assets/showcase-strange-orbit-port-DS9Kw4Iv.js"
   ],
   "canvases": [
    {
@@ -23,37 +23,37 @@
    "__AURA3D_ROUTE_READY__"
   ],
   "started": true,
-  "startNote": "clicked #start \"Start race\"",
+  "startNote": "clicked #start \"Let's ride\"",
   "errorsAfterStart": 0,
   "beforeStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 647,
-   "lumaStdDev": 49.12452222029123
+   "nonBlackFraction": 0.9981916666666667,
+   "distinctColors": 1313,
+   "lumaStdDev": 45.441604860973335
   },
   "afterStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 0.9996625,
-   "distinctColors": 1082,
-   "lumaStdDev": 80.46050649459796
+   "nonBlackFraction": 0.99998125,
+   "distinctColors": 1908,
+   "lumaStdDev": 47.8296128998554
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 0.9996666666666667,
-   "distinctColors": 1084,
-   "lumaStdDev": 80.46103289247372
+   "nonBlackFraction": 0.9999791666666666,
+   "distinctColors": 1878,
+   "lumaStdDev": 47.70935780138706
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 0.9996458333333333,
-   "distinctColors": 911,
-   "lumaStdDev": 81.974976867701
+   "nonBlackFraction": 0.9999354166666666,
+   "distinctColors": 1835,
+   "lumaStdDev": 40.200087537756325
   },
-  "drawCalls": 44,
+  "drawCalls": 132,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_STRANGE_ORBIT__",
@@ -62,15 +62,15 @@
    "stateChanged": [],
    "numericFields": 43,
    "hudChanged": true,
-   "hudBefore": "Strange Orbit|Ride the rings and find your own way around one continuous orbit. Rendered with Aura3D.|Bike|Skate|Sol|Bik",
+   "hudBefore": "One impossible world|Ride the rings. Find your own way.|Bike|Skate|Sol|Bike|Explorer|Racer|Expert|Precise lines, 3 rescu",
    "hudAfter": "Position|6 / 6|The painted rings|Lap 1 / 7|Race time|0:00.00|Best lap -|1|Orion|LEAD|2|Nova|+5m|3|Atlas|+10m|4|Io|+15m|5",
    "startDiff": {
-    "changedFraction": 0.8078395833333334,
-    "meanAbsLuma": 58.95262430555338
+    "changedFraction": 0.7638729166666667,
+    "meanAbsLuma": 35.35851527778118
    },
    "playDiff": {
-    "changedFraction": 0.005702083333333333,
-    "meanAbsLuma": 0.28136249999999774
+    "changedFraction": 0.008039583333333333,
+    "meanAbsLuma": 0.7536173611109763
    }
   },
   "consoleErrors": [],
@@ -83,7 +83,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-splat-rush-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-splat-rush-port-JeMTPEyj.js"
+   "/assets/showcase-splat-rush-port-o0sF4T3U.js"
   ],
   "canvases": [
    {
@@ -107,59 +107,59 @@
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 676,
-   "lumaStdDev": 59.19986052456084
+   "distinctColors": 748,
+   "lumaStdDev": 60.284553486357375
   },
   "afterStart": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 976,
-   "lumaStdDev": 51.95492459944834
+   "distinctColors": 1135,
+   "lumaStdDev": 54.416326311109266
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 1022,
-   "lumaStdDev": 51.63126520796628
+   "distinctColors": 1103,
+   "lumaStdDev": 53.25766620545801
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 637,
-   "lumaStdDev": 43.23263977091417
+   "distinctColors": 541,
+   "lumaStdDev": 42.789444122984385
   },
-  "drawCalls": 85,
+  "drawCalls": 95,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_SPLAT_RUSH__",
    "accessorErrors": [],
    "accessor": "state",
    "stateChanged": [
-    "state.score:4.81->29.22",
-    "state.distance:4.81->29.22",
-    "state.speed:16.08->16.47",
-    "state.frameCount:18.00->108.00",
-    "state.segmentCounter:205.00->230.00",
-    "state.lastSegmentZ:-180.19->-180.77",
-    "state.lastGateZ:-110.19->-85.77",
+    "state.score:4.81->25.93",
+    "state.distance:4.81->25.93",
+    "state.speed:16.08->16.42",
+    "state.laneOffset:0.00->0.24",
+    "state.frameCount:18.00->96.00",
+    "state.segmentCounter:205.00->226.00",
+    "state.lastSegmentZ:-180.19->-180.06",
+    "state.lastGateZ:-110.19->-89.06",
     "state.introT:0.18->-0.00",
-    "state.steps:109.00->199.00",
-    "state.n:109.00->199.00"
+    "state.steps:109.00->187.00"
    ],
    "numericFields": 43,
    "hudChanged": true,
-   "hudBefore": "SCORE: 0|PLAY NOW|Aura3D simulation port",
-   "hudAfter": "SCORE: 29|Aura3D simulation port",
+   "hudBefore": "SCORE: 0|PLAY NOW|Mouse or touch: drag \u00b7 Keyboard: Space to start, \u2190 \u2192 or A / D to steer, M to mute|Aura3D simulation po",
+   "hudAfter": "SCORE: 25|Aura3D simulation port",
    "startDiff": {
-    "changedFraction": 0.9167645833333333,
-    "meanAbsLuma": 42.72724722228562
+    "changedFraction": 0.91589375,
+    "meanAbsLuma": 40.97039027783033
    },
    "playDiff": {
-    "changedFraction": 0.26419583333333335,
-    "meanAbsLuma": 15.108465972215818
+    "changedFraction": 0.23914375,
+    "meanAbsLuma": 13.713575000004392
    }
   },
   "consoleErrors": [],
@@ -172,7 +172,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-serpentine-sky-run-port-B4pnLRDQ.js"
+   "/assets/showcase-serpentine-sky-run-port-u7TKeACv.js"
   ],
   "canvases": [
    {
@@ -185,8 +185,8 @@
   "hooks": [
    "__aura3dInFlightByteFetches",
    "__AURA_SAIYAN_SNAKE_WAY__",
-   "__AURA3D_LIVE_APPS__",
    "__AURA_PORT_MODULES__",
+   "__AURA3D_LIVE_APPS__",
    "__AURA3D_ROUTE_READY__"
   ],
   "started": true,
@@ -196,59 +196,48 @@
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 449,
-   "lumaStdDev": 31.07202912897118
+   "distinctColors": 761,
+   "lumaStdDev": 33.74854668559684
   },
   "afterStart": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 735,
-   "lumaStdDev": 49.31663907771798
+   "distinctColors": 1442,
+   "lumaStdDev": 54.53680581929184
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 747,
-   "lumaStdDev": 49.6085883861327
+   "distinctColors": 1431,
+   "lumaStdDev": 54.546966626899945
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 505,
-   "lumaStdDev": 34.61582596255006
+   "distinctColors": 874,
+   "lumaStdDev": 32.6004290322005
   },
-  "drawCalls": 47,
+  "drawCalls": 16,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_SAIYAN_SNAKE_WAY__",
    "accessorErrors": [],
    "accessor": "state",
-   "stateChanged": [
-    "state.frame:6.00->84.00",
-    "state.s:-42.98->-11.64",
-    "state.laneX:0.00->0.16",
-    "state.laneVel:0.00->-2.30",
-    "state.speed:29.05->23.53",
-    "state.mo:0.16->0.33",
-    "state.days:364.93->363.96",
-    "state.score:1.66->18.90",
-    "state.time:0.10->1.40",
-    "state.dashT:0.00->0.30"
-   ],
+   "stateChanged": [],
    "numericFields": 37,
    "hudChanged": true,
-   "hudBefore": "SNAKE WAY|One million kilometres of dead serpent, above Hell. A port of the Crayon game on the Aura3D engine.|A / D lane",
-   "hudAfter": "OUTBOUND KM|0|DAYS LEFT|364|BOOST|\u00d71|SCORE|19|OUTBOUND|CHECK-IN|stamped and pointed at the door|KI|STRAIN|Aura3D simulat",
+   "hudBefore": "SERPENTINE SKY RUN|One million kilometres of road, coiled over a sea of cloud. Collect spark, build your surge, and reac",
+   "hudAfter": "RUNNER|35|0|SURGE|\u00d71|OUTBOUND \u2014 KM COVERED|0|DAYS LEFT|365|DAYS|RUN ACTIVE|RUN SCORE|0|Aura3D simulation port",
    "startDiff": {
-    "changedFraction": 0.99133125,
-    "meanAbsLuma": 91.57113541673576
+    "changedFraction": 0.9541458333333334,
+    "meanAbsLuma": 93.43818472222235
    },
    "playDiff": {
-    "changedFraction": 0.15341041666666666,
-    "meanAbsLuma": 6.632793055553031
+    "changedFraction": 0.00565,
+    "meanAbsLuma": 0.465893055555635
    }
   },
   "consoleErrors": [],
@@ -261,7 +250,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-drift-and-deliver-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-drift-and-deliver-port-q8o3X1ra.js"
+   "/assets/showcase-drift-and-deliver-port-CILDU_WW.js"
   ],
   "canvases": [
    {
@@ -291,31 +280,31 @@
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 350,
-   "lumaStdDev": 29.044823275066076
+   "distinctColors": 471,
+   "lumaStdDev": 34.00456291555087
   },
   "afterStart": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 530,
-   "lumaStdDev": 39.28630289562547
+   "distinctColors": 1287,
+   "lumaStdDev": 42.994489396343475
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 529,
-   "lumaStdDev": 39.324831800980526
+   "distinctColors": 1278,
+   "lumaStdDev": 43.03864519064706
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 305,
-   "lumaStdDev": 35.37847677559536
+   "distinctColors": 1181,
+   "lumaStdDev": 39.09514531167011
   },
-  "drawCalls": 27,
+  "drawCalls": 123,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_DRIFT_AND_DELIVER__",
@@ -326,15 +315,15 @@
    ],
    "numericFields": 15,
    "hudChanged": true,
-   "hudBefore": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Drift & Deliver|W A S D or arrows to drive, Space to drift, Shift for nitro. Collect c",
-   "hudAfter": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Aura3D simulation port",
+   "hudBefore": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Sound on (M)|AN OPEN-CITY DRIVING GAME|Drift & Deliver|A getaway city of 225 blocks, 8",
+   "hudAfter": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Sound on (M)|Aura3D simulation port",
    "startDiff": {
-    "changedFraction": 0.9281666666666667,
-    "meanAbsLuma": 42.3312763889992
+    "changedFraction": 0.9110666666666667,
+    "meanAbsLuma": 54.58757222221762
    },
    "playDiff": {
-    "changedFraction": 0.0037958333333333334,
-    "meanAbsLuma": 0.09153819444449567
+    "changedFraction": 0.029429166666666666,
+    "meanAbsLuma": 1.0551909722218145
    }
   },
   "consoleErrors": [],
@@ -347,7 +336,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-heatsink-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-heatsink-port-DX4sjU5G.js"
+   "/assets/showcase-heatsink-port-BGXzVMlR.js"
   ],
   "canvases": [
    {
@@ -370,219 +359,54 @@
   "beforeStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 390,
-   "lumaStdDev": 38.37317074931768
+   "nonBlackFraction": 0.9856729166666667,
+   "distinctColors": 473,
+   "lumaStdDev": 38.207444674054855
   },
   "afterStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 781,
-   "lumaStdDev": 37.27750673597118
+   "nonBlackFraction": 0.9971895833333333,
+   "distinctColors": 1073,
+   "lumaStdDev": 36.940828924991955
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 771,
-   "lumaStdDev": 37.89830358853878
+   "nonBlackFraction": 0.9958354166666666,
+   "distinctColors": 1064,
+   "lumaStdDev": 36.29714752263445
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 668,
-   "lumaStdDev": 35.62956450034365
+   "nonBlackFraction": 0.99749375,
+   "distinctColors": 904,
+   "lumaStdDev": 29.986972703732263
   },
-  "drawCalls": 44,
+  "drawCalls": 68,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_HEATSINK__",
    "accessorErrors": [],
    "accessor": "state",
    "stateChanged": [
-    "state.step:6.00->84.00",
-    "state.countdown:3.10->1.80",
+    "state.step:6.00->72.00",
+    "state.countdown:3.10->2.00",
     "state.player.yW:5.44->5.23",
-    "state.player.vyW:-1.43->0.00"
+    "state.player.vyW:-1.43->-0.00"
    ],
    "numericFields": 26,
    "hudChanged": true,
    "hudBefore": "HEATSINK|Time Trial, Vesper Heights, 3 laps. W/Up throttle, S/Down brake, A/D steer, Shift afterburner, Space overdrive,",
    "hudAfter": "POSITION|1|1|LAP|LAP 1/3|TIME|00:00.000|BEST LAP|--:--.---|TAKEDOWNS|0|AFTERBURNER|100%|OVERDRIVE HEAT|0%|SHIELD|100%|GU",
    "startDiff": {
-    "changedFraction": 0.8297166666666667,
-    "meanAbsLuma": 29.690044444448322
+    "changedFraction": 0.85500625,
+    "meanAbsLuma": 31.354398611111787
    },
    "playDiff": {
-    "changedFraction": 0.07506041666666667,
-    "meanAbsLuma": 2.0835277777789196
-   }
-  },
-  "consoleErrors": [],
-  "pageErrors": [],
-  "failedRequests": [],
-  "badResponses": []
- },
- "ninja-runner": {
-  "slug": "ninja-runner",
-  "url": "https://aura3d.auraone.ai/apps/showcase-ninja-runner-port/",
-  "status": 200,
-  "scripts": [
-   "/assets/showcase-ninja-runner-port-By_2BB9t.js"
-  ],
-  "canvases": [
-   {
-    "id": "world",
-    "width": 800,
-    "height": 600,
-    "hasWebgl": true
-   }
-  ],
-  "hooks": [
-   "__aura3dInFlightByteFetches",
-   "__AURA_NINJA_RUNNER__",
-   "__AURA_PORT_MODULES__",
-   "__AURA3D_LIVE_APPS__",
-   "__AURA3D_ROUTE_READY__"
-  ],
-  "started": true,
-  "startNote": "clicked #start \"Enter the Village \u2192\"",
-  "errorsAfterStart": 0,
-  "beforeStart": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 440,
-   "lumaStdDev": 32.326700209349944
-  },
-  "afterStart": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 0.9968395833333333,
-   "distinctColors": 1077,
-   "lumaStdDev": 53.89625698185813
-  },
-  "afterPlay": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 0.9933875,
-   "distinctColors": 1173,
-   "lumaStdDev": 52.2548788586772
-  },
-  "canvasOnly": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 0.9766645833333333,
-   "distinctColors": 725,
-   "lumaStdDev": 51.1084650235195
-  },
-  "drawCalls": 52,
-  "bridgeWarnings": [],
-  "progress": {
-   "hook": "__AURA_NINJA_RUNNER__",
-   "accessorErrors": [],
-   "accessor": "state",
-   "stateChanged": [
-    "state.time:0.10->1.40",
-    "state.s:1.80->25.31",
-    "state.x:0.00->0.09",
-    "state.speed:18.01->18.15",
-    "state.entities[3].s:58.00->55.28",
-    "state.entities[3].approachSpeed:0.00->3.20"
-   ],
-   "numericFields": 193,
-   "hudChanged": true,
-   "hudBefore": "NINJA RUNNER|Ready.|Enter the Village \u2192|A/D move \u00b7 W jump \u00b7 S slide \u00b7 1 clones \u00b7 2 Spiral Orb \u00b7 Shift dash \u00b7 3 Spiral St",
-   "hudAfter": "DISTANCE|25|FOES DEFEATED|00|SCORE|0|ENERGY|300 / 300|HEALTH|\u2665\u2665\u2665\u2665\u2665|Lantern Village \u00b7 village|Runner|Sage|Beast|1 \u00b7 Shado",
-   "startDiff": {
-    "changedFraction": 0.9518833333333333,
-    "meanAbsLuma": 76.64570694449802
-   },
-   "playDiff": {
-    "changedFraction": 0.464175,
-    "meanAbsLuma": 21.35905277776432
-   }
-  },
-  "consoleErrors": [],
-  "pageErrors": [],
-  "failedRequests": [],
-  "badResponses": []
- },
- "last-train": {
-  "slug": "last-train",
-  "url": "https://aura3d.auraone.ai/apps/showcase-last-train-port/",
-  "status": 200,
-  "scripts": [
-   "/assets/showcase-last-train-port-DDx-vV-S.js"
-  ],
-  "canvases": [
-   {
-    "id": "world",
-    "width": 800,
-    "height": 600,
-    "hasWebgl": true
-   }
-  ],
-  "hooks": [
-   "__aura3dInFlightByteFetches",
-   "__AURA_LAST_TRAIN__",
-   "__AURA_PORT_MODULES__",
-   "__AURA3D_LIVE_APPS__",
-   "__AURA3D_ROUTE_READY__"
-  ],
-  "started": true,
-  "startNote": "no start button; pressed Enter/Space; buttons=[]",
-  "errorsAfterStart": 0,
-  "beforeStart": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 433,
-   "lumaStdDev": 56.97520163377404
-  },
-  "afterStart": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 433,
-   "lumaStdDev": 56.975064045687944
-  },
-  "afterPlay": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 428,
-   "lumaStdDev": 56.99918665374237
-  },
-  "canvasOnly": {
-   "width": 800,
-   "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 201,
-   "lumaStdDev": 28.752349719609974
-  },
-  "drawCalls": 35,
-  "bridgeWarnings": [],
-  "progress": {
-   "hook": "__AURA_LAST_TRAIN__",
-   "accessorErrors": [],
-   "accessor": "state",
-   "stateChanged": [
-    "state.played:4.10->5.40"
-   ],
-   "numericFields": 13,
-   "hudChanged": true,
-   "hudBefore": "Mango Tide|Folded Gardens|day|0|km/h|0|0|0|0|Press E to open the doors.|W|Space|A|D|E|N|R|Aura3D simulation port",
-   "hudAfter": "Mango Tide|Folded Gardens|day|0|km/h|0|0|0|0|Doors opening|W|Space|A|D|E|N|R|Aura3D simulation port",
-   "startDiff": {
-    "changedFraction": 0,
-    "meanAbsLuma": 0.001505555555555579
-   },
-   "playDiff": {
-    "changedFraction": 0.0012791666666666667,
-    "meanAbsLuma": 0.025789583333333435
+    "changedFraction": 0.0880125,
+    "meanAbsLuma": 3.121895833330881
    }
   },
   "consoleErrors": [],
@@ -595,7 +419,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-roadster-hours-port-B7vb1kmU.js"
+   "/assets/showcase-roadster-hours-port-CYeGVXra.js"
   ],
   "canvases": [
    {
@@ -618,51 +442,51 @@
   "beforeStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 318,
-   "lumaStdDev": 33.54268322370621
+   "nonBlackFraction": 0.9981416666666667,
+   "distinctColors": 1015,
+   "lumaStdDev": 47.77863785120036
   },
   "afterStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 517,
-   "lumaStdDev": 56.34492927168811
+   "nonBlackFraction": 0.9951645833333334,
+   "distinctColors": 1128,
+   "lumaStdDev": 46.86441443734639
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 514,
-   "lumaStdDev": 55.9727737257115
+   "nonBlackFraction": 0.9951479166666667,
+   "distinctColors": 1124,
+   "lumaStdDev": 46.77780475573881
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 356,
-   "lumaStdDev": 50.6397071457407
+   "nonBlackFraction": 0.9951458333333333,
+   "distinctColors": 1089,
+   "lumaStdDev": 43.73529301780295
   },
-  "drawCalls": 37,
+  "drawCalls": 71,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_ROADSTER_HOURS__",
    "accessorErrors": [],
    "accessor": "state",
    "stateChanged": [
-    "state.countdown:2.60->1.85"
+    "state.countdown:2.65->2.10"
    ],
    "numericFields": 61,
    "hudChanged": true,
-   "hudBefore": "Roadster Hours|Sunbreak Coast|W drive \u00b7 S brake \u00b7 A/D steer \u00b7 Space thrust \u00b7 Shift nitro \u00b7 Q/E roll \u00b7 R recover|Drive|Au",
-   "hudAfter": "0:00.00|Relay 1 / 5|THE FIRST LEAP|0|0|countdown|2|Thrust|Heat|Aura3D simulation port",
+   "hudBefore": "Roadster Hours|Sunbreak Coast|A road above the sea|Thread the coastal highway, cut through the skyline, and bring the re",
+   "hudAfter": "0:00.00|Relay 1 / 5|THE FIRST LEAP|0|3|Thrust|0|km/h|Heat|Aura3D simulation port",
    "startDiff": {
-    "changedFraction": 0.99554375,
-    "meanAbsLuma": 91.89044305561784
+    "changedFraction": 0.5642625,
+    "meanAbsLuma": 33.190243750001606
    },
    "playDiff": {
-    "changedFraction": 0.047302083333333335,
-    "meanAbsLuma": 1.7204187500003156
+    "changedFraction": 0.1208875,
+    "meanAbsLuma": 2.442322222221306
    }
   },
   "consoleErrors": [],
@@ -675,7 +499,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-where-the-wind-wanders-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-where-the-wind-wanders-port-BSbBtrqD.js"
+   "/assets/showcase-where-the-wind-wanders-port-c5EndLAI.js"
   ],
   "canvases": [
    {
@@ -693,61 +517,59 @@
    "__AURA3D_ROUTE_READY__"
   ],
   "started": true,
-  "startNote": "no start button; pressed Enter/Space; buttons=[]",
+  "startNote": "clicked #wwui-begin \"Begin the walk (Enter)\"",
   "errorsAfterStart": 0,
   "beforeStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 1134,
-   "lumaStdDev": 64.37755704940686
+   "nonBlackFraction": 0.9992020833333334,
+   "distinctColors": 4035,
+   "lumaStdDev": 57.109129842432225
   },
   "afterStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 1231,
-   "lumaStdDev": 62.67774138725347
+   "nonBlackFraction": 0.999375,
+   "distinctColors": 5266,
+   "lumaStdDev": 48.1861870267157
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 1232,
-   "lumaStdDev": 63.24490762731213
+   "nonBlackFraction": 0.9994833333333333,
+   "distinctColors": 5264,
+   "lumaStdDev": 46.64820272089107
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 1024,
-   "lumaStdDev": 57.77747771684443
+   "nonBlackFraction": 0.9982770833333333,
+   "distinctColors": 5043,
+   "lumaStdDev": 33.203202957127
   },
-  "drawCalls": 73,
+  "drawCalls": 12,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_WIND__",
    "accessorErrors": [],
    "accessor": "state",
    "stateChanged": [
-    "state.step:329.00->419.00",
-    "state.pos.x:-12.00->-11.98",
-    "state.pos.z:4.00->3.68",
-    "state.stride:0.00->0.44",
-    "state.hop.elapsed:0.40->0.00",
-    "state.hop.height:1.20->0.00"
+    "state.step:5.00->71.00",
+    "state.pos.x:-12.00->-11.68",
+    "state.pos.z:4.00->4.02",
+    "state.stride:0.00->0.15"
    ],
    "numericFields": 6,
-   "hudChanged": false,
-   "hudBefore": "0 / 3 discovered|WASD or arrows to walk \u00b7 Space to hop \u00b7 E to interact|Aura3D simulation port",
-   "hudAfter": "0 / 3 discovered|WASD or arrows to walk \u00b7 Space to hop \u00b7 E to interact|Aura3D simulation port",
+   "hudChanged": true,
+   "hudBefore": "0 / 3 discovered|WASD or arrows to walk \u00b7 Space to hop \u00b7 E to interact|Aura3D simulation port|Where the Wind Wanders|A s",
+   "hudAfter": "0 / 3 discovered|WASD or arrows to walk \u00b7 Space to hop \u00b7 E to interact|Aura3D simulation port|Take your time. The wind w",
    "startDiff": {
-    "changedFraction": 0.3146833333333333,
-    "meanAbsLuma": 15.192865277774175
+    "changedFraction": 0.6020083333333334,
+    "meanAbsLuma": 32.83406388888657
    },
    "playDiff": {
-    "changedFraction": 0.14240208333333335,
-    "meanAbsLuma": 7.205709027780899
+    "changedFraction": 0.412,
+    "meanAbsLuma": 16.234672916664632
    }
   },
   "consoleErrors": [],
@@ -760,7 +582,7 @@
   "url": "https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-silt-and-signal-port-B9ya9BXC.js"
+   "/assets/showcase-silt-and-signal-port-BalJrAcn.js"
   ],
   "canvases": [
    {
@@ -778,74 +600,90 @@
    "__AURA_SILT__"
   ],
   "started": true,
-  "startNote": "no start button; pressed Enter/Space; buttons=[]",
-  "errorsAfterStart": 0,
+  "startNote": "clicked #start-button \"Begin the journey\"",
+  "errorsAfterStart": 5,
   "beforeStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 688,
-   "lumaStdDev": 56.509940798174895
+   "nonBlackFraction": 0.9930729166666666,
+   "distinctColors": 306,
+   "lumaStdDev": 34.64718185164544
   },
   "afterStart": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 701,
-   "lumaStdDev": 54.94934244421729
+   "nonBlackFraction": 0.19268541666666666,
+   "distinctColors": 321,
+   "lumaStdDev": 22.63452747471336
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 697,
-   "lumaStdDev": 57.14556704313452
+   "nonBlackFraction": 0.19361875,
+   "distinctColors": 327,
+   "lumaStdDev": 23.25418412731593
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
-   "nonBlackFraction": 1,
-   "distinctColors": 390,
-   "lumaStdDev": 46.33325255014279
+   "nonBlackFraction": 0,
+   "distinctColors": 1,
+   "lumaStdDev": 0
   },
-  "drawCalls": 14,
+  "drawCalls": 0,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_SILT__",
    "accessorErrors": [],
    "accessor": "state",
    "stateChanged": [
+    "state.state.point:0.00->1.00",
+    "state.state.x:138.00->139.18",
+    "state.state.z:45.00->10.54",
     "state.state.yaw:0.00->-0.02",
-    "state.state.elapsed:5.00->6.30",
-    "state.flight.turn:0.00->-0.15",
-    "state.flight.bank:0.00->0.01",
-    "state.time:5.00->6.30",
-    "state.steps:300.00->378.00"
+    "state.state.elapsed:1.50->7.72",
+    "state.flight.speed:0.00->11.81",
+    "state.flight.turn:0.00->-0.14",
+    "state.flight.bank:0.00->0.06",
+    "state.flight.thrust:0.00->1.00",
+    "state.time:1.50->7.72"
    ],
    "numericFields": 21,
-   "hudChanged": false,
-   "hudBefore": "The Last Light|Reach Neri at her gatehouse|40 m|1/4 \u00b7 point 1/8|Speed|0|Altitude|4|Mode|Cruise|W/S throttle \u00b7 A/D steer ",
-   "hudAfter": "The Last Light|Reach Neri at her gatehouse|40 m|1/4 \u00b7 point 1/8|Speed|0|Altitude|4|Mode|Cruise|W/S throttle \u00b7 A/D steer ",
+   "hudChanged": true,
+   "hudBefore": "A hover-board flight through seven valleys|Silt & Signal|One small village, one long road, one favour to repay.|Begin th",
+   "hudAfter": "Lantern Road|Fly to the gatehouse on the far road|96 m|1/4 \u00b7 ring 2/8|Speed|10|Altitude|4|Mode|Cruise|W/S throttle \u00b7 A/D",
    "startDiff": {
-    "changedFraction": 0.05377083333333333,
-    "meanAbsLuma": 1.3026631944444904
+    "changedFraction": 0.8429270833333333,
+    "meanAbsLuma": 21.627127777789916
    },
    "playDiff": {
-    "changedFraction": 0.06900625,
-    "meanAbsLuma": 2.652374305550742
+    "changedFraction": 0.0015895833333333333,
+    "meanAbsLuma": 0.19434097222222235
    }
   },
-  "consoleErrors": [],
+  "consoleErrors": [
+   "Failed to load resource: the server responded with a status of 404 ()",
+   "Failed to load resource: the server responded with a status of 404 ()",
+   "Failed to load resource: the server responded with a status of 404 ()",
+   "Failed to load resource: the server responded with a status of 404 ()",
+   "Failed to load resource: the server responded with a status of 404 ()"
+  ],
   "pageErrors": [],
   "failedRequests": [],
-  "badResponses": []
+  "badResponses": [
+   "404 https://aura3d.auraone.ai/assets/assets/models/board.glb",
+   "404 https://aura3d.auraone.ai/assets/assets/models/house.glb",
+   "404 https://aura3d.auraone.ai/assets/assets/models/lamp.glb",
+   "404 https://aura3d.auraone.ai/assets/assets/models/hero.glb",
+   "404 https://aura3d.auraone.ai/assets/assets/models/tree.glb"
+  ]
  },
  "cloud-runner": {
   "slug": "cloud-runner",
   "url": "https://aura3d.auraone.ai/apps/showcase-cloud-runner-port/",
   "status": 200,
   "scripts": [
-   "/assets/showcase-cloud-runner-port-Rtaj4iSW.js"
+   "/assets/showcase-cloud-runner-port-C5hPG69q.js"
   ],
   "canvases": [
    {
@@ -858,64 +696,64 @@
   "hooks": [
    "__aura3dInFlightByteFetches",
    "__AURA_KID_GOKU__",
-   "__AURA3D_LIVE_APPS__",
    "__AURA_PORT_MODULES__",
+   "__AURA3D_LIVE_APPS__",
    "__AURA3D_ROUTE_READY__"
   ],
   "started": true,
-  "startNote": "no start button; pressed Enter/Space and called __AURA_KID_GOKU__.begin(); buttons=[]",
+  "startNote": "clicked # \"Play  \u25b8\"",
   "errorsAfterStart": 0,
   "beforeStart": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 371,
-   "lumaStdDev": 35.46250408650552
+   "distinctColors": 1824,
+   "lumaStdDev": 51.47417942313665
   },
   "afterStart": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 373,
-   "lumaStdDev": 35.476620951389364
+   "distinctColors": 2321,
+   "lumaStdDev": 47.81624667474982
   },
   "afterPlay": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 378,
-   "lumaStdDev": 35.46017199030381
+   "distinctColors": 2340,
+   "lumaStdDev": 44.439896670197705
   },
   "canvasOnly": {
    "width": 800,
    "height": 600,
    "nonBlackFraction": 1,
-   "distinctColors": 139,
-   "lumaStdDev": 7.873851916473865
+   "distinctColors": 1987,
+   "lumaStdDev": 35.503142808989836
   },
-  "drawCalls": 14,
+  "drawCalls": 536,
   "bridgeWarnings": [],
   "progress": {
    "hook": "__AURA_KID_GOKU__",
    "accessorErrors": [],
    "accessor": "snapshot",
    "stateChanged": [
-    "snapshot.s:1.20->17.70",
-    "snapshot.lane:0.00->0.08",
-    "snapshot.speed:7.56->14.31",
-    "snapshot.score:1.00->11.00"
+    "snapshot.s:0.20->12.50",
+    "snapshot.lane:0.00->0.59",
+    "snapshot.speed:3.50->13.97",
+    "snapshot.score:0.00->7.00"
    ],
    "numericFields": 13,
-   "hudChanged": false,
-   "hudBefore": "Aura3D simulation port",
-   "hudAfter": "Aura3D simulation port",
+   "hudChanged": true,
+   "hudBefore": "Aura3D simulation port|Beyond the|Seven star orbs. One long run home along the ridge.|Play  \u25b8|Sound on|How to play|\u2190|\u2192|S",
+   "hudAfter": "Aura3D simulation port|\u275a\u275a|1|2|3|4|5|6|7|\u2302|7|THE RUN BEGINS|RIDE THE ROLLING LOG|\u2190 \u2192 OR A D TO STEER|Sky cloud|Q",
    "startDiff": {
-    "changedFraction": 0.018127083333333332,
-    "meanAbsLuma": 0.5241875000001314
+    "changedFraction": 0.8599791666666666,
+    "meanAbsLuma": 47.25177708333251
    },
    "playDiff": {
-    "changedFraction": 0.025277083333333332,
-    "meanAbsLuma": 0.8722027777767508
+    "changedFraction": 0.450925,
+    "meanAbsLuma": 18.429754166672385
    }
   },
   "consoleErrors": [],

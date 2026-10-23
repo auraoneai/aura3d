@@ -16,6 +16,11 @@ const ALL_SLUGS = [
 const SLUGS_FILE = "tests/browser/live-slugs.txt";
 const SLUGS = (process.env.LIVE_SLUGS ?? (existsSync(SLUGS_FILE) ? readFileSync(SLUGS_FILE, "utf8").replace(/\s+/g, ",") : ALL_SLUGS.join(",")))
   .split(",").map((x) => x.trim()).filter(Boolean);
+// Heavy art-pass scenes render at well under 1 fps on the CPU rasteriser; a smaller viewport keeps the smoke measurable.
+const SMALL_VIEWPORT: Record<string, { width: number; height: number }> = {
+  "ninja-runner": { width: 360, height: 270 },
+  "last-train": { width: 360, height: 270 }
+};
 const START_SELECTOR: Record<string, string> = {
   "splat-rush": "#btn-start",
   "silt-and-signal": "#start-button",
@@ -27,8 +32,8 @@ const BOOT_WAIT_MS = Number(process.env.LIVE_BOOT_WAIT_MS ?? 9000);
 
 interface PixelStats { width: number; height: number; nonBlackFraction: number; distinctColors: number; lumaStdDev: number }
 
-async function pixelStats(page: Page, png: Buffer): Promise<PixelStats> {
-  return page.evaluate(async (b64: string) => {
+async function pixelStats(lab: Page, png: Buffer): Promise<PixelStats> {
+  return lab.evaluate(async (b64: string) => {
     const img = new Image();
     img.src = `data:image/png;base64,${b64}`;
     await img.decode();
@@ -52,8 +57,8 @@ async function pixelStats(page: Page, png: Buffer): Promise<PixelStats> {
 
 interface FrameDiff { changedFraction: number; meanAbsLuma: number }
 
-async function frameDiff(page: Page, a: Buffer, b: Buffer): Promise<FrameDiff> {
-  return page.evaluate(async ([ax, bx]: [string, string]) => {
+async function frameDiff(lab: Page, a: Buffer, b: Buffer): Promise<FrameDiff> {
+  return lab.evaluate(async ([ax, bx]: [string, string]) => {
     const load = async (b64: string) => {
       const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();
       const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
@@ -163,6 +168,8 @@ async function guarded<T>(label: string, work: Promise<T>, ms: number, fallback:
 for (const slug of SLUGS) {
   test(`live port boots: ${slug}`, async ({ page }) => {
     test.setTimeout(420_000);
+    const lab = await page.context().newPage(); // image analysis runs here so a starved game page cannot stall it
+    await lab.goto("about:blank");
     const t0 = Date.now();
     const hung: string[] = [];
     const step = (name: string): void => console.log(`STEP ${slug} ${name} +${Math.round((Date.now() - t0) / 1000)}s`);
@@ -179,6 +186,7 @@ for (const slug of SLUGS) {
     page.on("requestfailed", (r) => failedRequests.push(`${r.url().slice(0, 160)} :: ${r.failure()?.errorText ?? "?"}`));
     page.on("response", (r) => { if (r.status() >= 400) badResponses.push(`${r.status()} ${r.url().slice(0, 160)}`); });
 
+    if (SMALL_VIEWPORT[slug]) await page.setViewportSize(SMALL_VIEWPORT[slug]!);
     const url = `${BASE}/apps/showcase-${slug}-port/`;
     const response = await page.goto(url, { waitUntil: "load", timeout: 90_000 });
     const status = response?.status() ?? 0;
@@ -193,7 +201,7 @@ for (const slug of SLUGS) {
     const hooks = await page.evaluate(() => Object.keys(window).filter((k) => /^__AURA_|^__orbit|^__AURA|^__PORT/i.test(k)).slice(0, 12));
 
     const shot1 = await page.screenshot({ type: "png" });
-    const stats1 = await pixelStats(page, shot1);
+    const stats1 = await pixelStats(lab, shot1);
 
     // Press the real start control once enabled (boot can take a while on software GL), then play and prove the game advances.
     let started = false;
@@ -241,21 +249,21 @@ for (const slug of SLUGS) {
     await page.waitForTimeout(1500);
     const snapStart = await gameSnapshot(page);
     const shot2 = await page.screenshot({ type: "png" });
-    const stats2 = await pixelStats(page, shot2);
+    const stats2 = await pixelStats(lab, shot2);
     step("playing");
     await guarded("playFor", playFor(page, 6000, slug), 90_000, undefined, hung);
     step("played");
     const fpsPlay = await guarded("fps(play)", frameRate(page), 45_000, null, hung);
     const snapPlay = await gameSnapshot(page);
     const shot3 = await page.screenshot({ type: "png" });
-    const stats3 = await pixelStats(page, shot3);
-    const startDiff = await frameDiff(page, shot1, shot2);
-    const playDiff = await frameDiff(page, shot2, shot3);
+    const stats3 = await pixelStats(lab, shot3);
+    const startDiff = await frameDiff(lab, shot1, shot2);
+    const playDiff = await frameDiff(lab, shot2, shot3);
     const stateChanged = changedNumbers(snapStart.nums, snapPlay.nums);
     const hudChanged = snapStart.hud !== snapPlay.hud || snapBefore.hud !== snapStart.hud;
     step("canvas-shot");
     const canvasShot = await guarded("canvasOnlyShot", canvasOnlyShot(page), 90_000, shot3, hung);
-    const canvasStats = await pixelStats(page, canvasShot);
+    const canvasStats = await pixelStats(lab, canvasShot);
     const errorsAfterStart = pageErrors.length + consoleErrors.length;
     const jpeg = await page.screenshot({ type: "jpeg", quality: 45, scale: "css" });
 
