@@ -3,7 +3,7 @@
   "version": "4.0.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D 1:1 3D port of Roadster Rush (roadster-rush.ai.studio) — cold-gas thruster flight, barrel rolls, carrier ramp launches, roof running, and sky-lane dogfights over a gridlocked sunset freeway.",
+  "description": "Aura3D 4.0.8 native reimplementation of a sky-lane freeway racer's mechanics (own fixed-step simulation, no third-party bundle) — cold-gas thruster flight, barrel rolls, carrier ramp launches, roof running, and sky-lane dogfights over a gridlocked sunset freeway.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

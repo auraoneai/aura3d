@@ -13,6 +13,7 @@ import {
   type AuraRuntimeNodeHandle,
   type AuraSceneNode
 } from "@aura3d/engine";
+import { createNativeRoadster, findDrawCalls } from "../../showcase-roadster-rush/src/native";
 import { assets } from "../../../src/aura-assets";
 import { assetsV2 } from "./aura-assets-v2";
 
@@ -793,17 +794,6 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   return s;
 }
 
-function loadScriptSequentially(src: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.async = false;
-    script.onload = () => resolve();
-    script.onerror = (err) => reject(err);
-    document.body.appendChild(script);
-  });
-}
-
 async function bootRoadsterRushAura3D(): Promise<void> {
   const canvas = document.getElementById("game") as HTMLCanvasElement | null;
   if (!canvas) {
@@ -813,10 +803,8 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const builtScene = buildRoadsterRushScene();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
-    renderer: {
-      quality: "high",
-      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
-    }
+    renderer: { quality: "high" },
+    qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
   });
 
   const req = (id: string) => auraApp.nodes.require(id);
@@ -1826,27 +1814,28 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   // Wait for all GLB assets & scene nodes to finish loading before starting simulation or setting ready flags
   await auraApp.ready();
 
-  // Keep the engine.js hook as a secondary sync
-  (window as any).__AURA3D_ROADSTER_SYNC__ = (g: any, threeScene: any, threeCamera: any) => {
-    syncRoadsterWorld(g, threeScene, threeCamera);
-  };
-
-  await loadScriptSequentially("/roadster-rush/engine.js");
-
-  // Register Aura3D 60 FPS dynamic render loop callback after assets & simulation are ready
-  auraApp.onFrame(() => {
-    const g = (window as any).__GAME__?.game;
-    if (g) {
-      syncRoadsterWorld(g, g.scene, g.camera);
+  // Native Apex Overdrive simulation (apps/showcase-roadster-rush/src/native): fixed-step player, traffic, scoring and HUD
+  // written for Aura3D; this page only mirrors that state onto the scene nodes below.
+  const nativeGame = createNativeRoadster({
+    hudRoot: document.getElementById("hud"),
+    drawCalls: () => {
+      try {
+        return findDrawCalls(auraApp.diagnostics());
+      } catch {
+        return 0;
+      }
     }
   });
 
+  // Register Aura3D 60 FPS dynamic render loop callback after assets & simulation are ready
+  auraApp.onFrame(() => {
+    nativeGame.frameTick(performance.now());
+    syncRoadsterWorld(nativeGame);
+  });
+
   // Ensure initial live playing state and first synchronous world sync
-  const bootedGame = (window as any).__GAME__?.game;
-  if (bootedGame) {
-    ensureLivePlaying(bootedGame);
-    syncRoadsterWorld(bootedGame, bootedGame.scene, bootedGame.camera);
-  }
+  ensureLivePlaying(nativeGame);
+  syncRoadsterWorld(nativeGame);
   auraApp.step(1 / 60);
   document.getElementById("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";

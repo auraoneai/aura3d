@@ -68,5 +68,5 @@
       "role": "primaryVehicle"
     }
   ],
-  "notes": "Aura3D 4.0.1 full 3D endless freeway & sky-lane port of Roadster Rush (Apex Overdrive V2) with 11 typed GLB vehicles + 4 Meshy sky/interceptor GLBs, cold-gas thruster plumes, carrier ramp launches, sky dogfights, smart idle autopilot, and quick-switcher toolbar."
+  "notes": "Aura3D 4.0.1 full 3D endless freeway & sky-lane reimplementation on a native Aura3D simulation (Apex Overdrive V2, no third-party engine bundle) with 11 typed GLB vehicles + 4 Meshy sky/interceptor GLBs, cold-gas thruster plumes, carrier ramp launches, sky dogfights, smart idle autopilot, and quick-switcher toolbar."
 }
