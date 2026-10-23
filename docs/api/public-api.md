@@ -18,7 +18,7 @@ pnpm verify:api-docs
 | `@aura3d/asset-index` | `4.0.8` | `packages/asset-index/src/index.ts` | 35 |
 | `@aura3d/assets` | `4.0.8` | `packages/assets/src/index.ts` | 93 |
 | `@aura3d/assets/gltf-runtime` | `4.0.8` | `packages/assets/src/gltf-runtime.ts` | 6 |
-| `@aura3d/audio` | `4.0.8` | `packages/audio/src/index.ts` | 49 |
+| `@aura3d/audio` | `4.0.8` | `packages/audio/src/index.ts` | 50 |
 | `@aura3d/cli` | `4.0.8` | `packages/aura3d-cli/src/index.ts` | 37 |
 | `@aura3d/controls` | `4.0.8` | `packages/controls/src/index.ts` | 46 |
 | `@aura3d/core` | `4.0.8` | `packages/core/src/index.ts` | 14 |
@@ -350,6 +350,7 @@ export { VoicePool } from "./game-sound/Voice";
 export type { VoiceCueSpec, VoiceRecord, VoicePriority } from "./game-sound/Voice";
 export { syncListener } from "./game-sound/listenerSync";
 export type { ListenerLike } from "./game-sound/listenerSync";
+export * from "./synth";
 ```
 
 ## @aura3d/cli
