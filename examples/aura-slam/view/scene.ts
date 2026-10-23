@@ -1,0 +1,276 @@
+import { game, material, model, primitives, scene, type AuraApp, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { stadiumAssets as assets } from "./assets";
+import { buildBallNodes } from "./ball";
+import { BASELINE_Z, DOUBLES_X, HIDDEN_SCALE, NET_POST_H, NET_POST_X, SERVICE_Z, SINGLES_X } from "./constants";
+import { cameraNode } from "./camera";
+import { postEffects, sceneLights } from "./lighting";
+import { createStaticBoxes } from "./statics";
+import type { Vec3 } from "../contract/units";
+import type { AthleteRigPort } from "./rigPort";
+import { buildBleacherNodes, buildSpectatorNodes } from "./spectators";
+import { VENUE_PALETTES } from "./venues";
+
+/** Every node name the renderer resolves at runtime; kept in one place so the scene and the renderer cannot drift. */
+export const SCENE_NODE_IDS = [
+  "stadium-outer-ground", "court-apron", "court-doubles-surface", "court-singles-surface",
+  "service-box-highlight", "serve-aim-ring", "serve-toss-ring", "landing-indicator-ring",
+  "umpire-head", "net-fault-left", "net-fault-right"
+] as const;
+
+export function buildTennisScene(rig: AthleteRigPort): ReturnType<typeof scene> {
+  const lineMat = material.pbr({ color: "#f5f4e6", roughness: 0.58 });
+  const netPostMat = material.pbr({ color: "#1d322c", metalness: 0.42, roughness: 0.48 });
+  const netMeshMat = material.pbr({ color: "#182421", roughness: 0.88 });
+  const netTapeMat = material.pbr({ color: "#faf8ee", roughness: 0.46 });
+
+  const s = scene().background("#0d2230").camera(cameraNode());
+  for (const light of sceneLights()) s.add(light);
+  for (const effect of postEffects()) s.add(effect);
+
+  // Outer stadium ground, apron, doubles court, and singles inner court
+  s
+    .add(
+      primitives
+        .plane({
+          name: "stadium-outer-ground",
+          size: [54, 1, 58],
+          material: material.pbr({ color: VENUE_PALETTES.hard.ground, roughness: 0.94 })
+        })
+        .position(0, -0.024, 0)
+        .runtime(game.runtimeNode("stadium-outer-ground"))
+    )
+    .add(
+      primitives
+        .box({
+          castShadow: false, name: "court-apron",
+          size: [19.8, 0.016, 26.8],
+          material: material.pbr({ color: VENUE_PALETTES.hard.apron, roughness: 0.88 })
+        })
+        .position(0, -0.012, 0)
+        .runtime(game.runtimeNode("court-apron"))
+    )
+    .add(
+      primitives
+        .box({
+          castShadow: false, name: "court-doubles-surface",
+          size: [DOUBLES_X * 2, 0.016, BASELINE_Z * 2],
+          material: material.pbr({ color: VENUE_PALETTES.hard.alley, roughness: 0.82 })
+        })
+        .position(0, -0.004, 0)
+        .runtime(game.runtimeNode("court-doubles-surface"))
+    )
+    .add(
+      primitives
+        .box({
+          castShadow: false, name: "court-singles-surface",
+          size: [SINGLES_X * 2, 0.018, BASELINE_Z * 2],
+          material: material.pbr({ color: VENUE_PALETTES.hard.court, roughness: 0.78 })
+        })
+        .position(0, 0, 0)
+        .runtime(game.runtimeNode("court-singles-surface"))
+    );
+
+  // Grass mower stripes (visible on grass court)
+  for (let i = 0; i < 8; i++) {
+    const stripeZ = -BASELINE_Z + (i + 0.5) * ((BASELINE_Z * 2) / 8);
+    s.add(
+      primitives
+        .box({
+          castShadow: false, name: `grass-stripe-${i}`,
+          size: [DOUBLES_X * 2 - 0.04, 0.004, (BASELINE_Z * 2) / 8 - 0.02],
+          material: material.pbr({
+            color: i % 2 === 0 ? "#53945a" : "#46804d",
+            roughness: 0.84
+          })
+        })
+        .position(0, 0.009, stripeZ)
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(`grass-stripe-${i}`))
+    );
+  }
+
+  // Regulation white court lines (one merged mesh)
+  const statics = createStaticBoxes();
+  const lineY = 0.012;
+  const addLine = (size: Vec3, x: number, z: number): void => statics.box("lines", lineMat, size, [x, lineY, z]);
+  addLine([DOUBLES_X * 2 + 0.055, 0.008, 0.075], 0, -BASELINE_Z);
+  addLine([DOUBLES_X * 2 + 0.055, 0.008, 0.075], 0, BASELINE_Z);
+  addLine([0.055, 0.008, BASELINE_Z * 2 + 0.075], -DOUBLES_X, 0);
+  addLine([0.055, 0.008, BASELINE_Z * 2 + 0.075], DOUBLES_X, 0);
+  addLine([0.055, 0.008, BASELINE_Z * 2 + 0.075], -SINGLES_X, 0);
+  addLine([0.055, 0.008, BASELINE_Z * 2 + 0.075], SINGLES_X, 0);
+  addLine([SINGLES_X * 2 + 0.055, 0.008, 0.055], 0, -SERVICE_Z);
+  addLine([SINGLES_X * 2 + 0.055, 0.008, 0.055], 0, SERVICE_Z);
+  addLine([0.055, 0.008, SERVICE_Z * 2 + 0.055], 0, 0);
+  addLine([0.055, 0.008, 0.28], 0, -BASELINE_Z + 0.14);
+  addLine([0.055, 0.008, 0.28], 0, BASELINE_Z - 0.14);
+
+  // Net posts + pulsing red fault LED strips + parabolic sagging net & top tape
+  s.addMany([
+    primitives
+      .cylinder({
+        name: "net-post-left",
+        size: [0.14, NET_POST_H, 0.14],
+        material: netPostMat
+      })
+      .position(-NET_POST_X, NET_POST_H * 0.5, 0),
+    primitives
+      .cylinder({
+        name: "net-post-right",
+        size: [0.14, NET_POST_H, 0.14],
+        material: netPostMat
+      })
+      .position(NET_POST_X, NET_POST_H * 0.5, 0),
+    primitives
+      .box({
+        name: "net-fault-left",
+        size: [0.032, NET_POST_H * 0.72, 0.088],
+        material: material.emissive({ color: "#3d1c1a", emissive: "#3d1c1a", emissiveIntensity: 0.15 })
+      })
+      .position(-NET_POST_X, NET_POST_H * 0.54, 0.048)
+      .runtime(game.runtimeNode("net-fault-left")),
+    primitives
+      .box({
+        name: "net-fault-right",
+        size: [0.032, NET_POST_H * 0.72, 0.088],
+        material: material.emissive({ color: "#3d1c1a", emissive: "#3d1c1a", emissiveIntensity: 0.15 })
+      })
+      .position(NET_POST_X, NET_POST_H * 0.54, 0.048)
+      .runtime(game.runtimeNode("net-fault-right"))
+  ]);
+
+  statics.box("netTape", netTapeMat, [0.055, 0.914, 0.034], [0, 0.457, 0]);
+  const netSegments = 9;
+  const netHalfSpan = NET_POST_X;
+  for (let i = 0; i < netSegments; i++) {
+    const t0 = -1 + (i / netSegments) * 2;
+    const t1 = -1 + ((i + 1) / netSegments) * 2;
+    const tm = (t0 + t1) * 0.5;
+    const segW = (t1 - t0) * netHalfSpan;
+    const segX = tm * netHalfSpan;
+    const topH = 0.914 + (1.07 - 0.914) * tm * tm;
+    statics.box("netMesh", netMeshMat, [segW + 0.01, topH - 0.05, 0.022], [segX, (topH - 0.05) * 0.5 + 0.02, 0]);
+    statics.box("netTape", netTapeMat, [segW + 0.015, 0.062, 0.036], [segX, topH - 0.02, 0]);
+  }
+
+  const chairWood = material.pbr({ color: "#8c613c", roughness: 0.78 });
+  const chairFrame = material.pbr({ color: "#223b35", roughness: 0.65 });
+  const canopyMat = material.pbr({ color: "#ece4cf", roughness: 0.82 });
+  statics.box("chairFrame", chairFrame, [0.85, 1.85, 0.92], [-6.76, 0.925, 0]);
+  statics.box("wood", chairWood, [0.74, 0.12, 0.72], [-6.76, 1.92, 0]);
+  statics.box("wood", chairWood, [0.12, 0.68, 0.72], [-7.08, 2.28, 0]);
+  statics.box("canopy", canopyMat, [1.18, 0.08, 1.18], [-6.76, 2.95, 0]);
+  s.addMany([
+    primitives
+      .capsule({
+        name: "umpire-torso",
+        size: [0.34, 0.68, 0.34],
+        material: material.pbr({ color: "#214b3e", roughness: 0.78 })
+      })
+      .position(-6.72, 2.26, 0),
+    primitives
+      .sphere({
+        name: "umpire-head",
+        size: [0.27, 0.27, 0.27],
+        material: material.pbr({ color: "#c58e69", roughness: 0.74 })
+      })
+      .position(-6.68, 2.62, 0)
+      .runtime(game.runtimeNode("umpire-head"))
+  ]);
+
+  // Sponsor A-frame boards ("FAMILYSHOOT") at z = -10.85, x = ±4.3 & side player benches
+  const sponsorBoardMat = material.pbr({ color: "#1d3d33", roughness: 0.72 });
+  const sponsorTrimMat = material.pbr({ color: "#f3efdf", roughness: 0.55 });
+  for (const bx of [-4.3, 4.3]) {
+    statics.box("sponsorBoard", sponsorBoardMat, [3.2, 0.78, 0.34], [bx, 0.39, -10.85]);
+    statics.box("sponsorTrim", sponsorTrimMat, [2.85, 0.18, 0.36], [bx, 0.42, -10.85]);
+  }
+  for (const bz of [-3.4, 3.4]) statics.box("wood", chairWood, [0.58, 0.46, 1.95], [-7.35, 0.23, bz]);
+
+  // Typed Aura3D Stadium Grandstands & Floodlights (from src/aura-assets.ts)
+  s.addMany([
+    model(assets.showcaseStadiumSeats, {
+      name: "stadium-grandstand-rear",
+      role: "setDressing",
+      castShadow: false,
+      scaleMode: "fit",
+      targetMaxDimension: 12.5
+    })
+      .position(0, 0, -18.5)
+      .runtime(game.runtimeNode("stadium-grandstand-rear", { tags: ["typed-supporting-asset"] })),
+    model(assets.rooftopScoreboardRigMeshy, {
+      name: "stadium-scoreboard-gantry",
+      role: "setDressing",
+      castShadow: false,
+      scaleMode: "fit",
+      targetMaxDimension: 6.2
+    }).position(0, 2.4, -15.6),
+    model(assets.rooftopFloodlightTowerMeshy, {
+      name: "stadium-floodlight-left",
+      role: "setDressing",
+      castShadow: false,
+      scaleMode: "fit",
+      targetMaxDimension: 5.8
+    }).position(-12.5, 0, -13.2),
+    model(assets.rooftopFloodlightTowerMeshy, {
+      name: "stadium-floodlight-right",
+      role: "setDressing",
+      castShadow: false,
+      scaleMode: "fit",
+      targetMaxDimension: 5.8
+    }).position(12.5, 0, -13.2)
+  ]);
+
+
+  s.addMany(buildBleacherNodes(statics));
+  s.addMany(statics.build());
+  s.addMany(buildSpectatorNodes());
+
+  // Service Box Highlight, Aim Ring, Toss Ring, Beginner Landing Ring
+  s.addMany([
+    primitives
+      .box({
+        name: "service-box-highlight",
+        size: [SINGLES_X, 0.005, SERVICE_Z],
+        material: material.emissive({ color: "#d9f28c", emissive: "#d9f28c", emissiveIntensity: 0.25 })
+      })
+      .position(-SINGLES_X * 0.5, 0.011, -SERVICE_Z * 0.5)
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("service-box-highlight")),
+    primitives
+      .torus({
+        name: "serve-aim-ring",
+        size: [0.44, 0.44, 0.05],
+        material: material.emissive({ color: "#f4f8df", emissive: "#f4f8df", emissiveIntensity: 0.75 })
+      })
+      .rotate(Math.PI * 0.5, 0, 0)
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("serve-aim-ring")),
+    primitives
+      .torus({
+        name: "serve-toss-ring",
+        size: [0.28, 0.28, 0.032],
+        material: material.emissive({ color: "#f7e994", emissive: "#f7e994", emissiveIntensity: 0.9 })
+      })
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("serve-toss-ring")),
+    primitives
+      .torus({
+        name: "landing-indicator-ring",
+        size: [0.36, 0.36, 0.044],
+        material: material.emissive({ color: "#edf1d2", emissive: "#edf1d2", emissiveIntensity: 0.65 })
+      })
+      .rotate(Math.PI * 0.5, 0, 0)
+      .scale(HIDDEN_SCALE)
+      .runtime(game.runtimeNode("landing-indicator-ring"))
+  ]);
+
+  s.addMany(buildBallNodes());
+  s.addMany(rig.build("player", true));
+  s.addMany(rig.build("rival", false));
+
+  return s;
+}
+
+export type SceneApp = AuraApp;
+export type SceneHandle = AuraRuntimeNodeHandle;
