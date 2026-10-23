@@ -215,6 +215,19 @@ geometry.merge(specs: readonly AuraCustomGeometrySpec[])
   // BufferGeometryUtils.mergeGeometries over specs
 ```
 
+**Scatter planning and static merge (4.0.9, root exports, pure TypeScript).** Deterministic placement and baking
+utilities extracted from the Crayon ports; full reference in `docs/api/scatter-merge.md`.
+
+```ts
+createScatterRandom(seed?: number): () => number
+scatterAlongPath(options: AuraScatterAlongPathOptions): AuraScatterPoint[]
+scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[]
+splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][]
+scatterTransforms(points: readonly AuraScatterPoint[], options?: { kind?: number; baseScale?: number | AuraVec3 }): AuraTransformSpec[]
+mergeStatic(parts: readonly AuraStaticPart[], options?: AuraMergeStaticOptions): AuraCustomGeometrySpec | undefined
+mergeStaticByKey(parts: readonly (AuraStaticPart & { key: K })[], options?: AuraMergeStaticOptions): Map<K, AuraCustomGeometrySpec>
+```
+
 `geometry.toNonIndexed` does not exist as a public member — the equivalent
 `auraGeometryToNonIndexed` helper is internal-only (parity-tested, but not
 re-exported through either barrel). The public `geometry` namespace ships

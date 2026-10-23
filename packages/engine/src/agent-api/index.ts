@@ -448,6 +448,21 @@ export type { AuraMirrorOptions, AuraMirrorSurfaceNode } from "./nodes/surfaces.
 // threejs-parity AD-15 (P2): `lights.lensFlare` option/node types.
 export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, AuraLensFlareOptions } from "./nodes/lensFlare.js";
 export { instances } from "./nodes/instances.js";
+export {
+  createScatterRandom,
+  scatterAlongPath,
+  scatterInArea,
+  scatterTransforms,
+  splitScatterByDistance,
+  type AuraScatterAlongPathOptions,
+  type AuraScatterArea,
+  type AuraScatterExclusion,
+  type AuraScatterInAreaOptions,
+  type AuraScatterPoint,
+  type AuraScatterRange,
+  type AuraScatterSide
+} from "./nodes/scatter.js";
+export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
