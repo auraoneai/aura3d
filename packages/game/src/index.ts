@@ -192,3 +192,10 @@ export type {
   TouchControlsDeps
 } from "./touch/TouchControls.js";
 export { registerGameFonts } from "./fonts/register.js";
+
+// Rebindable input bindings: validated, persisted, with reserved keys and conflict detection (extracted from Aura Slam 3D).
+export { createBindingStore } from "./input/bindingStore.js";
+export type {
+  BindingStore, BindingStoreOptions, BindingDeviceConfig, BindingActionDefinition, BindingProfile, BindingError,
+  BindingValidation, BindingApplyResult, BindingListener, BindingStorage, KeyBinding, ButtonBinding
+} from "./input/bindingStore.js";
