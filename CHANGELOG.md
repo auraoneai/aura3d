@@ -1,8 +1,14 @@
 # Changelog
 
-Version: 4.0.4
+Version: 4.0.5
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.0.5 (2026-10-22)
+
+- **`tsl` node-graph subset and `material.node({ colorNode, emissiveNode, opacityNode, positionNode, transparent, side, ... })`** (SH-01): author a material as a TSL-style graph (`positionLocal/World`, `normalLocal/World`, `uv()`, `time`, `cameraPosition`, `uniform`, `uniformArray`, `texture`, `color`, `float/int/bool/vec2-4` with swizzles, math and comparison nodes, `Fn`, `If/ElseIf/Else`, `Loop`) and the engine emits GLSL 300 es into the existing `material.custom` path, with type inference and constant folding. `tsl.supportedNames` lists exactly what is supported.
+  - Limits, all reported with named errors rather than silently ignored: `normalNode`, `roughnessNode` and `metalnessNode` are not supported (custom materials have no scene-light access); any other three/tsl name throws `tsl-unsupported-node`; `uv(1)` is not supported; WGSL is not emitted (`tsl-requires-glsl-backend`). The emitted GLSL is verified on the mock device, not yet on a real GPU.
+  - `aura3d migrate three` maps `MeshStandardNodeMaterial`, `MeshBasicNodeMaterial` and `NodeMaterial` to `material.node` as approximate, with notes naming the unsupported nodes.
 
 ## 4.0.4 (2026-10-22)
 

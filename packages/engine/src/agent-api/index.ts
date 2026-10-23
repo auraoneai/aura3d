@@ -455,6 +455,9 @@ export type { AuraInstancedMeshBoundingSphere, AuraInstancedBufferView, AuraInst
 export { lights } from "./nodes/lights.js";
 export { looks } from "./looks/looks.js";
 export { material } from "./nodes/material.js";
+// SH-01 / L1-11: TSL-subset node graph (`tsl.*`, `material.node`); GLSL only.
+export { tsl } from "./nodes/tsl/index.js";
+export type { TslCompileResult, TslEvalContext, TslInput, TslMaterialNodeOptions, TslType, TslUniformKind, TslUniformOptions } from "./nodes/tsl/index.js";
 export { particles } from "./nodes/particles.js";
 export { sceneKits } from "./nodes/sceneKits.js";
 export { shadows } from "./nodes/shadows.js";

@@ -3,6 +3,7 @@
 
 import type { AuraCustomMaterialSpec, AuraEditableMaterialParameters, AuraMaterialCapabilityDiagnostics, AuraMaterialCapabilityInput, AuraMaterialInspectorPanel, AuraMaterialSpec, AuraMaterialVisualQAResult, AuraProceduralTextureSpec, AuraSceneNode } from "../nodes/types.js";
 import { assertAuraCustomMaterialSpec } from "../compiler/customMaterial.js";
+import { materialNode } from "./tsl/index.js";
 import { PHYSICAL_SPEC_KEYS, createMaterialCapabilityDiagnostics, createMaterialInspector, proceduralTexture } from "../nodes/materialTools.js";
 import { neon } from "../nodes/neon.js";
 import { createPhysicalMaterialSpec } from "../../material-physical/PhysicalMaterialSpec.js";
@@ -59,6 +60,11 @@ export const material = lazyNamespace(() => ({
     assertAuraCustomMaterialSpec(spec);
     return { kind: "custom", custom: spec };
   },
+  /**
+   * SH-01 (L1-11): TSL-subset node material — `colorNode/emissiveNode/opacityNode/positionNode`
+   * graphs built with `tsl.*` lower to a GLSL `material.custom` spec. GLSL only; see `tsl`.
+   */
+  node: materialNode,
   pbr: (options: AuraMaterialSpec = {}): AuraMaterialSpec => resolveMaterialSpecDefaults({
     color: "#d7dee8",
     roughness: 0.55,

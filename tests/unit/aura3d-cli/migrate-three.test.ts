@@ -80,7 +80,9 @@ describe("aura3d migrate three", () => {
     "Scene.overrideMaterial": { source: `const scene = new THREE.Scene();\nscene.overrideMaterial = depthMaterial;`, expectContains: ["a3d: Scene.overrideMaterial → scene().overrideMaterial", "SG-10"], mapping: "approximate" },
 
     // ── pending rows that remain — targets reserved, not yet public ─────
-    NodeMaterial: { source: `new THREE.NodeMaterial()`, expectContains: ["parityPending NodeMaterial → material.custom", "SH-01"], mapping: "pending" },
+    NodeMaterial: { source: `new THREE.NodeMaterial()`, expectContains: ["a3d: NodeMaterial → material.node", "SH-01", "normalNode"], mapping: "approximate" },
+    MeshBasicNodeMaterial: { source: `new THREE.MeshBasicNodeMaterial()`, expectContains: ["a3d: MeshBasicNodeMaterial → material.node", "unlit"], mapping: "approximate" },
+    MeshStandardNodeMaterial: { source: `new THREE.MeshStandardNodeMaterial()`, expectContains: ["a3d: MeshStandardNodeMaterial → material.node", "scene-light"], mapping: "approximate" },
     Layers: { source: `const l = new THREE.Layers();`, expectContains: ["parityPending Layers → layers", "not yet public"], mapping: "pending" },
 
     // ── L10: deliberate exclusions (AD-04 loaders, AD-05 exporters) ──────
@@ -122,12 +124,12 @@ describe("aura3d migrate three", () => {
   });
 
   it("report carries {construct,line,mapping,note} rows and counts incl. pending", () => {
-    const { rows } = emitMigratedSource(`import * as THREE from "three";\nnew THREE.Scene();\nnew THREE.CSS3DRenderer()\nnew THREE.NodeMaterial()`);
+    const { rows } = emitMigratedSource(`import * as THREE from "three";\nnew THREE.Scene();\nnew THREE.CSS3DRenderer()\nnew THREE.PlaneHelper(plane)`);
     const report = buildMigrateReport(rows);
     expect(report.counts.none).toBe(1);
     expect(report.counts.pending).toBe(1);
     expect(report.rows.some((r) => r.construct === "CSS3DRenderer" && r.line === 3)).toBe(true);
-    expect(report.rows.some((r) => r.construct === "NodeMaterial" && r.mapping === "pending")).toBe(true);
+    expect(report.rows.some((r) => r.construct === "PlaneHelper" && r.mapping === "pending")).toBe(true);
   });
 
   // ── Golden: a Crayon-style module shaped like Strange Orbit ────────────

@@ -54,7 +54,7 @@ function createWebgpuOnlyWarnings(source: string): readonly ThreeCompatCompatibi
   if (/\bthree\/webgpu\b|WebGPURenderer|NodeMaterial/.test(source)) {
     warnings.push({
       code: "webgpu-flagged",
-      message: "createAuraApp mounts WebGL2 on the live path; a WebGPU backend needs Renderer.create({ backend: \"webgpu\" }) behind A3D_QR_WEBGPU. NodeMaterial/TSL constructs are pending (SH-01) — rewrite them as material.custom GLSL when it lands (lane L1)."
+      message: "createAuraApp mounts WebGL2 on the live path; a WebGPU backend needs Renderer.create({ backend: \"webgpu\" }) behind A3D_QR_WEBGPU. NodeMaterial graphs map to material.node with the supported tsl.* subset (GLSL only; normalNode, roughnessNode, metalnessNode and many three/tsl names are unsupported — see the NodeMaterial row)."
     });
   }
   // SH-04: GPU computation / compute shaders wait on the WebGPU backend.

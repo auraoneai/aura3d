@@ -29,6 +29,13 @@ export class AuraRuntimeError extends Error {
     // SH-04: malformed pipeline/buffer/dispatch input (GLSL instead of WGSL,
     // workgroup/limit violations, missing or mismatched bindings, disposed handles).
     | "invalid-compute-spec"
+    // SH-01 (L1-11): TSL-subset graph violations (`tsl.*`, `material.node`).
+    | "invalid-tsl-graph"
+    | "tsl-type-mismatch"
+    | "tsl-unsupported-node"
+    | "tsl-unsupported-output"
+    | "tsl-statement-outside-fn"
+    | "tsl-requires-glsl-backend"
     // CCR-03-8 (additive): PRD-03 §7.1 — v2 post-bridge field rejection.
     | "POST_FIELD_UNSUPPORTED"
     // T4.1 (PRD-15): strict degrade() throws the C-36 degradation codes,

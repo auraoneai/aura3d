@@ -1,10 +1,9 @@
 # PRD — three.js → Aura3D Parity
 
-**Status:** v5 · 2026-10-22. Released as **4.0.4** (npm, all 24 public packages; git tag `v4.0.4`).
-The engine surface in this document is complete except: **SH-01** (TSL subset, decided
-as hand-port per R-24), **Phase exits B, C, D** (game ports, dropped by decision),
+**Status:** v6 · 2026-10-22. Released as **4.0.5** (npm, all 24 public packages; git tag `v4.0.5`).
+The engine surface in this document is complete except: **Phase exits B, C, D** (game ports, dropped by decision),
 the **fixed-input captures for eight games** (R-25, partial), and **real-device
-verification** of WebXR, WebGPU compute and WebGPU canvas presentation (R-22).
+verification** of WebXR, WebGPU compute, TSL-emitted GLSL and WebGPU canvas presentation (R-22).
 `A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are default-on; the other four flags gate nothing.
 **Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
@@ -947,7 +946,7 @@ means "implemented and tested".
 - [x] L3-03 camera `Spline.ts` consumes `M/curves` (new `ClampedCatmullRomCurve3`, any alpha; duplicate derivative and `curveTypeFor` fallback deleted; also fixed an arc-length test that was failing at HEAD; R-14)
 
 ### P2 — completeness
-- [ ] SH-01 TSL subset. Re-probed (R-01): 1 of 10 games authors node materials (HEATSINK, 49 live; three r184+r186, `WebGPURenderer`). The ≥3-game trigger is not met, so there is no general TSL emitter, but HEATSINK is a Phase B game and needs either hand-ported `material.custom` materials or L1-11 → **R-24 (decision)**
+- [x] SH-01 TSL subset (`tsl` + `material.node` in `packages/engine/src/agent-api/nodes/tsl/`; GLSL 300 es emitter with type inference and constant folding; `tsl.test.ts` 24 tests including a JS reference interpreter and mock-device compile; released in 4.0.5). Limits: `normalNode`/`roughnessNode`/`metalnessNode` unsupported (custom materials have no scene-light access; HEATSINK uses `normalNode` in 7 of 49 node materials), other three/tsl names throw `tsl-unsupported-node`, WGSL not emitted, GLSL not yet verified on a real GPU
 - [x] SH-04 public WebGPU-only `compute.*` (`packages/rendering/src/compute/`, `compute.pipeline/buffer/dispatch`, `app.compute`; WGSL required; WebGL2 apps get `compute-requires-webgpu`; `tests/unit/parity/compute.test.ts` 26 tests against a fake `GPUDevice`). Real-GPU execution is untested: the remote runner's software WebGPU cannot run it (R-22)
 - [x] SH-09 material `patch` (`shader-material.test.ts` — patch chunks hash into program key)
 - [x] SG-08 sprites (`parity-lines` green — billboard + rotation pixel-proven)

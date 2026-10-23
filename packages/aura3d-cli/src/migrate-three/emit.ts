@@ -681,11 +681,11 @@ export function emitMigratedSource(source: string): MigrateResult {
           }
         }
         if (spec === "three/webgpu") {
-          pushComment(comments, c.line, `// a3d: three/webgpu — createAuraApp mounts WebGL2; NodeMaterial/TSL/compute constructs are pending (SH-01/SH-04)`);
+          pushComment(comments, c.line, `// a3d: three/webgpu — createAuraApp mounts WebGL2; NodeMaterial constructs map to material.node (SH-01 TSL subset, GLSL only); compute maps to compute.* (SH-04, WebGPU-only)`);
         }
       } else if (spec === "three/tsl") {
-        pushComment(comments, c.line, `// TODO(a3d-migrate): TSL imports have no public Aura3D equivalent yet (SH-01 probe-gated) — rewrite node graphs as material.custom GLSL when it lands`);
-        rows.push({ construct: `import "${spec}"`, line: c.line, mapping: "none", note: "three/tsl specifier is not rewritten; the TSL subset is probe-gated (SH-01)." });
+        pushComment(comments, c.line, `// TODO(a3d-migrate): three/tsl imports are not rewritten — rebuild node graphs with the tsl.* subset and material.node (see the NodeMaterial row for the supported and unsupported names)`);
+        rows.push({ construct: `import "${spec}"`, line: c.line, mapping: "none", note: "three/tsl specifier is not rewritten; use the tsl.* subset (SH-01) and material.node for supported nodes." });
       } else {
         const action = addonActionFor(spec);
         if (action?.kind === "rewrite") {

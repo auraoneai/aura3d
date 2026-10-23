@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aura3D 4.0.4 vs. Raw Three.js — Open-Source TypeScript 3D Engine</title>
-<meta name="description" content="Stop assembling 14 fragile npm packages to render a 3D scene. Compare Aura3D 4.0.4 (@aura3d/engine@4.0.4) against raw Three.js across architecture, asset type safety, WebGPU compute, physics, and 18-line scene boot." />
+<title>Aura3D 4.0.5 vs. Raw Three.js — Open-Source TypeScript 3D Engine</title>
+<meta name="description" content="Stop assembling 14 fragile npm packages to render a 3D scene. Compare Aura3D 4.0.5 (@aura3d/engine@4.0.5) against raw Three.js across architecture, asset type safety, WebGPU compute, physics, and 18-line scene boot." />
 <meta name="robots" content="index, follow, max-image-preview:large" />
 <link rel="canonical" href="https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Aura3D 4.0.4 vs. Raw Three.js: Build the application, not the renderer stack" />
-<meta property="og:description" content="Aura3D 4.0.4 packages the browser 3D application path into one open-source, zero-dependency, typed TypeScript engine." />
+<meta property="og:title" content="Aura3D 4.0.5 vs. Raw Three.js: Build the application, not the renderer stack" />
+<meta property="og:description" content="Aura3D 4.0.5 packages the browser 3D application path into one open-source, zero-dependency, typed TypeScript engine." />
 <meta property="og:url" content="https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html" />
 <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
 <meta property="og:image:alt" content="Aura3D wordmark and tagline on the brand light background" />
@@ -19,14 +19,14 @@
 <link rel="stylesheet" href="/marketing/src/styles.css" />
 </head>
 <body>
-<nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api.html">Agent API</a><a class="nav-link" href="/apps/showcase-index/">Examples</a><a class="nav-link" href="/docs/templates.html">Templates</a><a class="nav-link" href="/docs/assets.html">Assets</a><a class="nav-link" href="/docs/deployment.html">Deploy</a></div><div class="nav-actions"><span class="nav-version">v4.0.4</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building</a></div></div></nav>
+<nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api.html">Agent API</a><a class="nav-link" href="/apps/showcase-index/">Examples</a><a class="nav-link" href="/docs/templates.html">Templates</a><a class="nav-link" href="/docs/assets.html">Assets</a><a class="nav-link" href="/docs/deployment.html">Deploy</a></div><div class="nav-actions"><span class="nav-version">v4.0.5</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building</a></div></div></nav>
 
 <main class="compare-page">
   <header class="compare-hero">
     <div class="wrap">
-      <span class="hero-tag"><span class="pill">4.0.4 LIVE</span><b>Aura3D 4.0.4</b><span class="mute">MIT open-source TypeScript 3D engine</span></span>
+      <span class="hero-tag"><span class="pill">4.0.5 LIVE</span><b>Aura3D 4.0.5</b><span class="mute">MIT open-source TypeScript 3D engine</span></span>
       <h1>Stop assembling renderer parts.<br /><em>Stop wiring 14 fragile npm packages to ship a 3D scene.</em></h1>
-      <p class="compare-hero-lede">Three.js is a legendary low-level rendering kernel—not a complete application engine. The moment you step beyond a spinning cube, raw Three.js forces your team to hand-wire <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>OrbitControls</code>, <code>GLTFLoader</code>, <code>DRACOLoader</code>, <code>KTX2Loader</code>, <code>RGBELoader</code>, <code>EffectComposer</code>, <code>PMREMGenerator</code>, <code>Rapier3D</code>, <code>Recast</code>, manual resize observers, and recursive <code>dispose()</code> loops. <strong>Aura3D 4.0.4 (<code>@aura3d/engine@4.0.4</code>)</strong> boots a deterministic WebGPU compute + WebGL2 rendering pipeline in <strong>18 lines of TypeScript</strong> with compile-time typed assets, physical PBR, HDR post-processing, rigid-body physics, Recast crowd steering, Gaussian splats, portal worlds, and automated Playwright certification.</p>
+      <p class="compare-hero-lede">Three.js is a legendary low-level rendering kernel—not a complete application engine. The moment you step beyond a spinning cube, raw Three.js forces your team to hand-wire <code>WebGLRenderer</code>, <code>PerspectiveCamera</code>, <code>OrbitControls</code>, <code>GLTFLoader</code>, <code>DRACOLoader</code>, <code>KTX2Loader</code>, <code>RGBELoader</code>, <code>EffectComposer</code>, <code>PMREMGenerator</code>, <code>Rapier3D</code>, <code>Recast</code>, manual resize observers, and recursive <code>dispose()</code> loops. <strong>Aura3D 4.0.5 (<code>@aura3d/engine@4.0.5</code>)</strong> boots a deterministic WebGPU compute + WebGL2 rendering pipeline in <strong>18 lines of TypeScript</strong> with compile-time typed assets, physical PBR, HDR post-processing, rigid-body physics, Recast crowd steering, Gaussian splats, portal worlds, and automated Playwright certification.</p>
       <div class="hero-cta"><a class="btn btn-primary" href="/apps/showcase-index/">Launch 50 live experiences</a><a class="btn btn-ghost" href="/docs/agent-quickstart.html">Build your first scene</a></div>
       <div class="compare-facts">
         <div><strong>15 / 15</strong><span>selected correctness workloads</span></div>
@@ -38,7 +38,7 @@
     </div>
   </header>
 
-  <section class="compare-section"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">The decision</span><h2>Own the product—not the integration backlog.</h2><p>A low-level renderer leaves your team to select, connect, type, test, and maintain the rest of the application stack. Aura3D 4.0.4 starts at the application layer with a coherent public API and deployable workflows.</p></div>
+  <section class="compare-section"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">The decision</span><h2>Own the product—not the integration backlog.</h2><p>A low-level renderer leaves your team to select, connect, type, test, and maintain the rest of the application stack. Aura3D 4.0.5 starts at the application layer with a coherent public API and deployable workflows.</p></div>
     <div class="compare-columns">
       <article><span>The renderer-first path</span><h3>Your team assembles the application layer.</h3><ul><li>Choose and connect loaders, Draco/KTX2 WASM workers, controls, simulation, navigation, asset conventions, lifecycle, and deployment.</li><li>Create internal patterns for coding agents, scene composition, diagnostics, and release verification.</li><li>Own every integration boundary and recursive GPU disposal loop as the stack changes.</li></ul></article>
       <article class="aura-choice"><span>The Aura3D path</span><h3>Start with the system assembled.</h3><ul><li>Resolve license-aware assets into generated, SHA-256 verified TypeScript references (<code>src/aura-assets.ts</code>) instead of guessing model URLs.</li><li>Compose scenes in 18 lines through stable application-level nouns and verbs designed for developers and coding agents.</li><li>Use maintained scaffolds, physical PBR, HDR post-processing, Rapier physics, Recast crowds, Gaussian splats, portal worlds, and <code>aura3d check-deploy</code> in one open-source product path.</li></ul></article>
@@ -49,13 +49,13 @@
     <div class="wrap">
       <div class="compare-section-head">
         <span class="eyebrow">Architectural Comparison</span>
-        <h2>10-Point Breakdown: Raw Three.js Stack vs. Aura3D 4.0.4</h2>
-        <p>Every capability below ships directly inside <code>@aura3d/engine@4.0.4</code> and <code>@aura3d/cli@4.0.4</code> under the MIT license.</p>
+        <h2>10-Point Breakdown: Raw Three.js Stack vs. Aura3D 4.0.5</h2>
+        <p>Every capability below ships directly inside <code>@aura3d/engine@4.0.5</code> and <code>@aura3d/cli@4.0.5</code> under the MIT license.</p>
       </div>
-      <div class="compare" role="region" aria-label="Aura3D 4.0.4 vs Raw Three.js architectural comparison">
+      <div class="compare" role="region" aria-label="Aura3D 4.0.5 vs Raw Three.js architectural comparison">
         <div class="compare-head">
           <div>Capability</div>
-          <div>Aura3D 4.0.4 (<code>@aura3d/engine@4.0.4</code> + <code>@aura3d/cli@4.0.4</code>)</div>
+          <div>Aura3D 4.0.5 (<code>@aura3d/engine@4.0.5</code> + <code>@aura3d/cli@4.0.5</code>)</div>
           <div>Raw Three.js Stack (<code>three@0.185.x</code> + ecosystem)</div>
           <div>Impact</div>
         </div>
@@ -127,8 +127,8 @@
     <div class="wrap">
       <div class="compare-section-head">
         <span class="eyebrow">Code Comparison</span>
-        <h2>~120 Lines of Raw Three.js vs. 18 Lines of Aura3D 4.0.4</h2>
-        <p>Both snippets boot a studio-lit PBR scene with an animated GLB model, damped orbit controls, shadow mapping, and HDR bloom. Only Aura3D 4.0.4 verifies the asset hash at compile time and cleans up the entire GPU lifecycle automatically.</p>
+        <h2>~120 Lines of Raw Three.js vs. 18 Lines of Aura3D 4.0.5</h2>
+        <p>Both snippets boot a studio-lit PBR scene with an animated GLB model, damped orbit controls, shadow mapping, and HDR bloom. Only Aura3D 4.0.5 verifies the asset hash at compile time and cleans up the entire GPU lifecycle automatically.</p>
       </div>
       <div class="migration">
         <div class="migration-col">
@@ -180,7 +180,7 @@ controls.enableDamping = <span class="n">true</span>;
         </div>
         <div class="migration-col aura">
           <div class="migration-head">
-            <span>Aura3D 4.0.4 (<code>@aura3d/engine@4.0.4</code>)</span>
+            <span>Aura3D 4.0.5 (<code>@aura3d/engine@4.0.5</code>)</span>
             <span class="migration-tag">18 lines, typed &amp; verified</span>
           </div>
           <pre class="code"><code><span class="k">import</span> { createAuraApp, environment, light, model, orbitCamera, post } <span class="k">from</span> <span class="s">'@aura3d/engine'</span>;
@@ -237,7 +237,7 @@ controls.enableDamping = <span class="n">true</span>;
   <section class="compare-cta"><div class="wrap"><span class="eyebrow">Build now</span><h2>Less assembly.<br />More application.</h2><p>Give your team and coding agents a typed, inspectable path from asset to interactive, deployable browser 3D.</p><div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart.html">Build the first scene</a><a class="btn btn-ghost" href="/apps/showcase-index/">Launch the examples</a></div></div></section>
 </main>
 
-<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D, @aura3d/engine v4.0.4, MIT licensed</span><span>Comparison locked to Three.js 0.185.1, no universal score</span></div></div></footer>
+<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D, @aura3d/engine v4.0.5, MIT licensed</span><span>Comparison locked to Three.js 0.185.1, no universal score</span></div></div></footer>
 <script type="module" src="/marketing/src/main.ts"></script>
 </body>
 </html>

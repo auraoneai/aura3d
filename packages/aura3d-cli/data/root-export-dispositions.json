@@ -23604,6 +23604,18 @@
       "owners": []
     },
     {
+      "name": "tsl",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SH-01 \u2014 TSL-subset node graph (tsl.* factories, Fn/If/Loop, tsl.compile/evaluate) lowering to GLSL for material.node; WGSL is not emitted and unsupported TSL names throw tsl-unsupported-node",
+      "consumers": [
+        "tests/unit/parity/tsl.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "tuneLabelCollision",
       "kind": "value",
       "from": ".",

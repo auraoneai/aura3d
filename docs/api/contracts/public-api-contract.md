@@ -5,9 +5,9 @@ Generated reproducibly by `pnpm check:public-api` from packed current source.
 ## Summary
 
 - Checks passing: 7/7
-- Engine exports: 262
+- Engine exports: 263
 - React exports: 21
-- Docs named imports checked: 66
+- Docs named imports checked: 68
 
 ## Checks
 
@@ -18,7 +18,7 @@ Generated reproducibly by `pnpm check:public-api` from packed current source.
 | `react-required-exports` | pass | all required exports present |
 | `public-valid-examples-compile` | pass | valid public API examples compile from packed packages |
 | `public-invalid-examples-fail-as-expected` | pass | invalid model string, missing asset, archived imports, and archived package imports are rejected by TypeScript |
-| `docs-named-imports-are-exported` | pass | 66 documented named imports resolve |
+| `docs-named-imports-are-exported` | pass | 68 documented named imports resolve |
 | `archived-runtime-not-exported` | pass | archived runtime names are absent from public engine exports |
 
 ## Required Engine Exports

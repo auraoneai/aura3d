@@ -13,40 +13,40 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `4.0.4` | `packages/animation/src/index.ts` | 49 |
-| `@aura3d/apps` | `4.0.4` | `packages/apps/src/index.ts` | 10 |
-| `@aura3d/asset-index` | `4.0.4` | `packages/asset-index/src/index.ts` | 35 |
-| `@aura3d/assets` | `4.0.4` | `packages/assets/src/index.ts` | 93 |
-| `@aura3d/assets/gltf-runtime` | `4.0.4` | `packages/assets/src/gltf-runtime.ts` | 6 |
-| `@aura3d/audio` | `4.0.4` | `packages/audio/src/index.ts` | 49 |
-| `@aura3d/cli` | `4.0.4` | `packages/aura3d-cli/src/index.ts` | 37 |
-| `@aura3d/controls` | `4.0.4` | `packages/controls/src/index.ts` | 46 |
-| `@aura3d/core` | `4.0.4` | `packages/core/src/index.ts` | 14 |
-| `create-aura3d` | `4.0.4` | `packages/create-aura3d/src/index.ts` | 16 |
-| `@aura3d/debug` | `4.0.4` | `packages/debug/src/index.ts` | 30 |
-| `@aura3d/ecs` | `4.0.4` | `packages/ecs/src/index.ts` | 25 |
-| `@aura3d/editor-runtime` | `4.0.4` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `4.0.4` | `packages/engine/src/index.ts` | 21 |
-| `@aura3d/input` | `4.0.4` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/math` | `4.0.4` | `packages/math/src/index.ts` | 30 |
-| `@aura3d/navigation-recast` | `4.0.4` | `packages/navigation-recast/src/index.ts` | 16 |
-| `@aura3d/physics` | `4.0.4` | `packages/physics/src/index.ts` | 24 |
-| `@aura3d/physics-rapier` | `4.0.4` | `packages/physics-rapier/src/index.ts` | 26 |
-| `@aura3d/physics/solverless` | `4.0.4` | `packages/physics/src/solverless.ts` | 13 |
-| `@aura3d/physics/world` | `4.0.4` | `packages/physics/src/world.ts` | 2 |
-| `@aura3d/product-studio` | `4.0.4` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/react` | `4.0.4` | `packages/react/src/index.ts` | 39 |
-| `@aura3d/rendering` | `4.0.4` | `packages/rendering/src/index.ts` | 413 |
-| `@aura3d/rendering/extension-scalar-atlas` | `4.0.4` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
-| `@aura3d/rendering/reflection-surfaces` | `4.0.4` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
-| `@aura3d/rendering/webgpu` | `4.0.4` | `packages/rendering/src/webgpu.ts` | 8 |
-| `@aura3d/scene` | `4.0.4` | `packages/scene/src/index.ts` | 21 |
-| `@aura3d/scripting` | `4.0.4` | `packages/scripting/src/index.ts` | 39 |
-| `@aura3d/workflows` | `4.0.4` | `packages/workflows/src/index.ts` | 12 |
+| `@aura3d/animation` | `4.0.5` | `packages/animation/src/index.ts` | 49 |
+| `@aura3d/apps` | `4.0.5` | `packages/apps/src/index.ts` | 10 |
+| `@aura3d/asset-index` | `4.0.5` | `packages/asset-index/src/index.ts` | 35 |
+| `@aura3d/assets` | `4.0.5` | `packages/assets/src/index.ts` | 93 |
+| `@aura3d/assets/gltf-runtime` | `4.0.5` | `packages/assets/src/gltf-runtime.ts` | 6 |
+| `@aura3d/audio` | `4.0.5` | `packages/audio/src/index.ts` | 49 |
+| `@aura3d/cli` | `4.0.5` | `packages/aura3d-cli/src/index.ts` | 37 |
+| `@aura3d/controls` | `4.0.5` | `packages/controls/src/index.ts` | 46 |
+| `@aura3d/core` | `4.0.5` | `packages/core/src/index.ts` | 14 |
+| `create-aura3d` | `4.0.5` | `packages/create-aura3d/src/index.ts` | 16 |
+| `@aura3d/debug` | `4.0.5` | `packages/debug/src/index.ts` | 30 |
+| `@aura3d/ecs` | `4.0.5` | `packages/ecs/src/index.ts` | 25 |
+| `@aura3d/editor-runtime` | `4.0.5` | `packages/editor-runtime/src/index.ts` | 82 |
+| `@aura3d/engine` | `4.0.5` | `packages/engine/src/index.ts` | 21 |
+| `@aura3d/input` | `4.0.5` | `packages/input/src/index.ts` | 48 |
+| `@aura3d/math` | `4.0.5` | `packages/math/src/index.ts` | 30 |
+| `@aura3d/navigation-recast` | `4.0.5` | `packages/navigation-recast/src/index.ts` | 16 |
+| `@aura3d/physics` | `4.0.5` | `packages/physics/src/index.ts` | 24 |
+| `@aura3d/physics-rapier` | `4.0.5` | `packages/physics-rapier/src/index.ts` | 26 |
+| `@aura3d/physics/solverless` | `4.0.5` | `packages/physics/src/solverless.ts` | 13 |
+| `@aura3d/physics/world` | `4.0.5` | `packages/physics/src/world.ts` | 2 |
+| `@aura3d/product-studio` | `4.0.5` | `packages/product-studio/src/index.ts` | 12 |
+| `@aura3d/react` | `4.0.5` | `packages/react/src/index.ts` | 39 |
+| `@aura3d/rendering` | `4.0.5` | `packages/rendering/src/index.ts` | 413 |
+| `@aura3d/rendering/extension-scalar-atlas` | `4.0.5` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
+| `@aura3d/rendering/reflection-surfaces` | `4.0.5` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
+| `@aura3d/rendering/webgpu` | `4.0.5` | `packages/rendering/src/webgpu.ts` | 8 |
+| `@aura3d/scene` | `4.0.5` | `packages/scene/src/index.ts` | 21 |
+| `@aura3d/scripting` | `4.0.5` | `packages/scripting/src/index.ts` | 39 |
+| `@aura3d/workflows` | `4.0.5` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/animation/package.json`
 - Public entrypoint: `packages/animation/src/index.ts`
 
@@ -106,7 +106,7 @@ export type { ThreeCompatAnimatedAssetDiagnostic } from "./threejs-compatibility
 
 ## @aura3d/apps
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/apps/package.json`
 - Public entrypoint: `packages/apps/src/index.ts`
 
@@ -127,7 +127,7 @@ export async function createA3DApp(options: A3DAppOptions = {}): Promise<A3DApp>
 
 ## @aura3d/asset-index
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/asset-index/package.json`
 - Public entrypoint: `packages/asset-index/src/index.ts`
 
@@ -173,7 +173,7 @@ export function defaultAdapters(): SourceAdapter[] { return [ createAnimationSta
 
 ## @aura3d/assets
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/index.ts`
 
@@ -277,7 +277,7 @@ export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/gltf-runtime.ts`
 
@@ -294,7 +294,7 @@ export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";
 
 ## @aura3d/audio
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/audio/package.json`
 - Public entrypoint: `packages/audio/src/index.ts`
 
@@ -354,7 +354,7 @@ export type { ListenerLike } from "./game-sound/listenerSync";
 
 ## @aura3d/cli
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/aura3d-cli/package.json`
 - Public entrypoint: `packages/aura3d-cli/src/index.ts`
 
@@ -402,7 +402,7 @@ export function initAgentSetup(options: { readonly projectDir?: string;
 
 ## @aura3d/controls
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/controls/package.json`
 - Public entrypoint: `packages/controls/src/index.ts`
 
@@ -459,7 +459,7 @@ export { PointerLockControls as PointerLockControlsEngine } from "./engine/Point
 
 ## @aura3d/core
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/core/package.json`
 - Public entrypoint: `packages/core/src/index.ts`
 
@@ -484,7 +484,7 @@ export * from "./VersionedSerialization.js";
 
 ## create-aura3d
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/create-aura3d/package.json`
 - Public entrypoint: `packages/create-aura3d/src/index.ts`
 
@@ -511,7 +511,7 @@ export { AURA_AGENT_CLIENTS, AURA_SKILLS_LEDGER, findBundledSkillsDir, readSkill
 
 ## @aura3d/debug
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/debug/package.json`
 - Public entrypoint: `packages/debug/src/index.ts`
 
@@ -552,7 +552,7 @@ export type { DebugReport } from "./ReportExporter.js";
 
 ## @aura3d/ecs
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/ecs/package.json`
 - Public entrypoint: `packages/ecs/src/index.ts`
 
@@ -588,7 +588,7 @@ export * from "./systems/index.js";
 
 ## @aura3d/editor-runtime
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/editor-runtime/package.json`
 - Public entrypoint: `packages/editor-runtime/src/index.ts`
 
@@ -681,7 +681,7 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 
 ## @aura3d/engine
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `package.json`
 - Public entrypoint: `packages/engine/src/index.ts`
 
@@ -713,7 +713,7 @@ export * from "./lanes/index.js";
 
 ## @aura3d/input
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/input/package.json`
 - Public entrypoint: `packages/input/src/index.ts`
 
@@ -772,7 +772,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 
 ## @aura3d/math
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/math/package.json`
 - Public entrypoint: `packages/math/src/index.ts`
 
@@ -813,7 +813,7 @@ export * from "./Curves.js";
 
 ## @aura3d/navigation-recast
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/navigation-recast/package.json`
 - Public entrypoint: `packages/navigation-recast/src/index.ts`
 
@@ -840,7 +840,7 @@ export async function createRecastNavigation(options: RecastNavigationOptions = 
 
 ## @aura3d/physics
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/index.ts`
 
@@ -875,7 +875,7 @@ export * from "./PhysicsDebugDraw.js";
 
 ## @aura3d/physics-rapier
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/physics-rapier/package.json`
 - Public entrypoint: `packages/physics-rapier/src/index.ts`
 
@@ -912,7 +912,7 @@ export async function createCollidersFromSidecar( world: RapierPhysicsWorld, sou
 
 ## @aura3d/physics/solverless
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/solverless.ts`
 
@@ -936,7 +936,7 @@ export type { MeshSurfaceQuery, MeshSurfaceQueryOptions, SurfaceSample } from ".
 
 ## @aura3d/physics/world
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/world.ts`
 
@@ -949,7 +949,7 @@ export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection,
 
 ## @aura3d/product-studio
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/product-studio/package.json`
 - Public entrypoint: `packages/product-studio/src/index.ts`
 
@@ -972,7 +972,7 @@ export type * from "./ProductShowcaseLayout";
 
 ## @aura3d/react
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/react/package.json`
 - Public entrypoint: `packages/react/src/index.ts`
 
@@ -1022,7 +1022,7 @@ export function productViewerScene(asset: AuraAssetRef<"model">, material?: Aura
 
 ## @aura3d/rendering
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/index.ts`
 
@@ -1448,7 +1448,7 @@ export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalR
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/extension-scalar-atlas.ts`
 
@@ -1461,7 +1461,7 @@ export type { ExtensionScalarAtlas, ExtensionScalarAtlasSlot, ExtensionScalarPix
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/reflection-surfaces.ts`
 
@@ -1476,7 +1476,7 @@ export type { ReflectionSurface, ReflectionSurfaceKind, ReflectionSurfaceOptions
 
 ## @aura3d/rendering/webgpu
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/webgpu.ts`
 
@@ -1495,7 +1495,7 @@ export { Texture } from "./Texture";
 
 ## @aura3d/scene
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/scene/package.json`
 - Public entrypoint: `packages/scene/src/index.ts`
 
@@ -1527,7 +1527,7 @@ export * from "./SceneSerializer.js";
 
 ## @aura3d/scripting
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/scripting/package.json`
 - Public entrypoint: `packages/scripting/src/index.ts`
 
@@ -1577,7 +1577,7 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 
 ## @aura3d/workflows
 
-- Version: `4.0.4`
+- Version: `4.0.5`
 - Package manifest: `packages/workflows/package.json`
 - Public entrypoint: `packages/workflows/src/index.ts`
 
@@ -2204,14 +2204,88 @@ compute.dispose();                     // destroys every buffer, idempotent
 - Codemod: `GPUComputationRenderer` and TSL `compute()` (`ComputeNode`) are labelled
   `none` — no automatic rewrite; hand-port the kernels to WGSL.
 
+### TSL subset — SH-01 (lane L1 — LIVE, GLSL only)
+
+`tsl.*` builds a small typed node graph; `material.node({ ... })` lowers it to a
+GLSL 300 es `material.custom` spec (the existing SH-02 path is unchanged), so it
+runs on the WebGL2 live path. It is a **subset**, chosen from the HEATSINK probe
+(`evidence/crayon-probes/heatsink.json`: 49 live node materials using `colorNode` 49,
+`opacityNode` 43, `positionNode` 19, `normalNode` 7, `emissiveNode` 2).
+
+```ts
+import { material, tsl } from "@aura3d/engine";
+
+const glow = tsl.uniform(0.5, { name: "uGlow" });               // update later: handle.setUniform("uGlow", 2)
+const wave = tsl.sin(tsl.positionLocal.y.add(tsl.time)).mul(0.1);
+const spec = material.node({
+  positionNode: tsl.positionLocal.add(tsl.normalLocal.mul(wave)),  // vertex stage
+  colorNode: tsl.mix(tsl.color("#223344"), tsl.color("#ff8800"), tsl.uv().x),
+  emissiveNode: tsl.vec3(glow, glow.mul(0.5), 0),                  // added to rgb
+  opacityNode: tsl.uv().y,                                         // multiplies alpha
+  transparent: true
+});
+```
+
+**Outputs** (`material.node` options): `colorNode` (vec3 or vec4), `emissiveNode` (vec3),
+`opacityNode` (float), `positionNode` (vec3, local space; feeds the vertex stage and
+the fragment `positionLocal`/`positionWorld`), `alphaTest`, plus the pass-through
+render state `transparent`, `side`, `depthWrite`, `depthTest`, `blending`, `fog`,
+`defines`. Alpha is `colorNode.a * opacityNode` as in three.
+
+**Supported names** (`tsl.supportedNames` is the source of truth):
+
+- Inputs: `positionLocal`, `positionWorld`, `normalLocal`, `normalWorld`, `uv()` (set 0 only),
+  `time`, `cameraPosition`, `uniform(value, { name?, type? })`,
+  `uniformArray(values, type, { name? })` (lowered to `<name>_0 … <name>_{N-1}`; `.element(i)`
+  with a static index picks one, a node index emits a select ladder), `texture(handle, uv?, { name? })`.
+- Constructors: `color`, `float`, `int`, `bool`, `vec2`, `vec3`, `vec4`; swizzles (`.x`, `.xy`, `.rgb`, …).
+- Math: `add`, `sub`, `mul`, `div`, `mod`, `mix`, `smoothstep`, `clamp`, `pow`, `abs`, `min`, `max`, `dot`,
+  `cross`, `normalize`, `length`, `distance`, `sin`, `cos`, `tan`, `fract`, `floor`, `ceil`, `sign`,
+  `sqrt`, `exp`, `log`, `step`, `atan2`, `saturate`, `oneMinus`, `negate`, `select`; comparisons
+  `lessThan`, `greaterThan`, `lessThanEqual`, `greaterThanEqual`, `equal`, `notEqual`; `and`, `or`, `not`.
+  Every op is also a chainable node method (`a.mul(b).add(c)`).
+- Control flow: `Fn(callback)(...args)` (inlined; arguments are evaluated at the call site),
+  `.toVar()`, `.assign/.addAssign/.subAssign/.mulAssign/.divAssign`, `If(...).ElseIf(...).Else(...)`,
+  `Loop(count | { start, end }, ({ i }) => { ... })` (at most 1024 static iterations).
+  These statements are valid only inside `Fn`; outside it they throw `tsl-statement-outside-fn`.
+
+**Not supported — always a named `AuraRuntimeError`, never a silent no-op:**
+
+| What | Error |
+| --- | --- |
+| `normalNode`, `roughnessNode`, `metalnessNode` (custom materials have no scene-light access, so they would have no effect) | `tsl-unsupported-output` |
+| Any other three/tsl name (`triplanarTexture`, `viewportUV`, `screenUV`, `storage`, `instanceIndex`, `bumpMap`, `normalMap`, …) and `uv(1)` | `tsl-unsupported-node` |
+| `backend: "wgsl"` — WGSL is **not** emitted; GLSL is the only output | `tsl-requires-glsl-backend` |
+| Type errors (vec3 + vec2, arithmetic on bool, `cross` of non-vec3, …) | `tsl-type-mismatch` |
+| Malformed graphs (duplicate uniform names, out-of-range array index, bad alphaTest, …) | `invalid-tsl-graph` |
+
+**Behaviour notes**
+
+- The IR does type inference with GLSL promotion rules (`int` mixes with `float` via explicit casts) and
+  constant-folds all-constant ops. Temporaries are named by emission order, so the same graph always
+  produces byte-identical GLSL and cache keys.
+- `tsl.color("#rrggbb")` is used as authored (no colour-space conversion): custom materials write their
+  output directly, so the visible colour equals the hex.
+- Uniform names are validated by the shared `material.custom` rules (a name that lowers into a built-in,
+  such as `time`, is rejected). Unnamed uniforms get `tslUniform0, 1, …` by first use.
+- `tsl.compile(options)` returns `{ spec, vertex, fragment, uniforms }`; `tsl.evaluate(node, context)` is a CPU
+  reference evaluator with the same op semantics (used by the tests to check numeric results).
+- Verified by unit tests only (`tests/unit/parity/tsl.test.ts`): GLSL structure, mock-device compile and
+  CPU-interpreter values. The emitted GLSL was **not** compiled on a real GPU in this change.
+- Codemod: `NodeMaterial`, `MeshBasicNodeMaterial`, `MeshStandardNodeMaterial` → `material.node`
+  (approximate; the notes name the unsupported nodes). `three/tsl` imports are not rewritten.
+  `MeshStandardNodeMaterial` is lit in three but `material.node` output is unlit.
+
 ### Not yet — the only remaining gaps
 
 ```ts
 // batched.mesh promotion to ● — probe-gated on P-2 (native multi-draw/
 //   GPU-residency probe). The API and per-geometry-instancing path are
 //   LIVE today; the ● verdict waits on the probe.
-// SH-01 TSL subset — three's WebGPU node-material language; P2 /
-//   probe-gated.
+// SH-01 TSL subset — SHIPPED as `tsl.*` + `material.node` (see "TSL subset —
+//   SH-01" above): a GLSL-only subset, not a TSL compiler. Not yet: lighting
+//   inputs (normalNode/roughnessNode/metalnessNode), WGSL output, and any
+//   three/tsl name outside the supported list (they throw, never no-op).
 // SH-04 compute — SHIPPED as the WebGPU-only `compute.*` surface (see
 //   "Compute — SH-04" above). Not yet: the TSL `compute()` node graph and
 //   a GLSL compute path (neither will land; WGSL is the only kernel language).
