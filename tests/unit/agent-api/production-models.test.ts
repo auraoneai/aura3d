@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { defineModelAssets, modelsEnabledFromUrl, model, primitives, scene, AuraRuntimeError } from "../../../packages/engine/src/public/index";
+import { defineModelAssets, modelsEnabledFromUrl, model, primitives, scene } from "../../../packages/engine/src/public/index";
+import { AuraRuntimeError } from "../../../packages/engine/src/agent-api/compiler/errors";
 import { createAssetProvenance } from "../../../packages/engine/src/agent-api/diagnostics";
 import { analyzeProductionBridgeEligibility } from "../../../packages/engine/src/agent-api/compiler/observations";
 import { createAuraRuntimeNodeRegistry } from "../../../packages/engine/src/agent-api/app/runtimeNodes";
@@ -69,7 +70,7 @@ describe("procedural fallback switch", () => {
     const manifest = { hero: { url: "/hero.glb", sha256: HASH_A } } as const;
     const on = defineModelAssets(manifest, { enabled: true });
     const off = defineModelAssets(manifest, { enabled: false });
-    const fallback = () => primitives.box({ width: 1, height: 1, depth: 1 });
+    const fallback = () => primitives.box({ size: 1 });
     expect(on.enabled).toBe(true);
     expect(on.node("hero", { name: "h" }, fallback).toJSON().kind).toBe("model");
     expect(off.enabled).toBe(false);
@@ -93,7 +94,7 @@ describe("procedural fallback switch", () => {
 
 describe("scene(init) no longer silently drops its argument", () => {
   it("scene({ children, background, camera }) builds a populated scene", () => {
-    const box = primitives.box({ width: 1, height: 1, depth: 1 });
+    const box = primitives.box({ size: 1 });
     const built = scene({ children: [box, box], background: "#102030" }).toJSON();
     expect(built.nodes).toHaveLength(2);
     expect(built.background).toBe("#102030");
@@ -121,7 +122,7 @@ describe("setUniform on a model node", () => {
   });
 
   it("still validates on a non-model node without a custom material", () => {
-    const node = primitives.box({ width: 1, height: 1, depth: 1 }).runtime({ id: "box-node" }).toJSON();
+    const node = primitives.box({ size: 1 }).runtime({ id: "box-node" }).toJSON();
     const handle = createAuraRuntimeNodeRegistry(snapshotOf(node)).get("box-node")!;
     expect(() => handle.setUniform!("uGlow", 1)).toThrowError(/setUniform requires a node material created by material.custom/);
   });

@@ -15,8 +15,8 @@ const assets = defineModelAssets(
 
 scene({
   children: [
-    assets.node("hero", { name: "hero", position: [0, 0, 0] }, () => primitives.capsule({ radius: 0.4, height: 1.6 })),
-    assets.node("tree", { position: [4, 0, 2] }, () => primitives.cylinder({ radius: 0.3, height: 3 }))
+    assets.node("hero", { name: "hero", position: [0, 0, 0] }, () => primitives.capsule({ size: [0.8, 1.6, 0.8] })),
+    assets.node("tree", { position: [4, 0, 2] }, () => primitives.cylinder({ size: [0.6, 3, 0.6] }))
   ]
 });
 ```
