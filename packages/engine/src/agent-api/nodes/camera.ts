@@ -65,7 +65,8 @@ export const camera = lazyNamespace(() => ({
     ...resolveCameraClipping(options),
     position: options.position ?? [0, 1.4, 4],
     target: options.target ?? [0, 0.8, 0],
-    fov: options.fov ?? 45
+    fov: options.fov ?? 45,
+    ...(options.layers !== undefined ? { layers: options.layers } : {})
   }),
   orbit: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => {
     const distance = options.distance ?? 4;

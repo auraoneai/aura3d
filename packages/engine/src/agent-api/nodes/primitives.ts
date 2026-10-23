@@ -2,13 +2,55 @@
 
 import type { AuraPrimitiveOptions, AuraPrimitiveNode } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
+import { AuraRuntimeError } from "../compiler/errors.js";
 import { geometry } from "./geometry.js";
 import { instances } from "./instances.js";
 import { material } from "./material.js";
 import { physics } from "./physics.js";
 import { text3D } from "./text3d.js";
 
+/**
+ * The six original kinds are unit-sized shapes scaled by `size` / the node
+ * transform, so their `params` carry tessellation (and, for cylinder / torus,
+ * the profile ratios) only. A shape-defining key such as `radius` or `height`
+ * would never take effect, so it is rejected instead of being silently
+ * ignored. The SG-03 kinds (cone, circle, ring, ...) read their own params.
+ */
+const UNIT_PRIMITIVE_PARAM_KEYS: Readonly<Record<string, readonly string[]>> = {
+  box: ["widthSegments", "heightSegments", "depthSegments"],
+  sphere: ["widthSegments", "heightSegments"],
+  plane: ["widthSegments", "heightSegments"],
+  cylinder: ["radialSegments", "heightSegments", "radiusTop", "radiusBottom", "openEnded"],
+  capsule: ["radialSegments", "capSegments"],
+  torus: ["radialSegments", "tubularSegments", "tube"]
+};
+
+const SIZE_HINT: Readonly<Record<string, string>> = {
+  box: "size: [width, height, depth]",
+  sphere: "size: diameter (radius * 2)",
+  plane: "size: [width, 1, depth]",
+  cylinder: "size: [diameter, height, diameter]",
+  capsule: "size: [diameter, total height, diameter]",
+  torus: "size: overall scale"
+};
+
+export function assertUnitPrimitiveParams(primitiveName: string, params: unknown): void {
+  const allowed = UNIT_PRIMITIVE_PARAM_KEYS[primitiveName];
+  if (allowed === undefined || params === undefined || params === null) return;
+  if (typeof params !== "object" || Array.isArray(params)) {
+    throw new AuraRuntimeError("invalid-primitive-params", `primitives.${primitiveName}: params must be an object`);
+  }
+  const unused = Object.keys(params).filter((key) => !allowed.includes(key));
+  if (unused.length === 0) return;
+  throw new AuraRuntimeError(
+    "invalid-primitive-params",
+    `primitives.${primitiveName}: params ${unused.map((key) => `"${key}"`).join(", ")} ${unused.length === 1 ? "has" : "have"} no effect on this kind ` +
+      `(its shape comes from \`${SIZE_HINT[primitiveName]}\`). Supported params: ${allowed.join(", ")}`
+  );
+}
+
 export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions = {}): AuraNodeBuilder<AuraPrimitiveNode> {
+  assertUnitPrimitiveParams(primitiveName, options.params);
   return new AuraNodeBuilder({
     kind: "primitive",
     primitive: primitiveName,

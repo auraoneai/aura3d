@@ -23,6 +23,7 @@ export { GTAO_GLSL } from "./shaders/gtao.glsl";
 export { GTAO_DENOISE_GLSL, GTAO_APPLY_GLSL } from "./shaders/gtaoDenoise.glsl";
 export { GODRAYS_GLSL } from "./shaders/godrays.glsl";
 export { runV2HdrStages, runV2LdrTail, v2NeedsLdrTail, releaseV2Target, acquireV2Target } from "./v2Stages";
+export type { PostColorInput, DeferredAfterBloomStage, RunV2HdrStagesOptions } from "./v2Stages";
 export { DisplayLutCache, displayGradeKey, type DisplayGradeParams } from "./DisplayLutCache";
 export { parseCubeLut } from "./CubeLut";
 export { bloomNormalization } from "../postprocess/NativeBloomPyramid";

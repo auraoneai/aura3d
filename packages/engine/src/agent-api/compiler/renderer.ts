@@ -23,6 +23,7 @@ import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } fr
 import { upgradeProductionPrimitiveTextures } from "./textures.js";
 import { createProductionRuntimeBackgroundImage } from "./backgroundImage.js";
 import { createProductionParitySurfaces } from "./paritySurfaces.js";
+import { createProductionLensFlares } from "./lensFlare.js";
 import { camera } from "../nodes/camera.js";
 import { geometry } from "../nodes/geometry.js";
 import { material } from "../nodes/material.js";
@@ -34,6 +35,7 @@ import type { QrFlags } from "@aura3d/rendering/contracts";
 import { markTiming } from "../platform.js";
 import { QUALITY_TIERS, resolveTierSettings, type AuraQualityTier } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
+import { applyXRViewOverride } from "../xr/xrViewOverride.js";
 
 export async function createProductionRuntimeSceneRenderer(
   canvas: HTMLCanvasElement,
@@ -174,8 +176,19 @@ export async function createProductionRuntimeSceneRenderer(
     const paritySurfaces = createProductionParitySurfaces(productionRenderer, (message) => {
       runtimeWarnings.add(message);
     });
+    // threejs-parity AD-15 (P2): `lights.lensFlare` additive flare sprites, chained after the surfaces.
+    const lensFlares = createProductionLensFlares((message) => {
+      runtimeWarnings.add(message);
+    });
     const prepareParitySurfaces = (source: ProductionRendererInput["source"], time: number): ProductionRendererInput["source"] =>
-      paritySurfaces.prepare(source, snapshot, runtimeNodes, time, canvas.width / Math.max(1, canvas.height));
+      lensFlares.prepare(
+        paritySurfaces.prepare(source, snapshot, runtimeNodes, time, canvas.width / Math.max(1, canvas.height), { width: canvas.width, height: canvas.height }),
+        snapshot,
+        runtimeNodes,
+        time,
+        canvas.width / Math.max(1, canvas.height),
+        canvas.height
+      );
 
     // T3.11 (C-36): compile once at mount. With A3D_QR_COMPILER off the contract
     // stub returns `source: null` and every call below keeps the legacy path
@@ -393,7 +406,9 @@ export async function createProductionRuntimeSceneRenderer(
       render(time) {
         const input = takePreparedFrame(time);
         validateFrameInput(input);
-        latestDeviceDiagnostics = productionRenderer.render(prepareParitySurfaces(input.source, time), input.camera);
+        // threejs-parity SC-04: while an XR eye is installed on this canvas, render with its matrices and eye position.
+        const xrFrame = applyXRViewOverride(canvas, input);
+        latestDeviceDiagnostics = productionRenderer.render(prepareParitySurfaces(xrFrame.source, time), xrFrame.camera as typeof input.camera);
         getRootRenderSource(canvas)?.onFrame?.(latestDeviceDiagnostics, [...(input.source.collectRenderItems?.() ?? [])]);
         latestFeatures = rendererInteractiveFeatureReport(productionRenderer, latestDeviceDiagnostics, input);
         return latestDeviceDiagnostics.drawCalls;
@@ -438,6 +453,7 @@ export async function createProductionRuntimeSceneRenderer(
         disposeHdriEnvironment?.();
         backgroundImage?.dispose();
         paritySurfaces.dispose();
+        lensFlares.dispose();
         productionRenderer.dispose();
         if (compiled) {
           (runtimeNodes as { detachCompiled?: (scene: unknown) => void } | undefined)?.detachCompiled?.(compiledScene);

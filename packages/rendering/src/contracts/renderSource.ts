@@ -20,7 +20,8 @@ import type {
   RendererCameraProjection,
   RendererPostProcessOptions,
   RenderResourceLookup,
-  RendererShadowOptions
+  RendererShadowOptions,
+  RendererView
 } from "../Renderer";
 
 export interface RenderSource {
@@ -28,6 +29,8 @@ export interface RenderSource {
   readonly renderItems?: Iterable<RenderItem>;
   readonly scene?: Scene;
   readonly renderTarget?: RenderTarget;
+  /** threejs-parity L7/SC-01: ArrayCamera/StereoCamera views — the frame renders once per view into its viewport. */
+  readonly views?: readonly RendererView[];
   readonly cameraPolicy?: RendererCameraPolicy;
   readonly cameraFrameBounds?: SceneBounds3 | {
     readonly min: readonly [number, number, number];

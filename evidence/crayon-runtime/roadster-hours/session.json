@@ -32,9 +32,8 @@
     "Sound"
   ],
   "start_flow_attempted": [
-    "Drive Sunbreak Coast click",
-    "game iframe lost / click timed out",
-    "no live HUD captured"
+    "Drive Sunbreak Coast: real pointer click via Playwright locator on ACR run cc1ch (t=91 s after load)",
+    "gameplay HUD present after the click (see hud.gameplay)"
   ],
   "controls": {
     "declared_in_plan": [
@@ -47,11 +46,12 @@
       "Esc pauses"
     ],
     "runtime_exercised": [
-      "menu only"
+      "menu: Drive Sunbreak Coast click (pointer)"
     ]
   },
   "hud": {
-    "menu": "Ready · Sunbreak Coast, 100%, 3 routes · 9.3 km"
+    "menu": "Ready · Sunbreak Coast, 100%, 3 routes · 9.3 km",
+    "gameplay": "110 m Jump line 2 0 km/h ⌄ ⌃ STEER DRIVE Left thumb Slide to steer Pull down to brake Right thumb Hold to drive Push up to lift In the air: left spins & flips · right lifts & rolls ×"
   },
   "mechanic_notes": [
     "Three routes: Sunbreak Coast, Redline Canyon, Halo Skyway.",
@@ -61,9 +61,33 @@
     "srcdoc": "evidence/crayon-runtime/roadster-hours/srcdoc.html"
   },
   "limitations": [
-    "Start button click timed out and the child iframe was lost; no live speed/trick/upgrade HUD.",
-    "Controls are declared by the plan/page copy, not runtime-verified."
+    "Controls other than the menu click are declared by the plan/page copy, not runtime-verified (no fixed-input run; see R-25 part 2).",
+    "Page-evaluate stalls of up to ~75 s occur while the game loads under software GL; capture timeouts must allow for this.",
+    "No __getGameState hook is exposed; gameplay is evidenced by the DOM HUD text after the click."
   ],
   "schema": "a3d-crayon-runtime-capture/1",
-  "captured_at": "2026-10-22"
+  "captured_at": "2026-10-22",
+  "probe": {
+    "file": "evidence/crayon-probes/roadster-hours.json",
+    "run_id": "cc1ch",
+    "viewport": "800x450",
+    "renderer": "WebGLRenderer on SwiftShader (ACR)",
+    "settle": {
+      "settled": true,
+      "criterion": "strict",
+      "detail": "objects within 3% for 4000 ms (494..494)"
+    },
+    "live_counts": {
+      "scenes": 1,
+      "objects": 494,
+      "batchedMeshes": 68,
+      "shaderMaterials": 29,
+      "instancedMeshes": 121
+    },
+    "page_evaluate_latency_ms": {
+      "median": 4,
+      "max": 74867
+    }
+  },
+  "root_cause_of_earlier_blocker": "The earlier 'start click timed out / iframe lost' came from Prism sessions, not the game. On a software-GL runner the page's main thread is blocked for ~75 s while the game loads (one evaluate stalled 74867 ms; median 4 ms), so short-timeout clicks and evals fail. The probe's old matcher also only knew 'Start'/'Tap to start' labels and never saw 'Drive Sunbreak Coast'. Fixed in tools/crayon-probe (ranked start-control choice, real pointer click with long timeout, timed evaluates)."
 }

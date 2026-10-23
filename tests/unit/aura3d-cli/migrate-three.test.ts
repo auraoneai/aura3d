@@ -1,5 +1,9 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { emitMigratedSource } from "../../../packages/aura3d-cli/src/migrate-three/emit";
+import { customAttributeBlocker, emitMigratedSource } from "../../../packages/aura3d-cli/src/migrate-three/emit";
+import { assertCustomAttributeName } from "../../../packages/engine/src/agent-api/RootGeometry";
 import { buildMigrateReport } from "../../../packages/aura3d-cli/src/migrate-three/report";
 
 // PRD-15 T6.1: one fixture per mapping-table row plus an unmapped fixture.
@@ -71,6 +75,9 @@ describe("aura3d migrate three", () => {
     TextureLoader: { source: `const t = new THREE.TextureLoader();`, expectContains: ["a3d: TextureLoader → texture.load", "ST-07"], mapping: "approximate" },
     "TextureLoader.load": { source: `const t = new THREE.TextureLoader();\nt.load("wood.png");`, expectContains: ["a3d: TextureLoader.load → assets"], mapping: "approximate" },
     Reflector: { source: `new THREE.Reflector(geo)`, expectContains: ["a3d: Reflector → surfaces.mirror", "AD-15"], mapping: "approximate" },
+    Lensflare: { source: `const flare = new THREE.Lensflare();`, expectContains: ["a3d: Lensflare → lights.lensFlare", "AD-15"], mapping: "approximate" },
+    LensflareElement: { source: `new LensflareElement(tex, 60, 0.6, color)`, expectContains: ["a3d: LensflareElement → lights.lensFlare", "elements"], mapping: "approximate" },
+    "Scene.overrideMaterial": { source: `const scene = new THREE.Scene();\nscene.overrideMaterial = depthMaterial;`, expectContains: ["a3d: Scene.overrideMaterial → scene().overrideMaterial", "SG-10"], mapping: "approximate" },
 
     // ── pending rows that remain — targets reserved, not yet public ─────
     NodeMaterial: { source: `new THREE.NodeMaterial()`, expectContains: ["parityPending NodeMaterial → material.custom", "SH-01"], mapping: "pending" },
@@ -207,5 +214,152 @@ renderer.render(world, cam);
       expect(row.mapping, row.construct).not.toBe("none");
       expect(row.mapping, row.construct).not.toBe("pending");
     }
+  });
+});
+
+describe("migrate three: scanner on pretty-printed source", () => {
+  it("finds constructs whose arguments span lines and nest deeply", () => {
+    const source = `import * as THREE from "three";
+const mat = new THREE.MeshStandardMaterial({
+  color: 0xff0000,
+  map: loadMap(),
+});
+const tube = new THREE.Mesh(
+  new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)]), 64, 0.2),
+  mat
+);
+`;
+    const { rows } = emitMigratedSource(source);
+    const lines = (name: string) => rows.filter((r) => r.construct === name).map((r) => r.line);
+    expect(lines("MeshStandardMaterial")).toEqual([2]);
+    expect(lines("Mesh")).toEqual([6]);
+    expect(lines("TubeGeometry")).toEqual([7]);
+    expect(lines("CatmullRomCurve3")).toEqual([7]);
+    expect(lines("Vector3")).toEqual([7, 7]);
+  });
+
+  it("ignores parens inside strings and comments when balancing arguments", () => {
+    const source = `const m = new THREE.MeshBasicMaterial({
+  name: "a ) tricky ( name",
+  // a stray ) in a comment
+  color: 0xffaa00,
+});
+const s = new THREE.Scene();
+`;
+    const { rows } = emitMigratedSource(source);
+    expect(rows.map((r) => [r.construct, r.line])).toEqual([["MeshBasicMaterial", 1], ["Scene", 6]]);
+  });
+
+  it("rewrites a call whose argument text has irregular whitespace", () => {
+    const { code } = emitMigratedSource(`const s = new THREE.Scene( );`);
+    expect(code).toContain("scene()");
+    expect(code).not.toContain("new THREE.Scene");
+  });
+
+  it("does not treat a browser `new Audio(src)` as three's Audio", () => {
+    const { rows } = emitMigratedSource(`const el = new Audio("a.mp3");`);
+    expect(rows).toEqual([]);
+    const named = emitMigratedSource(`import { Audio } from "three";\nconst a = new Audio(listener);`);
+    expect(named.rows.some((r) => r.construct === "Audio")).toBe(true);
+  });
+});
+
+describe("migrate three: vertex attributes and canvas textures", () => {
+  it("maps standard attributes and CanvasTexture to real engine targets without a TODO", () => {
+    const { code, rows } = emitMigratedSource(`import * as THREE from "three";
+const g = new THREE.BufferGeometry();
+g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+g.setIndex(new THREE.Uint16BufferAttribute(idx, 1));
+const t = new THREE.CanvasTexture(canvas);
+`);
+    expect(code).not.toContain("TODO(a3d-migrate)");
+    expect(code).toContain("a3d: Float32BufferAttribute → geometry.dynamic");
+    expect(code).toContain("a3d: CanvasTexture → texture.canvas");
+    for (const name of ["Float32BufferAttribute", "Uint16BufferAttribute", "CanvasTexture"]) {
+      expect(rows.find((r) => r.construct === name)?.mapping, name).toBe("approximate");
+    }
+  });
+
+  it("maps a custom vertex attribute to geometry.dynamic attributes (R-23), never flags DOM setAttribute", () => {
+    const { code, rows } = emitMigratedSource(`import * as THREE from "three";
+const g = new THREE.BufferGeometry();
+g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+g.setAttribute("pigmentVein", new THREE.Float32BufferAttribute(vein, 1));
+canvas.setAttribute("aria-label", "x");
+panel.setAttribute("id", "hud");
+`);
+    expect(code).not.toContain("TODO(a3d-migrate)");
+    const custom = rows.filter((r) => r.construct === `setAttribute("pigmentVein")`);
+    expect(custom).toHaveLength(1);
+    expect(custom[0]).toMatchObject({ mapping: "approximate" });
+    expect(code).toMatch(/\/\/ a3d: custom vertex attribute "pigmentVein" → geometry\.dynamic\(\{ attributes: \{ pigmentVein:/);
+    expect(rows.some((r) => r.construct.includes("aria-label") || r.construct.includes('"id"'))).toBe(false);
+  });
+
+  it("still flags attribute names the engine cannot carry as custom attributes", () => {
+    const { code, rows } = emitMigratedSource(`import * as THREE from "three";
+g.setAttribute("uv1", new THREE.Float32BufferAttribute(a, 2));
+g.setAttribute("skinIndex", new THREE.Float32BufferAttribute(b, 4));
+g.setAttribute("a_mine", new THREE.Float32BufferAttribute(c, 1));
+g.setAttribute("ok_name", new THREE.Float32BufferAttribute(d, 1));
+`);
+    const todos = code.split("\n").filter((l) => l.includes("TODO(a3d-migrate)"));
+    expect(todos).toHaveLength(3);
+    expect(rows.filter((r) => r.mapping === "none").map((r) => r.construct)).toEqual([`setAttribute("uv1")`, `setAttribute("skinIndex")`, `setAttribute("a_mine")`]);
+    expect(rows.find((r) => r.construct === `setAttribute("ok_name")`)?.mapping).toBe("approximate");
+  });
+
+  it("customAttributeBlocker agrees with the engine assertCustomAttributeName", () => {
+    const names = [
+      "size", "pigmentVein", "paintOriginal", "ok_name", "A1", "_x",
+      "position", "normal", "uv", "uv1", "color", "tangent", "joints", "weights", "index", "instanceMatrix", "colors", "uvs",
+      "a_pos", "u_time", "gl_Position", "a__b", "1abc", "bad-name", "with space"
+    ];
+    for (const name of names) {
+      let engineAccepts = true;
+      try { assertCustomAttributeName(name); } catch { engineAccepts = false; }
+      expect(customAttributeBlocker(name) === undefined, name).toBe(engineAccepts);
+    }
+  });
+});
+
+// R-19: the real Strange Orbit game, captured remotely (tools/crayon-probe/capture-module.ts, ACR run cc1ap).
+// Both fixtures are UNTRUSTED third-party text: they are only ever read as strings here, never executed.
+describe("golden: real Strange Orbit capture", () => {
+  const dir = resolve(__dirname, "../../fixtures/crayon/strange-orbit");
+  const read = (name: string) => readFileSync(resolve(dir, name), "utf8");
+
+  it("the captured 19 KB module is the recorded bootstrap shell, byte for byte", () => {
+    const shell = read("game-module.mjs");
+    expect(Buffer.byteLength(shell)).toBe(19300);
+    const recorded = /SHA-256: ([0-9a-f]{64})/.exec(read("PROVENANCE.md"))?.[1];
+    expect(createHash("sha256").update(shell).digest("hex")).toBe(recorded);
+  });
+
+  it("the shell holds no three.js constructs: the game logic is a separate runtime/game.js import", () => {
+    const shell = read("game-module.mjs");
+    expect(shell).toMatch(/await import\("https:\/\/[^"]+\/runtime\/game\.js"\)/);
+    const { rows, code } = emitMigratedSource(shell);
+    expect(rows).toEqual([]);
+    expect(code).not.toContain("TODO(a3d-migrate)");
+  });
+
+  it("every three construct in the game's own code is reported and the migration carries zero TODOs", () => {
+    const census = (JSON.parse(read("census.json")) as { threeConstructs: Record<string, number> }).threeConstructs;
+    const { rows, code } = emitMigratedSource(read("game-logic.demangled.js"));
+
+    // The census is an independent count (regex over the bundle's class markers); the codemod must agree
+    // on every construct, including the pretty-printed multi-line calls.
+    const reported: Record<string, number> = {};
+    for (const row of rows) reported[row.construct] = (reported[row.construct] ?? 0) + 1;
+    for (const [name, count] of Object.entries(census)) expect(reported[name], name).toBe(count);
+    expect(Object.keys(census).length).toBeGreaterThanOrEqual(39);
+
+    // R-23: the five custom vertex attributes map to geometry.dynamic({ attributes }); no TODO remains in game logic.
+    expect(code).not.toContain("TODO(a3d-migrate)");
+    const custom = rows.filter((r) => /^setAttribute\("/.test(r.construct));
+    expect(custom.map((r) => /"([^"]+)"/.exec(r.construct)![1]!).sort()).toEqual(["paintOriginal", "pigmentBase", "pigmentChalk", "pigmentVein", "size"]);
+    expect(custom.every((r) => r.mapping === "approximate")).toBe(true);
   });
 });

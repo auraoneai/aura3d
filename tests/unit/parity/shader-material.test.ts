@@ -185,3 +185,96 @@ describe("runtime uniform writes — SH-02/L1-03 (no recompile)", () => {
     instance.dispose();
   });
 });
+
+describe("material.custom — authored uniform names that lower into built-ins (R-26)", () => {
+  const spec = (name: string): AuraCustomMaterialSpec => ({ glsl: { fragment: FRAGMENT }, uniforms: { [name]: "f32" } });
+
+  it("rejects `time`: it lowers to the prelude's own `u_time` (was a GLSL redefinition at compile time)", () => {
+    let error: unknown;
+    try {
+      material.custom(spec("time"));
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).toBeInstanceOf(AuraRuntimeError);
+    const err = error as AuraRuntimeError;
+    expect(err.code).toBe("invalid-material-spec");
+    expect(err.message).toContain('uniform "time" lowers to "u_time"');
+    expect(err.message).toContain("built-ins: ");
+    expect(err.message).toContain("u_resolution");
+    expect(err.message).toContain("reserved authored names: ");
+    expect(err.message).toContain('"myTime"');
+  });
+
+  it("rejects every name that lowers onto a built-in declaration", () => {
+    for (const name of ["time", "resolution", "cameraPosition_", "modelViewProjection", "viewMatrix_"]) {
+      const lowers = `u_${name}`;
+      const builtin = ["u_time", "u_resolution", "u_modelViewProjection"].includes(lowers);
+      if (builtin) expect(() => material.custom(spec(name)), name).toThrowError(/collides with a generated built-in/);
+      else expect(() => material.custom(spec(name)), name).not.toThrow();
+    }
+    expect(() => material.custom(spec("u_time"))).toThrowError(/reserved|collides/);
+  });
+
+  it("rejects two authored names that lower to the same uniform", () => {
+    expect(() => material.custom({ glsl: { fragment: FRAGMENT }, uniforms: { foo: "f32", u_foo: "f32" } })).toThrowError(/both lower to "u_foo"/);
+  });
+
+  it("accepts the renamed uniform and still compiles a program from it", () => {
+    const ok = material.custom(spec("veilTime"));
+    expect(ok.kind).toBe("custom");
+    const built = createCustomShaderMaterial(ok.custom!, new MockRenderDevice() as never);
+    expect(built).toBeDefined();
+  });
+});
+
+describe("shader compile failure message carries the GLSL info log (R-26)", () => {
+  const LOG = "ERROR: 0:14: 'u_time' : redefinition\nERROR: 0:15: 'main' : function already has a body\n";
+
+  it("shaderCompileFailureMessage: head, label/stage, first lines, truncation", async () => {
+    const { shaderCompileFailureMessage } = await import("../../../packages/rendering/src/RenderDevice");
+    const message = shaderCompileFailureMessage(LOG, { label: "custom:veil", stage: "fragment" });
+    expect(message.startsWith("WebGL shader compile failed (custom:veil, fragment):")).toBe(true);
+    expect(message).toContain("'u_time' : redefinition");
+    expect(shaderCompileFailureMessage("")).toBe("WebGL shader compile failed");
+    const long = shaderCompileFailureMessage(Array.from({ length: 40 }, (_, i) => `ERROR: 0:${i}: e${i}`).join("\n"));
+    expect(long).toContain("e5");
+    expect(long).not.toContain("e6");
+    expect(long.endsWith("…")).toBe(true);
+    expect(shaderCompileFailureMessage("E".repeat(5000)).length).toBeLessThan(1000);
+  });
+
+  it("WebGL2Device.compileShader: message includes the log, details keeps the full log", async () => {
+    const { WebGL2Device } = await import("../../../packages/rendering/src/WebGL2Device");
+    const { RenderDeviceError } = await import("../../../packages/rendering/src/RenderDevice");
+    const gl = {
+      createShader: () => ({}),
+      shaderSource: () => undefined,
+      compileShader: () => undefined,
+      getShaderParameter: () => false,
+      getShaderInfoLog: () => LOG,
+      deleteShader: () => undefined
+    };
+    let error: unknown;
+    try {
+      (WebGL2Device.prototype as unknown as { compileShader(this: unknown, type: number, source: string, label: string): unknown }).compileShader.call({ gl }, 35632, "void main() {}", "custom:veil");
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error).toBeInstanceOf(RenderDeviceError);
+    const err = error as InstanceType<typeof RenderDeviceError>;
+    expect(err.code).toBe("SHADER_COMPILE_FAILED");
+    expect(err.message).toMatch(/shader compile failed/i);
+    expect(err.message).toContain("'u_time' : redefinition");
+    expect(err.details).toEqual({ label: "custom:veil", log: LOG });
+  });
+
+  it("describeCompileError does not print the log twice for the new message", async () => {
+    const { describeCompileError } = await import("../../../packages/rendering/src/program/ProgramCache");
+    const { RenderDeviceError, shaderCompileFailureMessage } = await import("../../../packages/rendering/src/RenderDevice");
+    const error = new RenderDeviceError(shaderCompileFailureMessage(LOG, { stage: "vertex" }), "SHADER_COMPILE_FAILED", { log: LOG, stage: "vertex" });
+    const text = describeCompileError(error);
+    expect(text).toBe(error.message);
+    expect(text.split("'u_time' : redefinition").length - 1).toBe(1);
+  });
+});

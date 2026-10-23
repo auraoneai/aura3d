@@ -9,6 +9,9 @@ import * as THREE from "three";
 import {
   ArcCurve,
   CatmullRomCurve3,
+  ClampedCatmullRomCurve3,
+  catmullRomSegment,
+  catmullRomSegmentDerivative,
   CubicBezierCurve,
   CubicBezierCurve3,
   CurvePath,
@@ -436,6 +439,70 @@ describe("CurvePath / Path / Shape parity", () => {
       const s = curve.sample(t);
       expectVec3(s.point, curve.getPoint(t));
       expectVec3(s.tangent, curve.getTangent(t));
+    }
+  });
+});
+
+describe("ClampedCatmullRomCurve3 + catmullRomSegmentDerivative (R-14)", () => {
+  it("segment derivative equals a central finite difference of catmullRomSegment, any alpha", () => {
+    const rand = rng(0x14d3);
+    for (let i = 0; i < CASES; i += 1) {
+      const pts = Array.from({ length: 4 }, () => v3(rand));
+      const alpha = [0, 0.25, 0.5, 0.75, 1][i % 5]!;
+      const w = 0.05 + rand() * 0.9;
+      const h = 1e-6;
+      const d = catmullRomSegmentDerivative(pts[0]!, pts[1]!, pts[2]!, pts[3]!, w, alpha);
+      const a = catmullRomSegment(pts[0]!, pts[1]!, pts[2]!, pts[3]!, w + h, alpha);
+      const b = catmullRomSegment(pts[0]!, pts[1]!, pts[2]!, pts[3]!, w - h, alpha);
+      const fd = a.subtract(b).multiplyScalar(1 / (2 * h));
+      const scale = Math.max(1, d.length());
+      expect(d.subtract(fd).length() / scale).toBeLessThanOrEqual(1e-5);
+    }
+  });
+
+  it("matches three's centripetal/chordal CatmullRomCurve3 on closed splines (interior, non-degenerate)", () => {
+    const rand = rng(0xc10ed);
+    for (const [alpha, type] of [[0.5, "centripetal"], [1, "chordal"]] as const) {
+      for (let i = 0; i < 100; i += 1) {
+        const pts = Array.from({ length: 6 }, () => v3(rand));
+        const ours = new ClampedCatmullRomCurve3(pts, true, alpha);
+        const theirs = new THREE.CatmullRomCurve3(pts.map(tv3), true, type);
+        for (let k = 0; k < 20; k += 1) {
+          const t = rand();
+          expectVec3(ours.getPoint(t), theirs.getPoint(t), 1e-6);
+        }
+      }
+    }
+  });
+
+  it("open spline clamps ends: interpolates every control point at t = i/segments", () => {
+    const rand = rng(0x0ae17);
+    for (const alpha of [0, 0.25, 0.5, 0.75, 1]) {
+      const pts = Array.from({ length: 5 }, () => v3(rand));
+      const curve = new ClampedCatmullRomCurve3(pts, false, alpha);
+      expect(curve.segments).toBe(4);
+      for (let i = 0; i < pts.length; i += 1) {
+        expectVec3(curve.getPoint(i / 4), new THREE.Vector3(pts[i]!.x, pts[i]!.y, pts[i]!.z), 1e-9);
+      }
+    }
+  });
+
+  it("open-spline arc length is constant-speed under getPointAt (no end-span overshoot)", () => {
+    const pts = [new Vector3(0, 0, 0), new Vector3(2, 1, 0), new Vector3(5, 1, 3), new Vector3(8, 0, 3)];
+    const curve = new ClampedCatmullRomCurve3(pts, false, 0.5);
+    curve.arcLengthDivisions = 256;
+    const total = curve.getLength();
+    const n = 6;
+    const sub = 32;
+    for (let i = 0; i < n; i += 1) {
+      let arc = 0;
+      let prev = curve.getPointAt(i / n);
+      for (let k = 1; k <= sub; k += 1) {
+        const p = curve.getPointAt((i + k / sub) / n);
+        arc += p.distanceTo(prev);
+        prev = p;
+      }
+      expect(Math.abs(arc - total / n) / (total / n)).toBeLessThan(0.02);
     }
   });
 });

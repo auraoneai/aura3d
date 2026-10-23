@@ -6745,6 +6745,90 @@
       "owners": []
     },
     {
+      "name": "AuraXRButtonHandle",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 xr.button() return type.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraXRButtonOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 xr.button() options.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraXRDeviceBridge",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 the optional render-device slice (setExternalFramebuffer/setViewport) the XR path needs.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraXREnterResult",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 app.xr.enter() result.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraXRMode",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 immersive-vr | immersive-ar.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraXRRuntime",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 app.xr runtime.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraXRSessionInit",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 requested features / reference space.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "BatchEpisodeDefinition",
       "kind": "type",
       "from": ".",
@@ -15485,6 +15569,16 @@
       "owners": []
     },
     {
+      "name": "cameras",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: L7 SC-01 — cameras.cube landed",
+      "consumers": [],
+      "owners": []
+    },
+    {
       "name": "captionAnimationRenderOutputKinds",
       "kind": "value",
       "from": ".",
@@ -16043,6 +16137,16 @@
       "owners": [
         "??"
       ]
+    },
+    {
+      "name": "compute",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: L1-12 SH-04 \u2014 WebGPU-only compute.pipeline/buffer/dispatch (WGSL required); throws compute-requires-webgpu on WebGL2",
+      "consumers": [],
+      "owners": []
     },
     {
       "name": "computeDistanceAttenuation",
@@ -24073,6 +24177,18 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "xr",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "threejs-parity landed: SC-04 \u2014 xr.button + xr.createRuntime; `app.xr` session runtime. Unit-tested against fake XR objects only; session start needs a render device with setExternalFramebuffer/setViewport.",
+      "consumers": [
+        "tests/unit/parity/xr.test.ts"
+      ],
       "owners": []
     }
   ]

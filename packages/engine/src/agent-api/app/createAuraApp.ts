@@ -8,6 +8,7 @@ import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } fr
 import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { scene } from "../nodes/scene.js";
+import { createComputeSurface } from "../nodes/compute.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
 import { renderer } from "../rendererDiagnostics.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
@@ -43,6 +44,8 @@ import { collectGeneratedCodeWarnings } from "../looks/generatedCodeWarnings.js"
 import { material } from "../nodes/material.js";
 import { assets } from "../AssetDecoders.js";
 import { registerAppAssetEventHandlers } from "../assetEvents.js";
+import { createAuraXRRuntime } from "../xr/xrRuntime.js";
+import type { AuraXRDeviceBridge } from "../xr/types.js";
 import { round } from "../GameRuntime.js";
 
 export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
@@ -524,6 +527,23 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   };
   // Re-apply deferred overrides the moment a renderer appears.
   void productionMountSettled.then(() => { if (!disposed) parityL7AuraRenderer(); });
+  // SC-04: `app.xr`. Frames render through the lane renderer's device; with no
+  // setExternalFramebuffer/setViewport on it, `xr.enter()` refuses to start.
+  const parityL7XR = createAuraXRRuntime({
+    key: canvas ?? {},
+    getGL: () => (canvas?.getContext?.("webgl2") as { makeXRCompatible?(): Promise<void> } | null | undefined) ?? undefined,
+    getDevice: () => (parityL7AuraRenderer() as { readonly device?: AuraXRDeviceBridge } | undefined)?.device,
+    renderFrame: (seconds) => { productionController?.render(seconds); },
+    pauseLoop: () => productionController?.pause?.(),
+    resumeLoop: () => productionController?.resume?.(),
+    getTime: () => runtimeTime,
+    setTime: (seconds) => { runtimeTime = seconds; },
+    depthRange: () => ({
+      ...(snapshot.camera.near !== undefined ? { near: snapshot.camera.near } : {}),
+      ...(snapshot.camera.far !== undefined ? { far: snapshot.camera.far } : {})
+    }),
+    canvasSize: () => ({ width: canvas?.width ?? 0, height: canvas?.height ?? 0 })
+  });
   // endregion parity:L7
   const app: AuraApp & { resetRuntimeClock(): void } = {
     canvas,
@@ -531,6 +551,9 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     // object literal; the helpers above stay in the lane-owned block.
     get info() {
       return parityL7AuraRenderer()?.info;
+    },
+    get xr() {
+      return parityL7XR;
     },
     setPixelRatio(ratio: number) {
       parityL7PixelRatio = ratio;
@@ -554,6 +577,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     get backend() {
       return diagnosticsState.backend;
     },
+    // SH-04: WebGPU-only compute; throws `compute-requires-webgpu` until a WebGPU device is bound.
+    compute: createComputeSurface(() => diagnosticsState.backend),
     setPerformanceQuality(settings) {
       assertMutableFrame();
       const quality = validateRootPerformanceQuality(settings);
@@ -792,6 +817,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     },
     dispose() {
       disposed = true;
+      parityL7XR.dispose();
       /*
        * Settle any in-flight mount so `await app.ready()` cannot hang on a disposed app. A promise
        * that never resolves is a worse failure than the one WS-2.9 fixed: it has no diagnostic at all.

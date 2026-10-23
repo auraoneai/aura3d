@@ -31,10 +31,13 @@ describe("threejs-parity lane flags", () => {
     expect(resolveQrFlags({ options: "none" }).on("A3D_PARITY_BATCHING")).toBe(false);
   });
 
-  it("a parity flag is off by default (dev state)", () => {
+  it("the inert parity flags are off by default (dev state); BATCHING and LINES are default-on (R-17)", () => {
     const flags = resolveQrFlags({});
-    for (const lane of ["SHADING", "GEOMETRY", "TEXTURES", "BATCHING", "LINES", "RUNTIME"] as const) {
+    for (const lane of ["SHADING", "GEOMETRY", "TEXTURES", "RUNTIME"] as const) {
       expect(flags.on(`A3D_PARITY_${lane}` as never)).toBe(false);
+    }
+    for (const lane of ["BATCHING", "LINES"] as const) {
+      expect(flags.on(`A3D_PARITY_${lane}` as never)).toBe(true);
     }
   });
 });

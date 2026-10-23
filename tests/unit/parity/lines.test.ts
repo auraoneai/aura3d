@@ -173,7 +173,7 @@ function fakeOut() {
 
 describe("L6 handlers — flag gate + per-frame items", () => {
   const flagOn = resolveQrFlags({ options: "A3D_PARITY_LINES" });
-  const flagOff = resolveQrFlags({});
+  const flagOff = resolveQrFlags({ env: { A3D_PARITY_LINES: "0" } });
 
   it("flag off fails closed with parity-not-implemented (all three kinds)", () => {
     const out = fakeOut();

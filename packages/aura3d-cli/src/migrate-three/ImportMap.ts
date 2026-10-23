@@ -48,6 +48,10 @@ export const THREE_COMPAT_THREE_IMPORT_MAP: Readonly<Record<string, string>> = {
  * import; the codemod drops the specifier and comments the guidance.
  */
 export const THREE_COMPAT_CODEMOD_IMPORTS: Readonly<Record<string, string>> = {
+  "three/addons/webxr/VRButton.js": "xr.button({ app, mode: \"immersive-vr\" }) (pending render path, SC-04)",
+  "three/examples/jsm/webxr/VRButton.js": "xr.button({ app, mode: \"immersive-vr\" }) (pending render path, SC-04)",
+  "three/addons/webxr/ARButton.js": "xr.button({ app, mode: \"immersive-ar\" }) (pending render path, SC-04)",
+  "three/examples/jsm/webxr/ARButton.js": "xr.button({ app, mode: \"immersive-ar\" }) (pending render path, SC-04)",
   "three/addons/postprocessing/EffectComposer.js": "effects.* nodes / app.addPostPass",
   "three/examples/jsm/postprocessing/EffectComposer.js": "effects.* nodes / app.addPostPass",
   "three/addons/postprocessing/RenderPass.js": "implicit base render pass (createAuraApp scene+camera)",

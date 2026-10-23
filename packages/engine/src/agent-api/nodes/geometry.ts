@@ -3,12 +3,13 @@
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraPrimitiveOptions } from "./types.js";
 import {
+  auraGeometryToNonIndexed,
   defineAuraCustomGeometry,
   defineAuraDynamicGeometry,
   mergeAuraGeometries,
   normalizeGeometryAttributes
 } from "../RootGeometry.js";
-import { edgesParityMesh, wireframeParityMesh } from "@aura3d/rendering";
+import { convexParityMesh, edgesParityMesh, wireframeParityMesh, type ConvexPointInput } from "@aura3d/rendering";
 import { primitive } from "./primitives.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 
@@ -56,6 +57,24 @@ export const geometry = lazyNamespace(() => ({
       topology: "lines"
     };
   },
+  /**
+   * threejs-parity AD-07 (L2-07): three's `ConvexGeometry(points)` — QuickHull
+   * hull as a non-indexed triangle list with flat face normals. Needs ≥ 4
+   * non-coplanar points.
+   */
+  convex: (points: readonly ConvexPointInput[]): AuraCustomGeometrySpec => {
+    if (points.length < 4) throw new Error("Aura3D geometry.convex requires at least four points.");
+    const mesh = convexParityMesh({ points });
+    if (mesh.positions.length === 0) throw new Error("Aura3D geometry.convex points are degenerate (coplanar or coincident); no hull could be built.");
+    return {
+      kind: "aura-custom-geometry",
+      positions: mesh.positions,
+      normals: mesh.normals,
+      indices: []
+    };
+  },
+  /** threejs-parity SG-05 (L2-05): `geometry.toNonIndexed` — BufferGeometry.toNonIndexed, one vertex per index in index order. */
+  toNonIndexed: (source: AuraCustomGeometrySpec): AuraCustomGeometrySpec => auraGeometryToNonIndexed(source),
   /** threejs-parity SG-05 (L2-05): `geometry.merge` — BufferGeometryUtils.mergeGeometries over specs. */
   merge: (specs: readonly AuraCustomGeometrySpec[]): AuraCustomGeometrySpec => mergeAuraGeometries(specs)
 } as const));

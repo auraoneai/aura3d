@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
+import * as v2Entry from "../../../packages/rendering/src/post/v2Entry";
 import { mergedCustomPasses, runV2HdrStages, runV2LdrTail } from "../../../packages/rendering/src/post/v2Stages";
-import { resetPostSkipped } from "../../../packages/rendering/src/renderer/postSkipped";
+import { executePostGraphWebGL2 } from "../../../packages/rendering/src/webgl2/LegacyPost";
+import { postSkippedReasons, resetPostSkipped } from "../../../packages/rendering/src/renderer/postSkipped";
 import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
 import { effects } from "../../../packages/engine/src/agent-api/nodes/effects.composite.js";
 import { Prd03PostSurface } from "../../../packages/engine/src/agent-api/postBridge";
@@ -75,6 +77,8 @@ function fakeHost(trace: string[]): WebGL2DeviceHost {
     gl: tracingGl(trace),
     device: { createRenderTarget: () => fakeTarget() },
     stateCache: { invalidate: () => undefined },
+    // SC-01/XR: the default output binds through the lifecycle (external framebuffer + persistent viewport).
+    lifecycle: { bindOutput: () => undefined },
     resolveMultisampleTarget: () => undefined,
     activeRenderTarget: null
   } as unknown as WebGL2DeviceHost;
@@ -170,6 +174,36 @@ describe("post order slots — named + numeric ordering (L1-05)", () => {
     expect(trace).toEqual(["first", "late", "mid_b", "mid_a"]);
   });
 
+  it("named slots sharing the before-tonemap anchor execute after-bloom → numeric → before-tonemap when registered in reverse (R-03)", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    // Reverse of the intended execution order, all landing on one anchor.
+    releases.push(s.addPostPass(pass("slot-before-tonemap", { order: "before-tonemap" })));
+    releases.push(s.addPostPass(pass("slot-numeric-25", { order: 25 })));
+    releases.push(s.addPostPass(pass("slot-after-bloom", { order: "after-bloom" })));
+    const byId = new Map(mergedCustomPasses(PIPELINE).map((p) => [p.id, p]));
+    for (const id of ["slot-before-tonemap", "slot-numeric-25", "slot-after-bloom"]) {
+      expect(byId.get(`prd03.custom.${id}`)?.insertAt).toBe("before-tonemap");
+    }
+    const trace: string[] = [];
+    runV2HdrStages(fakeHost(trace), fakeTarget("rgba16f", true), PIPELINE, null);
+    expect(trace).toEqual(["slot_after_bloom", "slot_numeric_25", "slot_before_tonemap"]);
+  });
+
+  it("every named slot executes in slot order across anchors regardless of registration order (R-03)", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("n-after-tonemap", { order: "after-tonemap" })));
+    releases.push(s.addPostPass(pass("n-before-tonemap", { order: "before-tonemap" })));
+    releases.push(s.addPostPass(pass("n-after-bloom", { order: "after-bloom" })));
+    releases.push(s.addPostPass(pass("n-before-bloom", { order: "before-bloom" })));
+    const hdrTrace: string[] = [];
+    runV2HdrStages(fakeHost(hdrTrace), fakeTarget("rgba16f", true), PIPELINE, null);
+    const ldrTrace: string[] = [];
+    runV2LdrTail(fakeHost(ldrTrace), fakeTarget("rgba8"), PIPELINE, undefined);
+    expect([...hdrTrace, ...ldrTrace]).toEqual(["n_before_bloom", "n_after_bloom", "n_before_tonemap", "n_after_tonemap"]);
+  });
+
   it("explicit insertAt anchors run in anchor order regardless of registration order", () => {
     setRendererQrFlags(POST_FLAGS);
     const s = surface();
@@ -215,5 +249,151 @@ describe("post order slots — named + numeric ordering (L1-05)", () => {
     s.setPassUniform("uni", "u_ord_uni", 4);
     expect(descriptor.uniforms?.(ctx)).toEqual({ u_ord_uni: 4 });
     expect(() => s.setPassUniform("uni", "u_bad", Number.NaN)).toThrowError(/invalid|finite/i);
+  });
+});
+
+/* R-03b: the WebGL2 fused present composites bloom itself, so `before-tonemap`
+ * custom passes (after-bloom / numeric / before-tonemap slots) must run from
+ * its after-bloom hook. The fake present below mirrors the real
+ * `presentLdrPostprocess` ordering (bloom → afterBloom hook → tone map) and
+ * records into the same trace as the tracing GL. */
+describe("WebGL2 post order — before-tonemap passes run after the bloom composite (R-03b)", () => {
+  const LDR_PASSES = [
+    { name: "bloom", options: {} },
+    { name: "tone-mapping", options: {} }
+  ] as never;
+
+  function fusedHost(trace: string[], createdTargets?: { count: number }): WebGL2DeviceHost {
+    const base = fakeHost(trace) as unknown as Record<string, unknown>;
+    const device = base.device as { createRenderTarget: () => RenderTarget };
+    return {
+      ...base,
+      device: {
+        createRenderTarget: () => {
+          if (createdTargets) createdTargets.count += 1;
+          return device.createRenderTarget();
+        }
+      },
+      post: {
+        presentLdrPostprocess(_source: unknown, options: {
+          passes: ReadonlyArray<{ name: string }>;
+          afterBloom?: (input: { colorHandle: unknown; width: number; height: number }) => unknown;
+        }) {
+          if (options.passes.some((p) => p.name === "bloom")) {
+            trace.push("bloom");
+            options.afterBloom?.({ colorHandle: {}, width: 16, height: 16 });
+          }
+          trace.push("tonemap");
+        }
+      }
+    } as unknown as WebGL2DeviceHost;
+  }
+
+  const runFrame = (host: WebGL2DeviceHost, passes: unknown = LDR_PASSES): void =>
+    executePostGraphWebGL2(host, fakeTarget("rgba16f", true), {
+      pipeline: PIPELINE,
+      passes: passes as never,
+      v2: v2Entry
+    });
+
+  it("runs before-bloom → bloom → after-bloom → numeric → before-tonemap → tone map, regardless of registration order", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("r-before-tonemap", { order: "before-tonemap" })));
+    releases.push(s.addPostPass(pass("r-numeric-25", { order: 25 })));
+    releases.push(s.addPostPass(pass("r-after-bloom", { order: "after-bloom" })));
+    releases.push(s.addPostPass(pass("r-before-bloom", { order: "before-bloom" })));
+    const trace: string[] = [];
+    runFrame(fusedHost(trace));
+    expect(trace).toEqual(["r_before_bloom", "bloom", "r_after_bloom", "r_numeric_25", "r_before_tonemap", "tonemap"]);
+  });
+
+  it("keeps before-tonemap passes in the HDR stage driver when no bloom is requested (nothing to order against)", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("nb-after-bloom", { order: "after-bloom" })));
+    releases.push(s.addPostPass(pass("nb-before-tonemap", { order: "before-tonemap" })));
+    const trace: string[] = [];
+    runFrame(fusedHost(trace), [{ name: "tone-mapping", options: {} }]);
+    expect(trace).toEqual(["nb_after_bloom", "nb_before_tonemap", "tonemap"]);
+  });
+
+  it("an LDR (rgba8) forward target keeps the legacy placement and never hands the present a hook", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("ldr-before-tonemap", { order: "before-tonemap" })));
+    const trace: string[] = [];
+    executePostGraphWebGL2(fusedHost(trace), fakeTarget("rgba8", true), { pipeline: PIPELINE, passes: LDR_PASSES, v2: v2Entry });
+    expect(trace).toEqual(["ldr_before_tonemap", "bloom", "tonemap"]);
+  });
+
+  it("reports (not silently drops) deferred passes when the present never invokes the hook", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("skip-after-bloom", { order: "after-bloom" })));
+    const trace: string[] = [];
+    const host = fusedHost(trace) as unknown as { post: { presentLdrPostprocess: (...args: never[]) => void } };
+    host.post.presentLdrPostprocess = () => { trace.push("tonemap"); };
+    runFrame(host as unknown as WebGL2DeviceHost);
+    expect(trace).toEqual(["tonemap"]);
+    expect(trace).not.toContain("skip_after_bloom");
+    expect(postSkippedReasons()).toContain("POSTPROCESS_AFTER_BLOOM_UNUSED:before-tonemap-custom-passes");
+  });
+
+  it("releases the deferred stage's pooled targets every frame (no per-frame allocation growth)", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("leak-a", { order: "after-bloom" })));
+    releases.push(s.addPostPass(pass("leak-b", { order: "before-tonemap" })));
+    const trace: string[] = [];
+    const created = { count: 0 };
+    const host = fusedHost(trace, created);
+    runFrame(host);
+    const afterFirst = created.count;
+    expect(afterFirst).toBeGreaterThan(0);
+    runFrame(host);
+    runFrame(host);
+    expect(created.count).toBe(afterFirst);
+  });
+
+  it("releases the stage even when the present throws", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("throw-a", { order: "after-bloom" })));
+    const trace: string[] = [];
+    const created = { count: 0 };
+    const host = fusedHost(trace, created) as unknown as { post: { presentLdrPostprocess: (...args: never[]) => void } };
+    const original = host.post.presentLdrPostprocess;
+    let failNext = true;
+    host.post.presentLdrPostprocess = ((...args: never[]) => {
+      original(...args);
+      if (failNext) { failNext = false; throw new Error("boom"); }
+    }) as never;
+    expect(() => runFrame(host as unknown as WebGL2DeviceHost)).toThrowError("boom");
+    const afterThrow = created.count;
+    runFrame(host as unknown as WebGL2DeviceHost);
+    expect(created.count).toBe(afterThrow);
+  });
+
+  it("runV2HdrStages hands back the deferred stage and does not run before-tonemap passes itself", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("d-before-bloom", { order: "before-bloom" })));
+    releases.push(s.addPostPass(pass("d-after-bloom", { order: "after-bloom" })));
+    releases.push(s.addPostPass(pass("d-before-tonemap", { order: "before-tonemap" })));
+    const trace: string[] = [];
+    const host = fakeHost(trace);
+    const result = runV2HdrStages(host, fakeTarget("rgba16f", true), PIPELINE, null, undefined, undefined, { deferBeforeTonemap: true });
+    expect(trace).toEqual(["d_before_bloom"]);
+    expect(result.afterBloom).toBeDefined();
+    const out = result.afterBloom!.run({ colorHandle: {} as never, width: 16, height: 16 });
+    expect(trace).toEqual(["d_before_bloom", "d_after_bloom", "d_before_tonemap"]);
+    expect(out.width).toBe(16);
+    result.afterBloom!.release();
+    // Not requested → legacy behaviour: everything runs here, nothing deferred.
+    const legacyTrace: string[] = [];
+    const legacy = runV2HdrStages(fakeHost(legacyTrace), fakeTarget("rgba16f", true), PIPELINE, null);
+    expect(legacy.afterBloom).toBeUndefined();
+    expect(legacyTrace).toEqual(["d_before_bloom", "d_after_bloom", "d_before_tonemap"]);
   });
 });

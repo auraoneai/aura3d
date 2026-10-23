@@ -76,7 +76,11 @@ export const nodeHandlers: NodeKindHandlers = {
   line: lineNodeHandler as NodeHandler<{ readonly kind: "line" }>,
   points: pointsNodeHandler as NodeHandler<{ readonly kind: "points" }>,
   sprite: spriteNodeHandler as NodeHandler<{ readonly kind: "sprite" }>,
-  batched: parityPending("batched", "A3D_PARITY_BATCHING")
+  batched: parityPending("batched", "A3D_PARITY_BATCHING"),
+  // AD-15 (P2): the flare needs the frame's camera, so its render items are built in
+  // `compiler/lensFlare.ts` (`prepare`, chained after the parity surfaces); this entry
+  // only declares the kind so the scene compiler does not report it as unknown.
+  lensflare: bridgeCompiled("lensflare")
 };
 
 /** True when `kind` is a declared node kind (a key of the C-36 AuraNodeKindMap). */

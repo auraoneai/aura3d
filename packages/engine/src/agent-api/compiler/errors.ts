@@ -16,6 +16,19 @@ export class AuraRuntimeError extends Error {
     // violations — malformed spec, WGSL-only input, reserved uniform names,
     // invalid uniform values, unsupported render-state combinations.
     | "invalid-material-spec"
+    // `primitives.box/sphere/plane/cylinder/capsule/torus` given a `params`
+    // key the kind does not use (it would otherwise be silently ignored).
+    | "invalid-primitive-params"
+    // L7/SC-01: `cameras.array` / `cameras.stereo` option violations (viewport rects, eye separation, focus, fov).
+    | "invalid-camera-spec"
+    // AD-15 (P2): `lights.lensFlare` option violations (element size/distance, occlusion, edgeFade, intensity).
+    | "invalid-lens-flare"
+    // SH-04 (L1-12): `compute.*` / `app.compute` is WebGPU-only (WGSL). Every
+    // call without a bound WebGPU device fails with this code, never a silent no-op.
+    | "compute-requires-webgpu"
+    // SH-04: malformed pipeline/buffer/dispatch input (GLSL instead of WGSL,
+    // workgroup/limit violations, missing or mismatched bindings, disposed handles).
+    | "invalid-compute-spec"
     // CCR-03-8 (additive): PRD-03 §7.1 — v2 post-bridge field rejection.
     | "POST_FIELD_UNSUPPORTED"
     // T4.1 (PRD-15): strict degrade() throws the C-36 degradation codes,

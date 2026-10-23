@@ -14,6 +14,13 @@ export interface WebGL2TextureUnitBindingSnapshot {
   readonly sampler: WebGLSampler | null;
 }
 
+interface ViewRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
 export class WebGL2ContextLifecycle {
   constructor(readonly host: WebGL2DeviceHost, readonly canvas: HTMLCanvasElement | OffscreenCanvas) {
     if ("addEventListener" in canvas) {
@@ -110,6 +117,113 @@ export class WebGL2ContextLifecycle {
     return this.host.contextLost;
   }
 
+  /** SC-01: viewport/scissor override and the render target it was set on (override applies only while that target is bound). */
+  private viewportOverride: ViewRect | null = null;
+  private scissorOverride: ViewRect | null = null;
+  private scissorTestOn = false;
+  private viewStateTarget: unknown = null;
+  /** XR: framebuffer frames draw into instead of the canvas (null = the canvas), with its pixel size. */
+  private externalFramebuffer: WebGLFramebuffer | null = null;
+  private externalSize: { readonly width: number; readonly height: number } | null = null;
+  /** XR: viewport that survives `beginFrame` and the post/present passes; scoped to the default (canvas/external) framebuffer. */
+  private persistentViewportRect: ViewRect | null = null;
+
+  setViewport(x: number, y: number, width: number, height: number, options?: { readonly persistent?: boolean }): void {
+    this.assertAlive();
+    if (!(width > 0) || !(height > 0)) {
+      throw new RenderDeviceError("Viewport dimensions must be positive", "INVALID_VIEWPORT", { width, height });
+    }
+    if (options?.persistent) {
+      this.persistentViewportRect = { x, y, width, height };
+    } else {
+      this.viewportOverride = { x, y, width, height };
+      this.viewStateTarget = this.host.activeRenderTarget ?? null;
+    }
+    this.applyViewState();
+  }
+
+  /** Clears the persistent viewport and any frame-scoped override. */
+  resetViewport(): void {
+    this.assertAlive();
+    this.persistentViewportRect = null;
+    this.viewportOverride = null;
+    this.applyViewState();
+  }
+
+  /** XR: draw into `framebuffer` (an `XRWebGLLayer` framebuffer) instead of the canvas until called with null. */
+  setExternalFramebuffer(framebuffer: WebGLFramebuffer | null, width: number, height: number): void {
+    this.assertAlive();
+    if (framebuffer !== null && (!(width > 0) || !(height > 0))) {
+      throw new RenderDeviceError("External framebuffer dimensions must be positive", "INVALID_FRAME_SIZE", { width, height });
+    }
+    this.externalFramebuffer = framebuffer;
+    this.externalSize = framebuffer ? { width, height } : null;
+    if (!this.host.activeRenderTarget) {
+      this.host.stateCache.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebuffer, () => this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebuffer));
+      this.applyViewState();
+    }
+  }
+
+  /** The framebuffer standing in for the canvas: the XR framebuffer when set, else null (the canvas). */
+  defaultFramebuffer(): WebGLFramebuffer | null {
+    return this.externalFramebuffer;
+  }
+
+  /** The persistent viewport for the default framebuffer, or null. */
+  persistentViewport(): ViewRect | null {
+    return this.persistentViewportRect;
+  }
+
+  /** Binds `framebuffer` (null = the default/external framebuffer) and sets the viewport; a persistent viewport wins on the default framebuffer. */
+  bindOutput(framebuffer: WebGLFramebuffer | null, width: number, height: number): void {
+    const gl = this.host.gl;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer ?? this.externalFramebuffer);
+    const persistent = framebuffer === null ? this.persistentViewportRect : null;
+    if (persistent) gl.viewport(persistent.x, persistent.y, persistent.width, persistent.height);
+    else gl.viewport(0, 0, width, height);
+  }
+
+  setScissor(x: number, y: number, width: number, height: number): void {
+    this.assertAlive();
+    if (width < 0 || height < 0) {
+      throw new RenderDeviceError("Scissor dimensions must be non-negative", "INVALID_SCISSOR", { width, height });
+    }
+    this.scissorOverride = { x, y, width, height };
+    this.viewStateTarget = this.host.activeRenderTarget ?? null;
+    this.applyViewState();
+  }
+
+  setScissorTest(enabled: boolean): void {
+    this.assertAlive();
+    this.scissorTestOn = enabled;
+    this.viewStateTarget = this.host.activeRenderTarget ?? null;
+    this.applyViewState();
+  }
+
+  /** The device-level scissor rect in force for the bound target, or null when the scissor test is off. */
+  effectiveScissor(): ViewRect | null {
+    const live = this.viewStateTarget === (this.host.activeRenderTarget ?? null);
+    return live && this.scissorTestOn && this.scissorOverride ? this.scissorOverride : null;
+  }
+
+  /** Pushes the effective viewport/scissor for the currently bound target to GL (full target when no live override). */
+  applyViewState(): void {
+    const gl = this.host.gl;
+    const active = this.host.activeRenderTarget ?? null;
+    const live = this.viewStateTarget === active;
+    const fullWidth = active ? active.width : this.externalSize?.width ?? (this.viewportWidth || gl.drawingBufferWidth);
+    const fullHeight = active ? active.height : this.externalSize?.height ?? (this.viewportHeight || gl.drawingBufferHeight);
+    const persistent = active ? null : this.persistentViewportRect;
+    const v = live && this.viewportOverride ? this.viewportOverride : persistent ?? { x: 0, y: 0, width: fullWidth, height: fullHeight };
+    this.host.stateCache.viewport(v.x, v.y, v.width, v.height, () => gl.viewport(v.x, v.y, v.width, v.height));
+    const scissor = this.effectiveScissor();
+    this.host.stateCache.setEnabled(gl.SCISSOR_TEST, scissor !== null, () => {
+      if (scissor) gl.enable(gl.SCISSOR_TEST);
+      else gl.disable(gl.SCISSOR_TEST);
+    });
+    if (scissor) this.host.stateCache.scissor(scissor.x, scissor.y, scissor.width, scissor.height, () => gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height));
+  }
+
   beginFrame(width: number, height: number): void {
     this.assertAlive();
     if (this.frameActive) {
@@ -127,8 +241,14 @@ export class WebGL2ContextLifecycle {
     this.host.stateCache.invalidate();
     this.viewportWidth = width;
     this.viewportHeight = height;
-    this.host.stateCache.bindFramebuffer(this.host.gl.FRAMEBUFFER, this.host.activeRenderTarget?.framebuffer ?? null, () => this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, this.host.activeRenderTarget?.framebuffer ?? null));
-    this.host.stateCache.viewport(0, 0, width, height, () => this.host.gl.viewport(0, 0, width, height));
+    const frameFramebuffer = this.host.activeRenderTarget?.framebuffer ?? this.externalFramebuffer;
+    this.host.stateCache.bindFramebuffer(this.host.gl.FRAMEBUFFER, frameFramebuffer, () => this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, frameFramebuffer));
+    // The frame-scoped override resets every frame; the persistent viewport (XR) survives it.
+    this.viewportOverride = null;
+    this.scissorOverride = null;
+    this.scissorTestOn = false;
+    this.viewStateTarget = null;
+    this.applyViewState();
     this.host.stateCache.setEnabled(this.host.gl.DEPTH_TEST, true, () => this.host.gl.enable(this.host.gl.DEPTH_TEST));
     this.host.stateCache.depthFunc(this.host.gl.LEQUAL, () => this.host.gl.depthFunc(this.host.gl.LEQUAL));
   }

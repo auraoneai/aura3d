@@ -15,9 +15,41 @@ export interface A3DXRSessionInit {
 export interface A3DXRSessionLike {
   readonly inputSources?: readonly A3DXRInputSourceLike[];
   readonly enabledFeatures?: readonly string[];
+  /** SC-04: the layer the session presents to; set through `updateRenderState`. */
+  readonly renderState?: { readonly baseLayer?: A3DXRWebGLLayerLike };
   requestReferenceSpace?(type: A3DXRReferenceSpaceType): Promise<A3DXRReferenceSpaceLike>;
   requestAnimationFrame?(callback: (time: number, frame: A3DXRFrameLike) => void): number;
+  cancelAnimationFrame?(handle: number): void;
+  updateRenderState?(state: { readonly baseLayer?: A3DXRWebGLLayerLike; readonly depthNear?: number; readonly depthFar?: number }): void | Promise<void>;
+  addEventListener?(type: string, listener: () => void): void;
+  removeEventListener?(type: string, listener: () => void): void;
   end?(): Promise<void>;
+}
+
+/** SC-04: structural `XRViewport`. */
+export interface A3DXRViewportLike {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** SC-04: structural `XRWebGLLayer`. `framebuffer` is opaque here (a `WebGLFramebuffer`). */
+export interface A3DXRWebGLLayerLike {
+  readonly framebuffer?: unknown;
+  readonly framebufferWidth?: number;
+  readonly framebufferHeight?: number;
+  getViewport?(view: A3DXRViewLike): A3DXRViewportLike | null | undefined;
+}
+
+/** SC-04: structural `XRView` (one eye). `transform.inverse.matrix` is the world-to-view matrix. */
+export interface A3DXRViewLike {
+  readonly eye?: "left" | "right" | "none";
+  readonly projectionMatrix?: readonly number[];
+  readonly transform?: {
+    readonly matrix?: readonly number[];
+    readonly inverse?: { readonly matrix?: readonly number[] };
+  };
 }
 
 export interface A3DXRInputSourceLike {
@@ -50,6 +82,8 @@ export interface A3DXRHandLike {
 }
 
 export interface A3DXRViewerPoseLike {
+  /** SC-04: per-eye views; absent on trackers that only report a single pose. */
+  readonly views?: readonly A3DXRViewLike[];
   readonly position?: readonly [number, number, number];
   readonly orientation?: readonly [number, number, number, number];
   readonly viewMatrix?: readonly number[];
@@ -177,6 +211,16 @@ export class WebXRSessionController {
 
   get active(): boolean {
     return this.session !== null;
+  }
+
+  /** SC-04: the live session, for render-state and frame-loop wiring. Null when inactive. */
+  get xrSession(): A3DXRSessionLike | null {
+    return this.session;
+  }
+
+  /** SC-04: the reference space requested at `start()`. Null when inactive. */
+  get xrReferenceSpace(): A3DXRReferenceSpaceLike | null {
+    return this.referenceSpace;
   }
 
   async isSupported(): Promise<boolean> {

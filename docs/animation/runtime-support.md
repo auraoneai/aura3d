@@ -66,9 +66,9 @@ The public controller/source layer supports:
 This is enough to drive deterministic gameplay state, hitbox events, source
 evidence, and tests.
 
-## Runtime-Node Pose Composition and Bone Attachments (4.0.3)
+## Runtime-Node Pose Composition and Bone Attachments (4.0.4)
 
-Three runtime-node animation additions shipped in 4.0.3 for gameplay posing.
+Three runtime-node animation additions shipped in 4.0.4 for gameplay posing.
 All three require the default-on `A3D_QR_ANIMATION` flag and degrade to
 no-ops on model nodes that have not loaded.
 

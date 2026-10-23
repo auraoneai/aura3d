@@ -475,10 +475,25 @@ export interface RenderDevice {
   getRenderTarget?(): RenderTarget | null;
   /**
    * threejs-parity L7/SC-01 (P2, Array/Stereo cameras): raster viewport rect
-   * in target pixels. `beginFrame` resets it to the full frame. Optional —
-   * devices without it keep full-frame rasterization.
+   * in target pixels, origin bottom-left. By default it is frame-scoped:
+   * `beginFrame` resets it to the full frame and it only applies while the
+   * target it was set on stays bound. With `{ persistent: true }` (XR) it is
+   * scoped to the default (canvas / external) framebuffer instead and survives
+   * `beginFrame` and the post/present passes until `resetViewport()`.
+   * Optional — devices without it keep full-frame rasterization.
    */
-  setViewport?(x: number, y: number, width: number, height: number): void;
+  setViewport?(x: number, y: number, width: number, height: number, options?: RenderDeviceViewportOptions): void;
+  /**
+   * Clears the persistent viewport and any frame-scoped viewport override
+   * (XR session end, or a caller handing the device back).
+   */
+  resetViewport?(): void;
+  /**
+   * XR: frames draw into `framebuffer` (e.g. an `XRWebGLLayer` framebuffer,
+   * `width` x `height` pixels) instead of the canvas until this is called with
+   * `null`. Optional — devices without it can only draw to the canvas.
+   */
+  setExternalFramebuffer?(framebuffer: unknown | null, width: number, height: number): void;
   /** threejs-parity L7/SC-01 (P2): scissor rect in target pixels; gated by `setScissorTest`. */
   setScissor?(x: number, y: number, width: number, height: number): void;
   /** threejs-parity L7/SC-01 (P2): enables/disables scissor clipping (three's `setScissorTest`). */
@@ -537,6 +552,26 @@ export class RenderDeviceError extends Error {
     super(message);
     this.name = "RenderDeviceError";
   }
+}
+
+const SHADER_LOG_MAX_LINES = 6;
+const SHADER_LOG_MAX_CHARS = 900;
+
+/**
+ * Message for a failed shader compile: the first lines of the driver info log
+ * go in the text (a thrown error shows "ERROR: 0:12: 'u_time' : redefinition"
+ * instead of only "WebGL shader compile failed"). The full log stays on
+ * `RenderDeviceError.details.log`.
+ */
+export function shaderCompileFailureMessage(log: string, context: { readonly label?: string; readonly stage?: string } = {}): string {
+  const lines = log.split("\n").map((line) => line.trim()).filter((line) => line.length > 0);
+  const where = [context.label, context.stage].filter((part): part is string => typeof part === "string" && part.length > 0).join(", ");
+  const head = `WebGL shader compile failed${where ? ` (${where})` : ""}`;
+  if (lines.length === 0) return head;
+  let body = lines.slice(0, SHADER_LOG_MAX_LINES).join("\n");
+  const truncated = lines.length > SHADER_LOG_MAX_LINES || body.length > SHADER_LOG_MAX_CHARS;
+  if (body.length > SHADER_LOG_MAX_CHARS) body = body.slice(0, SHADER_LOG_MAX_CHARS);
+  return `${head}:\n${body}${truncated ? "\n…" : ""}`;
 }
 
 export class MockRenderBuffer implements RenderBuffer {
@@ -637,6 +672,26 @@ export class MockRenderTarget implements RenderTarget {
   }
 }
 
+export interface MockViewportCall {
+  readonly call: "viewport" | "scissor" | "scissorTest" | "resetViewport" | "externalFramebuffer";
+  readonly args: readonly (number | boolean)[];
+  /** `viewport` only: true when set with `{ persistent: true }`. */
+  readonly persistent?: boolean;
+}
+
+export interface MockDrawViewState {
+  readonly viewport: { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+  readonly scissor: { readonly x: number; readonly y: number; readonly width: number; readonly height: number } | null;
+  /** XR external framebuffer handle the draw went to (null for the canvas or a render target). */
+  readonly framebuffer: unknown | null;
+  readonly destination: "canvas" | "external" | "render-target";
+}
+
+export interface RenderDeviceViewportOptions {
+  /** XR: scope to the default (canvas / external) framebuffer and survive `beginFrame` and post/present passes until `resetViewport()`. */
+  readonly persistent?: boolean;
+}
+
 export class MockRenderDevice implements RenderDevice {
   public readonly kind = "mock";
   public readonly info: RenderDeviceInfo = {
@@ -666,6 +721,16 @@ export class MockRenderDevice implements RenderDevice {
   private viewportRect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number } = { x: 0, y: 0, width: 0, height: 0 };
   private scissorRect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number } = { x: 0, y: 0, width: 0, height: 0 };
   private scissorTestEnabled = false;
+  /** SC-01: render target the viewport/scissor override was set on (null = default framebuffer); the override only applies while it is bound. */
+  private viewStateTarget: MockRenderTarget | null = null;
+  /** XR: persistent viewport for the default framebuffer; survives `beginFrame`. */
+  private persistentViewportRect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number } | null = null;
+  /** XR: framebuffer frames draw into instead of the canvas. */
+  private externalFramebuffer: { readonly handle: unknown; readonly width: number; readonly height: number } | null = null;
+  /** True once a frame-scoped `setViewport` ran this frame (cleared by `beginFrame` / `resetViewport`). */
+  private frameViewportSet = false;
+  private viewportCallLog: Array<MockViewportCall> = [];
+  private drawViewStateLog: MockDrawViewState[] = [];
   private clearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
   /** C-28 (PRD 11): per-frame fields; zeroed by resetFrameCounters(). Live gauges come from getDiagnostics(). */
   private frameCounters = { drawCalls: 0, bufferCreates: 0, textureUploads: 0, readbacks: 0, renderTargetsCreated: 0, programCompiles: 0 };
@@ -1032,16 +1097,54 @@ export class MockRenderDevice implements RenderDevice {
     this.viewportRect = { x: 0, y: 0, width, height };
     this.scissorRect = { x: 0, y: 0, width, height };
     this.scissorTestEnabled = false;
+    this.viewStateTarget = null;
+    this.frameViewportSet = false;
+    this.viewportCallLog = [];
+    this.drawViewStateLog = [];
     this.drawCommands.length = 0;
   }
 
   /** threejs-parity L7/SC-01 (P2): raster viewport override, target pixels. */
-  setViewport(x: number, y: number, width: number, height: number): void {
+  setViewport(x: number, y: number, width: number, height: number, options?: RenderDeviceViewportOptions): void {
     this.assertAlive();
     if (width <= 0 || height <= 0) {
       throw new RenderDeviceError("Viewport dimensions must be positive", "INVALID_VIEWPORT", { width, height });
     }
-    this.viewportRect = { x, y, width, height };
+    if (options?.persistent) {
+      this.persistentViewportRect = { x, y, width, height };
+    } else {
+      this.viewportRect = { x, y, width, height };
+      this.viewStateTarget = this.activeRenderTarget;
+      this.frameViewportSet = true;
+    }
+    this.viewportCallLog.push({ call: "viewport", args: [x, y, width, height], persistent: options?.persistent === true });
+  }
+
+  /** Clears the persistent viewport and the frame-scoped override. */
+  resetViewport(): void {
+    this.assertAlive();
+    this.persistentViewportRect = null;
+    this.viewportRect = this.externalFramebuffer
+      ? { x: 0, y: 0, width: this.externalFramebuffer.width, height: this.externalFramebuffer.height }
+      : { x: 0, y: 0, width: this.viewportWidth, height: this.viewportHeight };
+    this.viewStateTarget = null;
+    this.frameViewportSet = false;
+    this.viewportCallLog.push({ call: "resetViewport", args: [] });
+  }
+
+  /** XR: frames draw into `framebuffer` (size `width` x `height`) instead of the canvas until called with null. */
+  setExternalFramebuffer(framebuffer: unknown | null, width: number, height: number): void {
+    this.assertAlive();
+    if (framebuffer !== null && (!(width > 0) || !(height > 0))) {
+      throw new RenderDeviceError("External framebuffer dimensions must be positive", "INVALID_FRAME_SIZE", { width, height });
+    }
+    this.externalFramebuffer = framebuffer === null ? null : { handle: framebuffer, width, height };
+    this.viewportCallLog.push({ call: "externalFramebuffer", args: framebuffer === null ? [] : [width, height] });
+  }
+
+  /** The XR framebuffer currently standing in for the canvas, or null. */
+  getExternalFramebuffer(): { readonly handle: unknown; readonly width: number; readonly height: number } | null {
+    return this.externalFramebuffer;
   }
 
   /** threejs-parity L7/SC-01 (P2): scissor rect, target pixels. */
@@ -1051,12 +1154,26 @@ export class MockRenderDevice implements RenderDevice {
       throw new RenderDeviceError("Scissor dimensions must be non-negative", "INVALID_SCISSOR", { width, height });
     }
     this.scissorRect = { x, y, width, height };
+    this.viewStateTarget = this.activeRenderTarget;
+    this.viewportCallLog.push({ call: "scissor", args: [x, y, width, height] });
   }
 
   /** threejs-parity L7/SC-01 (P2): scissor-test toggle. */
   setScissorTest(enabled: boolean): void {
     this.assertAlive();
     this.scissorTestEnabled = enabled;
+    this.viewStateTarget = this.activeRenderTarget;
+    this.viewportCallLog.push({ call: "scissorTest", args: [enabled] });
+  }
+
+  /** SC-01: ordered record of viewport/scissor API calls this frame (cleared by `beginFrame`). */
+  getViewportCalls(): ReadonlyArray<MockViewportCall> {
+    return this.viewportCallLog;
+  }
+
+  /** SC-01: the effective viewport/scissor each draw this frame was issued under, aligned with the draw order. */
+  getDrawViewStates(): readonly MockDrawViewState[] {
+    return this.drawViewStateLog;
   }
 
   clear(color: readonly [number, number, number, number]): void {
@@ -1160,7 +1277,26 @@ export class MockRenderDevice implements RenderDevice {
       });
     }
     this.drawCommands.push(command);
+    this.drawViewStateLog.push(this.effectiveViewState());
     this.frameCounters.drawCalls += 1;
+  }
+
+  /** Viewport/scissor in force for the bound target: the override while its target is bound, else the full target. */
+  private effectiveViewState(): MockDrawViewState {
+    const live = this.viewStateTarget === this.activeRenderTarget;
+    const toCanvas = this.activeRenderTarget === null;
+    const full = this.activeRenderTarget
+      ? { x: 0, y: 0, width: this.activeRenderTarget.width, height: this.activeRenderTarget.height }
+      : this.externalFramebuffer
+        ? { x: 0, y: 0, width: this.externalFramebuffer.width, height: this.externalFramebuffer.height }
+        : { x: 0, y: 0, width: this.viewportWidth, height: this.viewportHeight };
+    const persistent = toCanvas ? this.persistentViewportRect : null;
+    return {
+      viewport: live && this.frameViewportSet ? { ...this.viewportRect } : persistent ? { ...persistent } : full,
+      scissor: live && this.scissorTestEnabled ? { ...this.scissorRect } : null,
+      framebuffer: toCanvas ? this.externalFramebuffer?.handle ?? null : null,
+      destination: !toCanvas ? "render-target" : this.externalFramebuffer ? "external" : "canvas"
+    };
   }
 
   endFrame(): void {

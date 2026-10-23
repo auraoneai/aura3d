@@ -226,6 +226,9 @@ export function describeCompileError(error: unknown): string {
   const details = (error as { details?: { log?: unknown; stage?: unknown } }).details;
   const log = typeof details?.log === "string" ? details.log.trim() : "";
   if (!log) return error.message;
+  // Thrown shader-compile errors already carry the head of the log in `message`.
+  const firstLine = log.split("\n").map((line) => line.trim()).find((line) => line.length > 0);
+  if (firstLine !== undefined && error.message.includes(firstLine)) return error.message;
   const stage = details?.stage === undefined ? "" : ` [stage ${String(details.stage)}]`;
   return `${error.message}${stage}: ${log.length > 1200 ? `${log.slice(0, 1200)}…` : log}`;
 }

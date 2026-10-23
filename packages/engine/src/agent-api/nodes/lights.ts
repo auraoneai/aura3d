@@ -4,8 +4,15 @@ import type { AuraColor, AuraLightNode, AuraVec3 } from "./types.js";
 import type { AuraDirectionalShadowOptions, AuraLocalShadowOptions } from "../../contracts/lighting.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { distance } from "../SpatialAnchoring.js";
+import { createLensFlareNode } from "./lensFlare.js";
 
 export const lights = {
+  /**
+   * threejs-parity AD-15 (P2): three's `Lensflare` — additive flare sprites
+   * placed along the line from `position`/`light` through the screen centre.
+   * See `nodes/lensFlare.ts` for placement rules and the occlusion caveat.
+   */
+  lensFlare: createLensFlareNode,
   ambient: (options: { readonly name?: string; readonly intensity?: number; readonly color?: AuraColor } = {}) =>
     new AuraNodeBuilder<AuraLightNode>({
       kind: "light",

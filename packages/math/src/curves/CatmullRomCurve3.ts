@@ -89,6 +89,40 @@ export function catmullRomSegment(
 }
 
 /**
+ * Analytic `dP/dweight` of {@link catmullRomSegment} — the derivative of the
+ * cubic Hermite segment between `p1` and `p2` at segment weight `weight`
+ * (`c1 + 2·c2·w + 3·c3·w²`). Divide by the segment's knot span
+ * (`distance(p1,p2)^alpha`) to get `dP/d(knot parameter)`.
+ */
+export function catmullRomSegmentDerivative(
+  p0: Vector3,
+  p1: Vector3,
+  p2: Vector3,
+  p3: Vector3,
+  weight: number,
+  alpha = 0.5
+): Vector3 {
+  const k = (a: Vector3, b: Vector3): number => Math.pow(Math.max(a.distanceTo(b), EPSILON), alpha);
+  const dt0 = k(p0, p1);
+  const dt1 = k(p1, p2);
+  const dt2 = k(p2, p3);
+
+  const t1 = p1.subtract(p0).multiplyScalar(1 / dt0)
+    .subtract(p2.subtract(p0).multiplyScalar(1 / (dt0 + dt1)))
+    .add(p2.subtract(p1).multiplyScalar(1 / dt1))
+    .multiplyScalar(dt1);
+
+  const t2 = p2.subtract(p1).multiplyScalar(1 / dt1)
+    .subtract(p3.subtract(p1).multiplyScalar(1 / (dt1 + dt2)))
+    .add(p3.subtract(p2).multiplyScalar(1 / dt2))
+    .multiplyScalar(dt1);
+
+  const c2 = p1.multiplyScalar(-3).add(p2.multiplyScalar(3)).add(t1.multiplyScalar(-2)).subtract(t2);
+  const c3 = p1.multiplyScalar(2).subtract(p2.multiplyScalar(2)).add(t1).add(t2);
+  return t1.add(c2.multiplyScalar(2 * weight)).add(c3.multiplyScalar(3 * weight * weight));
+}
+
+/**
  * 3D Catmull-Rom spline — three.js `CatmullRomCurve3` parity: `centripetal`
  * (default, α=0.5 knots), `chordal` (α=1) and `catmullrom` (uniform +
  * `tension`) curve types, endpoint extrapolation and closed loops.

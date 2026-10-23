@@ -388,9 +388,29 @@ function runCustomPass(
   camera: FrameCamera | null | undefined,
   bag?: PostFrameContextBag
 ): RenderTarget {
+  return runCustomPassOnTexture(host, state, pass, asGlTarget(input), aux, camera, bag) ?? input;
+}
+
+/** A sampled colour texture a custom pass can read (a pooled target or a device-owned texture). */
+export interface PostColorInput {
+  readonly colorHandle: WebGLTexture;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** Returns `null` when the pass's `enabled()` declines this frame (input passes through untouched). */
+function runCustomPassOnTexture(
+  host: WebGL2DeviceHost,
+  state: PostV2State,
+  pass: PostPassDescriptor,
+  input: PostColorInput,
+  aux: { readonly linZ?: RenderTarget | null; readonly velocity?: RenderTarget | null },
+  camera: FrameCamera | null | undefined,
+  bag?: PostFrameContextBag
+): RenderTarget | null {
   const gl = host.gl;
   const frame = customPassFrameContext(state, host, input.width, input.height, camera, bag);
-  if (pass.enabled && !pass.enabled(frame)) return input;
+  if (pass.enabled && !pass.enabled(frame)) return null;
   recordPostStage(`custom:${pass.id}@${pass.insertAt}`);
   const wantsDepth = pass.inputs.includes("depth");
   const wantsVelocity = pass.inputs.includes("velocity");
@@ -403,7 +423,7 @@ function runCustomPass(
   });
   const prog = program(state, gl, `custom:${pass.id}`, customPassFragmentSource(pass.fragment.glsl));
   const textures: WebGLTexture[] = [
-    asGlTarget(input).colorHandle,
+    input.colorHandle,
     wantsDepth && aux.linZ ? asGlTarget(aux.linZ).colorHandle : state.blankTex,
     wantsVelocity && aux.velocity ? asGlTarget(aux.velocity).colorHandle : state.blankTex
   ];
@@ -511,6 +531,29 @@ function smaaTexturesReady(host: WebGL2DeviceHost, state: PostV2State): boolean 
   return false;
 }
 
+export interface RunV2HdrStagesOptions {
+  /**
+   * R-03b: the WebGL2 fused present composites bloom inside
+   * `presentLdrPostprocess`, i.e. AFTER this driver returns. `before-tonemap`
+   * custom passes belong after the §6.1 S9/S10 bloom composite, so when the
+   * caller can run them from inside the present it sets this flag and
+   * receives them back as `afterBloom` instead of having them run here.
+   */
+  readonly deferBeforeTonemap?: boolean;
+}
+
+/**
+ * The deferred `before-tonemap` custom passes. `run` executes them in anchor
+ * order over the bloom composite and returns the texture the output stage
+ * must read; `release` frees everything the stage still holds (the pooled
+ * pass output plus the depth/velocity surfaces the passes sampled). The
+ * caller must call `release` exactly once, after the present.
+ */
+export interface DeferredAfterBloomStage {
+  readonly run: (input: PostColorInput) => PostColorInput;
+  readonly release: () => void;
+}
+
 /**
  * Runs S1 → S2 → S4 → CA on the HDR frame. Returns the (possibly pooled)
  * HDR target the fused present should consume. When no HDR stage is enabled
@@ -526,8 +569,9 @@ export function runV2HdrStages(
    * wasn't requested or the route's geometry is unsupported. */
   temporal?: TemporalGpuBindings,
   /** CCR-03-12 (Phase 6): C-13 custom-pass frame context (source/items/sceneDepth). */
-  frameContext?: PostFrameContextBag
-): { readonly target: RenderTarget; readonly aoPending: boolean; readonly skipped: readonly string[] } {
+  frameContext?: PostFrameContextBag,
+  options?: RunV2HdrStagesOptions
+): { readonly target: RenderTarget; readonly aoPending: boolean; readonly skipped: readonly string[]; readonly afterBloom?: DeferredAfterBloomStage } {
   const wantsAo = Boolean(pipeline.ao);
   const wantsGodRays = Boolean(pipeline.godRays);
   const wantsCa = Boolean(pipeline.chromaticAberration && (pipeline.chromaticAberration as { intensity?: number }).intensity);
@@ -1021,17 +1065,61 @@ export function runV2HdrStages(
   }
 
   // ── §6.1 insertion "before-tonemap" (linear HDR, exposure applied) ────────
-  for (const pass of customsAt("before-tonemap")) {
-    const out = runCustomPass(host, state, pass, hdr, { linZ: linZFull, velocity: dilatedVelocity }, camera, frameContext);
-    if (out !== hdr) {
-      if (hdr !== source) state.pool.release(hdr);
-      hdr = out;
+  const beforeTonemapPasses = customsAt("before-tonemap");
+  let afterBloom: DeferredAfterBloomStage | undefined;
+  if (options?.deferBeforeTonemap && beforeTonemapPasses.length > 0) {
+    // R-03b: bloom composites inside the fused present, so these passes run
+    // from there (S9/S10 → before-tonemap → OUT). Capture this frame's clock
+    // now; the counters advance below before the present calls `run`.
+    const deferredFrameIndex = state.frameIndex;
+    const deferredTimeSeconds = state.timeSeconds;
+    const deferredAux = { linZ: linZFull, velocity: dilatedVelocity };
+    const releaseLinZ = linZFull && linZOwnedByPool ? linZFull : null;
+    const releaseVelocity = dilatedVelocity;
+    let held: RenderTarget | null = null;
+    afterBloom = {
+      run: (input) => {
+        const savedFrameIndex = state.frameIndex;
+        const savedTimeSeconds = state.timeSeconds;
+        state.frameIndex = deferredFrameIndex;
+        state.timeSeconds = deferredTimeSeconds;
+        try {
+          let current: PostColorInput = input;
+          for (const pass of beforeTonemapPasses) {
+            const out = runCustomPassOnTexture(host, state, pass, current, deferredAux, camera, frameContext);
+            if (!out) continue;
+            if (held) state.pool.release(held);
+            held = out;
+            current = asGlTarget(out);
+          }
+          return current;
+        } finally {
+          state.frameIndex = savedFrameIndex;
+          state.timeSeconds = savedTimeSeconds;
+        }
+      },
+      release: () => {
+        if (held) state.pool.release(held);
+        held = null;
+        if (releaseVelocity) state.pool.release(releaseVelocity);
+        if (releaseLinZ) state.pool.release(releaseLinZ);
+      }
+    };
+  } else {
+    for (const pass of beforeTonemapPasses) {
+      const out = runCustomPass(host, state, pass, hdr, { linZ: linZFull, velocity: dilatedVelocity }, camera, frameContext);
+      if (out !== hdr) {
+        if (hdr !== source) state.pool.release(hdr);
+        hdr = out;
+      }
     }
   }
 
   state.timeSeconds += temporal?.v2?.frameTime ?? 1 / 60;
-  if (dilatedVelocity) state.pool.release(dilatedVelocity);
-  if (linZFull && linZOwnedByPool) state.pool.release(linZFull);
+  if (!afterBloom) {
+    if (dilatedVelocity) state.pool.release(dilatedVelocity);
+    if (linZFull && linZOwnedByPool) state.pool.release(linZFull);
+  }
   if (minmaxHalf) state.pool.release(minmaxHalf);
   state.frameIndex += 1;
   // T0-16: `draw()`/the stage bodies issue raw GL (bindFramebuffer,
@@ -1044,7 +1132,7 @@ export function runV2HdrStages(
   // `prd03.indirectFraction`) and the apply multiplies only that fraction.
   // `aoPending` still reports AO_INDIRECT_FRACTION_PENDING because legacy
   // shaderKey/custom draws carry no f_ind and take the capped fallback.
-  return { target: hdr, aoPending: wantsAo, skipped };
+  return { target: hdr, aoPending: wantsAo, skipped, ...(afterBloom ? { afterBloom } : {}) };
 }
 
 /**
@@ -1114,7 +1202,7 @@ export function runV2LdrTail(
   // between the stages (an after-tonemap custom pass splices S10b→S11).
   if (aaFxaa && displayCustoms.length === 0) {
     const prog = program(state, gl, "finalize-fxaa-fused", FINALIZE_FXAA_FUSED_GLSL);
-    bindOut(gl, outTarget, w, h);
+    bindOut(host, outTarget, w, h);
     gl.useProgram(prog);
     gl.bindVertexArray(state.vao);
     resetFullscreenState(gl);
@@ -1226,7 +1314,7 @@ export function runV2LdrTail(
 
   // S12 — finalize: grain + RCAS + the single triangular dither.
   const prog = program(state, gl, "finalize", FINALIZE_GLSL);
-  bindOut(gl, outTarget, w, h);
+  bindOut(host, outTarget, w, h);
   gl.useProgram(prog);
   gl.bindVertexArray(state.vao);
   resetFullscreenState(gl);
@@ -1249,14 +1337,15 @@ export function runV2LdrTail(
   if (current !== ldr) state.pool.release(current);
 }
 
-function bindOut(gl: WebGL2RenderingContext, outTarget: RenderTarget | undefined, w: number, h: number): void {
+function bindOut(host: WebGL2DeviceHost, outTarget: RenderTarget | undefined, w: number, h: number): void {
+  const gl = host.gl;
   if (outTarget) {
     const t = asGlTarget(outTarget);
     gl.bindFramebuffer(gl.FRAMEBUFFER, t.framebuffer);
     gl.viewport(0, 0, t.width, t.height);
   } else {
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, w, h);
+    // SC-01/XR: the default output is the external framebuffer when set, and honours a persistent viewport.
+    host.lifecycle.bindOutput(null, w, h);
   }
 }
 

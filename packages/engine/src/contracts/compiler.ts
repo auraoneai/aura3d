@@ -29,7 +29,9 @@ export interface AuraNodeKindMap { model: unknown; primitive: unknown; group: un
   // threejs-parity (docs/workflows/threejs-parity-gaps.md §5.0): declared so a
   // lane's registerNodeHandler can win; the default handlers fail closed with
   // "parity-not-implemented" until the lane's real handler lands.
-  line: unknown; points: unknown; sprite: unknown; batched: unknown; }
+  line: unknown; points: unknown; sprite: unknown; batched: unknown;
+  // AD-15 (P2): lens flare — compiled per frame by `compiler/lensFlare.ts` (camera-dependent).
+  lensflare: unknown; }
 
 export interface AnyNodeHandler {
   readonly kind: string;

@@ -19,6 +19,7 @@ import {
   type ShaderReflection,
   type ShaderSources,
   resolveGpuTargetOwner,
+  shaderCompileFailureMessage,
   spreadGpuTargetInventory,
 } from "./RenderDevice";
 import { Texture, isCompressedTextureFormat, isFloatColorTextureFormat, type TextureCompressedFormat, type TextureCubeFace, type TextureFormat, type TexturePixelData } from "./Texture";
@@ -622,7 +623,7 @@ export class WebGL2Device implements RenderDevice {
               this.gl.deleteShader(vertexShader);
               this.gl.deleteShader(fragmentShader);
               this.gl.deleteProgram(program);
-              throw new RenderDeviceError("WebGL shader compile failed", "SHADER_COMPILE_FAILED", { label: sources.label, log, stage: type });
+              throw new RenderDeviceError(shaderCompileFailureMessage(log, { label: sources.label, stage: type }), "SHADER_COMPILE_FAILED", { label: sources.label, log, stage: type });
             }
           }
           this.gl.deleteShader(vertexShader);
@@ -1318,14 +1319,9 @@ export class WebGL2Device implements RenderDevice {
     }
     if (target === null) {
       this.host.activeRenderTarget = null;
-      this.stateCache.bindFramebuffer(this.gl.FRAMEBUFFER, null, () => this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null));
-      this.stateCache.viewport(
-        0,
-        0,
-        this.host.lifecycle.viewportWidth || this.gl.drawingBufferWidth,
-        this.host.lifecycle.viewportHeight || this.gl.drawingBufferHeight,
-        () => this.gl.viewport(0, 0, this.host.lifecycle.viewportWidth || this.gl.drawingBufferWidth, this.host.lifecycle.viewportHeight || this.gl.drawingBufferHeight)
-      );
+      const defaultFramebuffer = this.host.lifecycle.defaultFramebuffer();
+      this.stateCache.bindFramebuffer(this.gl.FRAMEBUFFER, defaultFramebuffer, () => this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, defaultFramebuffer));
+      this.host.lifecycle.applyViewState();
       return;
     }
     if (!(target instanceof WebGL2RenderTarget) || !this.renderTargets.has(target) || target.disposed) {
@@ -1335,7 +1331,36 @@ export class WebGL2Device implements RenderDevice {
     }
     this.host.activeRenderTarget = target;
     this.stateCache.bindFramebuffer(this.gl.FRAMEBUFFER, target.drawFramebuffer, () => this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, target.drawFramebuffer));
-    this.stateCache.viewport(0, 0, target.width, target.height, () => this.gl.viewport(0, 0, target.width, target.height));
+    this.host.lifecycle.applyViewState();
+  }
+
+  /**
+   * threejs-parity L7/SC-01: raster viewport in target pixels, origin bottom-left.
+   * Default: frame-scoped — applies while the current target stays bound and
+   * resets at `beginFrame`. `{ persistent: true }` (XR): scoped to the default
+   * (canvas/external) framebuffer and survives `beginFrame` and the post/present
+   * passes until `resetViewport()`.
+   */
+  setViewport(x: number, y: number, width: number, height: number, options?: { readonly persistent?: boolean }): void {
+    this.host.lifecycle.setViewport(x, y, width, height, options);
+  }
+
+  resetViewport(): void {
+    this.host.lifecycle.resetViewport();
+  }
+
+  /** XR: frames draw into `framebuffer` instead of the canvas until this is called with null. */
+  setExternalFramebuffer(framebuffer: unknown | null, width: number, height: number): void {
+    this.host.lifecycle.setExternalFramebuffer(framebuffer as WebGLFramebuffer | null, width, height);
+  }
+
+  /** threejs-parity L7/SC-01: scissor rect; clipping is gated by `setScissorTest`. */
+  setScissor(x: number, y: number, width: number, height: number): void {
+    this.host.lifecycle.setScissor(x, y, width, height);
+  }
+
+  setScissorTest(enabled: boolean): void {
+    this.host.lifecycle.setScissorTest(enabled);
   }
 
   getRenderTarget(): RenderTarget | null {
@@ -1719,7 +1744,7 @@ export class WebGL2Device implements RenderDevice {
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
       const log = this.gl.getShaderInfoLog(shader) ?? "Unknown shader compile error";
       this.gl.deleteShader(shader);
-      throw new RenderDeviceError("WebGL shader compile failed", "SHADER_COMPILE_FAILED", { label, log });
+      throw new RenderDeviceError(shaderCompileFailureMessage(log, { label }), "SHADER_COMPILE_FAILED", { label, log });
     }
     return shader;
   }

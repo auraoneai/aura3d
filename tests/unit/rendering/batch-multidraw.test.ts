@@ -34,13 +34,15 @@ import {
   type MultiDrawBatch
 } from "../../../packages/rendering/src/batching/MultiDrawBatch";
 import type { MultiDrawGroup } from "../../../packages/rendering/src/batching/StaticMergePlanner";
-import { BatchPlanCache } from "../../../packages/rendering/src/renderer/CullingBatching";
+import { BatchPlanCache, deviceSupportsMultiDraw } from "../../../packages/rendering/src/renderer/CullingBatching";
 import { flushMultiDrawQueue, submitDraw } from "../../../packages/rendering/src/forward/DrawSubmit";
 import { generateProgramImpl } from "../../../packages/rendering/src/program/ProgramGenerator";
 import { normalizeProgramFeatures } from "../../../packages/rendering/src/program/ProgramFeatures";
 import type { ProgramFeatures } from "../../../packages/rendering/src/contracts/program";
 import { registerPrd11DrawIdShader } from "../../../packages/rendering/src/batching/shaders/drawId.glsl";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { setRendererQrFlags } from "../../../packages/rendering/src/renderer/FrameGraph";
+import type { QrFlags } from "../../../packages/rendering/src/contracts";
 
 function boxGeometry(dye = 0): Geometry {
   const vb = new VertexBuffer(VertexFormat.P3N3, 4);
@@ -182,6 +184,100 @@ describe("BatchPlanCache multi-draw routing + diagnostics (L5-03)", () => {
     const marked1 = second.find((i) => (i as { multiDraw?: { drawData?: Texture } }).multiDraw) as { multiDraw?: { drawData?: Texture } } | undefined;
     const tex1 = marked1?.multiDraw?.drawData;
     expect(tex1).toBe(tex0);
+  });
+});
+
+describe("R-10 device-capability gate (WEBGL_multi_draw)", () => {
+  function capableDevice(multiDraw: boolean): RenderDevice {
+    const device = new MockRenderDevice() as unknown as RenderDevice;
+    Object.defineProperty(device, "probe", { value: { multiDraw }, configurable: true });
+    device.multiDrawElementsInstanced = () => undefined;
+    return device;
+  }
+  const quad = (n: number): RenderItem[] => Array.from({ length: n }, (_, i) => item(boxGeometry(i), i * 3));
+
+  it("deviceSupportsMultiDraw: probe flag + entry point; no device or no entry point is false", () => {
+    expect(deviceSupportsMultiDraw(undefined)).toBe(false);
+    expect(deviceSupportsMultiDraw(new MockRenderDevice() as unknown as RenderDevice)).toBe(false); // no entry point
+    expect(deviceSupportsMultiDraw(capableDevice(true))).toBe(true);
+    expect(deviceSupportsMultiDraw(capableDevice(false))).toBe(false); // probed absent extension
+    expect(deviceSupportsMultiDraw({ multiDrawElementsInstanced: () => undefined })).toBe(true); // unprobed double
+  });
+
+  it("explicit multiDrawAvailable still wins over the device", () => {
+    const cache = new BatchPlanCache();
+    cache.apply(quad(3), { multiDrawAvailable: true, device: capableDevice(false) });
+    expect(cache.lastReport.multiDrawMode).toBe("multi-draw");
+    const off = new BatchPlanCache();
+    off.apply(quad(3), { multiDrawAvailable: false, device: capableDevice(true) });
+    expect(off.lastReport.multiDrawMode).toBe("unavailable");
+  });
+
+  describe("without an explicit option (generated-program path on)", () => {
+    const generated: QrFlags = {
+      values: { A3D_QR_CORE_GENERATOR: true },
+      on: (name: string) => name === "A3D_QR_CORE_GENERATOR"
+    } as unknown as QrFlags;
+    const none: QrFlags = { values: {}, on: () => false } as unknown as QrFlags;
+    function withGeneratedPrograms<T>(run: () => T): T {
+      setRendererQrFlags(generated);
+      try { return run(); } finally { setRendererQrFlags(none); }
+    }
+
+    it("extension absent → 'unavailable', no markers, draw count = one draw per item", () => {
+      withGeneratedPrograms(() => {
+        const cache = new BatchPlanCache();
+        const device = capableDevice(false);
+        const out = cache.apply(quad(4), { device });
+        expect(cache.lastReport.multiDrawMode).toBe("unavailable");
+        expect(out.every((it) => (it as { multiDraw?: unknown }).multiDraw === undefined)).toBe(true);
+        expect(cache.lastReport.multiDrawBatches).toBe(0);
+        expect(cache.lastReport.outputDraws).toBe(out.length);
+      });
+    });
+
+    it("extension present → 'multi-draw'; outputDraws equals device submissions (one call per group)", () => {
+      withGeneratedPrograms(() => {
+        const cache = new BatchPlanCache();
+        const device = capableDevice(true);
+        const calls: unknown[][] = [];
+        device.multiDrawElementsInstanced = (draws) => { calls.push([...draws]); };
+        const out = cache.apply(quad(4), { device });
+        expect(cache.lastReport.multiDrawMode).toBe("multi-draw");
+        expect(cache.lastReport.multiDrawBatches).toBeGreaterThan(0);
+        // Submit exactly what the planner emitted: markers sharing a group go
+        // through ONE multiDrawElementsInstanced call, everything else is a draw.
+        const markers = out.filter((it) => (it as { multiDraw?: unknown }).multiDraw !== undefined);
+        const others = out.length - markers.length;
+        const groups = new Set(markers.map((it) => (it as unknown as { multiDraw: { drawData: unknown } }).multiDraw.drawData));
+        device.beginFrame(8, 8);
+        for (const g of groups) {
+          const members = markers.filter((it) => (it as unknown as { multiDraw: { drawData: unknown } }).multiDraw.drawData === g);
+          device.multiDrawElementsInstanced?.(members as unknown as readonly DrawCommand[]);
+        }
+        device.endFrame();
+        expect(calls.length + others).toBe(cache.lastReport.outputDraws);
+      });
+    });
+
+    it("plan is rebuilt when device capability changes under an unchanged item list", () => {
+      withGeneratedPrograms(() => {
+        const cache = new BatchPlanCache();
+        const items = quad(4);
+        cache.apply(items, { device: capableDevice(true) });
+        expect(cache.lastReport.multiDrawMode).toBe("multi-draw");
+        const v = cache.planVersion;
+        cache.apply(items, { device: capableDevice(false) });
+        expect(cache.planVersion).toBe(v + 1);
+        expect(cache.lastReport.multiDrawMode).toBe("unavailable");
+      });
+    });
+  });
+
+  it("generated-program path off → unavailable even on a capable device", () => {
+    const cache = new BatchPlanCache();
+    cache.apply(quad(4), { device: capableDevice(true) });
+    expect(cache.lastReport.multiDrawMode).toBe("unavailable");
   });
 });
 

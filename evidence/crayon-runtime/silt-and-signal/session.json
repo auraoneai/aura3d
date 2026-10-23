@@ -18,16 +18,23 @@
     }
   ],
   "page_copy": "Carry Neri through seven living worlds to restore the old crossings. A cinematic hover-bike journey through cliff villages, broken aqueducts, midnight forests and sky orchards, with voiced scenes, music and water that reacts to the ride.",
-  "menus": [],
+  "menus": [
+    "Title/mode select (runtime-built buttons in the game frame): 'Begin the journey', 'Free ride & racing'"
+  ],
   "controls": {
     "declared_in_plan": [
       "W/S accelerate/reverse",
       "A/D steer",
       "E/Q rise/fall"
     ],
-    "runtime_exercised": []
+    "runtime_exercised": [
+      "menu: Free ride & racing click (pointer)"
+    ]
   },
-  "hud": {},
+  "hud": {
+    "dom_text_after_start": "Built with 0% Create yours ↗",
+    "note": "No DOM gameplay HUD and no __getGameState; the game exposes __siltArcadeMode and __boot."
+  },
   "mechanic_notes": [
     "Cinematic hover-bike journey; seven worlds; restore old crossings; voiced scenes; water reacts to the ride."
   ],
@@ -37,10 +44,43 @@
     "harness_module": "evidence/crayon-runtime/silt-and-signal/module.js"
   },
   "limitations": [
-    "browser_eval in the child frame returns “Timed out evaluating expression in child frame”.",
-    "The iframe is cross-origin to the parent, so contentWindow.__getGameState is blocked.",
-    "The 205,683-char srcdoc contains the PlayLabs harness and boot code, not the game module; no live HUD/state captured."
+    "No DOM gameplay HUD or game-state hook was observed after the start click; the post-start phase is inferred from the click sequence and an unchanged, settled scene (10,724 objects before and after), not from game state.",
+    "Object count is identical before and after the click in every run, so it cannot distinguish a menu scene from a gameplay scene; counts describe the single world scene.",
+    "Controls (W/S, A/D, E/Q) are declared by the plan/page copy, not runtime-verified (no fixed-input run; see R-25 part 2)."
   ],
   "schema": "a3d-crayon-runtime-capture/1",
-  "captured_at": "2026-10-22"
+  "captured_at": "2026-10-22",
+  "start_flow": {
+    "click_sequence": [
+      {
+        "label": "Free ride & racing",
+        "method": "locator-click-force",
+        "t": 62088
+      }
+    ],
+    "note": "Earlier diagnostic runs (cc1c9, cc1ca) first clicked 'Begin the journey'; the final run's first successful click was 'Free ride & racing'. Both are real buttons in the game frame."
+  },
+  "probe": {
+    "file": "evidence/crayon-probes/silt-and-signal.json",
+    "run_id": "cc1ch",
+    "viewport": "800x450",
+    "renderer": "WebGLRenderer on SwiftShader (ACR)",
+    "settle": {
+      "settled": true,
+      "criterion": "strict",
+      "detail": "objects within 3% for 4000 ms (10724..10724)"
+    },
+    "live_counts": {
+      "scenes": 1,
+      "objects": 10724,
+      "batchedMeshes": 0,
+      "shaderMaterials": 14,
+      "instancedMeshes": 10
+    },
+    "page_evaluate_latency_ms": {
+      "median": 8,
+      "max": 4153
+    }
+  },
+  "root_cause_of_earlier_blocker": "'Timed out evaluating expression in child frame' was Prism's evaluate timeout, not a cross-origin block: the probe evaluates in the same about:srcdoc game frame successfully (median 8 ms) but a single evaluate can stall up to 4153 ms while the game loads under software GL (worst stall per run: 21 s at 1440x1000; 4.2, 9.2 and 16.8 s at 800x450). The pre-boot hook (context.addInitScript) reaches the srcdoc frame, so no child-frame session is needed."
 }

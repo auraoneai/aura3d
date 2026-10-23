@@ -1,10 +1,10 @@
-# Aura3D 4.0.3 Public-Surface Diff
+# Aura3D 4.0.4 Public-Surface Diff
 
 Generated from `v1.5.2` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12484**
+- Baseline symbols: **13007**; current symbols: **12569**
 - Classified removals: **2120**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
@@ -2348,6 +2348,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/controls:type:ControlPickMetadata` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/controls:type:OrbitCameraLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/input:runtime:WebXRSessionController` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
@@ -2477,6 +2478,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/rendering:type:RenderItem` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderPass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderQueueSortItem` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:RenderSource` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderTarget` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:RenderTargetDescriptor` — reviewed-2.0-public-declaration-contract-change
@@ -2494,6 +2496,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/rendering:type:TexturedPBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:ToneMappingOperator` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:UnlitMaterialOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:VertexAttributeSemantic` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:VolumetricLightOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:VoxelBlockDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:VoxelVisibleBlock` — reviewed-2.0-public-declaration-contract-change
@@ -2541,6 +2544,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/scripting:type:VisualGraphExecutionContext` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/scripting:type:VisualNodeCategory` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:runtime:ActionMap` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/input:runtime:WebXRSessionController` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRFrameLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRInputSourceLike` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/input:type:A3DXRSessionLike` — reviewed-2.0-public-declaration-contract-change
@@ -2662,6 +2666,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/rendering:type:RenderItem` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderPass` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderQueueSortItem` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:RenderSource` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderState` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderTarget` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:RenderTargetDescriptor` — reviewed-2.0-public-declaration-contract-change
@@ -2679,6 +2684,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/rendering:type:TexturedPBRMaterialOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:ToneMappingOperator` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:UnlitMaterialOptions` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:VertexAttributeSemantic` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:VolumetricLightOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:VoxelBlockDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:VoxelVisibleBlock` — reviewed-2.0-public-declaration-contract-change

@@ -48,11 +48,20 @@ export const QR_FLAG_STATES: Readonly<Partial<Record<QrFlagName, QrFlagState>>> 
   // node kind/material/texture/runtime surface compiles to a
   // "not yet implemented (A3D_PARITY_*)" validate error until its lane lands
   // and the flag promotes per the §7.3 integration checkpoint.
+  // R-17 (2026-10-22, tests/unit/parity/default-flags.test.ts): only BATCHING
+  // (nodes/batched.ts) and LINES (compiler/lines.ts) gate code, and only the new
+  // batched/line/points/sprite node kinds, so they cannot change any existing
+  // scene. Both promoted default-on on the strength of remote ACR run
+  // r17-20261022T204448Z (all 11 parity-*.spec.ts, 16/16). The L4 LPIPS gate
+  // needs GitHub Actions + a self-hosted GPU runner, which machine policy
+  // prohibits, so it is waived ONLY for flags that gate nothing but new opt-in
+  // node kinds (PRD §7.3). SHADING, GEOMETRY, TEXTURES and RUNTIME are read
+  // nowhere (inert) and stay "dev". Revert = set either back to "dev".
   A3D_PARITY_SHADING: "dev",
   A3D_PARITY_GEOMETRY: "dev",
   A3D_PARITY_TEXTURES: "dev",
-  A3D_PARITY_BATCHING: "dev",
-  A3D_PARITY_LINES: "dev",
+  A3D_PARITY_BATCHING: "default-on",
+  A3D_PARITY_LINES: "default-on",
   A3D_PARITY_RUNTIME: "dev"
 };
 

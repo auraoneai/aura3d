@@ -18,14 +18,16 @@
  * produced items/bindings are fresh for the frame that consumes them.
  */
 
-import type { Renderer, RenderItem, RenderSource, TextureBinding } from "@aura3d/rendering";
+import type { Renderer, RenderItem, RenderSource, RendererView, TextureBinding } from "@aura3d/rendering";
 import { CubeCameraReflectionCapture, Geometry, PlanarReflectionCapture, TexturedUnlitMaterial, createReflectionProbe } from "@aura3d/rendering";
 import type { AuraRuntimeNodeRegistry, AuraSceneSnapshot } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { resolveCameraFrame } from "./camera.js";
-import { createCameraProjection } from "../RootRuntimeSupport.js";
-import { isAuraCubeCameraNode, type AuraCubeCameraNode } from "../nodes/cameras.js";
+import { createCameraProjection, resolveCameraClipping } from "../RootRuntimeSupport.js";
+import { lookAtMat4, multiplyMat4 } from "@aura3d/scene/math";
+import { computeStereoEyes } from "../stereoMath.js";
+import { isAuraCameraArrayNode, isAuraCameraStereoNode, isAuraCubeCameraNode, type AuraCameraArrayNode, type AuraCameraStereoNode, type AuraCubeCameraNode } from "../nodes/cameras.js";
 import { isAuraMirrorSurfaceNode, type AuraMirrorSurfaceNode } from "../nodes/surfaces.js";
 
 export interface ProductionParitySurfaces {
@@ -39,7 +41,8 @@ export interface ProductionParitySurfaces {
     snapshot: AuraSceneSnapshot,
     runtimeNodes: AuraRuntimeNodeRegistry | undefined,
     time: number,
-    aspect: number
+    aspect: number,
+    size?: { readonly width: number; readonly height: number }
   ): RenderSource;
   /** Latest cube-camera texture bindings, keyed by camera node name. */
   cubeBindings(): ReadonlyMap<string, TextureBinding>;
@@ -129,12 +132,15 @@ export function createProductionParitySurfaces(
   };
 
   return {
-    prepare(source, snapshot, runtimeNodes, time, aspect) {
+    prepare(source, snapshot, runtimeNodes, time, aspect, size) {
       if (disposed) return source;
       const flattened = groups.flatten(snapshot.nodes);
       const mirrorNodes = flattened.filter(isAuraMirrorSurfaceNode);
       const cubeNodes = flattened.filter(isAuraCubeCameraNode);
-      if (mirrorNodes.length === 0 && cubeNodes.length === 0) return source;
+      // L7/SC-01: ArrayCamera / StereoCamera — the frame renders once per view into its viewport.
+      const views = size ? createCameraViews(flattened.filter(isAuraCameraArrayNode), flattened.filter(isAuraCameraStereoNode), snapshot, runtimeNodes, time, size, warn) : undefined;
+      const withViews = (result: RenderSource): RenderSource => (views ? { ...result, views } : result);
+      if (mirrorNodes.length === 0 && cubeNodes.length === 0) return withViews(source);
 
       const baseItems = (): readonly RenderItem[] => [
         ...(source.collectRenderItems?.() ?? source.renderItems ?? [])
@@ -234,9 +240,9 @@ export function createProductionParitySurfaces(
         }
       }
 
-      if (extraItems.length === 0 && cubeBindings.size === 0) return source;
+      if (extraItems.length === 0 && cubeBindings.size === 0) return withViews(source);
       const bindings = cubeBindings;
-      return {
+      return withViews({
         ...source,
         collectRenderItems: () => [
           ...baseItems().map((item) => {
@@ -246,7 +252,7 @@ export function createProductionParitySurfaces(
           }),
           ...extraItems
         ]
-      };
+      });
     },
 
     cubeBindings() {
@@ -263,4 +269,107 @@ export function createProductionParitySurfaces(
       cubeBindings.clear();
     }
   };
+}
+
+
+const toPixelRect = (viewport: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }, size: { readonly width: number; readonly height: number }) => {
+  const x = Math.min(size.width - 1, Math.max(0, Math.round(viewport.x * size.width)));
+  const y = Math.min(size.height - 1, Math.max(0, Math.round(viewport.y * size.height)));
+  return {
+    x,
+    y,
+    width: Math.max(1, Math.min(size.width - x, Math.round(viewport.width * size.width))),
+    height: Math.max(1, Math.min(size.height - y, Math.round(viewport.height * size.height)))
+  };
+};
+
+/**
+ * Builds `RenderSource.views` from authored `cameras.array` / `cameras.stereo`
+ * nodes. Only one multi-view node is honoured per scene (the first); extras warn.
+ */
+function createCameraViews(
+  arrayNodes: readonly AuraCameraArrayNode[],
+  stereoNodes: readonly AuraCameraStereoNode[],
+  snapshot: AuraSceneSnapshot,
+  runtimeNodes: AuraRuntimeNodeRegistry | undefined,
+  time: number,
+  size: { readonly width: number; readonly height: number },
+  warn: (message: string) => void
+): readonly RendererView[] | undefined {
+  if (arrayNodes.length + stereoNodes.length === 0) return undefined;
+  if (arrayNodes.length + stereoNodes.length > 1) {
+    warn("CAMERA_VIEWS_MULTIPLE: only the first cameras.array / cameras.stereo node is honoured per scene");
+  }
+  const layerMask = (layers: number | undefined) => (layers !== undefined ? { layerMask: layers >>> 0 } : {});
+  const arrayNode = arrayNodes[0];
+  const stereoNode = arrayNode ? undefined : stereoNodes[0];
+
+  if (arrayNode) {
+    return arrayNode.cameras.map((entry): RendererView => {
+      const spec = { ...snapshot.camera, ...(entry.camera ?? {}) };
+      const viewport = toPixelRect(entry.viewport, size);
+      const { eye, target } = resolveCameraFrame(snapshot, spec, time, runtimeNodes);
+      const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
+      const projection = createCameraProjection(spec, viewport.width / Math.max(1, viewport.height));
+      return {
+        viewport,
+        cameraPosition: [eye[0], eye[1], eye[2]],
+        camera: {
+          viewMatrix: new Float32Array(view),
+          projectionMatrix: new Float32Array(projection),
+          viewProjectionMatrix: new Float32Array(multiplyMat4(projection, view)),
+          ...layerMask(spec.layers)
+        }
+      };
+    });
+  }
+
+  if (!stereoNode) return undefined;
+  const spec = snapshot.camera;
+  if (spec.mode === "orthographic" || spec.mode === "isometric") {
+    warn("CAMERA_STEREO_ORTHOGRAPHIC: cameras.stereo requires a perspective camera; rendering the single scene camera");
+    return undefined;
+  }
+  const canvasAspect = size.width / Math.max(1, size.height);
+  const fov = stereoNode.fov ?? spec.fov ?? 45;
+  const { near } = resolveCameraClipping(spec);
+  const { eye, target } = resolveCameraFrame(snapshot, spec, time, runtimeNodes);
+  const view = lookAtMat4([...eye], [...target], [0, 1, 0]);
+  const projection = createCameraProjection({ ...spec, mode: "perspective", fov }, canvasAspect);
+  const sideBySide = stereoNode.layout === "side-by-side";
+  const eyes = computeStereoEyes({
+    viewMatrix: view,
+    projectionMatrix: projection,
+    cameraPosition: [eye[0], eye[1], eye[2]],
+    fov,
+    aspect: canvasAspect,
+    near,
+    focus: stereoNode.focus,
+    zoom: stereoNode.zoom,
+    eyeSeparation: stereoNode.eyeSeparation,
+    aspectScale: stereoNode.aspect ?? (sideBySide ? 0.5 : 2)
+  });
+  const halfWidth = Math.floor(size.width / 2);
+  const halfHeight = Math.floor(size.height / 2);
+  const leftViewport = sideBySide
+    ? { x: 0, y: 0, width: halfWidth, height: size.height }
+    : { x: 0, y: halfHeight, width: size.width, height: size.height - halfHeight };
+  const rightViewport = sideBySide
+    ? { x: halfWidth, y: 0, width: size.width - halfWidth, height: size.height }
+    : { x: 0, y: 0, width: size.width, height: halfHeight };
+  if (leftViewport.width < 1 || leftViewport.height < 1 || rightViewport.width < 1 || rightViewport.height < 1) {
+    warn("CAMERA_STEREO_TOO_SMALL: render target is too small to split into two eye viewports");
+    return undefined;
+  }
+  const eyeView = (frame: typeof eyes.left, viewport: typeof leftViewport): RendererView => ({
+    viewport,
+    cameraPosition: frame.cameraPosition,
+    camera: {
+      viewMatrix: frame.viewMatrix,
+      projectionMatrix: frame.projectionMatrix,
+      viewProjectionMatrix: frame.viewProjectionMatrix,
+      ...layerMask(spec.layers)
+    }
+  });
+  return [eyeView(eyes.left, leftViewport), eyeView(eyes.right, rightViewport)];
 }

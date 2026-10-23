@@ -503,8 +503,29 @@ const EMIT_ARGS: Readonly<Record<string, EmitArgs>> = {
   PointerLockControls: (args) => controlsCtor("PointerLockControls", args),
   DragControls: () => ({ call: "new DragControls({})", comment: "a3d: ctor takes DragControlsOptions, not (objects, camera, dom) — deprecated in @aura3d/engine/controls; prefer InteractionControls/picking" }),
   TransformControls: () => ({ call: "new TransformControls({})", comment: "a3d: ctor takes TransformControlsOptions, not (camera, dom) — the gizmo attaches to Aura objects" }),
-  AudioListener: () => ({ call: "new AudioListener()", comment: "a3d: does not drive ctx.listener yet (AU-01); listenerSync drives the pose" })
+  AudioListener: () => ({ call: "new AudioListener()", comment: "a3d: AudioListener.setTransform writes the pose into ctx.listener when a context is bound; listenerSync is the per-frame driver" })
 };
+
+const THREE_NAMED_AUDIO_IMPORT = /import\s*\{[^}]*\bAudio\b[^}]*\}\s*from\s*["']three(?:\/[^"']*)?["']/;
+const STANDARD_VERTEX_ATTRIBUTES: ReadonlySet<string> = new Set(["position", "normal", "uv", "color"]);
+// Mirrors RootGeometry.assertCustomAttributeName (checked against it in tests/unit/aura3d-cli/migrate-three.test.ts),
+// plus three's own non-standard-but-built-in names the engine does not carry as custom attributes.
+const RESERVED_CUSTOM_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
+  "position", "positions", "normal", "normals", "uv", "uv0", "uvs", "uv1", "uv2", "uv3", "color", "colors", "tangent", "tangents",
+  "joints", "weights", "joints1", "weights1", "skinIndex", "skinWeight", "lineStart", "lineEnd", "lineCorner", "lineDistance", "index",
+  "instanceMatrix", "instanceColor"
+]);
+
+/** Why a three attribute name cannot become an engine custom attribute, or undefined when it can. */
+export function customAttributeBlocker(name: string): string | undefined {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) return "is not a GLSL identifier";
+  if (name.startsWith("gl_") || name.includes("__")) return "is reserved by GLSL (gl_ prefix or double underscore)";
+  if (name.startsWith("a_") || name.startsWith("u_")) return "uses a prefix reserved for engine attributes/uniforms (a_, u_)";
+  if (RESERVED_CUSTOM_ATTRIBUTE_NAMES.has(name)) return "collides with a built-in vertex semantic the engine does not carry as a custom attribute";
+  return undefined;
+}
+
+const CUSTOM_ATTRIBUTE_CALL = /\.setAttribute\(\s*(["'])([A-Za-z0-9_]+)\1\s*,\s*(?![\s"'`\d])/g;
 
 export function emitMigratedSource(source: string): MigrateResult {
   const constructs = parseThreeSource(source);
@@ -518,6 +539,8 @@ export function emitMigratedSource(source: string): MigrateResult {
   for (const c of constructs) {
     if (c.construct === "import") continue; // handled at the end
     if (c.specifier === "bare" && UNSAFE_BARE_NAME.test(c.construct)) continue;
+    // `new Audio(src)` is the browser's HTMLAudioElement unless three's Audio was imported by name.
+    if (c.specifier === "bare" && c.construct === "Audio" && !THREE_NAMED_AUDIO_IMPORT.test(source)) continue;
     const mapping = threeMappingFor(c.construct);
     if (c.specifier === "bare" && !mapping) continue; // not a THREE name — don't report local ctors
 
@@ -540,8 +563,8 @@ export function emitMigratedSource(source: string): MigrateResult {
         pushComment(comments, c.line, `// a3d: ${c.construct} → ${mapping.target} — ${mapping.note}`);
       } else {
         const replacement = emitCall(mapping, c);
-        const needle = `new THREE.${c.construct}(${c.args})`;
-        const needleBare = `new ${c.construct}(${c.args})`;
+        const needle = `new THREE.${c.construct}(${c.rawArgs ?? c.args})`;
+        const needleBare = `new ${c.construct}(${c.rawArgs ?? c.args})`;
         if (source.includes(needle)) {
           rewrites.push({ match: needle, replacement });
         } else if (source.includes(needleBare)) {
@@ -572,6 +595,31 @@ export function emitMigratedSource(source: string): MigrateResult {
     } else {
       pushComment(comments, c.line, `// TODO(a3d-migrate): no mapping for ${c.construct} — ${row.note}`);
     }
+  }
+
+  // Standard attributes (position/normal/uv/color) are fields of geometry.dynamic;
+  // any other name is a custom per-vertex attribute (R-23), carried by
+  // geometry.dynamic({ attributes }) and read by name in material.custom GLSL.
+  // Gated on a BufferAttribute-family construct plus a non-string second
+  // argument so DOM `el.setAttribute("id", "x")` calls in the same file are not
+  // flagged.
+  if (constructs.some((x) => /BufferAttribute$/.test(x.construct))) {
+    source.split("\n").forEach((text, index) => {
+      for (const m of text.matchAll(CUSTOM_ATTRIBUTE_CALL)) {
+        const name = m[2] ?? "";
+        if (STANDARD_VERTEX_ATTRIBUTES.has(name)) continue;
+        const blocker = customAttributeBlocker(name);
+        if (blocker) {
+          const blockedNote = `vertex attribute "${name}" has no public Aura3D equivalent — the name ${blocker}; rename it, or drop the per-vertex data`;
+          pushComment(comments, index + 1, `// TODO(a3d-migrate): ${blockedNote}`);
+          rows.push({ construct: `setAttribute("${name}")`, line: index + 1, mapping: "none", note: blockedNote });
+          continue;
+        }
+        const note = `custom vertex attribute "${name}" → geometry.dynamic({ attributes: { ${name}: { itemSize, data } } }) (R-23, max 11 per geometry, GLSL-identifier names); declare it in the material.custom vertex stage as \`in <float|vec2|vec3|vec4> ${name};\` (GLSL1 \`attribute\` is accepted, but \`varying\`/\`texture2D\`/\`gl_FragColor\` must still be ported to #version 300 es); per-frame writes go through handle.updateAttribute("${name}", { array, offset }); for a THREE.Points object add topology: "points" and set gl_PointSize in the vertex shader`;
+        pushComment(comments, index + 1, `// a3d: ${note}`);
+        rows.push({ construct: `setAttribute("${name}")`, line: index + 1, mapping: "approximate", note });
+      }
+    });
   }
 
   let code = source;

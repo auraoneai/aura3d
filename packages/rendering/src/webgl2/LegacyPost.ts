@@ -18,6 +18,23 @@ import type { PostPipelineOptions } from "../contracts/post";
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";
 
+/** A texture the after-bloom hook reads or returns (`PostColorInput` in `post/v2Stages`). */
+export interface LdrPresentColorInput {
+  readonly colorHandle: WebGLTexture;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * R-03b: `afterBloom` runs once, between the native bloom composite and the
+ * fused tone-map/output stage (§6.1 S9/S10 → before-tonemap → OUT). It only
+ * fires when bloom is active on an HDR source; callers that pass it must
+ * check `afterBloomRan` semantics themselves (see `executePostGraphWebGL2`).
+ */
+export type WebGL2LdrPostprocessPresentationOptions = LdrPostprocessPresentationOptions & {
+  readonly afterBloom?: (input: LdrPresentColorInput) => LdrPresentColorInput;
+};
+
 export interface NativeBloomOptions {
   readonly threshold: number;
   readonly intensity: number;
@@ -194,7 +211,7 @@ export class WebGL2LegacyPostPipeline {
     const outputHeight = this.host.lifecycle.viewportHeight || this.host.gl.drawingBufferHeight;
     this.drawRenderTargetToBackbuffer(source, outputWidth, outputHeight);
     this.host.activeRenderTarget = null;
-    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, null);
+    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, this.host.lifecycle.defaultFramebuffer());
     this.host.lifecycle.lastError = this.host.lifecycle.readError();
     if (this.host.lifecycle.lastError) {
       throw new RenderDeviceError(`WebGL2 render-target presentation failed: ${this.host.lifecycle.lastError}`, "WEBGL_PRESENT_FAILED", {
@@ -228,7 +245,7 @@ export class WebGL2LegacyPostPipeline {
     }
   }
 
-  presentLdrPostprocess(source: RenderTarget, options: LdrPostprocessPresentationOptions): void {
+  presentLdrPostprocess(source: RenderTarget, options: WebGL2LdrPostprocessPresentationOptions): void {
     this.host.lifecycle.assertAlive();
     if (!(source instanceof WebGL2RenderTarget) || !this.host.renderTargets.has(source) || source.disposed) {
       throw new RenderDeviceError("Render target is not a live WebGL2 resource owned by this device", "INVALID_RESOURCE", {
@@ -380,6 +397,15 @@ export class WebGL2LegacyPostPipeline {
           // loop (GL_INVALID_OPERATION 0x502, WEBGL_LDR_POSTPROCESS_FAILED).
           temporarySourceIndex = 1;
           this.recordBloomDiagnostics(bloomOptions, source.width, source.height, sourceIsHdr, plan.mipCount);
+        }
+        if (sourceIsHdr && options.afterBloom) {
+          // The pass output is a pooled texture outside the ping-pong pair, so
+          // later stages index from the "external source" slot (-1).
+          const afterBloom = options.afterBloom({ colorHandle: ldrSourceHandle, width: source.width, height: source.height });
+          if (afterBloom.colorHandle !== ldrSourceHandle) {
+            ldrSourceHandle = afterBloom.colorHandle;
+            temporarySourceIndex = -1;
+          }
         }
       }
       if ((depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions) && bloomResources) {
@@ -771,8 +797,7 @@ export class WebGL2LegacyPostPipeline {
     const toneOptions = { ...(toneMappingDefaults ?? {}), ...(tonePass?.options ?? {}) };
     const colorOptions = colorPass?.options ?? {};
     const fxaaOptions = fxaaPass?.options ?? {};
-    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebuffer);
-    this.host.gl.viewport(0, 0, width, height);
+    this.host.lifecycle.bindOutput(framebuffer, width, height);
     this.host.gl.useProgram(program);
     this.host.gl.bindVertexArray(vertexArray);
     this.bindFullscreenTexture(0, sourceTexture);
@@ -1502,8 +1527,7 @@ export class WebGL2LegacyPostPipeline {
       polygonOffsetFillEnabled: this.host.gl.isEnabled(this.host.gl.POLYGON_OFFSET_FILL),
       depthMask: this.host.gl.getParameter(this.host.gl.DEPTH_WRITEMASK) as boolean
     };
-    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebuffer);
-    this.host.gl.viewport(0, 0, outputWidth, outputHeight);
+    this.host.lifecycle.bindOutput(framebuffer, outputWidth, outputHeight);
     this.host.gl.colorMask(true, true, true, true);
     this.host.gl.disable(this.host.gl.SCISSOR_TEST);
     this.host.gl.disable(this.host.gl.STENCIL_TEST);
@@ -2160,8 +2184,7 @@ void main() {
     vertexArray: WebGLVertexArrayObject
   ): void {
     const program = this.ensureNativeFxaaFinalizeProgram();
-    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebuffer);
-    this.host.gl.viewport(0, 0, outputWidth, outputHeight);
+    this.host.lifecycle.bindOutput(framebuffer, outputWidth, outputHeight);
     this.host.gl.useProgram(program);
     this.host.gl.bindVertexArray(vertexArray);
     this.bindFullscreenTexture(0, sourceTexture);
@@ -2795,8 +2818,22 @@ export function executePostGraphWebGL2(
   // Phase 3: real S1/S2/S4 + CA run on the HDR target before the fused
   // present; S10b/S11/S12 run as the LDR tail after it.
   let workSource = source;
+  // R-03b: bloom composites inside the fused present, so `before-tonemap`
+  // custom passes must run from its after-bloom hook to honour the §6.1 order
+  // (S9/S10 bloom → before-tonemap → OUT). Without an active HDR bloom there
+  // is nothing to order against and they stay in the HDR stage driver.
+  const deferBeforeTonemap = Boolean(v2)
+    && request.passes.some((pass) => pass.name === ("bloom" as LdrPostprocessPassName))
+    && source.colorTexture.format !== "rgba8";
+  let afterBloomStage: import("../post/v2Entry").DeferredAfterBloomStage | undefined;
+  let afterBloomRan = false;
   if (v2) {
-    workSource = v2.runV2HdrStages(host, source, pipeline, request.cameraFrame, request.temporal, request.frameContext).target;
+    const hdrResult = v2.runV2HdrStages(
+      host, source, pipeline, request.cameraFrame, request.temporal, request.frameContext,
+      deferBeforeTonemap ? { deferBeforeTonemap: true } : undefined
+    );
+    workSource = hdrResult.target;
+    afterBloomStage = hdrResult.afterBloom;
   }
   const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(pipeline));
   const ldrTailTarget = needsTail && v2
@@ -2850,15 +2887,30 @@ export function executePostGraphWebGL2(
   const passes = pipeline.toneMapping === "none" && !depthSkippedPasses.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName))
     ? [...depthSkippedPasses, createLegacyOutputPass(pipelineForOut)]
     : depthSkippedPasses;
-  host.post.presentLdrPostprocess(workSource, {
-    passes,
-    ...(ldrTailTarget ?? request.outputTarget ? { outputTarget: ldrTailTarget ?? request.outputTarget } : {}),
-    toneMappingDefaults: { outputColorSpace: "srgb" },
-    depthRange: {
-      near: request.depthRange?.near ?? request.pipeline.depthRange.near,
-      far: request.depthRange?.far ?? request.pipeline.depthRange.far
+  try {
+    host.post.presentLdrPostprocess(workSource, {
+      passes,
+      ...(ldrTailTarget ?? request.outputTarget ? { outputTarget: ldrTailTarget ?? request.outputTarget } : {}),
+      toneMappingDefaults: { outputColorSpace: "srgb" },
+      depthRange: {
+        near: request.depthRange?.near ?? request.pipeline.depthRange.near,
+        far: request.depthRange?.far ?? request.pipeline.depthRange.far
+      },
+      ...(afterBloomStage ? {
+        afterBloom: (input: LdrPresentColorInput) => {
+          afterBloomRan = true;
+          return afterBloomStage!.run(input);
+        }
+      } : {})
+    });
+    if (afterBloomStage && !afterBloomRan) {
+      // The present declined the hook (no HDR bloom reached it): the deferred
+      // passes were never applied. Surface it instead of dropping silently.
+      recordPostSkipped("POSTPROCESS_AFTER_BLOOM_UNUSED:before-tonemap-custom-passes");
     }
-  });
+  } finally {
+    afterBloomStage?.release();
+  }
   if (workSource !== source && v2) v2.releaseV2Target(host, workSource);
   if (ldrTailTarget && v2) {
     v2.runV2LdrTail(host, ldrTailTarget, pipeline, request.outputTarget, request.frameContext);

@@ -49,8 +49,9 @@ export interface CurveSample {
 }
 
 export { CurveBase } from "./curves/CurveBase.js";
-export { CatmullRomCurve3, catmullRomSegment } from "./curves/CatmullRomCurve3.js";
+export { CatmullRomCurve3, catmullRomSegment, catmullRomSegmentDerivative } from "./curves/CatmullRomCurve3.js";
 export type { CatmullRomCurveType } from "./curves/CatmullRomCurve3.js";
+export { ClampedCatmullRomCurve3 } from "./curves/ClampedCatmullRomCurve3.js";
 export { CubicBezierCurve3 } from "./curves/CubicBezierCurve3.js";
 export { QuadraticBezierCurve3 } from "./curves/QuadraticBezierCurve3.js";
 export { LineCurve3 } from "./curves/LineCurve3.js";

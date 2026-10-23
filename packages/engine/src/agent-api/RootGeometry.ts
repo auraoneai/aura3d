@@ -30,6 +30,16 @@ export interface AuraGeometryMorphTargetSpec {
   readonly positions: Float32Array | readonly number[];
 }
 
+/**
+ * R-23: one author-named per-vertex attribute (three's `setAttribute(name, new
+ * BufferAttribute(array, itemSize))`). `data.length` must equal
+ * `vertexCount * itemSize`; the vertex shader reads it as `in <type> <name>;`.
+ */
+export interface AuraCustomVertexAttributeSpec {
+  readonly itemSize: 1 | 2 | 3 | 4;
+  readonly data: Float32Array | readonly number[];
+}
+
 export interface AuraCustomGeometrySpec {
   readonly kind: "aura-custom-geometry";
   readonly positions: AuraVec3Attribute;
@@ -39,6 +49,8 @@ export interface AuraCustomGeometrySpec {
   /** SG-05: per-vertex RGBA colors (Float32Array or `[r,g,b,a]` tuples/`AuraColor` list). */
   readonly colors?: Float32Array | readonly number[] | readonly AuraColor[];
   readonly indices: AuraIndexAttribute;
+  /** R-23: author-named per-vertex attributes (max 11), bound by name in `material.custom` GLSL. */
+  readonly attributes?: Readonly<Record<string, AuraCustomVertexAttributeSpec>>;
   readonly bounds?: { readonly min: AuraRootVec3; readonly max: AuraRootVec3 };
   /** SG-05: three's geometry.groups — material-index index ranges. */
   readonly groups?: readonly AuraGeometryGroupSpec[];
@@ -46,8 +58,8 @@ export interface AuraCustomGeometrySpec {
   readonly drawRange?: AuraGeometryDrawRangeSpec;
   /** SG-05: authored morph-target position arrays (absolute or delta per the morph pipeline). */
   readonly morphTargets?: readonly AuraGeometryMorphTargetSpec[];
-  /** SG-05: `"lines"` produces line-segment topology (geometry.edges/wireframe). Default `"triangles"`. */
-  readonly topology?: "triangles" | "lines";
+  /** SG-05: `"lines"` produces line-segment topology (geometry.edges/wireframe). R-23: `"points"` draws one point per vertex (the vertex shader sets gl_PointSize). Default `"triangles"`. */
+  readonly topology?: "triangles" | "lines" | "points";
   /** SG-05: set by `geometry.dynamic` — flags the spec as a `handle.setGeometry` target. */
   readonly dynamic?: boolean;
 }
@@ -123,9 +135,14 @@ export function selectAuraRootLodLevel(
 export function defineAuraCustomGeometry(spec: Omit<AuraCustomGeometrySpec, "kind">): AuraCustomGeometrySpec {
   const normalized = normalizeGeometryAttributes(spec);
   const lines = spec.topology === "lines";
-  if (normalized.vertexCount < (lines ? 2 : 3)) throw new Error(`Aura3D custom ${lines ? "line" : "triangle"} geometry requires at least ${lines ? "two" : "three"} positions.`);
-  const indexCount = normalized.indices?.length ?? normalized.vertexCount;
-  if (lines ? indexCount % 2 !== 0 : indexCount % 3 !== 0) throw new Error(`Aura3D custom ${lines ? "line" : "triangle"} geometry indices must contain complete ${lines ? "segments" : "triangles"}.`);
+  const points = spec.topology === "points";
+  if (points) {
+    if (normalized.vertexCount < 1) throw new Error("Aura3D custom point geometry requires at least one position.");
+  } else {
+    if (normalized.vertexCount < (lines ? 2 : 3)) throw new Error(`Aura3D custom ${lines ? "line" : "triangle"} geometry requires at least ${lines ? "two" : "three"} positions.`);
+    const indexCount = normalized.indices?.length ?? normalized.vertexCount;
+    if (lines ? indexCount % 2 !== 0 : indexCount % 3 !== 0) throw new Error(`Aura3D custom ${lines ? "line" : "triangle"} geometry indices must contain complete ${lines ? "segments" : "triangles"}.`);
+  }
   if (spec.bounds) {
     validateVec3(spec.bounds.min, "bounds min");
     validateVec3(spec.bounds.max, "bounds max");
@@ -138,6 +155,7 @@ export function defineAuraCustomGeometry(spec: Omit<AuraCustomGeometrySpec, "kin
     ...(spec.uvs ? { uvs: spec.uvs } : {}),
     ...(spec.colors ? { colors: spec.colors } : {}),
     indices: spec.indices,
+    ...(normalized.custom.length > 0 ? { attributes: customAttributesRecord(normalized.custom) } : {}),
     ...(spec.groups ? { groups: [...spec.groups] } : {}),
     ...(spec.drawRange ? { drawRange: { ...spec.drawRange } } : {}),
     ...(spec.morphTargets ? { morphTargets: spec.morphTargets.map((target) => ({ ...target })) } : {}),
@@ -147,11 +165,65 @@ export function defineAuraCustomGeometry(spec: Omit<AuraCustomGeometrySpec, "kin
   };
 }
 
+function customAttributesRecord(custom: readonly NormalizedCustomVertexAttribute[]): Readonly<Record<string, AuraCustomVertexAttributeSpec>> {
+  return Object.fromEntries(custom.map((entry) => [entry.name, { itemSize: entry.itemSize, data: entry.data }]));
+}
+
 // ── SG-05 (threejs-parity L2): dynamic geometry + BufferGeometryUtils ────────
+
+export interface NormalizedCustomVertexAttribute {
+  readonly name: string;
+  readonly itemSize: 1 | 2 | 3 | 4;
+  readonly data: Float32Array;
+}
+
+/** R-23: names a custom attribute may not take — engine semantics, their updateAttribute aliases, and the `a_` engine prefix. */
+const RESERVED_CUSTOM_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
+  "position", "positions", "normal", "normals", "uv", "uv0", "uvs", "uv1", "color", "colors", "tangent", "tangents",
+  "joints", "weights", "joints1", "weights1", "lineStart", "lineEnd", "lineCorner", "lineDistance", "index",
+  "instanceMatrix", "instanceColor"
+]);
+export const MAX_CUSTOM_VERTEX_ATTRIBUTES = 11;
+
+export function assertCustomAttributeName(name: string): void {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) throw new Error(`Aura3D custom vertex attribute name "${name}" must be a GLSL identifier ([A-Za-z_][A-Za-z0-9_]*).`);
+  if (name.startsWith("gl_") || name.includes("__")) throw new Error(`Aura3D custom vertex attribute name "${name}" is reserved by GLSL (gl_ prefix or double underscore).`);
+  if (name.startsWith("a_") || name.startsWith("u_")) throw new Error(`Aura3D custom vertex attribute name "${name}" uses a prefix reserved for engine attributes/uniforms (a_, u_).`);
+  if (RESERVED_CUSTOM_ATTRIBUTE_NAMES.has(name)) throw new Error(`Aura3D custom vertex attribute name "${name}" collides with a built-in vertex semantic.`);
+}
+
+/** R-23: validate and flatten `spec.attributes`; entries come back sorted by name (the stable location order). */
+export function normalizeCustomVertexAttributes(
+  attributes: Readonly<Record<string, AuraCustomVertexAttributeSpec>> | undefined,
+  vertexCount: number
+): readonly NormalizedCustomVertexAttribute[] {
+  if (attributes === undefined) return [];
+  const names = Object.keys(attributes).sort();
+  if (names.length > MAX_CUSTOM_VERTEX_ATTRIBUTES) {
+    throw new Error(`Aura3D geometry supports at most ${MAX_CUSTOM_VERTEX_ATTRIBUTES} custom vertex attributes, got ${names.length}.`);
+  }
+  return names.map((name) => {
+    assertCustomAttributeName(name);
+    const entry = attributes[name]!;
+    const itemSize = entry?.itemSize;
+    if (itemSize !== 1 && itemSize !== 2 && itemSize !== 3 && itemSize !== 4) throw new Error(`Aura3D custom vertex attribute "${name}" itemSize must be 1, 2, 3 or 4.`);
+    const raw = entry.data;
+    if (!(raw instanceof Float32Array) && !Array.isArray(raw)) throw new Error(`Aura3D custom vertex attribute "${name}" data must be a Float32Array or number[].`);
+    const data = raw instanceof Float32Array ? raw : Float32Array.from(raw as readonly number[]);
+    if (data.length !== vertexCount * itemSize) {
+      throw new Error(`Aura3D custom vertex attribute "${name}" has ${data.length} values; expected ${vertexCount} vertices x ${itemSize} = ${vertexCount * itemSize}.`);
+    }
+    for (let i = 0; i < data.length; i += 1) {
+      if (!Number.isFinite(data[i])) throw new Error(`Aura3D custom vertex attribute "${name}" value ${i} must be finite.`);
+    }
+    return { name, itemSize, data };
+  });
+}
 
 export interface NormalizedGeometryAttributes {
   readonly positions: Float32Array;
   readonly vertexCount: number;
+  readonly custom: readonly NormalizedCustomVertexAttribute[];
   readonly normals?: Float32Array;
   readonly uvs?: Float32Array;
   readonly colors?: Float32Array;
@@ -203,6 +275,7 @@ export function normalizeGeometryAttributes(spec: {
   readonly uvs?: AuraVec2Attribute;
   readonly colors?: Float32Array | readonly number[] | readonly AuraColor[];
   readonly indices?: AuraIndexAttribute;
+  readonly attributes?: Readonly<Record<string, AuraCustomVertexAttributeSpec>>;
 }): NormalizedGeometryAttributes {
   const positions = readVec3Attribute(spec.positions, "positions");
   if (!positions) throw new Error("Aura3D geometry requires positions.");
@@ -258,7 +331,7 @@ export function normalizeGeometryAttributes(spec: {
       if (!Number.isInteger(value) || value < 0 || value >= vertexCount) throw new Error(`Aura3D geometry index ${offset} is outside the position buffer.`);
     }
   }
-  return { positions, vertexCount, normals, uvs, colors, indices };
+  return { positions, vertexCount, custom: normalizeCustomVertexAttributes(spec.attributes, vertexCount), normals, uvs, colors, indices };
 }
 
 function colorToFlatRgba(color: AuraColor): readonly [number, number, number, number] {
@@ -291,11 +364,16 @@ export function defineAuraDynamicGeometry(spec: {
   readonly uvs?: AuraVec2Attribute;
   readonly colors?: Float32Array | readonly number[] | readonly AuraColor[];
   readonly indices?: AuraIndexAttribute;
+  readonly attributes?: Readonly<Record<string, AuraCustomVertexAttributeSpec>>;
+  readonly topology?: "triangles" | "points";
   readonly groups?: readonly AuraGeometryGroupSpec[];
   readonly drawRange?: AuraGeometryDrawRangeSpec;
   readonly morphTargets?: readonly AuraGeometryMorphTargetSpec[];
   readonly bounds?: { readonly min: AuraRootVec3; readonly max: AuraRootVec3 };
 }): AuraCustomGeometrySpec {
+  if (spec.topology !== undefined && spec.topology !== "triangles" && spec.topology !== "points") {
+    throw new Error(`Aura3D geometry.dynamic topology must be "triangles" or "points", got ${String(spec.topology)}.`);
+  }
   const normalized = normalizeGeometryAttributes(spec);
   if (normalized.vertexCount === 0) throw new Error("Aura3D dynamic geometry requires at least one vertex.");
   const indexCount = normalized.indices?.length ?? normalized.vertexCount;
@@ -307,6 +385,8 @@ export function defineAuraDynamicGeometry(spec: {
     ...(spec.uvs !== undefined ? { uvs: normalized.uvs! } : {}),
     ...(spec.colors !== undefined ? { colors: normalized.colors! } : {}),
     indices: normalized.indices ?? Uint16Array.from({ length: normalized.vertexCount }, (_, i) => i),
+    ...(normalized.custom.length > 0 ? { attributes: customAttributesRecord(normalized.custom) } : {}),
+    ...(spec.topology === "points" ? { topology: "points" as const } : {}),
     ...(spec.groups ? { groups: [...spec.groups] } : {}),
     ...(spec.drawRange ? { drawRange: { ...spec.drawRange } } : {}),
     ...(spec.morphTargets ? { morphTargets: spec.morphTargets.map((target) => ({ ...target })) } : {}),
@@ -429,6 +509,7 @@ export function auraGeometryToNonIndexed(spec: AuraCustomGeometrySpec): AuraCust
   const colors = spec.colors !== undefined ? normalizeGeometryAttributes({ positions: spec.positions, colors: spec.colors }).colors : undefined;
   const indices = spec.indices;
   if (!indices || indices.length === 0) return spec;
+  const custom = normalizeCustomVertexAttributes(spec.attributes, positions.length / 3);
   const expand = (source: Float32Array | undefined, components: number): Float32Array | undefined => {
     if (!source) return undefined;
     const out = new Float32Array(indices.length * components);
@@ -444,6 +525,7 @@ export function auraGeometryToNonIndexed(spec: AuraCustomGeometrySpec): AuraCust
     ...(normals ? { normals: expand(normals, 3)! } : {}),
     ...(uvs ? { uvs: expand(uvs, 2)! } : {}),
     ...(colors ? { colors: expand(colors, 4)! } : {}),
+    ...(custom.length > 0 ? { attributes: Object.fromEntries(custom.map((entry) => [entry.name, { itemSize: entry.itemSize, data: expand(entry.data, entry.itemSize)! }])) } : {}),
     indices: []
   };
 }
@@ -461,15 +543,23 @@ export function mergeAuraGeometries(specs: readonly AuraCustomGeometrySpec[]): A
   const withNormals = normalized.every((entry) => entry.normals !== undefined);
   const withColors = normalized.every((entry) => entry.colors !== undefined);
   const withIndex = normalized.every((entry) => entry.indices !== undefined && entry.indices.length > 0);
+  const customNames = normalized[0]!.custom.map((entry) => entry.name);
+  for (const entry of normalized) {
+    if (entry.custom.length !== customNames.length || entry.custom.some((attribute, i) => attribute.name !== customNames[i] || attribute.itemSize !== normalized[0]!.custom[i]!.itemSize)) {
+      throw new Error("mergeAuraGeometries requires every geometry to carry the same custom vertex attributes (names and itemSize), like three's mergeGeometries.");
+    }
+  }
   const totalVertices = normalized.reduce((sum, entry) => sum + entry.vertexCount, 0);
   const positions = new Float32Array(totalVertices * 3);
   const normals = withNormals ? new Float32Array(totalVertices * 3) : undefined;
   const uvs = withUvs ? new Float32Array(totalVertices * 2) : undefined;
   const colors = withColors ? new Float32Array(totalVertices * 4) : undefined;
+  const customMerged = normalized[0]!.custom.map((attribute) => ({ name: attribute.name, itemSize: attribute.itemSize, data: new Float32Array(totalVertices * attribute.itemSize) }));
   const indices: number[] = [];
   const groups: AuraGeometryGroupSpec[] = [];
   let cursor = 0;
   for (const entry of normalized) {
+    entry.custom.forEach((attribute, i) => customMerged[i]!.data.set(attribute.data, cursor * attribute.itemSize));
     positions.set(entry.positions, cursor * 3);
     if (normals && entry.normals) normals.set(entry.normals, cursor * 3);
     if (uvs && entry.uvs) uvs.set(entry.uvs, cursor * 2);
@@ -488,6 +578,7 @@ export function mergeAuraGeometries(specs: readonly AuraCustomGeometrySpec[]): A
     ...(normals ? { normals } : {}),
     ...(uvs ? { uvs } : {}),
     ...(colors ? { colors } : {}),
+    ...(customMerged.length > 0 ? { attributes: customAttributesRecord(customMerged) } : {}),
     indices,
     ...(withIndex ? { groups } : {})
   };

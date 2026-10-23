@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <title>Strange Orbit on Aura3D</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --ink: #f3ece0;
+        --muted: #b9b2a6;
+        --panel: rgba(18, 21, 28, 0.74);
+        --line: rgba(243, 236, 224, 0.16);
+        --warm: #e9ad87;
+        --jade: #93ead5;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #12151c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .hidden { display: none !important; }
+      .num { font-variant-numeric: tabular-nums; }
+      .meta { font-size: 12px; color: var(--muted); }
+      h1, h2 { margin: 0; line-height: 1.15; }
+      h1 { font-size: 24px; font-weight: 600; }
+      h2 { font-size: 16px; font-weight: 500; }
+      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(243, 236, 224, 0.1); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
+      button.primary { background: var(--warm); color: #1d1a17; border-color: transparent; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; backdrop-filter: blur(6px); }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(18, 21, 28, 0.55); }
+      .overlay .panel { width: min(420px, 90vw); display: grid; gap: 10px; }
+      .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      #menu { background: linear-gradient(90deg, rgba(18, 21, 28, 0.85), rgba(18, 21, 28, 0.1)); place-items: center start; padding-left: 6vw; }
+
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      #hud .top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 12px; }
+      #hud .block { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-width: 120px; }
+      #hud .value { font-size: 20px; font-weight: 500; line-height: 1.2; }
+      #order { position: absolute; top: 84px; right: 12px; margin: 0; padding: 8px 12px; list-style: none; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 150px; }
+      #order li { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; font-size: 12px; line-height: 1.7; font-variant-numeric: tabular-nums; }
+      #order li.you { color: var(--warm); font-weight: 500; }
+      #notice { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); text-align: center; font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
+      #banner { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); font-size: 13px; font-weight: 500; color: var(--jade); }
+      #hud .bottom { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+      .meter { width: 220px; height: 6px; border-radius: 3px; background: rgba(243, 236, 224, 0.16); overflow: hidden; margin: 6px 0; }
+      .meter > i { display: block; height: 100%; width: 0; background: var(--jade); }
+      #progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(243, 236, 224, 0.12); }
+      #progress > i { display: block; height: 100%; width: 0; background: var(--warm); }
+      #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
+      #count { font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); }
+      .keys { position: fixed; left: 12px; bottom: 150px; font-size: 12px; color: var(--muted); pointer-events: none; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #12151c; z-index: 5; }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+
+    <section id="loading"><div class="panel"><h2>Strange Orbit</h2><p id="loading-status" class="meta">Mixing the pigments</p></div></section>
+
+    <section id="menu" class="overlay">
+      <div class="panel">
+        <h1>Strange Orbit</h1>
+        <p class="meta">Ride the rings and find your own way around one continuous orbit. Rendered with Aura3D.</p>
+        <div class="row">
+          <button id="vehicle-bike" type="button">Bike</button>
+          <button id="vehicle-skate" type="button">Skate</button>
+          <span class="meta">Now riding: <span id="rider-name">Sol</span> on the <span id="vehicle-name">bike</span></span>
+        </div>
+        <div class="row"><button id="start" class="primary" type="button" disabled>Start race</button></div>
+        <p class="meta">W accelerate, S brake, A/D steer, Shift boost, Space jump, G gravity, C camera, Esc pause.</p>
+      </div>
+    </section>
+
+    <section id="hud" class="hidden">
+      <div class="top">
+        <div class="block"><div class="meta">Position</div><div id="place" class="value num">6 / 6</div></div>
+        <div class="block" style="text-align:center"><div id="section" class="meta">The painted rings</div><div id="lap" class="value num">Lap 1 / 7</div></div>
+        <div class="block" style="text-align:right"><div class="meta">Race time</div><div id="timer" class="value num">0:00.00</div><div id="best-lap" class="meta num">Best lap -</div></div>
+      </div>
+      <ol id="order"></ol>
+      <div id="banner"></div>
+      <div id="notice" role="status"></div>
+      <div class="bottom">
+        <div class="block"><div class="meta">Stardust <span id="energy-value" class="num">55%</span></div><div class="meter"><i id="energy-fill"></i></div><div class="meta">Collected <span id="dust" class="num">0</span></div><div id="gravity" class="meta num">Gravity 3</div></div>
+        <div class="block" style="text-align:right"><div id="speed" class="value num">0</div><div class="meta">km/h</div></div>
+      </div>
+      <div id="progress"><i id="progress-fill"></i></div>
+    </section>
+
+    <section id="countdown" class="hidden"><div id="count" class="num">3</div></section>
+
+    <section id="pause" class="overlay hidden">
+      <div class="panel"><h2>Paused</h2><p class="meta">The stars can wait.</p><div class="row"><button id="resume" class="primary" type="button">Resume</button><button id="restart" type="button">Restart</button><button id="to-menu" type="button">Menu</button></div></div>
+    </section>
+
+    <section id="results" class="overlay hidden">
+      <div class="panel">
+        <h2 id="result-medal">Gold medal</h2>
+        <div class="row"><div><div class="meta">Position</div><div id="result-place" class="value num" style="font-size:20px">1 / 6</div></div><div><div class="meta">Race time</div><div id="result-time" class="value num" style="font-size:20px">0:00.00</div></div><div><div class="meta">Score</div><div id="result-score" class="value num" style="font-size:20px">0</div></div></div>
+        <p id="result-goals" class="meta"></p>
+        <div class="row"><button id="again" class="primary" type="button">Race again</button></div>
+      </div>
+    </section>
+
+    <section id="lost" class="overlay hidden">
+      <div class="panel"><h2>Lost in orbit</h2><p class="meta">Brake before the edges, or press G to sling back while you have a charge.</p><div class="row"><button id="again-lost" class="primary" type="button">Race again</button></div></div>
+    </section>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

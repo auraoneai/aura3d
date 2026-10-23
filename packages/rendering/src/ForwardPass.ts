@@ -1662,8 +1662,19 @@ function clearProceduralEnvironmentMapUniforms(
  */
 function withItemEnvironmentCube(environment: EnvironmentLightingOptions, item: RenderItem): EnvironmentLightingOptions {
   if (!item.environmentCube) return environment;
+  // threejs-parity SC-01: the scene's sampled-environment knobs describe the
+  // scene environment map, not a draw's own cube. three's `material.envMap`
+  // ignores `scene.environmentIntensity`, so a cube-camera binding
+  // (`item.cubeCameraEnvMap`) reflects at the material's own intensity, and any
+  // other per-draw cube on a scene with no sampled environment (the compiler
+  // fills explicit 0s) must not be scaled to nothing either.
+  const sceneHasSampledEnvironment = environment.environmentMapTexture !== undefined
+    || environment.environmentCubeMapTexture !== undefined
+    || (environment.environmentProbe ?? null) !== null;
+  const ownsEnvMap = item.cubeCameraEnvMap !== undefined;
   return {
     ...environment,
+    ...(ownsEnvMap || !sceneHasSampledEnvironment ? { environmentMapIntensity: 1, environmentMapSpecularIntensity: 1 } : {}),
     environmentCubeMapTexture: item.environmentCube,
     ...(item.environmentCubeMip !== undefined ? { environmentMapMipCount: item.environmentCubeMip } : {})
   };

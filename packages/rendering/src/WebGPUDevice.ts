@@ -315,6 +315,10 @@ export interface WebGPURenderPassDescriptorLike {
 
 export interface WebGPURenderPassEncoderLike {
   setPipeline(pipeline: WebGPURenderPipelineLike): void;
+  /** SC-01: WebGPU viewport, origin top-left. */
+  setViewport?(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number): void;
+  /** SC-01: WebGPU scissor rect, origin top-left. */
+  setScissorRect?(x: number, y: number, width: number, height: number): void;
   setVertexBuffer(slot: number, buffer: WebGPUBufferLike): void;
   setBindGroup?(index: number, bindGroup: WebGPUBindGroupLike): void;
   setIndexBuffer?(buffer: WebGPUBufferLike, indexFormat: "uint16" | "uint32"): void;
@@ -438,6 +442,13 @@ export class WebGPUDevice implements RenderDevice {
   private drawCalls = 0;
   private viewportWidth = 0;
   private viewportHeight = 0;
+  /** SC-01: viewport/scissor override (origin bottom-left, three convention) and the target it was set on; applies only while that target is bound. */
+  private viewStateTarget: WebGPURenderTarget | null = null;
+  private viewportOverride: { x: number; y: number; width: number; height: number } | null = null;
+  private scissorOverride: { x: number; y: number; width: number; height: number } | null = null;
+  private scissorTestOn = false;
+  /** XR/SC-01: viewport scoped to the default (canvas) target that survives `beginFrame`. */
+  private persistentViewportRect: { x: number; y: number; width: number; height: number } | null = null;
   private clearColor: readonly [number, number, number, number] = [0, 0, 0, 1];
   private lastError: string | null = null;
   private nativeSubmissions = 0;
@@ -509,6 +520,11 @@ export class WebGPUDevice implements RenderDevice {
       });
     }
     return new WebGPUDevice(adapter, device, canvasContext, presentationFormat);
+  }
+
+  /** The native `GPUDevice` this render device owns; used by `createComputeContext` (SH-04). */
+  get nativeGpuDevice(): WebGPUDeviceLike {
+    return this.device;
   }
 
   private constructor(
@@ -1014,8 +1030,67 @@ export class WebGPUDevice implements RenderDevice {
     this.lastError = null;
     this.viewportWidth = width;
     this.viewportHeight = height;
+    this.viewportOverride = null;
+    this.scissorOverride = null;
+    this.scissorTestOn = false;
+    this.viewStateTarget = null;
     this.releaseDisposedNativeSampledTextures();
     this.ensureCanvasDepthAttachment(width, height);
+  }
+
+  /** threejs-parity L7/SC-01: raster viewport in target pixels, origin bottom-left; converted to WebGPU's top-left origin per draw pass. */
+  setViewport(x: number, y: number, width: number, height: number, options?: { readonly persistent?: boolean }): void {
+    this.assertAlive();
+    if (!(width > 0) || !(height > 0)) {
+      throw new RenderDeviceError("Viewport dimensions must be positive", "INVALID_VIEWPORT", { width, height });
+    }
+    if (options?.persistent) {
+      this.persistentViewportRect = { x, y, width, height };
+      return;
+    }
+    this.viewportOverride = { x, y, width, height };
+    this.viewStateTarget = this.activeRenderTarget;
+  }
+
+  /** Clears the persistent viewport and the frame-scoped override. */
+  resetViewport(): void {
+    this.assertAlive();
+    this.persistentViewportRect = null;
+    this.viewportOverride = null;
+    this.viewStateTarget = null;
+  }
+
+  setScissor(x: number, y: number, width: number, height: number): void {
+    this.assertAlive();
+    if (width < 0 || height < 0) {
+      throw new RenderDeviceError("Scissor dimensions must be non-negative", "INVALID_SCISSOR", { width, height });
+    }
+    this.scissorOverride = { x, y, width, height };
+    this.viewStateTarget = this.activeRenderTarget;
+  }
+
+  setScissorTest(enabled: boolean): void {
+    this.assertAlive();
+    this.scissorTestOn = enabled;
+    this.viewStateTarget = this.activeRenderTarget;
+  }
+
+  /** Applies the live viewport/scissor override (if any) to a draw pass. Clears are full-attachment load ops and are never scissored. */
+  private applyViewStateToPass(pass: WebGPURenderPassEncoderLike): void {
+    const targetHeight = this.activeRenderTarget ? this.activeRenderTarget.height : this.viewportHeight;
+    if (this.viewStateTarget !== this.activeRenderTarget || !this.viewportOverride) {
+      const persistent = this.activeRenderTarget === null ? this.persistentViewportRect : null;
+      if (persistent) pass.setViewport?.(persistent.x, targetHeight - persistent.y - persistent.height, persistent.width, persistent.height, 0, 1);
+    }
+    if (this.viewStateTarget !== this.activeRenderTarget) return;
+    if (this.viewportOverride) {
+      const v = this.viewportOverride;
+      pass.setViewport?.(v.x, targetHeight - v.y - v.height, v.width, v.height, 0, 1);
+    }
+    if (this.scissorTestOn && this.scissorOverride) {
+      const r = this.scissorOverride;
+      pass.setScissorRect?.(r.x, targetHeight - r.y - r.height, r.width, r.height);
+    }
   }
 
   clear(color: readonly [number, number, number, number]): void {
@@ -1494,8 +1569,9 @@ export class WebGPUDevice implements RenderDevice {
         case "after-taa": {
           const taa = indexOf("taa");
           if (taa >= 0) return taa + 1;
+          // No TAA: the anchor still precedes bloom (v2 graph order is TAA → after-taa → bloom).
           const bloom = indexOf("bloom");
-          return bloom >= 0 ? bloom + 1 : 0;
+          return bloom >= 0 ? bloom : 0;
         }
         case "before-tonemap": {
           const tone = indexOf("tone-mapping");
@@ -1951,6 +2027,7 @@ export class WebGPUDevice implements RenderDevice {
     });
     this.nativeRenderPasses += 1;
     pass.setPipeline(pipeline);
+    this.applyViewStateToPass(pass);
     pass.setVertexBuffer(0, vertexBuffer.handle);
     if (bindGroup) pass.setBindGroup?.(0, bindGroup);
     if (command.indexBuffer) {

@@ -294,6 +294,9 @@ export { labels } from "./nodes/labels.js";
 export { lines, line, loop, segments, fat, computeLineDistances, normalizeLinePositions } from "./nodes/lines.js";
 export type { AuraLineOptions, AuraFatLineOptions, AuraLinePositionsInput } from "./nodes/lines.js";
 export { points } from "./nodes/points.js";
+// SH-04 / L1-12: public WebGPU-only compute surface (WGSL required).
+export { compute, createComputeSurface } from "./nodes/compute.js";
+export type { AuraComputeBuffer, AuraComputeBufferSpec, AuraComputeDeviceSource, AuraComputeDispatchInput, AuraComputeDispatchResult, AuraComputePipeline, AuraComputePipelineSpec, AuraComputeSurface } from "./nodes/compute.js";
 export type { AuraPointsOptions } from "./nodes/points.js";
 export { sprites, sprite } from "./nodes/sprites.js";
 export type { AuraSpriteOptions } from "./nodes/sprites.js";
@@ -428,9 +431,22 @@ export { CSS2D_OUT_OF_SCOPE, collectLabelTelemetry, labelTelemetryRoleFor, summa
 export type { LabelCollisionTuning, LabelTelemetry, LabelTelemetryByRole, LabelTelemetryRole, TextBucketSummary } from "./LabelTelemetry.js";
 export { camera } from "./nodes/camera.js";
 export { cameras } from "./nodes/cameras.js";
+// threejs-parity SC-04: WebXR entry points (`xr.button`, `app.xr`).
+export { xr } from "./xr/index.js";
+export type {
+  AuraXRButtonHandle,
+  AuraXRButtonOptions,
+  AuraXRDeviceBridge,
+  AuraXREnterResult,
+  AuraXRMode,
+  AuraXRRuntime,
+  AuraXRSessionInit
+} from "./xr/index.js";
 export type { AuraCubeCameraNode, AuraCubeCameraOptions } from "./nodes/cameras.js";
 export { surfaces } from "./nodes/surfaces.js";
 export type { AuraMirrorOptions, AuraMirrorSurfaceNode } from "./nodes/surfaces.js";
+// threejs-parity AD-15 (P2): `lights.lensFlare` option/node types.
+export type { AuraLensFlareElement, AuraLensFlareNode, AuraLensFlareOcclusion, AuraLensFlareOptions } from "./nodes/lensFlare.js";
 export { instances } from "./nodes/instances.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";

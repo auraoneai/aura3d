@@ -234,7 +234,10 @@ function isStaticBatchCandidate(item: RenderItem): item is RenderItem & { readon
     item.morphWeights === undefined &&
     item.instanceTransforms === undefined &&
     item.instanceColors === undefined &&
-    item.instanceAttributes === undefined;
+    item.instanceAttributes === undefined &&
+    // A per-draw cube binding (cube camera / probe) cannot survive a merge into
+    // a shared batch item, which would silently draw without the reflection.
+    item.environmentCube === undefined;
 }
 
 function staticBatchKey(item: RenderItem & { readonly material: RenderMaterial }): string {
@@ -282,11 +285,11 @@ export interface Prd11BatchPlanReport {
   readonly planBuildMs: number;
   readonly planVersion: number;
   /**
-   * L5 (parity-L5): the multi-draw route this plan emitted — "multi-draw" =
-   * marker items enqueued for `device.multiDrawElementsInstanced` (extension
-   * merges; its absence loops one draw per member at the device), "none" =
-   * no groups planned, "unavailable" = planner left members pending because
-   * the generated-program path is off.
+   * L5/R-10: the multi-draw route this plan emitted — "multi-draw" = marker
+   * items enqueued for `device.multiDrawElementsInstanced` (only planned when
+   * the device really supports it), "none" = route available but no groups
+   * planned, "unavailable" = the device lacks `WEBGL_multi_draw` (or the
+   * generated-program path is off), so members stay ordinary draws.
    */
   readonly multiDrawMode?: "multi-draw" | "none" | "unavailable";
 }
@@ -353,6 +356,28 @@ export function synthesizeInstancedItems(batches: readonly InstancedBatch[]): Re
   return items;
 }
 
+/** Subset of `RenderDevice` the planner reads to decide multi-draw availability. */
+export interface MultiDrawCapableDevice {
+  readonly probe?: { readonly multiDraw?: boolean };
+  readonly multiDrawElementsInstanced?: unknown;
+}
+
+export interface BatchPlanApplyOptions extends PlanBatchesOptions {
+  /** Device whose real multi-draw capability gates the route when `multiDrawAvailable` is not given. */
+  readonly device?: MultiDrawCapableDevice;
+}
+
+/**
+ * R-10: true only when the device can really merge draws. A probed device must
+ * report `multiDraw` (the `WEBGL_multi_draw` extension); a device with no probe
+ * (test doubles) is trusted only if it implements `multiDrawElementsInstanced`.
+ * No device, or a backend without the entry point (WebGPU today), is false.
+ */
+export function deviceSupportsMultiDraw(device: MultiDrawCapableDevice | undefined): boolean {
+  if (!device || typeof device.multiDrawElementsInstanced !== "function") return false;
+  return device.probe ? device.probe.multiDraw === true : true;
+}
+
 /**
  * Per-source plan cache. `apply()` returns the transformed item list ready
  * for draw submission; `lastReport` feeds `renderer.batching`.
@@ -361,37 +386,45 @@ export class BatchPlanCache {
   private signature = "";
   private synthesized: RenderItem[] = [];
   private plan: BatchPlan | null = null;
+  private planMultiDrawAvailable = false;
   private version = 0;
   /** Packed batches built for the current plan (multi-draw route, L5). */
   private multiDrawBatches: MultiDrawBatch[] = [];
   lastReport: Prd11BatchPlanReport = EMPTY_BATCH_REPORT;
 
   /**
-   * L5-03: `multiDrawAvailable` resolves per call — explicit option wins;
-   * otherwise the generated-program path (A3D_QR_CORE_GENERATOR / lobe route)
-   * decides, since the marker items only fetch draw data through generated
-   * features. When unavailable, group members passthrough as ordinary draws
-   * (the honest one-draw-per-geometry fallback) instead of silently merging.
+   * R-10: `multiDrawAvailable` resolves per call. An explicit option wins.
+   * Otherwise BOTH must hold: the device really exposes multi-draw
+   * (`deviceSupportsMultiDraw`: `WEBGL_multi_draw` via `probe.multiDraw`, and
+   * a `multiDrawElementsInstanced` entry point) AND the generated-program
+   * path is on, because marker items only fetch their draw data through
+   * generated features. Anything else is the honest one-draw-per-geometry
+   * fallback (`multiDrawMode:"unavailable"`) instead of a plan the device
+   * would silently loop.
    */
-  private multiDrawAvailable(options: PlanBatchesOptions): boolean {
-    return options.multiDrawAvailable ?? qrGeneratedProgramsOn(rendererQrFlags());
+  private multiDrawAvailable(options: BatchPlanApplyOptions): boolean {
+    if (options.multiDrawAvailable !== undefined) return options.multiDrawAvailable;
+    return deviceSupportsMultiDraw(options.device) && qrGeneratedProgramsOn(rendererQrFlags());
   }
 
-  apply(items: readonly RenderItem[], options: PlanBatchesOptions = {}): RenderItem[] {
+  apply(items: readonly RenderItem[], options: BatchPlanApplyOptions = {}): RenderItem[] {
     const signature = structuralSignature(items);
-    if (signature === this.signature && this.plan) {
+    const multiDrawAvailable = this.multiDrawAvailable(options);
+    if (signature === this.signature && this.plan && multiDrawAvailable === this.planMultiDrawAvailable) {
       for (const batch of this.plan.instancedBatches) refreshInstancedBatch(batch);
       for (const batch of this.multiDrawBatches) refreshMultiDrawBatch(batch);
       latestBatchPlanReport = this.lastReport;
       return this.synthesized;
     }
     const startedAt = typeof performance !== "undefined" ? performance.now() : Date.now();
-    const multiDrawAvailable = this.multiDrawAvailable(options);
-    const plan = planBatches(items, { ...options, multiDrawAvailable });
+    const { device: _device, ...plannerOptions } = options;
+    void _device;
+    const plan = planBatches(items, { ...plannerOptions, multiDrawAvailable });
     const buildMs = (typeof performance !== "undefined" ? performance.now() : Date.now()) - startedAt;
     this.version += 1;
     this.plan = plan;
     this.signature = signature;
+    this.planMultiDrawAvailable = multiDrawAvailable;
     // L5: multi-draw groups become marker items over packed pools + draw-data
     // rows (one texture per group; DrawSubmit enqueues consecutive markers).
     this.multiDrawBatches = plan.multiDrawGroups.map((group) => buildMultiDrawBatch(group));
@@ -399,7 +432,11 @@ export class BatchPlanCache {
     this.synthesized = [...synthesizeInstancedItems(plan.instancedBatches), ...multiDrawItems, ...plan.passthrough];
     this.lastReport = {
       inputItems: items.length,
-      outputDraws: plan.stats.instancedDraws + plan.stats.passthroughItems + plan.stats.multiDrawMembers,
+      // Submissions, not members: with the multi-draw route live every group
+      // is ONE `multiDrawElementsInstanced` call (a single-member group is one
+      // `draw`); members only count individually on the fallback path.
+      outputDraws: plan.stats.instancedDraws + plan.stats.passthroughItems +
+        (plan.multiDrawGroups.length > 0 ? plan.multiDrawGroups.length : plan.stats.multiDrawMembers),
       instancedBatches: plan.instancedBatches.length,
       multiDrawBatches: plan.multiDrawGroups.length,
       reasonsNotBatched: plan.reasonsNotBatched,

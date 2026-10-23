@@ -2,71 +2,82 @@
 /**
  * tools/crayon-probe — Crayon Arcade runtime probe (threejs-parity §9, lane L10).
  *
- * Records P-1..P-4 for a Crayon game inside a live page, over ONE CDP session
- * per game:
+ * Records P-1..P-4 for a Crayon game from LIVE scene objects:
  *
- *   P-1  node materials — counts of *NodeMaterial instances and of live
- *        materials carrying fragmentNode/colorNode/positionNode, plus
- *        three/webgpu reachability.
- *   P-2  isBatchedMesh — live BatchedMesh instances (traversal + heap).
- *   P-3  pipeline — EffectComposer instances (+ pass roster) vs the r186
- *        node pipeline (three/webgpu PostProcessing / *Node pass classes).
+ *   P-1  node materials — live materials that are NodeMaterials with
+ *        fragmentNode/colorNode/positionNode set.
+ *   P-2  isBatchedMesh — live BatchedMesh objects in the captured scenes.
+ *   P-3  pipeline — EffectComposer / r186 PostProcessing reachable from the
+ *        window or renderer, plus postprocessing-module resource signals.
  *   P-4  shader materials — isShaderMaterial / isRawShaderMaterial counts.
  *
- * Evidence strategy, in order (each probe reports which strategies fired):
- *   1. importmap probe   — `import("three")` + `import("three/addons/…")`
- *      inside the game frame resolves the game's own module record, then
- *      `Runtime.queryObjects` on Scene/EffectComposer/ShaderMaterial
- *      prototypes finds live objects. Works when the game loads three via
- *      an importmap (importmap-readable games).
- *   2. heap snapshot     — `HeapProfiler.takeHeapSnapshot` chunked and
- *      scanned for constructor names (BatchedMesh, *NodeMaterial,
- *      ShaderMaterial, EffectComposer, PostProcessing, WebGPU/WebGLRenderer).
- *      Works even when three is bundle-inlined; reports `inconclusive`
- *      instead of `no` when the bundle is mangled.
- *   3. DOM/global scan   — `window.__THREE__`, canvas[data-engine],
- *      importmap JSON, renderer resource URLs.
+ * Scene discovery (R-01 fix). The previous probe `import("three")`ed inside the
+ * frame and matched `Runtime.queryObjects` prototypes against the game's
+ * objects. That silently returns 0 whenever the prototype comes from another
+ * module record (inlined/bundled three, a second copy, or a frame whose
+ * execution-context hunt failed — 9 of 10 recorded runs reported
+ * `contextFound:false`). It also loaded `three/webgpu` and the
+ * EffectComposer addon itself and called `getContext("webgl2")` on the game
+ * canvas, polluting the very signals it was reading.
+ *
+ * Now a hook is injected BEFORE any game script runs (`context.addInitScript`,
+ * i.e. `Page.addScriptToEvaluateOnNewDocument` auto-attached into every frame
+ * including the sandboxed `about:srcdoc` game iframe). It owns
+ * `window.__THREE_DEVTOOLS__`, the event bus three.js dispatches `observe` on
+ * from the `Scene`, `WebGLRenderer` and `WebGPURenderer` constructors, so the
+ * probe holds the game's own live Scene/renderer objects. The scan then runs
+ * in that frame's main world; no execution-context ids, no prototype matching.
+ * See `inpage.ts` for the injected sources and `verdicts.ts` for the rules
+ * (`no` is only emitted when the question was actually asked).
+ *
+ * Heap snapshot is kept as corroboration only; it never decides a verdict.
  *
  * ── REMOTE RUN ONLY ────────────────────────────────────────────────────────
  * This tool drives a real browser against live Crayon endpoints — per the
- * repo's remote-first rule it must run on the remote runner, never locally.
- * Provision once:
- *     tools/remote-runner/provision.sh
- * then run through the runner's SSM port-forward (see tools/remote-capture.sh
- * for the forward shape):
+ * repo's remote-first rule it must run remotely (serverless ACR Tasks / CodeBuild
+ * or the remote runner), never as local Playwright on the Mac:
  *     pnpm exec tsx --tsconfig tsconfig.base.json tools/crayon-probe/index.ts \
- *       --game strange-orbit --url https://app.usecrayon.ai/play/<project-id> \
- *       --wait-ms 25000
- * or probe the whole roster from a manifest:
- *     pnpm exec tsx --tsconfig tsconfig.base.json tools/crayon-probe/index.ts \
- *       --manifest tools/crayon-probe/games.json
- * Output lands at evidence/crayon-probes/<game>.json.
+ *       --manifest tools/crayon-probe/games.json --emit-markers
+ * Output lands at evidence/crayon-probes/<game>.json (or the `--out` dir); with
+ * `--emit-markers` each report is also printed between
+ * `@@CRAYON_PROBE_BEGIN:<id>` / `@@CRAYON_PROBE_END:<id>` lines so a serverless
+ * job's log stream can be turned back into evidence files.
  * ───────────────────────────────────────────────────────────────────────────
  *
  * CLI:
  *   --game <id>          probe one game (requires --url or manifest entry)
  *   --url <url>          play-page URL for --game
- *   --manifest <path>    JSON manifest { games: [{ id, url? }] }; probes all
- *                        entries that have a url
- *   --wait-ms <ms>       settle time after load (default 20000)
- *   --frame-index <n>    force frame index instead of auto-detect
+ *   --manifest <path>    JSON manifest { games: [{ id, url? }] }
+ *   --only <id[,id]>     restrict a manifest run to these ids
+ *   --wait-ms <ms>       max time to wait for a populated scene (default 30000)
+ *   --settle-ms <ms>     scene object count must hold within 3% this long (default 4000)
+ *   --no-click-start     do not try to click "Tap to start"
+ *   --plateau-ms <ms>    churning/streaming worlds: count within --plateau-pct of its max this long, while rendering, counts as settled (default 15000)
+ *   --plateau-pct <f>    plateau tolerance as a fraction (default 0.08)
+ *   --viewport <WxH>     browser viewport (default 1440x1000; software-GL runners starve heavy games, try 800x450)
+ *   --screenshot-dir <d> write a post-wait PNG per game
+ *   --no-heap            skip the heap snapshot corroboration
  *   --out <dir>          output dir (default evidence/crayon-probes)
  *   --stdout             also print the report JSON
- *   --channel <name>     playwright channel (e.g. "chromium" = full Google
- *                        Chrome for Testing binary; escapes the local
- *                        agent-process-reaper's chrome-headless-shell pattern
- *                        and uses hardware GPU instead of SwiftShader)
+ *   --emit-markers       print each report between BEGIN/END marker lines
+ *   --connect <url>      attach to an existing CDP endpoint instead of launching
+ *   --channel <name>     playwright channel
  *   --headed             launch headed (default headless)
  *   --launch-arg <arg>   extra chromium launch arg (repeatable)
+ * Env: CRAYON_PROBE_ROOT — directory whose node_modules provides `playwright`
+ *   (defaults to the repo root; set it when the tool is bundled elsewhere).
  */
 
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { CLICK_START_SOURCE, GAME_STATE_SOURCE, HOOK_SOURCE, LIST_CONTROLS_SOURCE, SAMPLE_SOURCE, SCAN_SOURCE } from "./inpage.js";
+import { chooseStartControl, downsample, settleStatus, type Control, type Sample, type SettleCriterion } from "./startControl.js";
+import { buildVerdicts, type ProbeAnswer, type ProbeEvidence } from "./verdicts.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const requireFromRepo = createRequire(path.join(repoRoot, "package.json"));
+const requireFromRepo = createRequire(path.join(process.env.CRAYON_PROBE_ROOT ?? repoRoot, "package.json"));
 const { chromium } = requireFromRepo("playwright") as {
   chromium: {
     launch: (opts: Record<string, unknown>) => Promise<Browser>;
@@ -76,9 +87,16 @@ const { chromium } = requireFromRepo("playwright") as {
 
 // Minimal playwright types (tool runs un-built; keep local shapes).
 type Browser = { newContext: (o: Record<string, unknown>) => Promise<BrowserContext>; close: () => Promise<void>; contexts: () => BrowserContext[] };
-type BrowserContext = { newPage: () => Promise<Page>; newCDPSession: (o: Page | Frame) => Promise<CdpSession>; pages: () => Page[]; close: () => Promise<void> };
-type Page = { goto: (u: string, o: Record<string, unknown>) => Promise<unknown>; waitForTimeout: (ms: number) => Promise<void>; frames: () => Frame[]; evaluate: (fn: unknown, arg?: unknown) => Promise<unknown>; url: () => string; on: (ev: string, cb: (e: unknown) => void) => void; context: () => BrowserContext };
-type Frame = { evaluate: (fn: unknown, arg?: unknown) => Promise<unknown>; name: () => string; url: () => string };
+type BrowserContext = {
+  newPage: () => Promise<Page>;
+  newCDPSession: (o: Page | Frame) => Promise<CdpSession>;
+  addInitScript: (script: string) => Promise<void>;
+  pages: () => Page[];
+  close: () => Promise<void>;
+};
+type Locator = { click: (o?: Record<string, unknown>) => Promise<void> };
+type Page = { goto: (u: string, o: Record<string, unknown>) => Promise<unknown>; waitForTimeout: (ms: number) => Promise<void>; frames: () => Frame[]; url: () => string; on: (ev: string, cb: (e: unknown) => void) => void; keyboard: { press: (k: string) => Promise<void> }; screenshot: (o: Record<string, unknown>) => Promise<unknown> };
+type Frame = { evaluate: (fn: string) => Promise<unknown>; url: () => string; locator: (selector: string) => Locator };
 type CdpSession = { send: (method: string, params?: Record<string, unknown>) => Promise<Record<string, unknown>>; on: (ev: string, cb: (p: Record<string, unknown>) => void) => void; detach: () => Promise<void> };
 
 // ── CLI args ────────────────────────────────────────────────────────────────
@@ -87,10 +105,18 @@ interface Args {
   readonly game?: string;
   readonly url?: string;
   readonly manifest?: string;
+  readonly only?: readonly string[];
   readonly waitMs: number;
-  readonly frameIndex?: number;
+  readonly settleMs: number;
+  readonly plateauMs: number;
+  readonly plateauPct: number;
+  readonly viewport: { readonly width: number; readonly height: number };
+  readonly screenshotDir?: string;
+  readonly clickStart: boolean;
+  readonly heap: boolean;
   readonly outDir: string;
   readonly stdout: boolean;
+  readonly emitMarkers: boolean;
   readonly cdpEndpoint?: string;
   readonly channel?: string;
   readonly headed?: boolean;
@@ -98,7 +124,17 @@ interface Args {
 }
 
 function parseArgs(argv: readonly string[]): Args {
-  const out: Record<string, string | boolean | number | undefined | string[]> = { waitMs: 20000, outDir: path.join(repoRoot, "evidence", "crayon-probes"), launchArgs: [] };
+  const out: Record<string, string | boolean | number | undefined | string[] | { width: number; height: number }> = {
+    waitMs: 30000,
+    settleMs: 4000,
+    plateauMs: 15000,
+    plateauPct: 0.08,
+    viewport: { width: 1440, height: 1000 },
+    clickStart: true,
+    heap: true,
+    outDir: path.join(repoRoot, "evidence", "crayon-probes"),
+    launchArgs: []
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const next = () => argv[++i];
@@ -106,10 +142,23 @@ function parseArgs(argv: readonly string[]): Args {
       case "--game": out.game = next(); break;
       case "--url": out.url = next(); break;
       case "--manifest": out.manifest = next(); break;
+      case "--only": out.only = String(next()).split(",").map((s) => s.trim()).filter(Boolean); break;
       case "--wait-ms": out.waitMs = Number(next()); break;
-      case "--frame-index": out.frameIndex = Number(next()); break;
+      case "--settle-ms": out.settleMs = Number(next()); break;
+      case "--plateau-ms": out.plateauMs = Number(next()); break;
+      case "--plateau-pct": out.plateauPct = Number(next()); break;
+      case "--viewport": {
+        const m = /^(\d+)x(\d+)$/.exec(String(next()));
+        if (!m) { console.error("--viewport expects WxH, e.g. 800x450"); process.exit(2); }
+        out.viewport = { width: Number(m[1]), height: Number(m[2]) };
+        break;
+      }
+      case "--screenshot-dir": out.screenshotDir = path.resolve(String(next())); break;
+      case "--no-click-start": out.clickStart = false; break;
+      case "--no-heap": out.heap = false; break;
       case "--out": out.outDir = path.resolve(String(next())); break;
       case "--stdout": out.stdout = true; break;
+      case "--emit-markers": out.emitMarkers = true; break;
       case "--connect": out.cdpEndpoint = next(); break;
       case "--channel": out.channel = next(); break;
       case "--headed": out.headed = true; break;
@@ -121,111 +170,7 @@ function parseArgs(argv: readonly string[]): Args {
   return out as unknown as Args;
 }
 
-// ── in-frame probe script ───────────────────────────────────────────────────
-// Runs inside the game frame's isolated world. Stashes imported module
-// namespaces + prototype handles on window.__a3dProbe so Runtime.queryObjects
-// can find live instances afterwards.
-
-const PROBE_BOOT = `(async () => {
-  const probe = { protos: {}, revision: null, importmap: null, threeModule: null, addons: {}, webgpuModule: null, errors: [] };
-  try {
-    const im = document.querySelector('script[type="importmap"]');
-    if (im) probe.importmap = im.textContent;
-  } catch (e) { probe.errors.push("importmap:" + String(e).slice(0, 80)); }
-  try {
-    const three = await import("three");
-    probe.threeModule = true;
-    probe.revision = three.REVISION ?? null;
-    probe.protos.Scene = three.Scene && three.Scene.prototype;
-    probe.protos.Object3D = three.Object3D && three.Object3D.prototype;
-    probe.protos.Mesh = three.Mesh && three.Mesh.prototype;
-    probe.protos.ShaderMaterial = three.ShaderMaterial && three.ShaderMaterial.prototype;
-    probe.protos.Material = three.Material && three.Material.prototype;
-    probe.protos.WebGLRenderer = three.WebGLRenderer && three.WebGLRenderer.prototype;
-    probe.protos.InstancedMesh = three.InstancedMesh && three.InstancedMesh.prototype;
-  } catch (e) { probe.errors.push("three:" + String(e).slice(0, 120)); }
-  try {
-    const composer = await import("three/addons/postprocessing/EffectComposer.js");
-    probe.addons.EffectComposer = composer.EffectComposer && composer.EffectComposer.prototype;
-  } catch (e) { probe.errors.push("composer:" + String(e).slice(0, 80)); }
-  try {
-    const pass = await import("three/addons/postprocessing/Pass.js");
-    probe.addons.Pass = pass.Pass && pass.Pass.prototype;
-  } catch (e) { probe.errors.push("pass:" + String(e).slice(0, 60)); }
-  try {
-    const webgpu = await import("three/webgpu");
-    probe.webgpuModule = true;
-    if (webgpu.PostProcessing) probe.protos.PostProcessing = webgpu.PostProcessing.prototype;
-    if (webgpu.WebGPURenderer) probe.protos.WebGPURenderer = webgpu.WebGPURenderer.prototype;
-  } catch (e) { probe.errors.push("webgpu:" + String(e).slice(0, 80)); }
-  window.__a3dProbe = probe;
-  return {
-    revision: probe.revision,
-    hasThree: !!probe.threeModule,
-    hasComposerProto: !!probe.addons.EffectComposer,
-    hasPassProto: !!probe.addons.Pass,
-    hasWebgpu: !!probe.webgpuModule,
-    hasPostProcessingProto: !!probe.protos.PostProcessing,
-    protoNames: Object.keys(probe.protos).concat(Object.keys(probe.addons)),
-    importmap: probe.importmap ? probe.importmap.slice(0, 2000) : null,
-    errors: probe.errors
-  };
-})()`;
-
-// Traversal summary for a live scene object (called via callFunctionOn).
-const SCENE_SUMMARIZE = `function () {
-  const counts = {
-    objects: 0, meshes: 0, instancedMeshes: 0, batchedMeshes: 0,
-    shaderMaterials: 0, rawShaderMaterials: 0, nodeMaterials: 0,
-    materialCtorCounts: {}, objectCtorCounts: {}
-  };
-  const seen = new Set();
-  const visit = (o) => {
-    if (!o || seen.has(o)) return;
-    seen.add(o);
-    counts.objects++;
-    const ctor = (o.constructor && o.constructor.name) || "?";
-    counts.objectCtorCounts[ctor] = (counts.objectCtorCounts[ctor] || 0) + 1;
-    if (o.isMesh) counts.meshes++;
-    if (o.isInstancedMesh) counts.instancedMeshes++;
-    if (o.isBatchedMesh) counts.batchedMeshes++;
-    const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
-    for (const m of mats) {
-      if (!m || seen.has(m)) continue;
-      seen.add(m);
-      const mctor = (m.constructor && m.constructor.name) || "?";
-      counts.materialCtorCounts[mctor] = (counts.materialCtorCounts[mctor] || 0) + 1;
-      if (m.isShaderMaterial) counts.shaderMaterials++;
-      if (m.isRawShaderMaterial) counts.rawShaderMaterials++;
-      if (/NodeMaterial$/.test(mctor) || m.fragmentNode !== undefined || m.colorNode !== undefined || m.positionNode !== undefined) counts.nodeMaterials++;
-    }
-    const kids = o.children;
-    if (kids) for (const k of kids) visit(k);
-  };
-  visit(this);
-  return counts;
-}`;
-
-// Summarize a live EffectComposer / PostProcessing object.
-const PIPELINE_SUMMARIZE = `function () {
-  const passes = [];
-  const stack = [this];
-  const seen = new Set();
-  while (stack.length) {
-    const o = stack.pop();
-    if (!o || typeof o !== "object" || seen.has(o)) continue;
-    seen.add(o);
-    if (o.isPass || (o.constructor && /Pass$/.test(o.constructor.name))) {
-      passes.push({ type: o.constructor.name, shaderId: o.shaderID ?? (o.material && o.material.name) ?? null });
-    }
-    if (Array.isArray(o.passes)) stack.push(...o.passes);
-    if (o.renderPass) stack.push(o.renderPass);
-    if (o.nodes) stack.push(...(Array.isArray(o.nodes) ? o.nodes : []));
-  }
-  return { ctor: this.constructor && this.constructor.name, isEffectComposer: !!this.isEffectComposer, passCount: passes.length, passes: passes.slice(0, 24) };
-}`;
-
-// ── heap snapshot scan ──────────────────────────────────────────────────────
+// ── heap snapshot (corroboration only) ──────────────────────────────────────
 
 const HEAP_CLASS_PATTERNS: Readonly<Record<string, RegExp>> = {
   BatchedMesh: /"BatchedMesh"/,
@@ -243,10 +188,9 @@ const HEAP_CLASS_PATTERNS: Readonly<Record<string, RegExp>> = {
 
 async function heapClassCounts(cdp: CdpSession): Promise<{ readonly counts: Record<string, number>; readonly bytes: number; readonly error?: string }> {
   const chunks: string[] = [];
-  const onChunk = (p: Record<string, unknown>) => {
+  cdp.on("HeapProfiler.addHeapSnapshotChunk", (p) => {
     if (typeof p.chunk === "string") chunks.push(p.chunk);
-  };
-  cdp.on("HeapProfiler.addHeapSnapshotChunk", onChunk);
+  });
   try {
     await cdp.send("HeapProfiler.enable");
     await cdp.send("HeapProfiler.takeHeapSnapshot", { reportProgress: false, exposeInternals: false, exposeNumericValues: false });
@@ -258,25 +202,224 @@ async function heapClassCounts(cdp: CdpSession): Promise<{ readonly counts: Reco
   const counts: Record<string, number> = {};
   for (const [name, re] of Object.entries(HEAP_CLASS_PATTERNS)) {
     let n = 0;
-    for (const chunk of chunks) {
-      for (const m of chunk.matchAll(new RegExp(re.source, "g"))) n++;
-    }
+    for (const chunk of chunks) for (const _m of chunk.matchAll(new RegExp(re.source, "g"))) n++;
     counts[name] = n;
   }
-  return { counts, bytes: chunks.join("").length };
+  return { counts, bytes: chunks.reduce((a, c) => a + c.length, 0) };
+}
+
+// ── scene discovery ─────────────────────────────────────────────────────────
+
+interface HookState { readonly scenes: number; readonly renderers: number; readonly renderCalls: number }
+
+const HOOK_STATE_SOURCE = `(function () {
+  var h = window.__a3dHook;
+  if (!h) return null;
+  var calls = 0;
+  for (var i = 0; i < h.renderers.length; i++) calls += h.renderers[i].renderCalls;
+  return { scenes: h.scenes.length, renderers: h.renderers.length, renderCalls: calls };
+})()`;
+
+async function hookStates(page: Page): Promise<readonly { readonly frame: Frame; readonly index: number; readonly state: HookState | null }[]> {
+  const frames = page.frames();
+  const out: { frame: Frame; index: number; state: HookState | null }[] = [];
+  for (let i = 0; i < frames.length; i++) {
+    let state: HookState | null = null;
+    try {
+      state = (await frames[i].evaluate(HOOK_STATE_SOURCE)) as HookState | null;
+    } catch {
+      state = null;
+    }
+    out.push({ frame: frames[i], index: i, state });
+  }
+  return out;
+}
+
+const hookScore = (s: HookState | null): number => (s ? s.scenes * 1000 + s.renderCalls + s.renderers : -1);
+
+interface WaitResult {
+  readonly clicked: string | null;
+  readonly clickMethod: string | null;
+  readonly clickSequence: readonly { readonly label: string; readonly method: string; readonly t: number }[];
+  readonly gameState: { readonly hooks?: readonly string[]; readonly state?: string; readonly error?: string } | null;
+  readonly gameStateLater: { readonly state?: string } | null;
+  readonly clickAttempts: number;
+  readonly noStartControl: boolean;
+  readonly waitedMs: number;
+  readonly settled: boolean;
+  readonly criterion: SettleCriterion | null;
+  readonly settleDetail: string;
+  readonly peakObjects: number;
+  readonly samples: readonly Sample[];
+  readonly controlsFirst: readonly Control[];
+  readonly controlsLast: readonly Control[];
+  readonly controlsAfterStart: readonly Control[];
+  readonly hudText: string | null;
+  readonly evalMsMedian: number;
+  readonly evalMsMax: number;
+}
+
+const median = (xs: readonly number[]): number => {
+  if (xs.length === 0) return 0;
+  const s = [...xs].sort((a, b) => a - b);
+  return s[Math.floor(s.length / 2)];
+};
+
+async function listControls(frames: readonly Frame[]): Promise<readonly { readonly frame: Frame; readonly controls: readonly Control[] }[]> {
+  const out: { frame: Frame; controls: readonly Control[] }[] = [];
+  for (const frame of frames) {
+    try {
+      const controls = (await frame.evaluate(LIST_CONTROLS_SOURCE)) as Control[] | null;
+      if (controls && controls.length > 0) out.push({ frame, controls });
+    } catch { /* frame navigating or detached */ }
+  }
+  return out;
+}
+
+// Wait until the game's scene graph stops growing. A menu/title scene (e.g. HEATSINK: 9 objects) is created
+// long before the gameplay scene, so "a scene exists" is not enough: pick the start control (real pointer
+// click), then require the object count to settle. Strict = within 3% for `settleMs`; plateau = within
+// `plateauPct` of the max over `plateauMs` while the renderer is still drawing (streaming worlds never hold
+// still). Every evaluate is timed: on a software-GL runner a heavy game can starve the page's main thread, and
+// that latency is the evidence for why a click or probe "times out".
+async function waitForPopulatedScene(page: Page, args: Args): Promise<WaitResult> {
+  const started = Date.now();
+  let clicked: string | null = null;
+  let clickMethod: string | null = null;
+  let clickedAtT = -1;
+  let clickAttempts = 0;
+  let lastClickAttempt = 0;
+  let noStartControl = false;
+  const tried = new Set<string>();
+  const failures = new Map<string, number>();
+  const clickSequence: { label: string; method: string; t: number }[] = [];
+  let awaitingNext = false;
+  const samples: Sample[] = [];
+  const evalMs: number[] = [];
+  let controlsFirst: readonly Control[] = [];
+  let controlsLast: readonly Control[] = [];
+  let peak = 0;
+  let verdict = { settled: false, criterion: null as SettleCriterion | null, detail: "no populated scene" };
+  const timed = async <T>(fn: () => Promise<T>): Promise<T> => {
+    const t0 = Date.now();
+    try { return await fn(); } finally { evalMs.push(Date.now() - t0); }
+  };
+  while (Date.now() - started < args.waitMs) {
+    const states = await timed(() => hookStates(page));
+    const best = states.reduce((m, s) => (hookScore(s.state) > hookScore(m.state) ? s : m), states[0]);
+    if (best && best.state && best.state.scenes >= 1 && best.state.renderCalls >= 1) {
+      let sample: { objects: number; renderCalls: number } | null = null;
+      try { sample = (await timed(() => best.frame.evaluate(SAMPLE_SOURCE))) as { objects: number; renderCalls: number } | null; } catch { sample = null; }
+      if (sample) {
+        samples.push({ t: Date.now() - started, objects: sample.objects, renderCalls: sample.renderCalls });
+        peak = Math.max(peak, sample.objects);
+      }
+      const stepsDone = clickSequence.length;
+      const gap = stepsDone > 0 ? 6000 : 2500;
+      if (args.clickStart && !noStartControl && clickAttempts < 14 && stepsDone < 4 && Date.now() - lastClickAttempt > gap) {
+        lastClickAttempt = Date.now();
+        clickAttempts++;
+        const listed = await timed(() => listControls(page.frames()));
+        const all = listed.flatMap((l) => l.controls);
+        if (controlsFirst.length === 0) controlsFirst = all;
+        controlsLast = all;
+        // Hooked game frame first, then the rest.
+        const frames = page.frames();
+        const ordered = [...listed].sort((a, b) => Number(b.frame === best.frame) - Number(a.frame === best.frame));
+        let stepClicked = false;
+        for (const { frame, controls } of ordered) {
+          const fi = frames.indexOf(frame);
+          const triedHere = new Set([...tried].filter((k) => k.startsWith(`${fi}:`)).map((k) => Number(k.split(":")[1])));
+          const pick = chooseStartControl(controls, triedHere);
+          if (!pick) continue;
+          const key = `${fi}:${pick.index}`;
+          const locator = frame.locator(`[data-a3d-ctl="${pick.index}"]`);
+          let method: string | null = null;
+          try { await locator.click({ timeout: 8000 }); method = "locator-click"; } catch {
+            try { await locator.click({ timeout: 8000, force: true }); method = "locator-click-force"; } catch { /* retry next cycle */ }
+          }
+          if (method) {
+            tried.add(key);
+            clickSequence.push({ label: pick.text, method, t: Date.now() - started });
+            clicked ??= pick.text;
+            clickMethod ??= method;
+            clickedAtT = Date.now() - started;
+            stepClicked = true;
+            break;
+          }
+          failures.set(key, (failures.get(key) ?? 0) + 1);
+          if ((failures.get(key) ?? 0) >= 2) tried.add(key); // one retry, then move on
+        }
+        if (!stepClicked && stepsDone === 0) {
+          for (const s of states) {
+            if (!s.state) continue;
+            try {
+              const label = (await timed(() => s.frame.evaluate(CLICK_START_SOURCE))) as string | null;
+              if (label) { clicked = label; clickMethod = "dom-click"; clickSequence.push({ label, method: "dom-click", t: Date.now() - started }); clickedAtT = Date.now() - started; stepClicked = true; break; }
+            } catch { /* frame navigating */ }
+          }
+        }
+        if (!stepClicked && stepsDone === 0 && clickAttempts === 3) {
+          // Title screens that wait for any key rather than a button.
+          try { await page.keyboard.press("Enter"); clickMethod ??= "key-enter"; } catch { /* ignore */ }
+        }
+        if (!stepClicked && stepsDone === 0 && clickAttempts >= 4 && all.length === 0) noStartControl = true;
+        // After a click, the next cycle looks for a follow-up step; none found means the start flow is over.
+        awaitingNext = stepClicked;
+      }
+      const startResolved = (!args.clickStart || clicked !== null || noStartControl || clickAttempts >= 14) && !awaitingNext;
+      if (startResolved) {
+        const relevant = clickedAtT >= 0 ? samples.filter((x) => x.t >= clickedAtT) : samples;
+        verdict = settleStatus(relevant, { settleMs: args.settleMs, strictPct: 0.03, plateauMs: args.plateauMs, plateauPct: args.plateauPct });
+        if (verdict.settled) break;
+      }
+    }
+    await page.waitForTimeout(500);
+  }
+  if (controlsLast.length === 0 && controlsFirst.length > 0) controlsLast = controlsFirst;
+  // Proof the start control did something: re-list the visible controls and read the game frame's text
+  // after the wait. Time-boxed because a starved main thread can block an evaluate for a minute.
+  let controlsAfterStart: readonly Control[] = [];
+  let hudText: string | null = null;
+  let gameState: WaitResult["gameState"] = null;
+  let gameStateLater: WaitResult["gameStateLater"] = null;
+  if (clicked || noStartControl) {
+    const within = async <T>(p: Promise<T>, fallback: T): Promise<T> =>
+      Promise.race([p, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), 20000))]).catch(() => fallback);
+    const after = await within(listControls(page.frames()), []);
+    controlsAfterStart = after.flatMap((l) => l.controls);
+    const states = await within(hookStates(page), []);
+    const gameFrame = states.reduce<{ frame: Frame; state: HookState | null } | undefined>((m, s) => (!m || hookScore(s.state) > hookScore(m.state) ? s : m), undefined);
+    if (gameFrame) {
+      gameState = await within(gameFrame.frame.evaluate(GAME_STATE_SOURCE) as Promise<WaitResult["gameState"]>, null);
+      await page.waitForTimeout(5000);
+      gameStateLater = await within(gameFrame.frame.evaluate(GAME_STATE_SOURCE) as Promise<WaitResult["gameStateLater"]>, null);
+      hudText = (await within(gameFrame.frame.evaluate("(document.body && document.body.innerText || '').replace(/\\s+/g, ' ').trim().slice(0, 400)") as Promise<string | null>, null)) ?? null;
+    }
+  }
+  return {
+    clicked, clickMethod, clickSequence, gameState, gameStateLater, clickAttempts, noStartControl,
+    waitedMs: Date.now() - started,
+    settled: verdict.settled, criterion: verdict.criterion, settleDetail: verdict.detail,
+    peakObjects: peak,
+    samples: downsample(samples, 120),
+    controlsFirst, controlsLast, controlsAfterStart, hudText,
+    evalMsMedian: median(evalMs), evalMsMax: evalMs.length ? Math.max(...evalMs) : 0
+  };
 }
 
 // ── probe one game ──────────────────────────────────────────────────────────
 
 interface ProbeReport {
-  readonly schema: "a3d-crayon-probe/1";
+  readonly schema: "a3d-crayon-probe/2";
   readonly game: string;
   readonly url: string;
   readonly probedAt: string;
-  readonly frame: { readonly index: number; readonly url: string; readonly pickReason: string };
+  readonly frame: Record<string, unknown>;
   readonly dom: Record<string, unknown>;
   readonly module: Record<string, unknown>;
   readonly heap: Record<string, number>;
+  readonly heapMeta?: Record<string, unknown>;
   readonly liveObjects: Record<string, unknown>;
   readonly probes: {
     readonly p1_nodeMaterials: ProbeAnswer;
@@ -287,287 +430,138 @@ interface ProbeReport {
   readonly errors: readonly string[];
 }
 
-interface ProbeAnswer {
-  readonly answer: "yes" | "no" | "inconclusive";
-  readonly value: unknown;
-  readonly detail: string;
-}
+type ScanResult = Record<string, unknown> & { hookInstalled: boolean };
 
-async function pickGameFrame(page: Page, forcedIndex: number | undefined): Promise<{ readonly frame: Frame; readonly index: number; readonly reason: string }> {
-  const frames = page.frames();
-  if (forcedIndex !== undefined && frames[forcedIndex]) {
-    return { frame: frames[forcedIndex], index: forcedIndex, reason: `--frame-index ${forcedIndex}` };
-  }
-  let best: { frame: Frame; index: number; score: number; why: string } | undefined;
-  for (let i = 0; i < frames.length; i++) {
-    try {
-      const info = (await frames[i].evaluate(`(() => {
-        const im = document.querySelector('script[type="importmap"]');
-        return {
-          canvases: document.querySelectorAll("canvas").length,
-          glCanvas: !!document.querySelector("canvas[data-engine], canvas"),
-          hasImportmap: !!im,
-          threeImport: im ? /"three"/.test(im.textContent || "") : false,
-          scripts: document.scripts.length,
-          threeGlobal: typeof window.__THREE__
-        };
-      })()`)) as Record<string, unknown>;
-      const score =
-        (info.canvases ? 4 : 0) +
-        (info.hasImportmap ? 2 : 0) +
-        (info.threeImport ? 4 : 0) +
-        (info.threeGlobal ? 1 : 0) +
-        Math.min(2, Number(info.scripts) > 0 ? 1 : 0);
-      if (!best || score > best.score) best = { frame: frames[i], index: i, score, why: `canvas=${info.canvases} importmap=${info.hasImportmap} threeImport=${info.threeImport} __THREE__=${info.threeGlobal}` };
-    } catch {
-      /* cross-origin frame — skip */
-    }
-  }
-  if (!best) throw new Error("no reachable frame found (all frames cross-origin or empty)");
-  return { frame: best.frame, index: best.index, reason: `best score ${best.score} — ${best.why}` };
-}
-
-interface ExecCtxInfo {
-  readonly id: number;
-  readonly frameId?: string;
-  readonly isDefault: boolean;
-}
-
-async function probeGame(page: Page, cdp: CdpSession, context: BrowserContext, game: string, url: string, waitMs: number, forcedFrameIndex: number | undefined, errors: string[]): Promise<ProbeReport> {
+async function probeGame(page: Page, context: BrowserContext, args: Args, game: string, url: string, errors: string[]): Promise<ProbeReport> {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90000 });
-  await page.waitForTimeout(waitMs);
-
-  const pick = await pickGameFrame(page, forcedFrameIndex);
-  const frame = pick.frame;
-
-  // Frame-scoped CDP session: Crayon runs games in a sandboxed srcdoc iframe
-  // (`sandbox="allow-scripts …"` without allow-same-origin → opaque origin →
-  // OOPIF with its own process and CDP target). The page-level session cannot
-  // see the game frame's execution contexts or heap, so live-object queries
-  // and the heap snapshot must go through a session attached to the frame
-  // target itself. Falls back to the page session when the frame attach fails.
-  let gameCdp: CdpSession | undefined;
-  try {
-    gameCdp = await context.newCDPSession(frame);
-  } catch (e) {
-    errors.push(`framecdp:${String(e).slice(0, 140)}`);
-  }
-  const session = gameCdp ?? cdp;
-  const contexts: ExecCtxInfo[] = [];
-  if (gameCdp) {
-    gameCdp.on("Runtime.executionContextCreated", (p) => {
-      const c = (p as { context?: { id?: number; auxData?: { frameId?: string; isDefault?: boolean } } }).context;
-      if (c?.id !== undefined) contexts.push({ id: c.id, frameId: c.auxData?.frameId, isDefault: c.auxData?.isDefault === true });
-    });
-    await gameCdp.send("Runtime.enable").catch((e: unknown) => errors.push(`rt:${String(e).slice(0, 120)}`));
-  }
-
-  // DOM/global scan (strategy 3)
-  const dom = (await frame.evaluate(`(() => {
-    const im = document.querySelector('script[type="importmap"]');
-    const res = performance.getEntriesByType("resource").map((e) => e.name).filter((n) => /three|module|game/i.test(n)).slice(0, 40);
-    return {
-      title: document.title,
-      canvases: [...document.querySelectorAll("canvas")].map((c) => ({
-        w: c.width, h: c.height, engine: c.getAttribute("data-engine"),
-        webgl2: !!c.getContext("webgl2"), webgpu: !!(navigator.gpu && c.getContext("webgpu"))
-      })),
-      hasImportmap: !!im,
-      importmap: im ? (im.textContent || "").slice(0, 2000) : null,
-      threeGlobal: typeof window.__THREE__ !== "undefined" ? window.__THREE__ : null,
-      threeResources: res,
-      scripts: document.scripts.length
-    };
-  })()`).catch((e: unknown) => ({ error: String(e).slice(0, 160) }))) as Record<string, unknown>;
-
-  // Strategy 1: boot the module probe inside the frame's own context via
-  // playwright's frame.evaluate (runs the game frame's main world — the
-  // importmap import resolves the same module record the game uses).
-  const boot = (await frame.evaluate(PROBE_BOOT).catch((e: unknown) => ({ error: String(e).slice(0, 160) }))) as Record<string, unknown>;
-
-  // For queryObjects we need the game frame's MAIN-world execution context id.
-  // Isolated worlds (Page.createIsolatedWorld) do NOT see main-world window
-  // globals — __a3dProbe lives on the main world — so instead mark the DOM
-  // (document.documentElement attributes are shared by every world bound to
-  // that frame) and match it against the contexts Runtime.enable replayed.
-  const markToken = `${game}-${Date.now()}`;
-  await frame.evaluate(`document.documentElement.setAttribute("data-a3d-probe-mark", ${JSON.stringify(markToken)});`).catch(() => undefined);
-
-  let contextId: number | undefined;
-  const candidates = [...contexts.filter((c) => c.isDefault), ...contexts.filter((c) => !c.isDefault)];
-  for (const ctx of candidates) {
+  const wait = await waitForPopulatedScene(page, args);
+  if (args.screenshotDir) {
     try {
-      const marked = (await session.send("Runtime.evaluate", {
-        expression: `document.documentElement.getAttribute("data-a3d-probe-mark")`,
-        contextId: ctx.id,
-        returnByValue: true
-      })) as { result?: { value?: unknown } };
-      if (marked.result?.value === markToken) {
-        // Prefer the main-world context (the one where PROBE_BOOT stashed
-        // __a3dProbe); keep scanning if this is a utility world.
-        const hasProbe = (await session.send("Runtime.evaluate", {
-          expression: `"object" === typeof window.__a3dProbe`,
-          contextId: ctx.id,
-          returnByValue: true
-        })) as { result?: { value?: unknown } };
-        contextId = ctx.id;
-        if (hasProbe.result?.value === true) break;
-      }
+      fs.mkdirSync(args.screenshotDir, { recursive: true });
+      await page.screenshot({ path: path.join(args.screenshotDir, `${game}.png`), fullPage: false });
+    } catch (e) { errors.push(`screenshot:${String(e).slice(0, 120)}`); }
+  }
+
+  const states = await hookStates(page);
+  const hooked = states.filter((s) => s.state !== null);
+  const best = states.reduce((m, s) => (hookScore(s.state) > hookScore(m.state) ? s : m), states[0]);
+  if (!best) throw new Error("page has no frames");
+
+  let scan: ScanResult = { hookInstalled: false };
+  if (best.state) {
+    try {
+      scan = (await best.frame.evaluate(SCAN_SOURCE)) as ScanResult;
+    } catch (e) {
+      errors.push(`scan:${String(e).slice(0, 160)}`);
+    }
+  } else {
+    errors.push("hook:no frame reported window.__a3dHook (init script did not run in any frame)");
+  }
+
+  // Heap snapshot — corroboration only; needs a session on the game frame's process.
+  let heapCounts: Record<string, number> = {};
+  let heapBytes = 0;
+  let heapTarget: "frame" | "page" | "none" = "none";
+  if (args.heap && best.state) {
+    let session: CdpSession | undefined;
+    try {
+      session = await context.newCDPSession(best.frame);
+      heapTarget = "frame";
     } catch {
-      /* context may be destroyed or cross-origin — keep scanning */
-    }
-  }
-  await frame.evaluate(`document.documentElement.removeAttribute("data-a3d-probe-mark");`).catch(() => undefined);
-
-  const liveObjects: Record<string, unknown> = { contextFound: contextId !== undefined, frameSession: gameCdp !== undefined };
-  const liveCounts = { nodeMaterials: 0, batchedMeshes: 0, shaderMaterials: 0, rawShaderMaterials: 0, composerInstances: 0, postProcessingInstances: 0, passes: [] as unknown[] };
-
-  if (contextId !== undefined && boot.hasThree === true) {
-    const evalObj = async (expression: string): Promise<string | undefined> => {
-      const r = (await session.send("Runtime.evaluate", { expression, contextId, returnByValue: false, awaitPromise: true })) as { result?: { objectId?: string } };
-      return r.result?.objectId;
-    };
-    const queryObjects = async (protoExpr: string): Promise<unknown[] | undefined> => {
-      const protoId = await evalObj(protoExpr);
-      if (!protoId) return undefined;
-      const res = (await session.send("Runtime.queryObjects", { prototypeObjectId: protoId, executionContextId: contextId })) as { objects?: { objectId?: string } };
-      const arrId = res.objects?.objectId;
-      if (!arrId) return undefined;
-      const summary = (await session.send("Runtime.callFunctionOn", {
-        objectId: arrId,
-        functionDeclaration: `function () { return this.length; }`,
-        returnByValue: true
-      })) as { result?: { value?: number } };
-      await session.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
-      return [summary.result?.value ?? 0];
-    };
-    // Scenes — traverse each live Scene for the full material/object census.
-    const sceneCount = await queryObjects("window.__a3dProbe && window.__a3dProbe.protos.Scene");
-    const sceneTotal = sceneCount?.[0] as number | undefined;
-    liveObjects.scenes = sceneTotal ?? 0;
-    if (sceneTotal && sceneTotal > 0) {
-      const protoId = await evalObj("window.__a3dProbe.protos.Scene");
-      const res = (await session.send("Runtime.queryObjects", { prototypeObjectId: protoId!, executionContextId: contextId })) as { objects?: { objectId?: string } };
-      const arrId = res.objects?.objectId;
-      if (arrId) {
-        const agg = (await session.send("Runtime.callFunctionOn", {
-          objectId: arrId,
-          functionDeclaration: `function () {
-            const out = { objects: 0, meshes: 0, instancedMeshes: 0, batchedMeshes: 0, shaderMaterials: 0, rawShaderMaterials: 0, nodeMaterials: 0, materialCtorCounts: {}, objectCtorCounts: {} };
-            const merge = (dst, src) => { for (const k of Object.keys(src)) if (typeof src[k] === "number") dst[k] += src[k]; else for (const k2 of Object.keys(src[k])) dst[k][k2] = (dst[k][k2] || 0) + src[k][k2]; };
-            for (const s of this) {
-              const c = ${SCENE_SUMMARIZE.replace(/\n/g, " ")}.call(s);
-              merge(out, c);
-            }
-            return out;
-          }`,
-          returnByValue: true
-        })) as { result?: { value?: { batchedMeshes?: number; shaderMaterials?: number; rawShaderMaterials?: number; nodeMaterials?: number; objects?: number; meshes?: number; instancedMeshes?: number; materialCtorCounts?: Record<string, number>; objectCtorCounts?: Record<string, number> } } };
-        if (agg.result?.value) {
-          const v = agg.result.value;
-          liveObjects.sceneTraversal = v;
-          liveCounts.batchedMeshes += v.batchedMeshes ?? 0;
-          liveCounts.shaderMaterials += v.shaderMaterials ?? 0;
-          liveCounts.rawShaderMaterials += v.rawShaderMaterials ?? 0;
-          liveCounts.nodeMaterials += v.nodeMaterials ?? 0;
-        }
-        await session.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
+      // Same-process srcdoc frames have no session of their own: the page session shares their heap.
+      try {
+        session = await context.newCDPSession(page);
+        heapTarget = "page";
+      } catch (e) {
+        errors.push(`heap-session:${String(e).slice(0, 140)}`);
       }
     }
-    // Composer instances — live EffectComposer objects and their pass rosters.
-    const composerCount = await queryObjects("window.__a3dProbe && window.__a3dProbe.addons.EffectComposer");
-    liveObjects.effectComposers = composerCount?.[0] ?? 0;
-    liveCounts.composerInstances = (composerCount?.[0] as number | undefined) ?? 0;
-    if (liveCounts.composerInstances > 0) {
-      const protoId = await evalObj("window.__a3dProbe.addons.EffectComposer");
-      const res = (await session.send("Runtime.queryObjects", { prototypeObjectId: protoId!, executionContextId: contextId })) as { objects?: { objectId?: string } };
-      const arrId = res.objects?.objectId;
-      if (arrId) {
-        const passRoster = (await session.send("Runtime.callFunctionOn", {
-          objectId: arrId,
-          functionDeclaration: `function () { return this.map(function (c) { return (${PIPELINE_SUMMARIZE.replace(/\n/g, " ")}).call(c); }); }`,
-          returnByValue: true
-        })) as { result?: { value?: { passes?: unknown[] }[] } };
-        liveObjects.composerPasses = passRoster.result?.value ?? [];
-        liveCounts.passes = (passRoster.result?.value ?? []).flatMap((c) => c.passes ?? []);
-        await session.send("Runtime.releaseObject", { objectId: arrId }).catch(() => undefined);
-      }
-    }
-    // r186 node pipeline — PostProcessing instances (three/webgpu builds).
-    if (boot.hasPostProcessingProto === true) {
-      const ppCount = await queryObjects("window.__a3dProbe && window.__a3dProbe.protos.PostProcessing");
-      liveObjects.postProcessingInstances = ppCount?.[0] ?? 0;
-      liveCounts.postProcessingInstances = (ppCount?.[0] as number | undefined) ?? 0;
-    }
-    // ShaderMaterial census via prototype scan (catches materials not yet in a scene).
-    const smCount = await queryObjects("window.__a3dProbe && window.__a3dProbe.protos.ShaderMaterial");
-    liveObjects.shaderMaterialHeapObjects = smCount?.[0] ?? 0;
-    if ((smCount?.[0] as number | undefined ?? 0) > liveCounts.shaderMaterials) {
-      liveCounts.shaderMaterials = smCount?.[0] as number;
+    if (session) {
+      const heap = await Promise.race([
+        heapClassCounts(session),
+        new Promise<{ counts: Record<string, number>; bytes: number; error: string }>((resolve) => setTimeout(() => resolve({ counts: {}, bytes: 0, error: "heap snapshot timed out after 90s" }), 90000))
+      ]);
+      heapCounts = heap.counts;
+      heapBytes = heap.bytes;
+      if (heap.error) errors.push(`heap:${heap.error}`);
+      await session.detach().catch(() => undefined);
     }
   }
 
-  // Strategy 2: heap snapshot — constructor-name census.
-  const heap = await heapClassCounts(session);
-  if (heap.error) errors.push(`heap:${heap.error}`);
-
-  // ── verdicts ──────────────────────────────────────────────────────────
-  const heapMat = heap.counts;
-  const nodeMatCtorHits = Object.entries((liveObjects.sceneTraversal as { materialCtorCounts?: Record<string, number> } | undefined)?.materialCtorCounts ?? {})
-    .filter(([k]) => /NodeMaterial$/.test(k))
-    .reduce((acc, [, v]) => acc + v, 0);
-  const p1Value = {
-    liveTraversal: liveCounts.nodeMaterials + nodeMatCtorHits,
-    heapClasses: heapMat.NodeMaterial ?? 0,
-    webgpuModuleReachable: boot.hasWebgpu === true
+  const evidence: ProbeEvidence = {
+    hookInstalled: scan.hookInstalled === true,
+    traversal: scan.traversal as ProbeEvidence["traversal"],
+    pipelines: scan.pipelines as ProbeEvidence["pipelines"],
+    resourceSignals: scan.resourceSignals as ProbeEvidence["resourceSignals"],
+    importmapHasWebgpu: scan.importmapHasWebgpu === true,
+    renderers: scan.renderers as ProbeEvidence["renderers"],
+    heap: heapCounts,
+    heapBytes
   };
-  const p1: ProbeAnswer = p1Value.liveTraversal + p1Value.heapClasses > 0
-    ? { answer: "yes", value: p1Value, detail: "node materials observed (live traversal and/or heap NodeMaterial classes)" }
-    : boot.hasThree !== true && (heap.bytes ?? 0) === 0
-      ? { answer: "inconclusive", value: p1Value, detail: "three module not reachable via import() and heap snapshot failed — bundle likely inlined/mangled" }
-      : { answer: "no", value: p1Value, detail: "no NodeMaterial instances or classes observed" };
-
-  const p2Value = { liveTraversal: liveCounts.batchedMeshes, heapClasses: heapMat.BatchedMesh ?? 0 };
-  const p2: ProbeAnswer = p2Value.liveTraversal + p2Value.heapClasses > 0
-    ? { answer: "yes", value: p2Value, detail: "BatchedMesh observed" }
-    : { answer: "no", value: p2Value, detail: "no BatchedMesh observed (live traversal + heap)" };
-
-  const p3Value = {
-    effectComposers: liveCounts.composerInstances,
-    postProcessingInstances: liveCounts.postProcessingInstances,
-    heapEffectComposer: heapMat.EffectComposer ?? 0,
-    heapPostProcessing: heapMat.PostProcessing ?? 0,
-    passRoster: liveCounts.passes
-  };
-  const p3: ProbeAnswer = p3Value.effectComposers + p3Value.heapEffectComposer > 0
-    ? { answer: "yes", value: p3Value, detail: `EffectComposer pipeline (${p3Value.effectComposers} live, ${p3Value.heapEffectComposer} heap)` }
-    : p3Value.postProcessingInstances + p3Value.heapPostProcessing > 0
-      ? { answer: "yes", value: p3Value, detail: "r186 node pipeline (PostProcessing) observed" }
-      : { answer: "no", value: p3Value, detail: "no composer/post-processing pipeline observed" };
-
-  const p4Value = {
-    liveTraversal: { shader: liveCounts.shaderMaterials, rawShader: liveCounts.rawShaderMaterials },
-    heapClasses: { shader: heapMat.ShaderMaterial ?? 0, rawShader: heapMat.RawShaderMaterial ?? 0 }
-  };
-  const p4: ProbeAnswer = p4Value.liveTraversal.shader + p4Value.heapClasses.shader + p4Value.heapClasses.rawShader > 0
-    ? { answer: "yes", value: p4Value, detail: `${liveCounts.shaderMaterials} live isShaderMaterial, ${liveCounts.rawShaderMaterials} isRawShaderMaterial (+heap classes)` }
-    : { answer: "no", value: p4Value, detail: "no ShaderMaterial/RawShaderMaterial observed" };
+  const verdicts = buildVerdicts(evidence);
+  const pipelines = (scan.pipelines ?? {}) as { composers?: number; postProcessing?: number; composerPasses?: unknown[] };
 
   return {
-    schema: "a3d-crayon-probe/1",
+    schema: "a3d-crayon-probe/2",
     game,
     url,
     probedAt: new Date().toISOString(),
-    frame: { index: pick.index, url: frame.url(), pickReason: pick.reason },
-    dom,
-    module: boot,
-    heap: heap.counts,
-    liveObjects,
+    frame: {
+      index: best.index,
+      url: best.frame.url(),
+      framesWithHook: hooked.length,
+      totalFrames: states.length,
+      waitedMs: wait.waitedMs,
+      sceneSettled: wait.settled,
+      settleCriterion: wait.criterion,
+      settleDetail: wait.settleDetail,
+      clickedStart: wait.clicked,
+      clickMethod: wait.clickMethod,
+      clickSequence: wait.clickSequence,
+      gameStateAfterStart: wait.gameState,
+      gameStateFiveSecondsLater: wait.gameStateLater,
+      clickAttempts: wait.clickAttempts,
+      noStartControl: wait.noStartControl,
+      peakObjects: wait.peakObjects,
+      evalMs: { median: wait.evalMsMedian, max: wait.evalMsMax },
+      viewport: args.viewport,
+      objectSamples: wait.samples,
+      controlsFirstSeen: wait.controlsFirst.slice(0, 40),
+      controlsLastSeen: wait.controlsLast.slice(0, 40),
+      controlsAfterStart: wait.controlsAfterStart.slice(0, 40),
+      hudTextAfterStart: wait.hudText,
+      pickReason: best.state ? `highest hook score (scenes=${best.state.scenes} renderers=${best.state.renderers} renderCalls=${best.state.renderCalls})` : "no frame had the hook"
+    },
+    dom: { title: scan.title ?? null, canvases: scan.canvases ?? [], canvasContexts: scan.canvasContexts ?? null },
+    module: {
+      revisions: scan.revisions ?? [],
+      threeGlobal: scan.threeGlobal ?? null,
+      importmap: scan.importmap ?? null,
+      importmapHasWebgpu: scan.importmapHasWebgpu ?? null,
+      resourceSignals: scan.resourceSignals ?? null
+    },
+    heap: heapCounts,
+    heapMeta: { bytes: heapBytes, session: heapTarget },
+    liveObjects: {
+      contextFound: scan.hookInstalled === true,
+      hookInstalled: scan.hookInstalled === true,
+      observedEvents: scan.observed ?? 0,
+      scenes: scan.scenes ?? 0,
+      renderedScenes: scan.renderedScenes ?? 0,
+      renderers: scan.renderers ?? [],
+      sceneTraversal: scan.traversal ?? null,
+      renderedSceneTraversal: scan.renderedTraversal ?? null,
+      effectComposers: pipelines.composers ?? 0,
+      postProcessingInstances: pipelines.postProcessing ?? 0,
+      composerPasses: pipelines.composerPasses ?? [],
+      pipelineWalk: scan.pipelines ?? null,
+      hookErrors: scan.hookErrors ?? []
+    },
     probes: {
-      p1_nodeMaterials: p1,
-      p2_batchedMesh: p2,
-      p3_pipeline: p3,
-      p4_shaderMaterials: p4
+      p1_nodeMaterials: verdicts.p1,
+      p2_batchedMesh: verdicts.p2,
+      p3_pipeline: verdicts.p3,
+      p4_shaderMaterials: verdicts.p4
     },
     errors
   };
@@ -575,12 +569,18 @@ async function probeGame(page: Page, cdp: CdpSession, context: BrowserContext, g
 
 // ── main ────────────────────────────────────────────────────────────────────
 
+const failedAnswer: ProbeAnswer = { answer: "inconclusive", basis: "none", value: null, detail: "probe failed — see errors" };
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const games: { id: string; url: string }[] = [];
   if (args.manifest) {
     const manifest = JSON.parse(fs.readFileSync(args.manifest, "utf8")) as { games: { id: string; url?: string }[] };
-    for (const g of manifest.games) if (g.url) games.push({ id: g.id, url: g.url });
+    for (const g of manifest.games) {
+      if (!g.url) continue;
+      if (args.only && !args.only.includes(g.id)) continue;
+      games.push({ id: g.id, url: g.url });
+    }
   }
   if (args.game && args.url) games.push({ id: args.game, url: args.url });
   if (games.length === 0) {
@@ -593,11 +593,6 @@ async function main(): Promise<void> {
     ? await chromium.connectOverCDP(args.cdpEndpoint)
     : await chromium.launch({
         timeout: 60000,
-        // The local AuraOne reaper (ai.auraone.agent-process-reaper) SIGSTOPs
-        // chrome-headless-shell trees under load; --channel chromium launches
-        // the full "Google Chrome for Testing" binary (not matched by the
-        // reaper pattern) and uses the real GPU via ANGLE/Metal instead of
-        // SwiftShader. Omit --channel on the remote runner.
         ...(args.channel ? { channel: args.channel } : {}),
         ...(args.headed ? { headless: false } : {}),
         ...(args.launchArgs.length ? { args: [...args.launchArgs] } : {})
@@ -606,24 +601,22 @@ async function main(): Promise<void> {
   for (const game of games) {
     const errors: string[] = [];
     let report: ProbeReport | undefined;
-    // ONE CDP session per game.
-    const context = args.cdpEndpoint ? browser.contexts()[0] : await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-    const page = args.cdpEndpoint ? context.pages()[0] : await context.newPage();
-    if (!page) {
-      errors.push("no page in connected context");
-    } else {
-      page.on("pageerror", (e) => errors.push(`pageerror:${String(e).slice(0, 160)}`));
-      const cdp = await context.newCDPSession(page);
-      try {
-        report = await probeGame(page, cdp, context, game.id, game.url, args.waitMs, args.frameIndex, errors);
-      } catch (e) {
-        errors.push(`probe:${String(e).slice(0, 200)}`);
-      } finally {
-        await cdp.detach().catch(() => undefined);
+    const context = args.cdpEndpoint ? browser.contexts()[0] : await browser.newContext({ viewport: { width: args.viewport.width, height: args.viewport.height } });
+    try {
+      // Must run before the first navigation: reaches every frame, including the srcdoc game iframe.
+      await context.addInitScript(HOOK_SOURCE);
+      const page = args.cdpEndpoint ? context.pages()[0] : await context.newPage();
+      if (!page) {
+        errors.push("no page in connected context");
+      } else {
+        page.on("pageerror", (e) => errors.push(`pageerror:${String(e).slice(0, 160)}`));
+        report = await probeGame(page, context, args, game.id, game.url, errors);
       }
+    } catch (e) {
+      errors.push(`probe:${String(e).slice(0, 200)}`);
     }
     const final: ProbeReport = report ?? {
-      schema: "a3d-crayon-probe/1",
+      schema: "a3d-crayon-probe/2",
       game: game.id,
       url: game.url,
       probedAt: new Date().toISOString(),
@@ -631,19 +624,17 @@ async function main(): Promise<void> {
       dom: {},
       module: {},
       heap: {},
-      liveObjects: {},
-      probes: {
-        p1_nodeMaterials: { answer: "inconclusive", value: null, detail: "probe failed — see errors" },
-        p2_batchedMesh: { answer: "inconclusive", value: null, detail: "probe failed — see errors" },
-        p3_pipeline: { answer: "inconclusive", value: null, detail: "probe failed — see errors" },
-        p4_shaderMaterials: { answer: "inconclusive", value: null, detail: "probe failed — see errors" }
-      },
+      liveObjects: { contextFound: false, hookInstalled: false },
+      probes: { p1_nodeMaterials: failedAnswer, p2_batchedMesh: failedAnswer, p3_pipeline: failedAnswer, p4_shaderMaterials: failedAnswer },
       errors
     };
     const outPath = path.join(args.outDir, `${game.id}.json`);
-    fs.writeFileSync(outPath, `${JSON.stringify(final, null, 2)}\n`);
-    console.log(`[crayon-probe] ${game.id}: p1=${final.probes.p1_nodeMaterials.answer} p2=${final.probes.p2_batchedMesh.answer} p3=${final.probes.p3_pipeline.answer} p4=${final.probes.p4_shaderMaterials.answer} → ${path.relative(repoRoot, outPath)}`);
-    if (args.stdout) console.log(JSON.stringify(final, null, 2));
+    const json = `${JSON.stringify(final, null, 2)}\n`;
+    fs.writeFileSync(outPath, json);
+    const lo = final.liveObjects as { hookInstalled?: boolean; scenes?: number };
+    console.log(`[crayon-probe] ${game.id}: hook=${lo.hookInstalled === true} scenes=${lo.scenes ?? 0} p1=${final.probes.p1_nodeMaterials.answer} p2=${final.probes.p2_batchedMesh.answer} p3=${final.probes.p3_pipeline.answer} p4=${final.probes.p4_shaderMaterials.answer} → ${path.relative(repoRoot, outPath)}`);
+    if (args.emitMarkers) console.log(`@@CRAYON_PROBE_BEGIN:${game.id}\n${json}@@CRAYON_PROBE_END:${game.id}`);
+    else if (args.stdout) console.log(json);
     if (!args.cdpEndpoint) await context.close().catch(() => undefined);
   }
   await browser.close().catch(() => undefined);

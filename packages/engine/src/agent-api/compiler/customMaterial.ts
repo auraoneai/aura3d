@@ -48,6 +48,7 @@ import {
 } from "@aura3d/rendering";
 import type { BlendMode } from "@aura3d/rendering/contracts";
 import { AuraRuntimeError } from "./errors.js";
+import { assertCustomAttributeName } from "../RootGeometry.js";
 import type { AuraCustomMaterialSpec, AuraCustomUniformType, AuraUniformValue } from "../nodes/types.js";
 
 /* ------------------------------------------------------------------------- */
@@ -94,11 +95,28 @@ export function assertAuraCustomMaterialSpec(spec: unknown, owner = "material.cu
   }
   const uniforms = spec.uniforms ?? {};
   if (!isRecord(uniforms)) invalidSpec(owner, "spec.uniforms must be a record of uniform specs");
+  const loweredOwners = new Map<string, string>();
   for (const [name, uniform] of Object.entries(uniforms)) {
     if (!/^[A-Za-z_]\w*$/.test(name)) invalidSpec(owner, `uniform name "${name}" is not a valid identifier`);
     if (RESERVED_UNIFORM_NAMES.has(name)) {
       invalidSpec(owner, `uniform name "${name}" is reserved for a generated built-in`);
     }
+    // The authored name is lowered to `u_<name>`, so `time` becomes the
+    // prelude's own `u_time` and would fail GLSL compile with a redefinition.
+    const lowered = name.startsWith("u_") ? name : `u_${name}`;
+    if (builtinLoweredUniformNames().has(lowered)) {
+      invalidSpec(
+        owner,
+        `uniform "${name}" lowers to "${lowered}", which collides with a generated built-in declaration ` +
+          `(built-ins: ${[...builtinLoweredUniformNames()].join(", ")}; reserved authored names: ${[...RESERVED_UNIFORM_NAMES].join(", ")}). ` +
+          `Rename it, for example "my${name.charAt(0).toUpperCase()}${name.slice(1)}"`
+      );
+    }
+    const previous = loweredOwners.get(lowered);
+    if (previous !== undefined) {
+      invalidSpec(owner, `uniforms "${previous}" and "${name}" both lower to "${lowered}"; rename one`);
+    }
+    loweredOwners.set(lowered, name);
     const type = isRecord(uniform) ? uniform.type : uniform;
     if (typeof type !== "string" || !CUSTOM_UNIFORM_TYPES.includes(type as AuraCustomUniformType)) {
       invalidSpec(owner, `uniform "${name}" has unsupported type ${String(type)} (expected one of ${CUSTOM_UNIFORM_TYPES.join(", ")})`);
@@ -278,6 +296,15 @@ const BUILTIN_DECLS: readonly string[] = [
   "uniform vec2 u_resolution;"
 ];
 
+let builtinLoweredNames: ReadonlySet<string> | undefined;
+/** `u_*` names declared by BUILTIN_DECLS — the single source for the lowered-name collision check. */
+function builtinLoweredUniformNames(): ReadonlySet<string> {
+  builtinLoweredNames ??= new Set(
+    BUILTIN_DECLS.map((decl) => /\b(u_\w+)\s*;/.exec(decl)?.[1]).filter((name): name is string => name !== undefined)
+  );
+  return builtinLoweredNames;
+}
+
 function uniformDeclLines(uniforms: readonly LoweredUniform[]): string[] {
   return uniforms.map((uniform) => `uniform ${uniform.glslType} ${uniform.name};`);
 }
@@ -331,6 +358,34 @@ function vertexPreamble(uniforms: readonly LoweredUniform[], userSource: string)
 
 function fragmentPreamble(uniforms: readonly LoweredUniform[], userSource: string): string {
   return [...BUILTIN_DECLS, ...uniformDeclLines(uniforms), ...aliasLines(uniforms, userSource)].join("\n");
+}
+
+/**
+ * R-23: GLSL1-style `attribute T name;` (three ShaderMaterial source) becomes
+ * `in T name;` so migrated vertex stages compile under `#version 300 es`.
+ */
+function modernizeVertexAttributes(source: string): string {
+  return source.replace(/^([ \t]*)attribute(\s+)/gm, "$1in$2");
+}
+
+/**
+ * R-23: author-declared per-vertex attributes (`in float paintOriginal;`) the
+ * geometry must supply. Engine names (`a_*`) and built-in semantics are
+ * excluded; a missing one fails the draw with a named error instead of
+ * silently reading the zero default.
+ */
+function declaredCustomAttributes(vertexSource: string): readonly string[] {
+  const names = new Set<string>();
+  const pattern = /^[ \t]*(?:in|attribute)\s+(?:(?:lowp|mediump|highp)\s+)?(?:float|vec2|vec3|vec4)\s+([A-Za-z_]\w*)\s*;/gm;
+  for (let match = pattern.exec(vertexSource); match; match = pattern.exec(vertexSource)) {
+    try {
+      assertCustomAttributeName(match[1]!);
+      names.add(match[1]!);
+    } catch {
+      // engine or built-in attribute name: bound by the engine, not required from the author
+    }
+  }
+  return [...names].sort();
 }
 
 const DEFAULT_GLSL_VERTEX = `void main() {
@@ -481,7 +536,8 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     const name = options.name ? `${options.name}-${cacheName}` : cacheName;
     const uniforms = lowerUniforms(spec);
     const includes = bakeIncludes(spec.patch);
-    const vertexSource = spec.glsl.vertex ?? DEFAULT_GLSL_VERTEX;
+    const vertexSource = modernizeVertexAttributes(spec.glsl.vertex ?? DEFAULT_GLSL_VERTEX);
+    const customAttributes = declaredCustomAttributes(vertexSource);
     const glslVertex = injectPreamble(
       adapterPreprocessor.preprocess(vertexSource, { defines: spec.defines ?? {}, includes }).source,
       vertexPreamble(uniforms, vertexSource),
@@ -508,7 +564,8 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
       shaderLibrary: adapterLibraryFor(name),
       sources,
       uniforms,
-      renderState: customRenderState(spec)
+      renderState: customRenderState(spec),
+      requiredAttributes: ["a_position", ...customAttributes]
     });
     this.fogRequested = spec.fog === true;
     publicUniformsByMaterial.set(this, new Map(uniforms.map((uniform) => [uniform.publicName, uniform])));

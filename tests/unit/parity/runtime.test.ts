@@ -9,10 +9,21 @@
 
 import { describe, expect, it } from "vitest";
 import { MockRenderDevice } from "../../../packages/rendering/src/RenderDevice";
+import { Geometry } from "../../../packages/rendering/src/Geometry";
+import { PBRMaterial } from "../../../packages/rendering/src/PBRMaterial";
+import { Texture } from "../../../packages/rendering/src/Texture";
 import { Renderer } from "../../../packages/rendering/src/Renderer";
+import { TextureBinding } from "../../../packages/rendering/src/TextureBinding";
+import { TexturedUnlitMaterial } from "../../../packages/rendering/src/TexturedUnlitMaterial";
+import { UnlitMaterial } from "../../../packages/rendering/src/UnlitMaterial";
+import { createRenderTarget } from "../../../packages/engine/src/public/renderer";
+import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { createProductionParitySurfaces } from "../../../packages/engine/src/agent-api/compiler/paritySurfaces";
+import { multiplyMat4, perspectiveMat4 } from "../../../packages/scene/src";
 import { TemporalHistory } from "../../../packages/rendering/src/TemporalHistory";
 import type { ShaderLibrary } from "../../../packages/rendering/src/ShaderLibrary";
 import {
+  camera,
   cameras,
   Clock,
   createAuraApp,
@@ -368,5 +379,256 @@ describe("parity L7 — LightProbe (AD-16)", () => {
     expect(h.skyColor[0]).toBeGreaterThan(0);
     expect(h.groundColor[1]).toBeGreaterThan(0);
     expect(h.skyColor[0]).not.toBe(h.skyColor[1]); // channel-separated evaluation
+  });
+});
+
+describe("parity L7 — public RenderTarget + render({ target }) (SH-06, R-06)", () => {
+  it("createRenderTarget is a value export that allocates a live device target", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 4, height: 4 });
+    try {
+      expect(typeof createRenderTarget).toBe("function");
+      const target = createRenderTarget(renderer, { width: 16, height: 8, label: "rt-public" });
+      expect(target).toMatchObject({ width: 16, height: 8, label: "rt-public", disposed: false });
+      expect(target.colorTexture.width).toBe(16);
+      expect(renderer.device.getDiagnostics().renderTargets).toBe(1);
+      expect(createRenderTarget(renderer, { width: 2, height: 2 }).label).toBe("engine-render-target");
+      // The device owns validation; the factory must not swallow it.
+      expect(() => createRenderTarget(renderer, { width: 0, height: 4 })).toThrowError(/positive integers/);
+    } finally {
+      renderer.dispose();
+    }
+  });
+
+  it("render({ source, target }) draws at the target's size and restores the viewport", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 4, height: 4, clearColor: [0, 0, 0, 1] });
+    try {
+      const device = renderer.device as MockRenderDevice;
+      const bound: Array<string | null> = [];
+      const setRenderTarget = device.setRenderTarget.bind(device);
+      device.setRenderTarget = (next) => {
+        bound.push(next?.label ?? null);
+        setRenderTarget(next);
+      };
+      const target = createRenderTarget(renderer, { width: 16, height: 16, label: "rt-offscreen" });
+      const diagnostics = renderer.render({
+        source: { renderItems: [{ geometry: Geometry.triangle(), material: new UnlitMaterial({ color: [0.9, 0.2, 0.1, 1] }), label: "rt-triangle" }] },
+        target
+      });
+      expect(diagnostics.drawCalls).toBe(1);
+      expect(bound).toContain("rt-offscreen");
+      // The frame ran at the target's 16x16, not the renderer's 4x4 …
+      expect(renderer.device.captureState().get("viewport")).toBe("0,0,16,16");
+      // … and the renderer's own size is restored afterwards.
+      const size = renderer as unknown as { width: number; height: number };
+      expect([size.width, size.height]).toEqual([4, 4]);
+      target.dispose();
+      expect(() => renderer.render({ source: { renderItems: [] }, target })).toThrowError(/live render target/);
+    } finally {
+      renderer.dispose();
+    }
+  });
+
+  it("the target's colorTexture binds as a material map on a later frame", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, clearColor: [0, 0, 0, 1] });
+    try {
+      const target = createRenderTarget(renderer, { width: 16, height: 16, label: "rt-as-map" });
+      renderer.render({
+        source: { renderItems: [{ geometry: Geometry.triangle(), material: new UnlitMaterial({ color: [0, 1, 0, 1] }), label: "rt-source" }] },
+        target
+      });
+      const device = renderer.device as MockRenderDevice;
+      device.drawCommands.length = 0;
+
+      renderer.render({
+        renderItems: [{
+          geometry: Geometry.texturedCube(1),
+          material: new TexturedUnlitMaterial({ texture: target.colorTexture }),
+          label: "rt-consumer"
+        }]
+      });
+      const binding = device.drawCommands.find((c) => c.label === "rt-consumer")?.uniforms?.get("u_baseColorTexture");
+      expect(binding).toBeInstanceOf(TextureBinding);
+      expect((binding as TextureBinding).texture).toBe(target.colorTexture);
+      expect(renderer.device.captureState().get("renderTarget") ?? null).toBeNull();
+    } finally {
+      renderer.dispose();
+    }
+  });
+});
+
+describe("parity L7 — camera layer mask hides non-intersecting nodes (SR-04, R-08)", () => {
+  const identity = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  const item = (label: string, layerMask: number) => ({
+    geometry: Geometry.triangle(),
+    material: new UnlitMaterial({ color: [1, 1, 1, 1] }),
+    label,
+    layerMask
+  });
+
+  it("a CameraLike layerMask drops items whose layers do not intersect it from the frame", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8 });
+    try {
+      const device = renderer.device as MockRenderDevice;
+      const source = { renderItems: [item("on-layer-0", 0b01), item("on-layer-1", 0b10), item("on-both", 0b11)], frustumCulling: false };
+
+      renderer.render(source, { viewProjectionMatrix: identity });
+      expect(device.drawCommands.map((c) => c.label).sort()).toEqual(["on-both", "on-layer-0", "on-layer-1"]);
+
+      device.drawCommands.length = 0;
+      renderer.render(source, { viewProjectionMatrix: identity, layerMask: 0b10 });
+      expect(device.drawCommands.map((c) => c.label).sort()).toEqual(["on-both", "on-layer-1"]);
+
+      device.drawCommands.length = 0;
+      renderer.render(source, { viewProjectionMatrix: identity, layerMask: 0b100 });
+      expect(device.drawCommands).toHaveLength(0);
+    } finally {
+      renderer.dispose();
+    }
+  });
+
+  it("camera.perspective({ layers }) authors the mask on the camera spec", () => {
+    expect(camera.perspective({ layers: 0b10 }).layers).toBe(0b10);
+    expect("layers" in camera.perspective({})).toBe(false);
+  });
+});
+
+describe("parity L7 — cube-camera reflection reaches the shader (SC-01, R-08)", () => {
+  const faces = ["px", "nx", "py", "ny", "pz", "nz"] as const;
+  const cubeBinding = () =>
+    new TextureBinding({
+      name: "u_environmentCubeMapTexture",
+      expectedDimension: "cube",
+      texture: new Texture({
+        width: 2,
+        height: 2,
+        dimension: "cube",
+        cubeFaces: faces.map((face) => ({ face, mipLevels: [{ width: 2, height: 2, data: new Uint8Array(16).fill(255) }] }))
+      })
+    });
+  // What the app hands the renderer for a scene with no authored environment map:
+  // explicit zero sampled-environment knobs (compiler/environment.ts).
+  const sceneWithoutSampledEnvironment = { color: [1, 1, 1], intensity: 0, environmentMapIntensity: 0, environmentMapSpecularIntensity: 0 };
+  const draw = async (environmentCube: TextureBinding | undefined, environmentLighting: Record<string, unknown>) => {
+    const renderer = await Renderer.create({
+      backend: "mock",
+      width: 8,
+      height: 8,
+      qrFlags: resolveQrFlags({ options: ["lighting"] })
+    });
+    try {
+      renderer.render({
+        renderItems: [{
+          geometry: Geometry.litCube(1),
+          material: new PBRMaterial({ name: "reflector" }),
+          label: "reflector",
+          modelMatrix: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -3, 1]),
+          ...(environmentCube ? { environmentCube } : {})
+        }],
+        frustumCulling: false,
+        environmentLighting: environmentLighting as never
+      });
+      return (renderer.device as MockRenderDevice).drawCommands[0]!.uniforms!;
+    } finally {
+      renderer.dispose();
+    }
+  };
+
+  it("an item cube reflects at three's envMapIntensity default when the scene has no sampled environment", async () => {
+    const withCube = await draw(cubeBinding(), sceneWithoutSampledEnvironment);
+    expect(withCube.get("u_environmentCubeMap")).toBeInstanceOf(TextureBinding);
+    expect(withCube.get("u_environmentMapIntensity") as number).toBeCloseTo(1, 6);
+
+    // Control: the same scene without a cube-camera binding keeps its zero knobs.
+    const withoutCube = await draw(undefined, sceneWithoutSampledEnvironment);
+    expect(withoutCube.get("u_environmentMapIntensity") as number).toBe(0);
+  });
+
+  it("a cube-camera binding ignores the scene knobs even when the scene has a sampled environment", async () => {
+    const scenery = { ...sceneWithoutSampledEnvironment, environmentCubeMapTexture: cubeBinding(), environmentMapIntensity: 0, environmentMapSpecularIntensity: 0 };
+    const renderer = await Renderer.create({ backend: "mock", width: 8, height: 8, qrFlags: resolveQrFlags({ options: ["lighting"] }) });
+    try {
+      const item = (cubeCameraEnvMap?: string) => ({
+        geometry: Geometry.litCube(1),
+        material: new PBRMaterial({ name: "reflector" }),
+        label: "reflector",
+        modelMatrix: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -3, 1]),
+        environmentCube: cubeBinding(),
+        ...(cubeCameraEnvMap ? { cubeCameraEnvMap } : {})
+      });
+      const run = (cubeCameraEnvMap?: string): number => {
+        renderer.render({ renderItems: [item(cubeCameraEnvMap)], frustumCulling: false, environmentLighting: scenery as never });
+        const commands = (renderer.device as MockRenderDevice).drawCommands.filter((command) => command.label === "reflector");
+        return commands[commands.length - 1]!.uniforms!.get("u_environmentMapIntensity") as number;
+      };
+      expect(run("env")).toBeCloseTo(1, 6);
+      // A non-cube-camera per-draw cube (probe) still follows the authored scene knob.
+      expect(run()).toBe(0);
+    } finally {
+      renderer.dispose();
+    }
+  });
+
+  it("an authored sampled environment keeps its own knobs under an item cube", async () => {
+    const authored = await draw(cubeBinding(), {
+      ...sceneWithoutSampledEnvironment,
+      environmentMapTexture: cubeBinding(),
+      environmentMapIntensity: 0.3,
+      environmentMapSpecularIntensity: 0.4
+    });
+    expect(authored.get("u_environmentMapIntensity") as number).toBeCloseTo(0.3, 6);
+  });
+
+  it("the app's static-batching source keeps the cube binding on a cube-camera item (SC-01)", async () => {
+    const renderer = await Renderer.create({
+      backend: "mock",
+      width: 64,
+      height: 64,
+      qrFlags: resolveQrFlags({ options: ["lighting"] })
+    });
+    try {
+      const warnings: string[] = [];
+      const surfaces = createProductionParitySurfaces(renderer, (message) => warnings.push(message));
+      const snapshot = scene()
+        .camera(camera.perspective({ position: [0, 0, 6], target: [0, 0, 0], fov: 40 }))
+        .add(cameras.cube({ name: "env", resolution: 32, position: [0, 0, 0] }))
+        .add(primitives.sphere({ name: "ball" }))
+        .toJSON();
+      const items = [{
+        geometry: Geometry.litCube(1),
+        material: new PBRMaterial({ name: "ball" }),
+        label: "ball",
+        cubeCameraEnvMap: "env",
+        modelMatrix: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]),
+        includeInAutoFrame: false
+      }];
+      // `staticBatching: true` + `frustumCulling: true` is exactly what createProductionRuntimeRendererInput submits.
+      const source = surfaces.prepare(
+        {
+          collectRenderItems: () => items,
+          cameraPolicy: "require",
+          staticBatching: true,
+          frustumCulling: true,
+          environmentLighting: sceneWithoutSampledEnvironment as never
+        },
+        snapshot as never,
+        undefined,
+        0,
+        64 / 64
+      );
+      const viewProjection = Float32Array.from(multiplyMat4(
+        perspectiveMat4((Math.PI * 40) / 180, 1, 0.05, 100),
+        new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, -6, 1]) as never
+      ));
+      const device = renderer.device as MockRenderDevice;
+      device.drawCommands.length = 0;
+      renderer.render(source, { viewProjectionMatrix: viewProjection });
+
+      expect(warnings).toEqual([]);
+      const ball = device.drawCommands.find((command) => command.label?.includes("ball"))!.uniforms!;
+      expect(ball.get("u_environmentCubeMap")).toBeInstanceOf(TextureBinding);
+      expect(ball.get("u_environmentMapIntensity") as number).toBeCloseTo(1, 6);
+    } finally {
+      renderer.dispose();
+    }
   });
 });

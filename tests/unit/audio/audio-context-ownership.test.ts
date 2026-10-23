@@ -22,6 +22,26 @@ const LEGITIMATE_CONTEXT_OWNERS: Readonly<Record<string, string>> = {
     "THE owner. Every other consumer receives a context from here or is handed one explicitly; `createContext` exists so a caller can inject its own rather than construct a second."
 };
 
+/**
+ * Files that mention the construct as text but never construct a context. The codemod rewrites
+ * `new AudioContext(` in user source, so the pattern appears in its comment and report strings.
+ */
+const REFERENCE_ONLY_FILES: Readonly<Record<string, string>> = {
+  "packages/aura3d-cli/src/commands/prd09/codemods/audio-wrapper.ts":
+    "Codemod that rewrites user source; it names `new AudioContext(` only in a doc comment and a report-row string."
+};
+
+/** True when every matching line is a comment line or the match sits inside a quoted string. */
+function isTextOnlyReference(source: string): boolean {
+  return source.split("\n").every((line) => {
+    if (!CONSTRUCT_PATTERN.test(line)) return true;
+    const trimmed = line.trim();
+    if (trimmed.startsWith("*") || trimmed.startsWith("//") || trimmed.startsWith("/*")) return true;
+    const quoted = /(["'`])(?:(?!\1).)*?(?:new\s+AudioContext\s*\(|new\s+AudioCtor\s*\(|webkitAudioContext)(?:(?!\1).)*?\1/;
+    return quoted.test(line) && !CONSTRUCT_PATTERN.test(line.replace(quoted, ""));
+  });
+}
+
 function walk(directory: string, out: string[] = []): string[] {
   for (const entry of readdirSync(directory)) {
     if (entry === "node_modules" || entry === "dist" || entry === "tests") continue;
@@ -39,8 +59,11 @@ describe("AudioContext ownership (WS-3.2)", () => {
       const directory = join(ROOT, root);
       for (const file of walk(directory)) {
         const relative = file.slice(ROOT.length + 1);
-        if (!CONSTRUCT_PATTERN.test(readFileSync(file, "utf8"))) continue;
-        if (LEGITIMATE_CONTEXT_OWNERS[relative] === undefined) offenders.push(relative);
+        const source = readFileSync(file, "utf8");
+        if (!CONSTRUCT_PATTERN.test(source)) continue;
+        if (LEGITIMATE_CONTEXT_OWNERS[relative] !== undefined) continue;
+        if (REFERENCE_ONLY_FILES[relative] !== undefined && isTextOnlyReference(source)) continue;
+        offenders.push(relative);
       }
     }
     expect(
@@ -57,8 +80,16 @@ describe("AudioContext ownership (WS-3.2)", () => {
     }
   });
 
+  it("reference-only files still only mention the construct as text", () => {
+    for (const [relative, justification] of Object.entries(REFERENCE_ONLY_FILES)) {
+      const source = readFileSync(join(ROOT, relative), "utf8");
+      expect(isTextOnlyReference(source), `${relative} now constructs an AudioContext; route it through AudioContextManager`).toBe(true);
+      expect(justification.length, `${relative} needs a real justification`).toBeGreaterThan(40);
+    }
+  });
+
   it("keeps Aura Clash on the shared browser-context owner", () => {
-    const source = readFileSync(join(ROOT, "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"), "utf8");
+    const source = readFileSync(join(ROOT, "apps/aura-clash-showcase/src/legacy/playable/AuraClashArenaApp.ts"), "utf8");
     // invariant: source must keep `browserContext: true` — only enumerated owners construct an AudioContext
     expect(source).toContain("browserContext: true");
     expect(source).not.toMatch(CONSTRUCT_PATTERN);

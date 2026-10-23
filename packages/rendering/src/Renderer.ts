@@ -267,6 +267,37 @@ export interface RendererInput {
    * target's own dimensions; the viewport is restored afterwards.
    */
   readonly target?: RenderTarget;
+  /**
+   * threejs-parity L7/SC-01: raster viewport in target pixels (three's
+   * `setViewport`; origin bottom-left). Defaults to the whole target.
+   */
+  readonly viewport?: RendererRect;
+  /** threejs-parity L7/SC-01: scissor rect (three's `setScissor` + `setScissorTest(true)`); defaults to `viewport` when `viewport` is set. */
+  readonly scissor?: RendererRect;
+  /**
+   * threejs-parity L7/SC-01: three's `ArrayCamera` / `StereoCamera` — the scene
+   * renders once per view into its viewport of the same target. Also read
+   * from `source.views`. The first view clears the whole target; later views
+   * keep earlier pixels (and depth), so overlapping viewports share depth.
+   * Not supported with postprocess (`VIEWPORT_POSTPROCESS_UNSUPPORTED`).
+   */
+  readonly views?: readonly RendererView[];
+}
+
+/** Pixel rect, origin bottom-left (three/WebGL convention); WebGPU converts internally. */
+export interface RendererRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface RendererView {
+  readonly camera: CameraLike;
+  readonly viewport: RendererRect;
+  readonly scissor?: RendererRect;
+  /** World-space eye position for this view's specular/lighting terms. */
+  readonly cameraPosition?: readonly [number, number, number];
 }
 
 export type RendererCameraPolicy = "identity" | "auto-frame" | "require";
@@ -382,6 +413,8 @@ export interface CameraLike {
   readonly projectionMatrix?: Float32Array | readonly number[];
   readonly viewMatrix?: Float32Array | readonly number[];
   readonly viewProjectionMatrix?: Float32Array | readonly number[];
+  /** threejs-parity SR-04: three's `camera.layers` — nodes whose layers do not intersect this mask are absent from the frame. */
+  readonly layerMask?: number;
   resize?(width: number, height: number): void;
   updateCameraMatrices?(): void;
 }
@@ -890,9 +923,64 @@ export class Renderer {
   render(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
     // T0-28: ambient `rendererQrFlags()` readers (Lighting, Background, post…)
     // see this renderer's flags for the duration of the synchronous frame.
-    return withRendererQrFlags(this.device, () =>
-      this.adoptExplicitTargetSize(normalizeRendererInput(sourceOrInput, camera).source, () => this.renderFrame(sourceOrInput, camera))
-    );
+    const views = collectRendererViews(sourceOrInput);
+    if (views) {
+      let last!: RenderDeviceDiagnostics;
+      views.forEach((view, index) => {
+        const viewInput = viewFrameInput(sourceOrInput, camera, view);
+        this.pendingViewState = { viewport: view.viewport, scissor: view.scissor ?? view.viewport, skipClear: index > 0 };
+        try {
+          last = withRendererQrFlags(this.device, () => this.adoptExplicitTargetSize(viewInput.source, () => this.renderFrame(viewInput)));
+        } finally {
+          this.pendingViewState = null;
+        }
+      });
+      return last;
+    }
+    this.pendingViewState = collectSingleViewState(sourceOrInput);
+    try {
+      return withRendererQrFlags(this.device, () =>
+        this.adoptExplicitTargetSize(normalizeRendererInput(sourceOrInput, camera).source, () => this.renderFrame(sourceOrInput, camera))
+      );
+    } finally {
+      this.pendingViewState = null;
+    }
+  }
+
+  /** SC-01: viewport/scissor requested for the frame about to bind its main target; consumed by `clearAndApplyView`. */
+  private pendingViewState: PendingViewState | null = null;
+
+  private clearAndApplyView(clearColor: readonly [number, number, number, number]): void {
+    const state = this.pendingViewState;
+    this.pendingViewState = null;
+    if (!state) {
+      this.device.clear(clearColor);
+      return;
+    }
+    if (!this.device.setViewport || !this.device.setScissor || !this.device.setScissorTest) {
+      throw new RenderDeviceError("This render device does not support viewport/scissor rendering.", "VIEWPORT_UNSUPPORTED", { backend: this.device.kind });
+    }
+    // The clear runs before the viewport/scissor apply so it covers the whole
+    // target (a WebGPU clear is a full-attachment load op and cannot be scissored).
+    if (!state.skipClear) this.device.clear(clearColor);
+    validateViewRect("viewport", state.viewport, this.width, this.height);
+    this.device.setViewport(state.viewport.x, state.viewport.y, state.viewport.width, state.viewport.height);
+    if (state.scissor) {
+      validateViewRect("scissor", state.scissor, this.width, this.height);
+      this.device.setScissor(state.scissor.x, state.scissor.y, state.scissor.width, state.scissor.height);
+      this.device.setScissorTest(true);
+    }
+  }
+
+  private assertViewsSupported(postprocess: unknown): void {
+    if (this.pendingViewState && postprocess) {
+      this.pendingViewState = null;
+      throw new RenderDeviceError(
+        "Viewport/scissor views (ArrayCamera / StereoCamera) cannot be combined with postprocess; render the views without effects.",
+        "VIEWPORT_POSTPROCESS_UNSUPPORTED",
+        { backend: this.device.kind }
+      );
+    }
   }
 
   private renderFrame(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RenderDeviceDiagnostics {
@@ -916,7 +1004,7 @@ export class Renderer {
       throw new RenderDeviceError("RenderSource requires an explicit camera but none was supplied or found in the scene.", "CAMERA_REQUIRED");
     }
     let cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
-    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags().on("A3D_QR_LIGHTING"));
+    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags().on("A3D_QR_LIGHTING"), resolvedCamera?.layerMask);
     const collectionDiagnostics = collectedItems.diagnostics;
     let items = collectedItems.items;
     const lights = collectRenderLights(source);
@@ -954,6 +1042,7 @@ export class Renderer {
       }
     }
     let postprocess = collectPostprocess(source);
+    this.assertViewsSupported(postprocess);
     if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
     const ownedTargets: RenderTarget[] = [];
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
@@ -1072,7 +1161,7 @@ export class Renderer {
       } else {
         this.device.setRenderTarget(explicitRenderTarget ?? null);
       }
-      this.device.clear(qrOutput && !postprocess ? this.outputClearColor ?? this.clearColor : this.clearColor);
+      this.clearAndApplyView(qrOutput && !postprocess ? this.outputClearColor ?? this.clearColor : this.clearColor);
       if (environmentBackground) {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
@@ -1253,11 +1342,31 @@ export class Renderer {
   renderAsync(input: RendererInput): Promise<RenderDeviceDiagnostics>;
   renderAsync(source: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics>;
   async renderAsync(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
+    const views = collectRendererViews(sourceOrInput);
+    if (views) {
+      let last!: RenderDeviceDiagnostics;
+      for (let index = 0; index < views.length; index += 1) {
+        const view = views[index]!;
+        const viewInput = viewFrameInput(sourceOrInput, camera, view);
+        this.pendingViewState = { viewport: view.viewport, scissor: view.scissor ?? view.viewport, skipClear: index > 0 };
+        try {
+          last = await this.adoptExplicitTargetSizeAsync(viewInput.source, () => this.renderAsyncFrame(viewInput));
+        } finally {
+          this.pendingViewState = null;
+        }
+      }
+      return last;
+    }
+    this.pendingViewState = collectSingleViewState(sourceOrInput);
     // threejs-parity L7/SH-06: `{ target }` frames run at the target's size.
-    return this.adoptExplicitTargetSizeAsync(
-      normalizeRendererInput(sourceOrInput, camera).source,
-      () => this.renderAsyncFrame(sourceOrInput, camera)
-    );
+    try {
+      return await this.adoptExplicitTargetSizeAsync(
+        normalizeRendererInput(sourceOrInput, camera).source,
+        () => this.renderAsyncFrame(sourceOrInput, camera)
+      );
+    } finally {
+      this.pendingViewState = null;
+    }
   }
 
   private async renderAsyncFrame(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): Promise<RenderDeviceDiagnostics> {
@@ -1280,7 +1389,7 @@ export class Renderer {
       throw new RenderDeviceError("RenderSource requires an explicit camera but none was supplied or found in the scene.", "CAMERA_REQUIRED");
     }
     let cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
-    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags().on("A3D_QR_LIGHTING"));
+    const collectedItems = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera, rendererQrFlags().on("A3D_QR_LIGHTING"), resolvedCamera?.layerMask);
     const collectionDiagnostics = collectedItems.diagnostics;
     let items = collectedItems.items;
     const lights = collectRenderLights(source);
@@ -1321,6 +1430,7 @@ export class Renderer {
       }
     }
     let postprocess = collectPostprocess(source);
+    this.assertViewsSupported(postprocess);
     if (!postprocess?.temporal || (!postprocess.motionBlur && !postprocess.taa)) { this.temporalHistory.reset(); this.lastTemporalCameraPosition = undefined; }
     const ownedTargets: RenderTarget[] = [];
     const ownedShadowPasses: Array<{ dispose(): void }> = [];
@@ -1439,7 +1549,7 @@ export class Renderer {
       } else {
         this.device.setRenderTarget(explicitRenderTarget ?? null);
       }
-      this.device.clear(qrOutput && !postprocess ? this.outputClearColor ?? this.clearColor : this.clearColor);
+      this.clearAndApplyView(qrOutput && !postprocess ? this.outputClearColor ?? this.clearColor : this.clearColor);
       if (environmentBackground) {
         this.graph.addPass(new EnvironmentBackgroundPass({
           ...environmentBackground,
@@ -2107,6 +2217,60 @@ function normalizeRendererInput(
   }
   return { source: sourceOrInput, ...(camera ? { camera } : {}) };
 }
+interface PendingViewState {
+  readonly viewport: RendererRect;
+  readonly scissor: RendererRect | undefined;
+  readonly skipClear: boolean;
+}
+function collectRendererViews(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene): readonly RendererView[] | undefined {
+  if (sourceOrInput instanceof Scene || isIterable(sourceOrInput)) return undefined;
+  const views = isRendererInput(sourceOrInput)
+    ? sourceOrInput.views ?? (sourceOrInput.source instanceof Scene || isIterable(sourceOrInput.source) ? undefined : sourceOrInput.source.views)
+    : sourceOrInput.views;
+  if (!views) return undefined;
+  if (views.length === 0) {
+    throw new RenderDeviceError("Renderer views must contain at least one view.", "INVALID_VIEWPORT", { views: 0 });
+  }
+  return views;
+}
+function collectSingleViewState(sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene): PendingViewState | null {
+  if (sourceOrInput instanceof Scene || isIterable(sourceOrInput) || !isRendererInput(sourceOrInput)) return null;
+  if (!sourceOrInput.viewport && !sourceOrInput.scissor) return null;
+  const viewport = sourceOrInput.viewport;
+  const scissor = sourceOrInput.scissor ?? viewport;
+  return {
+    viewport: viewport ?? scissor!,
+    scissor,
+    skipClear: false
+  };
+}
+function viewFrameInput(
+  sourceOrInput: RendererInput | RenderSource | Iterable<RenderItem> | Scene,
+  camera: CameraLike | undefined,
+  view: RendererView
+): RendererInput {
+  const normalized = normalizeRendererInput(sourceOrInput, camera);
+  const base: RenderSource = normalized.source instanceof Scene
+    ? { scene: normalized.source }
+    : isIterable(normalized.source) ? { renderItems: normalized.source } : normalized.source;
+  const { views: _views, ...rest } = base;
+  return {
+    source: { ...rest, ...(view.cameraPosition ? { cameraPosition: view.cameraPosition } : {}) },
+    camera: view.camera
+  };
+}
+function validateViewRect(label: "viewport" | "scissor", rect: RendererRect, targetWidth: number, targetHeight: number): void {
+  const values = [rect.x, rect.y, rect.width, rect.height];
+  if (values.some((value) => !Number.isFinite(value))) {
+    throw new RenderDeviceError(`Renderer ${label} values must be finite.`, "INVALID_VIEWPORT", { label, rect });
+  }
+  if (rect.width <= 0 || rect.height <= 0) {
+    throw new RenderDeviceError(`Renderer ${label} dimensions must be positive.`, "INVALID_VIEWPORT", { label, rect });
+  }
+  if (rect.x < 0 || rect.y < 0 || rect.x + rect.width > targetWidth || rect.y + rect.height > targetHeight) {
+    throw new RenderDeviceError(`Renderer ${label} must lie inside the ${targetWidth}x${targetHeight} target.`, "INVALID_VIEWPORT", { label, rect, targetWidth, targetHeight });
+  }
+}
 function isRendererInput(value: RendererInput | RenderSource | Iterable<RenderItem> | Scene): value is RendererInput {
   return !(value instanceof Scene) && !isIterable(value) && isRecord(value) && "source" in value;
 }
@@ -2155,7 +2319,8 @@ function collectRenderItemsWithDiagnostics(
   source: RenderSource | Iterable<RenderItem> | Scene,
   cameraViewProjection?: Mat4,
   camera?: Camera,
-  keepCulledShadowCasters = false
+  keepCulledShadowCasters = false,
+  cameraLayerMask?: number
 ): { readonly items: readonly RenderItem[]; readonly diagnostics: RenderCollectionDiagnostics; readonly culledShadowCasters: readonly RenderItem[]; readonly cullingFrustum?: Frustum } {
   const diagnostics = createRenderCollectionDiagnostics();
   // 02-S5 (A3D_QR_LIGHTING): frustum-culled items that still cast. A caster
@@ -2169,14 +2334,14 @@ function collectRenderItemsWithDiagnostics(
     return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [] };
   }
   if (source instanceof Scene) {
-    const items = collectSceneRenderItems(source, {}, cameraViewProjection, camera, diagnostics, culledShadowCasters);
+    const items = collectSceneRenderItems(source, {}, cameraViewProjection, camera, diagnostics, culledShadowCasters, cameraLayerMask);
     return { items, diagnostics, culledShadowCasters: culledShadowCasters ?? [], ...(camera ? { cullingFrustum: camera.frustum } : {}) };
   }
   const items: RenderItem[] = [];
   let cullingFrustum: Frustum | undefined;
   if (source.scene) {
     if (source.frustumCulling !== false && camera) cullingFrustum = camera.frustum;
-    items.push(...collectSceneRenderItems(source.scene, source, cameraViewProjection, source.frustumCulling === false ? undefined : camera, diagnostics, culledShadowCasters));
+    items.push(...collectSceneRenderItems(source.scene, source, cameraViewProjection, source.frustumCulling === false ? undefined : camera, diagnostics, culledShadowCasters, cameraLayerMask));
   }
   const explicitItems: RenderItem[] = [];
   if (source.collectRenderItems) {
@@ -2188,7 +2353,7 @@ function collectRenderItemsWithDiagnostics(
   if (explicitItems.length > 0) {
     const explicitFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
     cullingFrustum ??= explicitFrustum;
-    const visibleItems = cullExplicitRenderItems(explicitItems, explicitFrustum, diagnostics, culledShadowCasters, camera?.layerMask);
+    const visibleItems = cullExplicitRenderItems(explicitItems, explicitFrustum, diagnostics, culledShadowCasters, cameraLayerMask ?? camera?.layerMask);
     const optimizedItems = applyRendererOwnedStaticBatching(source, applyRendererOwnedStaticMeshConsolidation(source, visibleItems));
     const projectedItems = applyViewProjection(optimizedItems, cameraViewProjection);
     items.push(...projectedItems);
@@ -2201,7 +2366,8 @@ function collectSceneRenderItems(
   cameraViewProjection?: Mat4,
   camera?: Camera,
   diagnostics?: RenderCollectionDiagnostics,
-  culledShadowCasters?: RenderItem[]
+  culledShadowCasters?: RenderItem[],
+  explicitCameraLayerMask?: number
 ): readonly RenderItem[] {
   scene.updateWorldTransforms();
   const renderables = scene.collectRenderables();
@@ -2214,7 +2380,7 @@ function collectSceneRenderItems(
     });
   }
   const items: RenderItem[] = [];
-  const cameraLayerMask = camera?.layerMask;
+  const cameraLayerMask = explicitCameraLayerMask ?? camera?.layerMask;
   for (const { node, renderable } of renderables) {
     // threejs-parity L7/SG-10: three's camera.layers test — a node whose
     // layers do not intersect the camera mask is absent from the frame.
@@ -2641,11 +2807,12 @@ function resolveCamera(
   camera?: CameraLike,
   viewport?: { readonly width: number; readonly height: number },
   options: { readonly allowSceneCamera?: boolean } = {}
-): { readonly viewProjectionMatrix: Mat4; readonly viewMatrix?: Mat4; readonly projectionMatrix?: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number] } | undefined {
+): { readonly viewProjectionMatrix: Mat4; readonly viewMatrix?: Mat4; readonly projectionMatrix?: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number]; readonly layerMask?: number } | undefined {
   const resolved = camera ?? (options.allowSceneCamera === false ? undefined : resolveSceneCamera(source));
   if (!resolved) {
     return undefined;
   }
+  const resolvedLayerMask = typeof resolved.layerMask === "number" ? { layerMask: resolved.layerMask } : {};
   const resize = maybeCameraResize(resolved);
   if (viewport && resize) {
     resize(viewport.width, viewport.height);
@@ -2655,6 +2822,7 @@ function resolveCamera(
     const viewMatrix = resolved.viewMatrix ? toMat4(resolved.viewMatrix, "viewMatrix") : undefined;
     return {
       viewProjectionMatrix: toMat4(resolved.viewProjectionMatrix, "viewProjectionMatrix"),
+      ...resolvedLayerMask,
       ...(viewMatrix ? { viewMatrix } : {}),
       // threejs-parity SH-02: custom-shader `u_projectionMatrix` source.
       ...(resolved.projectionMatrix ? { projectionMatrix: toMat4(resolved.projectionMatrix, "projectionMatrix") } : {}),
@@ -2670,6 +2838,7 @@ function resolveCamera(
     const projectionMatrix = toMat4(resolved.projectionMatrix, "projectionMatrix");
     return {
       viewProjectionMatrix: multiplyMat4(projectionMatrix, viewMatrix),
+      ...resolvedLayerMask,
       viewMatrix,
       projectionMatrix,
       ...(resolved instanceof Camera

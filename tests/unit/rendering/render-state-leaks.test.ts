@@ -1159,6 +1159,11 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     useProgram(program: FakeProgram) {
       state.currentProgram = program;
     },
+    // QR-01 T0-02 binds UBO blocks at link; the fake reports "no such block" (GL_INVALID_INDEX).
+    getUniformBlockIndex() {
+      return 0xffffffff;
+    },
+    uniformBlockBinding() {},
     getUniformLocation(program: FakeProgram, name: string) {
       return program.uniforms.includes(name.replace(/\[0\]$/, "")) ? { name: name.replace(/\[0\]$/, "") } : null;
     },
@@ -1220,3 +1225,151 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
 function parseNames(source: string, pattern: RegExp): string[] {
   return [...source.matchAll(pattern)].map((match) => match[1]!).filter((name, index, names) => names.indexOf(name) === index);
 }
+
+describe("WebGL2 viewport / scissor / external framebuffer (SC-01, XR)", () => {
+  const makeDevice = () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    return { device: WebGL2Device.create({ canvas }), gl };
+  };
+  const drawTriangle = (device: WebGL2Device): void => {
+    const geometry = Geometry.triangle();
+    const vertexBuffer = geometry.vertexBuffer.upload(device);
+    const shader = device.createShaderProgram({
+      label: "viewport-draw",
+      marker: "@aura3d-test:viewport-draw",
+      vertex: "#version 300 es\n// @aura3d-test:viewport-draw\nin vec3 a_position;\nvoid main(){gl_Position=vec4(a_position,1.0);}",
+      fragment: "#version 300 es\n// @aura3d-test:viewport-draw\nprecision mediump float;\nout vec4 o;\nvoid main(){o=vec4(1.0);}"
+    });
+    device.draw({ topology: "triangles", vertexBuffer, vertexFormat: geometry.vertexBuffer.format, vertexCount: geometry.vertexBuffer.vertexCount, shader });
+  };
+
+  it("applies a frame-scoped viewport and scissor to GL and resets both at beginFrame", () => {
+    const { device, gl } = makeDevice();
+    device.beginFrame(16, 8);
+    device.setViewport(2, 3, 6, 4);
+    expect(gl.state.viewport).toEqual([2, 3, 6, 4]);
+    device.setScissor(1, 1, 3, 3);
+    device.setScissorTest(true);
+    expect(gl.state.enabled.has(gl.SCISSOR_TEST)).toBe(true);
+    expect(gl.state.scissor).toEqual([1, 1, 3, 3]);
+    device.endFrame();
+    device.beginFrame(16, 8);
+    expect(gl.state.viewport).toEqual([0, 0, 16, 8]);
+    expect(gl.state.enabled.has(gl.SCISSOR_TEST)).toBe(false);
+  });
+
+  it("keeps the device-level scissor in force for draws with no per-draw scissor", () => {
+    const { device, gl } = makeDevice();
+    device.beginFrame(16, 8);
+    device.setViewport(4, 0, 8, 8);
+    device.setScissor(4, 0, 8, 8);
+    device.setScissorTest(true);
+    drawTriangle(device);
+    expect(gl.state.enabled.has(gl.SCISSOR_TEST)).toBe(true);
+    expect(gl.state.scissor).toEqual([4, 0, 8, 8]);
+    expect(gl.state.viewport).toEqual([4, 0, 8, 8]);
+    device.setScissorTest(false);
+    drawTriangle(device);
+    expect(gl.state.enabled.has(gl.SCISSOR_TEST)).toBe(false);
+    device.endFrame();
+  });
+
+  it("scopes the override to the target it was set on, restoring it on return", () => {
+    const { device, gl } = makeDevice();
+    const target = device.createRenderTarget({ width: 4, height: 4, label: "shadow-like" });
+    device.beginFrame(16, 8);
+    device.setViewport(2, 2, 8, 4);
+    device.setScissor(2, 2, 8, 4);
+    device.setScissorTest(true);
+    device.setRenderTarget(target);
+    expect(gl.state.viewport).toEqual([0, 0, 4, 4]);
+    expect(gl.state.enabled.has(gl.SCISSOR_TEST)).toBe(false);
+    device.setRenderTarget(null);
+    expect(gl.state.viewport).toEqual([2, 2, 8, 4]);
+    expect(gl.state.enabled.has(gl.SCISSOR_TEST)).toBe(true);
+    device.endFrame();
+  });
+
+  it("a persistent viewport survives beginFrame, stays off render targets, and resetViewport clears it", () => {
+    const { device, gl } = makeDevice();
+    const target = device.createRenderTarget({ width: 4, height: 4, label: "post" });
+    device.beginFrame(16, 8);
+    device.setViewport(1, 1, 4, 4, { persistent: true });
+    expect(gl.state.viewport).toEqual([1, 1, 4, 4]);
+    device.endFrame();
+    device.beginFrame(16, 8);
+    expect(gl.state.viewport).toEqual([1, 1, 4, 4]);
+    device.setRenderTarget(target);
+    expect(gl.state.viewport).toEqual([0, 0, 4, 4]);
+    device.setRenderTarget(null);
+    expect(gl.state.viewport).toEqual([1, 1, 4, 4]);
+    device.resetViewport();
+    expect(gl.state.viewport).toEqual([0, 0, 16, 8]);
+    device.endFrame();
+  });
+
+  it("setExternalFramebuffer redirects canvas rendering to the XR framebuffer until called with null", () => {
+    const { device, gl } = makeDevice();
+    const xrFramebuffer = gl.createFramebuffer();
+    const target = device.createRenderTarget({ width: 4, height: 4, label: "offscreen" });
+    device.setExternalFramebuffer(xrFramebuffer, 32, 24);
+    expect(gl.state.framebuffer).toBe(xrFramebuffer);
+    expect(gl.state.viewport).toEqual([0, 0, 32, 24]);
+    device.beginFrame(16, 8);
+    expect(gl.state.framebuffer).toBe(xrFramebuffer);
+    expect(gl.state.viewport).toEqual([0, 0, 32, 24]);
+    device.setRenderTarget(target);
+    expect(gl.state.framebuffer).not.toBe(xrFramebuffer);
+    device.setRenderTarget(null);
+    expect(gl.state.framebuffer).toBe(xrFramebuffer);
+    device.endFrame();
+    device.setExternalFramebuffer(null, 0, 0);
+    expect(gl.state.framebuffer).toBeNull();
+    device.beginFrame(16, 8);
+    expect(gl.state.framebuffer).toBeNull();
+    expect(gl.state.viewport).toEqual([0, 0, 16, 8]);
+    device.endFrame();
+  });
+
+  it("rejects invalid viewport and external-framebuffer dimensions", () => {
+    const { device, gl } = makeDevice();
+    expect(() => device.setViewport(0, 0, 0, 4)).toThrow();
+    expect(() => device.setExternalFramebuffer(gl.createFramebuffer(), 0, 4)).toThrow();
+    expect(() => device.setScissor(0, 0, -1, 4)).toThrow();
+  });
+
+  it("the present pass binds the external framebuffer and honours the persistent viewport", () => {
+    const { device, gl } = makeDevice();
+    const xrFramebuffer = gl.createFramebuffer();
+    const source = device.createRenderTarget({ width: 640, height: 360, label: "xr-post-source" });
+    device.setExternalFramebuffer(xrFramebuffer, 800, 600);
+    device.setViewport(10, 5, 100, 50, { persistent: true });
+    device.presentLdrPostprocess(source, {
+      passes: [{ name: "tone-mapping", options: { exposure: 1, operator: "aces" } }],
+      toneMappingDefaults: { outputColorSpace: "srgb" }
+    });
+    const toXr = gl.state.fullscreenDraws.filter((draw) => draw.framebuffer === xrFramebuffer);
+    expect(toXr).toHaveLength(1);
+    expect(toXr[0]!.viewport).toEqual([10, 5, 100, 50]);
+    // the persistent viewport is still in force for the next frame after presenting
+    device.beginFrame(800, 600);
+    expect(gl.state.viewport).toEqual([10, 5, 100, 50]);
+    device.endFrame();
+  });
+
+  it("the present pass without a persistent viewport covers the whole output", () => {
+    const { device, gl } = makeDevice();
+    const xrFramebuffer = gl.createFramebuffer();
+    const source = device.createRenderTarget({ width: 640, height: 360, label: "xr-post-source-full" });
+    device.setExternalFramebuffer(xrFramebuffer, 800, 600);
+    device.beginFrame(800, 600);
+    device.endFrame();
+    device.presentLdrPostprocess(source, {
+      passes: [{ name: "tone-mapping", options: { exposure: 1, operator: "aces" } }],
+      toneMappingDefaults: { outputColorSpace: "srgb" }
+    });
+    const toXr = gl.state.fullscreenDraws.filter((draw) => draw.framebuffer === xrFramebuffer);
+    expect(toXr).toHaveLength(1);
+    expect(toXr[0]!.viewport).toEqual([0, 0, 800, 600]);
+  });
+});

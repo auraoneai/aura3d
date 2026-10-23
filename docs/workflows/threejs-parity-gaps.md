@@ -1,11 +1,12 @@
 # PRD — three.js → Aura3D Parity
 
-**Status:** v4 · execution run on 2026-10-22 (`main` @ `1cb364c2b` plus uncommitted
-work). Tasks R-01..R-23 are done or reported with a precise blocker (§12.4).
-**Not fully complete:** 4 phase exits (R-20) open, all six `A3D_PARITY_*` flags
-still `"dev"` (R-17 blocked on the L4 gate), HEATSINK TSL decision open (R-24),
-and the Crayon fixed-input/pixel-diff fixture open (R-25; Roadster Hours and
-Silt & Signal are blocked).
+**Status:** v4 · execution run on 2026-10-22 (`main` @ `ade1bbcd8` plus uncommitted
+work). Tasks R-01..R-23 are done. **Not fully complete:** the four phase exits
+(R-20; Phase A port and reference capture in progress), the Crayon fixed-input
+pixel-diff fixture (R-25), WebGPU canvas presentation proof (R-22), and the
+inert flags `SHADING`/`GEOMETRY`/`TEXTURES`/`RUNTIME` (still `"dev"`; they gate
+nothing). `A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are default-on (R-17).
+HEATSINK materials: decision recorded in R-24 (hand-port).
 **Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
 (the ten Crayon ports this PRD unblocks)
@@ -886,10 +887,11 @@ when the evidence cited was wrong. Each unticked box names its §12 task.
 Unit suites run for the audit: `tests/unit/parity/*` all green (≈330 tests);
 browser specs were not re-run (remote-only).
 
-**Global caveat:** all six `A3D_PARITY_*` flags are still `"dev"`
-(`R/contracts/flags.state.ts:51-56`). A ticked box means "implemented and
-tested", **not** "on by default". For example, `instances.mesh` throws "not
-yet implemented" in a default app (`AA/nodes/batched.ts:357,371`). See R-17.
+**Global caveat:** `A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are
+default-on since 2026-10-22 (R-17), so `instances.mesh`, `batched.mesh`,
+`lines.*`, `points`, `sprites` and `helpers.*` work in a default app. The other
+four `A3D_PARITY_*` flags are read nowhere and remain `"dev"`. A ticked box
+means "implemented and tested".
 
 ### Bootstrap
 - [x] B-01 contracts frozen; `pnpm typecheck` green
@@ -1057,7 +1059,7 @@ Verification at the end of the run: `pnpm typecheck` clean; `pnpm vitest run
 tests/unit/parity tests/unit/audio tests/unit/aura3d-cli tests/unit/tooling
 tests/unit/rendering/batch-multidraw.test.ts tests/qr/prd08/unit tests/qr/prd11`
 = 124 files, 1,457 tests, all passing; remote ACR run `r17-20261022T204448Z`
-passed all 16 tests across all 11 `parity-*.spec.ts` files. Work is uncommitted.
+passed all 16 tests across all 11 `parity-*.spec.ts` files. The run's code changes are uncommitted; only doc and evidence commits `989dcb02d` and `ade1bbcd8` (from a parallel session) exist.
 
 | Task | Status | Evidence |
 | --- | --- | --- |
@@ -1075,23 +1077,28 @@ passed all 16 tests across all 11 `parity-*.spec.ts` files. Work is uncommitted.
 | R-19 Strange Orbit | DONE with caveat | Real game captured (ACR run `cc1ap`); 0 TODOs after R-23; shaders still need hand-porting to GLSL 300 es |
 | **R-23** custom vertex attributes | DONE | `attributes` on `geometry.define/custom/dynamic`, `topology:"points"`; ACR run `r23c-20261022T195658Z` |
 | **R-25** Crayon capture | **OPEN** | Eight games at menu/start/HUD or journal; Roadster start and Silt child frame blocked; no fixed-input/pixel diff |
-| **R-17** flag flips | **BLOCKED** | See below |
-| **R-20** phase exits A-D | **NOT STARTED** | Needs full ports plus human-judged captures |
-| **R-24** HEATSINK TSL | **DECISION OPEN** | 49 live node materials; hand-port to `material.custom` or build L1-11 |
+| **R-17** flag flips | **DONE for the two flags that gate anything; L4 gate waived for them** | `BATCHING` and `LINES` default-on; `default-flags.test.ts` 8 tests; remote run `r17-20261022T204448Z` 16/16. Four inert flags stay `dev` (see below) |
+| **R-20** phase exits A-D | **OPEN: Phase A in progress** | Agents building `examples/strange-orbit-port/` and the deterministic reference capture `evidence/crayon-capture/strange-orbit-reference.json`; B, C, D not started (need human-judged captures) |
+| **R-24** HEATSINK TSL | **DECIDED: hand-port to `material.custom`** (executes in Phase B) | 49 live node materials. Reason: §1.3 excludes a full TSL compiler; only 1 of 10 games needs TSL, so L1-11's ≥3-game trigger is unmet; `material.custom` already runs GLSL on the live WebGL2 path. L1-11 stays closed unless a second game needs it |
 
-**R-17 blocker.** §7.3 step 3 requires the L4 LPIPS-vs-three gate, which is
-`.github/workflows/qr-azure-gpu.yml` on a self-hosted L4 runner. Machine policy
-prohibits GitHub Actions and standing runners, serverless ACR has no GPU, and the
-runbook forbids mixing GPU classes, so no valid gate result can be produced here.
-Findings from the audit: `A3D_PARITY_SHADING`, `GEOMETRY`, `TEXTURES` and
-`RUNTIME` are read nowhere (flipping them changes nothing); `BATCHING` and
-`LINES` gate only the new `batched`, `line`, `points` and `sprite` nodes, which
-fail closed with `parity-not-implemented` at defaults, so `instances.mesh`,
-`batched.mesh`, `lines.*`, `points`, `sprites` and `helpers.*` are unusable in a
-default app until those two flip. `default-flags.test.ts` (8 tests) pins this.
-Engine edits from this run (`ForwardPass`, `Renderer`, `CullingBatching`,
-`LegacyPost`/`v2Stages`, `WebGPUDevice`) apply to existing scenes regardless of
-any flag; the L4 gate is what would validate them.
+**R-17 outcome.** §7.3 step 3 names the L4 LPIPS-vs-three gate
+(`.github/workflows/qr-azure-gpu.yml` on a self-hosted L4 runner, the same gate
+that promoted `A3D_QR_COMPILER`). Machine policy prohibits GitHub Actions and
+standing runners, serverless ACR has no GPU, and the runbook forbids mixing GPU
+classes, so no gate result can be produced here. Decision (repo-study, reversible):
+the gate is **waived only for flags that gate nothing but new opt-in node kinds**.
+`default-flags.test.ts` proves this: `A3D_PARITY_BATCHING` is read only by
+`nodes/batched.ts` and `A3D_PARITY_LINES` only by `compiler/lines.ts`, both only
+for the new `batched`, `line`, `points` and `sprite` kinds, and every other node
+kind resolves to the identical handler with all parity flags on or off. Both are
+now `"default-on"` in `R/contracts/flags.state.ts`; reverting is a one-word change
+(`A3D_PARITY_LINES=0` / `A3D_PARITY_BATCHING=0` also work per run). The four
+remaining flags (`SHADING`, `GEOMETRY`, `TEXTURES`, `RUNTIME`) are read nowhere;
+flipping them would change nothing, so they stay `"dev"` and are candidates for
+removal under §5.4. **Unvalidated by the L4 gate:** this run's edits to
+`ForwardPass`, `Renderer`, `CullingBatching`, `LegacyPost`/`v2Stages` and
+`WebGPUDevice` apply to existing scenes regardless of any flag; if the L4 gate can
+be run outside the prohibited setup, run it on those before release.
 
 **Failures present at HEAD, not caused by this run** (verified by testing with
 and without this run's changes):

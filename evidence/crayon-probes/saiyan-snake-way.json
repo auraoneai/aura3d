@@ -1,12 +1,19 @@
 {
-  "schema": "a3d-crayon-probe/1",
+  "schema": "a3d-crayon-probe/2",
   "game": "saiyan-snake-way",
   "url": "https://app.usecrayon.ai/play/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6",
-  "probedAt": "2026-10-22T05:25:24.159Z",
+  "probedAt": "2026-10-22T18:50:20.626Z",
   "frame": {
     "index": 1,
-    "url": "",
-    "pickReason": "best score 12 — canvas=1 importmap=true threeImport=true __THREE__=string"
+    "url": "about:srcdoc",
+    "framesWithHook": 2,
+    "totalFrames": 2,
+    "waitedMs": 28287,
+    "sceneSettled": true,
+    "clickedStart": null,
+    "clickAttempts": 6,
+    "peakObjects": 3207,
+    "pickReason": "highest hook score (scenes=1 renderers=1 renderCalls=81)"
   },
   "dom": {
     "title": "Play Labs runtime",
@@ -14,58 +21,36 @@
       {
         "w": 966,
         "h": 543,
-        "engine": "three.js r184",
-        "webgl2": true,
-        "webgpu": false
+        "engine": "three.js r184"
       }
     ],
-    "hasImportmap": true,
-    "importmap": "\n    {\n      \"imports\": {\n        \"three\":                       \"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js\",\n        \"three/addons/\":               \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"three/examples/jsm/\":         \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"@dimforge/rapier3d-compat\":   \"https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js\",\n        \"playlabs-boot\":               \"data:text/javascript;base64,aW1wb3J0KmFzIGUgZnJvbSJ0aHJlZSI7aW1wb3J0e3ZveGVsVG9NZXNoIGFzIHQsdGlja1ZveGVscyBhcyBuLHRhZ0Fzc2V0IGFzIG8sY3JlYXRlTW90aW9uUm9vdCBhcyByLHJlbGVhc2VBc3NldCBhcyBhLGRpc3Bvc2VQb29sIGFzIHN9ZnJvbSJwbGF5bGFicy12b3hlbCI7ZXhwb3J0e3QgYXMgdm94ZWxUb01lc2gsbiBhcyB0aWNrVm94ZWxzLG8gYXMgdGFnQXNzZXQsciBhcyBjcmVhdGVNb3Rpb25Sb290LGEgYXMgcmVsZWFzZUFzc2V0LHMgYXMgZGlzcG9zZVBvb2x9O2V4cG9ydCBmdW5jdGlvbiBzYXZlU2xvdChlPSJnYW1lIil7Y29uc3QgdD1gY3JheW9uLXNhdmU6JHtlfWA7bGV0IG49bnVsbDtjb25zdCBvPSgoKT0+e3RyeXtyZXR1cm4gbG9jYWxTdG9yYWdlLnNldEl0ZW0odCsiOnQiLCIxIiksbG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCsiOnQiKSwhMH1jYXRjaHtyZXR1cm4hMX19KSgpO3JldHVybntsb2FkKCl7aWYoIW8pcmV0dXJuIG47dHJ5e2NvbnN0IGU9bG9jYWxTdG9yYWdlLmdldEl0ZW0odCk7cmV0dXJuIGU/SlNPTi5wYXJzZShlKTpudWxsfWNhdGNoe3JldHVybiBufX0sc2F2ZShlKXtpZihuPWUsbyl0cnl7bG9jYWxTdG9yYWdlLnNldEl0ZW0odCxKU09OLnN0cmluZ2lmeShlKSl9Y2F0Y2h7fX0sY2xlYXIoKXtpZihuPW51bGwsbyl0cnl7bG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCl9Y2F0Y2h7fX19fWV4cG9ydCBmdW5jdGlvbiBiZW5kVG9Ib3Jpem9uKGUsdD0yNDAsbj0wKXtjb25zdCBvPWUudXNlckRhdGE7dm9pZCAwIT09by5fX2JlbnRZJiZlLnBvc2l0aW9uLnk9PT1vLl9fYmVudFl8fChvLl9fZmxhdFk9ZS5wb3NpdGlvbi55KTtjb25zdCByPWUucG9zaXRpb24uei1uO28uX19iZW50WT1vLl9fZmxhdFktcipyLygyKnQpLGUucG9zaXRpb24ueT1vLl9fYmVudFl9ZXhwb3J0IGZ1bmN0aW9uIGF1ZGlvUmVhZHkoZSl7Y29uc3QgdD13aW5kb3cuQXVkaW9Db250ZXh0fHx3aW5kb3cud2Via2l0QXVkaW9Db250ZXh0O2lmKCF0KXJldHVybjtsZXQgbj0hMTtjb25zdCBvPSgpPT57aWYoIW4pe249ITA7dHJ5e2NvbnN0IG49bmV3IHQsbz0oKT0+e3RyeXtlKG4pfWNhdGNoKGUpe2NvbnNvbGUud2FybigiW3BsYXlsYWJzXSBhdWRp",
-    "threeGlobal": "184",
-    "threeResources": [
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js",
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/geometries/RoundedBoxGeometry.js",
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.core.min.js",
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/loaders/GLTFLoader.js",
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/utils/SkeletonUtils.js",
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/utils/BufferGeometryUtils.js",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/snakehead.glb",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/goku-v3.glb",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/ui-portrait.jpg",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/ui-cover.jpg",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/ogre-brute.glb",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/ogre-boy.glb",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/ogre-red.glb",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/models/8cbeaf74-b632-4cfb-aec0-ee26ff75d6d6/ogre-boy.glb"
-    ],
-    "scripts": 5
+    "canvasContexts": {
+      "webgl": 0,
+      "webgl2": 2,
+      "webgpu": 0,
+      "2d": 25,
+      "other": 0
+    }
   },
   "module": {
-    "revision": "184",
-    "hasThree": true,
-    "hasComposerProto": true,
-    "hasPassProto": true,
-    "hasWebgpu": false,
-    "hasPostProcessingProto": false,
-    "protoNames": [
-      "Scene",
-      "Object3D",
-      "Mesh",
-      "ShaderMaterial",
-      "Material",
-      "WebGLRenderer",
-      "InstancedMesh",
-      "EffectComposer",
-      "Pass"
+    "revisions": [
+      "184"
     ],
+    "threeGlobal": "184",
     "importmap": "\n    {\n      \"imports\": {\n        \"three\":                       \"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js\",\n        \"three/addons/\":               \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"three/examples/jsm/\":         \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"@dimforge/rapier3d-compat\":   \"https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js\",\n        \"playlabs-boot\":               \"data:text/javascript;base64,aW1wb3J0KmFzIGUgZnJvbSJ0aHJlZSI7aW1wb3J0e3ZveGVsVG9NZXNoIGFzIHQsdGlja1ZveGVscyBhcyBuLHRhZ0Fzc2V0IGFzIG8sY3JlYXRlTW90aW9uUm9vdCBhcyByLHJlbGVhc2VBc3NldCBhcyBhLGRpc3Bvc2VQb29sIGFzIHN9ZnJvbSJwbGF5bGFicy12b3hlbCI7ZXhwb3J0e3QgYXMgdm94ZWxUb01lc2gsbiBhcyB0aWNrVm94ZWxzLG8gYXMgdGFnQXNzZXQsciBhcyBjcmVhdGVNb3Rpb25Sb290LGEgYXMgcmVsZWFzZUFzc2V0LHMgYXMgZGlzcG9zZVBvb2x9O2V4cG9ydCBmdW5jdGlvbiBzYXZlU2xvdChlPSJnYW1lIil7Y29uc3QgdD1gY3JheW9uLXNhdmU6JHtlfWA7bGV0IG49bnVsbDtjb25zdCBvPSgoKT0+e3RyeXtyZXR1cm4gbG9jYWxTdG9yYWdlLnNldEl0ZW0odCsiOnQiLCIxIiksbG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCsiOnQiKSwhMH1jYXRjaHtyZXR1cm4hMX19KSgpO3JldHVybntsb2FkKCl7aWYoIW8pcmV0dXJuIG47dHJ5e2NvbnN0IGU9bG9jYWxTdG9yYWdlLmdldEl0ZW0odCk7cmV0dXJuIGU/SlNPTi5wYXJzZShlKTpudWxsfWNhdGNoe3JldHVybiBufX0sc2F2ZShlKXtpZihuPWUsbyl0cnl7bG9jYWxTdG9yYWdlLnNldEl0ZW0odCxKU09OLnN0cmluZ2lmeShlKSl9Y2F0Y2h7fX0sY2xlYXIoKXtpZihuPW51bGwsbyl0cnl7bG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCl9Y2F0Y2h7fX19fWV4cG9ydCBmdW5jdGlvbiBiZW5kVG9Ib3Jpem9uKGUsdD0yNDAsbj0wKXtjb25zdCBvPWUudXNlckRhdGE7dm9pZCAwIT09by5fX2JlbnRZJiZlLnBvc2l0aW9uLnk9PT1vLl9fYmVudFl8fChvLl9fZmxhdFk9ZS5wb3NpdGlvbi55KTtjb25zdCByPWUucG9zaXRpb24uei1uO28uX19iZW50WT1vLl9fZmxhdFktcipyLygyKnQpLGUucG9zaXRpb24ueT1vLl9fYmVudFl9ZXhwb3J0IGZ1bmN0aW9uIGF1ZGlvUmVhZHkoZSl7Y29uc3QgdD13aW5kb3cuQXVkaW9Db250ZXh0fHx3aW5kb3cud2Via2l0QXVkaW9Db250ZXh0O2lmKCF0KXJldHVybjtsZXQgbj0hMTtjb25zdCBvPSgpPT57aWYoIW4pe249ITA7dHJ5e2NvbnN0IG49bmV3IHQsbz0oKT0+e3RyeXtlKG4pfWNhdGNoKGUpe2NvbnNvbGUud2FybigiW3BsYXlsYWJzXSBhdWRp",
-    "errors": [
-      "webgpu:TypeError: Failed to resolve module specifier 'three/webgpu'"
-    ]
+    "importmapHasWebgpu": false,
+    "resourceSignals": {
+      "threeCoreLoaded": true,
+      "webgpuBuild": [],
+      "effectComposerModule": [],
+      "composerModule": [],
+      "passModules": [],
+      "resourceCount": 17
+    }
   },
   "heap": {
     "BatchedMesh": 1,
-    "NodeMaterial": 0,
+    "NodeMaterial": 1,
     "ShaderMaterial": 1,
     "RawShaderMaterial": 1,
     "EffectComposer": 0,
@@ -76,51 +61,168 @@
     "PMREMGenerator": 1,
     "CSM": 0
   },
+  "heapMeta": {
+    "bytes": 46822642,
+    "session": "page"
+  },
   "liveObjects": {
-    "contextFound": false
+    "contextFound": true,
+    "hookInstalled": true,
+    "observedEvents": 68,
+    "scenes": 1,
+    "renderedScenes": 1,
+    "renderers": [
+      {
+        "kind": "WebGLRenderer",
+        "renderCalls": 81,
+        "targetSets": 81,
+        "nonNullTargetSets": 0
+      }
+    ],
+    "sceneTraversal": {
+      "scenes": 1,
+      "objects": 3207,
+      "meshes": 1661,
+      "instancedMeshes": 25,
+      "batchedMeshes": 0,
+      "skinnedMeshes": 40,
+      "points": 1,
+      "lines": 0,
+      "sprites": 166,
+      "shaderMaterials": 3,
+      "rawShaderMaterials": 0,
+      "nodeMaterialClasses": 0,
+      "nodeMaterialsAuthored": 0,
+      "materials": 1066,
+      "materialCtorCounts": {
+        "Ma": 570,
+        "Gn": 58,
+        "ec": 434,
+        "Gl": 3,
+        "$o": 1
+      },
+      "objectCtorCounts": {
+        "Er": 1,
+        "Tr": 449,
+        "Ra": 1596,
+        "la": 166,
+        "no": 25,
+        "Ar": 37,
+        "Ja": 40,
+        "Xa": 888,
+        "ih": 1,
+        "au": 1,
+        "qc": 1,
+        "lu": 1,
+        "iu": 1
+      },
+      "nodeMaterialSlots": {}
+    },
+    "renderedSceneTraversal": {
+      "scenes": 1,
+      "objects": 3207,
+      "meshes": 1661,
+      "instancedMeshes": 25,
+      "batchedMeshes": 0,
+      "skinnedMeshes": 40,
+      "points": 1,
+      "lines": 0,
+      "sprites": 166,
+      "shaderMaterials": 3,
+      "rawShaderMaterials": 0,
+      "nodeMaterialClasses": 0,
+      "nodeMaterialsAuthored": 0,
+      "materials": 1066,
+      "materialCtorCounts": {
+        "Ma": 570,
+        "Gn": 58,
+        "ec": 434,
+        "Gl": 3,
+        "$o": 1
+      },
+      "objectCtorCounts": {
+        "Er": 1,
+        "Tr": 449,
+        "Ra": 1596,
+        "la": 166,
+        "no": 25,
+        "Ar": 37,
+        "Ja": 40,
+        "Xa": 888,
+        "ih": 1,
+        "au": 1,
+        "qc": 1,
+        "lu": 1,
+        "iu": 1
+      },
+      "nodeMaterialSlots": {}
+    },
+    "effectComposers": 0,
+    "postProcessingInstances": 0,
+    "composerPasses": [],
+    "pipelineWalk": {
+      "composers": 0,
+      "postProcessing": 0,
+      "composerPasses": [],
+      "nodesVisited": 1309,
+      "truncated": false,
+      "roots": 26,
+      "errors": 0
+    },
+    "hookErrors": []
   },
   "probes": {
     "p1_nodeMaterials": {
       "answer": "no",
+      "basis": "module",
       "value": {
-        "liveTraversal": 0,
-        "heapClasses": 0,
-        "webgpuModuleReachable": false
+        "authored": 0,
+        "nodeMaterialClasses": 0,
+        "webgpuBuildResources": [],
+        "importmapHasWebgpu": false,
+        "webgpuRendererObserved": false,
+        "heapNodeMaterialNames": 1
       },
-      "detail": "no NodeMaterial instances or classes observed"
+      "detail": "three loaded from the importmap with no three/webgpu or three/tsl build requested; NodeMaterial cannot be constructed"
     },
     "p2_batchedMesh": {
-      "answer": "yes",
+      "answer": "no",
+      "basis": "live",
       "value": {
-        "liveTraversal": 0,
-        "heapClasses": 1
+        "liveBatchedMeshes": 0,
+        "instancedMeshes": 25,
+        "heapClassPresent": true
       },
-      "detail": "BatchedMesh observed"
+      "detail": "live traversal found 0 BatchedMesh (1 scene(s), 3207 objects); heap class presence is ignored (core three class)"
     },
     "p3_pipeline": {
       "answer": "no",
+      "basis": "module",
       "value": {
-        "effectComposers": 0,
-        "postProcessingInstances": 0,
-        "heapEffectComposer": 0,
-        "heapPostProcessing": 0,
-        "passRoster": []
+        "liveComposers": 0,
+        "livePostProcessing": 0,
+        "composerModuleResources": [],
+        "passModuleResources": [],
+        "heapComposerNames": 0,
+        "heapPostProcessingNames": 0,
+        "walk": {
+          "nodesVisited": 1309,
+          "truncated": false,
+          "failed": false
+        }
       },
-      "detail": "no composer/post-processing pipeline observed"
+      "detail": "populated scene rendered (1 scene(s), 3207 objects) with no postprocessing addon module and no three/webgpu build requested by the importmap game"
     },
     "p4_shaderMaterials": {
       "answer": "yes",
+      "basis": "live",
       "value": {
-        "liveTraversal": {
-          "shader": 0,
-          "rawShader": 0
-        },
-        "heapClasses": {
-          "shader": 1,
-          "rawShader": 1
-        }
+        "liveShader": 3,
+        "liveRawShader": 0,
+        "heapShaderNames": 1,
+        "heapRawShaderNames": 1
       },
-      "detail": "0 live isShaderMaterial, 0 isRawShaderMaterial (+heap classes)"
+      "detail": "3 live isShaderMaterial, 0 live isRawShaderMaterial (1 scene(s), 3207 objects)"
     }
   },
   "errors": []

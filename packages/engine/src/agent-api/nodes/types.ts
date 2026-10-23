@@ -486,6 +486,14 @@ export interface AuraPrimitiveParams {
   readonly radialSegments?: number;
   readonly heightSegments?: number;
   readonly widthSegments?: number;
+  /** box depth tessellation. */
+  readonly depthSegments?: number;
+  /** capsule hemisphere ring count. */
+  readonly capSegments?: number;
+  /** cylinder / cone: omit the end caps. */
+  readonly openEnded?: boolean;
+  /** torus tube radius ratio (the torusKnot tube is `tubeRadius`). */
+  readonly tube?: number;
   readonly innerRadius?: number;
   readonly outerRadius?: number;
   readonly thetaStart?: number;
@@ -776,7 +784,9 @@ export type AuraSceneNode =
   // threejs-parity L7 (SC-01/AD-15): cube-camera + mirror surface nodes compile
   // through `compiler/paritySurfaces.ts` into renderer-owned captures.
   | import("./cameras.js").AuraCubeCameraNode
-  | import("./surfaces.js").AuraMirrorSurfaceNode;
+  | import("./surfaces.js").AuraMirrorSurfaceNode
+  // threejs-parity AD-15 (P2): lens flare, compiled per frame by `compiler/lensFlare.ts`.
+  | import("./lensFlare.js").AuraLensFlareNode;
 
 export interface AuraModelNode extends AuraTransformSpec {
   readonly kind: "model";
@@ -1472,6 +1482,12 @@ export interface AuraCameraSpec {
   readonly near?: number;
   /** Far clipping distance in world units, greater than near; defaults to 100. */
   readonly far?: number;
+  /**
+   * SR-04: three's `camera.layers` as a bitmask. Nodes whose `layers` mask does
+   * not intersect it (runtime handle `.layers`) are absent from the frame.
+   * Unset = no layer filtering.
+   */
+  readonly layers?: number;
   readonly distance?: number;
   readonly from?: AuraVec3;
   readonly to?: AuraVec3;
@@ -1659,6 +1675,11 @@ export interface AuraSceneSnapshot {
    * tone-mapped with the scene (the default). Omitted unless `false`.
    */
   readonly backgroundToneMapped?: false;
+  /**
+   * threejs-parity SG-10: `scene().overrideMaterial(spec)`. Informational —
+   * `nodes` already carry the override on every mesh-like node.
+   */
+  readonly overrideMaterial?: AuraMaterialSpec;
   readonly camera: AuraCameraSpec;
   readonly timeline?: AuraTimelineSpec;
   readonly physics?: AuraPhysicsSceneSummary;
@@ -2612,6 +2633,10 @@ export interface AuraDynamicGeometrySpec {
   readonly uvs?: Float32Array | readonly (readonly [number, number])[];
   readonly colors?: Float32Array | readonly AuraColor[];
   readonly indices?: AuraIndexArray;
+  /** R-23: author-named per-vertex attributes (three `setAttribute(name, BufferAttribute)`), bound by name in `material.custom` GLSL. */
+  readonly attributes?: Readonly<Record<string, { readonly itemSize: 1 | 2 | 3 | 4; readonly data: Float32Array | readonly number[] }>>;
+  /** R-23: `"points"` draws one point per vertex (three `Points`); the vertex shader sets gl_PointSize. */
+  readonly topology?: "triangles" | "points";
   readonly groups?: readonly { readonly start: number; readonly count: number; readonly materialIndex?: number }[];
   readonly drawRange?: { readonly start: number; readonly count: number };
   readonly morphTargets?: readonly { readonly name?: string; readonly positions: Float32Array | readonly number[] }[];

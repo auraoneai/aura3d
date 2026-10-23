@@ -187,7 +187,7 @@ registerFrameContributor({
   phases: ["collect"],
   order: 900,
   collect(items, ctx: FrameContributorContext) {
-    return batchPlanCacheFor(ctx.device).apply(items);
+    return batchPlanCacheFor(ctx.device).apply(items, { device: ctx.device });
   }
 });
 

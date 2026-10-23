@@ -486,7 +486,16 @@ export class WebGL2DrawCallBinder {
         this.host.gl.scissor(renderState.scissor!.x, renderState.scissor!.y, renderState.scissor!.width, renderState.scissor!.height);
       });
     } else {
-      this.host.stateCache.setEnabled(this.host.gl.SCISSOR_TEST, false, () => this.host.gl.disable(this.host.gl.SCISSOR_TEST));
+      // SC-01: a device-level scissor (ArrayCamera/StereoCamera views) stays in force for draws with no per-draw scissor.
+      const deviceScissor = this.host.lifecycle.effectiveScissor();
+      if (deviceScissor) {
+        this.host.stateCache.setEnabled(this.host.gl.SCISSOR_TEST, true, () => this.host.gl.enable(this.host.gl.SCISSOR_TEST));
+        this.host.stateCache.scissor(deviceScissor.x, deviceScissor.y, deviceScissor.width, deviceScissor.height, () => {
+          this.host.gl.scissor(deviceScissor.x, deviceScissor.y, deviceScissor.width, deviceScissor.height);
+        });
+      } else {
+        this.host.stateCache.setEnabled(this.host.gl.SCISSOR_TEST, false, () => this.host.gl.disable(this.host.gl.SCISSOR_TEST));
+      }
     }
     if (renderState.polygonOffset) {
       this.host.stateCache.setEnabled(this.host.gl.POLYGON_OFFSET_FILL, true, () => this.host.gl.enable(this.host.gl.POLYGON_OFFSET_FILL));

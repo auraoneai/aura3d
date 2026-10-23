@@ -23,7 +23,9 @@ export type { RenderMaterial } from "@aura3d/rendering";
 // `@aura3d/rendering/contracts` (which stamps name/owner/stage metadata).
 export { PortableShaderMaterial, ShaderPreprocessor, registerShaderChunk } from "@aura3d/rendering";
 export type { PortableShaderSources, PortableShaderStagePair, PortableShaderUniform, PortableShaderMaterialOptions } from "@aura3d/rendering";
-export type { RenderTarget, Texture, Sampler } from "@aura3d/rendering";
+export type { RenderTarget, RenderTargetDescriptor, Texture, Sampler } from "@aura3d/rendering";
+// SH-06 (R-06): value-level render-target factory; `render({ target })` is the consumer.
+export { createRenderTarget } from "./renderTarget.js";
 
 /** @deprecated 3.1.0, removed 4.0.0. Alias of Renderer. */
 export { Renderer as A3DRenderer } from "@aura3d/rendering";

@@ -14,6 +14,7 @@ import {
   type AuraAssetRef,
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
+import { AudioContextManager } from "@aura3d/engine/audio";
 import { assets as catalogAssets } from "../../../src/aura-assets";
 import { v2Assets } from "./aura-assets-v2";
 
@@ -488,23 +489,19 @@ interface SceneryAnchor {
 
 class ThermalDriftAudioSynth {
   private ctx: AudioContext | null = null;
+  private readonly contextManager = new AudioContextManager();
 
   private ensureContext(): AudioContext | null {
     if (typeof window === "undefined") return null;
     if (!this.ctx) {
-      const Ctor =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (Ctor) {
-        try {
-          this.ctx = new Ctor();
-        } catch {
-          this.ctx = null;
-        }
+      try {
+        this.ctx = this.contextManager.context as unknown as AudioContext;
+      } catch {
+        this.ctx = null;
       }
     }
     if (this.ctx && this.ctx.state === "suspended") {
-      void this.ctx.resume().catch(() => {});
+      void this.contextManager.unlock().catch(() => {});
     }
     return this.ctx;
   }

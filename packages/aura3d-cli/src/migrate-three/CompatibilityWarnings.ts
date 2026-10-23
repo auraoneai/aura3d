@@ -61,7 +61,7 @@ function createWebgpuOnlyWarnings(source: string): readonly ThreeCompatCompatibi
   if (/GPUComputationRenderer|computeShader|\.compute\(/.test(source)) {
     warnings.push({
       code: "compute-webgpu-only",
-      message: "SH-04: GPU compute (GPUComputationRenderer-style) is WebGPU-only and pending — no public compute.* on the WebGL2 path (AD-11 exclusion)."
+      message: "SH-04: GPU compute is WebGPU-only — compute.pipeline/buffer/dispatch (WGSL required) exist, but createAuraApp mounts WebGL2 and every compute call throws compute-requires-webgpu until compute.bind(renderer.device) is given a Renderer.create({ backend: \"webgpu\" }) device. GPUComputationRenderer and TSL compute() are not rewritten automatically; hand-port them to WGSL."
     });
   }
   // WGSL sources only run on the WebGPU backend; the live path needs GLSL.

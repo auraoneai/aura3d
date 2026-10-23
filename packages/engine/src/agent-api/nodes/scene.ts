@@ -1,6 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
-import type { AuraColor, AuraSceneBackgroundImage, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraSceneSnapshot } from "./types.js";
+import type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraSceneSnapshot } from "./types.js";
+import { applyOverrideMaterial, assertAuraOverrideMaterial } from "./overrideMaterial.js";
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsHeight, boundsMaxDimension, boundsSize } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { camera } from "./camera.js";
@@ -63,6 +64,26 @@ export class AuraSceneBuilder {
   private timelineSpec: AuraTimelineSpec | undefined;
   private physicsController: AuraPhysicsWorldController | undefined;
   private diagnosticsEnabled = false;
+  private overrideMaterialSpec: AuraMaterialSpec | undefined;
+
+  /**
+   * threejs-parity SG-10: three's `scene.overrideMaterial`. Every primitive
+   * (including instanced and distance-LOD ones), model and `instances.mesh` /
+   * `batched.mesh` node renders with `spec` instead of its own material;
+   * geometry and per-node transforms are untouched. Pass `null` to restore the
+   * authored materials. Lines, points, sprites and procedural character parts
+   * keep their own materials. Applies to nodes authored before `toJSON()`/mount
+   * (nodes added later at runtime through the app keep their own material).
+   */
+  overrideMaterial(spec: AuraMaterialSpec | null): this {
+    if (spec === null) {
+      this.overrideMaterialSpec = undefined;
+      return this;
+    }
+    assertAuraOverrideMaterial(spec);
+    this.overrideMaterialSpec = spec;
+    return this;
+  }
 
   /**
    * PRD-01 C-05 + threejs-parity L7/SG-10: tone-mapped with the scene by
@@ -129,7 +150,8 @@ export class AuraSceneBuilder {
       camera: this.cameraSpec,
       timeline: this.timelineSpec,
       physics: this.physicsController?.snapshot(),
-      nodes: [...this.nodes],
+      ...(this.overrideMaterialSpec ? { overrideMaterial: this.overrideMaterialSpec } : {}),
+      nodes: this.overrideMaterialSpec ? applyOverrideMaterial(this.nodes, this.overrideMaterialSpec) : [...this.nodes],
       diagnostics: {
         enabled: this.diagnosticsEnabled
       }

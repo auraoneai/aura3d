@@ -64,6 +64,7 @@ export type { AdvancedRendererSource } from "./advanced-runtime";
 
 export { VertexAttribute, VertexFormat } from "./VertexFormat";
 export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";
+export { CUSTOM_ATTRIBUTE_LOCATION_POOL, assignCustomAttributeLocations, customAttributeSemantic, isCustomAttributeSemantic } from "./VertexFormat";
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
 export { Geometry, computeBounds } from "./Geometry";
@@ -93,6 +94,8 @@ export { extrudeParityMesh } from "./geometry/Extrude";
 export type { ExtrudeParityParams } from "./geometry/Extrude";
 export { shapeParityMesh } from "./geometry/Shape";
 export type { ShapeParityParams } from "./geometry/Shape";
+export { convexParityMesh } from "./geometry/Convex";
+export type { ConvexParityParams, ConvexPointInput } from "./geometry/Convex";
 export { edgesParityMesh } from "./geometry/Edges";
 export type { EdgesInput } from "./geometry/Edges";
 export { wireframeParityMesh } from "./geometry/Wireframe";
@@ -1129,7 +1132,7 @@ export type {
 } from "./CascadedShadowMaps";
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
-export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
+export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererRect, RendererView, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
 export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessChainCostEstimate, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlannedVsActual, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
@@ -1378,4 +1381,7 @@ export type { SizeKeyframe } from "./effects/SizeModule.js";
 export type { TrailModuleOptions } from "./effects/TrailModule.js";
 export type { VectorKeyframe } from "./effects/VelocityModule.js";
 export type { OctreeNode } from "./performance/Octree.js";
+// SH-04 / L1-12: public WebGPU-only compute surface (WGSL required).
+export { COMPUTE_BUFFER_USAGE, ComputeBuffer, ComputeContext, ComputeError, ComputeLimits, ComputePipeline, createComputeContext } from "./compute/index.js";
+export type { ComputeBindingSpec, ComputeBindingType, ComputeBufferSpec, ComputeBufferUsage, ComputeDispatchInput, ComputeDispatchResult, ComputeErrorCode, ComputeGPUBufferLike, ComputeGPUDeviceLike, ComputePipelineSpec, ComputeWorkgroups, ComputeWorkgroupSize } from "./compute/index.js";
 export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalRay, ProjectedDecalRaycastHit, ProjectedDecalRaycastResult, ProjectedDecalShape } from "./production-runtime/geometry/ProjectedDecalGeometry.js";

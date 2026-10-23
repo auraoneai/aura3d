@@ -1,97 +1,57 @@
 {
-  "schema": "a3d-crayon-probe/1",
+  "schema": "a3d-crayon-probe/2",
   "game": "last-train-to-the-sea",
   "url": "https://app.usecrayon.ai/play/bda1b910-b840-48cb-bb4c-28d0cde29107",
-  "probedAt": "2026-10-22T05:28:35.383Z",
+  "probedAt": "2026-10-22T19:01:35.004Z",
   "frame": {
     "index": 1,
-    "url": "",
-    "pickReason": "best score 12 — canvas=1 importmap=true threeImport=true __THREE__=string"
+    "url": "about:srcdoc",
+    "framesWithHook": 2,
+    "totalFrames": 2,
+    "waitedMs": 38654,
+    "sceneSettled": true,
+    "clickedStart": null,
+    "clickAttempts": 6,
+    "peakObjects": 3352,
+    "pickReason": "highest hook score (scenes=2 renderers=1 renderCalls=53)"
   },
   "dom": {
     "title": "Play Labs runtime",
     "canvases": [
       {
-        "w": 966,
-        "h": 543,
-        "engine": "three.js r184",
-        "webgl2": true,
-        "webgpu": false
+        "w": 754,
+        "h": 424,
+        "engine": "three.js r184"
       }
     ],
-    "hasImportmap": true,
-    "importmap": "\n    {\n      \"imports\": {\n        \"three\":                       \"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js\",\n        \"three/addons/\":               \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"three/examples/jsm/\":         \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"@dimforge/rapier3d-compat\":   \"https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js\",\n        \"playlabs-boot\":               \"data:text/javascript;base64,aW1wb3J0KmFzIGUgZnJvbSJ0aHJlZSI7aW1wb3J0e3ZveGVsVG9NZXNoIGFzIHQsdGlja1ZveGVscyBhcyBuLHRhZ0Fzc2V0IGFzIG8sY3JlYXRlTW90aW9uUm9vdCBhcyByLHJlbGVhc2VBc3NldCBhcyBhLGRpc3Bvc2VQb29sIGFzIHN9ZnJvbSJwbGF5bGFicy12b3hlbCI7ZXhwb3J0e3QgYXMgdm94ZWxUb01lc2gsbiBhcyB0aWNrVm94ZWxzLG8gYXMgdGFnQXNzZXQsciBhcyBjcmVhdGVNb3Rpb25Sb290LGEgYXMgcmVsZWFzZUFzc2V0LHMgYXMgZGlzcG9zZVBvb2x9O2V4cG9ydCBmdW5jdGlvbiBzYXZlU2xvdChlPSJnYW1lIil7Y29uc3QgdD1gY3JheW9uLXNhdmU6JHtlfWA7bGV0IG49bnVsbDtjb25zdCBvPSgoKT0+e3RyeXtyZXR1cm4gbG9jYWxTdG9yYWdlLnNldEl0ZW0odCsiOnQiLCIxIiksbG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCsiOnQiKSwhMH1jYXRjaHtyZXR1cm4hMX19KSgpO3JldHVybntsb2FkKCl7aWYoIW8pcmV0dXJuIG47dHJ5e2NvbnN0IGU9bG9jYWxTdG9yYWdlLmdldEl0ZW0odCk7cmV0dXJuIGU/SlNPTi5wYXJzZShlKTpudWxsfWNhdGNoe3JldHVybiBufX0sc2F2ZShlKXtpZihuPWUsbyl0cnl7bG9jYWxTdG9yYWdlLnNldEl0ZW0odCxKU09OLnN0cmluZ2lmeShlKSl9Y2F0Y2h7fX0sY2xlYXIoKXtpZihuPW51bGwsbyl0cnl7bG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCl9Y2F0Y2h7fX19fWV4cG9ydCBmdW5jdGlvbiBiZW5kVG9Ib3Jpem9uKGUsdD0yNDAsbj0wKXtjb25zdCBvPWUudXNlckRhdGE7dm9pZCAwIT09by5fX2JlbnRZJiZlLnBvc2l0aW9uLnk9PT1vLl9fYmVudFl8fChvLl9fZmxhdFk9ZS5wb3NpdGlvbi55KTtjb25zdCByPWUucG9zaXRpb24uei1uO28uX19iZW50WT1vLl9fZmxhdFktcipyLygyKnQpLGUucG9zaXRpb24ueT1vLl9fYmVudFl9ZXhwb3J0IGZ1bmN0aW9uIGF1ZGlvUmVhZHkoZSl7Y29uc3QgdD13aW5kb3cuQXVkaW9Db250ZXh0fHx3aW5kb3cud2Via2l0QXVkaW9Db250ZXh0O2lmKCF0KXJldHVybjtsZXQgbj0hMTtjb25zdCBvPSgpPT57aWYoIW4pe249ITA7dHJ5e2NvbnN0IG49bmV3IHQsbz0oKT0+e3RyeXtlKG4pfWNhdGNoKGUpe2NvbnNvbGUud2FybigiW3BsYXlsYWJzXSBhdWRp",
-    "threeGlobal": "184",
-    "threeResources": [
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js",
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/geometries/RoundedBoxGeometry.js",
-      "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.core.min.js",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/crowd-atlases-v3.json",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/resident-atlases-v5.json",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/living-v6/locals.json",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/living-v6/rear.json",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/cameo-v19/zoro.json",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/journey-v22/atlases.json",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/people-v48/atlases.json",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/coastal-materials-v2.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/cloud-bank-v2.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-mango.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/mythic-ui/limestone.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/mythic-ui/dawn-crest.svg",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/fonts/Geist-Variable.woff2",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-gardens.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-gardens.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-observatory.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-monsoon.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-saltlight.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-rear-mango.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-rear-gardens.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-rear-gardens.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-rear-observatory.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-rear-monsoon.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/living-v6-rear-saltlight.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/crowd-mango-v3.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/crowd-gardens-v3.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/crowd-gardens-v3.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/crowd-observatory-v3.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/crowd-monsoon-v3.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/crowd-saltlight-v3.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/residents-mango-v5.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/residents-gardens-v5.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/residents-gardens-v5.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/residents-observatory-v5.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/residents-monsoon-v5.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/runtime-v16/mobile/residents-saltlight-v5.webp",
-      "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/bda1b910-b840-48cb-bb4c-28d0cde29107/hearthwing-e42752a34305/assets/cameo-v19/zoro.webp"
-    ],
-    "scripts": 5
+    "canvasContexts": {
+      "webgl": 0,
+      "webgl2": 2,
+      "webgpu": 0,
+      "2d": 71,
+      "other": 0
+    }
   },
   "module": {
-    "revision": "184",
-    "hasThree": true,
-    "hasComposerProto": true,
-    "hasPassProto": true,
-    "hasWebgpu": false,
-    "hasPostProcessingProto": false,
-    "protoNames": [
-      "Scene",
-      "Object3D",
-      "Mesh",
-      "ShaderMaterial",
-      "Material",
-      "WebGLRenderer",
-      "InstancedMesh",
-      "EffectComposer",
-      "Pass"
+    "revisions": [
+      "184",
+      "184"
     ],
+    "threeGlobal": "184",
     "importmap": "\n    {\n      \"imports\": {\n        \"three\":                       \"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js\",\n        \"three/addons/\":               \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"three/examples/jsm/\":         \"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/\",\n        \"@dimforge/rapier3d-compat\":   \"https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.12.0/rapier.es.js\",\n        \"playlabs-boot\":               \"data:text/javascript;base64,aW1wb3J0KmFzIGUgZnJvbSJ0aHJlZSI7aW1wb3J0e3ZveGVsVG9NZXNoIGFzIHQsdGlja1ZveGVscyBhcyBuLHRhZ0Fzc2V0IGFzIG8sY3JlYXRlTW90aW9uUm9vdCBhcyByLHJlbGVhc2VBc3NldCBhcyBhLGRpc3Bvc2VQb29sIGFzIHN9ZnJvbSJwbGF5bGFicy12b3hlbCI7ZXhwb3J0e3QgYXMgdm94ZWxUb01lc2gsbiBhcyB0aWNrVm94ZWxzLG8gYXMgdGFnQXNzZXQsciBhcyBjcmVhdGVNb3Rpb25Sb290LGEgYXMgcmVsZWFzZUFzc2V0LHMgYXMgZGlzcG9zZVBvb2x9O2V4cG9ydCBmdW5jdGlvbiBzYXZlU2xvdChlPSJnYW1lIil7Y29uc3QgdD1gY3JheW9uLXNhdmU6JHtlfWA7bGV0IG49bnVsbDtjb25zdCBvPSgoKT0+e3RyeXtyZXR1cm4gbG9jYWxTdG9yYWdlLnNldEl0ZW0odCsiOnQiLCIxIiksbG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCsiOnQiKSwhMH1jYXRjaHtyZXR1cm4hMX19KSgpO3JldHVybntsb2FkKCl7aWYoIW8pcmV0dXJuIG47dHJ5e2NvbnN0IGU9bG9jYWxTdG9yYWdlLmdldEl0ZW0odCk7cmV0dXJuIGU/SlNPTi5wYXJzZShlKTpudWxsfWNhdGNoe3JldHVybiBufX0sc2F2ZShlKXtpZihuPWUsbyl0cnl7bG9jYWxTdG9yYWdlLnNldEl0ZW0odCxKU09OLnN0cmluZ2lmeShlKSl9Y2F0Y2h7fX0sY2xlYXIoKXtpZihuPW51bGwsbyl0cnl7bG9jYWxTdG9yYWdlLnJlbW92ZUl0ZW0odCl9Y2F0Y2h7fX19fWV4cG9ydCBmdW5jdGlvbiBiZW5kVG9Ib3Jpem9uKGUsdD0yNDAsbj0wKXtjb25zdCBvPWUudXNlckRhdGE7dm9pZCAwIT09by5fX2JlbnRZJiZlLnBvc2l0aW9uLnk9PT1vLl9fYmVudFl8fChvLl9fZmxhdFk9ZS5wb3NpdGlvbi55KTtjb25zdCByPWUucG9zaXRpb24uei1uO28uX19iZW50WT1vLl9fZmxhdFktcipyLygyKnQpLGUucG9zaXRpb24ueT1vLl9fYmVudFl9ZXhwb3J0IGZ1bmN0aW9uIGF1ZGlvUmVhZHkoZSl7Y29uc3QgdD13aW5kb3cuQXVkaW9Db250ZXh0fHx3aW5kb3cud2Via2l0QXVkaW9Db250ZXh0O2lmKCF0KXJldHVybjtsZXQgbj0hMTtjb25zdCBvPSgpPT57aWYoIW4pe249ITA7dHJ5e2NvbnN0IG49bmV3IHQsbz0oKT0+e3RyeXtlKG4pfWNhdGNoKGUpe2NvbnNvbGUud2FybigiW3BsYXlsYWJzXSBhdWRp",
-    "errors": [
-      "webgpu:TypeError: Failed to resolve module specifier 'three/webgpu'"
-    ]
+    "importmapHasWebgpu": false,
+    "resourceSignals": {
+      "threeCoreLoaded": true,
+      "webgpuBuild": [],
+      "effectComposerModule": [],
+      "composerModule": [],
+      "passModules": [],
+      "resourceCount": 98
+    }
   },
   "heap": {
     "BatchedMesh": 1,
-    "NodeMaterial": 0,
+    "NodeMaterial": 1,
     "ShaderMaterial": 1,
     "RawShaderMaterial": 1,
     "EffectComposer": 0,
@@ -102,51 +62,176 @@
     "PMREMGenerator": 1,
     "CSM": 0
   },
+  "heapMeta": {
+    "bytes": 93369140,
+    "session": "page"
+  },
   "liveObjects": {
-    "contextFound": false
+    "contextFound": true,
+    "hookInstalled": true,
+    "observedEvents": 76,
+    "scenes": 2,
+    "renderedScenes": 2,
+    "renderers": [
+      {
+        "kind": "WebGLRenderer",
+        "renderCalls": 53,
+        "targetSets": 55,
+        "nonNullTargetSets": 41
+      }
+    ],
+    "sceneTraversal": {
+      "scenes": 2,
+      "objects": 3352,
+      "meshes": 2402,
+      "instancedMeshes": 492,
+      "batchedMeshes": 0,
+      "skinnedMeshes": 33,
+      "points": 31,
+      "lines": 2,
+      "sprites": 0,
+      "shaderMaterials": 6,
+      "rawShaderMaterials": 0,
+      "nodeMaterialClasses": 0,
+      "nodeMaterialsAuthored": 0,
+      "materials": 914,
+      "materialCtorCounts": {
+        "zo": 7,
+        "Po": 421,
+        "Ar": 448,
+        "Ia": 29,
+        "Ro": 6,
+        "ba": 2,
+        "Io": 1
+      },
+      "objectCtorCounts": {
+        "Bu": 1,
+        "Br": 1877,
+        "da": 492,
+        "_s": 6,
+        "xi": 1,
+        "ci": 478,
+        "Kr": 33,
+        "Zr": 420,
+        "Ua": 31,
+        "Ca": 2,
+        "e": 5,
+        "ys": 2,
+        "br": 2,
+        "Ts": 1,
+        "os": 1
+      },
+      "nodeMaterialSlots": {}
+    },
+    "renderedSceneTraversal": {
+      "scenes": 2,
+      "objects": 3352,
+      "meshes": 2402,
+      "instancedMeshes": 492,
+      "batchedMeshes": 0,
+      "skinnedMeshes": 33,
+      "points": 31,
+      "lines": 2,
+      "sprites": 0,
+      "shaderMaterials": 6,
+      "rawShaderMaterials": 0,
+      "nodeMaterialClasses": 0,
+      "nodeMaterialsAuthored": 0,
+      "materials": 914,
+      "materialCtorCounts": {
+        "Po": 421,
+        "Ar": 448,
+        "Ia": 29,
+        "Ro": 6,
+        "ba": 2,
+        "zo": 7,
+        "Io": 1
+      },
+      "objectCtorCounts": {
+        "xi": 1,
+        "ci": 478,
+        "Kr": 33,
+        "Zr": 420,
+        "Br": 1877,
+        "_s": 6,
+        "Ua": 31,
+        "da": 492,
+        "Ca": 2,
+        "e": 5,
+        "ys": 2,
+        "br": 2,
+        "Ts": 1,
+        "os": 1,
+        "Bu": 1
+      },
+      "nodeMaterialSlots": {}
+    },
+    "effectComposers": 0,
+    "postProcessingInstances": 0,
+    "composerPasses": [],
+    "pipelineWalk": {
+      "composers": 0,
+      "postProcessing": 0,
+      "composerPasses": [],
+      "nodesVisited": 589,
+      "truncated": false,
+      "roots": 24,
+      "errors": 0
+    },
+    "hookErrors": []
   },
   "probes": {
     "p1_nodeMaterials": {
       "answer": "no",
+      "basis": "module",
       "value": {
-        "liveTraversal": 0,
-        "heapClasses": 0,
-        "webgpuModuleReachable": false
+        "authored": 0,
+        "nodeMaterialClasses": 0,
+        "webgpuBuildResources": [],
+        "importmapHasWebgpu": false,
+        "webgpuRendererObserved": false,
+        "heapNodeMaterialNames": 1
       },
-      "detail": "no NodeMaterial instances or classes observed"
+      "detail": "three loaded from the importmap with no three/webgpu or three/tsl build requested; NodeMaterial cannot be constructed"
     },
     "p2_batchedMesh": {
-      "answer": "yes",
+      "answer": "no",
+      "basis": "live",
       "value": {
-        "liveTraversal": 0,
-        "heapClasses": 1
+        "liveBatchedMeshes": 0,
+        "instancedMeshes": 492,
+        "heapClassPresent": true
       },
-      "detail": "BatchedMesh observed"
+      "detail": "live traversal found 0 BatchedMesh (2 scene(s), 3352 objects); heap class presence is ignored (core three class)"
     },
     "p3_pipeline": {
       "answer": "no",
+      "basis": "module",
       "value": {
-        "effectComposers": 0,
-        "postProcessingInstances": 0,
-        "heapEffectComposer": 0,
-        "heapPostProcessing": 0,
-        "passRoster": []
+        "liveComposers": 0,
+        "livePostProcessing": 0,
+        "composerModuleResources": [],
+        "passModuleResources": [],
+        "heapComposerNames": 0,
+        "heapPostProcessingNames": 0,
+        "walk": {
+          "nodesVisited": 589,
+          "truncated": false,
+          "failed": false
+        }
       },
-      "detail": "no composer/post-processing pipeline observed"
+      "detail": "populated scene rendered (2 scene(s), 3352 objects) with no postprocessing addon module and no three/webgpu build requested by the importmap game"
     },
     "p4_shaderMaterials": {
       "answer": "yes",
+      "basis": "live",
       "value": {
-        "liveTraversal": {
-          "shader": 0,
-          "rawShader": 0
-        },
-        "heapClasses": {
-          "shader": 1,
-          "rawShader": 1
-        }
+        "liveShader": 6,
+        "liveRawShader": 0,
+        "heapShaderNames": 1,
+        "heapRawShaderNames": 1
       },
-      "detail": "0 live isShaderMaterial, 0 isRawShaderMaterial (+heap classes)"
+      "detail": "6 live isShaderMaterial, 0 live isRawShaderMaterial (2 scene(s), 3352 objects)"
     }
   },
   "errors": []

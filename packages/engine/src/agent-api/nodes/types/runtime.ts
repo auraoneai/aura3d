@@ -298,6 +298,8 @@ export interface AuraApp {
   readonly scene: AuraSceneSnapshot;
   readonly backend: AuraBackend;
   readonly nodes: AuraRuntimeNodeRegistry;
+  /** SH-04 (L1-12): WebGPU-only compute (WGSL). Every call throws `compute-requires-webgpu` until a WebGPU device is bound with `app.compute.bind(...)`. */
+  readonly compute: import("../compute.js").AuraComputeSurface;
   readonly runtime: AuraRuntimeState;
   /**
    * The live physics simulation for this app.
@@ -409,6 +411,8 @@ export interface AuraApp {
   // ── threejs-parity (§5.0, task B-01) — frozen app members; optional until L7 lands them.
   /** SR-05 (L7): three's WebGLRenderer.info — render counters + resource memory. */
   readonly info?: AuraRendererInfo;
+  /** SC-04: WebXR session runtime (enter/exit, events, per-eye rendering). See `xr.button()`. */
+  readonly xr?: import("../../xr/types.js").AuraXRRuntime;
   /** SH-05 (L7): device-pixel-ratio override; applies on the next frame. */
   setPixelRatio?(ratio: number): void;
   /** SH-05 (L7): default clear color/alpha used when the scene has no background. */

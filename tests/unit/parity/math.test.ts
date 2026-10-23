@@ -6,9 +6,12 @@ import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { OBB as ThreeOBB } from "three/examples/jsm/math/OBB.js";
 import { Capsule as ThreeCapsule } from "three/examples/jsm/math/Capsule.js";
+import { ConvexHull as ThreeConvexHull } from "three/examples/jsm/math/ConvexHull.js";
+import { Octree as ThreeOctree } from "three/examples/jsm/math/Octree.js";
 import {
   Box3,
   Color,
+  ConvexHull,
   Cylindrical,
   Euler,
   Frustum,
@@ -17,6 +20,7 @@ import {
   Matrix4,
   MathUtils,
   OBB,
+  Octree,
   Capsule,
   Plane,
   Quaternion,
@@ -720,5 +724,236 @@ describe("OBB/Capsule parity (AD-14)", () => {
       expectClose(tr.radius, ttr.radius);
       expectVec3(cap.getCenter(), tcap.getCenter(new THREE.Vector3()));
     }
+  });
+});
+
+// ---- AD-14 / L3-07 (R-11): ConvexHull + Octree vs three 0.185.1 ----
+
+type Cloud = { name: string; points: Vector3[] };
+
+function hullClouds(): Cloud[] {
+  const rand = rng(0xc0a7e);
+  const uniform: Vector3[] = [];
+  for (let i = 0; i < 1000; i += 1) uniform.push(v3(rand, 10));
+  const sphereSurface: Vector3[] = [];
+  for (let i = 0; i < 1000; i += 1) {
+    const z = rand() * 2 - 1;
+    const a = rand() * Math.PI * 2;
+    const r = Math.sqrt(1 - z * z);
+    sphereSurface.push(new Vector3(r * Math.cos(a) * 7, r * Math.sin(a) * 7, z * 7));
+  }
+  // coplanar faces + interior points: exercises the face-merge path
+  const cube: Vector3[] = [];
+  for (const x of [-3, 3]) for (const y of [-3, 3]) for (const z of [-3, 3]) cube.push(new Vector3(x, y, z));
+  for (let i = 0; i < 200; i += 1) {
+    cube.push(new Vector3(fv(rand, 3), fv(rand, 3), 3), new Vector3(fv(rand, 3), -3, fv(rand, 3)), v3(rand, 2.5));
+  }
+  const thin: Vector3[] = [];
+  for (let i = 0; i < 1000; i += 1) thin.push(new Vector3(fv(rand, 12), fv(rand, 12), fv(rand, 0.05)));
+  return [
+    { name: "uniform ball-ish 1k", points: uniform },
+    { name: "sphere surface 1k", points: sphereSurface },
+    { name: "cube + coplanar + interior", points: cube },
+    { name: "thin slab 1k", points: thin }
+  ];
+}
+
+function hullFaceVertexKeys(faces: readonly { edge: { head(): { point: Vector3 }; next: unknown } | null }[]): string[] {
+  const keys: string[] = [];
+  for (const face of faces) {
+    const verts: string[] = [];
+    let edge = face.edge as { head(): { point: Vector3 }; next: unknown };
+    const start = edge;
+    do {
+      const p = edge.head().point;
+      verts.push(`${p.x.toFixed(6)},${p.y.toFixed(6)},${p.z.toFixed(6)}`);
+      edge = edge.next as typeof edge;
+    } while (edge !== start);
+    keys.push(verts.sort().join("|"));
+  }
+  return keys.sort();
+}
+
+describe("ConvexHull parity (AD-14 / R-11)", () => {
+  for (const cloud of hullClouds()) {
+    it(`${cloud.name}: faces, vertices, queries match three`, () => {
+      const ours = new ConvexHull().setFromPoints(cloud.points);
+      const theirs = new ThreeConvexHull().setFromPoints(cloud.points.map(tv3));
+      expect(ours.faces.length).toBeGreaterThan(3);
+      expect(ours.faces.length).toBe(theirs.faces.length);
+
+      const theirsFaces = theirs.faces as unknown as { edge: { head(): { point: THREE.Vector3 }; next: unknown } }[];
+      const theirKeys = hullFaceVertexKeys(
+        theirsFaces.map((f) => ({
+          edge: f.edge as unknown as { head(): { point: Vector3 }; next: unknown }
+        }))
+      );
+      expect(hullFaceVertexKeys(ours.faces)).toEqual(theirKeys);
+
+      // ConvexGeometry vertex expansion count (face loop walk)
+      const walk = (faces: readonly { edge: unknown }[]): number => {
+        let n = 0;
+        for (const face of faces) {
+          const start = face.edge as { next: unknown };
+          let edge = start;
+          do { n += 1; edge = edge.next as typeof edge; } while (edge !== start);
+        }
+        return n;
+      };
+      expect(walk(ours.faces)).toBe(walk(theirs.faces as unknown as { edge: unknown }[]));
+
+      const rand = rng(0x9ea1f);
+      for (let i = 0; i < 300; i += 1) {
+        const p = v3(rand, 14);
+        expect(ours.containsPoint(p)).toBe(theirs.containsPoint(tv3(p)));
+      }
+      for (let i = 0; i < 300; i += 1) {
+        const ray = new Ray(v3(rand, 30), v3(rand, 1).normalize());
+        const tray = new THREE.Ray(tv3(ray.origin), tv3(ray.direction));
+        const hit = ours.intersectRay(ray);
+        const thit = theirs.intersectRay(tray, new THREE.Vector3());
+        expect(hit === undefined).toBe(thit === null);
+        if (hit && thit) expectVec3(hit, thit, TRIG_TOL);
+        expect(ours.intersectsRay(ray)).toBe(theirs.intersectsRay(tray));
+      }
+    });
+  }
+
+  it("fewer than 4 points leaves the hull empty, like three", () => {
+    const pts = [new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0)];
+    expect(new ConvexHull().setFromPoints(pts).faces.length).toBe(new ThreeConvexHull().setFromPoints(pts.map(tv3)).faces.length);
+  });
+});
+
+function octreeSoup(): { positions: number[]; indices: number[] } {
+  const rand = rng(0x0c7ee);
+  const positions: number[] = [];
+  const indices: number[] = [];
+  const grid = 24;
+  const cell = 2;
+  for (let z = 0; z <= grid; z += 1) {
+    for (let x = 0; x <= grid; x += 1) {
+      positions.push((x - grid / 2) * cell, Math.sin(x * 0.7) * Math.cos(z * 0.5) * 2 + rand() * 0.4, (z - grid / 2) * cell);
+    }
+  }
+  for (let z = 0; z < grid; z += 1) {
+    for (let x = 0; x < grid; x += 1) {
+      const a = z * (grid + 1) + x;
+      const b = a + 1;
+      const c = a + grid + 1;
+      const d = c + 1;
+      indices.push(a, c, b, b, c, d);
+    }
+  }
+  // a few free-standing boxes (walls) above the terrain
+  const base = positions.length / 3;
+  const boxes = [[-6, 4, -6], [8, 5, 3], [0, 6, 10]];
+  boxes.forEach(([cx, cy, cz], bi) => {
+    const hx = 2; const hy = 3; const hz = 1.5;
+    const o = base + bi * 8;
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+      positions.push(cx! + sx * hx, cy! + sy * hy, cz! + sz * hz);
+    }
+    const f = (a: number, b: number, c: number, d: number) => indices.push(o + a, o + b, o + c, o + a, o + c, o + d);
+    f(0, 1, 3, 2); f(4, 6, 7, 5); f(0, 4, 5, 1); f(2, 3, 7, 6); f(0, 2, 6, 4); f(1, 5, 7, 3);
+  });
+  return { positions, indices };
+}
+
+function countTree(tree: { subTrees: readonly unknown[]; triangles: readonly unknown[] }): { nodes: number; tris: number } {
+  let nodes = 1;
+  let tris = tree.triangles.length;
+  for (const sub of tree.subTrees as { subTrees: readonly unknown[]; triangles: readonly unknown[] }[]) {
+    const c = countTree(sub);
+    nodes += c.nodes;
+    tris += c.tris;
+  }
+  return { nodes, tris };
+}
+
+describe("Octree parity (AD-14 / R-11)", () => {
+  const soup = octreeSoup();
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(soup.positions, 3));
+  geometry.setIndex(soup.indices);
+  const theirs = new ThreeOctree().fromGraphNode(new THREE.Mesh(geometry));
+  // three reads positions through a Float32BufferAttribute; feed ours the same f32-rounded values.
+  const ours = new Octree().fromPositions(new Float32Array(soup.positions), soup.indices);
+
+  it("tree structure (node and triangle counts) equals three", () => {
+    expect(countTree(ours)).toEqual(countTree(theirs as unknown as { subTrees: unknown[]; triangles: unknown[] }));
+    expect(ours.subTrees.length).toBe((theirs as unknown as { subTrees: unknown[] }).subTrees.length);
+  });
+
+  it("capsuleIntersect equals three's on 1000 seeded capsules (sweep over the level)", () => {
+    const rand = rng(0xca95);
+    let hits = 0;
+    for (let i = 0; i < CASES; i += 1) {
+      const start = new Vector3(fv(rand, 22), rand() * 7 - 2, fv(rand, 22));
+      const end = start.add(new Vector3(fv(rand, 0.4), rand() * 1.6 + 0.2, fv(rand, 0.4)));
+      const cap = new Capsule(start, end, rand() * 0.8 + 0.2);
+      const tcap = new ThreeCapsule(tv3(start), tv3(end), cap.radius);
+      const a = ours.capsuleIntersect(cap);
+      const b = theirs.capsuleIntersect(tcap);
+      expect(a === false).toBe(b === false);
+      if (a && b) {
+        hits += 1;
+        expectClose(a.depth, b.depth, TRIG_TOL);
+        expectVec3(a.normal, b.normal, TRIG_TOL);
+      }
+    }
+    expect(hits).toBeGreaterThan(100);
+  });
+
+  it("sphereIntersect equals three's on 1000 seeded spheres", () => {
+    const rand = rng(0x5ef3);
+    let hits = 0;
+    for (let i = 0; i < CASES; i += 1) {
+      const sp = new Sphere(new Vector3(fv(rand, 22), rand() * 7 - 2, fv(rand, 22)), rand() * 1.5 + 0.2);
+      const a = ours.sphereIntersect(sp);
+      const b = theirs.sphereIntersect(new THREE.Sphere(tv3(sp.center), sp.radius));
+      expect(a === false).toBe(b === false);
+      if (a && b) {
+        hits += 1;
+        expectClose(a.depth, b.depth, TRIG_TOL);
+        expectVec3(a.normal, b.normal, TRIG_TOL);
+      }
+    }
+    expect(hits).toBeGreaterThan(100);
+  });
+
+  it("boxIntersect equals three's on 500 seeded boxes", () => {
+    const rand = rng(0xb0c5);
+    let hits = 0;
+    for (let i = 0; i < 500; i += 1) {
+      const mn = new Vector3(fv(rand, 22), rand() * 7 - 2, fv(rand, 22));
+      const box = new Box3(mn, mn.add(new Vector3(rand() * 2 + 0.2, rand() * 2 + 0.2, rand() * 2 + 0.2)));
+      const a = ours.boxIntersect(box);
+      const b = theirs.boxIntersect(new THREE.Box3(tv3(box.min), tv3(box.max)));
+      expect(a === false).toBe(b === false);
+      if (a && b) {
+        hits += 1;
+        expectClose(a.depth, b.depth, TRIG_TOL);
+        expectVec3(a.normal, b.normal, TRIG_TOL);
+      }
+    }
+    expect(hits).toBeGreaterThan(50);
+  });
+
+  it("rayIntersect equals three's on 1000 seeded rays", () => {
+    const rand = rng(0x4a7e);
+    let hits = 0;
+    for (let i = 0; i < CASES; i += 1) {
+      const ray = new Ray(new Vector3(fv(rand, 22), 12 + rand() * 4, fv(rand, 22)), new Vector3(fv(rand, 0.3), -1, fv(rand, 0.3)).normalize());
+      const a = ours.rayIntersect(ray);
+      const b = theirs.rayIntersect(new THREE.Ray(tv3(ray.origin), tv3(ray.direction)));
+      expect(a === false).toBe(b === false);
+      if (a && b) {
+        hits += 1;
+        expectClose(a.distance, b.distance, TRIG_TOL);
+        expectVec3(a.position, b.position, TRIG_TOL);
+      }
+    }
+    expect(hits).toBeGreaterThan(300);
   });
 });

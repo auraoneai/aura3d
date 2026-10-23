@@ -3,7 +3,7 @@
  *
  * Voice → PannerNode (HRTF on high/ultra, equalpower otherwise; inverse
  * distance, refDistance 1, maxDistance 60, rolloff 1) → occlusion lowpass
- * (BiquadFilterNode, 20 kHz open → 900 Hz occluded, exponential map) → cue
+ * (BiquadFilterNode, ~20 kHz open → 400 Hz occluded, quadratic map) → cue
  * gain → bus.
  */
 
@@ -31,7 +31,7 @@ export interface SpatialNode {
   readonly occlusionFilter: SoundBiquadLike;
   setPosition(p: Vec3): void;
   setVelocity(v: Vec3): void;
-  /** 0 = open (20 kHz), 1 = fully occluded (900 Hz). */
+  /** 0 = open (~20 kHz), 1 = fully occluded (400 Hz). */
   setOcclusion(amount01: number): void;
   dispose(): void;
 }

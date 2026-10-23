@@ -75,9 +75,16 @@ describe("gainsForRpm (§6.8 equal-power crossfade)", () => {
 });
 
 describe("occlusionHz (§6.8)", () => {
-  it("maps 0 → 20 kHz, 1 → 900 Hz exponentially", () => {
-    expect(occlusionHz(0)).toBe(20_000);
-    expect(occlusionHz(1)).toBeCloseTo(900, 0);
-    expect(occlusionHz(0.5)).toBeCloseTo(Math.sqrt(20_000 * 900), 0);
+  // C-25 (#208, 4995fb7c8) replaced the exponential 20 kHz→900 Hz map with 20000·(1-occ)² + 400:
+  // a fully occluded voice rolls off at 400 Hz and the open filter sits just above 20 kHz.
+  it("maps 0 → 20.4 kHz, 1 → 400 Hz on the C-25 quadratic curve", () => {
+    expect(occlusionHz(0)).toBe(20_400);
+    expect(occlusionHz(1)).toBe(400);
+    expect(occlusionHz(0.5)).toBeCloseTo(5_400, 6);
+  });
+  it("clamps out-of-range occlusion and falls monotonically", () => {
+    expect(occlusionHz(-1)).toBe(occlusionHz(0));
+    expect(occlusionHz(2)).toBe(occlusionHz(1));
+    expect(occlusionHz(0.25)).toBeGreaterThan(occlusionHz(0.75));
   });
 });

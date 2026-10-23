@@ -1,8 +1,55 @@
 # Changelog
 
-Version: 4.0.3
+Version: 4.0.4
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.0.4 (2026-10-22)
+
+three.js parity: the engine surface that Crayon-style three.js ports need, behind the curated `@aura3d/engine` API. Every item below has a unit test; GPU behaviour was verified on a remote WebGL2 runner unless noted. Tracked in `docs/workflows/threejs-parity-gaps.md`.
+
+### Shading and materials
+
+- **`material.custom({ glsl, wgsl?, uniforms, defines, transparent, depthWrite, side, blending, fog, patch? })`** compiles GLSL (required) and optional WGSL into a `PortableShaderMaterial`; `handle.setUniform(name, value)` updates without recompiling. `registerShaderChunk(name, glsl, wgsl?)` adds `#include` chunks. `PortableShaderMaterial`, `ShaderPreprocessor` and `registerShaderChunk` are exported from `@aura3d/engine/renderer`.
+- **`effects.shaderPass({ glsl, wgsl?, uniforms, order })`** adds a custom post pass with named slots (`before-bloom`, `after-bloom`, `before-tonemap`, `after-tonemap`) or a numeric order. On WebGL2, `after-bloom` and `before-tonemap` passes now run after the bloom composite, matching WebGPU (they previously ran before bloom).
+- **Per-material `fog: false`** opt-out, Cineon tone mapping, `createRenderTarget` (render a scene into a target and sample it as a material map).
+- **`scene().overrideMaterial(spec | null)`** replaces every mesh material in the scene without mutating authored nodes.
+- **`lights.lensFlare(...)`**, `lights.rectArea` and `lights.lightProbe` (SH9). Lens flare placement follows three; unlike three it does not fade by depth occlusion because the engine has no depth readback.
+
+### Geometry, instancing, lines
+
+- **Primitives:** `cone`, `circle`, `ring`, `tube`, `lathe`, `extrude`, `shape`, `torusKnot`, `polyhedron`, `roundedBox`, with vertex and index counts checked against three 0.185.1.
+- **Geometry authoring:** `geometry.dynamic` (typed arrays, colours, groups, draw range, per-frame in-place `updateAttribute`/`setGeometry`), custom per-vertex `attributes` readable from `material.custom` shaders, `topology: "points"`, `geometry.edges`, `geometry.wireframe`, `geometry.merge`, `geometry.toNonIndexed`, `geometry.convex`.
+- **`instances.mesh`** and **`batched.mesh`** write the GPU instance buffer directly; multi-draw is used only when the device really supports `WEBGL_multi_draw`, and the report says so when it does not. `lines.*` (thin, fat, dashed), `points`, `sprites`, `helpers.*`.
+- **`A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are now default-on.** They gate only the new `batched`, `line`, `points` and `sprite` node kinds, so no existing scene is affected. The other four `A3D_PARITY_*` flags gate nothing and stay `dev`.
+
+### Textures, loaders, math, animation, audio
+
+- **`texture.data/canvas/video/compressed/depth/cube/dataArray/load`** with full handle semantics (`wrapS/T`, `repeat`, `offset`, `rotation`, `anisotropy`, filters, `flipY`, `needsUpdate`); WebGPU honours revisions and uploads every array layer. EXR decoder (none, RLE, ZIPS, ZIP, PIZ; half and float), `FileLoader`, `ImageBitmapLoader`, `DataTextureLoader`, asset progress and error callbacks.
+- **`@aura3d/math`:** full curve family with cached arc length and Frenet frames, `Path`/`Shape`, `ShapeUtils`, `Line3`, `Triangle`, `Spherical`, `Cylindrical`, all six `Euler` orders, `MathUtils`, HSL colour methods, `SphericalHarmonics3`, `OBB`, `Capsule`, `ConvexHull`, `Octree`; values are tested against three over seeded cases.
+- **Animation:** `clampWhenFinished`, negative `timeScale`, `finished` events, `PropertyBinding`, `AnimationUtils`, `AnimationObjectGroup`, colour tracks, `morphTargetDictionary`, `cloneSkinned` with shared textures.
+- **Audio:** fixed double distance attenuation on positional emitters, `distanceModel`, cone and orientation, `AudioListener` now drives `ctx.listener`, `AudioAnalyser`.
+- **Runtime:** `Clock`, `raycast` options, `app.info`, `app.precompile`, `setPixelRatio`, `setClearColor`, texture/cube backgrounds, node `layers`/`renderOrder`/`traverse`, `cameras.cube`, `surfaces.mirror`.
+
+### New in this release, with limits
+
+- **`cameras.array` and `cameras.stereo`** (three's ArrayCamera and StereoCamera) with viewport and scissor on the render device; stereo eye matrices are tested against three.
+- **`xr.button()` and `app.xr`** (WebXR enter/exit, per-view rendering into the XR layer). Tested with fake XR objects only; not yet verified on a headset or browser.
+- **`compute.*`** (WebGPU-only compute: pipelines, buffers, dispatch). Tested against a fake GPU device only; WebGL2 apps get a clear `compute-requires-webgpu` error.
+- WebGPU canvas presentation is unverified on the remote runner (software WebGPU destroys the device at the first presented frame); WebGPU material and post paths are verified through offscreen readback.
+
+### Behaviour changes
+
+- `primitives.box/sphere/plane/cylinder/capsule/torus` now throw `invalid-primitive-params` for params they do not use (previously ignored silently); size them with `size`.
+- `material.custom` rejects uniform names that lower into a reserved built-in (for example `time` becomes `u_time`) at authoring time instead of failing at GLSL compile.
+- Shader compile errors now include the first lines of the GLSL info log in the message.
+- Camera layer masks (`camera.perspective({ layers })`) now hide non-intersecting nodes; a cube-camera reflection is no longer scaled to nothing by a zero scene environment intensity; static batching keeps an item's cube binding.
+- Camera `Spline` now uses `@aura3d/math` curves (open-spline arc length is within 2% per sixth).
+
+### Tooling
+
+- `aura3d migrate three` gains rows for the new surface and a scanner fix for multi-line constructs; a test now fails if any mapping target is not exported.
+- Crayon probe v2 (live scene capture from the sandboxed game frame), the deterministic capture tool, and a Strange Orbit reference and port example under `examples/strange-orbit-port/`.
 
 ## 4.0.3 (2026-10-20)
 

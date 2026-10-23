@@ -3523,6 +3523,115 @@ describe("Renderer", () => {
     device.dispose();
   });
 
+  describe("WebGPU viewport / scissor (SC-01)", () => {
+    const drawTriangle = (device: Awaited<ReturnType<typeof createRenderDevice>>, label: string) => {
+      const vertices = new Float32Array([-0.5, -0.5, 0, 0.5, -0.5, 0, 0, 0.5, 0]);
+      const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
+      const shader = device.createShaderProgram({
+        label,
+        marker: `@aura3d-shader:${label}`,
+        vertex: `// @aura3d-shader:${label}\n@vertex fn vs_main(@location(0) position: vec3<f32>) -> @builtin(position) vec4<f32> { return vec4<f32>(position, 1.0); }`,
+        fragment: `// @aura3d-shader:${label}\n@fragment fn fs_main() -> @location(0) vec4<f32> { return vec4<f32>(1.0); }`
+      });
+      device.draw({ label, topology: "triangles", vertexBuffer, vertexFormat: VertexFormat.P3, vertexCount: 3, shader });
+    };
+
+    it("applies the frame-scoped viewport and scissor to the draw pass, converting to WebGPU's top-left origin", async () => {
+      const native = createNativeFakeWebGPU();
+      const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
+      const target = device.createRenderTarget({ width: 8, height: 8, label: "viewport-target" });
+      device.setRenderTarget(target);
+      device.beginFrame(8, 8);
+      device.clear([0, 0, 0, 1]);
+      device.setViewport!(2, 1, 4, 3);
+      device.setScissor!(1, 1, 5, 4);
+      device.setScissorTest!(true);
+      drawTriangle(device, "viewport-scissored");
+      device.endFrame();
+      const pass = native.device.renderPasses.at(-1)!;
+      expect(pass.viewports).toEqual([[2, 8 - 1 - 3, 4, 3, 0, 1]]);
+      expect(pass.scissors).toEqual([[1, 8 - 1 - 4, 5, 4]]);
+    });
+
+    it("issues no viewport or scissor commands without an override, and the override resets at beginFrame", async () => {
+      const native = createNativeFakeWebGPU();
+      const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
+      const target = device.createRenderTarget({ width: 8, height: 8, label: "viewport-target" });
+      device.setRenderTarget(target);
+      device.beginFrame(8, 8);
+      drawTriangle(device, "viewport-plain");
+      device.setViewport!(0, 0, 4, 4);
+      device.endFrame();
+      device.beginFrame(8, 8);
+      drawTriangle(device, "viewport-after-reset");
+      device.endFrame();
+      const passes = native.device.renderPasses.filter((pass) => pass.drawCalls.length > 0);
+      expect(passes.at(-2)!.viewports).toEqual([]);
+      expect(passes.at(-1)!.viewports).toEqual([]);
+      expect(passes.at(-1)!.scissors).toEqual([]);
+    });
+
+    it("a scissor rect only clips while setScissorTest is on", async () => {
+      const native = createNativeFakeWebGPU();
+      const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
+      const target = device.createRenderTarget({ width: 8, height: 8, label: "scissor-target" });
+      device.setRenderTarget(target);
+      device.beginFrame(8, 8);
+      device.setScissor!(0, 0, 4, 4);
+      drawTriangle(device, "scissor-off");
+      device.setScissorTest!(true);
+      drawTriangle(device, "scissor-on");
+      device.endFrame();
+      const passes = native.device.renderPasses.filter((pass) => pass.drawCalls.length > 0);
+      expect(passes.at(-2)!.scissors).toEqual([]);
+      expect(passes.at(-1)!.scissors).toEqual([[0, 4, 4, 4]]);
+    });
+
+    it("the override is scoped to its target: a different target gets no viewport command", async () => {
+      const native = createNativeFakeWebGPU();
+      const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
+      const a = device.createRenderTarget({ width: 8, height: 8, label: "a" });
+      const b = device.createRenderTarget({ width: 8, height: 8, label: "b" });
+      device.setRenderTarget(a);
+      device.beginFrame(8, 8);
+      device.setViewport!(1, 1, 4, 4);
+      device.setRenderTarget(b);
+      drawTriangle(device, "other-target");
+      device.setRenderTarget(a);
+      drawTriangle(device, "same-target");
+      device.endFrame();
+      const passes = native.device.renderPasses.filter((pass) => pass.drawCalls.length > 0);
+      expect(passes.at(-2)!.viewports).toEqual([]);
+      expect(passes.at(-1)!.viewports).toEqual([[1, 3, 4, 4, 0, 1]]);
+    });
+
+    it("a persistent viewport applies to the canvas, survives beginFrame, skips render targets, and resetViewport clears it", async () => {
+      const native = createNativeFakeWebGPU();
+      const canvas = createFakeWebGPUCanvas();
+      const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu, canvas: canvas as unknown as HTMLCanvasElement });
+      const target = device.createRenderTarget({ width: 8, height: 8, label: "post-target" });
+      device.setViewport!(2, 0, 6, 8, { persistent: true });
+      device.beginFrame(8, 8);
+      device.setRenderTarget(target);
+      drawTriangle(device, "persist-target");
+      device.setRenderTarget(null);
+      drawTriangle(device, "persist-canvas");
+      device.endFrame();
+      device.beginFrame(8, 8);
+      drawTriangle(device, "persist-canvas-next-frame");
+      device.endFrame();
+      device.resetViewport!();
+      device.beginFrame(8, 8);
+      drawTriangle(device, "persist-reset");
+      device.endFrame();
+      const passes = native.device.renderPasses.filter((pass) => pass.drawCalls.length > 0);
+      expect(passes.at(-4)!.viewports).toEqual([]);
+      expect(passes.at(-3)!.viewports).toEqual([[2, 0, 6, 8, 0, 1]]);
+      expect(passes.at(-2)!.viewports).toEqual([[2, 0, 6, 8, 0, 1]]);
+      expect(passes.at(-1)!.viewports).toEqual([]);
+    });
+  });
+
   it("submits native WebGPU indexed draws only when indexed pass APIs are present", async () => {
     const native = createNativeFakeWebGPU();
     const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
@@ -4250,6 +4359,8 @@ function createNativeFakeWebGPUDevice(options: { readonly indexedPassApi?: boole
     indexBuffers: Array<{ slot: number; indexFormat: "uint16" | "uint32" }>;
     bindGroups: number[];
     drawCalls: Array<{ kind: string; count: number; instances?: number }>;
+    viewports: number[][];
+    scissors: number[][];
   }>;
   shaderModules: Array<{ readonly label?: string; readonly code: string }>;
   pipelines: unknown[];
@@ -4285,6 +4396,8 @@ function createNativeFakeWebGPUDevice(options: { readonly indexedPassApi?: boole
     indexBuffers: Array<{ slot: number; indexFormat: "uint16" | "uint32" }>;
     bindGroups: number[];
     drawCalls: Array<{ kind: string; count: number; instances?: number }>;
+    viewports: number[][];
+    scissors: number[][];
   }> = [];
   const shaderModules: Array<{ readonly label?: string; readonly code: string }> = [];
   const pipelines: unknown[] = [];
@@ -4453,7 +4566,9 @@ function createNativeFakeWebGPUDevice(options: { readonly indexedPassApi?: boole
             indexBuffers: [] as Array<{ slot: number; indexFormat: "uint16" | "uint32" }>,
             drawCalls: [] as Array<{ kind: string; count: number; instances?: number }>,
             pipeline: undefined as string | undefined,
-            bindGroups: [] as number[]
+            bindGroups: [] as number[],
+            viewports: [] as number[][],
+            scissors: [] as number[][]
           };
           renderPasses.push(pass);
           const encoder = {
@@ -4465,6 +4580,12 @@ function createNativeFakeWebGPUDevice(options: { readonly indexedPassApi?: boole
             },
             setBindGroup(index: number) {
               pass.bindGroups.push(index);
+            },
+            setViewport(x: number, y: number, width: number, height: number, minDepth: number, maxDepth: number) {
+              pass.viewports.push([x, y, width, height, minDepth, maxDepth]);
+            },
+            setScissorRect(x: number, y: number, width: number, height: number) {
+              pass.scissors.push([x, y, width, height]);
             },
             draw(count: number, instances?: number) {
               pass.drawCalls.push({ kind: "draw", count, ...(instances === undefined || instances === 1 ? {} : { instances }) });

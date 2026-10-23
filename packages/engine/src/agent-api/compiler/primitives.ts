@@ -262,7 +262,7 @@ export async function upgradeProductionEnvironmentHdri(
   };
 }
 
-import { Geometry, IndexBuffer, InstancedPBRMaterial, PBRMaterial, VertexBuffer, VertexFormat } from "@aura3d/rendering";
+import { Geometry, IndexBuffer, InstancedPBRMaterial, PBRMaterial, VertexBuffer, VertexFormat, assignCustomAttributeLocations, customAttributeSemantic, type VertexAttributeDescriptor } from "@aura3d/rendering";
 import { computeAuraGeometryBounds, computeAuraGeometryNormals, defineAuraCustomGeometry, normalizeGeometryAttributes } from "../RootGeometry.js";
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { instances } from "../nodes/instances.js";
@@ -547,15 +547,28 @@ function createProductionPrimitiveMesh(primitive: AuraBuiltinPrimitive, node?: A
  */
 function createProductionGeometryFromCustomSpec(spec: AuraCustomGeometrySpec): Geometry {
   const normalized = normalizeGeometryAttributes(spec);
-  const normals = normalized.normals ?? computeAuraGeometryNormals({ positions: normalized.positions, indices: normalized.indices });
+  const normals = resolveSpecNormals(spec, normalized);
   const vertexCount = normalized.vertexCount;
-  const attributes: { semantic: "position" | "normal" | "uv" | "color"; components: 2 | 3 | 4; offset: number }[] = [
+  const attributes: VertexAttributeDescriptor[] = [
     { semantic: "position", components: 3, offset: 0 },
     { semantic: "normal", components: 3, offset: 12 }
   ];
   let cursor = 24;
   if (normalized.uvs) { attributes.push({ semantic: "uv", components: 2, offset: cursor }); cursor += 8; }
   if (normalized.colors) { attributes.push({ semantic: "color", components: 4, offset: cursor }); cursor += 16; }
+  // R-23: custom attributes follow the built-ins in name order and bind by
+  // their GLSL name; locations come from the stable pool.
+  const customLocations = assignCustomAttributeLocations(normalized.custom.map((entry) => entry.name));
+  for (const entry of normalized.custom) {
+    attributes.push({
+      semantic: customAttributeSemantic(entry.name),
+      components: entry.itemSize,
+      offset: cursor,
+      shaderName: entry.name,
+      shaderLocation: customLocations.get(entry.name)!
+    });
+    cursor += entry.itemSize * 4;
+  }
   const vertices = new VertexBuffer(new VertexFormat(attributes), vertexCount);
   for (let index = 0; index < vertexCount; index += 1) {
     vertices.setAttribute(index, "position", [normalized.positions[index * 3]!, normalized.positions[index * 3 + 1]!, normalized.positions[index * 3 + 2]!]);
@@ -563,13 +576,25 @@ function createProductionGeometryFromCustomSpec(spec: AuraCustomGeometrySpec): G
     if (normalized.uvs) vertices.setAttribute(index, "uv", [normalized.uvs[index * 2]!, normalized.uvs[index * 2 + 1]!]);
     if (normalized.colors) vertices.setAttribute(index, "color", [normalized.colors[index * 4]!, normalized.colors[index * 4 + 1]!, normalized.colors[index * 4 + 2]!, normalized.colors[index * 4 + 3]!]);
   }
+  for (const entry of normalized.custom) writeCustomAttribute(vertices, entry.name, entry.itemSize, entry.data, 0);
   const indexList = normalized.indices ?? Uint32Array.from({ length: vertexCount }, (_, i) => i);
   const indexBuffer = indexList.length > 0 ? new IndexBuffer(Array.from(indexList), vertexCount) : null;
-  const geometry = new Geometry(vertices, indexBuffer, spec.topology === "lines" ? "lines" : "triangles", customGeometryBounds(spec));
+  const geometry = new Geometry(vertices, indexBuffer, spec.topology === "lines" ? "lines" : spec.topology === "points" ? "points" : "triangles", customGeometryBounds(spec));
   if (spec.groups) geometry.groups = [...spec.groups];
   if (spec.drawRange) geometry.drawRange = { ...spec.drawRange };
   if (spec.morphTargets) geometry.morphTargets = spec.morphTargets.map((target) => ({ ...target }));
   return geometry;
+}
+
+/** Authored normals, else computed; points carry a constant +Y (a vertex count that is not a multiple of 3 would yield NaN face normals). */
+function resolveSpecNormals(spec: AuraCustomGeometrySpec, normalized: ReturnType<typeof normalizeGeometryAttributes>): Float32Array {
+  if (normalized.normals) return normalized.normals;
+  if (spec.topology === "points") {
+    const up = new Float32Array(normalized.positions.length);
+    for (let i = 1; i < up.length; i += 3) up[i] = 1;
+    return up;
+  }
+  return computeAuraGeometryNormals({ positions: normalized.positions, indices: normalized.indices });
 }
 
 function customGeometryBounds(spec: AuraCustomGeometrySpec): GltfBounds {
@@ -685,10 +710,11 @@ function applyDynamicGeometrySpec(resource: ProductionRuntimePrimitiveResource, 
   const sameFootprint = vertexBuffer.vertexCount === normalized.vertexCount
     && has("uv") === (normalized.uvs !== undefined)
     && has("color") === (normalized.colors !== undefined)
+    && customFootprintMatches(vertexBuffer, normalized.custom)
     && geometry.topology === (spec.topology ?? "triangles")
     && vertexBuffer.format.hasAttribute("normal")
     && !has("tangent");
-  const normals = normalized.normals ?? computeAuraGeometryNormals({ positions: normalized.positions, indices: normalized.indices });
+  const normals = resolveSpecNormals(spec, normalized);
 
   if (sameFootprint) {
     // In-place path (L2-04): attribute writes mark byte ranges dirty; the next
@@ -699,6 +725,7 @@ function applyDynamicGeometrySpec(resource: ProductionRuntimePrimitiveResource, 
       if (normalized.uvs) vertexBuffer.setAttribute(index, "uv", [normalized.uvs[index * 2]!, normalized.uvs[index * 2 + 1]!]);
       if (normalized.colors) vertexBuffer.setAttribute(index, "color", [normalized.colors[index * 4]!, normalized.colors[index * 4 + 1]!, normalized.colors[index * 4 + 2]!, normalized.colors[index * 4 + 3]!]);
     }
+    for (const entry of normalized.custom) writeCustomAttribute(vertexBuffer, entry.name, entry.itemSize, entry.data, 0);
     if (normalized.indices && geometry.indexBuffer && normalized.indices.length === geometry.indexBuffer.count) {
       geometry.indexBuffer.setIndices(0, normalized.indices);
     } else if (normalized.indices) {
@@ -723,11 +750,34 @@ function applyDynamicGeometrySpec(resource: ProductionRuntimePrimitiveResource, 
   tracked.bounds = { min: [...next.bounds.min] as AuraVec3, max: [...next.bounds.max] as AuraVec3 };
 }
 
+/** R-23: write `data` (itemSize floats per vertex) into the named custom attribute starting at vertex `start`. */
+function writeCustomAttribute(vertexBuffer: VertexBuffer, name: string, itemSize: number, data: ArrayLike<number>, start: number): void {
+  const semantic = customAttributeSemantic(name);
+  const elements = data.length / itemSize;
+  const scratch: number[] = new Array(itemSize);
+  for (let element = 0; element < elements; element += 1) {
+    for (let component = 0; component < itemSize; component += 1) scratch[component] = data[element * itemSize + component] ?? 0;
+    vertexBuffer.setAttribute(start + element, semantic, scratch);
+  }
+}
+
+/** R-23: the live buffer holds exactly the spec's custom attributes (same names, same itemSize). */
+function customFootprintMatches(vertexBuffer: VertexBuffer, custom: readonly { readonly name: string; readonly itemSize: number }[]): boolean {
+  const live = vertexBuffer.format.attributes.filter((attribute) => String(attribute.semantic).startsWith("custom:"));
+  if (live.length !== custom.length) return false;
+  return custom.every((entry) => {
+    const semantic = customAttributeSemantic(entry.name);
+    return vertexBuffer.format.hasAttribute(semantic) && vertexBuffer.format.getAttribute(semantic).components === entry.itemSize;
+  });
+}
+
 /** SG-05 `updateAttribute`: partial write by element offset — dirty-ranged, never reallocates. */
 function applyAttributeUpdateToGeometry(geometry: Geometry, update: AuraL2AttributeUpdate): void {
-  const semantic = L2_UPDATE_SEMANTICS[update.name.toLowerCase()];
+  // R-23: exact-name custom attributes win; validated names never collide with the built-in aliases.
+  const customSemantic = customAttributeSemantic(update.name);
+  const semantic = geometry.vertexBuffer.format.hasAttribute(customSemantic) ? customSemantic : L2_UPDATE_SEMANTICS[update.name.toLowerCase()];
   if (!semantic) {
-    throw new Error(`Aura3D updateAttribute name "${update.name}" is not a writable vertex semantic (position/normal/uv/uv1/color/tangent).`);
+    throw new Error(`Aura3D updateAttribute name "${update.name}" is not a writable vertex semantic (position/normal/uv/uv1/color/tangent) or a custom attribute on this geometry.`);
   }
   const vertexBuffer = geometry.vertexBuffer;
   if (!vertexBuffer.format.hasAttribute(semantic)) {

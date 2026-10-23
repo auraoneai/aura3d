@@ -374,7 +374,7 @@ export function createProductionRuntimeRendererInput(
     environmentFog: compatibility?.source.environmentFog ?? createProductionRuntimeEnvironmentFog(snapshot, collectedLights, canvas.width, canvas.height),
     ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { cameraPosition })
   };
-  const cameraLike: CameraLike = { viewProjectionMatrix };
+  const cameraLike: CameraLike = { viewProjectionMatrix, ...(snapshot.camera.layers !== undefined ? { layerMask: snapshot.camera.layers >>> 0 } : {}) };
   return {
     source,
     ...(compatibility?.source.cameraPolicy === "auto-frame" ? {} : { camera: cameraLike }),

@@ -21,7 +21,41 @@ export type VertexAttributeSemantic =
    */
   | "lineCorner"
   /** Accumulated arc length at this vertex, in world units, for dash patterns. */
-  | "lineDistance";
+  | "lineDistance"
+  /** R-23: author-named per-vertex attribute (`custom:<glslName>`); see {@link customAttributeSemantic}. */
+  | `custom:${string}`;
+
+const CUSTOM_SEMANTIC_PREFIX = "custom:";
+
+/**
+ * R-23: shader locations a custom attribute may take, in assignment order.
+ * Excludes 0/1/2 (position/normal/uv), 4 (color) and 7 (uv1) because the
+ * custom-geometry path emits those and the native WebGPU atlas shader keys on
+ * 4 and 7; also every entry is below WebGPU's default `maxVertexAttributes`
+ * (16), which a flat "14 and up" scheme would exceed after two attributes.
+ */
+export const CUSTOM_ATTRIBUTE_LOCATION_POOL: readonly number[] = [3, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15];
+
+export function customAttributeSemantic(name: string): `custom:${string}` {
+  return `${CUSTOM_SEMANTIC_PREFIX}${name}`;
+}
+
+export function isCustomAttributeSemantic(semantic: VertexAttributeSemantic): semantic is `custom:${string}` {
+  return semantic.startsWith(CUSTOM_SEMANTIC_PREFIX);
+}
+
+/**
+ * Stable location assignment: names are sorted ascending (code-unit order) and
+ * take the pool in order, so a geometry's layout never depends on the order the
+ * author listed its attributes in.
+ */
+export function assignCustomAttributeLocations(names: readonly string[]): ReadonlyMap<string, number> {
+  if (names.length > CUSTOM_ATTRIBUTE_LOCATION_POOL.length) {
+    throw new Error(`At most ${CUSTOM_ATTRIBUTE_LOCATION_POOL.length} custom vertex attributes are supported per geometry, got ${names.length}`);
+  }
+  const sorted = [...new Set(names)].sort();
+  return new Map(sorted.map((name, index) => [name, CUSTOM_ATTRIBUTE_LOCATION_POOL[index]!]));
+}
 
 export type VertexAttributeType = "float32";
 
@@ -72,12 +106,19 @@ export class VertexFormat {
     }
 
     const seen = new Set<VertexAttributeSemantic>();
+    const locations = new Map<number, VertexAttributeSemantic>();
     this.attributes = attributes.map((attribute) => {
       if (seen.has(attribute.semantic)) {
         throw new Error(`Duplicate vertex semantic: ${attribute.semantic}`);
       }
       seen.add(attribute.semantic);
-      return new VertexAttribute(attribute);
+      const built = new VertexAttribute(attribute);
+      const owner = locations.get(built.shaderLocation);
+      if (owner !== undefined && (isCustomAttributeSemantic(owner) || isCustomAttributeSemantic(built.semantic))) {
+        throw new Error(`Vertex semantics ${owner} and ${built.semantic} share shader location ${built.shaderLocation}`);
+      }
+      locations.set(built.shaderLocation, built.semantic);
+      return built;
     });
 
     const minimumStride = Math.max(...this.attributes.map((attribute) => attribute.offset + attribute.byteLength));
@@ -217,6 +258,9 @@ export class VertexFormat {
 }
 
 function defaultShaderLocation(semantic: VertexAttributeSemantic): number {
+  if (isCustomAttributeSemantic(semantic)) {
+    throw new Error(`Custom vertex attribute ${semantic} requires an explicit shaderLocation (use assignCustomAttributeLocations)`);
+  }
   switch (semantic) {
     case "position":
       return 0;
@@ -250,6 +294,7 @@ function defaultShaderLocation(semantic: VertexAttributeSemantic): number {
 }
 
 function defaultShaderName(semantic: VertexAttributeSemantic): string {
+  if (isCustomAttributeSemantic(semantic)) return semantic.slice(CUSTOM_SEMANTIC_PREFIX.length);
   switch (semantic) {
     case "position":
       return "a_position";
