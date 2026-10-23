@@ -285,7 +285,7 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     `// ${marker}`,
     // L5/PRD-11: `gl_DrawID` needs the pragma; `: warn` keeps unsupported
     // drivers compiling (the feature chunk then uses the `u_drawId` loop).
-    ...((localDefines as Record<string, unknown>)["A3D_L5_MULTI_DRAW"] || (localDefines as Record<string, unknown>)["A3D_PRD11_MULTI_DRAW_EXT"] ? ["#extension WEBGL_multi_draw : warn"] : []),
+    ...((localDefines as Record<string, unknown>)["A3D_L5_MULTI_DRAW"] || (localDefines as Record<string, unknown>)["A3D_PRD11_MULTI_DRAW_EXT"] ? ["#extension GL_ANGLE_multi_draw : warn"] : []),
     "precision highp float;",
     emitDefines(localDefines),
     COMMON_CHUNK_GLSL,

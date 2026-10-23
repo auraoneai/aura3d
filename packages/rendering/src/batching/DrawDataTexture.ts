@@ -17,6 +17,15 @@ import type { UniformValue } from "../RenderDevice";
 
 export const DRAW_DATA_TEXELS_PER_DRAW = 6;
 
+const drawDataBindings = new WeakMap<Texture, TextureBinding>();
+
+/** One shared `u_a3dDrawData` binding per draw-data texture: multi-draw merging compares uniform values by identity. */
+export function drawDataBindingFor(texture: Texture): TextureBinding {
+  let binding = drawDataBindings.get(texture);
+  if (!binding) drawDataBindings.set(texture, binding = new TextureBinding({ name: "u_a3dDrawData", texture, required: false }));
+  return binding;
+}
+
 /**
  * Meta texel `.w` bit layout (parity-L5 / SG-02): bit 0 = visible, bits 1+
  * = packed `PackedGeometryEntry.geometryId`. Shaders read

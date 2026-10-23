@@ -1,12 +1,10 @@
 # PRD — three.js → Aura3D Parity
 
-**Status:** v7 · 2026-10-23. Released as **4.0.6** (npm, all 24 public packages; git tag `v4.0.6`).
-The engine surface in this document is complete except: **Phase exits B, C, D** (game ports, dropped by decision),
-the **fixed-input captures for eight games** (R-25, partial), and **real-device
-verification** of WebXR, WebGPU compute and WebGPU canvas presentation (R-22). `material.node` (TSL) was verified on a remote software-WebGL2 runner in 4.0.6, not on a hardware GPU.
+**Status:** v8 · 2026-10-23. Released as **4.0.7** (npm, all 24 public packages; git tag `v4.0.7`).
+Scope was widened by the owner on 2026-10-23: all eleven Crayon games (the original ten plus *Kid Goku: Beyond the Clouds*) were ported and captured, and real-device checks were run on remote emulators.
+**Result:** simulation parity is verified for every port against a deterministic reference of the original (see §12.5). **Phase A, C and D exits are met. Phase B is NOT met:** state parity passes but the model-judged blind A/B identified the original in 48 of 48 trials. Ports are simulation ports with procedural art, not pixel-parity ports.
 `A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are default-on; the other four flags gate nothing.
 **Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
-**Scope decision (owner, 2026-10-22):** the goal is the engine surface, not the game ports. Phase exits B, C and D and the Crayon fixed-input captures (R-25) are **descoped by the owner**, not completed; they stay unticked and are not claimed. Real-device verification of WebXR, WebGPU compute and WebGPU canvas presentation needs hardware the remote runner lacks and is also not claimed.
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
 (the ten Crayon ports this PRD unblocks)
 
@@ -973,9 +971,9 @@ means "implemented and tested".
 
 ### Phase exits
 - [x] A — Strange Orbit 7-lap capture matches (reference `evidence/crayon-capture/strange-orbit-reference.json`, 283.683 s finish, 7 laps, 35 checkpoints, bit-exact across 6 sessions / 4 ACR runs; `examples/strange-orbit-port/race.ts` replays the recorded 17,214-step input and reproduces finish time, all lap times and all checkpoints exactly, in Node and in the live page on ACR; GPU render passed, run `so-d-20261022T230635Z`). Caveat: simulation parity, not pixel parity; assets are procedural
-- [ ] B — HEATSINK blind A/B "same game" (not attempted: a port was started and stopped by decision; needs a human-judged blind comparison) **[DESCOPED by owner 2026-10-22; not done]**
-- [ ] C — Ninja Runner 60 s with clones/combat (not attempted: port started and stopped by decision; the engine pieces it needs, `cloneSkinned` and `material.custom`, are shipped) **[DESCOPED by owner 2026-10-22; not done]**
-- [ ] D — Last Train town loop, memory stable ×3 (not attempted; the engine pieces it needs are shipped) **[DESCOPED by owner 2026-10-22; not done]**
+- [ ] B — HEATSINK blind A/B "same game" **NOT MET**. State parity passes (4 sessions + 4 replays identical, max delta 0; port replays all 202 snapshots within 1e-6; 62 unit tests; remote browser spec exit 0). The blind A/B is a MODEL judgement (`claude-sonnet-5.5` via Kiro Prism, 48 trials, seed 20261023, A/B randomised, no position bias): it identified the original 48/48 (95% CI 92.6-100%, chance 50%) and called the pair "same game" 0/48, in both runs (`evidence/heatsink-port/judge-results*.json`). Remaining differences by impact: the vehicle (six primitives vs a detailed drone), sky richness, surface detail, motion effects, road detail, grade/bloom, camera framing. Rain frames unavailable (rain exists only on Grand Circuit, not ported).
+- [x] C — Ninja Runner 60 s with clones/combat (original run replays event-for-event in the live remote page: 12,759 steps, 106.325 s, 102 kills, score 39,735, a win, 513 events, max trace delta 0; 12 `cloneSkinned` actors with 12 distinct bone sets and independent mixers (exit needs 10); browser spec covers movement, restart, win and loss; `evidence/ninja-runner-port/`). Caveat: soldier GLB tinted per form, procedural environment, no audio, enemy attack path unverified, not pixel parity
+- [x] D — Last Train town loop, memory stable ×3 (loop steps within 0.1% of the original, score 4,039 every loop, per-leg fares/passengers match on all 18 legs; 3 loops day/night/day show 0% drift on approximateGpuMemoryBytes (20,274,556), textures (4), buffers (51), render targets (1) against a 5% limit; remote run `last-train-h-20261023T065059Z`). Caveat: no garage wear/requests/Gold grade, procedural models, night via sky blend + surface tints (the remote output pass is bypassed), software WebGL2
 
 ---
 
@@ -1078,10 +1076,10 @@ passed all 16 tests across all 11 `parity-*.spec.ts` files. The run's code chang
 | R-18 audio | DONE | `tests/unit/audio` 97 tests. `occlusionHz` formula changed in `4995fb7c8` (C-25, #208), not `9c8761647` as first reported; the test was stale |
 | R-19 Strange Orbit | DONE with caveat | Real game captured (ACR run `cc1ap`); 0 TODOs after R-23; shaders still need hand-porting to GLSL 300 es |
 | **R-23** custom vertex attributes | DONE | `attributes` on `geometry.define/custom/dynamic`, `topology:"points"`; ACR run `r23c-20261022T195658Z` |
-| **R-25** Crayon capture | **PARTIAL** | Roadster Hours start click and Silt & Signal frame evaluation fixed (probes re-recorded settled); Strange Orbit has a bit-exact fixed-input reference. Fixed-input references for the other games were not recorded (stopped by decision) |
+| **R-25** Crayon capture | **DONE for all 11 games** | Deterministic fixed-input reference per game under `evidence/crayon-capture/`, each replayed against its port. Pixel diffs were not produced: ports use procedural art, so the comparison is on simulation state, with frame pairs only for HEATSINK |
 | **R-17** flag flips | **DONE for the two flags that gate anything; L4 gate waived for them** | `BATCHING` and `LINES` default-on; `default-flags.test.ts` 8 tests; remote run `r17-20261022T204448Z` 16/16. Four inert flags stay `dev` (see below) |
-| **R-20** phase exits A-D | **A DONE; B, C, D not attempted by decision** | Phase A exit met (see §10). The game ports for B, C, D were started and stopped on 2026-10-22 because the goal is the engine surface, not the ports; partial port files were deleted. The engine capabilities they need are shipped |
-| **R-24** HEATSINK TSL | **DECIDED: hand-port to `material.custom`** (executes in Phase B) | 49 live node materials. Reason: §1.3 excludes a full TSL compiler; only 1 of 10 games needs TSL, so L1-11's ≥3-game trigger is unmet; `material.custom` already runs GLSL on the live WebGL2 path. L1-11 stays closed unless a second game needs it |
+| **R-20** phase exits A-D | **A, C, D MET; B NOT MET** | See §10 and §12.5. B: state parity passes, model-judged blind A/B fails (48/48 original identified) |
+| **R-24** HEATSINK TSL | **DONE (hand-port)** | Five GLSL programs replace the original's 49 node materials, approximating the look rather than translating the node graphs (`examples/heatsink-port/PORTING-NOTES.md`) |
 
 **R-17 outcome.** §7.3 step 3 names the L4 LPIPS-vs-three gate
 (`.github/workflows/qr-azure-gpu.yml` on a self-hosted L4 runner, the same gate
@@ -1122,3 +1120,30 @@ fixture or pixel diff. Roadster Hours' `Drive Sunbreak Coast` click times out
 and loses the game iframe; Silt & Signal's child frame times out, leaving only
 its 205,683-char `iframe.srcdoc`. Eight games have live menu/start/HUD or journal
 evidence, and exact tuning is limited to Splat Rush and Drift & Deliver.
+
+
+### 12.5 Crayon game ports (2026-10-23)
+
+Each port is a simulation port: the game's logic is transcribed from the captured, demangled source into a pure fixed-timestep module, driven by recorded input, and checked against a deterministic reference of the original (virtual time, seeded RNG, 2+ independent sessions). Art is procedural unless stated. **No port is pixel-parity.** Remote verification is software WebGL2 (SwiftShader) on ACR, not a hardware GPU. Captured third-party source is stored as untrusted fixtures with provenance under `tests/fixtures/crayon/<game>/`.
+
+| Game | Reference (original) | Port vs reference | Not ported / gaps |
+| --- | --- | --- | --- |
+| Strange Orbit | 283.683 s finish, 7 laps, 35 checkpoints, bit-exact over 6 sessions | exact (finish, laps, checkpoints) in Node and in-page | GLB assets procedural; no career/garage/audio/ghost |
+| Splat Rush | 1500 steps, 4 sessions bit-identical; separate 450-step death run | 28 fields exact every step incl. RNG draw count (1e-16 on `px`, `camx`) | no audio; no DOM flash/vignette; platform SDKs absent |
+| Saiyan Snake Way | outbound run 5,433 steps, 8 stages, 0 mismatches over 8,967 fields | 183 snapshots within 1e-6 | fall phase/Hell, King Kai leap, road home; menus, audio, speed-line pass; GLB avatars; ray-marched clouds |
+| Where the Wind Wanders | 2,098-step scripted run, 3 letters + bell, 2 sessions, spread <= 1e-9 | worst 7.0e-10 over all steps, Node and in-page | boat voyage, Stillwater Isle, journal UI, audio, touch; painted art; terrain carving; foliage placement is a seeded scatter |
+| Silt & Signal | 3 parity rides x 2 sessions + in-page replay (13 columns/step), delta < 1e-9 | worst 0 in browser | colliders, terrain floor, chapters 1-6, voiced scenes, arcade mode, pointer/gamepad; ground/canal/rings/rider are stand-ins; clinic ride (13 collisions in original, 0 in port) recorded as a limit |
+| Ninja Runner | 12,759 steps, 106.325 s, 4 sessions bit-identical | event-for-event, trace delta 0 | soldier GLB tinted; procedural environment; no audio; enemy attack path never fired in any capture |
+| Last Train to the Sea | 1 town loop + 3-loop memory series | loop steps within 0.1%, score 4,039, 18/18 legs, 0% memory drift | garage wear/requests/Gold grade; procedural models; fitted dock timings |
+| Roadster Hours | 6,124 steps, 48.325 s, score 26,949, 2 sessions bit-identical | replay delta 2e-14; remote spec passes | boxes for vehicles, flat sky, no post/audio; in-game cross-check run was not assembled into the report; batch-draw assertion is `<= 2 x geometry count` (several passes draw the batch), not 1 |
+| Drift & Deliver | 4 scenario hashes, 3 sessions identical, 0 contacts | all four hashes reproduced exactly in remote x64 browser (Mac arm64 differs by libm rounding, documented) | **headlight beam cone does not draw (cause unexplained; not an engine draw-path bug, see below)**; collision response untested (reference has no contacts); no audio, story, shadows, skyline, sky/water shaders; no real-game frames for side-by-side |
+| HEATSINK | 4 sessions + 4 replays, max delta 0, 202 snapshots | 1e-6 (worst 1.6e-10) | **blind A/B fails** (see §10 B); Vesper Time Trial only; no AI/items/audio/menus; five GLSL programs approximate 49 node materials |
+| Kid Goku: Beyond the Clouds (11th, added 2026-10-23) | 800 steps, 3 sessions agree to 3.4e-14; obstacle layout read separately | worst deltas 0 / 0 / 9e-13 / 2e-13 over 160 trace points, Node and browser | creatures/boulders, Janken, finale, UI, audio, orb magnet on Nimbus; verified horizon ends at s ~ 190 before the first boulder at s=215; procedural art |
+
+Parity IDs the new game needs (for §7.1): SH-02 (30 ShaderMaterials), SG-01 (461 instanced meshes), SA-04 (10 skinned meshes), ST-01/03 (18 canvas textures), SG-07 (points), SG-08 (262 sprites). No SH-01, SG-02 or SH-03.
+
+**Engine bugs the ports and verifications exposed (fixed in 4.0.7):** `batched.mesh` multi-draw broken on real WebGL2 (four defects; 92 draws -> 3 multi-draw calls); `material.custom` silently skipped draws with an unused declared uniform; four WebXR runtime bugs (`local-floor` not requested, leaked session, non-persistent eye viewports, zero-width mono views). **Investigated, no engine bug:** a 22-case remote WebGL2 matrix (`tests/browser/custom-draw-probe.spec.ts`, ACR run `cdp-20261023T080348Z`: opaque/alpha/additive, depthWrite, side front/back/double, 900- and 3,400-unit domes, additive cone, custom-geometry beam, `setUniform` switching) draws exactly as the render state says, with 0 engine errors. HEATSINK's missing sky is most likely the unused-uniform silent skip (its sky material declared uniforms the shader never reads), fixed in 4.0.7; re-test the 3,400-unit `side:"back"` dome with the fix. Drift & Deliver's headlight beam stays **unexplained**: all four beam uniforms are used, so the unused-uniform cause does not apply; the next hypothesis is the port updating the beam's geometry and uniforms in the same frame.
+
+**Real-device verification (2026-10-23):** WebGPU `compute.*` passes on a real software-WebGPU device (vector add 65,536 elements, shared-memory reduction, 2D/3D dispatch, exact read-back). WebGPU canvas presentation works in headed Chromium under Xvfb (`@headed-xvfb` token on the remote runner) and still fails in headless SwiftShader. WebXR passes end to end against the independent `iwer` emulator (not a headset; frame pacing, optics, latency, tracking and the opaque-framebuffer path untested). A hardware-GPU run remains unperformed.
+
+**Third-party source handling:** the five largest raw captured bundles (HEATSINK, Where the Wind Wanders, Saiyan Snake Way, Kid Goku, Roadster Hours; about 4.9 MB) are deliberately not committed to this public repository; each game's `tests/fixtures/crayon/<game>/PROVENANCE.md` records the hash and how to re-capture it. Smaller formatted or extracted logic files, `evidence/crayon-runtime/*/srcdoc.html` and the Strange Orbit demangled source remain in the repo and are the owner's decision to keep or remove.

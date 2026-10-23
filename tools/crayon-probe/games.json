@@ -1,6 +1,6 @@
 {
   "schema": "a3d-crayon-probe-games/1",
-  "$comment": "The ten Crayon Arcade candidates from docs/workflows/crayon-game-reverse-engineering.md. Fill `url` with the game's play-page URL (https://app.usecrayon.ai/play/<project-id>) before probing \u2014 entries without a url are skipped. Module-shape/three-source columns are the doc's measurements; the probe records P-1..P-4 per game into evidence/crayon-probes/<id>.json.",
+  "$comment": "The eleven Crayon Arcade candidates from docs/workflows/crayon-game-reverse-engineering.md. Fill `url` with the game's play-page URL (https://app.usecrayon.ai/play/<project-id>) before probing \u2014 entries without a url are skipped. Module-shape/three-source columns are the doc's measurements; the probe records P-1..P-4 per game into evidence/crayon-probes/<id>.json.",
   "games": [
     {
       "id": "strange-orbit",
@@ -88,6 +88,12 @@
       "moduleShape": "dynamic import, not in DOM",
       "threeSource": "unknown",
       "priority": 10
+    },
+    {
+      "id": "kid-goku-beyond-the-clouds",
+      "title": "Kid Goku: Beyond the Clouds",
+      "url": "https://app.usecrayon.ai/play/3a9001a5-28fa-4ae0-ba5c-3b068d1912a4",
+      "priority": 11
     }
   ]
 }

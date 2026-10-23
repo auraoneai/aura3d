@@ -341,14 +341,14 @@ describe("DrawSubmit deferred multi-draw run (#181 / L5)", () => {
 });
 
 describe("ProgramGenerator multi-draw pragma (L5-03)", () => {
-  it("emits #extension WEBGL_multi_draw only when the ext define is set", () => {
+  it("emits #extension GL_ANGLE_multi_draw only when the ext define is set", () => {
     registerPrd11DrawIdShader();
     const flags = resolveQrFlags({ options: ["tiers.batching"] });
     const program = (value: string) => generateProgramImpl(
       normalizeProgramFeatures({ pass: "forward", lighting: "unlit", features: { "prd11.drawId": value } } as Partial<ProgramFeatures>),
       { flags }
     );
-    expect(program("multi-draw").vertex).toContain("#extension WEBGL_multi_draw");
-    expect(program("uniform").vertex).not.toContain("#extension WEBGL_multi_draw");
+    expect(program("multi-draw").vertex).toContain("#extension GL_ANGLE_multi_draw");
+    expect(program("uniform").vertex).not.toContain("#extension GL_ANGLE_multi_draw");
   });
 });

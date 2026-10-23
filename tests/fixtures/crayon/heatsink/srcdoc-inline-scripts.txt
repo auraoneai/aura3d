@@ -1,0 +1,7 @@
+window.__crayonGfx = {}; window.__crayonAssetBase = "https://app.usecrayon.ai";
+
+/* ---- */
+(function(){if(window.__HARNESS)return;try{Object.defineProperty(window,'__TEST',{configurable:false,set:function(){},get:function(){}});}catch(e){}})();
+
+/* ---- */
+window.__crayonPerfOn = false;

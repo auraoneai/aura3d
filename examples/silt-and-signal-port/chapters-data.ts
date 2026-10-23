@@ -1,0 +1,828 @@
+// GENERATED from tests/fixtures/crayon/silt-and-signal/chapters.json (extract.mjs on the captured bundle). Do not edit.
+export interface Point { x: number; z: number; y: number }
+export interface Objective { id: string; title: string; kind: string; points: Point[]; radius: number; hold?: number; scene?: string; maxY?: number; period?: number; open?: number; minSpeed?: number }
+export interface Chapter { id: string; name: string; subtitle: string; night?: boolean; length: number; music: string; palette: Record<string, number>; opening: string; objectives: Objective[] }
+export const CHAPTERS: readonly Chapter[] = [
+ {
+  "id": "home",
+  "name": "The Last Light",
+  "subtitle": "A small life. A very large world.",
+  "night": false,
+  "length": 1440,
+  "music": "home",
+  "palette": {
+   "sky": 10213356,
+   "fog": 12245463,
+   "ground": 8960345,
+   "stone": 15850941,
+   "water": 3258556,
+   "ink": 3157058,
+   "sun": 16766364
+  },
+  "opening": "workshop-call",
+  "objectives": [
+   {
+    "id": "clinic",
+    "title": "Reach Neri at her gatehouse",
+    "kind": "ride",
+    "points": [
+     {
+      "x": 138,
+      "z": 5,
+      "y": 4
+     },
+     {
+      "x": 138,
+      "z": -85,
+      "y": 4
+     },
+     {
+      "x": 138,
+      "z": -147,
+      "y": 4
+     },
+     {
+      "x": 119,
+      "z": -180,
+      "y": 6
+     },
+     {
+      "x": 78,
+      "z": -180,
+      "y": 7
+     },
+     {
+      "x": 38,
+      "z": -180,
+      "y": 4
+     },
+     {
+      "x": 12,
+      "z": -235,
+      "y": 4
+     },
+     {
+      "x": 0,
+      "z": -265,
+      "y": 4
+     }
+    ],
+    "radius": 15,
+    "scene": "last-light"
+   },
+   {
+    "id": "board",
+    "title": "Help Neri into the cradle",
+    "kind": "care",
+    "points": [
+     {
+      "x": 0,
+      "z": -285,
+      "y": 4
+     }
+    ],
+    "radius": 24,
+    "scene": "boarding",
+    "hold": 2.5
+   },
+   {
+    "id": "departure",
+    "title": "Take the road beyond the aqueduct",
+    "kind": "ride",
+    "points": [
+     {
+      "x": -4,
+      "z": -365,
+      "y": 4
+     },
+     {
+      "x": -12,
+      "z": -490,
+      "y": 4
+     },
+     {
+      "x": -18,
+      "z": -660,
+      "y": 4
+     },
+     {
+      "x": -10,
+      "z": -880,
+      "y": 4
+     }
+    ],
+    "radius": 24
+   },
+   {
+    "id": "canyon-gate",
+    "title": "Leave the village",
+    "kind": "portal",
+    "points": [
+     {
+      "x": 0,
+      "z": -1260,
+      "y": 6
+     }
+    ],
+    "radius": 24,
+    "scene": "departure"
+   }
+  ]
+ },
+ {
+  "id": "aqueduct",
+  "name": "The Broken Aqueduct",
+  "subtitle": "The shortest way out is not the safest.",
+  "length": 1770,
+  "music": "canyon",
+  "palette": {
+   "sky": 13415322,
+   "fog": 13081731,
+   "ground": 10188371,
+   "stone": 14458476,
+   "water": 3780542,
+   "ink": 4601406,
+   "sun": 16766368
+  },
+  "opening": "canyon",
+  "objectives": [
+   {
+    "id": "descent",
+    "title": "Follow the broken waterway",
+    "kind": "ride",
+    "points": [
+     {
+      "x": 15,
+      "z": -120,
+      "y": 14
+     },
+     {
+      "x": -80,
+      "z": -310,
+      "y": 28
+     },
+     {
+      "x": 55,
+      "z": -500,
+      "y": 17
+     }
+    ],
+    "radius": 24
+   },
+   {
+    "id": "watergate",
+    "title": "Lift the jammed aqueduct gate",
+    "kind": "lift",
+    "points": [
+     {
+      "x": 30,
+      "z": -625,
+      "y": 13
+     }
+    ],
+    "radius": 24,
+    "hold": 2.5,
+    "scene": "miners"
+   },
+   {
+    "id": "searchlights",
+    "title": "Cross beneath the searchlights",
+    "kind": "stealth",
+    "points": [
+     {
+      "x": 30,
+      "z": -741,
+      "y": 6
+     },
+     {
+      "x": -60,
+      "z": -850,
+      "y": 6
+     },
+     {
+      "x": 60,
+      "z": -1010,
+      "y": 5
+     },
+     {
+      "x": -30,
+      "z": -1190,
+      "y": 6
+     }
+    ],
+    "radius": 24,
+    "maxY": 19
+   },
+   {
+    "id": "first-portal",
+    "title": "Reach the living doorway",
+    "kind": "portal",
+    "points": [
+     {
+      "x": 35,
+      "z": -1430,
+      "y": 13
+     },
+     {
+      "x": 0,
+      "z": -1650,
+      "y": 9
+     }
+    ],
+    "radius": 24,
+    "scene": "threshold"
+   }
+  ]
+ },
+ {
+  "id": "forest",
+  "name": "The Inverted Forest",
+  "subtitle": "Listen to the one you came to save.",
+  "night": true,
+  "length": 1740,
+  "music": "forest",
+  "palette": {
+   "sky": 726833,
+   "fog": 1654352,
+   "ground": 2382936,
+   "stone": 10467765,
+   "water": 1596013,
+   "ink": 1056302,
+   "sun": 9554920
+  },
+  "opening": "forest",
+  "objectives": [
+   {
+    "id": "root-song",
+    "title": "Follow Neri’s gaze through the roots",
+    "kind": "ride",
+    "points": [
+     {
+      "x": 0,
+      "z": -100,
+      "y": 28
+     },
+     {
+      "x": 85,
+      "z": -290,
+      "y": 50
+     },
+     {
+      "x": -40,
+      "z": -480,
+      "y": 66
+     }
+    ],
+    "radius": 24
+   },
+   {
+    "id": "root-anchor",
+    "title": "Free the sleeping root",
+    "kind": "resonate",
+    "points": [
+     {
+      "x": -35,
+      "z": -610,
+      "y": 52
+     }
+    ],
+    "radius": 24,
+    "hold": 2.8,
+    "scene": "root-song"
+   },
+   {
+    "id": "midnight-rest",
+    "title": "Rest together beside the moon pool",
+    "kind": "care",
+    "points": [
+     {
+      "x": 90,
+      "z": -860,
+      "y": 26
+     }
+    ],
+    "radius": 24,
+    "hold": 1.5,
+    "scene": "midnight"
+   },
+   {
+    "id": "root-bridge",
+    "title": "Cross while the root bridge unfurls",
+    "kind": "timed",
+    "points": [
+     {
+      "x": 25,
+      "z": -1030,
+      "y": 40
+     },
+     {
+      "x": -55,
+      "z": -1210,
+      "y": 60
+     }
+    ],
+    "radius": 24,
+    "period": 11,
+    "open": 7
+   },
+   {
+    "id": "forest-exit",
+    "title": "Climb to the canopy crossing",
+    "kind": "portal",
+    "points": [
+     {
+      "x": 35,
+      "z": -1440,
+      "y": 80
+     },
+     {
+      "x": 0,
+      "z": -1640,
+      "y": 58
+     }
+    ],
+    "radius": 24,
+    "scene": "dawn"
+   }
+  ]
+ },
+ {
+  "id": "nursery",
+  "name": "The Abyssal Lanterns",
+  "subtitle": "A place to heal. A reason to keep going.",
+  "length": 1730,
+  "music": "nursery",
+  "palette": {
+   "sky": 12181997,
+   "fog": 12048855,
+   "ground": 14140056,
+   "stone": 15714471,
+   "water": 4569533,
+   "ink": 3361105,
+   "sun": 16772818
+  },
+  "opening": "nursery",
+  "objectives": [
+   {
+    "id": "tidal-channel",
+    "title": "Ride the sheltered tide",
+    "kind": "ride",
+    "points": [
+     {
+      "x": 0,
+      "z": -140,
+      "y": 4
+     },
+     {
+      "x": -100,
+      "z": -340,
+      "y": 4
+     }
+    ],
+    "radius": 24
+   },
+   {
+    "id": "wake-vane",
+    "title": "Turn the shell vane with your wake",
+    "kind": "wake",
+    "points": [
+     {
+      "x": 20,
+      "z": -550,
+      "y": 4
+     }
+    ],
+    "radius": 24,
+    "minSpeed": 11,
+    "maxY": 8
+   },
+   {
+    "id": "tow-shell",
+    "title": "Tow the fallen shell into its cradle",
+    "kind": "tow",
+    "points": [
+     {
+      "x": 75,
+      "z": -710,
+      "y": 5
+     },
+     {
+      "x": 0,
+      "z": -900,
+      "y": 5
+     }
+    ],
+    "radius": 24,
+    "hold": 1.1,
+    "scene": "first-steps"
+   },
+   {
+    "id": "young",
+    "title": "Wake the living springs",
+    "kind": "resonate",
+    "points": [
+     {
+      "x": -65,
+      "z": -1070,
+      "y": 14
+     },
+     {
+      "x": 40,
+      "z": -1280,
+      "y": 21
+     },
+     {
+      "x": 92,
+      "z": -1080,
+      "y": 12
+     }
+    ],
+    "radius": 24,
+    "hold": 2.2
+   },
+   {
+    "id": "nursery-return",
+    "title": "Return to Neri in the healing garden",
+    "kind": "care",
+    "points": [
+     {
+      "x": 0,
+      "z": -900,
+      "y": 8
+     }
+    ],
+    "radius": 24,
+    "hold": 1.4,
+    "scene": "sky"
+   },
+   {
+    "id": "sky-gate",
+    "title": "Follow the renewed current to the sky",
+    "kind": "portal",
+    "points": [
+     {
+      "x": 40,
+      "z": -1150,
+      "y": 20
+     },
+     {
+      "x": -45,
+      "z": -1370,
+      "y": 25
+     },
+     {
+      "x": 0,
+      "z": -1580,
+      "y": 12
+     }
+    ],
+    "radius": 24,
+    "scene": "nursery-flight"
+   }
+  ]
+ },
+ {
+  "id": "orchard",
+  "name": "The Storm Orchard",
+  "subtitle": "For a moment, the whole world can fly.",
+  "length": 2100,
+  "music": "orchard",
+  "palette": {
+   "sky": 8434903,
+   "fog": 9153740,
+   "ground": 8749721,
+   "stone": 14537419,
+   "water": 7503805,
+   "ink": 3422551,
+   "sun": 16769457
+  },
+  "opening": "orchard",
+  "objectives": [
+   {
+    "id": "updraft",
+    "title": "Rise with the Veilwings",
+    "kind": "climb",
+    "points": [
+     {
+      "x": 0,
+      "z": -180,
+      "y": 40
+     },
+     {
+      "x": -100,
+      "z": -430,
+      "y": 65
+     },
+     {
+      "x": 65,
+      "z": -620,
+      "y": 100
+     }
+    ],
+    "radius": 24
+   },
+   {
+    "id": "pollen",
+    "title": "Carry living pollen between the sails",
+    "kind": "pollen",
+    "points": [
+     {
+      "x": -45,
+      "z": -860,
+      "y": 112
+     },
+     {
+      "x": 60,
+      "z": -1110,
+      "y": 123
+     },
+     {
+      "x": 0,
+      "z": -1330,
+      "y": 138
+     }
+    ],
+    "radius": 24,
+    "scene": "moonrise"
+   },
+   {
+    "id": "moon-bridge",
+    "title": "Glide across the moonlit bridge",
+    "kind": "timed",
+    "points": [
+     {
+      "x": -75,
+      "z": -1540,
+      "y": 145
+     },
+     {
+      "x": 45,
+      "z": -1740,
+      "y": 150
+     }
+    ],
+    "radius": 24,
+    "period": 12,
+    "open": 8,
+    "scene": "promise"
+   },
+   {
+    "id": "crown-door",
+    "title": "Cross beyond the last cloud",
+    "kind": "portal",
+    "points": [
+     {
+      "x": 0,
+      "z": -1980,
+      "y": 155
+     }
+    ],
+    "radius": 24,
+    "scene": "sanctuary"
+   }
+  ]
+ },
+ {
+  "id": "crown",
+  "name": "The Hushed Crown",
+  "subtitle": "What we tried to keep.",
+  "night": true,
+  "length": 1910,
+  "music": "crown",
+  "palette": {
+   "sky": 2368319,
+   "fog": 5460324,
+   "ground": 4474713,
+   "stone": 13948110,
+   "water": 5467014,
+   "ink": 1514800,
+   "sun": 13158892
+  },
+  "opening": "elder",
+  "objectives": [
+   {
+    "id": "elder-path",
+    "title": "Follow Neri to the elder",
+    "kind": "ride",
+    "points": [
+     {
+      "x": 0,
+      "z": -190,
+      "y": 9
+     },
+     {
+      "x": -110,
+      "z": -420,
+      "y": 16
+     },
+     {
+      "x": 20,
+      "z": -600,
+      "y": 10
+     }
+    ],
+    "radius": 24
+   },
+   {
+    "id": "relay",
+    "title": "Send the sanctuary coordinates",
+    "kind": "relay",
+    "points": [
+     {
+      "x": 70,
+      "z": -760,
+      "y": 10
+     }
+    ],
+    "radius": 24,
+    "hold": 2.2,
+    "scene": "betrayal"
+   },
+   {
+    "id": "worker",
+    "title": "Free the workers’ trapped platform",
+    "kind": "lift",
+    "points": [
+     {
+      "x": -90,
+      "z": -940,
+      "y": 16
+     }
+    ],
+    "radius": 24,
+    "hold": 2.5,
+    "scene": "workers"
+   },
+   {
+    "id": "tether",
+    "title": "Break the extraction tether",
+    "kind": "resonate",
+    "points": [
+     {
+      "x": 55,
+      "z": -1160,
+      "y": 15
+     }
+    ],
+    "radius": 24,
+    "hold": 3,
+    "scene": "apology"
+   },
+   {
+    "id": "release-elder",
+    "title": "Guide the young beneath the elder",
+    "kind": "herd",
+    "points": [
+     {
+      "x": -60,
+      "z": -1350,
+      "y": 7
+     },
+     {
+      "x": 65,
+      "z": -1580,
+      "y": 7
+     }
+    ],
+    "radius": 24,
+    "scene": "resolve"
+   },
+   {
+    "id": "home-crossing",
+    "title": "Bring the living current home",
+    "kind": "portal",
+    "points": [
+     {
+      "x": 0,
+      "z": -1810,
+      "y": 11
+     }
+    ],
+    "radius": 24,
+    "scene": "homecoming"
+   }
+  ]
+ },
+ {
+  "id": "return",
+  "name": "The Long Return",
+  "subtitle": "This time, she goes first.",
+  "length": 1730,
+  "music": "return",
+  "palette": {
+   "sky": 15846833,
+   "fog": 14996152,
+   "ground": 9416553,
+   "stone": 15916736,
+   "water": 6209470,
+   "ink": 3621969,
+   "sun": 16767918
+  },
+  "opening": "village",
+  "objectives": [
+   {
+    "id": "new-channel",
+    "title": "Return through the harbour",
+    "kind": "ride",
+    "points": [
+     {
+      "x": 84.81819386620072,
+      "z": 60,
+      "y": 5
+     },
+     {
+      "x": 78.30576659566813,
+      "z": -80,
+      "y": 5
+     }
+    ],
+    "radius": 24
+   },
+   {
+    "id": "village-sluice",
+    "title": "Restore the town’s water power",
+    "kind": "resonate",
+    "points": [
+     {
+      "x": 110,
+      "z": -103,
+      "y": 4
+     }
+    ],
+    "radius": 24,
+    "hold": 2.5,
+    "scene": "lights"
+   },
+   {
+    "id": "last-bridge",
+    "title": "Open the harbour bridge",
+    "kind": "lift",
+    "points": [
+     {
+      "x": 75.88536850379596,
+      "z": -145,
+      "y": 6
+     }
+    ],
+    "radius": 24,
+    "hold": 2.4,
+    "scene": "gate"
+   },
+   {
+    "id": "migration",
+    "title": "Follow Neri beyond her gatehouse",
+    "kind": "herd",
+    "points": [
+     {
+      "x": 0,
+      "z": -350,
+      "y": 4
+     },
+     {
+      "x": 0,
+      "z": -490,
+      "y": 5
+     },
+     {
+      "x": 0,
+      "z": -710,
+      "y": 5
+     },
+     {
+      "x": 0,
+      "z": -1030,
+      "y": 5
+     },
+     {
+      "x": 0,
+      "z": -1310,
+      "y": 5
+     },
+     {
+      "x": 0,
+      "z": -1540,
+      "y": 5
+     }
+    ],
+    "radius": 24,
+    "lead": true,
+    "scene": "farewell"
+   },
+   {
+    "id": "ending",
+    "title": "Let the road belong to her",
+    "kind": "finish",
+    "points": [
+     {
+      "x": 0,
+      "z": -1590,
+      "y": 5
+     }
+    ],
+    "radius": 24
+   }
+  ]
+ }
+] as unknown as readonly Chapter[];
+export const START_HOME = {"x":140,"y":3,"z":55,"yaw":0};
+export const START_RETURN = {"x":88.11463149620404,"z":145,"y":5,"yaw":0};

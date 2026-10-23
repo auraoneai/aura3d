@@ -20,13 +20,21 @@ export interface AuraXRSessionInit {
  * - `setExternalFramebuffer(fb, w, h)`: until it is called again with `null`,
  *   frames render into `fb` (an `XRWebGLLayer.framebuffer`) instead of the
  *   canvas default framebuffer, with a backbuffer of `w x h`.
- * - `setViewport(x, y, w, h)`: a raster sub-rect that persists for the whole
- *   following frame (scene, post and present), because one XR framebuffer
- *   holds every eye side by side.
+ * - `setViewport(x, y, w, h, { persistent: true })`: a raster sub-rect that
+ *   survives `beginFrame` and the post and present passes, because one XR
+ *   framebuffer holds every eye side by side. Without `persistent` the device
+ *   resets the viewport at `beginFrame`, so the eye would render full-frame.
+ * - `resetViewport()`: clears that persistent viewport when the device is
+ *   handed back to the canvas path (after every XR frame and at session end).
+ *
+ * An `XRWebGLLayer` may report `framebuffer === null` (inline sessions and
+ * emulators such as iwer): the frame then draws into the canvas default
+ * framebuffer, and the per-eye viewports still apply.
  */
 export interface AuraXRDeviceBridge {
   setExternalFramebuffer?(framebuffer: unknown | null, width: number, height: number): void;
-  setViewport?(x: number, y: number, width: number, height: number): void;
+  setViewport?(x: number, y: number, width: number, height: number, options?: { readonly persistent?: boolean }): void;
+  resetViewport?(): void;
 }
 
 /** What the app resolved for one XR eye; installed per canvas while that eye renders. */

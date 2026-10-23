@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <title>Last Train to the Sea on Aura3D</title>
+    <style>
+      :root { color-scheme: dark; --ink: #f6efe1; --muted: #c4bcad; --panel: rgba(20, 24, 34, 0.72); --line: rgba(246, 239, 225, 0.18); --warm: #f2c14e; --coral: #e4572e; --jade: #6bc5a0; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #0e1220; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .num { font-variant-numeric: tabular-nums; }
+      .meta { font-size: 12px; color: var(--muted); }
+      .panel { position: fixed; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); }
+      #top { top: 12px; left: 12px; min-width: 240px; }
+      #top h1 { margin: 0 0 2px; font-size: 16px; font-weight: 500; }
+      #stats { top: 12px; right: 12px; text-align: right; }
+      #stats .big { font-size: 24px; font-weight: 600; }
+      #status { bottom: 12px; left: 12px; right: 12px; display: flex; gap: 16px; justify-content: space-between; align-items: center; }
+      #riders { bottom: 64px; left: 12px; max-width: 360px; }
+      #riders span { display: inline-block; margin: 0 8px 2px 0; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0e1220; z-index: 5; }
+      .hidden { display: none !important; }
+      kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font: inherit; font-size: 12px; color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <div id="top" class="panel">
+      <h1 id="station">Mango Tide</h1>
+      <div class="meta">Next: <span id="next">Folded Gardens</span> · <span id="clock">day</span></div>
+    </div>
+    <div id="stats" class="panel">
+      <div class="big num"><span id="speed">0</span> <span class="meta">km/h</span></div>
+      <div class="meta num">Aboard <span id="aboard">0</span> / 12 · Fares <span id="fares">0</span> · Tips <span id="tips">0</span> · Score <span id="score">0</span></div>
+    </div>
+    <div id="riders" class="panel hidden"></div>
+    <div id="status" class="panel">
+      <div id="message">Press <kbd>E</kbd> to open the doors.</div>
+      <div class="meta"><kbd>W</kbd> go · <kbd>Space</kbd> brake · <kbd>A</kbd>/<kbd>D</kbd> balance · <kbd>E</kbd> doors · <kbd>N</kbd> day/night · <kbd>R</kbd> new service</div>
+    </div>
+    <div id="loading"><div id="loading-status">Lighting the first view…</div></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

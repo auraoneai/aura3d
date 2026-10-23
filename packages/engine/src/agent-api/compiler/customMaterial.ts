@@ -297,6 +297,7 @@ function lowerUniforms(spec: AuraCustomMaterialSpec): readonly LoweredUniform[] 
       kind: lowered.kind,
       glslType: lowered.glsl,
       required: auraType !== "texture2d",
+      optimizable: true,
       value
     });
   }
@@ -570,6 +571,7 @@ function adapterLibraryFor(_name: string): ShaderLibrary {
  */
 export class AuraCustomShaderMaterial extends PortableShaderMaterial {
   private readonly fogRequested: boolean;
+  private readonly unusedUniformNames: readonly string[];
 
   constructor(spec: AuraCustomMaterialSpec, options: { readonly name?: string } = {}) {
     assertAuraCustomMaterialSpec(spec, options.name ?? "material.custom");
@@ -609,6 +611,10 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
       requiredAttributes: ["a_position", ...customAttributes]
     });
     this.fogRequested = spec.fog === true;
+    const authoredSource = `${spec.glsl.vertex ?? ""}\n${spec.glsl.fragment}`;
+    this.unusedUniformNames = uniforms
+      .filter((uniform) => !new RegExp(`\\b(?:${uniform.publicName}|${uniform.name})\\b`).test(authoredSource))
+      .map((uniform) => uniform.publicName);
     publicUniformsByMaterial.set(this, new Map(uniforms.map((uniform) => [uniform.publicName, uniform])));
     const liveRefs = new Map<string, { readonly publicName: string; readonly ref: AuraTextureRef }>();
     for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {
@@ -640,6 +646,9 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
   get customDiagnostics(): readonly string[] {
     const out: string[] = [];
     if (this.fogRequested) out.push("material.custom: fog is not wired to custom shaders — the field is recorded, not applied");
+    for (const publicName of this.unusedUniformNames) {
+      out.push(`[CUSTOM_UNIFORM_UNUSED] material.custom: uniform "${publicName}" is declared but never read by the shader; it is not uploaded and the draw is not skipped`);
+    }
     for (const publicName of customTextureUniformNames(this)) {
       const binding = this.getParameter(customUniformNameFor(publicName));
       if (isTextureBinding(binding) && !binding.texture) {

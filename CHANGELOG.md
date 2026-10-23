@@ -1,8 +1,19 @@
 # Changelog
 
-Version: 4.0.6
+Version: 4.0.7
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.0.7 (2026-10-23)
+
+Fixes found by porting eleven Crayon games and by verifying WebXR, WebGPU compute and the batching path on a real browser.
+
+- **Fix: `batched.mesh` / `instances.mesh` multi-draw was broken on a real WebGL2 context.** The draw-data texture was bound as a raw `Texture`; `u_drawId` was uploaded with `uniform1f`; the shader extension name was wrong (`GL_ANGLE_multi_draw`; `WEBGL_multi_draw` is now enabled at device creation); and `canMultiDraw` compared `TextureBinding`s by identity so no scene ever merged. A 92-vehicle frame went from 92 per-vehicle draws to 3 multi-draw calls carrying 552 members.
+- **Fix: `material.custom` no longer silently skips a draw when a declared uniform is unused.** The GLSL compiler optimises unused uniforms out; they are now flagged optimisable, the draw proceeds, and the material reports `CUSTOM_UNIFORM_UNUSED`. A genuinely missing required binding still fails with a named error.
+- **Fix: WebXR runtime** (verified against the independent `iwer` WebXR emulator in remote headless Chromium, not a headset): the `local-floor` reference space is now requested as a session feature; a failed reference-space request no longer leaks the XR session; per-eye viewports are persistent instead of being reset by `beginFrame`; zero-width views (mono devices) are skipped instead of failing the session; `xr.button({ app })` accepts a plain `AuraApp`.
+- **Verified: WebGPU compute** (`compute.*`) runs on a real software-WebGPU device: vector add over 65,536 elements, a shared-memory reduction and 2D/3D dispatches read back exactly. WebGPU canvas presentation works in headed Chromium under Xvfb (add `@headed-xvfb` to `SPECS` on the remote runner); headless Chromium + SwiftShader still destroys the device at the first presented frame.
+- **Codemod:** the `VRButton`, `ARButton` and `WebXRManager` rows are now `approximate` (emulator-verified; real-headset behaviour, frame pacing and the opaque-framebuffer path are untested).
+- **Tooling and examples (not published packages):** a slim remote-runner build context (209 MB instead of 1.9 GB); deterministic capture tooling and ports of eleven Crayon games under `examples/*-port/` with replay-verified simulations (see `docs/workflows/threejs-parity-gaps.md` for per-game scope and gaps).
 
 ## 4.0.6 (2026-10-23)
 

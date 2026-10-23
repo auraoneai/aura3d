@@ -1,0 +1,147 @@
+{
+ "schema": "a3d-crayon-runtime-session/1",
+ "game": "kid-goku-beyond-the-clouds",
+ "title": "Kid Goku: Beyond the Clouds",
+ "url": "https://app.usecrayon.ai/play/3a9001a5-28fa-4ae0-ba5c-3b068d1912a4",
+ "recordedAt": "2026-10-23",
+ "outerPage": {
+  "ogTitle": "Kid Goku: Beyond the Clouds",
+  "description": "Unofficial fan game. Run home through Mount Paozu as Kid Goku: ride the Flying Nimbus, leap gorges with the Power Pole, dodge dinosaurs and find the seven Dragon Balls. Arrows or A/D steer; Space jumps; E uses the Pole; Q calls Nimbus. Touch controls supported.",
+  "apiAccess": "api.usecrayon.ai/play/<id> returns 403 client_not_allowed to non-browser clients"
+ },
+ "engine": {
+  "three": "r184 (importmap, cdn.jsdelivr.net three@0.184.0)",
+  "rapier": "importmap lists @dimforge/rapier3d-compat 0.12.0",
+  "renderer": "WebGLRenderer / WebGL2",
+  "canvases": [
+   {
+    "w": 966,
+    "h": 543,
+    "engine": "three.js r184"
+   }
+  ],
+  "canvasContexts": {
+   "webgl": 0,
+   "webgl2": 2,
+   "webgpu": 0,
+   "2d": 18,
+   "other": 0
+  }
+ },
+ "release": {
+  "assetBase": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/3a9001a5-28fa-4ae0-ba5c-3b068d1912a4/releases/20261022-compact-ui-v3/",
+  "bundle": "assets/index-DhF_BuDt.js (389,344 bytes gzip / 1,278,835 plain, sha256 ddc83300ba064611a4ef7782ecf668d22b7724b0f8e99e4d8df9b47b159d57ae)",
+  "css": "assets/index-DgfmaJwX.css (13,700 bytes)",
+  "chunk": "sfx-DCbnRR1f.js"
+ },
+ "bootstrapBlobs": [
+  {
+   "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-0.mjs",
+   "role": "title, DOM shell, imports the runtime bundle"
+  },
+  {
+   "file": ".../blob-1.mjs",
+   "role": "seeded worker (30-element generator)"
+  },
+  {
+   "file": ".../blob-2.mjs",
+   "role": "procedural audio synthesis worker (44.1 kHz)"
+  }
+ ],
+ "importmapModules": [
+  "playlabs-boot",
+  "playlabs-voxel",
+  "playlabs-textures",
+  "playlabs-placement"
+ ],
+ "debugHooks": {
+  "__CLOUD_RUNNER__": "snapshot() + debug.{nimbus,press,hearts,chapter,at}",
+  "__LAB__": "scene, world, lib, renderer, camera, quality",
+  "__FINALE__": "finale controller while active"
+ },
+ "controls": {
+  "steer": "ArrowLeft/ArrowRight or A/D",
+  "jump": "Space or ArrowUp",
+  "pole": "E or X",
+  "nimbus": "Q or Shift",
+  "brake": "ArrowDown or S",
+  "start": "DOM button #start"
+ },
+ "chapter0": {
+  "name": "Mount Paozu",
+  "length": 1960,
+  "speed": 14.5,
+  "poles": 4,
+  "gaps": 4,
+  "balls": 6,
+  "meat": 4,
+  "creatures": 4,
+  "boulders": 5
+ },
+ "probe": {
+  "liveObjects": {
+   "scenes": 1,
+   "objects": 1623,
+   "meshes": 1061,
+   "instancedMeshes": 461,
+   "batchedMeshes": 0,
+   "skinnedMeshes": 10,
+   "points": 3,
+   "lines": 0,
+   "sprites": 262,
+   "shaderMaterials": 30,
+   "rawShaderMaterials": 0,
+   "nodeMaterialClasses": 0,
+   "nodeMaterialsAuthored": 0,
+   "materials": 142,
+   "materialCtorCounts": {
+    "Ts": 65,
+    "xs": 30,
+    "Yr": 5,
+    "yi": 40,
+    "Ta": 2
+   },
+   "objectCtorCounts": {
+    "Zn": 1,
+    "Hn": 84,
+    "na": 461,
+    "q": 590,
+    "li": 262,
+    "e": 27,
+    "Hi": 10,
+    "Ui": 183,
+    "Aa": 3,
+    "Tc": 1,
+    "oc": 1
+   },
+   "nodeMaterialSlots": {}
+  },
+  "verdicts": {
+   "p1_nodeMaterials": {
+    "answer": "no",
+    "basis": "module"
+   },
+   "p2_batchedMesh": {
+    "answer": "no",
+    "basis": "live"
+   },
+   "p3_pipeline": {
+    "answer": "no",
+    "basis": "module"
+   },
+   "p4_shaderMaterials": {
+    "answer": "yes",
+    "basis": "live"
+   }
+  }
+ },
+ "capture": {
+  "reference": "evidence/crayon-capture/kid-goku-beyond-the-clouds-reference.json",
+  "steps": 800,
+  "acrRun": "cc1fs"
+ },
+ "limits": [
+  "start control is a DOM button; the probe's label matcher did not click it (frame.clickedStart null) so the probe's traversal ran on the title-phase scene (1623 objects)",
+  "evaluate calls stalled up to 110 s under software GL at 1440x1000; the capture tool uses 640x360 and suppresses draws"
+ ]
+}

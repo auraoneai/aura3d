@@ -13,40 +13,40 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@aura3d/animation` | `4.0.6` | `packages/animation/src/index.ts` | 49 |
-| `@aura3d/apps` | `4.0.6` | `packages/apps/src/index.ts` | 10 |
-| `@aura3d/asset-index` | `4.0.6` | `packages/asset-index/src/index.ts` | 35 |
-| `@aura3d/assets` | `4.0.6` | `packages/assets/src/index.ts` | 93 |
-| `@aura3d/assets/gltf-runtime` | `4.0.6` | `packages/assets/src/gltf-runtime.ts` | 6 |
-| `@aura3d/audio` | `4.0.6` | `packages/audio/src/index.ts` | 49 |
-| `@aura3d/cli` | `4.0.6` | `packages/aura3d-cli/src/index.ts` | 37 |
-| `@aura3d/controls` | `4.0.6` | `packages/controls/src/index.ts` | 46 |
-| `@aura3d/core` | `4.0.6` | `packages/core/src/index.ts` | 14 |
-| `create-aura3d` | `4.0.6` | `packages/create-aura3d/src/index.ts` | 16 |
-| `@aura3d/debug` | `4.0.6` | `packages/debug/src/index.ts` | 30 |
-| `@aura3d/ecs` | `4.0.6` | `packages/ecs/src/index.ts` | 25 |
-| `@aura3d/editor-runtime` | `4.0.6` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `4.0.6` | `packages/engine/src/index.ts` | 21 |
-| `@aura3d/input` | `4.0.6` | `packages/input/src/index.ts` | 48 |
-| `@aura3d/math` | `4.0.6` | `packages/math/src/index.ts` | 30 |
-| `@aura3d/navigation-recast` | `4.0.6` | `packages/navigation-recast/src/index.ts` | 16 |
-| `@aura3d/physics` | `4.0.6` | `packages/physics/src/index.ts` | 24 |
-| `@aura3d/physics-rapier` | `4.0.6` | `packages/physics-rapier/src/index.ts` | 26 |
-| `@aura3d/physics/solverless` | `4.0.6` | `packages/physics/src/solverless.ts` | 13 |
-| `@aura3d/physics/world` | `4.0.6` | `packages/physics/src/world.ts` | 2 |
-| `@aura3d/product-studio` | `4.0.6` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/react` | `4.0.6` | `packages/react/src/index.ts` | 39 |
-| `@aura3d/rendering` | `4.0.6` | `packages/rendering/src/index.ts` | 413 |
-| `@aura3d/rendering/extension-scalar-atlas` | `4.0.6` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
-| `@aura3d/rendering/reflection-surfaces` | `4.0.6` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
-| `@aura3d/rendering/webgpu` | `4.0.6` | `packages/rendering/src/webgpu.ts` | 8 |
-| `@aura3d/scene` | `4.0.6` | `packages/scene/src/index.ts` | 21 |
-| `@aura3d/scripting` | `4.0.6` | `packages/scripting/src/index.ts` | 39 |
-| `@aura3d/workflows` | `4.0.6` | `packages/workflows/src/index.ts` | 12 |
+| `@aura3d/animation` | `4.0.7` | `packages/animation/src/index.ts` | 49 |
+| `@aura3d/apps` | `4.0.7` | `packages/apps/src/index.ts` | 10 |
+| `@aura3d/asset-index` | `4.0.7` | `packages/asset-index/src/index.ts` | 35 |
+| `@aura3d/assets` | `4.0.7` | `packages/assets/src/index.ts` | 93 |
+| `@aura3d/assets/gltf-runtime` | `4.0.7` | `packages/assets/src/gltf-runtime.ts` | 6 |
+| `@aura3d/audio` | `4.0.7` | `packages/audio/src/index.ts` | 49 |
+| `@aura3d/cli` | `4.0.7` | `packages/aura3d-cli/src/index.ts` | 37 |
+| `@aura3d/controls` | `4.0.7` | `packages/controls/src/index.ts` | 46 |
+| `@aura3d/core` | `4.0.7` | `packages/core/src/index.ts` | 14 |
+| `create-aura3d` | `4.0.7` | `packages/create-aura3d/src/index.ts` | 16 |
+| `@aura3d/debug` | `4.0.7` | `packages/debug/src/index.ts` | 30 |
+| `@aura3d/ecs` | `4.0.7` | `packages/ecs/src/index.ts` | 25 |
+| `@aura3d/editor-runtime` | `4.0.7` | `packages/editor-runtime/src/index.ts` | 82 |
+| `@aura3d/engine` | `4.0.7` | `packages/engine/src/index.ts` | 21 |
+| `@aura3d/input` | `4.0.7` | `packages/input/src/index.ts` | 48 |
+| `@aura3d/math` | `4.0.7` | `packages/math/src/index.ts` | 30 |
+| `@aura3d/navigation-recast` | `4.0.7` | `packages/navigation-recast/src/index.ts` | 16 |
+| `@aura3d/physics` | `4.0.7` | `packages/physics/src/index.ts` | 24 |
+| `@aura3d/physics-rapier` | `4.0.7` | `packages/physics-rapier/src/index.ts` | 26 |
+| `@aura3d/physics/solverless` | `4.0.7` | `packages/physics/src/solverless.ts` | 13 |
+| `@aura3d/physics/world` | `4.0.7` | `packages/physics/src/world.ts` | 2 |
+| `@aura3d/product-studio` | `4.0.7` | `packages/product-studio/src/index.ts` | 12 |
+| `@aura3d/react` | `4.0.7` | `packages/react/src/index.ts` | 39 |
+| `@aura3d/rendering` | `4.0.7` | `packages/rendering/src/index.ts` | 413 |
+| `@aura3d/rendering/extension-scalar-atlas` | `4.0.7` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
+| `@aura3d/rendering/reflection-surfaces` | `4.0.7` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
+| `@aura3d/rendering/webgpu` | `4.0.7` | `packages/rendering/src/webgpu.ts` | 8 |
+| `@aura3d/scene` | `4.0.7` | `packages/scene/src/index.ts` | 21 |
+| `@aura3d/scripting` | `4.0.7` | `packages/scripting/src/index.ts` | 39 |
+| `@aura3d/workflows` | `4.0.7` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/animation/package.json`
 - Public entrypoint: `packages/animation/src/index.ts`
 
@@ -106,7 +106,7 @@ export type { ThreeCompatAnimatedAssetDiagnostic } from "./threejs-compatibility
 
 ## @aura3d/apps
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/apps/package.json`
 - Public entrypoint: `packages/apps/src/index.ts`
 
@@ -127,7 +127,7 @@ export async function createA3DApp(options: A3DAppOptions = {}): Promise<A3DApp>
 
 ## @aura3d/asset-index
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/asset-index/package.json`
 - Public entrypoint: `packages/asset-index/src/index.ts`
 
@@ -173,7 +173,7 @@ export function defaultAdapters(): SourceAdapter[] { return [ createAnimationSta
 
 ## @aura3d/assets
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/index.ts`
 
@@ -277,7 +277,7 @@ export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";
 
 ## @aura3d/assets/gltf-runtime
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/gltf-runtime.ts`
 
@@ -294,7 +294,7 @@ export type { GLTFSharedTextureLease } from "./GLTFSharedTextureCache.js";
 
 ## @aura3d/audio
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/audio/package.json`
 - Public entrypoint: `packages/audio/src/index.ts`
 
@@ -354,7 +354,7 @@ export type { ListenerLike } from "./game-sound/listenerSync";
 
 ## @aura3d/cli
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/aura3d-cli/package.json`
 - Public entrypoint: `packages/aura3d-cli/src/index.ts`
 
@@ -402,7 +402,7 @@ export function initAgentSetup(options: { readonly projectDir?: string;
 
 ## @aura3d/controls
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/controls/package.json`
 - Public entrypoint: `packages/controls/src/index.ts`
 
@@ -459,7 +459,7 @@ export { PointerLockControls as PointerLockControlsEngine } from "./engine/Point
 
 ## @aura3d/core
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/core/package.json`
 - Public entrypoint: `packages/core/src/index.ts`
 
@@ -484,7 +484,7 @@ export * from "./VersionedSerialization.js";
 
 ## create-aura3d
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/create-aura3d/package.json`
 - Public entrypoint: `packages/create-aura3d/src/index.ts`
 
@@ -511,7 +511,7 @@ export { AURA_AGENT_CLIENTS, AURA_SKILLS_LEDGER, findBundledSkillsDir, readSkill
 
 ## @aura3d/debug
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/debug/package.json`
 - Public entrypoint: `packages/debug/src/index.ts`
 
@@ -552,7 +552,7 @@ export type { DebugReport } from "./ReportExporter.js";
 
 ## @aura3d/ecs
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/ecs/package.json`
 - Public entrypoint: `packages/ecs/src/index.ts`
 
@@ -588,7 +588,7 @@ export * from "./systems/index.js";
 
 ## @aura3d/editor-runtime
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/editor-runtime/package.json`
 - Public entrypoint: `packages/editor-runtime/src/index.ts`
 
@@ -681,7 +681,7 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 
 ## @aura3d/engine
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `package.json`
 - Public entrypoint: `packages/engine/src/index.ts`
 
@@ -713,7 +713,7 @@ export * from "./lanes/index.js";
 
 ## @aura3d/input
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/input/package.json`
 - Public entrypoint: `packages/input/src/index.ts`
 
@@ -772,7 +772,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 
 ## @aura3d/math
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/math/package.json`
 - Public entrypoint: `packages/math/src/index.ts`
 
@@ -813,7 +813,7 @@ export * from "./Curves.js";
 
 ## @aura3d/navigation-recast
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/navigation-recast/package.json`
 - Public entrypoint: `packages/navigation-recast/src/index.ts`
 
@@ -840,7 +840,7 @@ export async function createRecastNavigation(options: RecastNavigationOptions = 
 
 ## @aura3d/physics
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/index.ts`
 
@@ -875,7 +875,7 @@ export * from "./PhysicsDebugDraw.js";
 
 ## @aura3d/physics-rapier
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/physics-rapier/package.json`
 - Public entrypoint: `packages/physics-rapier/src/index.ts`
 
@@ -912,7 +912,7 @@ export async function createCollidersFromSidecar( world: RapierPhysicsWorld, sou
 
 ## @aura3d/physics/solverless
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/solverless.ts`
 
@@ -936,7 +936,7 @@ export type { MeshSurfaceQuery, MeshSurfaceQueryOptions, SurfaceSample } from ".
 
 ## @aura3d/physics/world
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/world.ts`
 
@@ -949,7 +949,7 @@ export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection,
 
 ## @aura3d/product-studio
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/product-studio/package.json`
 - Public entrypoint: `packages/product-studio/src/index.ts`
 
@@ -972,7 +972,7 @@ export type * from "./ProductShowcaseLayout";
 
 ## @aura3d/react
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/react/package.json`
 - Public entrypoint: `packages/react/src/index.ts`
 
@@ -1022,7 +1022,7 @@ export function productViewerScene(asset: AuraAssetRef<"model">, material?: Aura
 
 ## @aura3d/rendering
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/index.ts`
 
@@ -1448,7 +1448,7 @@ export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalR
 
 ## @aura3d/rendering/extension-scalar-atlas
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/extension-scalar-atlas.ts`
 
@@ -1461,7 +1461,7 @@ export type { ExtensionScalarAtlas, ExtensionScalarAtlasSlot, ExtensionScalarPix
 
 ## @aura3d/rendering/reflection-surfaces
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/reflection-surfaces.ts`
 
@@ -1476,7 +1476,7 @@ export type { ReflectionSurface, ReflectionSurfaceKind, ReflectionSurfaceOptions
 
 ## @aura3d/rendering/webgpu
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/webgpu.ts`
 
@@ -1495,7 +1495,7 @@ export { Texture } from "./Texture";
 
 ## @aura3d/scene
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/scene/package.json`
 - Public entrypoint: `packages/scene/src/index.ts`
 
@@ -1527,7 +1527,7 @@ export * from "./SceneSerializer.js";
 
 ## @aura3d/scripting
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/scripting/package.json`
 - Public entrypoint: `packages/scripting/src/index.ts`
 
@@ -1577,7 +1577,7 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 
 ## @aura3d/workflows
 
-- Version: `4.0.6`
+- Version: `4.0.7`
 - Package manifest: `packages/workflows/package.json`
 - Public entrypoint: `packages/workflows/src/index.ts`
 
@@ -1968,6 +1968,21 @@ receives raw UVs and owns its own transform. Fixtures:
 `custom-texture-assets.test.ts`, and `tests/browser/parity-tsl.spec.ts` (texels
 on a real WebGL2 GPU).
 
+#### Unused declared uniforms — R-27
+
+A uniform declared in `spec.uniforms` that the shader never reads is optimised
+out of the linked program by the GL compiler. That no longer skips the draw: the
+engine marks author-declared uniforms `optimizable`, so a uniform missing from
+the program's active set is simply not uploaded and `MaterialBinding.bind`
+returns a `[CUSTOM_UNIFORM_UNUSED]` warning listing the names. The same tag
+appears in `material.customDiagnostics` when the shader text never references a
+declared uniform. Bindings that are genuinely required still fail loudly with
+the named `MaterialBindingError` (`Missing shader uniform declared by material
+schema: …`, `Missing material parameter declared by schema: …`): `optimizable`
+is a new optional `MaterialUniformDescriptor` field that only `material.custom`
+and `material.node` set. Fixture: `tests/unit/parity/shader-material.test.ts`
+(R-27 block, including a `ForwardPass` draw on a device that drops the uniform).
+
 ### Geometry breadth and authoring — SG-03/04/05 (lane L2 — LIVE)
 
 ```ts
@@ -2234,9 +2249,11 @@ compute.dispose();                     // destroys every buffer, idempotent
   rebinding disposes the previous context. `ComputeError` (rendering package) carries
   `compute-invalid-spec | compute-wgsl-required | compute-disposed | compute-read-failed`.
 - `WebGPUDevice.nativeGpuDevice` exposes the owned `GPUDevice`.
-- **Tested against a fake `GPUDevice` only** (`tests/unit/parity/compute.test.ts`):
-  real-GPU execution is not covered, because the remote runner's headless SwiftShader
-  WebGPU cannot present or run it (R-22).
+- **Verification:** unit tests use a fake `GPUDevice` (`tests/unit/parity/compute.test.ts`); real
+  execution is covered by `tests/browser/parity-compute.spec.ts` on a remote software-WebGPU
+  (SwiftShader) device with exact GPU read-back: vector add over 65,536 elements, a
+  workgroup shared-memory reduction, 2D and 3D dispatch, `write()` between dispatches, dispose
+  idempotence and the `compute-requires-webgpu` error on a WebGL2 app. Hardware GPUs were not exercised.
 - Codemod: `GPUComputationRenderer` and TSL `compute()` (`ComputeNode`) are labelled
   `none` — no automatic rewrite; hand-port the kernels to WGSL.
 
@@ -2379,20 +2396,49 @@ continues from its last value.
 
 **Honest limits.**
 - The render device must expose the optional `AuraXRDeviceBridge` members
-  `setExternalFramebuffer(fb | null, width, height)` and
-  `setViewport(x, y, width, height)` (see the type for the exact contract).
-  Without them `enter()` returns `render-path-unavailable` **before** requesting
-  a session, so a headset is never shown a black frame. Until the WebGL2 device
-  implements them, `enter()` cannot start a session in a real browser.
-- Covered by unit tests against fake `XRSystem`/`XRSession`/`XRWebGLLayer`
-  objects only (`tests/unit/parity/xr.test.ts`). Real headset and browser
-  behaviour is untested, including `makeXRCompatible()` (which may lose and
-  restore the WebGL context on browsers where the context was not created
-  XR-compatible; the engine's device-loss recovery then re-mounts).
+  `setExternalFramebuffer(fb | null, width, height)`,
+  `setViewport(x, y, width, height, { persistent: true })` and `resetViewport()`
+  (see the type for the exact contract). The runtime asks for a **persistent**
+  viewport because the device resets a frame-scoped one at `beginFrame`, and it
+  clears it after every XR frame and at session end. Without the members
+  `enter()` returns `render-path-unavailable` **before** requesting a session, so
+  a headset is never shown a black frame. The WebGL2 device implements them.
+- A view whose viewport has no pixels (a mono emulator's deliberately zero-width
+  right view) is skipped, not rendered, and does not fail the session.
+- A layer with `framebuffer === null` (inline sessions, emulators) draws into the
+  canvas default framebuffer; the per-eye viewports still apply.
+- The default `local-floor` reference space is requested as an optional session
+  feature (browsers reject `requestReferenceSpace("local-floor")` otherwise) and
+  degrades to `local` when the device grants no floor; an explicit
+  `referenceSpace` never degrades silently. A session whose reference space cannot
+  be created is ended, never left open.
+- **Verification.** Unit tests (`tests/unit/parity/xr.test.ts`) use fake
+  `XRSystem`/`XRSession`/`XRWebGLLayer` objects. In addition,
+  `tests/browser/parity-xr.spec.ts` runs the lab `examples/xr-lab/` against an
+  independent WebXR implementation, the Immersive Web Emulation Runtime (iwer,
+  installed in the remote runner image), in headless Chromium with software
+  WebGL2: the button reports `ENTER VR`; a click starts a session whose frames
+  carry two views; each eye's cube centroids match the projection computed from the
+  **emulator's own** view and projection matrices for that same frame (within 7 px);
+  measured stereo disparity matches interocular distance times focal length over
+  depth; moving or turning the emulated headset moves both eyes as predicted;
+  leaving restores the canvas size and the full-frame render exactly; a second
+  session works; a mono device renders full width without GL errors. That run
+  found and fixed four runtime bugs (non-persistent eye viewports, zero-width views
+  failing the session, the reference-space feature, and a leaked session on
+  failure).
+- **Not verified:** a real headset or a native browser WebXR implementation, the
+  opaque non-null `XRWebGLLayer.framebuffer` path, optics, latency, tracking
+  quality and a hardware GPU. The emulator ran at about 0.8 frames per second on
+  software WebGL2, so frame pacing is untested. `makeXRCompatible()` is a no-op in
+  the emulator; on a native browser it may lose and restore the WebGL context
+  when the context was not created XR-compatible (the engine's device-loss
+  recovery then re-mounts).
 - AR passthrough compositing, hit-test source setup, XR controller models and
   `renderer.setAnimationLoop` hand-off are not implemented.
 - Codemod: `VRButton.createButton`, `ARButton.createButton` and `renderer.xr.*`
-  are rows labelled `pending` (not `approximate`) for the same reason.
+  are rows labelled `pending` (not `approximate`); the device path they waited for
+  now exists, so relabelling them is a separate decision.
 
 ### Excluded by contract — never lands
 

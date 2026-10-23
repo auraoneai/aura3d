@@ -30,6 +30,12 @@
 #   AURA3D_REPORTER    playwright --reporter      (line)
 #   BUILD              1=az acr build, 0=skip     (1)
 #   KEEP_IMAGE         1 keeps the pushed tag     (1)
+#   CONTEXT_PROFILE    slim|full                  (slim) slim omits public/aura-assets
+#                      (~1.4GB of showcase GLBs) and the environment-corpus /
+#                      asset-corpus / advanced-gallery fixture trees (~380MB); the
+#                      parity/port specs do not load them. Use full for specs that do.
+#   PUBLIC_ASSETS      space-separated filenames under public/aura-assets to include
+#                      even in the slim profile
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -45,6 +51,8 @@ SPECS="${SPECS:-tests/browser/parity-shader.spec.ts tests/browser/parity-post.sp
 AURA3D_REPORTER="${AURA3D_REPORTER:-line}"
 BUILD="${BUILD:-1}"
 KEEP_IMAGE="${KEEP_IMAGE:-1}"
+CONTEXT_PROFILE="${CONTEXT_PROFILE:-slim}"
+PUBLIC_ASSETS="${PUBLIC_ASSETS:-}"
 
 IMAGE_TAG="${IMAGE_TAG:-run-${RUN_ID}}"
 OUT_DIR="tests/reports/remote-acr/${RUN_ID}"
@@ -54,6 +62,7 @@ echo "== remote-acr run ${RUN_ID}"
 echo "   az wrapper : ${AZ_WRAPPER}"
 echo "   acr        : ${ACR_NAME} (${ACR_RG})  image=${IMAGE_REPO}:${IMAGE_TAG}"
 echo "   specs      : ${SPECS}"
+echo "   context    : ${CONTEXT_PROFILE}"
 echo "   reporter   : ${AURA3D_REPORTER}"
 echo "   out dir    : ${OUT_DIR}"
 
@@ -86,7 +95,13 @@ rsync -a package.json pnpm-lock.yaml pnpm-workspace.yaml \
 rsync -a patches "$CTX/"
 # public/ mirrors at the origin root in the dev server (vite contract) —
 # /aura-environments/*.manifest.json are lazily fetched by the engine.
-rsync -a public "$CTX/"
+if [ "$CONTEXT_PROFILE" = "full" ]; then
+  rsync -a public "$CTX/"
+else
+  rsync -a --exclude 'aura-assets' public "$CTX/"
+  mkdir -p "$CTX/public/aura-assets"
+  for asset in $PUBLIC_ASSETS; do rsync -a "public/aura-assets/$asset" "$CTX/public/aura-assets/"; done
+fi
 rsync -a --exclude '*/node_modules' \
         --exclude 'create-aura3d/templates' \
         --exclude 'create-aura3d/hdri' \
@@ -96,10 +111,14 @@ mkdir -p "$CTX/tests"
 rsync -a tests/browser tests/support tests/fixtures "$CTX/tests/"
 # Browser labs fetch fixture GLBs from the repo-root `fixtures/` tree
 # (`/fixtures/threejs-parity/assets/...`), served by the example dev server.
-rsync -a fixtures "$CTX/"
+if [ "$CONTEXT_PROFILE" = "full" ]; then
+  rsync -a fixtures "$CTX/"
+else
+  rsync -a --exclude 'environment-corpus' --exclude 'asset-corpus' --exclude 'advanced-gallery' fixtures "$CTX/"
+fi
 rsync -a examples "$CTX/"
 mkdir -p "$CTX/tools"
-rsync -a tools/naming-taxonomy tools/remote-acr "$CTX/tools/"
+rsync -a tools/naming-taxonomy tools/remote-acr tools/crayon-capture "$CTX/tools/"
 
 du -sh "$CTX" | awk '{print "   context size: "$1}'
 

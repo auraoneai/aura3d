@@ -23,6 +23,7 @@ export {
   DRAW_DATA_VISIBLE_BIT,
   DRAW_DATA_GEOMETRY_ID_SHIFT,
   DrawDataTexture,
+  drawDataBindingFor,
   packDrawDataFlags,
   unpackDrawDataFlags,
   type DrawDataEntry

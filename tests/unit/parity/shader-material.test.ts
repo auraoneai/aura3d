@@ -12,8 +12,13 @@ import { texture } from "../../../packages/engine/src/agent-api/nodes/texture.js
 import { createRenderTarget } from "../../../packages/engine/src/public/renderTarget.js";
 import { AuraRuntimeError } from "../../../packages/engine/src/agent-api/compiler/errors.js";
 import {
+  ForwardPass,
+  Geometry,
+  Material,
   MaterialBinding,
+  MaterialBindingError,
   MockRenderDevice,
+  MockShaderProgram,
   PortableShaderMaterial,
   Texture,
   TextureBinding,
@@ -421,5 +426,148 @@ void main() { outColor = texture(map, vec2(0.5)); }`;
     expect(bindingOf(instance).texture).toBeNull();
     expect(instance.customDiagnostics.some((line) => line.includes("[CUSTOM_TEXTURE_UNBOUND]"))).toBe(true);
     instance.dispose();
+  });
+});
+
+
+describe("R-27: a declared uniform the linked program optimised out does not skip the draw", () => {
+  // Models a GL compiler that drops an unused uniform from the linked program's
+  // active-uniform reflection (the engine's preamble still declares it in source).
+  class OptimizingDevice extends MockRenderDevice {
+    constructor(private readonly dropped: readonly string[]) {
+      super();
+    }
+    override createShaderProgram(...args: Parameters<MockRenderDevice["createShaderProgram"]>) {
+      const program = super.createShaderProgram(...args) as MockShaderProgram;
+      return new MockShaderProgram(program.id, program.label, program.marker, {
+        ...program.reflection,
+        uniforms: new Set([...program.reflection.uniforms].filter((name) => !this.dropped.includes(name)))
+      });
+    }
+  }
+
+  const ghostSpec = (): AuraCustomMaterialSpec => ({
+    glsl: { fragment: FRAGMENT },
+    uniforms: { strength: { type: "f32", value: 0.5 }, ghost: { type: "f32", value: 1 } }
+  });
+
+  it("customDiagnostics names a declared uniform the shader never reads", () => {
+    const instance = createCustomShaderMaterial(ghostSpec());
+    const lines = instance.customDiagnostics.filter((line) => line.includes("[CUSTOM_UNIFORM_UNUSED]"));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('"ghost"');
+    expect(instance.customDiagnostics.join("\n")).not.toContain('"strength"');
+    instance.dispose();
+  });
+
+  it("MaterialBinding.bind succeeds, uploads nothing for the missing uniform, and warns with CUSTOM_UNIFORM_UNUSED", () => {
+    const instance = createCustomShaderMaterial(ghostSpec());
+    const compiled = instance.compile(new OptimizingDevice(["u_ghost"]));
+    expect(compiled.ok).toBe(true);
+    expect(compiled.program!.reflection.uniforms.has("u_ghost")).toBe(false);
+    const bound = new MaterialBinding().bind(instance, compiled.program!);
+    expect(bound.warnings.some((line) => line.includes("[CUSTOM_UNIFORM_UNUSED]") && line.includes("u_ghost"))).toBe(true);
+    expect(bound.warnings.join("\n")).not.toContain("u_strength");
+    instance.dispose();
+  });
+
+  it("a ForwardPass draw with an optimised-out uniform is still issued on the mock device (and no draw is skipped)", () => {
+    const device = new OptimizingDevice(["u_ghost"]);
+    const instance = createCustomShaderMaterial(ghostSpec());
+    const warn = console.warn;
+    const warnings: string[] = [];
+    console.warn = (...args: unknown[]) => { warnings.push(args.join(" ")); };
+    try {
+      device.beginFrame(8, 8);
+      new ForwardPass({
+        items: [{ geometry: Geometry.triangle(), material: instance, modelMatrix: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]), label: "r27-optimised-out" }]
+      }).execute({ device, width: 8, height: 8 });
+      device.endFrame();
+    } finally {
+      console.warn = warn;
+    }
+    expect(device.drawCommands.filter((command) => command.label === "r27-optimised-out")).toHaveLength(1);
+    expect(warnings.filter((line) => line.includes("draw skipped"))).toEqual([]);
+    instance.dispose();
+  });
+
+  const plainProgram = (uniforms: readonly string[]) => {
+    const declarations = uniforms.map((name) => `uniform float ${name};`).join("\n");
+    return new MockRenderDevice().createShaderProgram({
+      label: "r27-plain",
+      marker: "@r27-plain",
+      vertex: `#version 300 es\n// @r27-plain\n${declarations}\nvoid main(){gl_Position=vec4(0.0);}`,
+      fragment: "#version 300 es\n// @r27-plain\nprecision mediump float;\nout vec4 o;\nvoid main(){o=vec4(1.0);}"
+    });
+  };
+  const plainMaterial = (optimizable: boolean, withParameter = true) => new Material({
+    name: "r27-plain",
+    shaderKey: "r27-plain",
+    uniformSchema: [{ name: "u_needed", kind: "float", required: true, ...(optimizable ? { optimizable: true } : {}) }],
+    ...(withParameter ? { parameters: { u_needed: 1 } } : {})
+  } as never);
+
+  it("a genuinely missing REQUIRED (non-optimizable) uniform still fails binding loudly with a named error", () => {
+    const material = plainMaterial(false);
+    const program = plainProgram([]);
+    expect(() => new MaterialBinding().bind(material, program)).toThrowError(MaterialBindingError);
+    expect(() => new MaterialBinding().bind(material, program)).toThrowError(/Missing shader uniform declared by material schema: u_needed/);
+  });
+
+  it("the same missing uniform marked optimizable binds with a CUSTOM_UNIFORM_UNUSED warning instead", () => {
+    const bound = new MaterialBinding().bind(plainMaterial(true), plainProgram([]));
+    expect(bound.warnings.some((line) => line.includes("[CUSTOM_UNIFORM_UNUSED]") && line.includes("u_needed"))).toBe(true);
+  });
+
+  it("a required uniform with no material parameter still fails binding, optimizable or not", () => {
+    expect(() => new MaterialBinding().bind(plainMaterial(false, false), plainProgram(["u_needed"]))).toThrowError(/Missing material parameter declared by schema: u_needed/);
+    expect(() => new MaterialBinding().bind(plainMaterial(true, false), plainProgram(["u_needed"]))).toThrowError(/Missing material parameter declared by schema: u_needed/);
+  });
+});
+
+describe("cdp: custom material render state reaches the issued draw (transparent / additive / side / depth)", () => {
+  const IDENTITY = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  const FRAG = `out vec4 outColor;
+void main() { outColor = vec4(beamColor, beamAmount); }`;
+  const draw = (overrides: Partial<AuraCustomMaterialSpec>, modelMatrix: Float32Array = IDENTITY) => {
+    const device = new MockRenderDevice();
+    const instance = createCustomShaderMaterial({
+      glsl: { fragment: FRAG },
+      uniforms: { beamColor: { type: "color3", value: [1, 0.5, 0.25] }, beamAmount: { type: "f32", value: 0.75 } },
+      ...overrides
+    });
+    device.beginFrame(8, 8);
+    new ForwardPass({ items: [{ geometry: Geometry.triangle(), material: instance, modelMatrix, label: "cdp" }] })
+      .execute({ device, width: 8, height: 8 });
+    device.endFrame();
+    const commands = device.drawCommands.filter((command) => command.label === "cdp");
+    instance.dispose();
+    return commands;
+  };
+
+  it.each([
+    ["opaque default", {}, { blend: false, depthWrite: true, depthTest: true, cullMode: "back", blendMode: "opaque" }],
+    ["alpha transparent", { transparent: true }, { blend: true, depthWrite: false, blendMode: "alpha", cullMode: "back" }],
+    ["additive beam", { transparent: true, depthWrite: false, depthTest: true, blending: "additive", side: "double" }, { blend: true, depthWrite: false, depthTest: true, blendMode: "additive", cullMode: "none" }],
+    ["inside-view sphere", { side: "back", depthWrite: false }, { blend: false, depthWrite: false, cullMode: "front" }],
+    ["depthTest off overlay", { transparent: true, depthTest: false, depthWrite: false }, { blend: true, depthTest: false, depthWrite: false }]
+  ] as const)("%s", (_name, spec, expected) => {
+    const commands = draw(spec as Partial<AuraCustomMaterialSpec>);
+    expect(commands).toHaveLength(1);
+    expect(commands[0]!.renderState).toMatchObject(expected);
+  });
+
+  it("an additive double-sided beam keeps its uniforms (beamAmount reaches the draw)", () => {
+    const [command] = draw({ transparent: true, depthWrite: false, blending: "additive", side: "double" });
+    const uploaded = [...(command!.uniforms ?? new Map()).entries()];
+    const byName = new Map(uploaded.map(([name, value]) => [name, value]));
+    expect(byName.get("u_beamAmount")).toBe(0.75);
+    expect(Array.from(byName.get("u_beamColor") as ArrayLike<number>)).toEqual([1, 0.5, 0.25]);
+  });
+
+  it("a mirrored model matrix flips culling but double-sided stays uncull", () => {
+    const mirrored = new Float32Array([-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+    expect(draw({ side: "double" }, mirrored)[0]!.renderState!.cullMode).toBe("none");
+    expect(draw({}, mirrored)[0]!.renderState!.cullMode).toBe("front");
   });
 });

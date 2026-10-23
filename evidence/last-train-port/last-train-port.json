@@ -1,0 +1,108 @@
+{
+  "gauges": [
+    {
+      "approximateGpuMemoryBytes": 20274556,
+      "textures": 4,
+      "buffers": 51,
+      "renderTargets": 1,
+      "drawCalls": 53,
+      "nodes": 216
+    },
+    {
+      "approximateGpuMemoryBytes": 20274556,
+      "textures": 4,
+      "buffers": 51,
+      "renderTargets": 1,
+      "drawCalls": 55,
+      "nodes": 216
+    },
+    {
+      "approximateGpuMemoryBytes": 20274556,
+      "textures": 4,
+      "buffers": 51,
+      "renderTargets": 1,
+      "drawCalls": 53,
+      "nodes": 216
+    }
+  ],
+  "drift": [
+    {
+      "approximateGpuMemoryBytes": 0,
+      "textures": 0,
+      "buffers": 0,
+      "renderTargets": 0
+    },
+    {
+      "approximateGpuMemoryBytes": 0,
+      "textures": 0,
+      "buffers": 0,
+      "renderTargets": 0
+    },
+    {
+      "approximateGpuMemoryBytes": 0,
+      "textures": 0,
+      "buffers": 0,
+      "renderTargets": 0
+    }
+  ],
+  "circuits": [
+    {
+      "loop": 1,
+      "time": "day",
+      "steps": 42343,
+      "score": 4039
+    },
+    {
+      "loop": 2,
+      "time": "night",
+      "steps": 42332,
+      "score": 4039
+    },
+    {
+      "loop": 3,
+      "time": "day",
+      "steps": 42332,
+      "score": 4039
+    }
+  ],
+  "shots": {
+    "06-gardens": {
+      "width": 800,
+      "height": 450,
+      "litFraction": 1,
+      "mean": 215.26999999999958
+    },
+    "04-snow-observatory": {
+      "width": 800,
+      "height": 450,
+      "litFraction": 1,
+      "mean": 219.7024768518089
+    },
+    "05-rain-monsoon": {
+      "width": 800,
+      "height": 450,
+      "litFraction": 1,
+      "mean": 224.11159722225364
+    },
+    "07-night-gardens": {
+      "width": 800,
+      "height": 450,
+      "litFraction": 0.9997916666666666,
+      "mean": 95.09451388888915
+    }
+  },
+  "runId": "last-train-h-20261023T065059Z",
+  "renderer": "SwiftShader WebGL2 (ACR task, playwright 1.59.1)",
+  "reference": {
+    "steps": [
+      42302,
+      42310,
+      42321
+    ],
+    "scores": [
+      4039,
+      4036,
+      4032
+    ]
+  }
+}

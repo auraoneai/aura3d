@@ -1,0 +1,15 @@
+HTTP/1.1 200 OK
+x-amz-request-id: EXT2XW9TKG1GJBBQ
+x-amz-id-2: QgoV24zcXgDAyBjNtWB8hrkHDqJZctZjzhkpGCCNJic9k+NUddzAmpGLIoS3hEaezOSFkSFi9kRpPF6cC3DOHSwC4PwdQTMl
+Content-Length: 389344
+Accept-Ranges: bytes
+Date: Fri, 23 Oct 2026 06:13:19 GMT
+Server: AmazonS3
+Last-Modified: Fri, 23 Oct 2026 01:07:18 GMT
+ETag: "6fa786e5476e0d4a6518e438b1357c66"
+x-amz-meta-sha256: ddc83300ba064611a4ef7782ecf668d22b7724b0f8e99e4d8df9b47b159d57ae
+Cache-Control: public,max-age=31536000,immutable
+Content-Encoding: gzip
+Content-Type: text/javascript; charset=utf-8
+x-amz-server-side-encryption: AES256
+

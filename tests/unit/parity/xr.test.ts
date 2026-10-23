@@ -16,8 +16,9 @@ import { threeMappingFor } from "../../../packages/aura3d-cli/src/migrate-three/
 import { THREE_COMPAT_CODEMOD_IMPORTS } from "../../../packages/aura3d-cli/src/migrate-three/ImportMap";
 
 // SC-04 (docs/workflows/threejs-parity-gaps.md): WebXR buttons + session runtime.
-// Everything here runs against FAKE XR objects. Real headset and browser
-// behaviour (XRWebGLLayer, makeXRCompatible, presentation) is NOT exercised.
+// Everything here runs against FAKE XR objects. The same runtime is exercised against the
+// independent iwer WebXR emulator in tests/browser/parity-xr.spec.ts; a real headset and a
+// native browser WebXR implementation are NOT exercised.
 
 const translation = (x: number, y: number, z: number): number[] => [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
 const near = 0.1;
@@ -96,7 +97,7 @@ function makeRig(overrides: Partial<AuraXRRuntimeOptions> & { supported?: boolea
     isSessionSupported: vi.fn(async () => overrides.supported ?? true),
     requestSession
   };
-  const device = { setExternalFramebuffer: vi.fn(), setViewport: vi.fn() };
+  const device = { setExternalFramebuffer: vi.fn(), setViewport: vi.fn(), resetViewport: vi.fn() };
   const key = {};
   let appClock = 5;
   const seen: { time: number; camera: AuraXRViewCamera | undefined }[] = [];
@@ -203,7 +204,10 @@ describe("app.xr runtime lifecycle", () => {
     await rig.runtime.enter();
     rig.session.tick(1000);
     expect(rig.device.setExternalFramebuffer).toHaveBeenNthCalledWith(1, { id: "xr-framebuffer" }, 2000, 1000);
-    expect(rig.device.setViewport.mock.calls).toEqual([[0, 0, 1000, 1000], [1000, 0, 1000, 1000]]);
+    // Persistent: a frame-scoped viewport would be reset by the device's beginFrame and the eye would render full-frame.
+    expect(rig.device.setViewport.mock.calls).toEqual([[0, 0, 1000, 1000, { persistent: true }], [1000, 0, 1000, 1000, { persistent: true }]]);
+    // ...and it is handed back (cleared) once the frame is done.
+    expect(rig.device.resetViewport).toHaveBeenCalledTimes(1);
     expect(rig.seen).toHaveLength(2);
     expect(rig.seen.map((entry) => entry.camera?.eye)).toEqual(["left", "right"]);
     close(rig.seen[0]!.camera!.eyePosition, [-0.03, 1.6, 0]);
@@ -216,6 +220,32 @@ describe("app.xr runtime lifecycle", () => {
     expect(rig.runtime.lastSample?.active).toBe(true);
     // The next XR frame is scheduled before rendering, so a render error cannot stall the loop silently.
     expect(rig.session.rafHandle).toBe(2);
+  });
+
+  it("renders into the canvas when the layer reports a null framebuffer (inline sessions, emulators), still per eye", async () => {
+    class NullFramebufferLayer extends FakeLayer {
+      override readonly framebuffer = null as unknown as { id: string };
+    }
+    const rig = makeRig({ layerConstructor: NullFramebufferLayer as never });
+    const errors = vi.fn();
+    rig.runtime.on("error", errors);
+    await rig.runtime.enter();
+    rig.session.tick(1000);
+    expect(rig.device.setExternalFramebuffer).toHaveBeenNthCalledWith(1, null, 2000, 1000);
+    expect(rig.device.setViewport.mock.calls).toEqual([[0, 0, 1000, 1000, { persistent: true }], [1000, 0, 1000, 1000, { persistent: true }]]);
+    expect(rig.seen).toHaveLength(2);
+    expect(errors).not.toHaveBeenCalled();
+    expect(rig.runtime.isPresenting).toBe(true);
+  });
+
+  it("clears the persistent viewport when the session ends, so the app's own frames are full-frame again", async () => {
+    const rig = makeRig();
+    await rig.runtime.enter();
+    rig.session.tick(1000);
+    rig.device.resetViewport.mockClear();
+    await rig.runtime.exit();
+    expect(rig.device.resetViewport).toHaveBeenCalled();
+    expect(rig.device.setExternalFramebuffer).toHaveBeenLastCalledWith(null, 640, 480);
   });
 
   it("continues the app clock from the XR frame times and writes it back", async () => {
@@ -237,6 +267,28 @@ describe("app.xr runtime lifecycle", () => {
     rig.session.tick(2, [bad, makeView("right", 0.03)]);
     expect(rig.seen.map((entry) => entry.camera?.eye)).toEqual(["right", "right"]);
     expect(errors.filter((code) => code === "XR_VIEW_MATRICES_INVALID")).toHaveLength(1);
+  });
+
+  it("skips an eye whose viewport has no pixels (a mono device's zero-width right view) instead of failing the session", async () => {
+    class MonoLayer extends FakeLayer {
+      override getViewport(view: { eye?: string }) {
+        return view.eye === "left" ? { x: 0, y: 0, width: 2000, height: 1000 } : { x: 2000, y: 0, width: 0, height: 1000 };
+      }
+    }
+    const rig = makeRig({ layerConstructor: MonoLayer as never });
+    const errors = vi.fn();
+    const frames = vi.fn();
+    rig.runtime.on("error", errors);
+    rig.runtime.on("frame", frames);
+    await rig.runtime.enter();
+    rig.session.tick(1000);
+    expect(rig.device.setViewport).toHaveBeenCalledTimes(1);
+    expect(rig.device.setViewport).toHaveBeenCalledWith(0, 0, 2000, 1000, { persistent: true });
+    expect(rig.seen).toHaveLength(1);
+    expect(rig.seen[0]!.camera?.eye).toBe("left");
+    expect(frames).toHaveBeenCalledWith(expect.objectContaining({ viewCount: 1 }));
+    expect(errors).not.toHaveBeenCalled();
+    expect(rig.runtime.isPresenting).toBe(true);
   });
 
   it("skips rendering on a frame with no viewer pose (tracking lost) but keeps the session", async () => {
@@ -470,6 +522,14 @@ describe("xr.button()", () => {
       else delete (globalThis as { document?: unknown }).document;
     }
   });
+
+  it("accepts an app whose `xr` is typed optional and throws a clear error when the runtime is missing", () => {
+    const fakeDocument = { createElement: () => new FakeElement() };
+    // A plain app-shaped holder with the runtime works (AuraApp.xr is `xr?:`).
+    const optionalTyped: { readonly xr?: ReturnType<typeof makeRig>["runtime"] } = { xr: makeRig().runtime };
+    expect(() => createXRButton({ app: optionalTyped, document: fakeDocument }).dispose()).not.toThrow();
+    expect(() => createXRButton({ app: {}, document: fakeDocument })).toThrow(/requires an app with an XR runtime/);
+  });
 });
 
 describe("WebXRSessionController session accessors", () => {
@@ -487,7 +547,69 @@ describe("WebXRSessionController session accessors", () => {
   });
 });
 
-describe("migrate-three XR rows (honest `pending`: no render device path yet)", () => {
+describe("WebXRSessionController reference-space negotiation (found by the iwer run)", () => {
+  // A browser rejects `requestReferenceSpace("local-floor")` unless it was requested as a session feature.
+  const makeSystem = (grant: readonly string[], alwaysReject = false) => {
+    const end = vi.fn(async () => undefined);
+    const requestReferenceSpace = vi.fn(async (type: string) => {
+      if (alwaysReject || (type !== "viewer" && type !== "local" && !grant.includes(type))) {
+        throw new Error("The requested reference space type is not supported.");
+      }
+      return { type };
+    });
+    const session = { requestReferenceSpace, end, enabledFeatures: grant };
+    const requestSession = vi.fn(async (_mode: string, _init: unknown) => session);
+    const system = { isSessionSupported: async () => true, requestSession };
+    return { system: system as never, requestSession, requestReferenceSpace, end };
+  };
+
+  it("requests the default local-floor space as an optional session feature", async () => {
+    const rig = makeSystem(["local-floor"]);
+    const controller = new WebXRSessionController({ xr: rig.system });
+    await expect(controller.start()).resolves.toMatchObject({ started: true, referenceSpace: "local-floor" });
+    expect(rig.requestSession).toHaveBeenCalledWith("immersive-vr", { requiredFeatures: [], optionalFeatures: ["local-floor"] });
+  });
+
+  it("does not duplicate a space the caller already listed, and adds nothing for local or viewer", async () => {
+    const listed = makeSystem(["local-floor"]);
+    await new WebXRSessionController({ xr: listed.system, requiredFeatures: ["local-floor"] }).start();
+    expect(listed.requestSession).toHaveBeenCalledWith("immersive-vr", { requiredFeatures: ["local-floor"], optionalFeatures: [] });
+    for (const referenceSpace of ["local", "viewer"] as const) {
+      const rig = makeSystem([]);
+      await new WebXRSessionController({ xr: rig.system, referenceSpace }).start();
+      expect(rig.requestSession).toHaveBeenCalledWith("immersive-vr", { requiredFeatures: [], optionalFeatures: [] });
+    }
+  });
+
+  it("degrades the default local-floor to local when the device grants no floor, like three's VRButton", async () => {
+    const rig = makeSystem([]);
+    const controller = new WebXRSessionController({ xr: rig.system });
+    await expect(controller.start()).resolves.toMatchObject({ started: true, referenceSpace: "local" });
+    expect(rig.requestReferenceSpace.mock.calls.map(([type]) => type)).toEqual(["local-floor", "local"]);
+    expect(rig.end).not.toHaveBeenCalled();
+    expect(controller.active).toBe(true);
+  });
+
+  it("does not silently degrade an explicit local-floor request, and ends the session it opened", async () => {
+    const rig = makeSystem([]);
+    const controller = new WebXRSessionController({ xr: rig.system, referenceSpace: "local-floor" });
+    await expect(controller.start()).rejects.toThrow(/reference space type is not supported/);
+    expect(rig.end).toHaveBeenCalledOnce();
+    expect(controller.active).toBe(false);
+    expect(controller.xrReferenceSpace).toBeNull();
+  });
+
+  it("ends the session when even the local fallback fails, so none is left open", async () => {
+    const rig = makeSystem([], true);
+    const controller = new WebXRSessionController({ xr: rig.system });
+    await expect(controller.start()).rejects.toThrow(/not supported/);
+    expect(rig.requestReferenceSpace.mock.calls.map(([type]) => type)).toEqual(["local-floor", "local"]);
+    expect(rig.end).toHaveBeenCalledOnce();
+    expect(controller.active).toBe(false);
+  });
+});
+
+describe("migrate-three XR rows (approximate: verified against the iwer emulator, not a headset)", () => {
   const source = [
     'import { VRButton } from "three/addons/webxr/VRButton.js";',
     'import { ARButton } from "three/addons/webxr/ARButton.js";',
@@ -502,12 +624,12 @@ describe("migrate-three XR rows (honest `pending`: no render device path yet)", 
     expect(found).toEqual(["WebXRManager@3", "VRButton.createButton@4", "ARButton.createButton@5", "WebXRManager@6"]);
   });
 
-  it("labels every XR row pending (never exact/approximate) and names the missing device capability", () => {
+  it("labels every XR row approximate (never exact) and states the emulator-only verification", () => {
     for (const construct of ["VRButton.createButton", "ARButton.createButton", "WebXRManager"]) {
       const row = threeMappingFor(construct)!;
-      expect(row.mapping).toBe("pending");
-      expect(row.note).toMatch(/PENDING/);
-      expect(row.note).toMatch(/setExternalFramebuffer|VRButton\.createButton/);
+      expect(row.mapping).toBe("approximate");
+      expect(row.note).not.toMatch(/PENDING/);
+      expect(row.note).toMatch(/iwer emulator|VRButton\.createButton/);
     }
     expect(threeMappingFor("VRButton.createButton")!.engineImport).toBe("xr");
   });

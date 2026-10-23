@@ -1,0 +1,1804 @@
+{
+ "id": "vesper",
+ "name": "Vesper Heights",
+ "shape": {
+  "seed": 31,
+  "radius": 1100,
+  "step": 2,
+  "controlPoints": 32,
+  "harmonics": [],
+  "jitter": 0,
+  "points": [
+   [
+    656,
+    512
+   ],
+   [
+    448,
+    360
+   ],
+   [
+    224,
+    180
+   ],
+   [
+    -224,
+    -180
+   ],
+   [
+    -448,
+    -336
+   ],
+   [
+    -688,
+    -416
+   ],
+   [
+    -896,
+    -336
+   ],
+   [
+    -1008,
+    -144
+   ],
+   [
+    -976,
+    72
+   ],
+   [
+    -848,
+    208
+   ],
+   [
+    -664,
+    272
+   ],
+   [
+    -448,
+    264
+   ],
+   [
+    -240,
+    184
+   ],
+   [
+    240,
+    -184
+   ],
+   [
+    464,
+    -344
+   ],
+   [
+    688,
+    -448
+   ],
+   [
+    912,
+    -400
+   ],
+   [
+    1064,
+    -240
+   ],
+   [
+    1104,
+    -32
+   ],
+   [
+    1040,
+    176
+   ],
+   [
+    888,
+    320
+   ],
+   [
+    696,
+    304
+   ],
+   [
+    608,
+    160
+   ],
+   [
+    656,
+    16
+   ],
+   [
+    944,
+    40
+   ],
+   [
+    1240,
+    96
+   ],
+   [
+    1320,
+    304
+   ],
+   [
+    1200,
+    512
+   ],
+   [
+    944,
+    608
+   ],
+   [
+    784,
+    584
+   ]
+  ],
+  "startPoint": 0,
+  "smoothing": {
+   "samples": 1400,
+   "passes": 5,
+   "window": 3,
+   "refitEvery": 6,
+   "arcDivisions": 4000,
+   "refitArcDivisions": 8000
+  },
+  "startSearch": {
+   "window": 400
+  },
+  "curvatureWindow": 5
+ },
+ "elevation": {
+  "keys": [
+   [
+    0,
+    0
+   ],
+   [
+    2,
+    0
+   ],
+   [
+    3,
+    0
+   ],
+   [
+    5,
+    0
+   ],
+   [
+    6,
+    2
+   ],
+   [
+    7,
+    10
+   ],
+   [
+    8,
+    22
+   ],
+   [
+    9,
+    32
+   ],
+   [
+    10,
+    36
+   ],
+   [
+    12,
+    36
+   ],
+   [
+    12.3,
+    36
+   ],
+   [
+    12.7,
+    36
+   ],
+   [
+    13,
+    36
+   ],
+   [
+    14,
+    37
+   ],
+   [
+    15,
+    46
+   ],
+   [
+    16,
+    62
+   ],
+   [
+    17,
+    76
+   ],
+   [
+    18,
+    80
+   ],
+   [
+    19,
+    80
+   ],
+   [
+    20,
+    74
+   ],
+   [
+    21,
+    64
+   ],
+   [
+    22,
+    56
+   ],
+   [
+    23,
+    48
+   ],
+   [
+    24,
+    44
+   ],
+   [
+    25,
+    36
+   ],
+   [
+    26,
+    26
+   ],
+   [
+    27,
+    14
+   ],
+   [
+    28,
+    5
+   ],
+   [
+    29,
+    1
+   ]
+  ],
+  "keySmooth": 70,
+  "waves": [],
+  "jumps": [],
+  "rampUp": 70,
+  "rampDown": 12
+ },
+ "districts": {
+  "valley": {
+   "name": "Bonewake Causeway",
+   "hw": 40,
+   "ceil": 0,
+   "heat": 1,
+   "cool": 1,
+   "light": 1,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 9074872,
+   "hud": {
+    "color": "#c9a0ff",
+    "label": "BONEWAKE CAUSEWAY"
+   }
+  },
+  "switchback": {
+   "name": "Shard Ascent",
+   "hw": 38,
+   "ceil": 0,
+   "heat": 1.1,
+   "cool": 1,
+   "light": 1,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 9074872,
+   "hud": {
+    "color": "#ff7ae0",
+    "label": "SHARD ASCENT"
+   }
+  },
+  "terrace": {
+   "name": "Luminous Reef",
+   "hw": 38,
+   "ceil": 0,
+   "heat": 1,
+   "cool": 1,
+   "light": 1,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 9074872,
+   "hud": {
+    "color": "#9f8cff",
+    "label": "LUMINOUS REEF"
+   }
+  },
+  "bridge": {
+   "name": "Rift Crossing",
+   "hw": 36,
+   "ceil": 0,
+   "heat": 1,
+   "cool": 1.2,
+   "light": 1,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 9074872,
+   "hud": {
+    "color": "#40e0ff",
+    "label": "RIFT CROSSING"
+   }
+  },
+  "ramp": {
+   "name": "Crown Rise",
+   "hw": 38,
+   "ceil": 0,
+   "heat": 1.2,
+   "cool": 0.9,
+   "light": 1,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 9074872,
+   "hud": {
+    "color": "#ff5ab4",
+    "label": "CROWN RISE"
+   }
+  },
+  "sky": {
+   "name": "Astral Shelf",
+   "hw": 36,
+   "ceil": 0,
+   "heat": 1,
+   "cool": 1.3,
+   "light": 1.05,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 10127560,
+   "hud": {
+    "color": "#7fe8ff",
+    "label": "ASTRAL SHELF"
+   }
+  },
+  "spiral": {
+   "name": "Resonance Well",
+   "hw": 38,
+   "ceil": 0,
+   "heat": 1,
+   "cool": 1,
+   "light": 0.95,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 8022184,
+   "hud": {
+    "color": "#b46cff",
+    "label": "RESONANCE WELL"
+   }
+  },
+  "exit": {
+   "name": "Echo Return",
+   "hw": 40,
+   "ceil": 0,
+   "heat": 1,
+   "cool": 1,
+   "light": 1,
+   "road": [
+    0.3,
+    0.31,
+    0.33
+   ],
+   "fog": 9074872,
+   "hud": {
+    "color": "#ffb02e",
+    "label": "ECHO RETURN"
+   }
+  }
+ },
+ "sectionsAt": "points",
+ "sections": [
+  [
+   0,
+   "valley"
+  ],
+  [
+   6.4,
+   "switchback"
+  ],
+  [
+   9.6,
+   "terrace"
+  ],
+  [
+   12.3,
+   "bridge"
+  ],
+  [
+   12.7,
+   "terrace"
+  ],
+  [
+   14.6,
+   "ramp"
+  ],
+  [
+   17.5,
+   "sky"
+  ],
+  [
+   20.3,
+   "spiral"
+  ],
+  [
+   24.6,
+   "exit"
+  ]
+ ],
+ "widthBlend": 80,
+ "ceilingBlend": 60,
+ "grid": {
+  "x": 10,
+  "row": 18
+ },
+ "splits": [
+  {
+   "s": 1080,
+   "len": 600,
+   "up": 14,
+   "down": 10,
+   "widen": 24,
+   "divider": 9,
+   "ramp": 140
+  },
+  {
+   "s": 6520,
+   "len": 600,
+   "up": 12,
+   "down": 11,
+   "widen": 24,
+   "divider": 9,
+   "ramp": 140
+  }
+ ],
+ "gameplay": {
+  "clear": {
+   "jump": 220,
+   "startAfter": 220,
+   "endBefore": 140,
+   "obstacleHx": 6
+  },
+  "obstacles": [],
+  "scatter": {
+   "start": 90,
+   "endMargin": 60,
+   "step": 30,
+   "rules": [
+    {
+     "type": "boostPad",
+     "districts": [
+      "valley",
+      "terrace",
+      "sky",
+      "exit",
+      "bridge"
+     ],
+     "chance": 0.09,
+     "lateral": [
+      0.15,
+      0.45
+     ],
+     "clear": 30,
+     "minGap": 260
+    },
+    {
+     "type": "pickup",
+     "districts": "all",
+     "chance": 0.05,
+     "lateral": 0.6,
+     "clear": 24,
+     "minGap": 300,
+     "kinds": [
+      "shield",
+      "cool"
+     ],
+     "h": 2.2
+    },
+    {
+     "type": "barrels",
+     "districts": [
+      "valley",
+      "exit"
+     ],
+     "chance": 0.04,
+     "clearEdge": 4,
+     "clear": 25,
+     "minGap": 240,
+     "count": 3,
+     "spacing": 2.2,
+     "edgeInset": 3,
+     "stagger": 1.6
+    }
+   ]
+  },
+  "checkpoints": {
+   "offset": 25,
+   "skipCovered": true
+  },
+  "pickupVisual": {
+   "shield": "shield_pickup",
+   "cool": "cooling_canister",
+   "y": 1.2,
+   "scale": 1.3
+  },
+  "barrelVisual": {
+   "asset": "explosive_barrel"
+  },
+  "itemBoxes": {
+   "rows": 6,
+   "firstAt": 0.5,
+   "search": 260,
+   "searchStep": 10,
+   "keepOut": {
+    "start": 280,
+    "end": 180,
+    "roofCheck": 70,
+    "jump": 120,
+    "boostPad": 60,
+    "pickup": 50
+   },
+   "wideRoad": 18,
+   "wideCount": 7,
+   "narrowCount": 5,
+   "edgeInset": 7,
+   "y": 2.4,
+   "clear": {
+    "hs": 8,
+    "hx": 3
+   }
+  },
+  "extraObstacles": [],
+  "extraLavaPools": [],
+  "extraBoostPads": [
+   {
+    "s": 1300,
+    "x": -26
+   },
+   {
+    "s": 1460,
+    "x": -24
+   },
+   {
+    "s": 6740,
+    "x": -26
+   },
+   {
+    "s": 6900,
+    "x": -24
+   }
+  ],
+  "extraPickups": [],
+  "extraBarrels": [],
+  "extraCheckpoints": []
+ },
+ "world": {
+  "builder": "vesper",
+  "seed": 91,
+  "rock": 4086116,
+  "rockDark": 2110789,
+  "rockUnder": 4084580,
+  "dust": 8559786,
+  "seamGlow": 1.2,
+  "terrain": {
+   "seed": 5,
+   "base": -12,
+   "hills": 35,
+   "mountains": 340,
+   "rimStart": 420,
+   "massifs": [
+    {
+     "x": 460,
+     "z": 535,
+     "yaw": 0.63,
+     "length": 470,
+     "width": 130,
+     "height": 115
+    },
+    {
+     "x": 480,
+     "z": 120,
+     "yaw": 0.58,
+     "length": 380,
+     "width": 100,
+     "height": 142
+    },
+    {
+     "x": -140,
+     "z": 80,
+     "yaw": 0.62,
+     "length": 490,
+     "width": 120,
+     "height": 130
+    },
+    {
+     "x": -460,
+     "z": -550,
+     "yaw": 0.13,
+     "length": 420,
+     "width": 150,
+     "height": 185
+    },
+    {
+     "x": -1110,
+     "z": -120,
+     "yaw": 1.42,
+     "length": 340,
+     "width": 125,
+     "height": 155
+    },
+    {
+     "x": -670,
+     "z": 435,
+     "yaw": -0.12,
+     "length": 420,
+     "width": 145,
+     "height": 138
+    },
+    {
+     "x": 60,
+     "z": -350,
+     "yaw": -0.7,
+     "length": 290,
+     "width": 105,
+     "height": 150
+    },
+    {
+     "x": 810,
+     "z": -620,
+     "yaw": 0.2,
+     "length": 470,
+     "width": 150,
+     "height": 220
+    },
+    {
+     "x": 1480,
+     "z": -30,
+     "yaw": 1.3,
+     "length": 450,
+     "width": 180,
+     "height": 205
+    },
+    {
+     "x": 1050,
+     "z": 810,
+     "yaw": -0.3,
+     "length": 500,
+     "width": 170,
+     "height": 180
+    }
+   ],
+   "inner": 12,
+   "blend": 60,
+   "fieldReach": 320,
+   "extent": 6500,
+   "grid": 420,
+   "gridPhone": 240,
+   "centreSpacing": 6.5,
+   "craters": [
+    {
+     "x": 800,
+     "z": 170,
+     "r": 240,
+     "depth": 58
+    },
+    {
+     "x": -760,
+     "z": -25,
+     "r": 170,
+     "depth": 28
+    },
+    {
+     "x": 420,
+     "z": -70,
+     "r": 165,
+     "depth": 24
+    }
+   ],
+   "colors": {
+    "floor": 4809316,
+    "floorDark": 2702154,
+    "shoulder": 6649723,
+    "high": 3424595
+   }
+  },
+  "road": {
+   "skirt": 2.6,
+   "color": 3426390,
+   "bandSpacing": 11,
+   "pebble": 2892358,
+   "pebbleAmount": 0.35
+  },
+  "lip": {
+   "profile": [
+    [
+     0,
+     -0.4
+    ],
+    [
+     0.3,
+     0.15
+    ],
+    [
+     0.7,
+     0.65
+    ],
+    [
+     1.2,
+     0.94
+    ],
+    [
+     1.8,
+     1
+    ],
+    [
+     2.4,
+     0.84
+    ],
+    [
+     2.9,
+     0.48
+    ],
+    [
+     3.3,
+     -0.2
+    ],
+    [
+     3.6,
+     -1.4
+    ]
+   ],
+   "top": 0.9
+  },
+  "districtWorld": {
+   "valley": {
+    "road": 7232668,
+    "ground": {
+     "inner": 18,
+     "blend": 95
+    }
+   },
+   "switchback": {
+    "road": 6969496,
+    "ground": {
+     "inner": 22,
+     "blend": 70
+    }
+   },
+   "terrace": {
+    "road": 7627426,
+    "ground": {
+     "inner": 36,
+     "blend": 40
+    }
+   },
+   "bridge": {
+    "road": 7759526,
+    "deck": true,
+    "slab": {
+     "depth": 13,
+     "jag": 1.4,
+     "float": false,
+     "arch": 1.2,
+     "stalactites": 0
+    }
+   },
+   "ramp": {
+    "road": 7101082,
+    "ground": {
+     "inner": 22,
+     "blend": 70
+    }
+   },
+   "sky": {
+    "road": 8022698,
+    "deck": true,
+    "slab": {
+     "depth": 22,
+     "jag": 2.4,
+     "float": true,
+     "stalactites": 0.4
+    }
+   },
+   "spiral": {
+    "road": 6837908,
+    "ground": {
+     "inner": 14,
+     "blend": 44
+    }
+   },
+   "exit": {
+    "road": 7232668,
+    "ground": {
+     "inner": 14,
+     "blend": 60
+    }
+   }
+  },
+  "dressing": {
+   "all": [
+    {
+     "kit": "twinpost",
+     "every": 110,
+     "edge": 1.7,
+     "side": "both",
+     "face": "along",
+     "edgePiece": true,
+     "variants": false,
+     "scale": 1.5
+    }
+   ],
+   "valley": [
+    {
+     "kit": "gboulder",
+     "every": 95,
+     "edge": [
+      12,
+      12
+     ],
+     "side": "random",
+     "chance": 0.65,
+     "ground": true,
+     "scale": [
+      0.35,
+      0.35
+     ]
+    },
+    {
+     "kit": "gcrystals",
+     "every": 160,
+     "edge": [
+      10,
+      16
+     ],
+     "side": "alt",
+     "chance": 0.7,
+     "ground": true,
+     "scale": [
+      0.55,
+      0.4
+     ]
+    }
+   ],
+   "sky": [
+    {
+     "kit": "gcrystals",
+     "every": 190,
+     "edge": 1.7,
+     "side": "alt",
+     "edgePiece": true,
+     "scale": 0.5
+    }
+   ],
+   "bridge": [
+    {
+     "kit": "gcrystals",
+     "every": 120,
+     "edge": 1.7,
+     "side": "both",
+     "edgePiece": true,
+     "scale": 0.5
+    }
+   ],
+   "switchback": [
+    {
+     "kit": "gspire",
+     "every": 145,
+     "edge": [
+      38,
+      14
+     ],
+     "side": -1,
+     "ground": true,
+     "scale": [
+      0.8,
+      0.25
+     ]
+    },
+    {
+     "kit": "goutcrop",
+     "every": 90,
+     "edge": [
+      12,
+      12
+     ],
+     "side": -1,
+     "chance": 0.7,
+     "ground": true,
+     "scale": [
+      0.4,
+      0.25
+     ]
+    }
+   ],
+   "terrace": [
+    {
+     "kit": "hreef",
+     "every": 85,
+     "edge": [
+      24,
+      12
+     ],
+     "side": "alt",
+     "ground": true,
+     "scale": [
+      0.75,
+      0.35
+     ]
+    },
+    {
+     "kit": "gpods",
+     "every": 160,
+     "edge": [
+      15,
+      10
+     ],
+     "side": "alt",
+     "ground": true,
+     "scale": [
+      0.9,
+      0.3
+     ]
+    }
+   ],
+   "ramp": [
+    {
+     "kit": "gspire",
+     "every": 180,
+     "edge": [
+      46,
+      12
+     ],
+     "side": 1,
+     "chance": 0.75,
+     "ground": true,
+     "scale": [
+      0.6,
+      0.25
+     ]
+    },
+    {
+     "kit": "gcrystals",
+     "every": 140,
+     "edge": 1.7,
+     "side": "alt",
+     "edgePiece": true,
+     "scale": 0.65
+    }
+   ],
+   "spiral": [
+    {
+     "kit": "gcrystals",
+     "every": 120,
+     "edge": 1.7,
+     "side": "alt",
+     "edgePiece": true,
+     "scale": 0.55
+    },
+    {
+     "kit": "gpods",
+     "every": 165,
+     "edge": [
+      16,
+      12
+     ],
+     "side": 1,
+     "chance": 0.65,
+     "ground": true,
+     "scale": [
+      0.7,
+      0.35
+     ]
+    }
+   ],
+   "exit": [
+    {
+     "kit": "reefFan",
+     "every": 120,
+     "edge": [
+      24,
+      16
+     ],
+     "side": -1,
+     "chance": 0.8,
+     "ground": true,
+     "scale": [
+      0.7,
+      0.4
+     ]
+    },
+    {
+     "kit": "gboulder",
+     "every": 110,
+     "edge": [
+      10,
+      16
+     ],
+     "side": 1,
+     "chance": 0.6,
+     "ground": true,
+     "scale": [
+      0.4,
+      0.35
+     ]
+    }
+   ]
+  },
+  "setPieces": [
+   {
+    "kit": "hreef_0",
+    "point": 0.18,
+    "edge": 34,
+    "side": -1,
+    "yaw": 0.35,
+    "scale": 1.25
+   },
+   {
+    "kit": "hreef_0",
+    "point": 0.36,
+    "edge": 40,
+    "side": 1,
+    "yaw": -0.4,
+    "scale": 1.4
+   },
+   {
+    "kit": "hcrest_0",
+    "point": 0.65,
+    "edge": 100,
+    "side": -1,
+    "yaw": 0.3,
+    "scale": 1.1
+   },
+   {
+    "kit": "hcrest_0",
+    "point": 1.2,
+    "edge": 125,
+    "side": 1,
+    "yaw": -0.5,
+    "scale": 1.35
+   },
+   {
+    "kit": "hcrest_0",
+    "point": 4.4,
+    "edge": 140,
+    "side": -1,
+    "yaw": 0.55,
+    "scale": 1.6
+   },
+   {
+    "kit": "hshard_0",
+    "point": 6.7,
+    "edge": 66,
+    "side": -1,
+    "yaw": 0.4,
+    "scale": 1.3
+   },
+   {
+    "kit": "hshard_0",
+    "point": 7.35,
+    "edge": 82,
+    "side": -1,
+    "yaw": 0.7,
+    "scale": 1.55
+   },
+   {
+    "kit": "hshard_0",
+    "point": 8.2,
+    "edge": 92,
+    "side": -1,
+    "yaw": 1.1,
+    "scale": 1.8
+   },
+   {
+    "kit": "hcrest_0",
+    "point": 10.25,
+    "edge": 105,
+    "side": 1,
+    "yaw": -0.3,
+    "scale": 1.3
+   },
+   {
+    "kit": "hreef_0",
+    "point": 10.7,
+    "edge": 32,
+    "side": 1,
+    "yaw": 0.3,
+    "scale": 1.4
+   },
+   {
+    "kit": "hreef_0",
+    "point": 11.15,
+    "edge": 38,
+    "side": -1,
+    "yaw": -0.5,
+    "scale": 1.6
+   },
+   {
+    "kit": "hcrest_0",
+    "point": 15.7,
+    "edge": 175,
+    "side": 1,
+    "yaw": 0.3,
+    "scale": 2
+   },
+   {
+    "kit": "gmonolith_0",
+    "point": 21.9,
+    "edge": 80,
+    "side": 1,
+    "yaw": 0.8,
+    "scale": 1.65
+   },
+   {
+    "kit": "hcrest_0",
+    "point": 27.3,
+    "edge": 135,
+    "side": -1,
+    "yaw": -0.4,
+    "scale": 1.5
+   }
+  ],
+  "referenceGardens": [
+   {
+    "point": 1.8,
+    "side": 1,
+    "edge": 28,
+    "scale": 0.9,
+    "kit": "crystalreef"
+   },
+   {
+    "point": 9.85,
+    "side": -1,
+    "edge": 27,
+    "scale": 1.4,
+    "kit": "bulbgrove"
+   },
+   {
+    "point": 10.35,
+    "side": 1,
+    "edge": 30,
+    "scale": 1.6,
+    "kit": "crystalreef"
+   },
+   {
+    "point": 10.8,
+    "side": -1,
+    "edge": 30,
+    "scale": 1.5,
+    "kit": "bulbgrove"
+   },
+   {
+    "point": 11.3,
+    "side": 1,
+    "edge": 28,
+    "scale": 1.4,
+    "kit": "crystalreef"
+   },
+   {
+    "point": 14.15,
+    "side": -1,
+    "edge": 28,
+    "scale": 1.2,
+    "kit": "bulbgrove"
+   },
+   {
+    "point": 21.4,
+    "side": 1,
+    "edge": 32,
+    "scale": 1.5,
+    "kit": "bulbgrove"
+   },
+   {
+    "point": 22.2,
+    "side": 1,
+    "edge": 32,
+    "scale": 1.7,
+    "kit": "crystalreef"
+   },
+   {
+    "point": 23.1,
+    "side": 1,
+    "edge": 30,
+    "scale": 1.6,
+    "kit": "bulbgrove"
+   },
+   {
+    "point": 27.8,
+    "side": -1,
+    "edge": 28,
+    "scale": 1.1,
+    "kit": "crystalreef"
+   }
+  ],
+  "referenceArches": [
+   {
+    "section": 4,
+    "offset": 190
+   },
+   {
+    "section": 6,
+    "offset": 170
+   }
+  ],
+  "cliffs": {
+   "seed": 29,
+   "every": 9,
+   "minDrop": 5,
+   "maxH": 46,
+   "width": [
+    12,
+    10
+   ]
+  },
+  "fill": {
+   "seed": 31,
+   "cell": 58,
+   "cellPhone": 85,
+   "reach": 480,
+   "clear": 55,
+   "density": 0.19,
+   "kits": [
+    [
+     "gspire",
+     0.36
+    ],
+    [
+     "goutcrop",
+     0.3
+    ],
+    [
+     "ghoodoo",
+     0.12
+    ],
+    [
+     "gboulder",
+     0.22
+    ]
+   ],
+   "scale": {
+    "spire": [
+     0.8,
+     1.2
+    ],
+    "outcrop": [
+     1.2,
+     1.6
+    ],
+    "goutcrop": [
+     0.7,
+     1
+    ],
+    "gspire": [
+     0.45,
+     0.7
+    ],
+    "ghoodoo": [
+     0.6,
+     0.6
+    ],
+    "gboulder": [
+     0.8,
+     1.4
+    ]
+   }
+  },
+  "rubble": {
+   "seed": 23,
+   "cell": 8,
+   "cellPhone": 13,
+   "reach": 55,
+   "clear": 5,
+   "density": 0.2,
+   "size": [
+    0.35,
+    2.2
+   ]
+  },
+  "flora": {
+   "seed": 17,
+   "cell": 24,
+   "cellPhone": 36,
+   "reach": 110,
+   "clear": 20,
+   "density": 0.09,
+   "kits": [
+    [
+     "reefFan",
+     0.55
+    ],
+    [
+     "gcrystals",
+     0.3
+    ],
+    [
+     "gpods",
+     0.15
+    ]
+   ]
+  },
+  "clusters": [
+   {
+    "seed": 1,
+    "pos": [
+     -780,
+     -35
+    ],
+    "radius": 150,
+    "count": 16,
+    "kits": [
+     "gspire",
+     "gspire",
+     "goutcrop"
+    ],
+    "clear": 55,
+    "scale": [
+     0.7,
+     0.8
+    ]
+   },
+   {
+    "seed": 2,
+    "pos": [
+     -400,
+     155
+    ],
+    "radius": 140,
+    "count": 14,
+    "kits": [
+     "reefFan",
+     "gpods",
+     "crystalreef"
+    ],
+    "clear": 40,
+    "scale": [
+     0.9,
+     0.6
+    ]
+   },
+   {
+    "seed": 3,
+    "pos": [
+     800,
+     170
+    ],
+    "radius": 115,
+    "count": 28,
+    "kits": [
+     "crystalreef",
+     "bulbgrove",
+     "gcrystals"
+    ],
+    "clear": 35,
+    "scale": [
+     1.1,
+     0.8
+    ]
+   },
+   {
+    "seed": 4,
+    "pos": [
+     -1450,
+     -230
+    ],
+    "radius": 540,
+    "count": 34,
+    "kits": [
+     "gspirelo",
+     "gspirelo",
+     "goutcroplo"
+    ],
+    "clear": 100,
+    "scale": [
+     1.4,
+     1.4
+    ]
+   },
+   {
+    "seed": 8,
+    "pos": [
+     580,
+     -1120
+    ],
+    "radius": 550,
+    "count": 28,
+    "kits": [
+     "gspirelo",
+     "ghoodoolo",
+     "garchlo"
+    ],
+    "clear": 100,
+    "scale": [
+     1.1,
+     1.3
+    ]
+   },
+   {
+    "seed": 5,
+    "pos": [
+     200,
+     80
+    ],
+    "minR": 2500,
+    "radius": 3800,
+    "count": 18,
+    "kits": [
+     "butte"
+    ],
+    "clear": 400,
+    "scale": [
+     1,
+     1.4
+    ]
+   }
+  ],
+  "floaters": [
+   {
+    "seed": 6,
+    "pos": [
+     -850,
+     -480
+    ],
+    "minR": 400,
+    "radius": 1500,
+    "count": 12,
+    "y": [
+     180,
+     130
+    ],
+    "scale": [
+     1.1,
+     2
+    ]
+   },
+   {
+    "seed": 7,
+    "pos": [
+     1250,
+     -250
+    ],
+    "minR": 170,
+    "radius": 460,
+    "count": 5,
+    "y": [
+     190,
+     75
+    ],
+    "scale": [
+     0.8,
+     1.1
+    ]
+   }
+  ],
+  "startGate": {
+   "light": {
+    "y": 20,
+    "color": 4249855,
+    "intensity": 420,
+    "distance": 60
+   }
+  },
+  "obstacleVisuals": {
+   "spires": {
+    "spires": 2,
+    "crystals": 3
+   }
+  }
+ },
+ "cityLights": {
+  "seed": 7,
+  "beacons": {
+   "minTop": 90,
+   "count": 0,
+   "color": [
+    1,
+    0.08,
+    0.04
+   ],
+   "dim": 0.35,
+   "flash": 9,
+   "rate": 0.55,
+   "duty": 0.82,
+   "size": 1.6,
+   "sizePerDist": 500
+  },
+  "searchlights": {
+   "count": 0,
+   "minDist": 700,
+   "maxDist": 1700,
+   "minTop": 70,
+   "length": 900,
+   "radius": 48,
+   "lampRadius": 2.5,
+   "color": [
+    0.9,
+    0.82,
+    0.68
+   ],
+   "strength": 0.16,
+   "speed": [
+    0.08,
+    0.1
+   ],
+   "tilt": [
+    0.35,
+    0.3
+   ],
+   "wobble": 0.12
+  }
+ },
+ "traffic": {
+  "seed": 42,
+  "lanes": 0,
+  "low": 0,
+  "types": []
+ },
+ "lighting": {
+  "aoStrength": 0.8,
+  "exposure": 1.02,
+  "sky": {
+   "zenith": [
+    0.004,
+    0.009,
+    0.035
+   ],
+   "mid": [
+    0.018,
+    0.055,
+    0.095
+   ],
+   "horizon": [
+    0.11,
+    0.23,
+    0.28
+   ],
+   "glow": [
+    0.35,
+    0.24,
+    0.32
+   ],
+   "sunDir": [
+    0.55,
+    0.23,
+    -0.62
+   ],
+   "sunColor": [
+    2.5,
+    1.4,
+    1
+   ],
+   "cloudSpeed": 0.0012,
+   "clouds": 0.055,
+   "cloudLit": [
+    0.9,
+    0.8,
+    1.1
+   ],
+   "horizonBand": 0.12,
+   "below": [
+    0.06,
+    0.16,
+    0.19
+   ],
+   "moon": {
+    "dir": [
+     0.65,
+     0.3,
+     0.7
+    ],
+    "size": 0.026,
+    "color": [
+     1,
+     1.1,
+     1.5
+    ],
+    "phase": 0.5
+   },
+   "alien": {
+    "aurora": 1.35,
+    "planet": {
+     "dir": [
+      -0.68,
+      0.42,
+      -0.72
+     ],
+     "size": 0.17,
+     "haze": 0.32
+    }
+   }
+  },
+  "sun": {
+   "color": 16769244,
+   "intensity": 2.9,
+   "dir": [
+    0.55,
+    0.23,
+    -0.62
+   ]
+  },
+  "hemi": {
+   "sky": 9616850,
+   "ground": 3354695,
+   "intensity": 1
+  },
+  "environmentIntensity": 0.65,
+  "grade": {
+   "saturation": 1.08,
+   "contrast": 1.08
+  },
+  "bloom": {
+   "strength": 0.28,
+   "radius": 0.4,
+   "threshold": 1.5
+  }
+ },
+ "atmosphere": {
+  "cool": [
+   0.1,
+   0.16,
+   0.25
+  ],
+  "warm": [
+   0.3,
+   0.19,
+   0.25
+  ],
+  "low": [
+   0.06,
+   0.19,
+   0.21
+  ],
+  "drift": true,
+  "start": 150,
+  "density": 0.0004,
+  "hDensity": 0.0022,
+  "hBase": 18,
+  "hFalloff": 0.031,
+  "maxFog": 0.96
+ },
+ "environment": {
+  "blendRate": 2,
+  "sampleBehind": 6,
+  "skyTint": {
+   "base": [
+    1,
+    1,
+    1
+   ]
+  },
+  "hazeColors": {
+   "ember": [
+    0.5,
+    0.2,
+    0.4
+   ],
+   "dark": [
+    0.08,
+    0.06,
+    0.12
+   ]
+  },
+  "haze": {
+   "cool": [
+    [
+     "dark",
+     "closed",
+     0.6
+    ]
+   ],
+   "warm": [
+    [
+     "dark",
+     "closed",
+     0.6
+    ]
+   ],
+   "low": [
+    [
+     "dark",
+     "closed",
+     0.55
+    ]
+   ]
+  },
+  "start": {
+   "base": 150,
+   "closed": -40
+  },
+  "density": {
+   "base": 0.0004,
+   "closed": 0.00065
+  },
+  "hDensity": {
+   "base": 0.0022
+  },
+  "hemiColor": {
+   "base": [
+    0.57,
+    0.66,
+    0.9
+   ]
+  },
+  "hemiByLight": true,
+  "sun": {
+   "closedDim": 0.85,
+   "lightMix": [
+    0.8,
+    0.2
+   ]
+  },
+  "environment": {
+   "closedDim": 0.5
+  }
+ },
+ "fx": {
+  "dust": {
+   "color": [
+    0.38,
+    0.65,
+    0.7
+   ],
+   "wake": 0.5,
+   "hover": 0.12,
+   "aiShare": 0.6,
+   "slide": 0.8,
+   "skipCovered": false
+  }
+ },
+ "minimap": {
+  "bg": "#17122a",
+  "blocks": [
+   "#2a2148",
+   "#221a3c",
+   "#1d1634"
+  ],
+  "road": "#8a78c0"
+ },
+ "ui": {
+  "thumb": "vesper",
+  "tagline": "Vesper Heights",
+  "mapLogo": "VESPER HEIGHTS maps",
+  "controlsTip": "Three heights: valley, terraces, sky decks · the bridge crosses the start straight · boost pads refill Boost.",
+  "posters": [
+   "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/vesper.webp",
+   "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/vesper.webp"
+  ],
+  "tips": {
+   "WATER": [
+    "HEIGHTS",
+    "The loop climbs to a floating sky deck and spirals down under it. Crests launch you: land straight."
+   ],
+   "LINES": [
+    "LINES",
+    "Roads are 72-80 m wide. Cut the inside of the crater spiral."
+   ]
+  }
+ }
+}

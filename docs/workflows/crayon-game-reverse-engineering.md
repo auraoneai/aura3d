@@ -635,6 +635,7 @@ passes.
 | Roadster Hours | yes | **blocked** | **blocked** | no | blocked |
 | Splat Rush | yes | yes (`PLAY NOW`) | yes | full `CONFIG` | strong |
 | Ninja Runner | yes | yes | yes | ability costs | strong |
+| Kid Goku: Beyond the Clouds (11th, added 2026-10-23) | yes | yes (`#start` button) | yes (`__CLOUD_RUNNER__.snapshot()`) | full chapter data + obstacle layout | strong |
 
 Per-game JSON evidence lives at `evidence/crayon-runtime/<game>/session.json`;
 the raw `srcdoc` and extracted harness files sit beside it. Exact numeric tuning
@@ -1174,6 +1175,37 @@ script per biome, energy VFX additive, light bloom.
 Capture diff passes on distance, score, and form index.
 
 **Effort.** L — the runner kit is the real deliverable.
+
+---
+
+### 6.11 Kid Goku: Beyond the Clouds — added 2026-10-23 · runner · three r184 (WebGL2)
+
+Play page `https://app.usecrayon.ai/play/3a9001a5-28fa-4ae0-ba5c-3b068d1912a4` ("Unofficial fan game"). A cinematic rail runner: distance
+along a fixed centerline, lane ±5.1, jump, Power Pole vaults, the Flying Nimbus (charge → call → ride → land), seven Dragon Balls, meat, a
+seeded obstacle field, pteranodon / T-rex / boulder encounters and rock-paper-scissors "Janken" duels, a finale. One chapter ("Mount
+Paozu": length 1960, speed 14.5).
+
+**Probe (R-01 style, ACR run, `evidence/crayon-probes/kid-goku-beyond-the-clouds.json`).** One scene, 1,623 objects, 1,061 meshes, 461
+instanced, 10 skinned, 3 points, 262 sprites, 142 materials. P-1 no (module: no `three/webgpu`/`tsl` requested), P-2 no (0 live
+BatchedMesh), P-3 no (module: no composer), **P-4 yes: 30 live ShaderMaterials**. Renderer `WebGLRenderer`, 18 2D canvases (canvas textures).
+The probe's start matcher did not click `#start` (the control is a DOM button), so its traversal is of the title-phase scene.
+
+**Hooks the game ships.** `window.__CLOUD_RUNNER__` (`snapshot()`, `debug.{nimbus,press,hearts,chapter,at}`) and `window.__LAB__`
+(`scene`, `world`, `lib`, `renderer`, `camera`, `quality`). The run simulation is a pure `Sp(state, input, dt, chapter)`; the frame loop clamps
+`dt` to [1e-3, 0.04] and builds input from held keys (steer ArrowLeft/Right or A/D, jump Space/ArrowUp, pole E/X, nimbus Q/Shift, brake
+ArrowDown/S).
+
+**Fixed-input reference (`tools/crayon-capture/kid-goku-beyond-the-clouds.ts`).** Virtual time (frozen `requestAnimationFrame` and
+`performance.now`, seeded `Math.random`, draw calls suppressed), keyboard input, state from `__CLOUD_RUNNER__.snapshot()`: 800 steps at
+1/60 s, jumping at s ≥ 147 to clear the 150-160 gap and take Dragon Ball 1. Three fresh sessions agree to 3.4e-14. Reference:
+`evidence/crayon-capture/kid-goku-beyond-the-clouds-reference.json`.
+
+**Port (`examples/kid-goku-beyond-the-clouds-port/`).** `sim.ts` is a faithful translation of `Sp`, the obstacle/orb pass and damage;
+it replays the original's recorded run with worst deltas s 0, lane 0, jump 9e-13, speed 2e-13 over all 160 trace points, and its seeded
+obstacle layout equals the original's. Not ported: creature/boulder encounters and Janken, finale, UI, audio, art. See `PORTING-NOTES.md`.
+
+**Parity IDs it needs.** SH-02 (30 ShaderMaterials: painterly gouache, clouds, water, foliage), SG-01 (461 instanced meshes), SA-04 (10 skinned
+meshes), ST-01/03 (18 canvas textures), SG-07 (3 points) and SG-08 (262 sprites). No node materials, no BatchedMesh, no post composer.
 
 ---
 

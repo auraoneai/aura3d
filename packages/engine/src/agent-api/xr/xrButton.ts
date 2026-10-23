@@ -26,8 +26,11 @@ export interface AuraXRButtonDocumentLike {
 }
 
 export interface AuraXRButtonOptions {
-  /** The app (or any holder) whose `xr` runtime the button drives. */
-  readonly app: { readonly xr: AuraXRRuntime };
+  /**
+   * The app (or any holder) whose `xr` runtime the button drives. `AuraApp.xr` is typed optional (test doubles
+   * may omit it), so a plain `AuraApp` is accepted here and a missing runtime throws a clear error.
+   */
+  readonly app: { readonly xr?: AuraXRRuntime | undefined };
   readonly mode?: AuraXRMode;
   readonly sessionInit?: AuraXRSessionInit;
   /** Where to append the button. Omit to create it detached and append it yourself. */
@@ -82,7 +85,8 @@ export function createXRButton(options: AuraXRButtonOptions): AuraXRButtonHandle
   });
   let state: AuraXRButtonState = "checking";
   let disposed = false;
-  const { xr } = options.app;
+  const xr = options.app.xr;
+  if (!xr) throw new Error("xr.button requires an app with an XR runtime (createAuraApp provides `app.xr`).");
 
   const render = (next: AuraXRButtonState, title = ""): void => {
     state = next;

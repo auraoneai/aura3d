@@ -27,7 +27,9 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   use: {
     browserName: "chromium",
-    headless: true,
+    // AURA3D_HEADED_XVFB=1 (set by tools/remote-acr/task-run.sh for the `@headed-xvfb` sentinel): headed Chromium under Xvfb,
+    // the only runner route where a WebGPU device survives presenting to a canvas (R-22).
+    headless: process.env.AURA3D_HEADED_XVFB !== "1",
     viewport: { width: 800, height: 600 },
     launchOptions: chromiumLaunchOptions,
   },

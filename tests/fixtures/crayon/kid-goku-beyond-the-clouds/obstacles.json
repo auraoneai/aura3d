@@ -1,0 +1,56 @@
+{
+ "schema": "a3d-kid-goku-obstacles/1",
+ "source": "window.__LAB__.world.obstacles read at the title screen of the original, ACR run (obstacles-only session), Chromium 147",
+ "capturedAt": "2026-10-23T06:40:10.174Z",
+ "obstacles": [
+  {
+   "s": 45,
+   "lane": 2.6,
+   "type": "rock",
+   "size": 1.2,
+   "id": 0
+  },
+  {
+   "s": 76,
+   "lane": -2.6,
+   "type": "rock",
+   "size": 1.2,
+   "id": 1
+  },
+  {
+   "s": 113,
+   "lane": 0.537094718310982,
+   "type": "log",
+   "size": 1.2230651602265425,
+   "id": 2
+  },
+  {
+   "s": 309.29286751756445,
+   "lane": -1.9707794599235058,
+   "type": "rock",
+   "size": 1.5386706485645847,
+   "id": 3
+  },
+  {
+   "s": 938.4721029205248,
+   "lane": 0.9151652636937797,
+   "type": "rock",
+   "size": 1.1356125816586429,
+   "id": 4
+  },
+  {
+   "s": 1035.64526467002,
+   "lane": -1.891205107793212,
+   "type": "log",
+   "size": 1.1550430007046089,
+   "id": 5
+  },
+  {
+   "s": 1502.1801837570965,
+   "lane": -1.8679111562669277,
+   "type": "log",
+   "size": 1.2918714138912037,
+   "id": 6
+  }
+ ]
+}

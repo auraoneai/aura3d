@@ -40,6 +40,13 @@ COPY workers/ ./workers/
 #    Exclude list travels with the workspace file if a floor is enabled later.
 RUN pnpm install --frozen-lockfile
 
+# 2b) Independent WebXR implementation for tests/browser/parity-xr.spec.ts: the
+#     Immersive Web Emulation Runtime (MIT, Meta), pinned and installed OUTSIDE the
+#     workspace so the repo lockfile is untouched. The spec injects
+#     /opt/iwer/node_modules/iwer/build/iwer.js (UMD global `IWER`) as a page init script.
+RUN npm install --prefix /opt/iwer iwer@2.7.0 --no-audit --no-fund --ignore-scripts >/dev/null \
+ && test -f /opt/iwer/node_modules/iwer/build/iwer.js
+
 # 3) Sources the tests actually serve/execute. tests/browser/example-dev-
 #    server.ts transpiles packages/*/src on the fly (esbuild + typescript)
 #    and resolves @aura3d/* specifiers to src entry points, falling back to
@@ -56,6 +63,7 @@ COPY examples/ ./examples/
 COPY public/ ./public/
 COPY tools/naming-taxonomy/ ./tools/naming-taxonomy/
 COPY tools/remote-acr/ ./tools/remote-acr/
+COPY tools/crayon-capture/ ./tools/crayon-capture/
 COPY playwright.config.ts tsconfig.base.json index.html favicon.svg ./
 
 # Fail the build, not the run, if the runner script failed to land.

@@ -3,8 +3,9 @@ import { createAuraXRRuntime } from "./xrRuntime.js";
 
 /**
  * threejs-parity SC-04: WebXR entry points. `xr.button()` is three's
- * `VRButton`/`ARButton`; `app.xr` is the session runtime. Real headset and
- * browser behaviour is not covered by the unit suite (fake XR objects only).
+ * `VRButton`/`ARButton`; `app.xr` is the session runtime. The unit suite uses fake
+ * XR objects; `tests/browser/parity-xr.spec.ts` additionally runs it against the
+ * independent iwer WebXR emulator. A real headset or native browser is untested.
  */
 export const xr = Object.freeze({
   button: createXRButton,

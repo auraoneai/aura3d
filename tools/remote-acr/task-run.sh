@@ -19,6 +19,25 @@ cd /repo
 AURA3D_SPECS="${AURA3D_SPECS:-${AURA3D_SPECS_CSV//,/ }}"
 : "${AURA3D_SPECS:?AURA3D_SPECS or AURA3D_SPECS_CSV must list the spec files to run}"
 : "${AURA3D_RUN_ID:?AURA3D_RUN_ID must stamp this run}"
+
+# Opt-in headed Chromium under Xvfb: list the sentinel `@headed-xvfb` among the specs
+# (e.g. SPECS="tests/browser/parity-shader.spec.ts @headed-xvfb"). Headless-shell Chromium on
+# this runner destroys a WebGPU GPUDevice at the first presented frame (R-22); headed
+# Chromium under Xvfb does not. The sentinel rides in SPECS_CSV so no task-yaml change is needed.
+XVFB_PID=""
+FILTERED_SPECS=""
+for spec in ${AURA3D_SPECS}; do
+  if [ "${spec}" = "@headed-xvfb" ]; then
+    Xvfb :99 -screen 0 1280x720x24 -nolisten tcp >/dev/null 2>&1 &
+    XVFB_PID=$!
+    export DISPLAY=:99 AURA3D_HEADED_XVFB=1
+    sleep 2
+    echo "[task-run] headed Chromium under Xvfb (pid ${XVFB_PID}, DISPLAY=${DISPLAY})"
+  else
+    FILTERED_SPECS="${FILTERED_SPECS:+${FILTERED_SPECS} }${spec}"
+  fi
+done
+AURA3D_SPECS="${FILTERED_SPECS}"
 REPORTER="${AURA3D_REPORTER:-line}"
 
 # NOTE: `az acr run` cannot carry CLI-provided secrets — AURA3D_ARTIFACTS_SAS
@@ -39,6 +58,7 @@ PW_EXIT=${PIPESTATUS[0]}
 set -e
 
 echo "[task-run] PLAYWRIGHT_EXIT=${PW_EXIT}"
+[ -n "${XVFB_PID}" ] && kill "${XVFB_PID}" 2>/dev/null
 
 # Dump failure evidence into the run log — error-context snapshots carry the
 # DOM state (lab status/error text) and do not depend on blob egress.

@@ -1,0 +1,1 @@
+(function(){if(window.__HARNESS)return;try{Object.defineProperty(window,'__TEST',{configurable:false,set:function(){},get:function(){}});}catch(e){}})();

@@ -55,6 +55,13 @@ export interface MaterialUniformDescriptor {
   readonly name: string;
   readonly kind: MaterialUniformKind;
   readonly required?: boolean;
+  /**
+   * The engine declares this uniform in the shader on the author's behalf, so the
+   * GL compiler may optimise it out of the linked program when the shader never
+   * reads it. Its absence from the program is then reported as a non-fatal
+   * `[CUSTOM_UNIFORM_UNUSED]` warning instead of failing binding (and skipping the draw).
+   */
+  readonly optimizable?: boolean;
 }
 
 export interface MaterialDescriptor {
@@ -117,7 +124,7 @@ export class Material {
     this.renderState = validateRenderState(renderState);
     this.requiredAttributes = descriptor.requiredAttributes ?? [];
     this.uniformSchema = validateUniformSchema(descriptor.uniformSchema ?? deriveRequiredUniformSchema(descriptor.requiredUniforms ?? []));
-    this.requiredUniforms = descriptor.requiredUniforms ?? this.uniformSchema.filter((uniform) => uniform.required !== false).map((uniform) => uniform.name);
+    this.requiredUniforms = descriptor.requiredUniforms ?? this.uniformSchema.filter((uniform) => uniform.required !== false && uniform.optimizable !== true).map((uniform) => uniform.name);
     this.fog = descriptor.fog !== false;
     for (const [key, value] of Object.entries(descriptor.parameters ?? {})) {
       this.setParameter(key, value);

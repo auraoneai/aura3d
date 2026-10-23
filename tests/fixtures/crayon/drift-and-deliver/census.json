@@ -1,0 +1,77 @@
+{
+ "schema": "a3d-crayon-module-census/1",
+ "game": "drift-and-deliver",
+ "capture": {
+  "tool": "tools/crayon-probe/capture-module.ts",
+  "acrRun": "cc1de",
+  "capturedAt": "2026-10-23T04:41:58.580Z"
+ },
+ "rawModule": {
+  "bytes": 1332481,
+  "chars": 1332031,
+  "sha256": "634323cfb2645c44fad3078ddd6937ed8c06d89e42618f6759ad8acb15d3d398"
+ },
+ "strippedModule": {
+  "chars": 767210,
+  "sha256": "abefd1bb978f4459fb9aa1822e04e7df0721e574e90c8d0df2bf3e4058798b04",
+  "embeddedImages": 19,
+  "embeddedImageChars": 566167
+ },
+ "threeConstructs": {
+  "materials": {
+   "MeshStandardMaterial": 85,
+   "MeshBasicMaterial": 58,
+   "MeshLambertMaterial": 34,
+   "PointsMaterial": 8,
+   "MeshToonMaterial": 1,
+   "MeshPhysicalMaterial": 1,
+   "LineBasicMaterial": 1,
+   "ShaderMaterial": 1
+  },
+  "geometries": {
+   "BoxGeometry": 132,
+   "CylinderGeometry": 45,
+   "PlaneGeometry": 45,
+   "SphereGeometry": 28,
+   "ConeGeometry": 24,
+   "TorusGeometry": 17,
+   "OctahedronGeometry": 8,
+   "IcosahedronGeometry": 7,
+   "CircleGeometry": 7,
+   "ExtrudeGeometry": 4,
+   "RingGeometry": 4,
+   "ShapeGeometry": 2,
+   "TubeGeometry": 2,
+   "LatheGeometry": 2
+  },
+  "other": {
+   "Mesh": 217,
+   "Vector3": 202,
+   "Color": 66,
+   "Float32BufferAttribute": 32,
+   "Vector2": 29,
+   "BufferAttribute": 29,
+   "CanvasTexture": 28,
+   "InstancedMesh": 20,
+   "Points": 8,
+   "PointLight": 3,
+   "AnimationClip": 3,
+   "DataTexture": 2,
+   "CatmullRomCurve3": 2,
+   "VectorKeyframeTrack": 2,
+   "Euler": 2,
+   "QuaternionKeyframeTrack": 2,
+   "DataArrayTexture": 1,
+   "SpotLight": 1,
+   "LineSegments": 1,
+   "Plane": 1,
+   "InstancedBufferAttribute": 1
+  }
+ },
+ "uniqueConstructors": 43,
+ "notes": [
+  "three is imported as a namespace (`e`) from the page importmap (three 0.184.0); it is not inlined in the module.",
+  "The module constructs exactly one ShaderMaterial: the additive headlight beam cone (no RawShaderMaterial or NodeMaterial). The earlier live probe reported 0 ShaderMaterial; the reason was not investigated.",
+  "Post-processing is not built by the module: it sets window.__crayonGfx = { postfx: 'high' } and the page's playlabs-boot runtime builds EffectComposer: RenderPass, UnrealBloomPass(strength 0.35, radius 0.35, threshold 1.05), SMAAPass, OutputPass."
+ ]
+}

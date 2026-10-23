@@ -3,7 +3,7 @@
 import { RenderDeviceError, type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderShaderProgram } from "../RenderDevice";
 import { resolveBlendMode } from "../contracts/blend";
 import type { BlendEquation, BlendFactor } from "../contracts/blend";
-import { isTextureBinding } from "../TextureBinding";
+import { isTextureBinding, type TextureBinding } from "../TextureBinding";
 import type { VertexAttribute, VertexFormat } from "../VertexFormat";
 import { WebGL2Buffer, WebGL2ShaderProgram } from "../WebGL2Device";
 import type { WebGL2DeviceHost } from "./DeviceHost";
@@ -14,8 +14,18 @@ export interface WebGL2VertexArrayCacheEntry {
   readonly boundLocations: ReadonlySet<number>;
 }
 
+/** `uniform1f` on an int/uint/bool uniform raises INVALID_OPERATION, so integer-typed scalars (source `int` or GL enum strings) bind through `uniform1i`/`uniform1ui`. */
+function integerUniformKind(type: string | undefined): "int" | "uint" | undefined {
+  if (type === "int" || type === "bool" || type === "5124" || type === "35670") return "int";
+  if (type === "uint" || type === "5125") return "uint";
+  return undefined;
+}
+
 export class WebGL2DrawCallBinder {
-  constructor(readonly host: WebGL2DeviceHost) {}
+  constructor(readonly host: WebGL2DeviceHost) {
+    // `gl_DrawID` (`#extension GL_ANGLE_multi_draw`) needs WEBGL_multi_draw enabled before the program links, so request it now.
+    this.multiDrawExtension();
+  }
 
   nextVertexFormatId = 1;
 
@@ -53,6 +63,7 @@ export class WebGL2DrawCallBinder {
     this.uniformLocationCache = new WeakMap();
     this.uniformValueCache = new WeakMap();
     this.multiDrawExt = undefined;
+    this.multiDrawExtension();
   }
 
   draw(command: DrawCommand): void {
@@ -174,7 +185,10 @@ export class WebGL2DrawCallBinder {
         this.host.samplers.uploadTextureUniform(location, value, textureUnit - 1, shader.reflection.uniformDetails.get(name)?.type);
       } else if (typeof value === "number") {
         if (valueCache.get(name) === value) continue;
-        this.host.gl.uniform1f(location, value);
+        const kind = integerUniformKind(shader.reflection.uniformDetails.get(name)?.type);
+        if (kind === "uint") this.host.gl.uniform1ui(location, value);
+        else if (kind === "int") this.host.gl.uniform1i(location, value);
+        else this.host.gl.uniform1f(location, value);
         valueCache.set(name, value);
       } else if (Array.isArray(value) || ArrayBuffer.isView(value)) {
         const length = (value as ArrayLike<number>).length;
@@ -658,7 +672,7 @@ export class WebGL2DrawCallBinder {
   private multiDrawExtension(): WebGLMultiDrawExtension | null {
     if (this.multiDrawExt === undefined) {
       const gl = this.host.gl as WebGL2RenderingContext & { getExtension?: (name: string) => unknown };
-      this.multiDrawExt = typeof gl.getExtension === "function"
+      this.multiDrawExt = typeof gl?.getExtension === "function"
         ? (gl.getExtension("WEBGL_multi_draw") as WebGLMultiDrawExtension | null) ?? null
         : null;
     }
@@ -763,9 +777,19 @@ function sameUniformsExceptDrawId(a: DrawCommand["uniforms"], b: DrawCommand["un
  * carrying identical CONTENT in different buffers still merge; every other
  * value compares by identity.
  */
+function textureBindingsEqual(a: TextureBinding, b: TextureBinding): boolean {
+  const sa = a.sampler, sb = b.sampler;
+  return a.name === b.name && a.texture === b.texture && a.required === b.required && a.ready === b.ready && a.rotation === b.rotation
+    && a.offset[0] === b.offset[0] && a.offset[1] === b.offset[1] && a.scale[0] === b.scale[0] && a.scale[1] === b.scale[1]
+    && (sa === sb || (sa.minFilter === sb.minFilter && sa.magFilter === sb.magFilter && sa.addressU === sb.addressU && sa.addressV === sb.addressV
+      && sa.addressW === sb.addressW && sa.maxAnisotropy === sb.maxAnisotropy && sa.compare === sb.compare && sa.mirror === sb.mirror));
+}
+
 function uniformValueEqual(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (typeof a === "number" || typeof b === "number") return a === b;
+  // Per-item bindings of the same texture and sampler state are interchangeable for one merged call.
+  if (isTextureBinding(a) && isTextureBinding(b)) return textureBindingsEqual(a, b);
   const la = a as ArrayLike<number> | null;
   const lb = b as ArrayLike<number> | null;
   if (

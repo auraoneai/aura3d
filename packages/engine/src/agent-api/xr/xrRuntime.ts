@@ -88,8 +88,12 @@ export function createAuraXRRuntime(options: AuraXRRuntimeOptions): AuraXRRuntim
     options.xr ?? (globalThis.navigator as (Navigator & { xr?: A3DXRSystemLike }) | undefined)?.xr;
 
   const releaseDevice = (): void => {
+    const device = options.getDevice();
+    // The persistent per-eye viewport must not outlive the XR frame, or the app's own frames would keep
+    // rasterizing into the last eye's rectangle after the session ends.
+    device?.resetViewport?.();
     const size = options.canvasSize?.() ?? { width: 0, height: 0 };
-    options.getDevice()?.setExternalFramebuffer?.(null, size.width, size.height);
+    device?.setExternalFramebuffer?.(null, size.width, size.height);
   };
 
   const teardown = (): void => {
@@ -145,12 +149,15 @@ export function createAuraXRRuntime(options: AuraXRRuntimeOptions): AuraXRRuntim
         const seconds = appTime(timeMs);
         for (const view of views) {
           const viewport = activeLayer.getViewport?.(view) ?? { x: 0, y: 0, width: framebufferWidth, height: framebufferHeight };
+          // A view with no pixels has nothing to render. Devices that report one (a mono emulator's deliberately
+          // zero-width right viewport) must not fail the session through `setViewport`'s positive-size check.
+          if (!(viewport.width > 0) || !(viewport.height > 0)) continue;
           const camera = resolveXRView(view, { x: viewport.x, y: viewport.y, width: viewport.width, height: viewport.height });
           if (!camera) {
             warnOnce("XR_VIEW_MATRICES_INVALID", "An XRView had missing or non-finite matrices; that eye was skipped.");
             continue;
           }
-          device.setViewport(camera.viewport.x, camera.viewport.y, camera.viewport.width, camera.viewport.height);
+          device.setViewport(camera.viewport.x, camera.viewport.y, camera.viewport.width, camera.viewport.height, { persistent: true });
           setXRViewCamera(options.key, camera);
           options.renderFrame(seconds);
           rendered += 1;

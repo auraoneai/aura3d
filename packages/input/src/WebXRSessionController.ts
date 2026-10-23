@@ -197,6 +197,8 @@ export class WebXRSessionController {
   readonly optionalFeatures: readonly string[];
   readonly referenceSpaceType: A3DXRReferenceSpaceType;
 
+  private readonly explicitReferenceSpace: boolean;
+  private activeReferenceSpaceType: A3DXRReferenceSpaceType;
   private readonly xr?: A3DXRSystemLike;
   private session: A3DXRSessionLike | null = null;
   private referenceSpace: A3DXRReferenceSpaceLike | null = null;
@@ -207,6 +209,8 @@ export class WebXRSessionController {
     this.requiredFeatures = options.requiredFeatures ?? [];
     this.optionalFeatures = options.optionalFeatures ?? [];
     this.referenceSpaceType = options.referenceSpace ?? (this.mode === "immersive-ar" ? "viewer" : "local-floor");
+    this.explicitReferenceSpace = options.referenceSpace !== undefined;
+    this.activeReferenceSpaceType = this.referenceSpaceType;
   }
 
   get active(): boolean {
@@ -247,21 +251,57 @@ export class WebXRSessionController {
         started: false
       };
     }
-    this.session = await this.xr.requestSession(this.mode, {
+    // WebXR: `viewer` is always available and `local` is implied for immersive sessions; every other
+    // reference-space type (`local-floor`, `bounded-floor`, `unbounded`) must be requested as a session feature
+    // or `requestReferenceSpace` rejects with NotSupportedError.
+    const requestedType = this.referenceSpaceType;
+    const implied = requestedType === "viewer" || requestedType === "local";
+    const listed = this.requiredFeatures.includes(requestedType) || this.optionalFeatures.includes(requestedType);
+    const optionalFeatures = implied || listed ? this.optionalFeatures : [...this.optionalFeatures, requestedType];
+    const session = await this.xr.requestSession(this.mode, {
       requiredFeatures: this.requiredFeatures,
-      optionalFeatures: this.optionalFeatures
+      optionalFeatures
     });
-    this.referenceSpace = await this.session.requestReferenceSpace?.(this.referenceSpaceType) ?? { type: this.referenceSpaceType };
+    this.session = session;
+    this.activeReferenceSpaceType = requestedType;
+    try {
+      this.referenceSpace = await session.requestReferenceSpace?.(requestedType) ?? { type: requestedType };
+    } catch (error) {
+      // Like three's VRButton, the default `local-floor` degrades to `local` on devices without a floor.
+      if (this.explicitReferenceSpace || requestedType !== "local-floor") {
+        await this.abandonSession(session);
+        throw error;
+      }
+      try {
+        this.referenceSpace = await session.requestReferenceSpace?.("local") ?? { type: "local" };
+        this.activeReferenceSpaceType = "local";
+      } catch (fallbackError) {
+        await this.abandonSession(session);
+        throw fallbackError;
+      }
+    }
     return {
       mode: this.mode,
-      referenceSpace: this.referenceSpace?.type ?? this.referenceSpaceType,
+      referenceSpace: this.referenceSpace?.type ?? this.activeReferenceSpaceType,
       supported: true,
       started: true
     };
   }
 
+  /** A session whose reference space could not be created is never left open. */
+  private async abandonSession(session: A3DXRSessionLike): Promise<void> {
+    this.session = null;
+    this.referenceSpace = null;
+    this.activeReferenceSpaceType = this.referenceSpaceType;
+    try {
+      await session.end?.();
+    } catch {
+      // The session is already unusable; ending it is best effort.
+    }
+  }
+
   sampleFrame(frame?: A3DXRFrameLike, hitTestSource?: unknown): WebXRFrameSample {
-    const referenceSpace = this.referenceSpace ?? { type: this.referenceSpaceType };
+    const referenceSpace = this.referenceSpace ?? { type: this.activeReferenceSpaceType };
     const sources = Array.from(this.session?.inputSources ?? []);
     const controllers = sources.map((source) => sampleInputSource(source, frame, referenceSpace));
     const hands = sources

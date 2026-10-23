@@ -7,8 +7,8 @@
  * WebGPU renderer with `Renderer.create({ backend: "webgpu" })` (or request your own
  * `GPUDevice`) and call `compute.bind(...)` / `app.compute.bind(...)` once.
  *
- * Real-GPU execution is covered by unit tests against a fake `GPUDevice` only; the
- * remote runner's headless SwiftShader WebGPU cannot present or run it (R-22).
+ * Unit tests use a fake `GPUDevice`; real execution is covered by `tests/browser/parity-compute.spec.ts`
+ * on a remote software-WebGPU (SwiftShader) device with exact read-back (hardware GPUs were not exercised).
  */
 
 import {

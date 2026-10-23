@@ -1,10 +1,10 @@
-# Aura3D 4.0.6 Public-Surface Diff
+# Aura3D 4.0.7 Public-Surface Diff
 
 Generated from `v1.5.2` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12577**
+- Baseline symbols: **13007**; current symbols: **12579**
 - Classified removals: **2120**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
@@ -2451,6 +2451,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine/rendering:type:LayeredParticleBudgetPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:LightingRigPreset` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:MaterialDescriptor` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine/rendering:type:MaterialUniformDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:MorphPlanDecision` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:MotionBlurOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine/rendering:type:ParticleModule` — reviewed-2.0-public-declaration-contract-change
@@ -2639,6 +2640,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/rendering:type:LayeredParticleBudgetPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:LightingRigPreset` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:MaterialDescriptor` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/rendering:type:MaterialUniformDescriptor` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:MorphPlanDecision` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:MotionBlurOptions` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/rendering:type:ParticleModule` — reviewed-2.0-public-declaration-contract-change

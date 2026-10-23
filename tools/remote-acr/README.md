@@ -77,6 +77,22 @@ Output: `tests/reports/remote-acr/<RUN_ID>/` (gitignored) —
 `acr-build.log`, `acr-run.log` (full ACR step log incl. `--reporter` output),
 `summary.json`, `artifacts/<RUN_ID>/tests/reports/…` (spec PNGs etc.).
 
+## WebGPU on this runner: use `@headed-xvfb`
+
+Headless Chromium on this runner (Playwright's headless shell, and new headless / `chrome-beta`
+too) destroys a WebGPU `GPUDevice` at the first frame presented to a canvas
+(`lost: destroyed: Device was destroyed.`, reproduced with no Aura3D code; R-22). Headed Chromium
+under Xvfb does not. Opt in by adding the sentinel `@headed-xvfb` to `SPECS`:
+
+```bash
+SPECS="tests/browser/parity-shader.spec.ts @headed-xvfb" tools/remote-acr/run.sh
+```
+
+`task-run.sh` starts `Xvfb :99`, exports `DISPLAY` and `AURA3D_HEADED_XVFB=1`, and
+`playwright.config.ts` then launches headed. The sentinel rides in `SPECS_CSV`, so no task-yaml
+change is involved; without it nothing changes. Compute (no canvas) works in either mode.
+The full 36-cell probe matrix is `tests/browser/webgpu-presentation-probe.spec.ts`.
+
 ## Cost/ephemerality
 
 ACR Tasks is serverless — zero standing compute. The only durable resources

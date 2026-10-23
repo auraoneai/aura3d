@@ -183,6 +183,12 @@ test.describe("parity shader material (SH-02, SH-10)", () => {
           return { ok: outcome === "alive", reason: outcome };
         });
         test.info().annotations.push({ type: "webgpu-canvas-presentation", description: JSON.stringify(canvasProbe) });
+        // R-22 route that works: headed Chromium under Xvfb (`@headed-xvfb` in SPECS, which sets AURA3D_HEADED_XVFB=1) does not
+        // destroy the device when a canvas frame is presented (probe matrix: tests/browser/webgpu-presentation-probe.spec.ts).
+        // There the canvas path is mandatory, so a regression cannot hide behind the offscreen fallback.
+        if (process.env.AURA3D_HEADED_XVFB === "1") {
+          expect(canvasProbe.ok, `headed Chromium under Xvfb must present a WebGPU canvas without losing the device: ${JSON.stringify(canvasProbe)}`).toBe(true);
+        }
         present = canvasProbe.ok ? "canvas" : "offscreen";
       }
 

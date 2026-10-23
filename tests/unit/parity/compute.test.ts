@@ -1,7 +1,7 @@
 /**
  * SH-04 / L1-12 — public WebGPU-only compute surface (WGSL required).
- * Driven by a fake `GPUDevice`: real-GPU execution is NOT covered here (the
- * remote runner's headless SwiftShader WebGPU cannot present or run it, R-22).
+ * Driven by a fake `GPUDevice`. Real execution (exact GPU read-back on a software-WebGPU device) is covered
+ * by tests/browser/parity-compute.spec.ts; hardware GPUs were not exercised.
  */
 
 import { describe, expect, it } from "vitest";

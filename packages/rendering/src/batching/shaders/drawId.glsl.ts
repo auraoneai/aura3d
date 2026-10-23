@@ -3,7 +3,7 @@
  * for the multi-draw layer (§6.6 layer 3). Two fetch paths share one source:
  *
  *   - `A3D_PRD11_MULTI_DRAW_EXT` defined → `gl_DrawID` (requires
- *     `#extension WEBGL_multi_draw`, emitted by the generator's define pass).
+ *     `#extension GL_ANGLE_multi_draw`, emitted by the generator's define pass).
  *   - otherwise → `uniform highp int u_drawId` bound per draw in the
  *     uniform-loop fallback (identical pixels, more draw calls).
  *
@@ -16,7 +16,7 @@
 
 import { registerShaderChunk, registerShaderFeature } from "../../contracts/program";
 import { registerDepthVariantFeature } from "../../contracts/shadows";
-import { DRAW_DATA_TEXELS_PER_DRAW } from "../DrawDataTexture";
+import { DRAW_DATA_TEXELS_PER_DRAW, drawDataBindingFor } from "../DrawDataTexture";
 import { registerWgslTwin } from "../../program/chunks/manifest";
 import { PRD11_DRAWID_WGSL } from "../../program/chunks/drawId.wgsl";
 import type { Texture } from "../../Texture";
@@ -88,7 +88,7 @@ export function registerPrd11DrawIdShader(): void {
       if (!marker) return;
       set("u_drawId", marker.drawIndex);
       if (marker.drawData) {
-        set("u_a3dDrawData", marker.drawData as unknown as never);
+        set("u_a3dDrawData", drawDataBindingFor(marker.drawData));
       }
     }
   });

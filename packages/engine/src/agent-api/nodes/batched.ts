@@ -31,7 +31,7 @@
  */
 import { Geometry } from "@aura3d/rendering";
 import type { Bounds3 } from "@aura3d/rendering";
-import { BatchedGeometryPool, DrawDataTexture, packDrawDataFlags } from "@aura3d/rendering";
+import { BatchedGeometryPool, DrawDataTexture, drawDataBindingFor, packDrawDataFlags } from "@aura3d/rendering";
 import type { PackedGeometryEntry, Texture, RenderItem } from "@aura3d/rendering";
 import { qrCoreGeneratorOn } from "@aura3d/rendering";
 import { registerShaderChunk, registerShaderFeature, registerDepthVariantFeature } from "@aura3d/rendering/contracts";
@@ -105,7 +105,7 @@ const L5_BATCH_DEPTH_FEATURE = "parity.batchDraw.depth";
  * uniform-loop fallback).
  */
 const L5_BATCH_PARS_GLSL = /* glsl */ `
-#if defined(WEBGL_multi_draw) && defined(A3D_L5_MULTI_DRAW)
+#if defined(GL_ANGLE_multi_draw) && defined(A3D_L5_MULTI_DRAW)
 #define a3d_l5_draw_index gl_DrawID
 #else
 uniform highp int u_drawId;
@@ -195,7 +195,7 @@ export function registerBatchedDrawShader(): void {
       const marker = (item as RenderItem & { multiDraw?: { drawIndex: number; drawData?: Texture } }).multiDraw;
       if (!marker) return;
       set("u_drawId", marker.drawIndex);
-      if (marker.drawData) set("u_a3dDrawData", marker.drawData as unknown as never);
+      if (marker.drawData) set("u_a3dDrawData", drawDataBindingFor(marker.drawData));
     }
   });
   // Depth/distance passes run through the depth-variant registry — same

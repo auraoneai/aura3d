@@ -53,9 +53,11 @@ export class MaterialBinding {
         diagnostics.push(`Missing material parameter: ${uniform}`);
       }
     }
+    const optimizedOut: string[] = [];
     for (const uniform of material.uniformSchema) {
-      if (uniform.required !== false && !shader.reflection.uniforms.has(uniform.name)) {
-        diagnostics.push(`Missing shader uniform declared by material schema: ${uniform.name}`);
+      if (!shader.reflection.uniforms.has(uniform.name)) {
+        if (uniform.optimizable === true) optimizedOut.push(uniform.name);
+        else if (uniform.required !== false) diagnostics.push(`Missing shader uniform declared by material schema: ${uniform.name}`);
       }
       const value = uniforms.get(uniform.name);
       if (value === undefined) {
@@ -83,6 +85,9 @@ export class MaterialBinding {
     }
     if (diagnostics.length > 0) {
       throw new MaterialBindingError("Material binding validation failed", diagnostics);
+    }
+    if (optimizedOut.length > 0) {
+      warnings.push(`[CUSTOM_UNIFORM_UNUSED] material "${material.name}": declared uniform(s) ${optimizedOut.join(", ")} not active in the linked program (unused or optimised out); not uploaded`);
     }
     return { shader, uniforms, diagnostics: warnings, warnings };
   }

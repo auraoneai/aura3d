@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <title>Silt &amp; Signal on Aura3D</title>
+    <style>
+      :root { color-scheme: dark; --ink: #f4efe6; --muted: #bdb6a8; --panel: rgba(20, 22, 28, 0.72); --line: rgba(244, 239, 230, 0.16); --warm: #e8b07a; --jade: #8fd9c6; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #14161c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .hidden { display: none !important; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; backdrop-filter: blur(6px); }
+      .meta { font-size: 12px; color: var(--muted); }
+      .num { font-variant-numeric: tabular-nums; }
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      #objective-card { position: absolute; top: 12px; left: 12px; max-width: 360px; }
+      #chapter { font-size: 12px; color: var(--warm); letter-spacing: 0.04em; text-transform: uppercase; }
+      #objective { font-size: 16px; font-weight: 500; margin: 2px 0 4px; }
+      #flight { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 4px; min-width: 200px; }
+      #flight .row { display: flex; justify-content: space-between; gap: 16px; }
+      .meter { height: 6px; border-radius: 3px; background: rgba(244, 239, 230, 0.16); overflow: hidden; margin: 4px 0; }
+      .meter > i { display: block; height: 100%; width: 100%; background: var(--jade); }
+      #keys { position: absolute; right: 12px; bottom: 12px; text-align: right; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #14161c; z-index: 5; }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <section id="loading"><div class="panel"><h2 style="margin:0">Silt &amp; Signal</h2><p id="loading-status" class="meta">Raising the world</p></div></section>
+    <div id="hud">
+      <div id="objective-card" class="panel">
+        <div id="chapter"></div>
+        <div id="objective"></div>
+        <div class="meta"><span id="distance" class="num"></span> · <span id="steps" class="num"></span> <span id="hold" class="num"></span></div>
+      </div>
+      <div id="flight" class="panel">
+        <div class="row"><span class="meta">Speed</span><span id="speed" class="num">0</span></div>
+        <div class="row"><span class="meta">Altitude</span><span id="altitude" class="num">0</span></div>
+        <div class="meter"><i id="energy"></i></div>
+        <div class="row"><span class="meta">Mode</span><span id="mode">Cruise</span></div>
+      </div>
+      <div id="keys" class="panel meta">W/S throttle · A/D steer · E/Q rise/fall · Shift boost · B brake · F interact · P autopilot</div>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
