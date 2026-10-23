@@ -31,12 +31,40 @@ const HASHES = {
   "textures/rock_Roughness.jpg": "sha256-75256cb9072dfdd046e12988e03c8d6a17af985b35e3b83e5082e4699ebde1a6",
 } as const;
 
-const url = (path: string): string => new URL(path, import.meta.url).pathname;
+/* Static literals: the bundler only rewrites `new URL("<literal>", import.meta.url)`; a computed path resolves against the chunk and 404s. */
+const ASSET_URLS: Readonly<Record<string, string>> = {
+  "models/board.glb": new URL("./assets/models/board.glb", import.meta.url).pathname,
+  "models/hero.glb": new URL("./assets/models/hero.glb", import.meta.url).pathname,
+  "models/house.glb": new URL("./assets/models/house.glb", import.meta.url).pathname,
+  "models/lamp.glb": new URL("./assets/models/lamp.glb", import.meta.url).pathname,
+  "models/rocks.glb": new URL("./assets/models/rocks.glb", import.meta.url).pathname,
+  "models/tree.glb": new URL("./assets/models/tree.glb", import.meta.url).pathname,
+  "textures/bricks_Color.jpg": new URL("./assets/textures/bricks_Color.jpg", import.meta.url).pathname,
+  "textures/bricks_NormalGL.jpg": new URL("./assets/textures/bricks_NormalGL.jpg", import.meta.url).pathname,
+  "textures/bricks_Roughness.jpg": new URL("./assets/textures/bricks_Roughness.jpg", import.meta.url).pathname,
+  "textures/grass_Color.jpg": new URL("./assets/textures/grass_Color.jpg", import.meta.url).pathname,
+  "textures/grass_NormalGL.jpg": new URL("./assets/textures/grass_NormalGL.jpg", import.meta.url).pathname,
+  "textures/grass_Roughness.jpg": new URL("./assets/textures/grass_Roughness.jpg", import.meta.url).pathname,
+  "textures/ground_Color.jpg": new URL("./assets/textures/ground_Color.jpg", import.meta.url).pathname,
+  "textures/ground_NormalGL.jpg": new URL("./assets/textures/ground_NormalGL.jpg", import.meta.url).pathname,
+  "textures/ground_Roughness.jpg": new URL("./assets/textures/ground_Roughness.jpg", import.meta.url).pathname,
+  "textures/paving_Color.jpg": new URL("./assets/textures/paving_Color.jpg", import.meta.url).pathname,
+  "textures/paving_NormalGL.jpg": new URL("./assets/textures/paving_NormalGL.jpg", import.meta.url).pathname,
+  "textures/paving_Roughness.jpg": new URL("./assets/textures/paving_Roughness.jpg", import.meta.url).pathname,
+  "textures/rock_Color.jpg": new URL("./assets/textures/rock_Color.jpg", import.meta.url).pathname,
+  "textures/rock_NormalGL.jpg": new URL("./assets/textures/rock_NormalGL.jpg", import.meta.url).pathname,
+  "textures/rock_Roughness.jpg": new URL("./assets/textures/rock_Roughness.jpg", import.meta.url).pathname,
+};
+const url = (key: string): string => {
+  const hit = ASSET_URLS[key];
+  if (!hit) throw new Error(`silt-and-signal-port: unknown asset ${key}`);
+  return hit;
+};
 export const ASSET_HASHES: Readonly<Record<string, string>> = HASHES;
 const model = (file: string, bounds: readonly [number, number, number], extra: Record<string, unknown> = {}) =>
-  ({ type: "model", format: "glb", url: url(`./assets/models/${file}.glb`), hash: ASSET_HASHES[`models/${file}.glb`]!, bounds, metadata: { license: "CC0-1.0", ...extra } }) as const;
+  ({ type: "model", format: "glb", url: url(`models/${file}.glb`), hash: ASSET_HASHES[`models/${file}.glb`]!, bounds, metadata: { license: "CC0-1.0", ...extra } }) as const;
 const tex = (name: string, channel: "Color" | "NormalGL" | "Roughness") =>
-  ({ type: "texture", format: "jpg", url: url(`./assets/textures/${name}_${channel}.jpg`), hash: ASSET_HASHES[`textures/${name}_${channel}.jpg`]!, metadata: { license: "CC0-1.0 (ambientCG)" } }) as const;
+  ({ type: "texture", format: "jpg", url: url(`textures/${name}_${channel}.jpg`), hash: ASSET_HASHES[`textures/${name}_${channel}.jpg`]!, metadata: { license: "CC0-1.0 (ambientCG)" } }) as const;
 
 /** Clip names and durations come from `aura3d assets inspect hero.glb --animation`. */
 export const HERO_CLIPS = [

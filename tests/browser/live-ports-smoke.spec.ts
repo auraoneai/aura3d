@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -7,10 +8,14 @@ import { expect, test, type Page } from "@playwright/test";
  * Remote-runner friendly: results and downsized screenshots are printed into the log (no artifact egress).
  */
 const BASE = (process.env.LIVE_BASE ?? "https://aura3d.auraone.ai").replace(/\/$/, "");
-const SLUGS = (process.env.LIVE_SLUGS ?? [
+const ALL_SLUGS = [
   "strange-orbit", "splat-rush", "serpentine-sky-run", "drift-and-deliver", "heatsink", "ninja-runner",
   "last-train", "roadster-hours", "where-the-wind-wanders", "silt-and-signal", "cloud-runner"
-].join(",")).split(",").map((s) => s.trim()).filter(Boolean);
+];
+// LIVE_SLUGS (env) or an optional tests/browser/live-slugs.txt (remote runs cannot forward env) narrows the run.
+const SLUGS_FILE = "tests/browser/live-slugs.txt";
+const SLUGS = (process.env.LIVE_SLUGS ?? (existsSync(SLUGS_FILE) ? readFileSync(SLUGS_FILE, "utf8").replace(/\s+/g, ",") : ALL_SLUGS.join(",")))
+  .split(",").map((x) => x.trim()).filter(Boolean);
 const START_SELECTOR: Record<string, string> = {
   "splat-rush": "#btn-start",
   "silt-and-signal": "#start-button",
@@ -119,8 +124,8 @@ function changedNumbers(a: Record<string, number>, b: Record<string, number>): s
 
 /** Hold the documented control keys (steer, jump, boost, act) for a few seconds while the game runs. */
 const PLAY_KEYS: Record<string, string[]> = {
-  // Last Train starts docked: E opens the doors, P hands the train to its autopilot, then the throttle keys drive it.
-  "last-train": ["KeyE", "KeyP", "ArrowUp", "KeyW", "Space"]
+  // Last Train starts docked: Enter/E open the doors, W is the throttle, P hands the train to its autopilot.
+  "last-train": ["Enter", "KeyE", "KeyW", "KeyP", "Space"]
 };
 async function playFor(page: Page, ms: number, slug: string): Promise<void> {
   const keys = PLAY_KEYS[slug] ?? ["ArrowRight", "ArrowLeft", "ArrowUp", "Space", "KeyD", "KeyA", "KeyW", "ShiftLeft"];
@@ -132,6 +137,14 @@ async function playFor(page: Page, ms: number, slug: string): Promise<void> {
 }
 
 /** Screenshot with every DOM element but the canvases hidden, so overlays/HUD cannot make a blank scene look rendered. */
+async function frameRate(page: Page): Promise<number | null> {
+  return page.evaluate(() => new Promise<number>((resolve) => {
+    let n = 0; const start = performance.now();
+    const tick = (): void => { n++; if (performance.now() - start >= 2000) resolve(n / ((performance.now() - start) / 1000)); else requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }));
+}
+
 async function canvasOnlyShot(page: Page): Promise<Buffer> {
   await page.addStyleTag({ content: "html.__canvas-only *{visibility:hidden !important} html.__canvas-only canvas{visibility:visible !important}" });
   await page.evaluate(() => document.documentElement.classList.add("__canvas-only"));
@@ -140,9 +153,19 @@ async function canvasOnlyShot(page: Page): Promise<Buffer> {
   return shot;
 }
 
+/** A blocked page main thread stalls every Playwright call; turn that into a recorded result instead of a test timeout. */
+async function guarded<T>(label: string, work: Promise<T>, ms: number, fallback: T, hung: string[]): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<T>((resolve) => { timer = setTimeout(() => { hung.push(`${label} blocked >${ms / 1000}s`); resolve(fallback); }, ms); });
+  try { return await Promise.race([work, timeout]); } finally { if (timer) clearTimeout(timer); }
+}
+
 for (const slug of SLUGS) {
   test(`live port boots: ${slug}`, async ({ page }) => {
     test.setTimeout(420_000);
+    const t0 = Date.now();
+    const hung: string[] = [];
+    const step = (name: string): void => console.log(`STEP ${slug} ${name} +${Math.round((Date.now() - t0) / 1000)}s`);
     const consoleErrors: string[] = [];
     const pageErrors: string[] = [];
     const failedRequests: string[] = [];
@@ -175,6 +198,8 @@ for (const slug of SLUGS) {
     // Press the real start control once enabled (boot can take a while on software GL), then play and prove the game advances.
     let started = false;
     let startNote = "";
+    step("booted");
+    const fpsBoot = await guarded("fps(boot)", frameRate(page), 45_000, null, hung);
     const snapBefore = await gameSnapshot(page);
     const findStart = () => page.evaluate(([sel, fallback]) => {
       const visible = (el: Element) => (el as HTMLElement).offsetParent !== null || getComputedStyle(el).position === "fixed";
@@ -212,11 +237,15 @@ for (const slug of SLUGS) {
       const buttons = await page.evaluate(() => Array.from(document.querySelectorAll("button, [role='button']")).slice(0, 14).map((b) => `${b.id || "-"}:${(b.textContent ?? "").trim().slice(0, 24)}:${(b as HTMLElement).offsetParent ? "v" : "h"}${(b as HTMLButtonElement).disabled ? "d" : ""}`));
       startNote += `; buttons=${JSON.stringify(buttons)}`;
     }
+    step("started");
     await page.waitForTimeout(1500);
     const snapStart = await gameSnapshot(page);
     const shot2 = await page.screenshot({ type: "png" });
     const stats2 = await pixelStats(page, shot2);
-    await playFor(page, 6000, slug);
+    step("playing");
+    await guarded("playFor", playFor(page, 6000, slug), 90_000, undefined, hung);
+    step("played");
+    const fpsPlay = await guarded("fps(play)", frameRate(page), 45_000, null, hung);
     const snapPlay = await gameSnapshot(page);
     const shot3 = await page.screenshot({ type: "png" });
     const stats3 = await pixelStats(page, shot3);
@@ -224,13 +253,14 @@ for (const slug of SLUGS) {
     const playDiff = await frameDiff(page, shot2, shot3);
     const stateChanged = changedNumbers(snapStart.nums, snapPlay.nums);
     const hudChanged = snapStart.hud !== snapPlay.hud || snapBefore.hud !== snapStart.hud;
-    const canvasShot = await canvasOnlyShot(page);
+    step("canvas-shot");
+    const canvasShot = await guarded("canvasOnlyShot", canvasOnlyShot(page), 90_000, shot3, hung);
     const canvasStats = await pixelStats(page, canvasShot);
     const errorsAfterStart = pageErrors.length + consoleErrors.length;
     const jpeg = await page.screenshot({ type: "jpeg", quality: 45, scale: "css" });
 
     const summary = {
-      slug, url, status, scripts: scripts.map((s) => s.replace(BASE, "")), canvases: canvasInfo, hooks, started, startNote, errorsAfterStart,
+      slug, url, status, scripts: scripts.map((s) => s.replace(BASE, "")), canvases: canvasInfo, hooks, started, startNote, errorsAfterStart, fpsBoot, fpsPlay, hung,
       beforeStart: stats1, afterStart: stats2, afterPlay: stats3, canvasOnly: canvasStats, drawCalls: snapPlay.drawCalls, bridgeWarnings: bridgeWarnings.slice(0, 4),
       progress: { hook: snapPlay.hook, accessorErrors: snapPlay.accessorErrors, accessor: snapPlay.accessor, stateChanged, numericFields: Object.keys(snapPlay.nums).length, hudChanged, hudBefore: snapBefore.hud.slice(0, 120), hudAfter: snapPlay.hud.slice(0, 120), startDiff, playDiff },
       consoleErrors: consoleErrors.slice(0, 8), pageErrors: pageErrors.slice(0, 8),
@@ -245,6 +275,7 @@ for (const slug of SLUGS) {
     const best = stats2.distinctColors >= stats1.distinctColors ? stats2 : stats1;
     expect(best.nonBlackFraction, "canvas draws non-black pixels").toBeGreaterThan(0.02);
     expect(best.distinctColors, "frame has more than a flat colour").toBeGreaterThan(24);
+    expect(hung, "page main thread stays responsive (software GL)").toEqual([]);
     expect(bridgeWarnings, "no production-bridge model rejection warnings").toEqual([]);
     expect(canvasStats.nonBlackFraction, "canvas-only pixels are not blank").toBeGreaterThan(0.03);
     expect(canvasStats.distinctColors, "canvas-only frame is more than a flat colour").toBeGreaterThan(24);
