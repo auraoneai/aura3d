@@ -48,4 +48,7 @@ for (const file of STADIUM_FILES) {
   if (!existsSync(source)) { console.error(`missing ${source}`); process.exit(1); }
   cpSync(source, path.join(assetsOut, file));
 }
+// The site serves /fonts/* from marketing/public/fonts (vercel.json rewrite); mirror it so the page finds its licensed fonts.
+const fontsSource = path.join(repoRoot, "marketing/public/fonts");
+if (existsSync(fontsSource)) cpSync(fontsSource, path.join(outDir, "fonts"), { recursive: true });
 console.log(`aura-slam wrapper built: ${outDir}`);

@@ -1,0 +1,77 @@
+{
+ "note": "left = live game reference, right = native build; native frames at comparable, not identical, simulation steps",
+ "rows": [
+  {
+   "label": "menu",
+   "native": "menu-1280",
+   "ref": "menu__1280x720",
+   "width": 1280,
+   "height": 720,
+   "lumaJsd": 0.0144,
+   "rgbJsd": 0.0299,
+   "paletteDistance": 0.0014,
+   "edgeRatio": 1.192,
+   "lumaMeanDelta": -2.19
+  },
+  {
+   "label": "serve",
+   "native": "serve-1280",
+   "ref": "serve-ready__1280x720",
+   "width": 1280,
+   "height": 720,
+   "lumaJsd": 0.0146,
+   "rgbJsd": 0.0302,
+   "paletteDistance": 0.0014,
+   "edgeRatio": 1.191,
+   "lumaMeanDelta": -2.37
+  },
+  {
+   "label": "rally",
+   "native": "rally-1280",
+   "ref": "rally-near-net__1280x720",
+   "width": 1280,
+   "height": 720,
+   "lumaJsd": 0.0144,
+   "rgbJsd": 0.0305,
+   "paletteDistance": 0.002,
+   "edgeRatio": 1.18,
+   "lumaMeanDelta": -2.41
+  },
+  {
+   "label": "point won",
+   "native": "point-1280",
+   "ref": "point-won__1280x720",
+   "width": 1280,
+   "height": 720,
+   "lumaJsd": 0.0145,
+   "rgbJsd": 0.0311,
+   "paletteDistance": 0.002,
+   "edgeRatio": 1.18,
+   "lumaMeanDelta": -2.41
+  },
+  {
+   "label": "match over",
+   "native": "results-1280",
+   "ref": "match-over__1280x720",
+   "width": 1280,
+   "height": 720,
+   "lumaJsd": 0.0135,
+   "rgbJsd": 0.0711,
+   "paletteDistance": 0.0051,
+   "edgeRatio": 1.242,
+   "lumaMeanDelta": -1.48
+  },
+  {
+   "label": "mobile",
+   "native": "serve-390",
+   "ref": "rally-near-net__mobile-390x844",
+   "width": 390,
+   "height": 844,
+   "lumaJsd": 0.0592,
+   "rgbJsd": 0.1292,
+   "paletteDistance": 0.0227,
+   "edgeRatio": 1.287,
+   "lumaMeanDelta": 3.54
+  }
+ ]
+}

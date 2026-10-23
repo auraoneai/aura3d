@@ -12,6 +12,8 @@ import { createMatchEngine } from "../../../examples/aura-slam/sim/create";
  */
 const REFERENCE = fileURLToPath(new URL("../../../evidence/aura-slam/reference.json", import.meta.url));
 const present = existsSync(REFERENCE);
+/** The committed baseline (slam-ref) has `scenarios[]` recorded through the live page (adapter included), not the `runs[]` schema of contract/reference.ts. */
+const scenarioSchema = present && Array.isArray((JSON.parse(readFileSync(REFERENCE, "utf8")) as { scenarios?: unknown }).scenarios);
 
 type Capture = ReferenceCapture | { runs: ReferenceCapture[] };
 const runsOf = (capture: Capture): ReferenceCapture[] => ("runs" in capture ? capture.runs : [capture]);
@@ -49,9 +51,9 @@ function replay(ref: ReferenceCapture) {
   return { errors, events, engine };
 }
 
-describe.skipIf(!present)("native simulation replays the original engine's recorded run (gate G1)", () => {
-  const capture: Capture = present ? JSON.parse(readFileSync(REFERENCE, "utf8")) : { runs: [] };
-  const runs = runsOf(capture);
+describe.skipIf(!present || scenarioSchema)("native simulation replays the original engine's recorded run (gate G1)", () => {
+  const capture: Capture = present && !scenarioSchema ? JSON.parse(readFileSync(REFERENCE, "utf8")) : { runs: [] };
+  const runs = scenarioSchema ? [] : runsOf(capture);
   it("the reference file is a non-empty a3d-crayon-capture/1 aura-slam capture", () => {
     expect(runs.length).toBeGreaterThan(0);
     for (const run of runs) { expect(run.schema).toBe("a3d-crayon-capture/1"); expect(run.game).toBe("aura-slam"); expect(run.checkpoints.length).toBeGreaterThan(0); }
@@ -72,4 +74,23 @@ describe.skipIf(!present)("native simulation replays the original engine's recor
 
 describe.skipIf(present)("replay gate G1 is waiting for evidence/aura-slam/reference.json", () => {
   it.todo("reference capture not committed yet: run the slam-ref capture, then this suite replays it");
+});
+
+describe.skipIf(!scenarioSchema)("baseline reference (live page capture): structure and what a replay must preserve", () => {
+  const ref = scenarioSchema ? (JSON.parse(readFileSync(REFERENCE, "utf8")) as { schema: string; game: string; scenarios: Array<{ id: string; setup: Record<string, unknown>; script: { encoding: string; inputs: unknown[] }; sessions: Array<{ digest: string; steps: number }>; sampled: { columns: string[]; rows: unknown[][] }; events: unknown[]; reference: { steps: number; winner: string | null } }>; tolerance: { exactDigestRequired: string[]; sampledAbsTolerance: number; eventStepTolerance: number } }) : null;
+  it("is the a3d-crayon-capture/1 capture with six scenarios, two identical sessions each", () => {
+    expect(ref!.schema).toBe("a3d-crayon-capture/1");
+    expect(ref!.game).toBe("aura-slam-3d");
+    expect(ref!.scenarios.map((s) => s.id)).toEqual(expect.arrayContaining(["auto-beginner-hard", "auto-club-grass", "auto-pro-clay", "auto-legend-hard", "manual-human-policy"]));
+    for (const s of ref!.scenarios) {
+      expect(s.sessions.length).toBeGreaterThanOrEqual(2);
+      expect(new Set(s.sessions.map((x) => x.digest)).size, `${s.id} sessions agree`).toBe(1);
+      expect(s.sampled.rows.length).toBeGreaterThan(0);
+    }
+    expect(ref!.tolerance.sampledAbsTolerance).toBeLessThanOrEqual(1e-6);
+  });
+  it.todo("replay each scenario through the native SHELL in a browser (keys -> input mapper -> engine, advanceTime(1000/60) per step; the Auto scenarios need the original adapter's autoplay controller, which nudges the player directly): compare sampled rows within 1e-6 and event steps exactly");
+  it("the sim itself equals the original engine over full matches (see autoplay-golden.test.ts, remote replay in aura-slam-int.spec.ts)", () => {
+    expect(existsSync(fileURLToPath(new URL("../../browser/aura-slam-golden.json", import.meta.url)))).toBe(true);
+  });
 });

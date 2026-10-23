@@ -4,24 +4,61 @@
   "classification": "prototype",
   "publicShowcase": false,
   "promotionStatus": "unregistered",
-  "generatedAt": "2026-10-23T00:00:00.000Z",
-  "ok": false,
+  "generatedAt": "2026-10-23T23:40:00.000Z",
+  "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
   "kind": "native-rebuild",
   "renderer": "webgl2 (createAuraApp)",
   "sourceExample": "examples/aura-slam/",
-  "evidence": "UI layer: 37 unit tests (scoreboard, results, HUD views, menu flow, input frame, loop, QA text) compare against the original scripts.",
+  "evidence": "Production build of the wrapper (tools/aura-slam/build-wrapper.mjs) played end to end in remote headed Chromium (software WebGL2): menu, Quick Match with a real click, real keys serve/pause/resume, a point scored, match completed, 0 console errors, every asset URL 200, ?diag=1 shows no shader failure, no spurious black-frame reload; the shipped sim equals the ORIGINAL match-engine.js over two full seeded matches inside a real browser (aura-slam-int.spec.ts, autoplay golden). Frames and metrics: evidence/aura-slam/native-game/, native-vs-live-metrics.json.",
   "limits": [
     "Not registered as a live route: the live Aura Slam stays on apps/showcase-top-tennis until gates G1-G6 in docs/aura-slam/ARCHITECTURE.md pass.",
     "Tournament, tour, online play and appearance select (Phase 2) are shown as disabled menu entries.",
-    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU.",
+    "draw calls 261 (desktop) and 143 (mobile) against the 150 budget; verified only on software WebGL2, not a hardware GPU."
   ],
   "checks": [
-    { "name": "index.html exists", "ok": true },
-    { "name": "module script present", "ok": true },
-    { "name": "has a canvas mount", "ok": true },
-    { "name": "mounts examples port without code duplication", "ok": true, "detail": "examples/aura-slam/main" },
-    { "name": "examples/aura-slam/main.ts exists", "ok": false, "detail": "M-RENDER has not landed main.ts yet" }
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/aura-slam/main"
+    },
+    {
+      "name": "examples/aura-slam/main.ts exists",
+      "ok": true
+    },
+    {
+      "name": "production build plays end to end (remote)",
+      "ok": true,
+      "detail": "aura-slam-int.spec.ts 3/3, run slam-int-20261023T232530Z"
+    },
+    {
+      "name": "sim equals original engine in a real browser",
+      "ok": true,
+      "detail": "2 full matches, all checkpoints"
+    },
+    {
+      "name": "live-game replay gate G1 (reference.json scenarios)",
+      "ok": false,
+      "detail": "needs shell-level replay incl. the original adapter's autoplay; not run"
+    },
+    {
+      "name": "matched-tick render parity G3",
+      "ok": false,
+      "detail": "indicative state-matched metrics only (native-vs-live-metrics.json)"
+    }
   ]
 }
