@@ -26,8 +26,8 @@ import type {
   Game,
   GameScenario,
   TransitionSpec
-} from "@aura3d/engine/contracts";
-import { StubTimeController } from "@aura3d/engine/contracts";
+} from "@aura3d/engine";
+import { StubTimeController } from "@aura3d/engine";
 import { GameSessionImpl } from "./session/GameSession";
 import { awaitFirstPresentedDraw, drawCallsOf } from "./session/presented";
 import { attachSessionLifecycle, type LifecycleSound } from "./session/lifecycle";
@@ -49,7 +49,7 @@ import { createRumbleDriver } from "./juice/rumble";
 import { createTweenEngine } from "./juice/tween";
 import { createGameAudio, type GameAudio, type GameAudioOptions } from "@aura3d/engine";
 import { bindFeelSound } from "@aura3d/engine/lanes";
-import type { Hud, TouchControls } from "@aura3d/engine/contracts";
+import type { Hud, TouchControls } from "@aura3d/engine";
 
 
 const currentUrl = (): URL | undefined =>

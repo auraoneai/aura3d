@@ -6,7 +6,7 @@
  * counter. `<0.5 KB` gzipped — a few fields only.
  */
 
-import type { GameBeacon, GameSessionState } from "@aura3d/engine/contracts";
+import type { GameBeacon, GameSessionState } from "@aura3d/engine";
 
 export interface BeaconOptions {
   readonly route: string;

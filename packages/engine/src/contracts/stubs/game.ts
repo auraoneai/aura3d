@@ -110,7 +110,16 @@ function currentUrl(): URL | undefined {
  * Transitions are immediate cuts. It never deadlocks and real `app.ready()`
  * resolve is wired before `state` reaches "playing".
  */
+let stubWarned = false;
+
 export function createGame<TCue extends string, TEvent extends string>(options: CreateGameOptions<TCue, TEvent>): Game<TCue, TEvent> {
+  if (!stubWarned && typeof console !== "undefined") {
+    stubWarned = true;
+    console.warn(
+      "CREATE_GAME_STUB: createGame from '@aura3d/engine' is the headless stub (no HUD, touch, juice or sound). " +
+        "Import { createGame } from '@aura3d/engine/game' for the full game kit."
+    );
+  }
   const runtime = createGameApp(options.target as HTMLElement, {
     scene: options.scene() as AuraSceneSnapshot
   });

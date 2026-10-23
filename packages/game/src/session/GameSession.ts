@@ -11,12 +11,12 @@
 import {
   StubTimeController,
   type AuraTimeController
-} from "@aura3d/engine/contracts";
+} from "@aura3d/engine";
 import type {
   GameSession,
   GameSessionState,
   PauseReason
-} from "@aura3d/engine/contracts";
+} from "@aura3d/engine";
 
 export type SessionEvent = "state" | "pause" | "resume" | "settings";
 

@@ -15,8 +15,9 @@ import {
   type CreateGameOptions,
   type Game,
   type QrFlagInput
-} from "@aura3d/engine/contracts";
+} from "@aura3d/engine";
 import { createGameImpl, type Prd09CreateGameOptions, type Prd09Game } from "./createGame";
+import { withGameFlagDefault } from "./flagDefault";
 
 export const C24_GAME_SLOT = defineContractSlot<typeof stubCreateGame>(
   "C-24",
@@ -43,15 +44,19 @@ const currentUrl = (): string | undefined =>
 export function createGame<TCue extends string, TEvent extends string>(
   options: Prd09CreateGameOptions<TCue, TEvent>
 ): Prd09Game<TCue, TEvent> {
+  // This entry point is the explicit opt-in to the real kit, so the `game` lane defaults on; explicit
+  // `-game`/`none`, the URL and env sources still turn it off.
+  const gameFlags = withGameFlagDefault(options.qualityRebuild?.flags as QrFlagInput | undefined);
   const flags = resolveQrFlags({
-    options: options.qualityRebuild?.flags as QrFlagInput | undefined,
+    options: gameFlags,
     url: currentUrl(),
     env: envFlags()
   });
+  const effective = { ...options, qualityRebuild: { ...options.qualityRebuild, flags: gameFlags } };
   // Public types describe the impl surface (Prd09CreateGameOptions → Prd09Game);
   // the slot's declared signature stays contract-shaped for the flag-off stub.
   return C24_GAME_SLOT.get(flags)(
-    options as unknown as CreateGameOptions<TCue, TEvent>
+    effective as unknown as CreateGameOptions<TCue, TEvent>
   ) as Prd09Game<TCue, TEvent>;
 }
 
@@ -74,7 +79,7 @@ export type {
   GameFxLayer,
   CaptureContext,
   GameBeacon
-} from "@aura3d/engine/contracts";
+} from "@aura3d/engine";
 
 // PRD-09 juice surface (§7.6): tween engine, Juice facade, overlay driver,
 // fx pools (instanced backend A / particle-pass backend B), rumble adapter.

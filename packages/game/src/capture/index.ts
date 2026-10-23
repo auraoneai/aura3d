@@ -10,4 +10,4 @@ export {
   type LookSource,
   type LookNodeEntry
 } from "./lookSignature";
-export type { CaptureContext } from "@aura3d/engine/contracts";
+export type { CaptureContext } from "@aura3d/engine";

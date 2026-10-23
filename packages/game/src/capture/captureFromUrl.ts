@@ -9,7 +9,7 @@
  * `overview` or the debug params (T0-29 crash table, #979).
  */
 
-import type { CaptureContext } from "@aura3d/engine/contracts";
+import type { CaptureContext } from "@aura3d/engine";
 
 export function captureFromUrl(url?: URL): CaptureContext {
   if (url === undefined || typeof URL === "undefined") return { mode: "play" };

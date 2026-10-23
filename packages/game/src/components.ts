@@ -14,7 +14,7 @@ import type {
   Hud,
   GameFxLayer,
   TransitionSpec
-} from "@aura3d/engine/contracts";
+} from "@aura3d/engine";
 import type { AuraVec3 } from "@aura3d/engine";
 import type { GameSessionImpl } from "./session/GameSession";
 import { runTransition, type TransitionDriver } from "./shell/transition";
