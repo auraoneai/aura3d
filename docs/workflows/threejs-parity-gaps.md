@@ -1,12 +1,11 @@
 # PRD — three.js → Aura3D Parity
 
-**Status:** v4 · execution run on 2026-10-22 (`main` @ `ade1bbcd8` plus uncommitted
-work). Tasks R-01..R-23 are done. **Not fully complete:** the four phase exits
-(R-20; Phase A port and reference capture in progress), the Crayon fixed-input
-pixel-diff fixture (R-25), WebGPU canvas presentation proof (R-22), and the
-inert flags `SHADING`/`GEOMETRY`/`TEXTURES`/`RUNTIME` (still `"dev"`; they gate
-nothing). `A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are default-on (R-17).
-HEATSINK materials: decision recorded in R-24 (hand-port).
+**Status:** v5 · 2026-10-22. Released as **4.0.4** (npm, all 24 public packages; git tag `v4.0.4`).
+The engine surface in this document is complete except: **SH-01** (TSL subset, decided
+as hand-port per R-24), **Phase exits B, C, D** (game ports, dropped by decision),
+the **fixed-input captures for eight games** (R-25, partial), and **real-device
+verification** of WebXR, WebGPU compute and WebGPU canvas presentation (R-22).
+`A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are default-on; the other four flags gate nothing.
 **Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
 (the ten Crayon ports this PRD unblocks)
@@ -949,7 +948,7 @@ means "implemented and tested".
 
 ### P2 — completeness
 - [ ] SH-01 TSL subset. Re-probed (R-01): 1 of 10 games authors node materials (HEATSINK, 49 live; three r184+r186, `WebGPURenderer`). The ≥3-game trigger is not met, so there is no general TSL emitter, but HEATSINK is a Phase B game and needs either hand-ported `material.custom` materials or L1-11 → **R-24 (decision)**
-- [ ] SH-04 compute (after `A3D_QR_WEBGPU`)
+- [x] SH-04 public WebGPU-only `compute.*` (`packages/rendering/src/compute/`, `compute.pipeline/buffer/dispatch`, `app.compute`; WGSL required; WebGL2 apps get `compute-requires-webgpu`; `tests/unit/parity/compute.test.ts` 26 tests against a fake `GPUDevice`). Real-GPU execution is untested: the remote runner's software WebGPU cannot run it (R-22)
 - [x] SH-09 material `patch` (`shader-material.test.ts` — patch chunks hash into program key)
 - [x] SG-08 sprites (`parity-lines` green — billboard + rotation pixel-proven)
 - [x] SG-11 mixed-child LOD — `groups.lod({levels, hysteresis})` ships arbitrary subtrees per level (`lodMarkers.ts` + renderInput per-frame visibility; `runtime.test.ts` SG-11 block)
@@ -957,7 +956,10 @@ means "implemented and tested".
 - [x] AU-03 analyser (`AudioAnalyser.ts` + `parity-audio` spec)
 - [x] SR-04 layers (`camera.perspective({ layers })` now hides non-intersecting nodes; pixel case in `parity-runtime.spec.ts` plus unit tests that fail without the fix; R-08)
 - [x] SC-03 helpers (`parity-lines` green — helper glyphs pixel-proven)
-- [ ] SC-04 XR buttons + render target (post-D; `WebXRSessionController` exists, no public XR buttons)
+- [x] SC-04 `xr.button()` + `app.xr` (`packages/engine/src/agent-api/xr/`, `WebXRSessionController` session/reference-space getters; per-view rendering via `setExternalFramebuffer` and a persistent `setViewport` on `RenderDevice`/`WebGL2Device`; `xr.test.ts` 31 tests with fake XR objects). Not verified on a headset or real browser
+- [x] SG-10 `scene().overrideMaterial(spec | null)` (`override-material.test.ts` 17 tests; primitives, models, instances, LOD, `batched.mesh`; not applied to lines, points, sprites, character parts or nodes added after mount)
+- [x] AD-15 Lensflare `lights.lensFlare` (`lens-flare.test.ts` 25 tests; placement follows three's formula; no depth-occlusion fade because the engine has no depth readback)
+- [x] SC-01 / L7-15 `cameras.array`, `cameras.stereo`, viewport and scissor (`viewport-views.test.ts`; stereo eye matrices equal three's `StereoCamera` within 1e-6)
 - [x] ST-04 / ST-06 loaders + progress (`FileLoader`/`ImageBitmapLoader`/`DataTextureLoader` shipped; progress events wired e2e)
 - [x] AD-16 `lights.rectArea` + `lights.lightProbe` — LightProbe ships public: `sh` (27 SH9 coeffs, three's band-major packing) evaluates ±direction into the hemisphere-irradiance channel (`runtime.test.ts` AD-16 block; codemod rows LightProbe/AmbientLightProbe/HemisphereLightProbe → `lights.lightProbe` approximate)
 
@@ -970,10 +972,10 @@ means "implemented and tested".
 - [x] route-health reports `parityIds` (`AA/devtools/routeHealth.ts:13-27`; caller-supplied, browser specs assert exact ID lists)
 
 ### Phase exits
-- [ ] A — Strange Orbit 7-lap capture matches
-- [ ] B — HEATSINK blind A/B "same game"
-- [ ] C — Ninja Runner 60 s with clones/combat
-- [ ] D — Last Train town loop, memory stable ×3
+- [x] A — Strange Orbit 7-lap capture matches (reference `evidence/crayon-capture/strange-orbit-reference.json`, 283.683 s finish, 7 laps, 35 checkpoints, bit-exact across 6 sessions / 4 ACR runs; `examples/strange-orbit-port/race.ts` replays the recorded 17,214-step input and reproduces finish time, all lap times and all checkpoints exactly, in Node and in the live page on ACR; GPU render passed, run `so-d-20261022T230635Z`). Caveat: simulation parity, not pixel parity; assets are procedural
+- [ ] B — HEATSINK blind A/B "same game" (not attempted: a port was started and stopped by decision; needs a human-judged blind comparison)
+- [ ] C — Ninja Runner 60 s with clones/combat (not attempted: port started and stopped by decision; the engine pieces it needs, `cloneSkinned` and `material.custom`, are shipped)
+- [ ] D — Last Train town loop, memory stable ×3 (not attempted; the engine pieces it needs are shipped)
 
 ---
 
@@ -1076,9 +1078,9 @@ passed all 16 tests across all 11 `parity-*.spec.ts` files. The run's code chang
 | R-18 audio | DONE | `tests/unit/audio` 97 tests. `occlusionHz` formula changed in `4995fb7c8` (C-25, #208), not `9c8761647` as first reported; the test was stale |
 | R-19 Strange Orbit | DONE with caveat | Real game captured (ACR run `cc1ap`); 0 TODOs after R-23; shaders still need hand-porting to GLSL 300 es |
 | **R-23** custom vertex attributes | DONE | `attributes` on `geometry.define/custom/dynamic`, `topology:"points"`; ACR run `r23c-20261022T195658Z` |
-| **R-25** Crayon capture | **OPEN** | Eight games at menu/start/HUD or journal; Roadster start and Silt child frame blocked; no fixed-input/pixel diff |
+| **R-25** Crayon capture | **PARTIAL** | Roadster Hours start click and Silt & Signal frame evaluation fixed (probes re-recorded settled); Strange Orbit has a bit-exact fixed-input reference. Fixed-input references for the other games were not recorded (stopped by decision) |
 | **R-17** flag flips | **DONE for the two flags that gate anything; L4 gate waived for them** | `BATCHING` and `LINES` default-on; `default-flags.test.ts` 8 tests; remote run `r17-20261022T204448Z` 16/16. Four inert flags stay `dev` (see below) |
-| **R-20** phase exits A-D | **OPEN: Phase A in progress** | Agents building `examples/strange-orbit-port/` and the deterministic reference capture `evidence/crayon-capture/strange-orbit-reference.json`; B, C, D not started (need human-judged captures) |
+| **R-20** phase exits A-D | **A DONE; B, C, D not attempted by decision** | Phase A exit met (see §10). The game ports for B, C, D were started and stopped on 2026-10-22 because the goal is the engine surface, not the ports; partial port files were deleted. The engine capabilities they need are shipped |
 | **R-24** HEATSINK TSL | **DECIDED: hand-port to `material.custom`** (executes in Phase B) | 49 live node materials. Reason: §1.3 excludes a full TSL compiler; only 1 of 10 games needs TSL, so L1-11's ≥3-game trigger is unmet; `material.custom` already runs GLSL on the live WebGL2 path. L1-11 stays closed unless a second game needs it |
 
 **R-17 outcome.** §7.3 step 3 names the L4 LPIPS-vs-three gate
