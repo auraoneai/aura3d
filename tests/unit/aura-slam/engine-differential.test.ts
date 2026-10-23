@@ -6,6 +6,9 @@ import { appearance as appearanceTs } from "../../../examples/aura-slam/sim/appe
 import { roster as rosterTs } from "../../../examples/aura-slam/sim/roster";
 import { SERVE, SERVE_CPU, SHOT, makeServeStats } from "../../../examples/aura-slam/sim/serve";
 import { pointLabel } from "../../../examples/aura-slam/sim/scoring";
+import { physics as physicsTs } from "../../../examples/aura-slam/sim/physics";
+import { strokes as strokesTs } from "../../../examples/aura-slam/sim/strokes";
+import { createMatchEngine, viewMatch } from "../../../examples/aura-slam/sim/create";
 import { DIFFICULTY_LEVELS, GRAVITY, MATCH_RULES } from "../../../examples/aura-slam/contract";
 
 const DIR = fileURLToPath(new URL("../../../apps/showcase-top-tennis/public/toptennis/", import.meta.url));
@@ -22,6 +25,8 @@ const rosterJs = loadUmd("player-roster.js");
 const appearanceJs = loadUmd("player-appearance.js");
 const Original = loadUmd("match-engine.js", { "./physics.js": physics, "./strokes.js": strokes, "./player-roster.js": rosterJs, "./player-appearance.js": appearanceJs });
 const Ported = engineModule(physics, strokes, rosterTs, appearanceTs);
+/** The shipped wiring: typed physics and strokes as well. */
+const PortedTyped = engineModule(physicsTs, strokesTs, rosterTs, appearanceTs);
 
 type AnyEngine = ReturnType<typeof Original.create>;
 
@@ -57,12 +62,12 @@ function makePolicy(missRate: number) {
   };
 }
 
-function run(ticks: number, options: Record<string, unknown>, missRate = 0.2) {
+function run(ticks: number, options: Record<string, unknown>, missRate = 0.2, Port: typeof Ported = Ported) {
   const policy = makePolicy(missRate);
   const logA: unknown[] = [];
   const logB: unknown[] = [];
   const a = Original.create({ ...options, onEvent: (e: unknown) => logA.push(clean(e)) });
-  const b = Ported.create({ ...options, onEvent: (e: unknown) => logB.push(clean(e)) });
+  const b = Port.create({ ...options, onEvent: (e: unknown) => logB.push(clean(e)) });
   let maxPoints = 0;
   let firstDiff: string | null = null;
   for (let tick = 0; tick < ticks; tick++) {
@@ -191,4 +196,31 @@ describe("scoring rules: awardPoint sequences match the original (game, deuce, a
       if (/match|tiebreak/.test(name)) expect(sawMatchWon).toBe(true);
     });
   }
+});
+
+describe("shipped wiring (typed physics + strokes + create.ts) is identical to the original", () => {
+  const cases: Array<[string, Record<string, unknown>, number]> = [
+    ["beginner hard", { difficulty: "beginner", venue: "hard" }, 0],
+    ["club grass", { difficulty: "club", venue: "grass" }, 0.2],
+    ["ace clay", { difficulty: "ace", venue: "clay" }, 0.3],
+    ["pro hard", { difficulty: "pro", venue: "hard" }, 0.2],
+    ["legend, rival serves first", { difficulty: "legend", venue: "grass", firstServer: "ai" }, 0.1],
+    ["beginner desert", { difficulty: "beginner", venue: "desert" }, 0.4],
+  ];
+  for (const [name, options, miss] of cases) {
+    it(`${name}: 12000 ticks, state and events`, () => {
+      const r = run(12000, options, miss, PortedTyped);
+      expect(r.firstDiff).toBeNull();
+      expect(r.logB).toEqual(r.logA);
+      expect(r.logA.length).toBeGreaterThan(100);
+    }, 120000);
+  }
+  it("createMatchEngine/viewMatch from create.ts behave like the original", () => {
+    const a = Original.create({ difficulty: "pro" });
+    const b = createMatchEngine({ difficulty: "pro" });
+    const policy = makePolicy(0.2);
+    for (let t = 0; t < 2000; t++) { const i = policy(a, t); a.applyInput("player", i); b.applyInput("player", i as never); a.step(1 / 60); b.step(1 / 60); }
+    expect(JSON.stringify(b.state)).toBe(JSON.stringify(a.state));
+    for (const side of ["player", "ai"] as const) expect(JSON.stringify(viewMatch(b.snapshot(), side))).toBe(JSON.stringify(Original.view(a.snapshot(), side)));
+  });
 });
