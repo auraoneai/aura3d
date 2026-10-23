@@ -1,4 +1,7 @@
 import type { AuraRuntimeNodeHandle } from "../index";
+import { createRacketScoring, type RacketScoring, type RacketScoringRules } from "./racketScoring";
+
+export * from "./racketScoring";
 
 export type RacketVec3 = readonly [number, number, number];
 
@@ -65,6 +68,8 @@ export interface RacketSportsGameKit {
     ball: RacketBallState,
     surface?: RacketSurfacePhysicsOptions
   ): RacketBallStepEvents;
+  /** Pure game/match/tiebreak scoring state machine; defaults to the Aura Slam tennis rules. */
+  scoring(rules?: RacketScoringRules): RacketScoring;
 }
 
 function clamp(v: number, min: number, max: number): number {
@@ -233,7 +238,8 @@ export function createRacketSportsGameKit(id = "racket-sports"): RacketSportsGam
     solveArmElbow,
     localToWorld,
     localDirToWorld,
-    stepBallPhysics: stepRacketBallPhysics
+    stepBallPhysics: stepRacketBallPhysics,
+    scoring: createRacketScoring
   };
 }
 
@@ -244,5 +250,6 @@ export const racketSports = {
   solveArmElbow,
   localToWorld,
   localDirToWorld,
-  stepBallPhysics: stepRacketBallPhysics
+  stepBallPhysics: stepRacketBallPhysics,
+  scoring: createRacketScoring
 } as const;
