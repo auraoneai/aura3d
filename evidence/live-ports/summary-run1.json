@@ -1,0 +1,469 @@
+{
+ "cloud-runner": {
+  "afterStart": {
+   "distinctColors": 369,
+   "height": 600,
+   "lumaStdDev": 35.45885904649333,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 380,
+   "height": 600,
+   "lumaStdDev": 35.46429788335795,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_KID_GOKU__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-cloud-runner-port-CpbayCRT.js"
+  ],
+  "slug": "cloud-runner",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-cloud-runner-port/"
+ },
+ "drift-and-deliver": {
+  "afterStart": {
+   "distinctColors": 265,
+   "height": 600,
+   "lumaStdDev": 17.644722612815766,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 265,
+   "height": 600,
+   "lumaStdDev": 17.644722612815766,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 150,
+    "id": "world",
+    "width": 300
+   },
+   {
+    "hasWebgl": true,
+    "height": 240,
+    "id": "minimap",
+    "width": 240
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches"
+  ],
+  "pageErrors": [
+   "aura3d: instances.mesh unavailable \u2014 the instancedMesh module was not loaded; import the engine entry."
+  ],
+  "scripts": [
+   "/assets/showcase-drift-and-deliver-port-DVF6RpW9.js"
+  ],
+  "slug": "drift-and-deliver",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-drift-and-deliver-port/"
+ },
+ "heatsink": {
+  "afterStart": {
+   "distinctColors": 390,
+   "height": 600,
+   "lumaStdDev": 38.40021662616809,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 393,
+   "height": 600,
+   "lumaStdDev": 38.37730574735059,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_HEATSINK__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-heatsink-port-BweIDBDf.js"
+  ],
+  "slug": "heatsink",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-heatsink-port/"
+ },
+ "last-train": {
+  "afterStart": {
+   "distinctColors": 433,
+   "height": 600,
+   "lumaStdDev": 56.97516236068062,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 433,
+   "height": 600,
+   "lumaStdDev": 56.97520163377404,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_LAST_TRAIN__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-last-train-port-6fm6O8-C.js"
+  ],
+  "slug": "last-train",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-last-train-port/"
+ },
+ "ninja-runner": {
+  "afterStart": {
+   "distinctColors": 427,
+   "height": 600,
+   "lumaStdDev": 32.323270706501255,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 427,
+   "height": 600,
+   "lumaStdDev": 32.32330276788234,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_NINJA_RUNNER__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-ninja-runner-port-DQ0avrFN.js"
+  ],
+  "slug": "ninja-runner",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-ninja-runner-port/"
+ },
+ "roadster-hours": {
+  "afterStart": {
+   "distinctColors": 323,
+   "height": 600,
+   "lumaStdDev": 33.51595953138213,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 318,
+   "height": 600,
+   "lumaStdDev": 33.552794008004824,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_ROADSTER_HOURS__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-roadster-hours-port-Qrp811U_.js"
+  ],
+  "slug": "roadster-hours",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/"
+ },
+ "serpentine-sky-run": {
+  "afterStart": {
+   "distinctColors": 449,
+   "height": 600,
+   "lumaStdDev": 31.07241567650188,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 449,
+   "height": 600,
+   "lumaStdDev": 31.072028041884238,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_SAIYAN_SNAKE_WAY__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-serpentine-sky-run-port-CZJ0HNWy.js"
+  ],
+  "slug": "serpentine-sky-run",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/"
+ },
+ "silt-and-signal": {
+  "afterStart": {
+   "distinctColors": 692,
+   "height": 600,
+   "lumaStdDev": 55.88869639093486,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 688,
+   "height": 600,
+   "lumaStdDev": 56.509940798174895,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA_SILT__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-silt-and-signal-port-BbTyqdOs.js"
+  ],
+  "slug": "silt-and-signal",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/"
+ },
+ "splat-rush": {
+  "afterStart": {
+   "distinctColors": 696,
+   "height": 600,
+   "lumaStdDev": 59.17189468381277,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 675,
+   "height": 600,
+   "lumaStdDev": 59.20234667945953,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_SPLAT_RUSH__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-splat-rush-port-DRtoZCfR.js"
+  ],
+  "slug": "splat-rush",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-splat-rush-port/"
+ },
+ "strange-orbit": {
+  "afterStart": {
+   "distinctColors": 647,
+   "height": 600,
+   "lumaStdDev": 49.12482933417184,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 646,
+   "height": 600,
+   "lumaStdDev": 49.124424386890624,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_STRANGE_ORBIT__",
+   "__orbit",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-strange-orbit-port-unuVQuBu.js"
+  ],
+  "slug": "strange-orbit",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-strange-orbit-port/"
+ },
+ "where-the-wind-wanders": {
+  "afterStart": {
+   "distinctColors": 1157,
+   "height": 600,
+   "lumaStdDev": 64.22456298965373,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "badResponses": [],
+  "beforeStart": {
+   "distinctColors": 1134,
+   "height": 600,
+   "lumaStdDev": 64.37755704940686,
+   "nonBlackFraction": 1,
+   "width": 800
+  },
+  "canvases": [
+   {
+    "hasWebgl": true,
+    "height": 600,
+    "id": "world",
+    "width": 800
+   }
+  ],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_WIND__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA_PORT_MODULES__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "pageErrors": [],
+  "scripts": [
+   "/assets/showcase-where-the-wind-wanders-port-BDVNitDM.js"
+  ],
+  "slug": "where-the-wind-wanders",
+  "started": false,
+  "status": 200,
+  "url": "https://aura3d.auraone.ai/apps/showcase-where-the-wind-wanders-port/"
+ }
+}
