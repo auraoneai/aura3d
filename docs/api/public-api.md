@@ -1788,6 +1788,8 @@ registerShaderChunk(name, glsl)    // SH-10 registry — resolves #include in
                                    // material.custom / effects.shaderPass
 ```
 
+Built-in author chunks for `material.custom` (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<colorspace_decode>`, `<colorspace_encode>`) are listed in [`glsl-chunks.md`](./glsl-chunks.md).
+
 Fixtures: `tests/unit/parity/shader-material.test.ts`,
 `shader-pass-order.test.ts`.
 

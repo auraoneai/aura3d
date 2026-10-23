@@ -610,6 +610,7 @@ export type { CompiledShaderSource, ShaderSourcePair } from "./ShaderLibrary";
 export type { ShaderVariantDescriptor } from "./ShaderLibrary";
 export { MAX_UNIFORM_SKINNING_JOINTS, SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
 export type { ShaderChunk } from "./ShaderChunks";
+export { A3D_AUTHOR_GLSL_CHUNKS, A3D_AUTHOR_GLSL_CHUNK_NAMES, type A3dAuthorGlslChunk } from "./shaders/chunks/author";
 
 export { DEFAULT_RENDER_STATE, Material, validateRenderState } from "./Material";
 export type {

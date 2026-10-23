@@ -13,6 +13,7 @@
  */
 
 const COMMON = /* glsl */ `
+#include <a3d_fog>
 float hash21(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
@@ -30,10 +31,7 @@ float fbm(vec2 p) {
 }
 // original atmosphere: density 0.0004, hDensity 0.0022, hBase 18, hFalloff 0.031, maxFog 0.96
 vec3 applyFog(vec3 color, vec3 world) {
-  float dist = length(world - cameraPosition);
-  float height = max(0.0, world.y - 18.0);
-  float amount = 1.0 - exp(-(0.0004 * dist + 0.0022 * dist * exp(-0.031 * height)));
-  return mix(color, fogColor, min(amount, 0.96));
+  return a3dFogHeight(color, fogColor, length(world - cameraPosition), world.y, 0.0004, 0.0022, 18.0, 0.031, 0.96);
 }
 vec3 lit(vec3 albedo, vec3 N) {
   vec3 hemi = mix(groundAmbient, skyAmbient, N.y * 0.5 + 0.5);
