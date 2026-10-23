@@ -8,12 +8,12 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 4.0.2 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 4.0.7 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api.html
 - Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-10-20
+- Last updated: 2026-10-23
 
 ## Pages
 
@@ -31,8 +31,8 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura3D Guide for Claude-Assisted 3D Apps](https://aura3d.auraone.ai/docs/claude.html): Use Claude with Aura3D to generate TypeScript browser 3D scenes from scene kits, primitives, typed GLB/glTF assets, and Vite templates.
 - [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor.html): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence.html): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
-- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.0.2 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
-- [Aura3D 4.0.2 vs. Raw Three.js — Open-Source TypeScript 3D Engine](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Stop assembling 14 fragile npm packages to render a 3D scene. Compare Aura3D 4.0.2 (@aura3d/engine@4.0.2) against raw Three.js across architecture, asset type safety, WebGPU compute, physics, and 18-line scene boot.
+- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.0.7 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
+- [Aura3D 4.0.7 vs. Raw Three.js — Open-Source TypeScript 3D Engine](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Stop assembling 14 fragile npm packages to render a 3D scene. Compare Aura3D 4.0.7 (@aura3d/engine@4.0.7) against raw Three.js across architecture, asset type safety, WebGPU compute, physics, and 18-line scene boot.
 - [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase.html): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
 
 ### Showcase
@@ -63,6 +63,17 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura3D - Slingshot Siege](https://aura3d.auraone.ai/apps/showcase-slingshot-siege/): Aura3D Slingshot Siege prototype: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower.
 - [Dot Dash 3D — Neon Maze Chase · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/): Aura3D Dot Dash 3D showcase, a neon maze-chase arcade game: dash through six glowing circuits gobbling light-dots while four Specters hunt with distinct AI personalities.
 - [Cross Hop — Aura3D Endless Lane Hopper](https://aura3d.auraone.ai/apps/showcase-cross-hop/): Aura3D Cross Hop showcase, an endless lane-hopping game: dodge cars, trams, trains, rivers and lava across 6 remixed themes, rescue critters, chase the high score.
+- [Strange Orbit — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-strange-orbit-port/): Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget, rebuilt from a recorded run of the original. Simulation parity verified against the original's recorded seven-lap run; procedural art, no career, garage or audio. Independent Aura3D reconstruction; not affiliated with the original.
+- [Splat Rush — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-splat-rush-port/): Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches the original's recorded run. No audio; the original's DOM flash and vignette overlays and platform SDKs are not ported. Independent Aura3D reconstruction; not affiliated with the original.
+- [Serpentine Sky Run — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/): Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky. Independent Aura3D reconstruction; not affiliated with the original.
+- [Drift &amp;amp; Deliver — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-drift-and-deliver-port/): Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera; all four recorded scenarios reproduce exactly. Headlight beam cone does not draw yet; collision response untested; no audio, story or shadows. Independent Aura3D reconstruction; not affiliated with the original.
+- [HEATSINK — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-heatsink-port/): Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the original within 1e-6. Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only, no AI or audio. Independent Aura3D reconstruction; not affiliated with the original.
+- [Ninja Runner — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-ninja-runner-port/): Lane-running combat with twelve skinned clones, form changes and a full course win; the recorded 106-second run replays event for event. A single soldier model tinted per form, procedural environment, no audio. Independent Aura3D reconstruction; not affiliated with the original.
+- [Last Train to the Sea — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-last-train-port/): Train-driving loop with day and night, passengers, fares and tips; loop length and score match the original's recorded loop and memory stays flat over three loops. No garage wear, requests or Gold grade; procedural models; night is a sky blend plus surface tints. Independent Aura3D reconstruction; not affiliated with the original.
+- [Roadster Hours — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/): Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Box vehicles, flat sky, no post-processing or audio. Independent Aura3D reconstruction; not affiliated with the original.
+- [Where the Wind Wanders — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-where-the-wind-wanders-port/): Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the original within 1e-9 over 2,098 steps. Meadow only: no boat voyage, island, journal or audio; procedural art. Independent Aura3D reconstruction; not affiliated with the original.
+- [Silt &amp;amp; Signal — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/): Free-ride flying over a silt world; three recorded rides reproduce the original's simulation state to 1e-9. Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes. Independent Aura3D reconstruction; not affiliated with the original.
+- [Cloud Runner — Aura3D port of the mechanics](https://aura3d.auraone.ai/apps/showcase-cloud-runner-port/): Obstacle runner on a cloud: the first chapter's run model replays the original's recorded run to 1e-12. Chapter-one run only: no creatures, boulders, finale or audio; procedural art. Independent Aura3D reconstruction; not affiliated with the original.
 
 ## Notes
 
@@ -224,6 +235,7 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
 
 
 
