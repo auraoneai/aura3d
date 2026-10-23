@@ -1,0 +1,8901 @@
+{
+ "schema": "a3d-slam-frames/1",
+ "capturedAt": "2026-10-23T22:41:59.682Z",
+ "capture": "fresh page; replay the pure autoplay beginner/hard scenario to the listed step at 320x180; resize the viewport to the target size; one more advanceTime; screenshot (page, DOM HUD included)",
+ "predicates": {
+  "preds": [
+   {
+    "name": "serve-ready",
+    "step": 1
+   },
+   {
+    "name": "serve-toss",
+    "step": 34
+   },
+   {
+    "name": "serve-fault",
+    "step": 122
+   },
+   {
+    "name": "point-won",
+    "step": 291
+   },
+   {
+    "name": "ball-at-bounce",
+    "step": 653
+   },
+   {
+    "name": "rally-near-net",
+    "step": 676
+   },
+   {
+    "name": "game-won",
+    "step": 4602
+   },
+   {
+    "name": "match-over",
+    "step": 12579
+   }
+  ],
+  "steps": 12579,
+  "digest": "d8a8a4f0e16c8959"
+ },
+ "frames": [
+  {
+   "name": "menu",
+   "size": "1280x720",
+   "step": 0,
+   "digestAtStep": null,
+   "renderMs": 91973,
+   "wallMs": 101739,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 63.876,
+   "meanRGB": [
+    25.285,
+    73.909,
+    78.122
+   ],
+   "edgeDensity": 0.080073,
+   "lumaHist": [
+    0.056099,
+    0.022913,
+    0.057824,
+    0.118372,
+    0.03737,
+    0.02611,
+    0.097755,
+    0.003938,
+    0.281092,
+    0.020124,
+    0.203396,
+    0.00326,
+    0.000646,
+    0.000952,
+    0.000964,
+    0.001929,
+    0.001771,
+    0.001253,
+    0.000992,
+    0.001437,
+    0.002385,
+    0.003351,
+    0.003558,
+    0.001948,
+    0.00296,
+    0.012693,
+    0.02427,
+    0.001395,
+    0.003965,
+    0.004836,
+    0.000104,
+    0.00034
+   ],
+   "rHist": [
+    0.482958,
+    0.157547,
+    0.04554,
+    0.220982,
+    0.003971,
+    0.002181,
+    0.002623,
+    0.001092,
+    0.001489,
+    0.003949,
+    0.002333,
+    0.001574,
+    0.00184,
+    0.000582,
+    0.001089,
+    0.004931,
+    0.000494,
+    0.000508,
+    0.000687,
+    0.001188,
+    0.002913,
+    0.002714,
+    0.00349,
+    0.001501,
+    0.004221,
+    0.002914,
+    0.037992,
+    0.004559,
+    0.000448,
+    0.000476,
+    0.001168,
+    0.000048
+   ],
+   "gHist": [
+    0.05329,
+    0.017231,
+    0.017806,
+    0.129136,
+    0.049953,
+    0.040022,
+    0.012657,
+    0.097044,
+    0.00638,
+    0.26937,
+    0.014577,
+    0.011137,
+    0.028007,
+    0.182977,
+    0.000621,
+    0.000858,
+    0.002453,
+    0.001147,
+    0.00126,
+    0.001412,
+    0.002305,
+    0.002758,
+    0.004749,
+    0.001389,
+    0.003614,
+    0.012598,
+    0.001404,
+    0.024245,
+    0.000431,
+    0.000469,
+    0.004637,
+    0.004064
+   ],
+   "bHist": [
+    0.058895,
+    0.006273,
+    0.037549,
+    0.026904,
+    0.114198,
+    0.012585,
+    0.062374,
+    0.019727,
+    0.221229,
+    0.003098,
+    0.00264,
+    0.096127,
+    0.001394,
+    0.002543,
+    0.26616,
+    0.006367,
+    0.003103,
+    0.00213,
+    0.002821,
+    0.025714,
+    0.003126,
+    0.003918,
+    0.004275,
+    0.002699,
+    0.011348,
+    0.000569,
+    0.000458,
+    0.000991,
+    0.000107,
+    0.000079,
+    0.00006,
+    0.000538
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.711479275805708,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.028568061686792,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.138568061686792,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 34,
+   "heap": 76600000,
+   "bytes": 85098
+  },
+  {
+   "name": "serve-ready",
+   "size": "1280x720",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 68133,
+   "wallMs": 77736,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 64.054,
+   "meanRGB": [
+    25.46,
+    74.107,
+    78.112
+   ],
+   "edgeDensity": 0.080152,
+   "lumaHist": [
+    0.056125,
+    0.02291,
+    0.057841,
+    0.118377,
+    0.037358,
+    0.025219,
+    0.09774,
+    0.003915,
+    0.281084,
+    0.020097,
+    0.203373,
+    0.003216,
+    0.000641,
+    0.000945,
+    0.00097,
+    0.001923,
+    0.001782,
+    0.001258,
+    0.000993,
+    0.001441,
+    0.002386,
+    0.003359,
+    0.003562,
+    0.001949,
+    0.002964,
+    0.012699,
+    0.024275,
+    0.001405,
+    0.004002,
+    0.005748,
+    0.000104,
+    0.00034
+   ],
+   "rHist": [
+    0.482985,
+    0.157578,
+    0.045531,
+    0.220106,
+    0.003934,
+    0.00216,
+    0.002614,
+    0.001057,
+    0.001474,
+    0.003887,
+    0.002335,
+    0.001573,
+    0.001845,
+    0.000576,
+    0.001099,
+    0.004947,
+    0.00049,
+    0.000509,
+    0.000689,
+    0.001196,
+    0.002912,
+    0.002718,
+    0.003503,
+    0.001501,
+    0.004222,
+    0.002933,
+    0.038031,
+    0.005506,
+    0.000445,
+    0.000464,
+    0.001133,
+    0.000048
+   ],
+   "gHist": [
+    0.053315,
+    0.017227,
+    0.017815,
+    0.129124,
+    0.049967,
+    0.040023,
+    0.011755,
+    0.097015,
+    0.006376,
+    0.269336,
+    0.014563,
+    0.011079,
+    0.028018,
+    0.182971,
+    0.000623,
+    0.000854,
+    0.002449,
+    0.001143,
+    0.001274,
+    0.001402,
+    0.002316,
+    0.002764,
+    0.004753,
+    0.001399,
+    0.003615,
+    0.012599,
+    0.00141,
+    0.024244,
+    0.000429,
+    0.000461,
+    0.004639,
+    0.005048
+   ],
+   "bHist": [
+    0.058915,
+    0.006284,
+    0.037551,
+    0.026951,
+    0.114198,
+    0.012606,
+    0.061547,
+    0.020712,
+    0.221217,
+    0.003041,
+    0.002568,
+    0.096115,
+    0.001394,
+    0.00254,
+    0.266158,
+    0.006355,
+    0.003098,
+    0.002126,
+    0.002819,
+    0.025709,
+    0.003126,
+    0.003912,
+    0.004269,
+    0.002702,
+    0.01134,
+    0.000561,
+    0.000446,
+    0.000955,
+    0.000107,
+    0.000079,
+    0.00006,
+    0.000538
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 31,
+   "heap": 91700000,
+   "bytes": 85350
+  },
+  {
+   "name": "serve-toss",
+   "size": "1280x720",
+   "step": 34,
+   "digestAtStep": "54d492d6d7a52738",
+   "renderMs": 85938,
+   "wallMs": 95515,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 64.083,
+   "meanRGB": [
+    25.497,
+    74.137,
+    78.112
+   ],
+   "edgeDensity": 0.080838,
+   "lumaHist": [
+    0.056144,
+    0.022678,
+    0.058002,
+    0.118132,
+    0.037254,
+    0.025087,
+    0.097755,
+    0.003888,
+    0.281382,
+    0.020199,
+    0.203242,
+    0.003257,
+    0.000863,
+    0.001003,
+    0.001046,
+    0.001931,
+    0.001777,
+    0.001199,
+    0.001025,
+    0.001357,
+    0.002393,
+    0.003295,
+    0.003411,
+    0.001965,
+    0.002979,
+    0.01269,
+    0.024293,
+    0.00142,
+    0.004033,
+    0.005755,
+    0.00011,
+    0.000435
+   ],
+   "rHist": [
+    0.482669,
+    0.157572,
+    0.045642,
+    0.219984,
+    0.003964,
+    0.002201,
+    0.002676,
+    0.001098,
+    0.001512,
+    0.003863,
+    0.002256,
+    0.001748,
+    0.001791,
+    0.000597,
+    0.001101,
+    0.004947,
+    0.000505,
+    0.000525,
+    0.000697,
+    0.001169,
+    0.002829,
+    0.002914,
+    0.00328,
+    0.001528,
+    0.004223,
+    0.002948,
+    0.03805,
+    0.005509,
+    0.000449,
+    0.000479,
+    0.001227,
+    0.000049
+   ],
+   "gHist": [
+    0.053467,
+    0.017077,
+    0.017832,
+    0.129125,
+    0.049678,
+    0.03994,
+    0.011548,
+    0.097099,
+    0.006401,
+    0.269527,
+    0.01458,
+    0.011148,
+    0.028179,
+    0.182947,
+    0.000722,
+    0.000952,
+    0.002451,
+    0.001134,
+    0.001184,
+    0.001413,
+    0.002247,
+    0.00277,
+    0.004532,
+    0.001415,
+    0.003617,
+    0.012585,
+    0.001431,
+    0.024264,
+    0.000436,
+    0.000472,
+    0.004679,
+    0.005149
+   ],
+   "bHist": [
+    0.058979,
+    0.006324,
+    0.03742,
+    0.027043,
+    0.114308,
+    0.012504,
+    0.061378,
+    0.020729,
+    0.221141,
+    0.003134,
+    0.002533,
+    0.096152,
+    0.001458,
+    0.002418,
+    0.266417,
+    0.006353,
+    0.00315,
+    0.002134,
+    0.002816,
+    0.025719,
+    0.002918,
+    0.003854,
+    0.004244,
+    0.00267,
+    0.011342,
+    0.00057,
+    0.000451,
+    0.000958,
+    0.000101,
+    0.000085,
+    0.000052,
+    0.000645
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     1.2902341666666683,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "toss",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.35,
+      1.2,
+      0.24
+     ],
+     "leftHand": [
+      -0.13,
+      1.88,
+      -0.19
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 64,
+   "heap": 103000000,
+   "bytes": 85853
+  },
+  {
+   "name": "rally-near-net",
+   "size": "1280x720",
+   "step": 676,
+   "digestAtStep": "ea606b9abe7b3038",
+   "renderMs": 90828,
+   "wallMs": 100725,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 60.695,
+   "meanRGB": [
+    20.82,
+    70.895,
+    77.068
+   ],
+   "edgeDensity": 0.082967,
+   "lumaHist": [
+    0.056445,
+    0.022729,
+    0.058079,
+    0.117931,
+    0.03769,
+    0.025049,
+    0.097907,
+    0.004074,
+    0.300838,
+    0.020353,
+    0.205203,
+    0.003215,
+    0.000679,
+    0.000934,
+    0.000897,
+    0.001697,
+    0.001866,
+    0.001467,
+    0.001101,
+    0.001467,
+    0.002407,
+    0.003566,
+    0.003596,
+    0.00196,
+    0.003406,
+    0.012679,
+    0.001233,
+    0.00099,
+    0.004146,
+    0.005803,
+    0.000122,
+    0.000472
+   ],
+   "rHist": [
+    0.503341,
+    0.157422,
+    0.045854,
+    0.221898,
+    0.003767,
+    0.002119,
+    0.002632,
+    0.001072,
+    0.001432,
+    0.003889,
+    0.002378,
+    0.001529,
+    0.001787,
+    0.000588,
+    0.001124,
+    0.004969,
+    0.000594,
+    0.000645,
+    0.000706,
+    0.001175,
+    0.002994,
+    0.002926,
+    0.003494,
+    0.001522,
+    0.004646,
+    0.002789,
+    0.014855,
+    0.005552,
+    0.000524,
+    0.00046,
+    0.001266,
+    0.00005
+   ],
+   "gHist": [
+    0.053525,
+    0.017347,
+    0.017823,
+    0.129077,
+    0.049741,
+    0.040191,
+    0.011532,
+    0.09713,
+    0.006597,
+    0.289193,
+    0.014539,
+    0.011261,
+    0.028366,
+    0.184524,
+    0.000655,
+    0.000687,
+    0.002326,
+    0.001394,
+    0.001275,
+    0.001541,
+    0.002336,
+    0.00296,
+    0.00482,
+    0.001385,
+    0.004041,
+    0.012555,
+    0.001343,
+    0.00088,
+    0.000442,
+    0.000458,
+    0.004871,
+    0.005186
+   ],
+   "bHist": [
+    0.059184,
+    0.006576,
+    0.037365,
+    0.0269,
+    0.11449,
+    0.012667,
+    0.061177,
+    0.020699,
+    0.223192,
+    0.003112,
+    0.002603,
+    0.096228,
+    0.001531,
+    0.002713,
+    0.285775,
+    0.006391,
+    0.003154,
+    0.002207,
+    0.002961,
+    0.002515,
+    0.003261,
+    0.003981,
+    0.004155,
+    0.002743,
+    0.011519,
+    0.000569,
+    0.000457,
+    0.000957,
+    0.000085,
+    0.000084,
+    0.000062,
+    0.000688
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.61131458807285,
+     1.2690545827463535,
+     -0.8193757418698773
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "run",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.8613835329677771,
+        0
+       ],
+       "knee": [
+        -0.17441814619494833,
+        0.47944218506841213,
+        -0.2896973608806583
+       ],
+       "foot": [
+        -0.19931583339687495,
+        0.09,
+        -0.010206950202338924
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.8613835329677771,
+        0
+       ],
+       "knee": [
+        0.1529950185943115,
+        0.4779224590873095,
+        -0.2887016360917588
+       ],
+       "foot": [
+        0.15535161478329818,
+        0.17620049080043704,
+        0.08460561043246496
+       ],
+       "planted": false
+      }
+     ],
+     "rightHand": [
+      0.21309942759010397,
+      1.0424014723111528,
+      -0.3481286461437632
+     ],
+     "leftHand": [
+      -0.16465647978933717,
+      1.046867491043995,
+      -0.04227278795803302
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 706,
+   "heap": 109000000,
+   "bytes": 87575
+  },
+  {
+   "name": "ball-at-bounce",
+   "size": "1280x720",
+   "step": 653,
+   "digestAtStep": "8542b8b1181768c1",
+   "renderMs": 66580,
+   "wallMs": 77161,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 60.674,
+   "meanRGB": [
+    20.771,
+    70.872,
+    77.151
+   ],
+   "edgeDensity": 0.082785,
+   "lumaHist": [
+    0.056056,
+    0.022607,
+    0.058444,
+    0.117928,
+    0.037376,
+    0.024991,
+    0.097741,
+    0.003998,
+    0.303032,
+    0.020259,
+    0.204017,
+    0.0032,
+    0.000696,
+    0.000995,
+    0.000863,
+    0.001654,
+    0.001826,
+    0.001344,
+    0.001093,
+    0.0015,
+    0.002553,
+    0.003663,
+    0.003608,
+    0.001995,
+    0.003343,
+    0.012474,
+    0.001223,
+    0.000973,
+    0.004175,
+    0.005771,
+    0.000111,
+    0.00049
+   ],
+   "rHist": [
+    0.505056,
+    0.157199,
+    0.045754,
+    0.220691,
+    0.003704,
+    0.002107,
+    0.002633,
+    0.00107,
+    0.001426,
+    0.003889,
+    0.002436,
+    0.00153,
+    0.001715,
+    0.000584,
+    0.001104,
+    0.004951,
+    0.000527,
+    0.000578,
+    0.00073,
+    0.001215,
+    0.003014,
+    0.003063,
+    0.003539,
+    0.001603,
+    0.00462,
+    0.002726,
+    0.01472,
+    0.005559,
+    0.000496,
+    0.000436,
+    0.001272,
+    0.00005
+   ],
+   "gHist": [
+    0.053455,
+    0.017081,
+    0.018003,
+    0.128967,
+    0.049881,
+    0.039794,
+    0.011543,
+    0.09712,
+    0.006527,
+    0.29123,
+    0.014485,
+    0.011236,
+    0.028337,
+    0.183393,
+    0.000638,
+    0.000696,
+    0.002248,
+    0.001238,
+    0.001354,
+    0.00153,
+    0.002451,
+    0.003052,
+    0.004826,
+    0.001438,
+    0.003954,
+    0.012338,
+    0.001351,
+    0.000873,
+    0.000421,
+    0.000446,
+    0.004891,
+    0.005202
+   ],
+   "bHist": [
+    0.058972,
+    0.00648,
+    0.037336,
+    0.027147,
+    0.114256,
+    0.012504,
+    0.061163,
+    0.020828,
+    0.221823,
+    0.003132,
+    0.002565,
+    0.096278,
+    0.001494,
+    0.002522,
+    0.28786,
+    0.006271,
+    0.003201,
+    0.002285,
+    0.003103,
+    0.002578,
+    0.003293,
+    0.003977,
+    0.00402,
+    0.002692,
+    0.01139,
+    0.000553,
+    0.000441,
+    0.000932,
+    0.000068,
+    0.000077,
+    0.000061,
+    0.000697
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.810530430475702,
+     0.1288524346122416,
+     -4.212392853907521
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0246573576318714,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1346573576318713,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 683,
+   "heap": 109000000,
+   "bytes": 87483
+  },
+  {
+   "name": "serve-fault",
+   "size": "1280x720",
+   "step": 122,
+   "digestAtStep": "983658090b6be967",
+   "renderMs": 66947,
+   "wallMs": 76364,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 60.734,
+   "meanRGB": [
+    20.958,
+    70.892,
+    77.23
+   ],
+   "edgeDensity": 0.082278,
+   "lumaHist": [
+    0.050171,
+    0.022941,
+    0.058115,
+    0.122671,
+    0.0383,
+    0.025957,
+    0.09713,
+    0.005247,
+    0.303504,
+    0.019905,
+    0.20322,
+    0.003262,
+    0.000679,
+    0.000999,
+    0.000856,
+    0.00167,
+    0.001826,
+    0.001347,
+    0.001141,
+    0.001407,
+    0.002437,
+    0.003664,
+    0.003197,
+    0.001995,
+    0.00324,
+    0.012398,
+    0.001094,
+    0.000894,
+    0.004061,
+    0.005724,
+    0.00051,
+    0.000436
+   ],
+   "rHist": [
+    0.49939,
+    0.15681,
+    0.045428,
+    0.220768,
+    0.009122,
+    0.002485,
+    0.003519,
+    0.001146,
+    0.001462,
+    0.004123,
+    0.002376,
+    0.001462,
+    0.001765,
+    0.000621,
+    0.001107,
+    0.004893,
+    0.000473,
+    0.000614,
+    0.000713,
+    0.00109,
+    0.003013,
+    0.003012,
+    0.003102,
+    0.001606,
+    0.004479,
+    0.002755,
+    0.014463,
+    0.005473,
+    0.000397,
+    0.000423,
+    0.001258,
+    0.000652
+   ],
+   "gHist": [
+    0.04755,
+    0.017558,
+    0.017709,
+    0.13372,
+    0.050643,
+    0.040907,
+    0.011726,
+    0.096268,
+    0.0065,
+    0.292718,
+    0.01501,
+    0.010179,
+    0.028033,
+    0.18337,
+    0.000654,
+    0.000777,
+    0.002266,
+    0.001236,
+    0.001284,
+    0.001372,
+    0.002334,
+    0.003085,
+    0.004388,
+    0.001451,
+    0.003847,
+    0.012333,
+    0.001192,
+    0.000791,
+    0.000383,
+    0.000412,
+    0.005157,
+    0.005148
+   ],
+   "bHist": [
+    0.05311,
+    0.006349,
+    0.037514,
+    0.027332,
+    0.119182,
+    0.013732,
+    0.061578,
+    0.020885,
+    0.221961,
+    0.003331,
+    0.002579,
+    0.095337,
+    0.001577,
+    0.002822,
+    0.288891,
+    0.006936,
+    0.002615,
+    0.001172,
+    0.002754,
+    0.002615,
+    0.003216,
+    0.003548,
+    0.00403,
+    0.002642,
+    0.011171,
+    0.000528,
+    0.0004,
+    0.000931,
+    0.000085,
+    0.000487,
+    0.000049,
+    0.000641
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     -5.789417441783185,
+     0.12112666295228622,
+     -9.070651161890735
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": true
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0240044180160348,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1340044180160347,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 153,
+   "heap": 97400000,
+   "bytes": 87379
+  },
+  {
+   "name": "point-won",
+   "size": "1280x720",
+   "step": 291,
+   "digestAtStep": "781c6aec4d0c4607",
+   "renderMs": 85681,
+   "wallMs": 95228,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 60.777,
+   "meanRGB": [
+    21.041,
+    70.928,
+    77.22
+   ],
+   "edgeDensity": 0.082872,
+   "lumaHist": [
+    0.050257,
+    0.023006,
+    0.057946,
+    0.122679,
+    0.038254,
+    0.02576,
+    0.098054,
+    0.005362,
+    0.302337,
+    0.020003,
+    0.203185,
+    0.003245,
+    0.000703,
+    0.001003,
+    0.000807,
+    0.001674,
+    0.001859,
+    0.001276,
+    0.001239,
+    0.001434,
+    0.002397,
+    0.003656,
+    0.003258,
+    0.002007,
+    0.003245,
+    0.012474,
+    0.001082,
+    0.000908,
+    0.004158,
+    0.005782,
+    0.000521,
+    0.000426
+   ],
+   "rHist": [
+    0.49901,
+    0.156873,
+    0.045563,
+    0.220547,
+    0.009019,
+    0.002488,
+    0.003505,
+    0.001176,
+    0.001447,
+    0.00414,
+    0.002394,
+    0.001523,
+    0.001747,
+    0.000588,
+    0.001093,
+    0.004899,
+    0.000539,
+    0.000569,
+    0.000802,
+    0.001155,
+    0.003039,
+    0.002887,
+    0.003128,
+    0.001634,
+    0.004555,
+    0.002762,
+    0.014634,
+    0.005477,
+    0.000471,
+    0.000433,
+    0.001249,
+    0.000653
+   ],
+   "gHist": [
+    0.047717,
+    0.017191,
+    0.017835,
+    0.133733,
+    0.050756,
+    0.04074,
+    0.011668,
+    0.097183,
+    0.006528,
+    0.291608,
+    0.015026,
+    0.010286,
+    0.028007,
+    0.183245,
+    0.000669,
+    0.000812,
+    0.002185,
+    0.001214,
+    0.001385,
+    0.001438,
+    0.00236,
+    0.003033,
+    0.004412,
+    0.001452,
+    0.003883,
+    0.012365,
+    0.001188,
+    0.000794,
+    0.000387,
+    0.000446,
+    0.005313,
+    0.00514
+   ],
+   "bHist": [
+    0.053288,
+    0.006301,
+    0.03766,
+    0.026916,
+    0.119145,
+    0.01398,
+    0.061516,
+    0.020914,
+    0.221785,
+    0.003294,
+    0.002536,
+    0.096321,
+    0.001621,
+    0.002937,
+    0.287652,
+    0.00702,
+    0.002648,
+    0.001214,
+    0.002922,
+    0.002464,
+    0.003288,
+    0.00357,
+    0.004048,
+    0.00261,
+    0.01126,
+    0.000531,
+    0.000394,
+    0.00093,
+    0.000069,
+    0.00048,
+    0.000054,
+    0.000634
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     -2.6156118129816184,
+     0.11759129707881644,
+     -4.736656576697858
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": true
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0240015590836349,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1340015590836348,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 319,
+   "heap": 103000000,
+   "bytes": 88119
+  },
+  {
+   "name": "game-won",
+   "size": "1280x720",
+   "step": 4602,
+   "digestAtStep": "6dac8abd03a0f153",
+   "renderMs": 86797,
+   "wallMs": 97215,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 60.593,
+   "meanRGB": [
+    20.671,
+    70.8,
+    77.037
+   ],
+   "edgeDensity": 0.081977,
+   "lumaHist": [
+    0.056178,
+    0.023101,
+    0.057689,
+    0.117977,
+    0.037689,
+    0.025175,
+    0.097897,
+    0.003947,
+    0.301901,
+    0.020416,
+    0.205177,
+    0.003159,
+    0.000641,
+    0.000973,
+    0.00083,
+    0.001715,
+    0.001845,
+    0.001417,
+    0.001029,
+    0.001432,
+    0.002402,
+    0.003649,
+    0.003522,
+    0.001985,
+    0.003436,
+    0.012522,
+    0.001183,
+    0.000926,
+    0.003984,
+    0.005669,
+    0.000098,
+    0.000435
+   ],
+   "rHist": [
+    0.503982,
+    0.157529,
+    0.045618,
+    0.222169,
+    0.003872,
+    0.002114,
+    0.002642,
+    0.00107,
+    0.001413,
+    0.003874,
+    0.00232,
+    0.001429,
+    0.001772,
+    0.000575,
+    0.00109,
+    0.004933,
+    0.00056,
+    0.000615,
+    0.00073,
+    0.001153,
+    0.002954,
+    0.002972,
+    0.003497,
+    0.001518,
+    0.00475,
+    0.00269,
+    0.014595,
+    0.00552,
+    0.000401,
+    0.000383,
+    0.00121,
+    0.000049
+   ],
+   "gHist": [
+    0.053383,
+    0.017696,
+    0.017414,
+    0.128698,
+    0.050099,
+    0.040246,
+    0.011734,
+    0.097087,
+    0.006471,
+    0.290157,
+    0.014457,
+    0.011302,
+    0.028404,
+    0.184479,
+    0.00061,
+    0.000687,
+    0.002383,
+    0.001309,
+    0.001288,
+    0.001424,
+    0.002293,
+    0.003058,
+    0.004729,
+    0.001418,
+    0.00408,
+    0.01242,
+    0.001288,
+    0.00084,
+    0.000377,
+    0.000404,
+    0.00462,
+    0.005146
+   ],
+   "bHist": [
+    0.059102,
+    0.006443,
+    0.037737,
+    0.02663,
+    0.114418,
+    0.012504,
+    0.061332,
+    0.020817,
+    0.223282,
+    0.003187,
+    0.002522,
+    0.096095,
+    0.001539,
+    0.002483,
+    0.286777,
+    0.006299,
+    0.003175,
+    0.002141,
+    0.002939,
+    0.002536,
+    0.00312,
+    0.003936,
+    0.00415,
+    0.002636,
+    0.011495,
+    0.000549,
+    0.000441,
+    0.000932,
+    0.000068,
+    0.000064,
+    0.00006,
+    0.000592
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     -1.4268364132668956,
+     0.6293103980040199,
+     -0.14635972577127543
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.8869873121723316,
+        0
+       ],
+       "knee": [
+        -0.19997851682282491,
+        0.48846498667983074,
+        -0.26283474644772475
+       ],
+       "foot": [
+        -0.24994984280932694,
+        0.09,
+        0.00008828595794530686
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.8869873121723316,
+        0
+       ],
+       "knee": [
+        0.2019712635093683,
+        0.4724476529628132,
+        -0.23633844103678114
+       ],
+       "foot": [
+        0.24990768714644815,
+        0.09009118563051266,
+        0.049853157683463864
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0252634352021102,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.13526343520211,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 4630,
+   "heap": 116000000,
+   "bytes": 86657
+  },
+  {
+   "name": "match-over",
+   "size": "1280x720",
+   "step": 12579,
+   "digestAtStep": "d8a8a4f0e16c8959",
+   "renderMs": 85805,
+   "wallMs": 97493,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 42.994,
+   "meanRGB": [
+    20.145,
+    48.957,
+    51.2
+   ],
+   "edgeDensity": 0.077648,
+   "lumaHist": [
+    0.015214,
+    0.028658,
+    0.150194,
+    0.04427,
+    0.511114,
+    0.054358,
+    0.12643,
+    0.008611,
+    0.00457,
+    0.005132,
+    0.00376,
+    0.005256,
+    0.002725,
+    0.003817,
+    0.003607,
+    0.000666,
+    0.000479,
+    0.000565,
+    0.000498,
+    0.000734,
+    0.000601,
+    0.000689,
+    0.000664,
+    0.001099,
+    0.001117,
+    0.000571,
+    0.00079,
+    0.000594,
+    0.000946,
+    0.018988,
+    0.003285,
+    0
+   ],
+   "rHist": [
+    0.26517,
+    0.57313,
+    0.075361,
+    0.012129,
+    0.004962,
+    0.006377,
+    0.006249,
+    0.003653,
+    0.001466,
+    0.004899,
+    0.002219,
+    0.003573,
+    0.003076,
+    0.005016,
+    0.001368,
+    0.000557,
+    0.000367,
+    0.000579,
+    0.00069,
+    0.000563,
+    0.000588,
+    0.00069,
+    0.000928,
+    0.001092,
+    0.000528,
+    0.000551,
+    0.000818,
+    0.01728,
+    0.00053,
+    0.000448,
+    0.005141,
+    0
+   ],
+   "gHist": [
+    0.000796,
+    0.025964,
+    0.067394,
+    0.127369,
+    0.02745,
+    0.510315,
+    0.029838,
+    0.093312,
+    0.057737,
+    0.005084,
+    0.004206,
+    0.004526,
+    0.005629,
+    0.003902,
+    0.003728,
+    0.000859,
+    0.00046,
+    0.000479,
+    0.000586,
+    0.000655,
+    0.000643,
+    0.000554,
+    0.000672,
+    0.001112,
+    0.000815,
+    0.000891,
+    0.000711,
+    0.000659,
+    0.000748,
+    0.000696,
+    0.017522,
+    0.004691
+   ],
+   "bHist": [
+    0,
+    0.019945,
+    0.030545,
+    0.092928,
+    0.087077,
+    0.055375,
+    0.574417,
+    0.039575,
+    0.040037,
+    0.011463,
+    0.006759,
+    0.004972,
+    0.002391,
+    0.00596,
+    0.002418,
+    0.013034,
+    0.000496,
+    0.000484,
+    0.00051,
+    0.000472,
+    0.00063,
+    0.000577,
+    0.000932,
+    0.001077,
+    0.001147,
+    0.001556,
+    0.000526,
+    0.001033,
+    0.002004,
+    0.00166,
+    0,
+    0
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     7.123098998138509,
+     0.072,
+     2.12727162682056
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.027860118088127,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.137860118088127,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 12607,
+   "heap": 86400000,
+   "bytes": 85340
+  },
+  {
+   "name": "menu",
+   "size": "640x360",
+   "step": 0,
+   "digestAtStep": null,
+   "renderMs": 27189,
+   "wallMs": 36632,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 57.027,
+   "meanRGB": [
+    31.63,
+    63.803,
+    64.685
+   ],
+   "edgeDensity": 0.132747,
+   "lumaHist": [
+    0.041107,
+    0.011354,
+    0.080434,
+    0.211419,
+    0.186263,
+    0.058207,
+    0.066102,
+    0.023086,
+    0.125569,
+    0.019744,
+    0.067604,
+    0.007943,
+    0.002383,
+    0.002027,
+    0.002214,
+    0.001545,
+    0.00197,
+    0.001536,
+    0.001389,
+    0.002765,
+    0.020143,
+    0.004687,
+    0.002765,
+    0.002513,
+    0.005074,
+    0.005933,
+    0.021541,
+    0.003845,
+    0.001337,
+    0.017075,
+    0.000391,
+    0.000035
+   ],
+   "rHist": [
+    0.275668,
+    0.293854,
+    0.169332,
+    0.105161,
+    0.016107,
+    0.010673,
+    0.004054,
+    0.003941,
+    0.003984,
+    0.009627,
+    0.004614,
+    0.002266,
+    0.001402,
+    0.001372,
+    0.002387,
+    0.004457,
+    0.001328,
+    0.001272,
+    0.018681,
+    0.003264,
+    0.004861,
+    0.002956,
+    0.002786,
+    0.001424,
+    0.005017,
+    0.004852,
+    0.023984,
+    0.01668,
+    0.000755,
+    0.000642,
+    0.002565,
+    0.000035
+   ],
+   "gHist": [
+    0.039162,
+    0.009896,
+    0.026801,
+    0.173685,
+    0.183433,
+    0.120109,
+    0.038681,
+    0.064644,
+    0.014978,
+    0.129635,
+    0.013581,
+    0.011853,
+    0.024253,
+    0.051571,
+    0.002044,
+    0.001697,
+    0.001984,
+    0.001437,
+    0.001675,
+    0.002287,
+    0.002244,
+    0.019987,
+    0.004136,
+    0.002114,
+    0.004978,
+    0.004553,
+    0.005421,
+    0.022361,
+    0.001749,
+    0.001328,
+    0.002765,
+    0.014957
+   ],
+   "bHist": [
+    0.043511,
+    0.004536,
+    0.02181,
+    0.04941,
+    0.129319,
+    0.107873,
+    0.236532,
+    0.040161,
+    0.074375,
+    0.02569,
+    0.009258,
+    0.055069,
+    0.008303,
+    0.007426,
+    0.125039,
+    0.007313,
+    0.00378,
+    0.00306,
+    0.005508,
+    0.025126,
+    0.002695,
+    0.001606,
+    0.003641,
+    0.001814,
+    0.002852,
+    0.000608,
+    0.000699,
+    0.002209,
+    0.000078,
+    0.000043,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7106646190511646,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0284732510332835,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1384732510332833,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 30,
+   "heap": 91700000,
+   "bytes": 33546
+  },
+  {
+   "name": "serve-ready",
+   "size": "640x360",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 20650,
+   "wallMs": 30648,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 57.738,
+   "meanRGB": [
+    32.329,
+    64.595,
+    64.636
+   ],
+   "edgeDensity": 0.13303,
+   "lumaHist": [
+    0.041115,
+    0.01135,
+    0.08046,
+    0.21158,
+    0.18625,
+    0.054644,
+    0.066055,
+    0.02299,
+    0.125495,
+    0.019596,
+    0.067522,
+    0.007752,
+    0.002405,
+    0.002018,
+    0.002222,
+    0.001554,
+    0.002001,
+    0.001541,
+    0.001385,
+    0.002786,
+    0.020143,
+    0.004722,
+    0.002795,
+    0.002509,
+    0.005095,
+    0.005929,
+    0.021562,
+    0.003898,
+    0.00148,
+    0.02072,
+    0.000391,
+    0.000035
+   ],
+   "rHist": [
+    0.27569,
+    0.294036,
+    0.169293,
+    0.101675,
+    0.015985,
+    0.010612,
+    0.004002,
+    0.003793,
+    0.003906,
+    0.009414,
+    0.004614,
+    0.002266,
+    0.001415,
+    0.001359,
+    0.002413,
+    0.004501,
+    0.001324,
+    0.001302,
+    0.018681,
+    0.003286,
+    0.004857,
+    0.002969,
+    0.002839,
+    0.001415,
+    0.005022,
+    0.004931,
+    0.024128,
+    0.020473,
+    0.000742,
+    0.000599,
+    0.002426,
+    0.000035
+   ],
+   "gHist": [
+    0.039171,
+    0.009913,
+    0.026788,
+    0.173767,
+    0.183533,
+    0.120078,
+    0.035113,
+    0.064544,
+    0.014931,
+    0.129479,
+    0.013503,
+    0.011593,
+    0.024258,
+    0.051584,
+    0.002027,
+    0.001693,
+    0.00201,
+    0.001432,
+    0.001688,
+    0.002292,
+    0.002266,
+    0.019991,
+    0.004167,
+    0.002135,
+    0.004991,
+    0.00454,
+    0.005451,
+    0.022357,
+    0.001749,
+    0.001285,
+    0.002778,
+    0.018893
+   ],
+   "bHist": [
+    0.043524,
+    0.004527,
+    0.021814,
+    0.049622,
+    0.12944,
+    0.107995,
+    0.233207,
+    0.044162,
+    0.074266,
+    0.025495,
+    0.009036,
+    0.054939,
+    0.008307,
+    0.007391,
+    0.125004,
+    0.007296,
+    0.00375,
+    0.003043,
+    0.005473,
+    0.025104,
+    0.0027,
+    0.00158,
+    0.003624,
+    0.001788,
+    0.002834,
+    0.000577,
+    0.000655,
+    0.002066,
+    0.000078,
+    0.000043,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 30,
+   "heap": 81400000,
+   "bytes": 33841
+  },
+  {
+   "name": "serve-toss",
+   "size": "640x360",
+   "step": 34,
+   "digestAtStep": "54d492d6d7a52738",
+   "renderMs": 19771,
+   "wallMs": 29597,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 58.058,
+   "meanRGB": [
+    33.171,
+    64.814,
+    64.412
+   ],
+   "edgeDensity": 0.135577,
+   "lumaHist": [
+    0.042578,
+    0.011155,
+    0.080534,
+    0.210095,
+    0.175143,
+    0.065035,
+    0.06572,
+    0.022912,
+    0.125369,
+    0.019353,
+    0.067535,
+    0.007843,
+    0.002565,
+    0.002005,
+    0.002079,
+    0.001489,
+    0.002049,
+    0.001563,
+    0.001432,
+    0.00276,
+    0.020221,
+    0.004687,
+    0.002951,
+    0.002648,
+    0.0052,
+    0.006046,
+    0.02168,
+    0.004362,
+    0.001845,
+    0.02072,
+    0.000391,
+    0.000035
+   ],
+   "rHist": [
+    0.277678,
+    0.290773,
+    0.157839,
+    0.101241,
+    0.01572,
+    0.010434,
+    0.003728,
+    0.01566,
+    0.003941,
+    0.009375,
+    0.004753,
+    0.002287,
+    0.001332,
+    0.001419,
+    0.002344,
+    0.004575,
+    0.001367,
+    0.001332,
+    0.018789,
+    0.003333,
+    0.005048,
+    0.002917,
+    0.002878,
+    0.001515,
+    0.00503,
+    0.005017,
+    0.024258,
+    0.020569,
+    0.000833,
+    0.000738,
+    0.002504,
+    0.000773
+   ],
+   "gHist": [
+    0.040534,
+    0.009922,
+    0.025924,
+    0.173034,
+    0.183529,
+    0.119918,
+    0.034544,
+    0.064345,
+    0.014874,
+    0.129323,
+    0.013299,
+    0.011701,
+    0.024345,
+    0.051654,
+    0.002001,
+    0.001727,
+    0.001797,
+    0.001489,
+    0.001766,
+    0.002361,
+    0.002287,
+    0.019852,
+    0.004232,
+    0.002348,
+    0.005091,
+    0.004692,
+    0.00553,
+    0.022765,
+    0.002166,
+    0.00128,
+    0.002778,
+    0.018893
+   ],
+   "bHist": [
+    0.0448,
+    0.004579,
+    0.020755,
+    0.062678,
+    0.12849,
+    0.107969,
+    0.221892,
+    0.041506,
+    0.074457,
+    0.025564,
+    0.009132,
+    0.055065,
+    0.008303,
+    0.007318,
+    0.124935,
+    0.00714,
+    0.003906,
+    0.003212,
+    0.005734,
+    0.025152,
+    0.003147,
+    0.001949,
+    0.003624,
+    0.001775,
+    0.002826,
+    0.000564,
+    0.00069,
+    0.002062,
+    0.000078,
+    0.000043,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     1.2902341666666683,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "toss",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.35,
+      1.2,
+      0.24
+     ],
+     "leftHand": [
+      -0.13,
+      1.88,
+      -0.19
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 64,
+   "heap": 109000000,
+   "bytes": 34784
+  },
+  {
+   "name": "rally-near-net",
+   "size": "640x360",
+   "step": 676,
+   "digestAtStep": "ea606b9abe7b3038",
+   "renderMs": 27350,
+   "wallMs": 37600,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 54.434,
+   "meanRGB": [
+    27.781,
+    61.418,
+    63.73
+   ],
+   "edgeDensity": 0.137148,
+   "lumaHist": [
+    0.041589,
+    0.011029,
+    0.080673,
+    0.211697,
+    0.180286,
+    0.05951,
+    0.066037,
+    0.031541,
+    0.13898,
+    0.019427,
+    0.067643,
+    0.007912,
+    0.002543,
+    0.002044,
+    0.002153,
+    0.001654,
+    0.002192,
+    0.001571,
+    0.001984,
+    0.002878,
+    0.020204,
+    0.004809,
+    0.002947,
+    0.002665,
+    0.004922,
+    0.003194,
+    0.001393,
+    0.003451,
+    0.001636,
+    0.021011,
+    0.000391,
+    0.000035
+   ],
+   "rHist": [
+    0.297821,
+    0.294475,
+    0.167947,
+    0.099423,
+    0.018537,
+    0.01056,
+    0.003898,
+    0.003568,
+    0.00408,
+    0.009536,
+    0.004831,
+    0.002409,
+    0.00138,
+    0.001541,
+    0.002296,
+    0.00454,
+    0.00138,
+    0.001866,
+    0.018767,
+    0.00326,
+    0.005109,
+    0.002899,
+    0.003073,
+    0.001497,
+    0.004931,
+    0.001636,
+    0.003984,
+    0.020577,
+    0.001128,
+    0.00059,
+    0.002426,
+    0.000035
+   ],
+   "gHist": [
+    0.039575,
+    0.009813,
+    0.026879,
+    0.173581,
+    0.185664,
+    0.116771,
+    0.035755,
+    0.064214,
+    0.014874,
+    0.151541,
+    0.013459,
+    0.011701,
+    0.024327,
+    0.051706,
+    0.002088,
+    0.001745,
+    0.001918,
+    0.001658,
+    0.002352,
+    0.002365,
+    0.002348,
+    0.020061,
+    0.00434,
+    0.002227,
+    0.005438,
+    0.003993,
+    0.001688,
+    0.002791,
+    0.001723,
+    0.001636,
+    0.002873,
+    0.018893
+   ],
+   "bHist": [
+    0.043937,
+    0.004427,
+    0.021745,
+    0.049813,
+    0.131437,
+    0.106172,
+    0.228641,
+    0.04684,
+    0.075404,
+    0.025833,
+    0.009041,
+    0.054484,
+    0.008333,
+    0.010061,
+    0.14447,
+    0.00724,
+    0.003845,
+    0.003129,
+    0.003707,
+    0.004362,
+    0.002882,
+    0.001602,
+    0.00375,
+    0.001714,
+    0.002878,
+    0.00076,
+    0.000655,
+    0.002062,
+    0.000078,
+    0.000043,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.61131458807285,
+     1.2690545827463535,
+     -0.8193757418698773
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "run",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.8613835329677771,
+        0
+       ],
+       "knee": [
+        -0.17441814619494833,
+        0.47944218506841213,
+        -0.2896973608806583
+       ],
+       "foot": [
+        -0.19931583339687495,
+        0.09,
+        -0.010206950202338924
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.8613835329677771,
+        0
+       ],
+       "knee": [
+        0.1529950185943115,
+        0.4779224590873095,
+        -0.2887016360917588
+       ],
+       "foot": [
+        0.15535161478329818,
+        0.17620049080043704,
+        0.08460561043246496
+       ],
+       "planted": false
+      }
+     ],
+     "rightHand": [
+      0.21309942759010397,
+      1.0424014723111528,
+      -0.3481286461437632
+     ],
+     "leftHand": [
+      -0.16465647978933717,
+      1.046867491043995,
+      -0.04227278795803302
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 706,
+   "heap": 76600000,
+   "bytes": 34821
+  },
+  {
+   "name": "ball-at-bounce",
+   "size": "640x360",
+   "step": 653,
+   "digestAtStep": "8542b8b1181768c1",
+   "renderMs": 26954,
+   "wallMs": 37643,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 54.391,
+   "meanRGB": [
+    27.728,
+    61.377,
+    63.7
+   ],
+   "edgeDensity": 0.136918,
+   "lumaHist": [
+    0.041766,
+    0.01099,
+    0.080807,
+    0.211753,
+    0.180278,
+    0.059592,
+    0.065521,
+    0.031489,
+    0.139531,
+    0.019314,
+    0.067695,
+    0.007938,
+    0.002552,
+    0.002083,
+    0.00217,
+    0.001623,
+    0.002179,
+    0.001558,
+    0.001931,
+    0.002743,
+    0.020195,
+    0.004844,
+    0.002808,
+    0.002669,
+    0.004918,
+    0.003203,
+    0.001385,
+    0.003411,
+    0.001615,
+    0.021011,
+    0.000391,
+    0.000035
+   ],
+   "rHist": [
+    0.298268,
+    0.292196,
+    0.170113,
+    0.100777,
+    0.017253,
+    0.010547,
+    0.003915,
+    0.003563,
+    0.004149,
+    0.009423,
+    0.004835,
+    0.0024,
+    0.001411,
+    0.001536,
+    0.002209,
+    0.004627,
+    0.001385,
+    0.001823,
+    0.018724,
+    0.003286,
+    0.004896,
+    0.003038,
+    0.002873,
+    0.001493,
+    0.004939,
+    0.001641,
+    0.00398,
+    0.020551,
+    0.001098,
+    0.00059,
+    0.002426,
+    0.000035
+   ],
+   "gHist": [
+    0.03964,
+    0.009857,
+    0.026931,
+    0.171432,
+    0.187912,
+    0.116888,
+    0.035677,
+    0.063924,
+    0.014696,
+    0.152083,
+    0.013385,
+    0.011693,
+    0.02441,
+    0.051727,
+    0.002014,
+    0.001806,
+    0.001931,
+    0.001636,
+    0.002279,
+    0.002274,
+    0.002287,
+    0.020139,
+    0.004154,
+    0.002235,
+    0.005464,
+    0.003976,
+    0.001719,
+    0.002765,
+    0.001693,
+    0.001606,
+    0.002873,
+    0.018893
+   ],
+   "bHist": [
+    0.043963,
+    0.004714,
+    0.021602,
+    0.04977,
+    0.133607,
+    0.104184,
+    0.226888,
+    0.048498,
+    0.07549,
+    0.025807,
+    0.009036,
+    0.05424,
+    0.008168,
+    0.010013,
+    0.145065,
+    0.00724,
+    0.003793,
+    0.003073,
+    0.003511,
+    0.004466,
+    0.002691,
+    0.001606,
+    0.003715,
+    0.001719,
+    0.002882,
+    0.000768,
+    0.000651,
+    0.002062,
+    0.000078,
+    0.000043,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.810530430475702,
+     0.1288524346122416,
+     -4.212392853907521
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0246573576318714,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1346573576318713,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 707,
+   "heap": 86400000,
+   "bytes": 34779
+  },
+  {
+   "name": "serve-fault",
+   "size": "640x360",
+   "step": 122,
+   "digestAtStep": "983658090b6be967",
+   "renderMs": 25790,
+   "wallMs": 36291,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 53.897,
+   "meanRGB": [
+    28.472,
+    60.592,
+    62.446
+   ],
+   "edgeDensity": 0.137739,
+   "lumaHist": [
+    0.041011,
+    0.011176,
+    0.080512,
+    0.21191,
+    0.201128,
+    0.054961,
+    0.06684,
+    0.053464,
+    0.100534,
+    0.019488,
+    0.067591,
+    0.007947,
+    0.002422,
+    0.002036,
+    0.002161,
+    0.001727,
+    0.002127,
+    0.001593,
+    0.001997,
+    0.003303,
+    0.02026,
+    0.004644,
+    0.002917,
+    0.002786,
+    0.003893,
+    0.003134,
+    0.001311,
+    0.003411,
+    0.001493,
+    0.020751,
+    0.001437,
+    0.000035
+   ],
+   "rHist": [
+    0.277574,
+    0.295812,
+    0.169592,
+    0.10161,
+    0.030482,
+    0.011024,
+    0.005352,
+    0.003841,
+    0.003945,
+    0.010182,
+    0.004848,
+    0.002483,
+    0.001441,
+    0.001432,
+    0.002431,
+    0.004588,
+    0.001332,
+    0.001888,
+    0.018872,
+    0.003741,
+    0.004544,
+    0.003372,
+    0.002947,
+    0.001628,
+    0.003937,
+    0.001558,
+    0.003993,
+    0.020447,
+    0.000777,
+    0.000668,
+    0.002457,
+    0.001202
+   ],
+   "gHist": [
+    0.039119,
+    0.009766,
+    0.02697,
+    0.173993,
+    0.198338,
+    0.121389,
+    0.035178,
+    0.06464,
+    0.01931,
+    0.131315,
+    0.012513,
+    0.011636,
+    0.02431,
+    0.051619,
+    0.002066,
+    0.001766,
+    0.002105,
+    0.001536,
+    0.002257,
+    0.002752,
+    0.002383,
+    0.019965,
+    0.004227,
+    0.002383,
+    0.004444,
+    0.003945,
+    0.001645,
+    0.002717,
+    0.00174,
+    0.001306,
+    0.003772,
+    0.018893
+   ],
+   "bHist": [
+    0.04329,
+    0.004557,
+    0.021853,
+    0.049822,
+    0.129249,
+    0.123824,
+    0.234028,
+    0.044158,
+    0.074336,
+    0.025829,
+    0.009071,
+    0.055313,
+    0.009501,
+    0.018251,
+    0.118342,
+    0.006463,
+    0.003802,
+    0.003151,
+    0.003668,
+    0.004609,
+    0.002626,
+    0.001714,
+    0.002908,
+    0.001576,
+    0.002791,
+    0.000616,
+    0.000655,
+    0.002131,
+    0.000109,
+    0.001102,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     -5.789417441783185,
+     0.12112666295228622,
+     -9.070651161890735
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": true
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0240044180160348,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1340044180160347,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 153,
+   "heap": 97400000,
+   "bytes": 35111
+  },
+  {
+   "name": "point-won",
+   "size": "640x360",
+   "step": 291,
+   "digestAtStep": "781c6aec4d0c4607",
+   "renderMs": 20285,
+   "wallMs": 31585,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 53.943,
+   "meanRGB": [
+    28.52,
+    60.639,
+    62.472
+   ],
+   "edgeDensity": 0.138307,
+   "lumaHist": [
+    0.04105,
+    0.011233,
+    0.080434,
+    0.211788,
+    0.200937,
+    0.054974,
+    0.066871,
+    0.053472,
+    0.100516,
+    0.019497,
+    0.067622,
+    0.007986,
+    0.002444,
+    0.00197,
+    0.002166,
+    0.001662,
+    0.002144,
+    0.001619,
+    0.002031,
+    0.003273,
+    0.020295,
+    0.004601,
+    0.002908,
+    0.002812,
+    0.003885,
+    0.003134,
+    0.001328,
+    0.003403,
+    0.001615,
+    0.020859,
+    0.001437,
+    0.000035
+   ],
+   "rHist": [
+    0.27753,
+    0.29612,
+    0.169071,
+    0.101615,
+    0.030399,
+    0.011046,
+    0.00536,
+    0.003828,
+    0.004045,
+    0.010174,
+    0.004861,
+    0.002474,
+    0.00145,
+    0.001463,
+    0.002339,
+    0.00457,
+    0.001393,
+    0.001884,
+    0.018906,
+    0.003759,
+    0.004492,
+    0.003359,
+    0.00296,
+    0.001641,
+    0.003928,
+    0.001567,
+    0.003958,
+    0.02056,
+    0.00092,
+    0.000668,
+    0.002457,
+    0.001202
+   ],
+   "gHist": [
+    0.039045,
+    0.009831,
+    0.026871,
+    0.173737,
+    0.19878,
+    0.120929,
+    0.035252,
+    0.064601,
+    0.019366,
+    0.131398,
+    0.012457,
+    0.01168,
+    0.024384,
+    0.051632,
+    0.001957,
+    0.001784,
+    0.002088,
+    0.001528,
+    0.002274,
+    0.002786,
+    0.002361,
+    0.019957,
+    0.004249,
+    0.002361,
+    0.004436,
+    0.003945,
+    0.001658,
+    0.002708,
+    0.001732,
+    0.001424,
+    0.003898,
+    0.018893
+   ],
+   "bHist": [
+    0.04342,
+    0.004423,
+    0.02181,
+    0.049683,
+    0.129427,
+    0.123398,
+    0.234154,
+    0.044141,
+    0.074336,
+    0.025855,
+    0.009132,
+    0.055352,
+    0.009397,
+    0.018316,
+    0.118338,
+    0.006454,
+    0.003811,
+    0.003181,
+    0.003889,
+    0.004575,
+    0.002652,
+    0.001719,
+    0.002912,
+    0.001558,
+    0.002804,
+    0.000612,
+    0.000651,
+    0.002135,
+    0.000109,
+    0.001102,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     -2.6156118129816184,
+     0.11759129707881644,
+     -4.736656576697858
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": true
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0240015590836349,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1340015590836348,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 323,
+   "heap": 86400000,
+   "bytes": 35162
+  },
+  {
+   "name": "game-won",
+   "size": "640x360",
+   "step": 4602,
+   "digestAtStep": "6dac8abd03a0f153",
+   "renderMs": 25483,
+   "wallMs": 35768,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 55.034,
+   "meanRGB": [
+    28.58,
+    62.035,
+    63.583
+   ],
+   "edgeDensity": 0.139349,
+   "lumaHist": [
+    0.042639,
+    0.011936,
+    0.087552,
+    0.196337,
+    0.197279,
+    0.052174,
+    0.062925,
+    0.030872,
+    0.135113,
+    0.019757,
+    0.067635,
+    0.007986,
+    0.002266,
+    0.00197,
+    0.0023,
+    0.001801,
+    0.002218,
+    0.001723,
+    0.002148,
+    0.002826,
+    0.020247,
+    0.004527,
+    0.002183,
+    0.001988,
+    0.004397,
+    0.004084,
+    0.002292,
+    0.005074,
+    0.004774,
+    0.020547,
+    0.000395,
+    0.000035
+   ],
+   "rHist": [
+    0.296324,
+    0.283576,
+    0.177222,
+    0.104861,
+    0.01365,
+    0.009288,
+    0.00319,
+    0.003911,
+    0.004188,
+    0.009857,
+    0.004605,
+    0.001884,
+    0.001532,
+    0.001558,
+    0.002444,
+    0.004614,
+    0.001489,
+    0.001849,
+    0.018759,
+    0.003325,
+    0.004592,
+    0.002166,
+    0.002157,
+    0.001836,
+    0.005833,
+    0.002951,
+    0.008464,
+    0.020334,
+    0.00049,
+    0.00059,
+    0.002426,
+    0.000035
+   ],
+   "gHist": [
+    0.040061,
+    0.01059,
+    0.03092,
+    0.16786,
+    0.186055,
+    0.122326,
+    0.031714,
+    0.062561,
+    0.014284,
+    0.147817,
+    0.014002,
+    0.011458,
+    0.024371,
+    0.051632,
+    0.001901,
+    0.001862,
+    0.002205,
+    0.001558,
+    0.002491,
+    0.002444,
+    0.002348,
+    0.020013,
+    0.004332,
+    0.001949,
+    0.004661,
+    0.00306,
+    0.001445,
+    0.003668,
+    0.002391,
+    0.002465,
+    0.006662,
+    0.018893
+   ],
+   "bHist": [
+    0.044466,
+    0.004887,
+    0.021953,
+    0.052973,
+    0.130243,
+    0.104041,
+    0.226814,
+    0.047687,
+    0.073859,
+    0.024067,
+    0.012444,
+    0.058641,
+    0.008129,
+    0.010417,
+    0.140534,
+    0.007318,
+    0.003876,
+    0.003147,
+    0.003108,
+    0.004544,
+    0.002882,
+    0.001732,
+    0.003659,
+    0.001654,
+    0.00286,
+    0.000573,
+    0.000655,
+    0.002062,
+    0.000069,
+    0.000052,
+    0.000247,
+    0.000408
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     -1.4268364132668956,
+     0.6293103980040199,
+     -0.14635972577127543
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.8869873121723316,
+        0
+       ],
+       "knee": [
+        -0.19997851682282491,
+        0.48846498667983074,
+        -0.26283474644772475
+       ],
+       "foot": [
+        -0.24994984280932694,
+        0.09,
+        0.00008828595794530686
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.8869873121723316,
+        0
+       ],
+       "knee": [
+        0.2019712635093683,
+        0.4724476529628132,
+        -0.23633844103678114
+       ],
+       "foot": [
+        0.24990768714644815,
+        0.09009118563051266,
+        0.049853157683463864
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0252634352021102,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.13526343520211,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 4632,
+   "heap": 116000000,
+   "bytes": 35097
+  },
+  {
+   "name": "match-over",
+   "size": "640x360",
+   "step": 12579,
+   "digestAtStep": "d8a8a4f0e16c8959",
+   "renderMs": 25221,
+   "wallMs": 36735,
+   "errors": [],
+   "width": 640,
+   "height": 360,
+   "meanLuma": 44.314,
+   "meanRGB": [
+    24.364,
+    49.58,
+    50.903
+   ],
+   "edgeDensity": 0.107062,
+   "lumaHist": [
+    0.000677,
+    0.018984,
+    0.133451,
+    0.034049,
+    0.658785,
+    0.057261,
+    0.01276,
+    0.012227,
+    0.003299,
+    0.005178,
+    0.006662,
+    0.01066,
+    0.001354,
+    0.000625,
+    0.001037,
+    0.000664,
+    0.000677,
+    0.001042,
+    0.000877,
+    0.001094,
+    0.001115,
+    0.001241,
+    0.001098,
+    0.002053,
+    0.001658,
+    0.000812,
+    0.000964,
+    0.001063,
+    0.002626,
+    0.024674,
+    0.001332,
+    0
+   ],
+   "rHist": [
+    0.068411,
+    0.714926,
+    0.07875,
+    0.035681,
+    0.014844,
+    0.014201,
+    0.001688,
+    0.006389,
+    0.002799,
+    0.013451,
+    0.003355,
+    0.001406,
+    0.000595,
+    0.000716,
+    0.00079,
+    0.000907,
+    0.000764,
+    0.000898,
+    0.001163,
+    0.001085,
+    0.001046,
+    0.000924,
+    0.001176,
+    0.002526,
+    0.00089,
+    0.000946,
+    0.001389,
+    0.023989,
+    0.000447,
+    0.000582,
+    0.003264,
+    0
+   ],
+   "gHist": [
+    0.000187,
+    0.012591,
+    0.053581,
+    0.09523,
+    0.048251,
+    0.636545,
+    0.048633,
+    0.022305,
+    0.013047,
+    0.002066,
+    0.007769,
+    0.008294,
+    0.005729,
+    0.001285,
+    0.000786,
+    0.000851,
+    0.000634,
+    0.000742,
+    0.000951,
+    0.001063,
+    0.001202,
+    0.00089,
+    0.001011,
+    0.002253,
+    0.001181,
+    0.001259,
+    0.000877,
+    0.000998,
+    0.000799,
+    0.001241,
+    0.008989,
+    0.018763
+   ],
+   "bHist": [
+    0,
+    0.006437,
+    0.009575,
+    0.135985,
+    0.020473,
+    0.104601,
+    0.642218,
+    0.026176,
+    0.003628,
+    0.01151,
+    0.008607,
+    0.003455,
+    0.00526,
+    0.001285,
+    0.001484,
+    0.00599,
+    0.00043,
+    0.00072,
+    0.000699,
+    0.000616,
+    0.000872,
+    0.000794,
+    0.001905,
+    0.001133,
+    0.001432,
+    0.000434,
+    0.00072,
+    0.002079,
+    0.000148,
+    0.001332,
+    0,
+    0
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     7.123098998138509,
+     0.072,
+     2.12727162682056
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.027860118088127,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.137860118088127,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 12609,
+   "heap": 167000000,
+   "bytes": 29006
+  },
+  {
+   "name": "venue-hard-serve-ready",
+   "size": "1280x720",
+   "step": 1,
+   "digestAtStep": "87f981c7793ee012",
+   "renderMs": 67531,
+   "wallMs": 77261,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 64.054,
+   "meanRGB": [
+    25.46,
+    74.107,
+    78.112
+   ],
+   "edgeDensity": 0.080145,
+   "lumaHist": [
+    0.056122,
+    0.022904,
+    0.057843,
+    0.118387,
+    0.037356,
+    0.025221,
+    0.09774,
+    0.003912,
+    0.281084,
+    0.020099,
+    0.203371,
+    0.003223,
+    0.000639,
+    0.000948,
+    0.000966,
+    0.001924,
+    0.001778,
+    0.001258,
+    0.000994,
+    0.001437,
+    0.002386,
+    0.003364,
+    0.00356,
+    0.001947,
+    0.002969,
+    0.012695,
+    0.024276,
+    0.001405,
+    0.004003,
+    0.005748,
+    0.000104,
+    0.00034
+   ],
+   "rHist": [
+    0.482975,
+    0.157587,
+    0.045528,
+    0.220105,
+    0.003934,
+    0.002165,
+    0.002614,
+    0.001058,
+    0.001471,
+    0.003886,
+    0.002338,
+    0.001576,
+    0.001847,
+    0.000578,
+    0.001095,
+    0.004947,
+    0.00049,
+    0.000509,
+    0.000686,
+    0.001198,
+    0.002908,
+    0.002717,
+    0.003505,
+    0.0015,
+    0.004224,
+    0.002933,
+    0.038031,
+    0.005507,
+    0.000443,
+    0.000465,
+    0.001133,
+    0.000048
+   ],
+   "gHist": [
+    0.053311,
+    0.01723,
+    0.017807,
+    0.129137,
+    0.049964,
+    0.040023,
+    0.011756,
+    0.097014,
+    0.006378,
+    0.269335,
+    0.014561,
+    0.011077,
+    0.028022,
+    0.182975,
+    0.000616,
+    0.00085,
+    0.002457,
+    0.00114,
+    0.001275,
+    0.001402,
+    0.002314,
+    0.002764,
+    0.004752,
+    0.001398,
+    0.003614,
+    0.012601,
+    0.001407,
+    0.024244,
+    0.000431,
+    0.000461,
+    0.004638,
+    0.005048
+   ],
+   "bHist": [
+    0.058912,
+    0.006279,
+    0.037549,
+    0.026961,
+    0.114198,
+    0.012603,
+    0.061549,
+    0.020709,
+    0.221214,
+    0.003051,
+    0.002569,
+    0.096118,
+    0.001394,
+    0.002533,
+    0.266163,
+    0.006354,
+    0.003098,
+    0.002126,
+    0.002816,
+    0.025712,
+    0.003125,
+    0.003911,
+    0.004271,
+    0.002699,
+    0.011341,
+    0.000561,
+    0.000446,
+    0.000955,
+    0.000107,
+    0.000079,
+    0.00006,
+    0.000538
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7070770939754136,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.028075517012786,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1380755170127859,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 29,
+   "heap": 86400000,
+   "bytes": 85327
+  },
+  {
+   "name": "venue-grass-serve-ready",
+   "size": "1280x720",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 97996,
+   "wallMs": 107942,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 75.375,
+   "meanRGB": [
+    43.129,
+    87.723,
+    48.013
+   ],
+   "edgeDensity": 0.078933,
+   "lumaHist": [
+    0.05522,
+    0.048025,
+    0.0173,
+    0.131757,
+    0.023519,
+    0.040422,
+    0.009928,
+    0.013069,
+    0.210936,
+    0.005382,
+    0.004816,
+    0.181632,
+    0.002868,
+    0.173541,
+    0.008835,
+    0.002921,
+    0.001569,
+    0.001712,
+    0.001312,
+    0.001829,
+    0.002312,
+    0.002106,
+    0.004842,
+    0.002248,
+    0.002707,
+    0.012637,
+    0.024289,
+    0.0014,
+    0.004004,
+    0.006418,
+    0.000104,
+    0.00034
+   ],
+   "rHist": [
+    0.113933,
+    0.142371,
+    0.051051,
+    0.231599,
+    0.006936,
+    0.182154,
+    0.004842,
+    0.178025,
+    0.004747,
+    0.004912,
+    0.002374,
+    0.002224,
+    0.000887,
+    0.000734,
+    0.000736,
+    0.004472,
+    0.001493,
+    0.000477,
+    0.00076,
+    0.001246,
+    0.00158,
+    0.003947,
+    0.003574,
+    0.002396,
+    0.003315,
+    0.002898,
+    0.038061,
+    0.0062,
+    0.000437,
+    0.000458,
+    0.001113,
+    0.000048
+   ],
+   "gHist": [
+    0.052524,
+    0.016943,
+    0.040362,
+    0.083092,
+    0.071906,
+    0.026522,
+    0.02675,
+    0.006015,
+    0.013507,
+    0.009576,
+    0.208755,
+    0.001942,
+    0.004306,
+    0.180765,
+    0.002513,
+    0.002737,
+    0.176842,
+    0.005048,
+    0.003094,
+    0.002115,
+    0.002599,
+    0.002129,
+    0.005443,
+    0.002327,
+    0.002662,
+    0.012622,
+    0.001396,
+    0.024277,
+    0.00039,
+    0.000473,
+    0.004615,
+    0.005753
+   ],
+   "bHist": [
+    0.088761,
+    0.008677,
+    0.033313,
+    0.066774,
+    0.276738,
+    0.193261,
+    0.055035,
+    0.186127,
+    0.017451,
+    0.004492,
+    0.002957,
+    0.00423,
+    0.00093,
+    0.001086,
+    0.001296,
+    0.001344,
+    0.000554,
+    0.001046,
+    0.002423,
+    0.027091,
+    0.001794,
+    0.00469,
+    0.003307,
+    0.002652,
+    0.01135,
+    0.000514,
+    0.00039,
+    0.000934,
+    0.000106,
+    0.000079,
+    0.00006,
+    0.000538
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "grass"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 31,
+   "heap": 103000000,
+   "bytes": 86079
+  },
+  {
+   "name": "venue-clay-serve-ready",
+   "size": "1280x720",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 66862,
+   "wallMs": 76382,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 71.733,
+   "meanRGB": [
+    120.845,
+    60.688,
+    36.534
+   ],
+   "edgeDensity": 0.07825,
+   "lumaHist": [
+    0.055843,
+    0.047794,
+    0.016905,
+    0.132938,
+    0.04267,
+    0.021427,
+    0.01449,
+    0.022967,
+    0.195917,
+    0.007184,
+    0.092274,
+    0.003267,
+    0.269945,
+    0.004762,
+    0.002041,
+    0.000911,
+    0.001188,
+    0.001723,
+    0.001348,
+    0.001445,
+    0.002384,
+    0.002318,
+    0.004604,
+    0.001342,
+    0.003614,
+    0.012666,
+    0.024268,
+    0.001405,
+    0.004003,
+    0.005911,
+    0.000104,
+    0.00034
+   ],
+   "rHist": [
+    0.078729,
+    0.094689,
+    0.039747,
+    0.017502,
+    0.027939,
+    0.028283,
+    0.008129,
+    0.002824,
+    0.004012,
+    0.00749,
+    0.020431,
+    0.003113,
+    0.001561,
+    0.00292,
+    0.005827,
+    0.010178,
+    0.009698,
+    0.124599,
+    0.078009,
+    0.003474,
+    0.046266,
+    0.048576,
+    0.004684,
+    0.271969,
+    0.007255,
+    0.006047,
+    0.038166,
+    0.005767,
+    0.000457,
+    0.000474,
+    0.001134,
+    0.000048
+   ],
+   "gHist": [
+    0.080422,
+    0.020154,
+    0.021961,
+    0.127025,
+    0.050079,
+    0.060353,
+    0.184804,
+    0.095671,
+    0.007069,
+    0.265674,
+    0.008218,
+    0.003128,
+    0.00409,
+    0.000833,
+    0.000658,
+    0.000787,
+    0.001806,
+    0.001155,
+    0.001016,
+    0.0014,
+    0.002339,
+    0.003612,
+    0.003815,
+    0.001428,
+    0.003564,
+    0.012609,
+    0.001365,
+    0.024262,
+    0.000363,
+    0.000514,
+    0.004622,
+    0.005205
+   ],
+   "bHist": [
+    0.09314,
+    0.031949,
+    0.229345,
+    0.147079,
+    0.333793,
+    0.02422,
+    0.048643,
+    0.009966,
+    0.010528,
+    0.003304,
+    0.001712,
+    0.004161,
+    0.001054,
+    0.001838,
+    0.000771,
+    0.000947,
+    0.000533,
+    0.001015,
+    0.003753,
+    0.025936,
+    0.001641,
+    0.003798,
+    0.004259,
+    0.002645,
+    0.011328,
+    0.000506,
+    0.000405,
+    0.000947,
+    0.000106,
+    0.000079,
+    0.00006,
+    0.000538
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "clay"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 30,
+   "heap": 86400000,
+   "bytes": 87835
+  },
+  {
+   "name": "venue-desert-serve-ready",
+   "size": "1280x720",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 88540,
+   "wallMs": 97891,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 86.682,
+   "meanRGB": [
+    72.148,
+    91.908,
+    77.716
+   ],
+   "edgeDensity": 0.087781,
+   "lumaHist": [
+    0.05383,
+    0.020398,
+    0.011825,
+    0.088961,
+    0.066936,
+    0.036686,
+    0.016777,
+    0.004364,
+    0.002796,
+    0.099818,
+    0.00296,
+    0.272106,
+    0.011097,
+    0.008643,
+    0.014135,
+    0.199572,
+    0.00227,
+    0.009769,
+    0.012663,
+    0.001693,
+    0.002419,
+    0.002318,
+    0.004629,
+    0.001354,
+    0.003685,
+    0.012679,
+    0.02436,
+    0.001426,
+    0.004004,
+    0.005384,
+    0.000104,
+    0.00034
+   ],
+   "rHist": [
+    0.080632,
+    0.089622,
+    0.039434,
+    0.104315,
+    0.281797,
+    0.027218,
+    0.037769,
+    0.001719,
+    0.004417,
+    0.003729,
+    0.00367,
+    0.003593,
+    0.002157,
+    0.000995,
+    0.0014,
+    0.009743,
+    0.005552,
+    0.005215,
+    0.010802,
+    0.201705,
+    0.004256,
+    0.008509,
+    0.016538,
+    0.002389,
+    0.004091,
+    0.00322,
+    0.038117,
+    0.005264,
+    0.000461,
+    0.000479,
+    0.001146,
+    0.000048
+   ],
+   "gHist": [
+    0.051157,
+    0.016301,
+    0.012722,
+    0.07553,
+    0.075069,
+    0.047592,
+    0.015735,
+    0.004406,
+    0.006947,
+    0.004192,
+    0.003529,
+    0.096488,
+    0.009143,
+    0.276861,
+    0.025069,
+    0.189742,
+    0.004735,
+    0.017537,
+    0.001995,
+    0.001769,
+    0.002336,
+    0.001617,
+    0.005917,
+    0.001395,
+    0.003622,
+    0.012624,
+    0.001443,
+    0.0243,
+    0.000445,
+    0.000484,
+    0.004637,
+    0.004663
+   ],
+   "bHist": [
+    0.057218,
+    0.005296,
+    0.037019,
+    0.024193,
+    0.096897,
+    0.010181,
+    0.060706,
+    0.017166,
+    0.019756,
+    0.033869,
+    0.186354,
+    0.106171,
+    0.265442,
+    0.014778,
+    0.003414,
+    0.002237,
+    0.001487,
+    0.001453,
+    0.002479,
+    0.024931,
+    0.003899,
+    0.003928,
+    0.004282,
+    0.002741,
+    0.011336,
+    0.000565,
+    0.000458,
+    0.000961,
+    0.000107,
+    0.000079,
+    0.00006,
+    0.000538
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "desert"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 31,
+   "heap": 103000000,
+   "bytes": 88448
+  },
+  {
+   "name": "venue-beach-serve-ready",
+   "size": "1280x720",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 89136,
+   "wallMs": 98490,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 96.564,
+   "meanRGB": [
+    71.537,
+    103.511,
+    101.444
+   ],
+   "edgeDensity": 0.089111,
+   "lumaHist": [
+    0.053828,
+    0.020385,
+    0.010131,
+    0.088709,
+    0.032758,
+    0.026041,
+    0.025409,
+    0.011173,
+    0.033265,
+    0.095305,
+    0.262324,
+    0.014594,
+    0.005851,
+    0.002236,
+    0.002132,
+    0.002788,
+    0.004556,
+    0.006647,
+    0.007307,
+    0.011312,
+    0.204711,
+    0.011161,
+    0.01293,
+    0.002218,
+    0.003695,
+    0.012737,
+    0.024372,
+    0.001498,
+    0.004018,
+    0.005465,
+    0.000104,
+    0.00034
+   ],
+   "rHist": [
+    0.082038,
+    0.180811,
+    0.303987,
+    0.019111,
+    0.014462,
+    0.021664,
+    0.00907,
+    0.004346,
+    0.028504,
+    0.00351,
+    0.004567,
+    0.004768,
+    0.001378,
+    0.001271,
+    0.000801,
+    0.006408,
+    0.000902,
+    0.004447,
+    0.004992,
+    0.006989,
+    0.007234,
+    0.018449,
+    0.200288,
+    0.016107,
+    0.005007,
+    0.003243,
+    0.038051,
+    0.005457,
+    0.000462,
+    0.000485,
+    0.001145,
+    0.000048
+   ],
+   "gHist": [
+    0.051155,
+    0.016286,
+    0.012527,
+    0.07434,
+    0.038645,
+    0.037005,
+    0.025327,
+    0.010737,
+    0.034521,
+    0.003548,
+    0.096589,
+    0.001809,
+    0.003332,
+    0.270244,
+    0.006263,
+    0.003821,
+    0.004507,
+    0.006463,
+    0.007495,
+    0.01131,
+    0.204652,
+    0.010451,
+    0.014202,
+    0.002225,
+    0.003538,
+    0.012862,
+    0.001362,
+    0.024498,
+    0.000433,
+    0.000482,
+    0.004639,
+    0.004733
+   ],
+   "bHist": [
+    0.057208,
+    0.005168,
+    0.01,
+    0.019461,
+    0.067056,
+    0.016776,
+    0.090794,
+    0.030374,
+    0.012444,
+    0.003811,
+    0.004015,
+    0.006548,
+    0.003358,
+    0.098757,
+    0.007575,
+    0.010104,
+    0.473564,
+    0.011812,
+    0.016058,
+    0.025799,
+    0.002236,
+    0.005699,
+    0.003169,
+    0.003962,
+    0.011421,
+    0.000584,
+    0.000496,
+    0.000966,
+    0.000107,
+    0.000079,
+    0.00006,
+    0.000538
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "beach"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 31,
+   "heap": 103000000,
+   "bytes": 89242
+  },
+  {
+   "name": "venue-moon-serve-ready",
+   "size": "1280x720",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 89555,
+   "wallMs": 99546,
+   "errors": [],
+   "width": 1280,
+   "height": 720,
+   "meanLuma": 61.937,
+   "meanRGB": [
+    52.156,
+    64.321,
+    67.125
+   ],
+   "edgeDensity": 0.083341,
+   "lumaHist": [
+    0.054959,
+    0.022435,
+    0.014544,
+    0.128553,
+    0.14016,
+    0.289184,
+    0.023217,
+    0.018046,
+    0.001704,
+    0.011126,
+    0.008657,
+    0.018525,
+    0.196053,
+    0.001345,
+    0.00102,
+    0.002604,
+    0.000824,
+    0.000781,
+    0.001238,
+    0.001664,
+    0.003794,
+    0.002261,
+    0.003615,
+    0.003002,
+    0.002348,
+    0.012745,
+    0.024382,
+    0.00139,
+    0.004004,
+    0.005368,
+    0.000109,
+    0.000343
+   ],
+   "rHist": [
+    0.081659,
+    0.103243,
+    0.114604,
+    0.341163,
+    0.014836,
+    0.011208,
+    0.01639,
+    0.007435,
+    0.003734,
+    0.008969,
+    0.01245,
+    0.027616,
+    0.182221,
+    0.000549,
+    0.000735,
+    0.006033,
+    0.000586,
+    0.00048,
+    0.001021,
+    0.001312,
+    0.00188,
+    0.003294,
+    0.004326,
+    0.001472,
+    0.004301,
+    0.003134,
+    0.03804,
+    0.005165,
+    0.000449,
+    0.000479,
+    0.00116,
+    0.000055
+   ],
+   "gHist": [
+    0.05225,
+    0.017938,
+    0.01469,
+    0.105434,
+    0.112072,
+    0.077888,
+    0.285879,
+    0.023896,
+    0.006084,
+    0.005621,
+    0.008925,
+    0.014347,
+    0.200895,
+    0.00237,
+    0.000687,
+    0.001786,
+    0.001615,
+    0.000666,
+    0.001259,
+    0.001574,
+    0.002894,
+    0.002528,
+    0.004695,
+    0.002115,
+    0.003276,
+    0.012717,
+    0.001476,
+    0.024262,
+    0.000399,
+    0.000465,
+    0.004656,
+    0.00464
+   ],
+   "bHist": [
+    0.057233,
+    0.007855,
+    0.010461,
+    0.02503,
+    0.102347,
+    0.02992,
+    0.149342,
+    0.292994,
+    0.023668,
+    0.011338,
+    0.01039,
+    0.021043,
+    0.194368,
+    0.001067,
+    0.001528,
+    0.002323,
+    0.000563,
+    0.001198,
+    0.002558,
+    0.026095,
+    0.003019,
+    0.003946,
+    0.004352,
+    0.00272,
+    0.011564,
+    0.000781,
+    0.000534,
+    0.000979,
+    0.000106,
+    0.000079,
+    0.000061,
+    0.000539
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": false,
+     "count": 24
+    },
+    "environment": {
+     "venue": "moon"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "apollo",
+     "rival": "apollo"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 30,
+   "heap": 86400000,
+   "bytes": 82413
+  },
+  {
+   "name": "serve-ready",
+   "size": "mobile-390x844",
+   "step": 1,
+   "digestAtStep": "2b5ccea250271b46",
+   "renderMs": 26537,
+   "wallMs": 36161,
+   "errors": [],
+   "width": 390,
+   "height": 844,
+   "meanLuma": 72.167,
+   "meanRGB": [
+    36.198,
+    81.517,
+    85.464
+   ],
+   "edgeDensity": 0.089646,
+   "lumaHist": [
+    0.059296,
+    0.009494,
+    0.100905,
+    0.048691,
+    0.079982,
+    0.021692,
+    0.011763,
+    0.015688,
+    0.375298,
+    0.014926,
+    0.121421,
+    0.004508,
+    0.002099,
+    0.000805,
+    0.000966,
+    0.001109,
+    0.001698,
+    0.003038,
+    0.000738,
+    0.001209,
+    0.021916,
+    0.004025,
+    0.004615,
+    0.001422,
+    0.0023,
+    0.008112,
+    0.060247,
+    0.006234,
+    0.001139,
+    0.014458,
+    0.000043,
+    0.000161
+   ],
+   "rHist": [
+    0.508753,
+    0.114412,
+    0.067937,
+    0.136979,
+    0.014288,
+    0.004803,
+    0.002728,
+    0.003184,
+    0.002822,
+    0.00586,
+    0.002631,
+    0.001349,
+    0.000659,
+    0.000677,
+    0.000978,
+    0.00237,
+    0.00216,
+    0.000705,
+    0.021886,
+    0.001789,
+    0.002695,
+    0.001249,
+    0.005119,
+    0.001294,
+    0.002415,
+    0.004758,
+    0.068775,
+    0.014279,
+    0.000386,
+    0.000532,
+    0.001367,
+    0.000161
+   ],
+   "gHist": [
+    0.058513,
+    0.009196,
+    0.039662,
+    0.077081,
+    0.06296,
+    0.070413,
+    0.004259,
+    0.011098,
+    0.004897,
+    0.366885,
+    0.028898,
+    0.010682,
+    0.006021,
+    0.115622,
+    0.000775,
+    0.000939,
+    0.001562,
+    0.0023,
+    0.001881,
+    0.001075,
+    0.000851,
+    0.022761,
+    0.006295,
+    0.001811,
+    0.0023,
+    0.00796,
+    0.003229,
+    0.059631,
+    0.001662,
+    0.003722,
+    0.00175,
+    0.013313
+   ],
+   "bHist": [
+    0.062705,
+    0.002051,
+    0.00538,
+    0.049025,
+    0.077102,
+    0.037893,
+    0.090986,
+    0.02435,
+    0.116211,
+    0.022114,
+    0.008747,
+    0.005669,
+    0.004916,
+    0.005958,
+    0.364543,
+    0.022129,
+    0.009202,
+    0.005517,
+    0.003327,
+    0.059618,
+    0.002382,
+    0.004186,
+    0.002582,
+    0.001476,
+    0.008528,
+    0.000665,
+    0.000842,
+    0.001489,
+    0.00014,
+    0.000079,
+    0.000024,
+    0.000164
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.2825,
+     0.7061091996776016,
+     7.959999999999999
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0279721290851846,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1379721290851845,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 30,
+   "heap": 97400000,
+   "bytes": 31184
+  },
+  {
+   "name": "point-won",
+   "size": "mobile-390x844",
+   "step": 291,
+   "digestAtStep": "781c6aec4d0c4607",
+   "renderMs": 35736,
+   "wallMs": 45271,
+   "errors": [],
+   "width": 390,
+   "height": 844,
+   "meanLuma": 63.114,
+   "meanRGB": [
+    25.103,
+    72.53,
+    81.767
+   ],
+   "edgeDensity": 0.095838,
+   "lumaHist": [
+    0.060062,
+    0.01025,
+    0.100917,
+    0.048949,
+    0.093085,
+    0.021607,
+    0.01269,
+    0.034333,
+    0.395379,
+    0.014905,
+    0.122731,
+    0.004299,
+    0.001868,
+    0.000939,
+    0.001088,
+    0.001212,
+    0.00196,
+    0.003375,
+    0.001206,
+    0.001628,
+    0.022059,
+    0.00363,
+    0.005146,
+    0.001996,
+    0.003096,
+    0.007674,
+    0.002907,
+    0.004472,
+    0.001151,
+    0.014321,
+    0.000905,
+    0.000158
+   ],
+   "rHist": [
+    0.546752,
+    0.115658,
+    0.068046,
+    0.138255,
+    0.026416,
+    0.005101,
+    0.003345,
+    0.003348,
+    0.003005,
+    0.006577,
+    0.002552,
+    0.001127,
+    0.000802,
+    0.000729,
+    0.001036,
+    0.00257,
+    0.002594,
+    0.001033,
+    0.022481,
+    0.002139,
+    0.002467,
+    0.001337,
+    0.005356,
+    0.001972,
+    0.003558,
+    0.005001,
+    0.009245,
+    0.014264,
+    0.000392,
+    0.000437,
+    0.001361,
+    0.001045
+   ],
+   "gHist": [
+    0.059439,
+    0.00971,
+    0.04026,
+    0.076953,
+    0.07576,
+    0.071376,
+    0.004785,
+    0.011247,
+    0.008218,
+    0.402348,
+    0.028618,
+    0.010557,
+    0.005781,
+    0.116569,
+    0.000838,
+    0.001072,
+    0.001689,
+    0.002838,
+    0.002303,
+    0.001492,
+    0.001057,
+    0.022439,
+    0.006702,
+    0.002324,
+    0.003157,
+    0.007516,
+    0.002042,
+    0.001726,
+    0.001592,
+    0.003694,
+    0.002588,
+    0.01331
+   ],
+   "bHist": [
+    0.063905,
+    0.002509,
+    0.005657,
+    0.049119,
+    0.077534,
+    0.050106,
+    0.091822,
+    0.02442,
+    0.117514,
+    0.02239,
+    0.008807,
+    0.006158,
+    0.006301,
+    0.012067,
+    0.395461,
+    0.022816,
+    0.009424,
+    0.005739,
+    0.003555,
+    0.002099,
+    0.001987,
+    0.004451,
+    0.002795,
+    0.001422,
+    0.007917,
+    0.000632,
+    0.000805,
+    0.001449,
+    0.000046,
+    0.000908,
+    0.000021,
+    0.000164
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     -2.6156118129816184,
+     0.11759129707881644,
+     -4.736656576697858
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": true
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "ready",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        -0.2,
+        0.4885,
+        -0.26286450882536416
+       ],
+       "foot": [
+        -0.25,
+        0.09,
+        0
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.887,
+        0
+       ],
+       "knee": [
+        0.20202389843840082,
+        0.4723695294459455,
+        -0.23616749750843
+       ],
+       "foot": [
+        0.25,
+        0.09,
+        0.05
+       ],
+       "planted": true
+      }
+     ],
+     "rightHand": [
+      0.15,
+      1.0240015590836349,
+      -0.35
+     ],
+     "leftHand": [
+      0.07499999999999998,
+      1.1340015590836348,
+      -0.37
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 320,
+   "heap": 91700000,
+   "bytes": 33199
+  },
+  {
+   "name": "rally-near-net",
+   "size": "mobile-390x844",
+   "step": 676,
+   "digestAtStep": "ea606b9abe7b3038",
+   "renderMs": 28616,
+   "wallMs": 38706,
+   "errors": [],
+   "width": 390,
+   "height": 844,
+   "meanLuma": 63.362,
+   "meanRGB": [
+    24.618,
+    72.949,
+    82.485
+   ],
+   "edgeDensity": 0.095537,
+   "lumaHist": [
+    0.06063,
+    0.012025,
+    0.101476,
+    0.049499,
+    0.075541,
+    0.02668,
+    0.013027,
+    0.016253,
+    0.422175,
+    0.014877,
+    0.122202,
+    0.00435,
+    0.002054,
+    0.001054,
+    0.00127,
+    0.001203,
+    0.002084,
+    0.003585,
+    0.000857,
+    0.001397,
+    0.021992,
+    0.004199,
+    0.004718,
+    0.001583,
+    0.003427,
+    0.008327,
+    0.003172,
+    0.004536,
+    0.001188,
+    0.014431,
+    0.00003,
+    0.000158
+   ],
+   "rHist": [
+    0.562474,
+    0.115527,
+    0.065707,
+    0.138264,
+    0.014203,
+    0.0048,
+    0.002567,
+    0.00315,
+    0.002962,
+    0.006204,
+    0.002555,
+    0.001391,
+    0.000878,
+    0.000902,
+    0.001094,
+    0.002664,
+    0.002683,
+    0.001282,
+    0.022083,
+    0.001914,
+    0.002907,
+    0.001431,
+    0.005201,
+    0.001583,
+    0.003612,
+    0.004858,
+    0.010232,
+    0.014364,
+    0.000595,
+    0.000413,
+    0.00134,
+    0.000158
+   ],
+   "gHist": [
+    0.060022,
+    0.010469,
+    0.041624,
+    0.077528,
+    0.064856,
+    0.068772,
+    0.005326,
+    0.011587,
+    0.005538,
+    0.414212,
+    0.028588,
+    0.010654,
+    0.005942,
+    0.116275,
+    0.00099,
+    0.00113,
+    0.001859,
+    0.002959,
+    0.001984,
+    0.001291,
+    0.00099,
+    0.022867,
+    0.006444,
+    0.001884,
+    0.003454,
+    0.00809,
+    0.002327,
+    0.001814,
+    0.001653,
+    0.003837,
+    0.001723,
+    0.01331
+   ],
+   "bHist": [
+    0.06478,
+    0.003254,
+    0.00549,
+    0.049162,
+    0.077619,
+    0.039285,
+    0.085466,
+    0.02908,
+    0.118228,
+    0.022728,
+    0.009069,
+    0.006027,
+    0.005614,
+    0.00689,
+    0.411572,
+    0.022427,
+    0.00946,
+    0.005778,
+    0.003561,
+    0.001975,
+    0.002382,
+    0.004098,
+    0.002825,
+    0.001483,
+    0.008552,
+    0.000756,
+    0.000781,
+    0.001428,
+    0.000024,
+    0.000021,
+    0.000021,
+    0.000164
+   ],
+   "graphics": {
+    "type": "aura3d-smooth-players",
+    "engine": "@aura3d/engine",
+    "playerStyle": "3d",
+    "displayBall": [
+     2.61131458807285,
+     1.2690545827463535,
+     -0.8193757418698773
+    ],
+    "camera": {
+     "position": [
+      0,
+      25.5,
+      37.1
+     ],
+     "target": [
+      0,
+      0,
+      0.7
+     ],
+     "fov": 15,
+     "near": 0.1,
+     "far": 180,
+     "aspect": 1.7777777777777777
+    },
+    "viewport": {
+     "width": 320,
+     "height": 180,
+     "bottom": 0,
+     "pixelRatio": 1
+    },
+    "audience": {
+     "visible": true,
+     "count": 24
+    },
+    "environment": {
+     "venue": "hard"
+    },
+    "umpire": {
+     "visible": true
+    },
+    "netPostLights": {
+     "active": false
+    },
+    "outfits": {
+     "player": "tennis",
+     "rival": "tennis"
+    },
+    "playerPose": {
+     "mode": "run",
+     "legs": [
+      {
+       "hip": [
+        -0.15,
+        0.8613835329677771,
+        0
+       ],
+       "knee": [
+        -0.17441814619494833,
+        0.47944218506841213,
+        -0.2896973608806583
+       ],
+       "foot": [
+        -0.19931583339687495,
+        0.09,
+        -0.010206950202338924
+       ],
+       "planted": true
+      },
+      {
+       "hip": [
+        0.15,
+        0.8613835329677771,
+        0
+       ],
+       "knee": [
+        0.1529950185943115,
+        0.4779224590873095,
+        -0.2887016360917588
+       ],
+       "foot": [
+        0.15535161478329818,
+        0.17620049080043704,
+        0.08460561043246496
+       ],
+       "planted": false
+      }
+     ],
+     "rightHand": [
+      0.21309942759010397,
+      1.0424014723111528,
+      -0.3481286461437632
+     ],
+     "leftHand": [
+      -0.16465647978933717,
+      1.046867491043995,
+      -0.04227278795803302
+     ]
+    }
+   },
+   "engineStats": {
+    "diagnostics": {
+     "fps": 60,
+     "drawCalls": 0,
+     "nodesWithPhysics": 0,
+     "animatedNodes": 0,
+     "maxRecommendedDrawCalls": 260,
+     "programs": 9,
+     "downscaledTextures": 0
+    },
+    "evidence": {},
+    "info": {
+     "triangles": 0,
+     "geometries": 25,
+     "textures": 16,
+     "programs": 11
+    },
+    "quality": {}
+   },
+   "evidenceStats": {},
+   "appKeys": [
+    "canvas",
+    "info",
+    "xr",
+    "setPixelRatio",
+    "setClearColor",
+    "precompile",
+    "scene",
+    "backend",
+    "compute",
+    "setPerformanceQuality",
+    "setScene",
+    "nodes",
+    "physics",
+    "runtime",
+    "onFrame",
+    "offFrame",
+    "input",
+    "pause",
+    "resetRuntimeClock",
+    "resume",
+    "ready",
+    "onDeviceLost",
+    "onDeviceRestored",
+    "deviceLost",
+    "advance",
+    "step",
+    "stepAsync",
+    "disposeAsync",
+    "diagnostics",
+    "evidence",
+    "screenshot",
+    "dispose",
+    "setOutput",
+    "setOutputOverlay",
+    "capture",
+    "onRendererError",
+    "output",
+    "lighting",
+    "post",
+    "effects",
+    "atmosphere",
+    "time",
+    "feel",
+    "camera",
+    "world",
+    "quality",
+    "addPostPass",
+    "setQualityTier",
+    "cutCamera"
+   ],
+   "renders": 706,
+   "heap": 97400000,
+   "bytes": 33328
+  }
+ ]
+}

@@ -440,3 +440,6 @@ evidence/look-reference-frames/
 !examples/silt-and-signal-port/assets/textures/*.jpg
 !evidence/silt-and-signal-port/*.jpg
 !examples/kid-goku-beyond-the-clouds-port/assets/textures/*.jpg
+
+# Aura Slam parity baseline frames (first-party, committed)
+!evidence/aura-slam/frames-reference/*.jpg
