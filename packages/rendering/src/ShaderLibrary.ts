@@ -232,7 +232,7 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
-  float projectedDepth = projected.z * 0.5 + 0.5;
+  float projectedDepth = clamp(projected.z * 0.5 + 0.5, 0.0, 1.0);
   float shadowed = 0.0;
   float totalWeight = 0.0;
   int sampleCount = clamp(int(u_shadowPcfSampleCount), 1, 32);
@@ -804,7 +804,7 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
-  float projectedDepth = projected.z * 0.5 + 0.5;
+  float projectedDepth = clamp(projected.z * 0.5 + 0.5, 0.0, 1.0);
   float shadowed = 0.0;
   float totalWeight = 0.0;
   int sampleCount = clamp(int(u_shadowPcfSampleCount), 1, 32);
@@ -1335,7 +1335,7 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
-  float projectedDepth = projected.z * 0.5 + 0.5;
+  float projectedDepth = clamp(projected.z * 0.5 + 0.5, 0.0, 1.0);
   float shadowed = 0.0;
   float totalWeight = 0.0;
   int sampleCount = clamp(int(u_shadowPcfSampleCount), 1, 32);
@@ -1824,7 +1824,7 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
-  float projectedDepth = projected.z * 0.5 + 0.5;
+  float projectedDepth = clamp(projected.z * 0.5 + 0.5, 0.0, 1.0);
   float shadowed = 0.0;
   float totalWeight = 0.0;
   int sampleCount = clamp(int(u_shadowPcfSampleCount), 1, 32);
@@ -2515,7 +2515,7 @@ float a3dTexturedPbrShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDire
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
   float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
-  float projectedDepth = projected.z * 0.5 + 0.5;
+  float projectedDepth = clamp(projected.z * 0.5 + 0.5, 0.0, 1.0);
   float shadowed = 0.0;
   float totalWeight = 0.0;
   int sampleCount = clamp(int(u_shadowPcfSampleCount), 1, 32);

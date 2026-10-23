@@ -3411,7 +3411,7 @@ fn a3dNativeShadowFactor(worldPosition: vec3<f32>, normal: vec3<f32>, lightDirec
   // receivers, so each tap scales by its own texel distance.
   let slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
   let slopeTexelBias = slopeTangent * slopeBias * max(texelSize.x, texelSize.y);
-  let projectedDepth = projected.z * 0.5 + 0.5;
+  let projectedDepth = clamp(projected.z * 0.5 + 0.5, 0.0, 1.0);
   var shadowed = 0.0;
   var totalWeight = 0.0;
   let taps = clamp(sampleCount, 1, 32);
