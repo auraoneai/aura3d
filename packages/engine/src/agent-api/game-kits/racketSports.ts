@@ -1,9 +1,12 @@
 import type { AuraRuntimeNodeHandle } from "../index";
 import { racketAthleteRig, type RacketAthleteRigKit } from "./racketAthleteRig";
 import { directionToEulerXYZ, localDirToWorld, localToWorld, orientCylinderBetween, solveArmElbow, type RacketVec3 } from "./racketGeometry";
+import { createBallFlight, type BallFlightConfig, type BallFlightKit } from "./ballFlight";
 import { createRacketScoring, type RacketScoring, type RacketScoringRules } from "./racketScoring";
 
 export * from "./racketScoring";
+export { createBallFlight };
+export type { BallFlightBall, BallFlightBoard, BallFlightConfig, BallFlightEventType, BallFlightKit, BallFlightSample, BallFlightSurface } from "./ballFlight";
 
 export { directionToEulerXYZ, localDirToWorld, localToWorld, orientCylinderBetween, solveArmElbow, type RacketVec3 };
 
@@ -74,6 +77,11 @@ export interface RacketSportsGameKit {
   scoring(rules?: RacketScoringRules): RacketScoring;
   /** Procedural athlete rig: stride/split-step/slide locomotion solver and a limb applicator (see racketAthleteRig). */
   readonly athleteRig: RacketAthleteRigKit;
+  /**
+   * Exact event-time ball flight (x lateral, y along the court, z up). Configure units, gravity, drag, net,
+   * surfaces and optional boards; returns pure sample/solve/advance functions. See docs/api/ball-flight.md.
+   */
+  ballFlight(config: BallFlightConfig): BallFlightKit;
 }
 
 export function stepRacketBallPhysics(
@@ -150,7 +158,8 @@ export function createRacketSportsGameKit(id = "racket-sports"): RacketSportsGam
     localDirToWorld,
     stepBallPhysics: stepRacketBallPhysics,
     scoring: createRacketScoring,
-    athleteRig: racketAthleteRig
+    athleteRig: racketAthleteRig,
+    ballFlight: createBallFlight
   };
 }
 
@@ -163,5 +172,6 @@ export const racketSports = {
   localDirToWorld,
   stepBallPhysics: stepRacketBallPhysics,
   scoring: createRacketScoring,
-  athleteRig: racketAthleteRig
+  athleteRig: racketAthleteRig,
+  ballFlight: createBallFlight
 } as const;
