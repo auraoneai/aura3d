@@ -8,6 +8,8 @@
  */
 import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, material, primitives, scene, texture } from "@aura3d/engine";
 import { CAR_KINDS, buildCarShell, type CarKind, type CarShell } from "./vehicles";
+import { TRAFFIC_MODEL, carModel } from "./models";
+import { planProps, propNodes, type PropPlan } from "./props";
 import { GROUND_HALF, WALLS, blockDecals, buildCity, buildFurniture, buildProps, facadeKey, farCity, roadPlane, type Furniture } from "./city";
 import { farCitySpec, skySpec } from "./sky";
 import { PALETTE_SLOTS, Palette, bakePaletteUVs, createMesh, quad, toArrays, type MeshData } from "./mesh";
@@ -122,6 +124,8 @@ export interface TrafficRig {
 export interface LookRig {
   builder: ReturnType<typeof scene>;
   traffic: TrafficRig[];
+  /** car indices drawn as generated models (`traffic-<i>` runtime nodes); empty when the instanced shells are used */
+  modelTraffic: number[];
   coinMesh: ReturnType<typeof instances.mesh>;
   starMesh: ReturnType<typeof instances.mesh>;
   heartMesh: ReturnType<typeof instances.mesh>;
@@ -142,7 +146,7 @@ const geo = (m: MeshData, _name: string) => {
   return geometry.define({ positions: a.positions, normals: a.normals, uvs: a.uvs, colors: a.colors, indices: a.indices });
 };
 
-export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; start: { x: number; z: number } }): LookRig {
+export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; start: { x: number; z: number } }): LookRig {
   const high = opts.quality === "high";
   const tex = paintTextures(opts.quality);
   const city = buildCity(world.blocks, world.buildings);
@@ -155,7 +159,8 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   for (const shell of [...shells.values(), playerShell]) bakePaletteUVs(shell.detail, palette);
   const far = farCity();
   bakePaletteUVs(far, palette);
-  const props = buildProps(furniture);
+  const propPlan: PropPlan | null = opts.models ? planProps(furniture, world.blocks, world.buildings, opts.start) : null;
+  const props = buildProps(furniture, propPlan?.skip);
   bakePaletteUVs(props, palette);
   const paletteCanvas = canvas(PALETTE_SLOTS * 16, 16);
   paintPalette(paletteCanvas.g, palette.hexes, PALETTE_SLOTS);
@@ -204,8 +209,18 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   // ---- street furniture, trees and pedestrians: one merged static mesh in palette colours ----
   b.add(geometry.custom(geo(props, "props"), { name: "props", material: material.pbr({ color: "#ffffff", roughness: 0.82, texture: asRef(paletteTex) }), castShadow: false, receiveShadow: true }));
 
+  // ---- generated prop models: near-field lamps, signals, trees, hydrants, shelters and the landmarks ----
+  if (propPlan) for (const n of propNodes(propPlan)) b.add(n);
+
   // ---- traffic: paint + detail shells per kind, wheels and hubs ----
-  const traffic: TrafficRig[] = CAR_KINDS.map((kind) => {
+  const modelTraffic: number[] = [];
+  if (opts.models) {
+    world.traffic.forEach((_, i) => {
+      b.add(carModel(`traffic-${i}`, TRAFFIC_MODEL[CAR_KINDS[i % CAR_KINDS.length] as CarKind], false));
+      modelTraffic.push(i);
+    });
+  }
+  const traffic: TrafficRig[] = (opts.models ? [] : CAR_KINDS).map((kind) => {
     const cars = world.traffic.map((_, i) => i).filter((i) => i % CAR_KINDS.length === CAR_KINDS.indexOf(kind));
     const shell = shells.get(kind)!;
     const paint = instances.mesh(geo(shell.paint, `${kind}-paint`), material.carPaint({ color: "#ffffff", roughness: 0.4, metallic: 0.2, clearcoat: 0.4, envMapIntensity: 0.45 }), cars.length);
@@ -227,6 +242,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   return {
     builder: b,
     traffic,
+    modelTraffic,
     coinMesh,
     starMesh,
     heartMesh,

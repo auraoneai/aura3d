@@ -127,3 +127,29 @@ None blocked the port. Three things worth fixing in the engine:
 
 Also: `instances.mesh` and `lines.*` are unused because their flags are still `dev` (R-17),
 and custom materials are unlit, so shadows would need a dedicated shadow pass.
+
+## Meshy art pass (2026-10-23)
+
+The primitive riders, bikes and gate pillars were replaced with Meshy-generated models (text prompts written for this port, in our own words; no image-to-3D, no reference to the original's characters or assets). Generated through Kiro Prism with the shared helper (`/tmp/meshy/meshy.mjs`, ledger tag `strange-orbit`). Rights: the account's Meshy plan terms at generation time (see `assets/provenance/*.rights.json`); not CC0.
+
+| Role | File | Prompt gist | Refine / remesh task | Triangles (verts) | Size |
+| --- | --- | --- | --- | --- | --- |
+| Player bike + rider (rivals 2, 4 tinted) | `assets/models/bike_rider.glb` | sleek pearl-white and teal hoverbike, crouched astronaut rider, cyan thrusters | `01a169cf-79f4-7069-9035-8d104a1c81af` | 44k verts | 2.3 MB |
+| Rival bike + rider (rivals 1, 3, 5) | `assets/models/rival_bike.glb` | angular indigo and gold wedge racer, rider lying low, amber thruster | `01a169e9-f81c-77fd-ab45-de0ef2c90599` | 45k verts | 2.4 MB |
+| Skate mode skater | `assets/models/skate_rider.glb` | astronaut on a glowing teal skateboard | `01a169cd-4617-733b-a9e9-80aa4edf1e44` | 30k verts | 1.8 MB |
+| Gate pylons (10) | `assets/models/pylon.glb` | tapered terracotta stone column, teal cap, cyan band | `01a169d7-9225-7465-84c7-daf05756300c` | 16k verts | 1.1 MB |
+| Rim boulders | `assets/models/boulder_a.glb` | weathered terracotta boulder with teal veins (remeshed to 8k) | refine `01a169cd-a0e4-74a5-a214-0656f611408e`, remesh `01a169d2-ecd1-7261-a858-3702a23a12db` | 8k verts | 1.0 MB |
+| Rim spires | `assets/models/boulder_b.glb` | tall angular basalt spire, chalk streaks | `01a169d3-fb24-74c3-8289-ab2ef49341f5` | 28k verts | 1.2 MB |
+| Horizon lander | `assets/models/lander.glb` | retro four-legged lander, gold foil | `01a169d2-71c7-755b-8bba-c23ba266d313` | 38k verts | 1.6 MB |
+| Horizon observatory (2) | `assets/models/observatory.glb` | white dome, tower, radio dish | `01a169d5-3fee-769b-8e68-ecf096abfa00` | 43k verts | 1.8 MB |
+
+Credits: eight models at 30 (20 preview + 10 refine) plus one remesh at 5 = 245 credits. (The shared ledger records 175 for this game because rate-limited polls marked finished tasks as failed; the task ids above are the real spend.) Optimised with `/tmp/meshy/optimize.mjs` (dedup, weld, simplify, 1024 px textures for riders/pylon, 512 px for the props, meshopt), admitted with `aura3d assets import-meshy` + `assets validate --require-license` in an isolated temp project (`failures: []`), and wired in `models.ts` as same-origin pathname + `sha256` (the production bridge draws nothing for http(s) URLs).
+
+Wiring notes:
+
+- `model()` grounds a model: its origin is the bottom centre of the bounds, so a rider part sits at the rig origin (ground contact) and the node is scaled by `targetMaxDimension` (bike 2.5 m, skater 1.7 m) times the race scale.
+- Meshy models face -X, so the rider rig yaws them by pi (bike) or pi/2 (skater) so forward is the rig's +X.
+- A rider is now one node (was 19 primitives); the wheel spin, pedal and arm motion of the primitive rig are gone, the rider pose is rigid.
+- `?meshy=0` restores the primitive riders and the plain pillars (bisecting a render problem).
+- Set dressing: 14 boulders and spires along the rim (deterministic Lehmer seed 48271), a lander at s = 330 and two observatories at s = 790 and 1260.
+- Meshy rigging/animation was not used: the riders are single combined meshes (a rider fused to a bike cannot be rigged as a humanoid).

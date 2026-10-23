@@ -77,3 +77,18 @@ Simulation untouched (reference replay still exact). Added, all presentation-onl
 - No 3D outlines: the measured original has none.
 
 Frame comparison and blind judge: `tools/crayon-capture/splat-rush-frames.ts` (original, remote), `tests/browser/splat-rush-frames.spec.ts` (port, remote), `tools/crayon-capture/splat-rush-judge.ts`; results in `evidence/splat-rush-port/`.
+
+## Meshy model pass (2026-10-23)
+
+Presentation only; `sim.ts` and the reference replay are untouched. Seven Meshy text-to-3D models (prompts, task ids, sizes in
+`assets/ATTRIBUTION.md`; rights basis in `assets/provenance/*.rights.json`), generated through Kiro Prism, optimised to ~10-26k
+vertices and 1024 px textures, admitted with `assets import-meshy` and wired through same-origin pathnames + sha256 (`models.ts`).
+
+- `backdrop.ts`: 12 floating islands (tree, tower) and hot-air balloons drift past both sides of the road at 0.55x the road's scroll
+  speed, follow its curve, and scale in/out at the far/near ends. Placement is a pure function of the sim's `distance` and
+  `elapsed`; it never touches the sim or its random stream. A hemisphere + two directional lights light them (the toon surfaces
+  carry their own lighting, so the gates, road and ball are unchanged).
+- `pickups.ts`: the sphere-and-cone power-ups are replaced by one model per type (rainbow star gem, shield badge, x2 gold coin,
+  colour-swap token), pooled 4 per type; the sim still owns type, lane and height. Gates, ball, splatters, road, rails and sky stay
+  procedural (the original's gates are colour-coded gameplay objects tinted by uniform).
+- Cost: +~6 MB assets (7 GLBs), draw calls 105-201 at 640x360 (was 85-178).

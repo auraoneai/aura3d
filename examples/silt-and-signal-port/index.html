@@ -28,8 +28,8 @@
       .meter { height: 6px; border-radius: 3px; background: rgba(246, 240, 228, 0.16); overflow: hidden; margin: 4px 0; }
       .meter > i { display: block; height: 100%; width: 100%; background: var(--jade); }
       #keys { position: absolute; right: 12px; bottom: 12px; text-align: right; max-width: 420px; }
-      #compass-wrap { position: absolute; top: 12px; right: 12px; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; }
-      #compass { width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 26px solid var(--warm); transition: transform 60ms linear; }
+      #compass-wrap { position: absolute; top: 12px; right: 12px; width: 92px; height: 92px; background: rgba(8, 20, 28, 0.78); box-shadow: 0 0 0 3px #19e6ff, 0 0 18px 2px rgba(25, 230, 255, 0.55); display: grid; place-items: center; border-radius: 50%; }
+      #compass { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 44px solid #19e6ff; filter: drop-shadow(0 0 6px #19e6ff); transition: transform 60ms linear; }
       #toast { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-size: 16px; font-weight: 500; opacity: 0; transition: opacity 240ms; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
       #toast.show { opacity: 1; }
       .screen { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(14, 16, 22, 0.15), rgba(14, 16, 22, 0.78)); }

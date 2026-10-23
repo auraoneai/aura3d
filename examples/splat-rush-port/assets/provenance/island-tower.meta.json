@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d1-42b2-749d-8fde-528865d8e0bf",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776684227,
+  "started_at": 1792776684233,
+  "finished_at": 1792776719985,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-42b2-749d-8fde-528865d8e0bf/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-42b2-749d-8fde-528865d8e0bf/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-42b2-749d-8fde-528865d8e0bf/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-42b2-749d-8fde-528865d8e0bf/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-42b2-749d-8fde-528865d8e0bf/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-42b2-749d-8fde-528865d8e0bf/output/preview.png",
+  "prompt": "a small floating sky island with a cute round cartoon tower with a conical lavender roof and a tiny flag, chunky toy style, rounded cream stone underside, bright pastel colours, smooth glossy surfaces, game prop",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3643968153,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/splat-island-tower/model.glb",
+  "artifacts/meshy/splat-island-tower/thumbnail.png",
+  "artifacts/meshy/splat-island-tower/texture_0_base_color.png",
+  "artifacts/meshy/splat-island-tower/texture_0_metallic.png",
+  "artifacts/meshy/splat-island-tower/texture_0_normal.png",
+  "artifacts/meshy/splat-island-tower/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:32:13.420Z"
+}

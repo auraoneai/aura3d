@@ -9,6 +9,13 @@ import { COURSE_LENGTH, GAPS, biomeAt, gapAt, groundFrame, pathWidth } from "./c
 import { surfaceY } from "./meshes";
 import { seededRandom } from "./sim";
 import { trs } from "./shapes";
+import { MESHY_MANIFEST } from "./assets/meshy/manifest";
+
+/** A generated-model instance (position of the model's base centre, yaw, per-axis scale applied to the model's own units). */
+export interface ModelPlacement { readonly position: [number, number, number]; readonly yaw: number; readonly scale: [number, number, number]; readonly tint?: string }
+export type ModelSink = Record<string, ModelPlacement[]>;
+/** Extra yaw that turns each model's authored front toward +z (calibrated from render frames). */
+export const MODEL_FRONT_YAW: Readonly<Record<string, number>> = { houseA: 0, houseB: 0, tower: 0, gate: 0, pine: 0, lantern: 0, oak: 0 };
 
 export type ShapeId = "box" | "gable" | "hip" | "cylinder" | "cone" | "sphere" | "rock";
 export interface Placement { readonly matrix: number[]; readonly color: string }
@@ -51,13 +58,19 @@ const STONE = ["#9a9484", "#8c8a7c", "#aaa893", "#7d9188"] as const;
 const WOOD = ["#8a6a45", "#7a5c3b", "#9a7a50"] as const;
 const CLOTH = ["#c0392b", "#d4a24c", "#3f7f9a", "#7a5c9a"] as const;
 
-export function buildScenery(): SceneryLayer[] {
+export function buildScenery(models?: ModelSink): SceneryLayer[] {
   const layers = new Map<string, SceneryLayer>(LAYERS.map((l) => [l.id, { ...l, placements: [] }]));
   const put = (id: string, x: number, y: number, z: number, yaw: number, sx: number, sy: number, sz: number, color: string): void => {
     layers.get(id)!.placements.push({ matrix: trs(x, y, z, yaw, sx, sy, sz), color });
   };
   const at = (d: number, lat: number) => { const f = groundFrame(d, lat); return { x: f.x, y: surfaceY(d, lat), z: f.z, yaw: Math.atan2(f.dx, f.dz) }; };
   const pick = <T,>(r: () => number, list: readonly T[]): T => list[Math.floor(r() * list.length) % list.length]!;
+  /** Add one generated-model instance whose base sits at world (x, y, z); `height`/`width`/`depth` are the wanted world sizes. */
+  const mput = (id: string, x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint?: string): void => {
+    const m = MESHY_MANIFEST[id]!;
+    const sx = width / m.size[0], sy = height / m.size[1], sz = depth / m.size[2];
+    (models![id] ??= []).push({ position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [sx, sy, sz], ...(tint ? { tint } : {}) });
+  };
   /** World position of a point given in a box's local frame (+x across the route away from the right-hand side, +z forward). */
   const local = (c: { x: number; z: number; yaw: number }, lx: number, lz: number): [number, number] => {
     const co = Math.cos(c.yaw), si = Math.sin(c.yaw);
@@ -71,6 +84,11 @@ export function buildScenery(): SceneryLayer[] {
     const c = at(d, lat);
     const y0 = o.baseY ?? Math.min(surfaceY(d, lat - o.bw / 2), surfaceY(d, lat + o.bw / 2), c.y) - 0.15;
     const face = side;
+    if (models) {
+      /* the model's width runs along the route, its depth across it; the façade (+z) faces the path; the base sinks 0.3 below the lowest ground */
+      mput(r() < 0.5 ? "houseA" : "houseB", c.x, y0 - 0.2, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), o.bd, o.bh + 2.6, o.bw);
+      return;
+    }
     put("walls", c.x, y0, c.z, c.yaw, o.bw, o.bh, o.bd, pick(r, WALLS));
     put("walls", c.x, y0 - 1.3, c.z, c.yaw, o.bw + 0.3, 2, o.bd + 0.3, shade(pick(r, STONE), 0.92));
     const floors = Math.max(1, Math.round(o.bh / 3.3));
@@ -112,6 +130,7 @@ export function buildScenery(): SceneryLayer[] {
     const lat = side * (w / 2 + o.gap + o.r);
     const c = at(d, lat);
     const y0 = o.baseY ?? Math.min(surfaceY(d, lat - o.r), surfaceY(d, lat + o.r), c.y) - 0.2;
+    if (models) { mput("tower", c.x, y0 - 0.2, c.z, r() * 6, (o.r + 0.3) * 2, o.h + 3.4, (o.r + 0.3) * 2); return; }
     put("towers", c.x, y0 - 1.3, c.z, 0, o.r + 0.2, 2, o.r + 0.2, shade(pick(r, STONE), 0.92));
     put("towers", c.x, y0, c.z, 0, o.r, o.h, o.r, pick(r, WALLS));
     const floors = Math.max(1, Math.round(o.h / 3.3));
@@ -132,6 +151,7 @@ export function buildScenery(): SceneryLayer[] {
 
   const lanternPost = (d: number, side: -1 | 1): void => {
     const c = at(d, side * (pathWidth(d) / 2 + 0.55));
+    if (models) { const k = 3.9 / MESHY_MANIFEST.lantern!.size[1]; mput("lantern", c.x, c.y, c.z, c.yaw, MESHY_MANIFEST.lantern!.size[0] * k, 3.9, MESHY_MANIFEST.lantern!.size[2] * k); return; }
     put("posts", c.x, c.y, c.z, 0, 0.07, 3, 0.07, "#3a3028");
     put("lanterns", c.x, c.y + 3.15, c.z, 0, 0.3, 0.4, 0.3, "#ffb25a");
     put("cones", c.x, c.y + 3.45, c.z, 0, 0.45, 0.32, 0.45, "#2b2420");
@@ -140,6 +160,7 @@ export function buildScenery(): SceneryLayer[] {
   const gate = (d: number, pillar: string, beam: string): void => {
     const w = pathWidth(d) + 3.2;
     const c = at(d, 0);
+    if (models) { mput("gate", c.x, c.y - 0.3, c.z, c.yaw, w + 4.6, 13.8, 3.4, pillar === "#9a9484" ? "#a9aca3" : undefined); return; }
     for (const s of [-1, 1]) {
       const [px, pz] = local(c, s * w / 2, 0);
       put("trim", px, c.y - 0.3, pz, c.yaw, 1.3, 13.3, 1.3, pillar);
@@ -151,6 +172,7 @@ export function buildScenery(): SceneryLayer[] {
   };
 
   const tree = (x: number, y: number, z: number, h: number, crown: string, r: () => number): void => {
+    if (models) { const m = MESHY_MANIFEST.oak!, k = h / m.size[1], wk = 0.9 + r() * 0.3; mput("oak", x, y - 0.2, z, r() * 6, m.size[0] * k * wk, h, m.size[2] * k * wk); return; }
     put("trunks", x, y - 0.2, z, 0, 0.22 + h * 0.03, h * 0.62, 0.22 + h * 0.03, "#5a4332");
     const cr = h * 0.34;
     put("crowns", x, y + h * 0.66, z, 0, cr, cr * 0.85, cr, crown);
@@ -159,6 +181,7 @@ export function buildScenery(): SceneryLayer[] {
   };
 
   const pine = (x: number, y: number, z: number, h: number, r: () => number): void => {
+    if (models) { const wk = 0.85 + r() * 0.35, m = MESHY_MANIFEST.pine!; mput("pine", x, y - 0.4, z, r() * 6, m.size[0] * (h / m.size[1]) * wk, h, m.size[2] * (h / m.size[1]) * wk); return; }
     const tw = 0.45 + h * 0.04;
     put("trunks", x, y - 0.6, z, 0, tw, h * 0.7, tw, "#4a3a2a");
     const tone = pick(r, PINES);

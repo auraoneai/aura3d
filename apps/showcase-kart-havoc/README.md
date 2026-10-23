@@ -1,6 +1,6 @@
-# Kart Havoc — Desert Canyon Item Racing (`@aura3d/engine` 4.0.0)
+# Kart Havoc — Desert Canyon Item Racing (`@aura3d/engine` 4.0.8)
 
-Mario Kart-inspired desert canyon item karting game built on the public `@aura3d/engine` 4.0.0 and `@aura3d/engine/game` APIs.
+Mario Kart-inspired desert canyon item karting game built on the public `@aura3d/engine` 4.0.8 and `@aura3d/engine/game` APIs.
 
 Status: source-level playable prototype (`prototype` claim label) under the `golden-hour` look preset.
 

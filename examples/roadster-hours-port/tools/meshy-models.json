@@ -1,0 +1,176 @@
+[
+ {
+  "key": "roadster",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-roadster/model.glb",
+  "dims": [
+   1.87,
+   1.2,
+   3.93
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "sedan",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-sedan-r/model.glb",
+  "dims": [
+   1.64,
+   1.15,
+   3.31
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "hatch",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-hatch-r/model.glb",
+  "dims": [
+   1.62,
+   1.4,
+   3.6
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "suv",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-suv-r/model.glb",
+  "dims": [
+   1.85,
+   1.75,
+   4.3
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "pickup",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-pickup-r/model.glb",
+  "dims": [
+   1.9,
+   1.75,
+   5.2
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "bus",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-bus-r/model.glb",
+  "dims": [
+   2.5,
+   3.3,
+   11.5
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "boxtruck",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-boxtruck-r/model.glb",
+  "dims": [
+   2.4,
+   3.4,
+   7.5
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "lighthouse",
+  "kind": "prop",
+  "glb": "artifacts/meshy/rr-lighthouse-r/model.glb",
+  "dims": [
+   10,
+   62,
+   10
+  ],
+  "tex": 1024
+ },
+ {
+  "key": "townhouse",
+  "kind": "prop",
+  "glb": "artifacts/meshy/rr-townhouse-r/model.glb",
+  "dims": [
+   9,
+   11,
+   8
+  ],
+  "tex": 1024
+ },
+ {
+  "key": "pine",
+  "kind": "prop",
+  "glb": "artifacts/meshy/rr-pine-r/model.glb",
+  "dims": [
+   6,
+   12,
+   6
+  ],
+  "tex": 1024
+ },
+ {
+  "key": "villa",
+  "kind": "prop",
+  "glb": "artifacts/meshy/rr-villa2-r/model.glb",
+  "dims": [
+   10,
+   7,
+   8
+  ],
+  "tex": 1024
+ },
+ {
+  "key": "palm",
+  "kind": "prop",
+  "glb": "artifacts/meshy/rr-palm-r/model.glb",
+  "dims": [
+   5,
+   9,
+   5
+  ],
+  "tex": 1024
+ },
+ {
+  "key": "boulders",
+  "kind": "prop",
+  "glb": "artifacts/meshy/rr-boulders-r/model.glb",
+  "dims": [
+   4,
+   3,
+   4
+  ],
+  "tex": 1024
+ },
+ {
+  "key": "semi",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-semi-r/model.glb",
+  "dims": [
+   2.6,
+   4.1,
+   20.8
+  ],
+  "tex": 1024,
+  "flip": true
+ },
+ {
+  "key": "tanker",
+  "kind": "vehicle",
+  "glb": "artifacts/meshy/rr-tanker-r/model.glb",
+  "dims": [
+   2.6,
+   3.5,
+   17.6
+  ],
+  "tex": 1024,
+  "flip": true
+ }
+]

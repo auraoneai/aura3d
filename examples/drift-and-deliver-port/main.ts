@@ -13,6 +13,7 @@ import { createAuraApp, createAuraRouteHealthSnapshot, geometry, material, primi
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "./blackframe";
+import { carModel } from "./models";
 import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
 import { beamGeometry, beamSpec } from "./headlights";
@@ -37,6 +38,8 @@ const config = {
   autostart: params.get("autostart") === "1" || params.get("manual") === "1",
   quality: (params.get("quality") === "low" ? "low" : "high") as "high" | "low",
   /** diagnostics switches: `ao=1` turns screen-space AO on, `env=0` drops the HDRI light, `shadow=0` drops the sun's shadows */
+  /** `models=0` falls back to the code-built car shells (diagnostics) */
+  models: params.get("models") !== "0",
   ao: params.get("ao") === "1",
   env: params.get("env") !== "0",
   shadow: params.get("shadow") !== "0",
@@ -109,12 +112,16 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, start: { x: car.x, z: car.z } });
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, start: { x: car.x, z: car.z } });
   const s = look.builder;
-  s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#1d1e24", roughness: 0.28, envMapIntensity: 0.6 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
-  s.add(geometry.custom(shellGeometry(look.playerShell.detail), { name: "car-detail", material: material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: look.palette as never }), castShadow: true, receiveShadow: true }).runtime({ id: "car-detail" }));
-  s.add(primitives.box({ name: "car-light-l", size: [0.4, 0.14, 0.1], position: [-0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-l" }));
-  s.add(primitives.box({ name: "car-light-r", size: [0.4, 0.14, 0.1], position: [0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-r" }));
+  if (config.models) {
+    s.add(carModel("car-rig", "hypercar", true));
+  } else {
+    s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#1d1e24", roughness: 0.28, envMapIntensity: 0.6 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
+    s.add(geometry.custom(shellGeometry(look.playerShell.detail), { name: "car-detail", material: material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: look.palette as never }), castShadow: true, receiveShadow: true }).runtime({ id: "car-detail" }));
+    s.add(primitives.box({ name: "car-light-l", size: [0.4, 0.14, 0.1], position: [-0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-l" }));
+    s.add(primitives.box({ name: "car-light-r", size: [0.4, 0.14, 0.1], position: [0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-r" }));
+  }
   s.add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }));
   return s;
 }
@@ -198,6 +205,12 @@ function placeTraffic(): void {
       rig.detail.setMatrixAt(n, m);
     });
   }
+  for (const i of look.modelTraffic) {
+    const t = traffic[i]!;
+    const h = node(`traffic-${i}`);
+    h.setPosition(t.x, 0, t.z);
+    h.setRotation(0, t.yaw, 0);
+  }
 }
 
 const HIDDEN = mat(0, -50, 0, 0, 0, 0, 0, 0);
@@ -217,10 +230,14 @@ function placeNodes(dt: number): void {
     h.setPosition(car.x + ox * c + oz * s, oy, car.z - ox * s + oz * c);
     h.setRotation(extra[0], yaw + extra[1], roll + extra[2]);
   };
-  place("car-paint", 0, 0, 0);
-  place("car-detail", 0, 0, 0);
-  place("car-light-l", -0.6, 0.62, 2.1);
-  place("car-light-r", 0.6, 0.62, 2.1);
+  if (config.models) {
+    place("car-rig", 0, 0, 0);
+  } else {
+    place("car-paint", 0, 0, 0);
+    place("car-detail", 0, 0, 0);
+    place("car-light-l", -0.6, 0.62, 2.1);
+    place("car-light-r", 0.6, 0.62, 2.1);
+  }
   placeBeams(yaw);
   if (!beamsUncullable) {
     node("car-beams").frustumCulled = false;

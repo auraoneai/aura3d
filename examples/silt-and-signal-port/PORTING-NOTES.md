@@ -82,3 +82,24 @@ B, X, Start); procedural Web Audio (chapter pad, speed-reactive hum and wind, ri
 13-column trace rows as the reference), `applyInput(input)`, `setAutopilot(on)`, `state()`, `row()`, `render()`, `overview(on)`, `pose(p)`,
 `mode()`, `setMode(m)`, `info()`.
 Query: `?chapter=0..6&objective=N&autopilot=1&manual=1&start=1`.
+
+## Meshy art pass (2026-10-23)
+
+Generated through Kiro Prism from original text prompts (no image-to-3D, no original names); credits spent for this game: **453** (ledger tag `silt`, cap 800). Rights basis and task ids: `assets/ATTRIBUTION.md` and `assets/provenance/*.rights.json`. Admitted in an isolated temp project (`assets import-meshy` + `validate --require-license`, `failures: []`), then hard-simplified (meshopt simplify, 1024 px textures) so the whole port stays under 20 MB.
+
+| Model | Role | Prompt gist |
+| --- | --- | --- |
+| courier.glb | rider: remesh 12k, rig, library idle (action 0), rig walk/run merged into one GLB; clips idle/walk/run | young sky courier, sand flight suit, A-pose |
+| hoverboard.glb | board under the rider | sleek sand-white deck, copper trim, teal thruster strips |
+| ringclean.glb | the eight waiting signal rings (scale 25.5) | thick carved sandstone ring with glowing rune lines |
+| gatehouse.glb | landmark at the first objective | sandstone gatehouse, two towers, wooden gate |
+| aqueduct.glb | two distant aqueduct segments | ruined sandstone aqueduct, three arches |
+| ringgate.glb | canyon-gate landmark beyond the last objective | stone ring between two towers |
+| watchtower.glb | two outposts on the road | ruined sandstone watchtower |
+| pillar.glb | six canyon pillars | wind-carved sandstone pillar |
+| canyonrocks.glb | the 48 largest boulders (the rest stay cheap instanced icosahedra) | eroded red-sandstone boulder cluster |
+| lantern.glb | first 18 street lamps | iron post with bronze lantern |
+| banner.glb | eight route banners | tall pole, tattered teal and ochre banner |
+| stall.glb | two plaza market stalls | canvas-roofed stall with crates and jars |
+
+Rings: the waiting rings are lit stone models; the active ring gets a thin emissive torus and a thin emissive beam (solid lit meshes, no alpha blending or custom shader), because the owner reported on a real GPU that the previous additive-shader rings did not appear. Thrusters are emissive spheres for the same reason. Rejected/unused: a first ring-gate prompt that produced towers (kept only as the canyon-gate landmark), a cactus (60k triangles after simplify), a footbridge (Prism returned quota_exhausted). Not done: rigged villagers (static A-pose NPCs looked wrong), chapters 1-6 landmarks (landmarks are chapter 0 only).

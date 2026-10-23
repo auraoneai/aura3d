@@ -79,7 +79,7 @@ describe("silt-and-signal-port art assets and copy", () => {
       expect(existsSync(file), `${key}: ${file}`).toBe(true);
       bytes += statSync(file).size;
     }
-    expect(bytes).toBeLessThan(6 * 1024 * 1024);
+    expect(bytes).toBeLessThan(20 * 1024 * 1024);
     for (const [rel, hash] of Object.entries(ASSET_HASHES)) {
       expect(`sha256-${createHash("sha256").update(readFileSync(resolve(dir, "assets", rel))).digest("hex")}`, rel).toBe(hash);
     }

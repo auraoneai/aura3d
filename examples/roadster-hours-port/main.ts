@@ -10,6 +10,7 @@ import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound } from "./audio";
 import { LEVELS } from "./data";
 import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type Run, type RunInput } from "./sim";
+import { loadMeshy } from "./meshy";
 import { buildWorld, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
@@ -321,6 +322,7 @@ window.skybreak = { snapshot };
 
 async function boot(): Promise<void> {
   sizeCanvas();
+  if (new URLSearchParams(location.search).get("meshy") !== "0") await loadMeshy();
   const world = buildWorld(levelIndex);
   buildMenu();
   app = createAuraApp(canvas, {
@@ -331,6 +333,15 @@ async function boot(): Promise<void> {
   });
   await app.ready();
   runtime = world.bind(app);
+  // The engine uploads generated-model textures one at a time after mount (its diagnostics expose no completion signal):
+  // keep the loading screen up for a short settle so the models do not flash untextured.
+  if (world.texturedNodes > 0) {
+    $("loading-status").textContent = "Loading models";
+    for (const started = performance.now(); performance.now() - started < 1500;) {
+      app.step(0);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
   ready = true;
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;

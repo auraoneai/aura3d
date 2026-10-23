@@ -23,9 +23,9 @@ import {
   ui,
   type AuraRuntimeNodeHandle,
   type AuraSceneNode,
-  type AuraDiagnostics
+  type AuraDiagnostics,
+  resolveQrFlags
 } from "@aura3d/engine";
-import { resolveQrFlags } from "@aura3d/engine/contracts";
 import { assets } from "../../../../src/aura-assets";
 import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
 import { RulesEngine, type ShotRecord, type ShotOutcome } from "../gameplay/rules";

@@ -116,6 +116,7 @@ export function registerArtShots(lab: string, only: readonly string[] = [], quer
       console.log("DRIFT_ART_PERF", lab, JSON.stringify(perf));
       const diag = await api((o) => ({ d: o.diagnostics(), info: o.info() }));
       console.log("DRIFT_ART_DIAG", lab, JSON.stringify({ drawCalls: diag.d?.drawCalls, triangles: diag.d?.triangles, errors: diag.d?.errors?.length ?? 0 }), JSON.stringify(diag.info).slice(0, 600));
+      expect(diag.d?.drawCalls ?? 0, "the models and the city must draw").toBeGreaterThan(0);
       expect(errors.filter((e) => !/favicon/i.test(e))).toEqual([]);
     });
   });

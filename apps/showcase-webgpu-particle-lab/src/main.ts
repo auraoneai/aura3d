@@ -13,7 +13,7 @@ import {
   scene,
   timeline,
   type AuraColor,
-  type AuraInstanceTransform
+  type AuraTransformSpec
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 
@@ -111,7 +111,7 @@ const SWARM_OUTER_COUNT = 140;
 const innerSwarmPalette: readonly AuraColor[] = ["#38bdf8", "#22d3ee", "#67e8f9", "#0ea5e9", "#a5f3fc"];
 const outerSwarmPalette: readonly AuraColor[] = ["#fbbf24", "#f59e0b", "#38bdf8", "#fde047", "#c084fc"];
 
-const innerSwarmTransforms: AuraInstanceTransform[] = Array.from({ length: SWARM_INNER_COUNT }, () => ({
+const innerSwarmTransforms: AuraTransformSpec[] = Array.from({ length: SWARM_INNER_COUNT }, () => ({
   position: [0, 0.56, -0.42],
   scale: 1
 }));
@@ -120,7 +120,7 @@ const innerSwarmColors: AuraColor[] = Array.from(
   (_, index) => innerSwarmPalette[index % innerSwarmPalette.length]!
 );
 
-const outerSwarmTransforms: AuraInstanceTransform[] = Array.from({ length: SWARM_OUTER_COUNT }, () => ({
+const outerSwarmTransforms: AuraTransformSpec[] = Array.from({ length: SWARM_OUTER_COUNT }, () => ({
   position: [0, 0.56, -0.42],
   scale: 1
 }));
@@ -629,8 +629,8 @@ function publishEvidence(): void {
       typedRef: "assets.showcaseParticleCore",
       id: particleCoreAsset.id,
       url: particleCoreAsset.url,
-      license: particleCoreAsset.metadata.provenance.license,
-      author: particleCoreAsset.metadata.provenance.author,
+      license: String(particleCoreAsset.metadata?.provenance?.license ?? "unknown"),
+      author: String(particleCoreAsset.metadata?.provenance?.author ?? "unknown"),
       auraEvidence: collectAuraSceneEvidence(labApp.scene)
     }
   };

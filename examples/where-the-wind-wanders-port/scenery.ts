@@ -13,7 +13,11 @@ const SUN_SHADOW = (() => {
   return { x: x / l, z: z / l };
 })();
 
+export interface ModelPlacement { x: number; y: number; z: number; s: number; yaw: number; variant?: number; w?: number; d?: number; h?: number }
+export interface ReplacedByModels { bell?: boolean; cottage?: boolean; trees?: boolean; boat?: boolean; stones?: boolean; shrubs?: boolean }
 export interface Scenery {
+  /** placements of the pieces a model replaced (empty when nothing is replaced) */
+  placements: { bell: ModelPlacement[]; cottages: ModelPlacement[]; pines: ModelPlacement[]; oaks: ModelPlacement[]; shrubs: ModelPlacement[]; stones: ModelPlacement[] };
   props: Mesh;
   sails: Mesh;
   boat: Mesh;
@@ -44,8 +48,9 @@ const C = {
 
 const rotate = (x: number, z: number, yaw: number): [number, number] => [x * Math.cos(yaw) + z * Math.sin(yaw), -x * Math.sin(yaw) + z * Math.cos(yaw)];
 
-export function buildScenery(seed = 4242): Scenery {
+export function buildScenery(seed = 4242, replace: ReplacedByModels = {}): Scenery {
   const rand = lehmer(seed);
+  const placements: Scenery["placements"] = { bell: [], cottages: [], pines: [], oaks: [], shrubs: [], stones: [] };
   const props = newMesh();
   const blobs: ShadowBlob[] = [];
   const keepClear: { x: number; z: number; r: number }[] = [];
@@ -62,6 +67,13 @@ export function buildScenery(seed = 4242): Scenery {
   const cottage = (x: number, z: number, s: number, yaw: number, roof: Rgb, wall: Rgb): void => {
     const y = terrainHeight(x, z) - 0.15;
     const w = 7.2 * s, d = 5.4 * s, h = 3.6 * s;
+    if (replace.cottage) {
+      placements.cottages.push({ x, y, z, s, yaw, w, d, h: 0.6 * s + h + 3.0 * s });
+      blobs.push({ x: x + SUN_SHADOW.x * 4.2, z: z + SUN_SHADOW.z * 3.2, rx: w * 0.78, rz: d * 0.78, strength: 0.5 });
+      blobs.push({ x, z, rx: w * 0.62, rz: d * 0.62, strength: 0.35 });
+      keepClear.push({ x, z, r: Math.max(w, d) * 0.62 + 1.5 });
+      return;
+    }
     const ax = (lx: number, lz: number): [number, number] => {
       const [rx, rz] = rotate(lx, lz, yaw);
       return [x + rx, z + rz];
@@ -112,6 +124,15 @@ export function buildScenery(seed = 4242): Scenery {
   const cot = STRUCTURES.cottage, dcot = STRUCTURES.distantCottage, mill = STRUCTURES.windmill;
   cottage(cot.x, cot.z, 1.12, 0, C.tile, C.plaster);
   cottage(dcot.x, dcot.z, 0.95, 0.5, lin("#a8503a"), lin("#e6dcc0"));
+  if (replace.shrubs) {
+    for (const c of placements.cottages) {
+      for (let i = 0; i < 5; i++) {
+        const a = c.yaw + 0.5 + i * 1.15, r = (c.w ?? 7) * 0.62 + 0.8 + (i % 2) * 0.9;
+        const sx = c.x + Math.cos(a) * r, sz = c.z + Math.sin(a) * r * 0.8;
+        placements.shrubs.push({ x: sx, y: terrainHeight(sx, sz) - 0.05, z: sz, s: 0.9 + (i % 3) * 0.25, yaw: i * 1.7 });
+      }
+    }
+  }
 
   // windmill: stone base, tapered wooden body with a gallery and stairs, shingled cap, cloth sails
   const my = terrainHeight(mill.x, mill.z) - 0.2;
@@ -167,6 +188,7 @@ export function buildScenery(seed = 4242): Scenery {
     keepClear.push({ x: sx, z: sz, r: 1.2 });
   }
   const by = terrainHeight(BELL.x, BELL.z);
+  if (!replace.bell) {
   for (const sx of [-1.15, 1.15]) {
     addCylinder(props, { x: BELL.x + sx, y: by - 0.1, z: BELL.z, r0: 0.17, r1: 0.14, h: 3.5, seg: 8, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight });
     addBox(props, { x: BELL.x + sx * 0.78, y: by + 2.55, z: BELL.z, w: 0.12, h: 0.12, d: 0.12, yaw: 0, kind: KIND.wood, color: C.woodDark, tiltZ: sx > 0 ? 0.8 : -0.8 });
@@ -175,6 +197,8 @@ export function buildScenery(seed = 4242): Scenery {
   addGable(props, { x: BELL.x, y: by + 3.55, z: BELL.z, w: 3.0, d: 1.5, h: 0.9, overhang: 0.25, kind: KIND.roof, color: C.shingle, colorTop: lin("#9b6a4a"), gableColor: C.wood, gableKind: KIND.wood });
   addBox(props, { x: BELL.x, y: by + 0.2, z: BELL.z + 1.6, w: 2.0, h: 0.1, d: 0.6, kind: KIND.deck, color: C.woodLight });
   for (const bx of [-0.8, 0.8]) addBox(props, { x: BELL.x + bx, y: by + 0.08, z: BELL.z + 1.6, w: 0.12, h: 0.2, d: 0.5, kind: KIND.wood, color: C.woodDark });
+  }
+  if (replace.bell) placements.bell.push({ x: BELL.x, y: by - 0.05, z: BELL.z, s: 1, yaw: 0, h: 4.6 });
   keepClear.push({ x: BELL.x, z: BELL.z, r: 3.2 });
   blobs.push({ x: BELL.x + 1.2, z: BELL.z - 0.8, rx: 2.4, rz: 1.4, strength: 0.32 });
   const bellHang = { x: BELL.x, y: by + 3.3, z: BELL.z };
@@ -211,6 +235,12 @@ export function buildScenery(seed = 4242): Scenery {
     }
   };
   rocks(-30, -7.2, 4, 0.9); rocks(-10, -7.5, 3, 0.8); rocks(12, -4.2, 3, 0.8); rocks(40, -12.5, 6, 1.0); rocks(8, -15.5, 5, 1.1); rocks(-35, -14, 7, 1.2); rocks(52, 8, 4, 0.9); rocks(-43, -8, 4, 1.0); rocks(24, -2, 3, 0.7);
+  if (replace.stones) {
+    for (const [sx, sz, ss, yaw] of [[-35, -14, 1.0, 0.3], [40, -12.5, 0.9, -0.6]] as const) {
+      placements.stones.push({ x: sx, y: terrainHeight(sx, sz) - 0.05, z: sz, s: ss, yaw });
+      keepClear.push({ x: sx, z: sz, r: 3.2 * ss });
+    }
+  }
 
   // boat: its own mesh, origin at the waterline, bow towards +z
   const boat = newMesh();
@@ -228,6 +258,13 @@ export function buildScenery(seed = 4242): Scenery {
     const H = (3.8 + rand() * 2.8) * s;
     const phase = rand() * 6.28;
     const frost = rand() < 0.22;
+    if (replace.trees) {
+      placements.pines.push({ x, y, z, s, yaw: rand() * 6.28, h: H + 1.2 * s, variant: frost ? 1 : 0 });
+      blobs.push({ x: x + SUN_SHADOW.x * H * 0.55, z: z + SUN_SHADOW.z * H * 0.55, rx: 1.7 * s, rz: 1.5 * s + H * 0.12, strength: 0.38 });
+      keepClear.push({ x, z, r: 1.3 * s });
+      treeCount++;
+      return;
+    }
     const deep = frost ? C.pineFrost : mixRgb(C.pineDeep, C.pineMid, tone);
     const top = frost ? scaleRgb(C.pineFrost, 1.25) : mixRgb(C.pineMid, C.pineLight, tone);
     addCylinder(props, { x, y, z, r0: 0.3 * s, r1: 0.15 * s, h: 2.3 * s, seg: 6, kind: KIND.bark, color: C.barkDark, colorTop: C.barkLight, sway: 0.02, phase });
@@ -247,6 +284,14 @@ export function buildScenery(seed = 4242): Scenery {
     const y = (yAt ?? terrainHeight(x, z)) - 0.1;
     const phase = rand() * 6.28;
     const trunkH = (big ? 4.4 : 2.0 + rand() * 0.6) * s;
+    if (replace.trees) {
+      const R0 = (big ? 3.1 : 1.5 + rand() * 0.4) * s;
+      placements.oaks.push({ x, y, z, s, yaw: rand() * 6.28, h: trunkH + R0 * 2.2, variant: variant === "birch" ? 1 : variant === "maple" ? 2 : 0 });
+      blobs.push({ x: x + SUN_SHADOW.x * R0 * 1.0, z: z + SUN_SHADOW.z * R0 * 1.0, rx: R0 * 1.5, rz: R0 * 1.3, strength: big ? 0.5 : 0.36 });
+      keepClear.push({ x, z, r: big ? 2.6 : 1.3 * s });
+      treeCount++;
+      return;
+    }
     const leafBase = variant === "maple" ? lin("#a8903a") : variant === "birch" ? lin("#5e9a3e") : C.oakDeep;
     const leafTop = variant === "maple" ? lin("#dcc45a") : variant === "birch" ? lin("#93c455") : lin("#78ad42");
     addCylinder(props, { x, y, z, r0: (big ? 0.85 : 0.34) * s, r1: (big ? 0.5 : 0.2) * s, h: trunkH, seg: 8, kind: KIND.bark, color: variant === "birch" ? C.birchDark : C.barkDark, colorTop: variant === "birch" ? C.birch : C.barkLight, sway: 0.015, phase });
@@ -398,7 +443,7 @@ export function buildScenery(seed = 4242): Scenery {
   addBlob(wisp, { x: 0, y: -0.28, z: 0, rx: 0.1, ry: 0.2, rz: 0.1, rings: 3, seg: 6, bump: 0, kind: KIND.skin, color: lin("#7a4fd8"), colorTop: lin("#9b6cf0") });
   const traveller = buildTraveller();
 
-  return { props, sails, boat, traveller, bellMesh, envelope, wisp, blobs, keepClear, windmillHub, bellHang, boatMoor, jettyEnd, lanterns, treeCount };
+  return { placements, props, sails, boat, traveller, bellMesh, envelope, wisp, blobs, keepClear, windmillHub, bellHang, boatMoor, jettyEnd, lanterns, treeCount };
 }
 
 /** The walker: limb ids drive the vertex-shader gait (1/2 legs, 3/4 arms, 5 cloak). Feet at y = 0, facing +z. */

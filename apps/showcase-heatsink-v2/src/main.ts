@@ -922,10 +922,7 @@ const minimapCtx = minimapCanvas?.getContext("2d") ?? null;
 async function bootThermalDriftShowcase(): Promise<void> {
   const auraApp = createAuraApp("#app", {
     scene: buildThermalDriftScene(),
-    renderer: {
-      quality: "high",
-      qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }
-    },
+    renderer: { quality: "high" },
     diagnostics: false
   });
 

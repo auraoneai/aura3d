@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169ea-c92f-7274-8cfa-4e8ac7c0b1cb",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792778357051,
+  "started_at": 1792778357057,
+  "finished_at": 1792778400571,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169ea-c92f-7274-8cfa-4e8ac7c0b1cb/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169ea-c92f-7274-8cfa-4e8ac7c0b1cb/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169ea-c92f-7274-8cfa-4e8ac7c0b1cb/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169ea-c92f-7274-8cfa-4e8ac7c0b1cb/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169ea-c92f-7274-8cfa-4e8ac7c0b1cb/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169ea-c92f-7274-8cfa-4e8ac7c0b1cb/output/preview.png",
+  "prompt": "a small friendly floating spirit companion, a glowing violet teardrop-shaped wisp with a soft translucent tail and two tiny bright eyes, stylised storybook game prop, PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 1043389232,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/wind-wisp/model.glb",
+  "artifacts/meshy/wind-wisp/thumbnail.png",
+  "artifacts/meshy/wind-wisp/texture_0_base_color.png",
+  "artifacts/meshy/wind-wisp/texture_0_metallic.png",
+  "artifacts/meshy/wind-wisp/texture_0_normal.png",
+  "artifacts/meshy/wind-wisp/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T18:00:22.468Z"
+}

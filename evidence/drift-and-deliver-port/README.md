@@ -1,5 +1,23 @@
 # Drift & Deliver port: remote browser evidence
 
+## Meshy models pass (Oct 2026)
+
+The player car, traffic and near-field street furniture are now generated 3D models (see `examples/drift-and-deliver-port/assets/ATTRIBUTION.md`
+and PORTING-NOTES.md). `compare-meshy-before-after.jpg` is a 2 x 2 sheet of port frames only: top row `z-idle` (before: round-3 code-built shells and
+props, after: generated models), bottom row `downtown-ne`. Frames are in `meshy-after/` (`ref-z-idle-final-clean.jpg` is the final code; `ref-downtown-ne-clean.jpg`
+is from the run before the hypercar's normal map was dropped and its environment reflections reduced, so its car is slightly noisier). All were taken by
+`tests/browser/drift-and-deliver-art-lib.ts` on the remote runner (SwiftShader WebGL2, 1024x576, quality high; ACR runs `drift-meshy-a4-20261023T190353Z`
+and `drift-meshy-b1-20261023T192922Z`, both passed with 0 console errors). The `*.jpg` ignore rule keeps these frames out of git unless force-added.
+
+- Draw calls: 129 at `z-idle`, 80 at `downtown-ne` (round 3: 85-123 across its shots). Render + read-back proxy on software GL 56 s per frame (round 3: 38-55 s;
+  not a GPU number). 84 traffic cars are 84 `model()` nodes (one draw each); lamps, signals, trees, hydrants and shelters are one instanced draw per kind.
+- Assets: 14 GLBs, about 16 MB (the 10 MB guideline is exceeded; hypercar 2.4 MB, landmarks 2 MB each). Meshy credits spent for Drift: 440 (ledger tag `drift`).
+- The blind judge was **not** re-run for this pass (a model judge needs the full 11-shot set, about 5 hours on software GL); the structural change is visible in the
+  sheet: lamps with lanterns, signal heads, hydrants and palms near the start, and a modelled hypercar instead of the box shell.
+- Remaining differences: the hypercar's paint still reads patchy and faceted from behind (Meshy's baked texture plus the sky reflection; its normal map was
+  dropped because the derivative-tangent normal mapping made it look crumpled), the wheels do not spin, traffic colours are fixed per model, pedestrians are
+  still static code-built figures, and the far field (beyond 170-230 m) keeps the low-poly props, with an unblended swap.
+
 ## Art pass (Oct 2026): before / after
 
 `frames-before/` and `frames-after/` are 1024x576 JPEGs (`ref-<shot>-clean.jpg`, canvas only, no DOM HUD) of the port at the same 11 shots,

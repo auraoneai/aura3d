@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169ee-2aa6-7595-9d24-087d4c5020ee",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792778578612,
+  "started_at": 1792778578618,
+  "finished_at": 1792778640463,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169ee-2aa6-7595-9d24-087d4c5020ee/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169ee-2aa6-7595-9d24-087d4c5020ee/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169ee-2aa6-7595-9d24-087d4c5020ee/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169ee-2aa6-7595-9d24-087d4c5020ee/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169ee-2aa6-7595-9d24-087d4c5020ee/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169ee-2aa6-7595-9d24-087d4c5020ee/output/preview.png",
+  "prompt": "a ruined sandstone watchtower with a collapsed top and a wooden platform, desert canyon outpost, stylised game building, PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 225341023,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/silt-watchtower/model.glb",
+  "artifacts/meshy/silt-watchtower/thumbnail.png",
+  "artifacts/meshy/silt-watchtower/texture_0_base_color.png",
+  "artifacts/meshy/silt-watchtower/texture_0_metallic.png",
+  "artifacts/meshy/silt-watchtower/texture_0_normal.png",
+  "artifacts/meshy/silt-watchtower/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T18:04:08.677Z"
+}

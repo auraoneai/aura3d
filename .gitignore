@@ -443,3 +443,8 @@ evidence/look-reference-frames/
 
 # Aura Slam parity baseline frames (first-party, committed)
 !evidence/aura-slam/frames-reference/*.jpg
+# Roadster Hours port: generated model textures (runtime assets) and port-only Meshy evidence frames
+!examples/roadster-hours-port/assets/meshy/*.jpg
+!evidence/roadster-hours-port/meshy-before/*.jpg
+!evidence/roadster-hours-port/meshy-after/*.jpg
+!evidence/roadster-hours-port/meshy-compare/*.jpg

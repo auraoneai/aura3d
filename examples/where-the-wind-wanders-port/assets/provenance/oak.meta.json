@@ -1,0 +1,49 @@
+{
+ "resource": "remesh",
+ "task": {
+  "id": "01a169e9-5834-76d0-bae9-0552ffb788e0",
+  "type": "remesh",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792778262621,
+  "started_at": 1792778262626,
+  "finished_at": 1792778561585,
+  "expires_at": 1793037761585,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e9-5834-76d0-bae9-0552ffb788e0/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e9-5834-76d0-bae9-0552ffb788e0/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e9-5834-76d0-bae9-0552ffb788e0/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e9-5834-76d0-bae9-0552ffb788e0/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e9-5834-76d0-bae9-0552ffb788e0/output/texture_0_roughness.png",
+    "metallic_roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e9-5834-76d0-bae9-0552ffb788e0/output/texture_0_metallic_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e9-5834-76d0-bae9-0552ffb788e0/output/preview.png",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "text_style_prompt": "",
+  "image_style_url": "",
+  "name": "",
+  "art_style": "",
+  "object_prompt": "",
+  "style_prompt": "",
+  "negative_prompt": "",
+  "model_url": "",
+  "consumed_credits": 5
+ },
+ "saved_files": [
+  "artifacts/meshy/wind-oak-s/model.glb",
+  "artifacts/meshy/wind-oak-s/thumbnail.png",
+  "artifacts/meshy/wind-oak-s/texture_0_base_color.png",
+  "artifacts/meshy/wind-oak-s/texture_0_metallic.png",
+  "artifacts/meshy/wind-oak-s/texture_0_normal.png",
+  "artifacts/meshy/wind-oak-s/texture_0_roughness.png",
+  "artifacts/meshy/wind-oak-s/texture_0_metallic_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T18:02:58.481Z"
+}

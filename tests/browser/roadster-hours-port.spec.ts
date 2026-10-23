@@ -35,7 +35,7 @@ interface Api {
   batching(): { multiDrawMode?: string; multiDrawBatches?: number; instancedBatches?: number; outputDraws?: number } | null;
   diagnostics(): { drawCalls?: number; errors?: readonly unknown[] } | null;
   appInfo(): unknown;
-  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; geometries: number; features: readonly string[] } | null;
+  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; instancedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] } | null;
   routeHealth(): { status: string; parityIds: readonly string[] } | null;
 }
 interface ReplayFixture {
@@ -147,15 +147,20 @@ test.describe("roadster-hours-port (Phase B)", () => {
     await api((a) => a.renderNow());
     const gl = await page.evaluate(() => ({ ...(window as unknown as { __glCounts: Record<string, number> }).__glCounts }));
     console.log("ROADSTER_HOURS_GL_FRAME", JSON.stringify(gl));
-    if (multiDrawExt) {
+    // Generated (Meshy) vehicles are textured instanced nodes (batched.mesh cannot bind a texture): one instanced draw per model.
+    // Only the vehicles without a generated model (a few box rigs) stay in batched meshes, so the multi-draw bounds apply when enough remain.
+    const batchedSlots = vehicles - probe!.instancedInstances;
+    if (probe!.instancedInstances > 0) expect(gl.dei, "each generated vehicle model is one instanced draw").toBeGreaterThanOrEqual(1);
+    // Multi-draw packs several geometries into one call: a lone shared box geometry (the rigs) is drawn as one instanced call instead.
+    if (multiDrawExt && batchedSlots >= 24 && probe!.batchedGeometries > 3) {
       expect(gl.md, "the batched vehicles go out as multi-draw calls").toBeGreaterThanOrEqual(1);
       // The batches are drawn by more than one render pass; the bound is relative to the pooled geometries, not the instance count.
       expect(gl.md, "a small bounded number of multi-draw calls per frame, independent of the instance count").toBeLessThanOrEqual(2 * probe!.geometries);
       // Members are the instances inside the view frustum this frame (parts of vehicles behind or beside the camera are culled).
-      expect(gl.mdMembers, "the multi-draw calls carry the visible vehicle instances").toBeGreaterThanOrEqual(Math.floor(vehicles * 0.6));
-    } else {
+      expect(gl.mdMembers, "the multi-draw calls carry the visible batched vehicle instances").toBeGreaterThanOrEqual(Math.floor(batchedSlots * 0.6));
+    } else if (!multiDrawExt) {
       expect(gl.md).toBe(0);
-      expect(gl.de + gl.dei, "fallback draws at least one per instance").toBeGreaterThanOrEqual(vehicles);
+      expect(gl.de + gl.dei, "fallback draws at least one per instance").toBeGreaterThanOrEqual(Math.min(vehicles, batchedSlots + 1));
     }
     const diag = await api((a) => a.diagnostics());
     expect((diag?.errors ?? []).length, JSON.stringify(diag?.errors)).toBe(0);

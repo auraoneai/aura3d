@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169cd-a0f2-75a8-bf15-bd42d6a4179a",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776446215,
+  "started_at": 1792776446220,
+  "finished_at": 1792776490836,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cd-a0f2-75a8-bf15-bd42d6a4179a/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cd-a0f2-75a8-bf15-bd42d6a4179a/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cd-a0f2-75a8-bf15-bd42d6a4179a/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cd-a0f2-75a8-bf15-bd42d6a4179a/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cd-a0f2-75a8-bf15-bd42d6a4179a/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cd-a0f2-75a8-bf15-bd42d6a4179a/output/preview.png",
+  "prompt": "a floating energy cell pickup, glowing cyan crystal octahedron held inside a thin dark metal cage frame, sci-fi game collectible, emissive, PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3512680225,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/hs-pickup-shield-p/model.glb",
+  "artifacts/meshy/hs-pickup-shield-p/thumbnail.png",
+  "artifacts/meshy/hs-pickup-shield-p/texture_0_base_color.png",
+  "artifacts/meshy/hs-pickup-shield-p/texture_0_metallic.png",
+  "artifacts/meshy/hs-pickup-shield-p/texture_0_normal.png",
+  "artifacts/meshy/hs-pickup-shield-p/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:29:36.127Z"
+}

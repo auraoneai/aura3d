@@ -1,0 +1,34 @@
+/**
+ * Generated 3D models for the port (Meshy text-to-3D through Kiro Prism, prompts and task ids in assets/ATTRIBUTION.md).
+ * Characters are rigged GLBs with canonical clip names (run, idle, jump, slide, punch, sword, jab, block, hit, death) and
+ * are cloned with `cloneSkinned`; props are instanced with `instances.model`. Asset URLs are same-origin pathnames with
+ * a sha256 so the production bridge admits them.
+ */
+import { defineAuraAssets } from "@aura3d/engine";
+import { MESHY_MANIFEST, type PropId } from "./assets/meshy/manifest";
+
+export type CharacterId = "hero" | "soldier" | "brute" | "sage";
+
+export const CHARACTER_URLS: Readonly<Record<CharacterId, string>> = {
+  hero: new URL("./assets/meshy/hero.glb", import.meta.url).href,
+  soldier: new URL("./assets/meshy/soldier.glb", import.meta.url).href,
+  brute: new URL("./assets/meshy/brute.glb", import.meta.url).href,
+  sage: new URL("./assets/meshy/sage.glb", import.meta.url).href
+};
+
+/** Which character model each of the thirteen actor slots clones: 0 hero, 1-3 shadow clones, 4-9 soldiers, 10-11 brutes, 12 sage. */
+export const SLOT_MODEL: readonly CharacterId[] = ["hero", "hero", "hero", "hero", "soldier", "soldier", "soldier", "soldier", "soldier", "soldier", "brute", "brute", "sage"];
+
+const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23";
+const url = (id: PropId): string => new URL(`./assets/meshy/${id}.glb`, import.meta.url).pathname;
+const entry = (id: PropId) => ({ type: "model" as const, format: "glb" as const, url: url(id), hash: `sha256-${MESHY_MANIFEST[id].sha256}`, metadata: { license: LICENSE } });
+
+export const PROP_ASSETS = defineAuraAssets({
+  houseA: entry("houseA"),
+  houseB: entry("houseB"),
+  tower: entry("tower"),
+  gate: entry("gate"),
+  pine: entry("pine"),
+  lantern: entry("lantern"),
+  oak: entry("oak")
+});

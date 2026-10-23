@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d3-fb24-74c3-8289-ab2ef49341f5",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776862521,
+  "started_at": 1792776862526,
+  "finished_at": 1792776909996,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d3-fb24-74c3-8289-ab2ef49341f5/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d3-fb24-74c3-8289-ab2ef49341f5/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d3-fb24-74c3-8289-ab2ef49341f5/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d3-fb24-74c3-8289-ab2ef49341f5/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d3-fb24-74c3-8289-ab2ef49341f5/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d3-fb24-74c3-8289-ab2ef49341f5/output/preview.png",
+  "prompt": "a tall angular basalt rock spire with pale chalk streaks and cracked sides, lunar landscape game prop, stylised, PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2214491527,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/so-boulder_b/model.glb",
+  "artifacts/meshy/so-boulder_b/thumbnail.png",
+  "artifacts/meshy/so-boulder_b/texture_0_base_color.png",
+  "artifacts/meshy/so-boulder_b/texture_0_metallic.png",
+  "artifacts/meshy/so-boulder_b/texture_0_normal.png",
+  "artifacts/meshy/so-boulder_b/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:35:33.009Z"
+}

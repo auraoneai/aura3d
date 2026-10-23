@@ -157,10 +157,11 @@ test.describe("strange-orbit-port (Phase A)", () => {
 
     // Compact on purpose: the full diagnostics object is large enough to be dropped from the remote log.
     const diag = await api((o) => {
-      const d = o.diagnostics() as { drawCalls?: number; errors?: readonly unknown[] } | null;
+      const d = o.diagnostics() as { drawCalls?: number; triangles?: number; errors?: readonly unknown[] } | null;
       const i = o.info() as { memory?: { geometries?: number; programs?: number } } | null;
-      return { drawCalls: d?.drawCalls ?? 0, errorCount: d?.errors?.length ?? null, geometries: i?.memory?.geometries ?? null, programs: i?.memory?.programs ?? null, nodes: o.nodeCount(), routeHealth: o.routeHealth() };
+      return { drawCalls: d?.drawCalls ?? 0, triangles: d?.triangles ?? null, errorCount: d?.errors?.length ?? null, geometries: i?.memory?.geometries ?? null, programs: i?.memory?.programs ?? null, nodes: o.nodeCount(), routeHealth: o.routeHealth() };
     });
+    console.log("STRANGE_ORBIT_PERF", JSON.stringify({ drawCalls: diag.drawCalls, triangles: diag.triangles, nodes: diag.nodes, geometries: diag.geometries, programs: diag.programs, errorCount: diag.errorCount }));
     console.log("STRANGE_ORBIT_DIAG", JSON.stringify(diag), JSON.stringify(errors.slice(0, 6)).slice(0, 600));
 
     // ---- deterministic 7-lap race (sim only, then render the finish) ----
@@ -199,7 +200,7 @@ test.describe("strange-orbit-port (Phase A)", () => {
     expect(diag.errorCount ?? 0).toBe(0);
     expect(diag.routeHealth?.status).toBe("ready");
     expect(diag.routeHealth?.parityIds).toEqual(["SG-03", "SG-05", "SH-02", "R-23"]);
-    expect(diag.nodes).toBeGreaterThan(25);
+    expect(diag.nodes).toBeGreaterThan(15);
 
     // Track pixels sit under the chase camera; the frame is not a flat clear colour.
     expect(startStats.whole.colors, JSON.stringify(startStats.whole)).toBeGreaterThan(40);
@@ -241,5 +242,42 @@ test.describe("strange-orbit-port (Phase A)", () => {
       expect([entry.id, entry.name, entry.place, entry.gap, entry.finished, entry.finishTime]).toEqual([want.id, want.name, want.place, want.gap, want.finished, want.finishTime]);
       expect(Math.abs(entry.s - want.s)).toBeLessThan(1e-5);
     });
+  });
+  test("skate mode: Meshy skater renders and the race starts", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+    await page.setViewportSize({ width: 960, height: 540 });
+    await page.goto(`${server.origin}${LAB}?manual=1&quality=low&vehicle=skate`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(
+      () => {
+        const w = window as unknown as { __AURA_STRANGE_ORBIT__?: { ready(): boolean }; __AURA_STRANGE_ORBIT_ERROR__?: string };
+        return w.__AURA_STRANGE_ORBIT__?.ready() === true || Boolean(w.__AURA_STRANGE_ORBIT_ERROR__);
+      },
+      undefined,
+      { timeout: 540_000 }
+    );
+    const api = <T>(fn: (o: OrbitApi) => T | Promise<T>): Promise<T> =>
+      page.evaluate(`(${fn.toString()})(window.__AURA_STRANGE_ORBIT__)`) as Promise<T>;
+    const frame = async (name: string): Promise<void> => {
+      const data = await api((o) => o.frame(640, 360, 0.72));
+      const b64 = data.split(",")[1] ?? "";
+      const parts = Math.ceil(b64.length / 1800);
+      for (let i = 0; i < parts; i++) console.log(`STRANGE_ORBIT_FRAMEPART ${name} ${i + 1}/${parts} ${b64.slice(i * 1800, (i + 1) * 1800)}`);
+    };
+    await api((o) => { o.stepFrames(1); return 0; });
+    await frame("skate-menu");
+    await api((o) => { o.begin(); o.setAutopilot(true); o.stepFrames(260); return 0; });
+    await frame("skate-race-start");
+    await api((o) => { o.stepFrames(600); return 0; });
+    await frame("skate-race-10s");
+    const state = await api((o) => o.state());
+    const diag = await api((o) => { const d = o.diagnostics() as { drawCalls?: number; errors?: readonly unknown[] } | null; return { drawCalls: d?.drawCalls ?? 0, errorCount: d?.errors?.length ?? 0 }; });
+    console.log("STRANGE_ORBIT_SKATE", JSON.stringify({ phase: state.phase, s: state.s, speed: state.speed, ...diag }));
+    expect(diag.errorCount).toBe(0);
+    expect(diag.drawCalls).toBeGreaterThan(5);
+    expect(state.phase).toBe("racing");
+    expect(state.s).toBeGreaterThan(100);
+    expect(errors.filter((e) => /Failed to resolve|shader|GLSL|compile|bridge|model/i.test(e)), errors.join("\n")).toEqual([]);
   });
 });

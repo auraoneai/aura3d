@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169e5-0183-72d1-8d5b-3d2219b6a5f2",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792777978255,
+  "started_at": 1792777978259,
+  "finished_at": 1792778013820,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169e5-0183-72d1-8d5b-3d2219b6a5f2/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169e5-0183-72d1-8d5b-3d2219b6a5f2/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169e5-0183-72d1-8d5b-3d2219b6a5f2/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169e5-0183-72d1-8d5b-3d2219b6a5f2/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169e5-0183-72d1-8d5b-3d2219b6a5f2/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169e5-0183-72d1-8d5b-3d2219b6a5f2/output/preview.png",
+  "prompt": "a tall stone clock tower landmark with a pointed copper green roof, four lit clock faces and arched belfry windows, cream limestone walls, single building, centered, no ground, PBR materials",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 1280188181,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/drift-clocktower/model.glb",
+  "artifacts/meshy/drift-clocktower/thumbnail.png",
+  "artifacts/meshy/drift-clocktower/texture_0_base_color.png",
+  "artifacts/meshy/drift-clocktower/texture_0_metallic.png",
+  "artifacts/meshy/drift-clocktower/texture_0_normal.png",
+  "artifacts/meshy/drift-clocktower/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:53:45.932Z"
+}

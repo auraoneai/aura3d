@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169e8-a858-76f9-aa78-2ca5a14316ab",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792778217569,
+  "started_at": 1792778217573,
+  "finished_at": 1792778294173,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e8-a858-76f9-aa78-2ca5a14316ab/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e8-a858-76f9-aa78-2ca5a14316ab/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e8-a858-76f9-aa78-2ca5a14316ab/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e8-a858-76f9-aa78-2ca5a14316ab/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e8-a858-76f9-aa78-2ca5a14316ab/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169e8-a858-76f9-aa78-2ca5a14316ab/output/preview.png",
+  "prompt": "a round stone watchtower with a conical dark slate tile roof, small arched windows and a wooden door, stylised hand-painted game asset, no base",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3117474241,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/ninja-tower/model.glb",
+  "artifacts/meshy/ninja-tower/thumbnail.png",
+  "artifacts/meshy/ninja-tower/texture_0_base_color.png",
+  "artifacts/meshy/ninja-tower/texture_0_metallic.png",
+  "artifacts/meshy/ninja-tower/texture_0_normal.png",
+  "artifacts/meshy/ninja-tower/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:58:26.584Z"
+}

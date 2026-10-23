@@ -4,12 +4,13 @@
  * pickups, barrels, the player drone (primitives), exhaust points, chase camera, bloom and vignette. The original's
  * GLB/texture assets are re-created procedurally; see PORTING-NOTES.md.
  */
-import { camera, effects, geometry, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, effects, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
 import { pointsSpec, roadSpec, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, type Rgb } from "./materials";
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
+import { barrelModel, droneHull, gatePylonNodes, sceneryNodes, pickupModel } from "./models";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
@@ -39,25 +40,14 @@ interface PartSpec {
   readonly glow: string;
   readonly glowAmt: number;
   readonly additive?: boolean;
+  /** the Meshy hull model instead of a primitive */
+  readonly model?: boolean;
 }
-const DIAG = 1.62;
+/** the generated hull's camera gimbal (its nose) must point along the track's +X; a +90 degree yaw rendered it backwards, so -90 */
+const HULL_YAW = -Math.PI / 2;
 /** Quad-rotor drone in the track frame (x forward, y up, z side): copper body, cyan accents, twin thrusters with plumes. */
 const DRONE_PARTS: readonly PartSpec[] = [
-  { id: "drone-body", prim: "box", size: [3.0, 0.75, 1.5], offset: [0, 0, 0], base: "#b8581c", glow: "#ff8a3a", glowAmt: 0.1 },
-  { id: "drone-cabin", prim: "box", size: [1.5, 0.5, 1.1], offset: [0.2, 0.6, 0], base: "#8a3f14", glow: "#ff9a4a", glowAmt: 0.18 },
-  { id: "drone-strip", prim: "box", size: [3.1, 0.1, 0.34], offset: [0, 0.34, 0], base: "#0a2a30", glow: "#40f0ff", glowAmt: 1.6 },
-  { id: "drone-arm-a", prim: "box", size: [4.6, 0.16, 0.26], offset: [0, 0.3, 0], yaw: Math.PI / 4, base: "#262b33", glow: "#000000", glowAmt: 0 },
-  { id: "drone-arm-b", prim: "box", size: [4.6, 0.16, 0.26], offset: [0, 0.3, 0], yaw: -Math.PI / 4, base: "#262b33", glow: "#000000", glowAmt: 0 },
-  ...([[1, 1], [1, -1], [-1, 1], [-1, -1]] as const).flatMap(([fx, fz], k): PartSpec[] => [
-    { id: `drone-motor-${k}`, prim: "box", size: [0.55, 0.45, 0.55], offset: [fx * DIAG, 0.42, fz * DIAG], base: "#c26a24", glow: "#40f0ff", glowAmt: 0.5 },
-    { id: `drone-blade-${k}-a`, prim: "box", size: [1.9, 0.03, 0.13], offset: [fx * DIAG, 0.7, fz * DIAG], spin: 55 * fx * fz, yaw: k, base: "#1b1f25", glow: "#000000", glowAmt: 0 },
-    { id: `drone-blade-${k}-b`, prim: "box", size: [1.9, 0.03, 0.13], offset: [fx * DIAG, 0.7, fz * DIAG], spin: 55 * fx * fz, yaw: k + Math.PI / 2, base: "#1b1f25", glow: "#000000", glowAmt: 0 }
-  ]),
-  ...([-1, 1] as const).flatMap((side, k): PartSpec[] => [
-    { id: `drone-thruster-${k}`, prim: "cyl", size: [0.62, 1.7, 0.62], offset: [-1.45, -0.05, side * 0.62], rollZ: Math.PI / 2, base: "#b8581c", glow: "#ff8a3a", glowAmt: 0.2 },
-    { id: `drone-thruster-glow-${k}`, prim: "sphere", size: 0.6, offset: [-2.3, -0.05, side * 0.62], base: "#ffffff", glow: "#fff4dc", glowAmt: 2.4 },
-    { id: `drone-plume-${k}`, prim: "cyl", size: [0.2, 4.4, 0.2], offset: [-4.6, -0.05, side * 0.62], rollZ: Math.PI / 2, base: "#ff8a3a", glow: "#ff9a3a", glowAmt: 0.8, additive: true }
-  ])
+  { id: "drone-hull", prim: "box", size: 1, offset: [0, 0.1, 0], yaw: HULL_YAW, base: "#000000", glow: "#000000", glowAmt: 0, model: true }
 ];
 
 const STREAKS = 110;
@@ -102,23 +92,19 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
   b.add(primitives.sphere({ name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
+  /* the Meshy models are lit surfaces: a cool sky fill and a warm low key, the custom (unlit) road/sky/neon shaders ignore both */
+  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#6fa8d8", groundColor: "#2a1a10", intensity: 1.1 }));
+  b.add(lights.directional({ name: "key", position: [180, 260, -120], target: [0, 0, 0], intensity: 2.6, color: "#ffd9b0" }));
+  for (const n of sceneryNodes(track)) b.add(n);
+
   /* checkpoint gates: veil across the road + two pylons */
   track.checkpoints.forEach((s, i) => {
     const fr = track.frame(s);
     const color = hexLinear(fr.sec.hud.color);
     b.add(geometry.custom(dynamicFrom(veilQuad(track, s, 22)), { name: `gate-veil-${i}`, material: material.custom(veilSpec(color, "gate")) }).runtime({ id: `gate-veil-${i}` }));
-    const rot = droneEuler(fr, 0, 0, 0);
-    for (const side of [-1, 1]) {
-      const lat = side * (fr.hw + 0.6);
-      b.add(primitives.cylinder({
-        name: `gate-${i}-pylon-${side}`,
-        position: [fr.x + fr.rx * lat, fr.y + 11, fr.z + fr.rz * lat],
-        rotation: [...rot],
-        size: [1.2, 22, 1.2],
-        material: material.custom(solidSpec(hexLinear("#1b2036"), color, 1.4))
-      }));
-    }
   });
+
+  for (const n of gatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0))) b.add(n);
 
   /* boost pads */
   track.boostPads.forEach((p, i) => {
@@ -128,22 +114,15 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   /* pickups and barrels */
   track.pickups.forEach((p, i) => {
     const shield = p.kind === "shield";
-    b.add(primitives.polyhedron({
-      name: `pickup-${i}`,
-      params: { variant: "octahedron", detail: 0, radius: 1.0 },
-      material: material.custom(solidSpec(shield ? hexLinear("#5fd0ff") : hexLinear("#6dffb0"), shield ? hexLinear("#5fd0ff") : hexLinear("#6dffb0"), 1.1))
-    }).runtime({ id: fogTracked(`pickup-${i}`, `pickup-${i}`) }));
+    b.add(pickupModel(i, shield).runtime({ id: fogTracked(`pickup-${i}`, `pickup-${i}`) }));
   });
   track.barrels.forEach((_, i) => {
-    b.add(primitives.cylinder({
-      name: `barrel-${i}`,
-      size: [1.5, 2.2, 1.5],
-      material: material.custom(solidSpec(hexLinear("#8a2b12"), hexLinear("#ff5a1f"), 0.7))
-    }).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
+    b.add(barrelModel(i).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
   });
 
   /* player drone */
   for (const part of DRONE_PARTS) {
+    if (part.model) { b.add(droneHull().runtime({ id: fogTracked(part.id, part.id) })); continue; }
     const extra = part.additive ? { transparent: true, blending: "additive" as const, depthWrite: false } : {};
     const mat = material.custom(solidSpec(hexLinear(part.base), hexLinear(part.glow), part.glowAmt, extra));
     const handle = part.prim === "box"
@@ -232,6 +211,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       const local = yawNow || part.rollZ ? multiplyMat3(axisRotation("y", yawNow), axisRotation("z", part.rollZ ?? 0)) : null;
       const e = local ? matrixToEulerZYX(multiplyMat3(R, local)) : euler;
       h.setRotation(e[0], e[1], e[2]);
+      if (part.model) continue;
       h.setUniform?.("heat", heatGlow);
       h.setUniform?.("flash", p.invuln > 0 ? 0.5 + 0.5 * Math.sin(time * 30) : 0);
     }

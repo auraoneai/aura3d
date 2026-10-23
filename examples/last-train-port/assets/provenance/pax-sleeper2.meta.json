@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169de-c62b-709f-8e11-01f2a1b40de3",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792777569854,
+  "started_at": 1792777569860,
+  "finished_at": 1792777600966,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169de-c62b-709f-8e11-01f2a1b40de3/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169de-c62b-709f-8e11-01f2a1b40de3/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169de-c62b-709f-8e11-01f2a1b40de3/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169de-c62b-709f-8e11-01f2a1b40de3/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169de-c62b-709f-8e11-01f2a1b40de3/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169de-c62b-709f-8e11-01f2a1b40de3/output/preview.png",
+  "prompt": "a drowsy standing passenger in a periwinkle blue sweater and grey trousers, eyes closed and head tilted forward, a flat cap tipped low, full body standing upright with no chair and no furniture, stylised hand-painted game asset, warm painted PBR textures, clean silhouette",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 842560312,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/last-train/pax-sleeper2/model.glb",
+  "artifacts/meshy/last-train/pax-sleeper2/thumbnail.png",
+  "artifacts/meshy/last-train/pax-sleeper2/texture_0_base_color.png",
+  "artifacts/meshy/last-train/pax-sleeper2/texture_0_metallic.png",
+  "artifacts/meshy/last-train/pax-sleeper2/texture_0_normal.png",
+  "artifacts/meshy/last-train/pax-sleeper2/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:46:53.647Z"
+}

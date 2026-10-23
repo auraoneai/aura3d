@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d6-a631-70f3-87d5-4888fb6b17ac",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792777037375,
+  "started_at": 1792777037379,
+  "finished_at": 1792777083429,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169d6-a631-70f3-87d5-4888fb6b17ac/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169d6-a631-70f3-87d5-4888fb6b17ac/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169d6-a631-70f3-87d5-4888fb6b17ac/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169d6-a631-70f3-87d5-4888fb6b17ac/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169d6-a631-70f3-87d5-4888fb6b17ac/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a169d6-a631-70f3-87d5-4888fb6b17ac/output/preview.png",
+  "prompt": "a horned stone gateway arch standing on two thick pillars, weathered pale grey stone with a carved ring emblem on the lintel and two curved stone horns on top, ancient fantasy road checkpoint, symmetrical, game prop, painterly PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2003722010,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/sw-gate/model.glb",
+  "artifacts/meshy/sw-gate/thumbnail.png",
+  "artifacts/meshy/sw-gate/texture_0_base_color.png",
+  "artifacts/meshy/sw-gate/texture_0_metallic.png",
+  "artifacts/meshy/sw-gate/texture_0_normal.png",
+  "artifacts/meshy/sw-gate/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:38:07.817Z"
+}

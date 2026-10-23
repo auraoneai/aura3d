@@ -112,10 +112,14 @@ export interface World {
 }
 
 const FAR = [0, -400, 0] as const;
-/** board.glb is 0.7 m long and 0.137 m thick; the rider's feet stand on its deck top */
-const BOARD_SCALE = 2.8;
+/** QA only (`?nobeacon=1`): hides the active-ring beacon so a spec can difference two frames and measure its contrast. */
+const NO_BEACON = typeof location !== "undefined" && new URLSearchParams(location.search).has("nobeacon");
+/** hoverboard.glb is 1.9 m long (x axis) and 0.37 m thick, origin at its centre; the rider's feet stand on its deck top */
+const BOARD_SCALE = 1.15;
 const BOARD_DROP = 1.25;
-const DECK_TOP = 0.137 * BOARD_SCALE;
+const DECK_TOP = 0.18 * BOARD_SCALE;
+const BOARD_YAW = Math.PI / 2;
+const RIDER_HEIGHT = 2.1;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 const dynamicFrom = (m: MeshData) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
 
@@ -233,15 +237,27 @@ export function buildWorld(chapter: number): World {
   }
 
   if (props.trees.length) builder.add(instances.model(assets.tree, { name: "trees", transforms: placements(props.trees), castShadow: true, receiveShadow: true }));
-  // boulders: squashed icosahedra with the rock texture set (the staged rocks.glb samples a near-black palette entry)
+  // boulders: Meshy canyon-rock cluster (1.9 m wide, origin at its centre), sunk slightly so it sits on the ground
   if (props.rocks.length) {
-    builder.add(instances.polyhedron({
+    builder.add(instances.model(assets.canyonrocks, {
       name: "rocks",
+      castShadow: false,
+      receiveShadow: true,
+      transforms: [...props.rocks].sort((a, b) => b.scale - a.scale).slice(0, 48).map((p) => {
+        const s = (p.scale * 1.15) / 1.9;
+        return { position: [p.x, p.y + 0.38 * s, p.z] as [number, number, number], rotation: [0, p.yaw, 0] as [number, number, number], scale: [s, s * 0.8, s] as [number, number, number] };
+      })
+    }));
+  }
+  if (props.rocks.length > 48) {
+    const rest = [...props.rocks].sort((a, b) => b.scale - a.scale).slice(48);
+    builder.add(instances.polyhedron({
+      name: "rocks-small",
       size: [1, 1, 1],
-      castShadow: true,
+      castShadow: false,
       receiveShadow: true,
       material: pbr({ color: "#b3aea6", texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1 }),
-      transforms: props.rocks.map((p) => ({
+      transforms: rest.map((p) => ({
         position: [p.x, p.y + 0.28 * p.scale, p.z] as [number, number, number],
         rotation: [0, p.yaw, 0] as [number, number, number],
         scale: [p.scale, p.scale * 0.62, p.scale * 0.85] as [number, number, number]
@@ -250,7 +266,16 @@ export function buildWorld(chapter: number): World {
   }
   if (props.houses.length) builder.add(instances.model(assets.house, { name: "houses", transforms: placements(props.houses, { x: 0, y: 0, z: -0.064 }), castShadow: true, receiveShadow: true }));
   // lamp.glb keeps its source offset: centre (2.038, 0, 7), height -0.3..0.3
-  if (props.lamps.length) builder.add(instances.model(assets.lamp, { name: "lamps", transforms: placements(props.lamps, { x: 2.038, y: 0.3, z: 7 }), castShadow: true }));
+  if (props.lamps.length) {
+    builder.add(instances.model(assets.lantern, {
+      name: "lamps",
+      transforms: props.lamps.slice(0, 18).map((p) => {
+        const s = Math.max(2.2, p.scale);
+        return { position: [p.x, p.y + 0.95 * s, p.z] as [number, number, number], rotation: [0, p.yaw, 0] as [number, number, number], scale: s };
+      }),
+      castShadow: false
+    }));
+  }
   if (props.stone.length) {
     builder.add(instances.cylinder({
       name: "piers",
@@ -271,21 +296,75 @@ export function buildWorld(chapter: number): World {
     }));
   }
 
+  // Waiting rings are Meshy stone rings with ember runes (lit PBR, no blending); the active ring is the bright emissive beacon below.
   for (let i = 0; i < MAX_RINGS; i++) {
-    builder.add(primitives.torus({
-      name: `ring-${i}`,
-      position: [...FAR],
-      size: [48, 48, 48],
-      params: { tube: 0.045 },
-      material: material.custom(ringSpec(i === 0))
-    }).runtime({ id: `ring-${i}` }));
+    builder.add(model(assets.ringclean, { name: `ring-${i}`, position: [...FAR], scale: 38, castShadow: false }).runtime({ id: `ring-${i}` }));
   }
+  // Active-ring beacon: a thick dark-teal ring body (reads as a dark band against sand and sky), a saturated cyan rim, an
+  // expanding cyan ripple and a wide cyan light column, all solid lit meshes so they survive every backend.
+  builder.add(primitives.torus({
+    name: "beacon-ring",
+    position: [...FAR],
+    size: [66, 66, 66],
+    params: { tube: 0.085 },
+    material: material.emissive({ color: "#021015", emissiveIntensity: 0.1 })
+  }).runtime({ id: "beacon-ring" }));
+  builder.add(primitives.torus({
+    name: "beacon-rim",
+    position: [...FAR],
+    size: [76, 76, 76],
+    params: { tube: 0.022 },
+    material: material.emissive({ color: "#19e6ff", emissiveIntensity: 3.4 })
+  }).runtime({ id: "beacon-rim" }));
+  builder.add(primitives.torus({
+    name: "beacon-halo",
+    position: [...FAR],
+    size: [66, 66, 66],
+    params: { tube: 0.018 },
+    material: material.emissive({ color: "#7df3ff", emissiveIntensity: 2.6 })
+  }).runtime({ id: "beacon-halo" }));
+  builder.add(primitives.cylinder({
+    name: "beacon-beam",
+    position: [...FAR],
+    size: [5.5, 360, 5.5],
+    material: material.emissive({ color: "#19e6ff", emissiveIntensity: 2.2 })
+  }).runtime({ id: "beacon-beam" }));
 
   for (const side of ["l", "r"]) {
-    builder.add(primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.7, 1.5, 0.7], material: material.custom(ringSpec(true, [0.25, 0.85, 1])) }).runtime({ id: `thruster-${side}` }));
+    builder.add(primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.7, 1.5, 0.7], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) }).runtime({ id: `thruster-${side}` }));
   }
-  builder.add(model(assets.board, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true }).runtime({ id: "board" }));
-  builder.add(model(assets.hero, { name: "rider", position: [0, 4, 0], scale: 1.25, castShadow: true }).runtime({ id: "rider" }));
+  builder.add(model(assets.hoverboard, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true }).runtime({ id: "board" }));
+  builder.add(model(assets.courier, { name: "rider", position: [0, 4, 0], targetHeight: RIDER_HEIGHT, castShadow: true }).runtime({ id: "rider" }));
+
+  if (usesOriginalTerrain(chapter) && chapter === 0) {
+    const ground = (x: number, z: number): number => Math.max(0, terrain.heightAt(x, z));
+    const landmark = (asset: Parameters<typeof model>[0], name: string, x: number, z: number, scale: number, yaw: number, lift: number): void => {
+      builder.add(model(asset, { name, position: [x, ground(x, z) + lift * scale, z], rotation: [0, yaw, 0], scale, castShadow: false, receiveShadow: true }));
+    };
+    landmark(assets.gatehouse, "gatehouse-neri", -34, -262, 15, 0.35, 0.7);
+    landmark(assets.aqueduct, "aqueduct-east", 150, -520, 34, Math.PI / 2, 0.62);
+    landmark(assets.aqueduct, "aqueduct-west", -170, -720, 34, Math.PI / 2, 0.62);
+    landmark(assets.ringgate, "canyon-gate", 0, -1295, 30, 0, 0.62);
+    for (const [i, [x, z, yaw]] of ([[85, -12, 0.4], [172, -42, -0.5]] as const).entries()) {
+      builder.add(model(assets.stall, { name: `stall-${i}`, position: [x, ground(x, z) + 0.72 * 5, z], rotation: [0, yaw, 0], scale: 5, castShadow: false, receiveShadow: true }));
+    }
+    for (const [i, [x, z, yaw]] of ([[-120, -640, 0.5], [135, -870, -0.8]] as const).entries()) {
+      builder.add(model(assets.watchtower, { name: `watchtower-${i}`, position: [x, ground(x, z) + 0.95 * 15, z], rotation: [0, yaw, 0], scale: 15, castShadow: false, receiveShadow: true }));
+    }
+    let banners = 0;
+    for (const objective of ch.objectives) {
+      objective.points.forEach((pt, i) => {
+        if (i % 2 !== 0 || banners >= 8) return;
+        const side = banners % 2 === 0 ? 1 : -1;
+        const x = pt.x + side * 42, z = pt.z;
+        builder.add(model(assets.banner, { name: `banner-${banners}`, position: [x, ground(x, z) + 0.95 * 11, z], rotation: [0, side * 0.6, 0], scale: 11, castShadow: false }));
+        banners += 1;
+      });
+    }
+    for (const [i, [x, z, s]] of ([[-85, -930, 24], [92, -980, 28], [-110, -1060, 26], [105, -1120, 22], [-78, -1180, 30], [88, -1230, 25]] as const).entries()) {
+      builder.add(model(assets.pillar, { name: `pillar-${i}`, position: [x, ground(x, z) + 0.9 * s, z], rotation: [0, i * 1.7, 0], scale: s, castShadow: false, receiveShadow: true }));
+    }
+  }
 
   const stats: WorldStats = {
     walls: props.walls.length, trees: props.trees.length, rocks: props.rocks.length, houses: props.houses.length, lamps: props.lamps.length,
@@ -310,7 +389,7 @@ export function buildWorld(chapter: number): World {
       let controller: ReturnType<typeof createAnimationController> | undefined;
       try {
         if (options.animate === false) throw new Error("animation disabled (norig=1)");
-        controller = createAnimationController({ id: "rider-animation", clipRegistry: assets.hero, requiredClips: ["idle", "drive"], suppressRootMotion: true });
+        controller = createAnimationController({ id: "rider-animation", clipRegistry: assets.courier, requiredClips: ["idle", "walk"], suppressRootMotion: true });
         controller.bindRuntimeNode(node("rider"), { id: "rider-binding", defaultClipId: "idle" });
         animation = { bound: true, clip: "idle" };
       } catch (error) {
@@ -326,14 +405,14 @@ export function buildWorld(chapter: number): World {
       let lookX = 0, lookY = 0, lookZ = 0, init = false;
       let lastPoint = -1, lastObjective = -1;
       return {
-        celebrate() { oneShot = 0.9; playClip("emote-yes"); },
+        celebrate() { oneShot = 0.9; playClip("walk"); },
         update(sim, dt, time, aspect) {
           const { state, flight } = sim;
           const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
           const pitch = Math.max(-0.35, Math.min(0.35, -flight.vertical * 0.012));
           const rider = node("rider"), board = node("board");
           board.setPosition(state.x, state.y - BOARD_DROP, state.z);
-          board.setRotation(pitch, state.yaw + Math.PI, flight.bank);
+          board.setRotation(pitch, state.yaw + BOARD_YAW, flight.bank);
           rider.setPosition(state.x, state.y - BOARD_DROP + DECK_TOP, state.z);
           rider.setRotation(pitch, state.yaw + Math.PI, flight.bank);
           const cy = Math.cos(state.yaw), sy = Math.sin(state.yaw);
@@ -341,28 +420,37 @@ export function buildWorld(chapter: number): World {
             const t = node(`thruster-${side}`);
             t.setPosition(state.x + ox * cy + 0.2 * sy, state.y - BOARD_DROP - 0.85, state.z - ox * sy + 0.2 * cy);
             t.setScale([1, 0.8 + 0.25 * Math.sin(time * 24 + ox * 5) + Math.min(0.8, Math.abs(flight.speed) * 0.012), 1]);
-            t.setUniform?.("siltTime", time);
           }
           node("sky").setPosition(state.x, state.y, state.z);
           node("canal").setUniform?.("siltTime", time);
 
           if (state.point !== lastPoint || state.objective !== lastObjective) {
-            if (lastPoint >= 0 && (state.point > lastPoint || state.objective !== lastObjective)) { oneShot = 0.9; playClip("emote-yes"); }
+            if (lastPoint >= 0 && (state.point > lastPoint || state.objective !== lastObjective)) { oneShot = 0.9; playClip("walk"); }
             lastPoint = state.point; lastObjective = state.objective;
           }
           if (oneShot > 0) oneShot -= dt;
-          else if (sim.state.hold > 0) playClip("interact-right");
-          else playClip(Math.abs(flight.speed) > 4 ? "drive" : "idle");
+          else if (sim.state.hold > 0) playClip("walk");
+          else playClip("idle");
           controller?.update(dt);
 
           const o = objectiveOf(state);
+          const beaconRing = node("beacon-ring"), beaconRim = node("beacon-rim"), beaconHalo = node("beacon-halo"), beaconBeam = node("beacon-beam");
+          const active = o.points[state.point];
+          if (!active || state.scene || state.completed || NO_BEACON) {
+            beaconRing.setPosition(...FAR); beaconRim.setPosition(...FAR); beaconHalo.setPosition(...FAR); beaconBeam.setPosition(...FAR);
+          } else {
+            const pulse = 1 + 0.035 * Math.sin(time * 5);
+            const ripple = 1 + ((time * 0.8) % 1) * 0.5;
+            beaconRing.setPosition(active.x, active.y, active.z); beaconRing.setScale([pulse, pulse, pulse]);
+            beaconRim.setPosition(active.x, active.y, active.z); beaconRim.setScale([pulse, pulse, pulse]);
+            beaconHalo.setPosition(active.x, active.y, active.z); beaconHalo.setScale([ripple, ripple, ripple]);
+            beaconBeam.setPosition(active.x, active.y + 170, active.z);
+          }
           for (let i = 0; i < MAX_RINGS; i++) {
             const h = node(`ring-${i}`);
             const p = o.points[i];
-            if (!p || state.scene || state.completed) { h.setPosition(...FAR); continue; }
+            if (!p || state.scene || state.completed || i <= state.point) { h.setPosition(...FAR); continue; }
             h.setPosition(p.x, p.y, p.z);
-            h.setUniform?.("siltTime", time);
-            h.setUniform?.("ringActive", i === state.point ? 1 : 0);
           }
           const back = 13 + Math.min(8, Math.abs(flight.speed) * 0.08);
           const ex = state.x - fx * back, ey = state.y + 5.2 + Math.abs(flight.vertical) * 0.05, ez = state.z - fz * back;

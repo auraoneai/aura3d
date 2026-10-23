@@ -12,7 +12,7 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
-import { v2assets } from "./aura-assets-v2";
+import { v2AssetManifest } from "./aura-assets-v2";
 
 type Vec3 = [number, number, number];
 
@@ -913,33 +913,33 @@ function buildTennisScene(): ReturnType<typeof scene> {
       scaleMode: "fit",
       targetMaxDimension: 5.8
     }).position(12.5, 0, -13.2),
-    model(v2assets.tennisTrophy, {
+    model(v2AssetManifest.tennisTrophy, {
       name: "v2-tennis-trophy",
       role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 0.72
     }).position(-7.35, 0.72, 0),
-    model(v2assets.tennisUmpireChair, {
+    model(v2AssetManifest.tennisUmpireChair, {
       name: "v2-tennis-umpire-chair",
       role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 2.85
     }).position(-6.76, 0, 0),
-    model(v2assets.tennisMascot, {
+    model(v2AssetManifest.tennisMascot, {
       name: "v2-tennis-mascot",
-      role: "supportingCast",
+      role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 1.45
     }).position(7.2, 0, -4.2),
-    model(v2assets.tennisBallCart, {
+    model(v2AssetManifest.tennisBallCart, {
       name: "v2-tennis-ball-cart",
       role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 0.95
     }).position(6.8, 0, 2.6),
-    model(v2assets.tennisChampionStatue, {
+    model(v2AssetManifest.tennisChampionStatue, {
       name: "v2-tennis-champion-statue",
-      role: "landmark",
+      role: "setDressing",
       scaleMode: "fit",
       targetMaxDimension: 2.8
     }).position(8.8, 0, -11.4)

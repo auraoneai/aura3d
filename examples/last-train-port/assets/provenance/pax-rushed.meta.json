@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d0-ae2b-7100-a6b9-79998211ee57",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776646200,
+  "started_at": 1792776646205,
+  "finished_at": 1792776689474,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-ae2b-7100-a6b9-79998211ee57/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-ae2b-7100-a6b9-79998211ee57/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-ae2b-7100-a6b9-79998211ee57/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-ae2b-7100-a6b9-79998211ee57/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-ae2b-7100-a6b9-79998211ee57/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-ae2b-7100-a6b9-79998211ee57/output/preview.png",
+  "prompt": "a tense commuter in a bright red coat holding a briefcase on the knees, sitting upright with knees bent, no chair, full body, stylised hand-painted game asset, warm painted PBR textures, clean silhouette",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2734980692,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/last-train/pax-rushed/model.glb",
+  "artifacts/meshy/last-train/pax-rushed/thumbnail.png",
+  "artifacts/meshy/last-train/pax-rushed/texture_0_base_color.png",
+  "artifacts/meshy/last-train/pax-rushed/texture_0_metallic.png",
+  "artifacts/meshy/last-train/pax-rushed/texture_0_normal.png",
+  "artifacts/meshy/last-train/pax-rushed/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:31:52.820Z"
+}

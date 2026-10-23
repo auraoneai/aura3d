@@ -1,0 +1,49 @@
+{
+ "resource": "remesh",
+ "task": {
+  "id": "01a169d2-2667-70ad-8ca2-99a6a6e1b8a0",
+  "type": "remesh",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776742536,
+  "started_at": 1792776742540,
+  "finished_at": 1792776825560,
+  "expires_at": 1793036025560,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d2-2667-70ad-8ca2-99a6a6e1b8a0/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d2-2667-70ad-8ca2-99a6a6e1b8a0/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d2-2667-70ad-8ca2-99a6a6e1b8a0/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d2-2667-70ad-8ca2-99a6a6e1b8a0/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d2-2667-70ad-8ca2-99a6a6e1b8a0/output/texture_0_roughness.png",
+    "metallic_roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d2-2667-70ad-8ca2-99a6a6e1b8a0/output/texture_0_metallic_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d2-2667-70ad-8ca2-99a6a6e1b8a0/output/preview.png",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "text_style_prompt": "",
+  "image_style_url": "",
+  "name": "",
+  "art_style": "",
+  "object_prompt": "",
+  "style_prompt": "",
+  "negative_prompt": "",
+  "model_url": "",
+  "consumed_credits": 5
+ },
+ "saved_files": [
+  "artifacts/meshy/rr-sedan-r/model.glb",
+  "artifacts/meshy/rr-sedan-r/thumbnail.png",
+  "artifacts/meshy/rr-sedan-r/texture_0_base_color.png",
+  "artifacts/meshy/rr-sedan-r/texture_0_metallic.png",
+  "artifacts/meshy/rr-sedan-r/texture_0_normal.png",
+  "artifacts/meshy/rr-sedan-r/texture_0_roughness.png",
+  "artifacts/meshy/rr-sedan-r/texture_0_metallic_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:33:52.436Z"
+}

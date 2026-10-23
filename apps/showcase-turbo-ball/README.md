@@ -1,6 +1,6 @@
 # Turbo Ball — Aura3D 2v2 Rocket Soccer Arena
 
-**Turbo Ball** is a 2v2 Rocket League-style Car Soccer Arena game built on `@aura3d/engine` 4.0.0 using 10 custom Meshy 3D GLB assets admitted in `src/aura-assets.ts` and `aura.assets.json`.
+**Turbo Ball** is a 2v2 Rocket League-style Car Soccer Arena game built on `@aura3d/engine` 4.0.8 using 10 custom Meshy 3D GLB assets admitted in `src/aura-assets.ts` and `aura.assets.json`.
 
 ## Admitted 3D Assets (`src/aura-assets.ts`)
 

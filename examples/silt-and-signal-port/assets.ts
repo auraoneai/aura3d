@@ -8,6 +8,18 @@
 import { defineAuraAssets } from "@aura3d/engine";
 
 const HASHES = {
+  "models/courier.glb": "sha256-6ff58fb9e3b9b715a8e9c1234619308ed58f4a5ec29e47166a05e5d412447edd",
+  "models/hoverboard.glb": "sha256-4efacc1c0f985e061a89345e7ca5b991579ced89efc1d34ce1aa2d34e5655488",
+  "models/canyonrocks.glb": "sha256-2988706391e2b9f488c4c986b981dd25ce62e72c751f6b3356dc66bdf23b75fd",
+  "models/pillar.glb": "sha256-c3905d6a2cea48aee50224ea435282993975b22128f87b397b157f522aaa4445",
+  "models/aqueduct.glb": "sha256-f3954fff6860a5fcb908e2d52591e16f81f789f6f35f1e0879f165b82a285d98",
+  "models/gatehouse.glb": "sha256-60a2284a723269203a2571ce7646234f22a7b3cf924aa7fd1978113023cba0f6",
+  "models/lantern.glb": "sha256-29711fb1dfeaa430df1c3b4fa011e621f9613e5b693f6ee489267d5f3996baea",
+  "models/ringgate.glb": "sha256-bf2300aac5583b1c2ad7169a390275ec0311e7117ef8e8031aae46958c0c7e08",
+  "models/ringclean.glb": "sha256-2dffaf16cfa75b0003d1048c05ed3c9e95b6c1c3195f6ba4116fd11783e4008d",
+  "models/banner.glb": "sha256-5da0fd3a11600705d435c881f0012b5424c17d357d84090915c177fa4e415186",
+  "models/stall.glb": "sha256-f610e63a9c11dc5cc5a00f3f21d2bfbd80171a4f28fef2f482cfb022cb5c2fac",
+  "models/watchtower.glb": "sha256-e1b4f84d7daffb49629dbe90d741abf47acded34745c15c68227173e629d3c83",
   "models/board.glb": "sha256-cb725a12a84664201367ca277f5e9155089fb1319464ba5c69800525434b742b",
   "models/hero.glb": "sha256-407a9aa65fe186bac976d46fb78fbc303471eb75328fca31d7bbfc1812bc81ea",
   "models/house.glb": "sha256-7aa00a1bee1828e5518426cf85f744c9ffd142d66850ff0ae08fca2c27a09757",
@@ -33,6 +45,18 @@ const HASHES = {
 
 /* Static literals: the bundler only rewrites `new URL("<literal>", import.meta.url)`; a computed path resolves against the chunk and 404s. */
 const ASSET_URLS: Readonly<Record<string, string>> = {
+  "models/courier.glb": new URL("./assets/models/courier.glb", import.meta.url).pathname,
+  "models/hoverboard.glb": new URL("./assets/models/hoverboard.glb", import.meta.url).pathname,
+  "models/canyonrocks.glb": new URL("./assets/models/canyonrocks.glb", import.meta.url).pathname,
+  "models/pillar.glb": new URL("./assets/models/pillar.glb", import.meta.url).pathname,
+  "models/aqueduct.glb": new URL("./assets/models/aqueduct.glb", import.meta.url).pathname,
+  "models/gatehouse.glb": new URL("./assets/models/gatehouse.glb", import.meta.url).pathname,
+  "models/lantern.glb": new URL("./assets/models/lantern.glb", import.meta.url).pathname,
+  "models/ringgate.glb": new URL("./assets/models/ringgate.glb", import.meta.url).pathname,
+  "models/ringclean.glb": new URL("./assets/models/ringclean.glb", import.meta.url).pathname,
+  "models/banner.glb": new URL("./assets/models/banner.glb", import.meta.url).pathname,
+  "models/stall.glb": new URL("./assets/models/stall.glb", import.meta.url).pathname,
+  "models/watchtower.glb": new URL("./assets/models/watchtower.glb", import.meta.url).pathname,
   "models/board.glb": new URL("./assets/models/board.glb", import.meta.url).pathname,
   "models/hero.glb": new URL("./assets/models/hero.glb", import.meta.url).pathname,
   "models/house.glb": new URL("./assets/models/house.glb", import.meta.url).pathname,
@@ -78,7 +102,26 @@ export const HERO_CLIPS = [
   { name: "pick-up", duration: 0.33, loop: false }
 ] as const;
 
+/** The Meshy courier: idle from the animation library, walk and run from the rig's basic set (names from `assets inspect`). */
+export const COURIER_CLIPS = [
+  { name: "idle", duration: 4.03, loop: true },
+  { name: "walk", duration: 1.07, loop: true },
+  { name: "run", duration: 0.67, loop: true }
+] as const;
+
 export const assets = defineAuraAssets({
+  courier: model("courier", [0.01, 0.018, 0.006], { animations: COURIER_CLIPS.map((c) => c.name), animationClips: COURIER_CLIPS.map((c) => c.name), license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  hoverboard: model("hoverboard", [1.903, 0.365, 1.125], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  canyonrocks: model("canyonrocks", [1.9, 0.911, 1.667], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  pillar: model("pillar", [0.711, 1.903, 0.713], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  aqueduct: model("aqueduct", [1.902, 1.28, 0.67], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  gatehouse: model("gatehouse", [1.901, 1.409, 0.78], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  lantern: model("lantern", [0.323, 1.903, 0.166], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  ringgate: model("ringgate", [1.899, 1.309, 1.9], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  ringclean: model("ringclean", [1.902, 1.903, 0.314], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  banner: model("banner", [0.778, 1.905, 0.14], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  stall: model("stall", [1.901, 1.417, 1.173], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
+  watchtower: model("watchtower", [0.804, 1.902, 0.863], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
   tree: model("tree", [0.927, 1.684, 0.883]),
   rocks: model("rocks", [1, 1, 1]),
   house: model("house", [1.64, 0.88, 0.968]),

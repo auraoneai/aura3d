@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d1-9a11-71b1-85ef-6cda4f95eac0",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776706590,
+  "started_at": 1792776706597,
+  "finished_at": 1792776769767,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-9a11-71b1-85ef-6cda4f95eac0/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-9a11-71b1-85ef-6cda4f95eac0/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-9a11-71b1-85ef-6cda4f95eac0/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-9a11-71b1-85ef-6cda4f95eac0/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-9a11-71b1-85ef-6cda4f95eac0/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-9a11-71b1-85ef-6cda4f95eac0/output/preview.png",
+  "prompt": "a large upright circular stone ring gate with a thick weathered sandstone band carved with softly glowing amber runes, hollow centre, flat stylised game prop, desert ruin, warm palette, PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3785806913,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/silt-ringgate/model.glb",
+  "artifacts/meshy/silt-ringgate/thumbnail.png",
+  "artifacts/meshy/silt-ringgate/texture_0_base_color.png",
+  "artifacts/meshy/silt-ringgate/texture_0_metallic.png",
+  "artifacts/meshy/silt-ringgate/texture_0_normal.png",
+  "artifacts/meshy/silt-ringgate/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:33:13.100Z"
+}

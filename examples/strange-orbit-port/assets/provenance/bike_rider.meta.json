@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169cf-79f4-7069-9035-8d104a1c81af",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776567304,
+  "started_at": 1792776567309,
+  "finished_at": 1792776646347,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cf-79f4-7069-9035-8d104a1c81af/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cf-79f4-7069-9035-8d104a1c81af/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cf-79f4-7069-9035-8d104a1c81af/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cf-79f4-7069-9035-8d104a1c81af/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cf-79f4-7069-9035-8d104a1c81af/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169cf-79f4-7069-9035-8d104a1c81af/output/preview.png",
+  "prompt": "a stylised sci-fi lunar hoverbike with one rider crouched low and forward, sleek pearl-white and teal body with a terracotta accent stripe, round warm headlight at the front, twin glowing cyan thruster nozzles at the rear, rider in a light grey spacesuit with a rounded glass visor helmet, single combined model, game vehicle, PBR, side-on racing pose",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2486916828,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/so-bike_rider/model.glb",
+  "artifacts/meshy/so-bike_rider/thumbnail.png",
+  "artifacts/meshy/so-bike_rider/texture_0_base_color.png",
+  "artifacts/meshy/so-bike_rider/texture_0_metallic.png",
+  "artifacts/meshy/so-bike_rider/texture_0_normal.png",
+  "artifacts/meshy/so-bike_rider/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:30:55.735Z"
+}

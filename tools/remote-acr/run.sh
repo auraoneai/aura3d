@@ -34,6 +34,7 @@
 #                      (~1.4GB of showcase GLBs) and the environment-corpus /
 #                      asset-corpus / advanced-gallery fixture trees (~380MB); the
 #                      parity/port specs do not load them. Use full for specs that do.
+#   EXTRA_DIRS         space-separated repo-relative dirs to add to the context (e.g. apps/showcase-foo)
 #   PUBLIC_ASSETS      space-separated filenames under public/aura-assets to include
 #                      even in the slim profile
 set -euo pipefail
@@ -117,6 +118,9 @@ else
   rsync -a --exclude 'environment-corpus' --exclude 'asset-corpus' --exclude 'advanced-gallery' fixtures "$CTX/"
 fi
 rsync -a examples "$CTX/"
+# EXTRA_DIRS: space-separated repo-relative dirs (e.g. apps/showcase-foo) the spec serves through the dev server.
+mkdir -p "$CTX/apps" "$CTX/src"
+for extra in ${EXTRA_DIRS:-}; do rsync -aR --exclude node_modules --exclude dist "$extra" "$CTX/"; done
 mkdir -p "$CTX/tools"
 rsync -a tools/naming-taxonomy tools/remote-acr tools/crayon-capture "$CTX/tools/"
 

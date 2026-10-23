@@ -54,3 +54,11 @@ horned stone check-in gate (a stage set piece the port does not have), plus a na
 Simulation parity is claimed by `tests/unit/saiyan-snake-way-port/reference-replay.test.ts` (183 recorded snapshots, 46 fields
 each, within 1e-6 of the original) and by the in-page replay in `tests/browser/saiyan-snake-way-port.spec.ts`, not by the pictures.
 The pictures are not a pixel match to the original; `examples/saiyan-snake-way-port/PORTING-NOTES.md` has the divergence table.
+
+## Meshy art pass (2026-10-23)
+
+Frames: `meshy-before/` (the previous pass: CC0 catalog runner, primitive props), `meshy-after/` (Meshy runner, gate, barrier, ogre, cart, feast, lanterns and
+floating islands) and `compare-meshy.jpg` (before | after, four states). Production-renderer remote runs: `ssw-meshy-2` (art spec, passed, 0 errors) and
+`ssw-meshy-3` (`tests/browser/saiyan-snake-way-meshy.spec.ts`, hazard close-ups, passed: 68-110 draw calls per frame, 0 errors). Models: see
+`examples/saiyan-snake-way-port/assets/ATTRIBUTION.md`. Images are ignored by the repo's `*.jpg` rule; force-add them if they should ship.
+The blind judge was not re-run for this pass.

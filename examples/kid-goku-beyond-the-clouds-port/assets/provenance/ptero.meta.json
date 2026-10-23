@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169e6-80aa-70a9-88aa-b46d67e2941c",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792778076359,
+  "started_at": 1792778076364,
+  "finished_at": 1792778108275,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169e6-80aa-70a9-88aa-b46d67e2941c/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169e6-80aa-70a9-88aa-b46d67e2941c/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169e6-80aa-70a9-88aa-b46d67e2941c/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169e6-80aa-70a9-88aa-b46d67e2941c/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169e6-80aa-70a9-88aa-b46d67e2941c/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/cb684f2b-2a81-4e0b-bb57-1951f99f73bf/tasks/01a169e6-80aa-70a9-88aa-b46d67e2941c/output/preview.png",
+  "prompt": "a stylised cartoon pterodactyl with wings fully spread, teal and grey leathery wings, orange head crest, long beak, cream underside, game enemy, painterly",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2844234587,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/cr-ptero/model.glb",
+  "artifacts/meshy/cr-ptero/thumbnail.png",
+  "artifacts/meshy/cr-ptero/texture_0_base_color.png",
+  "artifacts/meshy/cr-ptero/texture_0_metallic.png",
+  "artifacts/meshy/cr-ptero/texture_0_normal.png",
+  "artifacts/meshy/cr-ptero/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:55:20.533Z"
+}

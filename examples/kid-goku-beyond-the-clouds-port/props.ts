@@ -44,8 +44,11 @@ function mesa(rnd: () => number, radius: number, height: number, baseY: number):
 }
 
 const MESA_HEIGHT = [100, 118, 136, 112, 126, 104];
-export function buildMesas(ch: Chapter): Mesh[] {
+export interface MesaPlacement { pos: V3; height: number; width: number; yaw: number }
+const HERO_MESA_CAP = 46;
+export function buildMesas(ch: Chapter): { meshes: Mesh[]; placements: MesaPlacement[] } {
   const out: Mesh[] = [];
+  const placements: MesaPlacement[] = [];
   const rnd = seeded(555);
   const protos = Array.from({ length: 6 }, (_, i) => mesa(seeded(100 + i), 20 + (i % 3) * 9, MESA_HEIGHT[i]!, -120));
   for (let c0 = -60; c0 < ch.length + 160; c0 += CHUNK * 2) {
@@ -60,12 +63,14 @@ export function buildMesas(ch: Chapter): Mesh[] {
         const proto = protos[idx]!;
         const topY = f.point[1] + (rnd() * 54 - 18) + (Math.abs(lat) > 160 ? 14 : 0);
         const sx = 0.8 + rnd() * 0.9;
-        chunk.append(proto, [p[0], topY - (-120 + MESA_HEIGHT[idx]!), p[2]], [sx, 1, sx * (0.85 + rnd() * 0.3)], rnd() * 6.28);
+        const sz = sx * (0.85 + rnd() * 0.3), yaw = rnd() * 6.28;
+        if (Math.abs(lat) < 170 && placements.length < HERO_MESA_CAP) placements.push({ pos: [p[0], topY - (120 + MESA_HEIGHT[idx]!) * 0.9, p[2]], height: (120 + MESA_HEIGHT[idx]!) * 0.9, width: (40 + (idx % 3) * 18) * sx, yaw });
+        else chunk.append(proto, [p[0], topY - (-120 + MESA_HEIGHT[idx]!), p[2]], [sx, 1, sz], yaw);
       }
     }
     if (chunk.indices.length) out.push(chunk);
   }
-  return out;
+  return { meshes: out, placements };
 }
 
 /* ---------------------------------------------------------------- cloud clumps (lit puffs below, beside and above the ridge) */

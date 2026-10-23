@@ -7,7 +7,9 @@
  */
 import { camera, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
 import { COLORS, CONFIG, POOL, type SplatRushSim } from "./sim";
-import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
+import { blobMesh, capsuleMesh, cylinderMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
+import { addBackdrop, updateBackdrop } from "./backdrop";
+import { addPickups, hidePickups, updatePickups } from "./pickups";
 import { FLAT_FRAGMENT, FLAT_VERTEX, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_VERTEX, toonFragment } from "./shaders";
 
 type Rgb = readonly [number, number, number];
@@ -217,6 +219,7 @@ export function buildWorld(options: WorldOptions): World {
 
   /* sky backdrop (radius 120, centred on the origin like the original) */
   add("sky", sphereMesh(120, 32, 32), skySpec());
+  addBackdrop(builder);
 
   /* player ball: sphere r 0.55, painted map x player colour */
   add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toonSpec(hexLinear(COLORS[0] as string), ballTex));
@@ -247,9 +250,8 @@ export function buildWorld(options: WorldOptions): World {
   );
   for (let i = 0; i < GATE_MAX; i++) add(`gate-${i}`, gateMesh, toonSpec(hexLinear(COLORS[0] as string)));
 
-  /* power-ups: sphere + cone */
-  const powerMesh = mergeMeshes([sphereMesh(0.4, 20, 16), coneMesh(0.4, 0.8, 20, 0.4)]);
-  for (let i = 0; i < POOL.powerups; i++) add(`powerup-${i}`, powerMesh, toonSpec(hexLinear("#b868e8")));
+  /* power-ups: Meshy toy models, one pool per type (pickups.ts) */
+  addPickups(builder);
 
   /* splatters: flat blob + two small discs */
   const splatMesh = mergeMeshes([
@@ -287,14 +289,13 @@ export function buildWorld(options: WorldOptions): World {
       const controller: NonNullable<typeof maybeController> = maybeController;
       const hide = (id: string): void => void node(id).setVisible(false);
       for (let i = 0; i < GATE_MAX; i++) hide(`gate-${i}`);
-      for (let i = 0; i < POOL.powerups; i++) hide(`powerup-${i}`);
+      hidePickups(node);
       for (let i = 0; i < POOL.splatters; i++) hide(`splat-${i}`);
       for (let i = 0; i < POOL.particles; i++) hide(`particle-${i}`);
       hide("shield");
 
       const gateColor: number[] = Array.from({ length: GATE_MAX }, () => -1);
       const splatColor: number[] = Array.from({ length: POOL.splatters }, () => -1);
-      const powerType: string[] = Array.from({ length: POOL.powerups }, () => "");
       const particleColor: string[] = Array.from({ length: POOL.particles }, () => "");
       let ballColorKey = "";
       let lastFov = -1;
@@ -358,17 +359,7 @@ export function buildWorld(options: WorldOptions): World {
           h.setVisible(true).setPosition(g.x, 0, g.z);
           if (gateColor[i] !== g.colorIndex) { h.setUniform?.("baseColor", [...hexLinear(COLORS[g.colorIndex] as string)]); gateColor[i] = g.colorIndex; }
         }
-        for (let i = 0; i < POOL.powerups; i++) {
-          const pu = simNow.powerups[i];
-          const h = node(`powerup-${i}`);
-          if (!pu) { h.setVisible(false); continue; }
-          h.setVisible(true).setPosition(pu.x, pu.y, pu.z);
-          if (powerType[i] !== pu.type) {
-            const c = pu.type === "rainbow" ? "#b868e8" : pu.type === "shield" ? "#5ecaf0" : pu.type === "x2" ? "#f9c647" : "#9ad4e8";
-            h.setUniform?.("baseColor", [...hexLinear(c)]);
-            powerType[i] = pu.type;
-          }
-        }
+        updatePickups(node, simNow.powerups, simNow.elapsed);
         for (let i = 0; i < POOL.splatters; i++) {
           const sp = simNow.splatters[i];
           const h = node(`splat-${i}`);
@@ -387,6 +378,7 @@ export function buildWorld(options: WorldOptions): World {
         const stretch = (d: number, h2: number): number => 1 + 0.05 * d + 0.6 * h2;
         const d2 = o.phase === "playing" ? o.speed : 0.5 * CONFIG.FORWARD_SPEED_INIT;
         simNow.streaks.forEach((s, i) => node(`streak-${i}`).setPosition(s.x, s.y, s.z).setScale([1, 1, stretch(d2, simNow.speedRatio)]));
+        updateBackdrop(node, o.distance, simNow.elapsed);
         /* camera */
         const c = simNow.camera;
         const baseFov = aspect >= 1 ? 55 : 55 + 25 * Math.min(1, (1 - aspect) / 0.5);

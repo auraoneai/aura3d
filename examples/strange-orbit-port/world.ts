@@ -23,6 +23,7 @@ import {
 } from "./course";
 import { buildCourse, buildIslands, buildLoops, buildRamps, veilQuad, type MeshData } from "./meshes";
 import { axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
+import { MESHY, MESHY_ENABLED, MESHY_SIZE } from "./models";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
@@ -91,6 +92,12 @@ function hslToRgb(h: number, s: number, l: number): Rgb {
   return [lin(f(0)), lin(f(8)), lin(f(4))];
 }
 
+function mixHex(a: string, b: string, t: number): string {
+  const ch = (h: string, i: number): number => parseInt(h.slice(1 + i * 2, 3 + i * 2), 16);
+  const out = [0, 1, 2].map((i) => Math.round(ch(a, i) * (1 - t) + ch(b, i) * t).toString(16).padStart(2, "0"));
+  return `#${out.join("")}`;
+}
+
 const euler = (m: Mat3): [number, number, number] => [...matrixToEulerZYX(m)];
 
 interface PartSpec {
@@ -111,8 +118,15 @@ interface Riderrig {
   readonly parts: readonly PartSpec[];
 }
 
+/** Local yaw that turns each Meshy rider model so its forward points along the rig's +X. */
+const MODEL_YAW: Record<Vehicle, Mat3> = { bike: axisRotation("y", Math.PI), skate: axisRotation("y", Math.PI / 2) };
+
 function riderRig(index: number, vehicle: Vehicle): Riderrig {
   const root = `rider-${index}`;
+  if (MESHY_ENABLED) {
+    // `model()` grounds a model: its origin is the bottom centre of the bounds, so the rig origin is the ground contact.
+    return { root, parts: [{ id: `${root}-model`, offset: [0, 0, 0], local: MODEL_YAW[vehicle] }] };
+  }
   const wheel = multiplyMat3(IDENTITY, axisRotation("x", Math.PI / 2));
   const lean = axisRotation("z", -0.45);
   const acrossSide = axisRotation("x", Math.PI / 2); // cylinder axis Y -> Z
@@ -257,6 +271,10 @@ export function buildWorld(options: WorldOptions): World {
     const rot = euler(basisMatrix(f.tangent, f.up, f.side));
     for (const side of [-1, 1]) {
       const p = f.p.clone().addScaledVector(f.side, side * 11.1).addScaledVector(f.up, 6.4);
+      if (MESHY_ENABLED) {
+        builder.add(model(MESHY.pylon, { name: `gate-${i}-pillar-${side}`, position: [p.x - f.up.x * 6.5, p.y - f.up.y * 6.5, p.z - f.up.z * 6.5], rotation: rot, targetMaxDimension: 13, castShadow: false, receiveShadow: false }));
+        continue;
+      }
       builder.add(primitives.cylinder({
         name: `gate-${i}-pillar-${side}`,
         position: [p.x, p.y, p.z],
@@ -291,6 +309,27 @@ export function buildWorld(options: WorldOptions): World {
       }));
     });
   });
+
+  /* ---- Meshy set dressing: boulders along the rim, a lander and an observatory on the horizon ---- */
+  if (MESHY_ENABLED) {
+    const rand = lehmer(48271);
+    const dress = (name: string, asset: (typeof MESHY)[keyof typeof MESHY], s: number, lateral: number, drop: number, size: number, spin: number, rock = false): void => {
+      const f = mainFrame(s);
+      const p = f.p.clone().addScaledVector(f.side, lateral).addScaledVector(f.up, drop);
+      const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", spin));
+      builder.add(model(asset, { name, position: [p.x, p.y, p.z], rotation: euler(rock ? multiplyMat3(base, axisRotation("z", (rand() - 0.5) * 0.5)) : base), targetMaxDimension: size, castShadow: false, receiveShadow: false }));
+    };
+    for (let k = 0; k < 14; k++) {
+      const s = 40 + k * (COURSE_LENGTH - 80) / 14 + rand() * 40;
+      const side = k % 2 === 0 ? 1 : -1;
+      const lateral = side * (13.5 + rand() * 9);
+      if (k % 3 === 1) dress(`dress-spire-${k}`, MESHY.boulderB, s, lateral, -0.5, 6 + rand() * 4, rand() * 6.28, true);
+      else dress(`dress-boulder-${k}`, MESHY.boulderA, s, lateral, -0.3, 2.6 + rand() * 2.4, rand() * 6.28, true);
+    }
+    dress("dress-lander", MESHY.lander, 330, 14.5, -0.2, 6.5, 2.2);
+    dress("dress-observatory", MESHY.observatory, 790, -16, -0.2, 12, 0.6);
+    dress("dress-observatory-far", MESHY.observatory, 1260, 17, -0.2, 14, 3.9);
+  }
 
   /* ---- meteors (moon rocks) ---- */
   const meteors = collectibles("painted").filter((c) => c.kind === "meteor");
@@ -338,6 +377,20 @@ export function buildWorld(options: WorldOptions): World {
   riders.forEach((rig, i) => {
     const [bodyHex, accentHex] = i === 0 ? [RIDERS[rider]!.color, RIDERS[rider]!.accent] : RIVAL_COLORS[i - 1]!;
     const body = hexLinear(bodyHex), accent = hexLinear(accentHex), dark = hexLinear("#2a2f3b");
+    if (MESHY_ENABLED) {
+      const part = rig.parts[0]!;
+      const size = vehicle === "skate" ? MESHY_SIZE.skate.target : MESHY_SIZE.bike.target;
+      const wedge = vehicle === "bike" && i % 2 === 1; // rivals 1, 3, 5 ride the second Meshy bike design
+      const tint = i === 0 || wedge ? undefined : [{ color: mixHex(RIVAL_COLORS[i - 1]![0], "#ffffff", 0.55), colorMode: "multiply" as const }];
+      builder.add(model(vehicle === "skate" ? MESHY.skateRider : wedge ? MESHY.rivalBike : MESHY.bikeRider, {
+        name: part.id,
+        targetMaxDimension: size,
+        castShadow: false,
+        receiveShadow: false,
+        ...(tint ? { materialOverrides: tint } : {})
+      }).runtime({ id: part.id }));
+      return;
+    }
     for (const part of rig.parts) {
       const kind = part.id.slice(rig.root.length + 1);
       const suit = hexLinear("#d9d6cf");

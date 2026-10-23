@@ -126,7 +126,16 @@ function inspectedAssetBounds(nextState: InspectorState) {
     floorY: previewY + 0.02
   });
 }
-const assetMetadata = inspectedAsset.metadata;
+interface InspectedAssetMetadata {
+  readonly provenance: { readonly license: string; readonly author: string };
+  readonly materialMetadata: readonly { readonly name?: string }[];
+  readonly textures: readonly unknown[];
+  readonly skeleton: { readonly messages: readonly string[] };
+  readonly morphTargets: { readonly messages: readonly string[] };
+  readonly materials: readonly string[];
+  readonly nodeNames: readonly string[];
+}
+const assetMetadata = inspectedAsset.metadata as unknown as InspectedAssetMetadata;
 const assetProvenance = assetMetadata.provenance;
 const materialMetadata = assetMetadata.materialMetadata;
 

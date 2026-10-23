@@ -1,0 +1,107 @@
+{
+ "reference": {
+  "lumaMean": 68.43,
+  "lumaStd": 48.13,
+  "saturation": 1.0,
+  "edgeDensity": 0.0668,
+  "meanRGB": [
+   90.0,
+   63.5,
+   53.9
+  ]
+ },
+ "frames": {
+  "before-menu": {
+   "lumaMean": 87.64,
+   "lumaStd": 30.07,
+   "saturation": 1.0,
+   "edgeDensity": 0.0189,
+   "meanRGB": [
+    111.9,
+    82.0,
+    72.4
+   ],
+   "lumaJSD": 0.2902,
+   "rgbJSD": 0.2893,
+   "paletteDistance": 31.3,
+   "palette": [
+    [
+     112,
+     80,
+     48
+    ],
+    [
+     48,
+     48,
+     80
+    ],
+    [
+     176,
+     112,
+     80
+    ],
+    [
+     144,
+     80,
+     48
+    ],
+    [
+     144,
+     112,
+     80
+    ],
+    [
+     80,
+     80,
+     80
+    ]
+   ]
+  },
+  "after-menu": {
+   "lumaMean": 87.99,
+   "lumaStd": 30.27,
+   "saturation": 1.0,
+   "edgeDensity": 0.0173,
+   "meanRGB": [
+    110.8,
+    82.7,
+    73.7
+   ],
+   "lumaJSD": 0.2997,
+   "rgbJSD": 0.2998,
+   "paletteDistance": 31.3,
+   "palette": [
+    [
+     112,
+     80,
+     48
+    ],
+    [
+     48,
+     48,
+     80
+    ],
+    [
+     144,
+     80,
+     48
+    ],
+    [
+     176,
+     112,
+     80
+    ],
+    [
+     80,
+     80,
+     80
+    ],
+    [
+     144,
+     112,
+     80
+    ]
+   ]
+  }
+ }
+}

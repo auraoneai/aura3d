@@ -1,0 +1,49 @@
+{
+ "resource": "remesh",
+ "task": {
+  "id": "01a16a1f-1dbb-70c4-9940-e92ba04970fb",
+  "type": "remesh",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792781786605,
+  "started_at": 1792781786617,
+  "finished_at": 1792781895182,
+  "expires_at": 1793041095182,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a16a1f-1dbb-70c4-9940-e92ba04970fb/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a16a1f-1dbb-70c4-9940-e92ba04970fb/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a16a1f-1dbb-70c4-9940-e92ba04970fb/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a16a1f-1dbb-70c4-9940-e92ba04970fb/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a16a1f-1dbb-70c4-9940-e92ba04970fb/output/texture_0_roughness.png",
+    "metallic_roughness": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a16a1f-1dbb-70c4-9940-e92ba04970fb/output/texture_0_metallic_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/a1f3f7f7-a555-4055-873e-625e86927d5f/tasks/01a16a1f-1dbb-70c4-9940-e92ba04970fb/output/preview.png",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "text_style_prompt": "",
+  "image_style_url": "",
+  "name": "",
+  "art_style": "",
+  "object_prompt": "",
+  "style_prompt": "",
+  "negative_prompt": "",
+  "model_url": "",
+  "consumed_credits": 5
+ },
+ "saved_files": [
+  "artifacts/meshy/drift-lighthouse-r/model.glb",
+  "artifacts/meshy/drift-lighthouse-r/thumbnail.png",
+  "artifacts/meshy/drift-lighthouse-r/texture_0_base_color.png",
+  "artifacts/meshy/drift-lighthouse-r/texture_0_metallic.png",
+  "artifacts/meshy/drift-lighthouse-r/texture_0_normal.png",
+  "artifacts/meshy/drift-lighthouse-r/texture_0_roughness.png",
+  "artifacts/meshy/drift-lighthouse-r/texture_0_metallic_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T18:58:41.263Z"
+}

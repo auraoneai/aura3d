@@ -1,18 +1,19 @@
 /**
  * Roadster Hours world on the public `@aura3d/engine` surface only: a procedural sky dome, a footprint-filtered ocean,
  * rock cliffs, guardrails, the road ribbon, kickers and roofline shortcuts (`geometry.dynamic` + `material.custom`), relay
- * gates, data cells and hazards, the Roadster, and every traffic and lineup vehicle in a small set of `batched.mesh`es
- * (one per material group: paint with per-instance colour, trim, glass, head and tail lights, plus box rigs). The cars are
- * baked CC0 models (`cars.baked.ts`); the rigs stay boxes.
+ * gates, data cells and hazards, the Roadster, and every traffic and lineup vehicle: generated (Meshy) models as textured
+ * `instances.custom` nodes (one per model; `batched.mesh` cannot bind a texture), with the baked CC0 cars in per-material
+ * `batched.mesh`es and the box rigs as the fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
  */
 import {
-  batched, camera, effects, environments, geometry, lights, material, primitives, scene, type AuraApp
+  batched, camera, effects, environments, geometry, instances, lights, material, primitives, scene, type AuraApp
 } from "@aura3d/engine";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
 import { LEVELS } from "./data";
 import { LOOKS, hexLinear, type Look } from "./look";
 import { beamSpec, plumeSpec, rampSpec, roadSpec, skySpec, solidSpec, terrainSpec, towerSpec, townSpec, waterSpec, type FogLook } from "./materials";
+import { hasMeshy, meshyGeometry, meshyMaterial, meshySize } from "./meshy";
 import type { Run } from "./sim";
 
 export { hexLinear };
@@ -221,6 +222,32 @@ function towers(level: Level, seed: number): MeshData {
   return m;
 }
 
+interface TownLot { readonly x: number; readonly y: number; readonly z: number; readonly w: number; readonly dep: number; readonly h: number; readonly s: number; readonly id: number; readonly sign: -1 | 1 }
+/** Lots of the cliff-top town (shared by the plaster-cube fallback and the generated villa/townhouse models). */
+function townLots(level: Level, look: Look, seed: number): TownLot[] {
+  const lots: TownLot[] = [];
+  const act = level.acts.find((a) => /city/i.test(a.name));
+  if (!act) return lots;
+  const next = level.acts[level.acts.indexOf(act) + 1];
+  const s0 = act.s, s1 = next ? next.s : act.s + 600;
+  const sign = (look.seaSide * -1) as -1 | 1;
+  let id = 1;
+  for (let s = s0; s < s1; s += 17) {
+    for (let k = 0; k < 3; k++) {
+      const r1 = hash2(Math.floor(s) + k * 131, 3, seed), r2 = hash2(Math.floor(s) + k * 71, 5, seed), r3 = hash2(Math.floor(s) + k * 53, 9, seed);
+      if (r1 < 0.28) continue;
+      const d = 34 + k * 24 + r2 * 12;
+      const w = 8 + r1 * 8, dep = 8 + r2 * 7, h = 6 + r3 * 11;
+      const ss = s + r3 * 8;
+      const [x, , z] = roadPoint(level, ss, sign * (level.width + d), 0);
+      const y = flankY(level, look, sign, "hills", seed + 101, ss, d) - 1.5;
+      lots.push({ x, y, z, w, dep, h, s: ss, id, sign });
+      id++;
+    }
+  }
+  return lots;
+}
+
 /** Cliff-top town: plaster cubes with flat roofs on the plateau above the road for the route's town act. uv.x carries the building id for the facade tint. */
 function townBuildings(level: Level, look: Look, seed: number): MeshData {
   const m = emptyMesh();
@@ -297,10 +324,40 @@ const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
   return { min, max };
 };
 
+/** Dense per-model instance pool for the generated vehicles: slot matrices are written like batched instances and flushed to the instanced node once per frame (batched meshes cannot bind a texture, instanced custom nodes can). */
+interface SlotMesh { setMatrixAt(i: number, matrix: Float32Array): void; setVisibleAt(i: number, visible: boolean): void }
+class InstancePool implements SlotMesh {
+  readonly matrices: Float32Array;
+  readonly shown: boolean[];
+  count = 0;
+  dirty = true;
+  constructor(readonly capacity: number) { this.matrices = new Float32Array(capacity * 16); this.shown = new Array<boolean>(capacity).fill(true); }
+  add(): number { return this.count++; }
+  setMatrixAt(i: number, matrix: Float32Array): void { this.matrices.set(matrix, i * 16); this.dirty = true; }
+  setVisibleAt(i: number, visible: boolean): void { this.shown[i] = visible; this.dirty = true; }
+  /** Decodes the y-rotation + scale + translation matrices written by `matrixFor`. */
+  transforms(): { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] {
+    const out: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
+    for (let i = 0; i < this.capacity; i++) {
+      const m = this.matrices.subarray(i * 16, i * 16 + 16);
+      const live = i < this.count && this.shown[i];
+      const sx = Math.hypot(m[0]!, m[2]!) || 1, sz = Math.hypot(m[8]!, m[10]!) || 1;
+      out.push({ position: [m[12]!, m[13]!, m[14]!], rotation: [0, Math.atan2(-m[2]!, m[0]!), 0], scale: live ? [sx, m[5]!, sz] : [0.0001, 0.0001, 0.0001] });
+    }
+    return out;
+  }
+}
+
 const carFor = (piece: string, index: number): CarKey | null => {
   if (piece === "sedan") return index % 2 === 0 ? "sedan" : "sportsCar";
   const key = CAR_FOR_PIECE[piece];
   return key ?? null;
+};
+
+/** Which generated (Meshy) model stands in for a sim piece, when it loaded; null falls back to the baked CC0 cars and box rigs. */
+const meshyFor = (piece: string, index: number): string | null => {
+  const key = piece === "sedan" ? (index % 3 === 0 ? "hatch" : "sedan") : piece === "box_truck" ? "boxtruck" : piece;
+  return ["sedan", "hatch", "suv", "pickup", "bus", "boxtruck", "semi", "tanker"].includes(key) && hasMeshy(key) ? key : null;
 };
 
 const CAB_COLOURS = ["#2f3e55", "#a32a2a", "#e0b13a", "#2b6a52", "#c46a2b"];
@@ -358,14 +415,14 @@ function rigParts(piece: string, boxes: readonly LocalBox[], cargoColour: string
   return { parts, tails, heads };
 }
 
-interface VehicleDef { readonly piece: string; readonly variant: number; readonly car: CarKey | null; readonly colour: string }
+interface VehicleDef { readonly piece: string; readonly variant: number; readonly car: CarKey | null; readonly meshy: string | null; readonly colour: string }
 
 export interface WorldRuntime {
   update(run: Run, dt: number, time: number, aspect: number): void;
   reset(run: Run): void;
   batching(): Record<string, unknown> | null;
   /** Draw calls with every vehicle hidden vs shown: the delta is what the batched meshes cost. */
-  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; geometries: number; features: readonly string[] };
+  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; instancedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] };
   readonly vehicleInstances: number;
 }
 
@@ -380,6 +437,8 @@ export interface World {
   /** Pooled geometries across the batched vehicle meshes. */
   readonly vehicleGeometries: number;
   readonly vehicleMeshes: number;
+  /** Nodes whose texture the engine uploads after mount (generated models): the page waits for them before it hides the loading screen. */
+  readonly texturedNodes: number;
   bind(app: AuraApp): WorldRuntime;
 }
 
@@ -470,6 +529,68 @@ export function buildWorld(levelIndex: number): World {
     tier("cap", 66.4, 6.6, 2.4, red());
   }
 
+  /* ---- generated (Meshy) scenery: lighthouse, town houses, trees, boulders; each falls back to the procedural pieces above ---- */
+  let texturedScenery = 0;
+  const scatter = (key: string, name: string, items: readonly { p: Vec3; yaw: number; size: Vec3 }[], options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number } = {}): void => {
+    const data = meshyGeometry(key);
+    if (!data || !items.length) return;
+    texturedScenery++;
+    builder.add(instances.custom(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }) as never, {
+      name, material: meshyMaterial(key, options), transforms: items.map((item) => ({ position: item.p, rotation: [0, item.yaw, 0] as Vec3, scale: item.size }))
+    } as never));
+  };
+  if (look.style === "coast" && hasMeshy("lighthouse")) {
+    const lightS = Math.min(level.length - 260, 2520);
+    const lb = roadPoint(level, lightS, look.seaSide * (level.width + 95), 0);
+    const towerH = 72;
+    scatter("lighthouse", "lighthouse-model", [{ p: [lb[0], 6, lb[2]], yaw: 0, size: [towerH, towerH, towerH] }], { roughness: 0.6, metallic: 0.05 });
+  }
+  if (look.style === "coast" && (hasMeshy("villa") || hasMeshy("townhouse"))) {
+    const lots = townLots(level, look, seed);
+    const villas = lots.filter((l) => l.id % 2 === 0 || !hasMeshy("townhouse"));
+    const towns = lots.filter((l) => !villas.includes(l));
+    const place = (lot: TownLot) => ({ p: [lot.x, lot.y, lot.z] as Vec3, yaw: -roadProfile(level, lot.s).heading + (lot.sign > 0 ? Math.PI : 0), size: [lot.h * 1.3, lot.h * 1.3, lot.h * 1.3] as Vec3 });
+    if (hasMeshy("villa")) scatter("villa", "town-villas", villas.map(place), { roughness: 0.8 });
+    if (hasMeshy("townhouse")) scatter("townhouse", "town-townhouses", towns.map(place), { roughness: 0.8 });
+  }
+  if (look.style === "coast") {
+    const sign = (look.seaSide * -1) as -1 | 1;
+    const palms: { p: Vec3; yaw: number; size: Vec3 }[] = [], pines: { p: Vec3; yaw: number; size: Vec3 }[] = [];
+    for (let s = 90; s < level.length; s += 24) {
+      const r = (n: number): number => hash2(Math.floor(s) + n * 17, n + 3, seed + 505);
+      if (r(1) > 0.5) {
+        const d = 5 + r(2) * 10;
+        const [x, , z] = roadPoint(level, s + r(3) * 12, look.seaSide * (level.width + d), 0);
+        const h = 7 + r(4) * 4;
+        palms.push({ p: [x, flankY(level, look, look.seaSide, "sea", seed, s + r(3) * 12, d) - 0.2, z], yaw: r(5) * Math.PI * 2, size: [h, h, h] });
+      }
+      if (r(6) > 0.35) {
+        const d = 8 + r(7) * 46;
+        const [x, , z] = roadPoint(level, s + r(8) * 12, sign * (level.width + d), 0);
+        const h = 9 + r(9) * 6;
+        pines.push({ p: [x, flankY(level, look, sign, "hills", seed + 101, s + r(8) * 12, d) - 0.3, z], yaw: r(10) * Math.PI * 2, size: [h, h, h] });
+      }
+    }
+    const foliage = query.get("foliage") ?? "matte";
+    const foliageOptions = foliage === "double" ? { roughness: 0.85, doubleSided: true } : foliage === "single" ? { roughness: 0.85 } : { roughness: 1, metallic: 0, specular: 0.05 };
+    scatter("palm", "palms", palms, foliageOptions);
+    scatter("pine", "pines", pines, foliageOptions);
+  }
+  if (look.style === "coast" || look.style === "canyon") {
+    const sign = (look.seaSide * -1) as -1 | 1;
+    const kind = look.style === "coast" ? "hills" : "cliff";
+    const rocks: { p: Vec3; yaw: number; size: Vec3 }[] = [];
+    for (let s = 60; s < level.length; s += 41) {
+      const r = (n: number): number => hash2(Math.floor(s) + n * 29, n + 5, seed + 707);
+      if (r(1) < 0.3) continue;
+      const d = 4 + r(2) * 20;
+      const [x, , z] = roadPoint(level, s + r(3) * 20, sign * (level.width + d), 0);
+      const h = 2.5 + r(4) * 5;
+      rocks.push({ p: [x, flankY(level, look, sign, kind, seed + 101, s + r(3) * 20, d) - 0.4, z], yaw: r(5) * Math.PI * 2, size: [h * (0.9 + r(6) * 0.5), h, h * (0.9 + r(7) * 0.5)] });
+    }
+    scatter("boulders", "boulders", rocks, { roughness: 0.95 });
+  }
+
   /* ---- ocean ---- */
   const mid = roadPoint(level, level.length / 2, 0, 0);
   builder.add(primitives.plane({ name: "water", position: [mid[0], 0, mid[2]], size: 9000, material: material.custom(waterSpec(look)) }));
@@ -502,8 +623,9 @@ export function buildWorld(levelIndex: number): World {
   const defs: VehicleDef[] = [];
   const addDef = (piece: string, variant: number): number => {
     const idx = defs.length;
-    const car = carFor(piece, idx);
-    defs.push({ piece, variant, car, colour: car ? CAR_COLOURS[(idx * 7 + piece.length) % CAR_COLOURS.length]! : (RIG_COLOURS[piece] ?? "#cccccc") });
+    const meshy = meshyFor(piece, idx);
+    const car = meshy ? null : carFor(piece, idx);
+    defs.push({ piece, variant, car, meshy, colour: car ? CAR_COLOURS[(idx * 7 + piece.length) % CAR_COLOURS.length]! : (RIG_COLOURS[piece] ?? "#cccccc") });
     return idx;
   };
   const lineupDefs = layout.vehicles.map((v) => addDef(v.piece, v.v));
@@ -512,6 +634,7 @@ export function buildWorld(levelIndex: number): World {
   const usedCars = new Set<CarKey>();
   for (const d of defs) if (d.car) usedCars.add(d.car);
   const carCount = defs.filter((d) => d.car).length;
+  const meshyKeys = [...new Set(defs.flatMap((d) => (d.meshy ? [d.meshy] : [])))];
   const groupHandles = new Map<CarGroup, { mesh: ReturnType<typeof batched.mesh>; geo: Map<CarKey, number> }>();
   const groupMaterial = (g: CarGroup) => {
     switch (g) {
@@ -538,7 +661,19 @@ export function buildWorld(levelIndex: number): World {
     builder.add(mesh);
     groupHandles.set(g, { mesh, geo });
   }
-  const rigDefs = defs.filter((d) => !d.car);
+  /* generated vehicles: one textured instanced node per model (each model carries its own texture) */
+  const meshyPools = new Map<string, InstancePool>();
+  for (const key of meshyKeys) {
+    const data = meshyGeometry(key)!;
+    const count = defs.filter((d) => d.meshy === key).length;
+    const pool = new InstancePool(count);
+    meshyPools.set(key, pool);
+    builder.add(instances.custom(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }) as never, {
+      name: `vehicles-${key}`, material: meshyMaterial(key, { roughness: 0.5, metallic: 0.12 }), transforms: pool.transforms()
+    } as never).runtime({ id: `vehicles-${key}` }));
+    geometryTotal++;
+  }
+  const rigDefs = defs.filter((d) => !d.car && !d.meshy);
   const rigDetail = new Map<VehicleDef, ReturnType<typeof rigParts>>();
   rigDefs.forEach((d, i) => rigDetail.set(d, rigParts(d.piece, pieceSpec(d.piece, d.variant)!.boxes, d.colour, CAB_COLOURS[i % CAB_COLOURS.length]!)));
   const rigPartTotal = [...rigDetail.values()].reduce((n, r) => n + r.parts.length, 0);
@@ -555,10 +690,13 @@ export function buildWorld(levelIndex: number): World {
   geometryTotal++;
   builder.add(rigHeads);
 
-  interface Slot { readonly mesh: ReturnType<typeof batched.mesh>; readonly slot: number; readonly box: LocalBox }
+  interface Slot { readonly mesh: SlotMesh; readonly slot: number; readonly box: LocalBox }
   const slotsFor = (def: VehicleDef): Slot[] => {
     const slots: Slot[] = [];
-    if (def.car) {
+    if (def.meshy) {
+      const pool = meshyPools.get(def.meshy)!;
+      slots.push({ mesh: pool, slot: pool.add(), box: unionBox(pieceSpec(def.piece, def.variant)!.boxes) });
+    } else if (def.car) {
       const box = unionBox(pieceSpec(def.piece, def.variant)!.boxes);
       for (const g of CAR_GROUPS) {
         const handle = groupHandles.get(g);
@@ -585,16 +723,28 @@ export function buildWorld(levelIndex: number): World {
   const slotTotal = [...lineupSlots, ...trafficSlots].reduce((n, s) => n + s.length, 0);
 
   /* ---- the Roadster: baked sports car in five material groups ---- */
-  const nativeSize = carNativeSize("sportsCar");
+  const meshyPlayer = hasMeshy("roadster");
+  const nativeSize = meshyPlayer ? meshySize("roadster") : carNativeSize("sportsCar");
+  const playerIds: string[] = [];
   const playerHeight = nativeSize[1] * PLAYER_SCALE;
   const playerPaint = material.carPaint({ color: "#232932", roughness: 0.26, metallic: 0.7 });
-  for (const g of CAR_GROUPS) {
-    const data = carGroup("sportsCar", g);
-    if (!data) continue;
+  if (meshyPlayer) {
+    const data = meshyGeometry("roadster")!;
     builder.add(geometry.custom(
-      geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: new Float32Array((data.positions.length / 3) * 2), indices: data.indices }),
-      { name: `car-${g}`, material: g === "paint" ? playerPaint : groupMaterial(g) }
-    ).runtime({ id: `car-${g}` }));
+      geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }),
+      { name: "car-body", material: meshyMaterial("roadster", { roughness: 0.42, metallic: 0.18 }) }
+    ).runtime({ id: "car-body" }));
+    playerIds.push("car-body");
+  } else {
+    for (const g of CAR_GROUPS) {
+      const data = carGroup("sportsCar", g);
+      if (!data) continue;
+      builder.add(geometry.custom(
+        geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: new Float32Array((data.positions.length / 3) * 2), indices: data.indices }),
+        { name: `car-${g}`, material: g === "paint" ? playerPaint : groupMaterial(g) }
+      ).runtime({ id: `car-${g}` }));
+      playerIds.push(`car-${g}`);
+    }
   }
 
   /* ---- headlight beams (additive cones, same transform as the car) and particle emitters ---- */
@@ -625,13 +775,16 @@ export function buildWorld(levelIndex: number): World {
     vehicleCount: defs.length,
     vehicleSlots: slotTotal,
     vehicleGeometries: geometryTotal,
-    vehicleMeshes: groupHandles.size + 3,
+    vehicleMeshes: groupHandles.size + meshyPools.size + 3,
+    texturedNodes: meshyPools.size + (meshyPlayer ? 1 : 0) + texturedScenery,
     bind(app: AuraApp): WorldRuntime {
       const camCtl = app.camera;
       if (!camCtl) throw new Error("roadster-hours-port: the app exposes no camera controller");
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
-      const parts = CAR_GROUPS.filter((g) => carGroup("sportsCar", g)).map((g) => node(`car-${g}`));
+      const parts = playerIds.map((id) => node(id));
+      const poolNodes = [...meshyPools].map(([key, pool]) => ({ pool, handle: node(`vehicles-${key}`) }));
+      const flushPools = (): void => { for (const { pool, handle } of poolNodes) if (pool.dirty) { handle.setInstances?.(pool.transforms()); pool.dirty = false; } };
       const sky = node("sky");
       const roadNode = node("road");
       const cells = level.cells.map((_c, i) => node(`cell-${i}`));
@@ -656,20 +809,23 @@ export function buildWorld(levelIndex: number): World {
         layout.vehicles.forEach((v, vi) => { for (const slot of lineupSlots[vi]!) writeVehicle(slot, v.s, v.l, v.yaw); });
       };
       placeLineup();
+      flushPools();
 
       const allSlots = [...lineupSlots.flat(), ...trafficSlots.flat()];
       const offCentre = 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); },
+        reset: () => { placeLineup(); flushPools(); },
         probeBatchedDraws() {
           const draws = (): number => { app.step(0); return app.diagnostics().drawCalls ?? 0; };
           for (const s of allSlots) s.mesh.setVisibleAt(s.slot, false);
+          flushPools();
           const hidden = draws();
           for (const s of allSlots) s.mesh.setVisibleAt(s.slot, true);
+          flushPools();
           const visible = draws();
           const features = (app.diagnostics() as unknown as { compiledFeatures?: readonly string[] }).compiledFeatures ?? [];
-          return { hidden, visible, delta: visible - hidden, instances: allSlots.length, geometries: geometryTotal, features: features.map(String) };
+          return { hidden, visible, delta: visible - hidden, instances: allSlots.length, instancedInstances: [...meshyPools.values()].reduce((n, pool) => n + pool.count, 0), batchedGeometries: geometryTotal - meshyPools.size, geometries: geometryTotal, features: features.map(String) };
         },
         batching: () => ((app.diagnostics() as unknown as Record<string, unknown>)["renderer.batching"] as Record<string, unknown> | undefined) ?? null,
         update(run: Run, dt: number, time: number, aspect: number): void {
@@ -699,6 +855,7 @@ export function buildWorld(levelIndex: number): World {
             const car = run.traffic[ci]!;
             for (const slot of slots) writeVehicle(slot, car.s, car.l, 0);
           });
+          flushPools();
           // headlight pool on the road follows the car
           roadNode.setUniform?.("carPos", [carP[0], carP[1], carP[2]]);
           roadNode.setUniform?.("carDir", [-Math.sin(psi), -Math.cos(psi)]);

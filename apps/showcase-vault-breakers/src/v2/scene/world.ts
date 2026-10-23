@@ -14,7 +14,7 @@ import {
   NEON_SIGN, TRIM_MATERIAL, WALL_MATERIAL
 } from "./materials";
 
-function box(name: string, mat: Parameters<typeof primitives.box>[0]["material"], at: [number, number, number], size: [number, number, number]): AuraSceneNode {
+function box(name: string, mat: NonNullable<Parameters<typeof primitives.box>[0]>["material"], at: [number, number, number], size: [number, number, number]): AuraSceneNode {
   return primitives.box({ name, material: mat, castShadow: false, receiveShadow: true })
     .position(...at).scale(size).toJSON();
 }

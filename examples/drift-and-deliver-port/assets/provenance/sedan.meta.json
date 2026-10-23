@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d1-7716-7378-b178-0d944789cf9e",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776697641,
+  "started_at": 1792776697646,
+  "finished_at": 1792776730804,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-7716-7378-b178-0d944789cf9e/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-7716-7378-b178-0d944789cf9e/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-7716-7378-b178-0d944789cf9e/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-7716-7378-b178-0d944789cf9e/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-7716-7378-b178-0d944789cf9e/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-7716-7378-b178-0d944789cf9e/output/preview.png",
+  "prompt": "a mid-size city sedan car, rounded friendly stylised proportions, deep blue paint, four wheels, clean simple panels, no driver, single game vehicle, centered, no ground, PBR materials",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3742017241,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/drift-sedan/model.glb",
+  "artifacts/meshy/drift-sedan/thumbnail.png",
+  "artifacts/meshy/drift-sedan/texture_0_base_color.png",
+  "artifacts/meshy/drift-sedan/texture_0_metallic.png",
+  "artifacts/meshy/drift-sedan/texture_0_normal.png",
+  "artifacts/meshy/drift-sedan/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:32:25.848Z"
+}

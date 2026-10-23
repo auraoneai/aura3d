@@ -53,6 +53,13 @@ const phaseMessage: Record<string, string> = {
   docked: "Press E to open the doors.", opening: "Doors opening", deploying: "Steps out", alighting: "Passengers getting off",
   boarding: "Boarding", ready: "Ready when you are. Press W to depart.", retracting: "Steps in", closing: "Doors closing", enroute: "Cruising. A / D to balance."
 };
+const phasePrompt: Record<string, [string, string]> = {
+  docked: ["Press E to open the doors", "Passengers board while the doors are open"],
+  opening: ["Doors opening", "Wait for the steps"], deploying: ["Steps coming out", "Wait for passengers"],
+  alighting: ["Passengers getting off", "Then new riders board"], boarding: ["Boarding", "Wait for Ready, then hold W"],
+  ready: ["Hold W to depart", "Space or S brakes, A / D balance the lean"], retracting: ["Steps going in", "Leaving the platform"], closing: ["Doors closing", "Hold W once moving"],
+  enroute: ["Keep the lean level", "A / D balance, W to speed up, Space to brake"]
+};
 
 /* ------------------------------------------------------------------ input and stepping */
 
@@ -130,6 +137,11 @@ function updateHud(): void {
   $("tips").textContent = String(sim.attempt.tips);
   $("score").textContent = String(sim.score);
   const complete = sim.attempt.status === "complete" && sim.phase === "ready";
+  const prompt = complete ? ["Service complete", `Grade ${sim.attempt.grade ?? ""}. Press R for a new service`] as [string, string] : (phasePrompt[sim.phase] ?? [sim.phase, ""]);
+  const promptEl = $("prompt");
+  const promptHtml = `${prompt[0]}<span class="meta">${prompt[1]}</span>`;
+  if (promptEl.dataset.k !== promptHtml) { promptEl.dataset.k = promptHtml; promptEl.innerHTML = promptHtml; }
+  promptEl.classList.toggle("hidden", titleMode);
   $("message").textContent = complete ? `Service complete (${sim.attempt.grade}). Press R for a new service.` : (phaseMessage[sim.phase] ?? sim.phase);
   const riders = $("riders");
   riders.classList.toggle("hidden", sim.trips.length === 0);
@@ -220,6 +232,10 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyM") { sound.setMuted(!sound.muted); toast(sound.muted ? "Sound off" : "Sound on", 1200); }
   keys.add(e.code);
   if (e.code === "KeyE" && sim.phase === "docked") actionDoors(sim);
+  if (!e.repeat && (e.code === "KeyW" || e.code === "ArrowUp") && sim.attempt.status === "active") {
+    if (sim.phase === "docked") { actionDoors(sim); toast("Doors opening. Riders board, then hold W to depart", 3200); }
+    else if (sim.phase !== "ready" && sim.phase !== "enroute") toast(`${phasePrompt[sim.phase]?.[0] ?? sim.phase}: wait for Ready, then hold W`, 2400);
+  }
   if (e.code === "KeyN") actionTimeOfDay(sim, sim.timeOfDay === "night" ? "day" : "night");
   if (e.code === "KeyR") { actionNewService(sim); $("results").classList.add("hidden"); }
   if (e.code === "KeyP") autopilot = !autopilot;
@@ -267,7 +283,7 @@ function pixels(): { width: number; height: number; litFraction: number; mean: n
 /** Model nodes (the windmill and watchtower landmarks) and how many have decoded into the scene yet. */
 function assetStatus(): { total: number; loaded: number } {
   if (!app) return { total: 0, loaded: 0 };
-  const ids = app.nodes.ids().filter((id) => /^landmark-/.test(id));
+  const ids = app.nodes.ids().filter((id) => /^(landmark|house|clock-tower|lighthouse|crates|lamp-post|folk|tram-body)-?/.test(id));
   const loaded = ids.filter((id) => (app!.nodes.require(id) as unknown as { importedAssetEvidence?: () => { bounds?: unknown } | undefined }).importedAssetEvidence?.()?.bounds).length;
   return { total: ids.length, loaded };
 }

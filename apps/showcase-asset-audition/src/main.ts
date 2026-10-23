@@ -8,7 +8,7 @@ import {
   model,
   primitives,
   scene,
-  type AuraAsset,
+  type AuraAssetRef,
   type AuraNodeInput
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
@@ -32,7 +32,11 @@ declare global {
   }
 }
 
-const assetMap = assets as unknown as Record<string, AuraAsset>;
+type AuditionAsset = AuraAssetRef<"model"> & {
+  readonly bounds: readonly [number, number, number];
+  readonly metadata: { readonly provenance: { readonly license: string; readonly author: string; readonly sourceFamily?: string } };
+};
+const assetMap = assets as unknown as Record<string, AuditionAsset>;
 const params = new URLSearchParams(window.location.search);
 const assetName = params.get("asset") ?? "showcaseButterflyCircuit";
 const rotation = readRotation(params.get("rotation"));

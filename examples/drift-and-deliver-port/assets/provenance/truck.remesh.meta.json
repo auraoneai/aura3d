@@ -1,0 +1,49 @@
+{
+ "resource": "remesh",
+ "task": {
+  "id": "01a16a15-8391-7059-b293-cb329dc38cfd",
+  "type": "remesh",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792781157305,
+  "started_at": 1792781157310,
+  "finished_at": 1792781251646,
+  "expires_at": 1793040451646,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a16a15-8391-7059-b293-cb329dc38cfd/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a16a15-8391-7059-b293-cb329dc38cfd/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a16a15-8391-7059-b293-cb329dc38cfd/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a16a15-8391-7059-b293-cb329dc38cfd/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a16a15-8391-7059-b293-cb329dc38cfd/output/texture_0_roughness.png",
+    "metallic_roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a16a15-8391-7059-b293-cb329dc38cfd/output/texture_0_metallic_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a16a15-8391-7059-b293-cb329dc38cfd/output/preview.png",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "text_style_prompt": "",
+  "image_style_url": "",
+  "name": "",
+  "art_style": "",
+  "object_prompt": "",
+  "style_prompt": "",
+  "negative_prompt": "",
+  "model_url": "",
+  "consumed_credits": 5
+ },
+ "saved_files": [
+  "artifacts/meshy/drift-truck-r/model.glb",
+  "artifacts/meshy/drift-truck-r/thumbnail.png",
+  "artifacts/meshy/drift-truck-r/texture_0_base_color.png",
+  "artifacts/meshy/drift-truck-r/texture_0_metallic.png",
+  "artifacts/meshy/drift-truck-r/texture_0_normal.png",
+  "artifacts/meshy/drift-truck-r/texture_0_roughness.png",
+  "artifacts/meshy/drift-truck-r/texture_0_metallic_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T18:47:47.394Z"
+}

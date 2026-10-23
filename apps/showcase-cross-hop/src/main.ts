@@ -68,7 +68,7 @@ const g = createGame({
       horn: { id: "horn", asset: { url: sfxUrl("stinger.alarm.00") }, volume: 0.6 },
       rescue: { id: "rescue", asset: { url: sfxUrl("pickup.extra-life.00") }, volume: 0.85 },
       theme: { id: "theme", asset: { url: sfxUrl("stinger.level-start.00") }, volume: 0.6 },
-      ui: { id: "ui", asset: { url: sfxUrl("ui.button-click.00") }, volume: 0.5 }
+      ui: { id: "ui", asset: { url: sfxUrl("ui.click.00") }, volume: 0.5 }
     }
   },
   juice: {

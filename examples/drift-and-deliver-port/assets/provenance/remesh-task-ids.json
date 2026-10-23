@@ -1,0 +1,16 @@
+{
+ "hypercar": "01a16a0d-f870-7007-b0b2-69c7e7d4ed9d",
+ "sedan": "01a16a10-8c9d-733c-b16b-088cdaf467b2",
+ "hatch": "01a16a12-3631-7225-b6f1-d65a2c66af39",
+ "van": "01a16a13-e053-77a9-9ace-c8d4debcd694",
+ "truck": "01a16a15-8391-7059-b293-cb329dc38cfd",
+ "lamp": "01a16a17-343a-7271-83cc-17ea4580c74d",
+ "signal": "01a16a18-9272-7536-b421-4888ad739cc7",
+ "hydrant": "01a16a19-f08a-7218-8e4d-b2584fffad21",
+ "shelter": "01a16a1b-9809-7017-a211-b5515df8a82b",
+ "clocktower": "01a16a1d-6074-7295-8342-930f69c83e8e",
+ "lighthouse": "01a16a1f-1dbb-70c4-9940-e92ba04970fb",
+ "watertank": "01a16a21-32ca-751b-b4bf-e22ad5ec82e8",
+ "tree": "01a169e3-8ca7-75e3-aa80-4cbe737aa8ae",
+ "palm": "01a169e8-4778-756f-962b-c4512f114c55"
+}

@@ -1,0 +1,34 @@
+{
+ "resource": "rigging",
+ "task": {
+  "id": "01a169d1-793a-7200-a9f4-910eba3e7faa",
+  "type": "rig",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776701887,
+  "started_at": 1792776701892,
+  "finished_at": 1792776749566,
+  "expires_at": 1793035949566,
+  "task_error": null,
+  "result": {
+   "rigged_character_fbx_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Character_output.fbx",
+   "rigged_character_glb_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Character_output.glb",
+   "basic_animations": {
+    "walking_glb_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Animation_Walking_withSkin.glb",
+    "walking_fbx_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Animation_Walking_withSkin.fbx",
+    "walking_armature_glb_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Animation_Walking_withSkin_armature.glb",
+    "running_glb_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Animation_Running_withSkin.glb",
+    "running_fbx_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Animation_Running_withSkin.fbx",
+    "running_armature_glb_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d1-793a-7200-a9f4-910eba3e7faa/output/Animation_Running_withSkin_armature.glb"
+   }
+  },
+  "name": "",
+  "consumed_credits": 5
+ },
+ "saved_files": [
+  "artifacts/meshy/wind-traveller-rig/rigged_character_fbx.fbx",
+  "artifacts/meshy/wind-traveller-rig/rigged_character_glb.glb"
+ ],
+ "downloaded_at": "2026-10-23T17:32:48.017Z"
+}

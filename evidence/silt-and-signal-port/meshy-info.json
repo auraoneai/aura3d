@@ -1,0 +1,110 @@
+{
+  "ch0-obj0-chase": {
+    "mode": "play",
+    "bootMs": 26103,
+    "stats": {
+      "meanLuma": 158.18371752534742,
+      "edgeDensity": 3.241768594731972,
+      "distinctColors": 388,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 18,
+    "draws": 156,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "rider-close": {
+    "mode": "play",
+    "bootMs": 13068,
+    "stats": {
+      "meanLuma": 182.3934300988632,
+      "edgeDensity": 2.4073700624675256,
+      "distinctColors": 345,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 18,
+    "draws": 148,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-rings": {
+    "mode": "play",
+    "bootMs": 12668,
+    "stats": {
+      "meanLuma": 151.38445116130197,
+      "edgeDensity": 3.032311591057131,
+      "distinctColors": 357,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 18,
+    "draws": 146,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-gatehouse": {
+    "mode": "play",
+    "bootMs": 11270,
+    "stats": {
+      "meanLuma": 164.13283447775973,
+      "edgeDensity": 2.8022746326305765,
+      "distinctColors": 354,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 18,
+    "draws": 135,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  }
+}

@@ -8,7 +8,8 @@
  * and the output exposure. Everything the original fetched remotely is re-created or replaced with licensed assets.
  */
 import { camera, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
-import { applyMat3, matrixToEulerZYX, tramRotation, type V3 } from "./orient";
+import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
+import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
 import { MeshData, boxAt, cylinderX, roofDome, gableRoof, groundDisc, makeTownTextures, pyramidRoof, stoneArch, wallBox, type TownTextures } from "./townkit";
 import { sampleRoute, type SimData, type SimState, type Temperament } from "./sim";
@@ -66,6 +67,8 @@ const dyn = (r: Ribbon) => geometry.dynamic({ positions: f32(r.positions), norma
 const pbr = (color: string, roughness = 0.8, metallic = 0) => material.pbr({ color, roughness, metallic });
 const glow = (color: string, intensity = 1.2) => material.emissive({ color, emissive: color, emissiveIntensity: intensity });
 
+const PAX_ASSET = { easy: MESHY_ASSETS.paxEasy, sightseer: MESHY_ASSETS.paxSightseer, rushed: MESHY_ASSETS.paxRushed, sleeper: MESHY_ASSETS.paxSleeper };
+const HOUSES = [MESHY_ASSETS.houseCream, MESHY_ASSETS.houseOchre, MESHY_ASSETS.houseBlue];
 const LICENSE_CATALOG = "Aura3D catalog (gullsiege Meshy set), licensed for use with the engine";
 const ASSETS = defineAuraAssets({
   windmill: {
@@ -171,8 +174,8 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
 
   /* ---- lighting: HDRI IBL, cascaded-shadow sun, moon fill, fog, AO, bloom, grade, vignette ---- */
   if (!FX.has("nohdri")) b.add(environments.hdri({ name: "env-sky", texture: ASSETS.skyHdr, intensity: night ? 0.2 : 0.8, background: false }));
-  if (night) b.add(lights.directional({ name: "moon", position: MOON_NIGHT, target: [0, 0, 0], intensity: 1.7, color: "#9db4ff", shadow: { cascades: 3, maxDistance: 190, blend: 0.12 } }));
-  else b.add(lights.directional({ name: "sun", position: SUN_DAY, target: [0, 0, 0], intensity: 2.8, color: "#ffe8c0", shadow: { cascades: 3, maxDistance: 190, blend: 0.12 } }));
+  if (night) b.add(lights.directional({ name: "moon", position: MOON_NIGHT, target: [0, 0, 0], intensity: 1.7, color: "#9db4ff", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
+  else b.add(lights.directional({ name: "sun", position: SUN_DAY, target: [0, 0, 0], intensity: 2.8, color: "#ffe8c0", shadow: FX.has("noshadow") ? false : { cascades: 3, maxDistance: 190, blend: 0.12 } }));
   if (!FX.has("nofog")) b.add(effects.fog({ name: "haze", color: night ? FOG_NIGHT : FOG_DAY, density: night ? 0.00018 : 0.00014 }));
   if (!FX.has("noao")) b.add(effects.ambientOcclusion({ name: "ao" }));
   if (!FX.has("nobloom")) b.add(effects.bloom({ name: "bloom", intensity: night ? 0.85 : 0.5, threshold: night ? 0.6 : 0.82, radius: 0.55 }));
@@ -245,7 +248,8 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
     canopyBoxAt.push({ position: [s0.x + sx * 5.6, s0.y + 4.9, s0.z + sz * 5.6], rotation: [0, yaw, 0] }); canopyBoxColors.push(mixHex(town.color, "#b4523d", 0.55));
     canopyTrimAt.push({ position: [s0.x + sx * 5.6, s0.y + 4.68, s0.z + sz * 5.6], rotation: [0, yaw, 0] });
     for (const k of [-9, 9]) {
-      postAt.push({ position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.7, s0.z + sz * 6.8 + fz * k] });
+      if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.lamp, { name: `lamp-post-${i}-${k}`, position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.85, s0.z + sz * 6.8 + fz * k], scaleMode: "world", scale: 2.5, castShadow: false, receiveShadow: false }).runtime({ id: `lamp-post-${i}-${k}` }));
+      else postAt.push({ position: [s0.x + sx * 6.8 + fx * k, s0.y + 2.7, s0.z + sz * 6.8 + fz * k] });
       lampAt.push({ position: [s0.x + sx * 6.8 + fx * k, s0.y + 4.35, s0.z + sz * 6.8 + fz * k] });
     }
     for (const k of [-6, 0, 6]) benchAt.push({ position: [s0.x + sx * 6.4 + fx * k, s0.y + 1.15, s0.z + sz * 6.4 + fz * k], rotation: [0, yaw, 0] });
@@ -271,11 +275,24 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
       }
     };
     const TOWER_ALONG = 18;
-    buildRow(1, 21, -56, 56, 3, 5);
-    buildRow(-1, 17, -56, 56, 3, 5, (m, w) => Math.abs(m - TOWER_ALONG) < w / 2 + 6);
+    buildRow(1, 21, -56, 56, 3, 5, MESHY_ENABLED ? (m) => m > -37 && m < -1 : undefined);
+    buildRow(-1, 17, -56, 56, 3, 5, (m, w) => Math.abs(m - TOWER_ALONG) < w / 2 + 6 || (MESHY_ENABLED && m > -51 && m < -13));
+    if (MESHY_ENABLED) {
+      /* Meshy townhouses with real facade relief in the reserved windows; front (+Z) faces the track */
+      const SC = 6.84, HALF_H = 0.951 * SC;
+      const house = (k: number, side: 1 | -1, along: number, depth: number): void => {
+        const [hx, hz] = at(side * (side > 0 ? 21 : 17) + side * depth / 2, along);
+        b.add(model(HOUSES[k % 3]!, { name: `house-${i}-${side > 0 ? "a" : "b"}-${k}`, position: [hx, top + HALF_H, hz], rotation: [0, Math.atan2(-side * sx, -side * sz), 0], scaleMode: "world", scale: SC, castShadow: false, receiveShadow: true }).runtime({ id: `house-${i}-${side > 0 ? "a" : "b"}-${k}` }));
+      };
+      house(2, 1, -30, 8.9); house(0, 1, -18, 7.1); house(1, 1, -8, 10.7);
+      house((i + 0) % 3, -1, -44, 7.1); house((i + 1) % 3, -1, -32, 10.7); house((i + 2) % 3, -1, -20, 8.9);
+    }
     buildRow(1, 46, -34, 34, 4, 6);
     buildRow(-1, 46, -34, 34, 4, 6);
-    {
+    if (MESHY_ENABLED) {
+      const [tx, tz] = at(-21, TOWER_ALONG), ts = 14.7;
+      b.add(model(MESHY_ASSETS.clockTower, { name: `clock-tower-${i}`, position: [tx, top + 0.951 * ts, tz], rotation: [0, Math.atan2(sx, sz), 0], scaleMode: "world", scale: ts, castShadow: true, receiveShadow: true }).runtime({ id: `clock-tower-${i}` }));
+    } else {
       const [tx, tz] = at(-21, TOWER_ALONG);
       const th = 27, tw = 7;
       wallBox(stoneMesh, tx, top, tz, tw, th, tw, yaw, { uTile: 4, vTile: 4 });
@@ -308,9 +325,18 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
       awningAt.push({ position: [qx, top + 2.75, qz], rotation: [0, yaw, 0.12] });
       awningColors.push([town.color, "#e4572e", "#f2c14e", "#4fa5b8"][k]!);
     }
+    let folkModels = 0;
     for (let k = 0; k < 14; k++) {
-      const [fxp, fzp] = rand() < 0.7 ? at(4.4 + (rand() - 0.5) * 2.4, (rand() - 0.5) * 24) : at(-4 - rand() * 8, (rand() - 0.5) * 60);
+      const onPlatform = rand() < 0.7;
+      const [fxp, fzp] = onPlatform ? at(4.4 + (rand() - 0.5) * 2.4, (rand() - 0.5) * 24) : at(-4 - rand() * 8, (rand() - 0.5) * 60);
       const base = rand() < 0.7 ? s0.y + 0.75 : top + 0.04;
+      if (MESHY_ENABLED && onPlatform && folkModels < 5) {
+        const kinds = [MESHY_ASSETS.paxEasy, MESHY_ASSETS.paxSightseer, MESHY_ASSETS.paxRushed, MESHY_ASSETS.paxSleeper] as const;
+        const fs = 0.85 + rand() * 0.2;
+        b.add(model(kinds[(folkModels + i) % 4]!, { name: `folk-${i}-${folkModels}`, position: [fxp, s0.y + 0.75 + 0.951 * fs, fzp], rotation: [0, rand() * Math.PI * 2, 0], scaleMode: "world", scale: fs, castShadow: false, receiveShadow: false }).runtime({ id: `folk-${i}-${folkModels}` }));
+        folkModels++;
+        continue;
+      }
       folkBodyAt.push({ position: [fxp, base + 0.8, fzp] });
       folkHeadAt.push({ position: [fxp, base + 1.75, fzp] });
       folkColors.push(["#e4572e", "#2f8f9d", "#f2c14e", "#7a8cff", "#6bc5a0", "#d96aa7", "#8c6b4f"][Math.floor(rand() * 7)]!);
@@ -322,6 +348,16 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
     placed.push([lx, la]);
     const lh = landmark === ASSETS.windmill ? 30 : 34;
     b.add(model(landmark, { name: `landmark-${i}`, position: [s0.x + sx * lx + fx * la, top + lh / 2 - 0.4, s0.z + sz * lx + fz * la], rotation: [0, yaw + i, 0], targetMaxDimension: lh, castShadow: false, receiveShadow: true }).runtime({ id: `landmark-${i}` }));
+    if (MESHY_ENABLED) {
+      for (const [k, al] of [[0, 12.5], [1, -12.5]] as const) {
+        const [cx, cz] = at(4.6, al);
+        b.add(model(MESHY_ASSETS.crates, { name: `crates-${i}-${k}`, position: [cx, s0.y + 0.75 + 0.85, cz], rotation: [0, yaw + k * 1.9, 0], scaleMode: "world", scale: 0.9, castShadow: false, receiveShadow: true }).runtime({ id: `crates-${i}-${k}` }));
+      }
+      if (i % 3 === 1) {
+        const [lx2, lz2] = at(-40, 44), ls = 20;
+        b.add(model(MESHY_ASSETS.lighthouse, { name: `lighthouse-${i}`, position: [lx2, top + 0.951 * ls, lz2], rotation: [0, yaw + i, 0], scaleMode: "world", scale: ls, castShadow: true, receiveShadow: true }).runtime({ id: `lighthouse-${i}` }));
+      }
+    }
     for (let k = 0; k < 22; k++) {
       for (let tries = 0; tries < 10; tries++) {
         const ang = rand() * Math.PI * 2, rr = 63 + rand() * 8;
@@ -355,7 +391,7 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
   b.add(primitives.box({ name: "platform-edges", size: [0.3, 0.06, 30], instances: platformEdgeAt, material: pbr("#e9c24a", 0.6), castShadow: false }));
   b.add(primitives.box({ name: "canopies", size: [5.4, 0.3, 24], instances: canopyBoxAt, instanceColors: canopyBoxColors, material: pbr("#ffffff", 0.6), castShadow: true }));
   b.add(primitives.box({ name: "canopy-trims", size: [5.6, 0.14, 24.4], instances: canopyTrimAt, material: pbr("#f4ead2", 0.6), castShadow: false }));
-  b.add(primitives.cylinder({ name: "posts", size: [0.3, 4.4, 0.3], instances: postAt, material: pbr("#3b3d46", 0.5, 0.5), castShadow: false }));
+  if (postAt.length > 0) b.add(primitives.cylinder({ name: "posts", size: [0.3, 4.4, 0.3], instances: postAt, material: pbr("#3b3d46", 0.5, 0.5), castShadow: false }));
   b.add(primitives.sphere({ name: "lamps", size: 0.7, instances: lampAt, material: glow("#ffd89a", night ? 3 : 0.5), castShadow: false }).runtime({ id: "lamps" }));
   b.add(primitives.box({ name: "benches", size: [0.6, 0.12, 2.0], instances: benchAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
   b.add(primitives.box({ name: "signboards", size: [0.2, 1.0, 3.2], instances: signAt, material: pbr("#23423a", 0.6), castShadow: false }));
@@ -371,7 +407,7 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
   ROOF_TINTS.forEach((tint, k) => b.add(geometry.custom(roofMesh[k]!.toGeometry(), { name: `roofs-${k}`, material: texMat(tex?.roof, tint, 0.72), castShadow: true, receiveShadow: true })));
   b.add(geometry.custom(stoneMesh.toGeometry(), { name: "stonework", material: texMat(tex?.stone, "#ffffff", 0.9), castShadow: true, receiveShadow: true }));
   b.add(geometry.custom(cobbleMesh.toGeometry(), { name: "plaza-cobbles", material: texMat(tex?.cobble, "#ffffff", 0.92), castShadow: false, receiveShadow: true }));
-  b.add(geometry.custom(clockMesh.toGeometry(), { name: "clock-faces", material: texMat(tex?.clock, "#ffffff", 0.55), castShadow: false, receiveShadow: false }));
+  if (!MESHY_ENABLED) b.add(geometry.custom(clockMesh.toGeometry(), { name: "clock-faces", material: texMat(tex?.clock, "#ffffff", 0.55), castShadow: false, receiveShadow: false }));
   b.add(primitives.box({ name: "planters", size: [2.4, 0.9, 1.0], instances: planterAt, material: pbr("#cdbfa4", 0.9), castShadow: false }));
   b.add(primitives.box({ name: "stalls", size: [3, 1.4, 1.6], instances: stallAt, material: pbr("#8a5a35", 0.8), castShadow: false }));
   b.add(primitives.box({ name: "awnings", size: [3.6, 0.14, 2.4], instances: awningAt, instanceColors: awningColors, material: pbr("#ffffff", 0.7), castShadow: false }));
@@ -383,8 +419,13 @@ function buildScene(data: SimData, mode: "day" | "night", tex: TownTextures | nu
   b.add(primitives.sphere({ name: "stones", size: [3.2, 2.2, 2.8], instances: stoneAt, material: pbr("#8a867f", 0.95), castShadow: false }));
 
   /* ---- tram and passengers (flat top-level nodes, moved from the runtime) ---- */
-  for (const gp of tramGroups()) b.add(geometry.custom(gp.mesh.toGeometry(), { name: gp.id, material: gp.mat, castShadow: gp.cast, receiveShadow: false }).runtime({ id: gp.id }));
+  if (MESHY_ENABLED) b.add(model(MESHY_ASSETS.tram, { name: "tram-body", scaleMode: "world", scale: [...TRAM.scale] as [number, number, number], castShadow: true, receiveShadow: true }).runtime({ id: "tram-body" }));
+  else for (const gp of tramGroups()) b.add(geometry.custom(gp.mesh.toGeometry(), { name: gp.id, material: gp.mat, castShadow: gp.cast, receiveShadow: false }).runtime({ id: gp.id }));
   SEATS.forEach((_, i) => {
+    if (MESHY_ENABLED) {
+      for (const t of TEMPERAMENTS) b.add(model(PAX_ASSET[t], { name: `pax-${i}-${t}`, scaleMode: "world", scale: PAX_SCALE, castShadow: false, receiveShadow: false }).runtime({ id: `pax-${i}-${t}` }));
+      return;
+    }
     b.add(primitives.sphere({ name: `head-${i}`, size: 0.42, material: pbr("#f0c9a4", 0.6), castShadow: false }).runtime({ id: `head-${i}` }));
     for (const t of TEMPERAMENTS) b.add(primitives.capsule({ name: `pax-${i}-${t}`, size: [0.55, 1.1, 0.55], material: pbr(TEMPERAMENT_COLORS[t], 0.65), castShadow: false }).runtime({ id: `pax-${i}-${t}` }));
   });
@@ -466,11 +507,25 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
     if (sim.distance < 1) f = smoothedForward; else smoothedForward = f;
     const rot = tramRotation(f, -sim.roll);
     const euler = matrixToEulerZYX(rot);
-    for (const id of TRAM_GROUP_IDS) { const h = node(id); h.setPosition(here.x, here.y + 0.2, here.z); h.setRotation(euler[0], euler[1], euler[2]); }
+    if (MESHY_ENABLED) {
+      const body = node("tram-body"), bodyEuler = matrixToEulerZYX(multiplyMat3(rot, axisRotation("y", TRAM.yaw))), c = applyMat3(rot, [0, TRAM.centerY, 0]);
+      body.setPosition(here.x + c[0], here.y + 0.2 + c[1], here.z + c[2]); body.setRotation(bodyEuler[0], bodyEuler[1], bodyEuler[2]);
+    } else for (const id of TRAM_GROUP_IDS) { const h = node(id); h.setPosition(here.x, here.y + 0.2, here.z); h.setRotation(euler[0], euler[1], euler[2]); }
     const seated = new Set(sim.trips.map((t) => t.seat));
     SEATS.forEach((seat, i) => {
-      const w = applyMat3(rot, seat);
       const trip = sim.trips.find((t) => t.seat === i);
+      if (MESHY_ENABLED) {
+        const standing = applyMat3(rot, [seat[0], TRAM.floorY + PAX_SCALE * 0.951, seat[2]]);
+        const paxEuler = matrixToEulerZYX(multiplyMat3(rot, axisRotation("y", seat[0] < 0 ? Math.PI / 2 : -Math.PI / 2)));
+        for (const t of TEMPERAMENTS) {
+          const h = node(`pax-${i}-${t}`);
+          const on = seated.has(i) && trip?.temperament === t;
+          h.setVisible(on);
+          if (on) { h.setPosition(here.x + standing[0], here.y + standing[1] + 0.2, here.z + standing[2]); h.setRotation(paxEuler[0], paxEuler[1], paxEuler[2]); }
+        }
+        return;
+      }
+      const w = applyMat3(rot, seat);
       const hw = applyMat3(rot, [seat[0], seat[1] + 0.95, seat[2]]);
       const head = node(`head-${i}`);
       head.setVisible(seated.has(i));

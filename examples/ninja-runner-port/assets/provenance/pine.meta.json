@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169eb-4115-77e8-9107-ca5441a3bc27",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792778387750,
+  "started_at": 1792778387754,
+  "finished_at": 1792778897935,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169eb-4115-77e8-9107-ca5441a3bc27/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169eb-4115-77e8-9107-ca5441a3bc27/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169eb-4115-77e8-9107-ca5441a3bc27/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169eb-4115-77e8-9107-ca5441a3bc27/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169eb-4115-77e8-9107-ca5441a3bc27/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169eb-4115-77e8-9107-ca5441a3bc27/output/preview.png",
+  "prompt": "a stylised pine tree with layered dark green boughs and a rough brown trunk, hand-painted game asset, no base",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2680706995,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/ninja-pine/model.glb",
+  "artifacts/meshy/ninja-pine/thumbnail.png",
+  "artifacts/meshy/ninja-pine/texture_0_base_color.png",
+  "artifacts/meshy/ninja-pine/texture_0_metallic.png",
+  "artifacts/meshy/ninja-pine/texture_0_normal.png",
+  "artifacts/meshy/ninja-pine/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T18:09:05.290Z"
+}

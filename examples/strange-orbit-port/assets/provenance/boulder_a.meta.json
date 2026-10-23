@@ -1,0 +1,49 @@
+{
+ "resource": "remesh",
+ "task": {
+  "id": "01a169d2-ecd1-7261-a858-3702a23a12db",
+  "type": "remesh",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776793342,
+  "started_at": 1792776793347,
+  "finished_at": 1792776903235,
+  "expires_at": 1793036103235,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-ecd1-7261-a858-3702a23a12db/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-ecd1-7261-a858-3702a23a12db/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-ecd1-7261-a858-3702a23a12db/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-ecd1-7261-a858-3702a23a12db/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-ecd1-7261-a858-3702a23a12db/output/texture_0_roughness.png",
+    "metallic_roughness": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-ecd1-7261-a858-3702a23a12db/output/texture_0_metallic_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-ecd1-7261-a858-3702a23a12db/output/preview.png",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "text_style_prompt": "",
+  "image_style_url": "",
+  "name": "",
+  "art_style": "",
+  "object_prompt": "",
+  "style_prompt": "",
+  "negative_prompt": "",
+  "model_url": "",
+  "consumed_credits": 5
+ },
+ "saved_files": [
+  "artifacts/meshy/so-boulder_a-r/model.glb",
+  "artifacts/meshy/so-boulder_a-r/thumbnail.png",
+  "artifacts/meshy/so-boulder_a-r/texture_0_base_color.png",
+  "artifacts/meshy/so-boulder_a-r/texture_0_metallic.png",
+  "artifacts/meshy/so-boulder_a-r/texture_0_normal.png",
+  "artifacts/meshy/so-boulder_a-r/texture_0_roughness.png",
+  "artifacts/meshy/so-boulder_a-r/texture_0_metallic_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:35:49.477Z"
+}

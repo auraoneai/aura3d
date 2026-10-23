@@ -12,7 +12,7 @@
     "preview": "vite preview --host 127.0.0.1 --port 5182"
   },
   "dependencies": {
-    "@aura3d/engine": "file:../.."
+    "@aura3d/engine": "workspace:*"
   },
   "devDependencies": {
     "@gltf-transform/cli": "^4.5.1",

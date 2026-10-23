@@ -118,12 +118,13 @@ let bumperHitsThisBall = 0;
 let nudgeFlip = false;
 const bootedAtMs = performance.now();
 
-type NodeHandle = ReturnType<Game["app"]["nodes"]["get"]>;
-const handles = new Map<string, NodeHandle>();
+type MaybeNodeHandle = ReturnType<Game["app"]["nodes"]["get"]>;
+type NodeHandle = NonNullable<MaybeNodeHandle>;
+const handles = new Map<string, MaybeNodeHandle>();
 const bankLampHandles = new Map<number, NodeHandle>();
 const scoreboardHandles = new Map<string, NodeHandle>();
 
-function handle(name: string): NodeHandle {
+function handle(name: string): MaybeNodeHandle {
   if (!handles.has(name)) handles.set(name, game.app.nodes.get(name));
   return handles.get(name);
 }

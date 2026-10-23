@@ -160,7 +160,9 @@ export function buildGround(ch: Chapter, from = -40, to = ch.length + 80): Groun
 }
 
 /* ---------------------------------------------------------------- foliage, rocks, flowers */
-export interface Scatter { trees: Mesh[]; bushes: Mesh[]; rocks: Mesh[]; flowers: Mesh[] }
+export interface Placement { pos: V3; scale: number; yaw: number }
+export interface Scatter { trees: Mesh[]; bushes: Mesh[]; rocks: Mesh[]; flowers: Mesh[]; roundTrees: Placement[]; pineTrees: Placement[]; boulders: Placement[] }
+const HERO_TREE_CAP = 150, HERO_ROCK_CAP = 90, HERO_NEAR = 24;
 
 let treeParts: { trunk: Mesh; crowns: Mesh[] } | null = null;
 function treeKit(): { trunk: Mesh; crowns: Mesh[] } {
@@ -203,7 +205,12 @@ export function buildValleyForest(ch: Chapter): Mesh[] {
 }
 
 export function buildScatter(ch: Chapter): Scatter {
-  const out: Scatter = { trees: [], bushes: [], rocks: [], flowers: [] };
+  const out: Scatter = { trees: [], bushes: [], rocks: [], flowers: [], roundTrees: [], pineTrees: [], boulders: [] };
+  const heroTree = (base: V3, height: number, lat: number, r: number): boolean => {
+    if (Math.abs(lat) - ROAD_HALF > HERO_NEAR || out.roundTrees.length + out.pineTrees.length >= HERO_TREE_CAP) return false;
+    (r < 0.45 ? out.pineTrees : out.roundTrees).push({ pos: base, scale: height, yaw: r * 40 });
+    return true;
+  };
   const kit = treeKit();
   const rnd = seeded(2024);
   const rockMesh = [0, 1, 2].map((i) => icosphere(1, mix3(hex("#bda27c"), hex("#8f7a5c"), i / 2), 0.22, seeded(90 + i), true));
@@ -224,10 +231,11 @@ export function buildScatter(ch: Chapter): Scatter {
           const lat = side * (ROAD_HALF + (op > 0.5 ? shoulder + 1 + rnd() * 46 : wallTop - 1 + rnd() * 30));
           const base = at(s + (rnd() - 0.5) * 0.9, lat, groundHeight(ch, s, lat) - 0.15);
           const size = 4.4 + rnd() * 6;
-          treeAt(trees, kit, rnd, base, size);
+          if (!heroTree(base, size * 1.4, lat, rnd())) treeAt(trees, kit, rnd, base, size);
         } else if (mode >= 0.55 && rnd() < 0.1) {
           const lat = side * (ROAD_HALF + 2.2 + rnd() * Math.max(1, shoulder - 3));
-          treeAt(trees, kit, rnd, at(s, lat, groundHeight(ch, s, lat) - 0.15), 3.6 + rnd() * 3);
+          const base2 = at(s, lat, groundHeight(ch, s, lat) - 0.15), size2 = 3.6 + rnd() * 3;
+          if (!heroTree(base2, size2 * 1.4, lat, rnd())) treeAt(trees, kit, rnd, base2, size2);
         }
         if (rnd() < 0.22) {
           const gl = side * (ROAD_HALF + 1.3 + rnd() * 5);
@@ -237,7 +245,9 @@ export function buildScatter(ch: Chapter): Scatter {
         if (rnd() < 0.07) {
           const gl = side * (ROAD_HALF + 0.9 + rnd() * 12);
           const base = at(s, gl, groundHeight(ch, s, gl) - 0.25);
-          rocks.append(rockMesh[Math.floor(rnd() * 3)]!, base, [0.8 + rnd() * 1.9, 0.6 + rnd() * 1.2, 0.8 + rnd() * 1.7], rnd() * 6.28, (rnd() - 0.5) * 0.3);
+          const rs: V3 = [0.8 + rnd() * 1.9, 0.6 + rnd() * 1.2, 0.8 + rnd() * 1.7], ry = rnd() * 6.28, rt = (rnd() - 0.5) * 0.3, rk = Math.floor(rnd() * 3);
+          if (Math.abs(gl) - ROAD_HALF < 14 && out.boulders.length < HERO_ROCK_CAP) out.boulders.push({ pos: base, scale: 1.1 + (rs[0] + rs[2]) * 0.55, yaw: ry });
+          else rocks.append(rockMesh[rk]!, base, rs, ry, rt);
         }
         for (let k = 0; k < 2; k++) {
           if (rnd() < 0.55) {

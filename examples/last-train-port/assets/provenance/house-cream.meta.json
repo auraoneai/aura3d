@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d1-77a0-721a-9966-9a294ab2d294",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776697782,
+  "started_at": 1792776697786,
+  "finished_at": 1792776813283,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-77a0-721a-9966-9a294ab2d294/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-77a0-721a-9966-9a294ab2d294/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-77a0-721a-9966-9a294ab2d294/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-77a0-721a-9966-9a294ab2d294/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-77a0-721a-9966-9a294ab2d294/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d1-77a0-721a-9966-9a294ab2d294/output/preview.png",
+  "prompt": "a narrow four-storey terraced seaside townhouse, painted cream plaster, green wooden shutters, arched ground-floor door, small iron balconies, steep terracotta tile roof with a chimney, flat back and flat sides so it can sit in a row, stylised hand-painted game asset, warm painted PBR textures, clean silhouette",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 4198546149,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/last-train/house-cream/model.glb",
+  "artifacts/meshy/last-train/house-cream/thumbnail.png",
+  "artifacts/meshy/last-train/house-cream/texture_0_base_color.png",
+  "artifacts/meshy/last-train/house-cream/texture_0_metallic.png",
+  "artifacts/meshy/last-train/house-cream/texture_0_normal.png",
+  "artifacts/meshy/last-train/house-cream/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:33:49.792Z"
+}

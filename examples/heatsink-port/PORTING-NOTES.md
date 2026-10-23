@@ -63,3 +63,17 @@ Rendering and presentation only; the simulation, reference replay and unit tests
 `state`, `stepFrames`, `replay(text)`, `replayStart/replayTo`, `frame`, `pixels`, `routeHealth`. Browser checks run remotely only
 (`tests/browser/heatsink-port.spec.ts` via `tools/remote-acr/run.sh`); the blind comparison is `tools/crayon-capture/heatsink-judge.ts`.
 No engine changes were needed for the port itself.
+
+## Meshy art pass (2026-10-23)
+
+Nine generated models (see `assets/ATTRIBUTION.md` for prompts, task ids, sizes and the rights basis; ledger tag `heatsink`, 260 credits recorded of the 800 cap) replace the primitive stand-ins:
+
+- **Player drone**: a generated quad-rotor body (`drone2.glb`, ~40k vertices) replaces the 23-primitive craft. Its camera gimbal is the nose and must point along the track's +X; a +90 degree yaw rendered the drone backwards in the first capture, so `HULL_YAW = -pi/2`. The generated rotor blades are static (no spin, no rear exhaust sticks or glow spheres any more; the exhaust point particles remain). A first wedge-shaped hover-craft candidate was discarded after the design judge pointed out the original's vehicle is a quad-rotor.
+- **Checkpoint gates**: one instanced pylon model (`gate-pylons`, two per checkpoint) instead of cylinders; the veil quads stay procedural.
+- **Pickups**: `pickup-shield.glb` (cyan crystal in a cage) and `pickup-repair.glb` (mint core in a finned ring); **barrels**: `barrel.glb` (12 nodes, still driven per frame by the sim).
+- **Scenery** (`sceneryNodes` in `models.ts`, deterministic, beyond the guard rails, sim-independent): mushroom trees, coral plants, monoliths and ruin arches as four `instances.model` classes.
+- The models are lit PBR surfaces, so the world now has a cool hemisphere fill and a warm key light; the custom road/sky/neon shaders ignore both. Models load through the production-safe path (same-origin pathname + sha256).
+
+**Terrain-over-the-road at step 4500, found and fixed.** The track crosses over itself near s ~ 980: the upper stretch's wide shoulder skirts (`buildShoulders`) hung ~30 m above the lower road and filled the top of the frame like a ceiling. `buildShoulders` now leaves out any quad that sits more than 6 m above another stretch of road within 55 m (spatial hash over the road samples, own +-150 m excluded). A geometry probe finds no overhead terrain triangles at that spot afterwards, and the step-4500 frame shows the open canyon.
+
+**Capture spec**: `tests/browser/heatsink-port-meshy.spec.ts` is the Phase B spec with 8 frame steps and a 10-frame camera lead; under SwiftShader the 16-step, 30-frame version now exceeds its 25-minute timeout because the lit scene is heavier.

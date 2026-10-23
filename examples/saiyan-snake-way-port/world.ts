@@ -4,7 +4,7 @@
  * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { camera, cloneSkinned, effects, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cloneSkinned, effects, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { attachRootRenderSource, type TypedGLBActor } from "@aura3d/engine/production-runtime";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
@@ -13,12 +13,13 @@ import {
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { ROAD_LENGTH, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
+import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
 /** Entities kept alive per type (the road keeps roughly 900 m of entities alive). */
-export const POOLS: Readonly<Record<string, number>> = { orb: 150, soul: 40, barrier: 30, arch: 30, oni: 24, sweeper: 8, power: 10, feast: 8 };
+export const POOLS: Readonly<Record<string, number>> = { orb: 150, soul: 40, barrier: ENTITY_MODELS.barrier!.pool, arch: ENTITY_MODELS.arch!.pool, oni: ENTITY_MODELS.oni!.pool, sweeper: ENTITY_MODELS.sweeper!.pool, power: 10, feast: ENTITY_MODELS.feast!.pool };
 
 const POWER_STYLE: Readonly<Record<string, { core: Rgb; shell: Rgb }>> = {
   kaio: { core: hexLinear(PALETTE.auraCore), shell: hexLinear(PALETTE.aura) },
@@ -39,11 +40,13 @@ const HERO_COLORS: Readonly<Record<HeroColor, { base: Rgb; glow?: Rgb; amount?: 
   sash: { base: hexLinear(0x2fc8b4), glow: hexLinear(0x2fc8b4), amount: 0.12 }
 };
 
-type Shape = "capsule" | "sphere" | "cylinder" | "box" | "cone" | "octahedron";
+type Shape = "capsule" | "sphere" | "cylinder" | "box" | "cone" | "octahedron" | "model";
 interface PartSpec {
   readonly shape: Shape;
   readonly size?: number | readonly [number, number, number];
   readonly cone?: { readonly radius: number; readonly height: number };
+  /** Shape "model": the Meshy asset key (see models.ts); `size` is unused. */
+  readonly model?: string;
   readonly mat: string;
   /** Offset in the entity frame (x right, y up, z back along the road). */
   readonly at: LV3;
@@ -59,41 +62,15 @@ const ENTITY_PARTS: Readonly<Record<string, readonly PartSpec[]>> = {
     { shape: "sphere", size: 1.5, mat: "soul", at: [0, 0, 0] },
     { shape: "cone", cone: { radius: 0.55, height: 1.7 }, mat: "soul", at: [0, -0.05, 1.1], rot: [Math.PI / 2, 0, 0] }
   ],
-  barrier: [
-    { shape: "box", size: [3.3, 0.5, 0.85], mat: "barrierBase", at: [0, -0.85, 0] },
-    { shape: "cylinder", size: [0.5, 2.3, 0.5], mat: "barrierPost", at: [-1.45, 0.0, 0] },
-    { shape: "cylinder", size: [0.5, 2.3, 0.5], mat: "barrierPost", at: [1.45, 0.0, 0] },
-    { shape: "box", size: [2.6, 1.2, 0.12], mat: "barrierField", at: [0, -0.05, 0] }
-  ],
-  arch: [
-    { shape: "cylinder", size: [0.6, 2.7, 0.6], mat: "lacquer", at: [-1.95, -0.85, 0] },
-    { shape: "cylinder", size: [0.6, 2.7, 0.6], mat: "lacquer", at: [1.95, -0.85, 0] },
-    { shape: "box", size: [4.9, 0.42, 0.74], mat: "lacquer", at: [0, 0.15, 0] },
-    { shape: "box", size: [4.1, 0.2, 0.5], mat: "lacquerDark", at: [0, -0.4, 0] },
-    { shape: "box", size: [5.4, 0.18, 0.95], mat: "lacquerDark", at: [0, 0.46, 0] }
-  ],
-  oni: [
-    { shape: "capsule", size: [1.5, 2.1, 1.2], mat: "oni", at: [0, 0.25, 0] },
-    { shape: "sphere", size: 0.95, mat: "oniDark", at: [0, 1.5, 0] },
-    { shape: "cone", cone: { radius: 0.13, height: 0.55 }, mat: "bone", at: [-0.3, 2.05, 0], rot: [0, 0, 0.35] },
-    { shape: "cone", cone: { radius: 0.13, height: 0.55 }, mat: "bone", at: [0.3, 2.05, 0], rot: [0, 0, -0.35] },
-    { shape: "cylinder", size: [0.36, 1.9, 0.36], mat: "club", at: [1.2, 0.35, -0.2], rot: [0, 0, -0.3] }
-  ],
-  sweeper: [
-    { shape: "box", size: [2.6, 1.1, 2.6], mat: "cart", at: [0, 0, 0] },
-    { shape: "cylinder", size: [1.3, 0.28, 1.3], mat: "wheel", at: [-1.4, -0.35, 0], rot: [0, 0, Math.PI / 2] },
-    { shape: "cylinder", size: [1.3, 0.28, 1.3], mat: "wheel", at: [1.4, -0.35, 0], rot: [0, 0, Math.PI / 2] },
-    { shape: "sphere", size: 0.55, mat: "lantern", at: [0, 0.95, -1.0] }
-  ],
+  barrier: [{ shape: "model", model: "barrier", mat: "", at: [0, -ENTITY_MODELS.barrier!.baseY, 0], rot: [0, ENTITY_MODELS.barrier!.yaw, 0] }],
+  arch: [{ shape: "model", model: "arch", mat: "", at: [0, -ENTITY_MODELS.arch!.baseY, 0], rot: [0, ENTITY_MODELS.arch!.yaw, 0] }],
+  oni: [{ shape: "model", model: "oni", mat: "", at: [0, -ENTITY_MODELS.oni!.baseY, 0], rot: [0, ENTITY_MODELS.oni!.yaw, 0] }],
+  sweeper: [{ shape: "model", model: "sweeper", mat: "", at: [0, -ENTITY_MODELS.sweeper!.baseY, 0], rot: [0, ENTITY_MODELS.sweeper!.yaw, 0] }],
   power: [
     { shape: "octahedron", size: 0.95, mat: "power", at: [0, 0, 0], spin: 2.4 },
     { shape: "sphere", size: 1.9, mat: "powerHalo", at: [0, 0, 0] }
   ],
-  feast: [
-    { shape: "cylinder", size: [1.7, 0.14, 1.7], mat: "feastPlate", at: [0, -0.3, 0] },
-    { shape: "sphere", size: [1.2, 0.9, 1.2], mat: "feast", at: [0, 0.15, 0] },
-    { shape: "sphere", size: 0.34, mat: "orb", at: [0, 0.78, 0] }
-  ]
+  feast: [{ shape: "model", model: "feast", mat: "", at: [0, -ENTITY_MODELS.feast!.baseY, 0], rot: [0, ENTITY_MODELS.feast!.yaw, 0], spin: 0.6 }]
 };
 
 /** Matrix columns (x, y, z axes) to the engine's ZYX Euler angles (R = Rz·Ry·Rx). */
@@ -120,9 +97,9 @@ function frameBasis(frame: RoadFrame, yawOffset = 0): M3 {
 const eulerMatrix = (e: LV3): M3 => mul(rz(e[2]), mul(ry(e[1]), rx(e[0])));
 
 /** Catalog humanoid (CC0, see assets/ATTRIBUTION.md): faces +Z, clips Sprint_Loop / Jump_Loop / Crouch_Idle_Loop / Idle_Loop / Hit_Chest. */
-const RIG_URL = new URL("./assets/runner-rig.glb", import.meta.url).href;
+const RIG_URL = new URL("./assets/runner.glb", import.meta.url).href;
 const RIG_SCALE = 1.8;
-const CLIP = { run: "Sprint_Loop", air: "Jump_Loop", slide: "Crouch_Idle_Loop", idle: "Idle_Loop", hit: "Hit_Chest" } as const;
+const CLIP = { run: "Run_Loop", air: "Jump_Loop", fly: "Flight_Loop", dive: "Dive_Loop", slide: "Slide_Loop", idle: "Idle_Loop", hit: "Hit_React" } as const;
 
 export interface RunnerActor {
   readonly actor: TypedGLBActor;
@@ -241,6 +218,10 @@ export function buildWorld(options: WorldOptions = {}): World {
     builder.add((hidden ? node.position(0, -500, 0) : node).runtime({ id }));
   };
 
+  /* Meshy roadside lanterns and floating islands, recycled along the road */
+  for (let i = 0; i < LANTERN_COUNT; i++) builder.add(model(MESHY.lantern, { name: `lantern-${i}`, targetHeight: 3.6 }).position(0, -500, 0).runtime({ id: `lantern-${i}` }));
+  for (let i = 0; i < ISLAND_COUNT; i++) builder.add(model(MESHY.island, { name: `island-${i}`, targetHeight: 15 }).position(0, -500, 0).runtime({ id: `island-${i}` }));
+
   /* the runner and the aura shell */
   for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
     const c = HERO_COLORS[part.color];
@@ -256,7 +237,13 @@ export function buildWorld(options: WorldOptions = {}): World {
   /* entity pools: every slot is a small multi-part prop */
   for (const [type, count] of Object.entries(POOLS)) {
     (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
-      for (let i = 0; i < count; i++) addPart(`ent-${type}-${i}-${j}`, part, propMaterials[part.mat] as CustomSpec, true);
+      for (let i = 0; i < count; i++) {
+        if (part.shape === "model") {
+          const spec = ENTITY_MODELS[type] as NonNullable<(typeof ENTITY_MODELS)[string]>;
+          const id = `ent-${type}-${i}-${j}`;
+          builder.add(model(MESHY[spec.key], { name: id, targetHeight: spec.height }).position(0, -500, 0).runtime({ id }));
+        } else addPart(`ent-${type}-${i}-${j}`, part, propMaterials[part.mat] as CustomSpec, true);
+      }
     });
   }
 
@@ -348,7 +335,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           /* rigged runner: pick a clip from the sim state, then orient the model on the road frame */
           const moving = ds > 1e-5;
           const rate = Math.max(0.6, S.speed / 32);
-          const clip = S.stumble > 0.3 ? CLIP.hit : S.sliding > 0 ? CLIP.slide : flying || leaping || !S.grounded ? CLIP.air : moving ? CLIP.run : CLIP.idle;
+          const clip = S.stumble > 0.3 ? CLIP.hit : S.sliding > 0 ? CLIP.slide : S.dive || falling ? CLIP.dive : flying || leaping ? CLIP.fly : !S.grounded ? CLIP.air : moving ? CLIP.run : CLIP.idle;
           const length = runner.durations[clip] ?? 1;
           actorClock = (actorClock + dt * (moving ? 1.5 * rate : 1)) % length;
           const t = clip === CLIP.hit ? Math.min(length, Math.max(0, (0.75 - S.stumble) * 1.5)) : actorClock;
@@ -418,6 +405,26 @@ export function buildWorld(options: WorldOptions = {}): World {
           const sp = onRoad(sf, lateral, 0.8 + ((i * 3.7) % 8) + (flying ? S.y * 0.3 : 0));
           const e = matrixEuler(frameBasis(sf));
           h.setPosition(sp[0], sp[1], sp[2]).setRotation(e[0], e[1], e[2]).setScale([1, 1, Math.max(0.6, S.speed / 45)]).setVisible(true);
+        }
+
+        /* roadside lanterns (pairs along the verge) and floating islands drifting past on both sides */
+        for (let i = 0; i < LANTERN_COUNT; i++) {
+          const h = node(`lantern-${i}`);
+          const side = i % 2 ? 1 : -1;
+          const rel = mod(Math.floor(i / 2) * 58 - S.s, (LANTERN_COUNT / 2) * 58) - 26;
+          const lf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
+          const lp = onRoad(lf, side * 10.4, 0.4);
+          const le = matrixEuler(frameBasis(lf, side > 0 ? -Math.PI / 2 : Math.PI / 2));
+          h.setPosition(lp[0], lp[1], lp[2]).setRotation(le[0], le[1], le[2]).setVisible(true);
+        }
+        for (let i = 0; i < ISLAND_COUNT; i++) {
+          const h = node(`island-${i}`);
+          const side = i % 2 ? 1 : -1;
+          const rel = mod(i * 140 - S.s, ISLAND_COUNT * 140) - 90;
+          const sf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
+          const ip = onRoad(sf, side * (34 + ((i * 23) % 26)), 16 + ((i * 7) % 18) + Math.sin(time * 0.4 + i * 1.7) * 1.4);
+          const ie = matrixEuler(frameBasis(sf, time * 0.05 + i));
+          h.setPosition(ip[0], ip[1], ip[2]).setRotation(ie[0], ie[1], ie[2]).setScale(1 + (i % 3) * 0.35).setVisible(true);
         }
 
         /* entities: assign the nearest alive ones to the pooled slots, hide the rest */

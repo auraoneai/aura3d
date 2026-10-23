@@ -266,21 +266,51 @@ export function buildShoulders(track: Track, spacing = 6): MeshData {
   const rows = Math.ceil(track.length / spacing);
   const ds = track.length / rows;
   const f: Partial<Frame> = {};
+  /* where the track crosses over itself, the upper stretch's plains would hang overhead like a ceiling above the lower road:
+     leave out any quad that sits above another stretch of road (spatial hash of the road samples, 64 m cells) */
+  const CELL = 64, COVER_R = 55, MIN_GAP = 6, OWN_SPAN = 150;
+  const grid = new Map<number, number[]>();
+  const cellKey = (cx: number, cz: number): number => cx * 73856093 + cz * 19349663;
+  for (let i = 0; i < track.n; i += 2) {
+    const k = cellKey(Math.floor((track.px[i] as number) / CELL), Math.floor((track.pz[i] as number) / CELL));
+    const list = grid.get(k);
+    if (list) list.push(i); else grid.set(k, [i]);
+  }
+  const coversLowerRoad = (x: number, y: number, z: number, ownS: number): boolean => {
+    const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
+      const list = grid.get(cellKey(cx + dx, cz + dz));
+      if (!list) continue;
+      for (const i of list) {
+        if (Math.abs(track.wrapDelta(i * track.step, ownS)) < OWN_SPAN) continue;
+        const ddx = (track.px[i] as number) - x, ddz = (track.pz[i] as number) - z;
+        if (ddx * ddx + ddz * ddz < COVER_R * COVER_R && y - (track.py[i] as number) > MIN_GAP) return true;
+      }
+    }
+    return false;
+  };
   for (const side of [-1, 1]) {
     const v0 = m.positions.length / 3, i0 = m.indices.length;
+    const covered: boolean[] = [];
     for (let i = 0; i <= rows; i++) {
       const s = i * ds;
       const fr = track.frame(s, f);
       for (let j = 0; j < offsets.length; j++) {
         const lat = side * (fr.hw + offsets[j]!);
         const wob = j >= 2 ? Math.sin(s * 0.013 + j * 1.9) * 0.9 + Math.sin(s * 0.041 + j) * 0.4 : 0;
-        m.positions.push(fr.x + fr.rx * lat, fr.y + track.latY(s, side * fr.hw) + drops[j]! + wob, fr.z + fr.rz * lat);
+        const px = fr.x + fr.rx * lat, py = fr.y + track.latY(s, side * fr.hw) + drops[j]! + wob, pz = fr.z + fr.rz * lat;
+        m.positions.push(px, py, pz);
         m.normals.push(0, 1, 0);
         m.uvs.push(j / (offsets.length - 1), s / 40);
+        covered.push(coversLowerRoad(px, py, pz, s));
       }
     }
     const cols = offsets.length;
-    for (let i = 0; i < rows; i++) for (let j = 0; j < cols - 1; j++) { const a = v0 + i * cols + j, b = a + 1, c = a + cols, d = c + 1; m.indices.push(a, c, b, b, c, d); }
+    for (let i = 0; i < rows; i++) for (let j = 0; j < cols - 1; j++) {
+      const a = v0 + i * cols + j, b = a + 1, c = a + cols, d = c + 1;
+      if (covered[a - v0] || covered[b - v0] || covered[c - v0] || covered[d - v0]) continue;
+      m.indices.push(a, c, b, b, c, d);
+    }
     orient(m, i0, () => [0, 1, 0]);
     accumulateNormals(m, v0, i0);
   }

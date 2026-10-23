@@ -12,6 +12,7 @@ import { BELL, CAMERA_OFFSET, LETTERS, START, type WindState } from "./sim";
 import { GLOW_FRAGMENT, GLOW_VERTEX, HAZE_FRAGMENT, HAZE_VERTEX, MOTE_FRAGMENT, MOTE_VERTEX, PAINT_FRAGMENT, PAINT_VERTEX, PROP_FRAGMENT, PROP_VERTEX, SEA_FRAGMENT, SHAFT_FRAGMENT, SKY_FRAGMENT, STREAM_FRAGMENT, SKY_VERTEX, TRAVELLER_VERTEX, WIND_FRAGMENT, WIND_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX } from "./shaders";
 import { lin, toGeometryInput, type Mesh, type Rgb } from "./meshkit";
 import { buildScenery } from "./scenery";
+import { addAnimatedModels, addStaticModels, availableModels, createHeroAnimator, type ModelSet } from "./models";
 import { SEA_LEVEL, STREAM_POINTS, buildTerrain, lehmer, pathZ, streamInfo, terrainHeight } from "./terrain";
 
 type CustomSpec = Parameters<typeof material.custom>[0];
@@ -166,10 +167,12 @@ const FACING_YAW: Record<string, number> = { front: 0, frontRight: Math.PI / 4, 
 
 const dynamic = (m: Mesh, withLimb = false) => geometry.dynamic(toGeometryInput(m, withLimb, !withLimb));
 
-export function buildWorld(options: { density?: number } = {}): World {
+export function buildWorld(options: { density?: number; models?: boolean } = {}): World {
   const density = options.density ?? 1;
   const rand = lehmer(20261022);
-  const sc = buildScenery();
+  const none: ModelSet = { letter: false, bell: false, cottage: false, trees: false, hero: false, wisp: false, boat: false, stones: false, shrubs: false };
+  const set: ModelSet = options.models === false ? none : availableModels();
+  const sc = buildScenery(4242, { bell: set.bell, cottage: set.cottage, trees: set.trees, stones: set.stones, shrubs: set.shrubs });
   const builder: Scene = scene()
     .background("#b8d0bd")
     .camera(camera.perspective({ position: [START.x + CAMERA_OFFSET.x, 6.7, 21], target: [START.x, 2.2, 0.5], fov: 43, near: 0.15, far: 900 }));
@@ -334,9 +337,10 @@ export function buildWorld(options: { density?: number } = {}): World {
   builder.add(geometry.custom(dynamic(sc.props), { name: "scenery", material: material.custom(propSpec()) }).runtime({ id: "props" }));
   builder.add(geometry.custom(dynamic(sc.sails), { name: "windmill-sails", material: material.custom(propSpec()) }).runtime({ id: "sails" }));
   builder.add(geometry.custom(dynamic(sc.bellMesh), { name: "bell", material: material.custom(propSpec()) }).runtime({ id: "bell" }));
-  builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec()) }).runtime({ id: "boat" }));
+  if (!set.boat) builder.add(geometry.custom(dynamic(sc.boat), { name: "boat", material: material.custom(propSpec()) }).runtime({ id: "boat" }));
+  addStaticModels(builder, sc, set);
   LETTERS.forEach((_, i) => {
-    builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec()) }).runtime({ id: `letter-${i}` }));
+    if (!set.letter) builder.add(geometry.custom(dynamic(sc.envelope), { name: `letter-${i}`, material: material.custom(propSpec()) }).runtime({ id: `letter-${i}` }));
     builder.add(geometry.custom(geometry.dynamic(quad(1.5)), { name: `letter-glow-${i}`, material: material.custom(glowSpec(lin("#ffe9a0"), 1.5, i * 2.1)) }).runtime({ id: `letter-glow-${i}` }));
     builder.add(geometry.custom(geometry.dynamic(beam(0.5, 12)), { name: `letter-beam-${i}`, material: material.custom(shaftSpec(i * 3.7, 0.2)) }).runtime({ id: `letter-beam-${i}` }));
   });
@@ -346,9 +350,10 @@ export function buildWorld(options: { density?: number } = {}): World {
   });
 
   /* ---- traveller and contact shadow ---- */
-  builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: "traveller" }));
+  if (!set.hero) builder.add(geometry.custom(dynamic(sc.traveller, true), { name: "traveller", material: material.custom(travellerSpec()) }).runtime({ id: "traveller" }));
   builder.add(geometry.custom(geometry.dynamic(ground(0.8)), { name: "traveller-shadow", material: material.custom(blobSpec()) }).runtime({ id: "shadow" }));
-  builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: "wisp" }));
+  if (!set.wisp) builder.add(geometry.custom(dynamic(sc.wisp), { name: "wisp", material: material.custom(propSpec()) }).runtime({ id: "wisp" }));
+  addAnimatedModels(builder, set, LETTERS.length);
   builder.add(geometry.custom(geometry.dynamic(quad(1.1)), { name: "wisp-glow", material: material.custom(glowSpec(lin("#b78cff"), 1.1, 2.7)) }).runtime({ id: "wisp-glow" }));
 
   /* ---- floating pollen ---- */
@@ -383,6 +388,8 @@ export function buildWorld(options: { density?: number } = {}): World {
         if (!h) handles.set(id, (h = app.nodes.require(id)));
         return h;
       };
+      const heroAnim = set.hero ? createHeroAnimator(app) : null;
+      if (set.bell) node("bell").setVisible(false);
       const cam = app.camera;
       if (!cam) throw new Error("where-the-wind-wanders-port: the app exposes no camera controller");
       const look = { x: START.x + 2, y: 2.2, z: START.z - 3.5 };
@@ -421,21 +428,27 @@ export function buildWorld(options: { density?: number } = {}): World {
           const air = state.hop.phase === "air" ? 1 : state.hop.phase === "takeoff" ? 0.4 : 0;
           const squash = state.hop.phase === "takeoff" ? -0.08 : state.hop.phase === "landing" ? -0.1 : state.hop.phase === "air" ? 0.06 : 0;
           const onBoat = epilogue !== null;
-          const tr = node("traveller");
+          const tr = node(set.hero ? "hero" : "traveller");
           if (onBoat) {
             const b = boatPose(epilogue!);
-            tr.setPosition(b.x, b.y + 0.55, b.z - 0.3).setRotation(0, b.yaw, 0).setUniform?.("windTime", time);
+            tr.setPosition(b.x, b.y + 0.55, b.z - 0.3).setRotation(0, b.yaw, 0);
+            if (!heroAnim) tr.setUniform?.("windTime", time);
             node("shadow").setPosition(b.x, -10, b.z);
           } else {
             tr.setPosition(x, y + hop, z).setRotation(0, yaw, 0);
             node("shadow").setPosition(x, y + 0.06, z).setScale(1 - 0.35 * Math.min(1, hop / 1.2));
           }
-          tr.setScale(1.3);
-          tr.setUniform?.("gait", gait);
-          tr.setUniform?.("walkAmt", onBoat ? 0 : walkAmt);
-          tr.setUniform?.("hopAmt", air);
-          tr.setUniform?.("squash", squash);
-          tr.setUniform?.("windTime", time);
+          if (heroAnim) {
+            const clip = onBoat ? "Idle" : state.hop.phase !== "idle" ? "Run" : walkAmt > 0.5 ? "Walk" : "Idle";
+            heroAnim.play(clip, clip === "Walk" ? 0.9 + 0.5 * walkAmt : 1, dt);
+          } else tr.setScale(1.3);
+          if (!heroAnim) {
+            tr.setUniform?.("gait", gait);
+            tr.setUniform?.("walkAmt", onBoat ? 0 : walkAmt);
+            tr.setUniform?.("hopAmt", air);
+            tr.setUniform?.("squash", squash);
+            tr.setUniform?.("windTime", time);
+          }
           for (const id of allUniformNodes) node(id).setUniform?.("windTime", time);
           node("foliage").setUniform?.("playerPos", [x, y, z]);
           node("props").setUniform?.("playerPos", [x, y, z]);

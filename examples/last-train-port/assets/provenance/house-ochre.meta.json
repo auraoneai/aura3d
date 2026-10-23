@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d2-9963-75d3-85fb-0165f3f8d1e1",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776771961,
+  "started_at": 1792776771967,
+  "finished_at": 1792776836394,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d2-9963-75d3-85fb-0165f3f8d1e1/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d2-9963-75d3-85fb-0165f3f8d1e1/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d2-9963-75d3-85fb-0165f3f8d1e1/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d2-9963-75d3-85fb-0165f3f8d1e1/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d2-9963-75d3-85fb-0165f3f8d1e1/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d2-9963-75d3-85fb-0165f3f8d1e1/output/preview.png",
+  "prompt": "a narrow four-storey terraced townhouse, warm ochre plaster, blue shutters, shop window on the ground floor with a striped awning, slate roof with a dormer window, flat back and flat sides so it can sit in a row, stylised hand-painted game asset, warm painted PBR textures, clean silhouette",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2372750454,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/last-train/house-ochre/model.glb",
+  "artifacts/meshy/last-train/house-ochre/thumbnail.png",
+  "artifacts/meshy/last-train/house-ochre/texture_0_base_color.png",
+  "artifacts/meshy/last-train/house-ochre/texture_0_metallic.png",
+  "artifacts/meshy/last-train/house-ochre/texture_0_normal.png",
+  "artifacts/meshy/last-train/house-ochre/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:34:18.857Z"
+}

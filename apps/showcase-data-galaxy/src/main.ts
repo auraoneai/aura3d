@@ -20,7 +20,7 @@ import {
   ui,
   type AuraCameraSpec,
   type AuraColor,
-  type AuraInstanceTransform,
+  type AuraTransformSpec,
   type AuraNodeInput,
   type AuraSceneSnapshot
 } from "@aura3d/engine";
@@ -158,7 +158,7 @@ const cyanPalette: readonly AuraColor[] = ["#38bdf8", "#22d3ee", "#64f4cf", "#67
 const goldPalette: readonly AuraColor[] = ["#fbbf24", "#f59e0b", "#ffd27d", "#fde047", "#fb923c"];
 const violetPalette: readonly AuraColor[] = ["#a855f7", "#c084fc", "#ff8ba7", "#818cf8", "#e879f9"];
 
-const galaxyCyanTransforms: AuraInstanceTransform[] = Array.from({ length: GALAXY_CYAN_COUNT }, () => ({
+const galaxyCyanTransforms: AuraTransformSpec[] = Array.from({ length: GALAXY_CYAN_COUNT }, () => ({
   position: [0, 0.58, 0],
   scale: 1
 }));
@@ -167,7 +167,7 @@ const galaxyCyanColors: AuraColor[] = Array.from(
   (_, index) => cyanPalette[index % cyanPalette.length]!
 );
 
-const galaxyGoldTransforms: AuraInstanceTransform[] = Array.from({ length: GALAXY_GOLD_COUNT }, () => ({
+const galaxyGoldTransforms: AuraTransformSpec[] = Array.from({ length: GALAXY_GOLD_COUNT }, () => ({
   position: [0, 0.58, 0],
   scale: 1
 }));
@@ -176,7 +176,7 @@ const galaxyGoldColors: AuraColor[] = Array.from(
   (_, index) => goldPalette[index % goldPalette.length]!
 );
 
-const galaxyVioletTransforms: AuraInstanceTransform[] = Array.from({ length: GALAXY_VIOLET_COUNT }, () => ({
+const galaxyVioletTransforms: AuraTransformSpec[] = Array.from({ length: GALAXY_VIOLET_COUNT }, () => ({
   position: [0, 0.58, 0],
   scale: 1
 }));
@@ -852,8 +852,8 @@ function publishEvidence(status: ShowcaseStatus): void {
         typedRef: "assets.showcaseParticleCore",
         id: "showcaseParticleCore",
         url: dataCoreAsset.url,
-        license: dataCoreAsset.metadata.provenance.license,
-        author: dataCoreAsset.metadata.provenance.author
+        license: String(dataCoreAsset.metadata?.provenance?.license ?? "unknown"),
+        author: String(dataCoreAsset.metadata?.provenance?.author ?? "unknown")
       }
     ],
     claimBoundary:

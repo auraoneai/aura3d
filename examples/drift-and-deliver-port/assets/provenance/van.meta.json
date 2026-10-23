@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d2-4957-7315-88d3-e019d3fb5892",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776751463,
+  "started_at": 1792776751469,
+  "finished_at": 1792776806344,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-4957-7315-88d3-e019d3fb5892/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-4957-7315-88d3-e019d3fb5892/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-4957-7315-88d3-e019d3fb5892/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-4957-7315-88d3-e019d3fb5892/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-4957-7315-88d3-e019d3fb5892/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/6e924789-5462-469d-8c75-0dbe7916beef/tasks/01a169d2-4957-7315-88d3-e019d3fb5892/output/preview.png",
+  "prompt": "a boxy yellow city taxi-style minivan, rounded roof, black stripe along the side, four wheels, no driver, single game vehicle, centered, no ground, PBR materials",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2648577385,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/drift-van/model.glb",
+  "artifacts/meshy/drift-van/thumbnail.png",
+  "artifacts/meshy/drift-van/texture_0_base_color.png",
+  "artifacts/meshy/drift-van/texture_0_metallic.png",
+  "artifacts/meshy/drift-van/texture_0_normal.png",
+  "artifacts/meshy/drift-van/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:33:40.265Z"
+}

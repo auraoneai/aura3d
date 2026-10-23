@@ -80,3 +80,20 @@ Other limits: one judge model, one prompt per question. Original frames are Play
 | `heatsink-20261023T062559Z` (ACR chkk) | run 1 port spec: container exit 0 (the runner propagates the Playwright exit code); the log kept the 16 frame records but not the pass/fail summary lines. An earlier run of the same spec on the first visuals (`heatsink-20261023T052438Z`) also exited 0. |
 
 `frames/` holds the 16 original JPEGs, the 16 final (run f) port JPEGs, and `run2-before/` (the 16 pre-art-pass port JPEGs).
+
+## Meshy art pass (2026-10-23)
+
+Nine Meshy-generated models (prompts and task ids in `examples/heatsink-port/assets/ATTRIBUTION.md`) plus a terrain fix for the step-4500 ceiling. Frames at the same eight simulation steps (450, 1170, 1500, 2250, 3000, 3750, 4500, 5340): `meshy-before/port-*.jpg` (previous art pass) and `meshy-after/port-*.jpg`, side by side in `compare-meshy-before-after.jpg` (the `*.jpg` ignore rule keeps them local unless force-added; the original game's frames are not in these sheets).
+
+Blind model judge (`claude-sonnet-5.5` via Kiro Prism, seed 20261023, 8 states x 6 passes = 48 trials, same prompts; a model, not a human), results in `judge-results-meshy.json` and `judge-results-design-meshy.json`:
+
+| | before (art round 2, run f, 16 states) | after (Meshy pass, 8 states) |
+| --- | --- | --- |
+| strict: original identified | 48/48 | **35/48 (72.9%, Wilson 59-83%)**, chance 50%, "same game" 0/48 |
+| design: "same game design?" | 38/48 (79.2%) | **40/48 (83.3%, Wilson 70-91%)** |
+| luma histogram JSD | 0.121 | 0.119 |
+| edge density, port vs original | 1.05x | 1.07x |
+
+The strict result is the first below 48/48 in this program but is still far above chance (p ~ 1e-3), so Phase B stays unmet for HEATSINK. The design question is noisy across runs (earlier runs 34-40 of 48) and is measured on 8 states, not 16, so the two columns are comparable only roughly. An intermediate run with a wedge-shaped hover-craft drone scored 47/48 strict and 25/48 design; the judge's stated difference was that the original's vehicle is a quad-rotor drone, so the drone was regenerated as a quad-rotor.
+
+Replay is unchanged (final step 6000 matches the recorded state; `tests/unit/heatsink-port` 77/77). Draw calls were not captured: the spec's diagnostics line did not reach the run log.

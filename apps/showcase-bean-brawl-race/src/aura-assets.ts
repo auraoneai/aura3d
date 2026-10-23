@@ -15,7 +15,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "yellowBean": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
-export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAssets({
+export const assets = defineAuraAssets({
   "blueBean": {
     type: "model",
     format: "glb",
@@ -2830,6 +2830,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
-} as const);
+} as const as never) as unknown as AuraAssetMap<AuraGeneratedAssetDefinitions>;
 
 export type AuraGeneratedAssets = typeof assets;

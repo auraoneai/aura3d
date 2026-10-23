@@ -1,0 +1,18 @@
+{
+  "schema": "a3d-look-reference-frames/1",
+  "game": "drift-and-deliver",
+  "frames": [
+    {
+      "file": "ref-z-idle-clean.jpg",
+      "shot": "z-idle",
+      "variant": "clean",
+      "bytes": 98319
+    },
+    {
+      "file": "ref-downtown-ne-clean.jpg",
+      "shot": "downtown-ne",
+      "variant": "clean",
+      "bytes": 106589
+    }
+  ]
+}

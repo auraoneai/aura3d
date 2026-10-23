@@ -1,6 +1,6 @@
-# Bean Brawl Race — Aura3D 4.0.0 Obstacle Course Game
+# Bean Brawl Race — Aura3D 4.0.8 Obstacle Course Game
 
-A Fall Guys / Stumble Guys-style 3D obstacle course race built on `@aura3d/engine` 4.0.0, `@aura3d/animation` 4.0.0, and 11 custom Meshy 3D GLB assets. Race the pink/coral **Hero Bean** against 3 animated AI rival beans (**Blaze Bean**, **Frost Bean**, **Volt Bean**) across a 4-stage, 56-meter obstacle gauntlet to claim the floating **Winner Crown**.
+A Fall Guys / Stumble Guys-style 3D obstacle course race built on `@aura3d/engine` 4.0.8, `@aura3d/animation` 4.0.8, and 11 custom Meshy 3D GLB assets. Race the pink/coral **Hero Bean** against 3 animated AI rival beans (**Blaze Bean**, **Frost Bean**, **Volt Bean**) across a 4-stage, 56-meter obstacle gauntlet to claim the floating **Winner Crown**.
 
 ## Controls
 

@@ -2,7 +2,7 @@
 // Flag off (default): boots src/legacy/main.ts untouched. `?a3d-qr=route-bank-shot`
 // (or the raw flag id) boots src/v2/boot.ts. DEFAULT_ON flips only after G-PANEL
 // acceptance (§10 step 5).
-import { resolveQrFlags } from "@aura3d/engine/contracts";
+import { resolveQrFlags } from "@aura3d/engine";
 
 const ROUTE_FLAG = "A3D_QR_ROUTE_BANK_SHOT" as const;
 const DEFAULT_ON = false;

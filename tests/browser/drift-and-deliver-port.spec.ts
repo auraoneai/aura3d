@@ -63,7 +63,7 @@ test.describe("drift-and-deliver-port", () => {
       if (message.type() === "error") errors.push(message.text());
     });
     await page.setViewportSize({ width: 960, height: 540 });
-    await page.goto(`${server.origin}${LAB}?manual=1&quality=low`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}${LAB}?manual=1&quality=low&models=0`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
         const w = window as unknown as { __AURA_DRIFT_AND_DELIVER__?: { ready(): boolean }; __AURA_DRIFT_AND_DELIVER_ERROR__?: string };
@@ -225,7 +225,7 @@ test.describe("drift-and-deliver-port", () => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.setViewportSize({ width: 960, height: 540 });
-    await page.goto(`${server.origin}${LAB}?manual=1&quality=low&beams=1`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}${LAB}?manual=1&quality=low&beams=1&models=0`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
         const w = window as unknown as { __AURA_DRIFT_AND_DELIVER__?: { ready(): boolean }; __AURA_DRIFT_AND_DELIVER_ERROR__?: string };

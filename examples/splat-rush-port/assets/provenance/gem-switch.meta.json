@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169da-e9e9-7644-8158-bc3cacba5984",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792777316852,
+  "started_at": 1792777316857,
+  "finished_at": 1792777364261,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169da-e9e9-7644-8158-bc3cacba5984/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169da-e9e9-7644-8158-bc3cacba5984/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169da-e9e9-7644-8158-bc3cacba5984/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169da-e9e9-7644-8158-bc3cacba5984/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169da-e9e9-7644-8158-bc3cacba5984/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169da-e9e9-7644-8158-bc3cacba5984/output/preview.png",
+  "prompt": "a glossy chunky pastel teal round token pickup with two curved arrows chasing each other in a swap loop embossed on the face, toy style, smooth glossy surfaces, game pickup",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3860911338,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/splat-gem-switch/model.glb",
+  "artifacts/meshy/splat-gem-switch/thumbnail.png",
+  "artifacts/meshy/splat-gem-switch/texture_0_base_color.png",
+  "artifacts/meshy/splat-gem-switch/texture_0_metallic.png",
+  "artifacts/meshy/splat-gem-switch/texture_0_normal.png",
+  "artifacts/meshy/splat-gem-switch/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:42:47.145Z"
+}

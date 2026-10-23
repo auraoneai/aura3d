@@ -9,7 +9,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * Remote-only (tools/remote-acr/run.sh); never run under local Playwright. Drives `examples/ninja-runner-port`
  * through `window.__AURA_NINJA_RUNNER__` and checks the Phase C exit: the port plays through movement, jump,
  * combat, shadow clones, form changes (Sage, Kurama), a win, a restart and a loss, with real pixels on every
- * frame, twelve independent skinned actors (one `cloneSkinned` call, shared textures) and the original's
+ * frame, thirteen independent skinned actors (four `cloneSkinned` calls, one per generated character model, textures shared within a model) and the original's
  * recorded 106 s run reproduced step-exactly inside the live page.
  * Compact JPEG frames go to the log as `NINJA_RUNNER_FRAME <name> <base64>` because ACR runs cannot return files.
  */
@@ -142,12 +142,12 @@ test.describe("ninja-runner-port (Phase C)", () => {
     expect(fighting.kills).toBeGreaterThan(0);
     console.log("NINJA_RUNNER_STATS combat", JSON.stringify({ kills: fighting.kills, s: fighting.s, stats }));
 
-    // ---- twelve actors from one cloneSkinned call: independent skeletons, shared GPU textures ----
+    // ---- thirteen actors from four cloneSkinned calls (hero+clones, soldiers, brutes, sage): independent skeletons, shared GPU textures ----
     const probe = await api((o) => o.probeBones());
     const shared = (await api((o) => o.stats())).shared!;
     console.log("NINJA_RUNNER_STATS actors", JSON.stringify({ joint: probe.joint, distinct: probe.distinct, shared }));
-    expect(probe.translations.length).toBe(12);
-    expect(probe.distinct).toBeGreaterThanOrEqual(10);
+    expect(probe.translations.length).toBe(13);
+    expect(probe.distinct).toBeGreaterThanOrEqual(11);
     expect(shared.refs).toBeGreaterThanOrEqual(12);
 
     // ---- forms: Sage at 600 m, Kurama at 1,620 m (the policy switches); a frame in each ----
@@ -218,7 +218,7 @@ test.describe("ninja-runner-port (Phase C)", () => {
 
     writeFileSync(resolve(`${REPORT_ROOT}/ninja-runner-port.json`), `${JSON.stringify({
       schema: "a3d-ninja-runner-port-report/1",
-      claimBoundary: "Proves the Aura3D port boots on WebGL2, renders its world and twelve independent skinned actors, plays movement/combat/clones/Sage/Kurama/win/restart/loss, and that its fixed-step simulation reproduces the original's recorded 106 s run event-for-event. It does not claim pixel parity: the characters are the repository soldier fixture tinted per form/type, and the environment is procedural.",
+      claimBoundary: "Proves the Aura3D port boots on WebGL2, renders its world and thirteen independent skinned actors, plays movement/combat/clones/Sage/Kurama/win/restart/loss, and that its fixed-step simulation reproduces the original's recorded 106 s run event-for-event. It does not claim pixel parity: the characters and the village kit are generated models (Meshy text-to-3D, own prompts) and the ground, sky, water and effects are procedural.",
       replay: { steps: replayed.steps, kills: replayed.kills, score: replayed.score, eventsEqual, maxDelta },
       actors: { distinct: probe.distinct, shared },
       finish: { s: end.s, kills: end.kills, score: end.score }

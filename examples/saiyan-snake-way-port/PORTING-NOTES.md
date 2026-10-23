@@ -15,7 +15,7 @@ page's importmap, so the module is one 513,393-byte file of game code with minif
 | `road.ts` | The snake's path (the original's `XA`/`ZA`/`At` frame integration) and the ribbon mesh. |
 | `world.ts`, `materials.ts`, `shaders.ts` | Rendering on the public `@aura3d/engine` surface only: road ribbon, ray-marched cloud deck and starry sky dome, aura shell, rigged runner, multi-part props, post stack, chase camera. |
 | `hero.ts` | The procedural runner: a primitive figure posed from run, jump, slide, flight and dive states. It is the fallback when the rigged model cannot load, and its pose also anchors the aura, sparks and bursts. Pure maths, unit tested. |
-| `assets/runner-rig.glb` | The rigged runner: a CC0 Quaternius humanoid from the Aura3D catalog (`auraClashPlayerRig`, 7.8 MB, see `assets/ATTRIBUTION.md`), driven through `cloneSkinned` / `TypedGLBActor` with its Sprint, Jump, Crouch, Idle and Hit clips. |
+| `assets/runner.glb`, `models.ts` | The rigged runner and the Meshy props (see the Meshy art pass section below and `assets/ATTRIBUTION.md`), driven through `cloneSkinned` / `TypedGLBActor`. |
 | `styles.ts` | Three runner looks for the select card (colours only; the run is identical). |
 | `text.ts` | Display wording: swaps the franchise terms the simulation emits for generic ones (`displayText`), with a forbidden-term list the unit test checks against every string the sim can emit. |
 | `sfx.ts` | Synthesised one-shot sound effects (Web Audio, no asset files, no continuous bed). |
@@ -94,3 +94,22 @@ None blocking; no engine source was changed for this pass. Notes for authors of 
 - Transparent materials cannot keep `depthWrite`; a back-face-culled transparent surface needs counter-clockwise winding from outside.
 - `TypedGLBActor.setTint` multiplies the model's base colour, so it cannot recolour a green outfit to orange; an emissive wash only approximates it.
 - `handle.setScale` takes one number or one `[x, y, z]` array, not three arguments.
+
+## Meshy art pass (2026-10-23)
+
+Generated through Kiro Prism from original text prompts (never from images of the original; no franchise names in prompts), admitted with
+`aura3d assets import-meshy` in an isolated temp project (`validate --require-license`: no failures) and shipped under `assets/` (provenance:
+`assets/ATTRIBUTION.md`, `assets/provenance/*.rights.json|meta.json`). Loaded in `models.ts` with a same-origin pathname + sha256, the only form the
+production bridge accepts.
+
+- **Runner** (`runner.glb`, 4.6 MB, 20k vertices): text-to-3D A-pose, remeshed to 12k triangles (5 credits), rigged (5), plus six animation actions
+  (3 each). The rig returns a skeleton of 24 joints with a basic run clip; the other clips are separate GLBs, merged into one file by a small
+  gltf-transform script (same joint names, 66 channels each). Clip mapping in `world.ts`: run, idle, jump (`Regular_Jump`), slide (`slide_light`),
+  flight (`Leap_of_Faith`; the library has no flying clip, the world's pitch does the rest), dive and hit. It still goes through `cloneSkinned` and
+  falls back to the procedural figure.
+- **Entities as one model each** (pool sizes shrank to keep draw calls down: arch 8, barrier 16, oni 12, sweeper 6, feast 6): gate, barrier, ogre, cart, feast.
+  The simulation never reads pool sizes (a full pool only hides the farthest props).
+- **Decor**: ten roadside lantern posts recycled in pairs along the verge and six drifting floating islands.
+- Not used: `crystal.glb` (generated, 30 credits, not admitted).
+- Meshy facts worth knowing: `make` is 30 credits (20 preview + 10 refine); the rigged GLB is 21 MB raw (1024 px textures bring it to 4.6 MB with
+  all clips); text-to-3D output comes back with 0.2-4 M vertices, so every static prop needs `optimize.mjs` (a second pass for the island).

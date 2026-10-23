@@ -442,18 +442,26 @@ const SIGNAL_LAMP = ["#ff4a38", "#ffc23a", "#48e07a"].map(hexRgb);
  * drawn instance by instance in every shadow cascade (about 540 draws per cascade for the lamps alone); merged, they are one
  * draw and never cast shadows.
  */
-export function buildProps(f: Furniture): MeshData {
+export interface PropSkip {
+  readonly lamp?: (x: number, z: number) => boolean;
+  readonly signal?: (x: number, z: number) => boolean;
+  readonly tree?: (x: number, z: number) => boolean;
+}
+
+export function buildProps(f: Furniture, skip: PropSkip = {}): MeshData {
   const m = createMesh();
   const metal = hexRgb("#3a3d44");
   const lampHead = hexRgb("#f4efe0");
   const housing = hexRgb("#1c1d22");
   for (const p of f.lamps) {
+    if (skip.lamp?.(p.x, p.z)) continue;
     box(m, p.x, 0, p.z, 0.08, 5.6, 0.08, { side: metal, top: metal });
     const [ox, oz] = [Math.sin(p.yaw) * 0.7, Math.cos(p.yaw) * 0.7];
     orientedBox(m, p.x + ox, 5.5, p.z + oz, p.yaw, 0.05, 0.1, 0.75, metal, metal);
     orientedBox(m, p.x + Math.sin(p.yaw) * 1.35, 5.44, p.z + Math.cos(p.yaw) * 1.35, p.yaw, 0.17, 0.12, 0.35, lampHead, lampHead);
   }
   for (const p of f.signals) {
+    if (skip.signal?.(p.x, p.z)) continue;
     box(m, p.x, 0, p.z, 0.07, 4.2, 0.07, { side: metal, top: metal });
     orientedBox(m, p.x + Math.sin(p.yaw) * 0.9, 4.0, p.z + Math.cos(p.yaw) * 0.9, p.yaw, 0.05, 0.1, 0.9, metal, metal);
     const hx = p.x + Math.sin(p.yaw) * 1.7;
@@ -488,10 +496,12 @@ export function buildProps(f: Furniture): MeshData {
     }
   };
   f.streetTrees.forEach((t) => {
+    if (skip.tree?.(t.x, t.z)) return;
     if (Math.floor(t.seed * 7) % 2 === 0) pushPalm(t.x, t.z, 6 + (t.seed % 4), t.seed);
     else pushRound(t.x, t.z, 3.4 + (t.seed % 5) * 0.35, t.seed);
   });
   for (const t of f.parkTrees) {
+    if (skip.tree?.(t.x, t.z)) continue;
     if (t.palm) pushPalm(t.x, t.z, 5.5 + t.h * 0.5, t.seed);
     else pushRound(t.x, t.z, t.h, t.seed);
   }

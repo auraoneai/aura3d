@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169db-cc65-72c5-a0e4-6a9901034881",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792777374841,
+  "started_at": 1792777374847,
+  "finished_at": 1792777432916,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169db-cc65-72c5-a0e4-6a9901034881/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169db-cc65-72c5-a0e4-6a9901034881/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169db-cc65-72c5-a0e4-6a9901034881/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169db-cc65-72c5-a0e4-6a9901034881/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169db-cc65-72c5-a0e4-6a9901034881/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169db-cc65-72c5-a0e4-6a9901034881/output/preview.png",
+  "prompt": "a single thick floating ring of carved sandstone with glowing amber rune lines around the band, perfect circle, nothing else, no base, no towers, flat stylised game prop, PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3442791009,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/silt-ringclean/model.glb",
+  "artifacts/meshy/silt-ringclean/thumbnail.png",
+  "artifacts/meshy/silt-ringclean/texture_0_base_color.png",
+  "artifacts/meshy/silt-ringclean/texture_0_metallic.png",
+  "artifacts/meshy/silt-ringclean/texture_0_normal.png",
+  "artifacts/meshy/silt-ringclean/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:44:03.130Z"
+}

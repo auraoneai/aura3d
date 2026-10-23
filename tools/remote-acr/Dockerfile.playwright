@@ -58,6 +58,8 @@ COPY tests/support/ ./tests/support/
 # (soldier.glb et al.) from the example dev server's origin-root resolution.
 COPY fixtures/ ./fixtures/
 COPY examples/ ./examples/
+COPY apps/ ./apps/
+COPY src/ ./src/
 # Repo public/ mirrors at the origin root in the dev server — the engine
 # lazily fetches /aura-environments/*.manifest.json for the baked presets.
 COPY public/ ./public/

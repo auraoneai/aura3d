@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169ce-4e26-7677-bb15-8f153a18ef2c",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776490553,
+  "started_at": 1792776490558,
+  "finished_at": 1792776536958,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169ce-4e26-7677-bb15-8f153a18ef2c/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169ce-4e26-7677-bb15-8f153a18ef2c/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169ce-4e26-7677-bb15-8f153a18ef2c/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169ce-4e26-7677-bb15-8f153a18ef2c/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169ce-4e26-7677-bb15-8f153a18ef2c/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169ce-4e26-7677-bb15-8f153a18ef2c/output/preview.png",
+  "prompt": "a white delivery box truck with a cream cargo box and a small cab, four wheels visible, simple clean panels, no driver, single game vehicle, centered, no ground, PBR materials",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2440496603,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/drift-truck/model.glb",
+  "artifacts/meshy/drift-truck/thumbnail.png",
+  "artifacts/meshy/drift-truck/texture_0_base_color.png",
+  "artifacts/meshy/drift-truck/texture_0_metallic.png",
+  "artifacts/meshy/drift-truck/texture_0_normal.png",
+  "artifacts/meshy/drift-truck/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:31:32.591Z"
+}

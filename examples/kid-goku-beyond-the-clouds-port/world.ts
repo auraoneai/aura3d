@@ -5,23 +5,22 @@
  * particles and post (bloom, grade, vignette). Everything goes through the public `@aura3d/engine` surface; art is
  * original (procedural meshes, CC0 catalog model and textures).
  */
-import { camera, defineAuraAssets, effects, environments, geometry, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
-import { boulder, meatChunk, pteranodon, skyCloud, trex } from "./creatures";
+import { meatChunk } from "./creatures";
 import { Fx } from "./fx";
 import type { Game } from "./game";
 import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { Mesh, cylinder, hex } from "./mesh";
+import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
 import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
-const LICENSE_KAYKIT = "CC0 1.0, KayKit Adventurers (Aura3D curated library)";
 const LICENSE_ACG = "CC0 1.0, ambientCG";
 /* same-origin pathnames, not absolute URLs: the production bridge treats http(s) model URLs as unsafe and refuses the scene */
 export const ASSETS = defineAuraAssets({
-  runner: { type: "model", format: "glb", url: new URL("./assets/models/runner.glb", import.meta.url).pathname, hash: "sha256-cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6", metadata: { license: LICENSE_KAYKIT, animations: ["Idle", "Running_A", "Jump_Full_Short", "Jump_Idle", "Hit_A", "Hit_B", "Death_A", "Cheer", "Sit_Floor_Idle", "Block", "Unarmed_Melee_Attack_Punch_A", "Unarmed_Melee_Attack_Kick", "Unarmed_Pose", "Walking_A", "Spellcast_Raise", "Dodge_Left"] } },
   pathColor: { type: "texture", format: "jpg", url: new URL("./assets/textures/path-color.jpg", import.meta.url).pathname, hash: "sha256-5b083a420d259ad70ec62babb666554b6dcb82a7b06e8dfec8d3f6ba0bb0c7e6", metadata: { license: LICENSE_ACG } },
   pathNormal: { type: "texture", format: "jpg", url: new URL("./assets/textures/path-normal.jpg", import.meta.url).pathname, hash: "sha256-c8b9f181e2c5088f8cee915662401f5b02ac3ae9f0cbc82ea92d20dab9b97c4d", metadata: { license: LICENSE_ACG } },
 });
@@ -38,7 +37,13 @@ export interface WorldStats { drawNodes: number; chunks: number; triangles: numb
 export interface WorldRuntime { update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void; readonly stats: WorldStats; readonly camera: { eye: V3; target: V3 } }
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
 
+/* dev toggle for A/B frames: ?heroset=0 drops the instanced hero trees, rocks and mesas */
+const HERO_SET = typeof location === "undefined" || !/[?&]heroset=0/.test(location.search);
 const ORB_CAP = 72;
+/* clips that play once and hold their last pose (end time in seconds) or a fixed pose (at) */
+const HERO_HOLD: Readonly<Record<string, { end: number; at?: number }>> = { jump: { end: 2.0 }, hit: { end: 1.5 }, dead: { end: 2.95 }, sit: { end: 8.3, at: 7.6 } };
+/* Meshy models face +Z in their own space; the port's creature rig faced -Z, so the yaw is offset by this many half turns */
+const REX_FACING = 1;
 const SUN_POS: V3 = [48, 78, 38];
 const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
 const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
@@ -54,32 +59,41 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
 
   let triangles = 0, chunks = 0, drawNodes = 0;
-  const addMesh = (m: Mesh, name: string, spec: ReturnType<typeof scenerySpec>, id?: string): void => {
-    const node = geometry.custom(meshGeometry(m), { name, material: material.custom(spec) });
+  /* only the cliff walls cast sun shadows: every caster is drawn once per cascade, and merged foliage, flowers, mesas and cloud banks are far or tiny */
+  const addMesh = (m: Mesh, name: string, spec: ReturnType<typeof scenerySpec>, id?: string, castShadow = false): void => {
+    const node = geometry.custom(meshGeometry(m), { name, material: material.custom(spec), castShadow });
     b.add(id ? node.runtime({ id }) : node);
     triangles += m.indices.length / 3; chunks++; drawNodes++;
   };
 
   /* sky, valley */
-  b.add(primitives.sphere({ name: "sky", size: 3600, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
+  b.add(primitives.sphere({ name: "sky", size: 3600, castShadow: false, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
   b.add(geometry.custom(geometry.dynamic({
     positions: f32([-3200, 0, -3200, 3200, 0, -3200, 3200, 0, 3200, -3200, 0, 3200]), normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
     uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
-  }), { name: "valley", material: material.custom(valleySpec()) }).runtime({ id: "valley" }));
+  }), { name: "valley", castShadow: false, material: material.custom(valleySpec()) }).runtime({ id: "valley" }));
 
   /* ground: textured PBR track and grass, banded sandstone and foliage-covered banks */
   const ground = buildGround(ch);
   const sampling = { wrap: "repeat" as const, anisotropy: 8 };
-  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, material: material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
+  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, castShadow: false, material: material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
   ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
-  ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 })));
+  ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 }), undefined, true));
   const scatter = buildScatter(ch);
   scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 })));
   scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 })));
   scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 })));
   scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 })));
   buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.2, sun: 1.0 })));
-  buildMesas(ch).forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.35, mapScale: 0.18, rim: 0.3 })));
+  const mesas = buildMesas(ch);
+  mesas.meshes.forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.35, mapScale: 0.18, rim: 0.3 })));
+  /* generated hero set pieces along the road: instanced, one draw each */
+  const place = (list: readonly { pos: V3; scale: number; yaw: number }[]) => list.map((p) => ({ position: p.pos, rotation: [0, p.yaw, 0] as V3, scale: p.scale }));
+  const heroSet = { targetHeight: 1, castShadow: true, receiveShadow: false, instancingAware: true } as const;
+  if (HERO_SET && scatter.roundTrees.length) b.add(instances.model(MESHY.treeRound, { name: "hero-trees-round", ...heroSet, transforms: place(scatter.roundTrees) }));
+  if (HERO_SET && scatter.pineTrees.length) b.add(instances.model(MESHY.treePine, { name: "hero-trees-pine", ...heroSet, transforms: place(scatter.pineTrees) }));
+  if (HERO_SET && scatter.boulders.length) b.add(instances.model(MESHY.boulder, { name: "hero-rocks", ...heroSet, castShadow: false, transforms: place(scatter.boulders) }));
+  if (HERO_SET && mesas.placements.length) b.add(instances.model(MESHY.mesa, { name: "hero-mesas", targetHeight: 1, castShadow: false, receiveShadow: false, instancingAware: true, transforms: mesas.placements.map((m) => ({ position: m.pos, rotation: [0, m.yaw, 0] as V3, scale: [m.width / 0.55, m.height, m.width / 0.55] as V3 })) }));
   buildClouds(ch).forEach((m, i) => addMesh(m, `clouds-${i}`, scenerySpec({ sun: 0.85, rim: 0.5 })));
   buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 })));
   addMesh(buildBridges(ch), "bridges", scenerySpec({ rim: 0.15 }));
@@ -97,11 +111,11 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
       if (prev >= 0) m.quad(prev, prev + 1, k + 1, k);
       prev = k;
     }
-    b.add(geometry.custom(plainGeometry(m), { name: `river-${i}`, material: material.custom(waterSpec()) }).runtime({ id: `river-${i}` }));
+    b.add(geometry.custom(plainGeometry(m), { name: `river-${i}`, castShadow: false, material: material.custom(waterSpec()) }).runtime({ id: `river-${i}` }));
   });
 
   /* characters and set pieces */
-  b.add(model(ASSETS.runner, { name: "hero", targetHeight: 1.8, castShadow: true, receiveShadow: false, hiddenNodeNames: ["1H_Axe_Offhand", "Barbarian_Round_Shield", "1H_Axe", "2H_Axe", "Mug"] }).runtime({ id: "hero" }));
+  b.add(model(MESHY.hero, { name: "hero", targetHeight: 1.5, castShadow: true, receiveShadow: false }).runtime({ id: "hero" }));
   if (ch.log) {
     const raw = cylinder(14, 1.0, 1.0, 6.4, hex("#7d583a"), hex("#7d583a"));
     for (let i = 0; i < raw.vertexCount; i++) raw.positions[i * 3 + 1]! -= 3.2;
@@ -111,32 +125,25 @@ export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): Wo
   }
   const shadowQuad = new Mesh();
   shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
-  b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
-  const cloudMesh = skyCloud();
-  b.add(geometry.custom(meshGeometry(cloudMesh), { name: "sky-cloud", material: material.custom(scenerySpec({ sun: 1.5, rim: 0.7 })) }).runtime({ id: "sky-cloud" }));
+  b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", castShadow: false, material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
+  b.add(model(MESHY.cloud, { name: "sky-cloud", targetHeight: 0.8, castShadow: false, receiveShadow: false }).runtime({ id: "sky-cloud" }));
   const staff = cylinder(10, 0.13, 0.13, 1, hex("#b53a2a"), hex("#b53a2a"));
   staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0, 0]);
   staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0.94, 0]);
-  b.add(geometry.custom(meshGeometry(staff), { name: "staff", material: material.custom(scenerySpec({ rim: 0.4 })) }).runtime({ id: "staff" }));
+  b.add(geometry.custom(meshGeometry(staff), { name: "staff", castShadow: true, material: material.custom(scenerySpec({ rim: 0.4 })) }).runtime({ id: "staff" }));
   for (const ball of ch.balls) b.add(primitives.sphere({ name: `ball-${ball.star}`, size: 0.95, material: material.custom(ballSpec(ball.star)) }).runtime({ id: `ball-${ball.star}` }));
   if (ch.home) b.add(primitives.sphere({ name: `ball-${ch.home.star}`, size: 0.95, material: material.custom(ballSpec(ch.home.star)) }).runtime({ id: `ball-${ch.home.star}` }));
   const meat = meatChunk();
-  ch.meat.forEach((_, i) => b.add(geometry.custom(meshGeometry(meat), { name: `meat-${i}`, material: material.custom(scenerySpec({ sun: 1.4, rim: 0.4 })) }).runtime({ id: `meat-${i}` })));
-  const rock = boulder();
-  ch.boulders.forEach((_, i) => b.add(geometry.custom(meshGeometry(rock), { name: `boulder-${i}`, material: material.custom(scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.2 })) }).runtime({ id: `boulder-${i}` })));
-  const ptera = pteranodon();
+  ch.meat.forEach((_, i) => b.add(geometry.custom(meshGeometry(meat), { name: `meat-${i}`, castShadow: false, material: material.custom(scenerySpec({ sun: 1.4, rim: 0.4 })) }).runtime({ id: `meat-${i}` })));
+  ch.boulders.forEach((_, i) => b.add(model(MESHY.boulder, { name: `boulder-${i}`, targetHeight: 2.0, castShadow: true, receiveShadow: false }).runtime({ id: `boulder-${i}` })));
   const dives = ch.creatures.filter((c) => c.type === "pteranodon");
-  dives.forEach((_, i) => {
-    b.add(geometry.custom(meshGeometry(ptera.body), { name: `ptera-body-${i}`, material: material.custom(scenerySpec({ rim: 0.4 })) }).runtime({ id: `ptera-body-${i}` }));
-    for (const w of ["l", "r"]) b.add(geometry.custom(meshGeometry(ptera.wing), { name: `ptera-wing-${w}-${i}`, material: material.custom(scenerySpec({ rim: 0.5 })) }).runtime({ id: `ptera-wing-${w}-${i}` }));
-  });
-  const rex = trex();
+  dives.forEach((_, i) => b.add(model(MESHY.ptero, { name: `ptera-body-${i}`, targetHeight: 1.7, castShadow: true, receiveShadow: false }).runtime({ id: `ptera-body-${i}` })));
   const hasRex = ch.creatures.some((c) => c.type === "trex");
-  if (hasRex) for (const [id, m] of [["rex-body", rex.body], ["rex-head", rex.head], ["rex-jaw", rex.jaw]] as const) b.add(geometry.custom(meshGeometry(m), { name: id, material: material.custom(scenerySpec({ rim: 0.45 })) }).runtime({ id }));
+  if (hasRex) b.add(model(MESHY.rex, { name: "rex-body", targetHeight: 8.4, castShadow: true, receiveShadow: false }).runtime({ id: "rex-body" }));
 
   const quad = (() => { const m = new Mesh(); m.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); m.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); m.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); m.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); m.quad(0, 1, 2, 3); return m; })();
   const warnIds: string[] = [];
-  const warn = (id: string, round: boolean): void => { warnIds.push(id); b.add(geometry.custom(plainGeometry(quad), { name: id, material: material.custom(warnSpec(round)) }).runtime({ id })); };
+  const warn = (id: string, round: boolean): void => { warnIds.push(id); b.add(geometry.custom(plainGeometry(quad), { name: id, castShadow: false, material: material.custom(warnSpec(round)) }).runtime({ id })); };
   ch.boulders.forEach((_, i) => warn(`warn-boulder-${i}`, false));
   dives.forEach((_, i) => warn(`warn-dive-${i}`, true));
   const rexCreature = ch.creatures.find((c) => c.type === "trex");
@@ -173,7 +180,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
   const play = (clip: string, rate: number, dt: number): void => {
     if (clip !== animClip) { animClip = clip; animT = 0; }
     animT += dt * rate;
-    hero.play(clip, { loop: true, captureTime: animT, crossFade: 0.1 });
+    const hold = HERO_HOLD[clip];
+    hero.play(clip, { loop: hold === undefined, captureTime: hold === undefined ? animT : hold.at ?? Math.min(animT, hold.end), crossFade: 0.1 });
   };
 
   function emitEvents(g: Game, events: readonly string[]): void {
@@ -229,19 +237,19 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       if (phase === "menu") yaw = yawOf(f.forward) + Math.PI * 0.85 + Math.sin(clock * 0.3) * 0.08;
       if (phase === "result") yaw = yawOf(f.forward) + (g.result?.won ? Math.PI : 0);
       if (phase === "finale") yaw = yawOf(f.forward) - 0.1;
-      let clip = "Running_A", rate = 0.95 + s.speed / 30;
-      if (phase === "menu") { clip = "Idle"; rate = 1; }
-      else if (phase === "result") { clip = g.result?.won ? "Cheer" : "Death_A"; rate = 1; }
-      else if (phase === "finale") { const t = g.finale?.t ?? 0; clip = t < 4 ? "Walking_A" : "Cheer"; rate = t < 4 ? 1.1 : 1; }
-      else if (phase === "falling") { clip = "Jump_Idle"; rate = 1; }
-      else if (s.janken) { clip = s.janken.t < 0.7 ? "Unarmed_Pose" : "Unarmed_Melee_Attack_Punch_A"; rate = 1.2; }
-      else if (s.strikeTimer > 0) { clip = "Unarmed_Melee_Attack_Punch_A"; rate = 1.8; }
-      else if ((s.grabTimer ?? 0) > 0) { clip = "Hit_B"; rate = 1.2; }
-      else if ((s.stumbleTimer ?? 0) > 0) { clip = "Hit_A"; rate = 1.4; }
-      else if (riding) { clip = "Sit_Floor_Idle"; rate = 1; }
-      else if (s.pole) { clip = "Block"; rate = 1; }
-      else if (s.jump > 0.12) { clip = s.jumpVelocity > 0.5 ? "Jump_Full_Short" : "Jump_Idle"; rate = 1.1; }
-      else if (phase === "paused") { clip = animClip || "Running_A"; rate = 0; }
+      let clip = "run", rate = 0.95 + s.speed / 30;
+      if (phase === "menu") { clip = "idle"; rate = 1; }
+      else if (phase === "result") { clip = g.result?.won ? "cheer" : "dead"; rate = 1; }
+      else if (phase === "finale") { const t = g.finale?.t ?? 0; clip = t < 4 ? "walk" : "cheer"; rate = t < 4 ? 1.1 : 1; }
+      else if (phase === "falling") { clip = "jump"; rate = 0.7; }
+      else if (s.janken) { clip = s.janken.t < 0.7 ? "idle" : "attack"; rate = s.janken.t < 0.7 ? 1.4 : 1.2; }
+      else if (s.strikeTimer > 0) { clip = "attack"; rate = 1.8; }
+      else if ((s.grabTimer ?? 0) > 0) { clip = "hit"; rate = 1.2; }
+      else if ((s.stumbleTimer ?? 0) > 0) { clip = "hit"; rate = 1.4; }
+      else if (riding) { clip = "sit"; rate = 1; }
+      else if (s.pole) { clip = "block"; rate = 0.35; }
+      else if (s.jump > 0.12) { clip = "jump"; rate = 1.9; }
+      else if (phase === "paused") { clip = animClip || "run"; rate = 0; }
       if (phase === "playing" && s.invincible > 0 && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
       hero.setPosition(pos[0], pos[1], pos[2]);
       hero.setRotation(pitch, yaw, roll);
@@ -268,7 +276,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       cloud.setVisible(riding || (phase === "menu" && false));
       if (riding) {
         const base = at(s.s, s.lane, Math.max(0, s.jump - 0.55));
-        cloud.setPosition(base[0], base[1], base[2]);
+        cloud.setPosition(base[0] + f.forward[0] * 1.1, base[1] + 0.12, base[2] + f.forward[2] * 1.1); /* the generated cloud's mass sits behind its origin */
         cloud.setRotation(0, yaw, Math.sin(clock * 3) * 0.04);
         cloud.setScale(n.call > 0 ? 0.6 + (1 - n.call / 0.26) * 1.0 : 1.7);
         wispT += dt;
@@ -351,13 +359,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
 
       /* ---- pteranodons ---- */
       dives.forEach((c, i) => {
-        const body = node(`ptera-body-${i}`), wl = node(`ptera-wing-l-${i}`), wr = node(`ptera-wing-r-${i}`), wz = node(`warn-dive-${i}`);
+        const body = node(`ptera-body-${i}`), wz = node(`warn-dive-${i}`);
         const dv = enc.dives[i];
         const d = s.s - c.s;
         const alive = dv && !dv.hit && d > -70 && d < 26;
         const gone = dv?.ko && d < 40 && d > -70 && dv.hit;
         const show = !!alive || !!gone;
-        for (const n2 of [body, wl, wr]) n2.setVisible(show);
+        body.setVisible(show);
         if (show && dv) {
           const target = dv.target ?? s.lane;
           const k2 = smooth(-40, 0, d);
@@ -367,13 +375,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
           const bp = at(sp, lat, hgt);
           const bf = frameAt(sp);
           const by = yawOf(bf.forward) + Math.PI + (dv.hit ? 0 : 0);
-          body.setPosition(bp[0], bp[1], bp[2]); body.setRotation(0.2 * (1 - k2), yawOf(bf.forward) + Math.PI, bank); body.setScale(1.5);
-          for (const [nd, sgn] of [[wl, -1], [wr, 1]] as const) {
-            const off: V3 = [bf.right[0] * sgn * 0.5 * 1.5, 0, bf.right[2] * sgn * 0.5 * 1.5];
-            nd.setPosition(bp[0] + off[0], bp[1] + 0.1, bp[2] + off[2]);
-            nd.setRotation(0, by + (sgn > 0 ? 0 : Math.PI), bank + flap * sgn);
-            nd.setScale(1.5);
-          }
+          body.setPosition(bp[0], bp[1] + Math.sin(clock * 11 + i) * 0.12, bp[2]); body.setRotation(0.2 * (1 - k2), yawOf(bf.forward) + Math.PI, bank + flap * 0.22); body.setScale([2.6, 2.6 - Math.abs(flap) * 0.25, 2.6]);
           void by;
         }
         const wvis = !!dv && !dv.passed && !dv.hit && dv.target !== null && d > -40 && d < 0;
@@ -388,10 +390,10 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       /* ---- tyrant lizard ---- */
       const trexState = enc.trex;
       if (trexState) {
-        const body = node("rex-body"), head = node("rex-head"), jaw = node("rex-jaw");
+        const body = node("rex-body");
         const tc = trexState.creature;
         const present = s.s > tc.s - 30 && s.s < (tc.until ?? 0) + 14 && !trexState.beaten;
-        for (const n2 of [body, head, jaw]) n2.setVisible(present);
+        body.setVisible(present);
         if (present) {
           const next = trexState.attacks.find((a) => !a.done);
           const targetS = next ? next.s - 2 : s.s + 6;
@@ -407,14 +409,10 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
           const yaw0 = Math.atan2(fwd[0], fwd[2]) + Math.PI * 0.72 - swipe * 0.5;
           const sc = 1.15;
           const rot = (x: number, y: number, z: number, yawAngle: number): V3 => [x * Math.cos(yawAngle) + z * Math.sin(yawAngle), y, -x * Math.sin(yawAngle) + z * Math.cos(yawAngle)];
-          body.setPosition(bp[0], bp[1] + stomp, bp[2]); body.setRotation(0, yaw0, stunned ? 0.08 : 0); body.setScale(sc);
-          const ho = rot(0, 5.5 * sc, 3.1 * sc, yaw0);
-          const hy = yaw0 + lunge * 0.55;
-          const reach = rot(0, 0, lunge * 6.0, yaw0 + Math.PI / 2 * 0.0 + 1.0);
-          const hp2: V3 = [bp[0] + ho[0] + reach[0], bp[1] + ho[1] + stomp - (stunned ? 3.4 : 0) - lunge * 1.1, bp[2] + ho[2] + reach[2]];
-          head.setPosition(hp2[0], hp2[1], hp2[2]); head.setRotation(stunned ? 0.5 : 0, hy, 0); head.setScale(sc);
-          const open = stunned ? 0.1 : 0.25 + lunge * 0.6 + Math.max(0, Math.sin(clock * 3)) * 0.12;
-          jaw.setPosition(hp2[0], hp2[1] - 0.1, hp2[2]); jaw.setRotation(open, hy, 0); jaw.setScale(sc);
+          const reachF = rot(0, 0, lunge * 3.2, yaw0 - Math.PI * 0.72 + Math.PI * 0.72);
+          body.setPosition(bp[0] + reachF[0], bp[1] + stomp - (stunned ? 0.6 : 0), bp[2] + reachF[2]);
+          body.setRotation(stunned ? 0.18 : lunge * 0.28, yaw0 + Math.PI * REX_FACING, stunned ? 0.08 : swipe * 0.18);
+          body.setScale(sc);
         }
         rexAttacks.forEach((a, i) => {
           const wz = node(`warn-rex-${i}`), tstate = trexState.attacks.find((x) => x.s === a.s);

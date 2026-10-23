@@ -63,3 +63,37 @@ Running the port on a real WebGL2 context exposed four defects in the multi-draw
 - Reference: two independent in-browser sessions of the original's simulation under the same closed-loop policy, 6124 steps, bit-identical (tolerance 0). The unit replay matches the trace to 2e-14.
 - Remote browser spec: passes (`evidence/roadster-hours-port/`). One frame's batched vehicles go out as 3 multi-draw calls (several passes) instead of 92 draws.
 - Not done: the original's own rendering loop could not be driven to completion under software GL (2.5 to 5 s per frame), so the reference comes from the original's `sim` module driven directly, plus an in-game cross-check (run `cc1f3`: the real Drive button, the game's own loop under virtual time, 1550 steps) that matches the reference prefix exactly and is recorded as `ingameCrossCheck` in the report.
+
+## Generated models (Meshy art pass, 2026-10-23)
+
+The baked CC0 cars and box rigs were replaced by models generated through Meshy (via Kiro Prism, text prompts only: nothing was derived from the original game's art; prompts and task ids are in `assets/ATTRIBUTION.md`). 15 models, 445 credits (program ledger tag `roadster`, cap 800): each is `text-to-3d` preview + PBR refine (30), then a Meshy `remesh` (5) to a game triangle budget; the hero roadster keeps its full refine (about 37k triangles).
+
+| model | kind | triangles | vertices |
+| --- | --- | --- | --- |
+| roadster | vehicle | 37236 | 33346 |
+| sedan | vehicle | 3554 | 6633 |
+| hatch | vehicle | 3012 | 6517 |
+| suv | vehicle | 3280 | 6796 |
+| pickup | vehicle | 3423 | 7084 |
+| bus | vehicle | 4287 | 8567 |
+| boxtruck | vehicle | 3526 | 8031 |
+| lighthouse | prop | 5956 | 10990 |
+| townhouse | prop | 2610 | 5913 |
+| pine | prop | 3808 | 8672 |
+| villa | prop | 3086 | 6371 |
+| palm | prop | 4083 | 8239 |
+| boulders | prop | 2573 | 5088 |
+| semi | vehicle | 5982 | 12873 |
+| tanker | vehicle | 5735 | 12517 |
+
+Replaced: the player roadster (a teal open-top two-seater, own design), the passenger cars (sedan, hatchback, SUV, pickup), the bus, the box truck, the articulated semi and the tanker (the tractor-only and car-carrier rigs stay boxes), the lighthouse (instead of stacked cylinders), the cliff-top town (villa and townhouse models instead of plaster cubes) and, new, pines, palms and boulders along the road. If a model fails to load (or with `?meshy=0`) the port falls back to the baked CC0 cars and the procedural scenery.
+
+Pipeline (all under `tools/`): `tools/bake-meshy.mjs` reads the prepared GLBs (`artifacts/meshy/rr-<key>*/model.glb`, local only) listed in `tools/meshy-models.json` and writes a binary geometry file and a 1024 px base-colour JPEG per model into `assets/meshy/` plus the generated `meshy.baked.ts` (metadata, texture asset refs with sha256, bin URLs); `meshy.ts` fetches and decodes the bins at boot (`loadMeshy`). Vehicles are stretched into the unit box with the front at -Z (all generated vehicles needed `flip`), props are scaled to height 1 on y = 0. New assets: 3.0 MB geometry + 3.8 MB textures = 6.9 MB.
+
+**Engine finding (reported, not fixed):** `batched.mesh` and `instances.mesh` cannot bind a textured material: the batched/instanced-mesh render path builds its material with `createProductionPrimitiveMaterial` and never runs the post-mount texture upgrade that `geometry.custom` / `instances.custom` nodes get, so the models render white (a probe, `meshy-probe.html` + `tests/browser/roadster-hours-meshy-probe.spec.ts`, rendered one sedan five ways on the remote runner: `geometry.custom` and `instances.custom` textured, `instances.mesh`, batched with a texture and batched with vertex colours white). Textured vehicles therefore are `instances.custom` nodes (one per model, per-frame `setInstances`), and the scenery is static `instances.custom`. Consequence: this port no longer exercises `batched.mesh` multi-draw (only the remaining box rigs stay batched, drawn as one instanced call each), so the browser spec applies its multi-draw bounds only when several batched geometries remain; multi-draw is covered by `tests/unit/rendering/batch-multidraw.test.ts` and the parity instancing tests. The engine also uploads these textures one at a time after mount (no completion signal in the diagnostics), so the page holds its loading screen for a short settle (1.5 s) to avoid an untextured flash.
+
+Measured (software WebGL2, remote): the port spec passes (run `roadster-meshy-8`, replay still exact: 48.325 s, score 26,949), 71 draw calls on route 0 at 640x360 (was 42 with the baked cars; the textured vehicle and scenery nodes add about 29), 0 console errors, `batched` vehicle probe: 68 vehicles, 33 generated instances plus 35 box-rig parts. Frames: `evidence/roadster-hours-port/meshy-before/` (the previous art pass), `meshy-after/`, `meshy-compare/`.
+
+Admission: the optimised GLBs validate (`assets validate` reports no failures for the roadster, a sedan, the bus, the lighthouse, a townhouse and a palm, admitted in an isolated project), but `assets import-meshy --profile vehicle` reports `vehicle-parts: fail` for the vehicles (Meshy bakes the wheels into the body, so there are no separate wheel meshes; nothing here spins wheels) and `vehicle-orientation: unproven`. Provenance JSON for these is under `assets/provenance/`.
+
+Remaining visible differences: cars have no separate wheels or lights (painted into the texture), the generated textures are 1024 px (blurry on the hero car in close-ups), no shadows or motion blur, the tractor-only and car-carrier rigs are still boxes, and the models are a different design from the original's.

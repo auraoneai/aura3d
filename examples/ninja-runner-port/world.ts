@@ -13,27 +13,33 @@ import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
 import { hexLinear, type Rgb } from "./palette";
-import { LAYERS, buildScenery, type LayerSpec, type ShapeId, type SurfaceKey } from "./scenery";
+import { LAYERS, buildScenery, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
 import { unitBox, unitCone, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
 import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintLeaf, paintPlanks, paintPlaster, paintTiles, type Raster } from "./textures";
 import { TUNING, isEnemy, seededRandom, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
+import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
 
-export const RIG_URL = new URL("./assets/ninja-rig.glb", import.meta.url).href;
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
 const MODEL_YAW_OFFSET = 0;
-export const ACTOR_COUNT = 12;
+export const ACTOR_COUNT = 13;
 const HERO = 0;
 const CLONE_SLOTS = [1, 2, 3] as const;
 const ENEMY_SLOTS = [4, 5, 6, 7, 8, 9, 10, 11] as const;
+/** The sage model stands in for the hero in the Sage and Kurama forms (slot 12); heavy enemies use the brute slots. */
+const SAGE = 12;
+const BRUTE_SLOTS = [10, 11] as const;
+const SOLDIER_SLOTS = [4, 5, 6, 7, 8, 9] as const;
+const BONES = { handR: "RightHand", foreR: "RightForeArm", handL: "LeftHand" } as const;
 const PARTICLES = 480;
 const BARRIER_POOL = 8;
 const BEAM_POOL = 8;
 const SHURIKEN_POOL = 3;
 const TOWN_FLOOR_Y = 3.2;
 
+/** Canonical clip names: every character GLB is merged with these names (see tools/crayon-capture/ninja-runner-meshy-merge.mjs). */
 const CLIPS = {
-  run: "Sprint_Loop", jump: "Jump_Loop", idle: "Idle_Loop", slide: "Crouch_Idle_Loop", punch: "Punch_Cross", jab: "Punch_Jab", sword: "Sword_Attack",
-  block: "Sword_Block", hit: "Hit_Chest", death: "Death01"
+  run: "run", jump: "jump", idle: "idle", slide: "slide", punch: "punch", jab: "jab", sword: "sword",
+  block: "block", hit: "hit", death: "death"
 } as const;
 const ENEMY_ATTACK_CLIP: Record<EnemyKind, string> = { scout: CLIPS.jab, swordsman: CLIPS.sword, caster: CLIPS.block, heavy: CLIPS.punch };
 
@@ -135,45 +141,62 @@ export function chakraPickups(entities: readonly Entity[]): ChakraPickup[] {
 interface Tint { readonly base: readonly [number, number, number, number]; readonly emissive?: Rgb; readonly strength?: number }
 const FORM_TINT: Record<string, Tint> = {
   base: { base: [1, 1, 1, 1], emissive: [0.03, 0.02, 0], strength: 0.1 },
-  sage: { base: [1, 0.84, 0.58, 1], emissive: [1, 0.5, 0.12], strength: 0.55 },
-  kurama: { base: [1, 0.9, 0.5, 1], emissive: [1, 0.68, 0.14], strength: 1.5 }
+  sage: { base: [1, 1, 1, 1], emissive: [1, 0.5, 0.12], strength: 0.16 },
+  kurama: { base: [1, 0.86, 0.5, 1], emissive: [1, 0.62, 0.1], strength: 0.4 }
 };
 const ENEMY_TINT: Record<EnemyKind, readonly [number, number, number, number]> = {
-  scout: [1, 0.62, 0.45, 1], swordsman: [0.58, 0.66, 0.86, 1], caster: [0.74, 0.52, 0.96, 1], heavy: [0.48, 0.62, 0.44, 1]
+  scout: [1, 0.8, 0.72, 1], swordsman: [0.8, 0.86, 1, 1], caster: [0.92, 0.8, 1, 1], heavy: [1, 1, 1, 1]
 };
-const CLONE_TINT: Tint = { base: [0.55, 0.8, 1, 1], emissive: [0.2, 0.5, 1], strength: 1.2 };
+const CLONE_TINT: Tint = { base: [0.6, 0.85, 1, 1], emissive: [0.18, 0.45, 1], strength: 0.55 };
 const FLASH_TINT: Tint = { base: [1, 1, 1, 1], emissive: [1, 1, 1], strength: 1.4 };
 
 export interface ActorAssets {
   readonly actors: readonly TypedGLBActor[];
   readonly clip: string;
   readonly clipDuration: number;
-  readonly durations: Readonly<Record<string, number>>;
+  /** Clip durations per actor slot (each character GLB has its own clip set). */
+  readonly slotDurations: readonly Readonly<Record<string, number>>[];
+  readonly slotClips: readonly (readonly string[])[];
   readonly sharedTextureEntries: number;
   readonly sharedTextureRefs: number;
   readonly clips: readonly string[];
   dispose(): void;
 }
 
+/** One `cloneSkinned` call per distinct character model: hero (+ shadow clones), foot soldiers, brutes and the sage. */
 export async function loadActors(canvas: HTMLCanvasElement): Promise<ActorAssets> {
-  const asset = { url: RIG_URL, type: "model" as const, format: "glb" };
-  const batch = await cloneSkinned(asset, ACTOR_COUNT, { width: canvas.width, height: canvas.height, idPrefix: "ninja" });
-  const first = batch.actors[0]!;
+  const slotsOf = (id: CharacterId): number[] => SLOT_MODEL.flatMap((m, slot) => (m === id ? [slot] : []));
+  const order: CharacterId[] = ["hero", "soldier", "brute", "sage"];
+  const actors: TypedGLBActor[] = new Array(ACTOR_COUNT);
+  const batches: Awaited<ReturnType<typeof cloneSkinned>>[] = [];
+  for (const id of order) {
+    const slots = slotsOf(id);
+    const asset = { url: CHARACTER_URLS[id], type: "model" as const, format: "glb" };
+    const batch = await cloneSkinned(asset, slots.length, { width: canvas.width, height: canvas.height, idPrefix: `ninja-${id}` });
+    batches.push(batch);
+    slots.forEach((slot, i) => { actors[slot] = batch.actors[i]!; });
+  }
+  const slotClips = actors.map((a) => a.evidence.clips);
+  const slotDurations = actors.map((a, i) => {
+    const infos = a.animation.resolvedClipInfos();
+    const d: Record<string, number> = {};
+    for (const c of slotClips[i]!) { const info = infos.find((x) => x.name === c); d[c] = info && info.duration > 0 ? info.duration : 1; }
+    return d;
+  });
+  const first = actors[HERO]!;
   const clips = first.evidence.clips;
   const clip = clips.includes(CLIPS.run) ? CLIPS.run : clips[0];
   if (!clip) throw new Error("ninja-runner-port: the character rig exposes no animation clips");
-  const infos = first.animation.resolvedClipInfos();
-  const durations: Record<string, number> = {};
-  for (const c of clips) { const info = infos.find((i) => i.name === c); durations[c] = info && info.duration > 0 ? info.duration : 1; }
   return {
-    actors: batch.actors,
+    actors,
     clip,
-    clipDuration: durations[clip] ?? 1,
-    durations,
-    sharedTextureEntries: batch.sharedTextures.size,
-    sharedTextureRefs: batch.sharedTextures.refCount,
+    clipDuration: slotDurations[HERO]![clip] ?? 1,
+    slotDurations,
+    slotClips,
+    sharedTextureEntries: batches.reduce((n, b) => n + b.sharedTextures.size, 0),
+    sharedTextureRefs: batches.reduce((n, b) => n + b.sharedTextures.refCount, 0),
     clips,
-    dispose: () => batch.dispose()
+    dispose: () => { for (const b of batches) b.dispose(); }
   };
 }
 
@@ -234,12 +257,24 @@ export function buildWorld(options: WorldOptions): World {
     name: "town-floor", material: mapped(ground.cobble, "#a39b8a", 0.95), castShadow: false, receiveShadow: true
   }));
 
-  for (const layer of buildScenery()) {
+  const modelSink: ModelSink = {};
+  for (const layer of buildScenery(modelSink)) {
     const spec = LAYERS.find((l) => l.id === layer.id)!;
     const mesh = instances.mesh(defineShape(SHAPES[layer.shape]()), layerMaterial(spec), layer.placements.length);
     layer.placements.forEach((p, i) => { mesh.setMatrixAt(i, p.matrix); mesh.setColorAt(i, [...hexLinear(p.color), 1]); });
     mesh.computeBoundingSphere();
     builder.add(spec.castShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
+  }
+
+  for (const [id, list] of Object.entries(modelSink)) {
+    if (list.length === 0) continue;
+    const asset = PROP_ASSETS[id as keyof typeof PROP_ASSETS];
+    builder.add(instances.model(asset, {
+      name: `model-${id}`,
+      castShadow: false,
+      transforms: list.map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: p.scale })),
+      ...(list.some((p) => p.tint) ? { colors: list.map((p) => p.tint ?? "#ffffff") } : {})
+    }));
   }
 
   const water = buildWater();
@@ -308,9 +343,13 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
   if (!cameraController) throw new Error("ninja-runner-port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
-  const { actors, durations } = options.actors;
-  const clipLength = (clip: string): number => durations[clip] ?? options.actors.clipDuration;
-  const has = (clip: string): string => (options.actors.clips.includes(clip) ? clip : options.actors.clip);
+  const { actors, slotDurations, slotClips } = options.actors;
+  const clipLength = (clip: string, slot: number = HERO): number => slotDurations[slot]?.[clip] ?? options.actors.clipDuration;
+  const has = (clip: string, slot: number = HERO): string => {
+    const list = slotClips[slot]!;
+    return list.includes(clip) ? clip : list.includes(CLIPS.idle) ? CLIPS.idle : list[0]!;
+  };
+  let activeHero = HERO;
   const loopClock = actors.map((_, i) => i * 0.137);
   const visible = new Array<boolean>(actors.length).fill(false);
   const tints = new Array<string>(actors.length).fill("");
@@ -366,8 +405,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
     node(`blob-${slot}`).setVisible(show);
     if (!show) return;
     const f = groundFrame(entity.s, entity.x, entity.y);
-    const clip = has(anim.clip);
-    const length = clipLength(clip);
+    const clip = has(anim.clip, slot);
+    const length = clipLength(clip, slot);
     let t = anim.t;
     if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
     actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
@@ -445,8 +484,11 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       const heroScale = state.form === "kurama" ? 1.12 : 1;
       const flash = state.invulnerable > 0 && Math.floor(state.time * 14) % 2 === 0;
       const heroTint = flash ? FLASH_TINT : FORM_TINT[state.form]!;
-      setTint(HERO, flash ? "flash" : state.form, heroTint);
-      place(HERO, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, dt, true);
+      const heroSlot = state.form === "base" ? HERO : SAGE;
+      activeHero = heroSlot;
+      setTint(heroSlot, flash ? "flash" : state.form, heroTint);
+      place(heroSlot, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, dt, true);
+      place(heroSlot === HERO ? SAGE : HERO, { s, x: state.x, y: 0 }, 0, 1, anim, dt, false);
 
       /* shadow clones */
       CLONE_SLOTS.forEach((slot, k) => {
@@ -472,7 +514,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       const assigned = new Set(slotEntity.values());
       for (const e of window.slice(0, ENEMY_SLOTS.length)) {
         if (assigned.has(e.id)) continue;
-        const free = ENEMY_SLOTS.find((sl) => !slotEntity.has(sl));
+        const free = (e.type === "heavy" ? BRUTE_SLOTS : SOLDIER_SLOTS).find((sl) => !slotEntity.has(sl));
         if (free !== undefined) { slotEntity.set(free, e.id); assigned.add(e.id); tints[free] = ""; }
       }
       ENEMY_SLOTS.forEach((slot, w) => {
@@ -483,12 +525,12 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
         const dead = !e.alive;
         const pop = dead ? Math.max(0, 1 - (state.time - e.defeatedAt) / 0.45) : 1;
         let ea: Anim;
-        if (dead) ea = { clip: CLIPS.hit, t: Math.min(clipLength(CLIPS.hit), (state.time - e.defeatedAt) * 0.75) };
+        if (dead) ea = { clip: CLIPS.hit, t: Math.min(clipLength(CLIPS.hit, slot), (state.time - e.defeatedAt) * 0.75) };
         else if (e.intent) {
           const i = e.intent;
           const stageP = 1 - i.timer / Math.max(1e-3, i.duration);
           const p = i.stage === "windup" ? stageP * 0.5 : i.stage === "release" ? 0.5 + stageP * 0.25 : 0.75 + stageP * 0.25;
-          ea = { clip: ENEMY_ATTACK_CLIP[kind], t: Math.max(0, Math.min(0.98, p)) * clipLength(ENEMY_ATTACK_CLIP[kind]) };
+          ea = { clip: ENEMY_ATTACK_CLIP[kind], t: Math.max(0, Math.min(0.98, p)) * clipLength(has(ENEMY_ATTACK_CLIP[kind], slot), slot) };
         } else if (e.stagger > 0) ea = { clip: CLIPS.hit, t: 0.1 };
         else ea = e.approachSpeed > 0 ? { clip: CLIPS.run, rate: 1.25 } : { clip: CLIPS.idle, rate: 0.9 };
         setTint(slot, kind, { base: ENEMY_TINT[kind] });
@@ -496,14 +538,14 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
         hideWeapons(w);
         if (pop > 0.5) {
           refresh(slot);
-          const hand = boneWorld(slot, "hand_r"), fore = boneWorld(slot, "lowerarm_r");
+          const hand = boneWorld(slot, BONES.handR), fore = boneWorld(slot, BONES.foreR);
           if (hand && fore) {
             if (kind === "swordsman") aim(`blade-${w}`, fore, hand, 1.15);
             else if (kind === "scout") aim(`blade-${w}`, fore, hand, 0.5, 0.05);
             else if (kind === "heavy") aim(`club-${w}`, fore, hand, 1.2 * 1.3, 0.25);
           }
           if (kind === "caster") {
-            const lh = boneWorld(slot, "hand_l");
+            const lh = boneWorld(slot, BONES.handL);
             if (lh) { const o = node(`orb-${w}`); o.setVisible(true); o.setPosition(lh[0], lh[1] + 0.12, lh[2]); o.setScale(0.8 + 0.5 * (e.intent?.stage === "windup" ? 1 - e.intent.timer / Math.max(1e-3, e.intent.duration) : 0)); o.setUniform?.("ballTime", time + w); o.setUniform?.("ballOpacity", 0.95); }
           }
         }
@@ -534,8 +576,8 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       const sparks = node("rasengan-sparks");
       sparks.setVisible(casting);
       if (casting) {
-        refresh(HERO);
-        const hand = boneWorld(HERO, "hand_r"), fore = boneWorld(HERO, "lowerarm_r");
+        refresh(activeHero);
+        const hand = boneWorld(activeHero, BONES.handR), fore = boneWorld(activeHero, BONES.foreR);
         const fallback = groundFrame(s + 0.7, state.x + 0.25, state.y + 1.15);
         const reach = hand && fore ? normalize([hand[0] - fore[0], hand[1] - fore[1], hand[2] - fore[2]]) : ([0, 0, 0] as Vec3);
         const pos: Vec3 = hand ? [hand[0] + reach[0] * 0.28, hand[1] + reach[1] * 0.28, hand[2] + reach[2] * 0.28] : [fallback.x, fallback.y, fallback.z];
@@ -626,7 +668,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
     resetCamera() { camPos = null; },
     probeBones(joint) {
       const names = actors[0]!.animation.skeletonJointNames();
-      const name = joint && names.includes(joint) ? joint : names.includes("lowerarm_l") ? "lowerarm_l" : names.includes("mixamorig:LeftForeArm") ? "mixamorig:LeftForeArm" : names[0]!;
+      const name = joint && names.includes(joint) ? joint : names.includes("LeftForeArm") ? "LeftForeArm" : names[0]!;
       const clip = options.actors.clip;
       const length = clipLength(clip);
       const translations: [number, number, number][] = actors.map((actor, i) => {

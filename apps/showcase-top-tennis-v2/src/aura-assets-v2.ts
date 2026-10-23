@@ -38,7 +38,7 @@ export const v2assets = {
     url: "/aura-assets/tennis-mascot.glb",
     hash: "sha256-7652e7a29bbc1d4ef6f04ccebfbee82666251946478f0b6a456f3c31ab88442e",
     bounds: [1.1, 1.4, 1.1] as const,
-    role: "supportingCast" as const,
+    role: "setDressing" as const,
     metadata: {
       generator: "meshy",
       taskId: "01a1484c-0a30-7753-bf0b-24688519304d",
@@ -68,7 +68,7 @@ export const v2assets = {
     url: "/aura-assets/tennis-champion-statue.glb",
     hash: "sha256-5dbe9739c1ae557e6d0594ddf0c248d59ab61484df6a8bc01b77a9fcbf276ab7",
     bounds: [1.4, 2.8, 1.4] as const,
-    role: "landmark" as const,
+    role: "setDressing" as const,
     metadata: {
       generator: "meshy",
       taskId: "01a1484c-3f6b-75d9-bd57-508f9c254be9",

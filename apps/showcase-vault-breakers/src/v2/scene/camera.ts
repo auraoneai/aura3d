@@ -10,7 +10,7 @@ import type {
 
 export interface VaultRigState {
   /** Live ball world position, or null when no ball is in play. */
-  readonly ball: AuraVec3 | null;
+  ball: AuraVec3 | null;
 }
 
 const POSITION: AuraVec3 = [0, 5.15, 7.35];
@@ -20,7 +20,7 @@ const UP: AuraVec3 = [0, 1, 0];
 const TRACK_RADIUS = 0.4;
 
 export function createVaultRig(state: VaultRigState): AuraCameraRig {
-  const tracked: AuraVec3 = [...BASE_TARGET];
+  const tracked: [number, number, number] = [...BASE_TARGET];
   return {
     id: "vault-breakers.static-table",
     reset: () => { tracked[0] = BASE_TARGET[0]; tracked[1] = BASE_TARGET[1]; tracked[2] = BASE_TARGET[2]; },

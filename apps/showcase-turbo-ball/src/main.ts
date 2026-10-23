@@ -987,8 +987,7 @@ function buildPitchAndGoalsNodes(): AuraNodeInput[] {
     primitives
       .torus({
         name: "ball-ground-indicator",
-        radius: BALL_RADIUS * 0.92,
-        tube: 0.07,
+        size: (BALL_RADIUS * 0.92) / 0.43,
         material: blueNeonMat
       })
       .position(0, 0.025, 0)

@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d4-97e4-702e-88c3-2da19833c837",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776902650,
+  "started_at": 1792776902656,
+  "finished_at": 1792776951179,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d4-97e4-702e-88c3-2da19833c837/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d4-97e4-702e-88c3-2da19833c837/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d4-97e4-702e-88c3-2da19833c837/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d4-97e4-702e-88c3-2da19833c837/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d4-97e4-702e-88c3-2da19833c837/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d4-97e4-702e-88c3-2da19833c837/output/preview.png",
+  "prompt": "a low wide stone barrier block with two glowing jade crystal posts on its ends and carved serpent patterns on the base, fantasy road obstacle, game prop, painterly PBR",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2502560025,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/sw-barrier/model.glb",
+  "artifacts/meshy/sw-barrier/thumbnail.png",
+  "artifacts/meshy/sw-barrier/texture_0_base_color.png",
+  "artifacts/meshy/sw-barrier/texture_0_metallic.png",
+  "artifacts/meshy/sw-barrier/texture_0_normal.png",
+  "artifacts/meshy/sw-barrier/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:36:10.933Z"
+}

@@ -52,19 +52,19 @@ export function wireVaultFx(game: Game): {
 
   return {
     onBumper([x, z]) {
-      game.fx.burst("sparks", [x, 0.45, z], { count: 18, speed: 1.4, color: "#ffb054" });
+      game.fx.burst("spark", [x, 0.45, z], { count: 18, speed: 1.4, color: "#ffb054" });
       triggerImpact(x, z, "amber", 0.3);
       game.app.camera?.shake.add(0.08);
     },
     onSling([x, z]) {
-      game.fx.burst("sparks", [x, 0.4, z], { count: 10, speed: 1.0, color: "#55f4ff" });
+      game.fx.burst("spark", [x, 0.4, z], { count: 10, speed: 1.0, color: "#55f4ff" });
       triggerImpact(x, z, "cyan", 0.24);
     },
     onTarget(id) {
       const [bank] = id.split(":");
       const slot = Number(id.match(/:t(\d+)$/)?.[1] ?? 1);
       const [x, z] = TARGET_BANK_POSITIONS[bank ?? ""]?.[Math.max(0, Math.min(2, slot))] ?? [0, -2.5];
-      game.fx.burst("sparks", [x, 0.4, z], { count: 8, speed: 0.8, color: "#36f1ff" });
+      game.fx.burst("spark", [x, 0.4, z], { count: 8, speed: 0.8, color: "#36f1ff" });
       triggerImpact(x, z, "cyan", 0.18);
     },
     onDrain() {

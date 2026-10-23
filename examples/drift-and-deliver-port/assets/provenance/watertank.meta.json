@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169e7-27e0-73c4-b20b-19816b451f34",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792778119157,
+  "started_at": 1792778119164,
+  "finished_at": 1792778216913,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169e7-27e0-73c4-b20b-19816b451f34/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169e7-27e0-73c4-b20b-19816b451f34/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169e7-27e0-73c4-b20b-19816b451f34/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169e7-27e0-73c4-b20b-19816b451f34/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169e7-27e0-73c4-b20b-19816b451f34/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/867c2acc-2528-4a5b-a802-0f2640452ef6/tasks/01a169e7-27e0-73c4-b20b-19816b451f34/output/preview.png",
+  "prompt": "a rooftop wooden water tank on a steel stilt frame with a conical lid, weathered brown planks and rust-red metal bands, single rooftop prop, centered, no ground, PBR materials",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 845895335,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/drift-watertank/model.glb",
+  "artifacts/meshy/drift-watertank/thumbnail.png",
+  "artifacts/meshy/drift-watertank/texture_0_base_color.png",
+  "artifacts/meshy/drift-watertank/texture_0_metallic.png",
+  "artifacts/meshy/drift-watertank/texture_0_normal.png",
+  "artifacts/meshy/drift-watertank/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:57:11.748Z"
+}

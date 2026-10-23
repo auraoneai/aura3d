@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d6-d72f-77d4-82ad-22104349745f",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792777049926,
+  "started_at": 1792777049935,
+  "finished_at": 1792777086771,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d6-d72f-77d4-82ad-22104349745f/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d6-d72f-77d4-82ad-22104349745f/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d6-d72f-77d4-82ad-22104349745f/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d6-d72f-77d4-82ad-22104349745f/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d6-d72f-77d4-82ad-22104349745f/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a169d6-d72f-77d4-82ad-22104349745f/output/preview.png",
+  "prompt": "a glossy candy-like faceted star gem pickup with swirling rainbow pastel colours sitting on a small gold ring base, chunky toy style, smooth glossy surfaces, game pickup",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 132337256,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/splat-gem-rainbow/model.glb",
+  "artifacts/meshy/splat-gem-rainbow/thumbnail.png",
+  "artifacts/meshy/splat-gem-rainbow/texture_0_base_color.png",
+  "artifacts/meshy/splat-gem-rainbow/texture_0_metallic.png",
+  "artifacts/meshy/splat-gem-rainbow/texture_0_normal.png",
+  "artifacts/meshy/splat-gem-rainbow/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:38:20.331Z"
+}

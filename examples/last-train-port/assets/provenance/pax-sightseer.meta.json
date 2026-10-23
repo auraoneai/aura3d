@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a169d0-3181-76a3-85d4-14d841e1f891",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792776614295,
+  "started_at": 1792776614300,
+  "finished_at": 1792776674599,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-3181-76a3-85d4-14d841e1f891/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-3181-76a3-85d4-14d841e1f891/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-3181-76a3-85d4-14d841e1f891/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-3181-76a3-85d4-14d841e1f891/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-3181-76a3-85d4-14d841e1f891/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a169d0-3181-76a3-85d4-14d841e1f891/output/preview.png",
+  "prompt": "a cheerful young tourist in a teal coat with a satchel and a small camera around the neck, sitting pose leaning slightly forward with knees bent, no chair, full body, stylised hand-painted game asset, warm painted PBR textures, clean silhouette",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 4039865218,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/last-train/pax-sightseer/model.glb",
+  "artifacts/meshy/last-train/pax-sightseer/thumbnail.png",
+  "artifacts/meshy/last-train/pax-sightseer/texture_0_base_color.png",
+  "artifacts/meshy/last-train/pax-sightseer/texture_0_metallic.png",
+  "artifacts/meshy/last-train/pax-sightseer/texture_0_normal.png",
+  "artifacts/meshy/last-train/pax-sightseer/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T17:31:20.838Z"
+}

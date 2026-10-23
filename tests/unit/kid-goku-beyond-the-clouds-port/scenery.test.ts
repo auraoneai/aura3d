@@ -32,8 +32,20 @@ describe("cloud runner: procedural scenery", () => {
   it("stays inside a sane triangle budget", () => {
     const g = buildGround(CH);
     const sc = buildScatter(CH);
-    const total = tris(g.road) + tris(g.grass) + tris(g.slope) + tris(sc.trees) + tris(sc.bushes) + tris(sc.rocks) + tris(sc.flowers) + tris(buildValleyForest(CH)) + tris(buildMesas(CH)) + tris(buildClouds(CH)) + tris(buildObstacles(CH));
+    const total = tris(g.road) + tris(g.grass) + tris(g.slope) + tris(sc.trees) + tris(sc.bushes) + tris(sc.rocks) + tris(sc.flowers) + tris(buildValleyForest(CH)) + tris(buildMesas(CH).meshes) + tris(buildClouds(CH)) + tris(buildObstacles(CH));
     expect(total).toBeGreaterThan(100_000);
     expect(total).toBeLessThan(1_800_000);
+  });
+  it("places a bounded, deterministic, finite set of instanced hero trees, rocks and mesas", () => {
+    const a = buildScatter(CH), b = buildScatter(CH), m = buildMesas(CH), m2 = buildMesas(CH);
+    expect(a.roundTrees.length + a.pineTrees.length).toBeLessThanOrEqual(150);
+    expect(a.roundTrees.length + a.pineTrees.length).toBeGreaterThan(40);
+    expect(a.boulders.length).toBeLessThanOrEqual(90);
+    expect(m.placements.length).toBeLessThanOrEqual(46);
+    expect(m.placements.length).toBeGreaterThan(5);
+    expect(a.roundTrees).toEqual(b.roundTrees);
+    expect(m.placements).toEqual(m2.placements);
+    for (const p of [...a.roundTrees, ...a.pineTrees, ...a.boulders]) { expect(finite([...p.pos, p.scale, p.yaw])).toBe(true); expect(p.scale).toBeGreaterThan(0); }
+    for (const p of m.placements) expect(finite([...p.pos, p.height, p.width, p.yaw])).toBe(true);
   });
 });
