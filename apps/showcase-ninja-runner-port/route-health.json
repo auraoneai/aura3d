@@ -1,0 +1,53 @@
+{
+  "appId": "showcase-ninja-runner-port",
+  "route": "/apps/showcase-ninja-runner-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": true,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SG-03",
+    "SG-05",
+    "SH-02",
+    "SH-01",
+    "SA-04",
+    "ST-02",
+    "R-23",
+    "R-26"
+  ],
+  "sourceExample": "examples/ninja-runner-port/",
+  "evidence": "12,759-step run, 102 kills, score 39,735 and 513 events reproduced with trace delta 0; 12 clones with independent bone transforms.",
+  "limits": [
+    "A single soldier model tinted per form, procedural environment, no audio.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/ninja-runner-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

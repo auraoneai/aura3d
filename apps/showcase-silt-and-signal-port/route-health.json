@@ -1,0 +1,49 @@
+{
+  "appId": "showcase-silt-and-signal-port",
+  "route": "/apps/showcase-silt-and-signal-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": false,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SH-02",
+    "SH-01",
+    "SG-05",
+    "ST-01"
+  ],
+  "sourceExample": "examples/silt-and-signal-port/",
+  "evidence": "Three rides, two sessions each plus an in-page replay, 13 state columns per step, worst delta 0 in the browser.",
+  "limits": [
+    "Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/silt-and-signal-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

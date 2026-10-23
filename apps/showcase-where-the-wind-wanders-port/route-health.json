@@ -1,0 +1,51 @@
+{
+  "appId": "showcase-where-the-wind-wanders-port",
+  "route": "/apps/showcase-where-the-wind-wanders-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": false,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SH-02",
+    "SG-03",
+    "SG-05",
+    "SM-02",
+    "ST-01",
+    "SR-02"
+  ],
+  "sourceExample": "examples/where-the-wind-wanders-port/",
+  "evidence": "Worst trajectory delta 7.0e-10 units over all 2,098 steps in Node and in the live page.",
+  "limits": [
+    "Meadow only: no boat voyage, island, journal or audio; procedural art.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/where-the-wind-wanders-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

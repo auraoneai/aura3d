@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Free-ride flying over a silt world; three recorded rides reproduce the original's simulation state to 1e-9. Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes. Independent Aura3D reconstruction; not affiliated with the original." />
+    <meta name="theme-color" content="#0b1020" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/" />
+    <meta property="og:title" content="Silt &amp; Signal — Aura3D port of the mechanics" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Silt &amp; Signal — Aura3D port of the mechanics" />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <title>Silt &amp; Signal — Aura3D port of the mechanics</title>
+    <style>
+      :root { color-scheme: dark; --ink: #f4efe6; --muted: #bdb6a8; --panel: rgba(20, 22, 28, 0.72); --line: rgba(244, 239, 230, 0.16); --warm: #e8b07a; --jade: #8fd9c6; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #14161c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .hidden { display: none !important; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; backdrop-filter: blur(6px); }
+      .meta { font-size: 12px; color: var(--muted); }
+      .num { font-variant-numeric: tabular-nums; }
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      #objective-card { position: absolute; top: 12px; left: 12px; max-width: 360px; }
+      #chapter { font-size: 12px; color: var(--warm); letter-spacing: 0.04em; text-transform: uppercase; }
+      #objective { font-size: 16px; font-weight: 500; margin: 2px 0 4px; }
+      #flight { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 4px; min-width: 200px; }
+      #flight .row { display: flex; justify-content: space-between; gap: 16px; }
+      .meter { height: 6px; border-radius: 3px; background: rgba(244, 239, 230, 0.16); overflow: hidden; margin: 4px 0; }
+      .meter > i { display: block; height: 100%; width: 100%; background: var(--jade); }
+      #keys { position: absolute; right: 12px; bottom: 12px; text-align: right; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #14161c; z-index: 5; }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <section id="loading"><div class="panel"><h2 style="margin:0">Silt &amp; Signal</h2><p id="loading-status" class="meta">Raising the world</p></div></section>
+    <div id="hud">
+      <div id="objective-card" class="panel">
+        <div id="chapter"></div>
+        <div id="objective"></div>
+        <div class="meta"><span id="distance" class="num"></span> · <span id="steps" class="num"></span> <span id="hold" class="num"></span></div>
+      </div>
+      <div id="flight" class="panel">
+        <div class="row"><span class="meta">Speed</span><span id="speed" class="num">0</span></div>
+        <div class="row"><span class="meta">Altitude</span><span id="altitude" class="num">0</span></div>
+        <div class="meter"><i id="energy"></i></div>
+        <div class="row"><span class="meta">Mode</span><span id="mode">Cruise</span></div>
+      </div>
+      <div id="keys" class="panel meta">W/S throttle · A/D steer · E/Q rise/fall · Shift boost · B brake · F interact · P autopilot</div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+      <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes.</aside>
+  </body>
+</html>

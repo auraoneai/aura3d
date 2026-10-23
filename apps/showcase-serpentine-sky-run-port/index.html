@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky. Independent Aura3D reconstruction; not affiliated with the original." />
+    <meta name="theme-color" content="#0b1020" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/" />
+    <meta property="og:title" content="Serpentine Sky Run — Aura3D port of the mechanics" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Serpentine Sky Run — Aura3D port of the mechanics" />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <title>Serpentine Sky Run — Aura3D port of the mechanics</title>
+    <style>
+      :root { color-scheme: dark; --ink: #fbf4ec; --muted: #d9cfe6; --panel: rgba(34, 26, 52, 0.66); --line: rgba(251, 244, 236, 0.2); --warm: #ff7a52; --ki: #5fd0ff; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #a8b4e8; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .hidden { display: none !important; }
+      .num { font-variant-numeric: tabular-nums; }
+      .meta { font-size: 12px; color: var(--muted); }
+      button { font: 500 13px/1 "Graphik Web", sans-serif; color: #1d1530; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); }
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      #hud .top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 12px; }
+      #hud .label { font-size: 12px; color: var(--muted); }
+      #hud .value { font-size: 20px; font-weight: 500; line-height: 1.2; }
+      #hud .bottom { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 6px; width: 260px; }
+      .meter { height: 6px; border-radius: 3px; background: rgba(251, 244, 236, 0.2); overflow: hidden; }
+      .meter > i { display: block; height: 100%; width: 0; }
+      #ki-bar { background: var(--ki); }
+      #strain-bar { background: var(--warm); }
+      #banner { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); font-size: 22px; font-weight: 500; text-align: center; text-shadow: 0 2px 12px rgba(30, 20, 60, 0.6); }
+      #sub { position: absolute; left: 50%; top: 116px; transform: translateX(-50%); font-size: 13px; color: var(--muted); }
+      #toast { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); font-size: 14px; text-shadow: 0 1px 8px rgba(30, 20, 60, 0.7); }
+      #phase { position: absolute; right: 12px; top: 84px; font-size: 12px; color: var(--muted); }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(34, 26, 52, 0.55); }
+      .overlay .panel { width: min(440px, 90vw); display: grid; gap: 10px; padding: 16px; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #a8b4e8; color: #2a2145; z-index: 5; }
+      h1, h2 { margin: 0; line-height: 1.15; }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <section id="loading"><div class="panel"><h2>Snake Way</h2><p id="loading-status" class="meta">Laying the road</p></div></section>
+    <section id="title" class="overlay">
+      <div class="panel">
+        <h1>SNAKE WAY</h1>
+        <p class="meta">One million kilometres of dead serpent, above Hell. A port of the Crayon game on the Aura3D engine.</p>
+        <p class="meta">A / D lane &middot; Space jump &middot; S slide &middot; Shift Boost &middot; E fly &middot; P pause</p>
+        <button id="start" type="button">Start the run</button>
+      </div>
+    </section>
+    <section id="paused" class="overlay hidden"><div class="panel"><h2>Paused</h2><p class="meta">P or Esc to resume</p></div></section>
+    <div id="hud">
+      <div class="top">
+        <div class="panel"><div class="label">OUTBOUND KM</div><div class="value num" id="km">0</div></div>
+        <div class="panel"><div class="label">DAYS LEFT</div><div class="value num" id="days">365</div></div>
+        <div class="panel"><div class="label">BOOST</div><div class="value num" id="mult">×1</div></div>
+        <div class="panel"><div class="label">SCORE</div><div class="value num" id="score">0</div></div>
+      </div>
+      <div id="phase"></div>
+      <div id="banner"></div>
+      <div id="sub"></div>
+      <div id="toast"></div>
+      <div class="bottom">
+        <div><div class="label">KI</div><div class="meter"><i id="ki-bar"></i></div></div>
+        <div><div class="label">STRAIN</div><div class="meter"><i id="strain-bar"></i></div></div>
+      </div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+      <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky.</aside>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "@aura3d/showcase-roadster-hours-port",
+  "version": "4.0.7",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D port of the mechanics of Roadster Hours: Box vehicles, flat sky, no post-processing or audio.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  }
+}

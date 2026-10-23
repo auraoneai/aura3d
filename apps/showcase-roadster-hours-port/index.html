@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Box vehicles, flat sky, no post-processing or audio. Independent Aura3D reconstruction; not affiliated with the original." />
+    <meta name="theme-color" content="#0b1020" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
+    <meta property="og:title" content="Roadster Hours — Aura3D port of the mechanics" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Roadster Hours — Aura3D port of the mechanics" />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+  <title>Roadster Hours — Aura3D port of the mechanics</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #0b0b0d; overflow: hidden; font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace; color: rgba(255,255,255,.88); }
+    canvas#world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
+    .hidden { display: none !important; }
+    #hud { position: fixed; inset: 0; pointer-events: none; }
+    #hud .tl { position: absolute; left: 16px; top: 14px; }
+    #hud .tr { position: absolute; right: 16px; top: 14px; text-align: right; }
+    #hud .bl { position: absolute; left: 16px; bottom: 14px; width: 220px; }
+    #speed { font-size: 34px; font-weight: 500; }
+    #toast { position: absolute; left: 0; right: 0; top: 38%; text-align: center; font-size: 28px; font-weight: 500; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+    .bar { height: 6px; background: rgba(255,255,255,.14); margin-top: 6px; border-radius: 3px; overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; background: #6fe4e6; }
+    #heat-fill { background: #ff6b3b; }
+    .panel { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(5,6,8,.55); }
+    .panel > div { background: rgba(14,16,20,.92); padding: 22px 28px; border-radius: 10px; min-width: 260px; text-align: center; }
+    button { font: inherit; padding: 8px 18px; border-radius: 6px; border: 0; background: #e31937; color: #fff; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0b0d; }
+  </style>
+</head>
+<body>
+  <canvas id="world" tabindex="0" aria-label="Roadster Hours 3D driving world"></canvas>
+  <div id="hud" class="hidden">
+    <div class="tl"><div id="timer">0:00.00</div><div id="gate"></div><div id="act"></div></div>
+    <div class="tr"><div id="score">0</div><div><span id="speed">0</span> km/h</div><div id="phase"></div></div>
+    <div id="toast"></div>
+    <div class="bl"><div>Thrust</div><div class="bar"><i id="thrust-fill"></i></div><div>Heat</div><div class="bar"><i id="heat-fill"></i></div></div>
+  </div>
+  <div id="menu" class="panel"><div><h2>Roadster Hours</h2><p id="level-name"></p><p>W drive · S brake · A/D steer · Space thrust · Shift nitro · Q/E roll · R recover</p><button id="start" disabled>Drive</button></div></div>
+  <div id="results" class="panel hidden"><div><h2 id="result-medal"></h2><p id="result-time"></p><p id="result-score"></p><p id="result-cells"></p><button id="again">Run it again</button></div></div>
+  <div id="loading"><div><b>Roadster Hours</b><br><small id="loading-status">Preparing the road ahead</small></div></div>
+  <script type="module" src="./src/main.ts"></script>
+    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Box vehicles, flat sky, no post-processing or audio.</aside>
+  </body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the original within 1e-6. Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only, no AI or audio. Independent Aura3D reconstruction; not affiliated with the original." />
+    <meta name="theme-color" content="#0b1020" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-heatsink-port/" />
+    <meta property="og:title" content="HEATSINK — Aura3D port of the mechanics" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-heatsink-port/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HEATSINK — Aura3D port of the mechanics" />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <title>HEATSINK — Aura3D port of the mechanics</title>
+    <style>
+      :root { color-scheme: dark; --ink: #e8f0ff; --muted: #8b97b3; --panel: rgba(8, 12, 22, 0.72); --line: rgba(160, 190, 255, 0.18); --cyan: #40e0ff; --hot: #ff8a3a; --lav: #c9a0ff; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #02040a; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      .hidden { display: none !important; }
+      .num { font-variant-numeric: tabular-nums; }
+      .meta { font-size: 12px; color: var(--muted); }
+      h1, h2 { margin: 0; line-height: 1.15; }
+      h1 { font-size: 24px; font-weight: 600; }
+      h2 { font-size: 16px; font-weight: 500; }
+      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(160, 190, 255, 0.1); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
+      button.primary { background: var(--cyan); color: #04101a; border-color: transparent; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; backdrop-filter: blur(6px); }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(2, 4, 10, 0.55); }
+      .overlay .panel { width: min(420px, 90vw); display: grid; gap: 10px; }
+      #hud { position: fixed; inset: 0; pointer-events: none; }
+      #hud .top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 12px; }
+      #hud .block { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-width: 110px; }
+      #hud .value { font-size: 20px; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
+      #hud .bottom { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 4px; width: 260px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+      .meter { display: grid; grid-template-columns: 74px 1fr 38px; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+      .bar { height: 6px; border-radius: 3px; background: rgba(160, 190, 255, 0.16); overflow: hidden; }
+      .bar > i { display: block; height: 100%; width: 0; }
+      #h-ab { background: var(--cyan); } #h-heat { background: var(--hot); } #h-shield { background: #6dffb0; } #h-gun { background: var(--lav); }
+      #speedo { position: absolute; right: 12px; bottom: 12px; text-align: right; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; }
+      #speedo .value { font-size: 28px; font-weight: 500; }
+      #count { position: fixed; inset: 0; display: grid; place-items: center; font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); pointer-events: none; }
+      #notice { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #02040a; z-index: 5; }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <section id="loading"><div class="panel"><h2>HEATSINK</h2><p id="loading-status" class="meta">Spinning up the grid</p></div></section>
+    <section id="menu" class="overlay hidden">
+      <div class="panel">
+        <h1>HEATSINK</h1>
+        <p class="meta">Time Trial, Vesper Heights, 3 laps. W/Up throttle, S/Down brake, A/D steer, Shift afterburner, Space overdrive, E drift, Esc pause.</p>
+        <button id="start" class="primary" disabled>Start</button>
+      </div>
+    </section>
+    <section id="results" class="overlay hidden"><div class="panel"><h2 id="results-title">Finished</h2><p id="results-body" class="meta num"></p><button id="again" class="primary">Race again</button></div></section>
+    <div id="hud">
+      <div class="top">
+        <div class="block"><div class="meta">POSITION</div><div class="value"><span id="h-pos">1</span>/<span id="h-posof">1</span></div></div>
+        <div class="block"><div class="meta">LAP</div><div class="value" id="h-lap">LAP 1/3</div></div>
+        <div class="block"><div class="meta">TIME</div><div class="value" id="h-time">00:00.000</div></div>
+        <div class="block"><div class="meta">BEST LAP</div><div class="value" id="h-best">--:--.---</div></div>
+        <div class="block"><div class="meta">TAKEDOWNS</div><div class="value" id="h-td">0</div></div>
+      </div>
+      <div id="notice" class="meta"></div>
+      <div class="bottom">
+        <div class="meter"><span>AFTERBURNER</span><div class="bar"><i id="h-ab"></i></div><span id="h-ab-p" class="num">100%</span></div>
+        <div class="meter"><span id="h-heat-label">HEAT</span><div class="bar"><i id="h-heat"></i></div><span id="h-heat-p" class="num">0%</span></div>
+        <div class="meter"><span>SHIELD</span><div class="bar"><i id="h-shield"></i></div><span id="h-shield-p" class="num">100%</span></div>
+        <div class="meter"><span>GUN</span><div class="bar"><i id="h-gun"></i></div><span id="h-gun-p" class="num">0%</span></div>
+      </div>
+      <div id="speedo"><div class="meta">KM/H</div><div class="value" id="h-speed">0</div></div>
+    </div>
+    <div id="count" class="hidden"></div>
+    <script type="module" src="./src/main.ts"></script>
+      <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only, no AI or audio.</aside>
+  </body>
+</html>

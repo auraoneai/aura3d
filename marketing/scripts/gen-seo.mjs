@@ -122,6 +122,17 @@ const MANIFEST = {
   "/apps/showcase-slingshot-siege/": { source: "apps/showcase-slingshot-siege/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-dot-dash-3d/": { source: "apps/showcase-dot-dash-3d/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-cross-hop/": { source: "apps/showcase-cross-hop/index.html", freq: "weekly", priority: "0.70" },
+  "/apps/showcase-strange-orbit-port/": { source: "apps/showcase-strange-orbit-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-splat-rush-port/": { source: "apps/showcase-splat-rush-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-serpentine-sky-run-port/": { source: "apps/showcase-serpentine-sky-run-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-drift-and-deliver-port/": { source: "apps/showcase-drift-and-deliver-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-heatsink-port/": { source: "apps/showcase-heatsink-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-ninja-runner-port/": { source: "apps/showcase-ninja-runner-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-last-train-port/": { source: "apps/showcase-last-train-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-roadster-hours-port/": { source: "apps/showcase-roadster-hours-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-where-the-wind-wanders-port/": { source: "apps/showcase-where-the-wind-wanders-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-silt-and-signal-port/": { source: "apps/showcase-silt-and-signal-port/index.html", freq: "weekly", priority: "0.60" },
+  "/apps/showcase-cloud-runner-port/": { source: "apps/showcase-cloud-runner-port/index.html", freq: "weekly", priority: "0.60" },
 };
 
 // Docs pages that exist as files but are not sitemap entries:

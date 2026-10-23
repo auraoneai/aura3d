@@ -1,0 +1,46 @@
+{
+  "appId": "showcase-cloud-runner-port",
+  "route": "/apps/showcase-cloud-runner-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": true,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SG-05"
+  ],
+  "sourceExample": "examples/kid-goku-beyond-the-clouds-port/",
+  "evidence": "Worst deltas 0, 0, 9e-13 and 2e-13 over 160 trace points, in Node and in a real browser.",
+  "limits": [
+    "Chapter-one run only: no creatures, boulders, finale or audio; procedural art.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/kid-goku-beyond-the-clouds-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "appId": "showcase-strange-orbit-port",
+  "route": "/apps/showcase-strange-orbit-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": false,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SG-03",
+    "SG-05",
+    "SH-02",
+    "R-23"
+  ],
+  "sourceExample": "examples/strange-orbit-port/",
+  "evidence": "Original finish 283.683 s, 7 laps, 35 checkpoints reproduced exactly in Node and in the live page.",
+  "limits": [
+    "Simulation parity verified against the original's recorded seven-lap run; procedural art, no career, garage or audio.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/strange-orbit-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

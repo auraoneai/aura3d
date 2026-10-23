@@ -67,7 +67,18 @@ const showcaseRoutes = [
   "showcase-bunker-zero",
   "showcase-slingshot-siege",
   "showcase-dot-dash-3d",
-  "showcase-cross-hop"
+  "showcase-cross-hop",
+  "showcase-strange-orbit-port",
+  "showcase-splat-rush-port",
+  "showcase-serpentine-sky-run-port",
+  "showcase-drift-and-deliver-port",
+  "showcase-heatsink-port",
+  "showcase-ninja-runner-port",
+  "showcase-last-train-port",
+  "showcase-roadster-hours-port",
+  "showcase-where-the-wind-wanders-port",
+  "showcase-silt-and-signal-port",
+  "showcase-cloud-runner-port"
 ];
 
 const retiredPrototypeRoutes = [

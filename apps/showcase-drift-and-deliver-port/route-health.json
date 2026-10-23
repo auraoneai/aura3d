@@ -1,0 +1,50 @@
+{
+  "appId": "showcase-drift-and-deliver-port",
+  "route": "/apps/showcase-drift-and-deliver-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": false,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SG-01",
+    "SG-10",
+    "SH-03",
+    "ST-01",
+    "R-23"
+  ],
+  "sourceExample": "examples/drift-and-deliver-port/",
+  "evidence": "Four scenario hashes reproduced exactly in a remote browser; counts match the original (225 blocks, 174 pickups, 84 cars).",
+  "limits": [
+    "Headlight beam cone does not draw yet; collision response untested; no audio, story or shadows.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/drift-and-deliver-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

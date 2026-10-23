@@ -1,0 +1,51 @@
+{
+  "appId": "showcase-serpentine-sky-run-port",
+  "route": "/apps/showcase-serpentine-sky-run-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": true,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SH-02",
+    "SG-05",
+    "SG-06",
+    "SG-07",
+    "SC-01",
+    "SR-02"
+  ],
+  "sourceExample": "examples/saiyan-snake-way-port/",
+  "evidence": "183 recorded snapshots match within 1e-6 over a 5,433-step run.",
+  "limits": [
+    "Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/saiyan-snake-way-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

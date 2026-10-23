@@ -1,0 +1,50 @@
+{
+  "appId": "showcase-roadster-hours-port",
+  "route": "/apps/showcase-roadster-hours-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": false,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SG-01",
+    "SG-02",
+    "SH-02",
+    "SG-03",
+    "SG-05"
+  ],
+  "sourceExample": "examples/roadster-hours-port/",
+  "evidence": "6,124-step run replays with delta 2e-14; the batched mesh issues 3 multi-draw calls instead of 92 draws.",
+  "limits": [
+    "Box vehicles, flat sky, no post-processing or audio.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/roadster-hours-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

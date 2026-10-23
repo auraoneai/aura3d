@@ -1,0 +1,50 @@
+{
+  "appId": "showcase-heatsink-port",
+  "route": "/apps/showcase-heatsink-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": false,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SG-03",
+    "SG-05",
+    "SH-02",
+    "R-23",
+    "R-24"
+  ],
+  "sourceExample": "examples/heatsink-port/",
+  "evidence": "202 recorded snapshots replay within 1e-6; the blind A/B 'same game' exit is NOT met.",
+  "limits": [
+    "Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only, no AI or audio.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/heatsink-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

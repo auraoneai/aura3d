@@ -1,0 +1,50 @@
+{
+  "appId": "showcase-last-train-port",
+  "route": "/apps/showcase-last-train-port/",
+  "classification": "prototype",
+  "publicShowcase": true,
+  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "ok": true,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "displayNamesNeutralized": false,
+  "kind": "simulation-port",
+  "renderer": "webgl2 (createAuraApp)",
+  "parityIds": [
+    "SH-02",
+    "SH-01",
+    "SG-05",
+    "R-23",
+    "SR-02"
+  ],
+  "sourceExample": "examples/last-train-port/",
+  "evidence": "Loop steps within 0.1% of the original, score 4,039 on every loop, 0% GPU memory drift across three loops.",
+  "limits": [
+    "No garage wear, requests or Gold grade; procedural models; night is a sky blend plus surface tints.",
+    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    {
+      "name": "index.html exists",
+      "ok": true
+    },
+    {
+      "name": "module script present",
+      "ok": true
+    },
+    {
+      "name": "has a canvas mount",
+      "ok": true
+    },
+    {
+      "name": "mounts examples port without code duplication",
+      "ok": true,
+      "detail": "examples/last-train-port/main"
+    },
+    {
+      "name": "port note present",
+      "ok": true
+    }
+  ]
+}

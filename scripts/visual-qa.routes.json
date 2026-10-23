@@ -182,6 +182,61 @@
       "name": "showcase-cross-hop",
       "path": "/apps/showcase-cross-hop/",
       "noScroll": true
+    },
+    {
+      "name": "showcase-strange-orbit-port",
+      "path": "/apps/showcase-strange-orbit-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-splat-rush-port",
+      "path": "/apps/showcase-splat-rush-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-serpentine-sky-run-port",
+      "path": "/apps/showcase-serpentine-sky-run-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-drift-and-deliver-port",
+      "path": "/apps/showcase-drift-and-deliver-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-heatsink-port",
+      "path": "/apps/showcase-heatsink-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-ninja-runner-port",
+      "path": "/apps/showcase-ninja-runner-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-last-train-port",
+      "path": "/apps/showcase-last-train-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-roadster-hours-port",
+      "path": "/apps/showcase-roadster-hours-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-where-the-wind-wanders-port",
+      "path": "/apps/showcase-where-the-wind-wanders-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-silt-and-signal-port",
+      "path": "/apps/showcase-silt-and-signal-port/",
+      "noScroll": true
+    },
+    {
+      "name": "showcase-cloud-runner-port",
+      "path": "/apps/showcase-cloud-runner-port/",
+      "noScroll": true
     }
   ]
 }

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Obstacle runner on a cloud: the first chapter's run model replays the original's recorded run to 1e-12. Chapter-one run only: no creatures, boulders, finale or audio; procedural art. Independent Aura3D reconstruction; not affiliated with the original." />
+    <meta name="theme-color" content="#0b1020" />
+    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-cloud-runner-port/" />
+    <meta property="og:title" content="Cloud Runner — Aura3D port of the mechanics" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-cloud-runner-port/" />
+    <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Cloud Runner — Aura3D port of the mechanics" />
+    <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/fonts/local.css" />
+    <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+    <title>Cloud Runner — Aura3D port of the mechanics</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #9fd4e8; overflow: hidden; font-family: ui-sans-serif, system-ui, sans-serif; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+      #hud { position: fixed; left: 12px; top: 10px; color: #1b3a2f; font-size: 13px; line-height: 1.4; text-shadow: 0 1px 0 #fff8; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <div id="hud">loading</div>
+    <script type="module" src="./src/main.ts"></script>
+      <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Chapter-one run only: no creatures, boulders, finale or audio; procedural art.</aside>
+  </body>
+</html>
