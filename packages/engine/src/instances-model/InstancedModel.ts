@@ -122,9 +122,6 @@ export interface InstancedModelResult<TAsset> {
 const DEFAULT_MAX_INSTANCES_PER_DRAW = 4096;
 
 export function createInstancedModelNode<TAsset>(options: InstancedModelOptions<TAsset>): InstancedModelResult<TAsset> {
-  if (options.transforms.length === 0) {
-    throw new Error("Aura3D instanced models require at least one transform.");
-  }
   if (options.colors && options.colors.length !== options.transforms.length) {
     throw new Error("Aura3D instanced-model color count must match transform count.");
   }
@@ -143,7 +140,7 @@ export function createInstancedModelNode<TAsset>(options: InstancedModelOptions<
   const count = options.transforms.length;
   const withInstancing = Math.ceil(count / maxPerDraw);
   const material = options.materialName ?? "unknown-material";
-  const fallbackWarning: InstancedModelFallbackWarning | undefined = aware
+  const fallbackWarning: InstancedModelFallbackWarning | undefined = aware || count === 0
     ? undefined
     : {
       material,
@@ -197,7 +194,7 @@ function computeCullingTelemetry(transforms: readonly InstancedModelTransform[])
     cz += position[2] ?? 0;
   }
   const count = positions.length;
-  const centroid: InstancedModelVec3 = [cx / count, cy / count, cz / count];
+  const centroid: InstancedModelVec3 = count === 0 ? [0, 0, 0] : [cx / count, cy / count, cz / count];
   let radius = 0;
   for (const position of positions) {
     const distance = Math.hypot((position[0] ?? 0) - centroid[0], (position[1] ?? 0) - centroid[1], (position[2] ?? 0) - centroid[2]);

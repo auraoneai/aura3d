@@ -266,9 +266,14 @@ function emitBatchedItems(
   if (node.visible === false) {
     return { mode, geometries: state.geometries.length, instances: 0, draws: 0, ...(fallbackReason ? { fallbackReason } : {}) };
   }
+  const slots = state.liveSlots();
+  // A batched/instanced mesh with no live members draws nothing; it must never throw
+  // (pooling an empty geometry set, or a zero-length instance upload, blanks the canvas).
+  if (slots.length === 0) {
+    return { mode, geometries: state.geometries.length, instances: 0, draws: 0, ...(fallbackReason ? { fallbackReason } : {}) };
+  }
   const bounds = state.boundingBox();
   const nodeModel = batchedNodeModelMatrix(node, bounds, time);
-  const slots = state.liveSlots();
 
   if (mode === "instanced") {
     // One item per geometry bucket; dense slices ride the C-07 instance path.

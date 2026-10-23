@@ -17,6 +17,7 @@ import {
   type AuthoredMaterialSnapshot,
   type TypedGLBActorMaterialOverride
 } from "./ModelMaterialOverrides";
+import { modelTextureShareKey, sharedModelTextures } from "./actor/ModelTextureShare";
 import { createGLBActorAnimationMaterialResolver, createTypedGLBActorAnimationTrack, createTypedGLBActorEvidence, type TypedGLBActorMorphApplyOptions } from "./actor/TypedGLBActorAnimation";
 import { typedGLBActorExtensions, typedGLBActorQrFlags } from "./actor/extensions";
 import "./actor/TypedGLBActorLod.js";
@@ -95,6 +96,12 @@ export interface TypedGLBActorOptions {
    * decodes and uploads once for the whole clone set.
    */
   readonly sharedTextures?: import("@aura3d/assets").GLTFSharedTextureCache;
+  /**
+   * Default true: actors of the same asset (and decode options) built without an explicit
+   * `sharedTextures` share one ref-counted texture cache, so repeated `model()` nodes upload each
+   * glTF image once. Set false to give an actor its own private textures.
+   */
+  readonly shareTextures?: boolean;
 }
 
 export interface TypedGLBActorTintOptions {
@@ -251,6 +258,10 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
   // P5-2: decoder-missing failures surface a `decoder-missing:<id>` issue before the error
   // propagates as the actor's load failure (AssetDecoderUnavailable names the decoder).
   const loadIssues: string[] = [];
+  const textureShare = options.sharedTextures === undefined && options.shareTextures !== false
+    ? sharedModelTextures.acquire(modelTextureShareKey(options))
+    : undefined;
+  const sharedTextures = options.sharedTextures ?? textureShare?.cache;
   let pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
   try {
     pipeline = await loadProductionGLTFRenderPipeline({
@@ -271,9 +282,10 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
       ...(qrTransmission ? { materialsTransmission: true } : {}),
       ...(transmission !== undefined ? { transmission } : {}),
       ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {}),
-      ...(options.sharedTextures ? { sharedTextures: options.sharedTextures } : {})
+      ...(sharedTextures ? { sharedTextures } : {})
     });
   } catch (error) {
+    textureShare?.release();
     if (error instanceof Error && error.name === "AssetDecoderUnavailable") {
       loadIssues.push(`decoder-missing:${(error as { decoderId?: string }).decoderId ?? "unknown"}`);
     }
@@ -442,6 +454,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
         if (staticConsolidation?.ownedGeometries.has(item.geometry)) item.geometry.dispose();
       }
       pipeline.dispose();
+      textureShare?.release();
     }
   };
 

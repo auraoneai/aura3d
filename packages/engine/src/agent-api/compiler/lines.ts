@@ -429,7 +429,12 @@ export const lineNodeHandler: NodeHandler<{ readonly kind: "line" }> = {
   flag: L6_FLAG,
   compile(node, ctx, out) {
     assertL6Flag(ctx, "line");
-    const record = compileLineRecord(node as AuraLineNode, ctx);
+    const lineNode = node as AuraLineNode;
+    if (normalizeLinePositions(lineNode.positions, 2, `line node "l6.line.${runtimeIdOf(lineNode)}"`).length === 0) {
+      ctx.degrade({ code: "option-ignored", nodeId: runtimeIdOf(lineNode), message: "GEOMETRY_EMPTY: line has no points; nothing is drawn" });
+      return;
+    }
+    const record = compileLineRecord(lineNode, ctx);
     lineRecords.set(node, record);
     out.feature("vfx.parityLines");
   },
@@ -473,6 +478,10 @@ export const pointsNodeHandler: NodeHandler<{ readonly kind: "points" }> = {
     const n = node as AuraPointsNode;
     const label = `l6.points.${runtimeIdOf(n)}`;
     const positions = normalizeLinePositions(n.positions, 1, `points node "${label}"`);
+    if (positions.length === 0) {
+      ctx.degrade({ code: "option-ignored", nodeId: runtimeIdOf(n), message: "GEOMETRY_EMPTY: points node has no positions; nothing is drawn" });
+      return;
+    }
     const hasColors = n.colors !== undefined;
     const geometry = hasColors
       ? vertexColorsGeometry(positions, n.colors!, "points", label)

@@ -61,7 +61,8 @@ export function normalizeLinePositions(input: AuraLinePositionsInput | undefined
       return [p[0], p[1], p[2]] as AuraVec3;
     });
   }
-  if (out.length < minCount) throw new Error(`${label} requires at least ${minCount} points (got ${out.length})`);
+  // Zero points is a valid empty node (nothing drawn); a partial polyline is still an authoring error.
+  if (out.length !== 0 && out.length < minCount) throw new Error(`${label} requires at least ${minCount} points (got ${out.length})`);
   return out;
 }
 

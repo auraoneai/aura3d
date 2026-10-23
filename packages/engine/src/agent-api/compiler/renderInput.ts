@@ -174,6 +174,10 @@ export function createProductionRuntimeRendererInput(
     let currentNode = currentState.node;
     // threejs-parity L7/SG-11: `groups.lod` — deselected levels skip this frame.
     if (currentNode.visible === false || !lodLevelVisible(currentNode, cameraPosition)) continue;
+    if (currentNode.instances !== undefined && currentNode.instances.length === 0) {
+      runtimeWarnings.add(`INSTANCES_EMPTY: instances.model "${currentNode.name ?? currentNode.asset.id}" has no instances this frame; nothing is drawn.`);
+      continue;
+    }
     const actorBounds = productionActorModelBounds(currentNode.asset, entry.actor);
     const actorNormalize = shouldNormalizeModelNode(currentNode);
     let modelMatrix = [...(prd01ModelMatrixCache?.modelMatrix(currentNode, actorBounds, actorNormalize, time) ?? createModelMatrix(currentNode, actorBounds, actorNormalize, time))];
@@ -287,6 +291,10 @@ export function createProductionRuntimeRendererInput(
     const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
     // threejs-parity L7/SG-11: `groups.lod` — deselected levels skip this frame.
     if (!currentState.visible || !lodLevelVisible(currentState.node, cameraPosition)) continue;
+    if (currentState.node.instances !== undefined && currentState.node.instances.length === 0) {
+      runtimeWarnings.add(`INSTANCES_EMPTY: instances.${currentState.node.primitive} "${currentState.node.name ?? "unnamed"}" has no instances this frame; nothing is drawn.`);
+      continue;
+    }
     const resource = selectProductionPrimitiveResource(entry, currentState.node, cameraPosition, getRootPerformanceQuality(canvas)?.lodBias ?? 1);
     if (resource.sdfText && resource.texturedMaterial) {
       // G1 per-frame SDF opacity: LOD fade from the live camera distance

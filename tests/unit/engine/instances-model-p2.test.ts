@@ -10,7 +10,10 @@ function gridTransforms(count: number) {
 
 describe("P2 root instances.model wiring source", () => {
   test("validates like the primitive instancing path", () => {
-    assert.throws(() => createInstancedModelNode({ asset, transforms: [] }), /at least one transform/);
+    const empty = createInstancedModelNode({ asset, transforms: [] });
+    assert.equal(empty.node.instances.length, 0);
+    assert.equal(empty.node.instanceCulling.instanceCount, 0);
+    assert.deepEqual([...empty.node.instanceCulling.centroid], [0, 0, 0]);
     assert.throws(
       () => createInstancedModelNode({ asset, transforms: gridTransforms(2), colors: ["#fff"] }),
       /color count must match/

@@ -4,6 +4,12 @@ Version: 4.0.8
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.0.9 (unreleased)
+
+- **Fix: an empty instanced node no longer blanks the canvas.** `instances.<primitive>` and `instances.model` with zero transforms used to throw at build time, and a zero-length instance array threw `INSTANCING_CONTRACT` inside `ForwardPass` (before sorting), which stopped the frame. Zero instances is now valid: the compiler skips the node and reports `INSTANCES_EMPTY`, `batched.mesh`/`instances.mesh` with no live members emit nothing, and `ForwardPass` drops zero-length instanced items. A geometry `drawRange` of count 0 (three's `setDrawRange(0, 0)`) draws nothing instead of throwing.
+- **Fix: empty `points` / `lines` no longer throw.** Zero positions builds and compiles to nothing and reports `GEOMETRY_EMPTY`; a one-point polyline is still an authoring error.
+- **Perf: repeated `model()` nodes of one GLB share decoded textures.** `createTypedGLBActor` now takes a ref-counted `GLTFSharedTextureCache` per (asset url/id/sha256, decode options) when none is passed, so N nodes decode and upload each glTF image once instead of N times (20 actors of a 3-image GLB: 60 decodes before, 3 after). Textures are freed when the last actor disposes; `shareTextures: false` opts out and `cloneSkinned` keeps its own cache. Geometry buffers are still per node.
+
 ## 4.0.8 (2026-10-23)
 
 Fixes found by taking the eleven Crayon ports through the production build and a real browser.

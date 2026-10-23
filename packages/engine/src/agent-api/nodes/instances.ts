@@ -177,7 +177,7 @@ function packScatterPlacements(
 }
 
 export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }): AuraNodeBuilder<AuraPrimitiveNode> {
-  if (options.transforms.length === 0) throw new Error("Aura3D instancing requires at least one transform.");
+  // Zero transforms is valid (a pool that is empty this frame): the compiler skips the node with INSTANCES_EMPTY.
   if (options.colors && options.colors.length !== options.transforms.length) throw new Error("Aura3D instance color count must match transform count.");
   return primitive(primitiveName, { ...options, instances: options.transforms, instanceColors: options.colors });
 }

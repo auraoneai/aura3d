@@ -353,7 +353,7 @@ export class ForwardPass extends BaseRenderPass {
       if (auraFrame.buffer) context.device.bindUniformBuffer?.(auraFrame.buffer, 0);
     }
     try {
-      for (const item of sortForwardRenderItems(this.options.items, this.options.cameraPosition)) {
+      for (const item of sortForwardRenderItems(this.options.items.filter(hasDrawableInstances), this.options.cameraPosition)) {
         this.drawItem(context.device, item);
       }
       // #181: issue any trailing multi-draw run deferred by `submitDraw`.
@@ -365,6 +365,8 @@ export class ForwardPass extends BaseRenderPass {
   }
 
   private drawItem(device: RenderDevice, item: RenderItem): void {
+    // An instanced item with zero instances draws nothing (never a contract throw that blanks the frame).
+    if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
     // threejs-parity L7/SG-09: three's Object3D.onBeforeRender fires
     // immediately before the draw call.
     item.onBeforeRender?.(item);
@@ -489,6 +491,8 @@ export class ForwardPass extends BaseRenderPass {
       const vertexBuffer = geometry.vertexBuffer.upload(device);
       const indexBuffer = geometry.indexBuffer?.upload(device);
       const drawRange = resolveDrawRange(geometry, item.drawRange);
+      // three's setDrawRange(0, 0) draws nothing; the device rejects zero-count draws, so skip here.
+      if (drawRange.count === 0) return;
       const pipeline = this.pipelineFor(device, item, baseMaterial, shader, geometry);
       submitDraw(device, pipeline, geometry, instanceBinding.count, drawRange, { item, vertexBuffer, indexBuffer, drawRange, uniforms, instanceBinding });
     } finally {
@@ -2273,6 +2277,11 @@ function validateInstanceAttributeDescriptor(descriptor: RenderItemInstanceAttri
 
 
 
+
+/** An instanced item with zero instances draws nothing; it must never reach sorting/validation (a throw blanks the frame). */
+function hasDrawableInstances(item: RenderItem): boolean {
+  return item.instanceTransforms === undefined || item.instanceTransforms.length > 0;
+}
 
 function validateInstanceTransformSource(item: RenderItem): Float32Array | readonly number[] {
   const source = item.instanceTransforms ?? [];

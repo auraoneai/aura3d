@@ -36,9 +36,8 @@ describe("P2 instances.model root builder", () => {
       .toJSON();
     const node = snapshot.nodes.find((entry) => entry.kind === "model") as { instancedModelWarning?: string } | undefined;
     expect(node?.instancedModelWarning).toContain("material-rejects-instancing");
-    expect(() => scene().add(instances.model(models.tree, { transforms: [] })).toJSON()).toThrow(
-      "at least one transform"
-    );
+    // Zero instances is valid (an empty pool this frame): it builds, and the compiler skips it with INSTANCES_EMPTY.
+    expect(() => scene().add(instances.model(models.tree, { transforms: [] })).toJSON()).not.toThrow();
     expect(() =>
       scene().add(instances.model(models.tree, {
         transforms: [{ position: [0, 0, 0] }],
