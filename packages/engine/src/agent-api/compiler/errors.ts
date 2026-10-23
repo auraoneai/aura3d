@@ -19,6 +19,10 @@ export class AuraRuntimeError extends Error {
     // `primitives.box/sphere/plane/cylinder/capsule/torus` given a `params`
     // key the kind does not use (it would otherwise be silently ignored).
     | "invalid-primitive-params"
+    // `defineModelAssets`: bad sha256, unusable URL, or unknown model id (would otherwise draw nothing in production).
+    | "invalid-model-assets"
+    // `scene({ ... })` given options it does not understand (a silent empty scene before).
+    | "invalid-scene-options"
     // L7/SC-01: `cameras.array` / `cameras.stereo` option violations (viewport rects, eye separation, focus, fov).
     | "invalid-camera-spec"
     // AD-15 (P2): `lights.lensFlare` option violations (element size/distance, occlusion, edgeFade, intensity).

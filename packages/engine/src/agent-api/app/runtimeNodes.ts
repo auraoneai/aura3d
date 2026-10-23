@@ -529,6 +529,12 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
     // frame via `Material.setParameter` — the shader key never changes, so no
     // program is recompiled (program count stays flat across updates).
     setUniform(name: string, value: AuraUniformValue): AuraRuntimeNodeHandle {
+      // A GLB model node has no authored custom material to write into. Ports used to wrap every call in try/catch;
+      // it is now a documented, once-per-uniform diagnostic no-op (a model with `material: material.custom(...)` still writes).
+      if (node.kind === "model" && (("material" in node ? (node.material as { readonly kind?: string } | undefined) : undefined)?.kind !== "custom")) {
+        warnModelSetUniformNoop(name);
+        return this;
+      }
       assertCustomUniformWrite(("material" in node ? node.material : undefined) as { readonly kind?: string; readonly custom?: AuraCustomMaterialSpec } | undefined, name, value);
       recordCustomUniformWrite(runtime.id, name, value);
       bumpVersion();
@@ -770,4 +776,14 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   };
   parityL7NodeSpecs.set(handle, node);
   return handle;
+}
+
+
+const modelSetUniformWarned = new Set<string>();
+function warnModelSetUniformNoop(name: string): void {
+  if (modelSetUniformWarned.has(name)) return;
+  modelSetUniformWarned.add(name);
+  if (typeof console !== "undefined") {
+    console.warn(`[MODEL_SETUNIFORM_NOOP] setUniform("${name}") on a model node is ignored: the GLB keeps its own materials. Give the model options.material = material.custom(spec) to drive uniforms.`);
+  }
 }

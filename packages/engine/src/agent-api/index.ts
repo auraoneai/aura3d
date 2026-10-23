@@ -315,6 +315,9 @@ export type { AuraPromptPlanV2, AuraCompilePromptPlanOptions, AuraPromptPlanErro
 export { promptRecipes } from "./nodes/prompt/promptRecipes.js";
 export { promptSubjectIsResolved, resolvePromptPlanSubject } from "./nodes/promptPlans.js";
 export { resolveFrameAssetRenderScale, AuraSceneBuilder, scene } from "./nodes/scene.js";
+export type { AuraSceneInit } from "./nodes/scene.js";
+export { defineModelAssets, modelsEnabledFromUrl } from "./assets/productionModels.js";
+export type { AuraModelAssetEntry, AuraModelAssetsOptions, AuraModelAssetSet, AuraModelAssetRefs } from "./assets/productionModels.js";
 export { solarMaterialPresetsInNodes, solar } from "./nodes/solar.js";
 export { rootSdfFontAtlas, text3D } from "./nodes/text3d.js";
 // threejs-parity ST-01 (lane L4): the `texture.*` namespace + live handle type.

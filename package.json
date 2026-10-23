@@ -311,7 +311,10 @@
     "./dist/engine/lanes/**/*.js",
     "./dist/engine/public/index.js",
     "./dist/rendering/lanes/**/*.js",
-    "./dist/rendering/program/ProgramGenerator.js"
+    "./dist/rendering/program/ProgramGenerator.js",
+    "./examples/**",
+    "./apps/**",
+    "./templates/**"
   ],
   "description": "Build AI-authored browser 3D apps with TypeScript, typed GLB/glTF assets, Vite templates, scene kits, diagnostics, screenshots, and deploy checks.",
   "keywords": [

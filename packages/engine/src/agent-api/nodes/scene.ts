@@ -10,6 +10,7 @@ import { physics } from "./physics.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
 import { timeline } from "./timeline.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
+import { AuraRuntimeError } from "../compiler/errors.js";
 
 const DEFAULT_SCENE_BACKGROUND: AuraColor = "#070b12";
 
@@ -163,6 +164,35 @@ export class AuraSceneBuilder {
   }
 }
 
-export function scene(): AuraSceneBuilder {
-  return new AuraSceneBuilder();
+/** Optional one-shot construction for `scene({ ... })`; every field has a builder method with the same meaning. */
+export interface AuraSceneInit {
+  readonly children?: readonly (AuraNodeBuilder<AuraSceneNode> | AuraSceneNode)[];
+  readonly background?: AuraColor | AuraSceneBackgroundImage;
+  readonly camera?: AuraCameraSpec;
+  readonly timeline?: AuraTimelineSpec;
+  readonly diagnostics?: boolean;
+}
+
+const SCENE_INIT_KEYS = new Set(["children", "background", "camera", "timeline", "diagnostics"]);
+
+export function scene(init?: AuraSceneInit): AuraSceneBuilder {
+  const builder = new AuraSceneBuilder();
+  if (init === undefined) return builder;
+  if (init === null || typeof init !== "object" || Array.isArray(init)) {
+    throw new AuraRuntimeError("invalid-scene-options", "scene(init) takes an options object ({ children, background, camera, timeline, diagnostics }) or nothing. Suggested fix: scene().add(node) for one node, scene({ children: [...] }) for many.");
+  }
+  // `scene({ children })` used to return a silently empty scene (the argument was ignored); unknown keys now fail by name.
+  const unknown = Object.keys(init).filter((key) => !SCENE_INIT_KEYS.has(key));
+  if (unknown.length > 0) {
+    throw new AuraRuntimeError("invalid-scene-options", `scene(init) does not understand ${unknown.map((key) => `"${key}"`).join(", ")}. Supported: children, background, camera, timeline, diagnostics.`);
+  }
+  if (init.children !== undefined) {
+    if (!Array.isArray(init.children)) throw new AuraRuntimeError("invalid-scene-options", "scene({ children }) needs an array of nodes.");
+    builder.addMany(init.children);
+  }
+  if (init.background !== undefined) builder.background(init.background);
+  if (init.camera !== undefined) builder.camera(init.camera);
+  if (init.timeline !== undefined) builder.timeline(init.timeline);
+  if (init.diagnostics !== undefined) builder.diagnostics(init.diagnostics);
+  return builder;
 }
