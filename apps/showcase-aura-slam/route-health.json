@@ -1,0 +1,27 @@
+{
+  "appId": "showcase-aura-slam",
+  "route": "/apps/showcase-aura-slam/",
+  "classification": "prototype",
+  "publicShowcase": false,
+  "promotionStatus": "unregistered",
+  "generatedAt": "2026-10-23T00:00:00.000Z",
+  "ok": false,
+  "claimLabel": "Prototype",
+  "claimStatus": "bounded",
+  "kind": "native-rebuild",
+  "renderer": "webgl2 (createAuraApp)",
+  "sourceExample": "examples/aura-slam/",
+  "evidence": "UI layer: 37 unit tests (scoreboard, results, HUD views, menu flow, input frame, loop, QA text) compare against the original scripts.",
+  "limits": [
+    "Not registered as a live route: the live Aura Slam stays on apps/showcase-top-tennis until gates G1-G6 in docs/aura-slam/ARCHITECTURE.md pass.",
+    "Tournament, tour, online play and appearance select (Phase 2) are shown as disabled menu entries.",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
+  ],
+  "checks": [
+    { "name": "index.html exists", "ok": true },
+    { "name": "module script present", "ok": true },
+    { "name": "has a canvas mount", "ok": true },
+    { "name": "mounts examples port without code duplication", "ok": true, "detail": "examples/aura-slam/main" },
+    { "name": "examples/aura-slam/main.ts exists", "ok": false, "detail": "M-RENDER has not landed main.ts yet" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "@aura3d/showcase-aura-slam",
+  "version": "4.0.8",
+  "private": true,
+  "type": "module",
+  "description": "Native Aura3D build of Aura Slam 3D (examples/aura-slam): not routed live until the parity gates in docs/aura-slam/ARCHITECTURE.md pass.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  }
+}
