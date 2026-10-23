@@ -23,11 +23,11 @@ pnpm verify:api-docs
 | `@aura3d/controls` | `4.0.8` | `packages/controls/src/index.ts` | 46 |
 | `@aura3d/core` | `4.0.8` | `packages/core/src/index.ts` | 14 |
 | `create-aura3d` | `4.0.8` | `packages/create-aura3d/src/index.ts` | 16 |
-| `@aura3d/debug` | `4.0.8` | `packages/debug/src/index.ts` | 30 |
+| `@aura3d/debug` | `4.0.8` | `packages/debug/src/index.ts` | 32 |
 | `@aura3d/ecs` | `4.0.8` | `packages/ecs/src/index.ts` | 25 |
 | `@aura3d/editor-runtime` | `4.0.8` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `4.0.8` | `packages/engine/src/index.ts` | 21 |
-| `@aura3d/input` | `4.0.8` | `packages/input/src/index.ts` | 48 |
+| `@aura3d/engine` | `4.0.8` | `packages/engine/src/index.ts` | 22 |
+| `@aura3d/input` | `4.0.8` | `packages/input/src/index.ts` | 34 |
 | `@aura3d/math` | `4.0.8` | `packages/math/src/index.ts` | 30 |
 | `@aura3d/navigation-recast` | `4.0.8` | `packages/navigation-recast/src/index.ts` | 16 |
 | `@aura3d/physics` | `4.0.8` | `packages/physics/src/index.ts` | 24 |
@@ -36,7 +36,7 @@ pnpm verify:api-docs
 | `@aura3d/physics/world` | `4.0.8` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `4.0.8` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `4.0.8` | `packages/react/src/index.ts` | 39 |
-| `@aura3d/rendering` | `4.0.8` | `packages/rendering/src/index.ts` | 413 |
+| `@aura3d/rendering` | `4.0.8` | `packages/rendering/src/index.ts` | 418 |
 | `@aura3d/rendering/extension-scalar-atlas` | `4.0.8` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
 | `@aura3d/rendering/reflection-surfaces` | `4.0.8` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
 | `@aura3d/rendering/webgpu` | `4.0.8` | `packages/rendering/src/webgpu.ts` | 8 |
@@ -549,6 +549,8 @@ export { buildAxesHelper, buildBoundsHelper, buildCameraFrustumHelper, buildDire
 export type { AxesHelperOptions, BoundsHelperOptions, CameraFrustumHelperOptions, DebugColor, DebugVec3, DirectionalLightHelperOptions, GridHelperOptions, SkeletonHelperJoint } from "./SceneHelpers.js";
 export { ReportExporter } from "./ReportExporter.js";
 export type { DebugReport } from "./ReportExporter.js";
+export { DEFAULT_HEAL_LADDER, DEFAULT_HEAL_STORAGE_KEY, createBlackFrameWatch, formatEngineSection, formatGpuProbe, healParams, healRungName, healStage, installDiagnosticsPanel, installSafetyNet, isBlackFrame, probeGpu, resolveQualitySwitches } from "./safety/index.js";
+export type { BlackFrameWatch, BlackFrameWatchOptions, DiagnosticsAppLike, DiagnosticsPanelHandle, DiagnosticsPanelOptions, GpuProbe, HealRung, QualitySwitches, ResolveQualitySwitchesOptions, SafetyNet, SafetyNetOptions, SafetyReport, SafetySettings } from "./safety/index.js";
 ```
 
 ## @aura3d/ecs
@@ -710,6 +712,7 @@ export * from "./testing/routeHealth.js";
 export type { A3DAppLifecycleSnapshot, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
+export { CAMERA_DEFAULT_POSE, cameraQuatFromAxisAngle, cameraQuatFromEulerXYZ, cameraQuatMultiply, cameraQuatNormalize, cameraQuatRotateVec3, cameraQuatSlerp, cameraQuatToEulerXYZ } from "./lanes/prd08.js";
 ```
 
 ## @aura3d/input
@@ -752,23 +755,9 @@ export type { PointerEventLike, WheelEventLike } from "./PointerDevice";
 export { VirtualTouchJoystick, sampleVirtualTouchJoystickFixture } from "./VirtualTouchControls";
 export type { VirtualJoystickConfig, VirtualTouchJoystickSnapshot, VirtualTouchPoint } from "./VirtualTouchControls";
 export { WebXRSessionController } from "./WebXRSessionController";
-export type { A3DXRFrameLike, A3DXRHandedness, A3DXRHandLike, A3DXRHitTestResultLike, A3DXRInputSourceLike, A3DXRJointSample, A3DXRPoseLike, A3DXRReferenceSpaceLike, A3DXRReferenceSpaceType, A3DXRSessionInit, A3DXRSessionLike, A3DXRSessionMode, A3DXRSystemLike, A3DXRViewerPoseLike, WebXRCameraSample, WebXRCapabilityReport, WebXRControllerSample, WebXRFrameSample, WebXRHandSample, WebXRHitTestSample, WebXRJointSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
+export type { A3DXRFrameLike, A3DXRHandedness, A3DXRHandLike, A3DXRHitTestResultLike, A3DXRInputSourceLike, A3DXRJointSample, A3DXRPoseLike, A3DXRReferenceSpaceLike, A3DXRReferenceSpaceType, A3DXRSessionInit, A3DXRSessionLike, A3DXRSessionMode, A3DXRSystemLike, A3DXRViewerPoseLike, A3DXRViewLike, A3DXRViewportLike, A3DXRWebGLLayerLike, WebXRCameraSample, WebXRCapabilityReport, WebXRControllerSample, WebXRFrameSample, WebXRHandSample, WebXRHitTestSample, WebXRJointSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
 export * from "./GamepadInput.js";
 export * from "./GestureControls.js";
-export * from "./controls/PointerLockControls.js";
-export { CameraRig } from "./controls/CameraRig";
-export type { CameraRigState } from "./controls/CameraRig";
-export type { CameraTransformLike, EulerLike, Vec3Like } from "./controls/ControlTypes";
-export { createSceneCameraControlAdapter } from "./controls/SceneCameraAdapter";
-export type { SceneCameraControlAdapter } from "./controls/SceneCameraAdapter";
-export { EditorFlyControls } from "./controls/EditorFlyControls";
-export type { EditorFlyControlsOptions } from "./controls/EditorFlyControls";
-export { FirstPersonControls } from "./controls/FirstPersonControls";
-export type { FirstPersonControlsOptions } from "./controls/FirstPersonControls";
-export { DEFAULT_ORBIT_MAX_POLAR, OrbitControls } from "./controls/OrbitControls";
-export type { OrbitControlsOptions } from "./controls/OrbitControls";
-export { ThirdPersonFollowControls } from "./controls/ThirdPersonFollowControls";
-export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFollowControls";
 ```
 
 ## @aura3d/math
@@ -903,8 +892,8 @@ export interface RapierWheelCommand { readonly engineForce?: number;
 export interface RapierWheelState { readonly index: number;
 export class RapierVehicleControllerHandle { readonly #world: RapierPhysicsWorld;
 export class RapierPhysicsWorld { readonly #module: RapierModule;
-export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> { const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))();
-export function createRapierPhysicsSync(options: Omit<RapierPhysicsOptions, "moduleLoader"> = {}): RapierPhysicsWorld { return new RapierPhysicsWorld(defaultRapierModule, options.gravity ?? [0, -9.81, 0]);
+export async function createRapierPhysics(options: RapierPhysicsOptions = {}): Promise<RapierPhysicsWorld> { const module = await (options.moduleLoader ?? (() => import("@dimforge/rapier3d-compat")))() .catch((error: unknown) => { if ((error as { code?: string })?.code === "ERR_MODULE_NOT_FOUND") { throw new Error( "@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics." );
+export function createRapierPhysicsSync(options: Omit<RapierPhysicsOptions, "moduleLoader"> = {}): RapierPhysicsWorld { return new RapierPhysicsWorld(requireRapierModule(), options.gravity ?? [0, -9.81, 0]);
 export interface ColliderSidecarTransform { readonly position?: PhysicsVec3;
 export interface ColliderSidecarOptions extends ColliderSidecarTransform { readonly body?: RapierBodyHandle;
 export interface ColliderSidecarResult { readonly body: RapierBodyHandle;
@@ -1048,6 +1037,7 @@ export type { WebGPURenderToTextureProof, WebGPURenderToTextureProofOptions } fr
 export type { AdvancedRendererSource } from "./advanced-runtime";
 export { VertexAttribute, VertexFormat } from "./VertexFormat";
 export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";
+export { CUSTOM_ATTRIBUTE_LOCATION_POOL, assignCustomAttributeLocations, customAttributeSemantic, isCustomAttributeSemantic } from "./VertexFormat";
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
 export { Geometry, computeBounds } from "./Geometry";
@@ -1337,7 +1327,7 @@ export { CascadedShadowMaps, CascadedShadowPass, supportsCascadedShadowLight } f
 export type { CascadedShadowMapsOptions, CascadedShadowPassOptions, CascadedShadowPassResult, CascadeShadowPassResult, CascadeSplit, CascadeSplitOptions, ShadowCascade } from "./CascadedShadowMaps";
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
-export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
+export type { CameraLike, RendererAnimationLoop, RendererCameraFrameOptions, RendererCameraPolicy, RendererCameraProjection, RendererFrameCapture, RendererFrameCaptureDiagnosticsSummary, RendererFrameCaptureMetadata, RendererFrameCapturePixelDigest, RendererFrameCapturePixelStats, RendererFrameCaptureRenderSize, RendererFrameCaptureWithMetadata, RendererAppliedOutput, RendererInput, RendererRect, RendererView, RendererOptions, RendererOutputOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
 export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
 export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessChainCostEstimate, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlannedVsActual, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
@@ -1381,7 +1371,7 @@ export { RESIDENT_PARTICLE_CAMERA, ResidentGPUParticleRenderer, residentLifecycl
 export type { ResidentGPUParticleOptions, ResidentParticleCPUPhases, ResidentParticleFrame, ResidentParticlePacingControl } from "./effects/ResidentGPUParticleRenderer.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";
-export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
+export { geometryContentKey, materialSpecKey, materialKeyExcludesParameter, REASONS_NOT_BATCHED, planBatches, BatchedGeometryPool, DRAW_DATA_TEXELS_PER_DRAW, DRAW_DATA_VISIBLE_BIT, DRAW_DATA_GEOMETRY_ID_SHIFT, DrawDataTexture, drawDataBindingFor, packDrawDataFlags, unpackDrawDataFlags, buildMultiDrawBatch, multiDrawCommands, refreshMultiDrawBatch, synthesizeMultiDrawItems, submitMultiDrawBatch, PRD11_DRAWID_CHUNK, PRD11_DRAWID_DEPTH_FEATURE, PRD11_DRAWID_FEATURE, registerPrd11DrawIdShader, PRD11_INSTANCE_EMISSIVE_FEATURE, PRD11_INSTANCE_EMISSIVE_FRAG_CHUNK, PRD11_INSTANCE_EMISSIVE_VTX_CHUNK, registerPrd11InstanceEmissiveShader } from "./batching/index.js";
 export type { BatchPlan, InstancedBatch, InstancedBatchChunk, MultiDrawGroup, NotBatchedReason, PlanBatchesOptions, PackedGeometryEntry, DrawDataEntry, MultiDrawBatch, PackedDrawCommand, Prd11MultiDrawItem, SynthesizeMultiDrawItemsOptions } from "./batching/index.js";
 export { createDecalGeometry } from "./DecalGeometry.js";
 export type { DecalBasis, DecalBox, DecalGeometryResult, DecalRay, DecalRaycastHit, DecalRaycastOptions, DecalRaycastResult, DecalShape, DecalTriangleMesh } from "./DecalGeometry.js";
@@ -1444,6 +1434,8 @@ export type { SizeKeyframe } from "./effects/SizeModule.js";
 export type { TrailModuleOptions } from "./effects/TrailModule.js";
 export type { VectorKeyframe } from "./effects/VelocityModule.js";
 export type { OctreeNode } from "./performance/Octree.js";
+export { COMPUTE_BUFFER_USAGE, ComputeBuffer, ComputeContext, ComputeError, ComputeLimits, ComputePipeline, createComputeContext } from "./compute/index.js";
+export type { ComputeBindingSpec, ComputeBindingType, ComputeBufferSpec, ComputeBufferUsage, ComputeDispatchInput, ComputeDispatchResult, ComputeErrorCode, ComputeGPUBufferLike, ComputeGPUDeviceLike, ComputePipelineSpec, ComputeWorkgroups, ComputeWorkgroupSize } from "./compute/index.js";
 export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalRay, ProjectedDecalRaycastHit, ProjectedDecalRaycastResult, ProjectedDecalShape } from "./production-runtime/geometry/ProjectedDecalGeometry.js";
 ```
 
@@ -1635,13 +1627,6 @@ Euler — all six orders: "XYZ" | "YXZ" | "ZXY" | "ZYX" | "YZX" | "XZY"
 Color.setHSL / getHSL / offsetHSL / lerpHSL
 ```
 
-`ConvexHull` (QuickHull; `setFromPoints`, `containsPoint`, `intersectRay`,
-`intersectsRay`) and `Octree` (`fromPositions`, `fromTriangles`,
-`capsuleIntersect`, `sphereIntersect`, `boxIntersect`, `rayIntersect`) are
-compared against three's `ConvexHull` and `Octree` on seeded clouds and a
-terrain-plus-walls triangle soup (face/vertex sets, tree node counts,
-collision depth and normal).
-
 Fixture: `tests/unit/parity/math.test.ts`.
 
 ### Curve family — SM-02 (lane L3 — LIVE)
@@ -1654,11 +1639,6 @@ abstract class Curve<V>          // CurveBase: getPoint / getPointAt /
                                  //   updateArcLengths / getPoints /
                                  //   getSpacedPoints / computeFrenetFrames
 CatmullRomCurve3(points, closed?, curveType?, tension?)
-ClampedCatmullRomCurve3(points, closed?, alpha = 0.5)   // Aura3D extension:
-  // any knot exponent (0 uniform, 0.5 centripetal, 1 chordal); open ends are
-  // clamped (spans exactly points.length - 1 segments), closed splines wrap
-catmullRomSegment(p0, p1, p2, p3, weight, alpha?)       // one segment
-catmullRomSegmentDerivative(p0, p1, p2, p3, weight, alpha?)  // dP/dweight
 CubicBezierCurve3, QuadraticBezierCurve3, LineCurve3
 LineCurve, QuadraticBezierCurve, CubicBezierCurve, SplineCurve   // 2D
 EllipseCurve, ArcCurve                          // ArcCurve extends EllipseCurve
@@ -1766,126 +1746,13 @@ cameras.cube({ name?, resolution?, near?, far?, updateEvery?, position?,
                runtime? })
   // cube-camera node; rendered via Renderer.renderProbeFace once per
   // `updateEvery` frames — consume via material envMap: { cubeCamera: name }
-cameras.array({ name?, cameras: [{ camera?: Partial<AuraCameraSpec>,
-                                   viewport: { x, y, width, height } }] })
-  // three's ArrayCamera: the scene renders once per entry into its viewport of
-  // the same target. Viewports are FRACTIONS of the target in [0, 1] (origin
-  // bottom-left) — three's are pixels. `camera` overrides inherit the scene
-  // camera (position/target/fov/near/far/mode/layers). The first view clears
-  // the whole target; later views keep earlier pixels AND depth, so
-  // overlapping viewports share a depth buffer. Not supported with
-  // postprocess (`VIEWPORT_POSTPROCESS_UNSUPPORTED`). First node per scene wins.
-cameras.stereo({ name?, eyeSeparation? = 0.064, focus? = 10, fov?, aspect?,
-                 zoom? = 1, layout? = "side-by-side" | "over-under" })
-  // three's StereoCamera: off-axis eyes shifted ±eyeSeparation/2 along the
-  // camera x axis; eye view/projection matrices equal three's
-  // `StereoCamera.update` within 1e-6 (`computeStereoEyes`, tested against
-  // three 0.185.1). `aspect` is three's `StereoCamera.aspect` multiplier and
-  // defaults to 0.5 side-by-side / 2 over-under so each eye keeps a correct
-  // aspect. Left eye is the left half (or the top half for over-under).
-  // Requires a perspective scene camera; same postprocess limit as above.
-  // Option errors throw AuraRuntimeError code "invalid-camera-spec".
 
 scene().background(color | { texture, intensity?, rotation? } |
                    { cube: { faces: [6], intensity? } })          // SG-10 —
                    // color, image, or cubemap backdrop; never enables IBL
 ```
 
-Fixtures: `tests/unit/parity/runtime.test.ts`, `tests/unit/parity/tone-mapping.test.ts`
-(Cineon within 1/255 of the CPU reference and equal to three's chunk),
-`tests/browser/parity-runtime.spec.ts` and `tests/browser/parity-disposal.spec.ts`
-(remote GPU: fog opt-out, backgrounds, cube camera, mirror, layers, render-target-as-map,
-20-cycle disposal).
-
-### Viewport, scissor, external framebuffer — SC-01 / XR (device + renderer — LIVE)
-
-```ts
-// @aura3d/rendering — RenderDevice (WebGL2Device, WebGPUDevice, MockRenderDevice)
-device.setViewport(x, y, width, height, options?: { persistent?: boolean })
-  // target pixels, origin BOTTOM-LEFT (three/WebGL convention; WebGPU converts).
-  // Default = frame-scoped: applies only while the target it was set on stays
-  // bound (a shadow/post target never inherits it; returning re-applies it) and
-  // resets at beginFrame.
-  // { persistent: true } (XR): scoped to the default (canvas / external)
-  // framebuffer, survives beginFrame AND the post/present passes (WebGL2
-  // present paths honour it), stays off every render target, until
-  // resetViewport(). A frame-scoped viewport wins over it for that frame.
-device.resetViewport()                       // clears persistent + frame-scoped viewport
-device.setScissor(x, y, width, height)       // clip rect; inert until setScissorTest(true)
-device.setScissorTest(enabled)               // device scissor also holds for draws with no per-draw scissor
-device.setExternalFramebuffer(fb | null, width, height)
-  // XR: frames draw into `fb` (e.g. an XRWebGLLayer framebuffer, width x height
-  // pixels) instead of the canvas until called with null; the default viewport
-  // and the present passes follow it. WebGL2 only (WebGPU device omits it).
-// MockRenderDevice adds getViewportCalls() (ordered API calls), getDrawViewStates()
-// (the viewport/scissor/destination each draw ran under) and getExternalFramebuffer().
-
-renderer.render({ source, camera, viewport?, scissor? })      // one restricted frame
-renderer.render({ source, views: [{ camera, viewport, scissor?, cameraPosition? }] })
-  // also read from source.views; one frame per view, first view clears the whole
-  // target. WebGPU clears are full-attachment load ops and are never scissored.
-  // Throws RenderDeviceError VIEWPORT_POSTPROCESS_UNSUPPORTED with postprocess,
-  // INVALID_VIEWPORT for rects outside the target, VIEWPORT_UNSUPPORTED on a
-  // device without the optional methods.
-```
-
-Fixtures: `tests/unit/parity/viewport-views.test.ts` (mock recording, Renderer views,
-`computeStereoEyes` vs three, node validation, production views),
-`tests/unit/rendering/render-state-leaks.test.ts` (WebGL2 viewport/scissor/external
-framebuffer/present on the fake GL), `tests/unit/rendering/renderer.test.ts`
-("WebGPU viewport / scissor"). No GPU pixel fixture yet.
-
-### Scene material override and lens flare — SG-10, AD-15 (P2 — LIVE)
-
-```ts
-// @aura3d/engine
-scene().overrideMaterial(material.*(...) | material.custom(...) | null)
-  // three's scene.overrideMaterial. Applied in toJSON(): every primitive
-  // (incl. `instances` and distance-LOD levels), model, and instances.mesh /
-  // batched.mesh node renders with the override; geometry, size and transforms
-  // are untouched. Authored nodes are never mutated, so `null` restores the
-  // originals. Models also drop per-slot materialOverrides so they cannot win.
-  // NOT overridden: lines, points, sprites, procedural character parts, and
-  // nodes added at runtime after mount. A material.custom override on a model
-  // follows the existing model path (GLB slot replacement is not wired for
-  // custom shaders). A non-material argument throws `invalid-material-spec`.
-  // `AuraSceneSnapshot.overrideMaterial` records it for diagnostics.
-
-lights.lensFlare({
-  name?, position?: [x, y, z], light?: "<authored light name>",
-  elements?: [{ texture?: texture.* handle, size: px, distance, color? }],
-  occlusion?: "frustum" | "none",   // default "frustum"
-  edgeFade?: 0..1,                  // default 0.15
-  intensity?, runtime?
-}): AuraNodeBuilder        // three's Lensflare + LensflareElement
-```
-
-Placement is three's exactly (`Lensflare.js` `onBeforeRender`):
-`ndc(element) = ndc(light) + (-2·ndc(light))·distance`, square `size` in device
-pixels (`size / viewport.height`). Defaults reproduce three's `webgl_lensflares`
-layout (one 700 px glow plus four small discs) using a generated soft radial
-glow when an element has no texture. Elements render as additive, depth-less
-camera-facing sprites on the L6 sprite path, so they need `A3D_PARITY_LINES`
-(default-on). Option violations throw `invalid-lens-flare`.
-
-Differences from three, by design:
-
-- three fades the flare with a depth-buffer occlusion query. The production
-  pass gives the scene compiler no depth readback, so geometry that hides the
-  light on screen does **not** dim the flare. `occlusion: "frustum"` hides it
-  when the light is behind the camera or off-screen and fades it over `edgeFade`
-  of the half-screen near the edge; `"none"` draws whenever the light is in
-  front of the camera.
-- The flare follows the scene's camera, not an XR eye camera.
-
-Codemod rows (all `approximate`): `Scene.overrideMaterial` (detected as a property
-write on a `Scene` variable or the identifier `scene`), `Lensflare`,
-`LensflareElement`.
-
-Fixtures: `tests/unit/parity/override-material.test.ts`,
-`tests/unit/parity/lens-flare.test.ts` (placement pinned to three's source text
-and 500 seeded cases; per-frame render items; reprojection round trips),
-`tests/unit/aura3d-cli/migrate-three-override-lensflare.test.ts`.
+Fixture: `tests/unit/parity/runtime.test.ts`.
 
 ### Custom materials and shader passes — SH-02/03, SH-10 (lane L1 — LIVE)
 
@@ -1923,67 +1790,6 @@ registerShaderChunk(name, glsl)    // SH-10 registry — resolves #include in
 Fixtures: `tests/unit/parity/shader-material.test.ts`,
 `shader-pass-order.test.ts`.
 
-Authored uniform names lower to `u_<name>`. A name that lowers onto a built-in
-declaration (`time` → `u_time`, `resolution` → `u_resolution`,
-`modelViewProjection`, ...) is rejected at `material.custom` time with
-`invalid-material-spec`, which names the collision and lists the built-ins and
-reserved names (before, it passed validation and failed at GLSL compile with
-`'u_time' : redefinition`). Two authored names that lower to the same uniform
-(`foo` and `u_foo`) are rejected too. A shader compile failure's `message` now
-starts with the first lines of the driver info log (the full log stays on
-`error.details.log`).
-
-#### Texture uniforms — R-26
-
-A `texture2d` uniform of `material.custom` / `material.node` (and the sampler a
-`tsl.texture(...)` node creates) now resolves the **real** texture; before, an
-authored handle was lowered to an empty binding and the shader sampled the
-renderer's white fallback.
-
-```ts
-material.custom({ glsl: { fragment }, uniforms: { map: { type: "texture2d", value } } })
-handle.setUniform("map", other)           // swap the bound texture, no recompile
-```
-
-`value` (and a `setUniform` write) may be:
-
-- a `texture.data / canvas / video / load / ...` handle: its device texture is
-  bound with the handle's sampler state (`wrapS/T`, `minFilter/magFilter`,
-  `anisotropy`). Edits to those fields re-sync on the next frame without a
-  program change; `handle.needsUpdate = true` re-uploads the same device texture
-  (one revision bump, no rebind).
-- a rendering `Texture`, for example a `createRenderTarget(...)` colour
-  attachment (`target.colorTexture`).
-- a texture asset ref (`assets.x`): its url loads after mount
-  (`upgradeCustomMaterialTextures`) and binds as a raw (`linear`) texture, since
-  a custom shader owns its colour management. Primitive nodes only; on a
-  `model(...)` node an asset ref keeps the fallback.
-
-A uniform with no texture samples the white fallback and is named, once at
-mount and live on the material, as `[CUSTOM_TEXTURE_UNBOUND]`
-(`material.customDiagnostics`; `[CUSTOM_TEXTURE_ASSET_URL_MISSING]` and
-`[CUSTOM_TEXTURE_ASSET_LOAD_FAILED]` name an asset that could not load). The
-handle's `repeat / offset / rotation / center` are not applied: a custom shader
-receives raw UVs and owns its own transform. Fixtures:
-`tests/unit/parity/shader-material.test.ts`, `tsl.test.ts`,
-`custom-texture-assets.test.ts`, and `tests/browser/parity-tsl.spec.ts` (texels
-on a real WebGL2 GPU).
-
-#### Unused declared uniforms — R-27
-
-A uniform declared in `spec.uniforms` that the shader never reads is optimised
-out of the linked program by the GL compiler. That no longer skips the draw: the
-engine marks author-declared uniforms `optimizable`, so a uniform missing from
-the program's active set is simply not uploaded and `MaterialBinding.bind`
-returns a `[CUSTOM_UNIFORM_UNUSED]` warning listing the names. The same tag
-appears in `material.customDiagnostics` when the shader text never references a
-declared uniform. Bindings that are genuinely required still fail loudly with
-the named `MaterialBindingError` (`Missing shader uniform declared by material
-schema: …`, `Missing material parameter declared by schema: …`): `optimizable`
-is a new optional `MaterialUniformDescriptor` field that only `material.custom`
-and `material.node` set. Fixture: `tests/unit/parity/shader-material.test.ts`
-(R-27 block, including a `ForwardPass` draw on a device that drops the uniform).
-
 ### Geometry breadth and authoring — SG-03/04/05 (lane L2 — LIVE)
 
 ```ts
@@ -2000,85 +1806,14 @@ geometry.wireframe(source: AuraCustomGeometrySpec)
   // three's WireframeGeometry → a "lines"-topology spec
 geometry.merge(specs: readonly AuraCustomGeometrySpec[])
   // BufferGeometryUtils.mergeGeometries over specs
-geometry.toNonIndexed(source: AuraCustomGeometrySpec)
-  // BufferGeometry.toNonIndexed — one vertex per index, in index order;
-  // returns the spec unchanged when it has no indices
-geometry.convex(points: readonly ([x, y, z] | { x, y, z })[])
-  // ConvexGeometry — QuickHull hull as a non-indexed triangle list with
-  // flat face normals (AD-07); throws on < 4 points or a degenerate cloud
 ```
 
-`primitives.box / sphere / plane / cylinder / capsule / torus` are unit-sized
-shapes scaled by `size`; their `params` carry tessellation only (`box`:
-width/height/depthSegments; `sphere`, `plane`: width/heightSegments;
-`cylinder`: radialSegments, heightSegments, radiusTop, radiusBottom, openEnded;
-`capsule`: radialSegments, capSegments; `torus`: radialSegments,
-tubularSegments, tube). Any other key (for example `radius` on a sphere) throws
-`invalid-primitive-params` pointing at `size`, instead of being silently
-ignored as before. Fixture: `tests/unit/parity/geometry-counts.test.ts`.
-
-The public `geometry` namespace ships
-`define / custom / dynamic / edges / wireframe / merge / toNonIndexed /
-convex`. `@aura3d/rendering` also exports the raw generator
-`convexParityMesh({ points })`. Fixtures:
-`tests/unit/parity/geometry-counts.test.ts` (convex and `toNonIndexed`
-compared against three's `ConvexGeometry` and `toNonIndexed`),
+`geometry.toNonIndexed` does not exist as a public member — the equivalent
+`auraGeometryToNonIndexed` helper is internal-only (parity-tested, but not
+re-exported through either barrel). The public `geometry` namespace ships
+`define / custom / dynamic / edges / wireframe / merge`.
+Fixtures: `tests/unit/parity/geometry-counts.test.ts`,
 `geometry-dynamic.test.ts`.
-
-#### Custom per-vertex attributes and points — R-23
-
-three's `geometry.setAttribute("pigmentVein", new BufferAttribute(array, 3))`
-maps to an `attributes` field on `geometry.define` / `geometry.custom` /
-`geometry.dynamic` / `handle.setGeometry`:
-
-```ts
-geometry.dynamic({
-  positions, indices,
-  attributes: {                              // AuraCustomVertexAttributeSpec
-    paintOriginal: { itemSize: 1, data: Float32Array | number[] },
-    pigmentVein:   { itemSize: 3, data: Float32Array | number[] }
-  },
-  topology?: "triangles" | "points"          // "points": one point per vertex
-})
-handle.updateAttribute("pigmentVein", { array, offset? })   // in place, no realloc
-```
-
-Rules (violations throw with the offending name):
-
-- Names are GLSL identifiers (`[A-Za-z_][A-Za-z0-9_]*`), no `gl_` prefix, no
-  `__`, no `a_` / `u_` prefix, and not a built-in semantic (`position`,
-  `normal`, `uv`, `uv1`, `color`, `tangent`, `joints`, `weights`, `index`,
-  `instanceMatrix`, ...). `data.length` must equal `vertexCount * itemSize`
-  and every value must be finite. At most 11 attributes per geometry.
-- The vertex stage of `material.custom` reads each one by name as
-  `in <float|vec2|vec3|vec4> name;`. GLSL1 `attribute T name;` (three
-  `ShaderMaterial` source) is accepted and rewritten to `in`; the rest of
-  GLSL1 (`varying`, `texture2D`, `gl_FragColor`) is not rewritten and must be
-  ported to `#version 300 es` spelling (`in`/`out`, `texture`, an `out vec4`).
-- Declared custom attributes become the material's required attributes: a
-  geometry that lacks one fails the draw with
-  `RENDER_ITEM_GEOMETRY_MATERIAL_CONTRACT` naming it, instead of silently
-  reading the zero default. Engine (`a_*`) and built-in names are not required.
-- Shader locations are stable for WGSL authors: attributes sort by name and take
-  `3, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15` in order (so the alphabetically first
-  attribute is `@location(3)`), regardless of the order they were authored in.
-  The pool avoids 0/1/2/4/7 (position, normal, uv, color, uv1) and stays below
-  WebGPU's default 16 vertex attributes.
-- `geometry.toNonIndexed` expands and `geometry.merge` concatenates custom
-  attributes like three; `merge` throws when the specs carry different custom
-  attribute sets (three returns `null`).
-- `topology: "points"` draws `gl.POINTS`; the vertex shader must set
-  `gl_PointSize`. Normals default to +Y (never computed from face data).
-
-`aura3d migrate three` maps `setAttribute(<custom name>, new
-BufferAttribute(...))` to this field as an `approximate` row with an `a3d:`
-guidance comment. Names the engine cannot carry (`uv1`, `skinIndex`, `a_*`, ...)
-still produce a `TODO(a3d-migrate)`. Fixtures:
-`tests/unit/parity/geometry-custom-attributes.test.ts`,
-`tests/browser/parity-custom-attributes.spec.ts` (remote GPU: colour and point
-size read from custom attributes, `updateAttribute` in place),
-`tests/unit/aura3d-cli/migrate-three.test.ts` (real Strange Orbit capture: 0
-`TODO(a3d-migrate)`).
 
 ### Runtime surface — SG-09, SR-03/04/05/06/07, SH-05/06 (lane L7 — LIVE)
 
@@ -2115,28 +1850,15 @@ raycast(input, options?)            // SR-03 — input is a world ray
   //          near?, far? → hits nearest-first (AABB targets)
 raycastFirst(input, options?)       // nearest-hit shorthand
 
-// SH-06 — @aura3d/engine/renderer: createRenderTarget (value),
-// RenderTarget / RenderTargetDescriptor (types) +
-const target = createRenderTarget(renderer, { width: 512, height: 512 })
-renderer.render({ source, camera?, target })    // render into a target at
+// SH-06 — @aura3d/engine/renderer: RenderTarget (type) +
+renderer.render({ source, camera?, target? })   // render into a target at
                                                 // its own dimensions
-new TexturedUnlitMaterial({ texture: target.colorTexture })
-                                                // sample it as a material map
-                                                // (caller owns target.dispose())
-
-// SR-04 — camera layer mask (three's camera.layers)
-camera.perspective({ ..., layers: 0b01 })       // nodes whose handle .layers
-                                                // do not intersect it are absent
-                                                // from the frame; unset = no filter
-// Renderer level: CameraLike.layerMask does the same for renderer.render().
 ```
 
 `AuraToneMappingOperator` is `"none" | "linear" | "reinhard" | "aces" |
 "agx" | "neutral" | "cineon"` — all six operators map to shipped GLSL
 chunks, including Cineon (landed L7).
-Fixtures: `tests/unit/parity/runtime.test.ts` (camera layer mask, render-target-as-map
-binding), `tests/unit/parity/tone-mapping.test.ts`, and the remote GPU specs
-`tests/browser/parity-runtime.spec.ts` / `tests/browser/parity-disposal.spec.ts`.
+Fixture: `tests/unit/parity/runtime.test.ts`.
 
 ### Animation — SA-01/02/03/04/05/06, SM-03 (lane L8 — LIVE)
 
@@ -2186,263 +1908,35 @@ createAudioAnalyser(node, fftSize?) / new AudioAnalyser(...)
 Coverage: `tests/unit/audio/*` (no dedicated parity fixture — L9 merged the
 attenuation fix, listener wiring, and analyser together).
 
-### Root "." additions beyond the parity lanes
-
-```ts
-import { atmosphere, promptRecipes } from "@aura3d/engine";
-
-// atmosphere — app-first weather namespace delegating to the C-38
-// app.atmosphere member; every call throws a clear error if the
-// atmosphere extension is not installed on the app.
-atmosphere.setWetness(app, 0.8);          // number, not an options object
-atmosphere.setFog(app, { height: 12, density: 0.4 });
-atmosphere.setSky(app, { model: "gradient", zenith: "#2a3550", horizon: "#7f9fd0" });
-atmosphere.state(app);                    // current resolved atmosphere state
-
-// promptRecipes — the prompt-plan recipe table keyed by plan.sceneType;
-// consumed internally by promptPlanToScene / compilePromptPlanV2 and
-// exported for parity inspection and custom-scene extension.
-promptRecipes[plan.sceneType];            // (asset, plan, lookId?) => AuraSceneBuilder
-```
-
-### Compute — SH-04 (lane L1 — LIVE, WebGPU only)
-
-`compute` (root) and `app.compute` expose WGSL compute pipelines, storage and
-uniform buffers, and dispatch over `ComputeContext` from `@aura3d/rendering`.
-WGSL is required; there is no GLSL compute path. `createAuraApp` mounts WebGL2,
-which has no compute stage, so **every working call throws
-`AuraRuntimeError("compute-requires-webgpu")` until a WebGPU device is bound** —
-never a silent no-op.
-
-```ts
-import { compute } from "@aura3d/engine";
-import { Renderer } from "@aura3d/engine/renderer";
-
-const renderer = await Renderer.create({ backend: "webgpu", canvas });
-compute.bind(renderer.device);        // or app.compute.bind(...), or a raw GPUDevice
-
-const pipeline = compute.pipeline({
-  wgsl: `
-    @group(0) @binding(0) var<storage, read_write> data: array<f32>;
-    @group(0) @binding(1) var<uniform> params: vec4<f32>;
-    @compute @workgroup_size(64)
-    fn main(@builtin(global_invocation_id) id: vec3<u32>) { data[id.x] = data[id.x] * params.x; }`,
-  entryPoint: "main",                  // default "main"
-  bindings: [{ binding: 0, type: "storage" }, { binding: 1, type: "uniform" }],
-  workgroupSize: [64]                  // must equal the shader's @workgroup_size; read from the WGSL when literal
-});
-const data = compute.buffer({ data: new Float32Array(1024) });             // usage "storage" (default)
-const params = compute.buffer({ data: new Float32Array([2, 0, 0, 0]), usage: "uniform" });
-compute.dispatch({ pipeline, bindings: { 0: data, 1: params }, items: [1024] }); // or workgroups: [16]
-await compute.idle();
-const bytes = await data.read();       // ArrayBuffer copy via a MAP_READ staging buffer
-data.write(new Float32Array(4), 0);    // 4-byte aligned
-compute.dispose();                     // destroys every buffer, idempotent
-```
-
-- Validation is explicit and named (`invalid-compute-spec`): GLSL-looking source,
-  missing `@compute`/entry point, `workgroupSize` contradicting the shader,
-  workgroup/invocation limits, more than 8 storage / 12 uniform bindings, missing
-  or undeclared bindings, a uniform buffer bound as storage (or the reverse),
-  workgroup counts above `maxComputeWorkgroupsPerDimension`, handles from another
-  context, disposed handles.
-- `compute.bind` rejects a WebGL2 render device with `compute-requires-webgpu`;
-  rebinding disposes the previous context. `ComputeError` (rendering package) carries
-  `compute-invalid-spec | compute-wgsl-required | compute-disposed | compute-read-failed`.
-- `WebGPUDevice.nativeGpuDevice` exposes the owned `GPUDevice`.
-- **Verification:** unit tests use a fake `GPUDevice` (`tests/unit/parity/compute.test.ts`); real
-  execution is covered by `tests/browser/parity-compute.spec.ts` on a remote software-WebGPU
-  (SwiftShader) device with exact GPU read-back: vector add over 65,536 elements, a
-  workgroup shared-memory reduction, 2D and 3D dispatch, `write()` between dispatches, dispose
-  idempotence and the `compute-requires-webgpu` error on a WebGL2 app. Hardware GPUs were not exercised.
-- Codemod: `GPUComputationRenderer` and TSL `compute()` (`ComputeNode`) are labelled
-  `none` — no automatic rewrite; hand-port the kernels to WGSL.
-
-### TSL subset — SH-01 (lane L1 — LIVE, GLSL only)
-
-`tsl.*` builds a small typed node graph; `material.node({ ... })` lowers it to a
-GLSL 300 es `material.custom` spec (the existing SH-02 path is unchanged), so it
-runs on the WebGL2 live path. It is a **subset**, chosen from the HEATSINK probe
-(`evidence/crayon-probes/heatsink.json`: 49 live node materials using `colorNode` 49,
-`opacityNode` 43, `positionNode` 19, `normalNode` 7, `emissiveNode` 2).
-
-```ts
-import { material, tsl } from "@aura3d/engine";
-
-const glow = tsl.uniform(0.5, { name: "uGlow" });               // update later: handle.setUniform("uGlow", 2)
-const wave = tsl.sin(tsl.positionLocal.y.add(tsl.time)).mul(0.1);
-const spec = material.node({
-  positionNode: tsl.positionLocal.add(tsl.normalLocal.mul(wave)),  // vertex stage
-  colorNode: tsl.mix(tsl.color("#223344"), tsl.color("#ff8800"), tsl.uv().x),
-  emissiveNode: tsl.vec3(glow, glow.mul(0.5), 0),                  // added to rgb
-  opacityNode: tsl.uv().y,                                         // multiplies alpha
-  transparent: true
-});
-```
-
-**Outputs** (`material.node` options): `colorNode` (vec3 or vec4), `emissiveNode` (vec3),
-`opacityNode` (float), `positionNode` (vec3, local space; feeds the vertex stage and
-the fragment `positionLocal`/`positionWorld`), `alphaTest`, plus the pass-through
-render state `transparent`, `side`, `depthWrite`, `depthTest`, `blending`, `fog`,
-`defines`. Alpha is `colorNode.a * opacityNode` as in three.
-
-**Supported names** (`tsl.supportedNames` is the source of truth):
-
-- Inputs: `positionLocal`, `positionWorld`, `normalLocal`, `normalWorld`, `uv()` (set 0 only),
-  `time`, `cameraPosition`, `uniform(value, { name?, type? })`,
-  `uniformArray(values, type, { name? })` (lowered to `<name>_0 … <name>_{N-1}`; `.element(i)`
-  with a static index picks one, a node index emits a select ladder), `texture(handle, uv?, { name? })`.
-- Constructors: `color`, `float`, `int`, `bool`, `vec2`, `vec3`, `vec4`; swizzles (`.x`, `.xy`, `.rgb`, …).
-- Math: `add`, `sub`, `mul`, `div`, `mod`, `mix`, `smoothstep`, `clamp`, `pow`, `abs`, `min`, `max`, `dot`,
-  `cross`, `normalize`, `length`, `distance`, `sin`, `cos`, `tan`, `fract`, `floor`, `ceil`, `sign`,
-  `sqrt`, `exp`, `log`, `step`, `atan2`, `saturate`, `oneMinus`, `negate`, `select`; comparisons
-  `lessThan`, `greaterThan`, `lessThanEqual`, `greaterThanEqual`, `equal`, `notEqual`; `and`, `or`, `not`.
-  Every op is also a chainable node method (`a.mul(b).add(c)`).
-- Control flow: `Fn(callback)(...args)` (inlined; arguments are evaluated at the call site),
-  `.toVar()`, `.assign/.addAssign/.subAssign/.mulAssign/.divAssign`, `If(...).ElseIf(...).Else(...)`,
-  `Loop(count | { start, end }, ({ i }) => { ... })` (at most 1024 static iterations).
-  These statements are valid only inside `Fn`; outside it they throw `tsl-statement-outside-fn`.
-
-**Not supported — always a named `AuraRuntimeError`, never a silent no-op:**
-
-| What | Error |
-| --- | --- |
-| `normalNode`, `roughnessNode`, `metalnessNode` (custom materials have no scene-light access, so they would have no effect) | `tsl-unsupported-output` |
-| Any other three/tsl name (`triplanarTexture`, `viewportUV`, `screenUV`, `storage`, `instanceIndex`, `bumpMap`, `normalMap`, …) and `uv(1)` | `tsl-unsupported-node` |
-| `backend: "wgsl"` — WGSL is **not** emitted; GLSL is the only output | `tsl-requires-glsl-backend` |
-| Type errors (vec3 + vec2, arithmetic on bool, `cross` of non-vec3, …) | `tsl-type-mismatch` |
-| Malformed graphs (duplicate uniform names, out-of-range array index, bad alphaTest, …) | `invalid-tsl-graph` |
-
-**Behaviour notes**
-
-- The IR does type inference with GLSL promotion rules (`int` mixes with `float` via explicit casts) and
-  constant-folds all-constant ops. Temporaries are named by emission order, so the same graph always
-  produces byte-identical GLSL and cache keys.
-- `tsl.color("#rrggbb")` is used as authored (no colour-space conversion) and custom materials write linear
-  light: the output stage sRGB-encodes it, so the visible colour is the hex re-encoded (a lighter, less
-  saturated tone) unless the shader decodes it first. `#include <colorspace_decode>` provides
-  `a3dSrgbToLinear(vec3|vec4)` for that; with `output: { toneMapping: "none" }` the decoded colour then shows
-  as authored. Post effects (bloom, grade, vignette, fxaa) do not change a custom shader's colour.
-- Uniform names are validated by the shared `material.custom` rules (a name that lowers into a built-in,
-  such as `time`, is rejected). Unnamed uniforms get `tslUniform0, 1, …` by first use.
-- `tsl.compile(options)` returns `{ spec, vertex, fragment, uniforms }`; `tsl.evaluate(node, context)` is a CPU
-  reference evaluator with the same op semantics (used by the tests to check numeric results).
-- Verified by unit tests (`tests/unit/parity/tsl.test.ts`: GLSL structure, mock-device compile, CPU-interpreter
-  values) and on a WebGL2 browser GPU (`tests/browser/parity-tsl.spec.ts`, ACR run `chf7`: constant, uniform
-  + `setUniform` with no program growth, time-driven, `positionNode`, `Fn`/`Loop`/`If` against the interpreter,
-  and `texture(texture.data(...), uv())` sampling the authored texels). The runner is software WebGL2
-  (SwiftShader); a hardware GPU and WebGPU were not exercised.
-- Codemod: `NodeMaterial`, `MeshBasicNodeMaterial`, `MeshStandardNodeMaterial` → `material.node`
-  (approximate; the notes name the unsupported nodes). `three/tsl` imports are not rewritten.
-  `MeshStandardNodeMaterial` is lit in three but `material.node` output is unlit.
-
 ### Not yet — the only remaining gaps
 
 ```ts
 // batched.mesh promotion to ● — probe-gated on P-2 (native multi-draw/
 //   GPU-residency probe). The API and per-geometry-instancing path are
 //   LIVE today; the ● verdict waits on the probe.
-// SH-01 TSL subset — SHIPPED as `tsl.*` + `material.node` (see "TSL subset —
-//   SH-01" above): a GLSL-only subset, not a TSL compiler. Not yet: lighting
-//   inputs (normalNode/roughnessNode/metalnessNode), WGSL output, and any
-//   three/tsl name outside the supported list (they throw, never no-op).
-// SH-04 compute — SHIPPED as the WebGPU-only `compute.*` surface (see
-//   "Compute — SH-04" above). Not yet: the TSL `compute()` node graph and
-//   a GLSL compute path (neither will land; WGSL is the only kernel language).
+// cameras.array / cameras.stereo (P2) — need viewport/scissor support in
+//   the frame graph.
+// SH-01 TSL subset — three's WebGPU node-material language; P2 /
+//   probe-gated.
+// SH-04 compute — behind the A3D_QR_WEBGPU backend.
 // material.custom `patch` (SH-09) — the field is typed on
 //   AuraCustomMaterialSpec and the compiler include-bakes named chunks,
 //   but promotion to public parity is intentionally deferred; treat patch
 //   as not-yet.
-// SG-11 mixed-child LOD — SHIPPED as `groups.lod({ levels, hysteresis })`:
-//   each level takes arbitrary children (primitives, models, nested groups)
-//   and the production path shows exactly one level's subtree per frame by
-//   camera distance. `distanceLod` remains the single-primitive swap.
+// SG-11 mixed-child LOD — `distanceLod` ships root LOD (one primitive or
+//   geometry per level); three's LOD object with mixed child sets per
+//   level is not yet.
 // SC-04 XR controller buttons.
 // AD-16 rectArea/LightProbe — `lights.rectArea` (alias of lights.rect)
-//   ships and compiles to a real "rect-area" render light;
-//   `lights.lightProbe({ sh: [27], intensity })` ships three's LightProbe:
-//   SH9 coefficients evaluated ±direction into the hemisphere-irradiance
-//   channel (approximate vs full SH9 uniforms-lib; codemod rows say so).
-//   RectAreaLight uniforms-lib fidelity remains open.
+//   ships and compiles to a real "rect-area" render light; three's
+//   RectAreaLight uniforms-lib fidelity and LightProbe (spherical-
+//   harmonics probe) are not yet.
 ```
 
 Dev gates: the parity lanes sit behind `A3D_PARITY_SHADING`,
 `A3D_PARITY_GEOMETRY`, `A3D_PARITY_TEXTURES`, `A3D_PARITY_BATCHING`,
 `A3D_PARITY_LINES`, `A3D_PARITY_RUNTIME` (or the `parity.<area>` short form —
 `?a3d-qr=parity.lines`). Fixture: `tests/unit/parity/l0-flags.test.ts`.
-
-### WebXR — SC-04 (lane L7 — API LIVE, device render path PENDING)
-
-```ts
-import { createAuraApp, xr } from "@aura3d/engine";
-
-const app = createAuraApp(canvas, { scene });
-const vr = xr.button({ app, mode: "immersive-vr", sessionInit: { optionalFeatures: ["hand-tracking"] }, parent: document.body });
-// three's VRButton/ARButton: 'ENTER VR' / 'VR NOT SUPPORTED' / 'STOP'
-// (or 'ENTER AR' / 'AR NOT SUPPORTED'). vr.refresh(), vr.dispose(), vr.state.
-
-app.xr.isSupported("immersive-vr");                 // Promise<boolean>
-const r = await app.xr.enter("immersive-vr", { requiredFeatures: ["local-floor"] });
-// r: { supported, started, mode, reason?, message?, warnings }
-//   reason: "no-webxr" | "unsupported" | "already-presenting" |
-//           "render-path-unavailable" | "no-webgl-context" | "no-xr-layer" | "session-failed"
-app.xr.isPresenting; app.xr.mode; app.xr.lastSample; // controllers, hands, pose
-app.xr.on("sessionstart" | "sessionend" | "frame" | "error", listener);
-await app.xr.exit();
-```
-
-How it renders: while presenting, the window `requestAnimationFrame` loop is
-paused and `session.requestAnimationFrame` drives frames. Each `XRView` becomes
-one render with that eye's view/projection matrices and eye position (a
-per-canvas override read in `compiler/renderer.ts`), drawn into the
-`XRWebGLLayer` framebuffer at `layer.getViewport(view)`. The app clock
-continues from its last value.
-
-**Honest limits.**
-- The render device must expose the optional `AuraXRDeviceBridge` members
-  `setExternalFramebuffer(fb | null, width, height)`,
-  `setViewport(x, y, width, height, { persistent: true })` and `resetViewport()`
-  (see the type for the exact contract). The runtime asks for a **persistent**
-  viewport because the device resets a frame-scoped one at `beginFrame`, and it
-  clears it after every XR frame and at session end. Without the members
-  `enter()` returns `render-path-unavailable` **before** requesting a session, so
-  a headset is never shown a black frame. The WebGL2 device implements them.
-- A view whose viewport has no pixels (a mono emulator's deliberately zero-width
-  right view) is skipped, not rendered, and does not fail the session.
-- A layer with `framebuffer === null` (inline sessions, emulators) draws into the
-  canvas default framebuffer; the per-eye viewports still apply.
-- The default `local-floor` reference space is requested as an optional session
-  feature (browsers reject `requestReferenceSpace("local-floor")` otherwise) and
-  degrades to `local` when the device grants no floor; an explicit
-  `referenceSpace` never degrades silently. A session whose reference space cannot
-  be created is ended, never left open.
-- **Verification.** Unit tests (`tests/unit/parity/xr.test.ts`) use fake
-  `XRSystem`/`XRSession`/`XRWebGLLayer` objects. In addition,
-  `tests/browser/parity-xr.spec.ts` runs the lab `examples/xr-lab/` against an
-  independent WebXR implementation, the Immersive Web Emulation Runtime (iwer,
-  installed in the remote runner image), in headless Chromium with software
-  WebGL2: the button reports `ENTER VR`; a click starts a session whose frames
-  carry two views; each eye's cube centroids match the projection computed from the
-  **emulator's own** view and projection matrices for that same frame (within 7 px);
-  measured stereo disparity matches interocular distance times focal length over
-  depth; moving or turning the emulated headset moves both eyes as predicted;
-  leaving restores the canvas size and the full-frame render exactly; a second
-  session works; a mono device renders full width without GL errors. That run
-  found and fixed four runtime bugs (non-persistent eye viewports, zero-width views
-  failing the session, the reference-space feature, and a leaked session on
-  failure).
-- **Not verified:** a real headset or a native browser WebXR implementation, the
-  opaque non-null `XRWebGLLayer.framebuffer` path, optics, latency, tracking
-  quality and a hardware GPU. The emulator ran at about 0.8 frames per second on
-  software WebGL2, so frame pacing is untested. `makeXRCompatible()` is a no-op in
-  the emulator; on a native browser it may lose and restore the WebGL context
-  when the context was not created XR-compatible (the engine's device-loss
-  recovery then re-mounts).
-- AR passthrough compositing, hit-test source setup, XR controller models and
-  `renderer.setAnimationLoop` hand-off are not implemented.
-- Codemod: `VRButton.createButton`, `ARButton.createButton` and `renderer.xr.*`
-  are rows labelled `pending` (not `approximate`); the device path they waited for
-  now exists, so relabelling them is a separate decision.
 
 ### Excluded by contract — never lands
 
@@ -2452,7 +1946,6 @@ continues from its last value.
 // AD-05 exporters: GLTFExporter OBJExporter PLYExporter STLExporter
 //   USDZExporter DRACOExporter ColladaExporter
 // AD-09 effects/*, AD-10 modifiers (bake offline),
-// AD-11 GPUComputationRenderer (no automatic rewrite: hand-port to the
-//   WGSL `compute.*` surface),
-// AD-13 inspector/transpiler/libs/offscreen (webxr: see `xr.button` / `app.xr`, SC-04)
+// AD-11 GPUComputationRenderer (waits on SH-04 WebGPU compute),
+// AD-13 webxr/inspector/transpiler/libs/offscreen
 ```
