@@ -21,6 +21,7 @@ import { qrPrimitiveGeometryOptions } from "./geometry.js";
 import { createProductionRuntimeRendererInput } from "./renderInput.js";
 import { createProductionRuntimeShadowOptions, describeProductionSpotShadow } from "./shadows.js";
 import { upgradeProductionPrimitiveTextures } from "./textures.js";
+import { upgradeCustomMaterialTextures } from "./customTextures.js";
 import { createProductionRuntimeBackgroundImage } from "./backgroundImage.js";
 import { createProductionParitySurfaces } from "./paritySurfaces.js";
 import { createProductionLensFlares } from "./lensFlare.js";
@@ -129,6 +130,12 @@ export async function createProductionRuntimeSceneRenderer(
     }, webGL2MaxTextureSize(canvas)).catch((error) => {
       textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
     });
+    // R-26: asset-ref textures on material.custom / material.node uniforms.
+    void upgradeCustomMaterialTextures(primitiveEntries, (message) => {
+      textureUpgradeWarnings.add(message);
+    }).catch((error) => {
+      textureUpgradeWarnings.add(`custom material texture pass failed (${error instanceof Error ? error.message : String(error)}); white fallback retained`);
+    });
     const productionEnvironment = createProductionRuntimeEnvironment(snapshot, flags);
     // B3 HDRI upgrade: fire-and-forget after mount. First frames render the
     // studio procedural fallback; the HDR chain swaps the lighting object the
@@ -233,6 +240,11 @@ export async function createProductionRuntimeSceneRenderer(
         textureUpgradeWarnings.add(message);
       }, webGL2MaxTextureSize(canvas)).catch((error) => {
         textureUpgradeWarnings.add(`textured upgrade pass failed (${error instanceof Error ? error.message : String(error)}); scalar materials retained`);
+      });
+      void upgradeCustomMaterialTextures(primitiveEntries, (message) => {
+        textureUpgradeWarnings.add(message);
+      }).catch((error) => {
+        textureUpgradeWarnings.add(`custom material texture pass failed (${error instanceof Error ? error.message : String(error)}); white fallback retained`);
       });
       // C-37: bind the mounted compiled scene so registry add/remove can take the
       // subtree-compile path (no remount) under A3D_QR_COMPILER.

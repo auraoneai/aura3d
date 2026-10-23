@@ -4,13 +4,21 @@ import {
   applyCustomUniformWrites,
   assertAuraCustomMaterialSpec,
   createCustomShaderMaterial,
-  customMaterialCacheKey
+  customMaterialCacheKey,
+  normalizeCustomUniformValue,
+  syncCustomTextureRefs
 } from "../../../packages/engine/src/agent-api/compiler/customMaterial.js";
+import { texture } from "../../../packages/engine/src/agent-api/nodes/texture.js";
+import { createRenderTarget } from "../../../packages/engine/src/public/renderTarget.js";
 import { AuraRuntimeError } from "../../../packages/engine/src/agent-api/compiler/errors.js";
 import {
+  MaterialBinding,
   MockRenderDevice,
   PortableShaderMaterial,
+  Texture,
+  TextureBinding,
   globalShaderSource,
+  isTextureBinding,
   registerShaderChunk
 } from "../../../packages/rendering/src";
 import type { AuraCustomMaterialSpec } from "../../../packages/engine/src/agent-api/nodes/types.js";
@@ -276,5 +284,142 @@ describe("shader compile failure message carries the GLSL info log (R-26)", () =
     const text = describeCompileError(error);
     expect(text).toBe(error.message);
     expect(text.split("'u_time' : redefinition").length - 1).toBe(1);
+  });
+});
+
+
+describe("texture2d uniforms resolve the real texture (R-26)", () => {
+  const TEX_FRAGMENT = `out vec4 outColor;
+void main() { outColor = texture(map, vec2(0.5)); }`;
+  const pixels = (): Uint8Array => new Uint8Array([255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 255, 255]);
+  const texSpec = (value?: unknown): AuraCustomMaterialSpec => ({
+    glsl: { fragment: TEX_FRAGMENT },
+    uniforms: { map: value === undefined ? "texture2d" : { type: "texture2d", value } }
+  });
+  const bindingOf = (instance: PortableShaderMaterial): TextureBinding => {
+    const value = instance.getParameter("u_map");
+    expect(isTextureBinding(value)).toBe(true);
+    return value as TextureBinding;
+  };
+
+  it("a texture.data handle binds its real device texture and MaterialBinding sees no fallback", () => {
+    const handle = texture.data({ width: 2, height: 2, data: pixels() });
+    const instance = createCustomShaderMaterial(texSpec(handle));
+    const binding = bindingOf(instance);
+    expect(binding.texture).toBe(handle.texture);
+    const compiled = instance.compile(new MockRenderDevice());
+    expect(compiled.ok).toBe(true);
+    const bound = new MaterialBinding().bind(instance, compiled.program!);
+    expect(bound.uniforms.get("u_map")).toBe(binding);
+    expect(bound.warnings.join("\n")).not.toContain("using fallback texture");
+    instance.dispose();
+  });
+
+  it("an unset texture2d uniform samples the fallback and is named in customDiagnostics until a texture is bound", () => {
+    const instance = createCustomShaderMaterial(texSpec());
+    expect(bindingOf(instance).texture).toBeNull();
+    const compiled = instance.compile(new MockRenderDevice());
+    expect(new MaterialBinding().bind(instance, compiled.program!).warnings.join("\n")).toContain("using fallback texture: u_map");
+    expect(instance.customDiagnostics.some((line) => line.includes("[CUSTOM_TEXTURE_UNBOUND]") && line.includes('"map"'))).toBe(true);
+    const handle = texture.data({ width: 2, height: 2, data: pixels() });
+    expect(applyCustomUniformWrites(instance, new Map([["map", handle]]))).toBe(1);
+    expect(instance.customDiagnostics).toEqual([]);
+    expect(bindingOf(instance).texture).toBe(handle.texture);
+    instance.dispose();
+  });
+
+  it("the handle's sampler state propagates to the binding", () => {
+    const handle = texture.data({ width: 2, height: 2, data: pixels() });
+    handle.wrapS = "repeat";
+    handle.wrapT = "mirror";
+    handle.magFilter = "nearest";
+    handle.minFilter = "nearest";
+    handle.anisotropy = 4;
+    const instance = createCustomShaderMaterial(texSpec(handle));
+    const { sampler } = bindingOf(instance);
+    expect(sampler.addressU).toBe("repeat");
+    expect(sampler.addressV).toBe("mirror-repeat");
+    expect(sampler.magFilter).toBe("nearest");
+    expect(sampler.minFilter).toBe("nearest");
+    expect(sampler.maxAnisotropy).toBe(4);
+    instance.dispose();
+  });
+
+  it("later edits to the handle's sampler re-sync once without touching the shader key", () => {
+    const handle = texture.data({ width: 2, height: 2, data: pixels() });
+    const instance = createCustomShaderMaterial(texSpec(handle));
+    const shaderKey = instance.shaderKey;
+    expect(syncCustomTextureRefs(instance)).toBe(0);
+    handle.wrapS = "repeat";
+    expect(syncCustomTextureRefs(instance)).toBe(1);
+    expect(bindingOf(instance).sampler.addressU).toBe("repeat");
+    expect(syncCustomTextureRefs(instance)).toBe(0);
+    expect(instance.shaderKey).toBe(shaderKey);
+    instance.dispose();
+  });
+
+  it("needsUpdate re-uploads the same device texture: one revision bump, no rebind, no recompile key change", () => {
+    const handle = texture.data({ width: 2, height: 2, data: pixels() });
+    const instance = createCustomShaderMaterial(texSpec(handle));
+    expect(instance.compile(new MockRenderDevice()).ok).toBe(true);
+    // The renderer's program cache keys on shaderKey + sources; neither may move.
+    const shaderKey = instance.shaderKey;
+    const sources = instance.sources;
+    const before = bindingOf(instance);
+    const revision = handle.texture.revision;
+    handle.needsUpdate = true;
+    expect(handle.texture.revision).toBe(revision + 1);
+    expect(syncCustomTextureRefs(instance)).toBe(0);
+    expect(bindingOf(instance)).toBe(before);
+    expect(bindingOf(instance).texture).toBe(handle.texture);
+    expect(instance.shaderKey).toBe(shaderKey);
+    expect(instance.sources).toBe(sources);
+    instance.dispose();
+  });
+
+  it("setUniform(name, newHandle) swaps the bound texture, is idempotent, and becomes the live ref", () => {
+    const a = texture.data({ width: 2, height: 2, data: pixels() });
+    const b = texture.data({ width: 2, height: 2, data: pixels() });
+    const instance = createCustomShaderMaterial(texSpec(a));
+    const shaderKey = instance.shaderKey;
+    expect(applyCustomUniformWrites(instance, new Map([["map", b]]))).toBe(1);
+    expect(bindingOf(instance).texture).toBe(b.texture);
+    expect(applyCustomUniformWrites(instance, new Map([["map", b]]))).toBe(0);
+    b.wrapT = "repeat";
+    expect(syncCustomTextureRefs(instance)).toBe(1);
+    expect(bindingOf(instance).sampler.addressV).toBe("repeat");
+    a.wrapT = "mirror";
+    expect(syncCustomTextureRefs(instance)).toBe(0);
+    expect(instance.shaderKey).toBe(shaderKey);
+    instance.dispose();
+  });
+
+  it("a raw Texture and a render-target colour attachment bind directly", () => {
+    const raw = new Texture({ width: 2, height: 2, data: pixels(), label: "raw" });
+    const rawInstance = createCustomShaderMaterial(texSpec(raw));
+    expect(bindingOf(rawInstance).texture).toBe(raw);
+    rawInstance.dispose();
+    const device = new MockRenderDevice();
+    const target = createRenderTarget({ device }, { width: 8, height: 8, format: "rgba8", depth: false });
+    const instance = createCustomShaderMaterial(texSpec());
+    expect(applyCustomUniformWrites(instance, new Map([["map", target.colorTexture]]))).toBe(1);
+    expect(bindingOf(instance).texture).toBe(target.colorTexture);
+    instance.dispose();
+  });
+
+  it("asset refs lower to a placeholder until loaded; anything else is rejected", () => {
+    const assetRef = { kind: "aura-asset-ref", type: "texture", id: "diffuse", url: "/diffuse.png" };
+    const placeholder = normalizeCustomUniformValue("texture2d", assetRef, "map");
+    expect(isTextureBinding(placeholder) && placeholder.texture === null).toBe(true);
+    for (const bad of [1, [1, 2, 3], "diffuse", { kind: "aura-asset-ref", type: "model", id: "m" }]) {
+      expect(() => normalizeCustomUniformValue("texture2d", bad, "map")).toThrow(AuraRuntimeError);
+    }
+  });
+
+  it("a ref with no backing texture keeps the fallback placeholder instead of failing the material", () => {
+    const instance = createCustomShaderMaterial(texSpec({ kind: "aura-texture-ref", id: "texture-unbacked" }));
+    expect(bindingOf(instance).texture).toBeNull();
+    expect(instance.customDiagnostics.some((line) => line.includes("[CUSTOM_TEXTURE_UNBOUND]"))).toBe(true);
+    instance.dispose();
   });
 });

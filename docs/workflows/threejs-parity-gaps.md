@@ -1,9 +1,9 @@
 # PRD — three.js → Aura3D Parity
 
-**Status:** v6 · 2026-10-22. Released as **4.0.5** (npm, all 24 public packages; git tag `v4.0.5`).
+**Status:** v7 · 2026-10-23. Released as **4.0.6** (npm, all 24 public packages; git tag `v4.0.6`).
 The engine surface in this document is complete except: **Phase exits B, C, D** (game ports, dropped by decision),
 the **fixed-input captures for eight games** (R-25, partial), and **real-device
-verification** of WebXR, WebGPU compute, TSL-emitted GLSL and WebGPU canvas presentation (R-22).
+verification** of WebXR, WebGPU compute and WebGPU canvas presentation (R-22). `material.node` (TSL) was verified on a remote software-WebGL2 runner in 4.0.6, not on a hardware GPU.
 `A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are default-on; the other four flags gate nothing.
 **Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
@@ -946,7 +946,7 @@ means "implemented and tested".
 - [x] L3-03 camera `Spline.ts` consumes `M/curves` (new `ClampedCatmullRomCurve3`, any alpha; duplicate derivative and `curveTypeFor` fallback deleted; also fixed an arc-length test that was failing at HEAD; R-14)
 
 ### P2 — completeness
-- [x] SH-01 TSL subset (`tsl` + `material.node` in `packages/engine/src/agent-api/nodes/tsl/`; GLSL 300 es emitter with type inference and constant folding; `tsl.test.ts` 24 tests including a JS reference interpreter and mock-device compile; released in 4.0.5). Limits: `normalNode`/`roughnessNode`/`metalnessNode` unsupported (custom materials have no scene-light access; HEATSINK uses `normalNode` in 7 of 49 node materials), other three/tsl names throw `tsl-unsupported-node`, WGSL not emitted, GLSL not yet verified on a real GPU
+- [x] SH-01 TSL subset (`tsl` + `material.node` in `packages/engine/src/agent-api/nodes/tsl/`; GLSL 300 es emitter with type inference and constant folding; `tsl.test.ts` 24 tests including a JS reference interpreter and mock-device compile; released in 4.0.5; remote software-WebGL2 run of `tests/browser/parity-tsl.spec.ts` passes all 7 cases incl. authored-texel sampling after the R-26 texture-binding fix in 4.0.6). Limits: `normalNode`/`roughnessNode`/`metalnessNode` unsupported (custom materials have no scene-light access; HEATSINK uses `normalNode` in 7 of 49 node materials), other three/tsl names throw `tsl-unsupported-node`, WGSL not emitted, `time` is wall-clock not stepped time, texture `repeat`/`offset`/`rotation` not applied
 - [x] SH-04 public WebGPU-only `compute.*` (`packages/rendering/src/compute/`, `compute.pipeline/buffer/dispatch`, `app.compute`; WGSL required; WebGL2 apps get `compute-requires-webgpu`; `tests/unit/parity/compute.test.ts` 26 tests against a fake `GPUDevice`). Real-GPU execution is untested: the remote runner's software WebGPU cannot run it (R-22)
 - [x] SH-09 material `patch` (`shader-material.test.ts` — patch chunks hash into program key)
 - [x] SG-08 sprites (`parity-lines` green — billboard + rotation pixel-proven)

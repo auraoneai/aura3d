@@ -16,7 +16,7 @@ import type { GltfBounds } from "./types/runtime.js";
 import type { LabelTelemetry, TextBucketSummary } from "../LabelTelemetry.js";
 import type { ProjectedLabel } from "../WorldLabelRenderer.js";
 import type { PublicPlatformerGeometryContract, PublicRacingGeometryContract } from "../PublicGameGeometry";
-import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, TexturedPBRMaterial, CollectedLight, RenderDeviceDiagnostics, RendererPostprocessExecutionMode, WrinkleMapHook } from "@aura3d/rendering";
+import type { SdfTextOcclusionPolicy, Geometry, InstancedPBRMaterial, PBRMaterial, TexturedPBRMaterial, CollectedLight, RenderDeviceDiagnostics, RendererPostprocessExecutionMode, WrinkleMapHook, Texture } from "@aura3d/rendering";
 import type { TypedGLBActor, TypedGLBActorEvidence } from "../../production-runtime/TypedGLBActor.js";
 import type { WebGLPrimitive } from "./types/runtime.js";
 import type { animation } from "./animation.js";
@@ -2598,7 +2598,7 @@ export type AuraCustomUniformType = "f32" | "i32" | "bool" | "vec2" | "vec3" | "
 /** Uniform spec: bare type name, or `{ type, value }` for an initial value. */
 export type AuraCustomUniformSpec = AuraCustomUniformType | { readonly type: AuraCustomUniformType; readonly value?: unknown };
 /** Runtime uniform write (handle.setUniform / setPassUniform). */
-export type AuraUniformValue = number | boolean | readonly number[] | AuraVec3 | readonly AuraVec3[] | readonly [number, number] | readonly [number, number, number, number] | Float32Array | Int32Array | AuraTextureRef;
+export type AuraUniformValue = number | boolean | readonly number[] | AuraVec3 | readonly AuraVec3[] | readonly [number, number] | readonly [number, number, number, number] | Float32Array | Int32Array | AuraTextureRef | AuraAssetRef<"texture"> | Texture;
 
 /**
  * SH-02 (L1): `material.custom(spec)` payload. GLSL is required —

@@ -1,8 +1,14 @@
 # Changelog
 
-Version: 4.0.5
+Version: 4.0.6
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.0.6 (2026-10-23)
+
+- **Fix: `texture2d` uniforms on `material.custom` and `material.node` now bind the real authored texture.** In 4.0.5 a `texture.*` handle passed as a `texture2d` uniform (and therefore `tsl.texture(...)`) was lowered to a non-required binding, so the shader sampled the white fallback. Handles, raw textures (including `createRenderTarget` colour attachments) and texture asset refs now resolve to real textures and bind with their own sampler state; `needsUpdate` re-uploads without a program rebuild and `setUniform(name, newHandle)` swaps the texture. A uniform with no texture still samples white and is now reported as `CUSTOM_TEXTURE_UNBOUND`. Limits: a handle's `repeat`, `offset` and `rotation` are not applied (custom shaders receive raw UVs), and asset refs bind after mount, for primitive nodes only (`model(...)` nodes keep the fallback).
+- **Verification:** `material.node` was run on a remote software-WebGL2 runner (SwiftShader, not a hardware GPU): constant colour, `uniform` + `setUniform` with no program growth, time-driven graphs, `positionNode` displacement, `Fn`/`If`/`Loop` graphs against the JS interpreter, the unsupported-node error, and authored-texel sampling all pass.
+- **Note:** the TSL `time` node is wall-clock (`performance.now()` when each frame graph is built), not `app.step(dt)` time, so stepped runs do not give a deterministic time phase.
 
 ## 4.0.5 (2026-10-22)
 

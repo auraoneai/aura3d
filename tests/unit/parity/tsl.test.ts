@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { material, texture, tsl } from "../../../packages/engine/src/agent-api/index.js";
 import { applyCustomUniformWrites, createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial.js";
 import { AuraRuntimeError } from "../../../packages/engine/src/agent-api/compiler/errors.js";
-import { MockRenderDevice } from "../../../packages/rendering/src";
+import { MaterialBinding, MockRenderDevice, isTextureBinding, type TextureBinding } from "../../../packages/rendering/src";
 import type { TslNode } from "../../../packages/engine/src/agent-api/nodes/tsl/index.js";
 
 // SH-01 / L1-11 — TSL subset: type inference, constant folding, GLSL emission,
@@ -400,6 +400,50 @@ describe("material.node compile-through (material.custom path)", () => {
     expect(instance.sources.glsl.fragment).toContain("uniform sampler2D u_uMap;");
     expect(instance.sources.glsl.fragment).toMatch(/texture\(uMap, /);
     expect(instance.compile(new MockRenderDevice()).ok).toBe(true);
+    instance.dispose();
+  });
+});
+
+
+describe("tsl.texture() binds authored textures (R-26)", () => {
+  const data = (fill: number): Uint8Array => new Uint8Array(16).fill(fill);
+  const bindingOf = (instance: ReturnType<typeof createCustomShaderMaterial>): TextureBinding => {
+    const found = [...instance.getParameters().values()].find(isTextureBinding);
+    expect(found).toBeDefined();
+    return found as TextureBinding;
+  };
+
+  it("tsl.texture(texture.data(...), uv()) samples the data texture, not the white fallback", () => {
+    const handle = texture.data({ width: 2, height: 2, data: data(200) });
+    const spec = material.node({ colorNode: tsl.texture(handle, tsl.uv(), { name: "uMap" }) });
+    const instance = createCustomShaderMaterial(spec.custom!);
+    const binding = bindingOf(instance);
+    expect(binding.texture).toBe(handle.texture);
+    expect(instance.customDiagnostics).toEqual([]);
+    const compiled = instance.compile(new MockRenderDevice());
+    expect(compiled.ok).toBe(true);
+    const bound = new MaterialBinding().bind(instance, compiled.program!);
+    expect(bound.warnings.join("\n")).not.toContain("using fallback texture");
+    instance.dispose();
+  });
+
+  it("setUniform on the texture node's name swaps the bound texture without a program change", () => {
+    const first = texture.data({ width: 2, height: 2, data: data(10) });
+    const second = texture.data({ width: 2, height: 2, data: data(240) });
+    const spec = material.node({ colorNode: tsl.texture(first, tsl.uv(), { name: "uMap" }) });
+    const instance = createCustomShaderMaterial(spec.custom!);
+    const shaderKey = instance.shaderKey;
+    expect(applyCustomUniformWrites(instance, new Map([["uMap", second]]))).toBe(1);
+    expect(bindingOf(instance).texture).toBe(second.texture);
+    expect(applyCustomUniformWrites(instance, new Map([["uMap", second]]))).toBe(0);
+    expect(instance.shaderKey).toBe(shaderKey);
+    instance.dispose();
+  });
+
+  it("a texture node left without a texture is named in customDiagnostics", () => {
+    const spec = material.node({ colorNode: tsl.texture(undefined, tsl.uv(), { name: "uMap" }) });
+    const instance = createCustomShaderMaterial(spec.custom!);
+    expect(instance.customDiagnostics.some((line) => line.includes("[CUSTOM_TEXTURE_UNBOUND]"))).toBe(true);
     instance.dispose();
   });
 });

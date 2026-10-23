@@ -10,7 +10,7 @@ import { createModelMatrix, primitiveSize, shouldNormalizeModelNode } from "../s
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { evaluateDistancePrioritizedMipResidency, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
 import { PortableShaderMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
-import { applyCustomUniformWrites, createCustomShaderMaterial, customUniformWritesFor } from "./customMaterial.js";
+import { applyCustomUniformWrites, createCustomShaderMaterial, customUniformWritesFor, syncCustomTextureRefs } from "./customMaterial.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { AuraRuntimeError } from "./errors.js";
 import { blankProductionPrimitiveTextureState, createSdfTextPrimitiveResource } from "./textures.js";
@@ -139,6 +139,11 @@ export function resolveProductionPrimitiveRuntimeState(
   entry: ProductionRuntimePrimitiveEntry,
   runtimeNodes: AuraRuntimeNodeRegistry | undefined
 ): ProductionRuntimePrimitiveState {
+  // R-26: live `texture.*` handles bound to custom-material texture2d uniforms
+  // keep their sampler state in sync here, with or without a runtime id.
+  for (const resource of entry.resources) {
+    if (resource.material instanceof PortableShaderMaterial) syncCustomTextureRefs(resource.material);
+  }
   const runtimeId = entry.node.runtime?.id;
   if (!runtimeId) return { node: entry.node, visible: true };
   const runtimeHandle = runtimeNodes?.get(runtimeId) as (NonNullable<ReturnType<AuraRuntimeNodeRegistry["get"]>> & {

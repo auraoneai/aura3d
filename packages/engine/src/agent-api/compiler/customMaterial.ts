@@ -24,8 +24,16 @@
  * Known honest limits (documented, not silently applied):
  *   - `i32`/`bool` ride the float uniform channel; GLSL aliases emit int()/bool() casts.
  *   - `mat3` is padded into a mat4 slot; its alias emits `mat3(u_x)`.
- *   - `texture2d` accepts a `TextureBinding`; an `AuraTextureRef` lowers to a
- *     non-required binding so the renderer uses its fallback texture.
+ *   - `texture2d` accepts a `TextureBinding`, a `texture.*` handle
+ *     (`AuraTextureRef`, resolved to its real device texture with the handle's
+ *     sampler state), a raw rendering `Texture` (for example a render-target
+ *     colour attachment), or a texture asset ref (`assets.x`, loaded by
+ *     `upgradeCustomMaterialTextures` after mount). Handle sampler fields are
+ *     re-synced every frame without recompiling; `needsUpdate` re-uploads the
+ *     same device texture. A uniform with no texture samples the renderer's
+ *     white fallback and is named in `customDiagnostics`
+ *     (`CUSTOM_TEXTURE_UNBOUND`). The handle's `repeat/offset/rotation` are not
+ *     applied: a custom shader receives raw UVs and owns its own transform.
  *   - `fog` is recorded in `customDiagnostics`, never silently applied.
  */
 
@@ -34,6 +42,7 @@ import {
   ShaderPreprocessor,
   ShaderLibrary,
   SHADER_CHUNKS,
+  Texture,
   TextureBinding,
   globalShaderChunkEntries,
   globalShaderWgslChunkSource,
@@ -49,7 +58,9 @@ import {
 import type { BlendMode } from "@aura3d/rendering/contracts";
 import { AuraRuntimeError } from "./errors.js";
 import { assertCustomAttributeName } from "../RootGeometry.js";
-import type { AuraCustomMaterialSpec, AuraCustomUniformType, AuraUniformValue } from "../nodes/types.js";
+import { auraTextureRefTexture } from "../nodes/texture.js";
+import type { AuraAssetRef, AuraCustomMaterialSpec, AuraCustomUniformType, AuraTextureRef, AuraUniformValue } from "../nodes/types.js";
+import { auraTextureRefSampler, auraTextureRefTransform, isAuraTextureRef } from "./textures.js";
 
 /* ------------------------------------------------------------------------- */
 /* Validation (SH-02)                                                         */
@@ -165,6 +176,21 @@ interface LoweredUniform extends PortableShaderUniform {
 const isTextureRef = (value: unknown): value is { readonly kind: "aura-texture-ref"; readonly id: string } =>
   isRecord(value) && value.kind === "aura-texture-ref" && typeof value.id === "string";
 
+/** `assets.x` texture refs carry a url; the texture itself loads after mount. */
+const isAssetTextureRef = (value: unknown): value is AuraAssetRef<"texture"> =>
+  isRecord(value) && value.kind === "aura-asset-ref" && value.type === "texture";
+
+/**
+ * A `texture.*` handle → a binding over its real device texture with the
+ * handle's sampler state. A ref with no backing texture (never uploaded) keeps
+ * the fallback-sampling placeholder so the material still compiles.
+ */
+function bindingForTextureRef(ref: AuraTextureRef, name: string): TextureBinding {
+  const texture = auraTextureRefTexture(ref);
+  if (!texture) return new TextureBinding({ name, texture: null, required: false });
+  return new TextureBinding({ name, texture, sampler: auraTextureRefSampler(ref), transform: auraTextureRefTransform(ref), required: false });
+}
+
 const numericArray = (value: unknown): readonly number[] | null => {
   if (typeof value === "number") return [value];
   if (typeof value === "boolean") return [value ? 1 : 0];
@@ -210,8 +236,11 @@ const scalarCount = (type: AuraCustomUniformType): number =>
 export function normalizeCustomUniformValue(type: AuraCustomUniformType, value: unknown, name = "uniform"): UniformValue {
   if (type === "texture2d") {
     if (isTextureBinding(value)) return value;
-    if (isTextureRef(value)) return new TextureBinding({ name, texture: null, required: false });
-    invalidSpec("material.custom", `uniform "${name}" expects a TextureBinding or AuraTextureRef value`);
+    if (value instanceof Texture) return new TextureBinding({ name, texture: value, required: false });
+    if (isAuraTextureRef(value)) return bindingForTextureRef(value, name);
+    // Placeholder until `upgradeCustomMaterialTextures` loads the asset's url.
+    if (isAssetTextureRef(value)) return new TextureBinding({ name, texture: null, required: false });
+    invalidSpec("material.custom", `uniform "${name}" expects a TextureBinding, a texture handle (texture.*), a Texture (for example a render-target colour attachment) or a texture asset ref`);
   }
   if (type === "color3" && typeof value === "string") {
     const color = parseColor3(value);
@@ -479,6 +508,8 @@ export function stableSpecStringify(value: unknown): string {
 const normalizeHashableValue = (value: unknown): unknown => {
   if (isTextureBinding(value)) return { kind: "texture-binding", name: value.name };
   if (isTextureRef(value)) return { kind: "texture-ref", id: value.id };
+  if (value instanceof Texture) return { kind: "texture", label: value.label };
+  if (isAssetTextureRef(value)) return { kind: "asset-texture-ref", id: value.id };
   return numericArray(value) ?? value;
 };
 
@@ -513,6 +544,16 @@ const adapterPreprocessor = new ShaderPreprocessor();
 const globalSourceRefs = new Map<string, number>();
 /** material → authored-name → lowered uniform descriptor (runtime setUniform lookup). */
 const publicUniformsByMaterial = new WeakMap<PortableShaderMaterial, ReadonlyMap<string, LoweredUniform>>();
+/** material → lowered uniform name → live `texture.*` handle bound there (sampler state re-syncs each frame). */
+const liveTextureRefsByMaterial = new WeakMap<PortableShaderMaterial, Map<string, { readonly publicName: string; readonly ref: AuraTextureRef }>>();
+
+/** Lowered `u_*` uniform name for an authored uniform name. */
+export const customUniformNameFor = (publicName: string): string => publicName.startsWith("u_") ? publicName : `u_${publicName}`;
+
+/** Authored names of the texture2d uniforms declared on a custom material. */
+export function customTextureUniformNames(material: PortableShaderMaterial): readonly string[] {
+  return [...(publicUniformsByMaterial.get(material)?.values() ?? [])].filter((uniform) => uniform.auraType === "texture2d").map((uniform) => uniform.publicName);
+}
 
 function adapterLibraryFor(_name: string): ShaderLibrary {
   // One fresh library per material instance: two materials that lower to the
@@ -569,6 +610,12 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     });
     this.fogRequested = spec.fog === true;
     publicUniformsByMaterial.set(this, new Map(uniforms.map((uniform) => [uniform.publicName, uniform])));
+    const liveRefs = new Map<string, { readonly publicName: string; readonly ref: AuraTextureRef }>();
+    for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {
+      const value = isRecord(uniform) ? uniform.value : undefined;
+      if (isAuraTextureRef(value)) liveRefs.set(customUniformNameFor(publicName), { publicName, ref: value });
+    }
+    if (liveRefs.size > 0) liveTextureRefsByMaterial.set(this, liveRefs);
     registerGlobalShaderSource(this.sourcePair(this.sources));
     globalSourceRefs.set(this.shaderKey, (globalSourceRefs.get(this.shaderKey) ?? 0) + 1);
   }
@@ -585,9 +632,21 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
     }
   }
 
-  /** Diagnostics authored-side: `fog` is recorded here, never silently applied. */
+  /**
+   * Diagnostics authored-side: `fog` is recorded here, never silently applied,
+   * and a texture2d uniform with no texture is named (`CUSTOM_TEXTURE_UNBOUND`)
+   * because the shader then samples the renderer's white fallback.
+   */
   get customDiagnostics(): readonly string[] {
-    return this.fogRequested ? ["material.custom: fog is not wired to custom shaders — the field is recorded, not applied"] : [];
+    const out: string[] = [];
+    if (this.fogRequested) out.push("material.custom: fog is not wired to custom shaders — the field is recorded, not applied");
+    for (const publicName of customTextureUniformNames(this)) {
+      const binding = this.getParameter(customUniformNameFor(publicName));
+      if (isTextureBinding(binding) && !binding.texture) {
+        out.push(`[CUSTOM_TEXTURE_UNBOUND] material.custom: texture uniform "${publicName}" has no texture; the shader samples the white fallback`);
+      }
+    }
+    return out;
   }
 }
 
@@ -621,7 +680,7 @@ export function clearCustomUniformWrites(runtimeId: string): void {
 }
 
 const inferTypeFromValue = (value: unknown): AuraCustomUniformType => {
-  if (isTextureBinding(value) || isTextureRef(value)) return "texture2d";
+  if (isTextureBinding(value) || isTextureRef(value) || value instanceof Texture || isAssetTextureRef(value)) return "texture2d";
   const scalars = numericArray(value);
   switch (scalars?.length ?? 0) {
     case 2: return "vec2";
@@ -644,9 +703,19 @@ export function applyCustomUniformWrites(material: PortableShaderMaterial, write
   for (const [publicName, value] of writes) {
     const lowered = publics?.get(publicName);
     const type = lowered?.auraType ?? inferTypeFromValue(value);
-    const uniformName = lowered?.name ?? (publicName.startsWith("u_") ? publicName : `u_${publicName}`);
+    const uniformName = lowered?.name ?? customUniformNameFor(publicName);
     if (!material.uniformSchema.some((uniform) => uniform.name === uniformName)) continue;
     const normalized = normalizeCustomUniformValue(type, value, publicName);
+    if (type === "texture2d") {
+      // A newly written handle becomes the live ref; any other texture value stops the per-frame sync.
+      let refs = liveTextureRefsByMaterial.get(material);
+      if (isAuraTextureRef(value)) {
+        if (!refs) { refs = new Map(); liveTextureRefsByMaterial.set(material, refs); }
+        refs.set(uniformName, { publicName, ref: value });
+      } else {
+        refs?.delete(uniformName);
+      }
+    }
     if (uniformValuesEqual(material.getParameters().get(uniformName), normalized)) continue;
     material.setParameter(uniformName, normalized);
     applied += 1;
@@ -654,8 +723,42 @@ export function applyCustomUniformWrites(material: PortableShaderMaterial, write
   return applied;
 }
 
+/**
+ * Re-derives each live `texture.*` handle's binding (texture + sampler state)
+ * and writes it only when it changed, so wrap/filter edits on the handle reach
+ * the draw without a program change. `needsUpdate` needs no sync: the binding
+ * points at the same device texture, whose revision the device re-uploads.
+ */
+export function syncCustomTextureRefs(material: PortableShaderMaterial): number {
+  const refs = liveTextureRefsByMaterial.get(material);
+  if (!refs?.size) return 0;
+  let applied = 0;
+  for (const [uniformName, { publicName, ref }] of refs) {
+    const next = bindingForTextureRef(ref, publicName);
+    if (textureBindingsEqual(material.getParameters().get(uniformName), next)) continue;
+    material.setParameter(uniformName, next);
+    applied += 1;
+  }
+  return applied;
+}
+
+const samplersEqual = (a: TextureBinding["sampler"], b: TextureBinding["sampler"]): boolean =>
+  a.minFilter === b.minFilter && a.magFilter === b.magFilter && a.addressU === b.addressU && a.addressV === b.addressV
+  && a.addressW === b.addressW && a.maxAnisotropy === b.maxAnisotropy && a.compare === b.compare && a.mirror === b.mirror;
+
+const pairEqual = (a: readonly number[], b: readonly number[]): boolean => a.length === b.length && a.every((entry, index) => entry === b[index]);
+
+function textureBindingsEqual(a: unknown, b: unknown): boolean {
+  if (!isTextureBinding(a) || !isTextureBinding(b)) return false;
+  return a === b || (
+    a.texture === b.texture && samplersEqual(a.sampler, b.sampler)
+    && pairEqual(a.offset, b.offset) && pairEqual(a.scale, b.scale) && a.rotation === b.rotation
+  );
+}
+
 const uniformValuesEqual = (a: unknown, b: unknown): boolean => {
   if (a === b) return true;
+  if (isTextureBinding(a) || isTextureBinding(b)) return textureBindingsEqual(a, b);
   if (typeof a === "number" && typeof b === "number") return a === b;
   const av = numericArray(a);
   const bv = numericArray(b);

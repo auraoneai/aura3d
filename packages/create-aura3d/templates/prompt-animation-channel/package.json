@@ -11,8 +11,8 @@
     "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/engine": "4.0.5",
-    "@aura3d/assets": "4.0.5"
+    "@aura3d/engine": "4.0.6",
+    "@aura3d/assets": "4.0.6"
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",
