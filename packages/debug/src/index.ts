@@ -44,3 +44,33 @@ export type {
 } from "./SceneHelpers.js";
 export { ReportExporter } from "./ReportExporter.js";
 export type { DebugReport } from "./ReportExporter.js";
+export {
+  DEFAULT_HEAL_LADDER,
+  DEFAULT_HEAL_STORAGE_KEY,
+  createBlackFrameWatch,
+  formatEngineSection,
+  formatGpuProbe,
+  healParams,
+  healRungName,
+  healStage,
+  installDiagnosticsPanel,
+  installSafetyNet,
+  isBlackFrame,
+  probeGpu,
+  resolveQualitySwitches
+} from "./safety/index.js";
+export type {
+  BlackFrameWatch,
+  BlackFrameWatchOptions,
+  DiagnosticsAppLike,
+  DiagnosticsPanelHandle,
+  DiagnosticsPanelOptions,
+  GpuProbe,
+  HealRung,
+  QualitySwitches,
+  ResolveQualitySwitchesOptions,
+  SafetyNet,
+  SafetyNetOptions,
+  SafetyReport,
+  SafetySettings
+} from "./safety/index.js";
