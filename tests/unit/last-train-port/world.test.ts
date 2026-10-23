@@ -52,10 +52,13 @@ describe("last-train-port rendering helpers", () => {
     expect([a(), a(), a()]).toEqual([b(), b(), b()]);
   });
 
-  it("builds the whole scene (sky, cloud sea, six towns, tram, seats, weather) with unique node names", () => {
+  it("builds the whole scene (sky, cloud sea, six towns, tram, seats, weather, lighting rig) with unique node names", () => {
     const world = buildWorld(data);
     const json = JSON.stringify(world.scene.toJSON());
-    for (const name of ["sky", "cloud-sea", "island-0", "island-5", "platform-3", "tram-body", "pax-11-sleeper", "weather", "bed-5", "rail-r-0", "hemi-night", "lamp-5-9"]) expect(json, name).toContain(`"${name}"`);
+    for (const name of ["sky", "cloud-sea", "islands", "platforms", "tram-livery", "tram-wood", "pax-11-sleeper", "weather", "track-bed", "track-rails", "sun", "lamps", "sleepers", "head-11", "landmark-5", "motes", "facades-0", "roofs-2", "stonework", "plaza-cobbles", "clock-faces"]) expect(json, name).toContain(`"${name}"`);
+    const nightJson = JSON.stringify(world.nightScene.toJSON());
+    expect(nightJson).toContain('"moon"');
+    expect(nightJson).not.toContain('"sun"');
     const names = [...json.matchAll(/"name":"([^"]+)"/g)].map((m) => m[1]!);
     expect(new Set(names).size).toBe(names.length);
   });

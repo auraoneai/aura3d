@@ -10,8 +10,9 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * through `window.__AURA_ROADSTER_HOURS__`:
  *   - boots on WebGL2 with no engine error,
  *   - the route frames contain real road pixels and change as the car drives,
- *   - every traffic and lineup vehicle is in ONE batched mesh and the batched draw count is reported and bounded
- *     (one multi-draw group, or at most one draw per pooled geometry in the fallback),
+ *   - every traffic and lineup vehicle is a batched instance (baked CC0 cars in one batched mesh per material group: paint, trim,
+ *     glass, head and tail lights; box rigs in their own) and the batched draw count is reported and bounded
+ *     (a few multi-draw groups per mesh, or at most one draw per pooled geometry in the fallback),
  *   - the recorded reference input script (captured from the original game) replays in the live page to the original's
  *     final state, and the closed-loop autopilot completes the route.
  * Compact JPEG frames are written to the log as `ROADSTER_HOURS_FRAME <name> <base64>` (ACR runs cannot return files).
@@ -94,11 +95,22 @@ test.describe("roadster-hours-port (Phase B)", () => {
       console.log(`ROADSTER_HOURS_FRAME ${name} ${jpeg.slice(jpeg.indexOf(",") + 1)}`);
     };
 
+    // Software GL compiles the route's programs lazily: render until the canvas has structure before measuring a frame.
+    const settle = async (): Promise<Stats> => {
+      let stats = await api((a) => a.stats());
+      for (let tries = 0; tries < 40 && stats.lumaStd <= 3; tries++) {
+        await page.waitForTimeout(2500);
+        await api((a) => a.renderNow());
+        stats = await api((a) => a.stats());
+      }
+      return stats;
+    };
+
     // ---- menu / countdown frame, then drive the autopilot and compare frames
     await api((a) => { a.begin(); a.renderNow(); });
     await page.waitForTimeout(1500);
     await api((a) => a.renderNow());
-    const start = await api((a) => a.stats());
+    const start = await settle();
     console.log("ROADSTER_HOURS_INFO", JSON.stringify(await api((a) => {
       const d = a.diagnostics() as unknown as Record<string, unknown> | null;
       return { backend: d?.backend, drawCalls: d?.drawCalls, renderSize: d?.renderSize, errors: d?.errors, warnings: d?.warnings, renderer: d?.renderer };
@@ -111,7 +123,7 @@ test.describe("roadster-hours-port (Phase B)", () => {
     await api((a) => { a.setAutopilot(true); a.stepSteps(120 * 14); a.renderNow(); });
     await page.waitForTimeout(1500);
     await api((a) => a.renderNow());
-    const driving = await api((a) => a.stats());
+    const driving = await settle();
     await frame("driving");
     console.log("ROADSTER_HOURS_STATS driving", JSON.stringify(driving));
     expect(driving.hash, "the frame changes as the car drives").not.toBe(start.hash);
@@ -120,7 +132,7 @@ test.describe("roadster-hours-port (Phase B)", () => {
     expect(mid.s, "the autopilot drove down the road").toBeGreaterThan(300);
     expect(mid.crashes).toBe(0);
 
-    // ---- batching: all vehicles in one batched mesh; the draw count is reported and bounded
+    // ---- batching: all vehicles are batched instances; the draw count is reported and bounded
     const vehicles = mid.vehicles ?? 0;
     expect(vehicles, "traffic + lineup vehicles are batched instances").toBeGreaterThan(20);
     const batching = await api((a) => a.batching());
@@ -128,7 +140,7 @@ test.describe("roadster-hours-port (Phase B)", () => {
     const multiDrawExt = await page.evaluate(() => { const c = document.createElement("canvas").getContext("webgl2"); return Boolean(c?.getExtension("WEBGL_multi_draw")); });
     console.log("ROADSTER_HOURS_BATCHING", JSON.stringify({ rendererBatching: batching, probe, multiDrawExt }), "vehicles", vehicles);
     expect(probe, "the batched draw probe is reported").not.toBeNull();
-    expect(probe!.instances, "every vehicle box is a batched instance").toBe(vehicles);
+    expect(probe!.instances, "every vehicle part is a batched instance").toBe(vehicles);
     // GL-level count for one frame: the vehicles are a few multi-draw calls per frame with WEBGL_multi_draw, otherwise
     // the draw loop issues one draw per instance (never more).
     await page.evaluate(() => { const c = (window as unknown as { __glCounts: Record<string, number> }).__glCounts; c.md = 0; c.de = 0; c.dei = 0; c.mdMembers = 0; });
@@ -137,9 +149,10 @@ test.describe("roadster-hours-port (Phase B)", () => {
     console.log("ROADSTER_HOURS_GL_FRAME", JSON.stringify(gl));
     if (multiDrawExt) {
       expect(gl.md, "the batched vehicles go out as multi-draw calls").toBeGreaterThanOrEqual(1);
-      // Measured: 3 calls per frame (the batch is drawn by more than one render pass), against `vehicles` draws without multi-draw.
+      // The batches are drawn by more than one render pass; the bound is relative to the pooled geometries, not the instance count.
       expect(gl.md, "a small bounded number of multi-draw calls per frame, independent of the instance count").toBeLessThanOrEqual(2 * probe!.geometries);
-      expect(gl.mdMembers, "the multi-draw call carries every vehicle instance").toBeGreaterThanOrEqual(vehicles);
+      // Members are the instances inside the view frustum this frame (parts of vehicles behind or beside the camera are culled).
+      expect(gl.mdMembers, "the multi-draw calls carry the visible vehicle instances").toBeGreaterThanOrEqual(Math.floor(vehicles * 0.6));
     } else {
       expect(gl.md).toBe(0);
       expect(gl.de + gl.dei, "fallback draws at least one per instance").toBeGreaterThanOrEqual(vehicles);

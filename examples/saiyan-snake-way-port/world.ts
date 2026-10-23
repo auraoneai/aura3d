@@ -1,22 +1,99 @@
 /**
- * Snake Way on the public `@aura3d/engine` surface only: the snake's body as one dynamic ribbon with
- * `material.custom`, a sky/cloud-deck backdrop, Goku with the Kaio-ken aura shell, pooled nodes for
- * the road's entities, and the chase camera. The simulation (`sim.ts`) never imports this file.
+ * Serpentine Sky Run on the public `@aura3d/engine` surface only: the road as one dynamic ribbon with
+ * `material.custom`, a ray-marched cloud deck and starry sky dome, the rigged runner (a procedural figure as
+ * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
+ * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { camera, geometry, material, primitives, scene, type AuraApp } from "@aura3d/engine";
-import { PALETTE, auraSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb } from "./materials";
-import { buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
+import { camera, cloneSkinned, effects, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { attachRootRenderSource, type TypedGLBActor } from "@aura3d/engine/production-runtime";
+import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
+import {
+  PALETTE, auraSpec, blobSpec, flatSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
+} from "./materials";
+import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
 import { ROAD_LENGTH, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
+import type { RunnerStyle } from "./styles";
 
 type Scene = ReturnType<typeof scene>;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
-/** Pool sizes per entity type (the road keeps roughly 900 m of entities alive). */
-const POOLS: Readonly<Record<string, number>> = { orb: 150, soul: 40, barrier: 30, arch: 30, oni: 24, sweeper: 8, power: 10, feast: 8 };
+/** Entities kept alive per type (the road keeps roughly 900 m of entities alive). */
+export const POOLS: Readonly<Record<string, number>> = { orb: 150, soul: 40, barrier: 30, arch: 30, oni: 24, sweeper: 8, power: 10, feast: 8 };
 
-const POWER_COLORS: Readonly<Record<string, Rgb>> = {
-  kaio: hexLinear(PALETTE.aura), senzu: hexLinear(PALETTE.jade), stamp: hexLinear(PALETTE.gold), pole: hexLinear(PALETTE.lacquer),
-  nimbus: hexLinear(PALETTE.kiCore), weights: hexLinear(PALETTE.lacquerDark)
+const POWER_STYLE: Readonly<Record<string, { core: Rgb; shell: Rgb }>> = {
+  kaio: { core: hexLinear(PALETTE.auraCore), shell: hexLinear(PALETTE.aura) },
+  senzu: { core: hexLinear(0xd8ffe8), shell: hexLinear(PALETTE.jade) },
+  stamp: { core: hexLinear(0xfff0b0), shell: hexLinear(PALETTE.gold) },
+  pole: { core: hexLinear(0xffd2c0), shell: hexLinear(PALETTE.lacquer) },
+  nimbus: { core: hexLinear(PALETTE.kiCore), shell: hexLinear(PALETTE.ki) },
+  weights: { core: hexLinear(0xcfc4e8), shell: hexLinear(PALETTE.lacquerDark) }
+};
+
+const HERO_COLORS: Readonly<Record<HeroColor, { base: Rgb; glow?: Rgb; amount?: number }>> = {
+  gi: { base: hexLinear(PALETTE.gi) },
+  giDark: { base: hexLinear(PALETTE.giDark) },
+  skin: { base: hexLinear(PALETTE.skin) },
+  hair: { base: hexLinear(0x1d1620) },
+  teal: { base: hexLinear(PALETTE.teal) },
+  boot: { base: hexLinear(0x2c3470) },
+  sash: { base: hexLinear(0x2fc8b4), glow: hexLinear(0x2fc8b4), amount: 0.12 }
+};
+
+type Shape = "capsule" | "sphere" | "cylinder" | "box" | "cone" | "octahedron";
+interface PartSpec {
+  readonly shape: Shape;
+  readonly size?: number | readonly [number, number, number];
+  readonly cone?: { readonly radius: number; readonly height: number };
+  readonly mat: string;
+  /** Offset in the entity frame (x right, y up, z back along the road). */
+  readonly at: LV3;
+  /** Extra local rotation as ZYX Euler angles. */
+  readonly rot?: LV3;
+  /** Spin about the part's own up axis, radians per second. */
+  readonly spin?: number;
+}
+
+const ENTITY_PARTS: Readonly<Record<string, readonly PartSpec[]>> = {
+  orb: [{ shape: "sphere", size: 0.6, mat: "orb", at: [0, 0, 0] }],
+  soul: [
+    { shape: "sphere", size: 1.5, mat: "soul", at: [0, 0, 0] },
+    { shape: "cone", cone: { radius: 0.55, height: 1.7 }, mat: "soul", at: [0, -0.05, 1.1], rot: [Math.PI / 2, 0, 0] }
+  ],
+  barrier: [
+    { shape: "box", size: [3.3, 0.5, 0.85], mat: "barrierBase", at: [0, -0.85, 0] },
+    { shape: "cylinder", size: [0.5, 2.3, 0.5], mat: "barrierPost", at: [-1.45, 0.0, 0] },
+    { shape: "cylinder", size: [0.5, 2.3, 0.5], mat: "barrierPost", at: [1.45, 0.0, 0] },
+    { shape: "box", size: [2.6, 1.2, 0.12], mat: "barrierField", at: [0, -0.05, 0] }
+  ],
+  arch: [
+    { shape: "cylinder", size: [0.6, 2.7, 0.6], mat: "lacquer", at: [-1.95, -0.85, 0] },
+    { shape: "cylinder", size: [0.6, 2.7, 0.6], mat: "lacquer", at: [1.95, -0.85, 0] },
+    { shape: "box", size: [4.9, 0.42, 0.74], mat: "lacquer", at: [0, 0.15, 0] },
+    { shape: "box", size: [4.1, 0.2, 0.5], mat: "lacquerDark", at: [0, -0.4, 0] },
+    { shape: "box", size: [5.4, 0.18, 0.95], mat: "lacquerDark", at: [0, 0.46, 0] }
+  ],
+  oni: [
+    { shape: "capsule", size: [1.5, 2.1, 1.2], mat: "oni", at: [0, 0.25, 0] },
+    { shape: "sphere", size: 0.95, mat: "oniDark", at: [0, 1.5, 0] },
+    { shape: "cone", cone: { radius: 0.13, height: 0.55 }, mat: "bone", at: [-0.3, 2.05, 0], rot: [0, 0, 0.35] },
+    { shape: "cone", cone: { radius: 0.13, height: 0.55 }, mat: "bone", at: [0.3, 2.05, 0], rot: [0, 0, -0.35] },
+    { shape: "cylinder", size: [0.36, 1.9, 0.36], mat: "club", at: [1.2, 0.35, -0.2], rot: [0, 0, -0.3] }
+  ],
+  sweeper: [
+    { shape: "box", size: [2.6, 1.1, 2.6], mat: "cart", at: [0, 0, 0] },
+    { shape: "cylinder", size: [1.3, 0.28, 1.3], mat: "wheel", at: [-1.4, -0.35, 0], rot: [0, 0, Math.PI / 2] },
+    { shape: "cylinder", size: [1.3, 0.28, 1.3], mat: "wheel", at: [1.4, -0.35, 0], rot: [0, 0, Math.PI / 2] },
+    { shape: "sphere", size: 0.55, mat: "lantern", at: [0, 0.95, -1.0] }
+  ],
+  power: [
+    { shape: "octahedron", size: 0.95, mat: "power", at: [0, 0, 0], spin: 2.4 },
+    { shape: "sphere", size: 1.9, mat: "powerHalo", at: [0, 0, 0] }
+  ],
+  feast: [
+    { shape: "cylinder", size: [1.7, 0.14, 1.7], mat: "feastPlate", at: [0, -0.3, 0] },
+    { shape: "sphere", size: [1.2, 0.9, 1.2], mat: "feast", at: [0, 0.15, 0] },
+    { shape: "sphere", size: 0.34, mat: "orb", at: [0, 0.78, 0] }
+  ]
 };
 
 /** Matrix columns (x, y, z axes) to the engine's ZYX Euler angles (R = Rz·Ry·Rx). */
@@ -26,21 +103,61 @@ function basisToEuler(x: V3, y: V3, z: V3): V3 {
   if (Math.abs(m31) < 0.9999999) return [Math.atan2(m32, m33), ey, Math.atan2(m21, m11)];
   return [0, ey, Math.atan2(-m12, m22)];
 }
+const matrixEuler = (m: M3): V3 => basisToEuler([m[0], m[1], m[2]], [m[3], m[4], m[5]], [m[6], m[7], m[8]]);
 
 /** Orientation whose local Y is the road's up and whose local -Z points down the road (the original's `makeBasis(R, U, -F)`). */
-function roadEuler(frame: RoadFrame, yawOffset = 0): V3 {
+function frameBasis(frame: RoadFrame, yawOffset = 0): M3 {
   let R = frame.R, F = frame.F;
   if (yawOffset) {
     const c = Math.cos(yawOffset), s = Math.sin(yawOffset);
     R = [frame.R[0] * c + frame.F[0] * s, frame.R[1] * c + frame.F[1] * s, frame.R[2] * c + frame.F[2] * s];
     F = [frame.F[0] * c - frame.R[0] * s, frame.F[1] * c - frame.R[1] * s, frame.F[2] * c - frame.R[2] * s];
   }
-  return basisToEuler(R, frame.U, [-F[0], -F[1], -F[2]]);
+  return [R[0], R[1], R[2], frame.U[0], frame.U[1], frame.U[2], -F[0], -F[1], -F[2]];
+}
+
+/** Local ZYX Euler (R = Rz·Ry·Rx) as a matrix. */
+const eulerMatrix = (e: LV3): M3 => mul(rz(e[2]), mul(ry(e[1]), rx(e[0])));
+
+/** Catalog humanoid (CC0, see assets/ATTRIBUTION.md): faces +Z, clips Sprint_Loop / Jump_Loop / Crouch_Idle_Loop / Idle_Loop / Hit_Chest. */
+const RIG_URL = new URL("./assets/runner-rig.glb", import.meta.url).href;
+const RIG_SCALE = 1.8;
+const CLIP = { run: "Sprint_Loop", air: "Jump_Loop", slide: "Crouch_Idle_Loop", idle: "Idle_Loop", hit: "Hit_Chest" } as const;
+
+export interface RunnerActor {
+  readonly actor: TypedGLBActor;
+  readonly clips: readonly string[];
+  readonly durations: Readonly<Record<string, number>>;
+  dispose(): void;
+}
+
+/** Loads the rigged runner; resolves to null when the model cannot load so the procedural figure stays. */
+export async function loadRunner(canvas: HTMLCanvasElement): Promise<RunnerActor | null> {
+  try {
+    const batch = await cloneSkinned({ url: RIG_URL, type: "model" as const, format: "glb" }, 1, { width: canvas.width, height: canvas.height, idPrefix: "runner" });
+    const actor = batch.actors[0] as TypedGLBActor;
+    const clips = actor.evidence.clips;
+    if (!clips.includes(CLIP.run)) return null;
+    const infos = actor.animation.resolvedClipInfos();
+    const durations: Record<string, number> = {};
+    for (const c of clips) { const info = infos.find((i) => i.name === c); durations[c] = info && info.duration > 0 ? info.duration : 1; }
+    return { actor, clips, durations, dispose: () => batch.dispose() };
+  } catch (error) {
+    console.warn("saiyan-snake-way-port: rigged runner unavailable, using the procedural figure", error);
+    return null;
+  }
+}
+
+export interface WorldOptions {
+  readonly canvas?: HTMLCanvasElement;
+  readonly runner?: RunnerActor | null;
 }
 
 export interface WorldRuntime {
-  update(state: RunState, dt: number, time: number, aspect: number): void;
+  /** `outro` is the render time in seconds since the run left the `run` phase (fall, leap or game over). */
+  update(state: RunState, dt: number, time: number, aspect: number, outro?: number): void;
   resetCamera(): void;
+  setRunnerStyle(style: RunnerStyle): void;
   readonly nodeCount: number;
   readonly entityNodes: number;
 }
@@ -50,59 +167,103 @@ export interface World {
   bind(app: AuraApp): WorldRuntime;
 }
 
-export function buildWorld(): World {
+const STREAKS = 22;
+const SPARKS = 18;
+const BURSTS = 14;
+
+export function buildWorld(options: WorldOptions = {}): World {
   const samples = buildRoadSamples();
   const builder: Scene = scene()
-    .background("#a8b4e8")
-    .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }));
+    .background("#f2c6de")
+    .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
+    // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's)
+    .add(lights.hemisphere({ name: "sky fill", skyColor: "#f6d0e6", groundColor: "#b98a2e", intensity: 1.1 }))
+    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: 2.2, color: "#fff0dc" }));
 
   /* road + sky */
   const mesh = buildRoadMesh(samples);
-  builder.add(geometry.custom(geometry.dynamic({ positions: f32(mesh.positions), normals: f32(mesh.normals), uvs: f32(mesh.uvs), indices: Uint32Array.from(mesh.indices) }), { name: "road", material: material.custom(roadSpec()) }));
+  const ring = PROFILE.length;
+  const crossProfile = new Float32Array((mesh.positions.length / 3) * 2);
+  for (let v = 0; v < mesh.positions.length / 3; v++) {
+    const pt = PROFILE[v % ring] as readonly [number, number];
+    crossProfile[v * 2] = pt[0];
+    crossProfile[v * 2 + 1] = pt[1];
+  }
+  builder.add(
+    geometry
+      .custom(
+        geometry.dynamic({
+          positions: f32(mesh.positions), normals: f32(mesh.normals), uvs: f32(mesh.uvs), indices: Uint32Array.from(mesh.indices),
+          attributes: { crossProfile: { itemSize: 2, data: crossProfile } }
+        }),
+        { name: "road", material: material.custom(roadSpec()) }
+      )
+      .runtime({ id: "road" })
+  );
   builder.add(primitives.sphere({ name: "sky", size: 5200, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
-  /* Goku and the aura shell */
-  const gi = hexLinear(PALETTE.gi), giDark = hexLinear(PALETTE.giDark), skin = hexLinear(PALETTE.skin), hair = hexLinear(PALETTE.hair), teal = hexLinear(PALETTE.teal);
+  /* materials shared by figures and props */
   const solid = (c: Rgb, glow: Rgb = [0, 0, 0], amount = 0): CustomSpec => solidSpec(c, glow, amount);
-  const part = (id: string, node: ReturnType<typeof primitives.capsule>): void => { builder.add(node.runtime({ id })); };
-  part("goku-torso", primitives.capsule({ name: "goku-torso", size: [0.9, 1.5, 0.7], material: material.custom(solid(gi)) }));
-  part("goku-belt", primitives.cylinder({ name: "goku-belt", size: [0.95, 0.18, 0.75], material: material.custom(solid(teal)) }));
-  part("goku-legs", primitives.capsule({ name: "goku-legs", size: [0.85, 1.2, 0.6], material: material.custom(solid(giDark)) }));
-  part("goku-head", primitives.sphere({ name: "goku-head", size: 0.62, material: material.custom(solid(skin)) }));
-  part("goku-hair", primitives.cone({ name: "goku-hair", params: { radius: 0.42, height: 0.75, radialSegments: 7 }, material: material.custom(solid(hair)) }));
-  part("goku-armL", primitives.capsule({ name: "goku-armL", size: [0.28, 0.9, 0.28], material: material.custom(solid(skin)) }));
-  part("goku-armR", primitives.capsule({ name: "goku-armR", size: [0.28, 0.9, 0.28], material: material.custom(solid(skin)) }));
-  const auraOuter = primitives.cylinder({ name: "aura-outer", size: [3.4, 5.6, 3.4], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) });
-  const auraInner = primitives.cylinder({ name: "aura-inner", size: [2.5, 4.8, 2.5], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) });
-  builder.add(auraOuter.runtime({ id: "aura-outer" }));
-  builder.add(auraInner.runtime({ id: "aura-inner" }));
+  const propMaterials: Readonly<Record<string, CustomSpec>> = {
+    orb: glowSpec(hexLinear(PALETTE.kiCore), hexLinear(PALETTE.ki)),
+    soul: glowSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone), 0.95, 1),
+    barrierBase: solid(hexLinear(0x2d3d52)),
+    barrierPost: solid(hexLinear(PALETTE.teal), hexLinear(PALETTE.jade), 0.25),
+    barrierField: glowSpec(hexLinear(0xd8fff0), hexLinear(PALETTE.jade)),
+    lacquer: solid(hexLinear(PALETTE.lacquer), hexLinear(PALETTE.lacquerDark), 0.1),
+    lacquerDark: solid(hexLinear(PALETTE.lacquerDark)),
+    oni: solid(hexLinear(0xc4503c)),
+    oniDark: solid(hexLinear(0x8f2f2a)),
+    bone: solid(hexLinear(PALETTE.bone)),
+    club: solid(hexLinear(0x5d4630)),
+    cart: solid(hexLinear(0x6a5b48)),
+    wheel: solid(hexLinear(0x3a3128)),
+    lantern: glowSpec(hexLinear(0xfff0b0), hexLinear(PALETTE.gold)),
+    power: glowSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura)),
+    powerHalo: glowSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura)),
+    feastPlate: solid(hexLinear(PALETTE.gold), hexLinear(PALETTE.gold), 0.25),
+    feast: solid(hexLinear(0xe0a050), hexLinear(PALETTE.gold), 0.2)
+  };
 
-  /* entity pools */
-  const entityMaterial = (type: string): CustomSpec => {
-    switch (type) {
-      case "orb": return glowSpec(hexLinear(PALETTE.kiCore), hexLinear(PALETTE.ki));
-      case "soul": return glowSpec(hexLinear(PALETTE.spirit), hexLinear(PALETTE.bone));
-      case "barrier": return solid(hexLinear(PALETTE.teal), hexLinear(PALETTE.jade), 0.15);
-      case "arch": return solid(hexLinear(PALETTE.lacquer), hexLinear(PALETTE.lacquerDark), 0.1);
-      case "oni": return solid(hexLinear(0xc4503c), [0, 0, 0], 0);
-      case "sweeper": return solid(hexLinear(0x6a5b48));
-      case "power": return glowSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.aura));
-      default: return solid(hexLinear(PALETTE.gold), hexLinear(PALETTE.gold), 0.3);
+  const addPart = (id: string, spec: { shape: Shape; size?: number | readonly [number, number, number]; cone?: { radius: number; height: number } }, spec3: CustomSpec, hidden: boolean): void => {
+    const size = spec.size ?? 1;
+    const mat = material.custom(spec3);
+    const sz = size as number | [number, number, number];
+    let node;
+    switch (spec.shape) {
+      case "capsule": node = primitives.capsule({ name: id, size: sz as [number, number, number], material: mat }); break;
+      case "cylinder": node = primitives.cylinder({ name: id, size: sz as [number, number, number], material: mat }); break;
+      case "box": node = primitives.box({ name: id, size: sz, material: mat }); break;
+      case "cone": node = primitives.cone({ name: id, params: { radius: spec.cone?.radius ?? 0.2, height: spec.cone?.height ?? 0.6, radialSegments: 8 }, material: mat }); break;
+      case "octahedron": node = primitives.polyhedron({ name: id, params: { variant: "octahedron", detail: 0, radius: typeof size === "number" ? size : 0.9 }, material: mat }); break;
+      default: node = primitives.sphere({ name: id, size: sz, material: mat });
     }
+    builder.add((hidden ? node.position(0, -500, 0) : node).runtime({ id }));
   };
-  const makeEntity = (type: string, id: string) => {
-    switch (type) {
-      case "orb": return primitives.sphere({ name: id, size: 0.9, material: material.custom(entityMaterial(type)) });
-      case "soul": return primitives.sphere({ name: id, size: 1.5, material: material.custom(entityMaterial(type)) });
-      case "barrier": return primitives.box({ name: id, size: [3.2, 2.2, 0.7], material: material.custom(entityMaterial(type)) });
-      case "arch": return primitives.box({ name: id, size: [4.4, 1.0, 0.9], material: material.custom(entityMaterial(type)) });
-      case "oni": return primitives.capsule({ name: id, size: [1.5, 3.0, 1.3], material: material.custom(entityMaterial(type)) });
-      case "sweeper": return primitives.box({ name: id, size: [2.6, 1.8, 2.6], material: material.custom(entityMaterial(type)) });
-      case "power": return primitives.polyhedron({ name: id, params: { variant: "octahedron", detail: 0, radius: 0.9 }, material: material.custom(entityMaterial(type)) });
-      default: return primitives.sphere({ name: id, size: 1.5, material: material.custom(entityMaterial(type)) });
-    }
-  };
-  for (const [type, count] of Object.entries(POOLS)) for (let i = 0; i < count; i++) builder.add(makeEntity(type, `ent-${type}-${i}`).position(0, -500, 0).runtime({ id: `ent-${type}-${i}` }));
+
+  /* the runner and the aura shell */
+  for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
+    const c = HERO_COLORS[part.color];
+    addPart(`r-${part.id}`, part, solid(c.base, c.glow ?? [0, 0, 0], c.amount ?? 0), false);
+  }
+  builder.add(primitives.cylinder({ name: "aura-outer", size: [3.4, 5.6, 3.4], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-outer" }));
+  builder.add(primitives.cylinder({ name: "aura-inner", size: [2.5, 4.8, 2.5], material: material.custom(auraSpec(hexLinear(PALETTE.auraCore), hexLinear(PALETTE.auraLit), hexLinear(PALETTE.aura), 0.8)) }).runtime({ id: "aura-inner" }));
+  builder.add(primitives.cylinder({ name: "contact-shadow", size: [4, 0.02, 4], material: material.custom(blobSpec(1.9, 0.5)) }).runtime({ id: "contact-shadow" }));
+  for (let i = 0; i < SPARKS; i++) builder.add(primitives.sphere({ name: `spark-${i}`, size: 0.3, material: material.custom(flatSpec(hexLinear(PALETTE.auraLit), 0.85)) }).position(0, -500, 0).runtime({ id: `spark-${i}` }));
+  for (let i = 0; i < BURSTS; i++) builder.add(primitives.sphere({ name: `burst-${i}`, size: 0.34, material: material.custom(flatSpec(hexLinear(0xfff0b0), 0.9)) }).position(0, -500, 0).runtime({ id: `burst-${i}` }));
+  for (let i = 0; i < STREAKS; i++) builder.add(primitives.box({ name: `streak-${i}`, size: [0.04, 0.04, 6], material: material.custom(flatSpec(hexLinear(0xfff0f6), 0.2)) }).position(0, -500, 0).runtime({ id: `streak-${i}` }));
+
+  /* entity pools: every slot is a small multi-part prop */
+  for (const [type, count] of Object.entries(POOLS)) {
+    (ENTITY_PARTS[type] ?? []).forEach((part, j) => {
+      for (let i = 0; i < count; i++) addPart(`ent-${type}-${i}-${j}`, part, propMaterials[part.mat] as CustomSpec, true);
+    });
+  }
+
+  /* post: the look spec records no composer, so only a faint bloom for the glows and FXAA for the primitive edges */
+  builder
+    .add(effects.bloom({ name: "bloom", intensity: 0.12, threshold: 0.95, radius: 0.4 }))
+    .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
 
   return {
     scene: builder,
@@ -115,51 +276,151 @@ export function buildWorld(): World {
         if (!h) handles.set(id, h = app.nodes.require(id));
         return h;
       };
+      const runner = options.runner ?? null;
+      let actorMatrix: number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, -1000, 0, 1];
+      let actorVisible = false;
+      let actorClock = 0;
+      if (runner && options.canvas) {
+        attachRootRenderSource(options.canvas, { source: { collectRenderItems: () => (actorVisible ? runner.actor.collectRenderItems({ modelMatrix: actorMatrix }) : []) } });
+      }
       let rig: { f: V3; u: V3 } | null = null;
       let alive = 0;
+      let phaseAcc = 0;
+      let prevS: number | null = null;
+      let prevPulse = 0;
+      let burstT = 1;
       const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
       const norm3 = (a: V3): V3 => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
-      const place = (id: string, frame: RoadFrame, lateral: number, up: number, along = 0): void => {
-        const base = onRoad(frame, lateral, up);
-        const p: V3 = [base[0] + frame.F[0] * along, base[1] + frame.F[1] * along, base[2] + frame.F[2] * along];
-        const e = roadEuler(frame);
-        node(id).setPosition(p[0], p[1], p[2]).setRotation(e[0], e[1], e[2]).setVisible(true);
-      };
+      const mod = (x: number, m: number): number => ((x % m) + m) % m;
 
-      const update = (S: RunState, dt: number, time: number, aspect: number): void => {
+      const update = (S: RunState, dt: number, time: number, aspect: number, outro = 0): void => {
         const frame = frameAt(samples, Math.min(S.s, ROAD_LENGTH));
         node("sky").setPosition(frame.p[0], frame.p[1], frame.p[2]);
         node("sky").setUniform?.("skyTime", time);
 
-        /* Goku: parts stacked on the road frame; flight lifts the whole figure */
-        const pose = onRoad(frame, S.laneX, S.y);
+        /* runner: articulated parts posed in the road frame; flight lifts the whole figure */
+        let pose = onRoad(frame, S.laneX, S.y);
+        const falling = S.phase === "fall";
+        const leaping = S.phase === "leap";
+        const tf = Math.max(0, outro);
+        let airVy = S.vy;
+        if (falling) {
+          const drop = 0.5 * 58 * tf * tf;
+          const fwd = (S.speed * 0.5 * (1 - Math.exp(-1.6 * tf))) / 1.6;
+          pose = [pose[0] - frame.U[0] * drop + frame.F[0] * fwd, pose[1] - frame.U[1] * drop + frame.F[1] * fwd, pose[2] - frame.U[2] * drop + frame.F[2] * fwd];
+        } else if (leaping) {
+          const rise = 24 * tf - 16 * tf * tf;
+          const fwd = 16 * tf;
+          pose = [pose[0] + frame.U[0] * rise + frame.F[0] * fwd, pose[1] + frame.U[1] * rise + frame.F[1] * fwd, pose[2] + frame.U[2] * rise + frame.F[2] * fwd];
+          airVy = 24 - 32 * tf;
+        }
+        const tumbleM: M3 | null = falling ? rx(-tf * 5) : null;
+        const flying = S.nimbus > 0 || falling;
         const lean = Math.max(-0.35, Math.min(0.35, S.laneVel * 0.02));
-        const crouch = S.sliding > 0 ? 0.55 : 1;
-        const e = roadEuler(frame, -lean);
-        const at = (dx: number, dy: number, dz: number): V3 => [
-          pose[0] + frame.R[0] * dx + frame.U[0] * dy + frame.F[0] * dz,
-          pose[1] + frame.R[1] * dx + frame.U[1] * dy + frame.F[1] * dz,
-          pose[2] + frame.R[2] * dx + frame.U[2] * dy + frame.F[2] * dz
-        ];
-        const put = (id: string, p: V3): void => { node(id).setPosition(p[0], p[1], p[2]).setRotation(e[0], e[1], e[2]).setVisible(true); };
-        put("goku-legs", at(0, 0.7 * crouch, 0));
-        put("goku-belt", at(0, 1.35 * crouch, 0));
-        put("goku-torso", at(0, 2.1 * crouch, 0));
-        put("goku-head", at(0, 3.15 * crouch, 0));
-        put("goku-hair", at(0, 3.75 * crouch, 0));
-        put("goku-armL", at(-0.62, 2.2 * crouch, 0));
-        put("goku-armR", at(0.62, 2.2 * crouch, 0));
-        const intensity = S.auraVis === undefined ? 0 : S.auraVis;
+        if (prevS === null) prevS = S.s;
+        const ds = S.s - prevS;
+        prevS = S.s;
+        phaseAcc += ds > 1e-5 ? ds * 0.62 : dt * 2.5;
+        const surge = Math.max(0, Math.min(1, S.auraVis === undefined ? 0 : S.auraVis));
+        const B = frameBasis(frame, -lean);
+        const parts = poseHero({
+          phase: phaseAcc, time, grounded: S.grounded && !leaping, vy: airVy, sliding: S.sliding > 0, flying, diving: S.dive || falling,
+          lean: Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012)) + (falling ? 0.5 * Math.sin(time * 5) : 0),
+          surge, stumble: Math.max(0, Math.min(1, S.stumble)), speed: S.speed
+        });
+        const TUMBLE_CENTRE: LV3 = [0, 1.9, 0];
+        const toWorld = (p: LV3): V3 => {
+          let local = p;
+          if (tumbleM) {
+            const r = apply(tumbleM, [p[0] - TUMBLE_CENTRE[0], p[1] - TUMBLE_CENTRE[1], p[2] - TUMBLE_CENTRE[2]]);
+            local = [r[0] + TUMBLE_CENTRE[0], r[1] + TUMBLE_CENTRE[1], r[2] + TUMBLE_CENTRE[2]];
+          }
+          const w = apply(B, local);
+          return [pose[0] + w[0], pose[1] + w[1], pose[2] + w[2]];
+        };
+        const worldRot = (m: M3): M3 => mul(B, tumbleM ? mul(tumbleM, m) : m);
+        for (const [id, part] of Object.entries(parts)) {
+          const p = toWorld(part.p);
+          const e = matrixEuler(worldRot(part.m));
+          node(`r-${id}`).setPosition(p[0], p[1], p[2]).setRotation(e[0], e[1], e[2]).setVisible(!runner);
+        }
+        if (runner) {
+          /* rigged runner: pick a clip from the sim state, then orient the model on the road frame */
+          const moving = ds > 1e-5;
+          const rate = Math.max(0.6, S.speed / 32);
+          const clip = S.stumble > 0.3 ? CLIP.hit : S.sliding > 0 ? CLIP.slide : flying || leaping || !S.grounded ? CLIP.air : moving ? CLIP.run : CLIP.idle;
+          const length = runner.durations[clip] ?? 1;
+          actorClock = (actorClock + dt * (moving ? 1.5 * rate : 1)) % length;
+          const t = clip === CLIP.hit ? Math.min(length, Math.max(0, (0.75 - S.stumble) * 1.5)) : actorClock;
+          runner.actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+          const pitch = flying ? (S.dive || falling ? 2.3 : 1.32) : 0;
+          const lateralLean = Math.max(-0.3, Math.min(0.3, S.laneVel * 0.012)) + (falling ? 0.5 * Math.sin(time * 5) : 0);
+          let body = mul(rz(-lateralLean), rx(-pitch));
+          if (tumbleM) body = mul(tumbleM, body);
+          const centre: LV3 = [0, 1.7, 0];
+          const rc = apply(body, centre);
+          const w = apply(B, [centre[0] - rc[0], centre[1] - rc[1], centre[2] - rc[2]]);
+          const R = mul(B, mul(body, ry(Math.PI)));
+          actorMatrix = [R[0] * RIG_SCALE, R[1] * RIG_SCALE, R[2] * RIG_SCALE, 0, R[3] * RIG_SCALE, R[4] * RIG_SCALE, R[5] * RIG_SCALE, 0, R[6] * RIG_SCALE, R[7] * RIG_SCALE, R[8] * RIG_SCALE, 0, pose[0] + w[0], pose[1] + w[1], pose[2] + w[2], 1];
+          actorVisible = true;
+        }
+
+        /* aura shell around the torso, tilted with the body */
+        const root = (parts.pelvis as { p: LV3; m: M3 }).m;
+        const auraCentre = toWorld([(parts.pelvis as { p: LV3 }).p[0] + apply(root, [0, 1.05, 0])[0], (parts.pelvis as { p: LV3 }).p[1] + apply(root, [0, 1.05, 0])[1], (parts.pelvis as { p: LV3 }).p[2] + apply(root, [0, 1.05, 0])[2]]);
+        const auraEuler = matrixEuler(worldRot(root));
         const growth = 1 + 0.14 * S.auraRung + (S.kaio === "power" ? 0.2 : 0);
         for (const [id, scale, solidAmount] of [["aura-outer", growth, 0.8], ["aura-inner", growth * 0.92, 0.55]] as const) {
           const h = node(id);
-          h.setPosition(pose[0] + frame.U[0] * 2.4 * crouch, pose[1] + frame.U[1] * 2.4 * crouch, pose[2] + frame.U[2] * 2.4 * crouch).setRotation(e[0], e[1], e[2]).setScale(scale).setVisible(intensity > 4e-3);
+          h.setPosition(auraCentre[0], auraCentre[1], auraCentre[2]).setRotation(auraEuler[0], auraEuler[1], auraEuler[2]).setScale(scale).setVisible(surge > 4e-3);
           h.setUniform?.("auraTime", id === "aura-inner" ? 1.37 * time + 4 : time);
-          h.setUniform?.("auraIntensity", intensity);
+          h.setUniform?.("auraIntensity", surge);
           h.setUniform?.("auraSolid", S.nimbus > 0 ? 0.34 : solidAmount);
         }
 
-        /* entities: assign the nearest alive ones to the pooled nodes, hide the rest */
+        /* contact shadow on the road under the runner */
+        const ground = onRoad(frame, S.laneX, 0.05);
+        const be = matrixEuler(frameBasis(frame));
+        const shadow = node("contact-shadow");
+        shadow.setPosition(ground[0], ground[1], ground[2]).setRotation(be[0], be[1], be[2]).setVisible(!flying && !leaping && S.grounded);
+        shadow.setUniform?.("blobAlpha", 0.5);
+
+        /* ki sparks rising off the runner while the aura is up */
+        for (let i = 0; i < SPARKS; i++) {
+          const h = node(`spark-${i}`);
+          if (surge < 0.12) { h.setVisible(false); continue; }
+          const ph = mod(time * 0.9 + i / SPARKS, 1);
+          const sp = toWorld([Math.sin(i * 7.13) * 0.95, 0.5 + ph * 3.4, 0.2 + ph * (1.4 + 0.04 * S.speed)]);
+          h.setPosition(sp[0], sp[1], sp[2]).setScale(Math.max(0.05, (1 - ph) * (0.5 + 0.5 * surge))).setVisible(true);
+        }
+
+        /* a ring of sparkles at each orb pickup */
+        if (S.kiPulse > prevPulse + 0.3) burstT = 0;
+        prevPulse = S.kiPulse;
+        burstT += dt;
+        for (let i = 0; i < BURSTS; i++) {
+          const h = node(`burst-${i}`);
+          if (burstT >= 0.5) { h.setVisible(false); continue; }
+          const a = (i / BURSTS) * Math.PI * 2;
+          const r = burstT * 7;
+          const bp = toWorld([Math.cos(a) * r * 0.8, 2.3 + Math.sin(a) * r * 0.8, 0.4 + (i % 3) * 0.3]);
+          h.setPosition(bp[0], bp[1], bp[2]).setScale(Math.max(0.05, 1 - burstT / 0.5)).setVisible(true);
+        }
+
+        /* speed streaks fixed to the road so they sweep past the camera */
+        const fast = surge > 0.3 || flying;
+        for (let i = 0; i < STREAKS; i++) {
+          const h = node(`streak-${i}`);
+          if (!fast) { h.setVisible(false); continue; }
+          const rel = mod(i * 37.7 - S.s, 90) - 12;
+          const sf = frameAt(samples, Math.min(Math.max(S.s + rel, -40), ROAD_LENGTH));
+          const lateral = (i % 2 ? 1 : -1) * (4.5 + ((i * 5.3) % 9));
+          const sp = onRoad(sf, lateral, 0.8 + ((i * 3.7) % 8) + (flying ? S.y * 0.3 : 0));
+          const e = matrixEuler(frameBasis(sf));
+          h.setPosition(sp[0], sp[1], sp[2]).setRotation(e[0], e[1], e[2]).setScale([1, 1, Math.max(0.6, S.speed / 45)]).setVisible(true);
+        }
+
+        /* entities: assign the nearest alive ones to the pooled slots, hide the rest */
         const used: Record<string, number> = {};
         alive = 0;
         for (const ent of S.ents as readonly Entity[]) {
@@ -167,7 +428,8 @@ export function buildWorld(): World {
           const s = ent.type === "sweeper" || ent.type === "soul" || ent.type === "oni" ? ent.s + ent.rel : ent.s;
           if (s < S.s - 12 || s > S.s + 420) continue;
           const pool = POOLS[ent.type];
-          if (!pool) continue;
+          const parts3 = ENTITY_PARTS[ent.type];
+          if (!pool || !parts3) continue;
           const idx = used[ent.type] ?? 0;
           if (idx >= pool) continue;
           used[ent.type] = idx + 1;
@@ -175,10 +437,31 @@ export function buildWorld(): World {
           const f = frameAt(samples, Math.min(s, ROAD_LENGTH));
           const lateral = entityLateral(ent);
           const h = ent.type === "arch" ? 2.2 : ent.type === "oni" ? 1.5 : ent.type === "barrier" ? 1.1 : ent.type === "sweeper" ? 0.9 : entityHeight(ent);
-          place(`ent-${ent.type}-${idx}`, f, lateral, h);
-          if (ent.type === "power" || ent.type === "orb") node(`ent-${ent.type}-${idx}`).setScale(1);
+          const base = onRoad(f, lateral, h);
+          const EB = frameBasis(f);
+          const pulse = ent.type === "orb" ? 1 + 0.08 * Math.sin(time * 6 + ent.spin) : 1;
+          const tumble = ent.punt ? eulerMatrix([ent.punt.t * 9, ent.punt.t * 5, 0]) : null;
+          const style = ent.type === "power" ? POWER_STYLE[ent.kind ?? "kaio"] : undefined;
+          parts3.forEach((part, j) => {
+            const handle = node(`ent-${ent.type}-${idx}-${j}`);
+            let local: M3 = part.rot ? eulerMatrix(part.rot) : eulerMatrix([0, 0, 0]);
+            if (part.spin) local = mul(ry(time * part.spin + ent.spin), local);
+            let off: LV3 = part.at;
+            let m = mul(EB, local);
+            if (tumble) { m = mul(EB, mul(tumble, local)); off = apply(tumble, off); }
+            const wo = apply(EB, off);
+            const e = matrixEuler(m);
+            handle.setPosition(base[0] + wo[0], base[1] + wo[1], base[2] + wo[2]).setRotation(e[0], e[1], e[2]).setScale(pulse).setVisible(true);
+            if (style && (part.mat === "power" || part.mat === "powerHalo")) {
+              handle.setUniform?.("glowCore", [...style.core]);
+              handle.setUniform?.("glowShell", [...style.shell]);
+            }
+          });
         }
-        for (const [type, count] of Object.entries(POOLS)) for (let i = used[type] ?? 0; i < count; i++) node(`ent-${type}-${i}`).setVisible(false);
+        for (const [type, count] of Object.entries(POOLS)) {
+          const partCount = (ENTITY_PARTS[type] ?? []).length;
+          for (let i = used[type] ?? 0; i < count; i++) for (let j = 0; j < partCount; j++) node(`ent-${type}-${i}-${j}`).setVisible(false);
+        }
 
         /* chase camera */
         const up: V3 = norm3([frame.U[0], frame.U[1], frame.U[2]]);
@@ -188,23 +471,41 @@ export function buildWorld(): World {
           rig.f = norm3(lerp3(rig.f, frame.F, k));
           rig.u = norm3(lerp3(rig.u, up, k));
         }
-        const flying = S.nimbus > 0;
-        const back = flying ? 14 : 10 + Math.min(6, S.speed * 0.05);
-        const rise = flying ? 5 : 4.2;
-        const eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * rise, pose[1] - rig.f[1] * back + rig.u[1] * rise, pose[2] - rig.f[2] * back + rig.u[2] * rise];
-        const look: V3 = [pose[0] + rig.f[0] * 12 + rig.u[0] * 1.4, pose[1] + rig.f[1] * 12 + rig.u[1] * 1.4, pose[2] + rig.f[2] * 12 + rig.u[2] * 1.4];
+        const back = flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03);
+        const rise = flying ? 4.4 : 3.4;
+        const shake = Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;
+        const jx = shake * Math.sin(time * 61), jy = shake * Math.sin(time * 47 + 1.3);
+        const lift = falling ? Math.min(tf, 2.2) * 2.2 : leaping ? Math.min(tf, 2) * 1.2 : 0;
+        const eye: V3 = [pose[0] - rig.f[0] * back + rig.u[0] * (rise + lift) + frame.R[0] * jx, pose[1] - rig.f[1] * back + rig.u[1] * (rise + lift) + frame.R[1] * jx + jy, pose[2] - rig.f[2] * back + rig.u[2] * (rise + lift) + frame.R[2] * jx];
+        const ahead = falling || leaping ? 3 : 12;
+        const aim = falling ? -1.4 : 1.6;
+        const look: V3 = [pose[0] + rig.f[0] * ahead + rig.u[0] * aim, pose[1] + rig.f[1] * ahead + rig.u[1] * aim, pose[2] + rig.f[2] * ahead + rig.u[2] * aim];
         const fov = (aspect < 0.85 ? 74 : 62) + Math.min(10, Math.max(0, S.speed - 60) * 0.06);
         cameraController.setPose({ position: eye, target: look, up: rig.u, fov }, { cut: false });
-        void dt;
       };
 
       return {
         update,
-        resetCamera() { rig = null; },
+        resetCamera() { rig = null; prevS = null; },
+        setRunnerStyle(style: RunnerStyle) {
+          const colorOf: Record<HeroColor, number> = { gi: style.gi, giDark: style.giDark, skin: style.skin, hair: style.hair, teal: style.belt, boot: style.boot, sash: style.sash };
+          for (const part of HERO_PARTS as readonly HeroPartSpec[]) {
+            const h = node(`r-${part.id}`);
+            h.setUniform?.("baseColor", [...hexLinear(colorOf[part.color])]);
+            if (part.color === "sash") h.setUniform?.("glowColor", [...hexLinear(style.sash)]);
+          }
+          for (const id of ["aura-outer", "aura-inner"]) {
+            const h = node(id);
+            h.setUniform?.("auraHot", [...hexLinear(style.auraCore)]);
+            h.setUniform?.("auraMid", [...hexLinear(style.auraLit)]);
+            h.setUniform?.("auraEdge", [...hexLinear(style.aura)]);
+          }
+          for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
+          runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.3 });
+        },
         get nodeCount() { return handles.size; },
         get entityNodes() { return alive; }
       };
     }
   };
 }
-

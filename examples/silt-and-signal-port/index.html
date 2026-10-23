@@ -2,48 +2,116 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
     <title>Silt &amp; Signal on Aura3D</title>
     <style>
-      :root { color-scheme: dark; --ink: #f4efe6; --muted: #bdb6a8; --panel: rgba(20, 22, 28, 0.72); --line: rgba(244, 239, 230, 0.16); --warm: #e8b07a; --jade: #8fd9c6; }
+      :root { color-scheme: dark; --ink: #f6f0e4; --muted: #c4bcab; --panel: rgba(22, 20, 24, 0.7); --line: rgba(246, 240, 228, 0.18); --warm: #f0b980; --jade: #8fd9c6; }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #14161c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
-      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      html, body { margin: 0; height: 100%; background: #14161c; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
       .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; backdrop-filter: blur(6px); }
       .meta { font-size: 12px; color: var(--muted); }
       .num { font-variant-numeric: tabular-nums; }
+      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(246, 240, 228, 0.08); border: 1px solid var(--line); border-radius: 6px; height: 32px; padding: 0 14px; cursor: pointer; }
+      button:hover, button:focus-visible { background: rgba(240, 185, 128, 0.22); border-color: var(--warm); outline: none; }
+      button.primary { background: var(--warm); color: #231a12; border-color: var(--warm); height: 34px; }
+      button.primary:hover, button.primary:focus-visible { background: #f7cda1; }
       #hud { position: fixed; inset: 0; pointer-events: none; }
-      #objective-card { position: absolute; top: 12px; left: 12px; max-width: 360px; }
+      #objective-card { position: absolute; top: 12px; left: 12px; max-width: 380px; }
       #chapter { font-size: 12px; color: var(--warm); letter-spacing: 0.04em; text-transform: uppercase; }
       #objective { font-size: 16px; font-weight: 500; margin: 2px 0 4px; }
       #flight { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 4px; min-width: 200px; }
       #flight .row { display: flex; justify-content: space-between; gap: 16px; }
-      .meter { height: 6px; border-radius: 3px; background: rgba(244, 239, 230, 0.16); overflow: hidden; margin: 4px 0; }
+      .meter { height: 6px; border-radius: 3px; background: rgba(246, 240, 228, 0.16); overflow: hidden; margin: 4px 0; }
       .meter > i { display: block; height: 100%; width: 100%; background: var(--jade); }
-      #keys { position: absolute; right: 12px; bottom: 12px; text-align: right; }
-      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #14161c; z-index: 5; }
+      #keys { position: absolute; right: 12px; bottom: 12px; text-align: right; max-width: 420px; }
+      #compass-wrap { position: absolute; top: 12px; right: 12px; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; }
+      #compass { width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 26px solid var(--warm); transition: transform 60ms linear; }
+      #toast { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-size: 16px; font-weight: 500; opacity: 0; transition: opacity 240ms; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
+      #toast.show { opacity: 1; }
+      .screen { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(14, 16, 22, 0.15), rgba(14, 16, 22, 0.78)); }
+      .card { width: min(560px, 100%); display: grid; gap: 12px; }
+      .card h1 { margin: 0; font-size: 28px; font-weight: 500; letter-spacing: 0.01em; }
+      .card h2 { margin: 0; font-size: 20px; font-weight: 500; }
+      .card p { margin: 0; font-size: 14px; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+      .chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+      .chapters button { height: 34px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      table.controls { border-collapse: collapse; width: 100%; font-size: 12px; }
+      table.controls td { padding: 2px 6px 2px 0; color: var(--muted); }
+      table.controls td:first-child { color: var(--ink); white-space: nowrap; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #14161c; z-index: 8; }
+      #scene-lines p { font-size: 17px; line-height: 1.5; }
     </style>
   </head>
   <body>
     <canvas id="world"></canvas>
     <section id="loading"><div class="panel"><h2 style="margin:0">Silt &amp; Signal</h2><p id="loading-status" class="meta">Raising the world</p></div></section>
-    <div id="hud">
+    <div id="hud" class="hidden">
       <div id="objective-card" class="panel">
         <div id="chapter"></div>
         <div id="objective"></div>
         <div class="meta"><span id="distance" class="num"></span> · <span id="steps" class="num"></span> <span id="hold" class="num"></span></div>
       </div>
+      <div id="compass-wrap" class="panel"><div id="compass"></div></div>
       <div id="flight" class="panel">
-        <div class="row"><span class="meta">Speed</span><span id="speed" class="num">0</span></div>
-        <div class="row"><span class="meta">Altitude</span><span id="altitude" class="num">0</span></div>
+        <div class="row" style="justify-content:space-between"><span class="meta">Speed</span><span id="speed" class="num">0</span></div>
+        <div class="row" style="justify-content:space-between"><span class="meta">Altitude</span><span id="altitude" class="num">0</span></div>
         <div class="meter"><i id="energy"></i></div>
-        <div class="row"><span class="meta">Mode</span><span id="mode">Cruise</span></div>
+        <div class="row" style="justify-content:space-between"><span class="meta">Mode</span><span id="mode">Cruise</span></div>
       </div>
-      <div id="keys" class="panel meta">W/S throttle · A/D steer · E/Q rise/fall · Shift boost · B brake · F interact · P autopilot</div>
+      <div id="keys" class="panel meta">W/S throttle · A/D steer · E/Q rise/fall · Shift boost · B brake · F interact · Esc pause · P autopilot · hold the mouse or touch to fly, drag to steer and climb</div>
+      <div id="toast"></div>
     </div>
+
+    <section id="title-screen" class="screen hidden">
+      <div class="card panel">
+        <div class="meta">A hover-board flight through seven valleys</div>
+        <h1>Silt &amp; Signal</h1>
+        <p id="title-tagline" class="meta">Answer the lamp on the far road. Fly the rings, hold steady when asked, and see what is on the other side of the water.</p>
+        <div class="row"><button id="start-button" class="primary">Begin the journey</button><button id="mute-button">Sound: on</button></div>
+        <div class="meta">Jump to a chapter</div>
+        <div id="chapter-buttons" class="chapters"></div>
+        <table class="controls">
+          <tr><td>W / S or ↑ / ↓</td><td>throttle and reverse</td></tr>
+          <tr><td>A / D or ← / →</td><td>steer</td></tr>
+          <tr><td>E / Q</td><td>rise and descend</td></tr>
+          <tr><td>Shift or Space</td><td>boost (drains the energy bar)</td></tr>
+          <tr><td>B</td><td>brake</td></tr>
+          <tr><td>F (hold)</td><td>interact when a ring asks you to hold still</td></tr>
+          <tr><td>Mouse or touch</td><td>hold to fly, drag sideways to steer, up or down to climb or dive, a second finger boosts</td></tr>
+          <tr><td>Gamepad</td><td>left stick fly, right stick altitude, A or trigger boost, B brake, X interact, Start pause</td></tr>
+        </table>
+        <div class="meta">Terrain, models and textures are CC0 (Kenney, ambientCG, Aura3D starter); sound is synthesised live. This is a simulation port of a browser game's flight and objectives, not a copy of its art.</div>
+      </div>
+    </section>
+
+    <section id="pause-screen" class="screen hidden">
+      <div class="card panel">
+        <h2>Paused</h2>
+        <div class="row"><button id="resume-button" class="primary">Resume</button><button id="restart-button">Restart objective</button><button id="pause-mute">Sound: on</button><button id="title-button">Title screen</button></div>
+      </div>
+    </section>
+
+    <section id="scene-screen" class="screen hidden">
+      <div class="card panel">
+        <div id="scene-chapter" class="meta"></div>
+        <div id="scene-lines"></div>
+        <div class="row"><button id="scene-next" class="primary">Continue</button><span class="meta">Enter, Space or click</span></div>
+      </div>
+    </section>
+
+    <section id="done-screen" class="screen hidden">
+      <div class="card panel">
+        <h2>Journey complete</h2>
+        <div id="done-lines"></div>
+        <div id="done-stats" class="meta"></div>
+        <div class="row"><button id="again-button" class="primary">Fly again</button></div>
+      </div>
+    </section>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

@@ -37,6 +37,12 @@ vec3 shade(vec3 albedo, vec3 N, vec3 emissive) {
   vec3 fillC = vec3(0.508, 0.584, 0.737) * 0.95 * max(dot(N, fill), 0.0);
   return albedo * (hemi + keyC + fillC) * (1.2 / 3.14159265) + emissive;
 }
+/** Aerial perspective toward the cold nebula-blue of the original's far field. */
+vec3 haze(vec3 c, vec3 world) {
+  float d = length(world - cameraPosition);
+  float f = 1.0 - exp(-pow(d / 2300.0, 1.6));
+  return mix(c, vec3(0.10, 0.12, 0.22), clamp(f, 0.0, 0.82));
+}
 `;
 
 export const TRACK_VERTEX = /* glsl */ `
@@ -92,8 +98,20 @@ void main() {
   vec3 albedo = mix(pigment * (0.24 + 1.38 * pow(max(0.0, lum), 0.65)), original, vOriginal);
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
-  vec3 emissive = albedo * (0.1 * (1.0 - vOriginal));
-  outColor = vec4(shade(albedo, N, emissive), 1.0);
+  // Teal mineral veining that follows the brush streaks, as on the original's terracotta ring.
+  float vein = smoothstep(0.5, 0.68, fbm(vec2(vUv.x * 38.0, vUv.y * 4.5) + fbm(q * 0.22) * 3.0));
+  albedo = mix(albedo, vec3(0.08, 0.36, 0.38), vein * 0.62);
+  albedo *= vec3(0.80, 0.60, 0.52);
+  float across = smoothstep(0.0, 0.07, vUv.y) * smoothstep(1.0, 0.93, vUv.y);
+  albedo *= mix(0.5, 1.0, across);
+  // Impasto relief: screen-space bump from the streak height so the key light rakes across the brush marks.
+  float h = fbm(q * 2.2);
+  vec3 dpx = dFdx(vWorld), dpy = dFdy(vWorld);
+  vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
+  float det = dot(dpx, r1);
+  N = normalize(abs(det) * N - 0.05 * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
+  vec3 emissive = albedo * 0.1 + vec3(0.18, 0.72, 0.66) * (1.0 - across) * 0.3;
+  outColor = vec4(haze(shade(albedo, N, emissive), vWorld), 1.0);
 }`;
 
 /** Opal / mineral surfaces: strata banding with an iridescent tint (the original's `Mf`). */
@@ -122,7 +140,7 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   float glow = opal > 0.5 ? 0.17 : 0.025;
-  outColor = vec4(shade(albedo, N, albedo * glow), 1.0);
+  outColor = vec4(haze(shade(albedo, N, albedo * glow), vWorld), 1.0);
 }`;
 
 /** Flat or lit solid colour (riders, rocks, pillars, planet bands). */
@@ -153,7 +171,14 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   vec3 emissive = glowColor * glow * (banding > 0.0 ? 0.0 : 1.0);
-  outColor = vec4(shade(albedo, N, emissive), 1.0);
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 keyDir = normalize(vec3(150.0, 280.0, -150.0));
+  float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+  float spec = pow(max(dot(N, normalize(keyDir + V)), 0.0), 36.0);
+  vec3 lit = shade(albedo, N, emissive);
+  lit += vec3(0.42, 0.58, 0.95) * fres * 0.34 * (banding > 0.0 ? 0.0 : 1.0);
+  lit += vec3(1.0, 0.86, 0.66) * spec * 0.28 * (banding > 0.0 ? 0.0 : 1.0);
+  outColor = vec4(haze(lit, vWorld), 1.0);
 }`;
 
 /** Additive checkpoint veil (ported from the original gate `ShaderMaterial`; uv.y runs up the 13 m curtain). */
@@ -203,4 +228,75 @@ void main() {
   if (d > 1.0) discard;
   float soft = smoothstep(1.0, 0.0, d);
   outColor = vec4(vTint * (additive > 0.5 ? 1.4 : 1.0), soft * vFade);
+}`;
+
+
+/** Space sky: a deep gradient with a tilted galactic band, dust lanes and coloured nebula clouds (object-space direction, so it never parallaxes). */
+export const NEBULA_VERTEX = /* glsl */ `
+out vec3 vDir;
+void main() {
+  vDir = normalize(position);
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const NEBULA_FRAGMENT = /* glsl */ `
+in vec3 vDir;
+out vec4 outColor;
+float h31(vec3 p) {
+  p = fract(p * 0.3183099 + 0.1);
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+float n3(vec3 x) {
+  vec3 i = floor(x), f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(
+    mix(mix(h31(i), h31(i + vec3(1, 0, 0)), f.x), mix(h31(i + vec3(0, 1, 0)), h31(i + vec3(1, 1, 0)), f.x), f.y),
+    mix(mix(h31(i + vec3(0, 0, 1)), h31(i + vec3(1, 0, 1)), f.x), mix(h31(i + vec3(0, 1, 1)), h31(i + vec3(1, 1, 1)), f.x), f.y),
+    f.z);
+}
+float fbm3(vec3 p) {
+  float a = 0.5, s = 0.0;
+  for (int i = 0; i < 5; i++) { s += a * n3(p); p = p * 2.02 + vec3(7.1, 3.7, 1.3); a *= 0.5; }
+  return s;
+}
+void main() {
+  vec3 d = normalize(vDir);
+  vec3 col = mix(vec3(0.012, 0.016, 0.045), vec3(0.035, 0.028, 0.085), d.y * 0.5 + 0.5);
+  float band = exp(-pow(dot(d, normalize(vec3(0.28, 0.92, -0.26))) * 3.2, 2.0));
+  float c1 = fbm3(d * 2.4 + vec3(1.7, 0.3, 4.1));
+  float c2 = fbm3(d * 5.1 + c1 * 1.6 + vec3(9.2, 2.2, 0.7));
+  float cloud = pow(clamp(c1 * 1.25, 0.0, 1.0), 2.2);
+  vec3 purple = vec3(0.30, 0.11, 0.46);
+  vec3 teal = vec3(0.04, 0.34, 0.42);
+  vec3 amber = vec3(0.66, 0.30, 0.11);
+  vec3 neb = mix(purple, teal, smoothstep(0.30, 0.75, c2));
+  neb = mix(neb, amber, smoothstep(0.55, 0.9, fbm3(d * 1.7 + vec3(3.3, 8.8, 1.1))) * 0.7);
+  col += neb * cloud * (0.10 + 0.55 * band);
+  col += vec3(0.20, 0.17, 0.30) * band * pow(c2, 1.7) * 0.5;
+  float lane = smoothstep(0.52, 0.74, fbm3(d * 3.4 + vec3(5.5, 1.2, 7.7)));
+  col *= 1.0 - 0.55 * lane * band;
+  outColor = vec4(col, 1.0);
+}`;
+
+/** Additive Fresnel shell around the planet (limb glow, brighter on the sun side). */
+export const ATMOS_VERTEX = /* glsl */ `
+out vec3 vN;
+out vec3 vWorld;
+void main() {
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  vN = normalize(normalMatrix * normal);
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const ATMOS_FRAGMENT = /* glsl */ `
+in vec3 vN;
+in vec3 vWorld;
+out vec4 outColor;
+void main() {
+  vec3 N = normalize(vN);
+  vec3 V = normalize(cameraPosition - vWorld);
+  float f = pow(1.0 - max(dot(N, V), 0.0), 2.4);
+  float sun = clamp(dot(N, normalize(vec3(150.0, 280.0, -150.0))) * 0.6 + 0.55, 0.0, 1.0);
+  outColor = vec4(atmoColor * f * (0.4 + 1.5 * sun), f * 0.9);
 }`;

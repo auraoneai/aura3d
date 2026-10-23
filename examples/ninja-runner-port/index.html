@@ -7,44 +7,77 @@
     <link rel="stylesheet" href="/fonts/local.css" />
     <title>Ninja Runner on Aura3D</title>
     <style>
-      :root { color-scheme: dark; --ink: #fff0cc; --muted: #c9d3cf; --panel: rgba(17, 32, 43, 0.78); --line: rgba(255, 240, 204, 0.2); --warm: #ffa135; --cyan: #83ebff; }
+      :root { color-scheme: dark; --ink: #fff0cc; --muted: #cbd5d1; --panel: rgba(16, 30, 40, 0.74); --panel-solid: #14232d; --line: rgba(255, 240, 204, 0.2); --warm: #ffa135; --warm-deep: #ff7a1f; --cyan: #83ebff; --danger: #ff5a4a; }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #11202b; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
+      html, body { margin: 0; height: 100%; background: #11202b; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; user-select: none; -webkit-user-select: none; }
       canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
       .num { font-variant-numeric: tabular-nums; }
-      .meta { font-size: 12px; color: var(--muted); }
+      .meta { font-size: 12px; color: var(--muted); letter-spacing: 0.03em; }
       h1, h2 { margin: 0; line-height: 1.15; font-weight: 500; }
-      h1 { font-size: 28px; letter-spacing: 0.04em; }
-      h2 { font-size: 18px; }
+      h1 { font-size: 30px; letter-spacing: 0.12em; }
+      h2 { font-size: 20px; }
       button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--ink); background: rgba(255, 240, 204, 0.1); border: 1px solid var(--line); border-radius: 6px; padding: 9px 14px; cursor: pointer; }
-      button.primary { background: var(--warm); color: #1d1a17; border-color: transparent; }
-      button:disabled { opacity: 0.5; cursor: default; }
-      #stats { position: fixed; top: 14px; right: 14px; text-align: right; display: grid; gap: 8px; }
+      button:hover:not(:disabled) { background: rgba(255, 240, 204, 0.18); }
+      button.primary { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #1d1a17; border-color: transparent; padding: 11px 20px; }
+      button:disabled { opacity: 0.45; cursor: default; }
+      .glass { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+      #progress { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: min(46vw, 560px); height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.18); overflow: visible; }
+      #progress > i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, #ffd27a, var(--warm-deep)); }
+      #progress > b { position: absolute; top: -3px; width: 2px; height: 12px; background: rgba(255, 240, 204, 0.7); }
+      #progress > span { position: absolute; top: 12px; transform: translateX(-50%); font-size: 11px; color: var(--muted); white-space: nowrap; }
+      #stats { position: fixed; top: 14px; right: 14px; text-align: right; display: grid; gap: 6px; padding: 10px 14px; }
       #stats strong { font-size: 22px; font-weight: 500; }
-      #vitals { position: fixed; top: 14px; left: 14px; width: 190px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
-      .bar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.12); overflow: hidden; margin: 6px 0 8px; }
-      .bar > i { display: block; height: 100%; width: 0; background: var(--cyan); }
-      #hearts { letter-spacing: 3px; color: var(--warm); }
-      #forms { position: fixed; left: 14px; top: 130px; display: grid; gap: 6px; }
-      #forms button.selected { background: var(--warm); color: #1d1a17; }
-      #abilities { position: fixed; right: 14px; bottom: 14px; display: grid; gap: 6px; }
-      #abilities button { min-width: 150px; text-align: left; }
-      #announce { position: fixed; top: 70px; left: 0; right: 0; text-align: center; pointer-events: none; text-shadow: 0 1px 6px #0008; }
-      #announce strong { display: block; font-size: 22px; font-weight: 500; }
-      #overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(8, 16, 22, 0.55); }
-      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px 26px; max-width: 420px; display: grid; gap: 12px; }
+      #combo { color: var(--warm); font-size: 15px; min-height: 18px; }
+      #vitals { position: fixed; top: 14px; left: 14px; width: 210px; padding: 10px 12px; }
+      .bar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.14); overflow: hidden; margin: 6px 0 8px; }
+      .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #4cc9ff, var(--cyan)); }
+      #hearts { letter-spacing: 3px; color: var(--danger); font-size: 16px; }
+      #district { margin-top: 6px; }
+      #forms { position: fixed; left: 14px; bottom: 14px; display: flex; gap: 6px; padding: 8px; }
+      #forms button { min-width: 92px; text-align: left; display: grid; gap: 3px; }
+      #forms button small { font-size: 11px; color: var(--muted); }
+      #forms button.selected { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #1d1a17; border-color: transparent; }
+      #forms button.selected small { color: #3a2a18; }
+      #abilities { position: fixed; right: 14px; bottom: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px; }
+      #abilities button { position: relative; overflow: hidden; min-width: 128px; text-align: left; display: grid; gap: 3px; }
+      #abilities button small { font-size: 11px; color: var(--muted); }
+      #abilities button::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--cd, 0) * 100%); background: var(--cyan); }
+      #abilities button.poor { opacity: 0.55; }
+      #abilities button.live { border-color: var(--cyan); box-shadow: 0 0 12px rgba(131, 235, 255, 0.45); }
+      #announce { position: fixed; top: 74px; left: 0; right: 0; text-align: center; pointer-events: none; text-shadow: 0 1px 8px #000a; }
+      #announce strong { display: block; font-size: 24px; font-weight: 500; letter-spacing: 0.1em; }
+      #district-banner { position: fixed; left: 0; right: 0; top: 34%; text-align: center; pointer-events: none; font-size: 30px; letter-spacing: 0.22em; font-weight: 500; text-shadow: 0 2px 14px #000b; opacity: 0; transition: opacity 0.6s; }
+      #district-banner.show { opacity: 0.95; }
+      #hurt { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 140px 30px rgba(255, 60, 40, 0.75); opacity: 0; transition: opacity 0.5s ease-out; }
+      #hurt.on { opacity: 1; transition: none; }
+      #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-size: 120px; font-weight: 500; text-shadow: 0 4px 24px #000c; }
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(8, 16, 22, 0.35), rgba(8, 16, 22, 0.75)); }
+      .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px 28px; max-width: 460px; display: grid; gap: 14px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; }
+      .keys dt { color: var(--warm); font-weight: 500; white-space: nowrap; }
+      .keys dd { margin: 0; color: var(--muted); }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; }
+      #mute { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); margin-left: min(25vw, 300px); padding: 6px 10px; font-size: 12px; }
+      @media (max-width: 760px) { #abilities { grid-template-columns: 1fr; } #forms button { min-width: 70px; } #progress { width: 40vw; } }
     </style>
   </head>
   <body>
     <canvas id="world"></canvas>
-    <div id="stats" class="hidden"><div><span class="meta">DISTANCE</span><strong class="num"><span id="distance">0</span> m</strong></div><div><span class="meta">SHINOBI DEFEATED</span><strong class="num" id="kills">00</strong></div><div><span class="meta">SCORE</span><strong class="num" id="score">0</strong></div></div>
-    <div id="vitals" class="hidden"><span class="meta">CHAKRA</span><div class="bar"><i id="chakra-bar"></i></div><span class="num" id="chakra">300 / 300</span><div class="meta" style="margin-top:8px">HEALTH</div><div id="hearts">&#9829;&#9829;&#9829;&#9829;&#9829;</div><div class="meta" id="district">Hidden Leaf Village</div></div>
-    <div id="forms" class="hidden"><button data-form="base" class="selected">Naruto</button><button data-form="sage">Sage</button><button data-form="kurama">Kurama</button></div>
-    <div id="abilities" class="hidden"><button data-action="clones">1 &middot; Shadow clones</button><button data-action="rasengan">2 &middot; Rasengan</button><button data-action="dash">Shift &middot; Chakra dash</button><button data-action="rasenshuriken">3 &middot; Rasenshuriken</button></div>
+    <div id="progress" class="hidden"><i id="progress-fill"></i><b style="left:22.7%"></b><span style="left:22.7%">Sunfire</span><b style="left:61.4%"></b><span style="left:61.4%">Ember</span></div>
+    <div id="stats" class="hidden glass"><div><span class="meta">DISTANCE</span><strong class="num"><span id="distance">0</span> m</strong></div><div><span class="meta">DEFEATED</span><strong class="num" id="kills">00</strong></div><div><span class="meta">SCORE</span><strong class="num" id="score">0</strong></div><div id="combo" class="num"></div></div>
+    <div id="vitals" class="hidden glass"><span class="meta">SPIRIT</span><div class="bar"><i id="chakra-bar"></i></div><span class="num" id="chakra">300 / 300</span><div class="meta" style="margin-top:8px">HEALTH</div><div id="hearts">&#9829;&#9829;&#9829;&#9829;&#9829;</div><div class="meta" id="district">Lantern Village</div></div>
+    <div id="forms" class="hidden glass"><button data-form="base" class="selected">Runner<small>Space cycles</small></button><button data-form="sage">Sunfire<small>from 600 m</small></button><button data-form="kurama">Ember<small>from 1,620 m</small></button></div>
+    <div id="abilities" class="hidden glass"><button data-action="clones">Echo clones<small>1 &middot; 60</small></button><button data-action="rasengan">Spiral orb<small>2 &middot; 14</small></button><button data-action="dash">Surge dash<small>Shift &middot; 38</small></button><button data-action="rasenshuriken">Gale star<small>3 &middot; 75</small></button></div>
     <div id="announce"><strong id="announce-title"></strong><span class="meta" id="announce-small"></span></div>
-    <div id="overlay"><div class="card" id="intro-card"><h1>NINJA RUNNER</h1><p class="meta" id="loading-status">Loading the village&hellip;</p><button class="primary" id="start" disabled>Enter the Village &rarr;</button><p class="meta">A/D move &middot; W jump &middot; S slide &middot; 1 clones &middot; 2 Rasengan &middot; Shift dash &middot; 3 Rasenshuriken &middot; Space form &middot; Esc pause</p></div></div>
-    <div id="result" class="hidden" style="position:fixed;inset:0;display:grid;place-items:center;background:rgba(8,16,22,.6)"><div class="card"><span class="meta" id="result-label">MISSION REPORT</span><h2 id="result-title"></h2><p id="result-copy" class="meta"></p><div class="meta num" id="result-stats"></div><button class="primary" id="again">Run again</button></div></div>
+    <div id="hurt"></div>
+    <div id="district-banner"></div>
+    <div id="countdown" class="hidden"></div>
+    <button id="mute" class="hidden glass" title="Mute (M)">Sound on</button>
+    <div id="overlay" class="overlay"><div class="card" id="intro-card"><h1>NINJA RUNNER</h1><p class="meta" id="loading-status">Loading the village&hellip;</p><button class="primary" id="start" disabled>Run the Village &rarr;</button><dl class="keys"><dt>A / D</dt><dd>change lane</dd><dt>W</dt><dd>jump</dd><dt>S</dt><dd>slide</dd><dt>1</dt><dd>echo clones</dd><dt>2</dt><dd>spiral orb</dd><dt>3</dt><dd>gale star</dd><dt>Shift</dt><dd>surge dash</dd><dt>Space</dt><dd>cycle form</dd><dt>Esc / M</dt><dd>pause / mute</dd></dl><p class="meta">Touch: swipe to move, jump and slide; tap for the spiral orb.</p></div></div>
+    <div id="pause" class="overlay hidden"><div class="card"><h2>Paused</h2><p class="meta">The run is held. Everything is where you left it.</p><div class="row"><button class="primary" id="resume">Resume</button></div></div></div>
+    <div id="result" class="overlay hidden"><div class="card"><span class="meta" id="result-label">RUN REPORT</span><h2 id="result-title"></h2><p id="result-copy" class="meta"></p><div class="meta num" id="result-stats"></div><div class="row"><button class="primary" id="again">Run again</button></div></div></div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

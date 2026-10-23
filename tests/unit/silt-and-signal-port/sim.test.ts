@@ -97,8 +97,8 @@ describe("flight model (original e0)", () => {
   it("clamps x to +-640, z to [-length - 50, 150] and y to the ceiling", () => {
     const sim = createSim(0, 2, { floor: () => -100 }, { x: 700, z: 400, y: 500 });
     stepSim(sim, IDLE, STEP);
-    expect(sim.state.x).toBe(640);
-    expect(sim.state.z).toBe(150);
+    expect(sim.state.x).toBeCloseTo(640, 9);
+    expect(sim.state.z).toBeCloseTo(150, 9);
     expect(sim.state.y).toBe(205);
   });
 

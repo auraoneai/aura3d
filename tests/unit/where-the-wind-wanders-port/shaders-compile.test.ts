@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
-import { hazeSpec, paintSpec, seaSpec, solidSpec, windSpec } from "../../../examples/where-the-wind-wanders-port/world";
+import { blobSpec, glowSpec, hazeSpec, moteSpec, paintSpec, propSpec, seaSpec, shaftSpec, skySpec, streamSpec, travellerSpec, windSpec } from "../../../examples/where-the-wind-wanders-port/world";
 
 /**
  * Bakes every `material.custom` program the port draws with through the engine's own prelude
@@ -17,8 +17,15 @@ const programs = [
   { name: "wind-foliage", spec: windSpec() },
   { name: "paint-ground", spec: paintSpec() },
   { name: "sea", spec: seaSpec() },
-  { name: "solid-props", spec: solidSpec([0.5, 0.5, 0.5], [1, 1, 0.5], 0.4) },
-  { name: "mist-haze", spec: hazeSpec(1.5) }
+  { name: "sky", spec: skySpec() },
+  { name: "stream", spec: streamSpec() },
+  { name: "props", spec: propSpec() },
+  { name: "traveller", spec: travellerSpec() },
+  { name: "glow", spec: glowSpec([1, 0.9, 0.6], 1, 0) },
+  { name: "pollen", spec: moteSpec() },
+  { name: "mist-haze", spec: hazeSpec(1.5) },
+  { name: "light-shaft", spec: shaftSpec(1, 0.1) },
+  { name: "contact-shadow", spec: blobSpec() }
 ] as const;
 
 describe("where-the-wind-wanders-port programs (structural)", () => {
@@ -45,11 +52,12 @@ describe("where-the-wind-wanders-port programs (structural)", () => {
     });
   }
 
-  it("the wind program binds its three author attributes by name", () => {
+  it("the wind program binds its four author attributes by name", () => {
     const material = createCustomShaderManagedForAttributes();
     expect(material.vertex).toMatch(/\btint\b/);
     expect(material.vertex).toMatch(/\bsway\b/);
     expect(material.vertex).toMatch(/\bphase\b/);
+    expect(material.vertex).toMatch(/\bkind\b/);
   });
 });
 

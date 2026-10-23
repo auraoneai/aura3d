@@ -8,9 +8,17 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
 import { Autopilot } from "./autopilot";
-import { IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
+import { SplatSound, diffSounds, type FrameState } from "./audio";
+import { ScreenFx, flashFor } from "./fx";
+import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
 import { buildWorld, type WorldRuntime } from "./world";
 
+
+/* GT Walsheim Bold (licensed library, assets/GT-Walsheim-Bold.woff2): the heavy rounded face the HUD, popups and cards use */
+if (typeof FontFace !== "undefined" && typeof document !== "undefined") {
+  const face = new FontFace("Splat Display", `url(${new URL("./assets/GT-Walsheim-Bold.woff2", import.meta.url).href})`, { weight: "700" });
+  void face.load().then((f) => document.fonts.add(f)).catch(() => undefined);
+}
 const params = new URLSearchParams(location.search);
 const num = (key: string, fallback: number): number => {
   const v = Number(params.get(key));
@@ -40,6 +48,22 @@ let pilot: Autopilot | null = config.autopilot ? new Autopilot() : null;
 let renderFailed = false;
 const pending: Input = { start: false, down: false, up: false, dx: 0 };
 let popupShown = 0;
+let scriptInputs: Input[] = [];
+let scriptIdx = 0;
+
+/* presentation state (never read by the simulation) */
+const sound = new SplatSound();
+let fx: ScreenFx | undefined;
+let prevFrame: FrameState | null = null;
+let lastPhase = "splash";
+let keyDir = 0;
+let keyDragging = false;
+const store = {
+  get(key: string): string | null { try { return localStorage.getItem(key); } catch { return null; } },
+  set(key: string, value: string): void { try { localStorage.setItem(key, value); } catch { /* storage unavailable */ } }
+};
+let best = Number(store.get("splatRush.best")) || 0;
+sound.muted = store.get("splatRush.muted") === "1";
 
 /* ------------------------------------------------------------------ HUD */
 
@@ -65,18 +89,72 @@ function updateHud(): void {
   $("splash-screen").classList.toggle("hidden", o.phase !== "splash");
   const over = $("gameover-screen");
   over.classList.toggle("hidden", o.phase !== "gameOver");
-  if (o.phase === "gameOver") $("final-score").textContent = `Score: ${Math.floor(o.score)}`;
+  let perfectNow = false;
+  if (config.manual && popupShown < sim.popups.length) $("popups").replaceChildren();
   while (popupShown < sim.popups.length) {
     const p = sim.popups[popupShown++] as (typeof sim.popups)[number];
+    if (p.text.startsWith("PERFECT")) perfectNow = true;
     const el = document.createElement("div");
     el.className = "popup-text";
     el.textContent = p.text;
     el.style.color = p.color;
-    el.style.left = `${p.at * 100}%`;
-    el.style.top = p.size >= 2.5 ? "9%" : "16%";
-    $("popups").appendChild(el);
-    setTimeout(() => el.remove(), 950);
+    el.style.marginLeft = `${p.at * 100}%`;
+    const host = $("popups");
+    host.appendChild(el);
+    el.addEventListener("animationend", () => el.remove());
+    while (host.children.length > 3) host.firstElementChild?.remove();
   }
+  reactToFrame(perfectNow);
+}
+
+/* ------------------------------------------------------------------ audio, screen effects, results */
+
+function showResults(score: number): void {
+  const final = Math.floor(score);
+  const isBest = final > best;
+  if (isBest) { best = final; store.set("splatRush.best", String(best)); }
+  const out = $("final-score");
+  const paint = (shown: number, done: boolean): void => {
+    out.innerHTML =
+      `Score: ${shown.toLocaleString()}` +
+      (done ? `<br><span class="go-best">${isBest ? `NEW BEST! ${best.toLocaleString()}` : `Best: ${best.toLocaleString()}`}</span>` : "");
+  };
+  if (config.manual) { paint(final, true); return; }
+  const startedAt = performance.now();
+  const step = (): void => {
+    const t = Math.min(1, (performance.now() - startedAt) / 800);
+    paint(Math.floor(final * (1 - Math.pow(1 - t, 3))), t >= 1);
+    if (t < 1 && sim.o.phase === "gameOver") requestAnimationFrame(step);
+  };
+  step();
+}
+
+function reactToFrame(perfect: boolean): void {
+  const o = sim.o;
+  fx ??= new ScreenFx();
+  const frame: FrameState = {
+    phase: o.phase, lives: o.lives, combo: o.combo, multiplier: o.multiplier, score: o.score, shieldActive: o.shieldActive,
+    rainbowTimer: o.rainbowTimer, scoreX2Timer: o.scoreX2Timer, playerColorIndex: o.playerColorIndex, perfect
+  };
+  const own = COLORS[o.playerColorIndex] ?? "#ffffff";
+  for (const event of diffSounds(prevFrame, frame)) {
+    sound.play(event.sound, event.level);
+    if (config.manual) continue;
+    const flash = flashFor(event, o.playerColorIndex);
+    if (flash) fx.flash(flash.color, flash.strength);
+    if (event.sound === "burst") fx.reveal(own);
+  }
+  prevFrame = frame;
+  fx.vignette(o.multiplier, o.isRainbowActive, own, performance.now() / 1000);
+  if (o.phase !== lastPhase) {
+    if (o.phase === "splash" || o.phase === "playing") fx.clearReveal();
+    if (o.phase === "gameOver") { $("gameover-screen").style.background = own; showResults(o.score); }
+    if (o.phase !== "playing") $("popups").replaceChildren();
+    sound.setIntensity(o.phase === "playing" || o.phase === "bursting" ? "play" : o.phase === "gameOver" ? "over" : "title");
+    lastPhase = o.phase;
+  }
+  const bestEl = document.getElementById("splash-best");
+  if (bestEl) bestEl.textContent = best > 0 ? `Best: ${best.toLocaleString()}` : "";
 }
 
 /* ------------------------------------------------------------------ frame */
@@ -110,6 +188,10 @@ function tick(now: number): void {
   let guard = 0;
   while (accumulator >= 1 / 60 && guard++ < 6) {
     accumulator -= 1 / 60;
+    if (keyDir !== 0 && sim.o.phase === "playing") {
+      if (!keyDragging) { pending.down = true; keyDragging = true; }
+      pending.dx += keyDir * 12;
+    }
     const input: Input = pilot ? pilot.next(sim, steps) : { ...pending };
     pending.start = pending.down = pending.up = false;
     pending.dx = 0;
@@ -153,8 +235,10 @@ async function boot(): Promise<void> {
 let lastX = 0;
 let dragging = false;
 addEventListener("pointerdown", (e) => {
+  void sound.unlock();
   if (config.manual || pilot) return;
   const target = e.target as HTMLElement | null;
+  if (target?.closest?.(".no-steer")) return;
   if (sim.o.phase === "gameOver" && target?.id !== "btn-restart") return;
   if (sim.o.phase === "splash") pending.start = true;
   else pending.down = true;
@@ -173,10 +257,46 @@ const release = (): void => {
 };
 addEventListener("pointerup", release);
 addEventListener("pointercancel", release);
-$("btn-restart").addEventListener("click", () => {
-  if (config.manual || pilot) return;
+function restart(): void {
   sim.begin();
   popupShown = sim.popups.length;
+  prevFrame = null;
+}
+$("btn-restart").addEventListener("click", () => {
+  if (config.manual || pilot) return;
+  restart();
+});
+const muteButton = $("btn-mute");
+const paintMute = (): void => { muteButton.textContent = sound.muted ? "\u{1F507}" : "\u{1F50A}"; muteButton.setAttribute("aria-pressed", String(sound.muted)); };
+const toggleMute = (): void => { sound.setMuted(!sound.muted); store.set("splatRush.muted", sound.muted ? "1" : "0"); paintMute(); };
+muteButton.addEventListener("click", toggleMute);
+paintMute();
+
+/* keyboard (the original is pointer-only): Space/Enter start and restart, arrows or A/D steer, M mutes */
+const KEY_DIR: Record<string, number> = { ArrowLeft: -1, KeyA: -1, ArrowRight: 1, KeyD: 1 };
+const held = new Set<string>();
+addEventListener("keydown", (e) => {
+  void sound.unlock();
+  if (config.manual || pilot || e.repeat) return;
+  if (e.code === "KeyM") { toggleMute(); return; }
+  if (e.code === "Space" || e.code === "Enter") {
+    e.preventDefault();
+    if (sim.o.phase === "splash") pending.start = true;
+    else if (sim.o.phase === "gameOver") restart();
+    return;
+  }
+  if (e.code in KEY_DIR) {
+    e.preventDefault();
+    held.add(e.code);
+    keyDir = [...held].reduce((sum, k) => sum + (KEY_DIR[k] ?? 0), 0);
+    if (!keyDragging && sim.o.phase === "playing") { pending.down = true; keyDragging = true; }
+  }
+});
+addEventListener("keyup", (e) => {
+  if (!(e.code in KEY_DIR)) return;
+  held.delete(e.code);
+  keyDir = [...held].reduce((sum, k) => sum + (KEY_DIR[k] ?? 0), 0);
+  if (held.size === 0 && keyDragging) { pending.up = true; keyDragging = false; }
 });
 addEventListener("resize", sizeCanvas);
 
@@ -218,6 +338,41 @@ const hooks = {
     updateHud();
     return hooks.state();
   },
+  /** Frame capture: reset, warm up like the capture harness, and store a recorded input script to play step by step. */
+  loadScript(text: string, warmup = config.warmup) {
+    sim = new SplatRushSim(config.seed);
+    steps = 0;
+    popupShown = 0;
+    pilot = null;
+    prevFrame = null;
+    lastPhase = "splash";
+    for (let i = 0; i < warmup; i++) advance(IDLE);
+    steps = 0;
+    scriptInputs = expandScript(parseScript(text));
+    scriptIdx = 0;
+    render();
+    updateHud();
+    return sim.o.phase;
+  },
+  /** Advance the stored script to step `to` (absolute index), then render once. */
+  advanceScript(to: number) {
+    while (scriptIdx < to) advance(scriptInputs[scriptIdx++] ?? IDLE);
+    render();
+    updateHud();
+    return scriptIdx;
+  },
+  /** Start a run and never steer until `phase` (or `max` steps), like the original's idle control. */
+  idleUntil(phase: string, max = 1500) {
+    let n = 0;
+    while (sim.o.phase !== phase && n < max) {
+      advance(scriptIdx === 0 ? { ...IDLE, start: true } : scriptIdx === 1 ? { ...IDLE, down: true } : IDLE);
+      scriptIdx++;
+      n++;
+    }
+    render();
+    updateHud();
+    return `${sim.o.phase}:${scriptIdx}`;
+  },
   /** Start the autopilot on the live sim (like `?autopilot=1`), for tests. */
   autopilot(on: boolean) {
     pilot = on ? new Autopilot() : null;
@@ -227,6 +382,8 @@ const hooks = {
     sim = new SplatRushSim(seed);
     steps = 0;
     popupShown = 0;
+    prevFrame = null;
+    lastPhase = "splash";
     pilot = config.autopilot ? new Autopilot() : null;
     render();
     updateHud();

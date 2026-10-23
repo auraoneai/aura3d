@@ -106,7 +106,7 @@ for (const name of ["Mt", "yo", "ym"]) {
 }
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, "chapters.json"), JSON.stringify({ schema: "a3d-silt-extract/1", unresolved: [...unresolved], ...out }, null, 1));
-const keep = ["Eo", "e0", "Mx", "zn", "zi", "$T", "uc", "_o", "jn", "wo", "E0"];
+const keep = ["Eo", "e0", "Mx", "zn", "zi", "$T", "uc", "_o", "jn", "wo", "E0", "hS", "uS", "ss", "Bx", "rs", "Mo", "_i", "rv", "sv", "T0", "w0"];
 const excerpt = keep.map((k) => (fns.get(k) ? fns.get(k).getText(sf) : `/* ${k}: not a function declaration */`)).join("\n\n");
 fs.writeFileSync(path.join(outDir, "logic-extract.js"), `// UNTRUSTED third-party excerpts (minified identifiers) from the Silt & Signal game bundle. Read as text only.\n${excerpt}\n`);
 console.log(JSON.stringify({ chapters: out.Mt?.length ?? null, unresolved: [...unresolved], fns: keep.filter((k) => fns.has(k)) }));

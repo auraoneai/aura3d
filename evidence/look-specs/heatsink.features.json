@@ -1,0 +1,6023 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "heatsink",
+  "sources": [
+    {
+      "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+      "bytes": 1641373,
+      "lines": 722,
+      "singleLine": false,
+      "hash": "10a2994256b19bb0"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "level-select",
+      "hits": 333,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 1,
+          "col": 200,
+          "offset": 199
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 237309,
+          "offset": 351323
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 238438,
+          "offset": 352452
+        }
+      ]
+    },
+    {
+      "screen": "garage",
+      "hits": 188,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 41222,
+          "offset": 155236
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 41254,
+          "offset": 155268
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 41286,
+          "offset": 155300
+        }
+      ]
+    },
+    {
+      "screen": "settings",
+      "hits": 104,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 41760,
+          "offset": 155774
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 42342,
+          "offset": 156356
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 204275,
+          "offset": 318289
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 61,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 204186,
+          "offset": 318200
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 205161,
+          "offset": 319175
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 206052,
+          "offset": 320066
+        }
+      ]
+    },
+    {
+      "screen": "game-over",
+      "hits": 56,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 318265,
+          "offset": 1322527
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 319531,
+          "offset": 1323793
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 321260,
+          "offset": 1325522
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 55,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 30314,
+          "offset": 144328
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 91947,
+          "offset": 579421
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 104428,
+          "offset": 591902
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 53,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451574,
+          "offset": 1455836
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451582,
+          "offset": 1455844
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451947,
+          "offset": 1456209
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 41,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 2,
+          "col": 8144,
+          "offset": 11793
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 354,
+          "offset": 114368
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 220680,
+          "offset": 334694
+        }
+      ]
+    },
+    {
+      "screen": "checkpoint",
+      "hits": 35,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 104304,
+          "offset": 1108566
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 111402,
+          "offset": 1115664
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 310343,
+          "offset": 1314605
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 32,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 450027,
+          "offset": 1454289
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 450325,
+          "offset": 1454587
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 452446,
+          "offset": 1456708
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 25,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173368,
+          "offset": 1177630
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173565,
+          "offset": 1177827
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173762,
+          "offset": 1178024
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 19,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 2,
+          "col": 6466,
+          "offset": 10115
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 224,
+          "offset": 114238
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 464810,
+          "offset": 1469072
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 19,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 126928,
+          "offset": 1131190
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 138478,
+          "offset": 1142740
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 448579,
+          "offset": 1452841
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 42161,
+          "offset": 1608647
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 42674,
+          "offset": 1609160
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 42729,
+          "offset": 1609215
+        }
+      ]
+    },
+    {
+      "screen": "leaderboard",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 55671,
+          "offset": 1534504
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 12237,
+          "offset": 1578723
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 46818,
+          "offset": 1613304
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 6587,
+        "offset": 120601
+      },
+      "cases": [
+        "XYX",
+        "YZY",
+        "ZXZ",
+        "XZX",
+        "YXY",
+        "ZYZ"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 12943,
+        "offset": 126957
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 55171,
+        "offset": 169185
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 75952,
+        "offset": 189966
+      },
+      "cases": [
+        "rgb",
+        "rgba",
+        "hsl",
+        "hsla"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 215152,
+        "offset": 329166
+      },
+      "cases": [
+        "scalar",
+        "double",
+        "float",
+        "number",
+        "integer",
+        "vector",
+        "vector2",
+        "vector3",
+        "vector4",
+        "color",
+        "quaternion",
+        "bool",
+        "boolean",
+        "string"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 219567,
+        "offset": 333581
+      },
+      "cases": [
+        "arraybuffer",
+        "blob",
+        "document",
+        "json"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 101,
+        "col": 115403,
+        "offset": 602877
+      },
+      "cases": [
+        "uint",
+        "int",
+        "uvec2",
+        "uvec3",
+        "uvec4",
+        "ivec2",
+        "ivec3",
+        "ivec4"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 73302,
+        "offset": 1077564
+      },
+      "cases": [
+        "scene",
+        "node",
+        "mesh",
+        "accessor",
+        "bufferView",
+        "buffer",
+        "material",
+        "texture",
+        "skin",
+        "animation",
+        "camera"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 24352,
+        "offset": 1590838
+      },
+      "cases": [
+        "uniform",
+        "logarithmic",
+        "practical",
+        "custom"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 53707,
+        "offset": 1620193
+      },
+      "cases": [
+        "crash",
+        "nearmiss",
+        "scrape",
+        "landing",
+        "bottom",
+        "burst",
+        "roll"
+      ]
+    }
+  ],
+  "domIds": [
+    {
+      "id": "canvas",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 2,
+        "col": 105754,
+        "offset": 109403
+      }
+    },
+    {
+      "id": "loading",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 200,
+        "offset": 114214
+      }
+    },
+    {
+      "id": "overlay",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 453831,
+        "offset": 1458093
+      }
+    },
+    {
+      "id": "touch",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 455786,
+        "offset": 1460048
+      }
+    },
+    {
+      "id": "stick-zone",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 456227,
+        "offset": 1460489
+      }
+    },
+    {
+      "id": "stick-base",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 456267,
+        "offset": 1460529
+      }
+    },
+    {
+      "id": "stick-knob",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 456307,
+        "offset": 1460569
+      }
+    },
+    {
+      "id": "pause-btn",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 457601,
+        "offset": 1461863
+      }
+    },
+    {
+      "id": "music-track",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 99,
+        "offset": 1478932
+      }
+    },
+    {
+      "id": "music-tracks",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 133,
+        "offset": 1478966
+      }
+    },
+    {
+      "id": "music-title",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 168,
+        "offset": 1479001
+      }
+    },
+    {
+      "id": "music-status",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 242,
+        "offset": 1479075
+      }
+    },
+    {
+      "id": "h-hyper",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 23925,
+        "offset": 1502758
+      }
+    },
+    {
+      "id": "h-hyper-time",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 23925,
+        "offset": 1502758
+      }
+    },
+    {
+      "id": "h-hyper-fill",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 23925,
+        "offset": 1502758
+      }
+    },
+    {
+      "id": "h-range",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 24463,
+        "offset": 1503296
+      }
+    },
+    {
+      "id": "xp-fill",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 660,
+        "col": 3991,
+        "offset": 1548451
+      }
+    },
+    {
+      "id": "st-",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 683,
+        "col": 747,
+        "offset": 1556109
+      }
+    },
+    {
+      "id": "sv-",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 683,
+        "col": 747,
+        "offset": 1556109
+      }
+    },
+    {
+      "id": "volume-",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 700,
+        "col": 381,
+        "offset": 1560044
+      }
+    },
+    {
+      "id": "dr-stage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 810,
+        "offset": 1567296
+      }
+    },
+    {
+      "id": "play-stage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 961,
+        "offset": 1567447
+      }
+    },
+    {
+      "id": "home-stage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 1110,
+        "offset": 1567596
+      }
+    },
+    {
+      "id": "citymap",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 1376,
+        "offset": 1567862
+      }
+    },
+    {
+      "id": "load-poster",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 29216,
+        "offset": 1595702
+      }
+    },
+    {
+      "id": "load-tip",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 29300,
+        "offset": 1595786
+      }
+    },
+    {
+      "id": "c",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 29753,
+        "offset": 1596239
+      }
+    },
+    {
+      "id": "intro",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 42705,
+        "offset": 1609191
+      }
+    },
+    {
+      "id": "intro-poster",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 42738,
+        "offset": 1609224
+      }
+    },
+    {
+      "id": "intro-name",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 42820,
+        "offset": 1609306
+      }
+    },
+    {
+      "id": "intro-sub",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 42891,
+        "offset": 1609377
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "ArrowDown",
+        "hits": 7,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451716,
+          "offset": 1455978
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 7,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451691,
+          "offset": 1455953
+        }
+      },
+      {
+        "key": "Enter",
+        "hits": 6,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 450892,
+          "offset": 1455154
+        }
+      },
+      {
+        "key": "ArrowLeft",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451742,
+          "offset": 1456004
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451769,
+          "offset": 1456031
+        }
+      },
+      {
+        "key": "Escape",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451954,
+          "offset": 1456216
+        }
+      },
+      {
+        "key": "KeyQ",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451902,
+          "offset": 1456164
+        }
+      },
+      {
+        "key": "Space",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451796,
+          "offset": 1456058
+        }
+      },
+      {
+        "key": "Tab",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 452824,
+          "offset": 1457086
+        }
+      },
+      {
+        "key": "KeyS",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451709,
+          "offset": 1455971
+        }
+      },
+      {
+        "key": "KeyW",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451684,
+          "offset": 1455946
+        }
+      },
+      {
+        "key": "KeyA",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451735,
+          "offset": 1455997
+        }
+      },
+      {
+        "key": "KeyD",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451762,
+          "offset": 1456024
+        }
+      },
+      {
+        "key": "KeyE",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451888,
+          "offset": 1456150
+        }
+      },
+      {
+        "key": "Backspace",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 452123,
+          "offset": 1456385
+        }
+      },
+      {
+        "key": "KeyC",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451846,
+          "offset": 1456108
+        }
+      },
+      {
+        "key": "KeyF",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451860,
+          "offset": 1456122
+        }
+      },
+      {
+        "key": "KeyG",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451916,
+          "offset": 1456178
+        }
+      },
+      {
+        "key": "KeyH",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451976,
+          "offset": 1456238
+        }
+      },
+      {
+        "key": "KeyM",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451995,
+          "offset": 1456257
+        }
+      },
+      {
+        "key": "KeyP",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451963,
+          "offset": 1456225
+        }
+      },
+      {
+        "key": "KeyR",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 452052,
+          "offset": 1456314
+        }
+      },
+      {
+        "key": "KeyX",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451930,
+          "offset": 1456192
+        }
+      },
+      {
+        "key": "ShiftLeft",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451813,
+          "offset": 1456075
+        }
+      },
+      {
+        "key": "ShiftRight",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 451825,
+          "offset": 1456087
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "dispose",
+        "hits": 23,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 254836,
+          "offset": 368850
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 9,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 454327,
+          "offset": 1458589
+        }
+      },
+      {
+        "event": "pointerup",
+        "hits": 5,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 454657,
+          "offset": 1458919
+        }
+      },
+      {
+        "event": "keydown",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 453764,
+          "offset": 1458026
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 42621,
+          "offset": 785581
+        }
+      },
+      {
+        "event": "pointercancel",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 457109,
+          "offset": 1461371
+        }
+      },
+      {
+        "event": "pointermove",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 456611,
+          "offset": 1460873
+        }
+      },
+      {
+        "event": "release",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 301,
+          "col": 6574,
+          "offset": 848419
+        }
+      },
+      {
+        "event": "blur",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 454254,
+          "offset": 1458516
+        }
+      },
+      {
+        "event": "click",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 1193,
+          "offset": 1480026
+        }
+      },
+      {
+        "event": "contextmenu",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 454757,
+          "offset": 1459019
+        }
+      },
+      {
+        "event": "end",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29746,
+          "offset": 772706
+        }
+      },
+      {
+        "event": "error",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 221349,
+          "offset": 335363
+        }
+      },
+      {
+        "event": "focusin",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 57914,
+          "offset": 1536747
+        }
+      },
+      {
+        "event": "focusout",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 1052,
+          "offset": 1479885
+        }
+      },
+      {
+        "event": "gamepadconnected",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 454811,
+          "offset": 1459073
+        }
+      },
+      {
+        "event": "input",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 57783,
+          "offset": 1536616
+        }
+      },
+      {
+        "event": "inputsourceschange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29791,
+          "offset": 772751
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 454200,
+          "offset": 1458462
+        }
+      },
+      {
+        "event": "load",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 221317,
+          "offset": 335331
+        }
+      },
+      {
+        "event": "lostpointercapture",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 457558,
+          "offset": 1461820
+        }
+      },
+      {
+        "event": "pointerlockchange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 32963,
+          "offset": 1599449
+        }
+      },
+      {
+        "event": "select",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29427,
+          "offset": 772387
+        }
+      },
+      {
+        "event": "selectend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29532,
+          "offset": 772492
+        }
+      },
+      {
+        "event": "selectstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29477,
+          "offset": 772437
+        }
+      },
+      {
+        "event": "squeeze",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29585,
+          "offset": 772545
+        }
+      },
+      {
+        "event": "squeezeend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29692,
+          "offset": 772652
+        }
+      },
+      {
+        "event": "squeezestart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 109,
+          "col": 29636,
+          "offset": 772596
+        }
+      },
+      {
+        "event": "webglcontextlost",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 301,
+          "col": 50476,
+          "offset": 892321
+        }
+      },
+      {
+        "event": "wheel",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 48661,
+          "offset": 1527494
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 22,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 461440,
+          "offset": 1465702
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 8,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 463366,
+          "offset": 1467628
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 6,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 467727,
+          "offset": 1471989
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 469326,
+          "offset": 1473588
+        }
+      },
+      {
+        "api": "decodeAudioData",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 462202,
+          "offset": 1466464
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 467796,
+          "offset": 1472058
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 467764,
+          "offset": 1472026
+        }
+      },
+      {
+        "api": "createDynamicsCompressor",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 461322,
+          "offset": 1465584
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 461239,
+          "offset": 1465501
+        }
+      },
+      {
+        "api": "webkitAudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 461260,
+          "offset": 1465522
+        }
+      }
+    ],
+    "urls": [
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/laser.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 169820,
+          "offset": 1174082
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/laser_enemy.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 169975,
+          "offset": 1174237
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/explosion.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170134,
+          "offset": 1174396
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/explosion_small.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170297,
+          "offset": 1174559
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/afterburner.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170462,
+          "offset": 1174724
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/ramjet_loop.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170623,
+          "offset": 1174885
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/engine_loop.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170784,
+          "offset": 1175046
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/wind_loop.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170943,
+          "offset": 1175205
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/rain_loop.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 171100,
+          "offset": 1175362
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/pickup.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 171254,
+          "offset": 1175516
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/ui_move.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 171406,
+          "offset": 1175668
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/ui_select.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 171561,
+          "offset": 1175823
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/countdown.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 171718,
+          "offset": 1175980
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/go.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 171868,
+          "offset": 1176130
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/crash.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 172014,
+          "offset": 1176276
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/shockwave.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 172167,
+          "offset": 1176429
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/mine.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 172319,
+          "offset": 1176581
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/overheat.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 172470,
+          "offset": 1176732
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/scrape.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 172623,
+          "offset": 1176885
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/hit.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 172771,
+          "offset": 1177033
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/hurt.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 172917,
+          "offset": 1177179
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/finish.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173066,
+          "offset": 1177328
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_redline.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173224,
+          "offset": 1177486
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_riftbreaker.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173417,
+          "offset": 1177679
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_overdrive.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173616,
+          "offset": 1177878
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_menu.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 173823,
+          "offset": 1178085
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_race.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 174034,
+          "offset": 1178296
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_vesper.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 174217,
+          "offset": 1178479
+        }
+      },
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_dustfall.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 174428,
+          "offset": 1178690
+        }
+      }
+    ],
+    "oscillatorTypes": [
+      "square"
+    ],
+    "oscillatorCalls": 3,
+    "playCalls": 13
+  },
+  "storage": [
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 94725,
+        "offset": 1098987
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 94864,
+        "offset": 1099126
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 94962,
+        "offset": 1099224
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 100907,
+        "offset": 1105169
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 101011,
+        "offset": 1105273
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 101113,
+        "offset": 1105375
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 139472,
+        "offset": 1143734
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 139650,
+        "offset": 1143912
+      }
+    },
+    {
+      "store": "sessionStorage",
+      "op": "getItem",
+      "key": "heatsink.resumeEvent",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 139794,
+        "offset": 1144056
+      }
+    },
+    {
+      "store": "sessionStorage",
+      "op": "removeItem",
+      "key": "heatsink.resumeEvent",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 139844,
+        "offset": 1144106
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 452997,
+        "offset": 1457259
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 453065,
+        "offset": 1457327
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "lantaana.profile",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 55231,
+        "offset": 1534064
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "lantaana.profile",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 55299,
+        "offset": 1534132
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "lantaana.settings",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 56998,
+        "offset": 1535831
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "lantaana.settings",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 57409,
+        "offset": 1536242
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 11601,
+        "offset": 1578087
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 11733,
+        "offset": 1578219
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "lantaana.drone",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 32310,
+        "offset": 1598796
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "lantaana.drone",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 35838,
+        "offset": 1602324
+      }
+    }
+  ],
+  "network": [
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 218823,
+        "offset": 332837
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 236671,
+        "offset": 350685
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 462133,
+        "offset": 1466395
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 464957,
+        "offset": 1469219
+      }
+    }
+  ],
+  "platform": [
+    {
+      "api": "vibrate",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 457876,
+        "offset": 1462138
+      }
+    },
+    {
+      "api": "getGamepads",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 459011,
+        "offset": 1463273
+      }
+    },
+    {
+      "api": "getGamepads",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 50400,
+        "offset": 1529233
+      }
+    },
+    {
+      "api": "requestPointerLock",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 45724,
+        "offset": 1612210
+      }
+    }
+  ],
+  "three": {
+    "constructed": {},
+    "imports": [],
+    "importSources": []
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 507,
+      "hash": "6c120b5c0616b441",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 168,
+        "col": 1379,
+        "offset": 828002
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 197,
+      "hash": "f1af45567599ff80",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 223,
+        "col": 33,
+        "offset": 840207
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 141,
+      "hash": "65d6b9e10cc2a43b",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 262,
+        "col": 33,
+        "offset": 840575
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 53,
+      "hash": "08b1ee9850f68bf6",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 311,
+        "col": 417,
+        "offset": 905936
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 1827,
+      "hash": "758a6b8d76ab75d0",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 313,
+        "col": 24203,
+        "offset": 930178
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 78,
+      "hash": "98879b553f20f642",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28000,
+        "offset": 960005
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 78,
+      "hash": "186498f622295d91",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28099,
+        "offset": 960104
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 83,
+      "hash": "f6010449ed0c2bba",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28197,
+        "offset": 960202
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 83,
+      "hash": "12f237f791fb7c66",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28300,
+        "offset": 960305
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 83,
+      "hash": "9d21582914ecdbbe",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28403,
+        "offset": 960408
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 67,
+      "hash": "038b8432a6d73d47",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28509,
+        "offset": 960514
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 106,
+      "hash": "1da7a99201121909",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28600,
+        "offset": 960605
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 118,
+      "hash": "65e3e9964e583c73",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28730,
+        "offset": 960735
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 130,
+      "hash": "a52575423221629b",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 28872,
+        "offset": 960877
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 75,
+      "hash": "728c8079e2c7c67c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 29034,
+        "offset": 961039
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 131,
+      "hash": "d875ab0a61216d55",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 29141,
+        "offset": 961146
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 84,
+      "hash": "cb393e95727cb3a9",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 29303,
+        "offset": 961308
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 228,
+      "hash": "e2af9af03e11284c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 29411,
+        "offset": 961416
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 653,
+      "hash": "64aad96552832e6d",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 398,
+        "col": 24,
+        "offset": 961668
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 1558,
+      "hash": "166281343e195523",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 418,
+        "col": 24,
+        "offset": 962345
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 715,
+      "hash": "a729260fae61016a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 461,
+        "col": 30,
+        "offset": 963933
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 768,
+      "hash": "cf8a724c33776cc6",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 483,
+        "col": 35,
+        "offset": 964683
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 193,
+      "hash": "ed12f35189a1188b",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 550,
+        "col": 1055,
+        "offset": 987892
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 104,
+      "hash": "ea1ac8082bd1142a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 579,
+        "col": 33,
+        "offset": 988236
+      }
+    },
+    {
+      "kind": "wgsl",
+      "chars": 348,
+      "hash": "74bc0a1c6974c068",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 602,
+        "col": 47,
+        "offset": 988495
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "tonemap",
+      "hits": 103,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 1,
+          "col": 2602,
+          "offset": 2601
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 1,
+          "col": 2622,
+          "offset": 2621
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 1,
+          "col": 2636,
+          "offset": 2635
+        }
+      ]
+    },
+    {
+      "word": "bloom",
+      "hits": 20,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 126101,
+          "offset": 1130363
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 137653,
+          "offset": 1141915
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 338061,
+          "offset": 1342323
+        }
+      ]
+    },
+    {
+      "word": "exposure",
+      "hits": 14,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 1,
+          "col": 2591,
+          "offset": 2590
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 89,
+          "col": 8317,
+          "offset": 429325
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 89,
+          "col": 8665,
+          "offset": 429673
+        }
+      ]
+    },
+    {
+      "word": "smaa",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 371557,
+          "offset": 1375819
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 371745,
+          "offset": 1376007
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 371864,
+          "offset": 1376126
+        }
+      ]
+    },
+    {
+      "word": "outline",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 152923,
+          "offset": 640397
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 153085,
+          "offset": 640559
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 153292,
+          "offset": 640766
+        }
+      ]
+    },
+    {
+      "word": "motionblur",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 56476,
+          "offset": 1535309
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 56958,
+          "offset": 1535791
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 57096,
+          "offset": 1535929
+        }
+      ]
+    },
+    {
+      "word": "vignette",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 424974,
+          "offset": 1429236
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 426397,
+          "offset": 1430659
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 66461,
+          "offset": 1632947
+        }
+      ]
+    },
+    {
+      "word": "motion blur",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 56494,
+          "offset": 1535327
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "ember",
+      "hits": 73,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 76,
+          "col": 5871,
+          "offset": 380723
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 76,
+          "col": 10206,
+          "offset": 385058
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 76,
+          "col": 10242,
+          "offset": 385094
+        }
+      ]
+    },
+    {
+      "word": "dust",
+      "hits": 62,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 106034,
+          "offset": 1110296
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 112943,
+          "offset": 1117205
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 112959,
+          "offset": 1117221
+        }
+      ]
+    },
+    {
+      "word": "burst",
+      "hits": 42,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 103658,
+          "offset": 1107920
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 103685,
+          "offset": 1107947
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 104316,
+          "offset": 1108578
+        }
+      ]
+    },
+    {
+      "word": "rain",
+      "hits": 31,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 95,
+          "col": 14388,
+          "offset": 452257
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 95,
+          "col": 14417,
+          "offset": 452286
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 95,
+          "col": 14443,
+          "offset": 452312
+        }
+      ]
+    },
+    {
+      "word": "trail",
+      "hits": 19,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 115585,
+          "offset": 603059
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 117431,
+          "offset": 604905
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 101,
+          "col": 117460,
+          "offset": 604934
+        }
+      ]
+    },
+    {
+      "word": "smoke",
+      "hits": 16,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 74762,
+          "offset": 188776
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 431059,
+          "offset": 1435321
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 440292,
+          "offset": 1444554
+        }
+      ]
+    },
+    {
+      "word": "spark",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 104343,
+          "offset": 1108605
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 32729,
+          "offset": 1599215
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 721,
+          "col": 37466,
+          "offset": 1603952
+        }
+      ]
+    },
+    {
+      "word": "streak",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 7825,
+          "offset": 1486658
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 8026,
+          "offset": 1486859
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 656,
+          "col": 8077,
+          "offset": 1486910
+        }
+      ]
+    },
+    {
+      "word": "explosion",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170118,
+          "offset": 1174380
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 170275,
+          "offset": 1174537
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 442726,
+          "offset": 1446988
+        }
+      ]
+    },
+    {
+      "word": "debris",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 164803,
+          "offset": 1169065
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 164819,
+          "offset": 1169081
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 440404,
+          "offset": 1444666
+        }
+      ]
+    },
+    {
+      "word": "emitter",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 111301,
+          "offset": 1115563
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 164730,
+          "offset": 1168992
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 164753,
+          "offset": 1169015
+        }
+      ]
+    },
+    {
+      "word": "particle",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 179002,
+          "offset": 1183264
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 248453,
+          "offset": 1252715
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 647,
+          "col": 295417,
+          "offset": 1299679
+        }
+      ]
+    },
+    {
+      "word": "snow",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+          "line": 73,
+          "col": 74591,
+          "offset": 188605
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 17,
+      "keys": [
+        "generateMipmaps",
+        "internalFormat",
+        "minFilter",
+        "depthBuffer",
+        "stencilBuffer",
+        "resolveColorBuffer",
+        "resolveDepthBuffer",
+        "resolveStencilBuffer",
+        "storeMultisampledColorBuffer",
+        "storeMultisampledDepthBuffer",
+        "storeMultisampledStencilBuffer",
+        "depthTexture",
+        "samples",
+        "count",
+        "depth",
+        "multiview",
+        "useArrayDepthTexture"
+      ],
+      "numbers": {
+        "generateMipmaps": null,
+        "depthBuffer": null,
+        "stencilBuffer": null,
+        "resolveColorBuffer": null,
+        "resolveDepthBuffer": null,
+        "resolveStencilBuffer": null,
+        "storeMultisampledColorBuffer": null,
+        "storeMultisampledDepthBuffer": null,
+        "storeMultisampledStencilBuffer": null,
+        "samples": 0,
+        "count": 1,
+        "depth": 1,
+        "multiview": null,
+        "useArrayDepthTexture": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 41069,
+        "offset": 155083
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 1,
+        "mean": 0.25,
+        "head": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 45551,
+        "offset": 159565
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 148,
+      "keys": [
+        "aliceblue",
+        "antiquewhite",
+        "aqua",
+        "aquamarine",
+        "azure",
+        "beige",
+        "bisque",
+        "black",
+        "blanchedalmond",
+        "blue",
+        "blueviolet",
+        "brown",
+        "burlywood",
+        "cadetblue",
+        "chartreuse",
+        "chocolate",
+        "coral",
+        "cornflowerblue",
+        "cornsilk",
+        "crimson",
+        "cyan",
+        "darkblue",
+        "darkcyan",
+        "darkgoldenrod",
+        "darkgray",
+        "darkgreen",
+        "darkgrey",
+        "darkkhaki",
+        "darkmagenta",
+        "darkolivegreen",
+        "darkorange",
+        "darkorchid",
+        "darkred",
+        "darksalmon",
+        "darkseagreen",
+        "darkslateblue",
+        "darkslategray",
+        "darkslategrey",
+        "darkturquoise",
+        "darkviolet",
+        "deeppink",
+        "deepskyblue",
+        "dimgray",
+        "dimgrey",
+        "dodgerblue",
+        "firebrick",
+        "floralwhite",
+        "forestgreen",
+        "fuchsia",
+        "gainsboro",
+        "ghostwhite",
+        "gold",
+        "goldenrod",
+        "gray",
+        "green",
+        "greenyellow",
+        "grey",
+        "honeydew",
+        "hotpink",
+        "indianred"
+      ],
+      "numbers": {
+        "aliceblue": 15792383,
+        "antiquewhite": 16444375,
+        "aqua": 65535,
+        "aquamarine": 8388564,
+        "azure": 15794175,
+        "beige": 16119260,
+        "bisque": 16770244,
+        "black": 0,
+        "blanchedalmond": 16772045,
+        "blue": 255,
+        "blueviolet": 9055202,
+        "brown": 10824234,
+        "burlywood": 14596231,
+        "cadetblue": 6266528,
+        "chartreuse": 8388352,
+        "chocolate": 13789470,
+        "coral": 16744272,
+        "cornflowerblue": 6591981,
+        "cornsilk": 16775388,
+        "crimson": 14423100,
+        "cyan": 65535,
+        "darkblue": 139,
+        "darkcyan": 35723,
+        "darkgoldenrod": 12092939,
+        "darkgray": 11119017,
+        "darkgreen": 25600,
+        "darkgrey": 11119017,
+        "darkkhaki": 12433259,
+        "darkmagenta": 9109643,
+        "darkolivegreen": 5597999,
+        "darkorange": 16747520,
+        "darkorchid": 10040012,
+        "darkred": 9109504,
+        "darksalmon": 15308410,
+        "darkseagreen": 9419919,
+        "darkslateblue": 4734347,
+        "darkslategray": 3100495,
+        "darkslategrey": 3100495,
+        "darkturquoise": 52945,
+        "darkviolet": 9699539,
+        "deeppink": 16716947,
+        "deepskyblue": 49151,
+        "dimgray": 6908265,
+        "dimgrey": 6908265,
+        "dodgerblue": 2003199,
+        "firebrick": 11674146,
+        "floralwhite": 16775920,
+        "forestgreen": 2263842,
+        "fuchsia": 16711935,
+        "gainsboro": 14474460,
+        "ghostwhite": 16316671,
+        "gold": 16766720,
+        "goldenrod": 14329120,
+        "gray": 8421504,
+        "green": 32768,
+        "greenyellow": 11403055,
+        "grey": 8421504,
+        "honeydew": 15794160,
+        "hotpink": 16738740,
+        "indianred": 13458524
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 72123,
+        "offset": 186137
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 20,
+      "stats": {
+        "min": -0.5,
+        "max": 1,
+        "mean": 0.2,
+        "head": [
+          -0.5,
+          -0.5,
+          0,
+          0,
+          0,
+          0.5
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 135974,
+        "offset": 249988
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 108,
+      "stats": {
+        "min": 0,
+        "max": 19,
+        "mean": 9.175925925925926,
+        "head": [
+          3,
+          11,
+          7,
+          3,
+          7,
+          15
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 170979,
+        "offset": 284993
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 60,
+      "stats": {
+        "min": 0,
+        "max": 11,
+        "mean": 5.5,
+        "head": [
+          0,
+          11,
+          5,
+          0,
+          5,
+          1
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 183222,
+        "offset": 297236
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 18,
+      "stats": {
+        "min": -1,
+        "max": 1,
+        "mean": 0,
+        "head": [
+          1,
+          0,
+          0,
+          -1,
+          0,
+          0
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 184880,
+        "offset": 298894
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 24,
+      "stats": {
+        "min": 0,
+        "max": 5,
+        "mean": 2.5,
+        "head": [
+          0,
+          2,
+          4,
+          0,
+          4,
+          3
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 184923,
+        "offset": 298937
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "name",
+        "type",
+        "qualifier"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 101,
+        "col": 28644,
+        "offset": 516118
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 512,
+      "stats": {
+        "min": 0,
+        "max": 15360,
+        "mean": 11576.578125,
+        "head": [
+          12469,
+          15057,
+          12620,
+          14925,
+          13266,
+          14620
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 101,
+        "col": 30278,
+        "offset": 517752
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "name",
+        "type"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 101,
+        "col": 35931,
+        "offset": 523405
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 19,
+      "keys": [
+        "attributes",
+        "attributesSize",
+        "geometries",
+        "indexAttributes",
+        "indexAttributesSize",
+        "indirectStorageAttributes",
+        "indirectStorageAttributesSize",
+        "programs",
+        "programsSize",
+        "readbackBuffers",
+        "readbackBuffersSize",
+        "renderTargets",
+        "storageAttributes",
+        "storageAttributesSize",
+        "textures",
+        "texturesSize",
+        "uniformBuffers",
+        "uniformBuffersSize",
+        "total"
+      ],
+      "numbers": {
+        "attributes": 0,
+        "attributesSize": 0,
+        "geometries": 0,
+        "indexAttributes": 0,
+        "indexAttributesSize": 0,
+        "indirectStorageAttributes": 0,
+        "indirectStorageAttributesSize": 0,
+        "programs": 0,
+        "programsSize": 0,
+        "readbackBuffers": 0,
+        "readbackBuffersSize": 0,
+        "renderTargets": 0,
+        "storageAttributes": 0,
+        "storageAttributesSize": 0,
+        "textures": 0,
+        "texturesSize": 0,
+        "uniformBuffers": 0,
+        "uniformBuffersSize": 0,
+        "total": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 101,
+        "col": 85881,
+        "offset": 573355
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 11,
+      "keys": [
+        "name",
+        "type"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 103,
+        "col": 29333,
+        "offset": 678086
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 11,
+      "keys": [
+        "name",
+        "type"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 103,
+        "col": 29896,
+        "offset": 678649
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 9,
+      "keys": [
+        "name",
+        "type"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 103,
+        "col": 44261,
+        "offset": 693014
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "equals",
+        "bitcast_float_int",
+        "bitcast_int_float",
+        "bitcast_uint_float",
+        "bitcast_float_uint",
+        "floatpack_snorm_2x16",
+        "floatpack_unorm_2x16",
+        "floatpack_float16_2x16",
+        "floatpack_snorm_4x8",
+        "floatpack_unorm_4x8",
+        "floatunpack_snorm_2x16",
+        "floatunpack_unorm_2x16",
+        "floatunpack_float16_2x16",
+        "floatunpack_snorm_4x8",
+        "floatunpack_unorm_4x8"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 168,
+        "col": 656,
+        "offset": 827279
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 99,
+      "keys": [
+        "R8Unorm",
+        "R8Snorm",
+        "R8Uint",
+        "R8Sint",
+        "R16Uint",
+        "R16Sint",
+        "R16Float",
+        "RG8Unorm",
+        "RG8Snorm",
+        "RG8Uint",
+        "RG8Sint",
+        "R16Unorm",
+        "R16Snorm",
+        "R32Uint",
+        "R32Sint",
+        "R32Float",
+        "RG16Uint",
+        "RG16Sint",
+        "RG16Float",
+        "RGBA8Unorm",
+        "RGBA8UnormSRGB",
+        "RGBA8Snorm",
+        "RGBA8Uint",
+        "RGBA8Sint",
+        "BGRA8Unorm",
+        "BGRA8UnormSRGB",
+        "RG16Unorm",
+        "RG16Snorm",
+        "RGB9E5UFloat",
+        "RGB10A2Unorm",
+        "RG11B10UFloat",
+        "RG32Uint",
+        "RG32Sint",
+        "RG32Float",
+        "RGBA16Uint",
+        "RGBA16Sint",
+        "RGBA16Float",
+        "RGBA16Unorm",
+        "RGBA16Snorm",
+        "RGBA32Uint",
+        "RGBA32Sint",
+        "RGBA32Float",
+        "Depth16Unorm",
+        "Depth24Plus",
+        "Depth24PlusStencil8",
+        "Depth32Float",
+        "Depth32FloatStencil8",
+        "BC1RGBAUnorm",
+        "BC1RGBAUnormSRGB",
+        "BC2RGBAUnorm",
+        "BC2RGBAUnormSRGB",
+        "BC3RGBAUnorm",
+        "BC3RGBAUnormSRGB",
+        "BC4RUnorm",
+        "BC4RSnorm",
+        "BC5RGUnorm",
+        "BC5RGSnorm",
+        "BC6HRGBUFloat",
+        "BC6HRGBFloat",
+        "BC7RGBAUnorm"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 313,
+        "col": 13446,
+        "offset": 919421
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "Zero",
+        "One",
+        "Src",
+        "OneMinusSrc",
+        "SrcAlpha",
+        "OneMinusSrcAlpha",
+        "Dst",
+        "OneMinusDst",
+        "DstAlpha",
+        "OneMinusDstAlpha",
+        "SrcAlphaSaturated",
+        "Constant",
+        "OneMinusConstant"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 313,
+        "col": 16447,
+        "offset": 922422
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 20,
+      "keys": [
+        "CoreFeaturesAndLimits",
+        "DepthClipControl",
+        "Depth32FloatStencil8",
+        "TextureCompressionBC",
+        "TextureCompressionBCSliced3D",
+        "TextureCompressionETC2",
+        "TextureCompressionASTC",
+        "TextureCompressionASTCSliced3D",
+        "TimestampQuery",
+        "IndirectFirstInstance",
+        "ShaderF16",
+        "RG11B10UFloat",
+        "BGRA8UNormStorage",
+        "Float32Filterable",
+        "Float32Blendable",
+        "ClipDistances",
+        "DualSourceBlending",
+        "Subgroups",
+        "TextureFormatsTier1",
+        "TextureFormatsTier2"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 313,
+        "col": 17496,
+        "offset": 923471
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 52,
+      "keys": [
+        "f32",
+        "i32",
+        "u32",
+        "bool",
+        "vec2<f32>",
+        "vec2<i32>",
+        "vec2<u32>",
+        "vec2<bool>",
+        "vec2f",
+        "vec2i",
+        "vec2u",
+        "vec2b",
+        "vec3<f32>",
+        "vec3<i32>",
+        "vec3<u32>",
+        "vec3<bool>",
+        "vec3f",
+        "vec3i",
+        "vec3u",
+        "vec3b",
+        "vec4<f32>",
+        "vec4<i32>",
+        "vec4<u32>",
+        "vec4<bool>",
+        "vec4f",
+        "vec4i",
+        "vec4u",
+        "vec4b",
+        "mat2x2<f32>",
+        "mat2x2f",
+        "mat3x3<f32>",
+        "mat3x3f",
+        "mat4x4<f32>",
+        "mat4x4f",
+        "sampler",
+        "sampler_comparison",
+        "texture_1d",
+        "texture_2d",
+        "texture_2d_array",
+        "texture_multisampled_2d",
+        "texture_depth_2d",
+        "texture_depth_2d_array",
+        "texture_depth_multisampled_2d",
+        "texture_depth_cube",
+        "texture_depth_cube_array",
+        "texture_3d",
+        "texture_cube",
+        "texture_cube_array",
+        "texture_storage_1d",
+        "texture_storage_2d",
+        "texture_storage_2d_array",
+        "texture_storage_3d"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 25262,
+        "offset": 957267
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 20,
+      "keys": [
+        "float",
+        "int",
+        "uint",
+        "bool",
+        "color",
+        "vec2",
+        "ivec2",
+        "uvec2",
+        "bvec2",
+        "vec3",
+        "ivec3",
+        "uvec3",
+        "bvec3",
+        "vec4",
+        "ivec4",
+        "uvec4",
+        "bvec4",
+        "mat2",
+        "mat3",
+        "mat4"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 27637,
+        "offset": 959642
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 26,
+      "keys": [
+        "dFdx",
+        "dFdy",
+        "mod_float",
+        "mod_vec2",
+        "mod_vec3",
+        "mod_vec4",
+        "equals_bool",
+        "equals_bvec2",
+        "equals_bvec3",
+        "equals_bvec4",
+        "inverse_mat2",
+        "inverse_mat3",
+        "inverse_mat4",
+        "inversesqrt",
+        "faceforward",
+        "bitcast",
+        "floatpack_snorm_2x16",
+        "floatpack_unorm_2x16",
+        "floatpack_float16_2x16",
+        "floatpack_snorm_4x8",
+        "floatpack_unorm_4x8",
+        "floatunpack_snorm_2x16",
+        "floatunpack_unorm_2x16",
+        "floatunpack_float16_2x16",
+        "floatunpack_snorm_4x8",
+        "floatunpack_unorm_4x8"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 505,
+        "col": 8,
+        "offset": 965459
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 23,
+      "keys": [
+        "KHR_BINARY_GLTF",
+        "KHR_DRACO_MESH_COMPRESSION",
+        "KHR_LIGHTS_PUNCTUAL",
+        "KHR_MATERIALS_CLEARCOAT",
+        "KHR_MATERIALS_DISPERSION",
+        "KHR_MATERIALS_IOR",
+        "KHR_MATERIALS_SHEEN",
+        "KHR_MATERIALS_SPECULAR",
+        "KHR_MATERIALS_TRANSMISSION",
+        "KHR_MATERIALS_IRIDESCENCE",
+        "KHR_MATERIALS_ANISOTROPY",
+        "KHR_MATERIALS_UNLIT",
+        "KHR_MATERIALS_VOLUME",
+        "KHR_TEXTURE_BASISU",
+        "KHR_TEXTURE_TRANSFORM",
+        "KHR_MESH_QUANTIZATION",
+        "KHR_MATERIALS_EMISSIVE_STRENGTH",
+        "EXT_MATERIALS_BUMP",
+        "EXT_TEXTURE_WEBP",
+        "EXT_TEXTURE_AVIF",
+        "EXT_MESHOPT_COMPRESSION",
+        "KHR_MESHOPT_COMPRESSION",
+        "EXT_MESH_GPU_INSTANCING"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 51036,
+        "offset": 1055298
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "FLOAT",
+        "FLOAT_MAT3",
+        "FLOAT_MAT4",
+        "FLOAT_VEC2",
+        "FLOAT_VEC3",
+        "FLOAT_VEC4",
+        "LINEAR",
+        "REPEAT",
+        "SAMPLER_2D",
+        "POINTS",
+        "LINES",
+        "LINE_LOOP",
+        "LINE_STRIP",
+        "TRIANGLES",
+        "TRIANGLE_STRIP",
+        "TRIANGLE_FAN",
+        "UNSIGNED_BYTE",
+        "UNSIGNED_SHORT"
+      ],
+      "numbers": {
+        "FLOAT": 5126,
+        "FLOAT_MAT3": 35675,
+        "FLOAT_MAT4": 35676,
+        "FLOAT_VEC2": 35664,
+        "FLOAT_VEC3": 35665,
+        "FLOAT_VEC4": 35666,
+        "LINEAR": 9729,
+        "REPEAT": 10497,
+        "SAMPLER_2D": 35678,
+        "POINTS": 0,
+        "LINES": 1,
+        "LINE_LOOP": 2,
+        "LINE_STRIP": 3,
+        "TRIANGLES": 4,
+        "TRIANGLE_STRIP": 5,
+        "TRIANGLE_FAN": 6,
+        "UNSIGNED_BYTE": 5121,
+        "UNSIGNED_SHORT": 5123
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 66871,
+        "offset": 1071133
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 25,
+      "keys": [
+        "maxSpeed",
+        "accelK",
+        "boostAccelK",
+        "coastK",
+        "accelMax",
+        "boostAccelMax",
+        "brake",
+        "steerLow",
+        "steerHigh",
+        "steerResponse",
+        "driftSteerMul",
+        "grip",
+        "driftGrip",
+        "assist",
+        "hover",
+        "spring",
+        "damping",
+        "gravity",
+        "halfWidth",
+        "halfLength",
+        "crashAngle",
+        "crashMinSpeed",
+        "crashBudget",
+        "respawnInvuln",
+        "crashTime"
+      ],
+      "numbers": {
+        "maxSpeed": 115,
+        "accelK": 0.85,
+        "boostAccelK": 1.7,
+        "coastK": 0.25,
+        "accelMax": 34,
+        "boostAccelMax": 46,
+        "brake": 55,
+        "steerLow": 1.9,
+        "steerHigh": 0.95,
+        "steerResponse": 7,
+        "driftSteerMul": 1.5,
+        "grip": 9,
+        "driftGrip": 1.8,
+        "assist": 0.8,
+        "hover": 5.3,
+        "spring": 90,
+        "damping": 12,
+        "gravity": 28,
+        "halfWidth": 2.9,
+        "halfLength": 6.2,
+        "crashAngle": 0.38,
+        "crashMinSpeed": 45,
+        "crashBudget": 3,
+        "respawnInvuln": 2,
+        "crashTime": 1.6
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 103203,
+        "offset": 1107465
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "speed",
+        "life",
+        "length",
+        "startGrace",
+        "rate",
+        "heatPerShot",
+        "cool",
+        "lockout",
+        "assist",
+        "playerDmg",
+        "aiDmg",
+        "aiVsAiDmg",
+        "aiHealth",
+        "aiRegen",
+        "aiRange",
+        "shield",
+        "shieldRegen",
+        "shieldDelay"
+      ],
+      "numbers": {
+        "speed": 330,
+        "life": 0.75,
+        "length": 10,
+        "startGrace": 3,
+        "rate": 0.085,
+        "heatPerShot": 0.05,
+        "cool": 0.45,
+        "lockout": 0.35,
+        "assist": 14,
+        "playerDmg": 1,
+        "aiDmg": 0.6,
+        "aiVsAiDmg": 0.4,
+        "aiHealth": 11,
+        "aiRegen": 0.8,
+        "aiRange": 150,
+        "shield": 10,
+        "shieldRegen": 1.6,
+        "shieldDelay": 2.5
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 103910,
+        "offset": 1108172
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 28,
+      "keys": [
+        "boxSize",
+        "boxRespawn",
+        "rollTime",
+        "missileSpeed",
+        "missileAccel",
+        "missileLaunch",
+        "missileTurn",
+        "missileLag",
+        "missileLife",
+        "missileScale",
+        "lockRange",
+        "lockCone",
+        "missileDmg",
+        "lethalBelow",
+        "missileDmgAI",
+        "knock",
+        "salvoCount",
+        "salvoGap",
+        "turboMult",
+        "turboTime",
+        "turboKick",
+        "shieldTime",
+        "hyperTime",
+        "hyperSpeed",
+        "hyperAccel",
+        "hyperKick",
+        "weightsFront",
+        "weightsBack"
+      ],
+      "numbers": {
+        "boxSize": 3,
+        "boxRespawn": 3.5,
+        "rollTime": 0.8,
+        "missileSpeed": 192,
+        "missileAccel": 150,
+        "missileLaunch": 25,
+        "missileTurn": 1.15,
+        "missileLag": 2,
+        "missileLife": 5,
+        "missileScale": 1.35,
+        "lockRange": 330,
+        "lockCone": 10,
+        "missileDmg": 6,
+        "lethalBelow": 0.35,
+        "missileDmgAI": 7,
+        "knock": 0.55,
+        "salvoCount": 3,
+        "salvoGap": 0.22,
+        "turboMult": 0.42,
+        "turboTime": 1.8,
+        "turboKick": 22,
+        "shieldTime": 4.5,
+        "hyperTime": 3.5,
+        "hyperSpeed": 350,
+        "hyperAccel": 112,
+        "hyperKick": 38
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 104453,
+        "offset": 1108715
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 12,
+      "keys": [
+        "districts",
+        "every",
+        "asset",
+        "x",
+        "scaleToRoad",
+        "light",
+        "y",
+        "side",
+        "hwFrac",
+        "edge"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 109174,
+        "offset": 1113436
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "count",
+        "minDist",
+        "maxDist",
+        "minTop",
+        "length",
+        "radius",
+        "lampRadius",
+        "color",
+        "strength",
+        "speed",
+        "tilt",
+        "wobble"
+      ],
+      "numbers": {
+        "count": 7,
+        "minDist": 700,
+        "maxDist": 1700,
+        "minTop": 70,
+        "length": 900,
+        "radius": 48,
+        "lampRadius": 2.5,
+        "strength": 0.16,
+        "wobble": 0.12
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 111648,
+        "offset": 1115910
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 9,
+      "keys": [
+        "point",
+        "x",
+        "hx",
+        "hs",
+        "h",
+        "kind"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 116957,
+        "offset": 1121219
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "seed",
+        "base",
+        "hills",
+        "mountains",
+        "rimStart",
+        "inner",
+        "blend",
+        "dropSmooth",
+        "fieldReach",
+        "extent",
+        "grid",
+        "gridPhone",
+        "centreSpacing",
+        "cityBasin",
+        "colors"
+      ],
+      "numbers": {
+        "seed": 5,
+        "base": 0,
+        "hills": 9,
+        "mountains": 170,
+        "rimStart": 650,
+        "inner": 12,
+        "blend": 70,
+        "dropSmooth": 140,
+        "fieldReach": 420,
+        "extent": 6500,
+        "grid": 420,
+        "gridPhone": 240,
+        "centreSpacing": 6.5
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 117506,
+        "offset": 1121768
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 12,
+      "keys": [
+        "kit",
+        "point",
+        "span",
+        "margin",
+        "yaw"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 122578,
+        "offset": 1126840
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 17,
+      "keys": [
+        "kit",
+        "pos",
+        "reserve",
+        "light"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 123186,
+        "offset": 1127448
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "seed",
+        "cell",
+        "cellPhone",
+        "reach",
+        "density",
+        "farDensity",
+        "clear",
+        "nearBoost",
+        "nearBand",
+        "pines",
+        "giantBand",
+        "bushes",
+        "shoulderStep",
+        "boulders",
+        "tufts"
+      ],
+      "numbers": {
+        "seed": 9,
+        "cell": 17,
+        "cellPhone": 26,
+        "reach": 750,
+        "density": 0.23,
+        "farDensity": 0.55,
+        "clear": 14,
+        "nearBoost": 3.17,
+        "nearBand": 140,
+        "pines": 0.25,
+        "giantBand": 34,
+        "bushes": 0.6,
+        "shoulderStep": 18,
+        "boulders": 0.18,
+        "tufts": 0.25
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 124814,
+        "offset": 1129076
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "count",
+        "minDist",
+        "maxDist",
+        "minTop",
+        "length",
+        "radius",
+        "lampRadius",
+        "color",
+        "strength",
+        "speed",
+        "tilt",
+        "wobble"
+      ],
+      "numbers": {
+        "count": 0,
+        "minDist": 700,
+        "maxDist": 1700,
+        "minTop": 70,
+        "length": 900,
+        "radius": 48,
+        "lampRadius": 2.5,
+        "strength": 0.16,
+        "wobble": 0.12
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 125492,
+        "offset": 1129754
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "seed",
+        "base",
+        "hills",
+        "mountains",
+        "rimStart",
+        "massifs",
+        "inner",
+        "blend",
+        "fieldReach",
+        "extent",
+        "grid",
+        "gridPhone",
+        "centreSpacing",
+        "craters",
+        "colors"
+      ],
+      "numbers": {
+        "seed": 5,
+        "base": -12,
+        "hills": 35,
+        "mountains": 340,
+        "rimStart": 420,
+        "inner": 12,
+        "blend": 60,
+        "fieldReach": 320,
+        "extent": 6500,
+        "grid": 420,
+        "gridPhone": 240,
+        "centreSpacing": 6.5
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 131036,
+        "offset": 1135298
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 10,
+      "keys": [
+        "x",
+        "z",
+        "yaw",
+        "length",
+        "width",
+        "height"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 131097,
+        "offset": 1135359
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 14,
+      "keys": [
+        "kit",
+        "point",
+        "edge",
+        "side",
+        "yaw",
+        "scale"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 133838,
+        "offset": 1138100
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 10,
+      "keys": [
+        "point",
+        "side",
+        "edge",
+        "scale",
+        "kit"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 134715,
+        "offset": 1138977
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "count",
+        "minDist",
+        "maxDist",
+        "minTop",
+        "length",
+        "radius",
+        "lampRadius",
+        "color",
+        "strength",
+        "speed",
+        "tilt",
+        "wobble"
+      ],
+      "numbers": {
+        "count": 0,
+        "minDist": 700,
+        "maxDist": 1700,
+        "minTop": 70,
+        "length": 900,
+        "radius": 48,
+        "lampRadius": 2.5,
+        "strength": 0.16,
+        "wobble": 0.12
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 136909,
+        "offset": 1141171
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 38,
+      "keys": [
+        "concrete",
+        "concreteDark",
+        "concreteLight",
+        "concreteWarm",
+        "orange",
+        "hazard",
+        "rust",
+        "steel",
+        "steelLight",
+        "charcoal",
+        "trunk",
+        "trunkDark",
+        "root",
+        "trunkGiant",
+        "leafOlive",
+        "leafYellow",
+        "leafDark",
+        "leafLight",
+        "pine",
+        "pineDark",
+        "pineLight",
+        "moss",
+        "mossLight",
+        "grassDry",
+        "grassGreen",
+        "dirt",
+        "dirtDark",
+        "rock",
+        "rockDark",
+        "rockWarm",
+        "teal",
+        "containerOrange",
+        "containerRust",
+        "containerGrey",
+        "glassDark",
+        "wood",
+        "white",
+        "sign"
+      ],
+      "numbers": {
+        "concrete": 11117979,
+        "concreteDark": 8354933,
+        "concreteLight": 13025717,
+        "concreteWarm": 11773327,
+        "orange": 14708766,
+        "hazard": 2828840,
+        "rust": 9062954,
+        "steel": 4869716,
+        "steelLight": 7172730,
+        "charcoal": 3421754,
+        "trunk": 8214070,
+        "trunkDark": 6176552,
+        "root": 9069632,
+        "trunkGiant": 8345656,
+        "leafOlive": 9083454,
+        "leafYellow": 11579468,
+        "leafDark": 6715695,
+        "leafLight": 10727504,
+        "pine": 6455106,
+        "pineDark": 5073459,
+        "pineLight": 8164937,
+        "moss": 7109944,
+        "mossLight": 8886335,
+        "grassDry": 11901522,
+        "grassGreen": 9214530,
+        "dirt": 12159573,
+        "dirtDark": 9267780,
+        "rock": 9407364,
+        "rockDark": 7104868,
+        "rockWarm": 10128504,
+        "teal": 4029560,
+        "containerOrange": 12869674,
+        "containerRust": 8143920,
+        "containerGrey": 8093830,
+        "glassDark": 1909286,
+        "wood": 7295544,
+        "white": 15131094,
+        "sign": 3026996
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 180856,
+        "offset": 1185118
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "hcrest",
+        "hreef",
+        "hgate",
+        "hshard",
+        "gspire",
+        "gboulder",
+        "garch",
+        "ghoodoo",
+        "goutcrop",
+        "gcrystals",
+        "gplant",
+        "gpods",
+        "gmonolith",
+        "gisle",
+        "grubble"
+      ],
+      "numbers": {
+        "hcrest": 1,
+        "hreef": 1,
+        "hgate": 1,
+        "hshard": 1,
+        "gspire": 4,
+        "gboulder": 2,
+        "garch": 2,
+        "ghoodoo": 2,
+        "goutcrop": 2,
+        "gcrystals": 2,
+        "gplant": 2,
+        "gpods": 1,
+        "gmonolith": 1,
+        "gisle": 2,
+        "grubble": 3
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 265439,
+        "offset": 1269701
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 24,
+      "keys": [
+        "Change Map",
+        "Change Drone",
+        "Upgrades",
+        "Customize Drone",
+        "Select Map",
+        "Race Again",
+        "Play Setup",
+        "Main Menu",
+        "Race",
+        "Race Events",
+        "Events",
+        "Drones",
+        "Settings",
+        "Controls",
+        "Updates",
+        "Back",
+        "Start",
+        "Start Race",
+        "Start Trial",
+        "Resume",
+        "Restart",
+        "Reset to defaults",
+        "Exit",
+        "Exit to Menu"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 449859,
+        "offset": 1454121
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "Space",
+        "ShiftLeft",
+        "ShiftRight",
+        "ControlLeft",
+        "ControlRight",
+        "AltLeft",
+        "AltRight",
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "Escape",
+        "Enter",
+        "Tab",
+        "Backspace",
+        "Mouse0",
+        "Mouse2",
+        "Semicolon",
+        "Comma",
+        "Period",
+        "Slash",
+        "CapsLock"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 452592,
+        "offset": 1456854
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/custom-r6/sticker-.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 94188,
+        "offset": 1098450
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/custom-r6/aero-crest.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 95103,
+        "offset": 1099365
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/upgrades-r3/.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 101647,
+        "offset": 1105909
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/dustfall.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 127036,
+        "offset": 1131298
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/vesper.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 138617,
+        "offset": 1142879
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/kit_.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 162403,
+        "offset": 1166665
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/prop_.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 162570,
+        "offset": 1166832
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_orion.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 164869,
+        "offset": 1169131
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/drone_orion.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 165021,
+        "offset": 1169283
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_volt.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 165180,
+        "offset": 1169442
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/drone_volt.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 165331,
+        "offset": 1169593
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_bastion.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 165492,
+        "offset": 1169754
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/drone_bastion.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 165646,
+        "offset": 1169908
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_spectre.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 165810,
+        "offset": 1170072
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/drone_spectre.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 165964,
+        "offset": 1170226
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_razor.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 166126,
+        "offset": 1170388
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/drone_razor.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 166278,
+        "offset": 1170540
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_nighthawk.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 166442,
+        "offset": 1170704
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/drone_nighthawk.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 166598,
+        "offset": 1170860
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/assets/drone_wraith.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 166763,
+        "offset": 1171025
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/drone_wraith.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 166916,
+        "offset": 1171178
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/concrete_wall_008_diff.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 167475,
+        "offset": 1171737
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/concrete_wall_008_nor.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 167630,
+        "offset": 1171892
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/concrete_wall_008_rough.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 167786,
+        "offset": 1172048
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/asphalt_02_diff.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 167956,
+        "offset": 1172218
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/asphalt_02_nor.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 168104,
+        "offset": 1172366
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/asphalt_02_rough.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 168253,
+        "offset": 1172515
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/metal_plate_diff.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 168417,
+        "offset": 1172679
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/metal_plate_nor.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 168566,
+        "offset": 1172828
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/metal_plate_rough.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 168716,
+        "offset": 1172978
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/rock_face_diff.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 168879,
+        "offset": 1173141
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/rock_face_nor.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 169026,
+        "offset": 1173288
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/rock_face_rough.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 169174,
+        "offset": 1173436
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/aerial_rocks_02_diff.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 169341,
+        "offset": 1173603
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/aerial_rocks_02_nor.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 169494,
+        "offset": 1173756
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/aerial_rocks_02_rough.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 169648,
+        "offset": 1173910
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/laser.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 169820,
+        "offset": 1174082
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/laser_enemy.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 169975,
+        "offset": 1174237
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/explosion.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 170134,
+        "offset": 1174396
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/explosion_small.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 170297,
+        "offset": 1174559
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/afterburner.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 170462,
+        "offset": 1174724
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/ramjet_loop.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 170623,
+        "offset": 1174885
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/engine_loop.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 170784,
+        "offset": 1175046
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/wind_loop.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 170943,
+        "offset": 1175205
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/rain_loop.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 171100,
+        "offset": 1175362
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/pickup.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 171254,
+        "offset": 1175516
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/ui_move.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 171406,
+        "offset": 1175668
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/ui_select.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 171561,
+        "offset": 1175823
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/countdown.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 171718,
+        "offset": 1175980
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/go.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 171868,
+        "offset": 1176130
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/crash.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 172014,
+        "offset": 1176276
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/shockwave.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 172167,
+        "offset": 1176429
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/mine.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 172319,
+        "offset": 1176581
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/overheat.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 172470,
+        "offset": 1176732
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/scrape.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 172623,
+        "offset": 1176885
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/hit.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 172771,
+        "offset": 1177033
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/hurt.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 172917,
+        "offset": 1177179
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/finish.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 173066,
+        "offset": 1177328
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_redline.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 173224,
+        "offset": 1177486
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_riftbreaker.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 173417,
+        "offset": 1177679
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_overdrive.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 173616,
+        "offset": 1177878
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_menu.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 173823,
+        "offset": 1178085
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_race.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 174034,
+        "offset": 1178296
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_vesper.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 174217,
+        "offset": 1178479
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/audio/music_dustfall.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 174428,
+        "offset": 1178690
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/grand.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 174625,
+        "offset": 1178887
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/garage.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 174771,
+        "offset": 1179033
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/loaders-r31/combat.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 174918,
+        "offset": 1179180
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/grand-thumb.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 175725,
+        "offset": 1179987
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/dustfall-thumb.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 175881,
+        "offset": 1180143
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/art-r5/vesper-thumb.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 176038,
+        "offset": 1180300
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/thumb_foundry.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 176194,
+        "offset": 1180456
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/thumb_ruins.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 176341,
+        "offset": 1180603
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/thumb_start.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 176486,
+        "offset": 1180748
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/thumb_tunnel.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 176632,
+        "offset": 1180894
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/thumb_underpass.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 176782,
+        "offset": 1181044
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/thumb_.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 177142,
+        "offset": 1181404
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/drone_.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 177310,
+        "offset": 1181572
+      }
+    },
+    {
+      "path": "hero_crest.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 265594,
+        "offset": 1269856
+      }
+    },
+    {
+      "path": "hero_reef.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 265617,
+        "offset": 1269879
+      }
+    },
+    {
+      "path": "hero_gate.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 265639,
+        "offset": 1269901
+      }
+    },
+    {
+      "path": "hero_shard.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 265662,
+        "offset": 1269924
+      }
+    },
+    {
+      "path": "v__.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 266274,
+        "offset": 1270536
+      }
+    },
+    {
+      "path": "v___lo.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 266386,
+        "offset": 1270648
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/vesper/mineral-r4.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 296828,
+        "offset": 1301090
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/race-events.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 448121,
+        "offset": 1452383
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/drones.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 448278,
+        "offset": 1452540
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/settings.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 448432,
+        "offset": 1452694
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/controls.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 448588,
+        "offset": 1452850
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/updates.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 448743,
+        "offset": 1453005
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/equip.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 448895,
+        "offset": 1453157
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/back.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 449044,
+        "offset": 1453306
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/play.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 449192,
+        "offset": 1453454
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/restart.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 449343,
+        "offset": 1453605
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/exit.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 449494,
+        "offset": 1453756
+      }
+    },
+    {
+      "path": ".webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 473349,
+        "offset": 1477611
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/ui/icons-r11/.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 32627,
+        "offset": 1511460
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/game-assets/heatsink/20261014/tex/concrete_wall_008_.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 40546,
+        "offset": 1519379
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 110579,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 2,
+        "col": 157,
+        "offset": 3806
+      }
+    },
+    {
+      "name": "_getAreaTexture",
+      "params": 0,
+      "chars": 44321,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 379820,
+        "offset": 1384082
+      }
+    },
+    {
+      "name": "JP",
+      "params": 4,
+      "chars": 23508,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 272030,
+        "offset": 1276292
+      }
+    },
+    {
+      "name": "VP",
+      "params": 4,
+      "chars": 19980,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 228871,
+        "offset": 1233133
+      }
+    },
+    {
+      "name": "render",
+      "params": 0,
+      "chars": 17882,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 660,
+        "col": 5500,
+        "offset": 1549960
+      }
+    },
+    {
+      "name": "sI",
+      "params": 4,
+      "chars": 9498,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 302032,
+        "offset": 1306294
+      }
+    },
+    {
+      "name": "fromJSON",
+      "params": 2,
+      "chars": 8015,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 125595,
+        "offset": 239609
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 7751,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 117844,
+        "offset": 231858
+      }
+    },
+    {
+      "name": "setup",
+      "params": 1,
+      "chars": 6311,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 364787,
+        "offset": 1369049
+      }
+    },
+    {
+      "name": "setup",
+      "params": 1,
+      "chars": 5771,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 373769,
+        "offset": 1378031
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5158,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 365673,
+        "offset": 1369935
+      }
+    },
+    {
+      "name": "render",
+      "params": 2,
+      "chars": 4998,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 721,
+        "col": 62630,
+        "offset": 1629116
+      }
+    },
+    {
+      "name": "_setFramebuffer",
+      "params": 1,
+      "chars": 4777,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 313,
+        "col": 3860,
+        "offset": 909835
+      }
+    },
+    {
+      "name": "update",
+      "params": 3,
+      "chars": 4549,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 322791,
+        "offset": 1327053
+      }
+    },
+    {
+      "name": "convert",
+      "params": 2,
+      "chars": 4314,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 301,
+        "col": 21610,
+        "offset": 863455
+      }
+    },
+    {
+      "name": "EM",
+      "params": 2,
+      "chars": 4254,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 387,
+        "col": 20861,
+        "offset": 952866
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 3985,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 63647,
+        "offset": 177661
+      }
+    },
+    {
+      "name": "_renderScene",
+      "params": 3,
+      "chars": 3837,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 112,
+        "col": 3454,
+        "offset": 796805
+      }
+    },
+    {
+      "name": "copyTextureToTexture",
+      "params": 6,
+      "chars": 3647,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 301,
+        "col": 35940,
+        "offset": 877785
+      }
+    },
+    {
+      "name": "equals",
+      "params": 3,
+      "chars": 3591,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 73,
+        "col": 255433,
+        "offset": 369447
+      }
+    },
+    {
+      "name": "HI",
+      "params": 1,
+      "chars": 3492,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 473473,
+        "offset": 1477735
+      }
+    },
+    {
+      "name": "setSession",
+      "params": 1,
+      "chars": 3479,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 109,
+        "col": 29280,
+        "offset": 772240
+      }
+    },
+    {
+      "name": "setupShadow",
+      "params": 1,
+      "chars": 3382,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 103,
+        "col": 15059,
+        "offset": 663812
+      }
+    },
+    {
+      "name": "UP",
+      "params": 7,
+      "chars": 3265,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 252723,
+        "offset": 1256985
+      }
+    },
+    {
+      "name": "draw",
+      "params": 1,
+      "chars": 3181,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 301,
+        "col": 58284,
+        "offset": 900129
+      }
+    },
+    {
+      "name": "setup",
+      "params": 1,
+      "chars": 3174,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 95,
+        "col": 31341,
+        "offset": 469210
+      }
+    },
+    {
+      "name": "R6",
+      "params": 1,
+      "chars": 3158,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 96611,
+        "offset": 1100873
+      }
+    },
+    {
+      "name": "bq",
+      "params": 2,
+      "chars": 3141,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 1,
+        "col": 523,
+        "offset": 522
+      }
+    },
+    {
+      "name": "update",
+      "params": 2,
+      "chars": 2942,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 331481,
+        "offset": 1335743
+      }
+    },
+    {
+      "name": "setup",
+      "params": 1,
+      "chars": 2939,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 345660,
+        "offset": 1349922
+      }
+    },
+    {
+      "name": "createRenderPipeline",
+      "params": 2,
+      "chars": 2924,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 644,
+        "col": 10300,
+        "offset": 999530
+      }
+    },
+    {
+      "name": "draw",
+      "params": 1,
+      "chars": 2810,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 656,
+        "col": 35132,
+        "offset": 1513965
+      }
+    },
+    {
+      "name": "compileAsync",
+      "params": 4,
+      "chars": 2774,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 109,
+        "col": 45601,
+        "offset": 788561
+      }
+    },
+    {
+      "name": "buildGameplayObjects",
+      "params": 1,
+      "chars": 2767,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 144479,
+        "offset": 1148741
+      }
+    },
+    {
+      "name": "getInternalFormat",
+      "params": 6,
+      "chars": 2700,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 301,
+        "col": 27040,
+        "offset": 868885
+      }
+    },
+    {
+      "name": "getUniforms",
+      "params": 1,
+      "chars": 2690,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 537,
+        "col": 303,
+        "offset": 982896
+      }
+    },
+    {
+      "name": "reset",
+      "params": 0,
+      "chars": 2687,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 301,
+        "col": 18829,
+        "offset": 860674
+      }
+    },
+    {
+      "name": "beginRender",
+      "params": 1,
+      "chars": 2661,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 15103,
+        "offset": 1019365
+      }
+    },
+    {
+      "name": "finishRender",
+      "params": 1,
+      "chars": 2537,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 20556,
+        "offset": 1024818
+      }
+    },
+    {
+      "name": "oo",
+      "params": 2,
+      "chars": 2514,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/heatsink/game-module.raw.js",
+        "line": 647,
+        "col": 42278,
+        "offset": 1046540
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 9316,
+    "functions": 5449,
+    "newExpressions": 2605,
+    "calls": 29667
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "audio",
+        "original": "85 audio API uses / 29 audio assets",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:level-select",
+        "original": "333 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:garage",
+        "original": "188 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:settings",
+        "original": "104 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:game-over",
+        "original": "56 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "41 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:tutorial",
+        "original": "19 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "8 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:leaderboard",
+        "original": "5 references",
+        "port": "absent"
+      },
+      {
+        "feature": "persistence (storage)",
+        "original": "20 storage calls",
+        "port": "absent"
+      },
+      {
+        "feature": "gamepad",
+        "original": "gamepad API use",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "screen:results",
+        "original": "61 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "55 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "53 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:checkpoint",
+        "original": "35 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:menu",
+        "original": "32 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "25 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "19 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "tonemapx103, bloomx20, exposurex14, smaax9",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "emberx73, dustx62, burstx42, rainx31",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "ArrowDown, ArrowUp, Enter, ArrowLeft, ArrowRight, Escape, KeyQ, Space",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointerdown, pointerup, pointercancel, pointermove, lostpointercapture, pointerlockchange",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "Assets are procedural: the original's GLB drone, bone arch, ringed-planet textures, props and foliage are not reproduced",
+      "Time Trial only, Vesper Heights only. Rivals, AI, items, weapons, menus, garage, audio, ghost and the minimap are not ported.",
+      "The HUD's smoothed meters match the original's formulas (unit tested), but the original's DOM values are only refreshed when",
+      "The lighting is inline hemisphere plus sun on unlit custom materials: no PBR, IBL, cascaded shadows or SSAO.",
+      "Camera: the chase rig is framed like the original but is not the original's rig (no roll or fov kick tuning beyond `CFG.camera`)."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

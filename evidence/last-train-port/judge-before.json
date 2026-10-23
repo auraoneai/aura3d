@@ -1,0 +1,960 @@
+{
+  "schema": "a3d-last-train-blind-judge/1",
+  "generatedAt": "2026-10-23T10:47:27.156Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 4,
+    "trials": 48,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "portFrames": [
+      "01-docked-day",
+      "02-boarding",
+      "03-ready"
+    ],
+    "referenceFrames": [
+      "ref-2.jpg",
+      "ref-3.jpg",
+      "ref-5.jpg",
+      "ref-6.jpg"
+    ],
+    "crop": "rows 70..500 of 720 on both sides (HUD-free band)"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D tram game, labelled Image A and Image B. Both show the tram docked at the first station of the same game, with the on-screen HUD cropped out. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, buildings, ground, lighting and shadows, the tram, passengers and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perPair": [
+      {
+        "pair": "ref-2.jpg|01-docked-day",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-2.jpg|02-boarding",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-2.jpg|03-ready",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-3.jpg|01-docked-day",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-3.jpg|02-boarding",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-3.jpg|03-ready",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-5.jpg|01-docked-day",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-5.jpg|02-boarding",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-5.jpg|03-ready",
+        "lumaJsd": 0.5741631340480791,
+        "rgbJsd": 0.9070578074694496,
+        "paletteDistance": 0.12565465452643093,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09909374708787624,
+        "lumaMeanDelta": 81.930656963513
+      },
+      {
+        "pair": "ref-6.jpg|01-docked-day",
+        "lumaJsd": 0.574231533266079,
+        "rgbJsd": 0.9071300767945506,
+        "paletteDistance": 0.12570749729419464,
+        "edgeDensityOriginal": 0.24527071102413567,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09923245614035088,
+        "lumaMeanDelta": 81.91947676104832
+      },
+      {
+        "pair": "ref-6.jpg|02-boarding",
+        "lumaJsd": 0.574231533266079,
+        "rgbJsd": 0.9071300767945506,
+        "paletteDistance": 0.12570749729419464,
+        "edgeDensityOriginal": 0.24527071102413567,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09923245614035088,
+        "lumaMeanDelta": 81.91947676104832
+      },
+      {
+        "pair": "ref-6.jpg|03-ready",
+        "lumaJsd": 0.574231533266079,
+        "rgbJsd": 0.9071300767945506,
+        "paletteDistance": 0.12570749729419464,
+        "edgeDensityOriginal": 0.24527071102413567,
+        "edgeDensityPort": 0.024338815074215217,
+        "edgeDensityRatio": 0.09923245614035088,
+        "lumaMeanDelta": 81.91947676104832
+      }
+    ],
+    "summary": {
+      "pairs": 12,
+      "lumaJsd": 0.5741802338525791,
+      "rgbJsd": 0.9070758748007247,
+      "paletteDistance": 0.1256678652183719,
+      "edgeDensityRatio": 0.09912842435099489,
+      "lumaMeanDelta": 81.92786191289684
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 48,
+    "accuracy": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "pValueVsChance": 7.105427357601022e-15,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 24,
+    "byLook": {
+      "ref-2.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-2.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-2.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-3.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-3.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-3.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-5.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-5.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-5.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-6.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-6.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-6.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B is flat-shaded untextured boxes with no tram or tracks visible",
+        "Image B lacks passengers, props and the stylized lighting seen in A"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, tram, arch and floating islands",
+        "Image B is plain untextured boxes with flat colors and no tram or passengers",
+        "Image B lacks the cobblestone ground, rails and lanterns seen in A"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A is flat-shaded boxes with no textures, no tram and no passengers",
+        "Image B has detailed European buildings, tiled roofs, a stone arch, floating islands and a visible tram",
+        "Image B has a cobblestone ground, a station canopy and plants, where A has a plain beige ground"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.99,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a modeled tram",
+        "Image B is flat-shaded primitive boxes with no tram, tracks or passengers",
+        "Image B has a plain pale ground and gradient sky with no art-directed detail"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A is flat-shaded untextured blocks with no tram, passengers or detail",
+        "Image B has detailed textured buildings, cobblestones, tram, arch and floating islands",
+        "Image A has no recognizable station or tram scene"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, an arch, floating islands and a visible tram with passengers",
+        "Image A is made of flat untextured blocky boxes with no tram or passengers visible",
+        "Image A has a plain pale ground and sky gradient, unlike B's cobblestone streets and warm lighting"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A is flat-shaded boxes with no textures, no tram or passengers visible",
+        "Image B has detailed textured buildings, stone arch, floating islands, and a visible tram with passengers",
+        "Image A has a plain gradient sky and a bare sandy ground, unlike B's painterly scene"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.99,
+      "tells": [
+        "B uses plain untextured box buildings, A has detailed textured Mediterranean buildings with shutters and tiled roofs",
+        "B has no visible tram, tracks, cobblestones or passengers, A has all of them",
+        "A has the stone arch and floating islands, B has flat-shaded geometry and a bare sand-colored ground"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.99,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a modeled tram",
+        "Image B is flat-shaded boxes with no windows, rails, tram or passengers",
+        "Image B has a plain pale ground and sky gradient, unlike A's cobblestones and painterly lighting"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is untextured flat-shaded boxes with no tram or passengers visible",
+        "B has detailed textured buildings, tiled streets, floating islands and a visible tram",
+        "A has a plain gradient sky and sand-colored ground, unlike B's painterly scene"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.99,
+      "tells": [
+        "B uses plain untextured boxes and flat colors, while A has detailed textured buildings, tiled roofs and shutters",
+        "A has the floating islands, stone arch, tram with passengers and cobblestone tracks that B lacks",
+        "B's camera sits low under a flat platform with no tram visible, unlike A's street-level view of the station"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has flat untextured box buildings with no windows, roofs or detail",
+        "B has textured buildings, a stone arch, floating islands, cobblestones and a detailed tram",
+        "A is missing the tram, passengers and detailed lighting that B shows"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B is built from flat untextured boxes and primitive shapes",
+        "Image B has no tram, rails or passengers visible, with a plain gradient sky and ground"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.99,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a modeled tram",
+        "Image B uses plain untextured blocky boxes and a flat beige ground",
+        "Image B lacks the tram, tracks, passengers and props visible in A"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 1,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a modeled tram",
+        "Image B is built from plain untextured boxes with flat colors and no tram or detail",
+        "Image B has a bare beige ground with no cobblestones, tracks or props"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, an arch, floating islands and a visible tram with passengers",
+        "Image A is made of plain untextured boxes with flat colors and no tram or passengers visible",
+        "Image A has a bare, empty beige ground plane instead of cobblestone paving and rails"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A is untextured blocky boxes with flat colors and no tram or passengers visible",
+        "Image B has detailed textured European buildings, cobblestones, stone arch, floating islands and a visible teal-and-yellow tram",
+        "Image A has a plain pastel sky and flat sandy ground instead of richly detailed scenery"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B is plain untextured boxes with flat colors and no tram or rails",
+        "Image B lacks the passengers, props and stone-paved ground seen in A"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A is flat-shaded boxes with no textures, detail or visible tram",
+        "Image B has detailed European buildings, floating islands, arch and cobblestones",
+        "Image B shows the tram and passengers with rich lighting; Image A has none"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image B has detailed textured buildings, cobblestones, a stone arch and floating islands, while A has plain untextured boxes",
+        "Image B shows the tram, passengers and station canopy, none of which appear in A",
+        "Image A has flat, minimal lighting and a pale sand ground plane, unlike B's rich painterly lighting"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, a stone arch, floating islands and a visible tram",
+        "Image B is built from plain untextured boxes with flat colors and no tram or tracks",
+        "Image B has a flat beige ground and a simple gradient sky, unlike A's rich scene"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, a stone arch and floating islands, while B has plain untextured boxes",
+        "Image A has a detailed tram, cobblestone ground and passengers, while B has a flat beige plane and no visible tram or passengers",
+        "Image B has a flat low-poly look with no props, vegetation or lamps"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is flat-shaded untextured boxes; B has detailed textured buildings, arch and floating islands",
+        "A has no visible tram, passengers, rails or station canopy; B shows a teal-and-cream tram, passengers and a platform shelter",
+        "A's lighting is flat and pale with no detailed shadows; B has rich, warm, painterly lighting"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is untextured flat-shaded boxes, B has detailed textured buildings",
+        "B has the tram, passengers, rails, arch and floating islands; A has none of them",
+        "A's pale beige ground and plain gradient sky versus B's cobblestones and clouds"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a modeled tram",
+        "Image B is flat-shaded primitive boxes with no detail or tram visible",
+        "Image B lacks the cobblestone ground, rails, passengers and warm Mediterranean art direction"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is flat-shaded untextured boxes with no tram or passengers visible",
+        "B has detailed textured buildings, stone arch, floating islands and a visible tram",
+        "B has rich lighting, foliage and props matching a polished shipped game"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 2,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has detailed textured buildings, arch, floating islands, and tram; A shows only plain flat-shaded blocks",
+        "A has no visible tram, rails, passengers, or cobbled ground, just a flat beige plane",
+        "B has rich lighting, foliage, and props; A has a flat low-poly placeholder look"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 2,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A is flat-shaded boxy blocks with no textures, while B has detailed Mediterranean buildings with tiled roofs, shutters and an arch",
+        "No tram, passengers, tracks or props visible in A, whereas B shows a detailed teal and yellow tram, passengers, cobblestone and floating islands",
+        "A has a plain gradient sky and untextured sandy ground, while B has painterly lighting, clouds and rich detail"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 2,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.99,
+      "tells": [
+        "Image A has detailed textured buildings, an arch, floating islands and a modeled tram",
+        "Image B is built from flat untextured boxes with no tram or tracks visible",
+        "Image B has a plain pale ground and a simple gradient sky, with no cobblestones, props or passengers"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 2,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B is plain untextured boxes with flat colors and no tram or rails",
+        "Image B lacks passengers, props and the stylized painted look of A"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 2,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is flat-shaded untextured boxes with no tram, passengers or detail",
+        "B has textured cobblestones, tiled-roof buildings, a stone arch and floating islands",
+        "B shows a detailed teal-and-cream tram with passengers and a station canopy"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 2,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B is plain untextured blocky boxes with flat colors",
+        "Image B lacks tracks, passengers and props visible in A"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 2,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B is plain untextured boxes with flat colors and no tram or tracks",
+        "Image B lacks passengers, props and rich lighting"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 2,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is flat-shaded untextured boxes; B has detailed textured buildings, arch and floating islands",
+        "A has no visible tram, passengers or rails; B shows a teal and yellow tram, tracks, cobblestones and passengers",
+        "A has a plain pale-yellow ground and a flat sky; B has rich lighting, foliage and props"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 2,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.99,
+      "tells": [
+        "B uses plain untextured boxes and flat colors, while A has detailed textured buildings with windows, shutters and tiled roofs",
+        "A has the floating islands, stone arch and a detailed tram with passengers, none of which appear in B",
+        "B has a flat beige ground plane and no cobblestone or tram tracks"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 2,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is untextured flat-shaded boxes, B has detailed textured buildings",
+        "A has no visible tram, passengers, or rails; B has a detailed tram, track and figures",
+        "B has rich lighting, floating islands and an arch; A has plain pastel geometry"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, stone arch, floating islands, and a visible tram with passengers",
+        "Image A is untextured flat-shaded boxes with no tram, passengers or tracks visible",
+        "Image A has a flat beige ground plane and plain sky, lacking B's lighting and shadow richness"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, tiled roofs, arched bridge and floating islands",
+        "Image A is flat-shaded untextured boxes with no tram, passengers or tracks visible",
+        "Image B has a detailed teal-and-cream tram with passengers and a station canopy"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 3,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A is flat-shaded untextured boxes with no tram or passengers visible",
+        "B has detailed textured buildings, stone arch, floating islands, and a detailed tram",
+        "B has rich lighting, props and plants versus A's bare placeholder geometry"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 3,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, tram, arch and floating islands; Image B is only plain untextured blocks",
+        "Image B lacks the tram, passengers, cobbled ground and tracks",
+        "Image B has flat primitive shading and a plain sandy ground instead of A's painterly lighting"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 3,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, an arch, floating islands and a visible tram",
+        "Image A is flat-shaded untextured boxes with no tram or passengers visible",
+        "Image A has a plain gradient sky and a bare sand ground, unlike B's cobbled station"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 3,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B is flat-shaded primitive boxes with no tram, tracks or passengers",
+        "Image B has a plain pale ground and gradient sky with none of A's cobblestone and props"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 3,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arch, floating islands and a detailed tram",
+        "Image B uses plain untextured blocky boxes and flat colors",
+        "Image B lacks tracks, passengers, and the tram's visible detail"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 3,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.99,
+      "originalConfidence": 0.99,
+      "tells": [
+        "Image A has detailed textured buildings, tram, arch and floating islands",
+        "Image B is plain untextured boxes with flat colors",
+        "Image B lacks the tram, passengers, tracks and cobblestone ground"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 3,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, arched bridge and floating islands",
+        "Image B is built from plain untextured boxes with flat colors",
+        "Image B lacks the tram, passengers, tracks and cobblestone ground seen in A"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 3,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A is flat-shaded blocky boxes with no textures, while B has detailed textured buildings, tiled roofs and shutters",
+        "Image A has no visible tram, rails, passengers or floating islands, while B has a detailed teal-and-cream tram, an arch bridge and floating islands",
+        "Image A has a plain gradient sky and a bare beige ground, while B has painterly clouds, cobblestone paving and props like planters and lanterns"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 3,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A is flat untextured blocky boxes, B has detailed textured buildings with red roofs and shutters",
+        "B has the tram, passengers, cobbled tracks, floating islands and stone arch; A has none of these",
+        "A has a plain pale sky and flat beige ground with no detailed lighting or shadows"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 3,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.98,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed textured buildings, a stone arch, floating islands and a cobbled street",
+        "Image B is built from plain untextured boxes with flat colors and no tram visible",
+        "Image B has no tracks, passengers or props, only a flat beige ground and simple sky gradient"
+      ]
+    }
+  ]
+}

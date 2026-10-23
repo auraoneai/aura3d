@@ -1,0 +1,862 @@
+{
+  "schema": "a3d-heatsink-design-judge/1",
+  "generatedAt": "2026-10-23T10:38:35.991Z",
+  "kind": "MODEL judgement, not a human one; a different question from judge-results.json (symmetric, does not ask which is the original)",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 3,
+    "frameSteps": [
+      450,
+      750,
+      1140,
+      1170,
+      1200,
+      1230,
+      1500,
+      1920,
+      2250,
+      2550,
+      3000,
+      3270,
+      3660,
+      3750,
+      4500,
+      5340
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D racing game, labelled Image A and Image B. Both are taken at the same moment of the same recorded run (same track position, same speed), with the on-screen HUD hidden. One may be from a shipped game and the other from an independent re-implementation, or both from the same source; you are not told which.",
+    "question": "Question: do the two images show the SAME GAME DESIGN: the same track layout and scenery layout, the same kind of vehicle, and the same overall look-and-feel and art-direction family, even if rendering quality, textures, models and effects differ in detail? Answer with one JSON object and nothing else, with these keys: \"same_design\": true or false; \"confidence\": a number from 0 to 1; \"matches\": up to three short phrases naming what is the same in both; \"differences\": up to three short phrases naming the most important differences."
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "errors": 0,
+    "sameDesign": 38,
+    "sameDesignRate": 0.7916666666666666,
+    "wilson95": [
+      0.6574082647864651,
+      0.8826985220411018
+    ]
+  },
+  "trials": [
+    {
+      "step": 450,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange hovercraft with twin glowing thrusters and rotor-like struts",
+        "dark asphalt track with teal glowing vein/line details",
+        "teal-and-dark alien sci-fi palette with rear chase camera"
+      ],
+      "differences": [
+        "Image A has an open alien landscape with ringed planet, mountains and plants; Image B is a enclosed cave-like ceiling with cloudy texture and a gate",
+        "Vehicle model in B is blockier and simpler, with cyan cubes and orange boost trails versus the detailed model in A",
+        "Track edges and scenery differ: A has barriers and lit posts, B has white lane lines and a teal wall"
+      ]
+    },
+    {
+      "step": 750,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quad-rotor hover craft with twin glowing thrusters",
+        "dark asphalt road with white lane markings and side barriers",
+        "teal/cyan sci-fi palette with alien atmosphere"
+      ],
+      "differences": [
+        "A shows an enclosed cave or tunnel with a rocky ceiling, B shows an open mountain valley with a ringed planet and sky",
+        "A has cyan crystal cones and glowing ground lines, B has barrier posts and speed-streak effects",
+        "B's vehicle model is more detailed and the lighting is richer; A's is blocky and low-poly"
+      ]
+    },
+    {
+      "step": 1140,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange multi-rotor hover craft with twin glowing thrusters seen from behind",
+        "dark asphalt road with white lane dashes and side barriers between rocky mountains",
+        "teal/purple alien-night palette with aurora-like sky"
+      ],
+      "differences": [
+        "Image A has a large ringed planet and spiky crystal spires; Image B has an aurora sky and rounded textured mountains",
+        "Image B shows an overhead gate, glowing teal road cracks and thruster light trails that A lacks",
+        "Image A is more realistic with speed-line streaks and distant scenery; Image B is simpler and low-poly"
+      ]
+    },
+    {
+      "step": 1170,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange hovering multi-pod craft with twin glowing thrusters",
+        "dark asphalt road with white lane markings and edge barriers",
+        "alien mountain valley under an aurora and teal-purple night sky"
+      ],
+      "differences": [
+        "A has a large ringed planet and spiky crystal spires, while B has an aurora and starry sky with rounded striped rock mountains",
+        "Vehicle model differs: A is a bulky detailed craft with speed-line streaks, B is a blocky craft with wing struts and light trails",
+        "B has a gate with pink pillars, orange blocks and glowing cyan road patterns, while A has a smoother road with a different horizon layout"
+      ]
+    },
+    {
+      "step": 1200,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange multi-rotor hovercraft with twin glowing thrusters",
+        "aurora night sky with floating dark crystal",
+        "dark road with a gate/arch ahead and teal alien-landscape palette"
+      ],
+      "differences": [
+        "Image A has tall canyon walls and pink pylons, while B has an open landscape with rock structures and alien plants",
+        "Vehicle model detail differs (A is blocky and low-poly, B has more detailed pods and trailing exhaust)",
+        "B adds speed-line effects and has a different camera angle and lighting"
+      ]
+    },
+    {
+      "step": 1230,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange multi-rotor hovercraft with twin glowing thrusters and light trails",
+        "dark asphalt road passing under a black overhead gantry/bridge",
+        "aurora night sky over icy, teal-lit mountain scenery"
+      ],
+      "differences": [
+        "Image A is low-poly and flat-shaded with a clear view; Image B is more realistic with heavy motion blur and speed lines",
+        "scenery details differ: Image A has jagged grey peaks and cyan crystals, while Image B has a cliff with building-like structures on the left and a snowy slope on the right",
+        "road markings differ: Image A has white lane dashes and teal glowing veins on the road, while Image B has a plain dark road"
+      ]
+    },
+    {
+      "step": 1500,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "hovering craft with twin glowing thrusters and orange exhaust trails",
+        "aurora night sky over a snowy mountain landscape",
+        "dark road with a gantry/arch over the track and cyan accent lights"
+      ],
+      "differences": [
+        "Image A is low-poly and stylized with clean flat shapes; Image B is more realistic with detailed textures and heavier post-processing",
+        "Image A has pointed ice-blue peaks and a bright teal-green sky; Image B has darker, bulkier terrain and a deep blue sky with purple aurora",
+        "The craft in A is a chunky orange body with cyan pods; in B it is a smaller, more detailed metallic craft with a different speed-line style"
+      ]
+    },
+    {
+      "step": 1920,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.8,
+      "matches": [
+        "orange quad-rotor hover vehicle with twin glowing thrusters and orange trails",
+        "aurora night sky over icy mountains and dark asphalt road",
+        "dark overhead gate arch spanning the track with cyan accent lights"
+      ],
+      "differences": [
+        "Image A has realistic textures, motion-blur speed streaks and a steeper, more cluttered scenery, while Image B is low-poly and stylized",
+        "Image B has a straight, symmetric road with teal mountains and floating black cubes, while Image A has a curved road with a building on the left",
+        "The vehicle in Image B is blockier with visible cyan parts and a different camera distance, and the sky colors differ"
+      ]
+    },
+    {
+      "step": 2250,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange hover-craft with twin glowing thrusters and rotor arms",
+        "dark asphalt road with cyan crack/vein details and teal sci-fi palette",
+        "curving track with guardrails and a distant gate or structure over the road"
+      ],
+      "differences": [
+        "A shows open aurora sky with teal rock spires, while B is inside a tunnel or overpass with a dim hazy backdrop",
+        "B has speed-line effects, a more detailed vehicle model and glowing light posts, while A is simpler and low-poly",
+        "A has bright white lane markings and a night-sky look, while B is darker and more muted"
+      ]
+    },
+    {
+      "step": 2550,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.55,
+      "matches": [
+        "sci-fi hover/drone racer on wide track with edge barriers",
+        "alien mountain and rock scenery with a gantry/arch structure over the track",
+        "cool teal-purple twilight sky with a dark, moody palette"
+      ],
+      "differences": [
+        "Image A shows a detailed orange quad-rotor drone with propellers, while Image B shows a vehicle with only glowing light trails and faint shapes",
+        "Image B is washed out by heavy white-teal bloom/fog, while Image A is clear and high-contrast",
+        "Different camera framing and scenery: A has floating rocks and a close side gantry, B has a distant arch and smooth hills"
+      ]
+    },
+    {
+      "step": 3000,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter-style hover drone with rotors",
+        "dark asphalt track with glowing cyan vein markings",
+        "alien sci-fi landscape with aurora-like sky and cyan accent lights"
+      ],
+      "differences": [
+        "track layout and scenery differ: Image A has a black gate over the road and teal rock peaks, while Image B has a curving elevated barrier, floating rocks and pale spires",
+        "Image B shows speed-line effects and a more purple/dusk sky, while Image A has a starry teal aurora and visible orange thruster trails",
+        "vehicle model detail differs: Image A has a simpler blocky drone with cyan panels and glowing thrusters, while Image B has a more detailed drone with yellow/dark parts"
+      ]
+    },
+    {
+      "step": 3270,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter drone with four rotors",
+        "dark asphalt track with glowing teal circuit-line markings",
+        "sci-fi teal/cyan neon accent art direction"
+      ],
+      "differences": [
+        "Image A is an open alien sky with floating rocks and a dusk skybox, while Image B is inside a cave or tunnel with a rocky ceiling",
+        "Image B has bright thruster glow and yellow trails, while Image A has speed-line streaks and no thruster glow",
+        "scenery differs: dark arch structure and spires in A against teal cave walls and crystal spikes in B"
+      ]
+    },
+    {
+      "step": 3660,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": false,
+      "confidence": 0.72,
+      "matches": [
+        "orange hovering multi-rotor racer seen from behind",
+        "dark asphalt road with glowing cyan accents",
+        "alien night-sky, teal/purple stylized look"
+      ],
+      "differences": [
+        "Image A has a giant bone-like arch, ringed planet and rival racers; Image B shows none of these",
+        "Image B has smooth rocky peaks, an aurora sky and yellow lane lines, while A has no lane lines and has alien flora",
+        "Different track geometry: A is a straight road with a barrier, B is a curving road with a cyan channel beside it"
+      ]
+    },
+    {
+      "step": 3750,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": false,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter-style drone vehicle",
+        "aurora night sky over grey mountains",
+        "dark asphalt road with glowing teal accents"
+      ],
+      "differences": [
+        "Image A has a straight canyon road with yellow lane lines and jagged rocky peaks, while Image B has a curving road over rolling hills with no yellow lines",
+        "Vehicle in A is a blocky low-poly drone with glowing white thrusters, while B has a detailed spidery drone with a different body and thruster layout",
+        "B has speed lines, alien flora, tall spires and a large rock obstacle, while A has none of these and a teal barrier wall on the right"
+      ]
+    },
+    {
+      "step": 4500,
+      "pass": 0,
+      "originalIs": "A",
+      "sameDesign": false,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter drone viewed from behind",
+        "dark asphalt road with teal glowing vein markings",
+        "cool teal/blue night palette"
+      ],
+      "differences": [
+        "A shows open hilly terrain with an aurora sky; B shows a ceiling of rocky cave-like formations",
+        "A has a curving elevated track with scenery such as spires and crystal plants; B has a straight road with a guardrail and a teal obelisk",
+        "A has a detailed realistic drone with speed lines; B has a blocky low-poly drone with orange light trails"
+      ]
+    },
+    {
+      "step": 5340,
+      "pass": 0,
+      "originalIs": "B",
+      "sameDesign": false,
+      "confidence": 0.55,
+      "matches": [
+        "orange quadcopter-style hovering craft",
+        "aurora night sky over a cold teal palette",
+        "elevated asphalt track with speed-line effects"
+      ],
+      "differences": [
+        "Image A is a narrow canyon with jagged mountains and straight track; Image B is open rolling hills with a curving elevated track",
+        "different scenery layout: crystal spikes, a gate and cliff walls in A versus a rock formation, tall spires and spiky plants in B",
+        "different camera position and vehicle detail: low chase view with glowing cyan panels in A versus a higher view with a detailed orange drone in B"
+      ]
+    },
+    {
+      "step": 450,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange hover-craft with twin glowing thrusters and rotor-like struts",
+        "dark asphalt track with teal glowing accents and edge markers",
+        "teal/dark sci-fi alien atmosphere"
+      ],
+      "differences": [
+        "Image A shows open alien landscape with ringed planet and plants, Image B shows an enclosed cloudy ceiling/tunnel with a gate",
+        "vehicle model is detailed in A but blocky and simplified in B",
+        "B has lane lines and yellow thruster trails, while A has speed streaks and no lane markings"
+      ]
+    },
+    {
+      "step": 750,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": false,
+      "confidence": 0.6,
+      "matches": [
+        "orange quad-rotor hover craft with twin glowing thrusters",
+        "dark asphalt road with white lane markings",
+        "teal/cyan sci-fi color palette"
+      ],
+      "differences": [
+        "A is an enclosed tunnel/cave with a rocky ceiling, B is an open alien landscape with a ringed planet and mountains",
+        "Scenery differs: A has cyan cone markers and glowing floor lines, B has rock walls, spires and barrier posts",
+        "Vehicle details differ: A has a boxy craft with black rotor arms and cyan cubes, B has a more detailed craft with rotor pods and speed-streak effects"
+      ]
+    },
+    {
+      "step": 1140,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.62,
+      "matches": [
+        "orange multi-rotor hover craft with twin glowing thrusters",
+        "alien mountain valley with teal/purple aurora sky",
+        "dark asphalt road with white lane dashes and side barriers"
+      ],
+      "differences": [
+        "Image B has a large ringed planet and spiky crystal spires; Image A has an aurora sky with no planet",
+        "Image A has an overhead gantry, glowing trail lines and teal road cracks; Image B has speed-line streaks and no gantry",
+        "Image A's mountains are faceted and low-poly; Image B's terrain is smoother with more atmospheric haze"
+      ]
+    },
+    {
+      "step": 1170,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.62,
+      "matches": [
+        "orange hovering quad-rotor craft with twin glowing thrusters",
+        "alien mountain landscape along a dark multi-lane road",
+        "teal/purple night-sky sci-fi palette"
+      ],
+      "differences": [
+        "Image B has a ringed planet and speed-streak effects, while A has an aurora sky",
+        "different mountain shapes and rendering style (A is low-poly with swirly textures, B is smoother)",
+        "road markings and barriers differ (A has orange blocks and an overhead gate, B has white barrier posts)"
+      ]
+    },
+    {
+      "step": 1200,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange multi-rotor hover craft with twin glowing thrusters",
+        "aurora night sky with floating dark crystal",
+        "gray road with a gate arch ahead and teal alien-themed palette"
+      ],
+      "differences": [
+        "Image A has tall cliff walls and pink pylons, while B has an open terrain with a ruin structure and alien plants",
+        "Image B has speed-line effects and more detailed models and textures",
+        "Image A has a glowing yellow thruster trail and teal road veins, which B lacks"
+      ]
+    },
+    {
+      "step": 1230,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange multi-rotor hovercraft with twin glowing thrusters and light trails",
+        "dark road passing under a overhead gantry/bridge",
+        "aurora night sky with teal/cyan sci-fi accents on a mountainous landscape"
+      ],
+      "differences": [
+        "Image B has heavy speed-line and motion-blur effects and much higher rendering fidelity, while A is flat low-poly",
+        "Scenery differs: A has stylized pointed rock peaks and crystals, B has a snowy slope and a structure on the left, and the gantry shape and camera angle differ",
+        "A's road shows glowing teal vein markings and white lane lines, B's road is plain dark asphalt with a curved barrier"
+      ]
+    },
+    {
+      "step": 1500,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.7,
+      "matches": [
+        "hovering craft with twin glowing thrusters and orange trails",
+        "aurora night sky over a dark road with a gate arch ahead",
+        "cool teal/blue palette with speed streak lines"
+      ],
+      "differences": [
+        "Image A has low-poly stylized mountains while B has a more realistic rocky slope and structures",
+        "Image A's vehicle is a flat-shaded orange body with cyan pods, while B's is a darker, detailed, metallic craft",
+        "Image A has bright cyan cone markers and glowing road cracks, while B has a darker, grittier road with a different gate and lighting"
+      ]
+    },
+    {
+      "step": 1920,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.8,
+      "matches": [
+        "orange multi-rotor hover craft with twin glowing thrusters and orange light trails",
+        "dark asphalt road with cyan glowing edge markers/veins in an icy mountain setting",
+        "aurora night sky with a dark overhead gantry arch across the track"
+      ],
+      "differences": [
+        "Image A has a gantry close ahead, motion-blur speed lines, and a more realistic, detailed render, while Image B is low-poly and stylized",
+        "Image B shows a straight road between teal mountains with floating dark cubes, while Image A shows a snowy slope and a structure on the left",
+        "The vehicle is smaller and simpler in B, with cyan pods, and the lighting and color palette are more saturated teal"
+      ]
+    },
+    {
+      "step": 2250,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange quad-rotor hover craft with twin glowing thrusters",
+        "dark asphalt road curving right with cyan-teal rail posts and veins",
+        "teal-tinted sci-fi mountain landscape with floating dark crystal in sky"
+      ],
+      "differences": [
+        "A is enclosed under a tunnel/overpass with speed-line effects, B is open-air with aurora night sky",
+        "vehicle model detail differs (A detailed with pods, B simple blocky with cyan panels)",
+        "B has lane markings and thruster trails, A has none visible, and the mountains are shaped differently"
+      ]
+    },
+    {
+      "step": 2550,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "sci-fi drone/hovercraft racer on a wide elevated track",
+        "overarching gate/arch structure over the track with glowing lights",
+        "alien mountain/rock scenery with a hazy, moody sky"
+      ],
+      "differences": [
+        "Image A shows a detailed orange quadcopter drone with rotors, while Image B shows only a faint craft with two glowing orbs/trails",
+        "Image B is washed out by heavy white-teal fog/bloom, while A has a dramatic purple-teal sky with floating rocks",
+        "Camera angle and track detail differ: A shows a low, close chase view with speed lines, B a farther, centered view with glowing lane lines"
+      ]
+    },
+    {
+      "step": 3000,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter-style drone with rotors and glowing thrusters",
+        "dark asphalt track with cyan glowing vein lines and edge barriers",
+        "alien sci-fi landscape with aurora-like sky and glowing cyan accents"
+      ],
+      "differences": [
+        "scenery differs: teal rounded peaks with a black gate in A versus floating rocks, spiky spires and an overhead arch in B",
+        "vehicle detail and color differ: boxy orange with cyan panels and bright thruster trails in A versus a more detailed yellow-orange drone with speed lines in B",
+        "camera angle and sky palette differ: dark teal starry aurora in A versus a purple-pink cloudy dusk in B"
+      ]
+    },
+    {
+      "step": 3270,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter drone with rotors and glowing thrusters",
+        "dark asphalt track with glowing teal vein markings",
+        "stylized sci-fi teal/dark palette"
+      ],
+      "differences": [
+        "A is an open outdoor scene with floating rocks and a dusk sky, B is inside a cave with a rocky ceiling",
+        "Scenery differs: A has an overhead gantry with light strips and spires, B has teal cliffs and crystal spikes",
+        "B shows bright thruster glow and yellow trails, A has speed lines and a more muted drone"
+      ]
+    },
+    {
+      "step": 3660,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": false,
+      "confidence": 0.7,
+      "matches": [
+        "hovering orange rotor-pod racer from behind",
+        "dark asphalt road with teal glow edges",
+        "teal/purple alien night-sky palette"
+      ],
+      "differences": [
+        "A has a giant ribbed arch, ringed planet and rival racers; B shows aurora sky and rounded rock peaks with no opponents",
+        "B's road has yellow lane lines and a curving bank, while A's road is plain with a straight track",
+        "Scenery and terrain differ: A has dark cliffs and alien plants, B has pale snowy rock spires"
+      ]
+    },
+    {
+      "step": 3750,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange multi-rotor drone with glowing thrusters",
+        "aurora night sky over grey rocky mountains",
+        "dark asphalt track with teal glowing accents and edge markers"
+      ],
+      "differences": [
+        "Image B has a blocky low-poly drone, A has a detailed model",
+        "different track view: A shows a curving road on open hills with speed lines, B shows a straight road between peaks with yellow lines",
+        "different terrain and sky: A has smooth hills and magenta/green aurora, B has jagged peaks and teal aurora with stars"
+      ]
+    },
+    {
+      "step": 4500,
+      "pass": 1,
+      "originalIs": "B",
+      "sameDesign": false,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter-style hover vehicle with twin glowing thrusters",
+        "dark asphalt-like track with white lane markings and guardrail",
+        "teal/cyan accent color palette"
+      ],
+      "differences": [
+        "Image A shows an enclosed cave-like tunnel with a rocky ceiling, while Image B shows an open alpine landscape with an aurora sky",
+        "Track layout differs: A is a straight road with a guardrail, B is a curving elevated road over hills with a large rock outcrop",
+        "Scenery and art direction differ: A has low-poly teal obelisk and stylized noise-textured rock, B has detailed atmospheric terrain, crystal plants and speed-line effects"
+      ]
+    },
+    {
+      "step": 5340,
+      "pass": 1,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter-style hover craft with twin glowing thrusters",
+        "aurora-lit night sky over a dark asphalt track with mountains",
+        "speed-line streaks and cyan crystal/teal accent scenery"
+      ],
+      "differences": [
+        "Image A shows a wide open hilly landscape with a curving track and a rock outcrop beside it, while Image B shows a narrow canyon corridor with steep cliff walls and a gate",
+        "Image B has a low-poly, stylized, flat-shaded look with glowing cyan track lines, while Image A is more realistic and muted with softer shading",
+        "Different camera angle and track curvature, and a different craft model (A has a detailed rotor frame, B has a blocky body with cyan panels)"
+      ]
+    },
+    {
+      "step": 450,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange/rust hover-craft with twin glowing thrusters and rotor arms",
+        "dark asphalt road with white edge lines and cyan circuit-like glowing patterns",
+        "teal/cyan alien sci-fi palette with a straight road ahead"
+      ],
+      "differences": [
+        "A has a cloudy overcast ceiling-like sky and a flat teal wall, while B has a ringed planet, mountains and alien plants",
+        "A's vehicle is a simple blocky low-detail model, while B's is detailed with side pods",
+        "B has speed-line effects and roadside pylons, while A has a gate structure and sparse scenery"
+      ]
+    },
+    {
+      "step": 750,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": false,
+      "confidence": 0.6,
+      "matches": [
+        "orange quad-rotor hover craft with twin glowing thrusters",
+        "dark asphalt road with white lane markings",
+        "teal/cyan sci-fi palette with cyan accents"
+      ],
+      "differences": [
+        "A is inside an enclosed cave or tunnel with a rocky ceiling, while B is an open alien landscape with a ringed planet and mountains",
+        "scenery differs: cyan cone markers and teal walls in A versus rock cliffs, spires and barrier posts in B",
+        "vehicle detail and effects differ: A has blocky cyan cubes and long yellow thruster trails, while B has a more detailed craft with speed-line streaks"
+      ]
+    },
+    {
+      "step": 1140,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange hovercraft with twin glowing thrusters and side pods",
+        "dark asphalt track between rocky alien mountains",
+        "teal/purple aurora-style sci-fi sky and color palette"
+      ],
+      "differences": [
+        "Image A has a large ringed planet in the sky, absent in B",
+        "Image B has an overhead gate and glowing teal ground cracks and thruster trails, absent in A",
+        "Image B is low-poly and flat-shaded while A has more detailed models and effects"
+      ]
+    },
+    {
+      "step": 1170,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange hovering craft with twin glowing thrusters",
+        "dark asphalt road with white lane markings and edge barriers",
+        "alien mountain valley under an aurora-style sky with teal/purple palette"
+      ],
+      "differences": [
+        "Image A has a large ringed planet and spiky rock spires; Image B has rounded striated mountains and starry aurora sky",
+        "Craft model differs: A is a detailed drone-like ship with rotors, B is a blocky orange ship with white pods and stick wings",
+        "B shows light-trail streaks, glowing road cracks, orange blocks and a distant gate, while A shows speed-line streaks and a straighter road"
+      ]
+    },
+    {
+      "step": 1200,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.62,
+      "matches": [
+        "orange multi-rotor hover craft with twin glowing thrusters",
+        "dark asphalt track with a gate/arch ahead and a floating dark crystal in the sky",
+        "teal aurora night sky with purple bands and a cold alien palette"
+      ],
+      "differences": [
+        "Image A has tall cliff walls on both sides, while B has an open landscape with a hill and a ruined structure",
+        "Image A has pink pillar markers and glowing yellow thruster trails, while B has speed-line effects and cyan edge markers",
+        "The vehicle model in B is more detailed and the scenery is richer (spiky plants, rocks), while A is simpler and low-poly"
+      ]
+    },
+    {
+      "step": 1230,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange multi-rotor hovercraft with twin glowing orange light trails",
+        "dark asphalt road passing under a black gantry/overhead arch",
+        "aurora night sky with teal/cyan-lit mountainous scenery and glowing road-edge markers"
+      ],
+      "differences": [
+        "Image B has a heavily stylized motion-blur and speed-line effect with a more realistic, darker look, while A is flat low-poly and brighter",
+        "Different camera angle and road curvature: A is a straight view with mountains on both sides, B is turned with a large rock wall on the right and a structure on the left",
+        "Vehicle model is much more detailed in B, and A has glowing teal vein patterns on the road that are absent in B"
+      ]
+    },
+    {
+      "step": 1500,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "hovering quad-rotor craft with twin glowing orange thrusters and trails",
+        "aurora night sky over a dark asphalt road with a gantry arch ahead",
+        "cool teal/blue palette with speed-line streaks and snowy mountain scenery"
+      ],
+      "differences": [
+        "Image A is stylized low-poly with smooth flat shading, while Image B is more realistic and gritty with heavy motion blur",
+        "The vehicle in A is a bright orange body with cyan pods, while in B it is a darker, more detailed metallic craft",
+        "Scenery differs: A has pointed peaks and cone markers, B has a rocky slope and a ruined or industrial structure on the left"
+      ]
+    },
+    {
+      "step": 1920,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.8,
+      "matches": [
+        "orange multi-rotor hover vehicle with twin glowing headlights and amber thrust trails",
+        "dark asphalt road with a gantry arch crossing the track ahead",
+        "aurora night sky, teal-lit icy mountains and cyan roadside markers"
+      ],
+      "differences": [
+        "B has a simpler low-poly vehicle with visible rotors, while A has a more detailed model with heavy speed-line effects",
+        "B has a symmetric canyon with tall peaks and floating dark cubes, while A has a hillside on the right and a building structure on the left",
+        "A is more realistic and moody with a different camera angle and gantry placement, while B is flatter and stylized with lane markings and teal glow lines on the road"
+      ]
+    },
+    {
+      "step": 2250,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange twin-thruster hovering drone-craft with rotor arms",
+        "dark road curving right with glowing cyan-teal accents and rails",
+        "teal mountain/rock scenery with a gate/arch ahead and floating dark object in the sky"
+      ],
+      "differences": [
+        "A is under an enclosed tunnel/overpass with speed-line effects, B is open-air under an aurora night sky",
+        "vehicle model detail differs: A has detailed hex-pod rotors, B is a simple blocky craft with cyan panels and trails",
+        "B has lane markings and smoother stylised low-poly mountains, A is darker and murkier with fog"
+      ]
+    },
+    {
+      "step": 2550,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.55,
+      "matches": [
+        "sci-fi hovering drone/craft racing on an elevated track",
+        "dark stylized alien mountain landscape with an overhead gantry/arch structure",
+        "cool teal/cyan glowing accent lighting and starry sky"
+      ],
+      "differences": [
+        "Image A shows a detailed orange quadcopter drone with propellers, while Image B shows a faint craft with two glowing thruster lights",
+        "Image B is washed out by heavy white/teal bloom and fog, while Image A has a dramatic purple/teal sunset sky with floating rocks",
+        "Image A has a different camera angle and scenery (floating islands, curved wall), while Image B shows a straight road with a distant arch and rounded hills"
+      ]
+    },
+    {
+      "step": 3000,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quad-rotor drone racer with glowing thrusters",
+        "dark asphalt track with cyan glowing vein markings and a gate/arch structure",
+        "alien sci-fi landscape with aurora-style sky and teal/purple palette"
+      ],
+      "differences": [
+        "scenery differs: rounded teal peaks and a ringed planet in A versus floating rocks, spiky spires and a hazy sunset sky in B",
+        "drone model and camera differ: A has a boxy orange body with cyan panels and long yellow thruster trails, B has a more detailed gold and black body with speed lines",
+        "track and gate layout differ: A has a black gate overhead with a curving track, B has a flat open track with a side arch and barrier"
+      ]
+    },
+    {
+      "step": 3270,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter drone with rotors and glowing thrusters",
+        "dark asphalt track with glowing cyan crack lines",
+        "sci-fi teal/cyan accent color palette"
+      ],
+      "differences": [
+        "A is open sky with floating rocks and a purple dusk; B is an enclosed cave with a rocky ceiling",
+        "A has a dark overpass arch with neon strips; B has teal cave walls and crystal spikes",
+        "B shows bright thruster glow and orange trails; A shows speed lines and a different drone color and lighting"
+      ]
+    },
+    {
+      "step": 3660,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": false,
+      "confidence": 0.6,
+      "matches": [
+        "orange rotor-equipped hover craft with twin glowing thrusters seen from behind",
+        "alien night setting with aurora-like sky and teal/cyan accents",
+        "dark asphalt track bordered by rocky terrain"
+      ],
+      "differences": [
+        "Image B has a giant arch, ringed planet, rival racers and alien flora; Image A has none of these",
+        "Image A shows yellow lane lines, a cyan water channel and smooth pale mountain peaks, while Image B has a plain track with darker, rougher terrain",
+        "Image A's craft is simpler and blockier, while Image B's is more detailed and the scenery layout differs"
+      ]
+    },
+    {
+      "step": 3750,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": true,
+      "confidence": 0.72,
+      "matches": [
+        "orange quad-rotor drone with twin glowing thrusters",
+        "aurora night sky over grey rocky mountains",
+        "dark asphalt track with cyan accents and edge markers"
+      ],
+      "differences": [
+        "Image B has blocky low-poly vehicle and terrain versus more detailed models in A",
+        "different camera angle and track curvature/scenery arrangement (spires, ridges, speed lines in A)",
+        "Image B has yellow lane lines and a cyan barrier wall, absent in A"
+      ]
+    },
+    {
+      "step": 4500,
+      "pass": 2,
+      "originalIs": "A",
+      "sameDesign": false,
+      "confidence": 0.6,
+      "matches": [
+        "orange multi-rotor drone racer with twin glowing thrusters",
+        "dark asphalt track with teal glowing vein markings",
+        "teal/cool sci-fi color palette"
+      ],
+      "differences": [
+        "A shows an open hilly landscape with an aurora sky; B shows a cavernous ceiling of rock or cloud-like blobs",
+        "A has a curving track with a barrier wall and crystal-like scenery; B has a straight track with a teal obelisk and dashed lane markings",
+        "Different drone model and rendering: A is detailed with speed-line streaks and a third-person chase view; B is low-poly with light trails"
+      ]
+    },
+    {
+      "step": 5340,
+      "pass": 2,
+      "originalIs": "B",
+      "sameDesign": true,
+      "confidence": 0.6,
+      "matches": [
+        "orange quadcopter-style hover racer with twin glowing thrusters",
+        "aurora night sky with teal/purple palette",
+        "elevated road through rocky mountain terrain with speed-line effects"
+      ],
+      "differences": [
+        "track geometry and camera view differ: A is a straight road in a canyon with a gate, B is a curving elevated road over rounded hills",
+        "scenery differs: A has low-poly jagged teal peaks and crystals, B has smooth rounded hills, spires and a large rock formation",
+        "rendering style differs: A is flat stylized low-poly, B is more detailed and realistic with a more detailed drone model"
+      ]
+    }
+  ]
+}

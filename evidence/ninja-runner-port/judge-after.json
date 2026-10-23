@@ -1,0 +1,849 @@
+{
+  "schema": "a3d-ninja-runner-blind-judge/1",
+  "label": "after",
+  "generatedAt": "2026-10-23T12:01:20.716Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 24,
+    "shots": [
+      "village-a",
+      "village-b"
+    ],
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D endless-runner game (a ninja character running along a village street seen from a chase camera behind the runner), labelled Image A and Image B. Both are taken near the start of a run on the same course, cropped to the 3D scene so no on-screen HUD is visible. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, haze, the path surface, buildings, trees, lanterns, lighting and shadows, the character and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "shot": "village-a",
+        "look": "village",
+        "lumaJsd": 0.12623726864884302,
+        "rgbJsd": 0.7400243057033276,
+        "paletteDistance": 0.06925623035203701,
+        "edgeDensityOriginal": 0.1773750209595899,
+        "edgeDensityPort": 0.14800165281337582,
+        "edgeDensityRatio": 0.834399635375344,
+        "lumaMeanDelta": 11.02813639561623
+      },
+      {
+        "shot": "village-b",
+        "look": "village",
+        "lumaJsd": 0.11603973195287602,
+        "rgbJsd": 0.7531089641544627,
+        "paletteDistance": 0.06636036560260948,
+        "edgeDensityOriginal": 0.18231549572424366,
+        "edgeDensityPort": 0.13226998347186625,
+        "edgeDensityRatio": 0.7255005009114948,
+        "lumaMeanDelta": 3.914444932446031
+      }
+    ],
+    "summary": {
+      "frames": 2,
+      "lumaJsd": 0.12113850030085951,
+      "rgbJsd": 0.7465666349288951,
+      "paletteDistance": 0.06780829797732324,
+      "edgeDensityOriginal": 0.17984525834191678,
+      "edgeDensityPort": 0.14013581814262105,
+      "edgeDensityRatio": 0.7799500681434194,
+      "lumaMeanDelta": 7.47129066403113
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 47,
+    "accuracy": 0.9791666666666666,
+    "ci95": [
+      0.8910053086246883,
+      0.9963129840206002
+    ],
+    "pValueVsChance": 3.481659405224494e-13,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 23,
+    "byLook": {
+      "village": {
+        "valid": 48,
+        "correct": 47,
+        "accuracy": 0.9791666666666666
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed textured stone path, timbered buildings, and mountain backdrop, while A has flat, clean cartoon tiles and bright simple grass",
+        "B has a richly modeled orange-clad ninja character with chakra effects, while A has a small green-clad figure with a plain white hat",
+        "A has a red torii gate and bright low-poly look with spiky grass tufts, versus B's darker realistic lighting with shadows and lantern posts"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.75,
+      "tells": [
+        "B has a different character, with a green-clad figure and ghostly blue clones, versus A's orange-suited ninja",
+        "B uses flat, low-poly cartoon trees, grass tufts and bright saturated colors, while A has denser leafy trees and a muted, realistic look",
+        "Street layout and camera differ: A has a wide, flat cobblestone road with tall buildings close on both sides, B has a narrow winding path through open grass with a higher camera"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has detailed textured stone path, buildings, and mountain backdrop with painterly shading and cast shadows",
+        "B has flat, simplified low-poly look: plain-colored buildings, cone grass tufts, red torii gate, and a different character",
+        "Different character design and lighting: A has an orange-clad ninja with glowing effects and soft shadows; B has a green-clad figure and flat lighting"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has an orange-suited ninja with detailed, textured buildings, trees and cobblestones, while A has flat low-poly shapes and a different character",
+        "A has simplified pastel buildings, lollipop trees, translucent blue ghost figures and a red-roofed village look that doesn't match B's art direction",
+        "B has more refined lighting, soft shadows, distant mountains and a consistent chase-camera framing, which suggests a polished shipped game"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has detailed, textured cobblestone, timber-framed buildings, distant mountains and rich lighting with soft shadows, while Image A has flat, simple stone tiles and bright, uniform lighting",
+        "Image A has a red torii gate, spiky grass cones and low-poly toy-like trees, which look like a simplified re-creation; Image B has a lantern-lined street and a stylized character with glowing chakra effects",
+        "Image A's character is a generic green-clad figure with a white hat, whereas Image B shows a polished orange-and-black ninja with effects"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has a realistic Naruto-style orange-clad runner, while Image B has a different green-clad character with ghostly blue figures",
+        "Image A has dense, textured cobblestone, hazy mountains and shaded buildings, while Image B has flat, saturated low-poly colors",
+        "Image A has a low, close chase camera on a narrow street, while Image B has a higher, wider view over open grass and rounded trees"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has detailed textured cobblestones, timber-framed buildings, distant mountains and soft shadows, while A has flat, simple tiles and bright, untextured grass",
+        "Image A has a generic placeholder-like runner, a red torii gate, and cone-shaped grass tufts, which don't match B's art direction",
+        "Image B has a detailed orange-outfit ninja with glowing chakra orbs and collectibles ahead, while A has a plain green-clad character and sparse props"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat low-poly cartoon trees, bright saturated grass and red roofs, unlike A's detailed textured foliage and muted, realistic lighting",
+        "Different characters and camera: A has an orange-clad ninja from a low chase camera, B has a green-clad figure with ghostly blue clones from a higher angle",
+        "A has hazy mountains, walled street and soft shadows with a cohesive look; B has a flat, simplified, brighter look"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 4,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has detailed textured cobblestones, timber-framed buildings, mountains and baked-looking shadows, while A has flat cartoon pavers and bright flat-shaded grass",
+        "B has a polished Naruto-style orange-and-black ninja with chakra effects, while A has a green-clad character with a white hat that looks simpler",
+        "A has a red torii gate, grass cone clutter and a plain sky, which look like a simplified re-creation"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 4,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat low-poly trees, bright saturated grass and simplified buildings, while A has textured leafy foliage and detailed plaster walls with timber trim",
+        "A's chase-camera framing, hazy mountains and soft shadowed lighting look like a coherent shipped scene, while B has a different character cast, ghostly blue figures and a different building style",
+        "B's cobblestone path is narrow and lined with grass tufts, while A's wide stone street is edged by buildings with a different perspective"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 5,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has detailed textured cobblestones, a painterly sculpted tree canopy, and a sky with mountains, while B has flat low-poly tinted stone, simple blob trees, and plain grass with cone tufts",
+        "Image A has warm, directional lighting with soft shadows, while B has flat, even lighting",
+        "Image A has timber-framed buildings and a Naruto-style character with a glowing chakra orb, while B has a red torii gate, simple boxy houses, and a different green-clad character"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 5,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a Naruto-style orange-clad ninja with detailed textured cobblestones, mountains and soft lighting; A has a different green-clad character with ghostly blue clones",
+        "A uses flat low-poly look with saturated grass, pastel pink and green blob trees and plain red roofs",
+        "B's buildings, trees and lanterns are more detailed and cohesive, while A reads as a simplified, differently styled scene"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 6,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has detailed, textured cobblestones, buildings and foliage with realistic shadowing, while Image B uses flat, simplified low-poly shapes",
+        "Image A has a distant mountain backdrop and warm, directional lighting; Image B has a flatter, brighter, cartoonish look with a red torii gate and spiky grass tufts",
+        "Different character models and building styles (cream stucco with timber vs. rounded white buildings with teal trim)"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 6,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a Naruto-style orange-clad ninja with a detailed character model, while A shows a green-clad figure with ghostly blue clones",
+        "B has detailed, textured stone paving, bushy trees, mountains and a hazy sky, while A has flat low-poly trees and simple cartoon buildings",
+        "A has a bright saturated cartoon palette and a different camera and lantern style, which points to a re-implementation"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 7,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has detailed, textured cobblestone, timber-framed buildings, distant mountains and soft shadows, while A has flat, cartoonish paving with a bright, unshadowed look",
+        "A has a red torii gate, bright flat-green grass with cone bushes and a plain sky, unlike B's dense street of trees and lanterns",
+        "B's character is an orange-clad ninja with chakra effects and a richer model, while A's is a small green-clad figure with a white head"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 7,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat low-poly trees, simple buildings and untextured grass, unlike A's detailed foliage and textured walls",
+        "The character and camera differ: A shows an orange-clad ninja from behind, B shows several figures in a different outfit from a higher camera",
+        "A has a narrow, enclosed street with mountains and soft lighting, while B has an open, brighter, cartoon-style scene"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 8,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has detailed textured stone path, shaded buildings and trees with soft shadows, mountains in the distance",
+        "B has flat stylized low-poly look with a red torii gate, market stall and cone-shaped grass tufts",
+        "Different character models and different building and tree styles, so the art direction does not match"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 8,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has an orange-clad ninja with detailed textures and A shows a green-clad character with ghostly blue figures",
+        "B has realistic stone paving, bushy textured trees and mountains, while A has flat low-poly trees and a bright cartoon look",
+        "A has red-roofed pastel houses and a bright saturated palette, while B has muted cream buildings with a different architectural style"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 9,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has detailed, textured stone path, timber-framed buildings, and distant mountains, while A has flat, cartoonish pavers and a plain sky",
+        "Image B has a fully modeled ninja character with orange outfit and glowing chakra orbs, while A has a simple green-clad figure with a white hat",
+        "Image A has a red torii gate, bright flat-green grass with cone bushes, and low-detail lighting, while B has richer shadows and darker turf"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 9,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat low-poly trees, simple cartoon buildings, and bright saturated grass, while A has a denser, more detailed village with textured walls and wood trim",
+        "The runner and surrounding figures differ: A shows an orange-clad ninja, B shows a green-clad character with translucent blue figures",
+        "A has a wide, nearly flat cobblestone street with soft, realistic lighting, while B has a narrower, winding path and a higher, tilted camera"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 10,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has richly textured cobblestone, timber-framed buildings, distant mountains and detailed shadows, while A has flat, simple pale stone tiles and bright cartoon grass",
+        "B has a detailed orange-clad ninja with chakra effects, while A has a generic green-clad character",
+        "A has a red torii gate, simple low-poly trees and sparse spiky grass cones, with a different lighting and sky style"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 10,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has low-poly flat-shaded trees, buildings and grass while A has textured, detailed foliage and walls",
+        "Different characters: A shows an orange-clad ninja, B shows a green-clad figure with ghostly blue figures",
+        "Different camera and layout: A has a low, narrow, enclosed street, B has an elevated view of an open grassy area"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 11,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has detailed, textured stone path, tree canopies and building materials, with stronger directional shadows",
+        "Image B has flat, simplified cartoon shading, a red torii gate, a market stall and cone-shaped grass tufts that give it a different art direction",
+        "The character in A is a detailed orange-clad ninja with a glowing effect, while B shows a different green-clad character with a white hood and a different camera framing"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 11,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a textured, detailed cobblestone path with realistic lighting and shadows, while A uses a flat low-poly stone path",
+        "B shows a ninja in an orange outfit with mountains in the distance and detailed trees; A shows a different green-clad character with ghostly blue clones and simplistic pastel trees",
+        "A has a brighter, cartoonish low-poly look with red roofs and flat grass, while B has a more cohesive realistic Naruto-village-style architecture"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 12,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has detailed textured stone path, cream buildings with timber framing and distant mountains, which look like a polished shipped game",
+        "Image B has flat cartoon low-poly look, red torii gate, grass cones and plain pastel buildings, which look like a re-implementation",
+        "Different character (orange-clad blond ninja with chakra effects vs green-clad white-haired figure) and different lighting/shadow style"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 12,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a detailed, textured cobblestone path, hand-modeled trees and buildings, and a mountain backdrop, while A is low-poly with flat colors",
+        "B shows an orange-clad ninja runner in a Naruto-style village, while A shows a green-clad character with translucent blue ghost figures",
+        "A has pink and green lollipop trees, red-roofed houses and a bright saturated lawn, which differ from B's muted, realistic lighting"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 13,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has richer, more detailed textures (cobblestones, stucco walls, wood trim) and more realistic shading with soft shadows",
+        "Image B has flat, simplified low-poly style with plain green grass, cone bushes and a red torii gate that don't match A's art direction",
+        "Different character design, tree shapes and building style (A has tall rounded buildings and distant mountains, B has simple boxy houses)"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 13,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a detailed Naruto-style ninja in orange with realistic textures, while A has a generic green-clad character with ghostly blue clones",
+        "A has flat low-poly buildings, lollipop trees and bright saturated grass, while B has textured plaster walls, leafy rounded trees and mountains in the distance",
+        "B's path is a realistic high-detail cobblestone with soft shadows, while A's is a simple stone path with a different camera framing"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 14,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has richer detail: textured stone path, timber-framed buildings with wooden trim, mountain backdrop, and soft shadows",
+        "Image A looks flat and simplified, with a bright green grass field, cartoon cobbles, a red torii gate and spiky grass tufts",
+        "The character in B is a detailed orange-clad ninja with a chakra effect, while A's character is a plain green-clad figure"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 14,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat, low-poly stylized look with simple cartoon trees and low-detail grass, while A has denser, more realistic textures and shading",
+        "Different character and camera: A shows a single orange-clad ninja from a low chase camera, B shows a green-clad figure with ghostly blue clones from a higher angle",
+        "Different environment layout: A has a narrow street lined with close buildings and bushy trees, B has a wide open grassy area with red-roofed houses and a lighter, brighter palette"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 15,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has detailed textured stone path, lush low-poly trees with rich shading, and baked-looking shadows",
+        "B has flat pastel palette, red torii gate, simple grass cone tufts and a different character with no shadows",
+        "A has mountains in the distance, a warmer lit atmosphere, and a fully rendered orange-clad ninja character with a chakra effect"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 15,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a Naruto-style orange-clad ninja with detailed, textured buildings, trees and path, while A has a green-clad character with flat, low-poly look",
+        "A has translucent blue ghost-like figures, pastel pink trees and red-roofed houses, which are absent from B",
+        "A's camera is higher with a wider, simpler cobblestone path and flat saturated lighting, whereas B has a low chase camera with soft shadows and distant mountains"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 16,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has detailed, textured stone paving, shaded trees and buildings with a mountain backdrop, while B has flat, simplified low-poly shading",
+        "Image B has a red torii gate, market stall and green cone bushes, none of which appear in A",
+        "The character differs: an orange-clad ninja with a chakra orb in A, a green-clad white-haired figure in B, and the lantern posts and building styles do not match"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 16,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a detailed, textured cobblestone path, leafy trees and a mountain backdrop, while A uses flat low-poly shading",
+        "A shows a different character (green outfit) with ghostly blue clones, while B has an orange-clad ninja runner",
+        "A has bright saturated cartoon grass and pastel buildings, while B has muted, realistic lighting and shadows"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 17,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has richer, more detailed textures, with a stone path in varied tones, faceted low-poly trees, and timber-framed buildings with wood trim",
+        "Image A has more cohesive lighting, with soft tree shadows on the ground and a distant mountain backdrop, while Image B looks flat and simplified",
+        "Image B has a different layout, with a red torii gate, a market stall, flat cone grass tufts and a plain light-gray tiled path, which suggests a different art direction"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 17,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a detailed, textured cobblestone path with realistic lighting and shadows, A has a flat low-poly stone path",
+        "B shows an orange-clad ninja runner with mountains in the distance and a Hidden Leaf-style village, A shows a green-clad character with extra ghost-like clones and a cartoon low-poly look",
+        "A has flat pastel low-poly trees and buildings with red roofs, B has dense textured foliage and warm cream buildings with stylized trim"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 18,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has detailed textured stone path, timber-framed buildings, distant mountains, and soft cast shadows, while Image A has flat cartoon tiles, a bright flat-colored lawn, and a red torii gate",
+        "Image B's character is a detailed orange-and-black ninja with glowing chakra effects; Image A's is a simplified white-haired green-clad figure",
+        "Image A's lighting is flat and low-poly with cone shrubs, while Image B has richer atmospheric depth and tree-lined lanterns"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 18,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.72,
+      "tells": [
+        "A has detailed textured assets and a Naruto-style character model, while B uses flat low-poly primitives (sphere trees, cone grass)",
+        "A has a dusk-like haze, mountains and warm stucco buildings, while B has a bright cartoon sky with pink trees and red roofs",
+        "B's different characters (green-clad runner and blue ghost figures) and its higher camera"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 19,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image B has richly textured stone, detailed timber-framed buildings, distant mountains, and soft shadows, while A is flat, cartoonish and low-detail",
+        "Image A has bright saturated flat grass with spiky cone tufts, a red torii gate and a plain sky, which B lacks",
+        "Image B's orange-clad ninja with glowing chakra orbs and dense tree-lined street looks like polished shipped art, while A's character is a generic green-clad figure"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 19,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat low-poly shading, cartoon trees, and simple primitive buildings, while A has textured walls, detailed foliage, and a richer cobblestone surface",
+        "The characters differ: A has an orange-clad ninja running down the path, while B has a green-clad figure with translucent blue ghost figures",
+        "The camera and environment differ: A is a low, narrow street with dense buildings, while B is a wider, more open grassy area with brighter, flatter lighting"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 20,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has textured, detailed stone path, tree foliage and timber-framed buildings, with directional shadows and mountains in the distance",
+        "Image B has flat, simplified low-poly shapes: smooth uniform cobbles, plain walls, cone-shaped grass tufts and a red torii gate that A lacks",
+        "The characters, lighting and hazy sky differ, with a more polished orange-clad runner in A and a green-clad figure in B"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 20,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has detailed, textured stone path, bushy trees, and an orange-clad ninja runner in a Konoha-style village, while A has flat low-poly shading",
+        "A shows a different character (green-clad figure) with ghostly blue clones, lollipop-shaped trees, and red-roofed houses on bright grass",
+        "A has a simplified toy-like look with a different lamp and building style, so the two do not share art direction"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 21,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has detailed textured cobblestones, timber-framed buildings, mountains and baked shadows, while Image A has flat cartoon tiles, a bright green lawn and a red torii gate",
+        "Image B has a distinct orange-suited ninja with chakra effects and glowing pickups, while Image A has a generic green-clad character",
+        "Image A looks like a simplified low-poly re-creation with flat lighting, spiky grass cones and plain boxy houses"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 21,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.6,
+      "tells": [
+        "A has realistic textured walls, stone and lighting with distant mountains, while B has flat low-poly shading with cartoon trees",
+        "Different character and scene content: A has a single orange-clad ninja, while B has a green-clad runner with translucent blue figures",
+        "Different camera and palette: A has a low, centered chase camera with muted tones, while B has a higher, wider view with saturated red roofs and pink trees"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 22,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has detailed, textured stone path, stucco buildings with timber framing, and dense low-poly trees with baked-looking shadows",
+        "Image B has flat, simplified toon-like buildings, a red torii gate, and cone-shaped grass tufts that look like a different art style",
+        "Image A's character and lighting are more polished and cohesive, with distant mountains and a warm, hazy atmosphere, whereas B's palette is flatter and brighter"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 22,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has detailed textured stone path, bushy foliage trees and warm shaded buildings with a Naruto-style orange ninja, while A uses flat low-poly cartoon trees, bright saturated grass and simple red-roofed houses",
+        "A shows multiple green-clad characters and ghostly blue figures, a different character and gameplay setup from B's single runner",
+        "Different lighting and art style: A is bright and flat with no real shadows, B has soft shadows, mountains in the distance and a more realistic look"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 23,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has detailed textured cobblestones, painterly foliage and shadowed lighting that look like shipped game art",
+        "B has flat, low-poly shapes: plain pastel buildings, simple spherical trees and grass cone tufts, with a red torii gate",
+        "The characters differ: A is an orange-clad ninja with a glowing effect, B is a green-clad figure with a white head"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 23,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has a Naruto-style orange-clad ninja, while A has a green-clad character and ghostly blue clones",
+        "B has detailed, textured stone paving, shaded trees and distant mountains, while A has flat low-poly shading and simple lollipop trees",
+        "A has a different building style (red roofs, flat colors) and brighter, saturated lighting"
+      ],
+      "shot": "village-b"
+    }
+  ]
+}

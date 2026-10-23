@@ -6,9 +6,9 @@
  */
 import { camera, effects, geometry, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
-import { buildDividers, buildProps, buildRoad, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
-import { pointsSpec, roadSpec, skySpec, solidSpec, veilSpec, type Rgb } from "./materials";
-import { axisRotation, droneEuler, multiplyMat3 } from "./orient";
+import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
+import { pointsSpec, roadSpec, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, type Rgb } from "./materials";
+import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
@@ -26,15 +26,43 @@ function dynamicFrom(m: MeshData) {
 const FOG_NODES: string[] = [];
 const fogTracked = <T>(id: string, value: T): T => { FOG_NODES.push(id); return value; };
 
-interface PartSpec { id: string; offset: readonly [number, number, number]; kind: "body" | "nose" | "pod" | "fin" | "core" }
+interface PartSpec {
+  readonly id: string;
+  readonly prim: "box" | "cyl" | "sphere";
+  readonly size: number | readonly [number, number, number];
+  readonly offset: readonly [number, number, number];
+  readonly yaw?: number;
+  /** rad/s about the local Y axis, added to `yaw` */
+  readonly spin?: number;
+  readonly rollZ?: number;
+  readonly base: string;
+  readonly glow: string;
+  readonly glowAmt: number;
+  readonly additive?: boolean;
+}
+const DIAG = 1.62;
+/** Quad-rotor drone in the track frame (x forward, y up, z side): copper body, cyan accents, twin thrusters with plumes. */
 const DRONE_PARTS: readonly PartSpec[] = [
-  { id: "drone-body", offset: [0, 0, 0], kind: "body" },
-  { id: "drone-nose", offset: [2.9, -0.05, 0], kind: "nose" },
-  { id: "drone-pod-l", offset: [-0.6, 0, -1.9], kind: "pod" },
-  { id: "drone-pod-r", offset: [-0.6, 0, 1.9], kind: "pod" },
-  { id: "drone-fin", offset: [-2.0, 0.8, 0], kind: "fin" },
-  { id: "drone-core", offset: [-2.6, 0, 0], kind: "core" }
+  { id: "drone-body", prim: "box", size: [3.0, 0.75, 1.5], offset: [0, 0, 0], base: "#b8581c", glow: "#ff8a3a", glowAmt: 0.1 },
+  { id: "drone-cabin", prim: "box", size: [1.5, 0.5, 1.1], offset: [0.2, 0.6, 0], base: "#8a3f14", glow: "#ff9a4a", glowAmt: 0.18 },
+  { id: "drone-strip", prim: "box", size: [3.1, 0.1, 0.34], offset: [0, 0.34, 0], base: "#0a2a30", glow: "#40f0ff", glowAmt: 1.6 },
+  { id: "drone-arm-a", prim: "box", size: [4.6, 0.16, 0.26], offset: [0, 0.3, 0], yaw: Math.PI / 4, base: "#262b33", glow: "#000000", glowAmt: 0 },
+  { id: "drone-arm-b", prim: "box", size: [4.6, 0.16, 0.26], offset: [0, 0.3, 0], yaw: -Math.PI / 4, base: "#262b33", glow: "#000000", glowAmt: 0 },
+  ...([[1, 1], [1, -1], [-1, 1], [-1, -1]] as const).flatMap(([fx, fz], k): PartSpec[] => [
+    { id: `drone-motor-${k}`, prim: "box", size: [0.55, 0.45, 0.55], offset: [fx * DIAG, 0.42, fz * DIAG], base: "#c26a24", glow: "#40f0ff", glowAmt: 0.5 },
+    { id: `drone-blade-${k}-a`, prim: "box", size: [1.9, 0.03, 0.13], offset: [fx * DIAG, 0.7, fz * DIAG], spin: 55 * fx * fz, yaw: k, base: "#1b1f25", glow: "#000000", glowAmt: 0 },
+    { id: `drone-blade-${k}-b`, prim: "box", size: [1.9, 0.03, 0.13], offset: [fx * DIAG, 0.7, fz * DIAG], spin: 55 * fx * fz, yaw: k + Math.PI / 2, base: "#1b1f25", glow: "#000000", glowAmt: 0 }
+  ]),
+  ...([-1, 1] as const).flatMap((side, k): PartSpec[] => [
+    { id: `drone-thruster-${k}`, prim: "cyl", size: [0.62, 1.7, 0.62], offset: [-1.45, -0.05, side * 0.62], rollZ: Math.PI / 2, base: "#b8581c", glow: "#ff8a3a", glowAmt: 0.2 },
+    { id: `drone-thruster-glow-${k}`, prim: "sphere", size: 0.6, offset: [-2.3, -0.05, side * 0.62], base: "#ffffff", glow: "#fff4dc", glowAmt: 2.4 },
+    { id: `drone-plume-${k}`, prim: "cyl", size: [0.2, 4.4, 0.2], offset: [-4.6, -0.05, side * 0.62], rollZ: Math.PI / 2, base: "#ff8a3a", glow: "#ff9a3a", glowAmt: 0.8, additive: true }
+  ])
 ];
+
+const STREAKS = 110;
+/** chase-camera framing of the art pass (lower and closer than `CFG.camera`, matching the original's frames); the sim never reads it */
+const FRAMING = { dist: 7.6, height: 2.0 };
 
 export interface WorldRuntime {
   update(race: Race, hud: HudValues, dt: number, time: number, aspect: number): void;
@@ -50,8 +78,9 @@ export interface World {
 
 export function buildWorld(track: Track, quality: "high" | "low" = "high"): World {
   const high = quality === "high";
-  let minY = Infinity;
-  for (let i = 0; i < track.n; i++) minY = Math.min(minY, track.py[i] as number);
+  let minY = Infinity, maxY = -Infinity;
+  for (let i = 0; i < track.n; i++) { minY = Math.min(minY, track.py[i] as number); maxY = Math.max(maxY, track.py[i] as number); }
+  const snowLine = (minY + maxY) / 2 + 45;
   const b: Scene = scene()
     .background("#02040a")
     .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: CFG.camera.fovBase, near: 0.3, far: 4200 }));
@@ -59,11 +88,19 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   b.add(geometry.custom(dynamicFrom(buildRoad(track, high ? 3 : 5)), { name: "road", material: material.custom(roadSpec()) }).runtime({ id: fogTracked("road", "road") }));
   b.add(geometry.custom(dynamicFrom(buildDividers(track, 3, 3)), { name: "dividers", material: material.custom(solidSpec(hexLinear("#2a2f3f"), hexLinear("#40e0ff"), 0.25)) }).runtime({ id: fogTracked("dividers", "dividers") }));
   const props = buildProps(track);
-  b.add(geometry.custom(dynamicFrom(props.rocks), { name: "rocks", material: material.custom(solidSpec(hexLinear("#6c7f86"), hexLinear("#2a3a40"), 0.05)) }).runtime({ id: fogTracked("rocks", "rocks") }));
+  b.add(geometry.custom(dynamicFrom(props.rocks), { name: "rocks", material: material.custom(terrainSpec(snowLine)) }).runtime({ id: fogTracked("rocks", "rocks") }));
+  b.add(geometry.custom(dynamicFrom(buildShoulders(track, high ? 6 : 10)), { name: "plains", material: material.custom(terrainSpec(1e6, [1.15, 1.2, 1.2])) }).runtime({ id: fogTracked("plains", "plains") }));
+  const rails = buildRails(track);
+  b.add(geometry.custom(dynamicFrom(rails.rails), { name: "rails", material: material.custom(solidSpec(hexLinear("#aab6c0"), hexLinear("#324047"), 0.08)) }).runtime({ id: fogTracked("rails", "rails") }));
+  b.add(geometry.custom(dynamicFrom(rails.posts), { name: "rail-posts", material: material.custom(solidSpec(hexLinear("#2a5a62"), hexLinear("#60f4ff"), 1.7)) }).runtime({ id: fogTracked("rail-posts", "rail-posts") }));
+  const arches = buildArches(track);
+  b.add(geometry.custom(dynamicFrom(arches.body), { name: "arches", material: material.custom(solidSpec(hexLinear("#2a2a33"), hexLinear("#10141c"), 0.06)) }).runtime({ id: fogTracked("arches", "arches") }));
+  b.add(geometry.custom(dynamicFrom(arches.neon), { name: "arch-neon", material: material.custom(solidSpec(hexLinear("#bff8ff"), hexLinear("#80f4ff"), 2.2)) }).runtime({ id: fogTracked("arch-neon", "arch-neon") }));
+  b.add(geometry.custom(dynamicFrom(buildShards(track)), { name: "shards", material: material.custom(solidSpec(hexLinear("#1a1c26"), hexLinear("#241a3a"), 0.12)) }).runtime({ id: fogTracked("shards", "shards") }));
   b.add(geometry.custom(dynamicFrom(props.crystals), { name: "crystals", material: material.custom(solidSpec(hexLinear("#3ad8c8"), hexLinear("#4ff0e0"), 0.9)) }).runtime({ id: fogTracked("crystals", "crystals") }));
   b.add(geometry.custom(dynamicFrom(groundQuad(5000, minY - 90)), { name: "abyss", material: material.custom(solidSpec(hexLinear("#2a3a40"), hexLinear("#0b1a26"), 0.05)) }).runtime({ id: fogTracked("abyss", "abyss") }));
-  // size 900 with side "double": a back-culled or 3400-unit dome drew nothing in remote probes (see PORTING-NOTES.md)
-  b.add(primitives.sphere({ name: "sky", size: 900, material: material.custom({ ...skySpec(), side: "double" }) }).runtime({ id: "sky" }));
+  /* the earlier black sky was the draw-skip on unused declared uniforms (fixed in 4.0.7); the dome is back-culled again */
+  b.add(primitives.sphere({ name: "sky", size: 3000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
 
   /* checkpoint gates: veil across the road + two pylons */
   track.checkpoints.forEach((s, i) => {
@@ -107,18 +144,21 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
 
   /* player drone */
   for (const part of DRONE_PARTS) {
-    const hull = hexLinear("#b4531f"), accent = hexLinear("#ff9a4a"), hot = hexLinear("#bff6ff");
-    const mat = (base: Rgb, glow: Rgb, amount: number) => material.custom(solidSpec(base, glow, amount));
-    const handle = (() => {
-      switch (part.kind) {
-        case "body": return primitives.box({ name: part.id, size: [5.2, 0.9, 1.9], material: mat(hull, accent, 0.18) });
-        case "nose": return primitives.cone({ name: part.id, params: { radius: 0.95, height: 2.4, radialSegments: 6 }, material: mat(hull, accent, 0.3) });
-        case "pod": return primitives.box({ name: part.id, size: [3.6, 0.55, 0.9], material: mat(hexLinear("#2a2f36"), accent, 0.15) });
-        case "fin": return primitives.box({ name: part.id, size: [1.6, 1.3, 0.12], material: mat(hull, accent, 0.4) });
-        default: return primitives.sphere({ name: part.id, size: 0.85, material: mat(hot, hot, 1.8) });
-      }
-    })();
+    const extra = part.additive ? { transparent: true, blending: "additive" as const, depthWrite: false } : {};
+    const mat = material.custom(solidSpec(hexLinear(part.base), hexLinear(part.glow), part.glowAmt, extra));
+    const handle = part.prim === "box"
+      ? primitives.box({ name: part.id, size: part.size as [number, number, number], material: mat })
+      : part.prim === "cyl"
+        ? primitives.cylinder({ name: part.id, size: part.size as [number, number, number], material: mat })
+        : primitives.sphere({ name: part.id, size: part.size as number, material: mat });
     b.add(handle.runtime({ id: fogTracked(part.id, part.id) }));
+  }
+
+  /* speed streaks: a dynamic strip of camera-facing quads, rebuilt every frame */
+  {
+    const uv: number[] = [], idx: number[] = [];
+    for (let k = 0; k < STREAKS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(STREAKS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx) }), { name: "streaks", material: material.custom(streakSpec()) }).runtime({ id: "streaks" }));
   }
 
   /* exhaust / dust points */
@@ -133,7 +173,8 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
     }
   }), { name: "exhaust", material: material.custom(pointsSpec()) }).runtime({ id: "exhaust" }));
 
-  b.add(effects.bloom({ name: "bloom", intensity: 0.5, threshold: 1.0, radius: 0.4 }));
+  b.add(effects.bloom({ name: "bloom", intensity: 0.9, threshold: 0.85, radius: 0.5 }));
+  b.add(effects.colorGrade({ name: "grade", exposure: 1.05, contrast: 1.08, saturation: 1.0 }));
   b.add(effects.vignette({ name: "vignette" }));
 
   return { scene: b, track, bind: (app) => bindRuntime(app, track, POINTS) };
@@ -161,6 +202,10 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
   let head = 0;
   let budget = 0;
   const rng = seededRandom(4242);
+  const sPos = new Float32Array(STREAKS * 3);
+  const sLen = new Float32Array(STREAKS);
+  const sGeo = new Float32Array(STREAKS * 12);
+  let streaksReady = false;
   let rig: [number, number, number] | null = null;
   const frame: Partial<Frame> = {};
 
@@ -183,12 +228,13 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
         p.position.y + R[3] * ox + R[4] * oy + R[5] * oz,
         p.position.z + R[6] * ox + R[7] * oy + R[8] * oz
       );
-      h.setRotation(euler[0], euler[1], euler[2]);
+      const yawNow = (part.yaw ?? 0) + (part.spin ?? 0) * time;
+      const local = yawNow || part.rollZ ? multiplyMat3(axisRotation("y", yawNow), axisRotation("z", part.rollZ ?? 0)) : null;
+      const e = local ? matrixToEulerZYX(multiplyMat3(R, local)) : euler;
+      h.setRotation(e[0], e[1], e[2]);
       h.setUniform?.("heat", heatGlow);
       h.setUniform?.("flash", p.invuln > 0 ? 0.5 + 0.5 * Math.sin(time * 30) : 0);
     }
-    const nose = node("drone-nose");
-    if (!p.crashed) nose.setRotation(euler[0], euler[1], euler[2] - Math.PI / 2);
 
     /* camera */
     const hd = Math.cos(p.theta), hs = Math.sin(p.theta);
@@ -201,13 +247,53 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     const rl = Math.hypot(rig[0], rig[2]) || 1;
     const fx = rig[0] / rl, fz = rig[2] / rl;
     const c = CFG.camera;
-    const eye = [p.position.x - fx * c.dist, p.position.y + c.height, p.position.z - fz * c.dist] as const;
+    const eye = [p.position.x - fx * FRAMING.dist, p.position.y + FRAMING.height, p.position.z - fz * FRAMING.dist] as const;
     const look = [p.position.x + fx * c.lookAhead, p.position.y + 0.8, p.position.z + fz * c.lookAhead] as const;
     const speed01 = Math.min(1, p.v / CFG.vehicle.maxSpeed);
     const fovBase = c.fovBase + (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0);
     const fov = Math.min(c.fovMax, aspect < 0.85 ? fovBase + 8 : fovBase);
     cameraController.setPose({ position: [eye[0], eye[1], eye[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov }, { cut: false });
     node("sky").setPosition(eye[0], eye[1], eye[2]);
+
+    /* speed streaks radiate from the vanishing point: world-fixed lines along the heading, respawned ahead once passed */
+    {
+      let fdx = look[0] - eye[0], fdy = look[1] - eye[1], fdz = look[2] - eye[2];
+      const fl = Math.hypot(fdx, fdy, fdz) || 1;
+      fdx /= fl; fdy /= fl; fdz /= fl;
+      let rx = fdz, rz = -fdx;
+      const rlen = Math.hypot(rx, rz) || 1;
+      rx /= rlen; rz /= rlen;
+      // camera up = right x forward
+      const upx = 0 * fdz - rz * fdy, upy = rz * fdx - rx * fdz, upz = rx * fdy - 0 * fdx;
+      for (let k = 0; k < STREAKS; k++) {
+        const dx = sPos[k * 3]! - eye[0], dy = sPos[k * 3 + 1]! - eye[1], dz = sPos[k * 3 + 2]! - eye[2];
+        if (!streaksReady || dx * fdx + dy * fdy + dz * fdz < 4) {
+          const depth = 28 + rng() * 80, ang = rng() * Math.PI * 2, rad = 2.6 + Math.pow(rng(), 0.7) * 15;
+          sPos[k * 3] = eye[0] + fdx * depth + (rx * Math.cos(ang) + upx * Math.sin(ang) * 0.8) * rad;
+          sPos[k * 3 + 1] = eye[1] + fdy * depth + (upy * Math.sin(ang) * 0.8) * rad;
+          sPos[k * 3 + 2] = eye[2] + fdz * depth + (rz * Math.cos(ang) + upz * Math.sin(ang) * 0.8) * rad;
+          sLen[k] = 10 + rng() * 24;
+        }
+        const px = sPos[k * 3]!, py = sPos[k * 3 + 1]!, pz = sPos[k * 3 + 2]!;
+        const vx = px - eye[0], vy = py - eye[1], vz = pz - eye[2];
+        // width axis: perpendicular to both the streak direction and the view ray, so the quad always faces the camera
+        let wx = fdy * vz - fdz * vy, wy = fdz * vx - fdx * vz, wz = fdx * vy - fdy * vx;
+        const wl = Math.hypot(wx, wy, wz) || 1;
+        const depthNow = Math.max(4, vx * fdx + vy * fdy + vz * fdz);
+        const half = (0.0024 * depthNow + 0.05) / wl;
+        wx *= half; wy *= half; wz *= half;
+        const ex = px + fdx * sLen[k]!, ey = py + fdy * sLen[k]!, ez = pz + fdz * sLen[k]!;
+        const o = k * 12;
+        sGeo[o] = px - wx; sGeo[o + 1] = py - wy; sGeo[o + 2] = pz - wz;
+        sGeo[o + 3] = px + wx; sGeo[o + 4] = py + wy; sGeo[o + 5] = pz + wz;
+        sGeo[o + 6] = ex + wx; sGeo[o + 7] = ey + wy; sGeo[o + 8] = ez + wz;
+        sGeo[o + 9] = ex - wx; sGeo[o + 10] = ey - wy; sGeo[o + 11] = ez - wz;
+      }
+      streaksReady = true;
+      const sn = node("streaks");
+      sn.updateAttribute?.("position", { array: sGeo, offset: 0 });
+      sn.setUniform?.("streakAlpha", 0.15 + 1.5 * Math.min(1, Math.max(0, (p.v - 30) / 80)));
+    }
 
     /* checkpoint, pad pulses from the sim's events */
     for (; seen < race.events.length; seen++) {

@@ -630,3 +630,73 @@ describe("engine app path: the camera handed to the renderer carries real matric
     expect(Array.from(m.view)).not.toEqual([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
   });
 });
+
+describe("a declared custom attribute the linked program optimised out does not skip the draw", () => {
+  class AttributeDroppingDevice extends MockRenderDevice {
+    override createShaderProgram(...args: Parameters<MockRenderDevice["createShaderProgram"]>) {
+      const program = super.createShaderProgram(...args) as MockShaderProgram;
+      return new MockShaderProgram(program.id, program.label, program.marker, {
+        ...program.reflection,
+        attributes: new Map([...program.reflection.attributes].filter(([name]) => name !== "ghostPaint"))
+      });
+    }
+  }
+
+  const spec = (): AuraCustomMaterialSpec => ({
+    glsl: {
+      vertex: "in float ghostPaint;\nvoid main() { gl_Position = u_modelViewProjection * vec4(position, 1.0); }",
+      fragment: FRAGMENT
+    },
+    uniforms: { strength: { type: "f32", value: 0.5 } }
+  });
+
+  it("MaterialBinding.bind succeeds and warns CUSTOM_ATTRIBUTE_UNUSED instead of throwing", () => {
+    const instance = createCustomShaderMaterial(spec());
+    const compiled = instance.compile(new AttributeDroppingDevice());
+    expect(compiled.ok).toBe(true);
+    expect(compiled.program!.reflection.attributes.has("ghostPaint")).toBe(false);
+    const bound = new MaterialBinding().bind(instance, compiled.program!);
+    expect(bound.warnings.some((line) => line.includes("[CUSTOM_ATTRIBUTE_UNUSED]") && line.includes("ghostPaint"))).toBe(true);
+    instance.dispose();
+  });
+
+  it("a missing a_position still fails binding loudly", () => {
+    const instance = createCustomShaderMaterial(spec());
+    const compiled = instance.compile(new MockRenderDevice());
+    const program = new MockShaderProgram(compiled.program!.id, compiled.program!.label, "@m", {
+      ...compiled.program!.reflection,
+      attributes: new Map()
+    });
+    expect(() => new MaterialBinding().bind(instance, program)).toThrowError(/Missing shader attribute: a_position/);
+    instance.dispose();
+  });
+});
+
+describe("#include <colorspace_decode> for display-referred custom shader colours", () => {
+  const decodeSpec = (): AuraCustomMaterialSpec => ({
+    glsl: { fragment: "#include <colorspace_decode>\nout vec4 outColor;\nvoid main() { outColor = vec4(a3dSrgbToLinear(vec3(0.2, 0.5, 0.9)), 1.0); }" }
+  });
+
+  it("expands to a3dSrgbToLinear (vec3 and vec4) in the fragment source and compiles on the mock device", () => {
+    const instance = createCustomShaderMaterial(decodeSpec());
+    const fragment = instance.sources.glsl!.fragment;
+    expect(fragment).toContain("vec3 a3dSrgbToLinear(vec3 srgb)");
+    expect(fragment).toContain("vec4 a3dSrgbToLinear(vec4 srgba)");
+    expect(fragment).not.toContain("#include");
+    expect(instance.compile(new MockRenderDevice()).ok).toBe(true);
+    instance.dispose();
+  });
+
+  it("a user patch overrides the built-in chunk", () => {
+    const instance = createCustomShaderMaterial({ ...decodeSpec(), patch: { colorspace_decode: "vec3 a3dSrgbToLinear(vec3 c) { return c; }" } });
+    expect(instance.sources.glsl!.fragment).toContain("vec3 a3dSrgbToLinear(vec3 c) { return c; }");
+    expect(instance.sources.glsl!.fragment).not.toContain("srgba");
+    instance.dispose();
+  });
+
+  it("the chunk decodes sRGB to linear (CPU reference of the same formula)", () => {
+    const decode = (v: number) => (v < 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    expect(decode(0.5)).toBeCloseTo(0.214, 3);
+    expect(Math.round(255 * (decode(0.5) <= 0.0031308 ? 12.92 * decode(0.5) : 1.055 * Math.pow(decode(0.5), 1 / 2.4) - 0.055))).toBe(128);
+  });
+});

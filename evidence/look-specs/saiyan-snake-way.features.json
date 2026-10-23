@@ -1,0 +1,2877 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "saiyan-snake-way",
+  "sources": [
+    {
+      "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+      "bytes": 513393,
+      "lines": 211,
+      "singleLine": false,
+      "hash": "f67c2010bd2ca18a"
+    },
+    {
+      "file": "evidence/crayon-runtime/saiyan-snake-way/srcdoc.html#script0",
+      "bytes": 2895,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "1f54ee6d6b2e0ea8"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "level-select",
+      "hits": 123,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 484,
+          "offset": 103941
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 706,
+          "offset": 104163
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 717,
+          "offset": 104174
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 45,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 110,
+          "offset": 103567
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 1380,
+          "offset": 104837
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 1392,
+          "offset": 104849
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 28,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 1370,
+          "offset": 104827
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 166,
+          "col": 1582,
+          "offset": 170291
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 128775,
+          "offset": 320915
+        }
+      ]
+    },
+    {
+      "screen": "checkpoint",
+      "hits": 20,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 73,
+          "col": 3478,
+          "offset": 51080
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 415,
+          "offset": 103872
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 129,
+          "col": 508,
+          "offset": 103965
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 17,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 135,
+          "col": 965,
+          "offset": 117504
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 138,
+          "col": 809,
+          "offset": 118389
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 144,
+          "col": 1835,
+          "offset": 121453
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 12,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 130807,
+          "offset": 322947
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 211,
+          "col": 18019,
+          "offset": 513168
+        },
+        {
+          "file": "evidence/crayon-runtime/saiyan-snake-way/srcdoc.html#script0",
+          "line": 1,
+          "col": 550,
+          "offset": 549
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 142207,
+          "offset": 334347
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 146253,
+          "offset": 338393
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 146859,
+          "offset": 338999
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 144,
+          "col": 4923,
+          "offset": 124541
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 174,
+          "col": 146,
+          "offset": 176353
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 174,
+          "col": 164,
+          "offset": 176371
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 132408,
+          "offset": 324548
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 132593,
+          "offset": 324733
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 148487,
+          "offset": 340627
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 130807,
+          "offset": 322947
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 145333,
+          "offset": 337473
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 145426,
+          "offset": 337566
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 206,
+          "col": 11508,
+          "offset": 487599
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 153,
+        "col": 461,
+        "offset": 143462
+      },
+      "cases": [
+        "orb",
+        "feast",
+        "kaio",
+        "senzu",
+        "nimbus",
+        "pole",
+        "stamp",
+        "weights"
+      ]
+    }
+  ],
+  "domIds": [
+    {
+      "id": "canvas",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 1,
+        "col": 2539,
+        "offset": 2538
+      }
+    },
+    {
+      "id": "sw-fl-",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 130908,
+        "offset": 323048
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "ArrowLeft",
+        "hits": 5,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 272,
+          "offset": 131073
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 5,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 284,
+          "offset": 131085
+        }
+      },
+      {
+        "key": "Escape",
+        "hits": 5,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 851,
+          "offset": 131652
+        }
+      },
+      {
+        "key": "ArrowDown",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 260,
+          "offset": 131061
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 250,
+          "offset": 131051
+        }
+      },
+      {
+        "key": "Enter",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 875,
+          "offset": 131676
+        }
+      },
+      {
+        "key": "KeyE",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 136783,
+          "offset": 328923
+        }
+      },
+      {
+        "key": "ShiftLeft",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 136671,
+          "offset": 328811
+        }
+      },
+      {
+        "key": "Space",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 893,
+          "offset": 131694
+        }
+      },
+      {
+        "key": "Digit4",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 497,
+          "offset": 131298
+        }
+      },
+      {
+        "key": "Digit5",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 767,
+          "offset": 131568
+        }
+      },
+      {
+        "key": "KeyA",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1256,
+          "offset": 132057
+        }
+      },
+      {
+        "key": "KeyC",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1153,
+          "offset": 131954
+        }
+      },
+      {
+        "key": "KeyF",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1223,
+          "offset": 132024
+        }
+      },
+      {
+        "key": "KeyH",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1098,
+          "offset": 131899
+        }
+      },
+      {
+        "key": "KeyL",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 464,
+          "offset": 131265
+        }
+      },
+      {
+        "key": "KeyP",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 834,
+          "offset": 131635
+        }
+      },
+      {
+        "key": "KeyS",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1020,
+          "offset": 131821
+        }
+      },
+      {
+        "key": "KeyW",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 967,
+          "offset": 131768
+        }
+      },
+      {
+        "key": "KeyY",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1308,
+          "offset": 132109
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "click",
+        "hits": 18,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 133604,
+          "offset": 325744
+        }
+      },
+      {
+        "event": "touchstart",
+        "hits": 15,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1622,
+          "offset": 132423
+        }
+      },
+      {
+        "event": "keydown",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 145,
+          "offset": 130946
+        }
+      },
+      {
+        "event": "mousedown",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 136698,
+          "offset": 328838
+        }
+      },
+      {
+        "event": "change",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 133507,
+          "offset": 325647
+        }
+      },
+      {
+        "event": "error",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 149687,
+          "offset": 341827
+        }
+      },
+      {
+        "event": "input",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 133206,
+          "offset": 325346
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1456,
+          "offset": 132257
+        }
+      },
+      {
+        "event": "load",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 149634,
+          "offset": 341774
+        }
+      },
+      {
+        "event": "mouseenter",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 146467,
+          "offset": 338607
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 134573,
+          "offset": 326713
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 211,
+          "col": 1543,
+          "offset": 496692
+        }
+      },
+      {
+        "event": "touchend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 2115,
+          "offset": 132916
+        }
+      },
+      {
+        "event": "touchmove",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 149,
+          "col": 1831,
+          "offset": 132632
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [],
+    "urls": [],
+    "oscillatorTypes": [],
+    "oscillatorCalls": 0,
+    "playCalls": 6
+  },
+  "storage": [
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 3957,
+        "offset": 123575
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 5970,
+        "offset": 125588
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 9960,
+        "offset": 129578
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 133925,
+        "offset": 326065
+      }
+    }
+  ],
+  "network": [
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 4509,
+        "offset": 124127
+      }
+    }
+  ],
+  "platform": [],
+  "three": {
+    "constructed": {
+      "AnimationMixer": 4,
+      "Box3": 8,
+      "BoxGeometry": 11,
+      "BufferAttribute": 24,
+      "BufferGeometry": 29,
+      "CanvasTexture": 16,
+      "CapsuleGeometry": 15,
+      "CatmullRomCurve3": 9,
+      "CircleGeometry": 12,
+      "Color": 138,
+      "ConeGeometry": 29,
+      "CylinderGeometry": 37,
+      "DataTexture": 1,
+      "DirectionalLight": 1,
+      "Euler": 2,
+      "ExtrudeGeometry": 1,
+      "Float32BufferAttribute": 46,
+      "Fog": 1,
+      "GLTFLoader": 6,
+      "Group": 114,
+      "HemisphereLight": 1,
+      "InstancedBufferAttribute": 1,
+      "InstancedMesh": 40,
+      "LatheGeometry": 11,
+      "LineBasicMaterial": 1,
+      "LineSegments": 1,
+      "Matrix3": 1,
+      "Matrix4": 20,
+      "Mesh": 350,
+      "MeshBasicMaterial": 62,
+      "MeshLambertMaterial": 1,
+      "MeshPhongMaterial": 2,
+      "MeshToonMaterial": 24,
+      "Object3D": 12,
+      "OrthographicCamera": 1,
+      "PerspectiveCamera": 1,
+      "PlaneGeometry": 16,
+      "PointLight": 1,
+      "Points": 1,
+      "PointsMaterial": 1,
+      "Quaternion": 36,
+      "RingGeometry": 8,
+      "Scene": 2,
+      "ShaderMaterial": 4,
+      "ShapeGeometry": 1,
+      "SkinnedMesh": 1,
+      "SphereGeometry": 31,
+      "Sprite": 13,
+      "SpriteMaterial": 13,
+      "TorusGeometry": 38,
+      "TubeGeometry": 10,
+      "Vector2": 52,
+      "Vector3": 60,
+      "WebGLRenderer": 1,
+      "WebGLRenderTarget": 1
+    },
+    "imports": [
+      "GLTFLoader",
+      "clone"
+    ],
+    "importSources": [
+      "three",
+      "three/addons/loaders/GLTFLoader.js",
+      "three/addons/utils/SkeletonUtils.js"
+    ]
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 98,
+      "hash": "68c4a1c5cc38bb4a",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 31,
+        "col": 657,
+        "offset": 12153
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 6335,
+      "hash": "92d79d74c3460493",
+      "uniforms": [
+        "invPV",
+        "noiseTex",
+        "time",
+        "skyHi",
+        "sunXZ"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 31,
+        "col": 775,
+        "offset": 12271
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 221,
+      "hash": "b0967e29b3dae86d",
+      "uniforms": [],
+      "varyings": [
+        "vUv",
+        "vNV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 52,
+        "col": 559,
+        "offset": 34390
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 4512,
+      "hash": "a64a52033754d793",
+      "uniforms": [
+        "time",
+        "hot"
+      ],
+      "varyings": [
+        "vUv",
+        "vNV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 52,
+        "col": 805,
+        "offset": 34636
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 46,
+      "hash": "f3e1c0ba6f870987",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 161547,
+        "offset": 353687
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 54,
+      "hash": "e985d7b758c5bb0a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 162380,
+        "offset": 354520
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 97,
+      "hash": "60f45ee6eb4ce266",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 209,
+        "col": 769,
+        "offset": 491936
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1953,
+      "hash": "220aa07753142d61",
+      "uniforms": [
+        "tDiffuse",
+        "tDepth",
+        "centre",
+        "strength",
+        "aspect"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 209,
+        "col": 887,
+        "offset": 492054
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "outline",
+      "hits": 65,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 160763,
+          "offset": 352903
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 162608,
+          "offset": 354748
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 162749,
+          "offset": 354889
+        }
+      ]
+    },
+    {
+      "word": "tonemap",
+      "hits": 18,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 1,
+          "col": 2863,
+          "offset": 2862
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 1,
+          "col": 2877,
+          "offset": 2876
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 52,
+          "col": 303,
+          "offset": 34134
+        }
+      ]
+    },
+    {
+      "word": "halo",
+      "hits": 13,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 68,
+          "col": 1979,
+          "offset": 45022
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 138,
+          "col": 714,
+          "offset": 118294
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 144,
+          "col": 1766,
+          "offset": 121384
+        }
+      ]
+    },
+    {
+      "word": "grain",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 162147,
+          "offset": 354287
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 162210,
+          "offset": 354350
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "rain",
+      "hits": 58,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 1,
+          "col": 701,
+          "offset": 700
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 1,
+          "col": 731,
+          "offset": 730
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 1,
+          "col": 767,
+          "offset": 766
+        }
+      ]
+    },
+    {
+      "word": "splash",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+          "line": 182,
+          "col": 146253,
+          "offset": 338393
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 61,
+      "keys": [
+        "roadTop",
+        "roadLit",
+        "roadDark",
+        "joint",
+        "cut",
+        "hazard",
+        "hazardLit",
+        "scale",
+        "scaleDark",
+        "scaleLit",
+        "fin",
+        "finDark",
+        "ink",
+        "cloud",
+        "cloudLit",
+        "cloudDark",
+        "skyHigh",
+        "skyMid",
+        "skyLow",
+        "gi",
+        "giDark",
+        "teal",
+        "tealDark",
+        "skin",
+        "hair",
+        "aura",
+        "auraLit",
+        "auraCore",
+        "ki",
+        "kiCore",
+        "spirit",
+        "jade",
+        "jadeDark",
+        "jadeLit",
+        "lacquer",
+        "lacquerDark",
+        "gold",
+        "grass",
+        "grassDark",
+        "house",
+        "houseDark",
+        "bark",
+        "leaf",
+        "apple",
+        "bone",
+        "hellGrass",
+        "hellGrassDark",
+        "hellPath",
+        "hellPathLit",
+        "hellPathRim",
+        "hellTree",
+        "hellNeedle",
+        "hellRock",
+        "hellBlood",
+        "hellBloodLit",
+        "hellDome",
+        "hellStone",
+        "hellTent",
+        "hellBark",
+        "hellLeaf"
+      ],
+      "numbers": {
+        "roadTop": 16184319,
+        "roadLit": 16777215,
+        "roadDark": 14472943,
+        "joint": 10130352,
+        "cut": 6050680,
+        "hazard": 2068360,
+        "hazardLit": 7336136,
+        "scale": 14999799,
+        "scaleDark": 13025252,
+        "scaleLit": 16711167,
+        "fin": 11712476,
+        "finDark": 9081018,
+        "ink": 3879768,
+        "cloud": 16241733,
+        "cloudLit": 16774832,
+        "cloudDark": 14260766,
+        "skyHigh": 7747764,
+        "skyMid": 11040728,
+        "skyLow": 14469618,
+        "gi": 12866845,
+        "giDark": 9386514,
+        "teal": 2062962,
+        "tealDark": 1332302,
+        "skin": 15777930,
+        "hair": 1314573,
+        "aura": 16722458,
+        "auraLit": 16765088,
+        "auraCore": 16773328,
+        "ki": 3586559,
+        "kiCore": 14677247,
+        "spirit": 14676223,
+        "jade": 4168810,
+        "jadeDark": 2384191,
+        "jadeLit": 7784346,
+        "lacquer": 10234658,
+        "lacquerDark": 6953493,
+        "gold": 14395450,
+        "grass": 6274886,
+        "grassDark": 4033580,
+        "house": 15902912,
+        "houseDark": 13598103,
+        "bark": 8016432,
+        "leaf": 3116858,
+        "apple": 14170666,
+        "bone": 15920888,
+        "hellGrass": 9098429,
+        "hellGrassDark": 5548183,
+        "hellPath": 15708211,
+        "hellPathLit": 16638602,
+        "hellPathRim": 12614934,
+        "hellTree": 9069499,
+        "hellNeedle": 2894422,
+        "hellRock": 12166872,
+        "hellBlood": 15217435,
+        "hellBloodLit": 16284264,
+        "hellDome": 10135741,
+        "hellStone": 13222620,
+        "hellTent": 15235215,
+        "hellBark": 8016432,
+        "hellLeaf": 4168810
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 1,
+        "col": 914,
+        "offset": 913
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 17,
+      "stats": {
+        "min": -58,
+        "max": 58,
+        "mean": 0,
+        "head": [
+          -58,
+          -46,
+          -38,
+          -30,
+          -22,
+          -15
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 99,
+        "col": 4417,
+        "offset": 80804
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 121,
+      "keys": [
+        "phase",
+        "leg",
+        "s",
+        "lane",
+        "laneTarget",
+        "laneX",
+        "y",
+        "vy",
+        "grounded",
+        "sliding",
+        "speed",
+        "speedMul",
+        "aura",
+        "auraHeld",
+        "auraRung",
+        "strain",
+        "lockout",
+        "ki",
+        "kiMax",
+        "days",
+        "score",
+        "kiBanked",
+        "stumble",
+        "invuln",
+        "senzu",
+        "poleCharges",
+        "nimbus",
+        "flyX",
+        "flyY",
+        "flyGrace",
+        "flySide",
+        "kiWarn",
+        "leapT",
+        "weightsOff",
+        "checkpointS",
+        "flyFree",
+        "atEnd",
+        "endT",
+        "pHead",
+        "lawnFree",
+        "takeT",
+        "lawnStage",
+        "laps",
+        "lapAcc",
+        "lawnClip",
+        "lawnFly",
+        "bub",
+        "greg",
+        "gregY",
+        "kaiAng",
+        "kaiLat",
+        "mo",
+        "kaio",
+        "powerT",
+        "canFly",
+        "auraVis",
+        "camSpd",
+        "auraLatch",
+        "drowse",
+        "wind"
+      ],
+      "numbers": {
+        "s": 0,
+        "lane": 0,
+        "laneTarget": 0,
+        "laneX": 0,
+        "y": 0,
+        "vy": 0,
+        "grounded": null,
+        "sliding": 0,
+        "speedMul": 1,
+        "aura": null,
+        "auraHeld": 0,
+        "auraRung": 0,
+        "strain": 0,
+        "lockout": 0,
+        "ki": 0.35,
+        "kiMax": 1,
+        "score": 0,
+        "kiBanked": 0,
+        "stumble": 0,
+        "invuln": 0,
+        "senzu": 0,
+        "poleCharges": 0,
+        "nimbus": 0,
+        "flyX": 0,
+        "flyY": 0,
+        "flyGrace": 0,
+        "flySide": 1,
+        "kiWarn": 0,
+        "leapT": 0,
+        "weightsOff": null,
+        "checkpointS": 0,
+        "flyFree": null,
+        "atEnd": null,
+        "endT": 0,
+        "pHead": 0,
+        "lawnFree": null,
+        "takeT": 0,
+        "laps": 0,
+        "lapAcc": 0,
+        "lawnFly": null,
+        "gregY": 1.6,
+        "kaiAng": 0,
+        "kaiLat": 0,
+        "mo": 0.15,
+        "powerT": 0,
+        "canFly": null,
+        "auraVis": 0,
+        "auraLatch": null,
+        "drowse": 0,
+        "wind": 0,
+        "stageIndex": -1,
+        "fallT": 0,
+        "fallFrom": 0,
+        "hellT": 0,
+        "hellS": 0,
+        "hellX": 0,
+        "hellXTarget": 0,
+        "hellLead": 0,
+        "hellOgreS": 0,
+        "hellOgreX": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 103,
+        "offset": 103560
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "from",
+        "name",
+        "sub",
+        "curve",
+        "pitch",
+        "gap",
+        "orb",
+        "obst",
+        "spirit",
+        "sweeper",
+        "girth",
+        "oni",
+        "bank",
+        "turnRate",
+        "powers",
+        "hospitality",
+        "slow"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 1418,
+        "offset": 104875
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "from",
+        "name",
+        "sub",
+        "curve",
+        "pitch",
+        "gap",
+        "orb",
+        "obst",
+        "spirit",
+        "sweeper",
+        "oni",
+        "girth",
+        "bank",
+        "turnRate",
+        "powers"
+      ],
+      "numbers": {
+        "from": 260,
+        "curve": 0.015,
+        "pitch": 0.0036,
+        "gap": 0.14,
+        "orb": 0.8,
+        "obst": 0.3,
+        "spirit": 0.34,
+        "sweeper": 0,
+        "oni": 0.22,
+        "girth": 1,
+        "bank": 0.55,
+        "turnRate": 0.55
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 1554,
+        "offset": 105011
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "from",
+        "name",
+        "sub",
+        "curve",
+        "pitch",
+        "gap",
+        "orb",
+        "obst",
+        "spirit",
+        "sweeper",
+        "oni",
+        "girth",
+        "bank",
+        "turnRate",
+        "powers"
+      ],
+      "numbers": {
+        "from": 1600,
+        "curve": 0.0168,
+        "pitch": 0.0043,
+        "gap": 0.22,
+        "orb": 0.85,
+        "obst": 0.45,
+        "spirit": 0.55,
+        "sweeper": 0.42,
+        "oni": 0.55,
+        "girth": 1,
+        "bank": 0.7,
+        "turnRate": 1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 1765,
+        "offset": 105222
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "from",
+        "name",
+        "sub",
+        "curve",
+        "pitch",
+        "gap",
+        "orb",
+        "obst",
+        "spirit",
+        "sweeper",
+        "girth",
+        "hospitality",
+        "slow",
+        "powers"
+      ],
+      "numbers": {
+        "from": 2680,
+        "curve": 0.0044,
+        "pitch": 0.0016,
+        "gap": 0,
+        "orb": 0.3,
+        "obst": 0.2,
+        "spirit": 0.1,
+        "sweeper": 0,
+        "girth": 1,
+        "hospitality": null,
+        "slow": 0.86
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 1988,
+        "offset": 105445
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "from",
+        "name",
+        "sub",
+        "curve",
+        "pitch",
+        "gap",
+        "orb",
+        "obst",
+        "spirit",
+        "sweeper",
+        "oni",
+        "girth",
+        "nofly",
+        "bank",
+        "turnRate",
+        "powers"
+      ],
+      "numbers": {
+        "from": 3110,
+        "curve": 0.018,
+        "pitch": 0.0045,
+        "gap": 0.18,
+        "orb": 1,
+        "obst": 0.4,
+        "spirit": 0.2,
+        "sweeper": 0,
+        "oni": 0.5,
+        "girth": 1,
+        "nofly": null,
+        "bank": 1.15,
+        "turnRate": 1.5
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 2195,
+        "offset": 105652
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "from",
+        "name",
+        "sub",
+        "curve",
+        "pitch",
+        "gap",
+        "orb",
+        "obst",
+        "spirit",
+        "sweeper",
+        "oni",
+        "girth",
+        "corkscrew",
+        "wind",
+        "strainMul",
+        "bank",
+        "turnRate",
+        "powers"
+      ],
+      "numbers": {
+        "from": 3670,
+        "curve": 0.019,
+        "pitch": 0.0052,
+        "gap": 0.42,
+        "orb": 0.95,
+        "obst": 0.55,
+        "spirit": 0.45,
+        "sweeper": 0.22,
+        "oni": 0.42,
+        "girth": 0.72,
+        "corkscrew": null,
+        "wind": null,
+        "strainMul": 2,
+        "bank": 0.85,
+        "turnRate": 0.55
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 2410,
+        "offset": 105867
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "from",
+        "name",
+        "sub",
+        "curve",
+        "pitch",
+        "gap",
+        "orb",
+        "obst",
+        "spirit",
+        "sweeper",
+        "oni",
+        "girth",
+        "bank",
+        "turnRate",
+        "drowse",
+        "powers"
+      ],
+      "numbers": {
+        "from": 4850,
+        "curve": 0.009,
+        "pitch": 0.0028,
+        "gap": 0.24,
+        "orb": 0.45,
+        "obst": 0.2,
+        "spirit": 0.65,
+        "sweeper": 0.18,
+        "oni": 0.48,
+        "girth": 0.85,
+        "bank": 0.35,
+        "turnRate": 0.3,
+        "drowse": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 2682,
+        "offset": 106139
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "hi",
+        "mid",
+        "lo",
+        "cl",
+        "cm",
+        "cd"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 3057,
+        "offset": 106514
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "hi",
+        "mid",
+        "lo",
+        "cl",
+        "cm",
+        "cd"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 129,
+        "col": 3649,
+        "offset": 107106
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 25,
+      "keys": [
+        "clipFrame",
+        "bodyPitch",
+        "bodyBank",
+        "bodyYaw",
+        "bodyLift",
+        "bodyBack",
+        "spineArch",
+        "spineSide",
+        "armAbduction",
+        "armSweep",
+        "forearmAbduction",
+        "elbowSweep",
+        "thighGap",
+        "hipBend",
+        "shinGap",
+        "kneeBend",
+        "bootGap",
+        "bootLift",
+        "neckLift",
+        "headLift",
+        "cameraOrbit",
+        "cameraDistance",
+        "cameraHeight",
+        "cameraFov",
+        "showAura"
+      ],
+      "numbers": {
+        "clipFrame": 0.205,
+        "bodyPitch": 5,
+        "bodyBank": 5.5,
+        "bodyYaw": 0,
+        "bodyLift": 0,
+        "bodyBack": 0,
+        "spineArch": 1.4,
+        "spineSide": 0,
+        "armAbduction": 45.5,
+        "armSweep": 5,
+        "forearmAbduction": 41.4,
+        "elbowSweep": 3,
+        "thighGap": 10.75,
+        "hipBend": 4,
+        "shinGap": 7,
+        "kneeBend": 3,
+        "bootGap": 7.75,
+        "bootLift": -28.75,
+        "neckLift": 35.5,
+        "headLift": -10,
+        "cameraOrbit": 0,
+        "cameraDistance": 21.5,
+        "cameraHeight": 6.2,
+        "cameraFov": 58,
+        "showAura": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 5553,
+        "offset": 125171
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "live",
+        "p",
+        "v",
+        "t",
+        "life",
+        "s0",
+        "s1",
+        "r",
+        "g",
+        "b",
+        "grav",
+        "drag"
+      ],
+      "numbers": {
+        "live": null,
+        "t": 0,
+        "life": 1,
+        "s0": 1,
+        "s1": 0,
+        "r": 1,
+        "g": 1,
+        "b": 1,
+        "grav": 0,
+        "drag": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 151,
+        "col": 383,
+        "offset": 138345
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 110,
+      "keys": [
+        "phase",
+        "leg",
+        "s",
+        "lane",
+        "laneTarget",
+        "laneX",
+        "revived",
+        "kStage",
+        "kSenzu",
+        "wantJump",
+        "routeComplete",
+        "yStage",
+        "itT",
+        "itDone",
+        "y",
+        "vy",
+        "grounded",
+        "sliding",
+        "speed",
+        "speedMul",
+        "aura",
+        "auraHeld",
+        "auraRung",
+        "strain",
+        "lockout",
+        "ki",
+        "kiMax",
+        "days",
+        "score",
+        "kiBanked",
+        "stumble",
+        "invuln",
+        "senzu",
+        "poleCharges",
+        "nimbus",
+        "flyX",
+        "flyY",
+        "flyGrace",
+        "flySide",
+        "kiWarn",
+        "leapT",
+        "weightsOff",
+        "checkpointS",
+        "flyFree",
+        "atEnd",
+        "endT",
+        "pHead",
+        "lawnFree",
+        "takeT",
+        "lawnStage",
+        "laps",
+        "lapAcc",
+        "lawnClip",
+        "lawnFly",
+        "bub",
+        "greg",
+        "gregY",
+        "kaiAng",
+        "kaiLat",
+        "mo"
+      ],
+      "numbers": {
+        "lane": 0,
+        "laneTarget": 0,
+        "laneX": 0,
+        "revived": null,
+        "kSenzu": null,
+        "wantJump": null,
+        "routeComplete": null,
+        "itT": 0,
+        "itDone": null,
+        "y": 0,
+        "vy": 0,
+        "grounded": null,
+        "sliding": 0,
+        "speedMul": 1,
+        "aura": null,
+        "auraHeld": 0,
+        "auraRung": 0,
+        "strain": 0,
+        "lockout": 0,
+        "ki": 0.35,
+        "kiMax": 1,
+        "score": 0,
+        "kiBanked": 0,
+        "stumble": 0,
+        "invuln": 0,
+        "senzu": 0,
+        "poleCharges": 0,
+        "nimbus": 0,
+        "flyX": 0,
+        "flyY": 0,
+        "flyGrace": 0,
+        "flySide": 1,
+        "kiWarn": 0,
+        "leapT": 0,
+        "weightsOff": null,
+        "checkpointS": 0,
+        "flyFree": null,
+        "atEnd": null,
+        "endT": 0,
+        "pHead": 0,
+        "lawnFree": null,
+        "takeT": 0,
+        "laps": 0,
+        "lapAcc": 0,
+        "lawnFly": null,
+        "gregY": 1.6,
+        "kaiAng": 0,
+        "kaiLat": 0,
+        "mo": 0.15,
+        "powerT": 0,
+        "canFly": null,
+        "auraVis": 0,
+        "auraLatch": null,
+        "drowse": 0,
+        "wind": 0,
+        "hellT": 0,
+        "fallT": 0,
+        "planetT": 0,
+        "trainingDays": 0,
+        "peach": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 155376,
+        "offset": 347516
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 42,
+      "stats": {
+        "min": 0,
+        "max": 8,
+        "mean": 4,
+        "head": [
+          0,
+          1,
+          5,
+          0,
+          5,
+          4
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 160118,
+        "offset": 352258
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 15,
+      "keys": [
+        "x",
+        "z",
+        "rx",
+        "rz",
+        "height"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 172270,
+        "offset": 364410
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "x",
+        "z",
+        "rx",
+        "rz",
+        "h"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 174979,
+        "offset": 367119
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "id",
+        "name",
+        "sub",
+        "r0",
+        "r1",
+        "lane",
+        "gates",
+        "gateR",
+        "a0",
+        "a1",
+        "sky",
+        "fog"
+      ],
+      "numbers": {
+        "r0": 0,
+        "r1": 1150,
+        "lane": 210,
+        "gates": 4,
+        "gateR": 35,
+        "a0": 782,
+        "a1": 900
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 113,
+        "offset": 411768
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "id",
+        "name",
+        "sub",
+        "r0",
+        "r1",
+        "lane",
+        "gates",
+        "gateR",
+        "a0",
+        "a1",
+        "sky",
+        "fog"
+      ],
+      "numbers": {
+        "r0": 1150,
+        "r1": 2000,
+        "lane": 165,
+        "gates": 5,
+        "gateR": 32,
+        "a0": 900,
+        "a1": 330
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 275,
+        "offset": 411930
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "id",
+        "name",
+        "sub",
+        "r0",
+        "r1",
+        "lane",
+        "gates",
+        "gateR",
+        "a0",
+        "a1",
+        "sky",
+        "fog"
+      ],
+      "numbers": {
+        "r0": 2000,
+        "r1": 5600,
+        "lane": 155,
+        "gates": 13,
+        "gateR": 30,
+        "a0": 330,
+        "a1": 262
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 432,
+        "offset": 412087
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "id",
+        "name",
+        "sub",
+        "r0",
+        "r1",
+        "lane",
+        "gates",
+        "gateR",
+        "a0",
+        "a1",
+        "sky",
+        "fog"
+      ],
+      "numbers": {
+        "r0": 5600,
+        "r1": 6700,
+        "lane": 110,
+        "gates": 6,
+        "gateR": 27,
+        "a0": 262,
+        "a1": 135
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 597,
+        "offset": 412252
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "id",
+        "name",
+        "sub",
+        "r0",
+        "r1",
+        "lane",
+        "gates",
+        "gateR",
+        "a0",
+        "a1",
+        "sky",
+        "fog"
+      ],
+      "numbers": {
+        "r0": 6700,
+        "r1": 7800,
+        "lane": 128,
+        "gates": 6,
+        "gateR": 26,
+        "a0": 135,
+        "a1": 78
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 754,
+        "offset": 412409
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "id",
+        "name",
+        "sub",
+        "r0",
+        "r1",
+        "lane",
+        "gates",
+        "gateR",
+        "a0",
+        "a1",
+        "sky",
+        "fog"
+      ],
+      "numbers": {
+        "r0": 7800,
+        "r1": 9200,
+        "lane": 140,
+        "gates": 8,
+        "gateR": 28,
+        "a0": 82,
+        "a1": 125
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 909,
+        "offset": 412564
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "id",
+        "name",
+        "sub",
+        "r0",
+        "r1",
+        "lane",
+        "gates",
+        "gateR",
+        "a0",
+        "a1",
+        "sky",
+        "fog"
+      ],
+      "numbers": {
+        "r0": 9200,
+        "r1": 10000,
+        "lane": 210,
+        "gates": 5,
+        "gateR": 32,
+        "a0": 145,
+        "a1": 190
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 1062,
+        "offset": 412717
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "snakehead.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 90,
+        "col": 330,
+        "offset": 59375
+      }
+    },
+    {
+      "path": "ogre-red.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 131,
+        "col": 21,
+        "offset": 112214
+      }
+    },
+    {
+      "path": "ogre-brute.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 131,
+        "col": 159,
+        "offset": 112352
+      }
+    },
+    {
+      "path": "saibaman.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 131,
+        "col": 258,
+        "offset": 112451
+      }
+    },
+    {
+      "path": "ogre-boy.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 131,
+        "col": 353,
+        "offset": 112546
+      }
+    },
+    {
+      "path": "goku-v3.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 135,
+        "col": 29,
+        "offset": 116568
+      }
+    },
+    {
+      "path": "ui-portrait.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 7711,
+        "offset": 127329
+      }
+    },
+    {
+      "path": "vegeta.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 8422,
+        "offset": 128040
+      }
+    },
+    {
+      "path": "ui-portrait-vegeta.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 8444,
+        "offset": 128062
+      }
+    },
+    {
+      "path": "piccolo.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 9297,
+        "offset": 128915
+      }
+    },
+    {
+      "path": "ui-portrait-piccolo.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 9320,
+        "offset": 128938
+      }
+    },
+    {
+      "path": "bubbles.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 166,
+        "col": 24,
+        "offset": 168733
+      }
+    },
+    {
+      "path": "kingkai.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 166,
+        "col": 136,
+        "offset": 168845
+      }
+    },
+    {
+      "path": "gregory.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 166,
+        "col": 263,
+        "offset": 168972
+      }
+    },
+    {
+      "path": "ui-cover.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 128136,
+        "offset": 320276
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "qt",
+      "params": 1,
+      "chars": 14178,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 93,
+        "col": 50,
+        "offset": 60805
+      }
+    },
+    {
+      "name": "Up",
+      "params": 0,
+      "chars": 8016,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 189303,
+        "offset": 381443
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 7459,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 31,
+        "col": 11,
+        "offset": 11507
+      }
+    },
+    {
+      "name": "zp",
+      "params": 0,
+      "chars": 6362,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 199781,
+        "offset": 391921
+      }
+    },
+    {
+      "name": "Et",
+      "params": 0,
+      "chars": 6218,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 52,
+        "col": 192,
+        "offset": 34023
+      }
+    },
+    {
+      "name": "_l",
+      "params": 0,
+      "chars": 6035,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 137231,
+        "offset": 329371
+      }
+    },
+    {
+      "name": "Sp",
+      "params": 0,
+      "chars": 5745,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 182072,
+        "offset": 374212
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 5145,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 200,
+        "col": 31317,
+        "offset": 459964
+      }
+    },
+    {
+      "name": "no",
+      "params": 0,
+      "chars": 4185,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 109,
+        "col": 1,
+        "offset": 89205
+      }
+    },
+    {
+      "name": "Na",
+      "params": 1,
+      "chars": 4179,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 153,
+        "col": 6518,
+        "offset": 149519
+      }
+    },
+    {
+      "name": "Gp",
+      "params": 0,
+      "chars": 4115,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 177957,
+        "offset": 370097
+      }
+    },
+    {
+      "name": "gp",
+      "params": 0,
+      "chars": 4108,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 162669,
+        "offset": 354809
+      }
+    },
+    {
+      "name": "Sa",
+      "params": 1,
+      "chars": 4080,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 153,
+        "col": 1251,
+        "offset": 144252
+      }
+    },
+    {
+      "name": "po",
+      "params": 0,
+      "chars": 4007,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 118,
+        "col": 42,
+        "offset": 97316
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3533,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 200,
+        "col": 39984,
+        "offset": 468631
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3504,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 200,
+        "col": 36472,
+        "offset": 465119
+      }
+    },
+    {
+      "name": "ca",
+      "params": 1,
+      "chars": 3452,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 149,
+        "col": 3630,
+        "offset": 134431
+      }
+    },
+    {
+      "name": "Fi",
+      "params": 1,
+      "chars": 3380,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 157,
+        "col": 6296,
+        "offset": 161567
+      }
+    },
+    {
+      "name": "Bt",
+      "params": 0,
+      "chars": 3228,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 49,
+        "col": 1,
+        "offset": 30529
+      }
+    },
+    {
+      "name": "Un",
+      "params": 1,
+      "chars": 3190,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 1,
+        "offset": 119619
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3158,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 200,
+        "col": 28150,
+        "offset": 456797
+      }
+    },
+    {
+      "name": "Hp",
+      "params": 1,
+      "chars": 3094,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 206345,
+        "offset": 398485
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3043,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 144,
+        "col": 129,
+        "offset": 119747
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3012,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 200,
+        "col": 43525,
+        "offset": 472172
+      }
+    },
+    {
+      "name": "Kc",
+      "params": 1,
+      "chars": 2971,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 82,
+        "offset": 192222
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2890,
+      "loc": {
+        "file": "evidence/crayon-runtime/saiyan-snake-way/srcdoc.html#script0",
+        "line": 1,
+        "col": 2,
+        "offset": 1
+      }
+    },
+    {
+      "name": "OB",
+      "params": 0,
+      "chars": 2883,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 209,
+        "col": 76,
+        "offset": 491243
+      }
+    },
+    {
+      "name": "jc",
+      "params": 1,
+      "chars": 2867,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 182,
+        "col": 3074,
+        "offset": 195214
+      }
+    },
+    {
+      "name": "Rt",
+      "params": 0,
+      "chars": 2845,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 84,
+        "col": 1,
+        "offset": 53305
+      }
+    },
+    {
+      "name": "tg",
+      "params": 0,
+      "chars": 2832,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 188,
+        "col": 460,
+        "offset": 405675
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2767,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 93,
+        "col": 11338,
+        "offset": 72093
+      }
+    },
+    {
+      "name": "hh",
+      "params": 1,
+      "chars": 2721,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 7448,
+        "offset": 419103
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 2697,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 200,
+        "col": 4424,
+        "offset": 433071
+      }
+    },
+    {
+      "name": "bc",
+      "params": 1,
+      "chars": 2694,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 178,
+        "col": 4661,
+        "offset": 186304
+      }
+    },
+    {
+      "name": "uc",
+      "params": 1,
+      "chars": 2491,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 178,
+        "col": 10,
+        "offset": 181653
+      }
+    },
+    {
+      "name": "ah",
+      "params": 0,
+      "chars": 2455,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 194,
+        "col": 4778,
+        "offset": 416433
+      }
+    },
+    {
+      "name": "xt",
+      "params": 0,
+      "chars": 2452,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 71,
+        "col": 1,
+        "offset": 45125
+      }
+    },
+    {
+      "name": "Yt",
+      "params": 0,
+      "chars": 2443,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 87,
+        "col": 13,
+        "offset": 56239
+      }
+    },
+    {
+      "name": "pB",
+      "params": 1,
+      "chars": 2413,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 206,
+        "col": 6062,
+        "offset": 482153
+      }
+    },
+    {
+      "name": "dr",
+      "params": 1,
+      "chars": 2260,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/saiyan-snake-way/game-module.mjs",
+        "line": 166,
+        "col": 358,
+        "offset": 169067
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 2145,
+    "functions": 978,
+    "newExpressions": 1369,
+    "calls": 8403
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:level-select",
+        "original": "123 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "7 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:tutorial",
+        "original": "3 references",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "screen:menu",
+        "original": "45 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "28 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:checkpoint",
+        "original": "20 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "17 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:results",
+        "original": "12 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "9 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "4 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "outlinex65, tonemapx18, halox13, grainx2",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "rainx58, splashx1",
+        "port": "present"
+      },
+      {
+        "feature": "persistence (storage)",
+        "original": "4 storage calls",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "ArrowLeft, ArrowRight, Escape, ArrowDown, ArrowUp, Enter, KeyE, ShiftLeft",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "touchstart, mousedown, mouseenter, pointerdown, touchend, touchmove",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": []
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

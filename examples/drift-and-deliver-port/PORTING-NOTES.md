@@ -14,23 +14,34 @@ method: `evidence/crayon-capture/drift-and-deliver.md`. Reference: `evidence/cra
 | city grid, districts, park rule | the original's constants and rules; census matches (225 blocks, 30 parks) | `world.test.ts` |
 | pickups | the original's seeded generator (174: 150 coins, 14 stars, 10 hearts); collection rule (radius sqrt 13, combo to x20, star refill, heart +0.45) from the loop's source; **placements not compared with the original** | `world.test.ts` |
 | traffic | 84 cars seeded from the same formulas, simplified: speeds are this port's | `world.test.ts` |
-| headlight beam (the only ShaderMaterial) | **NOT VISIBLE IN THE ENGINE (open gap)**: geometry equals three's pipeline and the shaders link with the reference compiler, but remote pixel diffs (lamp on vs off, and lamp initially on) show zero change; frustum culling off, world-space attribute updates and a lit-from-start page did not fix it. Day-only in the original's default state | `headlights.test.ts` |
+| headlight beam (the only ShaderMaterial) | **draws** (fixed): the shader and geometry were always right. The engine app path gave `material.custom` identity `viewMatrix`/`projectionMatrix` built-ins, so every custom vertex stage drew in NDC and the beam (z = 2..29 in front of the car) was clipped away; fixed in the engine by passing the real camera matrices to custom shaders only. Lamp-on vs lamp-off is asserted by pixel difference in `drift-and-deliver-port.spec.ts`. Day-only in the original's default state | `headlights.test.ts`, `custom-draw-probe.spec.ts` |
 | post-processing | original: runtime `EffectComposer` = RenderPass, UnrealBloomPass(0.35, 0.35, 1.05), SMAAPass, OutputPass (Neutral, exposure 1.34). Port: `effects.bloom` + `effects.antiAlias(fxaa)` + `output: { toneMapping: "neutral", exposure: 1.34 }` | not pixel-compared |
 
-## What is not ported (all of it is visible in the original)
+## Art pass (this port's own look, not the original's assets)
 
-- The story, missions, police/wanted level and the BUSTED flow; getting in and out of cars on foot; the map overlay.
-- 456 pedestrians; ~11,000 prop and building placements from 520 GLB prototypes (517k triangles). The port has one box
-  per building slot (1,688 buildings, used as the collision solids), 360 trees and 84 traffic boxes.
-- Voiced story, audio, shadows, IBL, the water and sky shaders, the skyline, hills and clouds. The sky is a canvas
-  gradient texture; fog is not applied.
+The original's look (warm peach sky, golden low sun with long shadows, cream stone towers with lit and dark windows,
+green and mustard shopfronts with striped awnings, grey-brown asphalt with big yellow and white markings, palms, lamps,
+people) is reproduced with code-made art: `textures.ts` paints the road tile (crosswalks, stop lines, yellow box
+junctions, arrows, wear), facades (masonry courses, lit and dark panes, balconies; 8 wall colours), shopfronts, parks, plazas,
+sky and a hazy skyline (the sky dome and far city are `material.custom` shaders in `sky.ts` that decode authored colours with `#include <colorspace_decode>`; the built-in unlit/emissive paths drew black in this configuration); `city.ts` dresses the unchanged simulation footprints with metric-UV walls, shop bands, awnings,
+cornices, tiered crowns, gable roofs, roof clutter and water tanks, and places lamps, traffic lights, street/park trees and
+~270 pedestrians (all merged into one static palette-coloured mesh: instanced props were drawn per instance inside every shadow cascade); `vehicles.ts` builds four low-poly car shells with wheels built in (sedan, hatch, van, pickup); `look.ts` assembles the scene
+(HDRI image-based light, a warm low sun with 2 cascaded shadows over 150 m, exp2 haze `#f0dcc0` 0.0024, bloom, grade, vignette; AO is opt-in via `?ao=1`; output exposure 2.3, `?exposure=` overrides; diagnostics switches `env/shadow/fog/post/sky=0`); `audio.ts` is
+procedural WebAudio (engine note, tyre squeal, nitro rush, pickup chimes, traffic thud). New in the page: a title panel
+with the controls, pause (P / Esc), mute (M). Solid colours sample a palette strip because PBR materials ignore
+vertex colours; facade wall colours are baked into one texture per colour for the same reason.
+
+Simulation is untouched: `sim.ts`, `world.ts`, `chase.ts` and `headlights.ts` are byte-identical to the verified versions
+and the four scenario hashes, 225 blocks, 174 pickups and 84 traffic cars still hold.
+
+## What is still not ported
+
+- The story, missions, police/wanted level and the BUSTED flow; getting in and out of cars on foot; the map overlay;
+  garage / results / level-select / intro screens.
+- The original's ~11,000 GLB placements (517k triangles) and 456 animated pedestrians: the port has 1,688 dressed
+  buildings (also the collision solids), ~270 static pedestrians and 84 traffic cars.
+- Shadows of traffic and pedestrians are cast, but vertex-level detail (window recesses, props on facades) is texture-only.
 - The original's assets are not available to the port, so everything is procedural and says so.
-
-## Engine surface used (no `@aura3d/rendering` imports, no `TODO(a3d-migrate)`)
-
-`instances.mesh` (blocks, buildings, trees, traffic, pickups), `geometry.custom` + `geometry.dynamic` (beam),
-`material.custom` (beam), `material.pbr` / `material.emissive`, `primitives.*` (car, ground, water), `texture.canvas`
-(sky), `lights.*`, `effects.bloom` / `effects.antiAlias`, runtime node handles, `app.camera.setPose`.
 
 ## Hooks
 

@@ -4,8 +4,12 @@
  */
 import type { material } from "@aura3d/engine";
 import {
-  AURA_FRAGMENT, AURA_VERTEX, GLOW_FRAGMENT, GLOW_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
+  AURA_FRAGMENT, AURA_VERTEX, BLOB_FRAGMENT, BLOB_VERTEX, FLAT_FRAGMENT, FLAT_VERTEX, GLOW_FRAGMENT, GLOW_VERTEX,
+  ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX
 } from "./shaders";
+
+/** World height of the cloud deck's base (the sky shader marches up to 55 m above it). */
+export const DECK_BASE = -115;
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type Rgb = readonly [number, number, number];
@@ -38,9 +42,9 @@ export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, extr
   ...extra
 });
 
-export const glowSpec = (core: Rgb, shell: Rgb): CustomSpec => ({
+export const glowSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0): CustomSpec => ({
   glsl: { vertex: GLOW_VERTEX, fragment: GLOW_FRAGMENT },
-  uniforms: { glowCore: { type: "color3", value: [...core] }, glowShell: { type: "color3", value: [...shell] } },
+  uniforms: { glowCore: { type: "color3", value: [...core] }, glowShell: { type: "color3", value: [...shell] }, glowAlpha: { type: "f32", value: alpha }, glowHollow: { type: "f32", value: hollow } },
   side: "double",
   transparent: true,
   depthWrite: false,
@@ -53,9 +57,26 @@ export const roadSpec = (): CustomSpec => ({
     roadTop: { type: "color3", value: [...hexLinear(PALETTE.roadTop)] },
     roadDark: { type: "color3", value: [...hexLinear(PALETTE.roadDark)] },
     jointColor: { type: "color3", value: [...hexLinear(PALETTE.joint)] },
-    scaleColor: { type: "color3", value: [...hexLinear(PALETTE.scale)] }
+    scaleColor: { type: "color3", value: [...hexLinear(PALETTE.scale)] },
   },
   side: "double"
+});
+
+export const flatSpec = (color: Rgb, alpha: number): CustomSpec => ({
+  glsl: { vertex: FLAT_VERTEX, fragment: FLAT_FRAGMENT },
+  uniforms: { flatColor: { type: "color3", value: [...color] }, flatAlpha: { type: "f32", value: alpha } },
+  side: "double",
+  transparent: true,
+  depthWrite: false,
+  blending: "additive"
+});
+
+export const blobSpec = (radius: number, alpha: number): CustomSpec => ({
+  glsl: { vertex: BLOB_VERTEX, fragment: BLOB_FRAGMENT },
+  uniforms: { blobRadius: { type: "f32", value: radius }, blobAlpha: { type: "f32", value: alpha } },
+  side: "double",
+  transparent: true,
+  depthWrite: false
 });
 
 export const auraSpec = (hot: Rgb, mid: Rgb, edge: Rgb, solid: number): CustomSpec => ({
@@ -84,7 +105,7 @@ export const skySpec = (): CustomSpec => ({
     cloudLit: { type: "color3", value: [...hexLinear(PALETTE.cloudLit)] },
     cloudMid: { type: "color3", value: [...hexLinear(PALETTE.cloud)] },
     cloudDark: { type: "color3", value: [...hexLinear(PALETTE.cloudDark)] },
-    deckBase: { type: "f32", value: -115 },
+    deckBase: { type: "f32", value: DECK_BASE },
     skyTime: { type: "f32", value: 0 }
   },
   side: "double",
@@ -99,6 +120,8 @@ export function allProgramSpecs(): { name: string; spec: CustomSpec }[] {
     { name: "solid", spec: solidSpec(c(PALETTE.gi), c(PALETTE.auraLit), 0.2) },
     { name: "glow", spec: glowSpec(c(PALETTE.kiCore), c(PALETTE.ki)) },
     { name: "aura", spec: auraSpec(c(PALETTE.auraCore), c(PALETTE.auraLit), c(PALETTE.aura), 0.8) },
-    { name: "sky", spec: skySpec() }
+    { name: "sky", spec: skySpec() },
+    { name: "flat", spec: flatSpec(c(PALETTE.kiCore), 0.4) },
+    { name: "blob", spec: blobSpec(1.6, 0.5) }
   ];
 }

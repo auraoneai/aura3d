@@ -1,0 +1,4380 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "drift-and-deliver",
+  "sources": [
+    {
+      "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-2.js",
+      "bytes": 4085,
+      "lines": 97,
+      "singleLine": false,
+      "hash": "4980820aebb40214"
+    },
+    {
+      "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+      "bytes": 1332481,
+      "lines": 1,
+      "singleLine": true,
+      "hash": "18fe054382d51c09"
+    },
+    {
+      "file": "evidence/crayon-runtime/drift-and-deliver/srcdoc.html#script0",
+      "bytes": 2895,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "1f54ee6d6b2e0ea8"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "garage",
+      "hits": 76,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 383171,
+          "offset": 383170
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 383190,
+          "offset": 383189
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 383252,
+          "offset": 383251
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 55,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1177965,
+          "offset": 1177964
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1184855,
+          "offset": 1184854
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1193182,
+          "offset": 1193181
+        }
+      ]
+    },
+    {
+      "screen": "level-select",
+      "hits": 50,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 723522,
+          "offset": 723521
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 974923,
+          "offset": 974922
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 983766,
+          "offset": 983765
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 35,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 997957,
+          "offset": 997956
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1006256,
+          "offset": 1006255
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1097584,
+          "offset": 1097583
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 32,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 717663,
+          "offset": 717662
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 725226,
+          "offset": 725225
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 841312,
+          "offset": 841311
+        }
+      ]
+    },
+    {
+      "screen": "boss",
+      "hits": 24,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1269815,
+          "offset": 1269814
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1269829,
+          "offset": 1269828
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1277686,
+          "offset": 1277685
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 13,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 397765,
+          "offset": 397764
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 398236,
+          "offset": 398235
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 398704,
+          "offset": 398703
+        }
+      ]
+    },
+    {
+      "screen": "checkpoint",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 411049,
+          "offset": 411048
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 411077,
+          "offset": 411076
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 411132,
+          "offset": 411131
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 412799,
+          "offset": 412798
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 412826,
+          "offset": 412825
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 427742,
+          "offset": 427741
+        }
+      ]
+    },
+    {
+      "screen": "leaderboard",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1178453,
+          "offset": 1178452
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1328330,
+          "offset": 1328329
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 745314,
+          "offset": 745313
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 590870,
+          "offset": 590869
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [],
+  "domIds": [],
+  "inputs": {
+    "keys": [
+      {
+        "key": "Space",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 750868,
+          "offset": 750867
+        }
+      },
+      {
+        "key": "ArrowDown",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 750764,
+          "offset": 750763
+        }
+      },
+      {
+        "key": "ArrowLeft",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 750728,
+          "offset": 750727
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 750800,
+          "offset": 750799
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 750694,
+          "offset": 750693
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "keydown",
+        "hits": 19,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 750984,
+          "offset": 750983
+        }
+      },
+      {
+        "event": "click",
+        "hits": 6,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 724946,
+          "offset": 724945
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 5,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1096941,
+          "offset": 1096940
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 751026,
+          "offset": 751025
+        }
+      },
+      {
+        "event": "mouseenter",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1204842,
+          "offset": 1204841
+        }
+      },
+      {
+        "event": "mouseleave",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1204929,
+          "offset": 1204928
+        }
+      },
+      {
+        "event": "mousemove",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1006746,
+          "offset": 1006745
+        }
+      },
+      {
+        "event": "blur",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1307673,
+          "offset": 1307672
+        }
+      },
+      {
+        "event": "mousedown",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1307533,
+          "offset": 1307532
+        }
+      },
+      {
+        "event": "mouseup",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1307614,
+          "offset": 1307613
+        }
+      },
+      {
+        "event": "pointerlockchange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1006600,
+          "offset": 1006599
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 12,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 973850,
+          "offset": 973849
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 12,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 973827,
+          "offset": 973826
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 975155,
+          "offset": 975154
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 975879,
+          "offset": 975878
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 973648,
+          "offset": 973647
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 974016,
+          "offset": 974015
+        }
+      },
+      {
+        "api": "linearRampToValueAtTime",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 973952,
+          "offset": 973951
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 973906,
+          "offset": 973905
+        }
+      },
+      {
+        "api": "webkitAudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 973669,
+          "offset": 973668
+        }
+      }
+    ],
+    "urls": [],
+    "oscillatorTypes": [
+      "sawtooth",
+      "sine",
+      "square"
+    ],
+    "oscillatorCalls": 6,
+    "playCalls": 15
+  },
+  "storage": [
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1004281,
+        "offset": 1004280
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1004310,
+        "offset": 1004309
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1004593,
+        "offset": 1004592
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.m1.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1084378,
+        "offset": 1084377
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.cooked",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1084449,
+        "offset": 1084448
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "portola.cooked",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1096600,
+        "offset": 1096599
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.m1.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1101127,
+        "offset": 1101126
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.m2.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1101175,
+        "offset": 1101174
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.m3.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1101223,
+        "offset": 1101222
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.cooked",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1101271,
+        "offset": 1101270
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1184915,
+        "offset": 1184914
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1203149,
+        "offset": 1203148
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.m2.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1207035,
+        "offset": 1207034
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.trial.best",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1208234,
+        "offset": 1208233
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "portola.trial.best",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1211350,
+        "offset": 1211349
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1212532,
+        "offset": 1212531
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1222431,
+        "offset": 1222430
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1226919,
+        "offset": 1226918
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.m1.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1230037,
+        "offset": 1230036
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1231466,
+        "offset": 1231465
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1250693,
+        "offset": 1250692
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.m2.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1254105,
+        "offset": 1254104
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.rift.best",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1256600,
+        "offset": 1256599
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "portola.rift.bestT",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1256667,
+        "offset": 1256666
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "portola.rift.best",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1285292,
+        "offset": 1285291
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "portola.rift.bestT",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1285390,
+        "offset": 1285389
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "portola.m1.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1321908,
+        "offset": 1321907
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "portola.m2.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1321952,
+        "offset": 1321951
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "portola.m3.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1322303,
+        "offset": 1322302
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "removeItem",
+      "key": "portola.m3.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1322820,
+        "offset": 1322819
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "removeItem",
+      "key": "portola.m1.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1323064,
+        "offset": 1323063
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "removeItem",
+      "key": "portola.m2.done",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1323107,
+        "offset": 1323106
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "removeItem",
+      "key": "portola.cooked",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1324032,
+        "offset": 1324031
+      }
+    }
+  ],
+  "network": [],
+  "platform": [
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-2.js",
+        "line": 74,
+        "col": 129,
+        "offset": 3548
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-2.js",
+        "line": 78,
+        "col": 5,
+        "offset": 3705
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-2.js",
+        "line": 88,
+        "col": 5,
+        "offset": 3938
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-2.js",
+        "line": 92,
+        "col": 11,
+        "offset": 4018
+      }
+    },
+    {
+      "api": "requestPointerLock",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1006564,
+        "offset": 1006563
+      }
+    }
+  ],
+  "three": {
+    "constructed": {
+      "AnimationClip": 3,
+      "Box3": 7,
+      "BoxGeometry": 132,
+      "BufferAttribute": 29,
+      "BufferGeometry": 34,
+      "CanvasTexture": 28,
+      "CatmullRomCurve3": 2,
+      "CircleGeometry": 7,
+      "Color": 72,
+      "ConeGeometry": 24,
+      "CylinderGeometry": 45,
+      "DataTexture": 2,
+      "Euler": 9,
+      "ExtrudeGeometry": 4,
+      "Float32BufferAttribute": 32,
+      "Group": 177,
+      "InstancedBufferAttribute": 1,
+      "InstancedMesh": 20,
+      "LatheGeometry": 2,
+      "LineBasicMaterial": 1,
+      "LineSegments": 1,
+      "Matrix4": 25,
+      "Mesh": 217,
+      "MeshBasicMaterial": 58,
+      "MeshLambertMaterial": 34,
+      "MeshPhysicalMaterial": 1,
+      "MeshStandardMaterial": 85,
+      "MeshToonMaterial": 1,
+      "Object3D": 1,
+      "Plane": 1,
+      "PlaneGeometry": 45,
+      "PointLight": 3,
+      "Points": 8,
+      "PointsMaterial": 8,
+      "Quaternion": 17,
+      "QuaternionKeyframeTrack": 2,
+      "Raycaster": 1,
+      "RingGeometry": 4,
+      "ShaderMaterial": 1,
+      "ShapeGeometry": 2,
+      "SphereGeometry": 28,
+      "SpotLight": 1,
+      "TextureLoader": 2,
+      "TorusGeometry": 17,
+      "TubeGeometry": 2,
+      "Vector2": 29,
+      "Vector3": 249,
+      "VectorKeyframeTrack": 2
+    },
+    "imports": [
+      "RoundedBoxGeometry",
+      "boot",
+      "mergeGeometries",
+      "mergeVertices"
+    ],
+    "importSources": [
+      "playlabs-boot",
+      "three",
+      "three/addons/geometries/RoundedBoxGeometry.js",
+      "three/addons/utils/BufferGeometryUtils.js"
+    ]
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 91,
+      "hash": "c0c239e0078540f3",
+      "uniforms": [
+        "tMatArray"
+      ],
+      "varyings": [
+        "vMatLayer"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 693421,
+        "offset": 693420
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 51,
+      "hash": "5f0419e36948c71c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1148807,
+        "offset": 1148806
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "bloom",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 392576,
+          "offset": 392575
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 392601,
+          "offset": 392600
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 513826,
+          "offset": 513825
+        }
+      ]
+    },
+    {
+      "word": "tonemap",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 725761,
+          "offset": 725760
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1043415,
+          "offset": 1043414
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1053792,
+          "offset": 1053791
+        }
+      ]
+    },
+    {
+      "word": "exposure",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1053780,
+          "offset": 1053779
+        }
+      ]
+    },
+    {
+      "word": "outline",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 553246,
+          "offset": 553245
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "rain",
+      "hits": 41,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 391352,
+          "offset": 391351
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 391454,
+          "offset": 391453
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 391650,
+          "offset": 391649
+        }
+      ]
+    },
+    {
+      "word": "splash",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 623419,
+          "offset": 623418
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 717663,
+          "offset": 717662
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 725226,
+          "offset": 725225
+        }
+      ]
+    },
+    {
+      "word": "dust",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 384387,
+          "offset": 384386
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 413726,
+          "offset": 413725
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 667241,
+          "offset": 667240
+        }
+      ]
+    },
+    {
+      "word": "snow",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 405976,
+          "offset": 405975
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 676802,
+          "offset": 676801
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 677144,
+          "offset": 677143
+        }
+      ]
+    },
+    {
+      "word": "ember",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 388856,
+          "offset": 388855
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 526237,
+          "offset": 526236
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1253222,
+          "offset": 1253221
+        }
+      ]
+    },
+    {
+      "word": "smoke",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 397317,
+          "offset": 397316
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 526121,
+          "offset": 526120
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1057330,
+          "offset": 1057329
+        }
+      ]
+    },
+    {
+      "word": "spark",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 762715,
+          "offset": 762714
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 977519,
+          "offset": 977518
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 983337,
+          "offset": 983336
+        }
+      ]
+    },
+    {
+      "word": "particle",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 397301,
+          "offset": 397300
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 1065578,
+          "offset": 1065577
+        }
+      ]
+    },
+    {
+      "word": "trail",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 395685,
+          "offset": 395684
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 541217,
+          "offset": 541216
+        }
+      ]
+    },
+    {
+      "word": "streak",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+          "line": 1,
+          "col": 718724,
+          "offset": 718723
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "L",
+        "W",
+        "R",
+        "sill",
+        "bodyH",
+        "cabH",
+        "cabZ",
+        "cabL",
+        "roofW",
+        "roofL",
+        "axleF",
+        "axleB"
+      ],
+      "numbers": {
+        "L": 4.6,
+        "W": 1.82,
+        "R": 0.425,
+        "sill": 0.16,
+        "bodyH": 0.86,
+        "cabH": 0.4,
+        "cabZ": -0.28,
+        "cabL": 2.4,
+        "roofW": 0.8,
+        "roofL": 0.63,
+        "axleF": 1.38,
+        "axleB": -1.38
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 377976,
+        "offset": 377975
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "L",
+        "W",
+        "R",
+        "sill",
+        "bodyH",
+        "cabH",
+        "cabZ",
+        "cabL",
+        "roofW",
+        "roofL",
+        "axleF",
+        "axleB",
+        "cab"
+      ],
+      "numbers": {
+        "L": 4.95,
+        "W": 1.9,
+        "R": 0.437,
+        "sill": 0.17,
+        "bodyH": 0.9,
+        "cabH": 0.4,
+        "cabZ": -0.25,
+        "cabL": 2.55,
+        "roofW": 0.8,
+        "roofL": 0.64,
+        "axleF": 1.48,
+        "axleB": -1.48,
+        "cab": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 378090,
+        "offset": 378089
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "roofrack",
+        "L",
+        "W",
+        "R",
+        "sill",
+        "bodyH",
+        "cabH",
+        "cabZ",
+        "cabL",
+        "roofW",
+        "roofL",
+        "axleF",
+        "axleB"
+      ],
+      "numbers": {
+        "roofrack": null,
+        "L": 4.75,
+        "W": 1.92,
+        "R": 0.462,
+        "sill": 0.22,
+        "bodyH": 0.98,
+        "cabH": 0.5,
+        "cabZ": -0.2,
+        "cabL": 2.7,
+        "roofW": 0.86,
+        "roofL": 0.8,
+        "axleF": 1.43,
+        "axleB": -1.43
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 378211,
+        "offset": 378210
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "L",
+        "W",
+        "R",
+        "sill",
+        "bodyH",
+        "cabH",
+        "cabZ",
+        "cabL",
+        "roofW",
+        "roofL",
+        "axleF",
+        "axleB"
+      ],
+      "numbers": {
+        "L": 3.95,
+        "W": 1.72,
+        "R": 0.4,
+        "sill": 0.16,
+        "bodyH": 0.86,
+        "cabH": 0.46,
+        "cabZ": -0.22,
+        "cabL": 2.1,
+        "roofW": 0.82,
+        "roofL": 0.7,
+        "axleF": 1.19,
+        "axleB": -1.19
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 378339,
+        "offset": 378338
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "roofrack",
+        "L",
+        "W",
+        "R",
+        "sill",
+        "bodyH",
+        "cabH",
+        "cabZ",
+        "cabL",
+        "roofW",
+        "roofL",
+        "axleF",
+        "axleB"
+      ],
+      "numbers": {
+        "roofrack": null,
+        "L": 5.6,
+        "W": 1.98,
+        "R": 0.462,
+        "sill": 0.2,
+        "bodyH": 1.62,
+        "cabH": 0.48,
+        "cabZ": 1.1,
+        "cabL": 1.7,
+        "roofW": 0.92,
+        "roofL": 0.94,
+        "axleF": 1.68,
+        "axleB": -1.68
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 378453,
+        "offset": 378452
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "L",
+        "W",
+        "R",
+        "sill",
+        "bodyH",
+        "cabH",
+        "cabZ",
+        "cabL",
+        "roofW",
+        "roofL",
+        "axleF",
+        "axleB",
+        "bed",
+        "bedL"
+      ],
+      "numbers": {
+        "L": 5.7,
+        "W": 1.98,
+        "R": 0.5,
+        "sill": 0.28,
+        "bodyH": 1.06,
+        "cabH": 0.48,
+        "cabZ": 0.55,
+        "cabL": 1.95,
+        "roofW": 0.84,
+        "roofL": 0.84,
+        "axleF": 1.71,
+        "axleB": -1.71,
+        "bed": null,
+        "bedL": 2.1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 378583,
+        "offset": 378582
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "L",
+        "W",
+        "R",
+        "sill",
+        "bodyH",
+        "cabH",
+        "cabZ",
+        "cabL",
+        "roofW",
+        "roofL",
+        "axleF",
+        "axleB",
+        "lightbar"
+      ],
+      "numbers": {
+        "L": 5,
+        "W": 1.9,
+        "R": 0.437,
+        "sill": 0.17,
+        "bodyH": 0.9,
+        "cabH": 0.41,
+        "cabZ": -0.25,
+        "cabL": 2.55,
+        "roofW": 0.8,
+        "roofL": 0.64,
+        "axleF": 1.5,
+        "axleB": -1.5,
+        "lightbar": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 378718,
+        "offset": 378717
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 107,
+      "keys": [
+        "id",
+        "name",
+        "category",
+        "kind",
+        "variant",
+        "description",
+        "tags",
+        "defaults"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 382667,
+        "offset": 382666
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "roofStyle",
+        "floors",
+        "width",
+        "depth",
+        "roofPitch",
+        "windowDensity",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.9,
+        "floors": 1,
+        "width": 6.4,
+        "depth": 4.9,
+        "roofPitch": 1,
+        "windowDensity": 0.6,
+        "roughness": 0.88,
+        "metalness": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 382975,
+        "offset": 382974
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "setbackDepth",
+        "featureScale",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.78,
+        "floors": 6,
+        "width": 8.4,
+        "depth": 6.4,
+        "facadeColumns": 4,
+        "entranceWidth": 1.5,
+        "setbackDepth": 0.1,
+        "featureScale": 1,
+        "windowDensity": 0.82,
+        "roughness": 0.88,
+        "metalness": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 384934,
+        "offset": 384933
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "setbackDepth",
+        "featureScale",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.58,
+        "floors": 14,
+        "width": 8.2,
+        "depth": 7.4,
+        "facadeColumns": 6,
+        "entranceWidth": 2.2,
+        "setbackDepth": 0.24,
+        "featureScale": 1.1,
+        "windowDensity": 0.92,
+        "roughness": 0.82,
+        "metalness": 0.02
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 385537,
+        "offset": 385536
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "setbackDepth",
+        "featureScale",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.72,
+        "floors": 7,
+        "width": 9.4,
+        "depth": 7,
+        "facadeColumns": 5,
+        "entranceWidth": 2.4,
+        "setbackDepth": 0.12,
+        "featureScale": 1,
+        "windowDensity": 0.9,
+        "roughness": 0.86,
+        "metalness": 0.01
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 386141,
+        "offset": 386140
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "featureScale",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.86,
+        "floors": 1,
+        "width": 6.8,
+        "depth": 5.2,
+        "facadeColumns": 3,
+        "entranceWidth": 1.3,
+        "featureScale": 1.05,
+        "windowDensity": 0.8,
+        "roughness": 0.9,
+        "metalness": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 386736,
+        "offset": 386735
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "featureScale",
+        "serviceBayCount",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.6,
+        "floors": 1,
+        "width": 12.5,
+        "depth": 8.5,
+        "facadeColumns": 5,
+        "entranceWidth": 2.6,
+        "featureScale": 1.1,
+        "serviceBayCount": 2,
+        "windowDensity": 0.72,
+        "roughness": 0.9,
+        "metalness": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 387346,
+        "offset": 387345
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "featureScale",
+        "windowDensity",
+        "roofPitch",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.72,
+        "floors": 2,
+        "width": 12.2,
+        "depth": 7.2,
+        "facadeColumns": 5,
+        "entranceWidth": 2.1,
+        "featureScale": 1.05,
+        "windowDensity": 0.82,
+        "roofPitch": 0.55,
+        "roughness": 0.9,
+        "metalness": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 387954,
+        "offset": 387953
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "setbackDepth",
+        "featureScale",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.62,
+        "floors": 5,
+        "width": 12.5,
+        "depth": 8.5,
+        "facadeColumns": 6,
+        "entranceWidth": 2.8,
+        "setbackDepth": 0.12,
+        "featureScale": 1.1,
+        "windowDensity": 0.88,
+        "roughness": 0.86,
+        "metalness": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 388569,
+        "offset": 388568
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "featureScale",
+        "serviceBayCount",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.72,
+        "floors": 2,
+        "width": 11.5,
+        "depth": 7.4,
+        "facadeColumns": 4,
+        "entranceWidth": 1.2,
+        "featureScale": 1.05,
+        "serviceBayCount": 2,
+        "windowDensity": 0.72,
+        "roughness": 0.9,
+        "metalness": 0.01
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 389199,
+        "offset": 389198
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "featureScale",
+        "serviceBayCount",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.76,
+        "floors": 2,
+        "width": 9.6,
+        "depth": 6.8,
+        "facadeColumns": 4,
+        "entranceWidth": 1.8,
+        "featureScale": 1,
+        "serviceBayCount": 1,
+        "windowDensity": 0.82,
+        "roughness": 0.88,
+        "metalness": 0.01
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 389845,
+        "offset": 389844
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "featureScale",
+        "serviceBayCount",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.8,
+        "floors": 1,
+        "width": 10.5,
+        "depth": 7,
+        "facadeColumns": 3,
+        "entranceWidth": 1.1,
+        "featureScale": 1,
+        "serviceBayCount": 2,
+        "windowDensity": 0.55,
+        "roughness": 0.92,
+        "metalness": 0.02
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 390456,
+        "offset": 390455
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "featureScale",
+        "constructionProgress",
+        "windowDensity",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.58,
+        "floors": 6,
+        "width": 10.5,
+        "depth": 8.2,
+        "facadeColumns": 4,
+        "featureScale": 1,
+        "constructionProgress": 0.58,
+        "windowDensity": 0.5,
+        "roughness": 0.92,
+        "metalness": 0.04
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 391109,
+        "offset": 391108
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "scale",
+        "floors",
+        "width",
+        "depth",
+        "facadeColumns",
+        "entranceWidth",
+        "featureScale",
+        "windowDensity",
+        "roofPitch",
+        "roofStyle",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "scale": 0.62,
+        "floors": 2,
+        "width": 14.5,
+        "depth": 8.2,
+        "facadeColumns": 6,
+        "entranceWidth": 3,
+        "featureScale": 1.1,
+        "windowDensity": 0.82,
+        "roofPitch": 0.6,
+        "roughness": 0.9,
+        "metalness": 0.01
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 391745,
+        "offset": 391744
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "width",
+        "depth",
+        "grassDensity",
+        "shrubCount",
+        "rockCount",
+        "detail",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "width": 5.2,
+        "depth": 3.8,
+        "grassDensity": 0.58,
+        "shrubCount": 2,
+        "rockCount": 2,
+        "detail": 0.55,
+        "roughness": 0.94,
+        "metalness": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 404665,
+        "offset": 404664
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent",
+        "cityBlockCount",
+        "buildingsPerBlock",
+        "treeCount",
+        "vehicleCount",
+        "cityBlockSize",
+        "houseColorVariety",
+        "grassDensity",
+        "rockCount",
+        "roughness",
+        "metalness",
+        "materialMode"
+      ],
+      "numbers": {
+        "cityBlockCount": 4,
+        "buildingsPerBlock": 3,
+        "treeCount": 7,
+        "vehicleCount": 6,
+        "cityBlockSize": 19,
+        "houseColorVariety": 0.9,
+        "grassDensity": 0.62,
+        "rockCount": 3,
+        "roughness": 0.82,
+        "metalness": 0.06
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 405229,
+        "offset": 405228
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 39,
+      "keys": [
+        "seed",
+        "scale",
+        "detail",
+        "width",
+        "depth",
+        "floors",
+        "roofPitch",
+        "windowDensity",
+        "facadeColumns",
+        "entranceWidth",
+        "setbackDepth",
+        "featureScale",
+        "serviceBayCount",
+        "constructionProgress",
+        "trunkHeight",
+        "crownSize",
+        "foliageDensity",
+        "wheelSize",
+        "platformHeight",
+        "carriageCount",
+        "trackSegments",
+        "trackGauge",
+        "grassDensity",
+        "shrubCount",
+        "rockCount",
+        "cityBlockCount",
+        "buildingsPerBlock",
+        "treeCount",
+        "vehicleCount",
+        "cityBlockSize",
+        "houseColorVariety",
+        "primary",
+        "secondary",
+        "accent",
+        "roughness",
+        "metalness",
+        "materialMode",
+        "roofStyle",
+        "texturesEnabled"
+      ],
+      "numbers": {
+        "seed": 184,
+        "scale": 1,
+        "detail": 1.05,
+        "width": 3.8,
+        "depth": 3.2,
+        "floors": 2,
+        "roofPitch": 0.8,
+        "windowDensity": 0.7,
+        "facadeColumns": 4,
+        "entranceWidth": 1.4,
+        "setbackDepth": 0.14,
+        "featureScale": 1,
+        "serviceBayCount": 3,
+        "constructionProgress": 0.62,
+        "trunkHeight": 2.7,
+        "crownSize": 1.8,
+        "foliageDensity": 0.72,
+        "wheelSize": 0.48,
+        "platformHeight": 0.8,
+        "carriageCount": 4,
+        "trackSegments": 10,
+        "trackGauge": 1.435,
+        "grassDensity": 0.72,
+        "shrubCount": 6,
+        "rockCount": 10,
+        "cityBlockCount": 4,
+        "buildingsPerBlock": 3,
+        "treeCount": 7,
+        "vehicleCount": 6,
+        "cityBlockSize": 19,
+        "houseColorVariety": 0.88,
+        "roughness": 0.72,
+        "metalness": 0.04,
+        "texturesEnabled": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 428533,
+        "offset": 428532
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 10,
+      "keys": [
+        "x",
+        "halfWidth",
+        "lowerY",
+        "shoulderY",
+        "upperY"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 527753,
+        "offset": 527752
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "kind",
+        "variant",
+        "generation",
+        "referenceProfile",
+        "surfaceConstruction",
+        "referenceGlbDimensions",
+        "referenceGlbAxles",
+        "referenceGlbTriangleCount",
+        "sourceDimensionsInches",
+        "referenceLicense",
+        "closedSteelRamBumper",
+        "powertrainReference",
+        "animatedBoost",
+        "protrudingRearLampBlocks",
+        "flameNodes"
+      ],
+      "numbers": {
+        "referenceGlbTriangleCount": 1304218,
+        "closedSteelRamBumper": null,
+        "animatedBoost": null,
+        "protrudingRearLampBlocks": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 539745,
+        "offset": 539744
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 12,
+      "keys": [
+        "primary",
+        "secondary",
+        "accent"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 683501,
+        "offset": 683500
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 19,
+      "keys": [
+        "i",
+        "j",
+        "x",
+        "z",
+        "floor",
+        "px0",
+        "px1",
+        "pz0",
+        "pz1",
+        "rx0",
+        "rx1",
+        "rzTop",
+        "rzBot",
+        "liftY",
+        "dz1",
+        "dy0",
+        "dy1",
+        "padPieces",
+        "kerbSpec"
+      ],
+      "numbers": {
+        "i": -2,
+        "j": -2,
+        "x": -120,
+        "z": -120,
+        "floor": -5.4,
+        "px0": -137,
+        "px1": -103,
+        "pz0": -137,
+        "pz1": -107,
+        "rx0": -117.5,
+        "rx1": -106.5,
+        "rzTop": -98.5,
+        "rzBot": -114,
+        "liftY": 0.3,
+        "dz1": -127,
+        "dy0": -1,
+        "dy1": -0.2
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 697500,
+        "offset": 697499
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 41,
+      "keys": [
+        "lamp",
+        "traffic",
+        "bench",
+        "hydrant",
+        "pole",
+        "slide",
+        "gate",
+        "bridge",
+        "campfire",
+        "crate",
+        "barrel",
+        "flag",
+        "direction",
+        "bin",
+        "recycling",
+        "bollard",
+        "bike",
+        "planter",
+        "post",
+        "meter",
+        "fountainSm",
+        "nameSign",
+        "roadSign",
+        "busSign",
+        "adColumn",
+        "shelter",
+        "kiosk",
+        "phone",
+        "cabinet",
+        "stall",
+        "cone",
+        "guard",
+        "ev",
+        "picnic",
+        "swing",
+        "fountain",
+        "railing",
+        "flagpole",
+        "cafeTable",
+        "parasol",
+        "festoon"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 704439,
+        "offset": 704438
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "phase",
+        "boost",
+        "drifting",
+        "boosting",
+        "speed",
+        "heading",
+        "shake",
+        "score",
+        "combo",
+        "comboTimer",
+        "collected",
+        "total"
+      ],
+      "numbers": {
+        "boost": 1,
+        "drifting": null,
+        "boosting": null,
+        "speed": 0,
+        "heading": 0,
+        "shake": 0,
+        "score": 0,
+        "combo": 0,
+        "comboTimer": 0,
+        "collected": 0,
+        "total": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 717656,
+        "offset": 717655
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "position",
+        "inset",
+        "zIndex",
+        "pointerEvents",
+        "display",
+        "flexDirection",
+        "justifyContent",
+        "alignItems",
+        "padding",
+        "fontFamily",
+        "color",
+        "backgroundImage",
+        "backgroundSize",
+        "backgroundPosition"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 722547,
+        "offset": 722546
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "topColor",
+        "legsColor",
+        "skirt"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 971656,
+        "offset": 971655
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "position",
+        "right",
+        "top",
+        "zIndex",
+        "display",
+        "alignItems",
+        "gap",
+        "padding",
+        "borderRadius",
+        "background",
+        "border",
+        "boxShadow",
+        "pointerEvents",
+        "color",
+        "opacity",
+        "transition"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 991186,
+        "offset": 991185
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "position",
+        "top",
+        "left",
+        "transform",
+        "zIndex",
+        "fontFamily",
+        "fontSize",
+        "letterSpacing",
+        "color",
+        "textShadow",
+        "opacity",
+        "transition",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 996995,
+        "offset": 996994
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "position",
+        "bottom",
+        "left",
+        "transform",
+        "zIndex",
+        "fontFamily",
+        "fontSize",
+        "letterSpacing",
+        "color",
+        "background",
+        "padding",
+        "borderRadius",
+        "opacity",
+        "transition",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 997324,
+        "offset": 997323
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "legsColor",
+        "collar",
+        "belt",
+        "watch",
+        "shoeColor",
+        "headScale",
+        "expr"
+      ],
+      "numbers": {
+        "collar": null,
+        "watch": null,
+        "headScale": 0.88
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1003748,
+        "offset": 1003747
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 17,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "vest",
+        "legsColor",
+        "shoeColor",
+        "glasses",
+        "watch",
+        "pocket",
+        "headScale",
+        "expr"
+      ],
+      "numbers": {
+        "glasses": null,
+        "watch": null,
+        "headScale": 0.88
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1003982,
+        "offset": 1003981
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 20,
+      "keys": [
+        "i",
+        "j",
+        "x",
+        "z",
+        "hx0",
+        "hx1",
+        "hz0",
+        "hz1",
+        "lx0",
+        "lx1",
+        "wallH",
+        "lobbyH",
+        "mezY",
+        "mezD",
+        "trussY",
+        "stageX",
+        "stageY",
+        "floorY",
+        "door",
+        "back"
+      ],
+      "numbers": {
+        "i": 4,
+        "j": 1,
+        "x": 240,
+        "z": 60,
+        "hx0": 229,
+        "hx1": 253,
+        "hz0": 44,
+        "hz1": 79,
+        "lx0": 219.5,
+        "lx1": 229,
+        "wallH": 14.2,
+        "lobbyH": 5.6,
+        "mezY": 6.2,
+        "mezD": 6.4,
+        "trussY": 10.4,
+        "stageX": 246,
+        "stageY": 1.2,
+        "floorY": 0.3
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1106677,
+        "offset": 1106676
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 16,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1130622,
+        "offset": 1130621
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1130623,
+        "offset": 1130622
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1130812,
+        "offset": 1130811
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1131003,
+        "offset": 1131002
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1131200,
+        "offset": 1131199
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1131390,
+        "offset": 1131389
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1131581,
+        "offset": 1131580
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "pose"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1131772,
+        "offset": 1131771
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "cafe",
+        "market",
+        "garage",
+        "lobby",
+        "house",
+        "office",
+        "apartment",
+        "tower",
+        "cottage",
+        "shop",
+        "terrace",
+        "block",
+        "walkup"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1179337,
+        "offset": 1179336
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "legsColor",
+        "coat",
+        "chain",
+        "expr"
+      ],
+      "numbers": {
+        "coat": null,
+        "chain": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1186985,
+        "offset": 1186984
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "position",
+        "left",
+        "bottom",
+        "transform",
+        "zIndex",
+        "display",
+        "gap",
+        "alignItems",
+        "opacity",
+        "transition",
+        "maxWidth",
+        "pointerEvents",
+        "fontFamily",
+        "color",
+        "textAlign"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1189781,
+        "offset": 1189780
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "position",
+        "left",
+        "top",
+        "zIndex",
+        "fontFamily",
+        "color",
+        "fontSize",
+        "letterSpacing",
+        "textShadow",
+        "opacity",
+        "transition",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1190778,
+        "offset": 1190777
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "position",
+        "top",
+        "left",
+        "transform",
+        "zIndex",
+        "textAlign",
+        "fontFamily",
+        "color",
+        "textShadow",
+        "opacity",
+        "transition",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1191064,
+        "offset": 1191063
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "position",
+        "left",
+        "bottom",
+        "transform",
+        "zIndex",
+        "font",
+        "letterSpacing",
+        "color",
+        "textShadow",
+        "opacity",
+        "transition",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1191610,
+        "offset": 1191609
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "position",
+        "left",
+        "bottom",
+        "width",
+        "zIndex",
+        "borderRadius",
+        "overflow",
+        "background",
+        "border",
+        "transition",
+        "fontFamily",
+        "color",
+        "boxShadow",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1191886,
+        "offset": 1191885
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "position",
+        "inset",
+        "zIndex",
+        "display",
+        "flexDirection",
+        "justifyContent",
+        "alignItems",
+        "background",
+        "opacity",
+        "pointerEvents",
+        "transition",
+        "fontFamily",
+        "color",
+        "textAlign"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1192669,
+        "offset": 1192668
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "position",
+        "inset",
+        "zIndex",
+        "display",
+        "flexDirection",
+        "justifyContent",
+        "alignItems",
+        "gap",
+        "background",
+        "fontFamily",
+        "color",
+        "textAlign",
+        "padding",
+        "overflowY"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1203618,
+        "offset": 1203617
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "legsColor",
+        "coat",
+        "chain",
+        "expr"
+      ],
+      "numbers": {
+        "coat": null,
+        "chain": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1212733,
+        "offset": 1212732
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "legsColor",
+        "collar",
+        "watch",
+        "expr"
+      ],
+      "numbers": {
+        "collar": null,
+        "watch": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1213443,
+        "offset": 1213442
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "position",
+        "left",
+        "bottom",
+        "transform",
+        "zIndex",
+        "display",
+        "gap",
+        "alignItems",
+        "opacity",
+        "transition",
+        "maxWidth",
+        "pointerEvents",
+        "fontFamily",
+        "color",
+        "textAlign"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1214950,
+        "offset": 1214949
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "position",
+        "top",
+        "left",
+        "transform",
+        "zIndex",
+        "textAlign",
+        "fontFamily",
+        "color",
+        "textShadow",
+        "opacity",
+        "transition",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1215679,
+        "offset": 1215678
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "position",
+        "left",
+        "bottom",
+        "width",
+        "zIndex",
+        "borderRadius",
+        "overflow",
+        "background",
+        "border",
+        "transition",
+        "fontFamily",
+        "color",
+        "boxShadow",
+        "pointerEvents"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1216747,
+        "offset": 1216746
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "position",
+        "inset",
+        "zIndex",
+        "display",
+        "flexDirection",
+        "justifyContent",
+        "alignItems",
+        "background",
+        "opacity",
+        "pointerEvents",
+        "transition",
+        "fontFamily",
+        "color",
+        "textAlign"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1217530,
+        "offset": 1217529
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "position",
+        "left",
+        "bottom",
+        "transform",
+        "zIndex",
+        "width",
+        "display",
+        "gap",
+        "alignItems",
+        "opacity",
+        "transition",
+        "pointerEvents",
+        "fontFamily",
+        "color"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1234337,
+        "offset": 1234336
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "position",
+        "left",
+        "top",
+        "transform",
+        "zIndex",
+        "textAlign",
+        "opacity",
+        "transition",
+        "pointerEvents",
+        "fontFamily",
+        "color",
+        "textShadow"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1234972,
+        "offset": 1234971
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "position",
+        "right",
+        "bottom",
+        "zIndex",
+        "width",
+        "background",
+        "border",
+        "borderRadius",
+        "padding",
+        "transition",
+        "fontFamily",
+        "color",
+        "display",
+        "gap",
+        "alignItems"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1235392,
+        "offset": 1235391
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "position",
+        "inset",
+        "zIndex",
+        "display",
+        "flexDirection",
+        "justifyContent",
+        "alignItems",
+        "background",
+        "fontFamily",
+        "color",
+        "textAlign",
+        "padding"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1236096,
+        "offset": 1236095
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "arch",
+        "skin",
+        "hair",
+        "hairColor",
+        "top",
+        "topColor",
+        "lapel",
+        "inner",
+        "tie",
+        "legsColor",
+        "shoeColor",
+        "expr"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1248414,
+        "offset": 1248413
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "hp",
+        "max",
+        "x",
+        "z",
+        "y",
+        "h",
+        "spd",
+        "mode",
+        "t",
+        "morph",
+        "ph",
+        "stomp",
+        "hurtT",
+        "dead"
+      ],
+      "numbers": {
+        "hp": 0,
+        "max": 260,
+        "x": 0,
+        "z": 0,
+        "y": 0,
+        "h": 0,
+        "spd": 0,
+        "t": 0,
+        "morph": 0,
+        "ph": 0,
+        "stomp": 0,
+        "hurtT": 0,
+        "dead": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1266911,
+        "offset": 1266910
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "x",
+        "y",
+        "z",
+        "vx",
+        "vy",
+        "vz",
+        "rx",
+        "ry",
+        "sx",
+        "sy",
+        "life",
+        "sc"
+      ],
+      "numbers": {
+        "x": 0,
+        "y": -999,
+        "z": 0,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0,
+        "rx": 0,
+        "ry": 0,
+        "sx": 0,
+        "sy": 0,
+        "life": 0,
+        "sc": 1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1275244,
+        "offset": 1275243
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "position",
+        "left",
+        "top",
+        "width",
+        "height",
+        "marginLeft",
+        "marginTop",
+        "borderRadius",
+        "border",
+        "display",
+        "zIndex",
+        "pointerEvents",
+        "boxShadow"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1278307,
+        "offset": 1278306
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "x",
+        "z",
+        "y",
+        "tier",
+        "hp",
+        "yaw",
+        "ph",
+        "spd",
+        "hurt",
+        "dead",
+        "fall",
+        "pop",
+        "stun",
+        "spawnIn",
+        "drop",
+        "vy"
+      ],
+      "numbers": {
+        "y": 11.2,
+        "yaw": 0,
+        "hurt": 0,
+        "dead": 0,
+        "fall": 0,
+        "pop": 0,
+        "stun": 0,
+        "spawnIn": 1,
+        "drop": 1,
+        "vy": -2
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1287345,
+        "offset": 1287344
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "x",
+        "z",
+        "y",
+        "tier",
+        "hp",
+        "yaw",
+        "ph",
+        "spd",
+        "hurt",
+        "dead",
+        "fall",
+        "pop",
+        "stun",
+        "spawnIn",
+        "drop",
+        "vy"
+      ],
+      "numbers": {
+        "y": 11.2,
+        "hp": 99,
+        "yaw": 0,
+        "ph": 0,
+        "spd": 0.001,
+        "hurt": 0,
+        "dead": 0,
+        "fall": 0,
+        "pop": 0,
+        "stun": 0,
+        "spawnIn": 1,
+        "drop": 1,
+        "vy": -0.2
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1309538,
+        "offset": 1309537
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "on",
+        "x",
+        "z",
+        "y",
+        "h",
+        "spd",
+        "vy",
+        "air",
+        "bank",
+        "pitch",
+        "roll",
+        "vx",
+        "vz"
+      ],
+      "numbers": {
+        "on": null,
+        "x": 0,
+        "z": 0,
+        "h": 0,
+        "spd": 0,
+        "vy": 0,
+        "air": null,
+        "bank": 0,
+        "pitch": 0,
+        "roll": 0,
+        "vx": 0,
+        "vz": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1312400,
+        "offset": 1312399
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "position",
+        "left",
+        "top",
+        "zIndex",
+        "width",
+        "maxHeight",
+        "overflowY",
+        "background",
+        "border",
+        "borderRadius",
+        "padding",
+        "display",
+        "fontFamily",
+        "color",
+        "boxShadow",
+        "backdropFilter"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1326186,
+        "offset": 1326185
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "position",
+        "left",
+        "bottom",
+        "zIndex",
+        "fontSize",
+        "letterSpacing",
+        "color",
+        "opacity",
+        "fontFamily",
+        "pointerEvents",
+        "transition",
+        "textShadow"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1327746,
+        "offset": 1327745
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "display",
+        "alignItems",
+        "justifyContent",
+        "width",
+        "textAlign",
+        "cursor",
+        "fontFamily",
+        "fontSize",
+        "color",
+        "padding",
+        "margin",
+        "border",
+        "borderRadius",
+        "background"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1329901,
+        "offset": 1329900
+      }
+    }
+  ],
+  "assets": [],
+  "functions": [
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 54200,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1255456,
+        "offset": 1255455
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 36378,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1106597,
+        "offset": 1106596
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 27593,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1184717,
+        "offset": 1184716
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 24924,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1153155,
+        "offset": 1153154
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 24229,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1231224,
+        "offset": 1231223
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 22654,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1065601,
+        "offset": 1065600
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 19489,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 996690,
+        "offset": 996689
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 18908,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1212313,
+        "offset": 1212312
+      }
+    },
+    {
+      "name": "buildProceduralAsset",
+      "params": 2,
+      "chars": 18400,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 664192,
+        "offset": 664191
+      }
+    },
+    {
+      "name": "ve",
+      "params": 1,
+      "chars": 15148,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 525536,
+        "offset": 525535
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 14705,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 958834,
+        "offset": 958833
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 14157,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1039806,
+        "offset": 1039805
+      }
+    },
+    {
+      "name": "se",
+      "params": 2,
+      "chars": 14084,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 490437,
+        "offset": 490436
+      }
+    },
+    {
+      "name": "We",
+      "params": 3,
+      "chars": 14042,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 542553,
+        "offset": 542552
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 12560,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1088258,
+        "offset": 1088257
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 12526,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 984161,
+        "offset": 984160
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 12478,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1294522,
+        "offset": 1294521
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 12050,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1309659,
+        "offset": 1309658
+      }
+    },
+    {
+      "name": "tt",
+      "params": 2,
+      "chars": 11099,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 572560,
+        "offset": 572559
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 11016,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1016182,
+        "offset": 1016181
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 10616,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 973542,
+        "offset": 973541
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 9754,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1027201,
+        "offset": 1027200
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 8675,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1053966,
+        "offset": 1053965
+      }
+    },
+    {
+      "name": "D",
+      "params": 0,
+      "chars": 8063,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1043013,
+        "offset": 1043012
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 6632,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1178082,
+        "offset": 1178081
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 6552,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1321712,
+        "offset": 1321711
+      }
+    },
+    {
+      "name": "Ne",
+      "params": 2,
+      "chars": 6405,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 564205,
+        "offset": 564204
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5974,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1147178,
+        "offset": 1147177
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 5810,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 490559,
+        "offset": 490558
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5803,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1045218,
+        "offset": 1045217
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5773,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1100821,
+        "offset": 1100820
+      }
+    },
+    {
+      "name": "ta",
+      "params": 0,
+      "chars": 5580,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 719615,
+        "offset": 719614
+      }
+    },
+    {
+      "name": "make",
+      "params": 1,
+      "chars": 5489,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 963407,
+        "offset": 963406
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 5449,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 575752,
+        "offset": 575751
+      }
+    },
+    {
+      "name": "In",
+      "params": 2,
+      "chars": 5433,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 691907,
+        "offset": 691906
+      }
+    },
+    {
+      "name": "bn",
+      "params": 1,
+      "chars": 5323,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 1287520,
+        "offset": 1287519
+      }
+    },
+    {
+      "name": "Le",
+      "params": 2,
+      "chars": 5318,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 556761,
+        "offset": 556760
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5262,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 377157,
+        "offset": 377156
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 4995,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 674596,
+        "offset": 674595
+      }
+    },
+    {
+      "name": "xt",
+      "params": 2,
+      "chars": 4956,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/drift-and-deliver/capture-3.js",
+        "line": 1,
+        "col": 591948,
+        "offset": 591947
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 11275,
+    "functions": 1786,
+    "newExpressions": 1590,
+    "calls": 13931
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:garage",
+        "original": "76 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:results",
+        "original": "55 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:level-select",
+        "original": "50 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:boss",
+        "original": "24 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "13 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:checkpoint",
+        "original": "10 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "5 references",
+        "port": "absent"
+      },
+      {
+        "feature": "persistence (storage)",
+        "original": "33 storage calls",
+        "port": "absent"
+      },
+      {
+        "feature": "host-platform postMessage hooks",
+        "original": "4 postMessage calls",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "audio",
+        "original": "35 audio API uses / 0 audio assets",
+        "port": "present"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "35 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "32 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "bloomx9, tonemapx9, exposurex1, outlinex1",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "rainx41, splashx7, dustx6, snowx4",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "Space, ArrowDown, ArrowLeft, ArrowRight, ArrowUp",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointerdown, mouseenter, mouseleave, mousemove, mousedown, mouseup, pointerlockchange",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "The story, missions, police/wanted level and the BUSTED flow; getting in and out of cars on foot; the map overlay;",
+      "The original's ~11,000 GLB placements (517k triangles) and 456 animated pedestrians: the port has 1,688 dressed",
+      "Shadows of traffic and pedestrians are cast, but vertex-level detail (window recesses, props on facades) is texture-only.",
+      "The original's assets are not available to the port, so everything is procedural and says so."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

@@ -31,7 +31,7 @@ export interface SimState {
   landingTimer: number; jumpBuffer: number; launchQueued: boolean; launchDist: number; aerialUsed: boolean;
   powerLaunches: number; airSteps: number; vaults: number; flow: number; perfects: number; balls: number[];
   falling: number; nimbus: NimbusState; meat: number; eaten: Set<number>; janken: Janken | null; jankens: number;
-  strikeLead: number; grabTimer?: number; stumbleTimer?: number;
+  strikeLead: number; grabTimer?: number; stumbleTimer?: number; catchTimer?: number; jankenWindow?: boolean; chased?: boolean;
   crashed: Set<number>; collected: Set<number>;
   /** Encounter-system seam: return false when a creature attack is not live. Default: live. */
   liveAttack?: (creature: Creature, at: number) => boolean;
@@ -162,7 +162,7 @@ export function nimbusWhy(state: SimState, ch: Chapter): { why?: string; end?: n
 }
 
 /** Original `dp`: the ride/ground height reference the Nimbus uses (obstacles and boulders lift it). */
-function rideHeight(state: SimState, ch: Chapter): number {
+export function rideHeight(state: SimState, ch: Chapter): number {
   let lift = 0;
   for (const b of ch.boulders) {
     const t = state.s - b.s;
@@ -204,14 +204,14 @@ function nextThreat(state: SimState, ch: Chapter): number {
 function trick(state: SimState, name: string, duration: number): void {
   state.trick = name; state.trickTimer = duration; state.trickDuration = duration; state.flow = Math.min(1, state.flow + 0.08);
 }
-function award(state: SimState, points = 100): void {
+export function award(state: SimState, points = 100): void {
   state.combo++;
   state.maxCombo = Math.max(state.maxCombo, state.combo);
   state.comboTimer = 7;
   state.score += Math.round(points * (1 + Math.min(3, state.combo * 0.12)));
 }
 const EVENT_GAIN: Record<string, string> = { dragonball: "ball", perfect: "perfect", "power-launch": "launch", "flow-land": "flow" };
-function gainNimbus(state: SimState, kind: string, ch: Chapter, count = 1): void {
+export function gainNimbus(state: SimState, kind: string, ch: Chapter, count = 1): void {
   const n = state.nimbus, before = n.charge, why = nimbusWhy(state, ch).why;
   if (n.active || n.call > 0) return;
   const setPiece = !!why && (before < NIMBUS.hold || n.bank > 0);
@@ -427,6 +427,13 @@ export function layoutOrbs(ch: Chapter): Orb[] {
   }
   return out;
 }
+/** Original `HE`: bank an orb (score, Nimbus charge, every fifth a combo award). */
+export function collectOrb(state: SimState, orb: Orb, ch: Chapter): void {
+  state.collected.add(orb.id); state.orbs++;
+  state.score += 25 + Math.min(state.combo, 10) * 3;
+  gainNimbus(state, "orb", ch);
+  if (state.orbs % 5 === 0) award(state, 50);
+}
 export interface WorldLayout { obstacles: Obstacle[]; orbs: Orb[] }
 const worldCache = new WeakMap<Chapter, WorldLayout>();
 export function worldLayout(ch: Chapter): WorldLayout {
@@ -476,10 +483,7 @@ export function worldPass(state: SimState, ch: Chapter, world: WorldLayout = wor
     for (const orb of world.orbs) {
       if (state.collected.has(orb.id)) continue;
       if (Math.abs(orb.s - state.s) > 1.5 || Math.abs(state.lane - orb.lane) > 1.6 || state.jump > 1.9) continue;
-      state.collected.add(orb.id); state.orbs++;
-      state.score += 25 + Math.min(state.combo, 10) * 3;
-      gainNimbus(state, "orb", ch);
-      if (state.orbs % 5 === 0) award(state, 50);
+      collectOrb(state, orb, ch);
       ev.push("orb");
     }
   }
@@ -494,4 +498,56 @@ export function stepFrame(state: SimState, input: StepInput, dt: number, ch: Cha
   events.push(...worldPass(state, ch));
   state.score += state.speed * scaled * 0.6;
   return events;
+}
+
+/* ------------------------------------------------------------- encounter-layer helpers (additive) */
+
+/** Original `sp`: a charged Nimbus catches a fall (rescue call). Returns whether it was called. */
+export function rescue(state: SimState, ch: Chapter): boolean {
+  const n = state.nimbus;
+  if (n.charge < 1 || n.active || n.call > 0) return false;
+  const m = nimbusMap(ch);
+  let i = cellOf(m, state.s + 4);
+  while (i < m.n - 1 && !m.land[i]) i++;
+  const a = m.fly[i] ? -1 : (m.last[(m.next[i] as number) - 1] as number);
+  Object.assign(n, { charge: 0, bank: 0, ready: false, call: NIMBUS.rescueCall, rescue: true, from: i * CELL, end: Math.max(i, a) * CELL });
+  n.rescues++;
+  state.falls = Math.max(0, state.falls - 1);
+  return true;
+}
+
+/** Original `fp`: a bite knocks the rider off the Nimbus when it lands over a safe stretch. Returns whether it did. */
+export function knockOff(state: SimState, ch: Chapter): boolean {
+  const n = state.nimbus, m = nimbusMap(ch);
+  if (!n.active || state.jump > rideHeight(state, ch) + 1.1 || !m.safe[cellOf(m, state.s)]) return false;
+  Object.assign(n, { active: false, time: 0, end: null, rescue: false, from: 0, grace: NIMBUS.grace, charge: 0 });
+  state.jumpVelocity = 3; state.aerialUsed = false; state.combo = 0; state.comboTimer = 0;
+  return true;
+}
+
+/** Original `Zf`/`gp` reads and `yp` (the Janken beat clock) as used by the encounter layer. */
+export const JANKEN = { late: 7, ken: 0.36, hit: 0.74, impact: 0.1, end: 1.2, hands: ["guu", "paa", "choki"] } as const;
+export function startJanken(state: SimState, creature: Creature, kind: string): string[] {
+  state.janken = { step: "jan", t: 0, creature, kind, hand: JANKEN.hands[state.jankens % JANKEN.hands.length] as string };
+  state.jankens++;
+  return ["jan"];
+}
+export function tickJanken(state: SimState, dt: number): { events: string[]; scale: number } {
+  const j = state.janken;
+  if (!j) return { events: [], scale: 1 };
+  const events: string[] = [], before = j.t;
+  j.t += dt;
+  if (before < JANKEN.ken && j.t >= JANKEN.ken) { j.step = "ken"; events.push("ken"); }
+  if (before < JANKEN.hit && j.t >= JANKEN.hit) { j.step = j.hand as string; events.push(j.hand as string, "janken-hit"); }
+  if (j.t >= JANKEN.end) { state.janken = null; return { events, scale: 1 }; }
+  const a = JANKEN.hit + JANKEN.impact;
+  return { events, scale: j.t < JANKEN.hit ? 0.06 : j.t < a ? 1e-4 : 0.15 + 0.85 * smooth(a, JANKEN.end, j.t) };
+}
+/** Original `gp`: distance to the nearest live creature attack ahead (99 when none). */
+export function threatDistance(state: SimState, ch: Chapter): number { return nextThreat(state, ch); }
+/** Original `_p`: no set piece (gap, pole, wall, boulder) near enough to make a Janken duel unfair. */
+export function jankenAllowed(state: SimState, ch: Chapter): boolean {
+  const s = state.s;
+  return !ch.gaps.some((g) => g.end > s - 2 && g.start < s + 18) && !ch.poles.some((p) => s > p.start - 50 && s < p.end + 4) &&
+    !ch.walls.some((w) => s > w.start - 20 && s < w.end + 20) && !ch.boulders.some((b) => b.s > s - 3 && b.s < s + 22);
 }

@@ -1,0 +1,4318 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "where-the-wind-wanders",
+  "sources": [
+    {
+      "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+      "bytes": 645204,
+      "lines": 1,
+      "singleLine": true,
+      "hash": "48074e5ba2a3f5d9"
+    },
+    {
+      "file": "evidence/crayon-runtime/where-the-wind-wanders/srcdoc.html#script0",
+      "bytes": 2895,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "1f54ee6d6b2e0ea8"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "garage",
+      "hits": 65,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 11422,
+          "offset": 11421
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 11470,
+          "offset": 11469
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 79948,
+          "offset": 79947
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 48,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 49236,
+          "offset": 49235
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 100285,
+          "offset": 100284
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 100305,
+          "offset": 100304
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 40,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 51776,
+          "offset": 51775
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 166432,
+          "offset": 166431
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 219855,
+          "offset": 219854
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 27,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 104043,
+          "offset": 104042
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 118510,
+          "offset": 118509
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 130126,
+          "offset": 130125
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 22,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 103899,
+          "offset": 103898
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 133803,
+          "offset": 133802
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 237562,
+          "offset": 237561
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 13,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 212568,
+          "offset": 212567
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 212896,
+          "offset": 212895
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 459604,
+          "offset": 459603
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38895,
+          "offset": 38894
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 182698,
+          "offset": 182697
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 383115,
+          "offset": 383114
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 118524,
+          "offset": 118523
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 169899,
+          "offset": 169898
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 351624,
+          "offset": 351623
+        }
+      ]
+    },
+    {
+      "screen": "level-select",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 2133,
+          "offset": 2132
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 3089,
+          "offset": 3088
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 3734,
+          "offset": 3733
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 162022,
+          "offset": 162021
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 258446,
+          "offset": 258445
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 449542,
+          "offset": 449541
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38721,
+          "offset": 38720
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 282784,
+          "offset": 282783
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 449724,
+          "offset": 449723
+        }
+      ]
+    },
+    {
+      "screen": "settings",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 28920,
+          "offset": 28919
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 5961,
+        "offset": 5960
+      },
+      "cases": [
+        "bigint",
+        "string",
+        "number",
+        "object"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 25814,
+        "offset": 25813
+      },
+      "cases": [
+        "undefined",
+        "function",
+        "symbol",
+        "boolean"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 26102,
+        "offset": 26101
+      },
+      "cases": [
+        "undefined",
+        "function",
+        "symbol",
+        "boolean"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 26293,
+        "offset": 26292
+      },
+      "cases": [
+        "undefined",
+        "function",
+        "symbol",
+        "boolean"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 26444,
+        "offset": 26443
+      },
+      "cases": [
+        "bigint",
+        "boolean",
+        "number",
+        "string",
+        "undefined",
+        "object"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 31409,
+        "offset": 31408
+      },
+      "cases": [
+        "annotation-xml",
+        "color-profile",
+        "font-face",
+        "font-face-src",
+        "font-face-uri",
+        "font-face-format",
+        "font-face-name",
+        "missing-glyph"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 35732,
+        "offset": 35731
+      },
+      "cases": [
+        "onClick",
+        "onClickCapture",
+        "onDoubleClick",
+        "onDoubleClickCapture",
+        "onMouseDown",
+        "onMouseDownCapture",
+        "onMouseMove",
+        "onMouseMoveCapture",
+        "onMouseUp",
+        "onMouseUpCapture",
+        "onMouseEnter"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 40813,
+        "offset": 40812
+      },
+      "cases": [
+        "keyup",
+        "keydown",
+        "keypress",
+        "mousedown",
+        "focusout"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 49211,
+        "offset": 49210
+      },
+      "cases": [
+        "meta",
+        "title",
+        "style",
+        "link",
+        "script"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 51746,
+        "offset": 51745
+      },
+      "cases": [
+        "dialog",
+        "iframe",
+        "object",
+        "embed",
+        "video",
+        "audio",
+        "source",
+        "img",
+        "image",
+        "link",
+        "details",
+        "input",
+        "select",
+        "textarea"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 96021,
+        "offset": 96020
+      },
+      "cases": [
+        "forwards",
+        "backwards",
+        "unstable_legacy-backwards",
+        "together"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 99953,
+        "offset": 99952
+      },
+      "cases": [
+        "meta",
+        "link",
+        "style",
+        "script"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 106241,
+        "offset": 106240
+      },
+      "cases": [
+        "svg",
+        "math",
+        "script",
+        "select"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 107062,
+        "offset": 107061
+      },
+      "cases": [
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "img"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 113178,
+        "offset": 113177
+      },
+      "cases": [
+        "button",
+        "input",
+        "select",
+        "textarea",
+        "img"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 113418,
+        "offset": 113417
+      },
+      "cases": [
+        "div",
+        "span",
+        "svg",
+        "path",
+        "a",
+        "g",
+        "p",
+        "li",
+        "input",
+        "select",
+        "textarea",
+        "option",
+        "img",
+        "link",
+        "area",
+        "base",
+        "br",
+        "col",
+        "embed",
+        "hr",
+        "keygen",
+        "meta",
+        "param",
+        "source"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 113820,
+        "offset": 113819
+      },
+      "cases": [
+        "type",
+        "name",
+        "checked",
+        "defaultChecked",
+        "value",
+        "defaultValue",
+        "children",
+        "dangerouslySetInnerHTML"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 114814,
+        "offset": 114813
+      },
+      "cases": [
+        "value",
+        "defaultValue",
+        "children",
+        "dangerouslySetInnerHTML"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 153787,
+        "offset": 153786
+      },
+      "cases": [
+        "keypress",
+        "keydown",
+        "keyup",
+        "focusin",
+        "focusout",
+        "beforeblur",
+        "afterblur",
+        "click",
+        "auxclick",
+        "dblclick",
+        "mousedown",
+        "mousemove",
+        "mouseup",
+        "mouseout",
+        "mouseover",
+        "contextmenu",
+        "drag",
+        "dragend",
+        "dragenter",
+        "dragexit",
+        "dragleave",
+        "dragover",
+        "dragstart",
+        "drop"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 156281,
+        "offset": 156280
+      },
+      "cases": [
+        "focusin",
+        "focusout",
+        "mousedown",
+        "contextmenu",
+        "mouseup",
+        "dragend",
+        "selectionchange",
+        "keydown",
+        "keyup"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 159470,
+        "offset": 159469
+      },
+      "cases": [
+        "children",
+        "className",
+        "tabIndex",
+        "dir",
+        "role",
+        "viewBox",
+        "width",
+        "height",
+        "style",
+        "data",
+        "src",
+        "href",
+        "action",
+        "formAction",
+        "onClick",
+        "onScroll",
+        "onScrollEnd",
+        "dangerouslySetInnerHTML",
+        "multiple",
+        "muted",
+        "suppressContentEditableWarning",
+        "suppressHydrationWarning",
+        "defaultValue",
+        "defaultChecked"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 163830,
+        "offset": 163829
+      },
+      "cases": [
+        "style",
+        "dangerouslySetInnerHTML",
+        "children",
+        "onScroll",
+        "onScrollEnd",
+        "onClick",
+        "suppressContentEditableWarning",
+        "suppressHydrationWarning",
+        "innerHTML",
+        "ref",
+        "innerText",
+        "textContent"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 164837,
+        "offset": 164836
+      },
+      "cases": [
+        "div",
+        "span",
+        "svg",
+        "path",
+        "a",
+        "g",
+        "p",
+        "li",
+        "img",
+        "input",
+        "select",
+        "textarea",
+        "option",
+        "dialog",
+        "iframe",
+        "object",
+        "video",
+        "audio",
+        "image",
+        "details",
+        "embed",
+        "source",
+        "link",
+        "area"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 165038,
+        "offset": 165037
+      },
+      "cases": [
+        "src",
+        "srcSet",
+        "children",
+        "dangerouslySetInnerHTML"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 165383,
+        "offset": 165382
+      },
+      "cases": [
+        "name",
+        "type",
+        "checked",
+        "defaultChecked",
+        "value",
+        "defaultValue",
+        "children",
+        "dangerouslySetInnerHTML"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 166058,
+        "offset": 166057
+      },
+      "cases": [
+        "value",
+        "defaultValue",
+        "children",
+        "dangerouslySetInnerHTML"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 167234,
+        "offset": 167233
+      },
+      "cases": [
+        "css",
+        "script",
+        "font",
+        "img",
+        "image",
+        "input",
+        "link"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 169402,
+        "offset": 169401
+      },
+      "cases": [
+        "HTML",
+        "HEAD",
+        "BODY",
+        "SCRIPT",
+        "STYLE",
+        "LINK"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 172034,
+        "offset": 172033
+      },
+      "cases": [
+        "audioworklet",
+        "paintworklet",
+        "serviceworker",
+        "sharedworker",
+        "worker",
+        "script"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 172247,
+        "offset": 172246
+      },
+      "cases": [
+        "audioworklet",
+        "paintworklet",
+        "serviceworker",
+        "sharedworker",
+        "worker",
+        "script"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 174100,
+        "offset": 174099
+      },
+      "cases": [
+        "meta",
+        "title",
+        "style",
+        "link",
+        "script"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 175879,
+        "offset": 175878
+      },
+      "cases": [
+        "style",
+        "stylesheet",
+        "script",
+        "void"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 181112,
+        "offset": 181111
+      },
+      "cases": [
+        "focusin",
+        "dragenter",
+        "mouseover",
+        "pointerover",
+        "gotpointercapture"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 182380,
+        "offset": 182379
+      },
+      "cases": [
+        "beforetoggle",
+        "cancel",
+        "click",
+        "close",
+        "contextmenu",
+        "copy",
+        "cut",
+        "auxclick",
+        "dblclick",
+        "dragend",
+        "dragstart",
+        "drop",
+        "focusin",
+        "focusout",
+        "input",
+        "invalid",
+        "keydown",
+        "keypress",
+        "keyup",
+        "mousedown",
+        "mouseup",
+        "paste",
+        "pause",
+        "play"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 183992,
+        "offset": 183991
+      },
+      "cases": [
+        "focusin",
+        "focusout",
+        "dragenter",
+        "dragleave",
+        "mouseover",
+        "mouseout",
+        "pointerover",
+        "pointerout",
+        "gotpointercapture",
+        "lostpointercapture"
+      ]
+    }
+  ],
+  "domIds": [
+    {
+      "id": "canvas",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 644378,
+        "offset": 644377
+      }
+    },
+    {
+      "id": "boot",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 644449,
+        "offset": 644448
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "ArrowDown",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38687,
+          "offset": 38686
+        }
+      },
+      {
+        "key": "ArrowLeft",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38638,
+          "offset": 38637
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38669,
+          "offset": 38668
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38653,
+          "offset": 38652
+        }
+      },
+      {
+        "key": "Enter",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38851,
+          "offset": 38850
+        }
+      },
+      {
+        "key": "Escape",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38611,
+          "offset": 38610
+        }
+      },
+      {
+        "key": "Space",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 433584,
+          "offset": 433583
+        }
+      },
+      {
+        "key": "Tab",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38831,
+          "offset": 38830
+        }
+      },
+      {
+        "key": "Backspace",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 38817,
+          "offset": 38816
+        }
+      },
+      {
+        "key": "KeyA",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 448992,
+          "offset": 448991
+        }
+      },
+      {
+        "key": "KeyD",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 448999,
+          "offset": 448998
+        }
+      },
+      {
+        "key": "KeyE",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 433837,
+          "offset": 433836
+        }
+      },
+      {
+        "key": "KeyF",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 433805,
+          "offset": 433804
+        }
+      },
+      {
+        "key": "KeyJ",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 451706,
+          "offset": 451705
+        }
+      },
+      {
+        "key": "KeyP",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 433781,
+          "offset": 433780
+        }
+      },
+      {
+        "key": "KeyS",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 449043,
+          "offset": 449042
+        }
+      },
+      {
+        "key": "KeyU",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 451672,
+          "offset": 451671
+        }
+      },
+      {
+        "key": "KeyW",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 449036,
+          "offset": 449035
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "error",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 130695,
+          "offset": 130694
+        }
+      },
+      {
+        "event": "load",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 130666,
+          "offset": 130665
+        }
+      },
+      {
+        "event": "blur",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 434023,
+          "offset": 434022
+        }
+      },
+      {
+        "event": "keydown",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 433949,
+          "offset": 433948
+        }
+      },
+      {
+        "event": "abort",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 238025,
+          "offset": 238024
+        }
+      },
+      {
+        "event": "DOMContentLoaded",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 118610,
+          "offset": 118609
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 433987,
+          "offset": 433986
+        }
+      },
+      {
+        "event": "navigate",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 186985,
+          "offset": 186984
+        }
+      },
+      {
+        "event": "navigateerror",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 187076,
+          "offset": 187075
+        }
+      },
+      {
+        "event": "navigatesuccess",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 187027,
+          "offset": 187026
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 434757,
+          "offset": 434756
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 449238,
+          "offset": 449237
+        }
+      },
+      {
+        "event": "test",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 36355,
+          "offset": 36354
+        }
+      },
+      {
+        "event": "visibilitychange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 449274,
+          "offset": 449273
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 16,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 380824,
+          "offset": 380823
+        }
+      },
+      {
+        "api": "createStereoPanner",
+        "hits": 8,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 381311,
+          "offset": 381310
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 6,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 382074,
+          "offset": 382073
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 6,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 382303,
+          "offset": 382302
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 5,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 382235,
+          "offset": 382234
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 381201,
+          "offset": 381200
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 381149,
+          "offset": 381148
+        }
+      },
+      {
+        "api": "linearRampToValueAtTime",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 382262,
+          "offset": 382261
+        }
+      },
+      {
+        "api": "createConvolver",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 381835,
+          "offset": 381834
+        }
+      },
+      {
+        "api": "createDynamicsCompressor",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 380863,
+          "offset": 380862
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 447421,
+          "offset": 447420
+        }
+      }
+    ],
+    "urls": [],
+    "oscillatorTypes": [
+      "sine"
+    ],
+    "oscillatorCalls": 3,
+    "playCalls": 15
+  },
+  "storage": [
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": "wind-wanders-v2",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 427915,
+        "offset": 427914
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": "wind-wanders-v2",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 431578,
+        "offset": 431577
+      }
+    }
+  ],
+  "network": [],
+  "platform": [
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 2614,
+        "offset": 2613
+      }
+    },
+    {
+      "api": "requestFullscreen",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 453392,
+        "offset": 453391
+      }
+    }
+  ],
+  "three": {
+    "constructed": {
+      "BoxGeometry": 7,
+      "BufferAttribute": 9,
+      "BufferGeometry": 14,
+      "CatmullRomCurve3": 4,
+      "CircleGeometry": 1,
+      "Color": 27,
+      "ConeGeometry": 2,
+      "CylinderGeometry": 13,
+      "DataTexture": 2,
+      "DirectionalLight": 1,
+      "Float32BufferAttribute": 18,
+      "FogExp2": 1,
+      "Group": 15,
+      "HemisphereLight": 1,
+      "InstancedBufferAttribute": 6,
+      "InstancedMesh": 23,
+      "Matrix4": 3,
+      "Mesh": 34,
+      "MeshBasicMaterial": 21,
+      "MeshDepthMaterial": 1,
+      "MeshLambertMaterial": 15,
+      "MeshStandardMaterial": 6,
+      "MeshToonMaterial": 6,
+      "Object3D": 16,
+      "OrthographicCamera": 1,
+      "PerspectiveCamera": 1,
+      "PlaneGeometry": 25,
+      "Points": 4,
+      "Raycaster": 1,
+      "RingGeometry": 3,
+      "Scene": 2,
+      "ShaderMaterial": 16,
+      "ShapeGeometry": 1,
+      "SphereGeometry": 4,
+      "TextureLoader": 1,
+      "TorusGeometry": 2,
+      "TubeGeometry": 2,
+      "Vector2": 3,
+      "Vector3": 48,
+      "WebGLRenderer": 1
+    },
+    "imports": [],
+    "importSources": [
+      "three"
+    ]
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 857,
+      "hash": "13f0c8f5f4f7be17",
+      "uniforms": [
+        "uTime",
+        "phase",
+        "opacity",
+        "hazeColor"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 310513,
+        "offset": 310512
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 362994,
+        "offset": 362993
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 149,
+      "hash": "bca45691497a6299",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 363112,
+        "offset": 363111
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 107,
+      "hash": "cb6e5c24d11366c3",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 363818,
+        "offset": 363817
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 788,
+      "hash": "78daba4a1834a22c",
+      "uniforms": [
+        "time",
+        "strength"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 363944,
+        "offset": 363943
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 267,
+      "hash": "3b2bd5176ee4c0f0",
+      "uniforms": [
+        "time"
+      ],
+      "varyings": [
+        "glint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 365175,
+        "offset": 365174
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 187,
+      "hash": "61478c37765530a0",
+      "uniforms": [
+        "strength"
+      ],
+      "varyings": [
+        "glint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 365463,
+        "offset": 365462
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 129,
+      "hash": "bb9a7e1450366f50",
+      "uniforms": [],
+      "varyings": [
+        "waterPoint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 366991,
+        "offset": 366990
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 863,
+      "hash": "ef80b68226254eff",
+      "uniforms": [
+        "time",
+        "motion",
+        "direction"
+      ],
+      "varyings": [
+        "waterPoint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 367139,
+        "offset": 367138
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 194,
+      "hash": "424206d39d9a3856",
+      "uniforms": [],
+      "varyings": [
+        "bedHeight",
+        "shorePoint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 370251,
+        "offset": 370250
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 551,
+      "hash": "2551e45dd13fcccc",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [
+        "bedHeight",
+        "shorePoint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 370464,
+        "offset": 370463
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 228,
+      "hash": "a62b4636ceaa9164",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 373825,
+        "offset": 373824
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 104,
+      "hash": "e0256937621af3d7",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 374071,
+        "offset": 374070
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 377257,
+        "offset": 377256
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 347,
+      "hash": "55b455275840a9a6",
+      "uniforms": [
+        "time"
+      ],
+      "varyings": [
+        "glow"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 378799,
+        "offset": 378798
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 136,
+      "hash": "6285d38eb6b2c8ba",
+      "uniforms": [],
+      "varyings": [
+        "glow"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 379167,
+        "offset": 379166
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 73,
+      "hash": "905c6d995f42b8fb",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 390688,
+        "offset": 390687
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3588,
+      "hash": "121b1747108d0b0d",
+      "uniforms": [
+        "painting",
+        "coastPainting",
+        "voyage",
+        "voyageProgress",
+        "coastAspect",
+        "pan",
+        "warmth",
+        "uTime",
+        "viewportAspect",
+        "paintingAspect",
+        "skyProjectionInverse",
+        "skyCameraWorld",
+        "skyOrthographic",
+        "hazeColor",
+        "preserves"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 390779,
+        "offset": 390778
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 394793,
+        "offset": 394792
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 403462,
+        "offset": 403461
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 113,
+      "hash": "bee4aa9abbcd6712",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 403580,
+        "offset": 403579
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 96,
+      "hash": "41392e82adaf8f8e",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 405172,
+        "offset": 405171
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 136,
+      "hash": "2b3656cb9411bb81",
+      "uniforms": [],
+      "varyings": [
+        "vUv",
+        "vWorld"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 409657,
+        "offset": 409656
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 902,
+      "hash": "f215174f44ce309a",
+      "uniforms": [
+        "bed",
+        "uTime"
+      ],
+      "varyings": [
+        "vUv",
+        "vWorld"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 409811,
+        "offset": 409810
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 228,
+      "hash": "d0b4d23609093dec",
+      "uniforms": [],
+      "varyings": [
+        "vUv",
+        "vWorld"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 411621,
+        "offset": 411620
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1669,
+      "hash": "0090beb43c42643a",
+      "uniforms": [
+        "waterArt",
+        "lakeBed",
+        "uTime",
+        "awakened",
+        "voyage",
+        "oceanFocus"
+      ],
+      "varyings": [
+        "vUv",
+        "vWorld"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 411871,
+        "offset": 411870
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 422803,
+        "offset": 422802
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 113,
+      "hash": "d17b0d6233d65d6a",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 422921,
+        "offset": 422920
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 207,
+      "hash": "888923adaf010670",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 423724,
+        "offset": 423723
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 105,
+      "hash": "00cfa82582ebd313",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 423949,
+        "offset": 423948
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 375,
+      "hash": "be11ad1f4261de60",
+      "uniforms": [
+        "uTime",
+        "uSeed",
+        "uLength"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 424339,
+        "offset": 424338
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 290,
+      "hash": "d8971a06296abb03",
+      "uniforms": [
+        "uFade"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 424741,
+        "offset": 424740
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "tonemap",
+      "hits": 18,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 336343,
+          "offset": 336342
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 339434,
+          "offset": 339433
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 345913,
+          "offset": 345912
+        }
+      ]
+    },
+    {
+      "word": "outline",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 276331,
+          "offset": 276330
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 276349,
+          "offset": 276348
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 276412,
+          "offset": 276411
+        }
+      ]
+    },
+    {
+      "word": "grain",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 338488,
+          "offset": 338487
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 418657,
+          "offset": 418656
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 452284,
+          "offset": 452283
+        }
+      ]
+    },
+    {
+      "word": "halo",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 343531,
+          "offset": 343530
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 343663,
+          "offset": 343662
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 343740,
+          "offset": 343739
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "rain",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 335882,
+          "offset": 335881
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 336617,
+          "offset": 336616
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 338488,
+          "offset": 338487
+        }
+      ]
+    },
+    {
+      "word": "trail",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 344031,
+          "offset": 344030
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 425088,
+          "offset": 425087
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 436190,
+          "offset": 436189
+        }
+      ]
+    },
+    {
+      "word": "splash",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+          "line": 1,
+          "col": 359294,
+          "offset": 359293
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "screenX",
+        "screenY",
+        "clientX",
+        "clientY",
+        "pageX",
+        "pageY",
+        "ctrlKey",
+        "shiftKey",
+        "altKey",
+        "metaKey",
+        "getModifierState",
+        "button",
+        "buttons",
+        "relatedTarget",
+        "movementX",
+        "movementY"
+      ],
+      "numbers": {
+        "screenX": 0,
+        "screenY": 0,
+        "clientX": 0,
+        "clientY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "ctrlKey": 0,
+        "shiftKey": 0,
+        "altKey": 0,
+        "metaKey": 0,
+        "button": 0,
+        "buttons": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 37841,
+        "offset": 37840
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "Esc",
+        "Spacebar",
+        "Left",
+        "Up",
+        "Right",
+        "Down",
+        "Del",
+        "Win",
+        "Menu",
+        "Apps",
+        "Scroll",
+        "MozPrintableKey"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 38606,
+        "offset": 38605
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "key",
+        "code",
+        "location",
+        "ctrlKey",
+        "shiftKey",
+        "altKey",
+        "metaKey",
+        "repeat",
+        "locale",
+        "getModifierState",
+        "charCode",
+        "keyCode",
+        "which"
+      ],
+      "numbers": {
+        "code": 0,
+        "location": 0,
+        "ctrlKey": 0,
+        "shiftKey": 0,
+        "altKey": 0,
+        "metaKey": 0,
+        "repeat": 0,
+        "locale": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 39434,
+        "offset": 39433
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "color",
+        "date",
+        "datetime",
+        "datetime-local",
+        "email",
+        "month",
+        "number",
+        "password",
+        "range",
+        "search",
+        "tel",
+        "text",
+        "time",
+        "url",
+        "week"
+      ],
+      "numbers": {
+        "color": null,
+        "date": null,
+        "datetime": null,
+        "datetime-local": null,
+        "email": null,
+        "month": null,
+        "number": null,
+        "password": null,
+        "range": null,
+        "search": null,
+        "tel": null,
+        "text": null,
+        "time": null,
+        "url": null,
+        "week": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 41069,
+        "offset": 41068
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "kind",
+        "index",
+        "place",
+        "title",
+        "hint",
+        "message",
+        "text",
+        "image",
+        "caption",
+        "steps",
+        "prompt",
+        "promptCaption"
+      ],
+      "numbers": {
+        "index": 1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 294379,
+        "offset": 294378
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 42,
+      "keys": [
+        "oak",
+        "tree",
+        "rocks",
+        "fence",
+        "front",
+        "back",
+        "left",
+        "right",
+        "walk0",
+        "walk1",
+        "walk2",
+        "walk3",
+        "frontWalk0",
+        "frontWalk1",
+        "frontWalk2",
+        "frontWalk3",
+        "backWalk0",
+        "backWalk1",
+        "backWalk2",
+        "backWalk3",
+        "grass",
+        "wheat",
+        "fern",
+        "daisies",
+        "flowers",
+        "bluebells",
+        "shrub",
+        "reeds",
+        "cottage",
+        "windmill",
+        "jetty",
+        "shrine",
+        "spirit",
+        "spiritSide",
+        "letter",
+        "bell",
+        "satchel",
+        "sign",
+        "clover",
+        "strawberries",
+        "mushroomFern",
+        "brookFlowers"
+      ],
+      "numbers": {
+        "oak": 0.025825,
+        "tree": 0.036164,
+        "rocks": 0.05914,
+        "fence": 0.110345,
+        "front": 0.016204,
+        "back": 0.016204,
+        "left": 0.016204,
+        "right": 0.013889,
+        "walk0": 0.036364,
+        "walk1": 0.036364,
+        "walk2": 0.036364,
+        "walk3": 0.036364,
+        "frontWalk0": 0.036822,
+        "frontWalk1": 0.03876,
+        "frontWalk2": 0.034884,
+        "frontWalk3": 0.034884,
+        "backWalk0": 0.011628,
+        "backWalk1": 0.023256,
+        "backWalk2": 0.011628,
+        "backWalk3": 0.027132,
+        "grass": 0.037344,
+        "wheat": 0.030801,
+        "fern": 0.020704,
+        "daisies": 0.044289,
+        "flowers": 0.045356,
+        "bluebells": 0.037281,
+        "shrub": 0.037199,
+        "reeds": 0.03871,
+        "cottage": 0.027869,
+        "windmill": 0.01497,
+        "jetty": 0.044706,
+        "shrine": 0.021622,
+        "spirit": 0.07027,
+        "spiritSide": 0.101928,
+        "letter": 0.074499,
+        "bell": 0.063014,
+        "satchel": 0.066282,
+        "sign": 0.068127,
+        "clover": 0.015772870662460567,
+        "strawberries": 0.014705882352941176,
+        "mushroomFern": 0.0136986301369863,
+        "brookFlowers": 0.013623978201634877
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 306300,
+        "offset": 306299
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 45,
+      "keys": [
+        "name",
+        "url",
+        "width",
+        "height",
+        "sourceHeight",
+        "baseline",
+        "nativePixels"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 311427,
+        "offset": 311426
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 8,
+      "keys": [
+        "name",
+        "url",
+        "width",
+        "height",
+        "sourceHeight",
+        "baseline",
+        "nativePixels"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317733,
+        "offset": 317732
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 10,
+      "keys": [
+        "name",
+        "url",
+        "previous",
+        "width",
+        "height",
+        "previousWidth",
+        "previousHeight",
+        "repeat",
+        "offset",
+        "nativePixels"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 319456,
+        "offset": 319455
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 75,
+        "max": 255,
+        "mean": 194.625,
+        "head": [
+          75,
+          75,
+          75,
+          255,
+          150,
+          150
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 395342,
+        "offset": 395341
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "ready",
+        "count",
+        "found",
+        "near",
+        "location",
+        "complete",
+        "x",
+        "z",
+        "sailing",
+        "voyageProgress",
+        "fastSailing",
+        "reflections",
+        "reflected",
+        "trekProgress"
+      ],
+      "numbers": {
+        "ready": null,
+        "count": 0,
+        "complete": null,
+        "x": -12,
+        "z": 4,
+        "voyageProgress": 0,
+        "fastSailing": null,
+        "reflections": 0,
+        "trekProgress": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 450750,
+        "offset": 450749
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "concept.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 293753,
+        "offset": 293752
+      }
+    },
+    {
+      "path": "windmill.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 295203,
+        "offset": 295202
+      }
+    },
+    {
+      "path": "cutout.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 297032,
+        "offset": 297031
+      }
+    },
+    {
+      "path": "walk.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 298540,
+        "offset": 298539
+      }
+    },
+    {
+      "path": "scene.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 300086,
+        "offset": 300085
+      }
+    },
+    {
+      "path": "iterations.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 301672,
+        "offset": 301671
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalFront1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 311455,
+        "offset": 311454
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalFront0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 311597,
+        "offset": 311596
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalFront2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 311739,
+        "offset": 311738
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalFront3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 311881,
+        "offset": 311880
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalFront4.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312023,
+        "offset": 312022
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalBack0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312164,
+        "offset": 312163
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalBack1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312304,
+        "offset": 312303
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalBack2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312444,
+        "offset": 312443
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalBack3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312584,
+        "offset": 312583
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/diagonalBack4.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312724,
+        "offset": 312723
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/front.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312856,
+        "offset": 312855
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/back.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 312979,
+        "offset": 312978
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/right.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 313102,
+        "offset": 313101
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/seated-traveler.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 313236,
+        "offset": 313235
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/frontWalk0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 313375,
+        "offset": 313374
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/frontWalk1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 313509,
+        "offset": 313508
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/frontWalk2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 313643,
+        "offset": 313642
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/frontWalk3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 313777,
+        "offset": 313776
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/backWalk0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 313910,
+        "offset": 313909
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/backWalk1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314042,
+        "offset": 314041
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/backWalk2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314174,
+        "offset": 314173
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/backWalk3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314306,
+        "offset": 314305
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/walk0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314434,
+        "offset": 314433
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/walk1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314558,
+        "offset": 314557
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/walk2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314682,
+        "offset": 314681
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/walk3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314806,
+        "offset": 314805
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runFront0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 314934,
+        "offset": 314933
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runFront1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315066,
+        "offset": 315065
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runFront2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315198,
+        "offset": 315197
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runFront3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315330,
+        "offset": 315329
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runBack0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315461,
+        "offset": 315460
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runBack1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315591,
+        "offset": 315590
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runBack2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315721,
+        "offset": 315720
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runBack3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315851,
+        "offset": 315850
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runSide0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 315981,
+        "offset": 315980
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runSide1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 316111,
+        "offset": 316110
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runSide2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 316241,
+        "offset": 316240
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/runSide3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 316371,
+        "offset": 316370
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/jumpFrontCrouch.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 316508,
+        "offset": 316507
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/jumpFrontAir.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 316649,
+        "offset": 316648
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/jumpBackCrouch.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 316789,
+        "offset": 316788
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/jumpBackAir.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 316928,
+        "offset": 316927
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/jumpSideCrouch.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317067,
+        "offset": 317066
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/jumpSideAir.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317206,
+        "offset": 317205
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/left.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317335,
+        "offset": 317334
+      }
+    },
+    {
+      "path": "/art/character-hd-v59/diagonalFront3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317472,
+        "offset": 317471
+      }
+    },
+    {
+      "path": "/art/character-hd-v59/diagonalFront4.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317614,
+        "offset": 317613
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/walk0.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317752,
+        "offset": 317751
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/walk1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 317876,
+        "offset": 317875
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/walk2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318000,
+        "offset": 317999
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/walk3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318124,
+        "offset": 318123
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/diagonalFront1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318257,
+        "offset": 318256
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/diagonalFront2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318399,
+        "offset": 318398
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/diagonalFront3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318541,
+        "offset": 318540
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/diagonalFront4.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318683,
+        "offset": 318682
+      }
+    },
+    {
+      "path": "/art/character-hd-v69/diagonalFront1.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318830,
+        "offset": 318829
+      }
+    },
+    {
+      "path": "/art/character-hd-v69/diagonalFront2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 318997,
+        "offset": 318996
+      }
+    },
+    {
+      "path": "/art/character-hd-v69/diagonalFront3.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 319154,
+        "offset": 319153
+      }
+    },
+    {
+      "path": "/art/character-hd-v69/diagonalFront4.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 319322,
+        "offset": 319321
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/pine.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 319474,
+        "offset": 319473
+      }
+    },
+    {
+      "path": "/art/foliage-v41/pine.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 319536,
+        "offset": 319535
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/oak.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 319753,
+        "offset": 319752
+      }
+    },
+    {
+      "path": "/art/foliage-v41/oak.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 319814,
+        "offset": 319813
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/tree.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320031,
+        "offset": 320030
+      }
+    },
+    {
+      "path": "/art/foliage-v41/tree.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320093,
+        "offset": 320092
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/birch.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320312,
+        "offset": 320311
+      }
+    },
+    {
+      "path": "/art/foliage-v41/birch.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320375,
+        "offset": 320374
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/flowering-shrub.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320604,
+        "offset": 320603
+      }
+    },
+    {
+      "path": "/art/foliage-v41/flowering-shrub.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320677,
+        "offset": 320676
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/fern.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320903,
+        "offset": 320902
+      }
+    },
+    {
+      "path": "/art/foliage-v41/fern.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 320965,
+        "offset": 320964
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/cottage.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 321184,
+        "offset": 321183
+      }
+    },
+    {
+      "path": "/art/sprites-clean-v2/cottage.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 321249,
+        "offset": 321248
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/windmill.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 321473,
+        "offset": 321472
+      }
+    },
+    {
+      "path": "/art/sprites-clean-v2/windmill.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 321539,
+        "offset": 321538
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/shrine.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 321765,
+        "offset": 321764
+      }
+    },
+    {
+      "path": "/art/sprites-clean-v2/shrine.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 321829,
+        "offset": 321828
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/rocks.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 322053,
+        "offset": 322052
+      }
+    },
+    {
+      "path": "/art/sprites-clean-v2/rocks.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 322116,
+        "offset": 322115
+      }
+    },
+    {
+      "path": "/art/foliage-v58/birch.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 322342,
+        "offset": 322341
+      }
+    },
+    {
+      "path": "/art/foliage-v58/tree.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 322595,
+        "offset": 322594
+      }
+    },
+    {
+      "path": "/art/foliage-v58/pine.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 322849,
+        "offset": 322848
+      }
+    },
+    {
+      "path": "/art/foliage-v58/oak.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 323100,
+        "offset": 323099
+      }
+    },
+    {
+      "path": "/art/foliage-v58/fern.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 323349,
+        "offset": 323348
+      }
+    },
+    {
+      "path": "/art/ground-cover-hd-v52/grass-tuft.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 323611,
+        "offset": 323610
+      }
+    },
+    {
+      "path": "/art/foliage-v41/grass-tuft.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 323662,
+        "offset": 323661
+      }
+    },
+    {
+      "path": "/art/ground-cover-hd-v52/wildflowers.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 323891,
+        "offset": 323890
+      }
+    },
+    {
+      "path": "/art/foliage-v41/wildflowers.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 323943,
+        "offset": 323942
+      }
+    },
+    {
+      "path": "/art/ground-cover-hd-v52/clover.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 324167,
+        "offset": 324166
+      }
+    },
+    {
+      "path": "/art/foliage-v41/clover.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 324214,
+        "offset": 324213
+      }
+    },
+    {
+      "path": "/art/character-hd-v69/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 328421,
+        "offset": 328420
+      }
+    },
+    {
+      "path": "/art/character-hd-v60/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 328477,
+        "offset": 328476
+      }
+    },
+    {
+      "path": "/art/character-hd-v59/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 328533,
+        "offset": 328532
+      }
+    },
+    {
+      "path": "/art/foliage-v58/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 328676,
+        "offset": 328675
+      }
+    },
+    {
+      "path": "/art/character-hd-v56/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 328727,
+        "offset": 328726
+      }
+    },
+    {
+      "path": "/art/ground-cover-hd-v52/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 328909,
+        "offset": 328908
+      }
+    },
+    {
+      "path": "/art/environment-hd-v50/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329050,
+        "offset": 329049
+      }
+    },
+    {
+      "path": "/art/character-hd-v46/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329254,
+        "offset": 329253
+      }
+    },
+    {
+      "path": "/art/character-hd-v45/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329325,
+        "offset": 329324
+      }
+    },
+    {
+      "path": "/art/alpha-v43/boat-v2.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329369,
+        "offset": 329368
+      }
+    },
+    {
+      "path": "/art/alpha-v43/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329423,
+        "offset": 329422
+      }
+    },
+    {
+      "path": "/art/alpha-v43/mascot.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329480,
+        "offset": 329479
+      }
+    },
+    {
+      "path": "/art/foliage-v41/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329518,
+        "offset": 329517
+      }
+    },
+    {
+      "path": "/art/polish-v37/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329619,
+        "offset": 329618
+      }
+    },
+    {
+      "path": "/art/foliage-v35/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329706,
+        "offset": 329705
+      }
+    },
+    {
+      "path": "/art/character-v36/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329744,
+        "offset": 329743
+      }
+    },
+    {
+      "path": "/art/foliage-clean-v33/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329784,
+        "offset": 329783
+      }
+    },
+    {
+      "path": "/art/sailing/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329878,
+        "offset": 329877
+      }
+    },
+    {
+      "path": "/art/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 329984,
+        "offset": 329983
+      }
+    },
+    {
+      "path": "/art/sprites-clean-v2/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 330004,
+        "offset": 330003
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "\"node_modules/react-dom/cjs/react-dom-client.production.js\"",
+      "params": 1,
+      "chars": 174994,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 15209,
+        "offset": 15208
+      }
+    },
+    {
+      "name": "sc",
+      "params": 5,
+      "chars": 60903,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 387525,
+        "offset": 387524
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 22179,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 265441,
+        "offset": 265440
+      }
+    },
+    {
+      "name": "Tl",
+      "params": 2,
+      "chars": 18035,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 333178,
+        "offset": 333177
+      }
+    },
+    {
+      "name": "Kl",
+      "params": 3,
+      "chars": 14900,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 360865,
+        "offset": 360864
+      }
+    },
+    {
+      "name": "r",
+      "params": 1,
+      "chars": 12198,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 435166,
+        "offset": 435165
+      }
+    },
+    {
+      "name": "pc",
+      "params": 0,
+      "chars": 10122,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 450646,
+        "offset": 450645
+      }
+    },
+    {
+      "name": "\"node_modules/react/cjs/react.production.js\"",
+      "params": 1,
+      "chars": 7425,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 4148,
+        "offset": 4147
+      }
+    },
+    {
+      "name": "sl",
+      "params": 3,
+      "chars": 6761,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 97003,
+        "offset": 97002
+      }
+    },
+    {
+      "name": "cn",
+      "params": 1,
+      "chars": 6356,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 220285,
+        "offset": 220284
+      }
+    },
+    {
+      "name": "hl",
+      "params": 3,
+      "chars": 5952,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 104928,
+        "offset": 104927
+      }
+    },
+    {
+      "name": "ho",
+      "params": 1,
+      "chars": 5541,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 57813,
+        "offset": 57812
+      }
+    },
+    {
+      "name": "fn",
+      "params": 2,
+      "chars": 5353,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 226696,
+        "offset": 226695
+      }
+    },
+    {
+      "name": "au",
+      "params": 5,
+      "chars": 5266,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 153302,
+        "offset": 153301
+      }
+    },
+    {
+      "name": "Jl",
+      "params": 2,
+      "chars": 4984,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 375815,
+        "offset": 375814
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 4858,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 153708,
+        "offset": 153707
+      }
+    },
+    {
+      "name": "ec",
+      "params": 2,
+      "chars": 4572,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 380799,
+        "offset": 380798
+      }
+    },
+    {
+      "name": "Gl",
+      "params": 2,
+      "chars": 4424,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 121553,
+        "offset": 121552
+      }
+    },
+    {
+      "name": "uu",
+      "params": 6,
+      "chars": 4360,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 159445,
+        "offset": 159444
+      }
+    },
+    {
+      "name": "q",
+      "params": 5,
+      "chars": 3905,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 399838,
+        "offset": 399837
+      }
+    },
+    {
+      "name": "G",
+      "params": 2,
+      "chars": 3887,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 395951,
+        "offset": 395950
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 3872,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 375840,
+        "offset": 375839
+      }
+    },
+    {
+      "name": "qs",
+      "params": 5,
+      "chars": 3815,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 88429,
+        "offset": 88428
+      }
+    },
+    {
+      "name": "\"node_modules/scheduler/cjs/scheduler.production.js\"",
+      "params": 1,
+      "chars": 3500,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 579,
+        "offset": 578
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3490,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 363305,
+        "offset": 363304
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 3404,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 228247,
+        "offset": 228246
+      }
+    },
+    {
+      "name": "\"node_modules/react-dom/cjs/react-dom.production.js\"",
+      "params": 1,
+      "chars": 3297,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 11638,
+        "offset": 11637
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2890,
+      "loc": {
+        "file": "evidence/crayon-runtime/where-the-wind-wanders/srcdoc.html#script0",
+        "line": 1,
+        "col": 2,
+        "offset": 1
+      }
+    },
+    {
+      "name": "zl",
+      "params": 3,
+      "chars": 2889,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 113358,
+        "offset": 113357
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 4,
+      "chars": 2828,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 424079,
+        "offset": 424078
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 2805,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 428624,
+        "offset": 428623
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 4,
+      "chars": 2797,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 113400,
+        "offset": 113399
+      }
+    },
+    {
+      "name": "md",
+      "params": 9,
+      "chars": 2714,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 141586,
+        "offset": 141585
+      }
+    },
+    {
+      "name": "g",
+      "params": 4,
+      "chars": 2667,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 60525,
+        "offset": 60524
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 6,
+      "chars": 2490,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 406463,
+        "offset": 406462
+      }
+    },
+    {
+      "name": "So",
+      "params": 2,
+      "chars": 2481,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 252655,
+        "offset": 252654
+      }
+    },
+    {
+      "name": "Zs",
+      "params": 3,
+      "chars": 2418,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 92503,
+        "offset": 92502
+      }
+    },
+    {
+      "name": "fu",
+      "params": 3,
+      "chars": 2401,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 164818,
+        "offset": 164817
+      }
+    },
+    {
+      "name": "fo",
+      "params": 1,
+      "chars": 2343,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 245484,
+        "offset": 245483
+      }
+    },
+    {
+      "name": "update",
+      "params": 2,
+      "chars": 2245,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/where-the-wind-wanders/game-module.mjs",
+        "line": 1,
+        "col": 383023,
+        "offset": 383022
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 5751,
+    "functions": 1832,
+    "newExpressions": 531,
+    "calls": 7356
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:garage",
+        "original": "65 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "22 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:results",
+        "original": "13 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "9 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:level-select",
+        "original": "7 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:tutorial",
+        "original": "4 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:menu",
+        "original": "3 references",
+        "port": "absent"
+      },
+      {
+        "feature": "host-platform postMessage hooks",
+        "original": "1 postMessage calls",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "audio",
+        "original": "58 audio API uses / 0 audio assets",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "48 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "40 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "27 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "10 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "tonemapx18, outlinex9, grainx3, halox3",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "rainx8, trailx6, splashx1",
+        "port": "present"
+      },
+      {
+        "feature": "persistence (storage)",
+        "original": "2 storage calls",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Enter, Escape, Space, Tab",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointerdown",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "Boat voyage, Stillwater Isle, the island trail, reflections, the bench, journal UI and story text, audio, save slots,",
+      "Painted sprite art and the traveller's walk-cycle frames: the port uses a capsule, head and hat.",
+      "The original's stream and path carving of the terrain: the port keeps the analytic height field and a painted path stripe.",
+      "Foliage placement is the port's own seeded scatter, not the original's.",
+      "Height (y) is visual only; the simulation is x/z, so the port's y differs from the original's carved terrain."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

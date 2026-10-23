@@ -81,3 +81,20 @@ void main() { gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }`;
 export const FLAT_FRAGMENT = /* glsl */ `
 out vec4 outColor;
 void main() { outColor = vec4(baseColor, alpha); }`;
+
+/** Round shadow with a crisp edge (the original's toon shadow), drawn over a unit quad's uv. */
+export const SHADOW_VERTEX = /* glsl */ `
+out vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
+}`;
+
+export const SHADOW_FRAGMENT = /* glsl */ `
+in vec2 vUv;
+out vec4 outColor;
+void main() {
+  float d = length(vUv - 0.5) * 2.0;
+  float a = alpha * (1.0 - smoothstep(0.86, 1.0, d));
+  outColor = vec4(baseColor, a);
+}`;

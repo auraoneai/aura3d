@@ -432,3 +432,11 @@ AGENTS.md
 # Meshy key maintainer local vault + state (secrets, never commit)
 apps/meshy-keys/.meshy-keys.local.json
 apps/meshy-keys/.meshy-keys-state.json
+
+# Third-party look-reference screenshots (local only, never committed)
+evidence/look-reference-frames/
+
+# Silt & Signal port: CC0 texture sets (runtime source assets) and port-only evidence frames
+!examples/silt-and-signal-port/assets/textures/*.jpg
+!evidence/silt-and-signal-port/*.jpg
+!examples/kid-goku-beyond-the-clouds-port/assets/textures/*.jpg

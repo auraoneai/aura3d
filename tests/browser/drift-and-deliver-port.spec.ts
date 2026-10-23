@@ -113,7 +113,7 @@ test.describe("drift-and-deliver-port", () => {
     expect(counts.solids).toBe(counts.buildings);
 
     // ---- rendered frames ----
-    await api((o) => { o.reset(); o.teleport(30, -300, 0); o.stepFrames(1); return 0; });
+    await api((o) => { o.reset(); o.teleport(30, -300, 0); o.stepFrames(0); return 0; });
     const startStats = await stats();
     console.log("DRIFT_PORT_STATS start", JSON.stringify(startStats));
     await frame("start");
@@ -143,15 +143,16 @@ test.describe("drift-and-deliver-port", () => {
     await frame("drifting");
 
     const nodes = await api((o) => o.nodeCount());
-    expect(nodes).toBeGreaterThanOrEqual(9);
+    // the car is now five runtime nodes (paint, detail, two lamps, beams): the wheels are part of the shell mesh
+    expect(nodes).toBeGreaterThanOrEqual(5);
 
     // ---- headlight beams (the original's only ShaderMaterial, hand-ported to material.custom) ----
     await api((o) => { o.teleport(30, -200, 0); o.headlights(0); o.stepFrames(90); return 0; });
     const beamDiff = await page.evaluate(async () => {
       const o = (window as unknown as { __AURA_DRIFT_AND_DELIVER__: DriftApi }).__AURA_DRIFT_AND_DELIVER__;
-      o.headlights(0); o.stepFrames(1);
+      o.headlights(0); o.stepFrames(0);
       const off = await o.pixels();
-      o.headlights(1); o.stepFrames(1);
+      o.headlights(1); o.stepFrames(0);
       const on = await o.pixels();
       let changed = 0, brighter = 0, maxDelta = 0;
       for (let i = 0; i < off.data.length; i += 4) {
@@ -166,8 +167,11 @@ test.describe("drift-and-deliver-port", () => {
     });
     await frame("beams");
     console.log("DRIFT_PORT_BEAMS", JSON.stringify(beamDiff));
-    // KNOWN GAP: the beam cone does not draw in the engine (see PORTING-NOTES.md); logged, not asserted.
+    // The beam draws: lighting the lamp must brighten a meaningful number of pixels (fixed in 4.0.8: custom vertex stages
+    // previously rendered in NDC because the app path gave material.custom identity view/projection matrices).
     expect(beamDiff.level).toBe(1);
+    expect(beamDiff.brighter).toBeGreaterThan(500);
+    expect(beamDiff.maxDelta).toBeGreaterThan(20);
     await api((o) => o.headlights(0));
 
     // ---- the original's capture runner, run against the port, must reproduce the reference hashes ----
@@ -237,15 +241,20 @@ test.describe("drift-and-deliver-port", () => {
       const diff = (a: { data: Uint8ClampedArray }, b: { data: Uint8ClampedArray }) => { let n = 0; for (let i = 0; i < a.data.length; i += 4) if (Math.abs(luma(a.data, i) - luma(b.data, i)) > 3) n++; return n; };
       o.teleport(30, -200, 0);
       o.stepFrames(90);
+      // the first frames after boot can precede the post-mount texture upgrade; let it settle before the reference frame
+      for (let i = 0; i < 6; i++) {
+        o.stepFrames(0);
+        await new Promise((r) => setTimeout(r, 1500));
+      }
       const lit = await o.pixels();
       const litJpeg = await o.frame(480, 270, 0.7);
       const level = o.headlights();
       o.headlights(0);
-      o.stepFrames(1);
+      o.stepFrames(0);
       const dark = await o.pixels();
       const darkJpeg = await o.frame(480, 270, 0.7);
       o.headlights(1);
-      o.stepFrames(1);
+      o.stepFrames(0);
       const relit = await o.pixels();
       return { level, litMean: mean(lit), darkMean: mean(dark), relitMean: mean(relit), litVsDark: diff(lit, dark), relitVsDark: diff(relit, dark), litVsRelit: diff(lit, relit), litJpeg, darkJpeg, drawCalls: o.diagnostics()?.drawCalls ?? null };
     });
@@ -254,6 +263,11 @@ test.describe("drift-and-deliver-port", () => {
     const { litJpeg: _a, darkJpeg: _b, ...numbers } = probe;
     console.log("DRIFT_PORT_BEAM_PROBE", JSON.stringify(numbers));
     expect(probe.level).toBe(1);
+    // lamp on vs lamp off differs, and relighting reproduces the lit frame (same pixels, within noise). The frames are re-rendered
+    // without stepping the simulation (stepFrames(0)): with a textured city a one-step camera drift alone moves most edge pixels.
+    expect(probe.litVsDark).toBeGreaterThan(500);
+    expect(probe.relitVsDark).toBeGreaterThan(500);
+    expect(probe.litVsRelit).toBeLessThan(probe.litVsDark / 4);
     expect(errors).toEqual([]);
   });
 });

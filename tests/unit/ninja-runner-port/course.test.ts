@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   COURSE_LENGTH, GAPS, biomeAt, districtAt, gapAhead, gapAt, groundFrame, groundHeight, laneOffset, nearGap, pathWidth, routeFrame, smooth
 } from "../../../examples/ninja-runner-port/course";
-import { MeshBuilder, buildProps, buildRoute, buildSheet, buildWater, type MeshData } from "../../../examples/ninja-runner-port/meshes";
+import { MeshBuilder, buildRoute, buildRouteGroups, buildSheet, buildTownFloor, buildWater, surfaceY, type MeshData } from "../../../examples/ninja-runner-port/meshes";
 import { chakraPickups, drawFlame, modelMatrix } from "../../../examples/ninja-runner-port/world";
 import { createState } from "../../../examples/ninja-runner-port/sim";
 
@@ -13,7 +13,7 @@ const valid = (m: MeshData): void => {
   expect(m.tones.length).toBe(m.positions.length);
   expect(m.uvs.length / 2).toBe(v);
   expect(m.indices.length % 3).toBe(0);
-  expect(Math.max(...m.indices)).toBeLessThan(v);
+  expect(m.indices.reduce((a, b) => Math.max(a, b), 0)).toBeLessThan(v);
   expect(m.positions.every(Number.isFinite)).toBe(true);
   expect(m.normals.every(Number.isFinite)).toBe(true);
 };
@@ -88,16 +88,34 @@ describe("ninja-runner-port meshes", () => {
     valid(m);
     const full = (m.indices.length / 3);
     const rows = Math.ceil((COURSE_LENGTH + 24) / 2);
-    const stride = 15;
+    const stride = 19;
     expect(full).toBeLessThan(rows * (stride - 1) * 2);
     const gapRows = GAPS.reduce((n, [a, c]) => n + Math.round((c - a) / 2), 0);
     expect(rows * (stride - 1) * 2 - full).toBeGreaterThanOrEqual(gapRows * (stride - 1) * 2 * 0.8);
   });
 
-  it("props, water and the falls sheet are valid meshes and deterministic", () => {
-    const a = buildProps(), b = buildProps();
-    valid(a);
-    expect(a.positions).toEqual(b.positions);
+  it("the route groups partition the ribbon by biome and surface with shared, continuous normals", () => {
+    const groups = buildRouteGroups(2);
+    const whole = buildRoute(2);
+    let triangles = 0;
+    for (const g of groups) { valid(g.mesh); triangles += g.mesh.indices.length / 3; }
+    expect(triangles).toBe(whole.indices.length / 3);
+    expect(new Set(groups.map((g) => g.biome))).toEqual(new Set(["village", "alley", "stairs", "rooftops", "descent", "riverside", "bridge", "forest_entry", "forest", "forest_exit", "water"]));
+    expect(groups.every((g) => g.zone === "path" || g.zone === "verge")).toBe(true);
+    // folded-in far columns can leave fully degenerate vertices (zero normal) and a handful of flipped ones at bend extremes
+    let drawn = 0, up = 0;
+    for (const g of groups) for (let i = 0; i < g.mesh.normals.length; i += 3) {
+      if (Math.hypot(g.mesh.normals[i]!, g.mesh.normals[i + 1]!, g.mesh.normals[i + 2]!) < 0.5) continue;
+      drawn++;
+      if (g.mesh.normals[i + 1]! > 0) up++;
+    }
+    expect(up / drawn).toBeGreaterThan(0.998);
+  });
+
+  it("surfaceY follows the ribbon and the town floor, water and the falls sheet are valid meshes", () => {
+    expect(surfaceY(100, 0)).toBeCloseTo(groundFrame(100, 0).y, 9);
+    expect(surfaceY(100, 40)).toBeLessThan(surfaceY(100, 0));
+    valid(buildTownFloor(520, 1030, 130, 3.2));
     valid(buildWater());
     const sheet = buildSheet(56, 63);
     valid(sheet);

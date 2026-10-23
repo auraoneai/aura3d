@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-serpentine-sky-run-port",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "private": true,
   "type": "module",
   "description": "Aura3D port of the mechanics of Serpentine Sky Run: Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky.",

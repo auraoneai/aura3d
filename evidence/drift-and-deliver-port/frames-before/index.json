@@ -1,0 +1,72 @@
+{
+  "schema": "a3d-look-reference-frames/1",
+  "game": "drift-and-deliver",
+  "frames": [
+    {
+      "file": "ref-z-idle-clean.jpg",
+      "shot": "z-idle",
+      "variant": "clean",
+      "bytes": 25776
+    },
+    {
+      "file": "ref-z-drive-clean.jpg",
+      "shot": "z-drive",
+      "variant": "clean",
+      "bytes": 27378
+    },
+    {
+      "file": "ref-z-drift-clean.jpg",
+      "shot": "z-drift",
+      "variant": "clean",
+      "bytes": 33145
+    },
+    {
+      "file": "ref-z-boost-clean.jpg",
+      "shot": "z-boost",
+      "variant": "clean",
+      "bytes": 35282
+    },
+    {
+      "file": "ref-x-idle-clean.jpg",
+      "shot": "x-idle",
+      "variant": "clean",
+      "bytes": 41203
+    },
+    {
+      "file": "ref-x-drive-clean.jpg",
+      "shot": "x-drive",
+      "variant": "clean",
+      "bytes": 19277
+    },
+    {
+      "file": "ref-origin-clean.jpg",
+      "shot": "origin",
+      "variant": "clean",
+      "bytes": 26151
+    },
+    {
+      "file": "ref-downtown-ne-clean.jpg",
+      "shot": "downtown-ne",
+      "variant": "clean",
+      "bytes": 25489
+    },
+    {
+      "file": "ref-downtown-sw-clean.jpg",
+      "shot": "downtown-sw",
+      "variant": "clean",
+      "bytes": 22933
+    },
+    {
+      "file": "ref-outer-e-clean.jpg",
+      "shot": "outer-e",
+      "variant": "clean",
+      "bytes": 33106
+    },
+    {
+      "file": "ref-outer-n-clean.jpg",
+      "shot": "outer-n",
+      "variant": "clean",
+      "bytes": 34748
+    }
+  ]
+}

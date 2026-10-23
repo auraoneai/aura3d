@@ -1,0 +1,803 @@
+{
+  "schema": "a3d-silt-and-signal-blind-judge/1",
+  "label": "after",
+  "generatedAt": "2026-10-23T10:47:25.081Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 24,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "states": [
+      "start-a",
+      "start-b"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D hover-board flight game (a rider gliding over a canal valley with a village, aqueduct arches and glowing signal rings), labelled Image A and Image B. Both are taken at the same moment of the same recorded run (same game state), at the same window size. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge everything visible: the 3D scene (sky, terrain, water, buildings, rider, rings, lighting), the on-screen HUD and any title card.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "state": "start-a",
+        "lumaJsd": 0.47786289857546765,
+        "rgbJsd": 0.8119346264596062,
+        "paletteDistance": 0.10157919679901067,
+        "edgeDensityOriginal": 0.12280787790811723,
+        "edgeDensityPort": 0.0533454518506894,
+        "edgeDensityRatio": 0.4343813504423679,
+        "lumaMeanDelta": 45.09422729260359
+      },
+      {
+        "state": "start-b",
+        "lumaJsd": 0.48329536835649334,
+        "rgbJsd": 0.8144157091497851,
+        "paletteDistance": 0.10175165984635152,
+        "edgeDensityOriginal": 0.12038853361580813,
+        "edgeDensityPort": 0.0533454518506894,
+        "edgeDensityRatio": 0.44311073694882724,
+        "lumaMeanDelta": 43.9073844722563
+      }
+    ],
+    "summary": {
+      "frames": 2,
+      "lumaJsd": 0.48057913346598047,
+      "rgbJsd": 0.8131751678046957,
+      "paletteDistance": 0.1016654283226811,
+      "edgeDensityOriginal": 0.12159820576196267,
+      "edgeDensityPort": 0.0533454518506894,
+      "edgeDensityRatio": 0.43874604369559755
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 48,
+    "accuracy": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "pValueVsChance": 7.105427357601022e-15,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 24,
+    "byLook": {
+      "start-a": {
+        "valid": 24,
+        "correct": 24,
+        "accuracy": 1
+      },
+      "start-b": {
+        "valid": 24,
+        "correct": 24,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed rider, hover-board, townsfolk, market stalls and a minimap, while A has a blocky grey pod with no rider",
+        "B has rich warm sunset lighting, painterly clouds and cast shadows, while A is flat, pastel and low-poly",
+        "B has a polished HUD with a crayon watermark, while A has a plain grey panel HUD and generic pine trees"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has detailed, painterly hand-drawn art with a fully modelled rider, a pterosaur in the sky and townsfolk, while B uses simple low-poly blocks",
+        "Image B has a generic grey blob for the rider and plain white cuboid buildings, and its HUD is a utilitarian speed/altitude panel with a controls hint",
+        "Image A has warm golden-hour lighting, soft cloud shapes and a minimap, while B has flat pale sky and plain lighting"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider and hover-board with painterly lighting, cast shadows and a crayon watermark, while B shows a blocky grey placeholder craft",
+        "Image A has richly modeled Mediterranean architecture, market stalls, villagers and a warm sunset sky, while B has plain box buildings and generic low-poly pine trees",
+        "Image B's HUD is a different design with a speed/altitude panel, a different mission title and a plain control hint, versus A's polished HUD with minimap and key icons"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hover-board and richly lit village with NPCs, awnings and a flying creature",
+        "Image A has flat low-poly pine trees, plain blocky buildings and a placeholder-looking rider",
+        "Image A has a generic HUD (speed/altitude panel, controls hint) while Image B has a polished HUD with minimap, 50 m marker and a crayon watermark"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed rider, hoverboard, NPCs, and richly modeled architecture, while A shows a blocky grey craft and plain white boxes",
+        "B has painterly sunset lighting, cast shadows, and a crayon watermark, while A has flat pastel lighting with no shadows",
+        "B has a polished HUD with minimap, icons, and a waypoint marker, while A uses a basic text panel and no rings or aqueduct match"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed hand-painted art: a character rider, a painted sky with clouds, a pterodactyl-like creature, and townsfolk. Image B has simple low-poly shapes and a blocky vehicle with no visible rider.",
+        "Image A has a polished HUD with a minimap, map/help/pause buttons, a crayon logo and waypoint markers. Image B has a plain speed/altitude panel and a controls hint box.",
+        "Image A has rich lighting with cast shadows and a warm sunset palette. Image B has flat, pale lighting with generic pine trees and white boxy buildings."
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed rider, hoverboard, NPCs, market stalls and richly lit sunset sky; A has a blocky, flat-shaded rider and simple pine trees",
+        "B's HUD includes minimap, icon buttons, and a quest tracker with a waypoint marker; A's HUD is plain with speed/altitude panels and a generic control-hint box",
+        "B has a Crayon watermark and detailed architecture with long shadows; A has plain cube buildings and soft, low-detail lighting"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.98,
+      "tells": [
+        "A has a detailed, hand-painted rider and hoverboard, while B shows a blocky grey placeholder craft",
+        "A has richly detailed architecture, market stalls, villagers and warm sunset lighting, while B has plain box buildings and generic low-poly pine trees",
+        "A's HUD is polished, with a minimap, a crayon watermark and icon buttons, while B has a basic speed/altitude panel and a controls hint box"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 4,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed rider, hoverboard, NPCs, market stalls and richly lit sunset sky; A has primitive blocky board and flat low-poly props",
+        "A's HUD (Speed/Altitude/Mode panel, 'Lantern Road' card) and pale daylight palette differ from B's minimap, icon buttons and 'The Last Light' quest card",
+        "B has a crayon watermark, cast shadows and polished art direction; A looks like a simplified re-implementation"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 4,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed, hand-painted rider and hoverboard with a cast shadow, while B shows a plain gray blob vehicle",
+        "Image A has rich art direction with a warm sunset sky, painted clouds, ornate buildings, market stalls and villagers, while B has flat low-poly pine trees and plain boxy buildings",
+        "Image A's HUD has a minimap, map/help/pause buttons and a crayon watermark, while B has a speed/altitude panel and a controls hint box"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 5,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider, hover-board, painterly clouds, and a crayon watermark, while B has a blocky grey rider placeholder",
+        "Image A has rich architecture, market stalls, villagers, and a minimap, while B has low-poly generic trees and white box buildings",
+        "The HUD style and content differ (A: quest card, minimap, key hints; B: speed/altitude panel, ring counter, different text)"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 5,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hoverboard, villagers and ornate architecture, while A has a placeholder box rider and plain low-poly trees",
+        "Image B has painterly sunset lighting, clouds, a flying creature and a polished HUD with minimap, while A is flat and pale with debug-style HUD text",
+        "Image A shows a different mission and a generic ring and tree scene, not the aqueduct and village look of B"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 6,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed, painterly rider and hoverboard with cast shadows, while B shows a simple gray low-poly blob",
+        "A has rich architecture, market stalls, NPCs, a warm sunset sky and a minimap, while B has plain boxy buildings and generic pine trees",
+        "A's HUD has a minimap, key-hint pill and Crayon branding, while B has a blocky speed/altitude panel and different mission text"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 6,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image B has a detailed rider, hoverboard, villagers and ornate architecture, while A shows a plain grey blob and low-poly boxes",
+        "Image B has painterly sunset lighting with cast shadows, while A is flat pastel with generic mint pine trees",
+        "Image B has a polished HUD with minimap, icon buttons and a crayon watermark, while A has basic text panels and a debug-like controls hint"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 7,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed rider, ornate buildings, NPCs, and painterly sunset lighting with shadows",
+        "A has plain low-poly boxes, flat pastel sky, a simplistic hoverboard, and generic HUD panels",
+        "B has a minimap, a crayon watermark, and a polished HUD with icon buttons"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 7,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.98,
+      "tells": [
+        "A has a detailed painterly rider and hover-board with cast shadows, while B shows a blocky grey placeholder craft",
+        "A has rich warm lighting with detailed village architecture, market stalls, NPCs and a flying creature, while B has plain low-poly trees and boxy buildings",
+        "A has a polished HUD with minimap, map/help/pause buttons and crayon watermark, while B has a generic speed/altitude panel and controls hint box"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 8,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed rider, hoverboard, painted clouds, and richly modeled market buildings, while B has a blocky placeholder craft and primitive boxes",
+        "A has a polished HUD with minimap, map/help/pause buttons and a crayon watermark; B has a plain speed/altitude panel and generic text",
+        "B has flat low-poly pine trees, simple cream terrain and plain white arch rings, a different art direction from A's warm stylized lighting and shadows"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 8,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hoverboard and painterly lit scene with NPCs, market stalls, and a pterosaur",
+        "Image A has flat low-poly pine trees, a plain box rider, and simplistic beige blocks with a basic HUD",
+        "Image B has a polished HUD with a minimap, chapter title, and a crayon watermark, while Image A has debug-like stats and a controls panel"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 9,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed rider, ornate buildings, NPCs, sunset lighting and shadows, while A is flat low-poly with a bare hoverboard",
+        "A's HUD is generic (Speed/Altitude panel, 'Lantern Road' text), while B has a minimap, map/help/pause buttons and a themed quest card",
+        "A has pastel mint pine trees and plain blocky houses, which looks like a simplified re-creation"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 9,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.98,
+      "tells": [
+        "Image A has a detailed painterly rider and hover-board with a cast shadow, while B shows a plain gray blob vehicle",
+        "A has richly detailed architecture, market stalls, villagers and a flying creature, while B has simple low-poly boxes and generic trees",
+        "A has a different HUD with a minimap, map/help/pause buttons and a crayon watermark, while B has a speed/altitude panel and a controls hint box"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 10,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed rider, hoverboard, villagers and ornate architecture, while A shows a blocky grey craft with no rider",
+        "B has warm sunset lighting, painterly clouds, shadows and a minimap; A has flat pale lighting and simple low-poly trees",
+        "A has a plain HUD with no minimap and generic white ring arches; B has polished icon buttons and a crayon watermark"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 10,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed hand-painted art: a rider with a detailed character model, painterly clouds and ornate buildings with a crayon watermark",
+        "Image B uses plain low-poly geometry with a blocky gray craft and generic pine trees",
+        "Image B's HUD is a generic gray panel with controls text, while A has a polished minimap, icon buttons and objective card"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 11,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider, hoverboard and painterly sky with clouds, plus a crayon watermark, while B has a blocky placeholder craft",
+        "B uses flat low-poly geometry, generic pine trees and a plain HUD with a speed/altitude panel, unlike A's polished HUD, minimap and mission card",
+        "A shows a detailed village with market stalls, NPCs and canopies, while B shows boxy beige buildings and simple glowing arch rings"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 11,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hover-board and ornate village with townsfolk; Image A uses primitive low-poly boxes and a blocky craft",
+        "Image B has painterly sunset lighting, cast shadows, clouds and a pterosaur; Image A has flat pale lighting with plain trees",
+        "Image B has polished HUD with minimap, buttons and a studio watermark; Image A has a basic debug-style HUD with Speed/Altitude panel"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 12,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider character, hoverboard, shadows and textured stone plaza",
+        "Image B uses blocky primitive geometry, a plain grey craft and simple low-poly trees",
+        "HUD differs: A has a minimap, mission card and crayon logo, while B has a speed/altitude panel and different text"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 12,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed painterly art with a rider, a hoverbike, NPCs, market stalls and ornate buildings",
+        "Image A has plain low-poly pine trees, a blocky gray craft and a flat sandy ground",
+        "Image B has a polished HUD with a minimap, a map button and a waypoint marker, and a watermark, while Image A has a generic debug-style HUD"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 13,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed, painterly rider and hoverboard with a cast shadow; Image B shows a blocky gray placeholder craft",
+        "Image A has rich sunset lighting, layered clouds, an animated village and market stalls; Image B has flat pale lighting with simple low-poly pines and boxy buildings",
+        "Image A's HUD has a minimap, key hints and a Crayon watermark; Image B has a different, generic HUD with speed and altitude readouts"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 13,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hover-board and ornate village with NPCs, while A has a blocky grey pod and plain boxes",
+        "Image B has rich painterly sunset lighting, clouds and shadows, while A is flat low-poly with pale sky",
+        "Image B has polished HUD with minimap, buttons and a crayon logo, while A has a plain text-panel HUD"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 14,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.93,
+      "tells": [
+        "B has a detailed rider, hover-board, villagers and ornate architecture, while A has a blocky grey pod and plain box buildings",
+        "B has warm sunset lighting, painterly clouds, soft shadows and a minimap; A has flat pale sky and plain low-poly pines",
+        "B's HUD is polished (objective progress, map/help/pause buttons, crayon logo); A's HUD is basic with a speed/altitude panel"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 14,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.98,
+      "tells": [
+        "A has a detailed hand-painted rider, hoverboard and warm lit marketplace; B has a blocky grey placeholder craft",
+        "B uses flat low-poly pine trees, plain sand ground and simple box buildings instead of A's ornate architecture",
+        "B's HUD is generic (speed/altitude panel, controls hint) versus A's styled quest card, minimap and crayon logo"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 15,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider, hoverboard and a polished painterly sunset sky, while B has a blocky placeholder craft",
+        "Image A has rich architecture, market stalls, NPCs and a minimap, while B has plain boxy buildings and generic low-poly pines",
+        "Image B has a different HUD style with a speed/altitude panel and a different mission title, versus A's crayon-branded HUD"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 15,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hover-board and richly modeled village, while A has a placeholder grey blob and boxy buildings",
+        "Image B has warm painterly sunset lighting, cast shadows and a minimap/HUD with a studio watermark, versus A's flat pastel low-poly look and plain HUD panels",
+        "Image A's mint-green low-poly pines and glowing white ring arches don't match B's art direction"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 16,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider, hover-board, and painterly sky with clouds and a crayon logo, while B has a blocky placeholder craft",
+        "Image A has rich architecture, market stalls, NPCs, and soft shadows versus B's low-poly pines and plain boxy buildings",
+        "HUD differs: A has a minimap, key-hint chips, and a map/help/pause button set; B has a speed/altitude panel and a text control list"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 16,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hoverboard, villagers and ornate architecture, while A has a blob-like craft and boxy low-poly buildings",
+        "Image B has warm sunset lighting, painterly clouds, cast shadows and a pterosaur, while A has flat pastel shading and a plain sky",
+        "Image B has a polished HUD with minimap, icon buttons and a crayon logo, while A has a plain text HUD with a Speed/Altitude panel"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 17,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed, painterly rider on a hover-board with cloth, a shadow and warm sunset lighting, while B shows a plain gray blocky craft",
+        "B's terrain, buildings and trees are simple low-poly shapes with flat shading, and the rings are plain white arches",
+        "The HUD differs: A has a quest card, minimap, key hints and a crayon watermark, while B has a speed/altitude panel and different text"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 17,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hoverboard, and painterly lighting with cast shadows, while A shows a crude grey blob vehicle",
+        "Image B has rich villagers, market stalls, ornate architecture, and a pterosaur; A has generic low-poly pine trees and boxy white houses",
+        "Image B has a polished HUD with a minimap, icon buttons, and chapter title; A has plain debug-like panels and the glowing ring arches that B lacks"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 18,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed rider, hoverboard, NPCs, and richly modeled architecture with warm lighting and shadows",
+        "A has primitive low-poly boxes, flat pastel palette, and a generic gray blob for the rider",
+        "B has a polished HUD with minimap, icon buttons, and studio watermark, while A has plain text panels"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 18,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed painterly rider, hoverboard, villagers, market stalls and warm sunset lighting; Image B has a blocky placeholder craft with flat low-poly trees",
+        "Image A has a polished HUD with a minimap, map/help/pause icons and a crayon watermark; Image B has a generic grey speed/altitude panel and a controls hint box",
+        "Image A has a rich atmospheric sky with sculpted clouds and a flying creature; Image B has a plain pale blue sky with simple white ring arches"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 19,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed rider, hoverboard, NPCs, market stalls and richly lit sunset scene with shadows",
+        "A uses plain low-poly primitives, flat beige ground, simple mint pine trees and a blocky rider",
+        "A's HUD (speed/altitude/mode panel, 'Lantern Road') differs from B's minimap, objective tracker and icon buttons"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 19,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.98,
+      "tells": [
+        "A has detailed painterly art with a hand-drawn rider, textured sky and clouds, and a crayon watermark",
+        "B uses flat low-poly primitives, a blocky rider and generic cone trees",
+        "B has a different HUD with a speed/altitude panel and a controls hint, and A has a minimap and quest card"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 20,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider, hoverboard, painted clouds, people and a crayon watermark; Image B has a blocky grey capsule vehicle",
+        "Image A has a rich HUD with minimap, map/help/pause icons and key hints; Image B has a plain speed/altitude panel",
+        "Image B has flat low-poly trees, plain box buildings and simple white ring arches, unlike A's detailed architecture and lighting"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 20,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed painterly art, a rider character, and populated village with NPCs",
+        "Image A uses simple low-poly pine trees, flat boxy buildings and a placeholder rider",
+        "Image A has a basic HUD with a speed/altitude panel versus B's polished HUD with minimap and crayon watermark"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 21,
+      "look": "start-a",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed rider, hoverboard, NPCs and ornate buildings with warm sunset lighting and a minimap",
+        "A has simplified low-poly primitives, flat pastel lighting and a generic HUD",
+        "A's glowing rings and text-heavy HUD differ from B's quest card and 50 m waypoint marker"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 21,
+      "look": "start-b",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has detailed painterly rider, hoverboard, NPCs and ornate architecture; B has a blocky placeholder craft and boxy buildings",
+        "A has warm sunset sky, soft clouds, a flying creature and cast shadows; B has flat pale-blue sky with no shadows",
+        "A has polished HUD with minimap, map/help/pause buttons and crayon watermark; B has a plain speed/altitude panel and control-hint box"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 22,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed, hand-painted rider, hover-board and cast shadows; B has a blocky grey placeholder craft",
+        "Image A has rich architecture, painterly clouds and a warm sunset sky; B has plain boxy buildings and a flat pale sky",
+        "Image A has a polished HUD with minimap, quest card and crayon logo; B has a generic speed/altitude panel and different mission text"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 22,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image B has a detailed rider, hover-board and richly modeled architecture, while A uses simple low-poly blocks and a plain gray pod",
+        "Image B has painterly sunset lighting, soft shadows, clouds and a flying creature, while A has flat pale lighting",
+        "Image B has a polished HUD (minimap, icon buttons, chapter title, crayon logo), while A has a plain utility HUD with a controls hint box"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 23,
+      "look": "start-a",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed rider, hoverboard and painterly textured village, while B has a blocky low-poly craft with no visible rider",
+        "Image A has warm sunset lighting with soft clouds and cast shadows, while B has flat pale-blue lighting",
+        "Image A has a polished HUD with a minimap, key hints and a crayon logo, while B has a plain speed/altitude panel and a generic text box"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 23,
+      "look": "start-b",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has a detailed rider, hoverboard and stylized painterly lighting, with real shadows and populated village",
+        "Image A has plain low-poly pines, flat sand ground, and a basic grey blob board with a generic HUD",
+        "Image B has a polished HUD with minimap, a crayon watermark and a map/help/pause button set"
+      ]
+    }
+  ]
+}

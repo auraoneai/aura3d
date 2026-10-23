@@ -37,6 +37,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine", "/packages/engine/src/public/index.ts"],
   ["@aura3d/engine/scene", "/packages/scene/src/index.ts"],
   ["@aura3d/engine/renderer", "/packages/engine/src/public/renderer.ts"],
+  ["@aura3d/engine/audio", "/packages/audio/src/index.ts"],
   ["@aura3d/cli", "/packages/aura3d-cli/src/index.ts"],
   ["@aura3d/react", "/packages/react/src/index.ts"],
   ["@aura3d/engine/production-runtime", "/packages/engine/src/production-runtime/index.ts"],

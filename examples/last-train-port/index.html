@@ -24,6 +24,16 @@
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0e1220; z-index: 5; }
       .hidden { display: none !important; }
       kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font: inherit; font-size: 12px; color: var(--ink); }
+      #title, #results { position: fixed; inset: 0; display: grid; place-items: center; z-index: 4; background: radial-gradient(ellipse at center, rgba(14, 18, 32, 0.15), rgba(14, 18, 32, 0.72)); text-align: center; }
+      #title h2, #results h2 { margin: 0; font-size: 44px; font-weight: 500; letter-spacing: 0.01em; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45); }
+      #title .sub, #results .sub { margin: 6px 0 22px; font-size: 14px; color: var(--muted); }
+      #title .start { color: var(--ink); font-family: inherit; display: inline-block; margin: 0 0 18px; padding: 8px 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 14px; cursor: pointer; }
+      #title .keys, #results .grid { display: grid; grid-template-columns: auto auto; gap: 4px 18px; justify-content: center; text-align: left; font-size: 12px; color: var(--muted); }
+      #results .grade { font-size: 64px; font-weight: 500; line-height: 1.1; }
+      #results .grid { font-size: 14px; color: var(--ink); margin-bottom: 18px; }
+      #toast { position: fixed; top: 84px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 13px; transition: opacity 0.4s; pointer-events: none; }
+      #toast.off { opacity: 0; }
+      .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: baseline; }
     </style>
   </head>
   <body>
@@ -40,6 +50,29 @@
     <div id="status" class="panel">
       <div id="message">Press <kbd>E</kbd> to open the doors.</div>
       <div class="meta"><kbd>W</kbd> go · <kbd>Space</kbd> brake · <kbd>A</kbd>/<kbd>D</kbd> balance · <kbd>E</kbd> doors · <kbd>N</kbd> day/night · <kbd>R</kbd> new service</div>
+    </div>
+    <div id="toast" class="off"></div>
+    <div id="title" class="hidden">
+      <div>
+        <h2>Last Train to the Sea</h2>
+        <div class="sub">Six cloud-top towns, one tram, twelve seats. Balance the lean, keep every rider happy, make the last train.</div>
+        <button id="start-btn" class="start" type="button">Start &middot; press <kbd>Enter</kbd></button>
+        <div class="keys">
+          <span><kbd>E</kbd> open the doors</span><span><kbd>W</kbd> / <kbd>&uarr;</kbd> accelerate</span>
+          <span><kbd>Space</kbd> / <kbd>S</kbd> brake</span><span><kbd>A</kbd> <kbd>D</kbd> / <kbd>&larr;</kbd> <kbd>&rarr;</kbd> balance</span>
+          <span><kbd>N</kbd> day or night</span><span><kbd>P</kbd> autopilot &middot; <kbd>M</kbd> sound</span>
+        </div>
+        <div class="meta" id="best" style="margin-top:14px"></div>
+      </div>
+    </div>
+    <div id="results" class="hidden">
+      <div>
+        <div class="meta">Service complete</div>
+        <div class="grade" id="res-grade">Silver</div>
+        <div class="sub" id="res-score">Score 0</div>
+        <div class="grid" id="res-grid"></div>
+        <div class="meta">Press <kbd>R</kbd> for a new service &middot; <kbd>Enter</kbd> to keep riding</div>
+      </div>
     </div>
     <div id="loading"><div id="loading-status">Lighting the first view…</div></div>
     <script type="module" src="./main.ts"></script>

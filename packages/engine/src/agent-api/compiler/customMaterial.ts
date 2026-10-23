@@ -439,10 +439,25 @@ function injectPreamble(source: string, preamble: string, stage: "vertex" | "fra
   return `${head}${preamble}\n${body}`;
 }
 
+/**
+ * `#include <colorspace_decode>`: `a3dSrgbToLinear`. A custom shader's output is linear light and the
+ * output stage sRGB-encodes it, so a display-referred colour (a hex, a three.js ShaderMaterial
+ * colour) must be decoded in the shader to show as authored (with `output.toneMapping: "none"`).
+ */
+const COLORSPACE_DECODE_CHUNK_NAME = "colorspace_decode";
+const COLORSPACE_DECODE_CHUNK = `vec3 a3dSrgbToLinear(vec3 srgb) {
+  vec3 c = max(srgb, vec3(0.0));
+  return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+}
+vec4 a3dSrgbToLinear(vec4 srgba) {
+  return vec4(a3dSrgbToLinear(srgba.rgb), srgba.a);
+}`;
+
 /** Include map for the adapter bake: built-ins < global `registerShaderChunk` < `patch`. */
 function bakeIncludes(patch: Readonly<Record<string, string>> | undefined): Map<string, string> {
   const includes = new Map<string, string>();
   for (const chunk of SHADER_CHUNKS) includes.set(chunk.name, chunk.source);
+  includes.set(COLORSPACE_DECODE_CHUNK_NAME, COLORSPACE_DECODE_CHUNK);
   for (const [name, source] of globalShaderChunkEntries()) includes.set(name, source);
   for (const [name, source] of Object.entries(patch ?? {})) includes.set(name, source);
   return includes;

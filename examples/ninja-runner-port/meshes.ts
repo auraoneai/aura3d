@@ -1,11 +1,10 @@
 /**
  * Procedural geometry for the course (the original streams chunked meshes and GLB props): the route
- * ribbon with its rooftop/branch gaps, terrain verges, buildings, trees, rails and the river plane. Pure
+ * ribbon with its rooftop/branch gaps and terrain verges, the town floor, the river plane and the falls sheet. Pure
  * functions returning flat typed-array data for `geometry.dynamic`; no engine imports.
  */
 import { BIOME_TONES, hexLinear, type Rgb } from "./palette";
-import { COURSE_LENGTH, biomeAt, gapAt, groundFrame, pathWidth, railHeight } from "./course";
-import { seededRandom } from "./sim";
+import { COURSE_LENGTH, biomeAt, gapAt, groundFrame, pathWidth, routeFrame } from "./course";
 
 export interface MeshData {
   positions: number[];
@@ -105,29 +104,59 @@ const toneAt = (d: number, verge: boolean): Rgb => {
   return lerp3(a[i]!, b[i]!, 0.5);
 };
 
-/**
- * The route: a ribbon of `rows` quads along the course with 7 columns across the path and 4 verge columns each
- * side. Quads whose centre lies inside a gap are omitted, so the rooftop and branch gaps are real holes.
- */
-export function buildRoute(step = 2): MeshData {
+const VERGE_OFFSETS = [6, 16, 34, 70, 140, 260] as const;
+
+/** How far the verge falls below the path edge `out` metres away: gentle in the village and forest, steep over the river, valley and rooftops. */
+export function vergeDrop(d: number, out: number): number {
+  if (out <= 0) return 0;
+  const biome = biomeAt(Math.max(0, d));
+  if (biome === "village" || biome === "alley" || biome === "stairs") return -Math.min(2.2, out * 0.05);
+  if (biome === "forest_entry" || biome === "forest") return -Math.min(3, out * 0.05);
+  return -Math.min(14, out * 0.16) - (biome === "rooftops" ? 3 : 0);
+}
+
+/** Ground height of the route surface at (distance, lateral): the verge falls away from the path edge. */
+export function surfaceY(d: number, lat: number): number {
+  return groundFrame(d, lat).y + vergeDrop(d, Math.abs(lat) - pathWidth(Math.max(0, d)) / 2);
+}
+
+interface Ribbon { data: MeshData; rows: number; stride: number }
+
+/** Signed curvature of the route at `d` (positive = turning toward +lateral), from the tangent change over 6 m. */
+function curvature(d: number): number {
+  const a = routeFrame(d - 3), b = routeFrame(d + 3), t = routeFrame(d);
+  return ((b.dx - a.dx) * -t.dz + (b.dz - a.dz) * t.dx) / 6;
+}
+
+/** Far verge columns on the inside of a bend would fold over themselves; pull them in to 80% of the bend radius. */
+function foldFree(d: number, lat: number): number {
+  const k = curvature(d);
+  if (lat * k <= 0 || Math.abs(k) < 1e-6) return lat;
+  const cap = 0.8 / Math.abs(k);
+  return Math.abs(lat) > cap ? Math.sign(lat) * cap : lat;
+}
+
+/** The route ribbon: 7 columns across the path and `VERGE_OFFSETS.length` verge columns each side; gap quads are omitted. */
+function ribbon(step: number): Ribbon {
   const b = new MeshBuilder();
   const rows = Math.ceil((COURSE_LENGTH + 24) / step);
   const columns = (w: number): number[] => {
     const half = w / 2;
     const path = [-half, -half * 0.66, -half * 0.33, 0, half * 0.33, half * 0.66, half];
-    const verge = [6, 16, 34, 70].map((o) => half + o);
+    const verge = VERGE_OFFSETS.map((o) => half + o);
     return [...verge.map((v) => -v).reverse(), ...path, ...verge];
   };
   const stride = columns(8).length;
   for (let r = 0; r <= rows; r++) {
     const d = -12 + r * step;
     const w = pathWidth(Math.max(0, d));
-    columns(w).forEach((lat, c) => {
+    columns(w).forEach((lat0, c) => {
+      const onPath = Math.abs(lat0) <= w / 2 + 1e-6;
+      const lat = onPath ? lat0 : foldFree(d, lat0);
       const f = groundFrame(d, lat);
-      const onPath = Math.abs(lat) <= w / 2 + 1e-6;
       const tone = onPath ? toneAt(d, false) : lerp3(toneAt(d, false), toneAt(d, true), Math.min(1, (Math.abs(lat) - w / 2) / 6));
-      const edgeDrop = onPath ? 0 : -Math.min(14, (Math.abs(lat) - w / 2) * 0.16) - (biomeAt(d) === "rooftops" ? 3 : 0);
-      b.vertex(f.x, f.y + edgeDrop, f.z, c / (stride - 1), d / 3, tone);
+      const edgeDrop = onPath ? 0 : vergeDrop(d, Math.abs(lat) - w / 2);
+      b.vertex(f.x, f.y + edgeDrop, f.z, lat / 4, d / 4, tone);
     });
   }
   for (let r = 0; r < rows; r++) {
@@ -139,50 +168,67 @@ export function buildRoute(step = 2): MeshData {
       b.tri(i + 1, i + stride + 1, i + stride);
     }
   }
-  return b.computeNormals().data;
+  return { data: b.computeNormals().data, rows, stride };
 }
 
-/** Buildings along the village, backstreets and rooftops; moss-green trees through the forest; rails on the path edge. */
-export function buildProps(): MeshData {
+/** The route as one mesh with per-vertex tones (used by the shader-based fallback and the tests). */
+export function buildRoute(step = 2): MeshData { return ribbon(step).data; }
+
+export interface RouteGroup { readonly biome: string; readonly zone: "path" | "verge"; readonly mesh: MeshData }
+
+/**
+ * The route split by biome and surface (path or verge) so each group can take a flat lit PBR colour; normals come
+ * from the whole ribbon, so shading is continuous across group borders.
+ */
+export function buildRouteGroups(step = 2): RouteGroup[] {
+  const { data, rows, stride } = ribbon(step);
+  const first = VERGE_OFFSETS.length, last = first + 6;
+  const lists = new Map<string, number[]>();
+  for (let r = 0; r < rows; r++) {
+    const mid = -12 + (r + 0.5) * step;
+    if (gapAt(mid)) continue;
+    const biome = biomeAt(Math.max(0, mid));
+    for (let c = 0; c < stride - 1; c++) {
+      const zone = c >= first && c < last ? "path" : "verge";
+      const key = `${biome}|${zone}`;
+      let list = lists.get(key);
+      if (!list) lists.set(key, list = []);
+      const i = r * stride + c;
+      list.push(i, i + 1, i + stride, i + 1, i + stride + 1, i + stride);
+    }
+  }
+  return [...lists.entries()].map(([key, tris]) => {
+    const [biome, zone] = key.split("|") as [string, "path" | "verge"];
+    const remap = new Map<number, number>();
+    const mesh: MeshData = { positions: [], normals: [], uvs: [], tones: [], indices: [] };
+    for (const old of tris) {
+      let n = remap.get(old);
+      if (n === undefined) {
+        n = remap.size;
+        remap.set(old, n);
+        mesh.positions.push(data.positions[old * 3]!, data.positions[old * 3 + 1]!, data.positions[old * 3 + 2]!);
+        mesh.normals.push(data.normals[old * 3]!, data.normals[old * 3 + 1]!, data.normals[old * 3 + 2]!);
+        mesh.uvs.push(data.uvs[old * 2]!, data.uvs[old * 2 + 1]!);
+        mesh.tones.push(data.tones[old * 3]!, data.tones[old * 3 + 1]!, data.tones[old * 3 + 2]!);
+      }
+      mesh.indices.push(n);
+    }
+    return { biome, zone, mesh };
+  });
+}
+
+/** The street the rooftop run looks down on: a flat strip along the route between `from` and `to`, `half` metres each side. */
+export function buildTownFloor(from: number, to: number, half: number, y: number, step = 24): MeshData {
   const b = new MeshBuilder();
-  const rand = seededRandom(9871);
-  const wall = [hexLinear("#d8c8a6"), hexLinear("#c9b894"), hexLinear("#b8a27c"), hexLinear("#a58a68")];
-  const roof = [hexLinear("#8b4f3d"), hexLinear("#6f3f33"), hexLinear("#5e4338")];
-  for (let d = 20; d < 1130; d += 18 + Math.floor(rand() * 10)) {
-    if (gapAt(d)) continue;
-    for (const side of [-1, 1]) {
-      const w = pathWidth(d);
-      const lat = side * (w / 2 + 5 + rand() * 7);
-      const f = groundFrame(d, lat);
-      const yaw = Math.atan2(f.dx, f.dz);
-      const bw = 7 + rand() * 6, bd = 7 + rand() * 7, bh = 4 + rand() * 6;
-      const base = f.y - (biomeAt(d) === "rooftops" ? 3 : 0);
-      b.box(f.x, base, f.z, bw, bh, bd, yaw, wall[Math.floor(rand() * wall.length)]!);
-      b.box(f.x, base + bh, f.z, bw + 1.4, 0.7, bd + 1.4, yaw, roof[Math.floor(rand() * roof.length)]!);
-    }
+  const rows = Math.ceil((to - from) / step);
+  for (let r = 0; r <= rows; r++) {
+    const d = from + r * step;
+    for (const lat of [-half, 0, half]) { const f = groundFrame(d, lat); b.vertex(f.x, y, f.z, f.x / 5, f.z / 5, [1, 1, 1]); }
   }
-  const bark = hexLinear("#4a3a2a"), leaf = [hexLinear("#2f5a30"), hexLinear("#3b6b36"), hexLinear("#24492a")];
-  for (let d = 1500; d < COURSE_LENGTH - 30; d += 9 + Math.floor(rand() * 8)) {
-    if (gapAt(d)) continue;
-    for (const side of [-1, 1]) {
-      const w = pathWidth(d);
-      const lat = side * (w / 2 + 3 + rand() * 38);
-      const f = groundFrame(d, lat);
-      const h = 9 + rand() * 12;
-      const y = f.y - Math.min(14, (Math.abs(lat) - w / 2) * 0.16);
-      b.frustum(f.x, y, f.z, 0.7 + rand() * 0.5, 0.45, h, 7, bark);
-      b.frustum(f.x, y + h * 0.55, f.z, 3.6 + rand() * 2.2, 0.2, h * 0.7, 8, leaf[Math.floor(rand() * leaf.length)]!);
-    }
-  }
-  const rail = hexLinear("#6b5640");
-  for (let d = 0; d < COURSE_LENGTH; d += 12) {
-    if (gapAt(d)) continue;
-    const w = pathWidth(d);
-    const h = railHeight(d);
-    for (const side of [-1, 1]) {
-      const f = groundFrame(d, side * (w / 2 + 0.25));
-      b.box(f.x, f.y, f.z, 0.22, Math.min(1.2, h * 0.5), 0.22, 0, rail);
-    }
+  for (let r = 0; r < rows; r++) for (let c = 0; c < 2; c++) {
+    const i = r * 3 + c;
+    b.tri(i, i + 1, i + 3);
+    b.tri(i + 1, i + 4, i + 3);
   }
   return b.computeNormals().data;
 }

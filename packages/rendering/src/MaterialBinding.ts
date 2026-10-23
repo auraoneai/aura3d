@@ -1,5 +1,6 @@
 import { Material } from "./Material";
 import { MaterialInstance } from "./MaterialInstance";
+import { PortableShaderMaterial } from "./PortableShaderMaterial";
 import { type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { TextureBinding, isTextureBinding } from "./TextureBinding";
 import type { ProgramFeatures } from "./contracts/program";
@@ -40,9 +41,13 @@ export class MaterialBinding {
     const diagnostics: string[] = [];
     const warnings: string[] = [];
 
+    const unusedAttributes: string[] = [];
     for (const attribute of material.requiredAttributes) {
       if (!shader.reflection.attributes.has(attribute)) {
-        diagnostics.push(`Missing shader attribute: ${attribute}`);
+        // A custom shader may declare a vertex attribute it never reads; the GL
+        // compiler drops it from the active set, exactly like three.js ignores it.
+        if (material instanceof PortableShaderMaterial && attribute !== "a_position") unusedAttributes.push(attribute);
+        else diagnostics.push(`Missing shader attribute: ${attribute}`);
       }
     }
     for (const uniform of material.requiredUniforms) {
@@ -85,6 +90,9 @@ export class MaterialBinding {
     }
     if (diagnostics.length > 0) {
       throw new MaterialBindingError("Material binding validation failed", diagnostics);
+    }
+    if (unusedAttributes.length > 0) {
+      warnings.push(`[CUSTOM_ATTRIBUTE_UNUSED] material "${material.name}": declared attribute(s) ${unusedAttributes.join(", ")} not active in the linked program (unused or optimised out); not bound`);
     }
     if (optimizedOut.length > 0) {
       warnings.push(`[CUSTOM_UNIFORM_UNUSED] material "${material.name}": declared uniform(s) ${optimizedOut.join(", ")} not active in the linked program (unused or optimised out); not uploaded`);

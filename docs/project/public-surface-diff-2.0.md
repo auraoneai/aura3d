@@ -1,4 +1,4 @@
-# Aura3D 4.0.7 Public-Surface Diff
+# Aura3D 4.0.8 Public-Surface Diff
 
 Generated from `v1.5.2` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.
 

@@ -1,0 +1,5188 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "roadster-hours",
+  "sources": [
+    {
+      "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+      "bytes": 96530,
+      "lines": 685,
+      "singleLine": false,
+      "hash": "1aaead2ca4933079"
+    },
+    {
+      "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+      "bytes": 54763,
+      "lines": 62,
+      "singleLine": false,
+      "hash": "26fafa19104866eb"
+    },
+    {
+      "file": "tests/fixtures/crayon/roadster-hours/raw/sim-9N4wEPLA.js",
+      "bytes": 16524,
+      "lines": 1,
+      "singleLine": true,
+      "hash": "c4c9a61205cedafa"
+    },
+    {
+      "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+      "bytes": 808027,
+      "lines": 4418,
+      "singleLine": false,
+      "hash": "09009099d7b7e96b"
+    },
+    {
+      "file": "evidence/crayon-runtime/roadster-hours/srcdoc.html#script0",
+      "bytes": 2901,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "caca263437649e3a"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "level-select",
+      "hits": 223,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 607,
+          "col": 2693,
+          "offset": 57692
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 607,
+          "col": 2757,
+          "offset": 57756
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 607,
+          "col": 2770,
+          "offset": 57769
+        }
+      ]
+    },
+    {
+      "screen": "settings",
+      "hits": 88,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 14556,
+          "offset": 14555
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 15409,
+          "offset": 15408
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 15952,
+          "offset": 15951
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 41,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 15986,
+          "offset": 15985
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 16023,
+          "offset": 16022
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 16267,
+          "offset": 16266
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 27,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 2391,
+          "offset": 63114
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 10620,
+          "offset": 71343
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 10711,
+          "offset": 71434
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 25,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 10901,
+          "offset": 10900
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 15866,
+          "offset": 15865
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 15901,
+          "offset": 15900
+        }
+      ]
+    },
+    {
+      "screen": "checkpoint",
+      "hits": 23,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 19294,
+          "offset": 80017
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 685,
+          "col": 6272,
+          "offset": 95608
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 8892,
+          "offset": 8891
+        }
+      ]
+    },
+    {
+      "screen": "garage",
+      "hits": 20,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 16232,
+          "offset": 16231
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 21,
+          "col": 167,
+          "offset": 19219
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 10124,
+          "offset": 43905
+        }
+      ]
+    },
+    {
+      "screen": "credits",
+      "hits": 17,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 15,
+          "col": 118,
+          "offset": 17951
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 15,
+          "col": 137,
+          "offset": 17970
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 21,
+          "col": 501,
+          "offset": 19553
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 12,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 14565,
+          "offset": 14564
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 55,
+          "col": 442,
+          "offset": 32156
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 55,
+          "col": 480,
+          "offset": 32194
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 14,
+          "col": 118,
+          "offset": 17771
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 16596,
+          "offset": 50377
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 16674,
+          "offset": 50455
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 4405,
+          "offset": 38186
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 9126,
+          "offset": 42907
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 20847,
+          "offset": 54628
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 13962,
+          "offset": 13961
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 2915,
+          "offset": 36696
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 12229,
+          "offset": 46010
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 2,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/roadster-hours/srcdoc.html#script0",
+          "line": 4,
+          "col": 3,
+          "offset": 1216
+        },
+        {
+          "file": "evidence/crayon-runtime/roadster-hours/srcdoc.html#script0",
+          "line": 4,
+          "col": 19,
+          "offset": 1232
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 4998,
+        "offset": 4997
+      },
+      "cases": [
+        "XYX",
+        "YZY",
+        "ZXZ",
+        "XZX",
+        "YXY",
+        "ZYZ"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 11219,
+        "offset": 11218
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 52274,
+        "offset": 52273
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 72998,
+        "offset": 72997
+      },
+      "cases": [
+        "rgb",
+        "rgba",
+        "hsl",
+        "hsla"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 5,
+        "col": 21185,
+        "offset": 198846
+      },
+      "cases": [
+        "scalar",
+        "double",
+        "float",
+        "number",
+        "integer",
+        "vector",
+        "vector2",
+        "vector3",
+        "vector4",
+        "color",
+        "quaternion",
+        "bool",
+        "boolean",
+        "string"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 5,
+        "col": 25396,
+        "offset": 203057
+      },
+      "cases": [
+        "arraybuffer",
+        "blob",
+        "document",
+        "json"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4053,
+        "col": 14332,
+        "offset": 462178
+      },
+      "cases": [
+        "DirectionalLight",
+        "SpotLight",
+        "PointLight",
+        "HemisphereLight",
+        "RectAreaLight"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 100347,
+        "offset": 621950
+      },
+      "cases": [
+        "scene",
+        "node",
+        "mesh",
+        "accessor",
+        "bufferView",
+        "buffer",
+        "material",
+        "texture",
+        "skin",
+        "animation",
+        "camera"
+      ]
+    }
+  ],
+  "domIds": [
+    {
+      "id": "tuning",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 1,
+        "col": 16072,
+        "offset": 16071
+      }
+    },
+    {
+      "id": "gears",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 52,
+        "col": 266,
+        "offset": 24778
+      }
+    },
+    {
+      "id": "segs",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 52,
+        "col": 323,
+        "offset": 24835
+      }
+    },
+    {
+      "id": "world",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 4539,
+        "offset": 38320
+      }
+    },
+    {
+      "id": "ui",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 5310,
+        "offset": 39091
+      }
+    },
+    {
+      "id": "lost",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 17762,
+        "offset": 51543
+      }
+    },
+    {
+      "id": "load-status",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 18271,
+        "offset": 52052
+      }
+    },
+    {
+      "id": "load",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 18628,
+        "offset": 52409
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "Space",
+        "hits": 4,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 13714,
+          "offset": 13713
+        }
+      },
+      {
+        "key": "ArrowDown",
+        "hits": 3,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5877,
+          "offset": 39658
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 3,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5851,
+          "offset": 39632
+        }
+      },
+      {
+        "key": "ArrowLeft",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5823,
+          "offset": 39604
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5794,
+          "offset": 39575
+        }
+      },
+      {
+        "key": "KeyR",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 6357,
+          "offset": 40138
+        }
+      },
+      {
+        "key": "KeyS",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5866,
+          "offset": 39647
+        }
+      },
+      {
+        "key": "KeyW",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5840,
+          "offset": 39621
+        }
+      },
+      {
+        "key": "Enter",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11722,
+          "offset": 45503
+        }
+      },
+      {
+        "key": "Escape",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11642,
+          "offset": 45423
+        }
+      },
+      {
+        "key": "KeyA",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5812,
+          "offset": 39593
+        }
+      },
+      {
+        "key": "KeyD",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 5783,
+          "offset": 39564
+        }
+      },
+      {
+        "key": "KeyE",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 6234,
+          "offset": 40015
+        }
+      },
+      {
+        "key": "KeyH",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11565,
+          "offset": 45346
+        }
+      },
+      {
+        "key": "KeyP",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11661,
+          "offset": 45442
+        }
+      },
+      {
+        "key": "KeyQ",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 6247,
+          "offset": 40028
+        }
+      },
+      {
+        "key": "ShiftLeft",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 6184,
+          "offset": 39965
+        }
+      },
+      {
+        "key": "ShiftRight",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 6200,
+          "offset": 39981
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "dispose",
+        "hits": 12,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 3956,
+          "col": 836,
+          "offset": 414044
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 14353,
+          "offset": 14352
+        }
+      },
+      {
+        "event": "webglcontextlost",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 17697,
+          "offset": 51478
+        }
+      },
+      {
+        "event": "blur",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11888,
+          "offset": 45669
+        }
+      },
+      {
+        "event": "change",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 14429,
+          "offset": 14428
+        }
+      },
+      {
+        "event": "click",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 14061,
+          "offset": 14060
+        }
+      },
+      {
+        "event": "end",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2959,
+          "offset": 524562
+        }
+      },
+      {
+        "event": "error",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 5,
+          "col": 27174,
+          "offset": 204835
+        }
+      },
+      {
+        "event": "inputsourceschange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2988,
+          "offset": 524591
+        }
+      },
+      {
+        "event": "keydown",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11407,
+          "offset": 45188
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11835,
+          "offset": 45616
+        }
+      },
+      {
+        "event": "load",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 5,
+          "col": 27142,
+          "offset": 204803
+        }
+      },
+      {
+        "event": "pagehide",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 12075,
+          "offset": 45856
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 3561,
+          "offset": 3560
+        }
+      },
+      {
+        "event": "pointermove",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 3807,
+          "offset": 3806
+        }
+      },
+      {
+        "event": "pointerup",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 3927,
+          "offset": 3926
+        }
+      },
+      {
+        "event": "select",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2754,
+          "offset": 524357
+        }
+      },
+      {
+        "event": "selectend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2821,
+          "offset": 524424
+        }
+      },
+      {
+        "event": "selectstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2785,
+          "offset": 524388
+        }
+      },
+      {
+        "event": "sessionend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 31460,
+          "offset": 553063
+        }
+      },
+      {
+        "event": "sessionstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 31421,
+          "offset": 553024
+        }
+      },
+      {
+        "event": "squeeze",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2855,
+          "offset": 524458
+        }
+      },
+      {
+        "event": "squeezeend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2924,
+          "offset": 524527
+        }
+      },
+      {
+        "event": "squeezestart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 2887,
+          "offset": 524490
+        }
+      },
+      {
+        "event": "visibilitychange",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 62,
+          "col": 11947,
+          "offset": 45728
+        }
+      },
+      {
+        "event": "webglcontextcreationerror",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 23655,
+          "offset": 545258
+        }
+      },
+      {
+        "event": "webglcontextrestored",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4104,
+          "col": 23606,
+          "offset": 545209
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 16,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 4577,
+          "offset": 4576
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 10,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 4645,
+          "offset": 4644
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 8,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 4819,
+          "offset": 4818
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 6,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 5241,
+          "offset": 5240
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 6,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 6458,
+          "offset": 6457
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 5,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 6558,
+          "offset": 6557
+        }
+      },
+      {
+        "api": "linearRampToValueAtTime",
+        "hits": 3,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 6517,
+          "offset": 6516
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 4475,
+          "offset": 4474
+        }
+      },
+      {
+        "api": "webkitAudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 4496,
+          "offset": 4495
+        }
+      }
+    ],
+    "urls": [],
+    "oscillatorTypes": [
+      "sine"
+    ],
+    "oscillatorCalls": 4,
+    "playCalls": 15
+  },
+  "storage": [
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 4583,
+        "offset": 38364
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 4661,
+        "offset": 38442
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 5363,
+        "offset": 39144
+      }
+    }
+  ],
+  "network": [
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 1,
+        "col": 1071,
+        "offset": 1070
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 5,
+        "col": 24653,
+        "offset": 202314
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 5,
+        "col": 40558,
+        "offset": 218219
+      }
+    },
+    {
+      "kind": "Worker",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 24729,
+        "offset": 706433
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": "./assets/scans/manifest.json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4335,
+        "col": 1766,
+        "offset": 713093
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": "./assets/town/manifest.json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4361,
+        "col": 4016,
+        "offset": 728006
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": "./assets/vehicles/manifest.json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 8091,
+        "offset": 740689
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": "./assets/lite/manifest.json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 19771,
+        "offset": 752369
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": "./assets/scifi/manifest.json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 21039,
+        "offset": 753637
+      }
+    }
+  ],
+  "platform": [
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 25280,
+        "offset": 706984
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 25542,
+        "offset": 707246
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 25818,
+        "offset": 707522
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 25905,
+        "offset": 707609
+      }
+    }
+  ],
+  "three": {
+    "constructed": {},
+    "imports": [
+      "$",
+      "At",
+      "B",
+      "C",
+      "Ct",
+      "D",
+      "E",
+      "Et",
+      "F",
+      "Ft",
+      "H",
+      "I",
+      "J",
+      "K",
+      "L",
+      "Mt",
+      "N",
+      "Nt",
+      "O",
+      "Ot",
+      "P",
+      "Pt",
+      "R",
+      "S",
+      "St",
+      "T",
+      "U",
+      "V",
+      "W",
+      "X",
+      "Z",
+      "_",
+      "_t",
+      "a",
+      "at",
+      "b",
+      "bt",
+      "c",
+      "ct",
+      "dt",
+      "et",
+      "h",
+      "ht",
+      "i",
+      "it",
+      "j",
+      "jt",
+      "k",
+      "l",
+      "lt",
+      "m",
+      "mt",
+      "n",
+      "nt",
+      "o",
+      "p",
+      "pt",
+      "q",
+      "r",
+      "rt",
+      "s",
+      "st",
+      "t",
+      "tt",
+      "u",
+      "ut",
+      "v",
+      "vt",
+      "w",
+      "wt",
+      "x",
+      "y",
+      "yt"
+    ],
+    "importSources": [
+      "./fx-DtaHJ05i.js",
+      "./sim-9N4wEPLA.js",
+      "./world-BJq13QzJ.js"
+    ]
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 134,
+      "hash": "23a6c7de4301a91f",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 1,
+        "col": 1181,
+        "offset": 1180
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 181,
+      "hash": "5673d83ffe1cea9d",
+      "uniforms": [
+        "opacity",
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 10,
+        "col": 21,
+        "offset": 1332
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 135,
+      "hash": "22b7d56e27f22f01",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 24,
+        "col": 196,
+        "offset": 1706
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 493,
+      "hash": "67fb969b29c688ad",
+      "uniforms": [
+        "tDiffuse",
+        "defaultColor",
+        "defaultOpacity",
+        "luminosityThreshold",
+        "smoothWidth"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 34,
+        "col": 21,
+        "offset": 1859
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 144,
+      "hash": "d2e2d51449959e98",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 56,
+        "col": 5508,
+        "offset": 7857
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 743,
+      "hash": "5632f72a7e577de7",
+      "uniforms": [
+        "colorTexture",
+        "invSize",
+        "direction",
+        "gaussianCoefficients"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 65,
+        "col": 23,
+        "offset": 8019
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 144,
+      "hash": "d2e2d51449959e98",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 94,
+        "col": 325,
+        "offset": 9082
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1299,
+      "hash": "e0409f782756cacd",
+      "uniforms": [
+        "blurTexture1",
+        "blurTexture2",
+        "blurTexture3",
+        "blurTexture4",
+        "blurTexture5",
+        "bloomStrength",
+        "bloomRadius",
+        "bloomFactors",
+        "bloomTintColors"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 103,
+        "col": 23,
+        "offset": 9244
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 132,
+      "hash": "baf65bc8c60b0d3c",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 138,
+        "col": 1496,
+        "offset": 12034
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 6989,
+      "hash": "98c52425dc3a67cf",
+      "uniforms": [
+        "tNormal",
+        "tDepth",
+        "tNoise",
+        "resolution",
+        "cameraNear",
+        "cameraFar",
+        "cameraProjectionMatrix",
+        "cameraProjectionMatrixInverse",
+        "cameraWorldMatrix",
+        "radius",
+        "distanceExponent",
+        "thickness",
+        "distanceFallOff",
+        "scale",
+        "sceneBoxMin",
+        "sceneBoxMax"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 145,
+        "col": 21,
+        "offset": 12184
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 131,
+      "hash": "efd06f00365cc06d",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 334,
+        "col": 156,
+        "offset": 19326
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 612,
+      "hash": "46fbd452f780dd02",
+      "uniforms": [
+        "tDepth",
+        "cameraNear",
+        "cameraFar"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 340,
+        "col": 21,
+        "offset": 19475
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 131,
+      "hash": "efd06f00365cc06d",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 362,
+        "col": 100,
+        "offset": 20184
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 212,
+      "hash": "930c8c3efdf14af6",
+      "uniforms": [
+        "intensity",
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 368,
+        "col": 21,
+        "offset": 20333
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 132,
+      "hash": "baf65bc8c60b0d3c",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 376,
+        "col": 1007,
+        "offset": 21549
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 4855,
+      "hash": "127ac4769a2b1e8f",
+      "uniforms": [
+        "tDiffuse",
+        "tNormal",
+        "tDepth",
+        "tNoise",
+        "resolution",
+        "cameraProjectionMatrixInverse",
+        "lumaPhi",
+        "depthPhi",
+        "normalPhi",
+        "radius",
+        "index"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 383,
+        "col": 21,
+        "offset": 21699
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 73,
+      "hash": "5626f7384b9ec254",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 525,
+        "col": 14762,
+        "offset": 41313
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1743,
+      "hash": "0d48de49c5cd94ba",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 525,
+        "col": 14841,
+        "offset": 41392
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1735,
+      "hash": "f7897fc17b1f99f2",
+      "uniforms": [
+        "uShadow",
+        "uShadowMatrix",
+        "uHasShadow",
+        "uCarView"
+      ],
+      "varyings": [
+        "vUv",
+        "vA",
+        "vB",
+        "vWorld",
+        "vToward",
+        "vDepth",
+        "vTail"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 549,
+        "col": 508,
+        "offset": 43642
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 2001,
+      "hash": "e54c0aecf5a3ef18",
+      "uniforms": [
+        "uAtlas",
+        "uDepth",
+        "uDepthScale",
+        "uCameraNear",
+        "uSunDir"
+      ],
+      "varyings": [
+        "vUv",
+        "vA",
+        "vB",
+        "vWorld",
+        "vToward",
+        "vDepth",
+        "vTail"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 575,
+        "col": 7,
+        "offset": 45383
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 311,
+      "hash": "d8b82e1a269e54c3",
+      "uniforms": [
+        "uScale"
+      ],
+      "varyings": [
+        "vColor",
+        "vAlpha"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 606,
+        "col": 7502,
+        "offset": 54885
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 156,
+      "hash": "ab334910bfab1a8a",
+      "uniforms": [],
+      "varyings": [
+        "vColor",
+        "vAlpha"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 607,
+        "col": 203,
+        "offset": 55202
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 389,
+      "hash": "a1830637e9f7a0c5",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 610,
+        "col": 6,
+        "offset": 59356
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 969,
+      "hash": "633aa8c70f5aff8f",
+      "uniforms": [
+        "uTime",
+        "uLit"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 613,
+        "col": 50,
+        "offset": 59751
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 267,
+      "hash": "8d14f01fdcfbb31e",
+      "uniforms": [],
+      "varyings": [
+        "vColor",
+        "vAlpha"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 16289,
+        "offset": 77012
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 233,
+      "hash": "322f0f69d063a08f",
+      "uniforms": [],
+      "varyings": [
+        "vColor",
+        "vAlpha"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 16574,
+        "offset": 77297
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 22284,
+        "offset": 83007
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3789,
+      "hash": "5241c011669c455f",
+      "uniforms": [
+        "tDiffuse",
+        "uTime",
+        "uCenter",
+        "uFlashColor",
+        "uWhite",
+        "uContrastLow"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 22402,
+        "offset": 83125
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 672,
+        "col": 275,
+        "offset": 87187
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 200,
+      "hash": "d31a2e5d5b030d2f",
+      "uniforms": [
+        "tDiffuse",
+        "intensity"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 672,
+        "col": 393,
+        "offset": 87305
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 73,
+      "hash": "5626f7384b9ec254",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 672,
+        "col": 600,
+        "offset": 87512
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 321,
+      "hash": "6982d75852e6e352",
+      "uniforms": [
+        "tDepth",
+        "uFull"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 672,
+        "col": 767,
+        "offset": 87679
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1104,
+      "hash": "a7474459aba28bf9",
+      "uniforms": [
+        "tDiffuse",
+        "intensity",
+        "uLow"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 673,
+        "col": 448,
+        "offset": 88234
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 90,
+      "hash": "be364785ff6859cc",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 177508,
+        "offset": 177507
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 59,
+      "hash": "58837176c7285557",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3,
+        "col": 7,
+        "offset": 177603
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 51,
+      "hash": "c6a9614f5fabb89a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 486,
+        "col": 29,
+        "offset": 254310
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 265,
+      "hash": "3b3d092e4a5b5318",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 605,
+        "col": 22,
+        "offset": 259004
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 145,
+      "hash": "e0009895ecfbe0fb",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1458,
+        "col": 28,
+        "offset": 300539
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 173,
+      "hash": "abd3763c2b5ff946",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1657,
+        "col": 25,
+        "offset": 308093
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 70,
+      "hash": "7313886d8fcad0dc",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1742,
+        "col": 33,
+        "offset": 311172
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 273,
+      "hash": "bb4dba933faaf6c5",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1744,
+        "col": 24,
+        "offset": 311260
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 74,
+      "hash": "1b9447c9123fe30c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1752,
+        "col": 66,
+        "offset": 311555
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 87,
+      "hash": "119495ad8c88755a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2123,
+        "col": 30,
+        "offset": 327236
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 148,
+      "hash": "583283467cc1ea04",
+      "uniforms": [
+        "uvTransform"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2613,
+        "col": 25,
+        "offset": 344970
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 494,
+      "hash": "3e0648c50d47fe90",
+      "uniforms": [
+        "t2D",
+        "backgroundIntensity"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2618,
+        "col": 20,
+        "offset": 345137
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 211,
+      "hash": "e9dc7a6595f9d214",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2630,
+        "col": 24,
+        "offset": 345654
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 747,
+      "hash": "3bcaec40e063a045",
+      "uniforms": [
+        "envMap",
+        "backgroundBlurriness",
+        "backgroundIntensity",
+        "backgroundRotation"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2637,
+        "col": 24,
+        "offset": 345888
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 211,
+      "hash": "e9dc7a6595f9d214",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2659,
+        "col": 14,
+        "offset": 346648
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 329,
+      "hash": "ad30c3bd9010804b",
+      "uniforms": [
+        "tCube",
+        "tFlip",
+        "opacity"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2666,
+        "col": 14,
+        "offset": 346872
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 792,
+      "hash": "2d7993945c5b9c2a",
+      "uniforms": [],
+      "varyings": [
+        "vHighPrecisionZW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2676,
+        "col": 15,
+        "offset": 347215
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1214,
+      "hash": "f1e724e778a24c6a",
+      "uniforms": [
+        "opacity"
+      ],
+      "varyings": [
+        "vHighPrecisionZW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2703,
+        "col": 15,
+        "offset": 348021
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 770,
+      "hash": "6d1265e98acac316",
+      "uniforms": [],
+      "varyings": [
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2741,
+        "col": 18,
+        "offset": 349252
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 754,
+      "hash": "4efb5f697f31ad96",
+      "uniforms": [
+        "referencePosition",
+        "nearDistance",
+        "farDistance"
+      ],
+      "varyings": [
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2768,
+        "col": 18,
+        "offset": 350039
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 179,
+      "hash": "b7c5595953945f6c",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2791,
+        "col": 18,
+        "offset": 350810
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 297,
+      "hash": "cce0b06ce0b1d3dc",
+      "uniforms": [
+        "tEquirect"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2797,
+        "col": 18,
+        "offset": 351006
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 625,
+      "hash": "c2724939acbb4777",
+      "uniforms": [
+        "scale"
+      ],
+      "varyings": [
+        "vLineDistance"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2806,
+        "col": 20,
+        "offset": 351322
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 816,
+      "hash": "24705a10449f44ba",
+      "uniforms": [
+        "diffuse",
+        "opacity",
+        "dashSize",
+        "totalSize"
+      ],
+      "varyings": [
+        "vLineDistance"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2828,
+        "col": 20,
+        "offset": 351966
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 932,
+      "hash": "334e1058baa0d1c0",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2856,
+        "col": 19,
+        "offset": 352800
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1619,
+      "hash": "05380b1c9b875479",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [
+        "vNormal"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2888,
+        "col": 19,
+        "offset": 353750
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1134,
+      "hash": "844c4886370bd26b",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2936,
+        "col": 21,
+        "offset": 355389
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1988,
+      "hash": "27c42d7cf0b7a6e8",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 2975,
+        "col": 21,
+        "offset": 356543
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 987,
+      "hash": "e698e9e2bf588427",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3033,
+        "col": 20,
+        "offset": 358550
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1506,
+      "hash": "d2ddf6e2881f3e51",
+      "uniforms": [
+        "diffuse",
+        "opacity",
+        "matcap"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3067,
+        "col": 20,
+        "offset": 359556
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1056,
+      "hash": "9d6ec940de6489f4",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3113,
+        "col": 20,
+        "offset": 361081
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 699,
+      "hash": "9d1b19363344181b",
+      "uniforms": [
+        "opacity"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3146,
+        "col": 20,
+        "offset": 362156
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1132,
+      "hash": "1a78f3d34122a917",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3167,
+        "col": 19,
+        "offset": 362873
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 2096,
+      "hash": "c1aee01447c167e2",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "specular",
+        "shininess",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3206,
+        "col": 19,
+        "offset": 364023
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1208,
+      "hash": "a96c520a0ebc4c64",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition",
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3266,
+        "col": 22,
+        "offset": 366140
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3942,
+      "hash": "7487b380f5c9dfa7",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "roughness",
+        "metalness",
+        "opacity",
+        "ior",
+        "specularIntensity",
+        "specularColor",
+        "specularColorMap",
+        "specularIntensityMap",
+        "clearcoat",
+        "clearcoatRoughness",
+        "dispersion",
+        "iridescence",
+        "iridescenceIOR",
+        "iridescenceThicknessMinimum",
+        "iridescenceThicknessMaximum",
+        "sheenColor",
+        "sheenRoughness",
+        "sheenColorMap",
+        "sheenRoughnessMap",
+        "anisotropyVector",
+        "anisotropyMap"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3309,
+        "col": 22,
+        "offset": 367369
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1075,
+      "hash": "1f011c7d23349f64",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3434,
+        "col": 18,
+        "offset": 371328
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1767,
+      "hash": "44bbc89f57f353b6",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3471,
+        "col": 18,
+        "offset": 372420
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 864,
+      "hash": "94a9ef30c4c60d58",
+      "uniforms": [
+        "size",
+        "scale",
+        "uvTransform"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3523,
+        "col": 16,
+        "offset": 374202
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 793,
+      "hash": "0340c843b39cea5b",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3554,
+        "col": 16,
+        "offset": 375081
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 663,
+      "hash": "9eeb08c07d5c41cf",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3579,
+        "col": 16,
+        "offset": 375889
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 491,
+      "hash": "cc8f46fabda59945",
+      "uniforms": [
+        "color",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3602,
+        "col": 16,
+        "offset": 376567
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 964,
+      "hash": "f44747c91d5c13c5",
+      "uniforms": [
+        "rotation",
+        "center"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3618,
+        "col": 16,
+        "offset": 377073
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 768,
+      "hash": "b8d694e1396e1d89",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3642,
+        "col": 16,
+        "offset": 378052
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3417,
+      "hash": "78fefab878dca658",
+      "uniforms": [
+        "envMap",
+        "roughness",
+        "mipInt"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3667,
+        "col": 26042,
+        "offset": 404861
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1364,
+      "hash": "4cdf81576e50ed37",
+      "uniforms": [
+        "envMap",
+        "samples",
+        "weights",
+        "latitudinal",
+        "dTheta",
+        "mipInt",
+        "poleAxis"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3771,
+        "col": 412,
+        "offset": 408688
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 336,
+      "hash": "08febb139b250ce1",
+      "uniforms": [
+        "envMap"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3831,
+        "col": 169,
+        "offset": 410219
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 284,
+      "hash": "e97c440330ffa217",
+      "uniforms": [
+        "flipEnvMap",
+        "envMap"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3850,
+        "col": 183,
+        "offset": 410736
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1012,
+      "hash": "24413bc4e935516e",
+      "uniforms": [],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3866,
+        "col": 65,
+        "offset": 411083
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 325,
+      "hash": "a03213cdb82efc61",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3921,
+        "col": 497,
+        "offset": 412591
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 277,
+      "hash": "3a56cf36e285da98",
+      "uniforms": [
+        "tEquirect"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3939,
+        "col": 21,
+        "offset": 412934
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 282,
+      "hash": "6cfc00f7ba80ef92",
+      "uniforms": [
+        "modelViewMatrix",
+        "projectionMatrix"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3956,
+        "col": 7433,
+        "offset": 420641
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1060,
+      "hash": "f1a9d8d522dd031b",
+      "uniforms": [
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3970,
+        "col": 22,
+        "offset": 420941
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 49,
+      "hash": "f5939168ddf07c1e",
+      "uniforms": [],
+      "varyings": [
+        "pc_fragColor"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4044,
+        "col": 57,
+        "offset": 446510
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 53,
+      "hash": "44875654b59c6658",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4053,
+        "col": 21191,
+        "offset": 469037
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1003,
+      "hash": "5a31ac121bfdf5bd",
+      "uniforms": [
+        "shadow_pass",
+        "resolution",
+        "radius"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4055,
+        "col": 7,
+        "offset": 469096
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 56,
+      "hash": "ebbd6dda9a565b8e",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 51065,
+        "offset": 521163
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 379,
+      "hash": "365897cd3c0e57e8",
+      "uniforms": [
+        "depthColor",
+        "depthWidth",
+        "depthHeight"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4085,
+        "col": 7,
+        "offset": 521225
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 482,
+      "hash": "40d84413cde3fd52",
+      "uniforms": [
+        "tMap"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4207,
+        "col": 250,
+        "offset": 662772
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 49,
+      "hash": "907eb600f211856c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4209,
+        "col": 194,
+        "offset": 663416
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 94,
+      "hash": "d3c2c9630b37ba64",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4257,
+        "col": 372,
+        "offset": 669146
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 67,
+      "hash": "fbb9eafd72777436",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4265,
+        "col": 218,
+        "offset": 670053
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 343,
+      "hash": "e6ca54684e932af9",
+      "uniforms": [],
+      "varyings": [
+        "vHeight"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4265,
+        "col": 1003,
+        "offset": 670838
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 71,
+      "hash": "05d9416772f3f77c",
+      "uniforms": [],
+      "varyings": [
+        "vHeight"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4276,
+        "col": 97,
+        "offset": 671199
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 49,
+      "hash": "907eb600f211856c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4276,
+        "col": 1122,
+        "offset": 672224
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 373,
+      "hash": "8560129990cabde1",
+      "uniforms": [
+        "tSrc",
+        "uSize",
+        "uAxis"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4276,
+        "col": 1292,
+        "offset": 672394
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 361,
+      "hash": "8c644ff18af18c31",
+      "uniforms": [
+        "tD",
+        "uSize",
+        "uStep",
+        "uSy"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4279,
+        "col": 426,
+        "offset": 673158
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 125,
+      "hash": "d242c1140297ba9a",
+      "uniforms": [],
+      "varyings": [
+        "vWorld"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4283,
+        "col": 4622,
+        "offset": 678174
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3032,
+      "hash": "65f4e7890444e4c3",
+      "uniforms": [
+        "uSky",
+        "uSkyRotation",
+        "uHeightBounds",
+        "uSunDir",
+        "uSkyIntensity"
+      ],
+      "varyings": [
+        "vWorld"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4283,
+        "col": 4765,
+        "offset": 678317
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 803,
+      "hash": "045f0811f065c08e",
+      "uniforms": [
+        "uWindTime"
+      ],
+      "varyings": [
+        "vT",
+        "vSeed",
+        "vWorld",
+        "vN"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4335,
+        "col": 11007,
+        "offset": 722334
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 843,
+      "hash": "e1d06f81dadaa23e",
+      "uniforms": [
+        "uAmbient"
+      ],
+      "varyings": [
+        "vT",
+        "vSeed",
+        "vWorld",
+        "vN"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4346,
+        "col": 7,
+        "offset": 723143
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 141,
+      "hash": "724171190ce80b93",
+      "uniforms": [],
+      "varyings": [
+        "vUv",
+        "vW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 19205,
+        "offset": 779490
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 289,
+      "hash": "ad546747135576b9",
+      "uniforms": [
+        "uT"
+      ],
+      "varyings": [
+        "vUv",
+        "vW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 19364,
+        "offset": 779649
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 107,
+      "hash": "0a3a19230dd27036",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 19991,
+        "offset": 780276
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 232,
+      "hash": "d677f6bb20039119",
+      "uniforms": [
+        "uT"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 20116,
+        "offset": 780401
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 41390,
+        "offset": 801675
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 189,
+      "hash": "a64de35143a8be35",
+      "uniforms": [
+        "uOpacity"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 41508,
+        "offset": 801793
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "tonemap",
+      "hits": 61,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 549,
+          "col": 234,
+          "offset": 43368
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 606,
+          "col": 1731,
+          "offset": 49114
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 607,
+          "col": 934,
+          "offset": 55933
+        }
+      ]
+    },
+    {
+      "word": "halo",
+      "hits": 51,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 13878,
+          "offset": 74601
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 13502,
+          "offset": 13501
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+          "line": 1,
+          "col": 13507,
+          "offset": 13506
+        }
+      ]
+    },
+    {
+      "word": "bloom",
+      "hits": 31,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 56,
+          "col": 438,
+          "offset": 2787
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 56,
+          "col": 585,
+          "offset": 2934
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 56,
+          "col": 714,
+          "offset": 3063
+        }
+      ]
+    },
+    {
+      "word": "exposure",
+      "hits": 15,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 13295,
+          "offset": 74018
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 13601,
+          "offset": 74324
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 13903,
+          "offset": 74626
+        }
+      ]
+    },
+    {
+      "word": "tone_mapping",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 3956,
+          "col": 6919,
+          "offset": 420127
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 3956,
+          "col": 6943,
+          "offset": 420151
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 3956,
+          "col": 6969,
+          "offset": 420177
+        }
+      ]
+    },
+    {
+      "word": "vignette",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 13494,
+          "offset": 74217
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 13801,
+          "offset": 74524
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 14105,
+          "offset": 74828
+        }
+      ]
+    },
+    {
+      "word": "scanline",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4108,
+          "col": 477,
+          "offset": 641113
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4108,
+          "col": 781,
+          "offset": 641417
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 4108,
+          "col": 902,
+          "offset": 641538
+        }
+      ]
+    },
+    {
+      "word": "grain",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 21932,
+          "offset": 82655
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "trail",
+      "hits": 51,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 17580,
+          "offset": 78303
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 17596,
+          "offset": 78319
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 17616,
+          "offset": 78339
+        }
+      ]
+    },
+    {
+      "word": "rain",
+      "hits": 48,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 21932,
+          "offset": 82655
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/sim-9N4wEPLA.js",
+          "line": 1,
+          "col": 2628,
+          "offset": 2627
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/sim-9N4wEPLA.js",
+          "line": 1,
+          "col": 8288,
+          "offset": 8287
+        }
+      ]
+    },
+    {
+      "word": "dust",
+      "hits": 15,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 606,
+          "col": 403,
+          "offset": 47786
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 606,
+          "col": 1524,
+          "offset": 48907
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 606,
+          "col": 4366,
+          "offset": 51749
+        }
+      ]
+    },
+    {
+      "word": "emitter",
+      "hits": 15,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 1268,
+          "offset": 61991
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 2227,
+          "offset": 62950
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 5325,
+          "offset": 66048
+        }
+      ]
+    },
+    {
+      "word": "burst",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 2360,
+          "offset": 63083
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 8174,
+          "offset": 68897
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 8266,
+          "offset": 68989
+        }
+      ]
+    },
+    {
+      "word": "particle",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 16210,
+          "offset": 76933
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 16818,
+          "offset": 77541
+        },
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 629,
+          "col": 16850,
+          "offset": 77573
+        }
+      ]
+    },
+    {
+      "word": "snow",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+          "line": 607,
+          "col": 3679,
+          "offset": 58678
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 1,
+          "col": 71649,
+          "offset": 71648
+        }
+      ]
+    },
+    {
+      "word": "smoke",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+          "line": 1,
+          "col": 71820,
+          "offset": 71819
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "uniforms",
+        "vertexShader",
+        "fragmentShader",
+        "transparent",
+        "depthTest",
+        "depthWrite",
+        "blendSrc",
+        "blendDst",
+        "blendEquation",
+        "blendSrcAlpha",
+        "blendDstAlpha",
+        "blendEquationAlpha"
+      ],
+      "numbers": {
+        "transparent": null,
+        "depthTest": null,
+        "depthWrite": null,
+        "blendSrc": 208,
+        "blendDst": 200,
+        "blendEquation": 100,
+        "blendSrcAlpha": 206,
+        "blendDstAlpha": 200,
+        "blendEquationAlpha": 100
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 525,
+        "col": 6533,
+        "offset": 33084
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "uniforms",
+        "vertexShader",
+        "fragmentShader",
+        "transparent",
+        "depthTest",
+        "depthWrite",
+        "blending",
+        "blendSrc",
+        "blendDst",
+        "blendEquation",
+        "blendSrcAlpha",
+        "blendDstAlpha",
+        "blendEquationAlpha"
+      ],
+      "numbers": {
+        "transparent": null,
+        "depthTest": null,
+        "depthWrite": null,
+        "blending": 5,
+        "blendSrc": 208,
+        "blendDst": 200,
+        "blendEquation": 100,
+        "blendSrcAlpha": 206,
+        "blendDstAlpha": 200,
+        "blendEquationAlpha": 100
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 525,
+        "col": 6795,
+        "offset": 33346
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "kind",
+        "anchor",
+        "direction",
+        "root",
+        "mat",
+        "index",
+        "power",
+        "pulse",
+        "acc",
+        "sheet",
+        "flash",
+        "base",
+        "cool",
+        "burst",
+        "len"
+      ],
+      "numbers": {
+        "power": 0,
+        "pulse": 0,
+        "acc": 0,
+        "sheet": 0,
+        "flash": 0,
+        "base": 0,
+        "cool": 0,
+        "burst": 0,
+        "len": 1
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 2241,
+        "offset": 62964
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "white",
+        "exposure",
+        "contrastLow",
+        "contrastHigh",
+        "pivot",
+        "saturation",
+        "vibrance",
+        "warm",
+        "cool",
+        "warmHue",
+        "coolHue",
+        "shadow",
+        "highlight",
+        "split",
+        "highlightSat",
+        "vignette",
+        "bloom",
+        "lines"
+      ],
+      "numbers": {
+        "exposure": 1.07,
+        "contrastLow": 1.14,
+        "contrastHigh": 1.05,
+        "pivot": 0.19,
+        "saturation": 1.12,
+        "vibrance": 0.4,
+        "warm": 1.08,
+        "cool": 1.24,
+        "warmHue": 0.06,
+        "coolHue": 0.16,
+        "split": 0,
+        "highlightSat": 0.55,
+        "vignette": 0.26
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 13275,
+        "offset": 73998
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "white",
+        "exposure",
+        "contrastLow",
+        "contrastHigh",
+        "pivot",
+        "saturation",
+        "vibrance",
+        "warm",
+        "cool",
+        "warmHue",
+        "coolHue",
+        "shadow",
+        "highlight",
+        "split",
+        "highlightSat",
+        "vignette",
+        "bloom",
+        "lines"
+      ],
+      "numbers": {
+        "exposure": 1.1,
+        "contrastLow": 1.14,
+        "contrastHigh": 1.06,
+        "pivot": 0.19,
+        "saturation": 1.1,
+        "vibrance": 0.3,
+        "warm": 1.07,
+        "cool": 1.28,
+        "warmHue": 0.22,
+        "coolHue": 0.45,
+        "split": 0.1,
+        "highlightSat": 0.5,
+        "vignette": 0.26
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 13579,
+        "offset": 74302
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "white",
+        "exposure",
+        "contrastLow",
+        "contrastHigh",
+        "pivot",
+        "saturation",
+        "vibrance",
+        "warm",
+        "cool",
+        "warmHue",
+        "coolHue",
+        "shadow",
+        "highlight",
+        "split",
+        "highlightSat",
+        "vignette",
+        "bloom",
+        "lines"
+      ],
+      "numbers": {
+        "exposure": 1,
+        "contrastLow": 1.18,
+        "contrastHigh": 1.04,
+        "pivot": 0.16,
+        "saturation": 1.14,
+        "vibrance": 0.38,
+        "warm": 1.12,
+        "cool": 1.18,
+        "warmHue": 0.08,
+        "coolHue": 0.22,
+        "split": -0.1,
+        "highlightSat": 0.45,
+        "vignette": 0.3
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 13883,
+        "offset": 74606
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 77,
+      "keys": [
+        "levelIndex",
+        "level",
+        "phase",
+        "countdown",
+        "s",
+        "l",
+        "h",
+        "v",
+        "vy",
+        "theta",
+        "wheel",
+        "slip",
+        "roll",
+        "rollVelocity",
+        "pitch",
+        "spin",
+        "flip",
+        "rollRate",
+        "spinRate",
+        "flipRate",
+        "thrust",
+        "capacity",
+        "heat",
+        "overheated",
+        "grounded",
+        "time",
+        "score",
+        "combo",
+        "comboTime",
+        "checkpoint",
+        "nextGate",
+        "cells",
+        "crashes",
+        "airTime",
+        "driftTime",
+        "boostHold",
+        "rollTravel",
+        "spinTurns",
+        "flipTurns",
+        "airTricks",
+        "maxHeight",
+        "maxSpeed",
+        "cleanLandings",
+        "airRolls",
+        "airSpins",
+        "airFlips",
+        "combos",
+        "nearMisses",
+        "lineupsCleared",
+        "vehiclesCleared",
+        "overTops",
+        "trailerRides",
+        "ridden",
+        "wallDistance",
+        "shortcuts",
+        "events",
+        "toast",
+        "toastTime",
+        "recoverTime",
+        "boosting"
+      ],
+      "numbers": {
+        "countdown": 2.7,
+        "l": 0,
+        "h": 0,
+        "v": 0,
+        "vy": 0,
+        "theta": 0,
+        "wheel": 0,
+        "slip": 0,
+        "roll": 0,
+        "rollVelocity": 0,
+        "pitch": 0,
+        "spin": 0,
+        "flip": 0,
+        "rollRate": 0,
+        "spinRate": 0,
+        "flipRate": 0,
+        "heat": 0,
+        "overheated": null,
+        "grounded": null,
+        "combo": 1,
+        "comboTime": 0,
+        "airTime": 0,
+        "driftTime": 0,
+        "boostHold": 0,
+        "rollTravel": 0,
+        "spinTurns": 0,
+        "flipTurns": 0,
+        "maxHeight": 0,
+        "maxSpeed": 0,
+        "cleanLandings": 0,
+        "airRolls": 0,
+        "airSpins": 0,
+        "airFlips": 0,
+        "combos": 0,
+        "nearMisses": 0,
+        "lineupsCleared": 0,
+        "vehiclesCleared": 0,
+        "overTops": 0,
+        "trailerRides": 0,
+        "wallDistance": 0,
+        "shortcuts": 0,
+        "toastTime": 0,
+        "recoverTime": 0,
+        "boosting": null,
+        "drifting": null,
+        "lastGrounded": null,
+        "offroadTime": 0,
+        "gateMiss": null,
+        "saveDirty": null,
+        "nitro": 0,
+        "nitroTime": 0,
+        "nitroHeld": null,
+        "nitroGrace": 0,
+        "nitroWindow": null,
+        "lastNitroPress": -9,
+        "scraping": null
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/sim-9N4wEPLA.js",
+        "line": 1,
+        "col": 3227,
+        "offset": 3226
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "generateMipmaps",
+        "internalFormat",
+        "minFilter",
+        "depthBuffer",
+        "stencilBuffer",
+        "resolveDepthBuffer",
+        "resolveStencilBuffer",
+        "depthTexture",
+        "samples",
+        "count",
+        "depth",
+        "multiview"
+      ],
+      "numbers": {
+        "generateMipmaps": null,
+        "depthBuffer": null,
+        "stencilBuffer": null,
+        "resolveDepthBuffer": null,
+        "resolveStencilBuffer": null,
+        "samples": 0,
+        "count": 1,
+        "depth": 1,
+        "multiview": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 38959,
+        "offset": 38958
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 1,
+        "mean": 0.25,
+        "head": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 42807,
+        "offset": 42806
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 148,
+      "keys": [
+        "aliceblue",
+        "antiquewhite",
+        "aqua",
+        "aquamarine",
+        "azure",
+        "beige",
+        "bisque",
+        "black",
+        "blanchedalmond",
+        "blue",
+        "blueviolet",
+        "brown",
+        "burlywood",
+        "cadetblue",
+        "chartreuse",
+        "chocolate",
+        "coral",
+        "cornflowerblue",
+        "cornsilk",
+        "crimson",
+        "cyan",
+        "darkblue",
+        "darkcyan",
+        "darkgoldenrod",
+        "darkgray",
+        "darkgreen",
+        "darkgrey",
+        "darkkhaki",
+        "darkmagenta",
+        "darkolivegreen",
+        "darkorange",
+        "darkorchid",
+        "darkred",
+        "darksalmon",
+        "darkseagreen",
+        "darkslateblue",
+        "darkslategray",
+        "darkslategrey",
+        "darkturquoise",
+        "darkviolet",
+        "deeppink",
+        "deepskyblue",
+        "dimgray",
+        "dimgrey",
+        "dodgerblue",
+        "firebrick",
+        "floralwhite",
+        "forestgreen",
+        "fuchsia",
+        "gainsboro",
+        "ghostwhite",
+        "gold",
+        "goldenrod",
+        "gray",
+        "green",
+        "greenyellow",
+        "grey",
+        "honeydew",
+        "hotpink",
+        "indianred"
+      ],
+      "numbers": {
+        "aliceblue": 15792383,
+        "antiquewhite": 16444375,
+        "aqua": 65535,
+        "aquamarine": 8388564,
+        "azure": 15794175,
+        "beige": 16119260,
+        "bisque": 16770244,
+        "black": 0,
+        "blanchedalmond": 16772045,
+        "blue": 255,
+        "blueviolet": 9055202,
+        "brown": 10824234,
+        "burlywood": 14596231,
+        "cadetblue": 6266528,
+        "chartreuse": 8388352,
+        "chocolate": 13789470,
+        "coral": 16744272,
+        "cornflowerblue": 6591981,
+        "cornsilk": 16775388,
+        "crimson": 14423100,
+        "cyan": 65535,
+        "darkblue": 139,
+        "darkcyan": 35723,
+        "darkgoldenrod": 12092939,
+        "darkgray": 11119017,
+        "darkgreen": 25600,
+        "darkgrey": 11119017,
+        "darkkhaki": 12433259,
+        "darkmagenta": 9109643,
+        "darkolivegreen": 5597999,
+        "darkorange": 16747520,
+        "darkorchid": 10040012,
+        "darkred": 9109504,
+        "darksalmon": 15308410,
+        "darkseagreen": 9419919,
+        "darkslateblue": 4734347,
+        "darkslategray": 3100495,
+        "darkslategrey": 3100495,
+        "darkturquoise": 52945,
+        "darkviolet": 9699539,
+        "deeppink": 16716947,
+        "deepskyblue": 49151,
+        "dimgray": 6908265,
+        "dimgrey": 6908265,
+        "dodgerblue": 2003199,
+        "firebrick": 11674146,
+        "floralwhite": 16775920,
+        "forestgreen": 2263842,
+        "fuchsia": 16711935,
+        "gainsboro": 14474460,
+        "ghostwhite": 16316671,
+        "gold": 16766720,
+        "goldenrod": 14329120,
+        "gray": 8421504,
+        "green": 32768,
+        "greenyellow": 11403055,
+        "grey": 8421504,
+        "honeydew": 15794160,
+        "hotpink": 16738740,
+        "indianred": 13458524
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 69181,
+        "offset": 69180
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 18,
+      "stats": {
+        "min": -1,
+        "max": 1,
+        "mean": 0,
+        "head": [
+          1,
+          0,
+          0,
+          -1,
+          0,
+          0
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 172498,
+        "offset": 172497
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 24,
+      "stats": {
+        "min": 0,
+        "max": 5,
+        "mean": 2.5,
+        "head": [
+          0,
+          2,
+          4,
+          0,
+          4,
+          3
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 172539,
+        "offset": 172538
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 512,
+      "stats": {
+        "min": 0,
+        "max": 15360,
+        "mean": 11576.578125,
+        "head": [
+          12469,
+          15057,
+          12620,
+          14925,
+          13266,
+          14620
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 18868,
+        "offset": 540471
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 13,
+      "keys": [
+        "s",
+        "l",
+        "speed",
+        "piece",
+        "end"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 55721,
+        "offset": 577324
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 9,
+      "keys": [
+        "s",
+        "l",
+        "h"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 57221,
+        "offset": 578824
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 10,
+      "keys": [
+        "s",
+        "l",
+        "speed",
+        "piece",
+        "end"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 58575,
+        "offset": 580178
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 10,
+      "keys": [
+        "s",
+        "l",
+        "h"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 60093,
+        "offset": 581696
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 11,
+      "keys": [
+        "s",
+        "l",
+        "speed",
+        "piece",
+        "end"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 61542,
+        "offset": 583145
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 11,
+      "keys": [
+        "s",
+        "l",
+        "h"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 62966,
+        "offset": 584569
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "FLOAT",
+        "FLOAT_MAT3",
+        "FLOAT_MAT4",
+        "FLOAT_VEC2",
+        "FLOAT_VEC3",
+        "FLOAT_VEC4",
+        "LINEAR",
+        "REPEAT",
+        "SAMPLER_2D",
+        "POINTS",
+        "LINES",
+        "LINE_LOOP",
+        "LINE_STRIP",
+        "TRIANGLES",
+        "TRIANGLE_STRIP",
+        "TRIANGLE_FAN",
+        "UNSIGNED_BYTE",
+        "UNSIGNED_SHORT"
+      ],
+      "numbers": {
+        "FLOAT": 5126,
+        "FLOAT_MAT3": 35675,
+        "FLOAT_MAT4": 35676,
+        "FLOAT_VEC2": 35664,
+        "FLOAT_VEC3": 35665,
+        "FLOAT_VEC4": 35666,
+        "LINEAR": 9729,
+        "REPEAT": 10497,
+        "SAMPLER_2D": 35678,
+        "POINTS": 0,
+        "LINES": 1,
+        "LINE_LOOP": 2,
+        "LINE_STRIP": 3,
+        "TRIANGLES": 4,
+        "TRIANGLE_STRIP": 5,
+        "TRIANGLE_FAN": 6,
+        "UNSIGNED_BYTE": 5121,
+        "UNSIGNED_SHORT": 5123
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 93936,
+        "offset": 615539
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 51,
+      "stats": {
+        "min": 0,
+        "max": 253,
+        "mean": 26.392156862745097,
+        "head": [
+          0,
+          97,
+          115,
+          109,
+          1,
+          0
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 23404,
+        "offset": 705108
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 60,
+      "stats": {
+        "min": 0,
+        "max": 255,
+        "mean": 56.25,
+        "head": [
+          32,
+          0,
+          65,
+          2,
+          1,
+          106
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 23549,
+        "offset": 705253
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "./assets/route-coast.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 1,
+        "col": 13439,
+        "offset": 13438
+      }
+    },
+    {
+      "path": "./assets/route-canyon.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 1,
+        "col": 13474,
+        "offset": 13473
+      }
+    },
+    {
+      "path": "./assets/route-halo.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 1,
+        "col": 13507,
+        "offset": 13506
+      }
+    },
+    {
+      "path": "roadster-rocket.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 20364,
+        "offset": 54145
+      }
+    },
+    {
+      "path": "world-kit.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 62,
+        "col": 20386,
+        "offset": 54167
+      }
+    },
+    {
+      "path": "./assets/surfaces/-.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4108,
+        "col": 2567,
+        "offset": 643203
+      }
+    },
+    {
+      "path": "./assets/terrain/-.jpg",
+      "ext": "jpg",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4134,
+        "col": 9116,
+        "offset": 655743
+      }
+    },
+    {
+      "path": "./assets/skies/autumn_field_puresky.hdr",
+      "ext": "hdr",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4283,
+        "col": 1204,
+        "offset": 674756
+      }
+    },
+    {
+      "path": "./assets/skies/hilly_terrain_01_puresky.hdr",
+      "ext": "hdr",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4283,
+        "col": 1418,
+        "offset": 674970
+      }
+    },
+    {
+      "path": "./assets/skies/qwantani_moonrise_puresky.hdr",
+      "ext": "hdr",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4283,
+        "col": 1637,
+        "offset": 675189
+      }
+    },
+    {
+      "path": "./assets/scans/manifest.json",
+      "ext": "json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4335,
+        "col": 1772,
+        "offset": 713099
+      }
+    },
+    {
+      "path": "./assets/scans/nature-.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4335,
+        "col": 1974,
+        "offset": 713301
+      }
+    },
+    {
+      "path": "./assets/town/manifest.json",
+      "ext": "json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4361,
+        "col": 4022,
+        "offset": 728012
+      }
+    },
+    {
+      "path": "./assets/town-kit.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4361,
+        "col": 4142,
+        "offset": 728132
+      }
+    },
+    {
+      "path": "./assets/vehicles/manifest.json",
+      "ext": "json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 8097,
+        "offset": 740695
+      }
+    },
+    {
+      "path": "./assets/vehicles-kit.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 8265,
+        "offset": 740863
+      }
+    },
+    {
+      "path": "./assets/lite/manifest.json",
+      "ext": "json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 19777,
+        "offset": 752375
+      }
+    },
+    {
+      "path": "./assets/scifi/manifest.json",
+      "ext": "json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 21045,
+        "offset": 753643
+      }
+    },
+    {
+      "path": "./assets/scifi-kit.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 21166,
+        "offset": 753764
+      }
+    },
+    {
+      "path": "./assets/roadster-rocket.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 22714,
+        "offset": 782999
+      }
+    },
+    {
+      "path": "./assets/world-kit.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 22758,
+        "offset": 783043
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "Fu",
+      "params": 7,
+      "chars": 29352,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 17031,
+        "offset": 487129
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 26447,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4322,
+        "col": 132,
+        "offset": 681836
+      }
+    },
+    {
+      "name": "cu",
+      "params": 4,
+      "chars": 11723,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4032,
+        "col": 806,
+        "offset": 436884
+      }
+    },
+    {
+      "name": "Pu",
+      "params": 2,
+      "chars": 10627,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 6404,
+        "offset": 476502
+      }
+    },
+    {
+      "name": "pu",
+      "params": 6,
+      "chars": 10506,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4053,
+        "col": 1771,
+        "offset": 449617
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 8214,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 111266,
+        "offset": 111265
+      }
+    },
+    {
+      "name": "R",
+      "params": 4,
+      "chars": 7987,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/sim-9N4wEPLA.js",
+        "line": 1,
+        "col": 8456,
+        "offset": 8455
+      }
+    },
+    {
+      "name": "qf",
+      "params": 5,
+      "chars": 6877,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4134,
+        "col": 9261,
+        "offset": 655888
+      }
+    },
+    {
+      "name": "Uu",
+      "params": 2,
+      "chars": 6688,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 8828,
+        "offset": 530431
+      }
+    },
+    {
+      "name": "h",
+      "params": 6,
+      "chars": 6422,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4053,
+        "col": 2348,
+        "offset": 450194
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 6253,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4134,
+        "col": 9829,
+        "offset": 656456
+      }
+    },
+    {
+      "name": "Nu",
+      "params": 3,
+      "chars": 6199,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 205,
+        "offset": 470303
+      }
+    },
+    {
+      "name": "Je",
+      "params": 5,
+      "chars": 5628,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 685,
+        "col": 1534,
+        "offset": 90870
+      }
+    },
+    {
+      "name": "update",
+      "params": 2,
+      "chars": 5346,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 52,
+        "col": 745,
+        "offset": 25257
+      }
+    },
+    {
+      "name": "Cu",
+      "params": 1,
+      "chars": 5144,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4053,
+        "col": 15376,
+        "offset": 463222
+      }
+    },
+    {
+      "name": "Se",
+      "params": 3,
+      "chars": 5093,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 27444,
+        "offset": 497542
+      }
+    },
+    {
+      "name": "Dt",
+      "params": 5,
+      "chars": 5074,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 39894,
+        "offset": 561497
+      }
+    },
+    {
+      "name": "Bs",
+      "params": 2,
+      "chars": 4730,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3667,
+        "col": 10498,
+        "offset": 389317
+      }
+    },
+    {
+      "name": "Iu",
+      "params": 2,
+      "chars": 4675,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 46383,
+        "offset": 516481
+      }
+    },
+    {
+      "name": "n",
+      "params": 2,
+      "chars": 4640,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 46400,
+        "offset": 516498
+      }
+    },
+    {
+      "name": "mm",
+      "params": 0,
+      "chars": 4621,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 9763,
+        "offset": 742361
+      }
+    },
+    {
+      "name": "dp",
+      "params": 3,
+      "chars": 4189,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4283,
+        "col": 4087,
+        "offset": 677639
+      }
+    },
+    {
+      "name": "play",
+      "params": 1,
+      "chars": 4130,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 29,
+        "col": 11,
+        "offset": 20744
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 4102,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 1,
+        "col": 60635,
+        "offset": 60634
+      }
+    },
+    {
+      "name": "im",
+      "params": 2,
+      "chars": 3749,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 2701,
+        "offset": 735299
+      }
+    },
+    {
+      "name": "ac",
+      "params": 3,
+      "chars": 3718,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3667,
+        "col": 25784,
+        "offset": 404603
+      }
+    },
+    {
+      "name": "update",
+      "params": 2,
+      "chars": 3534,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 6732,
+        "offset": 67455
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 6,
+      "chars": 3365,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 50431,
+        "offset": 572034
+      }
+    },
+    {
+      "name": "Wu",
+      "params": 4,
+      "chars": 3329,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 15516,
+        "offset": 537119
+      }
+    },
+    {
+      "name": "s",
+      "params": 1,
+      "chars": 3307,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4053,
+        "col": 16029,
+        "offset": 463875
+      }
+    },
+    {
+      "name": "Nm",
+      "params": 1,
+      "chars": 3246,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4363,
+        "col": 22639,
+        "offset": 755237
+      }
+    },
+    {
+      "name": "zs",
+      "params": 6,
+      "chars": 3047,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3667,
+        "col": 7451,
+        "offset": 386270
+      }
+    },
+    {
+      "name": "update",
+      "params": 3,
+      "chars": 3045,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/game-qAzJLoNH.js",
+        "line": 1,
+        "col": 7701,
+        "offset": 7700
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 3,
+      "chars": 3045,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 722,
+        "offset": 470820
+      }
+    },
+    {
+      "name": "parse",
+      "params": 1,
+      "chars": 3030,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4104,
+        "col": 117920,
+        "offset": 639523
+      }
+    },
+    {
+      "name": "scenery",
+      "params": 0,
+      "chars": 2997,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4418,
+        "col": 37835,
+        "offset": 798120
+      }
+    },
+    {
+      "name": "yc",
+      "params": 5,
+      "chars": 2976,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 3956,
+        "col": 7091,
+        "offset": 420299
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2896,
+      "loc": {
+        "file": "evidence/crayon-runtime/roadster-hours/srcdoc.html#script0",
+        "line": 1,
+        "col": 2,
+        "offset": 1
+      }
+    },
+    {
+      "name": "update",
+      "params": 3,
+      "chars": 2870,
+      "loc": {
+        "file": "tests/fixtures/crayon/roadster-hours/raw/fx-DtaHJ05i.js",
+        "line": 629,
+        "col": 18581,
+        "offset": 79304
+      }
+    },
+    {
+      "name": "ke",
+      "params": 1,
+      "chars": 2806,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/roadster-hours/raw/world-BJq13QzJ.js",
+        "line": 4080,
+        "col": 39934,
+        "offset": 510032
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 3609,
+    "functions": 2618,
+    "newExpressions": 1693,
+    "calls": 10985
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:level-select",
+        "original": "223 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:garage",
+        "original": "20 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:tutorial",
+        "original": "12 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "10 references",
+        "port": "absent"
+      },
+      {
+        "feature": "persistence (storage)",
+        "original": "3 storage calls",
+        "port": "absent"
+      },
+      {
+        "feature": "host-platform postMessage hooks",
+        "original": "4 postMessage calls",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "audio",
+        "original": "56 audio API uses / 0 audio assets",
+        "port": "present"
+      },
+      {
+        "feature": "screen:settings",
+        "original": "88 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:results",
+        "original": "41 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "27 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "25 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:checkpoint",
+        "original": "23 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:credits",
+        "original": "17 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "4 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:menu",
+        "original": "4 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "2 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "tonemapx61, halox51, bloomx31, exposurex15",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "trailx51, rainx48, dustx15, emitterx15",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "Space, ArrowDown, ArrowUp, ArrowLeft, ArrowRight, KeyR, KeyS, KeyW",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointerdown, pointermove, pointerup",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "Look: vehicles and the Roadster are boxes; the sky is a flat colour; there is no post-processing or shadows.",
+      "The original replaces its built-in vehicle collision table with metadata from `world-kit.glb` at runtime; the port uses",
+      "Slow motion, camera shake, audio, the career/results UI and touch controls are not ported.",
+      "Verification of rendering is on a software WebGL2 runner (SwiftShader), not a hardware GPU."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

@@ -1,0 +1,960 @@
+{
+  "schema": "a3d-last-train-blind-judge/1",
+  "generatedAt": "2026-10-23T13:59:45.551Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 4,
+    "trials": 48,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "portFrames": [
+      "01-docked-day",
+      "02-boarding",
+      "03-ready"
+    ],
+    "referenceFrames": [
+      "ref-2.jpg",
+      "ref-3.jpg",
+      "ref-5.jpg",
+      "ref-6.jpg"
+    ],
+    "crop": "rows 70..500 of 720 on both sides (HUD-free band)"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D tram game, labelled Image A and Image B. Both show the tram docked at the first station of the same game, with the on-screen HUD cropped out. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, buildings, ground, lighting and shadows, the tram, passengers and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perPair": [
+      {
+        "pair": "ref-2.jpg|01-docked-day",
+        "lumaJsd": 0.14761177182557975,
+        "rgbJsd": 0.6268393158012622,
+        "paletteDistance": 0.12070238713912362,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.1303773131458784,
+        "edgeDensityRatio": 0.5308219178082192,
+        "lumaMeanDelta": -34.94382871192761
+      },
+      {
+        "pair": "ref-2.jpg|02-boarding",
+        "lumaJsd": 0.1475411314395222,
+        "rgbJsd": 0.6278201381624312,
+        "paletteDistance": 0.12067616121763063,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.13096096405397054,
+        "edgeDensityRatio": 0.5331982107911658,
+        "lumaMeanDelta": -34.95954267166046
+      },
+      {
+        "pair": "ref-2.jpg|03-ready",
+        "lumaJsd": 0.1463624443843341,
+        "rgbJsd": 0.6234648045832102,
+        "paletteDistance": 0.12065557797106996,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.13176777560339203,
+        "edgeDensityRatio": 0.536483086385239,
+        "lumaMeanDelta": -34.55574740004715
+      },
+      {
+        "pair": "ref-3.jpg|01-docked-day",
+        "lumaJsd": 0.14761177182557975,
+        "rgbJsd": 0.6268393158012622,
+        "paletteDistance": 0.12070238713912362,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.1303773131458784,
+        "edgeDensityRatio": 0.5308219178082192,
+        "lumaMeanDelta": -34.94382871192761
+      },
+      {
+        "pair": "ref-3.jpg|02-boarding",
+        "lumaJsd": 0.1475411314395222,
+        "rgbJsd": 0.6278201381624312,
+        "paletteDistance": 0.12067616121763063,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.13096096405397054,
+        "edgeDensityRatio": 0.5331982107911658,
+        "lumaMeanDelta": -34.95954267166046
+      },
+      {
+        "pair": "ref-3.jpg|03-ready",
+        "lumaJsd": 0.1463624443843341,
+        "rgbJsd": 0.6234648045832102,
+        "paletteDistance": 0.12065557797106996,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.13176777560339203,
+        "edgeDensityRatio": 0.536483086385239,
+        "lumaMeanDelta": -34.55574740004715
+      },
+      {
+        "pair": "ref-5.jpg|01-docked-day",
+        "lumaJsd": 0.14761177182557975,
+        "rgbJsd": 0.6268393158012622,
+        "paletteDistance": 0.12070238713912362,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.1303773131458784,
+        "edgeDensityRatio": 0.5308219178082192,
+        "lumaMeanDelta": -34.94382871192761
+      },
+      {
+        "pair": "ref-5.jpg|02-boarding",
+        "lumaJsd": 0.1475411314395222,
+        "rgbJsd": 0.6278201381624312,
+        "paletteDistance": 0.12067616121763063,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.13096096405397054,
+        "edgeDensityRatio": 0.5331982107911658,
+        "lumaMeanDelta": -34.95954267166046
+      },
+      {
+        "pair": "ref-5.jpg|03-ready",
+        "lumaJsd": 0.1463624443843341,
+        "rgbJsd": 0.6234648045832102,
+        "paletteDistance": 0.12065557797106996,
+        "edgeDensityOriginal": 0.24561403508771928,
+        "edgeDensityPort": 0.13176777560339203,
+        "edgeDensityRatio": 0.536483086385239,
+        "lumaMeanDelta": -34.55574740004715
+      },
+      {
+        "pair": "ref-6.jpg|01-docked-day",
+        "lumaJsd": 0.14769612249381192,
+        "rgbJsd": 0.6271398899562723,
+        "paletteDistance": 0.12064622409700099,
+        "edgeDensityOriginal": 0.24527071102413567,
+        "edgeDensityPort": 0.1303773131458784,
+        "edgeDensityRatio": 0.5315649496080627,
+        "lumaMeanDelta": -34.955008914392295
+      },
+      {
+        "pair": "ref-6.jpg|02-boarding",
+        "lumaJsd": 0.14762730496740165,
+        "rgbJsd": 0.6281147284783021,
+        "paletteDistance": 0.12061999817550798,
+        "edgeDensityOriginal": 0.24527071102413567,
+        "edgeDensityPort": 0.13096096405397054,
+        "edgeDensityRatio": 0.533944568868981,
+        "lumaMeanDelta": -34.970722874125144
+      },
+      {
+        "pair": "ref-6.jpg|03-ready",
+        "lumaJsd": 0.14645085802027502,
+        "rgbJsd": 0.6237667985292096,
+        "paletteDistance": 0.12059941492894732,
+        "edgeDensityOriginal": 0.24527071102413567,
+        "edgeDensityPort": 0.13176777560339203,
+        "edgeDensityRatio": 0.5372340425531915,
+        "lumaMeanDelta": -34.56692760251184
+      }
+    ],
+    "summary": {
+      "pairs": 12,
+      "lumaJsd": 0.14719336070248307,
+      "rgbJsd": 0.6261161827170413,
+      "paletteDistance": 0.12066400134874407,
+      "edgeDensityRatio": 0.5336877671653423,
+      "lumaMeanDelta": -34.822501311827914
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 48,
+    "accuracy": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "pValueVsChance": 7.105427357601022e-15,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 24,
+    "byLook": {
+      "ref-2.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-2.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-2.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-3.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-3.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-3.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-5.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-5.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-5.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-6.jpg|01-docked-day": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-6.jpg|02-boarding": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      },
+      "ref-6.jpg|03-ready": {
+        "valid": 4,
+        "correct": 4,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed textured buildings, floating islands and a stone arch, while B has flat-shaded blocky buildings",
+        "A's tram is a detailed teal and cream model, B's is a plain white and red box with blob passengers",
+        "B uses primitive shapes, such as bushes as spheres and bare rail ties, with no atmospheric lighting"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has rich painterly detail: textured red-tiled roofs, market stalls, planters, floating islands and a large stone arch",
+        "Image B uses flat untextured primitives: a plain white and red tram, blob-like passengers, simple boxy buildings and sparse ground",
+        "The tram design, color palette (teal and cream versus red and white) and overall lighting and atmosphere differ"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, red tile roofs, plants, props and floating islands, while A uses flat, simple boxes",
+        "Image B's tram has a detailed model with a teal roof, headlight and lamps, while A's is a plain white-roofed box with capsule passengers",
+        "Image B has richer lighting, atmospheric sky with clouds and depth, while A has a flat blue sky and basic shading"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has detailed, painterly textures, floating islands and a warm stylized look",
+        "B uses flat untextured primitives, blob passengers and bushes",
+        "B's tram, buildings and palette differ from A's teal and cream tram and red-roofed buildings"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image B has detailed textured buildings, foliage, floating islands and a richly modeled tram, while Image A has flat, low-poly boxy buildings and primitive shapes",
+        "Image A has flat lighting with simple blob bushes and capsule passengers, versus B's painterly lighting, props and atmospheric sky",
+        "Different tram design and station layout: A's white-roofed red tram vs B's teal and yellow tram"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings with red tile roofs, balconies, plants and floating islands, while A has flat plain boxy buildings",
+        "Image B has a richly modeled tram with teal roof, headlight and detailed windows, while A has a simple white-roofed open box with capsule passengers",
+        "Image B has soft painterly lighting, atmosphere and props like market stalls and lanterns, while A has flat shading and a bare gray cobblestone ground"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "B has detailed textured buildings, floating islands, plants and props; A is flat-shaded primitives",
+        "A has plain blocky buildings, a bare tram and simple capsule passengers",
+        "Lighting, sky and art direction differ: B is warm and painterly, A is flat and low-fidelity"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has detailed, textured painterly art with floating islands, an arch and warm lighting, while B uses flat untextured primitives",
+        "Tram design differs: A is a teal and yellow vintage tram, B is a white and red boxy tram with capsule passengers",
+        "B has a plain flat sky, simple blob bushes and sparse sleepers, lacking A's props, plants and market stalls"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has richly textured, hand-painted buildings with red tile roofs, floating islands and a detailed stone arch",
+        "B uses flat, untextured primitives such as capsule passengers, blob bushes and plain walls",
+        "Tram design, palette and lighting differ: A is a teal and yellow tram, B is a white and red open car with flat shading"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has richly detailed, textured buildings with red tile roofs, balconies and foliage, while A uses flat, simple boxy buildings",
+        "Image B has floating islands, a detailed stone arch, lanterns and planters, while A has a bare arch and sparse props",
+        "Image A has a primitive blocky tram with capsule passengers and plain flat lighting, while B has a polished teal-and-cream tram with warm lighting"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has detailed textured buildings, floating islands, a stone arch and a teal-and-cream tram, while B uses flat, plain geometry",
+        "B's tram is red and white with primitive capsule passengers and its camera angle and layout differ from A's",
+        "B has flat lighting, a plain sky and sparse tracks and props, whereas A has rich, painterly art direction"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 0,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, floating islands, and a lantern-lit arch while A has flat plain-colored blocky facades",
+        "Image B tram is a detailed teal and cream car with ornate shape while A is a simple white-roofed box with capsule passengers",
+        "Image B has rich props, plants, and painterly lighting while A has bare gray cobble ground and minimal shading"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has richly textured, painterly buildings, floating islands and a detailed stone arch; B has flat-shaded plain boxes",
+        "A's tram is a detailed teal and cream vehicle with ornate trim; B's is a simple white and red primitive",
+        "B has untextured ground, bare sleeper-like rails and capsule passengers, versus A's cobbled paving, plants, lanterns and market stalls"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has detailed hand-painted textures, red-tiled roofs, floating islands and a stone arch",
+        "Image B has flat untextured primitives, a plain white tram and blobby passengers",
+        "Image B's sparse rails, plain sky and simple shading lack A's warm, lived-in atmosphere"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 1,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has richly detailed, textured buildings, floating islands and a stone arch; B has flat, plain facades",
+        "A's tram is a detailed teal and cream car with a roof, B's is a simple boxy red and white car with capsule passengers",
+        "A has painterly lighting and props such as planters, lanterns and awnings; B has flat shading and primitive shapes"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "B has detailed textured buildings, floating islands, plants and market stalls; A uses flat primitive shapes",
+        "A's tram is a blocky open-air box with capsule passengers, unlike B's ornate teal and cream tram",
+        "A's lighting is flat with no sky detail or atmosphere, where B has soft warm lighting and clouds"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has detailed textured buildings, foliage, floating islands and a painterly sky; A has flat untextured boxes",
+        "A's tram is a low-poly white/red box with blob passengers versus B's detailed teal-and-cream tram",
+        "A's lighting is flat with simple primitive bushes and no props, while B has rich props, lanterns and soft shading"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has richly detailed, textured buildings with red tile roofs, balconies, trees and floating islands, while B has plain flat-shaded facades",
+        "B uses primitive capsule passengers, untextured ground and sparse sleepers, versus A's detailed tram, props and warm lighting",
+        "A has a stone arch, a bridge and a consistent painterly sky, while B has a flat blue sky and a bare arch"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "B has detailed textured buildings, floating islands, plants and props; A is flat-shaded with primitive boxes",
+        "A has a blank, simplified sky and a crude open-top tram with blob passengers",
+        "Lighting and art direction differ: B is warm and painterly, A is flat and low-fidelity"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has detailed textured buildings, floating islands, foliage and warm painterly lighting",
+        "A uses flat-shaded primitive boxes, blob bushes and capsule passengers",
+        "A's tram and platform are simple low-poly shapes with no props or atmosphere"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has detailed textured buildings, floating islands, ornate stone arch and warm painterly lighting",
+        "B has flat-shaded boxy buildings, plain primitive tram and capsule passengers, bare ground",
+        "B lacks props like planters, lanterns, market stalls and foliage seen in A"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.98,
+      "tells": [
+        "A has detailed textured buildings, floating islands and a stone arch; B has flat plain-colored blocky buildings",
+        "A's tram is a detailed teal and cream model; B's is a simple white, red and brown box with peg-like passengers",
+        "A has warm, painterly lighting and foliage; B has flat lighting, bare ground and primitive blob bushes"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has detailed textured buildings, floating islands, ornate props and warm lighting",
+        "A has flat-shaded boxy buildings, primitive blob bushes and plain grey cobble ground",
+        "A's tram is a simple white-roofed red box, unlike B's detailed teal-and-cream tram"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 1,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, floating islands, props and foliage, while A has flat low-poly boxes with plain colors",
+        "Image B's tram is a detailed teal and cream model, while A's is a simple open red and white box with capsule passengers",
+        "Image B has rich lighting, clouds and atmospheric depth, while A has flat lighting and an empty sky"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.96,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has rich painterly textures, floating islands and detailed ornate architecture",
+        "B has flat-shaded primitive geometry, plain boxy buildings and blob-like passengers",
+        "B's tram, sleepers and lighting are simplistic, with no warm stylized atmosphere"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has detailed textured buildings, foliage, floating islands and atmospheric lighting",
+        "A has flat-shaded primitive buildings and a simple boxy tram with blob-like passengers",
+        "A's sparse ground and plain sky lack B's props, shadows and depth"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 2,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "B has detailed textured buildings, red tile roofs, floating islands and rich props",
+        "A has flat, simplified buildings, primitive capsule passengers and plain lighting",
+        "B's tram is a detailed teal and cream model, while A's is a boxy white-roofed red tram"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 2,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "B has detailed textured buildings, floating islands, plants and props; A is flat-shaded primitives",
+        "A has simplified blocky tram, blob bushes and capsule passengers vs B's ornate yellow-teal tram",
+        "Different lighting and art style: A is flat and low-detail, B is painterly and warm with rich shading"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 2,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has detailed, textured art: red-tiled roofs, floating islands, a stone arch, a yellow-and-teal tram and a hand-painted look",
+        "Image B has flat, untextured primitives: a plain white and red tram, blobby bushes, capsule passengers and bare tracks",
+        "Image B has generic blue sky and flat grey ground with no bespoke set dressing, unlike the warm, cohesive lighting in A"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 2,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has detailed painterly textures, floating islands, ornate arch and warm lighting",
+        "B has flat-shaded primitive geometry, capsule passengers and plain white-red tram",
+        "B has sparse rails, simple blob bushes and a different building layout and palette"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 2,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "B has detailed textured buildings, floating islands, plants and market props; A is flat-shaded and sparse",
+        "A has simplified primitive-style tram, capsule passengers and plain gray ground",
+        "Lighting, sky and art direction in B are rich and painterly; A is basic and unrefined"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 2,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has rich painterly detail: textured red-tiled roofs, market stalls, planters, floating islands and a tall stone arch",
+        "Image B has flat untextured shading, plain primitive-like tram, blob bushes and capsule passengers",
+        "The tram and the architecture differ: A has a teal and cream tram with a canopy platform, B has a white and red open tram beside a big uniform facade"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 2,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has richly detailed, textured buildings with red tile roofs, floating islands and a stone arch; B has flat plain facades and simple untextured geometry",
+        "A's tram is a detailed yellow and teal model with fine trim; B's is a boxy white and red tram with capsule passengers",
+        "A has warm, painterly lighting and plants; B has flat lighting, primitive blob bushes and a plain grey pavement"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 2,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, floating islands, and a stone arch with rich lighting",
+        "Image A has flat-shaded primitive geometry, blocky tram, and simple capsule passengers",
+        "Image A has a plain sky and lacks the props, plants, and ornate details seen in B"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 2,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has detailed, painterly textures, with red-tiled roofs, floating islands, an ornate stone arch and a teal-and-cream tram, while Image B has flat, untextured shading",
+        "Image B uses a plain red and white tram, simple blob bushes and capsule passengers, with no floating islands or decorative props",
+        "The two scenes differ in camera angle, building layout, sky and lighting, and Image B's tracks and architecture look generic"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 2,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has richly detailed buildings with red tiled roofs, balconies, plants and floating islands, while A has flat boxy buildings",
+        "Image A's tram is a simple box with capsule passengers, but B's tram is a detailed teal and cream car",
+        "Image B has atmospheric lighting and props like lamps, planters and awnings, but A has plain gray ground and flat shading"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "ref-2.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "B has detailed textured buildings, floating islands, and rich lighting; A has flat, primitive-shaded boxes",
+        "A's tram, passengers and props are simple geometric blobs, while B's are detailed and stylized",
+        "Different architecture, camera angle and station layout (B's stone arch, tower and market stalls vs A's plain facade and rail ties)"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "ref-2.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has rich detailed textures, foliage, floating islands and market stalls",
+        "A uses flat-shaded primitive boxes and blob bushes with sparse detail",
+        "A's tram and buildings are simplified, with different layout and lighting"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 3,
+      "look": "ref-2.jpg|03-ready",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed, textured buildings with red tiled roofs, balconies and foliage, while A has flat, plain facades",
+        "Image B has richly modeled props such as market stalls, planters and lanterns, plus floating islands and clouds, absent in A",
+        "Image A's tram carries blob-like capsule passengers, and its lighting and sky are flat and simplified"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 3,
+      "look": "ref-3.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has richly textured, hand-painted art with floating islands, detailed tram and warm lighting",
+        "B uses flat, untextured primitive shapes with plain colors and simple blob passengers",
+        "B's tram, buildings and camera framing differ greatly from A's"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 3,
+      "look": "ref-3.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has detailed textured buildings, floating islands, plants and props; A has flat plain boxes",
+        "A has basic untextured geometry with simple lighting and blob-like bushes, B has rich painterly lighting",
+        "tram in A is a boxy white and red primitive vs a detailed yellow and teal tram in B"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 3,
+      "look": "ref-3.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has detailed painterly textures, floating islands and ornate arch; B has flat-shaded boxy buildings",
+        "A's tram is a teal and cream vintage car with fine detail; B's is a plain white-roofed red tram with capsule passengers",
+        "A has warm, soft lighting with props like planters, lanterns and awnings; B has sparse props and flat lighting"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 3,
+      "look": "ref-5.jpg|01-docked-day",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has rich textured detail: terracotta roofs, stone arch, floating islands, flower planters",
+        "Image B uses flat untextured primitives: plain boxes, blob bushes, simple capsule passengers",
+        "Different tram design and lighting: A is a teal and cream tram with warm painterly shading, B is a white and red tram with flat shading"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 3,
+      "look": "ref-5.jpg|02-boarding",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A has rich detailed art: textured red-tile roofs, an arch with floating islands, and a teal-and-cream tram",
+        "Image B has flat untextured primitives: blobby bushes, capsule passengers, a plain white-and-red tram and sparse sleepers instead of full rails",
+        "Image B has different layout and palette: no arch with floating islands, a long flat-roofed building, and a bare ground plane"
+      ]
+    },
+    {
+      "step": 8,
+      "pass": 3,
+      "look": "ref-5.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has detailed painterly textures, floating islands, and a rich stone arch; B has flat-shaded boxy buildings and primitive shapes",
+        "B's tram and passengers are simple capsules and a plain box, while A's tram is detailed with a teal roof and ornate trim",
+        "B has bare ground and sleepers with no props, while A has planters, lamps, market stalls and warm lighting"
+      ]
+    },
+    {
+      "step": 9,
+      "pass": 3,
+      "look": "ref-6.jpg|01-docked-day",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image B has detailed textured buildings, foliage, floating islands and a stone arch with lanterns, while A uses flat primitive-shaped geometry",
+        "Image B has a polished teal-and-cream tram with warm lighting, while A has a boxy white-roofed tram with peg-like passengers",
+        "Image A has a plain gray cobble ground, simple green bushes and a flat sky, while B has rich props, planters and atmospheric depth"
+      ]
+    },
+    {
+      "step": 10,
+      "pass": 3,
+      "look": "ref-6.jpg|02-boarding",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B has detailed textured buildings, floating islands, props and rich lighting",
+        "A has flat-shaded boxy buildings, primitive blob bushes and plain tram",
+        "A's sparse ground and simple capsule passengers vs B's polished art direction"
+      ]
+    },
+    {
+      "step": 11,
+      "pass": 3,
+      "look": "ref-6.jpg|03-ready",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has detailed textured buildings, floating islands and a stone arch, while B uses flat-shaded boxy buildings",
+        "A's tram is a detailed teal and cream model, while B's is a simple white-roofed car with capsule passengers",
+        "A has richly painted props such as plants, lanterns and awnings, while B has sparse props and plain tracks"
+      ]
+    }
+  ]
+}

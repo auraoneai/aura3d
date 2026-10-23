@@ -7,6 +7,7 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
 import { DEFAULT_PARAMS, autopilot } from "./autopilot";
+import { RoadsterSound } from "./audio";
 import { LEVELS } from "./data";
 import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type Run, type RunInput } from "./sim";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -22,6 +23,20 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 };
 const canvas = $<HTMLCanvasElement>("world");
 
+/* Licensed UI face (DIN Pro Regular/Medium/Bold, from the paid font gallery), loaded without blocking boot. */
+const FONT_FILES: readonly (readonly [string, string])[] = [
+  ["400", new URL("./assets/fonts/DINPro-Regular.woff", import.meta.url).href],
+  ["500", new URL("./assets/fonts/DINPro-Medium.woff", import.meta.url).href],
+  ["700", new URL("./assets/fonts/DINPro-Bold.woff", import.meta.url).href]
+];
+for (const [weight, url] of FONT_FILES) {
+  const face = new FontFace("DIN Pro", `url(${url})`, { weight });
+  (document.fonts as unknown as { add(font: FontFace): void }).add(face);
+  void face.load().catch(() => undefined);
+}
+const sound = new RoadsterSound();
+let lastInput: RunInput | undefined;
+
 const career: Career = defaultCareer();
 career.unlocked = LEVELS.length - 1;
 let run: Run = createRun(levelIndex, career);
@@ -29,6 +44,7 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let screen: "home" | "play" | "results" = "home";
+let paused = false;
 let autopilotOn = config.autopilot;
 let accumulator = 0;
 let frames = 0;
@@ -40,8 +56,12 @@ const down = new Set<string>();
 const pressed = new Set<string>();
 addEventListener("keydown", (e) => {
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
+  void sound.unlock();
   if (e.repeat) return;
+  if (e.code === "KeyM") { toggleMute(); return; }
+  if (e.code === "Escape" || e.code === "KeyP") { togglePause(); return; }
   if (e.code === "Enter" && screen === "home") { begin(); return; }
+  if (e.code === "Enter" && screen === "results") { begin(); return; }
   down.add(e.code);
   pressed.add(e.code);
 });
@@ -66,14 +86,30 @@ function keyboardInput(): RunInput {
 /* ------------------------------------------------------------------ flow */
 
 function begin(): void {
+  void sound.unlock();
   run = createRun(levelIndex, career);
   runtime?.reset(run);
+  sound.reset();
   screen = "play";
+  paused = false;
   accumulator = 0;
   panels();
 }
 
+function togglePause(): void {
+  if (screen !== "play") return;
+  if (run.phase === "paused") { run.phase = run.beforePause ?? "running"; paused = false; }
+  else if (run.phase === "running" || run.phase === "countdown") { run.beforePause = run.phase; run.phase = "paused"; paused = true; }
+  panels();
+}
+
+function toggleMute(): void {
+  sound.setMuted(!sound.muted);
+  $("mute").textContent = sound.muted ? "Sound off" : "Sound on";
+}
+
 function stepOnce(input: RunInput): void {
+  lastInput = input;
   stepRun(run, input, SIM_STEP, career);
   simSteps++;
   pressed.clear();
@@ -83,15 +119,43 @@ function stepOnce(input: RunInput): void {
 /* ------------------------------------------------------------------ HUD */
 
 const fmt = (t: number): string => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
+function buildMenu(): void {
+  const level = LEVELS[levelIndex]!;
+  $("level-name").textContent = level.name;
+  $("level-sub").textContent = level.subtitle;
+  $("level-desc").textContent = level.description;
+  const routes = $("routes");
+  routes.textContent = "";
+  LEVELS.forEach((l, i) => {
+    const a = document.createElement("a");
+    a.href = `?level=${i}`;
+    a.textContent = l.name;
+    if (i === levelIndex) a.setAttribute("aria-current", "true");
+    routes.appendChild(a);
+  });
+  const progress = $("progress");
+  for (const gate of level.gates) {
+    const tick = document.createElement("b");
+    tick.style.left = `${(gate.s / level.length) * 100}%`;
+    progress.appendChild(tick);
+  }
+}
 function panels(): void {
   $("menu").classList.toggle("hidden", screen !== "home");
   $("results").classList.toggle("hidden", screen !== "results");
+  $("pause").classList.toggle("hidden", !(screen === "play" && paused));
   $("hud").classList.toggle("hidden", screen === "home");
+  $("mute").classList.toggle("hidden", !ready);
+  sound.setScreen(screen);
   if (screen === "results" && run.result) {
+    const level = run.level;
     $("result-time").textContent = fmt(run.result.time);
     $("result-medal").textContent = `${run.result.medal} medal`;
     $("result-score").textContent = run.result.score.toLocaleString();
-    $("result-cells").textContent = `${run.result.cells} / ${run.level.cells.length} data cells`;
+    $("result-cells").textContent = `${run.result.cells} / ${level.cells.length}`;
+    $("result-crashes").textContent = String(run.result.crashes);
+    $("result-targets").textContent = `gold ${fmt(level.medal.gold)} · silver ${fmt(level.medal.silver)}`;
+    $("next").classList.toggle("hidden", levelIndex + 1 >= LEVELS.length);
   }
 }
 function updateHud(): void {
@@ -100,9 +164,14 @@ function updateHud(): void {
   $("score").textContent = Math.round(run.score).toLocaleString();
   $("gate").textContent = `Relay ${Math.min(run.nextGate + 1, run.level.gates.length)} / ${run.level.gates.length}`;
   $("act").textContent = run.act;
-  $("toast").textContent = run.toastTime > 0 && run.toast ? run.toast : run.phase === "countdown" ? String(Math.max(1, Math.ceil(run.countdown))) : "";
+  $("combo").textContent = run.comboTime > 0 && run.combo > 1 ? `Combo x${run.combo.toFixed(1)}` : "";
+  $("toast").textContent = run.toastTime > 0 && run.toast ? run.toast : "";
+  $("count").textContent = run.phase === "countdown" ? String(Math.max(1, Math.ceil(run.countdown))) : "";
   $("thrust-fill").style.width = `${(run.thrust / run.capacity) * 100}%`;
   $("heat-fill").style.width = `${run.heat}%`;
+  $("nitro-label").textContent = run.nitro > 0 ? "Nitro" : "";
+  $("heat-label").textContent = run.overheated ? "Overheated" : "";
+  $("progress-fill").style.width = `${clamp((run.s / run.level.length) * 100, 0, 100)}%`;
   $("phase").textContent = run.phase;
 }
 
@@ -129,6 +198,13 @@ function render(dt: number, time: number): void {
   runtime.update(run, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight));
   app.step(0);
   updateHud();
+  if (screen === "play") {
+    sound.update({
+      phase: run.phase, countdown: run.countdown, speed: run.v, grounded: run.grounded, boosting: run.boosting, nitro: run.nitro, nextGate: run.nextGate,
+      cells: run.cells.size, crashes: run.crashes, cleanLandings: run.cleanLandings, nearMisses: run.nearMisses, combos: run.combos,
+      vehiclesCleared: run.vehiclesCleared, throttle: (lastInput?.throttle ?? 0) > 0
+    });
+  }
   frames++;
 }
 
@@ -246,7 +322,7 @@ window.skybreak = { snapshot };
 async function boot(): Promise<void> {
   sizeCanvas();
   const world = buildWorld(levelIndex);
-  $("level-name").textContent = world.level.name;
+  buildMenu();
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
@@ -264,7 +340,11 @@ async function boot(): Promise<void> {
 }
 
 $("start").addEventListener("click", begin);
-for (const id of ["again"]) $(id).addEventListener("click", begin);
+for (const id of ["again", "restart"]) $(id).addEventListener("click", begin);
+$("resume").addEventListener("click", togglePause);
+$("mute").addEventListener("click", toggleMute);
+$("next").addEventListener("click", () => { location.search = `?level=${Math.min(LEVELS.length - 1, levelIndex + 1)}&autostart=1`; });
+canvas.addEventListener("pointerdown", () => { void sound.unlock(); });
 addEventListener("resize", sizeCanvas);
 requestAnimationFrame(frame);
 

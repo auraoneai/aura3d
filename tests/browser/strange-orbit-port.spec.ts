@@ -93,8 +93,17 @@ test.describe("strange-orbit-port (Phase A)", () => {
       page.evaluate(`(${fn.toString()})(window.__AURA_STRANGE_ORBIT__)`) as Promise<T>;
 
     const frame = async (name: string): Promise<void> => {
-      const data = await api((o) => o.frame(480, 270, 0.7));
-      console.log(`STRANGE_ORBIT_FRAME ${name} ${data.split(",")[1]}`);
+      const data = await api((o) => o.frame(640, 360, 0.72));
+      // Long log lines are dropped by the remote runner: emit the frame as short numbered chunks.
+      const b64 = data.split(",")[1] ?? "";
+      const parts = Math.ceil(b64.length / 1800);
+      for (let i = 0; i < parts; i++) console.log(`STRANGE_ORBIT_FRAMEPART ${name} ${i + 1}/${parts} ${b64.slice(i * 1800, (i + 1) * 1800)}`);
+    };
+    const uiShot = async (name: string): Promise<void> => {
+      const shot = await page.screenshot({ type: "jpeg", quality: 55 });
+      const b64 = shot.toString("base64");
+      const parts = Math.ceil(b64.length / 1800);
+      for (let i = 0; i < parts; i++) console.log(`STRANGE_ORBIT_FRAMEPART ${name} ${i + 1}/${parts} ${b64.slice(i * 1800, (i + 1) * 1800)}`);
     };
     const stats = (): Promise<Stats> =>
       page.evaluate(async () => {
@@ -126,6 +135,7 @@ test.describe("strange-orbit-port (Phase A)", () => {
     const menuStats = await stats();
     console.log("STRANGE_ORBIT_STATS menu", JSON.stringify(menuStats));
     await frame("menu");
+    await uiShot("ui-menu");
 
     // ---- racing: countdown (3.2 s) then 6 s of autopilot ----
     await api((o) => { o.begin(); o.setAutopilot(true); o.stepFrames(200); return 0; });
@@ -134,10 +144,16 @@ test.describe("strange-orbit-port (Phase A)", () => {
     console.log("STRANGE_ORBIT_STATS race-start", JSON.stringify(startStats));
     await api((o) => { o.stepFrames(360); return 0; });
     await frame("race-6s");
+    await uiShot("ui-race");
     const movedStats = await stats();
     console.log("STRANGE_ORBIT_STATS race-6s", JSON.stringify(movedStats));
     const racing = await api((o) => o.state());
     console.log("STRANGE_ORBIT_RACING", JSON.stringify({ s: racing.s, lane: racing.lane, speed: racing.speed, place: racing.place, route: racing.route, phase: racing.phase }));
+
+    await api((o) => { o.stepFrames(840); return 0; });
+    await frame("race-20s");
+    await api((o) => { o.stepFrames(1500); return 0; });
+    await frame("race-45s");
 
     // Compact on purpose: the full diagnostics object is large enough to be dropped from the remote log.
     const diag = await api((o) => {

@@ -1,0 +1,1006 @@
+{
+  "schema": "a3d-heatsink-blind-judge/1",
+  "generatedAt": "2026-10-23T10:06:31.209Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 3,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "frameSteps": [
+      450,
+      750,
+      1140,
+      1170,
+      1200,
+      1230,
+      1500,
+      1920,
+      2250,
+      2550,
+      3000,
+      3270,
+      3660,
+      3750,
+      4500,
+      5340
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D racing game, labelled Image A and Image B. Both are taken at the same moment of the same recorded run (same track position, same speed), with the on-screen HUD hidden. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, road, scenery, lighting, glow, the vehicle and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "step": 450,
+        "look": "cruise",
+        "lumaJsd": 0.048685087623627644,
+        "rgbJsd": 0.504081138521799,
+        "paletteDistance": 0.02730909833851851,
+        "edgeDensityOriginal": 0.05814760114572145,
+        "edgeDensityPort": 0.09811918188327963,
+        "edgeDensityRatio": 1.6874158168173947,
+        "lumaMeanDelta": -8.363689579974519
+      },
+      {
+        "step": 750,
+        "look": "cruise",
+        "lumaJsd": 0.02328201280023711,
+        "rgbJsd": 0.39736082364777714,
+        "paletteDistance": 0.02670362368120396,
+        "edgeDensityOriginal": 0.053272131220909416,
+        "edgeDensityPort": 0.042796723952738994,
+        "edgeDensityRatio": 0.8033604620635338,
+        "lumaMeanDelta": -6.362521044524854
+      },
+      {
+        "step": 1140,
+        "look": "heat",
+        "lumaJsd": 0.05907806626918877,
+        "rgbJsd": 0.425092204870271,
+        "paletteDistance": 0.03343581588799194,
+        "edgeDensityOriginal": 0.053272131220909416,
+        "edgeDensityPort": 0.1062141962047977,
+        "edgeDensityRatio": 1.9938041480703597,
+        "lumaMeanDelta": 9.5482666248395
+      },
+      {
+        "step": 1170,
+        "look": "heat",
+        "lumaJsd": 0.044460934011156444,
+        "rgbJsd": 0.4116041233262167,
+        "paletteDistance": 0.03365539163617594,
+        "edgeDensityOriginal": 0.053272131220909416,
+        "edgeDensityPort": 0.0863235096670247,
+        "edgeDensityRatio": 1.620425308479916,
+        "lumaMeanDelta": 11.90341717648539
+      },
+      {
+        "step": 1200,
+        "look": "heat",
+        "lumaJsd": 0.05494599650509978,
+        "rgbJsd": 0.28522649897044794,
+        "paletteDistance": 0.015648636261875147,
+        "edgeDensityOriginal": 0.05376163623344075,
+        "edgeDensityPort": 0.07888583064804869,
+        "edgeDensityRatio": 1.4673257023933401,
+        "lumaMeanDelta": -1.5869355375781566
+      },
+      {
+        "step": 1230,
+        "look": "heat",
+        "lumaJsd": 0.044835535302039764,
+        "rgbJsd": 0.3550112164599734,
+        "paletteDistance": 0.03133286234174145,
+        "edgeDensityOriginal": 0.06845238095238096,
+        "edgeDensityPort": 0.06758525778732545,
+        "edgeDensityRatio": 0.9873324615887543,
+        "lumaMeanDelta": 10.411932245942808
+      },
+      {
+        "step": 1500,
+        "look": "cruise",
+        "lumaJsd": 0.05670967842231001,
+        "rgbJsd": 0.31785232303178984,
+        "paletteDistance": 0.019110963889652964,
+        "edgeDensityOriginal": 0.06845238095238096,
+        "edgeDensityPort": 0.0846703813104189,
+        "edgeDensityRatio": 1.2369238313174238,
+        "lumaMeanDelta": 10.983332071971503
+      },
+      {
+        "step": 1920,
+        "look": "boost",
+        "lumaJsd": 0.03119944720229104,
+        "rgbJsd": 0.3222179522830486,
+        "paletteDistance": 0.023011585421469458,
+        "edgeDensityOriginal": 0.06845238095238096,
+        "edgeDensityPort": 0.07024257071249553,
+        "edgeDensityRatio": 1.026152337365152,
+        "lumaMeanDelta": 5.410801484216577
+      },
+      {
+        "step": 2250,
+        "look": "boost",
+        "lumaJsd": 0.4608492025041109,
+        "rgbJsd": 0.750948210829471,
+        "paletteDistance": 0.0884517359148831,
+        "edgeDensityOriginal": 0.04612256086645184,
+        "edgeDensityPort": 0.07464252148227712,
+        "edgeDensityRatio": 1.6183516283582997,
+        "lumaMeanDelta": -22.884342314777427
+      },
+      {
+        "step": 2550,
+        "look": "boost",
+        "lumaJsd": 0.49705384584417817,
+        "rgbJsd": 0.8770871759155273,
+        "paletteDistance": 0.1072391370124895,
+        "edgeDensityOriginal": 0.057263694951664876,
+        "edgeDensityPort": 0.00025733977801646975,
+        "edgeDensityRatio": 0.004493942946463462,
+        "lumaMeanDelta": 70.16996710835055
+      },
+      {
+        "step": 3000,
+        "look": "cruise",
+        "lumaJsd": 0.08449386749173413,
+        "rgbJsd": 0.4568140616980025,
+        "paletteDistance": 0.0804327877100277,
+        "edgeDensityOriginal": 0.057263694951664876,
+        "edgeDensityPort": 0.08401304600787683,
+        "edgeDensityRatio": 1.467125830402501,
+        "lumaMeanDelta": -17.17779730857464
+      },
+      {
+        "step": 3270,
+        "look": "boost",
+        "lumaJsd": 0.18627372171806894,
+        "rgbJsd": 0.45842943523591434,
+        "paletteDistance": 0.08815443641621026,
+        "edgeDensityOriginal": 0.057263694951664876,
+        "edgeDensityPort": 0.1052827380952381,
+        "edgeDensityRatio": 1.8385599843688942,
+        "lumaMeanDelta": -25.670956915216685
+      },
+      {
+        "step": 3660,
+        "look": "boost",
+        "lumaJsd": 0.03161072583771303,
+        "rgbJsd": 0.3879318644064823,
+        "paletteDistance": 0.0379536828330006,
+        "edgeDensityOriginal": 0.06392096312209095,
+        "edgeDensityPort": 0.097828276047261,
+        "edgeDensityRatio": 1.530456852791878,
+        "lumaMeanDelta": 2.423984333309278
+      },
+      {
+        "step": 3750,
+        "look": "cruise",
+        "lumaJsd": 0.06991843607128491,
+        "rgbJsd": 0.5151681848340004,
+        "paletteDistance": 0.05482969030664297,
+        "edgeDensityOriginal": 0.045554735051915506,
+        "edgeDensityPort": 0.09467306659505907,
+        "edgeDensityRatio": 2.078226697777232,
+        "lumaMeanDelta": 4.822383467801487
+      },
+      {
+        "step": 4500,
+        "look": "cruise",
+        "lumaJsd": 0.11911347270473828,
+        "rgbJsd": 0.5631031989490777,
+        "paletteDistance": 0.051634751963527625,
+        "edgeDensityOriginal": 0.045554735051915506,
+        "edgeDensityPort": 0.06366921768707483,
+        "edgeDensityRatio": 1.3976421466290063,
+        "lumaMeanDelta": -11.46854529887404
+      },
+      {
+        "step": 5340,
+        "look": "boost",
+        "lumaJsd": 0.09810119049659391,
+        "rgbJsd": 0.4414016155067265,
+        "paletteDistance": 0.05140753985328812,
+        "edgeDensityOriginal": 0.045554735051915506,
+        "edgeDensityPort": 0.0843235320443967,
+        "edgeDensityRatio": 1.851037701092963,
+        "lumaMeanDelta": 1.8093456416232812
+      }
+    ],
+    "summary": {
+      "all": {
+        "frames": 16,
+        "lumaJsd": 0.1194132013002733,
+        "rgbJsd": 0.4668331267804079,
+        "paletteDistance": 0.04814448371679371,
+        "edgeDensityOriginal": 0.055973849243644826,
+        "edgeDensityPort": 0.0774704618689581,
+        "edgeDensityRatio": 1.4130396782789447
+      },
+      "cruise": {
+        "frames": 6,
+        "lumaJsd": 0.06703375918565534,
+        "rgbJsd": 0.4590632884470744,
+        "paletteDistance": 0.04333681931492895,
+        "edgeDensityOriginal": 0.05470754639575128,
+        "edgeDensityPort": 0.07799026957274138,
+        "edgeDensityRatio": 1.445115797501182
+      },
+      "heat": {
+        "frames": 4,
+        "lumaJsd": 0.050830133021871185,
+        "rgbJsd": 0.36923351090672724,
+        "paletteDistance": 0.02851817653194612,
+        "edgeDensityOriginal": 0.05718956990691013,
+        "edgeDensityPort": 0.08475219857679912,
+        "edgeDensityRatio": 1.5172219051330924
+      },
+      "boost": {
+        "frames": 6,
+        "lumaJsd": 0.21751468893382597,
+        "rgbJsd": 0.539669375696195,
+        "paletteDistance": 0.06603635290855683,
+        "edgeDensityOriginal": 0.056429671649361496,
+        "edgeDensityPort": 0.07209616302661416,
+        "edgeDensityRatio": 1.311508741153942
+      }
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 48,
+    "accuracy": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "pValueVsChance": 7.105427357601022e-15,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 24,
+    "byLook": {
+      "cruise": {
+        "valid": 18,
+        "correct": 18,
+        "accuracy": 1
+      },
+      "heat": {
+        "valid": 12,
+        "correct": 12,
+        "accuracy": 1
+      },
+      "boost": {
+        "valid": 18,
+        "correct": 18,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 450,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B's sky is a stretched, noisy cloud texture where A has a ringed planet and aurora",
+        "A has detailed alien plants, mountains and speed streaks; B has flat teal walls and a boxy gate",
+        "B's ship is blocky with orange trail lines, while A's ship is detailed with a soft engine glow"
+      ]
+    },
+    {
+      "step": 750,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "originalConfidence": 0.86,
+      "tells": [
+        "A shows a flat-shaded cave with blocky ship parts and hard-edged yellow thruster trails, while B has a richly lit planet-and-sky scene",
+        "B's ship has refined detail, soft bloom on the engines and speed-streak particles, which A lacks",
+        "A's textures are low-res with stair-stepped, pixelated noise, while B's rendering is polished"
+      ]
+    },
+    {
+      "step": 1140,
+      "pass": 0,
+      "look": "heat",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has pixelated, noisy mountain textures and a hard vertical seam in the backdrop",
+        "B's vehicle is blockier, with flat engine trails and simpler geometry, while A's has detailed, glowing thrusters",
+        "A has a ringed planet, speed streaks and a more cohesive atmospheric look, while B has an aurora sky and a stray floating black shape"
+      ]
+    },
+    {
+      "step": 1170,
+      "pass": 0,
+      "look": "heat",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.88,
+      "tells": [
+        "B has low-poly blocky ship with stick-like struts and flat light-trail streaks, while A's ship is detailed with glowing engine halos",
+        "B's mountains have noisy pixelated procedural texture and aurora sky with no ringed planet, unlike A's smooth stylized terrain and planet",
+        "B's road has squiggly teal decal lines and orange block props, whereas A's road is clean with speed-line streaks and a polished atmospheric haze"
+      ]
+    },
+    {
+      "step": 1200,
+      "pass": 0,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has blocky, low-detail pixelated canyon walls and simplistic flat vehicle, while B has richer detailed scenery (rock structures, plants, floating object)",
+        "B shows speed streaks, engine glow and a detailed vehicle with cyan accents and exhaust trails",
+        "A's vehicle is a simplified orange model with plain light trails and a different camera angle/framing"
+      ]
+    },
+    {
+      "step": 1230,
+      "pass": 0,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat, low-poly craft and simplified mountains, while B has richer textured terrain and a detailed ship",
+        "B shows speed streaks, radial burst and motion blur, which A lacks",
+        "A's aurora sky and teal glowing road veins look like a simplified imitation of B's atmosphere"
+      ]
+    },
+    {
+      "step": 1500,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has low-poly flat-shaded mountains with pixelated textures and a simplistic blocky craft",
+        "B has richer detailed vehicle, realistic lighting and a more refined overhead gantry",
+        "A's aurora and speed lines are stylized and simplistic compared to B's"
+      ]
+    },
+    {
+      "step": 1920,
+      "pass": 0,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has low-poly blocky vehicle and floating black cubes",
+        "A has speed-line streaks, bloom and detailed textured scenery",
+        "B has stylized teal faceted mountains and a different camera framing/sky"
+      ]
+    },
+    {
+      "step": 2250,
+      "pass": 0,
+      "look": "boost",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has a low-poly, blocky vehicle with flat shading, while B has a detailed, refined craft model",
+        "Image A uses a bright aurora sky with pixelated, dithered mountain textures, while B has a muted, atmospheric environment with a tunnel structure",
+        "Image B shows speed-line streaks, bloom glow and richer lighting that A lacks"
+      ]
+    },
+    {
+      "step": 2550,
+      "pass": 0,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B is washed out by heavy teal fog and bloom, with a flat vehicle silhouette",
+        "A has a detailed orange drone with propellers, speed lines and a ground shadow",
+        "A has dramatic sky, floating rock islands and neon-edged structures; B has generic rounded hills and a plain overpass"
+      ]
+    },
+    {
+      "step": 3000,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has flat low-poly drone with glowing white thrusters and simplified geometry, B has detailed drone model with props and lights",
+        "A has pixelated teal mountains and aurora sky vs B's painterly clouds, floating rocks and richer atmosphere",
+        "B has speed-line streaks, cast shadow and textured road; A has flat road with yellow trail lines"
+      ]
+    },
+    {
+      "step": 3270,
+      "pass": 0,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has a flat-shaded, blocky noise-textured ceiling and teal wall slabs, unlike A's atmospheric open sky",
+        "A has a detailed drone model with speed lines, soft shadow and volumetric sky; B has a simplified model with glowing orb thrusters and long orange trails",
+        "A has a dramatic painterly sky, floating rocks and distant terrain depth; B has no comparable sky or scenery"
+      ]
+    },
+    {
+      "step": 3660,
+      "pass": 0,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has low-poly, pixelated mountains and an aurora sky, whereas A has a ringed planet and a giant arched structure",
+        "B's ship is a simple blocky model with no rivals; A's ship is detailed, with rivals and a richer scene",
+        "B has bright yellow lane lines and a flat cyan river, while A has a dark road with polished post-processing and glow"
+      ]
+    },
+    {
+      "step": 3750,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.93,
+      "tells": [
+        "A has crude low-poly terrain with blocky pixelated textures and a flat teal wall, while B has smooth, detailed hills and props",
+        "A's drone is a simple blocky model with big glowing orbs, while B's has a detailed frame, a cast shadow and speed streaks",
+        "B has richer atmosphere, with layered aurora, haze, distant structures and depth, compared with A's flat sky and plain road"
+      ]
+    },
+    {
+      "step": 4500,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B's vehicle is blocky and low-detail, with flat cyan panels and long orange thruster streaks",
+        "B's scene is a stylized cave with a repeating blobby ceiling texture, while A has an open aurora sky and detailed hills",
+        "A has speed-line particles, soft atmospheric depth and a cast shadow, all missing from B"
+      ]
+    },
+    {
+      "step": 5340,
+      "pass": 0,
+      "look": "boost",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has simplified low-poly blocky ship with cyan cubes and flat glowing thrusters, while B has a detailed drone with rotors and lights",
+        "A's canyon walls are smooth, with a dense mesh and pixelated textures, while B has natural rounded terrain with a detailed rock and shadows",
+        "A has an overly saturated teal aurora and a gate, while B has softer atmospheric haze, a cast shadow and richer scenery"
+      ]
+    },
+    {
+      "step": 450,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.96,
+      "tells": [
+        "B's sky is a smeared cloud texture with a pixelated ceiling effect, missing the ringed planet and aurora in A",
+        "B's ship is blocky and simplified, with flat cyan panels and thin orange trails, versus A's detailed ship with glowing engines",
+        "B lacks the alien flora, mountains and speed-line streaks that A has"
+      ]
+    },
+    {
+      "step": 750,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has flat, low-detail geometry and crude blocky ship",
+        "B has rich skybox with ringed planet, atmospheric haze, speed streaks",
+        "A's engine trails are flat orange bars rather than soft glow"
+      ]
+    },
+    {
+      "step": 1140,
+      "pass": 1,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has pixelated, noisy mountain textures with a visible seam and a floating black diamond",
+        "B has a ringed planet, smooth terrain, and a detailed ship with speed streaks",
+        "A's flat ship, cyan road veins and a black gantry look like a simplified re-creation"
+      ]
+    },
+    {
+      "step": 1170,
+      "pass": 1,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has a blocky low-poly craft with stick-like struts and flat glowing trails, while B has a detailed, polished ship with twin thrusters",
+        "A has pixelated, noisy, procedurally textured rock walls with an aurora sky, while B has smooth sculpted terrain with a ringed planet in the sky",
+        "B has speed-line streaks and richer atmospheric depth, while A looks flatter and more primitive"
+      ]
+    },
+    {
+      "step": 1200,
+      "pass": 1,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has blocky, low-detail canyon walls with pixelated noise textures, while B has detailed, smoothly shaded terrain and props",
+        "B has richer scenery: ruined structures, alien plants, floating objects, and speed-line effects",
+        "A's craft is simplified, with plain boxy parts and flat light streaks, while B's has detailed pods, glowing thrusters and bloom"
+      ]
+    },
+    {
+      "step": 1230,
+      "pass": 1,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat low-poly stylized mountains and a simplistic blocky ship; B has richer detailed textures and lighting",
+        "B has speed-line streaks, motion blur and a more detailed ship with bloom",
+        "A's sky is a bright green aurora over starfield; B's is a darker blue with a subtle purple aurora"
+      ]
+    },
+    {
+      "step": 1500,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat low-poly mountains with pixelated textures and stylized vivid aurora, while B has detailed realistic terrain and richer lighting",
+        "A's speed lines are thick white streaks, while B has thin golden lines and a radial burst around the ship",
+        "A's ship is a simple blocky orange model with cyan panels, while B's is a detailed, glowing mechanical craft"
+      ]
+    },
+    {
+      "step": 1920,
+      "pass": 1,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has low-poly, blocky vehicle and simplistic geometric shapes",
+        "A has speed-line streaks, motion blur and richer post-processing/bloom",
+        "B scenery is a stylized teal canyon with floating cubes, unlike A's detailed rocky and structural environment"
+      ]
+    },
+    {
+      "step": 2250,
+      "pass": 1,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has aurora sky, stylized low-poly mountains and yellow thruster trails absent in A",
+        "A has detailed vehicle model, enclosed tunnel with light strips, speed streaks and moody fog",
+        "B's simplified blocky craft and flat road versus A's refined materials and lighting"
+      ]
+    },
+    {
+      "step": 2550,
+      "pass": 1,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B is washed out by heavy white-teal fog and bloom, with glowing orbs in place of a detailed vehicle",
+        "A has a detailed orange quad-drone with rotors, speed lines, a dramatic sky and floating rock islands",
+        "B has a generic highway with guardrails and an overpass, and the camera and scenery differ from A"
+      ]
+    },
+    {
+      "step": 3000,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has flat low-poly vehicle with glowing orbs and yellow trails; B has detailed drone with props and lights",
+        "A has pixelated teal mountains and aurora sky; B has painterly clouds, floating rocks and richer atmosphere",
+        "B has speed lines, cast shadow and detailed road texture; A has simplistic road with cyan veins"
+      ]
+    },
+    {
+      "step": 3270,
+      "pass": 1,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.82,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has a blocky, low-detail cave ceiling texture and flat teal walls, where A has a soft atmospheric sky",
+        "B's drone is a flat, simplified model with glaring white thruster blobs and long yellow streaks; A's drone is detailed with speed-line effects",
+        "A has richer lighting, with a volumetric sky, floating rocks and neon-lit structures, while B looks flat and unshaded"
+      ]
+    },
+    {
+      "step": 3660,
+      "pass": 1,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has low-detail pixelated terrain, simple vehicle, and aurora sky, while A has a detailed ringed planet, giant arch, and rival ships",
+        "A has richer, more polished lighting, glow, and vehicle modeling, with other racers visible",
+        "B has bright yellow lane lines and a flat teal barrier, which A lacks"
+      ]
+    },
+    {
+      "step": 3750,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.93,
+      "tells": [
+        "B has low-poly blocky drone with cube parts and flat glowing thrusters, A has detailed drone model",
+        "B has pixelated, heavily tiled mountain textures and a flat teal barrier, while A has smooth atmospheric terrain with speed lines and particles",
+        "B's camera is lower and closer with yellow lane stripes, while A has an elevated chase camera with a soft shadow and aurora ribbons"
+      ]
+    },
+    {
+      "step": 4500,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "A has a flat, blocky drone model and low-detail cave-like blobby sky, while B has a detailed drone with a cast shadow",
+        "B has aurora sky, distant terrain, speed streaks and particle effects, and A has none of these",
+        "A has blocky stepped aliasing artifacts on the ceiling, and its cyan-tinted walls look like a procedural placeholder"
+      ]
+    },
+    {
+      "step": 5340,
+      "pass": 1,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B's vehicle is blocky and low-poly, while A's drone is detailed with thrusters and arms",
+        "A has a richer, more natural environment: rolling terrain, a spire, glowing flora, and soft aurora ribbons",
+        "B has flat, faceted teal mountains, simple crystal cones, and a hard-edged gate, so the art direction differs"
+      ]
+    },
+    {
+      "step": 450,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has a flat cloud-textured ceiling with no open sky, planet or terrain, while B has a ringed planet, mountains and alien plants",
+        "A's ship is a blocky low-detail model, while B's is a detailed, lit craft with glowing engines and speed streaks",
+        "A's road has orange lane stripes and flat teal walls, while B has an atmospheric, richly lit environment"
+      ]
+    },
+    {
+      "step": 750,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A shows a flat-shaded cave with blocky, low-detail ship and plain thruster beams",
+        "B has a ringed planet skybox, aurora, speed streaks and soft glowing engines",
+        "B's ship, guardrails and distant scenery are richer and more polished"
+      ]
+    },
+    {
+      "step": 1140,
+      "pass": 2,
+      "look": "heat",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has pixelated, low-res mountain textures and a visible seam/edge in the backdrop",
+        "B's ship is blockier and simpler, with flat-colored light trails, while A's is more detailed with a soft glow",
+        "A has a ringed planet, speed streaks and a coherent atmospheric mood that B lacks"
+      ]
+    },
+    {
+      "step": 1170,
+      "pass": 2,
+      "look": "heat",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.88,
+      "tells": [
+        "B has low-poly blocky ship with stick wings and flat orange thrust trails, A has detailed ship model",
+        "B terrain shows noisy pixelated texture artifacts and has no ringed planet, while A has a smooth painterly ringed-planet backdrop",
+        "B has squiggly cyan road decals and orange blocks, A has a clean road with speed streaks and guard rails"
+      ]
+    },
+    {
+      "step": 1200,
+      "pass": 2,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has a flat, low-poly orange craft with blocky details, while B's ship is more detailed with glowing engine trails and cyan accents",
+        "A's terrain looks like pixelated, noisy canyon walls, while B has smoother rock and richer props such as ruins and alien plants",
+        "B has speed-line streaks and a more atmospheric, polished look; A looks simpler"
+      ]
+    },
+    {
+      "step": 1230,
+      "pass": 2,
+      "look": "heat",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat low-poly mountains and a bright green aurora, while B has a darker blue sky with a purple aurora and richer textured terrain",
+        "B has speed-line streaks, motion blur and a burst effect around the ship that A lacks",
+        "A's ship looks like a simple blocky model with a different camera angle and glowing cyan road veins, whereas B's ship is more detailed with a plain road"
+      ]
+    },
+    {
+      "step": 1500,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat low-poly mountains with blocky pixelated texture, B has richer detailed terrain and structures",
+        "A's vehicle is a simple boxy orange craft with plain white glows, B's ship is detailed with realistic bloom and warm engine glow",
+        "A's speed lines are thick white streaks, B's are thin golden lines with a radial burst"
+      ]
+    },
+    {
+      "step": 1920,
+      "pass": 2,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has blocky, low-poly vehicle and floating black cubes",
+        "A has detailed vehicle with bloom, speed-line streaks, and realistic rock/structure textures",
+        "B has flat, stylized teal mountains and a different aurora and sky treatment"
+      ]
+    },
+    {
+      "step": 2250,
+      "pass": 2,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has an aurora sky with stars and simplified low-poly mountains, while A has a hazy overcast sky inside a tunnel-like structure",
+        "B's craft is a blocky, flat-shaded model with cyan cubes, while A's is a detailed, textured vehicle with proper lighting and glow",
+        "A has speed-line streaks, bloom and a polished atmospheric look that B lacks"
+      ]
+    },
+    {
+      "step": 2550,
+      "pass": 2,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B is washed out by heavy white-teal fog and glow, while A has crisp dramatic sky and contrast",
+        "A shows a detailed orange drone with rotors and floating rock islands; B has only glowing orbs and light streaks",
+        "A has a different camera angle and scenery; B has a highway-like road with an overpass and no speed lines"
+      ]
+    },
+    {
+      "step": 3000,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has simplified low-poly vehicle with glowing orbs and flat yellow trails, B has detailed model with shadow and speed streaks",
+        "A's pixelated teal mountains and aurora sky differ from B's painterly clouds, floating rocks and richer lighting",
+        "B has realistic road texture and a grounded shadow, A is flat with stylized glowing cracks"
+      ]
+    },
+    {
+      "step": 3270,
+      "pass": 2,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has a flat, blocky, low-detail cave ceiling texture and solid teal walls, where A has a rich painterly sky with floating rocks",
+        "B's drone is simplified, with glowing orbs and flat tan thruster streaks, where A has a detailed orange and teal drone with speed lines",
+        "A's lighting, atmosphere and road texture are more refined, and B looks like a procedural approximation"
+      ]
+    },
+    {
+      "step": 3660,
+      "pass": 2,
+      "look": "boost",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.93,
+      "tells": [
+        "Image B has detailed scenery (ringed planet, bone arch, rival ships) while A has low-poly pixelated mountains",
+        "Image A has a simplified blocky ship with flat shading and basic glow, B has a detailed ship model",
+        "Image A has noisy low-res mountain textures and a plain road, B has richer lighting and atmosphere"
+      ]
+    },
+    {
+      "step": 3750,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.93,
+      "tells": [
+        "B has blocky low-poly drone with flat boxes and glowing orbs, A has detailed orange quadcopter",
+        "B has coarse pixelated terrain textures and a flat teal barrier, A has smooth hills with atmospheric haze",
+        "B has yellow thruster light streaks and a closer, lower camera, A has white speed lines and a higher chase view"
+      ]
+    },
+    {
+      "step": 4500,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.9,
+      "tells": [
+        "B has blocky, flat-shaded drone with simplified geometry and cartoonish thruster trails",
+        "B scene is enclosed by cave-like blobby ceiling with banded, low-fidelity texture, unlike A's open aurora sky and terrain",
+        "A has richer atmospheric depth, speed-line streaks, and detailed drone and scenery"
+      ]
+    },
+    {
+      "step": 5340,
+      "pass": 2,
+      "look": "boost",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has low-poly blocky vehicle with simplified cyan cubes versus B's detailed drone with lit thrusters and shadow",
+        "A's terrain is flat-shaded canyon walls with pixelated textures versus B's smooth rolling hills with richer atmospheric depth",
+        "A's road has glowing cyan squiggle decals and yellow lines absent in B's plain asphalt and different road geometry"
+      ]
+    }
+  ]
+}

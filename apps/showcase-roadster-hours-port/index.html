@@ -3,52 +3,131 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Box vehicles, flat sky, no post-processing or audio. Independent Aura3D reconstruction; not affiliated with the original." />
-    <meta name="theme-color" content="#0b1020" />
-    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
-    <meta property="og:title" content="Roadster Hours — Aura3D port of the mechanics" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
-    <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Roadster Hours — Aura3D port of the mechanics" />
-    <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/fonts/local.css" />
-    <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+    <meta name="description" content="Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Coastal look with sky, ocean and a lit road; vehicles are simple models and there are no shadows; a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
+  <meta name="theme-color" content="#0b1020" />
+  <meta property="og:title" content="Roadster Hours — Aura3D port of the mechanics" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
+  <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Roadster Hours — Aura3D port of the mechanics" />
+  <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
+  <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/fonts/local.css" />
+  <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
   <title>Roadster Hours — Aura3D port of the mechanics</title>
   <style>
-    html, body { margin: 0; height: 100%; background: #0b0b0d; overflow: hidden; font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace; color: rgba(255,255,255,.88); }
+    :root { --ink: rgba(255,255,255,.92); --ink-2: rgba(255,255,255,.64); --line: rgba(255,255,255,.14); --glass: rgba(10,14,24,.62); --accent: #ffb347; --cyan: #6fe4e6; --heat: #ff6b3b; --red: #e31937; }
+    html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; font: 400 14px/1.4 "DIN Pro", sans-serif; font-synthesis: none; color: var(--ink); -webkit-font-smoothing: antialiased; }
     canvas#world { position: fixed; inset: 0; width: 100%; height: 100%; display: block; outline: none; }
     .hidden { display: none !important; }
-    #hud { position: fixed; inset: 0; pointer-events: none; }
-    #hud .tl { position: absolute; left: 16px; top: 14px; }
-    #hud .tr { position: absolute; right: 16px; top: 14px; text-align: right; }
-    #hud .bl { position: absolute; left: 16px; bottom: 14px; width: 220px; }
-    #speed { font-size: 34px; font-weight: 500; }
-    #toast { position: absolute; left: 0; right: 0; top: 38%; text-align: center; font-size: 28px; font-weight: 500; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
-    .bar { height: 6px; background: rgba(255,255,255,.14); margin-top: 6px; border-radius: 3px; overflow: hidden; }
-    .bar i { display: block; height: 100%; width: 0; background: #6fe4e6; }
-    #heat-fill { background: #ff6b3b; }
-    .panel { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(5,6,8,.55); }
-    .panel > div { background: rgba(14,16,20,.92); padding: 22px 28px; border-radius: 10px; min-width: 260px; text-align: center; }
-    button { font: inherit; padding: 8px 18px; border-radius: 6px; border: 0; background: #e31937; color: #fff; cursor: pointer; }
+    .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+    .meta { font-size: 12px; color: var(--ink-2); }
+
+    #hud { position: fixed; inset: 0; pointer-events: none; text-shadow: 0 1px 8px rgba(0,0,0,.55); }
+    #hud .tl { position: absolute; left: 20px; top: 16px; }
+    #hud .tr { position: absolute; right: 20px; top: 16px; text-align: right; }
+    #timer { font-size: 24px; font-weight: 500; line-height: 1.1; }
+    #score { font-size: 24px; font-weight: 500; line-height: 1.1; color: var(--accent); }
+    #gate, #act { font-size: 13px; color: var(--ink-2); }
+    #act { margin-top: 2px; }
+    #combo { font-size: 13px; font-weight: 500; color: var(--accent); min-height: 18px; }
+    #progress { position: absolute; left: 50%; top: 14px; width: min(380px, 38vw); height: 4px; transform: translateX(-50%); background: rgba(255,255,255,.18); border-radius: 2px; }
+    #progress i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--cyan); border-radius: 2px; }
+    #progress b { position: absolute; top: -3px; width: 2px; height: 10px; background: rgba(255,255,255,.55); }
+    #dash { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: grid; grid-template-columns: 150px auto 150px; gap: 16px; align-items: end; }
+    #dash .gauge { display: grid; gap: 5px; }
+    #dash .gauge .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); }
+    .bar { height: 6px; background: rgba(255,255,255,.16); border-radius: 3px; overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; background: var(--cyan); }
+    #heat-fill { background: var(--heat); }
+    #speedo { text-align: center; line-height: 1; }
+    #speed { font-size: 40px; font-weight: 500; }
+    #speedo small { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-2); }
+    #toast { position: absolute; left: 0; right: 0; top: 30%; text-align: center; font-size: 22px; font-weight: 500; text-shadow: 0 2px 14px rgba(0,0,0,.65); }
+    #count { position: absolute; left: 0; right: 0; top: 34%; text-align: center; font-size: 96px; font-weight: 500; line-height: 1; text-shadow: 0 4px 24px rgba(0,0,0,.6); }
+    #phase { display: none; }
+
+    .panel { position: fixed; inset: 0; display: flex; align-items: center; }
+    #menu { background: linear-gradient(90deg, rgba(6,9,18,.82) 0%, rgba(6,9,18,.58) 34%, rgba(6,9,18,0) 64%); }
+    .card { margin-left: clamp(20px, 6vw, 88px); width: min(400px, calc(100vw - 40px)); display: grid; gap: 14px; }
+    .wordmark { margin: 0; font-size: 46px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; }
+    h2 { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.2; }
+    .route-name { font-size: 20px; font-weight: 500; line-height: 1.2; }
+    .desc { color: var(--ink-2); max-width: 46ch; }
+    .routes { display: flex; gap: 8px; flex-wrap: wrap; }
+    .routes a { height: 32px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: 6px; border: 1px solid var(--line); background: var(--glass); color: var(--ink); text-decoration: none; font-weight: 500; backdrop-filter: blur(6px); }
+    .routes a[aria-current="true"] { background: rgba(255,179,71,.18); border-color: rgba(255,179,71,.6); }
+    .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--glass); backdrop-filter: blur(6px); }
+    .keys dt { font-weight: 500; white-space: nowrap; }
+    .keys dd { margin: 0; color: var(--ink-2); }
+    .actions { display: flex; gap: 8px; align-items: center; }
+    button { font: inherit; font-weight: 500; height: 32px; padding: 0 16px; border-radius: 6px; border: 0; background: var(--red); color: #fff; cursor: pointer; }
+    button.ghost { background: var(--glass); border: 1px solid var(--line); color: var(--ink); backdrop-filter: blur(6px); }
     button:disabled { opacity: .5; cursor: default; }
-    #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0b0d; }
+    .credit { font-size: 12px; color: var(--ink-2); max-width: 52ch; }
+    #pause, #results { justify-content: center; background: rgba(5,7,12,.55); backdrop-filter: blur(3px); }
+    .modal { min-width: 300px; max-width: calc(100vw - 40px); padding: 20px 24px; display: grid; gap: 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(12,16,26,.9); }
+    .modal h1 { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.15; text-transform: capitalize; }
+    .stats { display: grid; grid-template-columns: 1fr auto; gap: 4px 24px; }
+    .stats dt { color: var(--ink-2); }
+    .stats dd { margin: 0; font-weight: 500; text-align: right; }
+    #mute { position: fixed; right: 16px; bottom: 16px; z-index: 5; }
+    #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0d12; text-align: center; }
+    #loading b { font-weight: 500; font-size: 16px; }
   </style>
 </head>
 <body>
   <canvas id="world" tabindex="0" aria-label="Roadster Hours 3D driving world"></canvas>
   <div id="hud" class="hidden">
-    <div class="tl"><div id="timer">0:00.00</div><div id="gate"></div><div id="act"></div></div>
-    <div class="tr"><div id="score">0</div><div><span id="speed">0</span> km/h</div><div id="phase"></div></div>
+    <div class="tl"><div id="timer" class="num">0:00.00</div><div id="gate"></div><div id="act"></div></div>
+    <div id="progress"><i id="progress-fill"></i></div>
+    <div class="tr"><div id="score" class="num">0</div><div id="combo"></div></div>
     <div id="toast"></div>
-    <div class="bl"><div>Thrust</div><div class="bar"><i id="thrust-fill"></i></div><div>Heat</div><div class="bar"><i id="heat-fill"></i></div></div>
+    <div id="count"></div>
+    <div id="dash">
+      <div class="gauge"><div class="row"><span>Thrust</span><span id="nitro-label"></span></div><div class="bar"><i id="thrust-fill"></i></div></div>
+      <div id="speedo"><span id="speed" class="num">0</span><small>km/h</small></div>
+      <div class="gauge"><div class="row"><span>Heat</span><span id="heat-label"></span></div><div class="bar"><i id="heat-fill"></i></div></div>
+    </div>
+    <span id="phase"></span>
   </div>
-  <div id="menu" class="panel"><div><h2>Roadster Hours</h2><p id="level-name"></p><p>W drive · S brake · A/D steer · Space thrust · Shift nitro · Q/E roll · R recover</p><button id="start" disabled>Drive</button></div></div>
-  <div id="results" class="panel hidden"><div><h2 id="result-medal"></h2><p id="result-time"></p><p id="result-score"></p><p id="result-cells"></p><button id="again">Run it again</button></div></div>
-  <div id="loading"><div><b>Roadster Hours</b><br><small id="loading-status">Preparing the road ahead</small></div></div>
+  <div id="menu" class="panel">
+    <div class="card">
+      <h1 class="wordmark">Roadster Hours</h1>
+      <div><div class="route-name" id="level-name"></div><div class="meta" id="level-sub"></div></div>
+      <div class="desc" id="level-desc"></div>
+      <div class="routes" id="routes"></div>
+      <dl class="keys">
+        <dt>W / S</dt><dd>Drive, brake (hold with A/D to drift)</dd>
+        <dt>A / D</dt><dd>Steer, and spin in the air</dd>
+        <dt>Space</dt><dd>Thrust</dd>
+        <dt>Shift</dt><dd>Nitro (tap on the green window)</dd>
+        <dt>Q / E</dt><dd>Roll in the air</dd>
+        <dt>R, Esc, M</dt><dd>Recover, pause, mute</dd>
+      </dl>
+      <div class="actions"><button id="start" disabled>Drive</button><span class="meta">or press Enter</span></div>
+      <div class="credit">An independent Aura3D port of the mechanics of a browser game. The scenery is procedural; the cars are CC0 models (Quaternius, Kenney); the sound is synthesised.</div>
+    </div>
+  </div>
+  <div id="pause" class="panel hidden"><div class="modal"><h1>Paused</h1><div class="actions"><button id="resume">Resume</button><button id="restart" class="ghost">Restart route</button></div></div></div>
+  <div id="results" class="panel hidden">
+    <div class="modal">
+      <h1 id="result-medal"></h1>
+      <dl class="stats">
+        <dt>Time</dt><dd id="result-time" class="num"></dd>
+        <dt>Score</dt><dd id="result-score" class="num"></dd>
+        <dt>Data cells</dt><dd id="result-cells" class="num"></dd>
+        <dt>Crashes</dt><dd id="result-crashes" class="num"></dd>
+        <dt>Targets</dt><dd id="result-targets" class="num"></dd>
+      </dl>
+      <div class="actions"><button id="again">Run it again</button><button id="next" class="ghost hidden">Next route</button></div>
+    </div>
+  </div>
+  <button id="mute" class="ghost hidden" aria-label="Toggle sound">Sound on</button>
+  <div id="loading"><div><b>Roadster Hours</b><br><span class="meta" id="loading-status">Preparing the road ahead</span></div></div>
   <script type="module" src="./src/main.ts"></script>
-    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Box vehicles, flat sky, no post-processing or audio.</aside>
-  </body>
+  <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Coastal look with sky, ocean and a lit road; vehicles are simple models and there are no shadows; a blind model judge could still tell the port from the original.</aside>
+</body>
 </html>

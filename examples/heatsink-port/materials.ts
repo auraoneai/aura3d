@@ -4,7 +4,7 @@
  */
 import type { material } from "@aura3d/engine";
 import { VESPER } from "./map";
-import { POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX } from "./shaders";
+import { POINTS_FRAGMENT, POINTS_VERTEX, ROAD_FRAGMENT, ROAD_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, STREAK_FRAGMENT, STREAK_VERTEX, TERRAIN_FRAGMENT, VEIL_FRAGMENT, VEIL_VERTEX } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
 export type Rgb = readonly [number, number, number];
@@ -82,6 +82,30 @@ export const skySpec = (): CustomSpec => ({
   depthWrite: false
 });
 
+/** Hills and plains. `snowLine` is the world height where frost starts on upward faces; `tint` scales the rock colour. */
+export const terrainSpec = (snowLine: number, tint: Rgb = [1, 1, 1]): CustomSpec => ({
+  glsl: { vertex: SOLID_VERTEX, fragment: TERRAIN_FRAGMENT },
+  uniforms: {
+    ...lightUniforms(),
+    snowLine: { type: "f32", value: snowLine },
+    terrainTint: { type: "color3", value: [...tint] }
+  },
+  side: "double"
+});
+
+/** Additive camera-facing speed streaks (a dynamic quad strip rebuilt every frame). */
+export const streakSpec = (): CustomSpec => ({
+  glsl: { vertex: STREAK_VERTEX, fragment: STREAK_FRAGMENT },
+  uniforms: {
+    streakColor: { type: "color3", value: [1, 0.82, 0.55] },
+    streakAlpha: { type: "f32", value: 0.5 }
+  },
+  transparent: true,
+  depthWrite: false,
+  blending: "additive",
+  side: "double"
+});
+
 export const pointsSpec = (): CustomSpec => ({
   glsl: { vertex: POINTS_VERTEX, fragment: POINTS_FRAGMENT },
   transparent: true,
@@ -97,5 +121,7 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "veil-gate", spec: veilSpec([0.6, 0.9, 1], "gate") },
   { name: "veil-pad", spec: veilSpec([1, 0.7, 0.2], "pad") },
   { name: "sky", spec: skySpec() },
+  { name: "terrain", spec: terrainSpec(80, [1, 1, 1]) },
+  { name: "streak", spec: streakSpec() },
   { name: "points", spec: pointsSpec() }
 ];

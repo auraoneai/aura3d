@@ -32,3 +32,11 @@ The game defines `window.silt = { inspect(), qa? }`: `inspect()` returns the liv
 x/y/z/yaw, ...), the flight state (`rn`), the current target and objective, and the clock; `silt.qa` (`chapter`, `pose`, `scene`,
 `physicalWorld`, ...) exists only when the frame's `location.search` has `qa`. A srcdoc frame has an empty search string, so the
 reference capture patches `URLSearchParams` before the game runs (`tools/crayon-capture/silt-and-signal-lib.ts` `HOOK_SOURCE`).
+
+## Second capture (collision and floor, 2026-10-23)
+
+The bundle was captured again (serverless ACR run `cc1jx`, `tools/crayon-probe/capture-module.ts`; SHA-256 unchanged,
+`261aca2c...cc93`) to read the functions `examples/silt-and-signal-port/collide.ts` and `world-ch0.ts` port:
+`hS`, `uS`, `ss`, `Bx` (collision), `rs`, `Mo`, `_i`, `rv`, `sv`, `T0`, `w0` (floor), now part of `logic-extract.js`. The constant tables they use
+(`Tt`, `km`, `Bm`, `Um`, `oy`) are `var` initialisers, not function declarations, so they are transcribed in `world-ch0.ts` (values only).
+The bundle itself is still not stored.

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { allProgramSpecs } from "../../../examples/silt-and-signal-port/world";
+import { TOON_FRAGMENT } from "../../../examples/silt-and-signal-port/shaders";
 
 /**
  * Bakes every `material.custom` program the port draws with through the engine's own prelude
@@ -50,6 +51,18 @@ describe.skipIf(!available)("silt-and-signal-port GLSL compiles under #version 3
       } finally {
         material.dispose();
       }
+    }
+  });
+
+  it("the cel post pass compiles as a fragment stage", () => {
+    const dir = mkdtempSync(join(tmpdir(), "silt-glsl-toon-"));
+    try {
+      const source = `#version 300 es\nprecision highp float;\nuniform sampler2D u_color;\nin vec2 v_uv;\nout vec4 outColor;\n${TOON_FRAGMENT}`;
+      writeFileSync(join(dir, "p.frag"), source);
+      const result = spawnSync("glslangValidator", [join(dir, "p.frag")], { encoding: "utf8" });
+      expect(result.status, `${result.stdout}${result.stderr}`).toBe(0);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 });

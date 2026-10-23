@@ -452,3 +452,35 @@ export function assembleReport(sessions: readonly (SessionResult & { source?: st
     ]
   };
 }
+
+/* ------------------------------------------------------------------ look-reference frames */
+
+export interface FrameShot {
+  readonly name: string;
+  /** teleport target; absent = leave the car where it is */
+  readonly spawn?: Spawn;
+  /** key script stepped through the sim after the teleport */
+  readonly drive?: readonly Segment[];
+  /** real-time settle (ms) with the original's live loop running before the screenshot */
+  readonly settleMs?: number;
+  /** also take a variant with the DOM overlays visible (the original only; the port canvas has none) */
+  readonly hud?: boolean;
+  /** take the shot on the original's splash screen (before starting) */
+  readonly splash?: boolean;
+}
+
+/** The states photographed in both games. Streets run at 30 + 60k on both axes. */
+export const FRAME_SHOTS: readonly FrameShot[] = [
+  { name: "title", splash: true, hud: true, settleMs: 2500 },
+  { name: "z-idle", spawn: { x: 30, z: -300, heading: 0 }, hud: true, settleMs: 3500 },
+  { name: "z-drive", spawn: { x: 30, z: -300, heading: 0 }, drive: [{ steps: 150, keys: KEY.W }], settleMs: 2000 },
+  { name: "z-drift", spawn: { x: 30, z: -300, heading: 0 }, drive: [{ steps: 120, keys: KEY.W }, { steps: 40, keys: KEY.W | KEY.D | KEY.SPACE }], settleMs: 1200, hud: true },
+  { name: "z-boost", spawn: { x: 90, z: -300, heading: 0 }, drive: [{ steps: 90, keys: KEY.W }, { steps: 70, keys: KEY.W | KEY.SHIFT }], settleMs: 1200, hud: true },
+  { name: "x-idle", spawn: { x: -300, z: 30, heading: Math.PI / 2 }, settleMs: 3500 },
+  { name: "x-drive", spawn: { x: -300, z: 30, heading: Math.PI / 2 }, drive: [{ steps: 170, keys: KEY.W | KEY.A }], settleMs: 1800 },
+  { name: "origin", spawn: { x: 30, z: 30, heading: 0 }, settleMs: 3500, hud: true },
+  { name: "downtown-ne", spawn: { x: 150, z: 150, heading: Math.PI / 4 }, settleMs: 3500 },
+  { name: "downtown-sw", spawn: { x: -150, z: -150, heading: Math.PI }, settleMs: 3500 },
+  { name: "outer-e", spawn: { x: 330, z: 90, heading: -Math.PI / 2 }, settleMs: 3500 },
+  { name: "outer-n", spawn: { x: -90, z: 330, heading: Math.PI }, settleMs: 3500 }
+];

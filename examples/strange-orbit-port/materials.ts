@@ -4,7 +4,8 @@
  */
 import type { material } from "@aura3d/engine";
 import {
-  MINERAL_FRAGMENT, MINERAL_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, TRACK_FRAGMENT, TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX
+  ATMOS_FRAGMENT, ATMOS_VERTEX, MINERAL_FRAGMENT, MINERAL_VERTEX, NEBULA_FRAGMENT, NEBULA_VERTEX, POINTS_FRAGMENT, POINTS_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX,
+  TRACK_FRAGMENT, TRACK_VERTEX, VEIL_FRAGMENT, VEIL_VERTEX
 } from "./shaders";
 
 export type CustomSpec = Parameters<typeof material.custom>[0];
@@ -54,6 +55,21 @@ export const veilSpec = (): CustomSpec => ({
   blending: "additive"
 });
 
+export const skySpec = (): CustomSpec => ({
+  glsl: { vertex: NEBULA_VERTEX, fragment: NEBULA_FRAGMENT },
+  side: "double",
+  depthWrite: false
+});
+
+export const atmosphereSpec = (color: Rgb): CustomSpec => ({
+  glsl: { vertex: ATMOS_VERTEX, fragment: ATMOS_FRAGMENT },
+  uniforms: { atmoColor: { type: "color3", value: [...color] } },
+  transparent: true,
+  depthWrite: false,
+  side: "front",
+  blending: "additive"
+});
+
 /** One of each distinct program the scene uses (solid/mineral/points have two variants each). */
 export const allProgramSpecs = (): readonly { readonly name: string; readonly spec: CustomSpec }[] => [
   { name: "track", spec: trackSpec() },
@@ -65,5 +81,7 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "mineral-plain", spec: mineralSpec([0.8, 0.75, 0.7], false) },
   { name: "points-additive", spec: pointsSpec(true) },
   { name: "points-normal", spec: pointsSpec(false) },
-  { name: "veil", spec: veilSpec() }
+  { name: "veil", spec: veilSpec() },
+  { name: "sky", spec: skySpec() },
+  { name: "atmosphere", spec: atmosphereSpec([1, 0.7, 0.55]) }
 ];

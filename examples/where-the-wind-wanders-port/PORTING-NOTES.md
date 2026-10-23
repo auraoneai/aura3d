@@ -2,6 +2,7 @@
 
 Source of truth: `tests/fixtures/crayon/where-the-wind-wanders/game-module.mjs` (see PROVENANCE.md there).
 Reference: `evidence/crayon-capture/where-the-wind-wanders-reference.json` (2 sessions of the original on ACR).
+Measured look: `evidence/look-specs/where-the-wind-wanders.json` and `.features.json`.
 
 ## What is ported exactly (simulation parity)
 
@@ -20,32 +21,59 @@ Reference: `evidence/crayon-capture/where-the-wind-wanders-reference.json` (2 se
 
 Replaying the original's recorded key script (2,098 steps, three letters and the bell) through `sim.ts` matches the
 original's trajectory with a worst difference of 7e-10 world units, below the original's own session-to-session
-spread (1e-9). Virtual frames are 16.7 ms (the original's 60 fps throttle would otherwise skip frames).
+spread (1e-9). Virtual frames are 16.7 ms (the original's 60 fps throttle would otherwise skip frames). The art pass
+changed no simulation file: `sim.ts` is byte-identical and the replay tests are unchanged.
 
-## Rendering: procedural stand-ins
+## Rendering (art pass)
 
-The original draws painted sprite art fetched from a remote bucket; the port draws everything procedurally.
-The original has ~15 named shader program variants (`customProgramCacheKey`), instantiated many times (the probe counted
-67 live `ShaderMaterial`s). The port maps them to five `material.custom` programs:
+Everything is authored in code; no original art, audio or text is used. The look is matched to the numbers measured
+from the original (look spec): warm key light from (-35, 60, 28), hemisphere sky `#e5f2cf` over ground `#395730`,
+exp2 fog `#b8d0bd`, ACES tone mapping with exposure about 1.2, bloom and a grade. Every `material.custom` program shares
+one lighting model (`shaders.ts` `COMMON`) and writes linear HDR; the engine's ACES output stage tone maps all of them
+the same way.
 
-| Original program(s) | Port program |
+| Piece | How it is drawn |
 | --- | --- |
-| `terrain-conforming-cover`, `rooted-hill-groundcover`, `island-rooted-understory`, `mountain-bank-detail`, `batched-hill-plants`, `mossy-building-footing`, `instanced-sea-canopy`, `sea-forest-wind` (wind-swayed painted cards) | `WIND_*`: one merged mesh of 3,820 crossed cards with per-vertex `tint`, `sway`, `phase` attributes |
-| `painted-meadow` | `PAINT_*`: vertex-tinted, lambert-lit, painted noise terrain |
-| sea / water | `SEA_FRAGMENT` |
-| `jetty-painted-grain`, `pier-wood-grain` | `SOLID_*` (grain in the fragment shader) |
-| mist ribbons (`$s` haze shader) | `HAZE_*` |
+| Terrain | 0.8 m grid, 68k triangles, painted brush strokes and wild-flower speckle in the fragment shader, baked tree and building shadows in the vertex tint, a carved stream bed, beach and cliff edge, distant ridges |
+| Foliage | one merged mesh of about 19k alpha-cut cards (two crossed per plant) in seven kinds: grass tuft, flower, fern, reed, flowering shrub, broad-leaf rosette, flower spike; wind sway per card from `sway`, `phase`, `kind` attributes; cards within a few metres of the lens or of the traveller dissolve with a dither so nothing hides the walker |
+| Trees and buildings | merged into one `PROP` mesh (about 130k triangles): pines with jagged skirts, round trees from clustered noisy blobs, the old oak, a timber-framed cottage with ivy and flower boxes, a stone-and-timber windmill with gallery, stairs and cloth sails (the sails spin as their own node), fences, signs, rocks, the jetty with a lantern, the bell frame, the far shore and the isle with a lighthouse. Wood grain, plaster, roof tiles, leaves, bark, stone and cloth are procedural per-vertex `kind` patterns on metre uvs |
+| Sky | dome that follows the camera: gradient, painted clouds, sun glow |
+| Water | lake shader with shallow-to-deep colour, fresnel, glints and breathing foam lines along the shore; the stream is a ribbon with its own flow shader |
+| Traveller | one skinned-in-the-vertex-shader mesh (limbs swing from a gait phase driven by the sim's stride, cloak flutters, hop tucks the legs and squashes), a contact shadow, and a companion wisp with a glow |
+| Letters, bell, lanterns | glowing envelopes with halo and beam billboards, a swinging bell that glows once rung, lantern glows |
+| Atmosphere | drifting pollen billboards (additive), bloom, colour grade, light vignette |
+
+Draw calls: about 20 (terrain, sea, sky, foliage, stream, scenery, sails, bell, boat, traveller, shadow, wisp, glows).
+Static asset weight: 0 bytes (no model, texture or audio files).
+
+## Features added
+
+- Title card with controls (Enter or the button; `?start=1` and `?manual=1` skip it), pause (Esc or P), journal (J) that
+  keeps the text of each letter you find, story captions, sound toggle (M), on-screen pad and Hop/Act buttons on touch devices.
+  All text is the port's own writing.
+- Synthesised audio (Web Audio only): breathing wind, a shore wash that swells near the water, birds, grass footsteps,
+  hop and landing, a letter chime per letter and an inharmonic bell ring. Starts on the first user gesture; off in `manual` mode.
+- A presentation-only voyage epilogue: nine seconds after the bell rings a boat leaves the jetty for Stillwater Isle
+  (camera follows, closing card, "Keep wandering" returns to the valley). It never touches the simulation.
 
 ## Not ported (gaps)
 
-- Boat voyage, Stillwater Isle, the island trail, reflections, the bench, journal UI and story text, audio, save slots,
-  touch controls and the `playtest` autopilot (it only runs on localhost).
-- Painted sprite art and the traveller's walk-cycle frames: the port uses a capsule, head and hat.
-- The original's stream and path carving of the terrain: the port keeps the analytic height field and a painted path stripe.
-- Foliage placement is the port's own seeded scatter, not the original's.
+- The original's painted sprite art and hand-placed layout: foliage placement is the port's own seeded scatter, trees and
+  props are procedural low-poly, and the picture is much simpler than the original's roughly 1.1 M triangle painted scene.
+- Real reflections on the water, the bench, save slots (`wind-wanders-v2` local storage), the original's own journal wording,
+  the island trail on Stillwater Isle (only the voyage to it is shown), and the `playtest` autopilot (it only runs on localhost).
+- The stream is visual only: the simulation (and the original's recorded run) walks straight over it.
 - Height (y) is visual only; the simulation is x/z, so the port's y differs from the original's carved terrain.
 
 ## Hooks
 
 `window.__AURA_WIND__`: `state()`, `applyInput(keys, act)`, `stepFrames(n, keys)`, `runScript(segments)`, `reset()`,
-`routeHealth()`, `frame()`, `pixels()`. `?manual=1` stops the real-time loop so tests step the simulation themselves.
+`routeHealth()`, `frame()`, `pixels()`, plus capture helpers `teleport(x, z)` and `epilogue(seconds | null)`. `?manual=1` stops
+the real-time loop so tests step the simulation themselves (the follow camera still eases per step).
+
+## Engine note
+
+A custom shader that declares an attribute it never reads (the GLSL compiler optimises it out) makes the renderer silently
+skip the whole draw: `MaterialBinding.bind` compares `requiredAttributes` (every declared `in`) with the program's active
+attributes. The traveller was invisible until the unused `sway`/`phase` attributes were dropped from its mesh and shader.
+`toGeometryInput` in `meshkit.ts` now emits only the attributes a program reads.

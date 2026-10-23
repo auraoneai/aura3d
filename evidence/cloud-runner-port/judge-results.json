@@ -1,0 +1,1659 @@
+{
+  "schema": "a3d-kid-goku-blind-judge/1",
+  "generatedAt": "2026-10-23T11:19:31.791Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 12,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "states": [
+      "s0",
+      "s570",
+      "s700",
+      "s1560"
+    ],
+    "normalised": "640x360, original cropped to its 16:9 player content"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D third-person runner game, labelled Image A and Image B. Both are taken at the same distance along the same course, with the on-screen HUD hidden. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, clouds, terrain and cliffs, vegetation, lighting, the character and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "labels": {
+    "before": {
+      "states": [
+        "s0",
+        "s570",
+        "s700",
+        "s1560"
+      ],
+      "metrics": {
+        "perFrame": [
+          {
+            "state": "s0",
+            "lumaJsd": 0.861147283396614,
+            "rgbJsd": 0.9672814121092123,
+            "paletteDistance": 0.1950302231148578,
+            "edgeDensityOriginal": 0.09574700968459396,
+            "edgeDensityPort": 0.0011733594858233656,
+            "edgeDensityRatio": 0.012254789885225662,
+            "lumaMeanDelta": 54.93306879800974
+          },
+          {
+            "state": "s570",
+            "lumaJsd": 0.9283123914918817,
+            "rgbJsd": 0.9806843332330976,
+            "paletteDistance": 0.2888706405872087,
+            "edgeDensityOriginal": 0.08104499045550866,
+            "edgeDensityPort": 0.0018125777131749005,
+            "edgeDensityRatio": 0.022365080222570364,
+            "lumaMeanDelta": 78.32286293332544
+          },
+          {
+            "state": "s700",
+            "lumaJsd": 0.8698206270385485,
+            "rgbJsd": 0.9828041120806137,
+            "paletteDistance": 0.16450206404458045,
+            "edgeDensityOriginal": 0.07789268138911754,
+            "edgeDensityPort": 0.0021278086198140136,
+            "edgeDensityRatio": 0.027317182845258834,
+            "lumaMeanDelta": 51.312676308264
+          },
+          {
+            "state": "s1560",
+            "lumaJsd": 0.8821199748344756,
+            "rgbJsd": 0.9515246380582929,
+            "paletteDistance": 0.2007366133405408,
+            "edgeDensityOriginal": 0.047853802910632036,
+            "edgeDensityPort": 0.0021759688972172115,
+            "edgeDensityRatio": 0.0454711802378774,
+            "lumaMeanDelta": 61.67694486453027
+          }
+        ],
+        "mean": {
+          "lumaJsd": 0.88535006919038,
+          "rgbJsd": 0.9705736238703041,
+          "paletteDistance": 0.21228488527179695,
+          "edgeDensityRatio": 0.026852058297733065
+        }
+      },
+      "summary": {
+        "trials": 48,
+        "valid": 48,
+        "correct": 48,
+        "accuracy": 1,
+        "ci95": [
+          0.9258973488472576,
+          0.9999999999999999
+        ],
+        "pValueVsChance": 7.105427357601022e-15,
+        "distinguishable": true,
+        "sameGameYes": 0,
+        "sameGameRate": 0,
+        "pickedA": 24,
+        "byLook": {
+          "s0": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          },
+          "s570": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          },
+          "s700": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          },
+          "s1560": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          }
+        }
+      },
+      "trials": [
+        {
+          "step": 0,
+          "pass": 0,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "A is a flat-shaded capsule on a bare path with no cliffs, vegetation or clouds",
+            "B has detailed painterly cliffs, trees, clouds and a fully modeled character with a rolling log",
+            "A has a plain gradient sky and simple hills, while B has rich lighting and depth"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 0,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A is a plain capsule on a flat beige path with a bare sky, while B has a detailed rider on a board",
+            "B has layered cliffs, trees, volumetric clouds and a distant landscape; A has none of these",
+            "A's rounded green horizon and flat colors look like a minimal placeholder"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 0,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image A has a detailed, textured character with a red staff, while B has a plain capsule",
+            "Image A has rich scenery (mesas, cliffs, clouds, bushes, trees), while B has flat untextured terrain and an empty sky",
+            "Image A has painterly lighting and shadows, while B has flat, uniform shading"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 0,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A has rich painted clouds, layered mesas and detailed cliff walls",
+            "Image B is flat-shaded with a plain sky, simple green ground and a capsule placeholder character",
+            "Image A has trees, a log obstacle, a flying creature and lighting effects that B lacks"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 1,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image B has a plain capsule placeholder instead of a detailed character",
+            "Image B lacks cliffs, vegetation, clouds and a log obstacle",
+            "Image B has flat untextured terrain and a plain gradient sky"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 1,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A is a plain capsule on a flat beige path with a flat sky and no clouds",
+            "Image B has a detailed rider on a board, layered clouds and a distant landscape",
+            "Image B has textured cliffs, mesas and dense foliage; Image A has featureless green terrain"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 1,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "B has a flat capsule placeholder character instead of a detailed Goku model with staff",
+            "B lacks clouds, cliffs, mesas, vegetation and detailed terrain textures",
+            "B uses a flat untextured sky and ground with no lighting or shadows"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 1,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.97,
+          "tells": [
+            "Image A is flat-shaded primitives with a plain sky, no clouds or cliffs",
+            "Image B has detailed textured cliffs, trees, clouds, a bird and a log obstacle",
+            "Image A's capsule character and bare terrain contrast with B's polished lighting and depth haze"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 2,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A has flat pastel hills, plain sky and a capsule placeholder character",
+            "B has detailed cliffs, volumetric clouds, dense vegetation and a fully modeled character",
+            "B has rich lighting and a rolling log obstacle that A lacks"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 2,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A uses a plain capsule character and flat untextured terrain with a blank sky, while B has a detailed rider on a board",
+            "B has rich cliffs, clouds, layered vegetation and a distant landscape, while A has a bare gradient-free sky and a simple hill",
+            "B's dynamic camera and lighting with shadows versus A's minimal flat shading"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 2,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image B uses a capsule placeholder instead of a detailed character with a staff",
+            "Image B has flat untextured terrain with no cliffs, mesas, vegetation or clouds",
+            "Image B has a plain gradient-free sky and no lighting or shadows, unlike the rich painterly scene in A"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 2,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A has detailed clouds, textured cliffs, trees and a flying bird, while B has a flat plain sky and untextured terrain",
+            "B's character is a plain capsule and its terrain is simple flat-shaded planes",
+            "A has a wooden log obstacle and richly lit scenery, while B's lighting is flat with minimal props"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 3,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A uses a flat-shaded capsule placeholder instead of a detailed character model",
+            "Image A has a plain gradient sky and smooth green hills with no clouds, cliffs or vegetation",
+            "Image B has rich painterly cliffs, trees, volumetric clouds and a rolling log obstacle"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 3,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A is a plain capsule on flat beige path with no clouds or cliffs",
+            "Image B has detailed cliffs, trees, clouds and a rider on a board",
+            "Image A has a flat, empty sky and primitive geometry"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 3,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image A has a detailed animated character with a red staff, while B has a plain capsule",
+            "Image A has rich clouds, mesas, cliffs and bushes, while B has a flat pale sky and untextured terrain",
+            "Image A has painterly lighting and shadows, while B has flat shading and no vegetation"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 3,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "B has flat untextured sky, plain terrain and a capsule placeholder character",
+            "A has detailed painterly clouds, cliffs, trees, a log obstacle and a flying creature",
+            "B lacks the rich lighting, vegetation and distant landscape depth seen in A"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 4,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image B uses a plain capsule placeholder instead of the detailed Goku-style character",
+            "Image B has a flat gradient sky and flat-shaded terrain, with no clouds, cliffs or vegetation",
+            "Image A has rich painterly lighting, layered canyon cliffs, trees and a rolling log obstacle"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 4,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A is a flat, minimal capsule-character scene with a plain sky and no clouds",
+            "Image B has detailed painterly cliffs, lush trees, volumetric clouds and a distant landscape",
+            "Image B has a fully modeled rider on a board, while A has only a primitive capsule"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 4,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "A is a flat-shaded capsule on a plain beige path with no clouds, cliffs or vegetation",
+            "B has a detailed Goku-style character with a power pole, layered cliffs, bushes and volumetric clouds",
+            "B has rich lighting, shadows and a detailed sky versus A's flat pale-blue backdrop"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 4,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A has detailed clouds, cliffs, trees and a flying bird, while B has a flat sky and plain ground",
+            "B uses a capsule placeholder character and simple red poles instead of a modeled character and a log obstacle",
+            "B lacks the textured terrain, vegetation and lighting depth that A has"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 5,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A has flat pastel hills, a plain sky and a capsule placeholder character",
+            "B has detailed cliffs, layered clouds, vegetation and a rendered character with a rolling log",
+            "A lacks the lighting, depth and scene detail of B"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 5,
+          "look": "s570",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image B uses a flat capsule placeholder character instead of a detailed rider on a board",
+            "Image B has a plain gradient sky and flat green terrain with no clouds, cliffs, or vegetation",
+            "Image A has rich painterly cliffs, layered mesas, trees, and dynamic lighting"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 5,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A has a flat-shaded capsule placeholder instead of a detailed character",
+            "A lacks clouds, cliffs, vegetation and textured terrain",
+            "B has rich painterly art direction with lighting, shadows and detailed environment"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 5,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A has detailed clouds, textured cliffs, trees and a flying bird creature",
+            "Image B has a flat sky, untextured plain terrain and a capsule placeholder character",
+            "Image A has a log obstacle and sparkling pickups with rich lighting; B has minimal geometry"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 6,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image B has a plain capsule character instead of a detailed Goku-style figure",
+            "Image B has flat untextured terrain with no cliffs, vegetation or clouds",
+            "Image A has rich painterly lighting, layered cliffs, a log obstacle and detailed sky"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 6,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A is a plain capsule on a flat beige path with no clouds or detailed scenery",
+            "Image B has a detailed rider on a board, layered cliffs, trees and volumetric clouds",
+            "Image A's sky is a flat gradient with no depth, unlike B's richly lit environment"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 6,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A uses a flat capsule placeholder instead of a detailed character",
+            "A has no clouds, cliffs or vegetation, just flat-shaded terrain and plain sky",
+            "B has rich painted cliffs, bushes, clouds and a rigged character with a staff"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 6,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A has rich painterly sky, clouds, cliffs, trees and a detailed log obstacle",
+            "Image B is flat-shaded with a plain gradient-free sky and a capsule placeholder character",
+            "Image B lacks cliffs, vegetation and lighting depth"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 7,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A has flat pastel hills, a plain sky and a capsule placeholder character",
+            "B has detailed cliffs, volumetric clouds, dense vegetation and a rigged character with a rolling log",
+            "A lacks the lighting depth and scene detail of B"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 7,
+          "look": "s570",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "B uses a plain capsule placeholder instead of a detailed rider on a board",
+            "B has flat untextured terrain and a plain gradient sky with no clouds, cliffs or vegetation",
+            "A has rich painterly cliffs, layered clouds, trees and distant landscape"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 7,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "B has a capsule placeholder character instead of the detailed spiky-haired character with a staff",
+            "B has flat untextured terrain, a plain sky, no clouds, cliffs, mesas or vegetation",
+            "A has rich painterly lighting, layered rock cliffs, bushes and distant scenery that B lacks"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 7,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A is a flat-shaded placeholder with a plain sky, a capsule character and no cliffs or vegetation",
+            "B has detailed painted clouds, layered cliffs, trees, a bird and a log obstacle",
+            "B has rich lighting and atmospheric depth, while A has none"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 8,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A has flat pastel hills, plain sky and a capsule placeholder character",
+            "B has detailed cliffs, volumetric clouds, dense vegetation and a fully modeled character",
+            "B has rich lighting, depth and a rolling log obstacle that A lacks"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 8,
+          "look": "s570",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image B uses a flat capsule placeholder character instead of a detailed rider on a board",
+            "Image B lacks the textured cliffs, detailed foliage, clouds and depth haze seen in Image A",
+            "Image B has flat untextured terrain and plain sky with simple lighting"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 8,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A has a flat-shaded capsule character and a plain sky, B has a detailed anime character with a staff",
+            "B has textured cliffs, mesas, trees, bushes and volumetric clouds, while A has bare smooth terrain",
+            "B has rich lighting, shadows and depth, while A is minimal and flat"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 8,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A has detailed clouds, textured cliffs, trees and a bird, while B has a flat sky and untextured terrain",
+            "B uses a capsule placeholder character and primitive poles, and A has a log obstacle with painterly lighting",
+            "A has rich depth with distant mesas and haze, while B has minimal flat-shaded ground"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 9,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "A has flat pastel terrain, plain sky and a capsule placeholder character",
+            "B has detailed cliffs, vegetation, volumetric clouds and a fully modeled character with a rolling log",
+            "A lacks lighting depth and scenery that B's art direction clearly has"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 9,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A uses a plain capsule placeholder character, while B has a detailed rider on a board",
+            "Image A has a flat pastel sky with no clouds and simple untextured terrain, while B has volumetric clouds and layered distant landscape",
+            "Image B has detailed cliffs, trees and lighting with shadows, while A has a smooth featureless path and hills"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 9,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image A has a detailed character with a red staff, while Image B has a plain capsule",
+            "Image A has rich clouds, mesas, cliffs and shrubs, while Image B has flat-colored terrain and an empty sky",
+            "Image A has painterly lighting and shadows, while Image B has flat, unshaded colors"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 9,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "B has flat untextured terrain, plain sky and no clouds",
+            "B uses a capsule placeholder character with no cliffs or vegetation",
+            "A has detailed painted cliffs, trees, a log obstacle and a flying creature"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 10,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "A has a flat capsule placeholder character, B has a detailed Goku-style character",
+            "A has plain flat-shaded terrain with no cliffs, vegetation or clouds, while B has layered cliffs, trees and volumetric clouds",
+            "A has a flat blue sky and no lighting depth, while B has painterly lighting and atmospheric depth"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 10,
+          "look": "s570",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "B has a flat-shaded capsule character and a plain gradient sky, while A has a detailed rider on a board and volumetric clouds",
+            "B has smooth, featureless green and tan terrain, while A has layered cliffs, mesas and dense foliage",
+            "B has a low-detail, flat-lit scene with no distant landscape, while A has atmospheric depth and a dynamic tilted camera"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 10,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "A uses a flat capsule placeholder instead of a detailed character",
+            "A has plain flat-colored terrain with no cliffs, vegetation or clouds",
+            "B has rich painted sky, clouds, mesa cliffs, bushes and a stylized character with a staff"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 10,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "B has flat untextured sky, terrain and a capsule placeholder character",
+            "A has detailed clouds, layered cliffs, trees and a bird, with a textured log obstacle",
+            "A has rich painterly lighting and shadows, while B is flat-shaded with no depth"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 11,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.99,
+          "originalConfidence": 0.99,
+          "tells": [
+            "Image B uses a plain capsule placeholder instead of the detailed Goku-style character",
+            "Image B has a flat gradient sky and no clouds, cliffs, trees or distant landscape",
+            "Image A has textured canyon walls, rolling log obstacle, foliage and painterly lighting"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 11,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.98,
+          "tells": [
+            "Image A is a plain capsule on a flat beige path with a flat green horizon and no clouds",
+            "Image B has a detailed rider on a sled, layered clouds, tall rock pillars and rich foliage",
+            "Image B has a painterly lit steep slope with distant landscape depth, while Image A has none"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 11,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.98,
+          "originalConfidence": 0.99,
+          "tells": [
+            "B has a flat-shaded capsule character instead of a detailed spiky-haired figure with a red staff",
+            "B lacks clouds, cliffs, mesas, vegetation and detailed terrain textures",
+            "B has a plain gradient-free sky and flat untextured ground with minimal lighting"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 11,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.97,
+          "tells": [
+            "A has flat untextured terrain, plain sky and no clouds, while B has detailed cliffs, trees and layered clouds",
+            "A's character is a plain capsule, with no animated character or obstacles like B's log and bird",
+            "B has rich lighting, atmospheric depth and painterly art direction that A lacks"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "states": [
+        "s0",
+        "s570",
+        "s700",
+        "s1560"
+      ],
+      "metrics": {
+        "perFrame": [
+          {
+            "state": "s0",
+            "lumaJsd": 0.24276897767991684,
+            "rgbJsd": 0.6831984235285948,
+            "paletteDistance": 0.11452726234548163,
+            "edgeDensityOriginal": 0.09574700968459396,
+            "edgeDensityPort": 0.04085304985902173,
+            "edgeDensityRatio": 0.4266770314143308,
+            "lumaMeanDelta": -39.74125366036647
+          },
+          {
+            "state": "s570",
+            "lumaJsd": 0.09881777940329067,
+            "rgbJsd": 0.7032618464044696,
+            "paletteDistance": 0.1047895847337733,
+            "edgeDensityOriginal": 0.08104499045550866,
+            "edgeDensityPort": 0.030362865799197912,
+            "edgeDensityRatio": 0.374642104694506,
+            "lumaMeanDelta": -12.875859169899044
+          },
+          {
+            "state": "s700",
+            "lumaJsd": 0.39057317383883167,
+            "rgbJsd": 0.7566580066692217,
+            "paletteDistance": 0.16433348059062203,
+            "edgeDensityOriginal": 0.07789268138911754,
+            "edgeDensityPort": 0.05563825502180347,
+            "edgeDensityRatio": 0.7142937440278793,
+            "lumaMeanDelta": -48.5683043992248
+          },
+          {
+            "state": "s1560",
+            "lumaJsd": 0.13476048156057666,
+            "rgbJsd": 0.7796236716763425,
+            "paletteDistance": 0.1350222501261637,
+            "edgeDensityOriginal": 0.047853802910632036,
+            "edgeDensityPort": 0.04677676397961507,
+            "edgeDensityRatio": 0.9774931381518757,
+            "lumaMeanDelta": -21.26706865616714
+          }
+        ],
+        "mean": {
+          "lumaJsd": 0.21673010312065397,
+          "rgbJsd": 0.7306854870696572,
+          "paletteDistance": 0.12966814444901015,
+          "edgeDensityRatio": 0.6232765045721479
+        }
+      },
+      "summary": {
+        "trials": 48,
+        "valid": 48,
+        "correct": 48,
+        "accuracy": 1,
+        "ci95": [
+          0.9258973488472576,
+          0.9999999999999999
+        ],
+        "pValueVsChance": 7.105427357601022e-15,
+        "distinguishable": true,
+        "sameGameYes": 0,
+        "sameGameRate": 0,
+        "pickedA": 24,
+        "byLook": {
+          "s0": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          },
+          "s570": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          },
+          "s700": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          },
+          "s1560": {
+            "valid": 12,
+            "correct": 12,
+            "accuracy": 1
+          }
+        }
+      },
+      "trials": [
+        {
+          "step": 0,
+          "pass": 0,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.95,
+          "tells": [
+            "Image B has a detailed Goku-like character, layered canyon cliffs and a rich painterly sky; Image A has a generic bear-like avatar, simple low-poly trees and a flat hazy sky",
+            "Image A has a pale stone path and a smooth, flat-shaded log; Image B has a dirt path and a wood-grain log",
+            "Image A has sparse rounded bushes and rocks; Image B has detailed grass tufts and distant forest"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 0,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A shows a bear character on a flat dirt path, while B shows a rider on a red board sliding down a steep cliff slope",
+            "A has a realistic-textured, low-poly look; B has a polished stylized painterly look with detailed clouds and layered mesa landscape",
+            "Completely different terrain and camera: A is a ground-level canyon corridor, B is a steep slope with a wide vista"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 0,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished, painterly anime look with a vivid blue sky, billowing clouds, mesa cliffs and a dirt path, while B has a muted, overcast, low-poly look",
+            "A's character is a Goku-like spiky-haired kid with a red staff, while B's is a small bear-like figure on a cloud",
+            "B's blobby low-poly trees and bushes and its flat grey sky look like a generic re-implementation"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 0,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "B has a different environment: dense round-canopy forest and a pale sandy path, versus A's canyon cliffs, mesas and dirt road",
+            "B's character is a bird seen from behind with an orange beak, while A shows a distinct winged creature and a log obstacle",
+            "A's lighting and painterly haze with warm tones differ from B's flatter, cooler, low-poly look"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 1,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a polished painterly look with a layered, dramatic sky and a distant landmark, while Image B has a flat pale sky and sparse low-poly trees",
+            "Image A shows a recognizable spiky-haired anime character with a red staff, while Image B shows a generic bear-like figure",
+            "Image A has detailed terrain with layered cliffs and canyons, while Image B has a plain gray path and simple blob shrubs and rocks"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 1,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A shows a bear on a flat dirt path in a canyon, while Image B shows a rider on a hoverboard sliding down a steep slope",
+            "Image B has stylized painterly cliffs, layered mesas and polished cloud art, while Image A looks like a simple low-poly scene with basic bush blobs",
+            "Image A has a different character, camera and terrain layout, so it reads as a different game"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 1,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.93,
+          "tells": [
+            "Image A has a different character (bear-like figure on a cloud) versus a spiky-haired kid with a red staff in B",
+            "Image A shows low-poly rounded trees and bushes in a grey, overcast scene, while B has painted cliffs, mesas and a vivid blue sky with detailed clouds",
+            "B's dirt path, grass tufts and layered rock formations look polished and cohesive, while A looks like a simplified stand-in"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 1,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "B has a different scene: dense low-poly trees, a pale bird seen from behind, and a sandy path",
+            "A has a painterly look: soft clouds, sandstone cliffs, a log obstacle and a bird in flight",
+            "B's flat green shading and hazy sky differ from A's warm, rich lighting"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 2,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a polished, stylized anime look with a Goku-like character, painterly clouds and layered cliffs, while Image B shows a different bear-like character",
+            "Image B has generic low-poly trees, a pale flat path, and simple rocks and bushes in place of A's detailed terrain and vegetation",
+            "Image B's lighting is hazy and flat, and its camera is centered and low, unlike A's elevated, dynamic framing"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 2,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A shows a bear-like character on a flat dirt path, while B shows a rider on a red board sliding down a steep cliff slope",
+            "A has a flat, low-detail, procedural-looking canyon and low-poly trees, while B has hand-painted, stylized cliff faces, mesas and lush foliage",
+            "B has richer sky, clouds and distant landscape depth with a more polished art style"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 2,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.95,
+          "tells": [
+            "B has a different character (bear-like figure on a cloud) versus the spiky-haired kid with a red staff in A",
+            "A has a bright blue sky, mesa cliffs and a dirt path; B has an overcast sky, low-poly trees and a green meadow",
+            "A has polished, hand-painted anime shading; B has a flat, generic low-poly look with a different camera framing"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 2,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.85,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has layered cliffs, mesa pillars and a distant bird with painterly lighting and atmospheric depth",
+            "Image A has simple flat-shaded trees, blobby bushes and a plain beige character seen from an odd camera angle",
+            "Image A's sky and terrain are flat and low-detail compared with B's rich cloud and haze rendering"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 3,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a polished, painterly cel-shaded look with a detailed Goku-style character, while B has a generic low-poly bear-like figure",
+            "A has dramatic layered cliffs, stylized clouds and a deep valley vista; B has flat rounded trees, pale sky and a plain white path",
+            "B's lighting and textures are flat and simple, with a rough procedural log texture and scattered triangle particles"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 3,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A has a bear character on a flat dirt road, while B has a rider on a red board sliding down a steep slope",
+            "B has polished stylized cliffs, layered clouds and a detailed distant landscape, while A looks like a simple low-poly valley",
+            "A's gray-beige path and blobby bushes look like a rough re-creation, unlike B's cohesive art direction"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 3,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished anime-style Goku character with a red staff, while B has a different bear-like character riding a cloud",
+            "A shows painted sandstone cliffs, mesas and a dirt path under a vivid blue sky, while B shows low-poly trees and bushes under an overcast sky",
+            "B has a rough, generic low-poly render with a different camera angle and lighting"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 3,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has layered cliffs, mesas and a bird character with rich atmospheric depth",
+            "Image A has a flat grassy plain with uniform lollipop trees and a simplistic beak-like character",
+            "Image A's lighting and terrain are plainer, more like an approximation"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 4,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a polished painterly look with a detailed cel-shaded Goku-style character, while Image B has a generic bear-like avatar",
+            "A has rich layered scenery (mesas, distant valleys, stylized clouds) and a dirt path, while B has a pale stone path, simple low-poly trees and flat lighting",
+            "B has washed-out hazy sky, plain textures and a different camera framing from A"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 4,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A shows a bear-like character on a flat dirt road in a canyon, while Image B shows a rider on a red board sliding down a steep cliff slope",
+            "Image B has stylized, hand-painted rock pillars, layered vistas and fluffy clouds that look like polished shipped art, whereas Image A has simpler low-poly trees, bushes and flat textures",
+            "Camera and terrain differ completely: A is a behind-the-back view along a flat path, B is a dynamic angled view down a steep slope"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 4,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished, stylized anime look with a vivid blue sky, volumetric clouds and mesa cliffs, while B has a muted overcast sky with low-poly trees",
+            "A shows a spiky-haired character carrying a red staff on a dirt path, while B shows a different character riding a white cloud",
+            "B has flat low-poly vegetation and rocks with a different color palette and a closer camera, unlike A's detailed terrain"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 4,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has layered cliffs, mesas and a hazy painterly distance, while A is a flat meadow with uniform round trees",
+            "Image B has a bird character on a dirt track with a log obstacle, A has a first-person beak/neck view with a sandy path",
+            "Image A has simpler low-poly shading and a blank, flat lighting setup, while B has richer volumetric clouds and depth"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 5,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a polished, painterly cel-shaded look with a detailed Goku-style character, while B has a generic bear-like character",
+            "Image A has a rich canyon environment with layered cliffs, distant landmarks and stylized clouds, versus B's flat low-poly trees and plain hazy sky",
+            "Image A has a warm dirt path with a high chase camera, while B has a pale stone path with a low, centered camera"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 5,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A has a bear character on a flat path in a canyon, while Image B has a rider on a hoverboard sliding down a steep cliff face",
+            "Image B has hand-painted stylized cliffs, layered mesa pillars and a polished sky, while Image A has low-poly trees, a plain textured path and simple blobby bushes",
+            "Different camera, terrain and character, so the art direction is not the same"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 5,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.93,
+          "tells": [
+            "Image A has a different character (a bear-like figure riding a cloud) compared to the spiky-haired kid with a red staff in Image B",
+            "Image A uses chunky low-poly trees and bushes under a muted, hazy sky, while Image B has layered mesa cliffs, a dirt path and a vivid blue sky with volumetric clouds",
+            "Image B's polished, cohesive art direction and detailed terrain look like the shipped game, while Image A looks like a loose approximation"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 5,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "B has a different scene: forest with rounded trees and a bird seen from behind, versus A's canyon cliffs, log obstacle and mesa pillars",
+            "A has a richer painterly look with soft clouds, a hazy layered horizon and warm golden-hour lighting",
+            "B has flatter, simpler low-poly shading, a grainy sand-textured ground and a cooler, washed-out sky"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 6,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.95,
+          "tells": [
+            "Image B has detailed terrain, layered cliffs and rich clouds, while A has simple flat low-poly trees and a hazy sky",
+            "Image B's character is a stylized spiky-haired figure with a red staff, while A's is a generic bear-like avatar",
+            "Image B has a dirt path, a wooden log with a clear grain texture and a dramatic camera, unlike A's pale path and plain orange log"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 6,
+          "look": "s570",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.93,
+          "tells": [
+            "A has a stylized painterly look with a sled-riding character on a steep cliff slope, while B shows a bear character running on a flat path",
+            "B uses realistic-textured terrain with generic low-poly trees and a different lighting style",
+            "A has distinctive layered mesas, vivid cloud shapes and a hand-crafted environment that B lacks"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 6,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.95,
+          "tells": [
+            "B has a different character (bear-like figure on a cloud) versus the spiky-haired kid with a red staff in A",
+            "B has a low-poly forest with a gray overcast sky versus A's bright blue sky, stylized clouds, and mesa cliffs",
+            "A has a dirt path with layered plateaus; B has a grassy field with a stream and rocks"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 6,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has layered cliffs, mesa pillars and a bird, giving richer terrain and atmospheric depth",
+            "Image A has a flat grassy plain with uniform lollipop trees and a simplistic beak-like character viewed from an odd angle",
+            "Image B's lighting, clouds and soft haze look more polished, while Image A is flatter with generic primitives"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 7,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a polished, stylized Dragon Ball-style character with a red pole, while B has a generic bear-like character",
+            "A has rich painterly clouds, a distant landmark and layered canyon cliffs, while B has a hazy pale sky and simple low-poly trees",
+            "A has a dirt path and hand-painted terrain, while B has a pale stone path, plain green grass and scattered rocks"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 7,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A shows a bear-like character walking on a flat path, while Image B shows a rider on a red board sliding down a steep slope",
+            "Image A has a realistic-textured path and low-poly trees, whereas Image B has a stylized painterly look with layered mesa cliffs",
+            "Image B's sky, clouds and distant landscape are richly detailed, while Image A's scene is sparse and generic"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 7,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.95,
+          "tells": [
+            "Image A has a different character (bear-like figure on a cloud) and low-poly stylized trees, versus Image B's spiky-haired boy with a red staff",
+            "Image B shows layered mesa cliffs, a dirt path and a vivid blue sky with detailed clouds; Image A has a hazy overcast sky and rounded green blob bushes",
+            "Image B has a more polished, consistent art style with crisp lighting and detailed foliage; Image A looks like a loose approximation"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 7,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "B has a different scene: dense round-canopy trees, a river and a bird-back camera, versus A's canyon cliffs and mesas",
+            "A has soft painterly clouds, warm lighting and a detailed log obstacle that B lacks",
+            "B's flat, low-poly look with a plain sandy path differs from A's richer terrain shading"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 8,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image B has detailed canyon and cliff terrain with layered depth, rich clouds and a distant landmark, while A has a flat, sparse landscape with simple low-poly trees",
+            "Image B's character is a Goku-like figure with a red staff and polished cel-shaded rendering, while A's is a generic bear-like figure with crude shading",
+            "Image A's log, path and grass look like plain procedural textures with a hazy washed-out sky, unlike B's painterly, cohesive art direction"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 8,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A shows a bear-like character on a flat dirt path, while Image B shows a rider on a red board sliding down a steep slope",
+            "Image A has a realistic-textured path and low-poly trees with a flat canyon, while Image B has a stylized painterly look with layered mesa cliffs and a vista",
+            "Image B has richer lighting, cloud detail and a polished distant landscape, so it reads as the shipped game"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 8,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.93,
+          "tells": [
+            "B has a different character (bear-like figure on a cloud) versus the spiky-haired boy with a red staff in A",
+            "B has low-poly trees and an overcast, muted sky versus A's vivid blue sky, billowing clouds and mesa cliffs",
+            "A has a dirt path with layered terraced cliffs and stylized bushes; B has a grassy stream-like path and rounded rocks"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 8,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "B has a different scene: dense tree-filled lowland, no canyon cliffs or mesa pillars",
+            "B shows a bird seen from behind with an orange beak, versus the character in A",
+            "A has painterly soft lighting, layered distant mesas and stylized clouds; B looks flatter with sparse, generic low-poly trees"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 9,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a polished painterly look with a stylized Goku-like character, detailed clouds and layered canyon vistas, while Image B has a generic bear-like character",
+            "Image B uses simple low-poly trees, flat grass and a pale path with a plain textured log",
+            "Image B's lighting and sky are hazy and flat, with a different camera framing from A's higher, angled view"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 9,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A shows a bear-like character on a flat dirt path, while B shows a rider on a red board sliding down a steep slope",
+            "A has a realistic-textured, low-poly look with a dull haze, while B has a polished stylized look with painterly clouds and rich color",
+            "B has tall mesa-like cliffs and layered vistas, while A is a narrow canyon corridor with sparse vegetation"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 9,
+          "look": "s700",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.93,
+          "tells": [
+            "Image A shows a different character (bear-like figure on a white cloud) and low-poly rounded trees, unlike B's spiky-haired character with a red staff",
+            "Image B has detailed mesa cliffs, a dirt path and a bright blue sky with volumetric clouds, while A has a hazy, muted sky and a flat green meadow",
+            "Image A's blobby, simplified geometry and different lighting look like a re-implementation, whereas B's polished, consistent art looks like the shipped game"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 9,
+          "look": "s1560",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "B has a different scene: dense round-canopy trees and a pale bird seen from behind, versus A's cliffs, mesa and log obstacle",
+            "A has a layered painterly sky, soft bloom and a warm dirt-road palette, while B looks flatter and more procedural",
+            "B's low-poly bushes, rocks and speckled sand texture look like a re-implementation, whereas A's terrain is more authored"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 10,
+          "look": "s0",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.95,
+          "tells": [
+            "Image A has a polished, painterly cel-shaded look with a detailed Goku-style character, while B shows a generic bear-like figure in a low-poly style",
+            "A has dramatic layered cliffs, a distant rock spire and rich volumetric clouds, while B has a hazy, flat sky and simple lollipop trees",
+            "A has a warm dirt path with an angled, dynamic camera, while B has a pale stone path with a centered, static camera and a plain textured log"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 10,
+          "look": "s570",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A shows a bear-like character on a flat dirt road, while B shows a rider on a hoverboard sliding down a steep cliff slope",
+            "Image A has a realistic-textured road with low-poly trees and bushes, unlike B's stylized painterly cliffs and mesa landscape",
+            "Image B has richly detailed sky, clouds and distant vistas with a cohesive art style, while A looks like a generic prototype scene"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 10,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.95,
+          "tells": [
+            "B has a different character (bear-like figure riding a cloud) instead of the spiky-haired kid with a red staff",
+            "B has low-poly trees, grey overcast sky and a green valley instead of A's bright blue sky, mesa cliffs and dirt path",
+            "A has polished painterly cel-shaded lighting and vegetation, while B looks like a simpler engine render"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 10,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has layered cliffs, mesas and a distant bird with rich painterly lighting",
+            "Image A has simplistic low-poly trees, a flat terrain and an odd beak/stick character seen from the camera",
+            "Image A's sky and clouds are flat with generic fog, unlike B's volumetric clouds"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 11,
+          "look": "s0",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a generic bear-like character, B has a Goku-style character with a red staff",
+            "A has flat, low-detail terrain with simple blob trees, B has layered canyon cliffs, rich foliage and volumetric clouds",
+            "A has a hazy, washed-out sky and a close camera, B has a vivid, painterly sky and a wide, scenic vista"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 11,
+          "look": "s570",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.93,
+          "tells": [
+            "A has a stylized painterly look with a rider on a hoverboard sliding down a steep cliff, while B shows a bear character running on a flat dirt path",
+            "A has distinctive layered mesa pillars and a vivid saturated sky with big clouds, whereas B has generic low-poly trees and a hazy sky",
+            "B has a realistic, gritty path texture and a generic engine-style lighting look, unlike A's clean, hand-crafted shading"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 11,
+          "look": "s700",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.96,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished, painterly sky with volumetric clouds and distant mesas, while B has an overcast, flat gray sky",
+            "A has a spiky-haired character with a red staff on a dirt path, while B shows a different character riding a cloud",
+            "B has low-poly blobby trees and rocks with a different lighting style and a lower, closer camera"
+          ]
+        },
+        {
+          "step": 3,
+          "pass": 11,
+          "look": "s1560",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.85,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has layered cliffs, mesas and atmospheric depth",
+            "Image A has a flat open plain with uniform lollipop trees and a simplistic beak-like character",
+            "Image B has a polished winged character, painterly clouds and a log obstacle with soft lighting"
+          ]
+        }
+      ]
+    }
+  }
+}

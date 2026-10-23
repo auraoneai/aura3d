@@ -1,0 +1,1620 @@
+{
+  "schema": "a3d-saiyan-snake-way-blind-judge/1",
+  "generatedAt": "2026-10-23T11:57:57.018Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 16,
+    "trialsPerTag": 48,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D endless-runner game, labelled Image A and Image B. Both are taken at the same moment of the same run (same road position, same speed), at the same resolution, with the on-screen HUD visible. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge what is visible: sky, clouds, road, lighting, the runner, effects, the camera and the HUD.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "note": "Original frames are 1280x720 screenshots with HUD; port frames are 1280x720 page screenshots with HUD at the same road distance (idle run at base speed, invulnerable). The original's late frame (hell run) has no port counterpart and is excluded.",
+  "tags": {
+    "before": {
+      "metrics": {
+        "perState": [
+          {
+            "state": "m-early",
+            "look": "check-in",
+            "lumaJsd": 0.2593954786218947,
+            "rgbJsd": 0.6755868700704033,
+            "paletteDistance": 0.1262951450077574,
+            "edgeDensityOriginal": 0.08451576061133124,
+            "edgeDensityPort": 0.040792106398838714,
+            "edgeDensityRatio": 0.48265679801939343,
+            "lumaMeanDelta": 48.68378698324247
+          },
+          {
+            "state": "m-mid",
+            "look": "long-road",
+            "lumaJsd": 0.13902084188917738,
+            "rgbJsd": 0.3808258459063883,
+            "paletteDistance": 0.03966950271247801,
+            "edgeDensityOriginal": 0.07006072336214751,
+            "edgeDensityPort": 0.04199088059773061,
+            "edgeDensityRatio": 0.599349800895968,
+            "lumaMeanDelta": 3.446545152614675
+          },
+          {
+            "state": "m-sweep",
+            "look": "ki-pickup",
+            "lumaJsd": 0.16645541577084574,
+            "rgbJsd": 0.4811826348340699,
+            "paletteDistance": 0.02890692281335801,
+            "edgeDensityOriginal": 0.05333128451924796,
+            "edgeDensityPort": 0.046382753344580016,
+            "edgeDensityRatio": 0.8697100353515744,
+            "lumaMeanDelta": 9.463637395965065
+          }
+        ],
+        "mean": {
+          "lumaJsd": 0.1882905787606393,
+          "rgbJsd": 0.5125317836036205,
+          "paletteDistance": 0.06495719017786449,
+          "edgeDensityRatio": 0.650572211422312,
+          "lumaMeanDelta": 20.53132317727407
+        }
+      },
+      "summary": {
+        "trials": 48,
+        "valid": 48,
+        "correct": 48,
+        "accuracy": 1,
+        "ci95": [
+          0.9258973488472576,
+          0.9999999999999999
+        ],
+        "pValueVsChance": 7.105427357601022e-15,
+        "distinguishable": true,
+        "sameGameYes": 0,
+        "sameGameRate": 0,
+        "pickedA": 32,
+        "byLook": {
+          "check-in": {
+            "valid": 16,
+            "correct": 16,
+            "accuracy": 1
+          },
+          "long-road": {
+            "valid": 16,
+            "correct": 16,
+            "accuracy": 1
+          },
+          "ki-pickup": {
+            "valid": 16,
+            "correct": 16,
+            "accuracy": 1
+          }
+        }
+      },
+      "trials": [
+        {
+          "step": 0,
+          "pass": 0,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has a polished HUD with a character portrait, a styled comic-font title, and a detailed stone gate with a red disc, while B has plain boxy HUD panels and a minimal text label",
+            "A shows detailed textured road tiles, a carved arch, and a dense, grainy cloud sea, while B has a flat, smooth road and simple gradient clouds",
+            "B has a primitive capsule-and-cone runner and a road that curves away to the horizon, while A has no visible runner and a straight road to a gate"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 0,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has detailed Goku character, stylized logo title, and polished HUD",
+            "A uses primitive blocky runner, plain text HUD, and a stray red box",
+            "A has flat road with no side walls and simple cloud terrain, B has textured brick road and rich clouds"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 0,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed Goku model with spiky hair and gi emblem",
+            "A has a textured cloud-sea, a raised rim on the road and a distinct brick pattern; B has flat yellow ground and a plain road",
+            "HUD differs: A uses portrait panels, a progress bar and an Earth countdown; B uses plain stat boxes and a title banner"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 1,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished HUD with a character portrait, a stylized title and a detailed carved gate, while B has plain boxy HUD panels",
+            "B shows a crude primitive-shape runner and a flat, smooth road, whereas A's road has detailed tile and feather textures",
+            "A has a starry purple sky and textured cloud-sea, while B has a pale gradient sky and smooth clouds"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 1,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has detailed Goku model, themed HUD, and styled title logo",
+            "A uses primitive-shape runner, plain HUD boxes, and a floating red block",
+            "B has textured cloud sea, curbed road with brick tiles; A has flat yellow ground and wide plain road"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 1,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "A has a detailed Goku model with spiky hair and orange gi, while B uses a crude primitive-shape runner with a cone for hair",
+            "A has a textured cloud sea and a curved, brick-cobbled road with side walls, while B has a flat yellow plane and a flat road with large grid lines",
+            "A has a styled HUD with portrait, health bars and countdown panels, while B has plain minimal boxes and a title overlay"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 2,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has a polished HUD with a character portrait, a styled comic-font title, and themed panels, while B uses plain generic boxes",
+            "A has a detailed stone arch gate, a textured brick road, dithered golden clouds and a starry purple sky, while B has a flat road and smooth gradient sky",
+            "B shows a crude primitive-shape runner with a cone hat, and A has no visible runner in view"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 2,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a polished Goku model, styled HUD, portrait and title logo, while A uses primitive blocky shapes and plain text HUD",
+            "B's road has raised curbs, detailed brick tiles and a textured cloud sea, while A has a flat plain road with no side walls",
+            "A has an odd red slab and a witch-hat-like figure, and a debug-like HUD with no portrait or progress bar"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 2,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure while A has a detailed, textured character model",
+            "A has a textured cobblestone road with raised side walls and billowing cloud-sea terrain; B has a flat road with simple lines and a flat yellow plain",
+            "HUD differs entirely: A has portrait panels, a progress bar and a countdown card; B has plain boxes and a title banner"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 3,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has a polished HUD with a character portrait, styled title lettering and an ornate carved gate, while B uses plain translucent boxes and a simple text label",
+            "A's road is detailed tiled stone with feathered edges, and its clouds are textured and volumetric; B's road is flat with blurry seam lines and its clouds are smooth gradient",
+            "B shows a primitive blocky runner with a cone hat and a distant tube-like road, while A has no visible runner and a different camera view"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 3,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed Goku model, themed HUD and title logo, while A uses primitive blocky shapes and a plain HUD",
+            "B has a textured brick road with curved edges and layered cloud terrain, while A has a flat road with a bare-bones look",
+            "A has a stray red box and generic placeholder-style UI"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 3,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed Goku model with spiky hair and a gi emblem",
+            "B's HUD is flat and generic, while A has a portrait, health bars, and a countdown panel",
+            "B's road is flat with a plain tile pattern and blobby white spheres, while A has a curved raised road with rails, textured cloud-sea, and ki particles"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 4,
+          "look": "check-in",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.88,
+          "tells": [
+            "B has a detailed Goku portrait HUD, stylized fonts and a carved stone gate, while A has plain minimal HUD boxes",
+            "A shows a low-detail runner and a flat winding tube road, versus B's textured cobblestone road and rich cloud sea",
+            "The sky differs: A is pale lavender with smooth gradient clouds, B is deep purple with stars"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 4,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.96,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed Goku model with an emblem and spiky hair",
+            "B's HUD is plain boxes with generic text, while A has a styled portrait panel, a progress bar and themed title lettering",
+            "B's clouds are a flat yellow plane and its road has stretched seams, while A has volumetric golden clouds and a detailed brick road"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 4,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A's is a detailed Goku model",
+            "B has a flat yellow ground and a wide road with no side walls, while A has a textured cloud sea and a raised walled brick road",
+            "A's HUD uses character portrait panels, B's is minimal plain boxes"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 5,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished HUD with a character portrait, styled title text and a detailed carved-stone gate, while B has plain boxy HUD panels",
+            "A's road has detailed scale-textured edges and brick tiles, while B's road is flat with blurry lines",
+            "B has a crude primitive-shaped runner with a cone hat and a different camera, while A shows no runner and a different scene"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 5,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a detailed, textured Goku model, while B uses a crude primitive-shape runner with a cone for hair",
+            "A has a stylized HUD with a portrait, a themed title logo and a progress bar, while B has plain generic boxes",
+            "A has a fluffy, rolling golden cloud sea and a brick-textured road with raised edge walls, while B has a flat yellow plane and a smooth road with a stray red slab"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 5,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed, textured Goku model, A has a primitive blocky figure",
+            "B has a polished HUD with portrait, progress bar and star particles, A has plain text boxes",
+            "B's road has curved raised rails and a brick-tile texture, A's road is flat with a crude grid"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 6,
+          "look": "check-in",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.85,
+          "tells": [
+            "B has a richly detailed HUD with a character portrait, a stylized title font, and a progress bar, while A uses plain boxes",
+            "B's road, gate and cloud textures are detailed, while A's are flat with a smooth blurry road",
+            "A has a different camera and runner design with a visible character, while B shows no runner"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 6,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.96,
+          "tells": [
+            "B's runner is a crude primitive-shape figure with a cone for hair, while A has a detailed Goku model with gi emblem",
+            "B's HUD is plain generic boxes and lacks A's themed portrait panel, logo title and progress bar",
+            "B's clouds are a flat yellow plane and the road is a plain slab with a stray red block, versus A's textured cloud sea and brick road with curved walls"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 6,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed, recognizable Goku character model",
+            "A has a polished HUD with a portrait, ki bar and countdown panels, while B has plain text boxes",
+            "A has textured cloud-sea terrain and a curved road with brick and wall detail, while B has a flat yellow plane and a simplified road"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 7,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has a polished HUD with a character portrait, a styled Check-In banner and a carved stone gate with horns, while B has plain translucent boxes and no gate",
+            "A has a detailed tiled road with feather-like edge ornaments and textured, dithered golden clouds, while B has a flat, smooth road and a blurry, simple cloud floor",
+            "B shows a primitive-shape runner with a cone hat, and A shows no runner"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 7,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a detailed textured Goku model, while B uses a primitive block-and-cone figure",
+            "Image A has a styled HUD with a portrait, themed title lettering and billowy golden cloud terrain, while B has plain text panels and flat yellow ground",
+            "Image A shows a curving brick road with raised rims, while B shows a flat road with stray red slab geometry"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 7,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed Goku character with a portrait HUD, while A uses a crude primitive-shape figure with a cone hat",
+            "B has textured cloud sea, sparkles and a ki aura, while A has flat yellow ground and plain white blobs",
+            "B has a narrow brick road with raised side walls, while A has a wide flat tiled slab and a generic HUD"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 8,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished HUD with a character portrait, styled panels and a stylized title banner; B has plain translucent boxes and generic text",
+            "A has detailed textured scenery (carved stone gate, feathered bridge rails, noisy dithered clouds); B has a flat plain road and smooth gradient clouds",
+            "B shows a crude primitive-shape runner and a distant winding road, while A has a different camera view with no visible runner"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 8,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a detailed textured Goku model, while B uses a primitive blocky figure with a cone for hair",
+            "Image A has a polished, themed HUD with a portrait, stylized title logo and progress bar, while B has plain generic boxes",
+            "Image A has a fluffy, textured golden cloud sea and detailed brick road, while B has a flat smooth yellow ground and a simplistic road with a stray red block"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 8,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed, recognizable Goku model, textured brick road with raised edges and cloud-sea terrain, while A uses a primitive capsule figure on a flat road",
+            "B's HUD has a portrait, segmented bars and a progress bar; A's is plain boxes with a different layout and labels",
+            "A has flat white sphere pickups, a flat yellow ground and a thin tube track, while B has sparkle particles, a ki aura and volumetric clouds"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 9,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.93,
+          "tells": [
+            "A has a polished HUD with a character portrait, a stylized title font and detailed textured art, while B uses plain boxed HUD panels",
+            "A has a detailed carved-stone gate and cobbled road with a textured cloud sea, while B has a flat smooth road and blurry plain clouds",
+            "B has a crude primitive-shape runner with a cone hat, while A shows no runner and has a different camera view"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 9,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed Goku model, portrait HUD and stylized logo, while A uses primitive blocky shapes and a plain-text HUD",
+            "B has a textured brick road with raised edges and rolling cloud terrain, while A has a flat road with a smooth ground plane",
+            "A has a floating red slab and a different road layout and camera"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 9,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed, textured Goku model",
+            "B's HUD is plain and different in layout, while A has styled panels with a portrait, health bars and a countdown",
+            "B's road is flat, with a smooth stripe texture and no side walls, while A has a brick-textured road with raised curved rims and a billowy cloud sea"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 10,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has polished stylized HUD with a character portrait, a comic-style title and detailed carved-stone road, while B has plain minimal boxes",
+            "A shows an elaborate winged stone gate and a red ring, while B shows a distant winding tube road and a crude primitive-shape runner",
+            "A has a purple starry sky and textured golden clouds, while B has a flat pale gradient sky and smooth yellow ground"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 10,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed Goku model, portrait HUD and stylized logo, while A uses a primitive blocky runner and plain text HUD",
+            "B has a textured cloud sea, curved road with raised edges and tile detail; A has flat yellow ground and a faceted road",
+            "A has a large red box obstacle and a basic HUD layout, which looks like a placeholder re-implementation"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 10,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure while A has a detailed Goku model with an emblem and a ki aura",
+            "A has textured, billowing golden clouds and a detailed brick road with carved side walls; B has flat yellow ground and a simple plank road",
+            "A's HUD uses character-portrait panels and a countdown card; B's HUD is plain minimal boxes with a title banner"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 11,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished HUD with character portrait, stylized title lettering and detailed textured road, gate and clouds; B has plain boxy HUD panels and flat, smooth road",
+            "B shows a primitive low-poly runner and a distant winding road, while A has a carved stone gate with horns and a red portal disc",
+            "Cloud and sky rendering differ: A has dithered, grainy golden cloud terrain under a purple starry sky, B has smooth blurry yellow ground and a pale gradient sky"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 11,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has detailed Goku model, stylized logo title and polished HUD",
+            "A uses primitive block runner, plain HUD boxes and flat road without curbs",
+            "B has textured cloud sea, stars, brick road with raised edges"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 11,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure while A has a detailed Goku model with a textured gi and spiky hair",
+            "A's road has raised curved side walls, a fine brick texture and a cloud sea, whereas B has a flat slab with thick painted lines and a plain yellow ground",
+            "The HUD differs: A uses portrait panels, a countdown card and a progress bar, while B has four plain boxes and a title banner"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 12,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has a polished HUD with a character portrait, a styled comic-font title and an ornate stone gate, while B has plain translucent boxes",
+            "A has detailed textured cobblestone road and dense stylized volumetric clouds, while B has a flat road with blurry grid lines and smooth gradient ground",
+            "B shows a crude primitive-shape runner with a cone hat and a different camera view, while A shows no runner and a different scene"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 12,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.96,
+          "tells": [
+            "Image A has a detailed, textured Goku model, while B uses a primitive blocky figure with a cone for hair",
+            "A has a polished themed HUD with a portrait, stylized title lettering and a progress bar, while B has plain generic boxes",
+            "A has lumpy volumetric golden clouds and a brick-paved road, while B has a flat yellow plane and a smooth road with stray lines"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 12,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed Goku character, portrait HUD and textured cloud sea, while A has a primitive blocky runner with flat shapes",
+            "A's road is a wide flat slab with a drawn lane grid and white blob pickups, while B has a narrow brick road with raised side walls",
+            "HUD layout and style differ: A uses small top boxes and thin bars, B uses a character panel, progress bar and countdown panel"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 13,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has a polished themed HUD with a character portrait, a styled logo-like title and detailed textured art, while B has plain generic HUD boxes",
+            "A has a carved stone gate, a detailed brick road and fluffy volumetric clouds, while B has a flat road with blurry lines and smooth gradient ground",
+            "B shows a primitive-shape runner with a cone hat in view, while A has no visible runner model and a very different camera view"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 13,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has detailed Goku character, stylized logo and polished HUD with portrait",
+            "A uses primitive blocky runner, flat road and plain text HUD",
+            "B has textured cloud sea, raised road edges and particle effects, A has flat clouds and a red slab obstacle"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 13,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed Goku model with the kanji gi emblem",
+            "A's HUD uses styled portrait/health panels, while B has plain flat boxes",
+            "A has textured billowing golden clouds and a detailed brick road with curved rails, while B has a flat yellow plane and a wide, plain road"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 14,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.96,
+          "tells": [
+            "A has polished art: a carved stone gate, a detailed portrait HUD and stylized comic title text, while B has plain boxes and a simple font",
+            "B shows a primitive blocky runner and a flat road with a distant bending track, while A has a detailed textured cobblestone road with ornamental side wings",
+            "A has a rich purple starry sky and a textured golden cloud sea, while B has a smooth pale gradient sky and flat yellow ground"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 14,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed Goku model, portrait HUD and styled title, while A uses a primitive block-figure runner and plain-text HUD",
+            "B has a textured brick road with curved rims and fluffy cloud terrain; A has a flat pale road with a floating red slab and smooth flat ground",
+            "A's camera and road geometry look unfinished, with a tilted view and a hexagon-patterned road"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 14,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.97,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed character model with a face portrait and character HUD",
+            "A has textured cloud-sea terrain and detailed brick road with curved side walls, while B has flat yellow ground and a plain tiled road with a blurry painted shadow",
+            "B's HUD layout differs from A's (four small stat boxes plus a title banner, versus portrait/health panel, countdown panel and progress bar)"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 15,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.97,
+          "originalConfidence": 0.95,
+          "tells": [
+            "A has a polished HUD with a character portrait, a styled comic title and a detailed carved stone gate; B has plain boxes and a basic text overlay",
+            "A's road has textured bricks, ornate feathered edges and a gate with a red ring; B's road is flat with blurry lines and a distant tube-like track",
+            "B shows a primitive-shape runner with a black cone head, while A has no visible runner and uses a different camera view and cloud rendering"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 15,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.95,
+          "originalConfidence": 0.96,
+          "tells": [
+            "B's runner is a crude primitive-shape figure, while A has a detailed textured Goku model",
+            "B's HUD is plain generic boxes, while A has a themed portrait, ki bars and stylized title lettering",
+            "B's cloud sea is flat and the road geometry is crude, while A has lumpy golden clouds and a detailed brick road with curved side walls"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 15,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "B has a detailed, textured Goku model, while A has a primitive blocky figure with a cone hat",
+            "B has a polished HUD with a portrait, a progress bar and an Earth countdown, while A has plain text boxes",
+            "B has a cobblestone road with raised side walls, a cloud-sea texture and sparkle particles, while A has a flat pale slab with white blob props"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "metrics": {
+        "perState": [
+          {
+            "state": "m-early",
+            "look": "check-in",
+            "lumaJsd": 0.2089635159378746,
+            "rgbJsd": 0.6456339594975833,
+            "paletteDistance": 0.10196575745941648,
+            "edgeDensityOriginal": 0.08451576061133124,
+            "edgeDensityPort": 0.0954943526837285,
+            "edgeDensityRatio": 1.129899938106045,
+            "lumaMeanDelta": 39.4751379760167
+          },
+          {
+            "state": "m-mid",
+            "look": "long-road",
+            "lumaJsd": 0.04978319314849144,
+            "rgbJsd": 0.34975590709851373,
+            "paletteDistance": 0.023160466677879597,
+            "edgeDensityOriginal": 0.07006072336214751,
+            "edgeDensityPort": 0.07887389331345548,
+            "edgeDensityRatio": 1.1257933051269289,
+            "lumaMeanDelta": -10.827924424175166
+          },
+          {
+            "state": "m-sweep",
+            "look": "ki-pickup",
+            "lumaJsd": 0.044410449344660735,
+            "rgbJsd": 0.4198879733573015,
+            "paletteDistance": 0.030668184924380542,
+            "edgeDensityOriginal": 0.05333128451924796,
+            "edgeDensityPort": 0.0771683645668502,
+            "edgeDensityRatio": 1.4469624210719907,
+            "lumaMeanDelta": -2.858940474287806
+          }
+        ],
+        "mean": {
+          "lumaJsd": 0.10105238614367558,
+          "rgbJsd": 0.47175927998446615,
+          "paletteDistance": 0.051931469687225534,
+          "edgeDensityRatio": 1.2342185547683215,
+          "lumaMeanDelta": 8.596091025851242
+        }
+      },
+      "summary": {
+        "trials": 48,
+        "valid": 48,
+        "correct": 48,
+        "accuracy": 1,
+        "ci95": [
+          0.9258973488472576,
+          0.9999999999999999
+        ],
+        "pValueVsChance": 7.105427357601022e-15,
+        "distinguishable": true,
+        "sameGameYes": 0,
+        "sameGameRate": 0,
+        "pickedA": 32,
+        "byLook": {
+          "check-in": {
+            "valid": 16,
+            "correct": 16,
+            "accuracy": 1
+          },
+          "long-road": {
+            "valid": 16,
+            "correct": 16,
+            "accuracy": 1
+          },
+          "ki-pickup": {
+            "valid": 16,
+            "correct": 16,
+            "accuracy": 1
+          }
+        }
+      },
+      "trials": [
+        {
+          "step": 0,
+          "pass": 0,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has the Son Goku portrait HUD, stylized comic title font, and a monumental horned gate with a red/purple disc, while B uses a generic 'Runner' HUD with a plain orange avatar",
+            "Image B shows a visible runner and a long curving road, which A lacks, and has a different cloud and sky treatment and a different road shape",
+            "HUD styling differs: A has dark navy panels with a 'Mission Active' label, B has translucent purple panels with 'Run Active' and a Surge badge"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 0,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.85,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku character, Dragon Ball-style logo font and themed HUD (Earth Countdown, Mission Active), while A uses a generic runner and plain HUD",
+            "Image A has a camera pulled off the road with a generic red torii-like gate and a blocky brick road, while B has a polished curved road with fluffy golden clouds and a trailing energy effect",
+            "Image A's runner is a stiff, unfinished-looking figure with a generic HUD, which suggests a re-implementation"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 0,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Dragon Ball-themed runner (Goku sprite, portrait, Saiyan-style HUD) while B uses a generic blond runner with placeholder HUD text",
+            "A has detailed volumetric golden clouds and a curved road with ornate rails, whereas B has a flatter, smoother desert-like cloud floor and a straight road",
+            "B shows a generic title banner, a plain circle avatar and a simplified pause icon, which look like a re-implementation's stand-ins"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 1,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a stylized Dragon Ball HUD with a Goku portrait, comic-style fonts, and a carved stone gate with a red target disc, while B uses a generic 'Runner' HUD with no gate",
+            "Image A has no visible runner on a straight road, while B has a 3D runner and a curving road",
+            "Image A has a saturated purple sky and a dithered, strongly yellow cloud sea, while B has a pale pastel sky and smoother, flatter clouds"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 1,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku character, Dragon Ball-style title lettering and themed HUD, while A has a generic blonde runner and plain sans-serif UI",
+            "Image A has a red torii-style gate obstacle, blocky road geometry and a different camera angle, which look like a generic reimplementation",
+            "Image B has a polished curved road with cloud-sea terrain and particle trail, while A has flatter, less detailed visuals"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 1,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A uses a Dragon Ball Goku character with themed HUD (Son Goku portrait, Earth Countdown, Ki Absorbed), while B uses a generic 'Runner' with plain labels",
+            "A has a chunky stylized cloud sea and a curving road with ornate walls, while B has a smoother sand-like cloud floor and a straighter road",
+            "B adds a title banner ('The Long Road') and generic glowing orbs that A lacks, and its HUD fonts and styling are simpler"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 2,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.93,
+          "originalConfidence": 0.9,
+          "tells": [
+            "Image A has the Son Goku portrait, stylized comic-font HUD and logo-style CHECK-IN title; B uses a generic 'Runner' orange circle with plain fonts",
+            "Image A has a large ornate stone gate with horns and a red disc, the runner is absent, and the road is a straight bridge; B shows a curving road with a visible runner character",
+            "Image A has deep purple sky with dithered, saturated yellow clouds; B has a pale pastel sky and smoother, flatter sand-colored clouds"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 2,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku character, a themed logo and a polished HUD with a portrait, while A has a generic runner, a plain font and a pale placeholder-looking figure",
+            "Image B has a distinct road with raised curved walls and fluffy golden clouds, while A has a flat wide road with a stray red torii gate and a dull flat sand surface",
+            "The camera in B sits behind the runner, which makes the road easy to read, while A has an awkward angle with a gate that blocks the view"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 2,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.85,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a specific Son Goku character, portrait HUD and Dragon Ball-style labels, while B has a generic blonde runner and neutral HUD text",
+            "A has thick, billowy yellow clouds and a curved road with side rails, while B has a flat, smooth sand-like cloud sea and a differently shaped road",
+            "B has a large title banner and simplified glowing orbs, which A lacks"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 3,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has the Son Goku portrait, stylized comic-font HUD and a large ornate winged gate with a red/purple disc, while B has a generic 'Runner' HUD and no gate",
+            "Image A has a straight road with a dense, dithered, saturated yellow cloud sea, while B has a curving road with soft, pale clouds and a visible 3D runner",
+            "Different HUD wording and styling (Earth Countdown/Mission Active vs Days Left/Run Active), and the progress distance differs (10,680 vs 6,852)"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 3,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku character, themed HUD and logo, versus a generic runner and plain HUD in A",
+            "A's road and clouds look flat with a giant red gate and a different camera angle",
+            "B's cloud and road art is more polished and cohesive, with a stylized title and effects"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 3,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku character with a branded HUD (Son Goku portrait, Earth Countdown, Ki Absorbed), while Image B uses a generic 'Runner' with different HUD labels and a title banner",
+            "Image A has voluminous, textured golden clouds and a curving road with a distinct border, while B has flat, smooth sand-like clouds and a straight road",
+            "Image B has a different character model, large glowing orbs, and a different camera framing and road tile style"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 4,
+          "look": "check-in",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku portrait and name in the HUD, 'Earth Countdown' and 'Mission Active' wording, and a comic-style title font, while Image A uses a generic 'Runner' and 'Days Left'",
+            "Image A has no runner-gate arch and a lavender, desaturated sky and road, while B has a saturated purple sky, a large crystal arch with a red disc, and carved road rails",
+            "Image A shows a generic runner with a curving road, while B has no visible character and a straight road ahead"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 4,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "A has the Goku-themed HUD, with a portrait, stylized star-lettered title font and a detailed orange-gi runner, while B has a generic 'RUNNER' orb and plain sans-serif text",
+            "A's clouds are billowy with a sculpted texture and the road has thick curved walls, while B has flat speckled sand-like clouds and a thin-edged road",
+            "B has a crude red gate obstacle and a blocky runner model, and the camera and road perspective differ"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 4,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image A has a Goku character with themed HUD (portrait, Son Goku name, Ki Absorbed text, Earth Countdown), while Image B has a generic Runner with placeholder-style HUD and title banner",
+            "Image A has billowy, textured golden clouds and a curved road with decorative rim arcs, whereas B has flat, smooth sand-like terrain and a plain straight road",
+            "Image B's runner is a muddy semi-transparent figure with simple orbs and a generic pause icon, suggesting a re-implementation with substitute assets"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 5,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "A has a Goku portrait, stylized comic-font HUD and a large ice-carved horned gate with a red/purple disc, while B shows a generic 'RUNNER' orb and plain HUD",
+            "A's camera looks down a straight road with no runner visible, while B has a third-person runner and a curving road",
+            "A has dithered, saturated yellow clouds and a deep purple sky, while B has a paler, smoother, washed-out look"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 5,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "A has a detailed Goku character, a themed logo font, and a HUD with portrait and decorated panels; B has a generic 'RUNNER' placeholder with a plain sans-serif title",
+            "A has a rich, billowy golden cloud sea and a detailed stone-brick road with a curving path ahead; B has flat sandy terrain and a simplified road",
+            "B shows a different runner model, a large red gate obstacle, and a different HUD layout (Surge badge, 'Days Left')"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 5,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.75,
+          "tells": [
+            "B has a detailed Goku character with ki aura effects, while A has a generic brown-tinted runner",
+            "B's road has carved raised walls and volumetric clouds, while A's road is flatter with smooth, simple clouds",
+            "HUD styling and wording differ: B has stylised fonts and 'Earth Countdown', A has generic 'Days Left' and a 'The Long Road' banner"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 6,
+          "look": "check-in",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "B has a named character portrait (Son Goku) with themed HUD labels, while A uses a generic 'RUNNER' with an orange orb",
+            "B shows a distinct gate/arch landmark with a red disc; A shows a bare winding road with a visible runner model",
+            "Different sky, road and cloud rendering: A is pale lavender with a smooth, soft look; B is deep purple with dithered, textured clouds"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 6,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "A has a detailed Goku character, themed HUD portrait, and stylized title lettering, while B uses a generic orange-orb 'RUNNER' HUD with plain sans-serif text",
+            "A shows rich volumetric golden cloud sea and a detailed brick road with carved rails; B has flat sandy clouds and a simplified road",
+            "B's runner is a blocky tan figure partly hidden by a red gate, and the camera/road geometry differs"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 6,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku character with a licensed-style portrait and name, while B has a generic blonde runner and 'RUNNER' HUD",
+            "A has detailed carved road rails, fluffy volumetric golden clouds and a themed HUD ('Earth Countdown', 'Ki Absorbed'), while B has a smoother, flatter desert-like cloud floor and generic labels ('Days Left', 'Surge')",
+            "B shows a large title banner 'THE LONG ROAD' and different HUD typography and pause icon"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 7,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku portrait, a Dragon Ball-style font and a carved horned gate, while B has a generic 'RUNNER' orb and plain HUD text",
+            "Image A has no runner and a straight road, while B shows a golden runner and a curving road",
+            "Image A has a deep purple sky and red ground ring, while B has a pale lavender sky and a softer, flatter cloud floor"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 7,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "A has a detailed Goku character, stylized logo title font, and polished themed HUD, while B has a generic 'RUNNER' placeholder with plain sans-serif text",
+            "A has rich, volumetric golden cloud sea and detailed road rails; B has flat noisy sand-like clouds and plain road geometry",
+            "B's runner is a washed-out, crude figure with a stray red torii block, indicating a different, less finished implementation"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 7,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.85,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image A has a generic blond runner, B has Goku with themed HUD and Dragon Ball styling",
+            "Road in A is wide and flat with a different camera and no raised side walls; B has curved walls with carved glyphs and ki particles",
+            "HUD wording and fonts differ (Days Left/Run Active vs Earth Countdown/Mission Active), and A has a title banner"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 8,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku portrait, a stylized comic-style font and a carved gate with a red ring, while B has a generic 'Runner' HUD and a plain orb avatar",
+            "Image B has a visible runner character, a winding road and a different sky, while A has no runner and a dark purple sky",
+            "Image A has a dithered, saturated yellow cloud sea with a different road texture, while B is smoother and paler"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 8,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "A has a detailed Goku character, themed HUD portrait, and stylized star-logo title lettering, while B has a generic 'RUNNER' with an orange circle and plain sans-serif text",
+            "A has a rich, billowy golden cloud sea and a curving, ornate road with raised side walls, while B has flat, grainy sand-like terrain and a plain road with a different perspective",
+            "B has a different camera and a blocky red gate obstacle and a mostly obscured, crude runner model"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 8,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.75,
+          "tells": [
+            "Image A has a different runner character and HUD wording (Runner, Days Left, Surge) versus Goku and Earth Countdown in B",
+            "Road shape and proportions differ: A has a wide flat road with low edges, B has a narrow road with tall carved side walls",
+            "Cloud and terrain rendering differ, with a smoother haze in A and billowy textured clouds in B"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 9,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku portrait, a stylized comic-style font and a gate arch with horns, while B has a generic 'Runner' HUD and no gate",
+            "Image A has no visible runner, with the camera facing a gate, while B has a runner model and a distant curving road",
+            "The sky, cloud and road rendering differ: A has a saturated purple sky and dithered yellow clouds, B has a pale pastel sky and smooth clouds"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 9,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image A has a generic, crude runner model and a blocky red gate, while B has a polished Goku model with a portrait HUD",
+            "Image A uses plain placeholder HUD text and a plain title font, while B has themed Dragon Ball lettering and labels",
+            "Image A has a different camera and road framing, with a flatter, smoother road and cloud sea"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 9,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image A has a Goku character with named portrait HUD, while B has a generic blonde runner with placeholder orange portrait",
+            "A has a richly textured, billowy golden cloud sea and a curved road with a carved ornamental rail, while B has smoother, flatter dunes and a plain road",
+            "B has generic placeholder-style text ('RUNNER', 'DAYS LEFT', 'THE LONG ROAD' banner) compared to A's themed HUD ('EARTH COUNTDOWN', 'MISSION ACTIVE', 'KI ABSORBED')"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 10,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has the Son Goku portrait, a stylized comic font, and a detailed ornate gate with a red target disc, while B has a generic 'RUNNER' HUD with an orange circle",
+            "Image B has a visible runner character and a curving road, while A has none and shows a straight road",
+            "Sky and clouds differ: A has a deep purple sky with dithered, noisy yellow clouds, while B has a pale pastel sky with smooth sand-like clouds"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 10,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a distinct Goku character, a themed logo and fitting HUD styling, while A has a generic runner with a plain HUD",
+            "Image A's road is poorly shaped, with a floating red torii and a low, flat camera, while B's is a coherent narrow bridge with a proper chase camera",
+            "Image B's cloud sea, particle trail and polished HUD fit a deliberate art direction, while A looks like a rough approximation"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 10,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a recognizable Son Goku character, portrait and stylized HUD font, while B has a generic blond runner with a plain portrait",
+            "A has volumetric golden clouds and a curving road with side rails, whereas B has a flat sandy-looking cloud floor and a straight road with a raised arc",
+            "B shows a large title banner and generic HUD labels (Days Left, Surge) that look like a placeholder re-implementation"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 11,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a detailed Son Goku HUD portrait, stylized comic title font, and a large carved horned gate with a red disc, while B has a generic 'Runner' orb and plain text",
+            "Image B shows a visible runner character and a long winding road with different, softer pastel sky and flatter clouds, while A has no runner and a saturated purple sky with dithered yellow clouds",
+            "Different HUD wording and styling: 'Earth Countdown / Mission Active' in A versus 'Days Left / Run Active' and a 'Surge' badge in B"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 11,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku character with themed HUD (Son Goku portrait, Dragon Ball-style title, 'Earth Countdown'), while A uses a generic runner and plain HUD",
+            "Image A has a blocky red gate obstacle, a floating white gesture, and a flat, washed-out road with different camera framing",
+            "Image B has a polished, consistent look, with a stylised cloud sea, a curved road with raised walls, and cyan trail effects"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 11,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Son Goku character, portrait HUD and themed labels (Earth Countdown, Ki Absorbed), while Image B uses a generic Runner with placeholder text",
+            "Image A has a textured, billowy golden cloud sea and a curving road, while Image B has a flatter, smoother desert-like surface",
+            "Image B has a title banner, a plain pause icon and glowing orbs that look like a simplified re-implementation"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 12,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku portrait, stylized comic title lettering, and a large carved gate with a red disc, while B uses a generic orange avatar and plain text",
+            "Image A shows a different camera view: the road leads straight to the gate with no visible runner, while B shows the runner from behind on a winding road",
+            "Image A has a saturated purple sky and a dithered, thick yellow cloud sea, while B has a pale pastel sky and smoother, flatter terrain"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 12,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "A has a detailed Goku character, a portrait HUD, and a stylized star-logo title font; B has a generic runner, a plain orange circle avatar, and a plain sans-serif title",
+            "A has lush, billowy golden clouds and a coherent road with raised rails and a distant curve; B has flat, grainy sand and a distorted road with giant tiles",
+            "B has a large red torii-like obstacle and a different HUD (Surge, Days Left) with mismatched progress and score values"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 12,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.85,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image A has a generic blond runner, a different HUD font and panel layout, and a 'The Long Road' title banner",
+            "Image A's road is wide and flat with a distant tube-like arm, while B's road is narrow with raised carved side walls",
+            "Image B has a Goku character, a ki aura ring, themed HUD text ('Earth Countdown', 'Ki Absorbed') and a stylised cloud sea"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 13,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has the Son Goku portrait HUD, stylized comic title lettering and a stone dragon-gate with a red target disc, while B has a generic 'RUNNER' HUD and plain text",
+            "Image A has no visible runner and a straight road, while B shows a golden-haired runner on a winding road",
+            "Image A has a dense, saturated purple sky and grainy dithered yellow clouds, while B has a pale, soft, washed-out look"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 13,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku character, a themed logo font, and a themed HUD, while Image A uses a generic runner, a plain sans-serif title and generic HUD labels",
+            "Image A has a flat red torii gate and a pale placeholder-looking runner, while B's character is detailed and fully textured",
+            "Image B's road and clouds are denser and richer in detail, and the camera sits closer behind the runner"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 13,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku character, a themed HUD with a portrait and 'Ki Absorbed' text, while B has a generic runner and placeholder UI",
+            "A has thick, billowy golden clouds and curved road walls, while B has flat, smooth sand-like terrain and a generic road",
+            "B has a title banner and generic orb pickups, while A has ki particles and an aura ring"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 14,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has the Son Goku portrait HUD with stylized fonts, while B uses a generic 'RUNNER' orange orb and plain text",
+            "A shows a large ornate gate with horns and a red target disc ahead and no runner visible, while B shows a straight road with a visible humanoid runner and a distant curve",
+            "A has a deep saturated purple sky and a stylized dithered golden cloud sea, while B has a pale pastel sky and smoother clouds"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 14,
+          "look": "long-road",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.8,
+          "tells": [
+            "Image B has a Goku character, themed HUD and Dragon Ball-style title lettering, while A has a generic runner and plain sans-serif HUD",
+            "Image A has a red torii-like gate obstacle, a different camera angle and a bare, untextured road, unlike B's detailed road with walls",
+            "Image B's road, cloud sea and cyan trail effects look more polished and fully realized than A's"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 14,
+          "look": "ki-pickup",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A uses a recognizable Goku character with a branded portrait and name in the HUD, while B has a generic 'Runner' with a plain orange orb avatar",
+            "A's HUD has stylized fonts and themed labels ('Earth Countdown', 'Ki Absorbed'), while B has generic labels ('Days Left', 'Surge')",
+            "A's scene has dense, billowy, textured golden clouds and a curving road with carved rails, while B's clouds are flat and smooth, and the road is straight with plainer rails"
+          ]
+        },
+        {
+          "step": 0,
+          "pass": 15,
+          "look": "check-in",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.85,
+          "tells": [
+            "Image A has a Goku portrait, a themed HUD font and a stylized comic-style CHECK-IN title, while B uses a generic 'RUNNER' orange orb and plain text",
+            "A shows a large carved dragon-like gate with a red/purple disc, while B has no gate and only a distant curved road",
+            "A has no visible runner and a distinct road with feather-like edges, while B shows a runner character and a smoother road"
+          ]
+        },
+        {
+          "step": 1,
+          "pass": 15,
+          "look": "long-road",
+          "originalIs": "A",
+          "picked": "A",
+          "sameGame": false,
+          "sameGameConfidence": 0.9,
+          "originalConfidence": 0.9,
+          "tells": [
+            "A has a detailed Goku character, themed HUD portrait and stylized star-logo title font; B has a generic gold-haired runner, plain orange portrait and generic sans-serif title",
+            "A has rich, billowy golden cloud sea and a curved road with raised ornate rails; B has flat sandy-looking terrain and a plain road",
+            "B shows a large red gate obstacle and a different HUD layout, with a Surge tag and different labels"
+          ]
+        },
+        {
+          "step": 2,
+          "pass": 15,
+          "look": "ki-pickup",
+          "originalIs": "B",
+          "picked": "B",
+          "sameGame": false,
+          "sameGameConfidence": 0.8,
+          "originalConfidence": 0.78,
+          "tells": [
+            "Image B has Goku character, themed HUD (Earth Countdown, Ki Absorbed) with stylized fonts",
+            "Image A uses a generic blonde runner, generic HUD wording and a 'The Long Road' title banner",
+            "Road shape differs: B has a narrow cobbled path with carved side walls, A has a wide flat tiled deck"
+          ]
+        }
+      ]
+    }
+  }
+}

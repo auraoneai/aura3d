@@ -12,7 +12,9 @@ never executed outside the capture browser). Only the simulation-core regions th
 | `sim.ts` | The simulation. Pure and deterministic, no engine imports: `GM` door/depart actions, the `WM` fixed-step update (speed, balance/roll, comfort, tips, driving gates, catches), the dock phase machine, arrival, new service. |
 | `replay.ts` | Replays the original's reference through `sim.ts` (closed-loop controller or recorded script). |
 | `data/route.json`, `data/tables.json` | Measurements taken from the original's own functions: the six legs sampled every 2 m (position, curvature, grade, vertical curvature, bank), constants, difficulty table, towns and sky palettes, station passenger tables, driving gates. |
-| `world.ts`, `shaders.ts`, `materials.ts`, `orient.ts` | Rendering on the public `@aura3d/engine` surface only. |
+| `world.ts`, `townkit.ts`, `shaders.ts`, `materials.ts`, `orient.ts` | Rendering on the public `@aura3d/engine` surface only. `townkit.ts` builds the merged town meshes (metric-UV facades, gable and pyramid roofs, clock tower, stone arch, cobbled plaza) and paints their canvas textures. |
+| `audio.ts` | Synthesised sound on the shared `AudioContextManager`: wind and rail rumble that follow speed, wheel clacks at the joint spacing, flange squeal, rain hiss, a slow pad, one cue per event (`diffCues` is pure and unit tested). |
+| `assets/` | Two licensed catalog GLBs (windmill, watchtower) and a CC0 sky HDRI, 3.5 MB total, with `ATTRIBUTION.md`. |
 | `main.ts`, `index.html` | Boot, fixed-step loop, input, HUD, capture hooks. |
 
 Run it: open `/examples/last-train-port/` on the example dev server. Query parameters are listed at the top of `main.ts`.
@@ -57,11 +59,12 @@ completion and grade, new service, and the day/night toggle.
 | Route | Quintic Bezier legs, curvature from tangents | The original's own route as 2 m samples, linearly interpolated |
 | Garage, upgrades, workshop, skins, wing boost, near-save and bold bonuses | Present | Not ported (default garage: motor, brake and sway 1.0, no rear car) |
 | Orchard junction, requests (steady / connection / cargo), reaction messages, sleeper jolt rule | Present | Not ported; Gold needs three requests, so the port awards at most Silver |
-| Models and textures | Remote GLB models, sprite-sheet crowds, impasto textures | Procedural: boxes, cylinders, capsules, cones; passengers are coloured capsules by temperament |
+| Models and textures | Remote GLB models, sprite-sheet crowds, impasto textures | Art pass: terraced townhouses with painted plaster facades (shuttered windows, arched doors, lit windows at night), roof tiles, cobbled plaza, clock tower, stone arch, planters, stalls, townsfolk, trestle viaduct with pylons, sleepers and masts, an open-sided tram with benches and seated passengers (capsule bodies, sphere heads, coloured by temperament). Two catalog landmarks (windmill, watchtower). Not the original's art: no rigged or animated characters |
 | Shaders | Six `ShaderMaterial`s (live in the probe) | Three hand-ported: sky dome, cloud sea, weather points. The other three were not identified in the source and are not ported; lit surfaces use the engine's PBR material |
 | Weather and sky | Per-town sky palettes, rain at Monsoon Exchange, snow at Drowned Observatory | Same towns and palettes (smoothstep 0.22 to 0.82 of each leg); particles around the camera |
-| Day / night | A player toggle (`timeOfDay`) that changes lighting, not physics | Same: a toggle. The sky and clouds blend through a `nightMix` uniform; islands, platforms, canopies, buildings and roofs swap to a dark blue tint through `setMaterial`; lamps show at night. A day and a night light set also exist, but the compiler ignores light-node visibility and the remote renderer's output pass is bypassed (exposure and overlay have no effect there), so the tint is what makes night visible |
-| Audio, garage and menu screens, touch, save data, Driver ID | Present | Not ported |
+| Day / night | A player toggle (`timeOfDay`) that changes lighting, not physics | Same: a toggle. The compiler ignores light-node visibility and `app.lighting.setEnvironmentIntensity` is a stored no-op, so the lighting rig cannot be re-aimed at runtime: the port builds two scenes with identical node ids (day: HDRI at 0.8, cascaded-shadow sun, haze; night: HDRI at 0.2, moon, dark fog, stronger bloom, lit windows and lamps) and swaps them with `app.setScene`. The sky and clouds blend through `nightMix` |
+| Title, results, arrival toasts, audio | Present | Ported (title with controls and best score kept in localStorage, results card with grade and tallies, synthesised audio; `M` mutes). Station camera while docked, chase camera while running |
+| Garage screen, level select, countdown, touch, Driver ID | Present | Not ported (the garage needs the wear and upgrade model the sim does not have) |
 
 ## Hooks (deterministic capture)
 
@@ -72,9 +75,8 @@ only through these hooks.
 
 ## Engine features exercised (route-health `parityIds`)
 
-`SH-02` (`material.custom` for sky, clouds, weather), `SG-05` and `R-23` (`geometry.dynamic` ribbons, points with custom attributes,
-`updateAttribute` for weather), `SR-02`. The scene uses PBR materials, hemisphere and directional lights (a day and a night set toggled
-by visibility), primitives (box, cylinder, cone, sphere, capsule) and the node `runtime` handles to move the tram and passengers.
+`SH-02` (`material.custom` for sky, clouds, snow points, rain streaks), `SG-05` and `R-23` (`geometry.dynamic` ribbons, points with custom attributes,
+`updateAttribute` for weather), `SR-02`. The scene uses PBR materials with canvas textures, an HDRI environment, cascaded-shadow directional lights, fog, AO, bloom, colour grade and vignette (neutral tone mapping, exposure 1.5), instanced primitives, merged static meshes, two catalog models, and the node `runtime` handles to move the tram and passengers. Look-dev switches: `?fx=noao,nofog,nobloom,nograde,novignette,nohdri,skyflat`, `?tm=`, `?ev=`.
 
 ## Measured on the remote runner
 

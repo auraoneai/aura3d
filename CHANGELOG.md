@@ -1,8 +1,19 @@
 # Changelog
 
-Version: 4.0.7
+Version: 4.0.8
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.0.8 (2026-10-23)
+
+Fixes found by taking the eleven Crayon ports through the production build and a real browser.
+
+- **Fix: `material.custom` shaders now receive real `u_viewMatrix` / `u_projectionMatrix` on the app path.** They were identity matrices, so view-space effects (a headlight beam, view-dependent fog, billboards) drew nothing. The camera now supplies view and projection alongside the view-projection matrix. Cube-camera and mirror passes still hand custom shaders the bare view-projection.
+- **Fix: self-registering `agent-api` modules (`instancedMesh` and similar) are no longer tree-shaken out of production bundles.** A `sideEffects` allowlist dropped them, so instanced scenes drew nothing in a built app while working in dev.
+- **Fix: `material.custom` no longer silently skips a draw when a declared vertex attribute is unused.** The GL compiler drops an attribute the shader never reads; binding now warns `CUSTOM_ATTRIBUTE_UNUSED` and draws. A missing `a_position` still fails loudly.
+- **New: `#include <colorspace_decode>` for `material.custom`** defines `a3dSrgbToLinear(vec3|vec4)`. A custom shader writes linear light that the output stage sRGB-encodes (and the default ACES operator tones down), so the visible colour was not the authored hex; `docs/api/public-api.md` now says so. To get authored colours, include the chunk, wrap the output in `a3dSrgbToLinear` and set `output: { toneMapping: "none" }`. The default is unchanged.
+- **Known, not reproduced:** a report that sun `shadow: true` rendered one large instanced/skinned scene fully shadowed could not be reproduced on a minimal scene (`tests/browser/shadow-large-scene.spec.ts` guards the simple case); the Ninja Runner port ships with sun shadows off.
+- **Tooling and examples (not published packages):** strict live-port gameplay smoke with render checks, the port page generator, the look-spec extractor, and the art-fidelity pass over the eleven ports (per-game results and remaining gaps in `docs/workflows/threejs-parity-gaps.md`).
 
 ## 4.0.7 (2026-10-23)
 

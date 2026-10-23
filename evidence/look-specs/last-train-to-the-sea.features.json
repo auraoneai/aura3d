@@ -1,0 +1,690 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "last-train-to-the-sea",
+  "sources": [
+    {
+      "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+      "bytes": 56264,
+      "lines": 521,
+      "singleLine": false,
+      "hash": "ef28eb4dcc717c61"
+    },
+    {
+      "file": "evidence/crayon-runtime/last-train-to-the-sea/srcdoc.html#script0",
+      "bytes": 2901,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "caca263437649e3a"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "garage",
+      "hits": 70,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 144,
+          "col": 31,
+          "offset": 13764
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 155,
+          "col": 6,
+          "offset": 14420
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 169,
+          "col": 25,
+          "offset": 17930
+        }
+      ]
+    },
+    {
+      "screen": "level-select",
+      "hits": 19,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 32,
+          "col": 17,
+          "offset": 3225
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 33,
+          "col": 36,
+          "offset": 3293
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 34,
+          "col": 46,
+          "offset": 3365
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 19,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 66,
+          "col": 366,
+          "offset": 5720
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 66,
+          "col": 384,
+          "offset": 5738
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 66,
+          "col": 411,
+          "offset": 5765
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 14,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 177,
+          "col": 1573,
+          "offset": 20856
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 194,
+          "col": 51,
+          "offset": 22993
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 194,
+          "col": 74,
+          "offset": 23016
+        }
+      ]
+    },
+    {
+      "screen": "checkpoint",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 177,
+          "col": 775,
+          "offset": 20058
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 177,
+          "col": 792,
+          "offset": 20075
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 177,
+          "col": 806,
+          "offset": 20089
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 140,
+          "col": 373,
+          "offset": 13256
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 208,
+          "col": 106,
+          "offset": 25398
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 208,
+          "col": 124,
+          "offset": 25416
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 26,
+          "col": 71,
+          "offset": 2650
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 74,
+          "col": 189,
+          "offset": 6654
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 74,
+          "col": 511,
+          "offset": 6976
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 171,
+          "col": 261,
+          "offset": 18478
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 171,
+          "col": 273,
+          "offset": 18490
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 171,
+          "col": 374,
+          "offset": 18591
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [],
+  "domIds": [],
+  "inputs": {
+    "keys": [],
+    "listeners": []
+  },
+  "audio": {
+    "apiUse": [],
+    "urls": [],
+    "oscillatorTypes": [],
+    "oscillatorCalls": 0,
+    "playCalls": 0
+  },
+  "storage": [],
+  "network": [
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 98,
+        "col": 22,
+        "offset": 9844
+      }
+    }
+  ],
+  "platform": [],
+  "three": {
+    "constructed": {},
+    "imports": [],
+    "importSources": []
+  },
+  "shaders": [],
+  "postFx": [],
+  "particles": [
+    {
+      "word": "streak",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 140,
+          "col": 54,
+          "offset": 12937
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 140,
+          "col": 256,
+          "offset": 13139
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 212,
+          "col": 427,
+          "offset": 26189
+        }
+      ]
+    },
+    {
+      "word": "rain",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 25,
+          "col": 247,
+          "offset": 2352
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 28,
+          "col": 318,
+          "offset": 2994
+        },
+        {
+          "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+          "line": 74,
+          "col": 1091,
+          "offset": 7556
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 20,
+      "keys": [
+        "id",
+        "status",
+        "startStation",
+        "lastStation",
+        "legs",
+        "lanterns",
+        "catches",
+        "fares",
+        "tips",
+        "bonuses",
+        "lost",
+        "deliveries",
+        "requests",
+        "streak",
+        "wobble",
+        "peakMultiplier",
+        "distance",
+        "comfort",
+        "fullLoad",
+        "frontiers"
+      ],
+      "numbers": {
+        "lanterns": 3,
+        "catches": 0,
+        "fares": 0,
+        "tips": 0,
+        "bonuses": 0,
+        "lost": 0,
+        "deliveries": 0,
+        "requests": 0,
+        "streak": 0,
+        "wobble": 0,
+        "peakMultiplier": 1,
+        "distance": 0,
+        "comfort": 0,
+        "fullLoad": 0
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 140,
+        "col": 90,
+        "offset": 12973
+      }
+    }
+  ],
+  "assets": [],
+  "functions": [
+    {
+      "name": "v_",
+      "params": 2,
+      "chars": 44331,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 131,
+        "col": 1,
+        "offset": 11932
+      }
+    },
+    {
+      "name": "WM",
+      "params": 3,
+      "chars": 17794,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 360,
+        "col": 1,
+        "offset": 38388
+      }
+    },
+    {
+      "name": "FM",
+      "params": 1,
+      "chars": 14784,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 147,
+        "col": 1,
+        "offset": 13991
+      }
+    },
+    {
+      "name": "GM",
+      "params": 4,
+      "chars": 8123,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 251,
+        "col": 1,
+        "offset": 30264
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 4246,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 155,
+        "col": 16,
+        "offset": 14430
+      }
+    },
+    {
+      "name": "uu",
+      "params": 2,
+      "chars": 3199,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 30,
+        "col": 1,
+        "offset": 3165
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 6,
+      "chars": 3091,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 463,
+        "col": 124,
+        "offset": 51689
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 3029,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 199,
+        "col": 702,
+        "offset": 24736
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2896,
+      "loc": {
+        "file": "evidence/crayon-runtime/last-train-to-the-sea/srcdoc.html#script0",
+        "line": 1,
+        "col": 2,
+        "offset": 1
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 2737,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 159,
+        "col": 355,
+        "offset": 14893
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 2633,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 371,
+        "col": 106,
+        "offset": 40408
+      }
+    },
+    {
+      "name": "\"src/service/route.js\"",
+      "params": 0,
+      "chars": 2632,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 73,
+        "col": 75,
+        "offset": 6439
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 1683,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 455,
+        "col": 137,
+        "offset": 49886
+      }
+    },
+    {
+      "name": "\"src/service/economy.js\"",
+      "params": 0,
+      "chars": 1640,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 133,
+        "col": 71,
+        "offset": 12052
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 1502,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 377,
+        "col": 9,
+        "offset": 40692
+      }
+    },
+    {
+      "name": "fn",
+      "params": 0,
+      "chars": 1290,
+      "loc": {
+        "file": "evidence/crayon-runtime/last-train-to-the-sea/srcdoc.html#script0",
+        "line": 1,
+        "col": 1191,
+        "offset": 1190
+      }
+    },
+    {
+      "name": "VM",
+      "params": 3,
+      "chars": 1207,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 237,
+        "col": 1,
+        "offset": 29056
+      }
+    },
+    {
+      "name": "hu",
+      "params": 1,
+      "chars": 1177,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 23,
+        "col": 1,
+        "offset": 1987
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1176,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 179,
+        "col": 30,
+        "offset": 21058
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 4,
+      "chars": 1145,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 476,
+        "col": 7,
+        "offset": 53061
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 1025,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 400,
+        "col": 155,
+        "offset": 43801
+      }
+    },
+    {
+      "name": "cu",
+      "params": 2,
+      "chars": 848,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 5,
+        "col": 1,
+        "offset": 435
+      }
+    },
+    {
+      "name": "m_",
+      "params": 2,
+      "chars": 800,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 118,
+        "col": 1,
+        "offset": 10827
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 749,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 164,
+        "col": 668,
+        "offset": 16147
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 4,
+      "chars": 691,
+      "loc": {
+        "file": "tests/fixtures/crayon/last-train/game-sim.extract.js",
+        "line": 238,
+        "col": 34,
+        "offset": 29123
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 456,
+    "functions": 171,
+    "newExpressions": 21,
+    "calls": 873
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:level-select",
+        "original": "19 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "14 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:checkpoint",
+        "original": "8 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "8 references",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "screen:garage",
+        "original": "70 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:results",
+        "original": "19 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "7 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "6 references",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "streakx9, rainx5",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "Simulation parity is exact for the economy and close for timing; it is not pixel parity. The visuals are a stylised rebuild.",
+      "Renderer memory (geometries, textures, GPU bytes) is measured on the port. The original's reference measures JS heap and simulation",
+      "The remote runner is software WebGL2 (SwiftShader), not a hardware GPU."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

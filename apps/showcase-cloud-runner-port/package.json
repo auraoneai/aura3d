@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-cloud-runner-port",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "private": true,
   "type": "module",
   "description": "Aura3D port of the mechanics of Cloud Runner: Chapter-one run only: no creatures, boulders, finale or audio; procedural art.",

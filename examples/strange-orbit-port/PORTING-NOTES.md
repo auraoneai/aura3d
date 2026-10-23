@@ -13,6 +13,7 @@ read as text only, never executed).
 | `course.ts`, `track.ts`, `reentry.ts`, `vec3.ts` | Course topology, track geometry, zero-G re-entry surface, mutable `Vec3` (same in-place semantics as three's `Vector3`, tested against three 0.185.1). |
 | `world.ts`, `meshes.ts`, `shaders.ts`, `palette.ts`, `orient.ts` | Rendering on the public `@aura3d/engine` surface only. |
 | `main.ts`, `index.html` | Boot, fixed-step loop, input, HUD, capture hooks. |
+| `audio.ts`, `ui.ts` | Presentation only: synthesized engine/wind/event audio plus a catalog space-ambient loop (`assets/space-ambient.wav`), and an injected stylesheet + title-screen enhancement (difficulty selector, branding, HUD styling) that works for the live wrapper's own HTML copy because it keys on element ids. |
 
 Run it: open `/examples/strange-orbit-port/` on the example dev server. Query
 parameters are listed at the top of `main.ts`.
@@ -51,14 +52,17 @@ Without them the original race logic does not resolve.
 
 | Area | Original | Port |
 | --- | --- | --- |
-| Assets | Remote GLB models (riders, planet, gates, opal platforms, meteors, cave minerals) and `impasto.png` | Procedural: capsule/cylinder/sphere riders, sphere planet with banded shader, slab islands, icosahedron rocks, procedural brush texture in the track shader |
-| Lighting | three hemisphere + 2 directional lights, PCF shadows, ACES, exposure 1.2 | Same light model evaluated inline in each custom shader (custom materials are unlit); ACES tone mapping in the app output; **no shadow maps** |
+| Assets | Remote GLB models (riders, planet, gates, opal platforms, meteors, cave minerals) and `impasto.png` | Moon rocks are the licensed catalog model `diamondRock.af699d5e` (`assets/moon-rock.glb`, 1.1 MB, admitted with `sha256` + `provenance.sourcePath` so the production bridge accepts it). Riders are composed from primitives (slim frame, torus tyres, capsule limbs, glowing hubs/visor/nozzles); planet is a banded shader sphere with a Fresnel atmosphere shell; islands are slabs; procedural brush texture in the track shader |
+| Lighting | three hemisphere + 2 directional lights, PCF shadows, ACES, exposure 1.2 | Same light model evaluated inline in each custom shader (custom materials are unlit) plus rim/specular sheen, distance haze toward the nebula blue, ACES tone mapping, bloom (0.5 / threshold 0.78), colour grade and vignette in the app output; the catalog rocks use the scene lights; **no shadow maps** |
+| Sky | Dark star field with a distant ringed course | Nebula dome (`NEBULA_*`: object-space fbm clouds, galactic band, dust lanes), two star layers (one bright additive layer), planet atmosphere shell |
+| Track look | Terracotta ring with teal mineral strata | Track shader adds teal veining, terracotta grade, glowing edge lines and a screen-space impasto bump (`TRACK_FRAGMENT`) |
 | Track shading | `MeshStandardMaterial.onBeforeCompile` pigment patch | `material.custom` with the same pigment mixing code (`shaders.ts`), author attributes `pigmentBase/Vein/Chalk`, `paintOriginal` (R-23) |
 | Particles | three `Points` + sprites | `geometry.dynamic({ topology: "points" })` with `size`/`tint`/`fade` attributes |
 | Decorative rings, minerals in the cave, fractured opal escarpment, ghost rider, trail ribbons | Present | Not ported (cosmetic) |
 | Skate/bike kinematic poses | Rigged GLB animation | Rigid parts positioned per frame; no walk/pedal animation |
-| Career, championship, garage, suits, settings, ghosts persisted in `localStorage`, gamepad, touch controls, audio | Present | Not ported. Keyboard with the original default bindings only. Time-trial ghost *recording* works (`recording`), playback and persistence do not |
-| Menu | Animated observatory scene | Static overlay; the camera frames the riders at s = 35 |
+| Career, championship, garage, suits, settings, ghosts persisted in `localStorage`, gamepad, touch controls | Present | Not ported. Keyboard with the original default bindings only. Time-trial ghost *recording* works (`recording`), playback and persistence do not |
+| Audio | Original music and sfx | Own synthesis (Web Audio via `@aura3d/audio` `AudioContextManager`): speed-driven engine hum and wind, boost whoosh, cues for dust/gate/jump/land/hit/lost/launch/lap/finish; catalog ambient loop. Press M to mute. No original audio is used |
+| Menu | Animated observatory scene, Explorer/Racer/Expert picker | Overlay over the live scene (camera frames the riders at s = 35) with the original's title, tagline, bike/skate and difficulty selectors (difficulty reloads with `?difficulty=`). Garage/Settings are not ported |
 | Camera | Slerped rig quaternion | Exponentially blended forward/up vectors re-orthonormalised each frame (same 12 s⁻¹ rate) |
 | Quality levels | pixel ratio and shadow toggle | Row spacing (1.3 vs 2.1 m) and star count |
 
@@ -91,6 +95,18 @@ simulation advances only through these hooks.
 `reference-replay.json` in `tests/browser/data/` is the evidence capture's script and
 result (the ACR build context copies `tests/browser/` but not `tests/fixtures/`, and
 `tests/browser/fixtures/` is gitignored). A unit test pins it to the evidence file.
+
+## Art pass (2026-10-23)
+
+Debugging note worth keeping: a scene containing a `model()` whose asset URL is http(s) (dev server or live site) is
+rejected by the production bridge ("unsafeModelUrl and remote/raw model URLs are blocked") and **draws nothing at all**
+(`drawCalls: 0`, black frame, `diagnostics().errors[0]`) unless the `defineAuraAssets` entry carries `sha256`/`hash`
+and `metadata.provenance.sourcePath` under `public/aura-assets/` (`createAssetProvenance` in the engine's
+`diagnostics.ts`). `?off=lights,bloom,grade,vignette,sky,atmo,stars2,rocks,lintel` switches individual look
+upgrades off for bisecting this kind of failure.
+
+Capture: `tests/browser/strange-orbit-port.spec.ts` logs frames as short numbered `STRANGE_ORBIT_FRAMEPART` lines
+(long lines are dropped from the remote log) plus two page screenshots (`ui-menu`, `ui-race`).
 
 ## Engine findings
 

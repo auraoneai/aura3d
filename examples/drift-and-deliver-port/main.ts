@@ -9,12 +9,14 @@
  * Query parameters (all optional): `manual=1` (the sim only advances through `__sim` /
  * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
  */
-import { camera, createAuraApp, createAuraRouteHealthSnapshot, effects, geometry, instances, lights, material, primitives, scene, texture, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, geometry, material, primitives, type AuraApp } from "@aura3d/engine";
+import { buildLook, coinMat, mat, type LookRig } from "./look";
+import { createAudio } from "./audio";
+import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
 import { beamGeometry, beamSpec } from "./headlights";
 import { CONFIG, NO_KEYS, createCar, stateVector, stepCar, teleport, type Footprint, type Keys, type Solid } from "./sim";
 import {
-  BLOCK_HALF,
   PITCH,
   buildBlocks,
   buildBuildings,
@@ -22,7 +24,6 @@ import {
   buildTraffic,
   buildingSolids,
   collectPickups,
-  noise,
   stepTraffic,
   tickCombo,
   trafficContact
@@ -32,7 +33,16 @@ const params = new URLSearchParams(location.search);
 const config = {
   manual: params.get("manual") === "1",
   autostart: params.get("autostart") === "1" || params.get("manual") === "1",
-  quality: (params.get("quality") === "low" ? "low" : "high") as "high" | "low"
+  quality: (params.get("quality") === "low" ? "low" : "high") as "high" | "low",
+  /** diagnostics switches: `ao=1` turns screen-space AO on, `env=0` drops the HDRI light, `shadow=0` drops the sun's shadows */
+  ao: params.get("ao") === "1",
+  env: params.get("env") !== "0",
+  shadow: params.get("shadow") !== "0",
+  fog: params.get("fog") !== "0",
+  post: params.get("post") !== "0",
+  sky: params.get("sky") !== "0",
+  exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
+  sun: Number(params.get("sun") ?? "4.4") || 4.4
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -53,7 +63,8 @@ const solids: Solid[] = buildingSolids(buildings);
 const pickups = buildPickups();
 const traffic = buildTraffic();
 const car = createCar();
-const game = { phase: "splash" as "splash" | "playing", score: 0, collected: 0 };
+const game = { phase: "splash" as "splash" | "playing" | "paused", score: 0, collected: 0 };
+const audio = config.manual ? null : createAudio();
 const keys: Keys = { ...NO_KEYS };
 const camState: ChaseState = snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 });
 
@@ -81,98 +92,23 @@ function nearSolids(x: number, z: number): Solid[] {
 /** Collision candidates near the car: the original queries a spatial grid; the port passes the nearby subset. */
 const solidsNear = (): Solid[] => nearSolids(car.x, car.z);
 
-/* ------------------------------------------------------------------ matrices */
-
-type Mat = number[];
-function trs(x: number, y: number, z: number, yaw: number, sx: number, sy: number, sz: number): Mat {
-  const c = Math.cos(yaw);
-  const s = Math.sin(yaw);
-  return [c * sx, 0, -s * sx, 0, 0, sy, 0, 0, s * sz, 0, c * sz, 0, x, y, z, 1];
-}
-
-const TONES = ["#e8e2d6", "#dcd2c2", "#cfc4b2", "#e0d3bd", "#c9c2b6", "#d6c6ae"];
-const CAR_COLORS = ["#d8562a", "#3c3d45", "#4fb0e0", "#f0a02c", "#c9c2b6", "#7a9c56"];
-
 /* ------------------------------------------------------------------ scene */
 
-function skyTexture() {
-  const c = document.createElement("canvas");
-  c.width = 4;
-  c.height = 256;
-  const g = c.getContext("2d")!;
-  const grad = g.createLinearGradient(0, 0, 0, 256);
-  for (const [at, color] of [[0, "#4f8cca"], [0.38, "#9dc2e0"], [0.7, "#dfd2c2"], [0.87, "#fbd9ab"], [1, "#ffe9c4"]] as const) grad.addColorStop(at, color);
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 4, 256);
-  return texture.canvas({ canvas: c, colorSpace: "srgb" });
-}
-
-const blockMesh = instances.mesh("box", material.pbr({ color: "#ffffff", roughness: 0.9 }), blocks.length);
-blocks.forEach((b, i) => {
-  blockMesh.setMatrixAt(i, trs(b.x, 0.15, b.z, 0, BLOCK_HALF * 2, 0.3, BLOCK_HALF * 2));
-  blockMesh.setColorAt(i, b.park ? "#7a9c56" : b.plaza ? "#d5cbb2" : "#cbbfa4");
-});
-const buildingMesh = instances.mesh("box", material.pbr({ color: "#ffffff", roughness: 0.62, metallic: 0.05 }), buildings.length);
-buildings.forEach((b, i) => {
-  buildingMesh.setMatrixAt(i, trs(b.x, 0.3 + b.height / 2, b.z, 0, b.hw * 2, b.height, b.hd * 2));
-  buildingMesh.setColorAt(i, TONES[b.tone] as string);
-});
-const trees: { x: number; z: number; h: number }[] = [];
-blocks.filter((b) => b.park).forEach((b, bi) => {
-  for (let k = 0; k < 12; k++) {
-    const r = noise(bi * 31 + k * 3.7);
-    trees.push({ x: b.x + (noise(bi * 17 + k * 5.3) - 0.5) * 36, z: b.z + (noise(bi * 13 + k * 7.9) - 0.5) * 36, h: 3.2 + 3 * r });
-  }
-});
-const trunkMesh = instances.mesh("cylinder", material.pbr({ color: "#6b4b32", roughness: 0.9 }), trees.length);
-const crownMesh = instances.mesh("sphere", material.pbr({ color: "#5f8a45", roughness: 0.85 }), trees.length);
-trees.forEach((t, i) => {
-  trunkMesh.setMatrixAt(i, trs(t.x, 0.3 + t.h * 0.2, t.z, 0, 0.5, t.h * 0.4, 0.5));
-  crownMesh.setMatrixAt(i, trs(t.x, 0.3 + t.h * 0.7, t.z, 0, t.h * 0.7, t.h * 0.7, t.h * 0.7));
-});
-const trafficMesh = instances.mesh("box", material.pbr({ color: "#ffffff", roughness: 0.45, metallic: 0.2 }), traffic.length);
-traffic.forEach((t, i) => trafficMesh.setColorAt(i, CAR_COLORS[i % CAR_COLORS.length] as string));
-const coins = pickups.filter((p) => p.kind === "coin");
-const stars = pickups.filter((p) => p.kind === "star");
-const hearts = pickups.filter((p) => p.kind === "heart");
-const coinMesh = instances.mesh("cylinder", material.emissive({ color: "#ffd15c", emissive: "#ffb300" }), coins.length);
-const starMesh = instances.mesh("polyhedron", material.emissive({ color: "#fff0a8", emissive: "#ffd54a" }), stars.length);
-const heartMesh = instances.mesh("sphere", material.emissive({ color: "#ff8aa8", emissive: "#ff4d79" }), hearts.length);
-
 const beam = beamGeometry();
-const carPaint = material.pbr({ color: "#8d95a1", roughness: 0.55, metallic: 0.12 });
-const carAccent = material.pbr({ color: "#d8562a", roughness: 0.5, metallic: 0.1 });
-const dark = material.pbr({ color: "#1c1e24", roughness: 0.8 });
+const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
+  const a = toArrays(m);
+  return geometry.define({ positions: a.positions, normals: a.normals, uvs: a.uvs, colors: a.colors, indices: a.indices });
+};
+let look: LookRig;
 
 function buildScene() {
-  const s = scene()
-    .background({ texture: skyTexture() })
-    .camera(camera.perspective({ position: [car.x, 4.3, car.z - 10.6], target: [car.x, 1.25, car.z + 5], fov: 56, near: 0.4, far: 2400 }))
-    .add(primitives.plane({ name: "ground", position: [0, 0, 0], size: 2600, material: material.pbr({ color: "#6e6a72", roughness: 0.95 }) }))
-    .add(primitives.plane({ name: "water", position: [0, 0.02, 1100], size: [2600, 1200], material: material.pbr({ color: "#2e7ea6", roughness: 0.18, metallic: 0.1 }) }))
-    .add(blockMesh)
-    .add(buildingMesh)
-    .add(trunkMesh)
-    .add(crownMesh)
-    .add(trafficMesh)
-    .add(coinMesh)
-    .add(starMesh)
-    .add(heartMesh)
-    .add(primitives.box({ name: "car-body", size: [1.9, 0.55, 4.2], position: [0, 0.6, 0], material: carPaint }).runtime({ id: "car-body" }))
-    .add(primitives.box({ name: "car-cabin", size: [1.5, 0.5, 1.9], position: [0, 1.1, -0.2], material: carAccent }).runtime({ id: "car-cabin" }))
-    .add(primitives.box({ name: "car-light-l", size: [0.4, 0.14, 0.1], position: [-0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff" }) }).runtime({ id: "car-light-l" }))
-    .add(primitives.box({ name: "car-light-r", size: [0.4, 0.14, 0.1], position: [0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff" }) }).runtime({ id: "car-light-r" }))
-    .add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }))
-    .add(lights.directional({ name: "sun", position: [-62, 68, -36], target: [0, 0, 0], intensity: 3.15, color: "#ffd9a2" }))
-    .add(lights.hemisphere({ name: "sky", skyColor: "#cfe0f4", groundColor: "#8a7f6e", intensity: 0.9 }))
-    .add(lights.ambient({ name: "fill", intensity: 0.24, color: "#d8dae0" }))
-    .add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.05, radius: 0.35 }))
-    .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
-  for (const [i, x] of [-0.85, 0.85].entries()) {
-    for (const [j, z] of [1.3, -1.3].entries()) {
-      s.add(primitives.cylinder({ name: `wheel-${i}-${j}`, size: [0.8, 0.34, 0.8], rotation: [0, 0, Math.PI / 2], position: [x, 0.4, z], material: dark }).runtime({ id: `wheel-${i}-${j}` }));
-    }
-  }
+  look = buildLook({ blocks, buildings, traffic, pickups }, { quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, sky: config.sky, sun: config.sun, start: { x: car.x, z: car.z } });
+  const s = look.builder;
+  s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#1d1e24", roughness: 0.28, envMapIntensity: 0.6 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
+  s.add(geometry.custom(shellGeometry(look.playerShell.detail), { name: "car-detail", material: material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: look.palette as never }), castShadow: true, receiveShadow: true }).runtime({ id: "car-detail" }));
+  s.add(primitives.box({ name: "car-light-l", size: [0.4, 0.14, 0.1], position: [-0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-l" }));
+  s.add(primitives.box({ name: "car-light-r", size: [0.4, 0.14, 0.1], position: [0.6, 0.62, 2.1], material: material.emissive({ color: "#eaf1ff", emissive: "#dfe9ff", emissiveIntensity: 1.4 }) }).runtime({ id: "car-light-r" }));
+  s.add(geometry.custom(geometry.dynamic({ positions: beam.positions, normals: beam.normals, uvs: beam.uvs, indices: beam.indices }), { name: "car-beams", material: material.custom(beamSpec(headlightAmount)) }).runtime({ id: "car-beams" }));
   return s;
 }
 
@@ -200,10 +136,14 @@ const pickupState = () => ({ collected: game.collected, score: game.score, combo
 function simulateStep(input: Keys): void {
   stepCar(car, STEP, input, solidsNear(), FOOTPRINT);
   stepTraffic(traffic, STEP);
-  trafficContact(traffic, car);
+  const struck = trafficContact(traffic, car);
   const ps = pickupState();
-  collectPickups(pickups, car, ps);
+  const picked = collectPickups(pickups, car, ps);
   tickCombo(ps, STEP);
+  if (audio) {
+    if (struck) audio.thud();
+    for (const e of picked) audio.chime(e.kind, ps.combo);
+  }
   game.collected = ps.collected;
   game.score = ps.score;
   car.combo = ps.combo;
@@ -241,6 +181,24 @@ function placeBeams(yaw: number): void {
   h.updateAttribute?.("normal", { array: beamWorldNormals });
 }
 
+function placeTraffic(): void {
+  for (const rig of look.traffic) {
+    rig.cars.forEach((carIndex, n) => {
+      const t = traffic[carIndex]!;
+      const m = mat(t.x, 0, t.z, t.yaw, 0, 1, 1, 1);
+      rig.paint.setMatrixAt(n, m);
+      rig.detail.setMatrixAt(n, m);
+    });
+  }
+}
+
+const HIDDEN = mat(0, -50, 0, 0, 0, 0, 0, 0);
+function placePickups(): void {
+  look.coins.forEach((p, i) => look.coinMesh.setMatrixAt(i, p.taken ? HIDDEN : coinMat(p.x, 1.15 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0.95, 0.14)));
+  look.stars.forEach((p, i) => look.starMesh.setMatrixAt(i, p.taken ? HIDDEN : mat(p.x, 1.4 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0, 1.3, 1.3, 1.3)));
+  look.hearts.forEach((p, i) => look.heartMesh.setMatrixAt(i, p.taken ? HIDDEN : mat(p.x, 1.3 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0, 1.0, 1.0, 1.0)));
+}
+
 function placeNodes(dt: number): void {
   const yaw = car.heading + 0.72 * car.lean;
   const roll = -Math.max(-0.16, Math.min(0.16, car.steer * Math.min(1, Math.abs(car.speed) / 34) * 0.09 + 0.1 * car.lean));
@@ -251,8 +209,8 @@ function placeNodes(dt: number): void {
     h.setPosition(car.x + ox * c + oz * s, oy, car.z - ox * s + oz * c);
     h.setRotation(extra[0], yaw + extra[1], roll + extra[2]);
   };
-  place("car-body", 0, 0.6, 0);
-  place("car-cabin", 0, 1.1, -0.2);
+  place("car-paint", 0, 0, 0);
+  place("car-detail", 0, 0, 0);
   place("car-light-l", -0.6, 0.62, 2.1);
   place("car-light-r", 0.6, 0.62, 2.1);
   placeBeams(yaw);
@@ -261,14 +219,8 @@ function placeNodes(dt: number): void {
     beamsUncullable = true;
   }
   node("car-beams").setUniform?.("beamAmount", headlightAmount);
-  const spin = (renderTime * car.speed) / 0.34;
-  for (const [i, x] of [-0.85, 0.85].entries()) for (const [j, z] of [1.3, -1.3].entries()) place(`wheel-${i}-${j}`, x, 0.4, z, [spin * 0, 0, Math.PI / 2]);
-  traffic.forEach((t, i) => trafficMesh.setMatrixAt(i, trs(t.x, 0.9, t.z, t.yaw, 2.0, 1.3, 4.4)));
-  const put = (mesh: typeof coinMesh, list: typeof coins, size: number, tall: number) =>
-    list.forEach((p, i) => mesh.setMatrixAt(i, p.taken ? trs(0, -50, 0, 0, 0, 0, 0) : trs(p.x, p.y + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, size, tall, size)));
-  put(coinMesh, coins, 0.9, 0.12);
-  put(starMesh, stars, 1.2, 1.2);
-  put(heartMesh, hearts, 1.0, 1.0);
+  placeTraffic();
+  placePickups();
   stepChase(camState, { x: car.x, z: car.z, y: 0, heading: car.heading, speed: car.speed, boosting: car.boosting, shake: car.shake }, dt);
   app!.camera!.setPose({ position: [...camState.eye], target: [...camState.look], up: [0, 1, 0], fov: camState.fov }, { cut: false });
 }
@@ -341,7 +293,10 @@ function updateHud(): void {
 
 const KEYMAP: Record<string, keyof Keys> = { w: "w", arrowup: "w", a: "a", arrowleft: "a", s: "s", arrowdown: "s", d: "d", arrowright: "d", shift: "shift", " ": "space" };
 const onKey = (down: boolean) => (e: KeyboardEvent) => {
-  if (down && (e.key || "").toLowerCase() === "l") headlightAmount = headlightAmount > 0 ? 0 : 1;
+  const name = (e.key || "").toLowerCase();
+  if (down && name === "l") headlightAmount = headlightAmount > 0 ? 0 : 1;
+  if (down && !e.repeat && (name === "p" || name === "escape")) togglePause();
+  if (down && !e.repeat && name === "m" && audio) $("mute").textContent = audio.setMuted(!audio.muted) ? "Sound off (M)" : "Sound on (M)";
   const k = KEYMAP[(e.key || "").toLowerCase()];
   if (k) {
     keys[k] = down;
@@ -354,6 +309,18 @@ addEventListener("keyup", onKey(false));
 function begin(): void {
   game.phase = "playing";
   $("splash").classList.add("hidden");
+  audio?.resume();
+}
+
+function togglePause(): void {
+  if (game.phase === "playing") {
+    game.phase = "paused";
+    Object.assign(keys, NO_KEYS);
+    $("pause").classList.remove("hidden");
+  } else if (game.phase === "paused") {
+    game.phase = "playing";
+    $("pause").classList.add("hidden");
+  }
 }
 
 /* ------------------------------------------------------------------ original QA surface + hooks */
@@ -371,7 +338,7 @@ qa.__gameEntities = { player, obstacles: [] };
 qa.__getGameState = () => qaState;
 qa.__dbg = { THREE: { REVISION: "aura3d-port" }, camera: { fov: 56, near: 0.4, far: 2400 }, nearSolids, solids };
 qa.__crayonGfx = { postfx: "high", ibl: true, iblIntensity: 0.09 };
-qa.__diag = () => ({ solids: solids.length, bots: 0, traffic: traffic.length, pickups: pickups.length, blocks: blocks.length, parks: blocks.filter((b) => b.park).length, placements: buildings.length + trees.length });
+qa.__diag = () => ({ solids: solids.length, bots: 0, traffic: traffic.length, pickups: pickups.length, blocks: blocks.length, parks: blocks.filter((b) => b.park).length, placements: buildings.length + (look?.stats.trees ?? 0) });
 qa.__tp = (x: number, z: number, heading?: number) => {
   teleport(car, x, z, heading);
   Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
@@ -431,7 +398,7 @@ const api = {
     return headlightAmount;
   },
   pickups: () => pickups.map((p) => ({ kind: p.kind, x: p.x, z: p.z, taken: p.taken })),
-  counts: () => ({ blocks: blocks.length, buildings: buildings.length, trees: trees.length, traffic: traffic.length, pickups: pickups.length, solids: solids.length }),
+  counts: () => ({ blocks: blocks.length, buildings: buildings.length, trees: look?.stats.trees ?? 0, traffic: traffic.length, pickups: pickups.length, solids: solids.length }),
   nodeCount: () => handles.size,
   info: () => app?.info ?? null,
   diagnostics: () => app?.diagnostics() ?? null,
@@ -481,7 +448,7 @@ async function boot(): Promise<void> {
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "neutral", exposure: 1.34, dither: false },
+    output: { toneMapping: "neutral", exposure: config.exposure, dither: false },
     scene: buildScene()
   });
   await app.ready();
@@ -508,6 +475,7 @@ function tick(now: number): void {
       accumulator -= STEP;
     }
   }
+  audio?.update(game.phase === "playing" ? car : { speed: 0, drifting: false, boosting: false, boost: car.boost }, game.phase === "playing" && keys.w, dt);
   hudTimer += dt;
   if (hudTimer >= 0.05) {
     updateHud();
@@ -517,6 +485,8 @@ function tick(now: number): void {
 }
 
 $("start").addEventListener("click", begin);
+$("resume").addEventListener("click", togglePause);
+addEventListener("blur", () => { if (game.phase === "playing" && !config.manual) togglePause(); });
 addEventListener("resize", sizeCanvas);
 requestAnimationFrame(tick);
 

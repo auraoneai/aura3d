@@ -10,7 +10,8 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
-import { biomeAt, districtAt } from "./course";
+import { GameAudio } from "./audio";
+import { announcement, districtLabel, resultCopy } from "./labels";
 import {
   DEFAULT_SEED, SIM_STEP, TUNING, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
   type Action, type SimEvent, type SimState
@@ -24,7 +25,7 @@ const config = {
   autostart: params.get("autostart") === "1",
   autopilot: params.get("autopilot") === "1",
   manual: params.get("manual") === "1",
-  quality: params.get("quality") === "low" ? "low" : "high"
+  quality: (params.get("quality") === "low" ? "low" : "high") as "low" | "high"
 };
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
@@ -50,19 +51,39 @@ let policy: PolicyParams = DEFAULT_POLICY;
 let pendingEvents: SimEvent[] = [];
 let notice: { title: string; small: string; until: number } | null = null;
 let renderFailed = false;
-
-const FORM_LABEL: Record<string, string> = { base: "Naruto Uzumaki", sage: "Sage Mode", kurama: "Kurama Chakra Mode" };
+let countdown = 0;
+let shownDistrict = "";
+const audio = new GameAudio();
+const maxCooldown: Record<string, number> = { dash: 1 };
 
 function say(title: string, small: string, seconds: number): void { notice = { title, small, until: renderTime + seconds }; }
+
+const SFX_FOR_EVENT: Readonly<Record<string, Parameters<GameAudio["play"]>[0]>> = {
+  jump: "jump", land: "land", dash: "dash", rasengan: "orb", rasenshuriken: "gale", clones: "clones", damage: "hurt", break: "crate", armorBreak: "crate",
+  windImpact: "galeHit", cloneStrike: "orbHit", deflect: "orbHit", interrupt: "orbHit", unlock: "unlock", form: "form", won: "win", lost: "lose", dropWarning: "warn"
+};
 
 function handle(events: readonly SimEvent[]): void {
   for (const ev of events) {
     pendingEvents.push(ev);
-    if (ev.type === "unlock") say("NEW FORM UNLOCKED", ev.form === "sage" ? "Sage Mode" : "Kurama Mode", 2.8);
-    else if (ev.type === "form") say("CHAKRA AWAKENING", FORM_LABEL[ev.form as string] ?? "", 1.5);
-    else if (ev.type === "rasenshuriken") say("WIND STYLE", "Rasenshuriken", 1.2);
-    else if (ev.type === "dropWarning") say("LOOK ABOVE", "Shinobi descending", 1.4);
+    const note = announcement(ev.type, ev.form as string | undefined);
+    if (note) say(note.title, note.small, note.seconds);
+    if (ev.type === "damage") flashHurt();
+    if (ev.type === "pickup") audio.play("pickup", renderTime);
+    else if (ev.type === "kill") audio.play(ev.heavy ? "heavyKill" : "kill");
+    else { const sfx = SFX_FOR_EVENT[ev.type]; if (sfx) audio.play(sfx); }
   }
+}
+
+function flashHurt(): void {
+  const el = document.getElementById("hurt");
+  if (!el) return;
+  el.classList.add("on");
+  window.setTimeout(() => el.classList.remove("on"), 90);
+}
+
+function showHud(on: boolean): void {
+  for (const id of ["stats", "vitals", "forms", "abilities", "progress", "mute"]) $(id).classList.toggle("hidden", !on);
 }
 
 function begin(): void {
@@ -70,13 +91,38 @@ function begin(): void {
   startRun(z);
   accumulator = 0;
   simSteps = 0;
+  countdown = 0;
   pendingEvents = [];
   handle(drainEvents(z));
   runtime?.resetCamera();
-  say("", districtAt(z.s), 2.4);
+  shownDistrict = "";
   $("overlay").classList.add("hidden");
   $("result").classList.add("hidden");
-  for (const id of ["stats", "vitals", "forms", "abilities"]) $(id).classList.remove("hidden");
+  $("pause").classList.add("hidden");
+  $("countdown").classList.add("hidden");
+  showHud(true);
+}
+
+/** Player-initiated start: a short 3-2-1 over the idle runner, then the run. The hooks call `begin` directly. */
+function startWithCountdown(): void {
+  if (!ready || countdown > 0) return;
+  audio.unlock();
+  audio.play("click");
+  z = createState(config.seed);
+  runtime?.resetCamera();
+  $("overlay").classList.add("hidden");
+  $("result").classList.add("hidden");
+  $("pause").classList.add("hidden");
+  showHud(false);
+  $("countdown").classList.remove("hidden");
+  countdown = 2.2;
+}
+
+function setPaused(on: boolean): void {
+  if (on && z.phase === "running") z.phase = "paused";
+  else if (!on && z.phase === "paused") z.phase = "running";
+  else return;
+  $("pause").classList.toggle("hidden", !on);
 }
 
 function act(action: Action): boolean {
@@ -97,27 +143,52 @@ function step(n: number, scripted?: readonly Action[]): void {
 
 /* ------------------------------------------------------------------ HUD */
 
+const ABILITY_COST: Record<string, number> = { clones: TUNING.cloneCost, rasengan: TUNING.attackCost, dash: TUNING.dashCost, rasenshuriken: TUNING.shurikenCost };
+
+function abilityCooldown(action: string): number {
+  const left = action === "clones" ? z.cloneCooldown : action === "rasengan" ? z.attackCooldown : action === "dash" ? z.dashCooldown : z.shurikenCooldown;
+  const full = action === "clones" ? TUNING.cloneCooldown : action === "rasengan" ? TUNING.attackCooldown : action === "rasenshuriken" ? TUNING.shurikenCooldown : (maxCooldown[action] = Math.max(maxCooldown[action] ?? 1, left));
+  return Math.max(0, Math.min(1, left / full));
+}
+
 function updateHud(): void {
   $("distance").textContent = String(Math.floor(z.s));
   $("kills").textContent = String(z.kills).padStart(2, "0");
   $("score").textContent = String(z.score);
+  $("combo").textContent = z.combo > 1 ? `${z.combo}x combo` : "";
   $("chakra").textContent = `${Math.round(z.chakra)} / ${TUNING.maxChakra}`;
   $("chakra-bar").style.width = `${(z.chakra / TUNING.maxChakra) * 100}%`;
   $("hearts").textContent = "♥".repeat(Math.max(0, z.health)) + "♡".repeat(Math.max(0, TUNING.health - z.health));
-  $("district").textContent = `${districtAt(z.s)} · ${biomeAt(z.s)}`;
+  $("progress-fill").style.width = `${Math.min(100, (z.s / TUNING.length) * 100)}%`;
+  const district = districtLabel(z.s);
+  $("district").textContent = district;
+  if (district !== shownDistrict && z.phase === "running") {
+    const banner = $("district-banner");
+    banner.textContent = district.toUpperCase();
+    banner.classList.add("show");
+    shownDistrict = district;
+    window.setTimeout(() => banner.classList.remove("show"), 2200);
+  }
   document.querySelectorAll<HTMLButtonElement>("#forms button").forEach((b) => {
     const form = b.dataset.form as string;
     b.classList.toggle("selected", z.form === form);
     b.disabled = form !== "base" && z.s < (form === "sage" ? 600 : 1620);
+  });
+  document.querySelectorAll<HTMLButtonElement>("#abilities button").forEach((b) => {
+    const action = b.dataset.action as string;
+    b.style.setProperty("--cd", abilityCooldown(action).toFixed(3));
+    b.classList.toggle("poor", z.chakra < (ABILITY_COST[action] ?? 0));
+    b.classList.toggle("live", (action === "clones" && z.clones > 0) || (action === "rasengan" && z.attack > 0) || (action === "dash" && z.dash > 0) || (action === "rasenshuriken" && z.shurikenCast > 0));
   });
   const live = notice && notice.until > renderTime ? notice : null;
   $("announce-title").textContent = live?.title ?? "";
   $("announce-small").textContent = live?.small ?? "";
   if (z.phase === "won" || z.phase === "lost") {
     $("result").classList.remove("hidden");
-    $("result-label").textContent = z.phase === "won" ? "MISSION COMPLETE" : "MISSION REPORT";
-    $("result-title").textContent = z.phase === "won" ? "The Hidden Leaf stands." : "The fire still burns.";
-    $("result-copy").textContent = z.phase === "won" ? "From Konoha to the Valley of the End." : z.falling ? "Missed the jump. Jump before the edge to clear rooftop and branch gaps." : "Gather your chakra and go again.";
+    const copy = resultCopy(z.phase === "won", z.falling);
+    $("result-label").textContent = copy.label;
+    $("result-title").textContent = copy.title;
+    $("result-copy").textContent = copy.copy;
     $("result-stats").textContent = `${Math.floor(z.s)} m · ${z.kills} defeated · best combo ${z.bestCombo}x · score ${z.score}`;
   }
 }
@@ -145,6 +216,12 @@ function tick(now: number): void {
   lastTick = now;
   if (!ready) return;
   renderTime += dt;
+  if (countdown > 0) {
+    countdown -= dt;
+    $("countdown").textContent = countdown <= 0.35 ? "GO" : String(Math.ceil((countdown - 0.35) / 0.62));
+    if (countdown <= 0) begin();
+  }
+  audio.update({ form: z.form, speed: z.speed, running: z.phase === "running" });
   if (!config.manual && z.phase === "running") {
     accumulator += dt;
     let guard = 0;
@@ -159,13 +236,15 @@ function tick(now: number): void {
 const KEYS: Record<string, Action> = { KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right", Space: "cycleForm", ArrowUp: "jump", KeyW: "jump", KeyS: "slide", ArrowDown: "slide", ShiftLeft: "dash", ShiftRight: "dash", Digit1: "clones", Digit2: "rasengan", Digit3: "rasenshuriken" };
 addEventListener("keydown", (e) => {
   if (!ready || e.repeat) return;
-  if (e.code === "Escape") { if (z.phase === "running") z.phase = "paused"; else if (z.phase === "paused") z.phase = "running"; return; }
-  if (e.code === "Enter" && z.phase === "intro") { begin(); return; }
+  audio.unlock();
+  if (e.code === "Escape") { setPaused(z.phase === "running"); return; }
+  if (e.code === "KeyM") { audio.toggleMute(); $("mute").textContent = audio.muted ? "Sound off" : "Sound on"; return; }
+  if (e.code === "Enter" && (z.phase === "intro" || z.phase === "won" || z.phase === "lost")) { startWithCountdown(); return; }
   const a = KEYS[e.code];
   if (a) { e.preventDefault(); act(a); }
 });
 let swipe: { x: number; y: number } | null = null;
-canvas.addEventListener("pointerdown", (e) => { if (e.pointerType === "mouse") act("rasengan"); else swipe = { x: e.clientX, y: e.clientY }; });
+canvas.addEventListener("pointerdown", (e) => { audio.unlock(); if (e.pointerType === "mouse") act("rasengan"); else swipe = { x: e.clientX, y: e.clientY }; });
 canvas.addEventListener("pointerup", (e) => {
   if (!swipe) return;
   const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
@@ -175,8 +254,10 @@ canvas.addEventListener("pointerup", (e) => {
 });
 document.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((b) => b.addEventListener("click", () => act(b.dataset.action as Action)));
 document.querySelectorAll<HTMLButtonElement>("[data-form]").forEach((b) => b.addEventListener("click", () => act(b.dataset.form as Action)));
-$("start").addEventListener("click", begin);
-$("again").addEventListener("click", begin);
+$("start").addEventListener("click", startWithCountdown);
+$("again").addEventListener("click", startWithCountdown);
+$("resume").addEventListener("click", () => setPaused(false));
+$("mute").addEventListener("click", () => { audio.unlock(); audio.toggleMute(); $("mute").textContent = audio.muted ? "Sound off" : "Sound on"; });
 
 /* ------------------------------------------------------------------ capture hooks */
 
@@ -203,7 +284,26 @@ const api = {
     render(0);
     return { steps: n, ...snapshot(z) };
   },
+  /** Step the live sim without rendering until distance `s`, one of the requested moments (`attack`, `shuriken`, `clones`, `form`) or the end of the run; renders once. */
+  advanceTo(s: number, stops: readonly string[] = [], maxSteps = 60000) {
+    let n = 0, stop: string | null = null;
+    const startForm = z.form;
+    while (n < maxSteps && z.phase === "running" && z.s < s && !stop) {
+      step(1); n++;
+      if (stops.includes("attack") && z.attack > 0) stop = "attack";
+      else if (stops.includes("shuriken") && z.shurikenCast > 0) stop = "shuriken";
+      else if (stops.includes("clones") && z.clones > 0) stop = "clones";
+      else if (stops.includes("form") && z.form !== startForm) stop = "form";
+    }
+    updateHud();
+    runtime?.resetCamera();
+    render(0);
+    return { steps: n, stop, ...snapshot(z) };
+  },
   setAutopilot(on: boolean, next?: PolicyParams) { autopilotOn = on; if (next) policy = next; },
+  /** Render `frames` real-time frames of `dt` seconds (animation clocks, particles) without advancing the sim; for captures. */
+  settle(frames = 6, dt = 1 / 60) { for (let i = 0; i < frames; i++) { renderTime += dt; render(dt); } updateHud(); },
+  audio: () => ({ supported: audio.supported, active: audio.active, muted: audio.muted }),
   /** Replay a recorded action script (the capture's `script` string) into a fresh recorded run; no rendering per step. */
   replay: (text: string, maxSteps = 40000) => summary(replayScript(decodeActionScript(text), maxSteps)),
   runPolicy: (p: PolicyParams = DEFAULT_POLICY, maxSteps = 40000) => summary(runPolicy(p, maxSteps)),
@@ -287,7 +387,7 @@ function sizeCanvas(): void {
 async function boot(): Promise<void> {
   sizeCanvas();
   actors = await loadActors(canvas);
-  const world = buildWorld({ canvas, actors, entities: z.entities });
+  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

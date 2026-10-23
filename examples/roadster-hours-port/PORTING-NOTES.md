@@ -18,10 +18,11 @@ per-step input hook, `window.skybreakDemo.input(state)`, which is what makes a d
 | `sim` (`C`, `R`, `D`, `k`, `A`, `j`, `N`, `L`, ...) | `sim.ts`, statement-for-statement, same evaluation order | exact: the recorded original run replays on the same steps |
 | `world` route data (`Xu`, `Zu`, `ed`, `td`) | `data.ts`, extracted mechanically from the bundle | exact numbers |
 | `world` course functions (`Qu`, `$u`, `od`, `sd`, `cd`, `fd`, `pd`) | `course.ts` | exact |
-| road, kickers, shortcut decks, gates, cells, hazards, water | `world.ts` with `geometry.dynamic` + `material.custom` (road, water, solid/glow GLSL 300 es in `shaders.ts`) | procedural look, not pixel parity |
-| 68 `BatchedMesh` + 121 `InstancedMesh` for traffic, lineups and scenery | ONE `batched.mesh` (`vehicles`) holding every traffic and lineup vehicle, one instance per collision box, two pooled geometries, per-instance colour and matrix writes each frame | functional; scenery instancing is not ported |
+| road, kickers, shortcut decks, gates, cells, hazards, water, sky | `world.ts` with `geometry.dynamic` + `material.custom`: lit asphalt with filtered markings and cyan edge neon, footprint-filtered ocean, procedural sky dome (clouds, sun, ridge), terrain, guardrails, street lamps, cliff-top town, lighthouse, night skyline, hazard-chevron ramps, GPU point-sprite dust and spark plumes, additive headlight cones (`shaders.ts`, `look.ts`) | procedural look, not pixel parity |
+| 68 `BatchedMesh` + 121 `InstancedMesh` for traffic, lineups and scenery | seven `batched.mesh`es: baked CC0 cars (Quaternius sports car, car, taxi; Kenney race car; `tools/bake-cars.mjs`) in one mesh per material group (paint with per-instance colour, trim, glass, head, tail), box rigs detailed with windows, wheels and lamps; 451 instances | functional; scenery instancing is not ported |
 | 29 `ShaderMaterial`s | four `material.custom` programs | simplified look |
-| `roadster-rocket.glb`, `world-kit.glb`, sky, post-processing, audio, career UI, touch controls | not ported (the Roadster is three procedural boxes; keyboard input only; minimal HUD) | gaps |
+| `roadster-rocket.glb`, `world-kit.glb`, HDR sky, post, audio, UI | engine bloom, colour grade, vignette, FXAA, IBL preset and fog; synthesised audio (`audio.ts`, engine, wind, music, event cues); title with route picker, HUD, pause and results (DIN Pro from the licensed font gallery); the Roadster is a baked graphite sports car | partial |
+| career UI, touch controls, shadows, slow motion, camera shake | not ported | gaps |
 
 ## Determinism and the reference
 
@@ -41,10 +42,11 @@ No `@aura3d/rendering` internals, no `TODO(a3d-migrate)`.
 
 ## Gaps and divergences
 
-- Look: vehicles and the Roadster are boxes; the sky is a flat colour; there is no post-processing or shadows.
+- Look: the blind judge still tells the port from the original 81% of the time (was 100%): the original's cars are heavier, its scenery denser (trees, buildings, bridge), it has shadows and motion blur; rigs are still boxes with detail parts. Debug switches: `?post=0`, `?env=0`, `?fog=0`.
+- `effects.particles` `attachTo` is typed but not implemented in the engine; the plumes are shader-driven point sprites instead.
 - The original replaces its built-in vehicle collision table with metadata from `world-kit.glb` at runtime; the port uses
   the built-in table (`ed`). The capture records the original's traffic dimensions and a test compares them.
-- Slow motion, camera shake, audio, the career/results UI and touch controls are not ported.
+- Slow motion, camera shake, shadows and touch controls are not ported.
 - Verification of rendering is on a software WebGL2 runner (SwiftShader), not a hardware GPU.
 
 ## Engine fixes found while verifying the batched path
@@ -60,4 +62,4 @@ Running the port on a real WebGL2 context exposed four defects in the multi-draw
 
 - Reference: two independent in-browser sessions of the original's simulation under the same closed-loop policy, 6124 steps, bit-identical (tolerance 0). The unit replay matches the trace to 2e-14.
 - Remote browser spec: passes (`evidence/roadster-hours-port/`). One frame's batched vehicles go out as 3 multi-draw calls (several passes) instead of 92 draws.
-- Not done: the original's own rendering loop could not be driven to completion under software GL (2.5 to 5 s per frame), so the reference comes from the original's `sim` module driven directly, plus a partial in-game cross-check that is not part of the report.
+- Not done: the original's own rendering loop could not be driven to completion under software GL (2.5 to 5 s per frame), so the reference comes from the original's `sim` module driven directly, plus an in-game cross-check (run `cc1f3`: the real Drive button, the game's own loop under virtual time, 1550 steps) that matches the reference prefix exactly and is recorded as `ingameCrossCheck` in the report.

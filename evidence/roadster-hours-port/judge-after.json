@@ -1,0 +1,898 @@
+{
+  "schema": "a3d-roadster-hours-blind-judge/1",
+  "label": "after",
+  "generatedAt": "2026-10-23T11:59:42.467Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 6,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "states": [
+      "s0030",
+      "lineup",
+      "s0720",
+      "air",
+      "s1680",
+      "s2400",
+      "s3000",
+      "s3600"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D racing game, labelled Image A and Image B. Both are taken at the same moment of the same recorded run (same road position, same speed), with the on-screen HUD hidden. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, road, scenery, lighting, glow, the vehicles and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "state": "s0030",
+        "lumaJsd": 0.21367644036403388,
+        "rgbJsd": 0.572192986697907,
+        "paletteDistance": 0.09922312835786806,
+        "edgeDensityOriginal": 0.07837382127021794,
+        "edgeDensityPort": 0.0485386873165553,
+        "edgeDensityRatio": 0.6193227091633466,
+        "lumaMeanDelta": 18.43261574072102
+      },
+      {
+        "state": "lineup",
+        "lumaJsd": 0.21755732262586916,
+        "rgbJsd": 0.5872199384586735,
+        "paletteDistance": 0.11365921898577269,
+        "edgeDensityOriginal": 0.08481390120527071,
+        "edgeDensityPort": 0.05055267595078998,
+        "edgeDensityRatio": 0.5960423377818683,
+        "lumaMeanDelta": 23.814164617276603
+      },
+      {
+        "state": "s0720",
+        "lumaJsd": 0.2479842171190631,
+        "rgbJsd": 0.6063921787234178,
+        "paletteDistance": 0.1301907408459101,
+        "edgeDensityOriginal": 0.06312839567851121,
+        "edgeDensityPort": 0.049366140011240865,
+        "edgeDensityRatio": 0.7819957957215283,
+        "lumaMeanDelta": 23.375875469131046
+      },
+      {
+        "state": "air",
+        "lumaJsd": 0.09128670387377563,
+        "rgbJsd": 0.4589319883571271,
+        "paletteDistance": 0.1059297824422084,
+        "edgeDensityOriginal": 0.11585898957097358,
+        "edgeDensityPort": 0.1035252607256604,
+        "edgeDensityRatio": 0.893545344293222,
+        "lumaMeanDelta": -7.579067354919118
+      },
+      {
+        "state": "s1680",
+        "lumaJsd": 0.12002053349076915,
+        "rgbJsd": 0.5064530333089001,
+        "paletteDistance": 0.16365277736597822,
+        "edgeDensityOriginal": 0.13994879160681947,
+        "edgeDensityPort": 0.07767907325298196,
+        "edgeDensityRatio": 0.5550535475234271,
+        "lumaMeanDelta": -2.7580011743623913
+      },
+      {
+        "state": "s2400",
+        "lumaJsd": 0.22533121684102986,
+        "rgbJsd": 0.5224766247493542,
+        "paletteDistance": 0.11845598590794205,
+        "edgeDensityOriginal": 0.1057031786673328,
+        "edgeDensityPort": 0.06672703428464373,
+        "edgeDensityRatio": 0.6312680008861975,
+        "lumaMeanDelta": 17.702853907351624
+      },
+      {
+        "state": "s3000",
+        "lumaJsd": 0.17603640696111,
+        "rgbJsd": 0.5461485412738828,
+        "paletteDistance": 0.16237723031530932,
+        "edgeDensityOriginal": 0.23472334977830514,
+        "edgeDensityPort": 0.11966839442952601,
+        "edgeDensityRatio": 0.50982739698693,
+        "lumaMeanDelta": -8.7532164845517
+      },
+      {
+        "state": "s3600",
+        "lumaJsd": 0.1411363302231454,
+        "rgbJsd": 0.35061998340950107,
+        "paletteDistance": 0.0550076255746668,
+        "edgeDensityOriginal": 0.1281536876288016,
+        "edgeDensityPort": 0.03876537813026916,
+        "edgeDensityRatio": 0.3024913199731985,
+        "lumaMeanDelta": 7.42593519903366
+      }
+    ],
+    "summary": {
+      "frames": 8,
+      "lumaJsd": 0.17912864643734952,
+      "rgbJsd": 0.5188044093723454,
+      "paletteDistance": 0.11856206122445695,
+      "edgeDensityRatio": 0.6111933065412148,
+      "lumaMeanDelta": 8.957644989960093
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 39,
+    "accuracy": 0.8125,
+    "ci95": [
+      0.6805986065115378,
+      0.8980872365179983
+    ],
+    "pValueVsChance": 0.000015221826110689537,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 23,
+    "byLook": {
+      "s0030": {
+        "valid": 6,
+        "correct": 6,
+        "accuracy": 1
+      },
+      "lineup": {
+        "valid": 6,
+        "correct": 3,
+        "accuracy": 0.5
+      },
+      "s0720": {
+        "valid": 6,
+        "correct": 0,
+        "accuracy": 0
+      },
+      "air": {
+        "valid": 6,
+        "correct": 6,
+        "accuracy": 1
+      },
+      "s1680": {
+        "valid": 6,
+        "correct": 6,
+        "accuracy": 1
+      },
+      "s2400": {
+        "valid": 6,
+        "correct": 6,
+        "accuracy": 1
+      },
+      "s3000": {
+        "valid": 6,
+        "correct": 6,
+        "accuracy": 1
+      },
+      "s3600": {
+        "valid": 6,
+        "correct": 6,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "s0030",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Different car model and rear styling (A is a modern dark coupe, B is a boxy retro car with a red stripe)",
+        "Different scenery: B has a tall building, street lamps, and dead trees; A has a plain sand dune and smooth guardrails",
+        "Different lighting and camera: A is hazy and cool with a lower, farther camera; B has a warmer, crisper look with a closer camera"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "lineup",
+      "originalIs": "A",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has volumetric clouds, hazy atmosphere, teal road-edge glow and tire smoke, which feel like shipped-game polish",
+        "A has a flat blue gradient sky, a plain road with no edge glow, and a different car model and camera framing",
+        "A has a distinct building and a bright light beam that B lacks, which suggests different scenery placement"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "look": "s0720",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.62,
+      "tells": [
+        "Image A has volumetric cloud sky, smoke puff and cyan road-edge glow that look like a polished shipped game",
+        "Image B has a different car model, flatter sky gradient and sparse low-poly-looking scenery",
+        "Camera is lower and closer with different car framing in B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "look": "air",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image A has strong motion blur, speed streaks and dense tire smoke/boost exhaust",
+        "Image B has flat, soft clouds and a simpler water/terrain look with a yellow-black hazard stripe road section",
+        "Image A has richer cinematic lighting, a city skyline and detailed car rear with boost flames"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "look": "s1680",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.72,
+      "tells": [
+        "A shows a flat sandy dune and an open sea road, while B has a detailed suspension bridge, cliffs and a city skyline at the same road position",
+        "B has richer terrain and rock textures and crisper cable geometry, while A's dunes and water look flatter and blurrier",
+        "The cars differ in shape and camera framing: A is a taller sedan-like car, B a low wide car with a spoiler"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "look": "s2400",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B's traffic is plain white boxes, while A's trucks and car are detailed models",
+        "B has a hazy overcast sky and coastal setting, while A has a clear blue sky and city street",
+        "B has a smeared white blob under the car and flatter lighting, while A has sharper shading and believable depth of field"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "look": "s3000",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has sparse, boxy, flat-shaded buildings on bare yellow terrain, while B has dense, detailed terracotta-roofed coastal town",
+        "Image A has a large, glossy rippled water surface and a hazy flat sky, unlike B's softer, richer atmospheric lighting",
+        "Image B's road, guard rails and car details look more refined and cohesive with the scenery"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "look": "s3600",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.68,
+      "tells": [
+        "B has a bare desert/coast setting, while A has detailed urban buildings and a dense street",
+        "B's pickup is a flat yellow disc and its smoke is sparse blobs, while A has a ringed diamond pickup and thick volumetric smoke",
+        "A is letterboxed with a cinematic grade, while B is full-frame with a flatter look"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "s0030",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.65,
+      "tells": [
+        "Different car model: A is a dark blue coupe, B is a muscle car with a spoiler and exhaust pipes",
+        "B has richer scenery: buildings, lamp posts, dead trees and distant mountains, where A is sparse",
+        "Different sky and lighting: A is hazy and desaturated, B is a clearer, warmer blue gradient"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "lineup",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.65,
+      "tells": [
+        "Image A has a hazy, desaturated sky with a flat gray-blue tone and a sea on the left, while B has a clear blue sky and a building on the left",
+        "The cars and the smoke or dust puff under the car in A differ from the detailed car model in B",
+        "Image B has sharper scenery detail, with mountains, trees and a building, whereas A has simpler, blurrier terrain"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 1,
+      "look": "s0720",
+      "originalIs": "A",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "originalConfidence": 0.66,
+      "tells": [
+        "B has richer volumetric clouds, haze and smoke/dust puff behind the car",
+        "A's car is a different, lower sports-car model with a cleaner, flatter sky",
+        "B shows cyan edge lighting on the road and a different camera distance/height"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "look": "air",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.75,
+      "tells": [
+        "A has strong motion blur, speed streaks and thick smoke/boost exhaust trails",
+        "B has flatter, simpler lighting with a plain cloudy sky and a yellow-black chevron road section",
+        "A shows richer scenery with a city skyline, detailed terrain and a glowing teal road edge"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "look": "s1680",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.72,
+      "tells": [
+        "Image B has no suspension bridge or city skyline, and its terrain is a flat sand-colored slope",
+        "Image B's water is blurry with repeating ripples, and its sky and haze are flatter",
+        "The car models differ, and Image A has richer scenery detail and lighting"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "look": "s2400",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has an overcast, hazy, desaturated sky and sea with white box placeholder traffic, while B has a crisp blue sky with detailed trucks and buildings",
+        "A shows a smeared white glow under the car and a different car model and color from B's sharp red car",
+        "The scenery differs completely: A has a sea and guardrail on the left, B has dense buildings and an orange wall"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "look": "s3000",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image A has sparse, blocky box buildings on flat yellow terrain, while B has dense, detailed red-roofed coastal town",
+        "Image A's ocean is a stretched, smeared texture with a plain hazy sky, while B has richer atmospheric lighting and sky",
+        "Image A's road and scenery look simplified and low-detail compared with B's polished, cohesive art direction"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "look": "s3600",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B's scenery (desert dunes and coastal highway) is completely different from A's detailed city street with buildings",
+        "B's smoke is a few soft blobs, while A has dense volumetric tire smoke",
+        "B's pickup is a flat yellow disc, whereas A's is a diamond inside a ring"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "s0030",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.62,
+      "tells": [
+        "different car model (wide low sports car vs small sedan with orange tail lights)",
+        "A has richer scenery: building, dead trees, street lamps, distant light beam",
+        "B has a generic sand dune, cyan road-edge glow and soft cloudy sky"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "lineup",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has a hazy, desaturated sky and a flat sea with a cyan-glowing road edge, unlike B's crisp blue sky and detailed scenery",
+        "Image A's car is a different, smaller model with soft white smoke puffs under it, while B shows a distinct wide-body car with a rear grille and plate",
+        "Image B has richer scenery (buildings, trees, mountains, a light beam) and sharper, higher-contrast lighting"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 2,
+      "look": "s0720",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.68,
+      "tells": [
+        "Image A has volumetric clouds, hazy atmosphere and a smoke/dust puff behind the car, which look like the richer original rendering",
+        "Image B has a different car model, a flatter sky gradient and sparse scenery (bare trees, mountain)",
+        "Image A has cyan road-edge glow and a gate in the distance, while B has a light beam and a different camera distance and height"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 2,
+      "look": "air",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has strong motion blur, speed streaks and dense dust/smoke trail, which looks like the polished shipped game",
+        "Image B shows a flat, soft sky and simpler water and terrain, with a different road marking (large yellow chevrons) and weaker lighting",
+        "Image A has richer warm/cool color grading and detailed distant city, while B looks flatter and more generic"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 2,
+      "look": "s1680",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.68,
+      "tells": [
+        "A has flat, smooth yellow terrain and blurry water; B has detailed rocky cliffs and a city skyline",
+        "B has a cable-stayed bridge with detailed cables and a richer car model; A has none of this",
+        "A's hazy, washed-out lighting and simplified scenery look like an approximation"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 2,
+      "look": "s2400",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.68,
+      "tells": [
+        "A has an overcast, hazy sea-side scene with white box placeholders and a smudgy white blob under the car, while B is a crisp sunny city street",
+        "B has detailed buildings, textured brick walls and proper truck traffic, while A has sparse scenery and a different car",
+        "The sky, lighting and road surface differ strongly: A is flat and grey, B is saturated blue with strong sun shading"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 2,
+      "look": "s3000",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat, barren yellow terrain with simple boxy buildings, unlike A's dense detailed red-roofed town",
+        "B's sea and sky look flatter and more uniform, with a different horizon and haze",
+        "A has richer lighting, depth and scenery density, and a different camera angle and car framing"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 2,
+      "look": "s3600",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Completely different environments at the same road position: dense city street in A, empty desert/coastal highway in B",
+        "B's pickup is a flat yellow blob, while A's is a designed diamond-and-ring pickup",
+        "B's smoke is a few soft blobs, while A's is a dense volumetric cloud"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "s0030",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.68,
+      "tells": [
+        "Different car model and rear styling (A is a dark modern coupe, B is a boxy retro car with a red trim strip)",
+        "Scenery differs: B has a building, lamp posts, dead trees and a distant mountain, while A has bare dunes and a flat horizon",
+        "Different lighting and haze: A is overcast and cool with a glowing cyan road edge, B is clearer and warmer with a light beam in the distance"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "lineup",
+      "originalIs": "A",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has a hazy, overcast sky with soft clouds, cyan-lit road edges, and tire smoke puffs, which suggests a more elaborate shipped look",
+        "A has a clear flat blue sky, a different car model, a building on the left, and a bright light beam on the road, which look like a simpler re-creation",
+        "The camera framing and road layout differ: A has a wide road with a sharp horizon, while B has a sea and guardrail on the left"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 3,
+      "look": "s0720",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.68,
+      "tells": [
+        "Image A has a heavy cloud-filled sky, hazy atmosphere and a smoke/dust puff behind the car, while B has a plain clear sky",
+        "Image A has cyan edge glow along the road borders and a cohesive moody grade, while B uses plain white edge lines and flatter lighting",
+        "The cars and camera differ: A has a small distant hatchback, B has a large low-slung sports car close to the camera, plus B has sparse scrub and a mountain on the horizon"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 3,
+      "look": "air",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has strong motion blur, speed streaks and thick tire smoke, which suggests a polished original",
+        "Image B has a flatter, hazier sky and simpler terrain with a different road layout (hazard-striped chevrons)",
+        "Image B's car and effects look less detailed, with sparse dust particles and no exhaust or boost flames"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 3,
+      "look": "s1680",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.68,
+      "tells": [
+        "B has detailed suspension-bridge cables, city skyline and rocky terrain, while A shows plain sand dunes and a flat shoreline",
+        "A's water is a blurry tiled ripple pattern with a hazy, washed-out sky, unlike B's crisper water and saturated blue sky",
+        "Different environment and car rendering at the same road position: A's car is dark with a plain rear, B's has a detailed rear spoiler"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 3,
+      "look": "s2400",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.75,
+      "tells": [
+        "A has a hazy overcast sky, sea on the left and a white smudge under the car, while B has a crisp blue sky and detailed buildings",
+        "A's traffic vehicles are plain white boxes, while B's are detailed trucks",
+        "A's car and road look flat and wet, while B has richer lighting, shadows and textures"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 3,
+      "look": "s3000",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat yellow terrain with sparse boxy buildings, A has dense detailed red-roofed town",
+        "B's water is a stylized wave texture, A's sea is hazy and realistic",
+        "A's lighting, haze and depth of field are richer than B's flatter look"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 3,
+      "look": "s3600",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.72,
+      "tells": [
+        "Scenery differs completely: dense detailed city buildings vs. empty desert and water",
+        "Pickup is a ring with a diamond in A but a flat yellow blob in B",
+        "Tire smoke is large and volumetric in A but small, sparse puffs in B"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 4,
+      "look": "s0030",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.65,
+      "tells": [
+        "A has richer roadside detail (building, bare trees, lamp posts, distant skyline)",
+        "B has a different car model and a cyan edge glow on the road that A lacks",
+        "B's hills and clouds look smoother and more generic, with a different camera height and framing"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 4,
+      "look": "lineup",
+      "originalIs": "A",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has a hazy, overcast atmosphere, cyan-lit road edges and tire smoke, which suggests richer original post-processing",
+        "A has a clean blue sky, a flat road and an apartment building, which look simplified",
+        "The car model and the camera framing differ: A's car is a large, high-set coupe, while B's is a smaller dark car"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 4,
+      "look": "s0720",
+      "originalIs": "A",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "originalConfidence": 0.66,
+      "tells": [
+        "Image B has volumetric clouds, cyan-lit road edges and a tire smoke puff, giving richer atmosphere",
+        "Image A has a different car model, flat gradient sky and a plain light-beam marker",
+        "Image A has a distant hazy city skyline and a different camera height/distance"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 4,
+      "look": "air",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image B has richer detail: city skyline, dense dust/smoke, speed streaks, motion blur and boost exhaust",
+        "Image A has a flat, sparse, low-detail environment with a plain sea and a simple yellow desert slope",
+        "Image A has a different road layout with yellow/black chevron stripes and a different car model and camera framing"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 4,
+      "look": "s1680",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.78,
+      "tells": [
+        "Image B has a detailed suspension bridge with cables and rocky cliffs, while A shows a plain road beside smooth sand dunes",
+        "A's terrain, water and sky look simplified and blurry, and B's are richer and more detailed",
+        "The car model, camera framing and skyline differ between the two"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 4,
+      "look": "s2400",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.72,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has flat white box vehicles and a blurry white smudge under the car, which look like placeholder or artifact rendering",
+        "A has richer, more detailed lighting, with a blue sky, textured buildings, and natural depth of field and motion blur",
+        "The environments differ: A is a city street with a brick wall, B is a hazy coastal road with a different car model"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 4,
+      "look": "s3000",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has a flat yellow terrain with sparse, blocky box-like buildings, while B has dense, detailed terracotta-roofed coastal town",
+        "Image A has a large open ocean with a different road layout and scale, while B has a richer coastline and denser scenery",
+        "B has more refined lighting, atmospheric haze and varied building detail, while A looks like a simplified approximation"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 4,
+      "look": "s3600",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.72,
+      "tells": [
+        "A shows a desert/coastal highway while B shows a dense European-style city street, so the environments don't match",
+        "A's pickup is a flat yellow disc and its smoke is soft grey blobs, which look like placeholder effects",
+        "B has a detailed ring-and-diamond pickup, volumetric tire smoke and richly built scenery"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 5,
+      "look": "s0030",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has richer roadside props (building, lampposts, dead trees, distant mountains) that A lacks",
+        "different car model and camera framing",
+        "A's scenery is flatter and sparser, with a smooth featureless dune slope and hazy sky"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 5,
+      "look": "lineup",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has a hazy, overcast sky, a flat sea, and smoke puffs under the car, while B has a clear blue sky with a lit-up distant city and mountains",
+        "The car in A is a dark generic sedan with a soft, glowy tail, whereas B has a detailed muscle car with a visible rear grille and license plate",
+        "A has a different roadside setup, with a teal-edged road, a guardrail and a street lamp, but B has a building on the left and sparse trees"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 5,
+      "look": "s0720",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.62,
+      "tells": [
+        "Image A has volumetric cloud layers, a hazy sky and a soft smoke or dust puff at the car's rear, which look like the shipped game's richer rendering",
+        "Image B has a flatter, saturated blue sky, sharper road texture and distant mountains, so it looks like a re-implementation",
+        "The car model and the camera distance and height differ (A: small dark hatchback far ahead; B: large low sports car close up)"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 5,
+      "look": "air",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.72,
+      "tells": [
+        "A has strong motion blur, speed streaks and thick boost smoke with a skyline",
+        "B has a flat yellow-black hazard-striped road, softer overcast sky and water on the left",
+        "A's cyan edge lines, lighting and car rendering look more polished and cinematic"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 5,
+      "look": "s1680",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.7,
+      "tells": [
+        "A has a detailed suspension bridge, city skyline and textured hills, while B has flat sand and a distant shoreline",
+        "different car model and rear lights, with B's car looking simpler",
+        "B's sky, water and terrain look softer and more generic, while A has richer lighting and a cyan road-edge glow"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 5,
+      "look": "s2400",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has plain white box trucks and a smeared white blob under the car, which look like placeholders",
+        "A has detailed trucks, a brick wall and city buildings under blue-sky lighting, while B is overcast with a seaside setting",
+        "The player car model and camera framing differ: A is a low red-lit sports car, B is a dark hatchback"
+      ]
+    },
+    {
+      "step": 6,
+      "pass": 5,
+      "look": "s3000",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image A has sparse, blocky box buildings on flat yellow terrain, while B has dense detailed terracotta-roofed town",
+        "Image A's water is a stylized rippled plane with a different horizon and haze, B has natural coastal lighting",
+        "Image A's scenery looks simplified and placeholder-like, B has richer art direction and depth"
+      ]
+    },
+    {
+      "step": 7,
+      "pass": 5,
+      "look": "s3600",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.75,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A has a detailed city street with textured buildings, while Image B has a plain desert and coastal highway",
+        "Image A's pickup is a detailed ring with a diamond, while Image B's is a flat yellow disc",
+        "Image A has dense, volumetric tire smoke and cinematic letterbox bars, while Image B has sparse blob puffs and no bars"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,849 @@
+{
+  "schema": "a3d-ninja-runner-blind-judge/1",
+  "label": "before",
+  "generatedAt": "2026-10-23T12:00:25.162Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 24,
+    "shots": [
+      "village-a",
+      "village-b"
+    ],
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D endless-runner game (a ninja character running along a village street seen from a chase camera behind the runner), labelled Image A and Image B. Both are taken near the start of a run on the same course, cropped to the 3D scene so no on-screen HUD is visible. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, haze, the path surface, buildings, trees, lanterns, lighting and shadows, the character and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "shot": "village-a",
+        "look": "village",
+        "lumaJsd": 0.5229953993249362,
+        "rgbJsd": 0.7553416087148811,
+        "paletteDistance": 0.10406829693298808,
+        "edgeDensityOriginal": 0.1773750209595899,
+        "edgeDensityPort": 0.032598150765324456,
+        "edgeDensityRatio": 0.18378095511402961,
+        "lumaMeanDelta": 55.17960536638198
+      },
+      {
+        "shot": "village-b",
+        "look": "village",
+        "lumaJsd": 0.378898743439592,
+        "rgbJsd": 0.6927826784001423,
+        "paletteDistance": 0.0961636870004677,
+        "edgeDensityOriginal": 0.18231549572424366,
+        "edgeDensityPort": 0.03855666275420988,
+        "edgeDensityRatio": 0.21148319072410451,
+        "lumaMeanDelta": 19.33184047686956
+      }
+    ],
+    "summary": {
+      "frames": 2,
+      "lumaJsd": 0.4509470713822641,
+      "rgbJsd": 0.7240621435575116,
+      "paletteDistance": 0.1001159919667279,
+      "edgeDensityOriginal": 0.17984525834191678,
+      "edgeDensityPort": 0.03557740675976717,
+      "edgeDensityRatio": 0.19763207291906706,
+      "lumaMeanDelta": 37.25572292162577
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 48,
+    "accuracy": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "pValueVsChance": 7.105427357601022e-15,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 24,
+    "byLook": {
+      "village": {
+        "valid": 48,
+        "correct": 48,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has flat box buildings, a plain dirt path and water, while B has detailed textured houses, a cobblestone road and rounded trees",
+        "B has a fully textured, stylized orange-and-black ninja, while A has a translucent, untextured placeholder-like figure",
+        "B has lanterns, mountains and soft lighting with shadows, while A has bare posts and a flat sky"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has detailed cobblestone path, textured stucco buildings and rounded trees, while B has flat sandy ground and plain box buildings",
+        "B has water, no lanterns or trees, and several ghostly blue figures instead of a single orange ninja",
+        "A has soft realistic lighting and shadows, while B has flat unlit shading with blurry low-res textures"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed cobblestone path, textured stucco buildings with tiled roofs and windows, and rounded low-poly trees, while B has a flat sand-colored path and plain box buildings",
+        "Image A has distant mountains, lanterns on posts and a fully textured, lit ninja character, while B has bare posts, water at the edges and a translucent, untextured character",
+        "Image A has soft directional lighting and shadows across the street, while B has flat lighting and no visible shadows"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.93,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings and rounded trees with lanterns; A has a flat sandy path and plain box buildings",
+        "B has a single orange-clad ninja runner; A has several translucent blue figures with an orange one",
+        "A shows open water and flat colors with no street lanterns or trees, unlike B's village street"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has flat box buildings, a plain dirt path and water instead of textured stone cobbles, windowed houses and trees",
+        "B has detailed art with lanterns, mountains, a cobblestone street and a textured orange-clad ninja, whereas A has a translucent placeholder-like figure",
+        "A has flat lighting and no shadows, while B has soft shadows and richer shading"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has detailed textured cobblestone, stucco buildings with windows, and rounded trees, while B has flat untextured box buildings and plain sand",
+        "Image A shows a village street with lanterns and a ninja in an orange outfit, while B has water, ice-blue soldier figures and no lanterns",
+        "Image A has richer lighting, shadows and haze, while B has flat, low-fidelity shading"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has flat box buildings, plain dirt path and water, while B has detailed cobblestone, windowed houses, lanterns and rounded trees",
+        "A has a translucent, low-detail character and blocky placeholder-like props, while B has a fully textured orange-clad ninja with glowing effects",
+        "B has mountains, richer lighting, shadows and haze, while A has a plain sky and flat shading"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has detailed cobblestone street, textured plaster buildings and stylized trees; B has flat sand path and plain brown box buildings",
+        "B shows water, ghostly blue figures and a different character, not a village street with lanterns",
+        "A has soft lighting, shadows and a mountain backdrop; B is flat-shaded with simple geometry"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 4,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has flat boxy buildings, a plain sandy path and water, while B has detailed stone-textured cobblestones, trees, lanterns and windowed buildings",
+        "A's character is a translucent, untextured placeholder figure, while B's is a detailed orange-clad ninja with chakra effects",
+        "B has mountains, richer lighting and shadows, and consistent art direction, while A looks like a primitive prototype"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 4,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has detailed cobblestone path, textured stucco buildings and rounded trees; Image B has flat sandy ground and plain box buildings",
+        "Image B shows water, a different environment, and multiple ghostly blue figures with an orange runner, unlike the lone ninja in A",
+        "Image A has polished lighting, soft shadows and street lanterns, while B looks low-fidelity and flat-shaded"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 5,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed cobblestone path, stylized trees, textured buildings, and mountains; Image B has flat sandy path and plain box buildings",
+        "Image A has a fully textured, orange-outfit ninja character with lanterns and lighting/shadows; Image B has a translucent, low-detail character and bare posts",
+        "Image B shows water on the horizon and simple primitive geometry, typical of a re-implementation"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 5,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed cobblestone path, textured plaster buildings with windows, and rounded trees with lanterns; A has a flat sandy path with plain brown box buildings",
+        "B's orange-clad ninja character with a chase camera versus A's pale blue ghost-like soldier figures and an orange figure",
+        "A shows an ocean and bare green strip, while B has a mountain backdrop and soft realistic lighting and shadows"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 6,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has a detailed cobblestone path, textured stucco buildings with windows, and lowpoly trees, while B has a flat sandy path with plain box buildings",
+        "A has lamp posts, mountains, and a detailed character model, while B has stubby posts, water at the edges, and a translucent character",
+        "A has soft shadows and richer lighting, while B looks flat and unshaded"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 6,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings and rounded trees, while A has flat sandy ground and plain brown box buildings",
+        "B shows a single orange-clad ninja with a lantern-lined village street, while A shows several ghostly blue figures and a water/ocean edge",
+        "B has richer lighting, shadows and a mountain backdrop, while A has flat shading and a low-detail look"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 7,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has flat box buildings, a plain dirt path and water, while B has detailed houses with windows, a cobblestone road and trees",
+        "B has a textured character, lanterns, mountains and soft lighting, while A has a washed-out, translucent character model and basic geometry",
+        "A looks like a placeholder-art reimplementation, with fence posts and no lanterns or foliage"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 7,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has detailed textured cobblestone path, stylized trees, lanterns and plastered buildings; Image B has flat sandy path and plain boxy brown buildings",
+        "Image B shows water, blocky untextured geometry and multiple ghostly blue figures, a different art direction",
+        "Image A's orange-clad ninja runner with soft lighting and mountains versus Image B's low-poly orange figure among pale clones"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 8,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed cobblestone path, textured stucco buildings with windows and orange roofs, and rounded trees, while B has a flat sandy path with plain box buildings",
+        "Image A has a fully detailed orange ninja character with glowing orbs, while B has a translucent, blocky figure",
+        "Image A shows mountains, lanterns and soft lighting with shadows, while B has water, bare posts and flat unshaded colors"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 8,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings, rounded trees and lamp posts; A has flat sandy dirt and plain brown box buildings",
+        "B shows a single orange-clad ninja runner; A shows several translucent ice-blue figures and a different character model",
+        "A has an ocean on the right and a different, simplified lighting style, while B has a village street with soft shadows and mountains"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 9,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A uses plain box buildings, a flat dirt path and water, while B has detailed cobblestone, windowed houses and rounded trees",
+        "Image A character is a translucent placeholder-looking figure, while B has a fully textured orange-and-black ninja with glowing effects",
+        "Image B has lanterns, mountains, shadows and richer lighting, which A lacks"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 9,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has detailed textured cobblestone, stylized trees, lanterns and detailed buildings; Image B has flat sandy ground, plain box buildings and water",
+        "Image A shows a single orange-clad ninja runner; Image B shows several translucent blue figures chasing an orange character",
+        "Image A has richer lighting, shadows and mountains; Image B has flat shading and a simple low-poly look"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 10,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has flat box buildings, plain dirt path and water, while B has detailed cobblestone, trees, lanterns and mountains",
+        "B has a textured, fully modeled orange-and-black ninja with glowing chakra effects, while A has a washed-out translucent placeholder figure",
+        "B has rich lighting, shadows and varied building architecture, while A has flat shading and simple fence posts"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 10,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has a detailed cobblestone street, textured plaster buildings and rounded trees, while B has flat sandy ground and plain box buildings",
+        "Image B shows a water body, blocky untextured walls and multiple pale blue ghost-like figures, which are absent in A",
+        "A has a polished, lit orange-clad ninja character, while B's character is a low-detail orange figure among translucent runners"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 11,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has a detailed cobblestone path, textured stucco buildings with windows and tiled roofs, and a mountain backdrop",
+        "B has a flat sandy path, plain box buildings, and posts instead of lanterns",
+        "B has a tinted, translucent low-detail character and water at the horizon, which A does not have"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 11,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings, rounded trees and lanterns, while A has flat sandy dirt and plain brown box buildings",
+        "B's single orange-clad ninja runner is clearly modeled, while A shows several icy-blue clone figures and a blocky orange figure",
+        "A has an ocean and a flat, low-detail look, and B has mountains and a village street with soft lighting and shadows"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 12,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has detailed cobblestone path, textured stucco buildings with windows, and low-poly trees with lantern posts, while B has a flat sandy path with plain box buildings",
+        "A has a detailed orange-clad ninja character with a glowing chakra effect, while B has a translucent, crude figure",
+        "A has mountains, soft shadows and richer lighting, while B has water at the edges, basic posts and flat shading"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 12,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.93,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings and rounded trees; A has a flat sandy path and plain brown box buildings",
+        "B has a single orange-clad ninja runner with a coherent village street; A shows multiple ghostly blue figures and an ocean",
+        "B's lighting, shadows and lanterns are polished; A is low-poly, unshaded and blurred"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 13,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has detailed cobblestone path, textured stucco buildings, rounded trees and lantern posts; B has flat sandy path and plain box buildings",
+        "A has a detailed character model with rasengan glow; B has a translucent, crude figure",
+        "A has mountains, soft lighting and shadows; B has flat lighting and water at the edges"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 13,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings and rounded trees, while A has flat sandy ground and plain wooden box buildings",
+        "B shows a single orange-clad ninja with lanterns and village architecture, while A shows several translucent blue figures and a water/grass edge",
+        "B has soft lighting with shadows and a mountain backdrop, while A is flat-shaded with no real shadows"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 14,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A has flat box buildings, a plain dirt path and no trees or lanterns, while B has detailed houses, a cobblestone road, trees and lamp posts",
+        "A's character is a translucent, untextured figure, while B's is a fully textured orange-and-black ninja with a glowing chakra effect",
+        "A has water and a bare sky, while B has distant mountains, soft lighting and shadows"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 14,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has detailed textured cobblestone, stylized trees and lamp posts, while Image B has flat sandy ground and plain box buildings",
+        "Image A's orange-clad ninja is shown from behind, whereas Image B has several pale-blue armored figures plus an orange one",
+        "Image B has open water, crude untextured geometry and no village street, so the art direction differs"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 15,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed cobblestone path, textured stucco buildings with windows, rounded trees and lanterns, while B has a flat sandy path, plain box buildings and bare posts",
+        "Image A has distant mountains, soft lighting and shadows, while B has a flat sky, water at the edges and no visible shadows",
+        "Image A's runner is a fully textured orange-and-black ninja, while B's is a translucent, untextured figure"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 15,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings, rounded trees and lanterns, while A has a flat sandy path with plain brown box buildings",
+        "B has a single orange-clad ninja with realistic shading, while A has several translucent ice-blue clone figures and a crude orange one",
+        "A has a water and grass edge with no trees or lanterns, a different setting from B's village street"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 16,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has detailed cobblestone path, textured stucco buildings, and rounded trees; B has a flat sandy path and plain box buildings",
+        "A has a detailed orange-jacketed ninja character; B has a translucent, low-detail humanoid",
+        "A has mountains, lanterns, and shaded lighting; B has bare posts, water at the edges, and flat lighting"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 16,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed cobblestone path, textured plaster buildings and rounded trees; A has flat sandy dirt and plain brown box buildings",
+        "B has a single orange-clad ninja with lanterns and village streetscape; A has several pale ghostly figures and water",
+        "B has richer lighting, shadows and mountain backdrop; A is flat-shaded with an ocean"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 17,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has a detailed cobblestone path, textured stucco buildings with windows, and rounded low-poly trees; Image B has a flat sand path with plain box buildings",
+        "Image A has a detailed orange-and-black ninja model; Image B has a translucent, crude humanoid",
+        "Image A has mountains, soft lighting, and lanterns on poles; Image B has water, plain posts, and flat lighting"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 17,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed cobblestone road, textured stucco buildings, rounded trees and lanterns, while A has a flat sandy path with plain brown box buildings",
+        "B shows a single orange-clad ninja with a lit, shaded model, while A shows several pale blue ghost-like figures and an orange one",
+        "A has water and a bare green strip with no trees or lanterns, and B has a mountain backdrop with a village street"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 18,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "A has flat box buildings, a plain dirt path and water, while B has detailed textured buildings, a cobblestone road and trees",
+        "A's character is a translucent, untextured placeholder figure, while B's is a fully textured orange ninja with a glowing hand effect",
+        "B has lanterns, mountains, and richer lighting and shadows that A lacks"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 18,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has a detailed cobblestone path, textured stucco buildings, and rounded trees, while Image B has a flat sand path with plain box buildings",
+        "Image B has water, a flat-shaded look, and ghostly blue clone figures, which don't match Image A's village street",
+        "Image A has a detailed orange-clad ninja, lanterns, and soft lighting; Image B's character and lighting look crude by comparison"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 19,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "Image A uses flat box buildings, a plain dirt path and water with no trees, while B has textured cobblestone, detailed multi-story houses, lantern posts and rounded trees",
+        "Image A's character is a washed-out translucent placeholder-like figure, while B's is a fully textured orange-and-black ninja with glowing blue effects",
+        "Image B has mountains, soft lighting and shadows; A has a flat, simple sky and lighting"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 19,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has a detailed cobblestone street, textured plaster buildings and rounded trees, while Image B has a flat sandy path with plain box buildings",
+        "Image B has water, blurry low-res rendering and ghostly blue enemy figures that are absent from A",
+        "Image A has a polished orange-clad ninja character with soft lighting and shadows, while B's characters are crude and unlit"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 20,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed cobblestone path, textured stucco buildings with tiled roofs, and rounded trees; Image B has a flat sandy path with plain box buildings",
+        "Image A has a detailed orange-clad ninja character with lighting; Image B has a translucent, crude figure",
+        "Image A has mountains, lanterns and soft shadows; Image B has water at the edges, simple posts and no real shading"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 20,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has a detailed cobblestone path, textured stucco buildings, rounded trees and lanterns, while A has flat sandy ground and plain brown box buildings",
+        "B shows a single orange-clad ninja with realistic shading, while A shows several pale translucent figures and a crude orange one",
+        "A has water, a flat green bank and no trees or lanterns, while B has a mountain backdrop and soft lighting and shadows"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 21,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.96,
+      "tells": [
+        "A uses plain box buildings, a flat sandy path and water, while B has detailed textured houses, cobblestone and sculpted trees",
+        "A's character is a translucent, untextured placeholder, while B's is a fully textured orange-suited ninja with chakra effects",
+        "B has lanterns, mountains in the distance and richer lighting and shadows, which A lacks"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 21,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "Image A has detailed cobblestone path, textured stucco buildings and rounded trees, while B has flat sandy ground and plain box buildings",
+        "Image B shows water, translucent ghost-like figures and an orange character, a different setting and art style",
+        "Image A has a polished, lit and shadowed look with a clear ninja runner, while B is low-poly and flat-shaded"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 22,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "A has a detailed cobblestone path, textured stucco buildings with windows and tiled roofs, and leafy trees; B has a flat sandy path and plain box buildings",
+        "A has a mountain backdrop with lanterns and soft lighting and shadows; B has water at the edges, simple posts and flat lighting",
+        "A has a detailed character model; B has a translucent, crude figure"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 22,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.95,
+      "tells": [
+        "B has detailed cobblestone path, textured stucco buildings with windows, rounded trees and lanterns; A has flat sandy dirt and plain brown box buildings",
+        "A shows a water/sea and plain green strip with no lanterns or trees, plus multiple ghostly blue clone figures instead of a single ninja",
+        "B has richer lighting, soft shadows and mountain-haze skyline; A is flat-shaded with low-detail primitives"
+      ],
+      "shot": "village-b"
+    },
+    {
+      "step": 0,
+      "pass": 23,
+      "look": "village",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.97,
+      "tells": [
+        "Image A has detailed cobblestone path, textured buildings, rounded trees and lanterns; Image B has a flat sandy path, plain box buildings and simple posts",
+        "Image A has a mountain backdrop, warm lighting and soft shadows; Image B has a flat sky with water at the edges and no shadows",
+        "Image A's character is a fully textured ninja with a glowing effect; Image B's is a translucent, untextured figure"
+      ],
+      "shot": "village-a"
+    },
+    {
+      "step": 1,
+      "pass": 23,
+      "look": "village",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.97,
+      "originalConfidence": 0.93,
+      "tells": [
+        "B has detailed cobblestone path, textured plaster buildings, rounded trees and lanterns; A has flat sandy path and plain brown box buildings",
+        "A shows several translucent ghost-like runner figures and an ocean/grass edge, absent from B's village street",
+        "B has soft lighting, shadows and a distant mountain haze; A has flat unlit shading"
+      ],
+      "shot": "village-b"
+    }
+  ]
+}

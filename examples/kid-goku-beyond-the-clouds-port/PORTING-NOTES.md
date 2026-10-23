@@ -19,26 +19,34 @@ the frame wrapper (`dt` clamp, `score += speed·dt·0.6`) and the seeded obstacl
 gravity, the log dismount, Power Pole plant / vault / launch / perfect, gap and river falls, Dragon Ball and meat pickups, combo and score,
 checkpoints, the finish, and the whole Nimbus state machine with its safe-run map. No randomness and no wall clock: only `dt` and the input.
 
-## What is NOT ported
+## Art and features added after the simulation port (the "Cloud Runner" pass)
 
-- The encounter system (`FT`/`Lw`): creature attack timing and dives, boulders, Janken. The original asks it through `state.liveAttack`;
-  the port leaves that seam open (attacks always live) and has no creature or boulder events. Ordinary obstacles (rocks and logs) ARE
-  ported (`worldPass`: crash or clean pass, damage, hearts) and their seeded layout equals the original's. The orb magnet while riding the
-  Nimbus is not ported.
-- Verified horizon: the recorded run (800 steps, s 0 to ~190: the log, the 45/76 rocks, the seeded obstacles, orbs, the 150-160 gap
-  jump, Dragon Ball 1, checkpoint 172). Nothing past the first boulder (s=215) has been compared against the original.
-- Chapters other than 0 (the bundle defines one), the finale, the journal and menu UI, comic callouts, audio, touch controls, save data.
-- Art and characters: the road, cliff, river, balls and meat are procedural stand-ins; the hero is a capsule on an ellipsoid cloud. Cameras
-  are a simplified chase rig (the original has ~10 cinematic camera modes).
+The simulation (`sim.ts`, `chapter.ts`) is unchanged for the verified first 800 steps; every addition sits beside it:
+
+- `encounters.ts`: the encounter controller (`Lw` in the original): rolling boulders with their warning zones, pteranodon dives with shadow
+  targeting, the T-rex bite and tail-swipe gauntlet, staff strikes (`knockout`), `rewind` after a respawn, and the `liveAttack` seam.
+- `game.ts`: the main-loop order of the original (`SD`): rock-paper-scissors duel clock (`tickJanken`), hit-stop and slow-motion, sim step,
+  encounter events (`PE`/`LE`/`FE`), obstacle and orb pass with the Nimbus orb magnet, falls and respawns (a charged cloud rescues a fall),
+  the finale, results and persistence. Additive sim exports: `rescue`, `knockOff`, `startJanken`, `tickJanken`, `jankenAllowed`, `collectOrb`.
+- Render: `world.ts` (+ `terrain.ts`, `props.ts`, `creatures.ts`, `mesh.ts`, `shaders.ts`, `materials.ts`, `fx.ts`): lit sandstone canyon and
+  rolling meadows lofted from the course data, textured PBR track and grass (CC0 ambientCG, regraded), banded cliff walls, merged foliage,
+  mesas and cloud banks, valley forest, a sky dome with lit cumulus and hazy ridges, a rigged CC0 KayKit runner (clip-driven), the sky cloud,
+  star orbs, pterosaur and tyrant lizard, boulders, warning decals, pooled glow/dust particles, bloom + grade + vignette.
+- `ui.ts`, `audio.ts`: DOM title, HUD, prompts, duel banner, pause, results, touch controls; procedural Web Audio (no samples).
+- Persistence: best score and sound setting in `localStorage` (`cloud-runner.v1`).
+
+## What is still NOT ported
+
+- Meshy-generated creatures and hero: not generated (Meshy needs an approved credit maximum). The creatures are original procedural meshes;
+  the hero is a catalog model, not a copy of the original's character.
+- The original's painterly gouache post stack, comic callout art, ten cinematic camera modes, level select, journal and chapters other than 0
+  (the bundle defines one), and the finale cutscene's own staging (a short walk-home sequence stands in).
+- The simulation beyond the verified horizon (s ~190) is a faithful translation but has not been compared to the original beyond that
+  point; the encounter layer was written from the original's controller and has unit tests, not a recorded reference.
 
 ## Engine surfaces used
 
-`geometry.custom(geometry.dynamic(...))` ribbons (SG-05), `primitives.cylinder/sphere/capsule`, `material.pbr/emissive`, node handles
-(`setPosition`, `setVisible`), `app.camera.setPose`. No `@aura3d/rendering` internals; no `TODO(a3d-migrate)`. Nothing here needed a
-new engine capability; the original's 30 live ShaderMaterials (painterly gouache look, clouds, water, foliage) are the part that would, and
-they are not ported.
-
-## Hooks
-
-`window.__AURA_KID_GOKU__`: `snapshot()` (same fields as the original's `__CLOUD_RUNNER__.snapshot()` where they overlap), `stepFrames(n,
-input)`, `replay(segments)`, `reset()`, `pixels()`, `frame()`, `routeHealth()`, `diagnostics()`. `?manual=1` stops the real-time loop.
+`geometry.custom(geometry.dynamic(...))` merged meshes and ribbons, `material.pbr` (maps, normal maps), `material.custom` (sky, valley,
+water, orb, scenery, decals, pooled points with per-frame `updateAttribute`), `model` + `node.play` skeletal clips, `looks.preset`,
+`lights.directional` with cascaded shadows, `effects.fog/bloom/colorGrade/vignette`, `defineAuraAssets` with manifest hashes and same-origin
+pathnames (the production bridge refuses `http(s)` model URLs and hash-less models), `app.camera.setPose`. No `@aura3d/rendering` internals.

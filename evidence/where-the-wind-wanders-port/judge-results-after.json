@@ -1,0 +1,835 @@
+{
+  "schema": "a3d-wind-blind-judge/1",
+  "label": "after",
+  "generatedAt": "2026-10-23T11:28:14.959Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 12,
+    "pairs": [
+      "start=start",
+      "step-306=replay-306",
+      "step-700=replay-700",
+      "step-1172=replay-1172"
+    ],
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "imageSize": "640x360"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D exploration game in which a small traveller walks through a meadow valley, labelled Image A and Image B. Both are taken at the same moment of the same recorded run (the traveller is at the same place in the valley), with the on-screen HUD hidden. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, ground, grass and flowers, trees, buildings, water, lighting, the traveller and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "pair": "start",
+        "lumaJsd": 0.04303648574219148,
+        "rgbJsd": 0.5344858191722485,
+        "paletteDistance": 0.09875808287849863,
+        "edgeDensityOriginal": 0.4345852086653474,
+        "edgeDensityPort": 0.2305782735854013,
+        "edgeDensityRatio": 0.5305709190920905,
+        "lumaMeanDelta": 7.065964003464842
+      },
+      {
+        "pair": "step-306",
+        "lumaJsd": 0.049143302717808694,
+        "rgbJsd": 0.5928385189813591,
+        "paletteDistance": 0.12915162665977334,
+        "edgeDensityOriginal": 0.42765012871928687,
+        "edgeDensityPort": 0.20780284058072537,
+        "edgeDensityRatio": 0.4859178721705212,
+        "lumaMeanDelta": 3.4781270494770524
+      },
+      {
+        "pair": "step-700",
+        "lumaJsd": 0.0684716553458892,
+        "rgbJsd": 0.560703745679426,
+        "paletteDistance": 0.12928339441125886,
+        "edgeDensityOriginal": 0.382935500253936,
+        "edgeDensityPort": 0.23151520989124533,
+        "edgeDensityRatio": 0.6045801701271379,
+        "lumaMeanDelta": -0.0929822986051363
+      },
+      {
+        "pair": "step-1172",
+        "lumaJsd": 0.0774982676455636,
+        "rgbJsd": 0.52957939666023,
+        "paletteDistance": 0.09380176779318594,
+        "edgeDensityOriginal": 0.3443941437102678,
+        "edgeDensityPort": 0.1727859407015639,
+        "edgeDensityRatio": 0.5017098689312366,
+        "lumaMeanDelta": -0.036153471342657895
+      }
+    ],
+    "summary": {
+      "frames": 4,
+      "lumaJsd": 0.05953742786286324,
+      "rgbJsd": 0.5544018701233159,
+      "paletteDistance": 0.1127487179356792,
+      "edgeDensityRatio": 0.5306947075802466,
+      "lumaMeanDelta": 2.603738820748525
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 48,
+    "accuracy": 1,
+    "ci95": [
+      0.9258973488472576,
+      0.9999999999999999
+    ],
+    "pValueVsChance": 7.105427357601022e-15,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 24,
+    "byLook": {
+      "start": {
+        "valid": 12,
+        "correct": 12,
+        "accuracy": 1
+      },
+      "step-306": {
+        "valid": 12,
+        "correct": 12,
+        "accuracy": 1
+      },
+      "step-700": {
+        "valid": 12,
+        "correct": 12,
+        "accuracy": 1
+      },
+      "step-1172": {
+        "valid": 12,
+        "correct": 12,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image B has detailed, painterly textures: ivy-covered house, gnarled tree bark, dense grass and flowers",
+        "Image A is low-poly and flat-shaded, with simplified cone trees and a blocky traveller with a red hat",
+        "Image B has a dirt path network, a distant forested hill and atmospheric haze that A lacks"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has detailed painterly textures, with a gnarled, ivy-covered tree and a richly textured cottage",
+        "Image A is flat-shaded low-poly with simple cone trees and smooth blobby shrubs",
+        "Image A has a different camera angle and framing, a bright flat sky and a close blue lake, versus B's hazy distant hills and a path through the meadow"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "look": "step-700",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B uses flat low-poly shapes and simple textures, where A has detailed painterly textures",
+        "B's camera is lower and closer, with a different framing of the house and windmill",
+        "A has a layered forested hillside and dense hand-painted grass, while B has sparse stylized trees and a flat green backdrop"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has detailed painterly textures, a rich stone and timber windmill, a sailboat and a forested mountain backdrop",
+        "B has flat low-poly blob trees, a simplified windmill and a washed-out pastel palette",
+        "B's grass and flower density and its camera framing differ, and it lacks A's winding stream and bushes"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "start",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.93,
+      "tells": [
+        "A has painterly, richly textured foliage, ivy-covered house and detailed bark, while B is low-poly and flat-shaded",
+        "A uses a distant camera with a tiny traveller; B has a close camera with a large gnome-hatted traveller",
+        "A has a dense hill and forest backdrop with a dirt path; B has simple rounded trees and a plain lake"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.88,
+      "tells": [
+        "A has flat low-poly, simplified toon shapes, B has detailed painterly textures",
+        "Different camera angle and framing: A is a low close view, B is a higher, wider view with a path",
+        "Different vegetation and lighting: A has bright saturated flat grass and cone pines, B has rich berry bushes, a detailed gnarled tree and a hazy sky"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 1,
+      "look": "step-700",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has painterly, detailed textures: weathered stone windmill, ivy-covered cottage, dense forested hills",
+        "B has flat low-poly stylized shapes: simple lollipop trees, plain orange roof, smooth blocky windmill",
+        "Different camera angle and framing: A is a distant, high view with a winding stream; B is a close, low view with a wide lake"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "look": "step-1172",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image A uses flat, low-poly blobby trees and a simplified stylized windmill, while B has detailed textured stone and wood",
+        "Image B has richer painterly lighting, volumetric clouds, a sailboat and a winding stream with detailed foliage",
+        "Image A has a hazy flat pastel palette and a different camera angle and framing"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image B has detailed, textured foliage, a vine-covered house, and a worn dirt path, while A is flat low-poly and simplified",
+        "Image B has painterly depth-of-field, atmospheric haze and layered forested hills, versus A's flat blocky trees and plain horizon",
+        "The traveller in A is a large billboard-like figure with a red cone hat, while B's is small and orange-robed"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "Image B has detailed, painterly textures, an ivy-covered cottage and a gnarled, textured oak",
+        "Image A has flat low-poly stylized trees, simple houses and a cartoonish look",
+        "The camera, lighting and terrain layout differ, with A showing a lake and B showing a path and berry bushes"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 2,
+      "look": "step-700",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has painterly, detailed textures with a richly rendered cottage and windmill, B has flat low-poly stylized shapes",
+        "A has a distant forested hills backdrop with atmospheric depth, B has a flat green plain and simplified tree clumps",
+        "A's camera is a distant, elevated view of a small traveller on a path, B is a close third-person view with saturated, soft lighting"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 2,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image A has detailed, painterly textures: a wooden windmill with stone base, ivy-covered cottage, and a sailboat on the water",
+        "Image B has simplified low-poly blobby trees, a flat pastel palette, and a smooth plain windmill tower",
+        "Image B has a different scene layout and camera framing, and Image A's richer depth and atmospheric haze look more like a polished shipped title"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed painterly textures, with ivy on the house and a gnarled tree trunk, while A is low-poly and flat-shaded",
+        "B has a dirt path network and richly detailed grass with bushes, while A has simple blobby foliage",
+        "A's traveller has a red pointed hat and a stylized look, while B's traveller is smaller, in orange, with different proportions and camera framing"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "Image A has flat low-poly shapes with simple cartoon trees and a plain blue lake, while B has a detailed painterly tree with textured bark and foliage",
+        "B has richer atmospheric lighting, hills, a cottage with ivy and dormer details, and a stone path, none of which are in A",
+        "A's traveller is a small figure with a red cone hat, while B's traveller is in an orange robe, and the camera framing and composition differ"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 3,
+      "look": "step-700",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.75,
+      "originalConfidence": 0.68,
+      "tells": [
+        "A has detailed painterly textures (ivy on the house, tiled roof, forested hills), while B is simplified low-poly",
+        "B's trees, house and grass are flat and procedural-looking, with a tall camera angle",
+        "A has a lighter, hazy atmosphere and a path with a stream, which B lacks"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 3,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has detailed painterly textures, a stone-and-wood windmill, a sailboat and rich shrubs, while B is low-poly and flat",
+        "B has blobby yellow-green lollipop trees, a plain pale windmill base and a smooth flat sky",
+        "A has a winding stream, dense pine forested hills and a deep, realistic lighting palette, while B is washed-out and pastel"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 4,
+      "look": "start",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "A has painterly, richly detailed textures (ivy-covered tree, shingled roof, dense foliage)",
+        "B uses flat low-poly shapes with simple colours and a closer, lower camera",
+        "B's traveller is large with a red pointed hat, while A's is tiny and distant"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 4,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image B has detailed, painterly textures, a gnarled tree, and a richly detailed cottage, while A is flat, low-poly and cartoonish",
+        "Different camera angle and framing: B is a wide, high view along a dirt path, while A is a close, low view with a large tree trunk",
+        "Different vegetation and palette: B has dense round berry bushes and a warm, hazy sky, while A has stylized grass tufts, flat cone pines and a bright cyan lake"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 4,
+      "look": "step-700",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "A has flat, low-poly stylized shapes with simple colors, B has detailed painterly textures on the cottage and windmill",
+        "B has richer grass, shrub and foliage detail, forested hills and layered depth, while A has a blocky windmill and sparse background",
+        "A is more saturated and hazy with simplified cartoon trees, B has a more naturalistic lighting and sky"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 4,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "Image A has detailed textured windmill, cottage and boat with painterly lighting, while B uses flat low-poly shapes",
+        "B has blobby yellow-green lollipop trees and a simplified pale stone base, unlike A's detailed conifers and berry bushes",
+        "B has a different camera framing, pastel washed-out palette and a less detailed distant hill backdrop"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 5,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image B has detailed, textured foliage, a path network and ivy-covered buildings, while A is low-poly and flat-shaded",
+        "Image B's camera is farther back and the lighting is richer, with soft atmospheric depth",
+        "Image A's traveller is a simplified figure with a red pointed hat, and its scene has a different layout with the windmill and house placed differently"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 5,
+      "look": "step-306",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.9,
+      "tells": [
+        "A has painterly, richly detailed textures: gnarled oak, dense berry bushes, and layered hills",
+        "B uses flat low-poly, simplified geometry, such as a smooth trunk, cone trees and blocky house",
+        "B has a brighter, washed-out palette and a different camera angle and framing"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 5,
+      "look": "step-700",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has detailed textured stone windmill, ivy-covered cottage and dense realistic grass with painterly lighting",
+        "Image A has flat, simplified low-poly houses, blocky tree canopies and a plain stylized windmill",
+        "Image A has a saturated, bright color palette with a flat water plane and no paths, while B has winding dirt paths and a stream"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 5,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has detailed, painterly textures: wooden windmill, stone base, ivy-covered roof, sailboat",
+        "B uses flat low-poly blobby trees and simplified windmill and house geometry",
+        "B has a washed-out pastel palette and a different camera framing, with no winding stream or rich shrubs"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 6,
+      "look": "start",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.88,
+      "tells": [
+        "A has painterly, richly detailed textures with dense grass and ivy-covered cottage, while B is low-poly and flat-shaded",
+        "B's camera is much closer to the traveller, and the traveller is larger and cartoonish with a red hat",
+        "B's trees, windmill and foliage are simplified geometric shapes, with different water and sky rendering"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 6,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "Image A uses flat low-poly, simplified geometry with a cartoon palette, while B has detailed painterly textures",
+        "B has a richly detailed gnarled tree, a house with ivy and a dormer window, and a dirt path, none of which appear in A",
+        "B has more natural, atmospheric lighting and distant forested hills, while A has a flat sky and a mid-ground lake"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 6,
+      "look": "step-700",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has detailed textured stone windmill and ivy-covered cottage with dense, painterly foliage and forested hills",
+        "Image A has flat, low-poly stylized shapes, simplified boxy house, and lollipop trees with a uniform bright palette",
+        "Image B has winding paths, a stream, and richer atmospheric lighting that A lacks"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 6,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "Image A has detailed, painterly textures, a stone-based windmill with a wooden tower, and a sailboat on the water",
+        "Image B has a flat, low-poly style with blobby pastel trees and a plain smooth windmill",
+        "Image B has washed-out lighting, a flat sky and a different layout, with no winding stream and no distant forested hills"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 7,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed, painterly textures: ivy-covered house, gnarled bark, dense grass and bushes",
+        "A is low-poly and flat-shaded with simplified cone trees and a blocky traveller",
+        "Camera and composition differ: A is close with a big foreground tree trunk, B is wider with visible dirt paths"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 7,
+      "look": "step-306",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has painterly, detailed textures with dense grass and a richly gnarled tree, while B uses low-poly flat-shaded geometry",
+        "A has a hazy, atmospheric painted backdrop of forested hills, B has a flat pale distant treeline",
+        "B has a different camera angle and a more cartoonish, saturated look, with a stylised traveller and simplified foliage"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 7,
+      "look": "step-700",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has a painterly, detailed look with textured stone and wood on the windmill and cottage, and dense forested hills",
+        "B has flat, simplified low-poly stylization with plain colors and a stylized lollipop-like tree",
+        "B has a different camera angle and framing, a more saturated palette, and a plain flat-colored cottage and water"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 7,
+      "look": "step-1172",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image A uses flat, low-poly stylized blobs with soft pastel colors, while B has detailed painterly textures and richer lighting",
+        "Windmill and cottage in B have detailed stone, wood and ivy textures, while A's are simplified and smooth",
+        "B has a dramatic cloudy sky, a sailboat and a winding stream, none of which appear in A"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 8,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed, painterly textures (ivy on the house, gnarled bark, dense grass), while A is flat low-poly",
+        "A has a simplified blocky traveller and trees, with a different camera angle and a lower, closer view",
+        "B has paths, a layered distant forest and a hazy atmospheric sky, while A has a plain flat sky and a simple blue lake"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 8,
+      "look": "step-306",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has painterly, richly detailed textures (gnarled oak, dense grass, ivy-covered cottage), while B uses flat low-poly shapes",
+        "A shows hazy forested hills and warm atmospheric lighting, while B has a bright flat-colored lake and a pale sky",
+        "The traveller and camera framing differ: A is a distant view with a long path, while B is a close third-person view with a pointed red hat"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 8,
+      "look": "step-700",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "A has flat, low-poly stylized shapes with a simplified box house and a hazy pale sky, while B has detailed textured stone, timber and ivy on the house and windmill",
+        "B has richer lighting, a blue sky with volumetric clouds and dense forested hills; A has a flat meadow backdrop with sparse cartoon trees",
+        "B has dirt paths, a stream and dense grass with berry bushes, whereas A has a lumpy cartoon meadow with no visible paths"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 8,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has detailed textured windmill, cottage and painterly foliage; B uses flat low-poly blobs and simple geometry",
+        "A has dense shrubs, a winding stream, a sailboat and a forested hill backdrop; B has a flat lake and sparse distant trees",
+        "A has rich, realistic lighting and depth; B has washed-out, flat pastel shading"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 9,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image B has detailed painterly textures: ivy-covered house, gnarled bark, dense grass and bushes with paths",
+        "Image A uses flat low-poly shapes with simple stylized trees, a plain red-orange roof and a close, low camera",
+        "Image A's traveller is a distinct gnome-like figure in a pointed red hat; B's is a small orange-robed figure seen from further away"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 9,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "Image B has detailed painterly textures, ivy on the house and a gnarled, richly textured tree",
+        "Image A has flat low-poly shapes, simple cone trees and a smooth blocky house",
+        "Different camera framing and lighting: A has a low, close view with a pale hazy sky, while B has a wider view with bold blue sky and clouds"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 9,
+      "look": "step-700",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.72,
+      "tells": [
+        "A has detailed painterly textures on the house, windmill and foliage; B is flat low-poly",
+        "A has paths, a winding stream and dense layered grass; B has a plain lake and simpler vegetation",
+        "Traveller, tree shapes and colour grading differ (B is bright, saturated and cartoonish)"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 9,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.88,
+      "tells": [
+        "Image A has detailed, painterly textures: stone-and-timber windmill, ivy on the cottage, a sailboat and a winding stream",
+        "Image B uses flat low-poly blob trees, a plain pale windmill and a simplified cottage, with a washed-out pastel palette",
+        "Image A has dense flowering shrubs and a rich forested mountain backdrop, while Image B has sparse stylized grass and a hazy flat horizon"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 10,
+      "look": "start",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed, painterly textures: ivy-covered house, gnarled bark, dense grass and flowers, while A is flat, low-poly and cartoonish",
+        "A has a different layout: wide lake in the middle, tall conifers and a pale yellow blobby tree, where B has a dirt path, fenced fields and a distant forested hill",
+        "A's traveller is a gnome-like figure with a red hat, while B's is a smaller figure in orange, and the lighting, color grading and camera framing differ"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 10,
+      "look": "step-306",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has painterly, richly textured oak, grass and foliage; B has flat low-poly stylised trees",
+        "A has a detailed hazy mountain/forest backdrop; B has a flat pale distant horizon and a plain blue lake",
+        "Different traveller design and camera framing, with a lower, wider view in A versus a closer, higher view in B"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 10,
+      "look": "step-700",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has richer, painterly detail: textured stone windmill, ivy-covered cottage, dense forested hills",
+        "Image A looks flat and stylized, with simple low-poly trees, a plain box house, and a wooden windmill",
+        "Image A has a different overall palette, a hazy sky, and a camera angle that differs from Image B"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 10,
+      "look": "step-1172",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has detailed, painterly textures: stone-and-timber windmill, shingled roof, boat on water",
+        "B uses flat low-poly blobby trees and a smooth, plain windmill tower",
+        "B has a different layout and camera, with a pale washed-out palette and no winding stream"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 11,
+      "look": "start",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.92,
+      "tells": [
+        "A has painterly, richly detailed textures with a dense, realistic meadow and ivy-covered buildings, while B is low-poly and flat-shaded",
+        "Camera in A is farther back and higher, with a tiny traveller, while B is a close third-person view with a large gnome-hat traveller",
+        "B has simplified geometric trees, a flat blue lake, and a plain cottage with none of A's weathered detail"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 11,
+      "look": "step-306",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.9,
+      "tells": [
+        "Image B has richly textured, painterly trees, house and windmill, while A is flat low-poly and cartoonish",
+        "Image A has a saturated, simplified palette and a lower camera angle, unlike B's high-detail, hazy lighting",
+        "Different ground cover: A has dense grass with white flowers, B has round berry bushes and a visible dirt path"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 11,
+      "look": "step-700",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.75,
+      "tells": [
+        "A has detailed painterly textures on the house, windmill and grass, while B uses flat low-poly primitives",
+        "B's trees are simple cones and blobby spheres, and its water and sky are plain",
+        "A's distant forested hills and camera framing differ from B's flat green backdrop and closer, higher camera"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 11,
+      "look": "step-1172",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image A has flat, low-poly blobby trees and a simplified windmill, while B has detailed textured stonework and wood",
+        "B has richer lighting, a cloudy sky, a sailboat and a winding stream, which A lacks",
+        "A has a washed-out pastel palette and a lower camera, unlike B's higher, more painterly view"
+      ]
+    }
+  ]
+}

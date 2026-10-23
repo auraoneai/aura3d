@@ -1,0 +1,6098 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "kid-goku-beyond-the-clouds",
+  "sources": [
+    {
+      "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-0.mjs",
+      "bytes": 13705,
+      "lines": 6,
+      "singleLine": false,
+      "hash": "23a793435669279e"
+    },
+    {
+      "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-1.mjs",
+      "bytes": 2229,
+      "lines": 1,
+      "singleLine": false,
+      "hash": "06b3173aca757578"
+    },
+    {
+      "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-2.mjs",
+      "bytes": 35290,
+      "lines": 1,
+      "singleLine": true,
+      "hash": "9845eb1d11e6e934"
+    },
+    {
+      "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/inline-1.js",
+      "bytes": 79,
+      "lines": 1,
+      "singleLine": false,
+      "hash": "03b5b8280a7406db"
+    },
+    {
+      "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/inline-2.js",
+      "bytes": 153,
+      "lines": 1,
+      "singleLine": false,
+      "hash": "190414a528c7d315"
+    },
+    {
+      "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/inline-3.js",
+      "bytes": 30,
+      "lines": 1,
+      "singleLine": false,
+      "hash": "3af5355c12f997fb"
+    },
+    {
+      "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+      "bytes": 1278835,
+      "lines": 5904,
+      "singleLine": false,
+      "hash": "ae4e3ff28a96925e"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "level-select",
+      "hits": 82,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 40885,
+          "offset": 235452
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 42013,
+          "offset": 236580
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 42237,
+          "offset": 236804
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 78,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 27217,
+          "offset": 221784
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 55000,
+          "offset": 249567
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 58346,
+          "offset": 252913
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 49,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 10466,
+          "offset": 205033
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 11534,
+          "offset": 206101
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 12401,
+          "offset": 206968
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 42,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-0.mjs",
+          "line": 4,
+          "col": 300,
+          "offset": 13565
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 30549,
+          "offset": 30548
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4053,
+          "col": 443,
+          "offset": 479217
+        }
+      ]
+    },
+    {
+      "screen": "settings",
+      "hits": 40,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 41775,
+          "offset": 41774
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 42064,
+          "offset": 42063
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 180930,
+          "offset": 180929
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 39,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 54969,
+          "offset": 249536
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 55205,
+          "offset": 249772
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 55354,
+          "offset": 249921
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 32,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 9490,
+          "offset": 1082772
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 14417,
+          "offset": 1087699
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 16069,
+          "offset": 1089351
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 31,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-0.mjs",
+          "line": 3,
+          "col": 41,
+          "offset": 268
+        },
+        {
+          "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-2.mjs",
+          "line": 1,
+          "col": 34689,
+          "offset": 34688
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4312,
+          "col": 14220,
+          "offset": 638372
+        }
+      ]
+    },
+    {
+      "screen": "checkpoint",
+      "hits": 24,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-2.mjs",
+          "line": 1,
+          "col": 34147,
+          "offset": 34146
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4312,
+          "col": 5771,
+          "offset": 629923
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4312,
+          "col": 5941,
+          "offset": 630093
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 23,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5661,
+          "col": 5641,
+          "offset": 1007535
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5661,
+          "col": 5656,
+          "offset": 1007550
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 8610,
+          "offset": 1081892
+        }
+      ]
+    },
+    {
+      "screen": "game-over",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4312,
+          "col": 5867,
+          "offset": 630019
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 31571,
+          "offset": 1256823
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 31692,
+          "offset": 1256944
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 130108,
+          "offset": 1203390
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 130734,
+          "offset": 1204016
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 132216,
+          "offset": 1205498
+        }
+      ]
+    },
+    {
+      "screen": "leaderboard",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 129495,
+          "offset": 1202777
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 7241,
+        "offset": 7240
+      },
+      "cases": [
+        "XYX",
+        "YZY",
+        "ZXZ",
+        "XZX",
+        "YXY",
+        "ZYZ"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 13469,
+        "offset": 13468
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 54522,
+        "offset": 54521
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 75260,
+        "offset": 75259
+      },
+      "cases": [
+        "rgb",
+        "rgba",
+        "hsl",
+        "hsla"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5,
+        "col": 21891,
+        "offset": 216458
+      },
+      "cases": [
+        "scalar",
+        "double",
+        "float",
+        "number",
+        "integer",
+        "vector",
+        "vector2",
+        "vector3",
+        "vector4",
+        "color",
+        "quaternion",
+        "bool",
+        "boolean",
+        "string"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5,
+        "col": 26108,
+        "offset": 220675
+      },
+      "cases": [
+        "arraybuffer",
+        "blob",
+        "document",
+        "json"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4053,
+        "col": 14318,
+        "offset": 493092
+      },
+      "cases": [
+        "DirectionalLight",
+        "SpotLight",
+        "PointLight",
+        "HemisphereLight",
+        "RectAreaLight"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 49926,
+        "offset": 674078
+      },
+      "cases": [
+        "scene",
+        "node",
+        "mesh",
+        "accessor",
+        "bufferView",
+        "buffer",
+        "material",
+        "texture",
+        "skin",
+        "animation",
+        "camera"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4550,
+        "col": 6079,
+        "offset": 757452
+      },
+      "cases": [
+        "terrace",
+        "hill",
+        "meadow",
+        "cliff",
+        "drop",
+        "gorge",
+        "terraces",
+        "plateau",
+        "bank"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5832,
+        "col": 6092,
+        "offset": 1069910
+      },
+      "cases": [
+        "smile",
+        "set",
+        "open",
+        "grin",
+        "talk",
+        "shout",
+        "teeth",
+        "scream",
+        "ow",
+        "chew",
+        "wobble"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 116757,
+        "offset": 1190039
+      },
+      "cases": [
+        "eyecatch",
+        "resume",
+        "nimbusReady",
+        "kintoun",
+        "ball",
+        "perfect",
+        "arrive",
+        "fanfare",
+        "fail",
+        "jan",
+        "ken",
+        "guu",
+        "choki",
+        "paa",
+        "flyby"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5904,
+        "col": 28927,
+        "offset": 1254179
+      },
+      "cases": [
+        "rumble",
+        "boulder-hit",
+        "close-call",
+        "screech",
+        "ptera-struck",
+        "ptera-grab",
+        "dodge",
+        "stomp",
+        "trex-roar",
+        "trex-struck",
+        "trex-bite",
+        "trex-swipe",
+        "trex-flee"
+      ]
+    }
+  ],
+  "domIds": [
+    {
+      "id": "hud",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 2977,
+        "offset": 961544
+      }
+    },
+    {
+      "id": "touch",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 3144,
+        "offset": 961711
+      }
+    },
+    {
+      "id": "callout",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 3676,
+        "offset": 962243
+      }
+    },
+    {
+      "id": "toast",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 5537,
+        "offset": 964104
+      }
+    },
+    {
+      "id": "cutin",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 7508,
+        "offset": 966075
+      }
+    },
+    {
+      "id": "ball-count",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 34180,
+        "offset": 1107462
+      }
+    },
+    {
+      "id": "loading",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 100358,
+        "offset": 1173640
+      }
+    },
+    {
+      "id": "game",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 121360,
+        "offset": 1194642
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "ArrowDown",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45215,
+          "offset": 1270467
+        }
+      },
+      {
+        "key": "ArrowLeft",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45180,
+          "offset": 1270432
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45192,
+          "offset": 1270444
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45205,
+          "offset": 1270457
+        }
+      },
+      {
+        "key": "Space",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45227,
+          "offset": 1270479
+        }
+      },
+      {
+        "key": "Escape",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45282,
+          "offset": 1270534
+        }
+      },
+      {
+        "key": "KeyA",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 46314,
+          "offset": 1271566
+        }
+      },
+      {
+        "key": "KeyD",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 46272,
+          "offset": 1271524
+        }
+      },
+      {
+        "key": "KeyE",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45435,
+          "offset": 1270687
+        }
+      },
+      {
+        "key": "KeyP",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45301,
+          "offset": 1270553
+        }
+      },
+      {
+        "key": "KeyQ",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45489,
+          "offset": 1270741
+        }
+      },
+      {
+        "key": "KeyS",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 46370,
+          "offset": 1271622
+        }
+      },
+      {
+        "key": "KeyX",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45452,
+          "offset": 1270704
+        }
+      },
+      {
+        "key": "ShiftLeft",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45506,
+          "offset": 1270758
+        }
+      },
+      {
+        "key": "ShiftRight",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45528,
+          "offset": 1270780
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "dispose",
+        "hits": 12,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 3956,
+          "col": 836,
+          "offset": 444962
+        }
+      },
+      {
+        "event": "click",
+        "hits": 5,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 48475,
+          "offset": 1121757
+        }
+      },
+      {
+        "event": "error",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 27886,
+          "offset": 222453
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 4,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 2175,
+          "offset": 2174
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 56611,
+          "offset": 1129893
+        }
+      },
+      {
+        "event": "visibilitychange",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 43394,
+          "offset": 237961
+        }
+      },
+      {
+        "event": "keydown",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 9334,
+          "offset": 1234586
+        }
+      },
+      {
+        "event": "load",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5,
+          "col": 27854,
+          "offset": 222421
+        }
+      },
+      {
+        "event": "webglcontextlost",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 23540,
+          "offset": 576039
+        }
+      },
+      {
+        "event": "blur",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45062,
+          "offset": 1270314
+        }
+      },
+      {
+        "event": "end",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2951,
+          "offset": 555450
+        }
+      },
+      {
+        "event": "fullscreenchange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 2249,
+          "offset": 2248
+        }
+      },
+      {
+        "event": "goku-cutin",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 53953,
+          "offset": 1127235
+        }
+      },
+      {
+        "event": "goku-cutin-end",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 54588,
+          "offset": 1127870
+        }
+      },
+      {
+        "event": "inputsourceschange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2980,
+          "offset": 555479
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 45566,
+          "offset": 1270818
+        }
+      },
+      {
+        "event": "kidgoku:event",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 99645,
+          "offset": 1172927
+        }
+      },
+      {
+        "event": "pointermove",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 56827,
+          "offset": 1130109
+        }
+      },
+      {
+        "event": "select",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2746,
+          "offset": 555245
+        }
+      },
+      {
+        "event": "selectend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2813,
+          "offset": 555312
+        }
+      },
+      {
+        "event": "selectstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2777,
+          "offset": 555276
+        }
+      },
+      {
+        "event": "sessionend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 31450,
+          "offset": 583949
+        }
+      },
+      {
+        "event": "sessionstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 31411,
+          "offset": 583910
+        }
+      },
+      {
+        "event": "squeeze",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2847,
+          "offset": 555346
+        }
+      },
+      {
+        "event": "squeezeend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2916,
+          "offset": 555415
+        }
+      },
+      {
+        "event": "squeezestart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 2879,
+          "offset": 555378
+        }
+      },
+      {
+        "event": "touchstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5904,
+          "col": 18239,
+          "offset": 1243491
+        }
+      },
+      {
+        "event": "webglcontextcreationerror",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 23634,
+          "offset": 576133
+        }
+      },
+      {
+        "event": "webglcontextrestored",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4104,
+          "col": 23585,
+          "offset": 576084
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 42,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 101549,
+          "offset": 1174831
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 26,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 101669,
+          "offset": 1174951
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 20,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 101091,
+          "offset": 1174373
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 10,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 108243,
+          "offset": 1181525
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 8,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 103618,
+          "offset": 1176900
+        }
+      },
+      {
+        "api": "linearRampToValueAtTime",
+        "hits": 6,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 108276,
+          "offset": 1181558
+        }
+      },
+      {
+        "api": "createStereoPanner",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 105183,
+          "offset": 1178465
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 109950,
+          "offset": 1183232
+        }
+      },
+      {
+        "api": "createConvolver",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 101940,
+          "offset": 1175222
+        }
+      },
+      {
+        "api": "createDynamicsCompressor",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 101638,
+          "offset": 1174920
+        }
+      },
+      {
+        "api": "decodeAudioData",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 107120,
+          "offset": 1180402
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 101245,
+          "offset": 1174527
+        }
+      },
+      {
+        "api": "webkitAudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 101266,
+          "offset": 1174548
+        }
+      }
+    ],
+    "urls": [
+      {
+        "path": "/assets/audio/foley.mp3",
+        "loc": {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5839,
+          "col": 143233,
+          "offset": 1216515
+        }
+      }
+    ],
+    "oscillatorTypes": [
+      "sawtooth"
+    ],
+    "oscillatorCalls": 4,
+    "playCalls": 127
+  },
+  "storage": [
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 30551,
+        "offset": 1103833
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 30706,
+        "offset": 1103988
+      }
+    }
+  ],
+  "network": [
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 826,
+        "offset": 825
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5,
+        "col": 25365,
+        "offset": 219932
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5,
+        "col": 40263,
+        "offset": 234830
+      }
+    },
+    {
+      "kind": "Worker",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 92052,
+        "offset": 716204
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4334,
+        "col": 2898,
+        "offset": 723641
+      }
+    },
+    {
+      "kind": "Worker",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4861,
+        "col": 2523,
+        "offset": 802419
+      }
+    },
+    {
+      "kind": "Worker",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4861,
+        "col": 2654,
+        "offset": 802550
+      }
+    },
+    {
+      "kind": "Worker",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 93921,
+        "offset": 1167203
+      }
+    },
+    {
+      "kind": "Worker",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 94052,
+        "offset": 1167334
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "./sfx-DCbnRR1f.js",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 105609,
+        "offset": 1178891
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 107034,
+        "offset": 1180316
+      }
+    }
+  ],
+  "platform": [
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-1.mjs",
+        "line": 1,
+        "col": 2177,
+        "offset": 2176
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-2.mjs",
+        "line": 1,
+        "col": 35226,
+        "offset": 35225
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-2.mjs",
+        "line": 1,
+        "col": 35263,
+        "offset": 35262
+      }
+    },
+    {
+      "api": "requestFullscreen",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 2107,
+        "offset": 2106
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 92603,
+        "offset": 716755
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 92865,
+        "offset": 717017
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 93141,
+        "offset": 717293
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 93228,
+        "offset": 717380
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 106055,
+        "offset": 1179337
+      }
+    }
+  ],
+  "three": {
+    "constructed": {},
+    "imports": [],
+    "importSources": []
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 90,
+      "hash": "be364785ff6859cc",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 194414,
+        "offset": 194413
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 59,
+      "hash": "58837176c7285557",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3,
+        "col": 7,
+        "offset": 194509
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 51,
+      "hash": "c6a9614f5fabb89a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 486,
+        "col": 29,
+        "offset": 285161
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 265,
+      "hash": "3b3d092e4a5b5318",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 605,
+        "col": 22,
+        "offset": 289855
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 145,
+      "hash": "e0009895ecfbe0fb",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1458,
+        "col": 28,
+        "offset": 331390
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 173,
+      "hash": "abd3763c2b5ff946",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1657,
+        "col": 25,
+        "offset": 338944
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 70,
+      "hash": "7313886d8fcad0dc",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1742,
+        "col": 33,
+        "offset": 342023
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 273,
+      "hash": "bb4dba933faaf6c5",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1744,
+        "col": 24,
+        "offset": 342111
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 74,
+      "hash": "1b9447c9123fe30c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1752,
+        "col": 66,
+        "offset": 342406
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 87,
+      "hash": "119495ad8c88755a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2123,
+        "col": 30,
+        "offset": 358087
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 148,
+      "hash": "583283467cc1ea04",
+      "uniforms": [
+        "uvTransform"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2613,
+        "col": 25,
+        "offset": 375821
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 494,
+      "hash": "3e0648c50d47fe90",
+      "uniforms": [
+        "t2D",
+        "backgroundIntensity"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2618,
+        "col": 20,
+        "offset": 375988
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 211,
+      "hash": "e9dc7a6595f9d214",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2630,
+        "col": 24,
+        "offset": 376505
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 747,
+      "hash": "3bcaec40e063a045",
+      "uniforms": [
+        "envMap",
+        "backgroundBlurriness",
+        "backgroundIntensity",
+        "backgroundRotation"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2637,
+        "col": 24,
+        "offset": 376739
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 211,
+      "hash": "e9dc7a6595f9d214",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2659,
+        "col": 14,
+        "offset": 377499
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 329,
+      "hash": "ad30c3bd9010804b",
+      "uniforms": [
+        "tCube",
+        "tFlip",
+        "opacity"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2666,
+        "col": 14,
+        "offset": 377723
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 792,
+      "hash": "2d7993945c5b9c2a",
+      "uniforms": [],
+      "varyings": [
+        "vHighPrecisionZW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2676,
+        "col": 15,
+        "offset": 378066
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1214,
+      "hash": "f1e724e778a24c6a",
+      "uniforms": [
+        "opacity"
+      ],
+      "varyings": [
+        "vHighPrecisionZW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2703,
+        "col": 15,
+        "offset": 378872
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 770,
+      "hash": "6d1265e98acac316",
+      "uniforms": [],
+      "varyings": [
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2741,
+        "col": 18,
+        "offset": 380103
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 754,
+      "hash": "4efb5f697f31ad96",
+      "uniforms": [
+        "referencePosition",
+        "nearDistance",
+        "farDistance"
+      ],
+      "varyings": [
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2768,
+        "col": 18,
+        "offset": 380890
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 179,
+      "hash": "b7c5595953945f6c",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2791,
+        "col": 18,
+        "offset": 381661
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 297,
+      "hash": "cce0b06ce0b1d3dc",
+      "uniforms": [
+        "tEquirect"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2797,
+        "col": 18,
+        "offset": 381857
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 625,
+      "hash": "c2724939acbb4777",
+      "uniforms": [
+        "scale"
+      ],
+      "varyings": [
+        "vLineDistance"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2806,
+        "col": 20,
+        "offset": 382173
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 816,
+      "hash": "24705a10449f44ba",
+      "uniforms": [
+        "diffuse",
+        "opacity",
+        "dashSize",
+        "totalSize"
+      ],
+      "varyings": [
+        "vLineDistance"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2828,
+        "col": 20,
+        "offset": 382817
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 932,
+      "hash": "334e1058baa0d1c0",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2856,
+        "col": 19,
+        "offset": 383651
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1619,
+      "hash": "05380b1c9b875479",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [
+        "vNormal"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2888,
+        "col": 19,
+        "offset": 384601
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1134,
+      "hash": "844c4886370bd26b",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2936,
+        "col": 21,
+        "offset": 386240
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1988,
+      "hash": "27c42d7cf0b7a6e8",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 2975,
+        "col": 21,
+        "offset": 387394
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 987,
+      "hash": "e698e9e2bf588427",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3033,
+        "col": 20,
+        "offset": 389401
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1506,
+      "hash": "d2ddf6e2881f3e51",
+      "uniforms": [
+        "diffuse",
+        "opacity",
+        "matcap"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3067,
+        "col": 20,
+        "offset": 390407
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1056,
+      "hash": "9d6ec940de6489f4",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3113,
+        "col": 20,
+        "offset": 391932
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 699,
+      "hash": "9d1b19363344181b",
+      "uniforms": [
+        "opacity"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3146,
+        "col": 20,
+        "offset": 393007
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1132,
+      "hash": "1a78f3d34122a917",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3167,
+        "col": 19,
+        "offset": 393724
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 2096,
+      "hash": "c1aee01447c167e2",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "specular",
+        "shininess",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3206,
+        "col": 19,
+        "offset": 394874
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1208,
+      "hash": "a96c520a0ebc4c64",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition",
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3266,
+        "col": 22,
+        "offset": 396991
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3942,
+      "hash": "7487b380f5c9dfa7",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "roughness",
+        "metalness",
+        "opacity",
+        "ior",
+        "specularIntensity",
+        "specularColor",
+        "specularColorMap",
+        "specularIntensityMap",
+        "clearcoat",
+        "clearcoatRoughness",
+        "dispersion",
+        "iridescence",
+        "iridescenceIOR",
+        "iridescenceThicknessMinimum",
+        "iridescenceThicknessMaximum",
+        "sheenColor",
+        "sheenRoughness",
+        "sheenColorMap",
+        "sheenRoughnessMap",
+        "anisotropyVector",
+        "anisotropyMap"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3309,
+        "col": 22,
+        "offset": 398220
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1075,
+      "hash": "1f011c7d23349f64",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3434,
+        "col": 18,
+        "offset": 402179
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1767,
+      "hash": "44bbc89f57f353b6",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3471,
+        "col": 18,
+        "offset": 403271
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 864,
+      "hash": "94a9ef30c4c60d58",
+      "uniforms": [
+        "size",
+        "scale",
+        "uvTransform"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3523,
+        "col": 16,
+        "offset": 405053
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 793,
+      "hash": "0340c843b39cea5b",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3554,
+        "col": 16,
+        "offset": 405932
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 663,
+      "hash": "9eeb08c07d5c41cf",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3579,
+        "col": 16,
+        "offset": 406740
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 491,
+      "hash": "cc8f46fabda59945",
+      "uniforms": [
+        "color",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3602,
+        "col": 16,
+        "offset": 407418
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 964,
+      "hash": "f44747c91d5c13c5",
+      "uniforms": [
+        "rotation",
+        "center"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3618,
+        "col": 16,
+        "offset": 407924
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 768,
+      "hash": "b8d694e1396e1d89",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3642,
+        "col": 16,
+        "offset": 408903
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3417,
+      "hash": "78fefab878dca658",
+      "uniforms": [
+        "envMap",
+        "roughness",
+        "mipInt"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3667,
+        "col": 26109,
+        "offset": 435779
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1364,
+      "hash": "4cdf81576e50ed37",
+      "uniforms": [
+        "envMap",
+        "samples",
+        "weights",
+        "latitudinal",
+        "dTheta",
+        "mipInt",
+        "poleAxis"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3771,
+        "col": 412,
+        "offset": 439606
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 336,
+      "hash": "08febb139b250ce1",
+      "uniforms": [
+        "envMap"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3831,
+        "col": 169,
+        "offset": 441137
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 284,
+      "hash": "e97c440330ffa217",
+      "uniforms": [
+        "flipEnvMap",
+        "envMap"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3850,
+        "col": 183,
+        "offset": 441654
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1012,
+      "hash": "24413bc4e935516e",
+      "uniforms": [],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3866,
+        "col": 65,
+        "offset": 442001
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 325,
+      "hash": "a03213cdb82efc61",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3921,
+        "col": 497,
+        "offset": 443509
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 277,
+      "hash": "3a56cf36e285da98",
+      "uniforms": [
+        "tEquirect"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3939,
+        "col": 21,
+        "offset": 443852
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 282,
+      "hash": "6cfc00f7ba80ef92",
+      "uniforms": [
+        "modelViewMatrix",
+        "projectionMatrix"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3956,
+        "col": 7433,
+        "offset": 451559
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1060,
+      "hash": "f1a9d8d522dd031b",
+      "uniforms": [
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3970,
+        "col": 22,
+        "offset": 451859
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 49,
+      "hash": "f5939168ddf07c1e",
+      "uniforms": [],
+      "varyings": [
+        "pc_fragColor"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4044,
+        "col": 57,
+        "offset": 477438
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 53,
+      "hash": "44875654b59c6658",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4053,
+        "col": 21177,
+        "offset": 499951
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1003,
+      "hash": "5a31ac121bfdf5bd",
+      "uniforms": [
+        "shadow_pass",
+        "resolution",
+        "radius"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4055,
+        "col": 7,
+        "offset": 500010
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 56,
+      "hash": "ebbd6dda9a565b8e",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4080,
+        "col": 51047,
+        "offset": 552059
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 379,
+      "hash": "365897cd3c0e57e8",
+      "uniforms": [
+        "depthColor",
+        "depthWidth",
+        "depthHeight"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4085,
+        "col": 7,
+        "offset": 552121
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 134,
+      "hash": "23a6c7de4301a91f",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4104,
+        "col": 54654,
+        "offset": 607153
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 181,
+      "hash": "5673d83ffe1cea9d",
+      "uniforms": [
+        "opacity",
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4113,
+        "col": 21,
+        "offset": 607305
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 135,
+      "hash": "22b7d56e27f22f01",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4127,
+        "col": 6267,
+        "offset": 613750
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 493,
+      "hash": "67fb969b29c688ad",
+      "uniforms": [
+        "tDiffuse",
+        "defaultColor",
+        "defaultOpacity",
+        "luminosityThreshold",
+        "smoothWidth"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4137,
+        "col": 21,
+        "offset": 613903
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 144,
+      "hash": "d2e2d51449959e98",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4159,
+        "col": 5522,
+        "offset": 619915
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 743,
+      "hash": "5632f72a7e577de7",
+      "uniforms": [
+        "colorTexture",
+        "invSize",
+        "direction",
+        "gaussianCoefficients"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4168,
+        "col": 23,
+        "offset": 620077
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 144,
+      "hash": "d2e2d51449959e98",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4197,
+        "col": 326,
+        "offset": 621141
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1299,
+      "hash": "e0409f782756cacd",
+      "uniforms": [
+        "blurTexture1",
+        "blurTexture2",
+        "blurTexture3",
+        "blurTexture4",
+        "blurTexture5",
+        "bloomStrength",
+        "bloomRadius",
+        "bloomFactors",
+        "bloomTintColors"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4206,
+        "col": 23,
+        "offset": 621303
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 274,
+      "hash": "cfe554c70a28bafa",
+      "uniforms": [
+        "modelViewMatrix",
+        "projectionMatrix"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4241,
+        "col": 174,
+        "offset": 622771
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1092,
+      "hash": "0984d7ec3ae12810",
+      "uniforms": [
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4257,
+        "col": 21,
+        "offset": 623063
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 879,
+      "hash": "f00ce0bafcbba337",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4314,
+        "col": 58,
+        "offset": 719720
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 42,
+      "hash": "fa09320d7894fc78",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4333,
+        "col": 44,
+        "offset": 720729
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1893,
+      "hash": "e440ff6137d0df1b",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4353,
+        "col": 25,
+        "offset": 724543
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 151,
+      "hash": "e6522899fb23964a",
+      "uniforms": [],
+      "varyings": [
+        "vDir"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 4734,
+        "offset": 733101
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 4072,
+      "hash": "23e001b5a0445185",
+      "uniforms": [
+        "zenith",
+        "glow",
+        "band",
+        "plateW",
+        "bandOn"
+      ],
+      "varyings": [
+        "vDir"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 4903,
+        "offset": 733270
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1262,
+      "hash": "fafa195c7115ef27",
+      "uniforms": [
+        "grid",
+        "sunDir"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 6296,
+        "offset": 743633
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1403,
+      "hash": "14f4c1183aff3dcf",
+      "uniforms": [
+        "map",
+        "horizon",
+        "gold"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4483,
+        "col": 22,
+        "offset": 744913
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 402,
+      "hash": "60da12d43bb86185",
+      "uniforms": [],
+      "varyings": [
+        "vN",
+        "vW",
+        "vV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4505,
+        "col": 1989,
+        "offset": 748301
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1647,
+      "hash": "ee3c379fbb68ff94",
+      "uniforms": [
+        "sunDir"
+      ],
+      "varyings": [
+        "vN",
+        "vW",
+        "vV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4513,
+        "col": 22,
+        "offset": 748721
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 460,
+      "hash": "abeb53035f0ea0fb",
+      "uniforms": [],
+      "varyings": [
+        "vFall",
+        "vFN",
+        "vGloom",
+        "vEdge",
+        "vFallDist"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4959,
+        "col": 1808,
+        "offset": 816428
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 2588,
+      "hash": "cce3cf457eb3106d",
+      "uniforms": [
+        "uTime",
+        "fallMap",
+        "uSunDir"
+      ],
+      "varyings": [
+        "vFall",
+        "vFN",
+        "vGloom",
+        "vEdge",
+        "vFallDist"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4964,
+        "col": 22,
+        "offset": 816906
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 636,
+      "hash": "b4abcf70fe6ffe12",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [
+        "vA",
+        "vBig"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5001,
+        "col": 342,
+        "offset": 819832
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 461,
+      "hash": "ef21ec850a278f4b",
+      "uniforms": [
+        "uFoam",
+        "uSprayGloom"
+      ],
+      "varyings": [
+        "vA",
+        "vBig"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5011,
+        "col": 22,
+        "offset": 820486
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1101,
+      "hash": "58dee2454c4037fb",
+      "uniforms": [],
+      "varyings": [
+        "vUv",
+        "vData",
+        "vTint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5097,
+        "col": 858,
+        "offset": 846784
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 6161,
+      "hash": "258c127fd6b59821",
+      "uniforms": [],
+      "varyings": [
+        "vUv",
+        "vData",
+        "vTint"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5116,
+        "col": 22,
+        "offset": 847903
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 133,
+      "hash": "3f37398235c89f0c",
+      "uniforms": [],
+      "varyings": [
+        "vSm"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5212,
+        "col": 4671,
+        "offset": 858731
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 513,
+      "hash": "4c6194427a2f3cea",
+      "uniforms": [],
+      "varyings": [
+        "vSm"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5212,
+        "col": 4822,
+        "offset": 858882
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 480,
+      "hash": "1a1ba06c58908db4",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5403,
+        "col": 6884,
+        "offset": 905437
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 51,
+      "hash": "97302d79517e0516",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5415,
+        "col": 44,
+        "offset": 906179
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 398,
+      "hash": "68679889f69d374c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5464,
+        "col": 54,
+        "offset": 942233
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 254,
+      "hash": "b668804a3b128883",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5507,
+        "col": 54,
+        "offset": 945456
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 53,
+      "hash": "184d882d4e90fab7",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5512,
+        "col": 44,
+        "offset": 945799
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 85,
+      "hash": "3649c5dec414023c",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5527,
+        "col": 10646,
+        "offset": 957420
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1049,
+      "hash": "75e30d8aafbc2dd4",
+      "uniforms": [
+        "uTime",
+        "uColor"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5527,
+        "col": 10749,
+        "offset": 957523
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 422,
+      "hash": "14c3dff629439149",
+      "uniforms": [
+        "uRadius"
+      ],
+      "varyings": [
+        "vView",
+        "vCentre",
+        "vUp",
+        "vR"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 10815,
+        "offset": 969382
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3539,
+      "hash": "9fd0c40f1f595a42",
+      "uniforms": [
+        "uGlow",
+        "uCount",
+        "uStars",
+        "uCore"
+      ],
+      "varyings": [
+        "vView",
+        "vCentre",
+        "vUp",
+        "vR"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5551,
+        "col": 22,
+        "offset": 969822
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 230,
+      "hash": "6f3ebd45c230b8f2",
+      "uniforms": [],
+      "varyings": [
+        "vP",
+        "vN",
+        "vV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5645,
+        "col": 12407,
+        "offset": 1000050
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 719,
+      "hash": "241a7a3ad96e5813",
+      "uniforms": [
+        "uLantern"
+      ],
+      "varyings": [
+        "vP",
+        "vN",
+        "vV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5645,
+        "col": 12655,
+        "offset": 1000298
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 227,
+      "hash": "72a14e705dbd7c97",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5657,
+        "col": 181,
+        "offset": 1001193
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 532,
+      "hash": "9f1cec8fea0ade1d",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5657,
+        "col": 426,
+        "offset": 1001438
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 283,
+      "hash": "6e02c1d8ac2d6673",
+      "uniforms": [],
+      "varyings": [
+        "vN",
+        "vV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5679,
+        "col": 3661,
+        "offset": 1041945
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 610,
+      "hash": "77280cc1e0a0156c",
+      "uniforms": [],
+      "varyings": [
+        "vN",
+        "vV"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5683,
+        "col": 22,
+        "offset": 1042246
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 57,
+      "hash": "4618a47d71deb467",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5698,
+        "col": 39,
+        "offset": 1043986
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 59,
+      "hash": "7329a8f4fdb22871",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5698,
+        "col": 99,
+        "offset": 1044046
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 180,
+      "hash": "330207b82882d982",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5698,
+        "col": 2795,
+        "offset": 1046742
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 684,
+      "hash": "b7a26b296705a821",
+      "uniforms": [
+        "uTime"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5698,
+        "col": 2993,
+        "offset": 1046940
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 114,
+      "hash": "dc5fa75aedee1e75",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5832,
+        "col": 8812,
+        "offset": 1072630
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 525,
+      "hash": "c8655fef87fd5b49",
+      "uniforms": [
+        "uA",
+        "uT"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5832,
+        "col": 8944,
+        "offset": 1072762
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 114,
+      "hash": "dc5fa75aedee1e75",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5846,
+        "col": 759,
+        "offset": 1218337
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 683,
+      "hash": "600c86922a71a7a7",
+      "uniforms": [
+        "uTime",
+        "uColor"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5846,
+        "col": 891,
+        "offset": 1218469
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 114,
+      "hash": "dc5fa75aedee1e75",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5856,
+        "col": 132,
+        "offset": 1219281
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 440,
+      "hash": "fbe1625708ab1329",
+      "uniforms": [
+        "uAlpha"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5856,
+        "col": 264,
+        "offset": 1219413
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "tonemap",
+      "hits": 71,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 27800,
+          "offset": 27799
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 27876,
+          "offset": 27875
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 111535,
+          "offset": 111534
+        }
+      ]
+    },
+    {
+      "word": "bloom",
+      "hits": 21,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4159,
+          "col": 440,
+          "offset": 614833
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4159,
+          "col": 588,
+          "offset": 614981
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4159,
+          "col": 718,
+          "offset": 615111
+        }
+      ]
+    },
+    {
+      "word": "tone_mapping",
+      "hits": 15,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 3956,
+          "col": 6919,
+          "offset": 451045
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 3956,
+          "col": 6943,
+          "offset": 451069
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 3956,
+          "col": 6969,
+          "offset": 451095
+        }
+      ]
+    },
+    {
+      "word": "halo",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5645,
+          "col": 1977,
+          "offset": 989620
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5661,
+          "col": 1701,
+          "offset": 1003595
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5661,
+          "col": 1737,
+          "offset": 1003631
+        }
+      ]
+    },
+    {
+      "word": "grain",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5606,
+          "col": 9680,
+          "offset": 983037
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5642,
+          "col": 52,
+          "offset": 986620
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5642,
+          "col": 82,
+          "offset": 986650
+        }
+      ]
+    },
+    {
+      "word": "outline",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5443,
+          "col": 12218,
+          "offset": 923233
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5443,
+          "col": 17995,
+          "offset": 929010
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5443,
+          "col": 27687,
+          "offset": 938702
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "burst",
+      "hits": 33,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5097,
+          "col": 722,
+          "offset": 846648
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5224,
+          "col": 7497,
+          "offset": 869189
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5224,
+          "col": 11783,
+          "offset": 873475
+        }
+      ]
+    },
+    {
+      "word": "trail",
+      "hits": 15,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4861,
+          "col": 6058,
+          "offset": 805954
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5021,
+          "col": 5596,
+          "offset": 826539
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5527,
+          "col": 8677,
+          "offset": 955451
+        }
+      ]
+    },
+    {
+      "word": "dust",
+      "hits": 11,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5097,
+          "col": 698,
+          "offset": 846624
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5212,
+          "col": 1170,
+          "offset": 855230
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5212,
+          "col": 1469,
+          "offset": 855529
+        }
+      ]
+    },
+    {
+      "word": "smoke",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 74075,
+          "offset": 74074
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5645,
+          "col": 9641,
+          "offset": 997284
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5645,
+          "col": 9657,
+          "offset": 997300
+        }
+      ]
+    },
+    {
+      "word": "splash",
+      "hits": 10,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-2.mjs",
+          "line": 1,
+          "col": 34689,
+          "offset": 34688
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4312,
+          "col": 14220,
+          "offset": 638372
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5544,
+          "col": 675,
+          "offset": 959242
+        }
+      ]
+    },
+    {
+      "word": "rain",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 4861,
+          "col": 38,
+          "offset": 799934
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5390,
+          "col": 101,
+          "offset": 897145
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5606,
+          "col": 9680,
+          "offset": 983037
+        }
+      ]
+    },
+    {
+      "word": "particle",
+      "hits": 7,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1469,
+          "col": 9,
+          "offset": 331835
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1481,
+          "col": 9,
+          "offset": 332198
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 5527,
+          "col": 7688,
+          "offset": 954462
+        }
+      ]
+    },
+    {
+      "word": "snow",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+          "line": 1,
+          "col": 73904,
+          "offset": 73903
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "generateMipmaps",
+        "internalFormat",
+        "minFilter",
+        "depthBuffer",
+        "stencilBuffer",
+        "resolveDepthBuffer",
+        "resolveStencilBuffer",
+        "depthTexture",
+        "samples",
+        "count",
+        "depth",
+        "multiview"
+      ],
+      "numbers": {
+        "generateMipmaps": null,
+        "depthBuffer": null,
+        "stencilBuffer": null,
+        "resolveDepthBuffer": null,
+        "resolveStencilBuffer": null,
+        "samples": 0,
+        "count": 1,
+        "depth": 1,
+        "multiview": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 41233,
+        "offset": 41232
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 1,
+        "mean": 0.25,
+        "head": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 45081,
+        "offset": 45080
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 148,
+      "keys": [
+        "aliceblue",
+        "antiquewhite",
+        "aqua",
+        "aquamarine",
+        "azure",
+        "beige",
+        "bisque",
+        "black",
+        "blanchedalmond",
+        "blue",
+        "blueviolet",
+        "brown",
+        "burlywood",
+        "cadetblue",
+        "chartreuse",
+        "chocolate",
+        "coral",
+        "cornflowerblue",
+        "cornsilk",
+        "crimson",
+        "cyan",
+        "darkblue",
+        "darkcyan",
+        "darkgoldenrod",
+        "darkgray",
+        "darkgreen",
+        "darkgrey",
+        "darkkhaki",
+        "darkmagenta",
+        "darkolivegreen",
+        "darkorange",
+        "darkorchid",
+        "darkred",
+        "darksalmon",
+        "darkseagreen",
+        "darkslateblue",
+        "darkslategray",
+        "darkslategrey",
+        "darkturquoise",
+        "darkviolet",
+        "deeppink",
+        "deepskyblue",
+        "dimgray",
+        "dimgrey",
+        "dodgerblue",
+        "firebrick",
+        "floralwhite",
+        "forestgreen",
+        "fuchsia",
+        "gainsboro",
+        "ghostwhite",
+        "gold",
+        "goldenrod",
+        "gray",
+        "green",
+        "greenyellow",
+        "grey",
+        "honeydew",
+        "hotpink",
+        "indianred"
+      ],
+      "numbers": {
+        "aliceblue": 15792383,
+        "antiquewhite": 16444375,
+        "aqua": 65535,
+        "aquamarine": 8388564,
+        "azure": 15794175,
+        "beige": 16119260,
+        "bisque": 16770244,
+        "black": 0,
+        "blanchedalmond": 16772045,
+        "blue": 255,
+        "blueviolet": 9055202,
+        "brown": 10824234,
+        "burlywood": 14596231,
+        "cadetblue": 6266528,
+        "chartreuse": 8388352,
+        "chocolate": 13789470,
+        "coral": 16744272,
+        "cornflowerblue": 6591981,
+        "cornsilk": 16775388,
+        "crimson": 14423100,
+        "cyan": 65535,
+        "darkblue": 139,
+        "darkcyan": 35723,
+        "darkgoldenrod": 12092939,
+        "darkgray": 11119017,
+        "darkgreen": 25600,
+        "darkgrey": 11119017,
+        "darkkhaki": 12433259,
+        "darkmagenta": 9109643,
+        "darkolivegreen": 5597999,
+        "darkorange": 16747520,
+        "darkorchid": 10040012,
+        "darkred": 9109504,
+        "darksalmon": 15308410,
+        "darkseagreen": 9419919,
+        "darkslateblue": 4734347,
+        "darkslategray": 3100495,
+        "darkslategrey": 3100495,
+        "darkturquoise": 52945,
+        "darkviolet": 9699539,
+        "deeppink": 16716947,
+        "deepskyblue": 49151,
+        "dimgray": 6908265,
+        "dimgrey": 6908265,
+        "dodgerblue": 2003199,
+        "firebrick": 11674146,
+        "floralwhite": 16775920,
+        "forestgreen": 2263842,
+        "fuchsia": 16711935,
+        "gainsboro": 14474460,
+        "ghostwhite": 16316671,
+        "gold": 16766720,
+        "goldenrod": 14329120,
+        "gray": 8421504,
+        "green": 32768,
+        "greenyellow": 11403055,
+        "grey": 8421504,
+        "honeydew": 15794160,
+        "hotpink": 16738740,
+        "indianred": 13458524
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 71436,
+        "offset": 71435
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 20,
+      "stats": {
+        "min": -0.5,
+        "max": 1,
+        "mean": 0.2,
+        "head": [
+          -0.5,
+          -0.5,
+          0,
+          0,
+          0,
+          0.5
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 122695,
+        "offset": 122694
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 60,
+      "stats": {
+        "min": 0,
+        "max": 11,
+        "mean": 5.5,
+        "head": [
+          0,
+          11,
+          5,
+          0,
+          5,
+          1
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 186638,
+        "offset": 186637
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 512,
+      "stats": {
+        "min": 0,
+        "max": 15360,
+        "mean": 11576.578125,
+        "head": [
+          12469,
+          15057,
+          12620,
+          14925,
+          13266,
+          14620
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4104,
+        "col": 18851,
+        "offset": 571350
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 51,
+      "keys": [
+        "chapter",
+        "s",
+        "lane",
+        "laneVelocity",
+        "speed",
+        "jump",
+        "jumpVelocity",
+        "time",
+        "score",
+        "orbs",
+        "combo",
+        "maxCombo",
+        "comboTimer",
+        "hearts",
+        "checkpoint",
+        "pole",
+        "poleTimer",
+        "staffRecall",
+        "strikeTimer",
+        "invincible",
+        "finished",
+        "dead",
+        "crashed",
+        "collected",
+        "hits",
+        "falls",
+        "polesUsed",
+        "encounters",
+        "checkpointIndex",
+        "trick",
+        "trickTimer",
+        "trickDuration",
+        "boostTimer",
+        "landingTimer",
+        "jumpBuffer",
+        "launchQueued",
+        "launchDist",
+        "aerialUsed",
+        "powerLaunches",
+        "airSteps",
+        "vaults",
+        "flow",
+        "perfects",
+        "balls",
+        "falling",
+        "nimbus",
+        "meat",
+        "eaten",
+        "janken",
+        "jankens",
+        "strikeLead"
+      ],
+      "numbers": {
+        "s": 0,
+        "lane": 0,
+        "laneVelocity": 0,
+        "speed": 0,
+        "jump": 0,
+        "jumpVelocity": 0,
+        "time": 0,
+        "score": 0,
+        "orbs": 0,
+        "combo": 0,
+        "maxCombo": 0,
+        "comboTimer": 0,
+        "hearts": 3,
+        "checkpoint": 0,
+        "poleTimer": 0,
+        "staffRecall": 0,
+        "strikeTimer": 0,
+        "invincible": 1,
+        "finished": null,
+        "dead": null,
+        "hits": 0,
+        "falls": 0,
+        "polesUsed": 0,
+        "encounters": 0,
+        "checkpointIndex": 0,
+        "trickTimer": 0,
+        "trickDuration": 1,
+        "boostTimer": 0,
+        "landingTimer": 0,
+        "jumpBuffer": 0,
+        "launchQueued": null,
+        "launchDist": 99,
+        "aerialUsed": null,
+        "powerLaunches": 0,
+        "airSteps": 0,
+        "vaults": 0,
+        "flow": 0,
+        "perfects": 0,
+        "falling": 0,
+        "meat": 0,
+        "jankens": 0,
+        "strikeLead": 99
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 5641,
+        "offset": 629793
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "charge",
+        "bank",
+        "ready",
+        "call",
+        "active",
+        "time",
+        "end",
+        "from",
+        "rescue",
+        "grace",
+        "rides",
+        "rescues",
+        "blocked",
+        "wait",
+        "nope",
+        "nopeWhy"
+      ],
+      "numbers": {
+        "charge": 0,
+        "bank": 0,
+        "ready": null,
+        "call": 0,
+        "active": null,
+        "time": 0,
+        "from": 0,
+        "rescue": null,
+        "grace": 0,
+        "rides": 0,
+        "rescues": 0,
+        "nope": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 6162,
+        "offset": 630314
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "call",
+        "rescueCall",
+        "ride",
+        "rescueRide",
+        "speed",
+        "height",
+        "lift",
+        "cloudHop",
+        "hop",
+        "grace",
+        "magnet",
+        "minRide",
+        "gain",
+        "setPiece",
+        "hold"
+      ],
+      "numbers": {
+        "call": 0.26,
+        "rescueCall": 0.16,
+        "ride": 7,
+        "rescueRide": 2.4,
+        "speed": 1.5,
+        "height": 3.2,
+        "lift": 1.5,
+        "cloudHop": 10.5,
+        "hop": 6.5,
+        "grace": 1.6,
+        "magnet": 4.2,
+        "minRide": 25,
+        "setPiece": 0.45,
+        "hold": 0.9
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 6614,
+        "offset": 630766
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "FLOAT",
+        "FLOAT_MAT3",
+        "FLOAT_MAT4",
+        "FLOAT_VEC2",
+        "FLOAT_VEC3",
+        "FLOAT_VEC4",
+        "LINEAR",
+        "REPEAT",
+        "SAMPLER_2D",
+        "POINTS",
+        "LINES",
+        "LINE_LOOP",
+        "LINE_STRIP",
+        "TRIANGLES",
+        "TRIANGLE_STRIP",
+        "TRIANGLE_FAN",
+        "UNSIGNED_BYTE",
+        "UNSIGNED_SHORT"
+      ],
+      "numbers": {
+        "FLOAT": 5126,
+        "FLOAT_MAT3": 35675,
+        "FLOAT_MAT4": 35676,
+        "FLOAT_VEC2": 35664,
+        "FLOAT_VEC3": 35665,
+        "FLOAT_VEC4": 35666,
+        "LINEAR": 9729,
+        "REPEAT": 10497,
+        "SAMPLER_2D": 35678,
+        "POINTS": 0,
+        "LINES": 1,
+        "LINE_LOOP": 2,
+        "LINE_STRIP": 3,
+        "TRIANGLES": 4,
+        "TRIANGLE_STRIP": 5,
+        "TRIANGLE_FAN": 6,
+        "UNSIGNED_BYTE": 5121,
+        "UNSIGNED_SHORT": 5123
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 43513,
+        "offset": 667665
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 51,
+      "stats": {
+        "min": 0,
+        "max": 253,
+        "mean": 26.392156862745097,
+        "head": [
+          0,
+          97,
+          115,
+          109,
+          1,
+          0
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 90727,
+        "offset": 714879
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 60,
+      "stats": {
+        "min": 0,
+        "max": 255,
+        "mean": 56.25,
+        "head": [
+          32,
+          0,
+          65,
+          2,
+          1,
+          106
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 90872,
+        "offset": 715024
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "hazeStart",
+        "zenith",
+        "mid",
+        "horizon",
+        "warm",
+        "fog",
+        "band",
+        "density",
+        "sun",
+        "sunColor",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi"
+      ],
+      "numbers": {
+        "hazeStart": 80,
+        "zenith": 2060262,
+        "mid": 5156600,
+        "horizon": 13166836,
+        "warm": 16183254,
+        "fog": 10798032,
+        "density": 0.0012,
+        "sunColor": 16773584,
+        "key": 16773332,
+        "keyIntensity": 3.1,
+        "sky": 12573951,
+        "ground": 10193506,
+        "hemi": 1.55
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 44,
+        "offset": 728411
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "zenith",
+        "mid",
+        "horizon",
+        "warm",
+        "fog",
+        "band",
+        "density",
+        "sun",
+        "sunColor",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi"
+      ],
+      "numbers": {
+        "zenith": 2060258,
+        "mid": 5155572,
+        "horizon": 13035248,
+        "warm": 15985874,
+        "fog": 10666448,
+        "density": 0.0013,
+        "sunColor": 16773324,
+        "key": 16772296,
+        "keyIntensity": 3.1,
+        "sky": 12114175,
+        "ground": 9405534,
+        "hemi": 1.5
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 268,
+        "offset": 728635
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "zenith",
+        "mid",
+        "horizon",
+        "warm",
+        "fog",
+        "band",
+        "density",
+        "sun",
+        "sunColor",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi"
+      ],
+      "numbers": {
+        "zenith": 2258146,
+        "mid": 5419252,
+        "horizon": 13429230,
+        "warm": 16052180,
+        "fog": 11060940,
+        "density": 0.0012,
+        "sunColor": 16773836,
+        "key": 16773586,
+        "keyIntensity": 3.2,
+        "sky": 12902644,
+        "ground": 9342810,
+        "hemi": 1.55
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 475,
+        "offset": 728842
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "hazeStart",
+        "zenith",
+        "mid",
+        "horizon",
+        "warm",
+        "fog",
+        "band",
+        "density",
+        "sun",
+        "sunColor",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi"
+      ],
+      "numbers": {
+        "hazeStart": 90,
+        "zenith": 2061028,
+        "mid": 5222646,
+        "horizon": 13035762,
+        "warm": 15986390,
+        "fog": 10667216,
+        "density": 0.0011,
+        "sunColor": 16774104,
+        "key": 16773850,
+        "keyIntensity": 3,
+        "sky": 12443903,
+        "ground": 9149048,
+        "hemi": 1.6
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 683,
+        "offset": 729050
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "hazeStart",
+        "zenith",
+        "mid",
+        "horizon",
+        "warm",
+        "fog",
+        "band",
+        "density",
+        "sun",
+        "sunColor",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi"
+      ],
+      "numbers": {
+        "hazeStart": 120,
+        "zenith": 2783972,
+        "mid": 6075636,
+        "horizon": 14085366,
+        "warm": 16183516,
+        "fog": 12901606,
+        "density": 0.0011,
+        "sunColor": 16774364,
+        "key": 16774108,
+        "keyIntensity": 3,
+        "sky": 13230847,
+        "ground": 13156520,
+        "hemi": 1.7
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 902,
+        "offset": 729269
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 17,
+      "keys": [
+        "hazeStart",
+        "zenith",
+        "mid",
+        "horizon",
+        "warm",
+        "fog",
+        "band",
+        "density",
+        "sun",
+        "sunColor",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "shadow",
+        "mistOffset"
+      ],
+      "numbers": {
+        "hazeStart": 230,
+        "zenith": 1924040,
+        "mid": 5939176,
+        "horizon": 14478582,
+        "warm": 16511192,
+        "fog": 13820655,
+        "density": 0.0009,
+        "sunColor": 16769200,
+        "key": 16772300,
+        "keyIntensity": 1.95,
+        "sky": 10140140,
+        "ground": 9075818,
+        "hemi": 0.85,
+        "shadow": 0.85,
+        "mistOffset": -70
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 1121,
+        "offset": 729488
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "at",
+        "sun",
+        "disc",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "zenith",
+        "mid",
+        "horizon",
+        "away",
+        "warm",
+        "sunColor",
+        "glow",
+        "fog",
+        "hazeStart",
+        "mist",
+        "band",
+        "bandTint",
+        "gold",
+        "paint"
+      ],
+      "numbers": {
+        "at": -0.06,
+        "key": 16774886,
+        "keyIntensity": 3.25,
+        "sky": 12903167,
+        "ground": 10261608,
+        "hemi": 1.6,
+        "zenith": 2257642,
+        "mid": 5814520,
+        "horizon": 13692658,
+        "away": 13428978,
+        "warm": 16577238,
+        "sunColor": 16774364,
+        "fog": 10275014,
+        "hazeStart": 88,
+        "mist": 0.45,
+        "bandTint": 16056314,
+        "gold": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 1369,
+        "offset": 729736
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "at",
+        "sun",
+        "disc",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "zenith",
+        "mid",
+        "horizon",
+        "away",
+        "warm",
+        "sunColor",
+        "glow",
+        "fog",
+        "hazeStart",
+        "mist",
+        "band",
+        "bandTint",
+        "gold",
+        "paint"
+      ],
+      "numbers": {
+        "at": 0,
+        "key": 16774886,
+        "keyIntensity": 3.25,
+        "sky": 12903167,
+        "ground": 10261608,
+        "hemi": 1.6,
+        "zenith": 2257642,
+        "mid": 5814520,
+        "horizon": 13692658,
+        "away": 13428978,
+        "warm": 16577238,
+        "sunColor": 16774364,
+        "fog": 10275014,
+        "hazeStart": 88,
+        "mist": 0.45,
+        "bandTint": 16056314,
+        "gold": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 1673,
+        "offset": 730040
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "at",
+        "sun",
+        "disc",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "zenith",
+        "mid",
+        "horizon",
+        "away",
+        "warm",
+        "sunColor",
+        "glow",
+        "fog",
+        "hazeStart",
+        "mist",
+        "band",
+        "bandTint",
+        "gold",
+        "paint"
+      ],
+      "numbers": {
+        "at": 0.3,
+        "key": 16773332,
+        "keyIntensity": 3.1,
+        "sky": 12573951,
+        "ground": 10193506,
+        "hemi": 1.55,
+        "zenith": 2060262,
+        "mid": 5156600,
+        "horizon": 13166836,
+        "away": 13166836,
+        "warm": 16183254,
+        "sunColor": 16773584,
+        "fog": 9880764,
+        "hazeStart": 80,
+        "mist": 0.45,
+        "bandTint": 16449526,
+        "gold": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 1974,
+        "offset": 730341
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "at",
+        "sun",
+        "disc",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "zenith",
+        "mid",
+        "horizon",
+        "away",
+        "warm",
+        "sunColor",
+        "glow",
+        "fog",
+        "hazeStart",
+        "mist",
+        "band",
+        "bandTint",
+        "gold",
+        "paint"
+      ],
+      "numbers": {
+        "at": 0.62,
+        "key": 16771784,
+        "keyIntensity": 3.1,
+        "sky": 12638454,
+        "ground": 10521184,
+        "hemi": 1.52,
+        "zenith": 2189532,
+        "mid": 5679344,
+        "horizon": 14083816,
+        "away": 13689582,
+        "warm": 16443076,
+        "sunColor": 16771264,
+        "fog": 10273464,
+        "hazeStart": 84,
+        "mist": 0.35,
+        "bandTint": 16776432,
+        "gold": 0.1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 2269,
+        "offset": 730636
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "at",
+        "sun",
+        "disc",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "zenith",
+        "mid",
+        "horizon",
+        "away",
+        "warm",
+        "sunColor",
+        "glow",
+        "fog",
+        "hazeStart",
+        "mist",
+        "band",
+        "bandTint",
+        "gold",
+        "paint"
+      ],
+      "numbers": {
+        "at": 0.86,
+        "key": 16767128,
+        "keyIntensity": 3.15,
+        "sky": 13159654,
+        "ground": 11044444,
+        "hemi": 1.5,
+        "zenith": 2777814,
+        "mid": 6989546,
+        "horizon": 16308392,
+        "away": 14866648,
+        "warm": 16767136,
+        "sunColor": 16765584,
+        "fog": 14470320,
+        "hazeStart": 100,
+        "mist": 0.3,
+        "bandTint": 14865644,
+        "gold": 0.35
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 2573,
+        "offset": 730940
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "at",
+        "sun",
+        "disc",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "zenith",
+        "mid",
+        "horizon",
+        "away",
+        "warm",
+        "sunColor",
+        "glow",
+        "fog",
+        "hazeStart",
+        "mist",
+        "band",
+        "bandTint",
+        "gold",
+        "paint"
+      ],
+      "numbers": {
+        "at": 1,
+        "key": 16760940,
+        "keyIntensity": 3.35,
+        "sky": 12893408,
+        "ground": 12092500,
+        "hemi": 1.45,
+        "zenith": 4610240,
+        "mid": 10129106,
+        "horizon": 16764566,
+        "away": 15906480,
+        "warm": 16758380,
+        "sunColor": 16760948,
+        "fog": 15911072,
+        "hazeStart": 130,
+        "mist": 0.3,
+        "bandTint": 13220070,
+        "gold": 1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 2880,
+        "offset": 731247
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 22,
+      "keys": [
+        "at",
+        "sun",
+        "disc",
+        "key",
+        "keyIntensity",
+        "sky",
+        "ground",
+        "hemi",
+        "zenith",
+        "mid",
+        "horizon",
+        "away",
+        "warm",
+        "sunColor",
+        "glow",
+        "fog",
+        "hazeStart",
+        "mist",
+        "band",
+        "bandTint",
+        "gold",
+        "paint"
+      ],
+      "numbers": {
+        "at": 1.12,
+        "key": 16756828,
+        "keyIntensity": 3.3,
+        "sky": 12234974,
+        "ground": 11566162,
+        "hemi": 1.42,
+        "zenith": 3820210,
+        "mid": 9995468,
+        "horizon": 16760448,
+        "away": 15640234,
+        "warm": 16753242,
+        "sunColor": 16756834,
+        "fog": 15775894,
+        "hazeStart": 130,
+        "mist": 0.3,
+        "bandTint": 12560608,
+        "gold": 1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4412,
+        "col": 3180,
+        "offset": 731547
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 13,
+      "keys": [
+        "to",
+        "type",
+        "steps",
+        "from",
+        "h",
+        "ridge"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4550,
+        "col": 2878,
+        "offset": 754251
+      }
+    },
+    {
+      "kind": "object-array",
+      "length": 11,
+      "keys": [
+        "to",
+        "type",
+        "depth",
+        "from",
+        "h"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4550,
+        "col": 3491,
+        "offset": 754864
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 28,
+      "stats": {
+        "min": 6.2,
+        "max": 200,
+        "mean": 50.1,
+        "head": [
+          6.2,
+          7.2,
+          8.4,
+          10,
+          11.5,
+          13
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4550,
+        "col": 15232,
+        "offset": 766605
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 16,
+      "keys": [
+        "gLight",
+        "gMid",
+        "gLush",
+        "gShade",
+        "gDeep",
+        "pLight",
+        "pMid",
+        "pDark",
+        "rockLight",
+        "rockMid",
+        "rockDark",
+        "rockShade",
+        "moss",
+        "flowerY",
+        "flowerW"
+      ],
+      "numbers": {
+        "gLight": 12566380,
+        "gMid": 9810008,
+        "gLush": 7579210,
+        "gShade": 5933648,
+        "gDeep": 3893071,
+        "pLight": 13942154,
+        "pMid": 12755828,
+        "pDark": 10454108,
+        "rockLight": 13217144,
+        "rockMid": 11440740,
+        "rockDark": 8811354,
+        "rockShade": 6247768,
+        "moss": 7314757,
+        "flowerY": 15979848,
+        "flowerW": 16118498
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4575,
+        "col": 53,
+        "offset": 774861
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 24,
+      "keys": [
+        "ball",
+        "nimbus",
+        "meat",
+        "hit",
+        "fall",
+        "chomp",
+        "strike",
+        "perfect",
+        "home",
+        "jan",
+        "ken",
+        "guu",
+        "choki",
+        "paa",
+        "trex",
+        "screech",
+        "rumble",
+        "power-launch",
+        "extend",
+        "dodge",
+        "close",
+        "dismount",
+        "splash",
+        "checkpoint"
+      ],
+      "numbers": {
+        "ball": 3,
+        "nimbus": 3,
+        "meat": 3,
+        "hit": 3,
+        "fall": 3,
+        "chomp": 3,
+        "strike": 3,
+        "perfect": 3,
+        "home": 3,
+        "jan": 3,
+        "ken": 3,
+        "guu": 3,
+        "choki": 3,
+        "paa": 3,
+        "trex": 2,
+        "screech": 2,
+        "rumble": 2,
+        "power-launch": 2,
+        "extend": 2,
+        "dodge": 1,
+        "close": 1,
+        "dismount": 1,
+        "splash": 1,
+        "checkpoint": 1
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 1226,
+        "offset": 959793
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 13,
+      "keys": [
+        "lean",
+        "leanv",
+        "yaw",
+        "yawv",
+        "lateral",
+        "aim",
+        "aimv",
+        "turn",
+        "turnv",
+        "lookY",
+        "lookYv",
+        "lookP",
+        "lookPv"
+      ],
+      "numbers": {
+        "lean": 0,
+        "leanv": 0,
+        "yaw": 0,
+        "yawv": 0,
+        "lateral": 0,
+        "aim": 0,
+        "aimv": 0,
+        "turn": 0,
+        "turnv": 0,
+        "lookY": 0,
+        "lookYv": 0,
+        "lookP": 0,
+        "lookPv": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 4973,
+        "offset": 1078255
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 60,
+      "keys": [
+        "jump",
+        "land",
+        "landBig",
+        "swish",
+        "swoosh",
+        "whooshBig",
+        "passBy",
+        "extend",
+        "swing",
+        "bonk",
+        "dizzy",
+        "powerLaunch",
+        "launch",
+        "airStep",
+        "perfect",
+        "dragonBall",
+        "checkpoint",
+        "meat",
+        "hurt",
+        "slide",
+        "poof",
+        "boulderRoll",
+        "rockCrash",
+        "screech",
+        "squawk",
+        "flap",
+        "nimbusSwoop",
+        "roar",
+        "snort",
+        "yelp",
+        "stomp",
+        "chomp",
+        "tailSwipe",
+        "punch",
+        "snip",
+        "slap",
+        "splash",
+        "stomach",
+        "subDrop",
+        "riser",
+        "uiNope",
+        "hanko",
+        "ding",
+        "uiClick",
+        "uiConfirm",
+        "uiBack",
+        "uiToggle",
+        "step",
+        "foley",
+        "cloth",
+        "creak",
+        "footfall",
+        "roarTell",
+        "whimper",
+        "glock",
+        "tonbi",
+        "songbird",
+        "uguisu",
+        "crow",
+        "higurashi"
+      ],
+      "numbers": {
+        "jump": -9,
+        "land": -2,
+        "landBig": -3,
+        "swish": -11,
+        "swoosh": -9,
+        "whooshBig": -6,
+        "passBy": -7,
+        "extend": -6,
+        "swing": -7,
+        "bonk": -3,
+        "dizzy": -15,
+        "powerLaunch": -5,
+        "launch": -8,
+        "airStep": -9,
+        "perfect": -10,
+        "dragonBall": -4,
+        "checkpoint": -9,
+        "meat": -5,
+        "hurt": 2,
+        "slide": -8,
+        "poof": -6,
+        "boulderRoll": -1,
+        "rockCrash": -1,
+        "screech": -7,
+        "squawk": -6,
+        "flap": -9,
+        "nimbusSwoop": -6,
+        "roar": -2,
+        "snort": -8,
+        "yelp": -5,
+        "stomp": 0,
+        "chomp": 6,
+        "tailSwipe": -5,
+        "punch": -4,
+        "snip": -6,
+        "slap": -5,
+        "splash": -7,
+        "stomach": -3,
+        "subDrop": -6,
+        "riser": -12,
+        "uiNope": -10,
+        "hanko": 2,
+        "ding": -9,
+        "uiClick": -7,
+        "uiConfirm": -11,
+        "uiBack": -6,
+        "uiToggle": -9,
+        "step": -11,
+        "foley": -9,
+        "cloth": -16,
+        "creak": -14,
+        "footfall": 1,
+        "roarTell": -4,
+        "whimper": -9,
+        "glock": -18,
+        "tonbi": -19,
+        "songbird": -24,
+        "uguisu": -21,
+        "crow": -22,
+        "higurashi": -24
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 97050,
+        "offset": 1170332
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 5,
+        "mean": 2.8125,
+        "head": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 133623,
+        "offset": 1206905
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 2,
+        "mean": 0.6875,
+        "head": [
+          0,
+          0,
+          2,
+          0,
+          1,
+          0
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 135528,
+        "offset": 1208810
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 5,
+        "mean": 2.875,
+        "head": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 136494,
+        "offset": 1209776
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "/assets/lite/manifest.json",
+      "ext": "json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4334,
+        "col": 2904,
+        "offset": 723647
+      }
+    },
+    {
+      "path": "band.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 3979,
+        "offset": 741316
+      }
+    },
+    {
+      "path": "plate-1024.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 4073,
+        "offset": 741410
+      }
+    },
+    {
+      "path": "plate.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 4091,
+        "offset": 741428
+      }
+    },
+    {
+      "path": "clouds-1024.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 4330,
+        "offset": 741667
+      }
+    },
+    {
+      "path": "clouds.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 4349,
+        "offset": 741686
+      }
+    },
+    {
+      "path": "-1024.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 4564,
+        "offset": 741901
+      }
+    },
+    {
+      "path": ".webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4465,
+        "col": 4577,
+        "offset": 741914
+      }
+    },
+    {
+      "path": "/assets/v2/textures/grandpa-portrait.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5606,
+        "col": 9327,
+        "offset": 982684
+      }
+    },
+    {
+      "path": "/assets/v2/textures/room-plaster.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5606,
+        "col": 9510,
+        "offset": 982867
+      }
+    },
+    {
+      "path": "/assets/v2/textures/room-floor.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5606,
+        "col": 9687,
+        "offset": 983044
+      }
+    },
+    {
+      "path": "/assets/v2/turtle.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5606,
+        "col": 10354,
+        "offset": 983711
+      }
+    },
+    {
+      "path": "/assets/v2/korin-top.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 9324,
+        "offset": 1011218
+      }
+    },
+    {
+      "path": "/assets/korin.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 9476,
+        "offset": 1011370
+      }
+    },
+    {
+      "path": "/assets/v2/lookout.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 9636,
+        "offset": 1011530
+      }
+    },
+    {
+      "path": "/assets/lookout.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 9788,
+        "offset": 1011682
+      }
+    },
+    {
+      "path": "/assets/v2/gate.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 9954,
+        "offset": 1011848
+      }
+    },
+    {
+      "path": "/assets/v2/pteranodon.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 10124,
+        "offset": 1012018
+      }
+    },
+    {
+      "path": "/assets/pteranodon.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 10282,
+        "offset": 1012176
+      }
+    },
+    {
+      "path": "/assets/v2/trex.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 10437,
+        "offset": 1012331
+      }
+    },
+    {
+      "path": "/assets/trex.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 10583,
+        "offset": 1012477
+      }
+    },
+    {
+      "path": "/assets/v2/goku-house.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 10733,
+        "offset": 1012627
+      }
+    },
+    {
+      "path": "/assets/home.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 10885,
+        "offset": 1012779
+      }
+    },
+    {
+      "path": "/assets/v2/shrine.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 11031,
+        "offset": 1012925
+      }
+    },
+    {
+      "path": "/assets/v2/nature-kit.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 12389,
+        "offset": 1014283
+      }
+    },
+    {
+      "path": "/assets/v2/paozu-kit.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 12543,
+        "offset": 1014437
+      }
+    },
+    {
+      "path": "/assets/v2/rope-bridge-broken.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 12697,
+        "offset": 1014591
+      }
+    },
+    {
+      "path": "/assets/v2/danger-sign.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5661,
+        "col": 12858,
+        "offset": 1014752
+      }
+    },
+    {
+      "path": "/assets/ui/goku-eyes.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5710,
+        "col": 1732,
+        "offset": 1049352
+      }
+    },
+    {
+      "path": "/assets/v2/kid-goku.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 6288,
+        "offset": 1079570
+      }
+    },
+    {
+      "path": "/assets/kid-goku.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 6468,
+        "offset": 1079750
+      }
+    },
+    {
+      "path": "/assets/ui/eyecatch-1200.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 49483,
+        "offset": 1122765
+      }
+    },
+    {
+      "path": "/assets/ui/result-960.webp",
+      "ext": "webp",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 49929,
+        "offset": 1123211
+      }
+    },
+    {
+      "path": "/assets/audio/foley.mp3",
+      "ext": "mp3",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 143233,
+        "offset": 1216515
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 35220,
+      "loc": {
+        "file": "tests/fixtures/crayon/kid-goku-beyond-the-clouds/blob-2.mjs",
+        "line": 1,
+        "col": 67,
+        "offset": 66
+      }
+    },
+    {
+      "name": "cf",
+      "params": 7,
+      "chars": 29348,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4080,
+        "col": 17016,
+        "offset": 518028
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 26447,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 67455,
+        "offset": 691607
+      }
+    },
+    {
+      "name": "lg",
+      "params": 1,
+      "chars": 25183,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4575,
+        "col": 3,
+        "offset": 774811
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 24763,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4575,
+        "col": 334,
+        "offset": 775142
+      }
+    },
+    {
+      "name": "PC",
+      "params": 1,
+      "chars": 24428,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 34007,
+        "offset": 1107289
+      }
+    },
+    {
+      "name": "Pd",
+      "params": 4,
+      "chars": 11725,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4032,
+        "col": 806,
+        "offset": 467810
+      }
+    },
+    {
+      "name": "sf",
+      "params": 2,
+      "chars": 10615,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4080,
+        "col": 6401,
+        "offset": 507413
+      }
+    },
+    {
+      "name": "zd",
+      "params": 6,
+      "chars": 10492,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4053,
+        "col": 1771,
+        "offset": 480545
+      }
+    },
+    {
+      "name": "attach",
+      "params": 1,
+      "chars": 10353,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5710,
+        "col": 5985,
+        "offset": 1053605
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 2,
+      "chars": 9456,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5713,
+        "col": 21,
+        "offset": 1054392
+      }
+    },
+    {
+      "name": "J_",
+      "params": 5,
+      "chars": 8644,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5224,
+        "col": 11284,
+        "offset": 872976
+      }
+    },
+    {
+      "name": "gD",
+      "params": 2,
+      "chars": 8290,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5904,
+        "col": 36373,
+        "offset": 1261625
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 8214,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 112121,
+        "offset": 112120
+      }
+    },
+    {
+      "name": "s_",
+      "params": 0,
+      "chars": 7363,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5097,
+        "col": 780,
+        "offset": 846706
+      }
+    },
+    {
+      "name": "Dg",
+      "params": 1,
+      "chars": 7328,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4861,
+        "col": 7471,
+        "offset": 807367
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 7166,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4861,
+        "col": 7588,
+        "offset": 807484
+      }
+    },
+    {
+      "name": "gf",
+      "params": 2,
+      "chars": 6688,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4104,
+        "col": 8811,
+        "offset": 561310
+      }
+    },
+    {
+      "name": "h",
+      "params": 6,
+      "chars": 6408,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4053,
+        "col": 2348,
+        "offset": 481122
+      }
+    },
+    {
+      "name": "tv",
+      "params": 1,
+      "chars": 6251,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5262,
+        "col": 9,
+        "offset": 884516
+      }
+    },
+    {
+      "name": "of",
+      "params": 3,
+      "chars": 6196,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4080,
+        "col": 205,
+        "offset": 501217
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 6016,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5262,
+        "col": 180,
+        "offset": 884687
+      }
+    },
+    {
+      "name": "Pg",
+      "params": 2,
+      "chars": 5540,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5021,
+        "col": 9,
+        "offset": 820952
+      }
+    },
+    {
+      "name": "ix",
+      "params": 3,
+      "chars": 5502,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5606,
+        "col": 3564,
+        "offset": 976921
+      }
+    },
+    {
+      "name": "Yd",
+      "params": 1,
+      "chars": 5144,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4053,
+        "col": 15362,
+        "offset": 494136
+      }
+    },
+    {
+      "name": "ve",
+      "params": 3,
+      "chars": 5095,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4080,
+        "col": 27423,
+        "offset": 528435
+      }
+    },
+    {
+      "name": "Et",
+      "params": 5,
+      "chars": 5084,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4104,
+        "col": 39863,
+        "offset": 592362
+      }
+    },
+    {
+      "name": "fl",
+      "params": 2,
+      "chars": 4730,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 3667,
+        "col": 10567,
+        "offset": 420237
+      }
+    },
+    {
+      "name": "lf",
+      "params": 2,
+      "chars": 4676,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4080,
+        "col": 46364,
+        "offset": 547376
+      }
+    },
+    {
+      "name": "n",
+      "params": 2,
+      "chars": 4641,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4080,
+        "col": 46381,
+        "offset": 547393
+      }
+    },
+    {
+      "name": "Yb",
+      "params": 2,
+      "chars": 4423,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5544,
+        "col": 10408,
+        "offset": 968975
+      }
+    },
+    {
+      "name": "Sp",
+      "params": 4,
+      "chars": 4282,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 4312,
+        "col": 12277,
+        "offset": 636429
+      }
+    },
+    {
+      "name": "a",
+      "params": 1,
+      "chars": 4219,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 181139,
+        "offset": 181138
+      }
+    },
+    {
+      "name": "$y",
+      "params": 0,
+      "chars": 4174,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5527,
+        "col": 81,
+        "offset": 946855
+      }
+    },
+    {
+      "name": "update",
+      "params": 4,
+      "chars": 4168,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5839,
+        "col": 12697,
+        "offset": 1085979
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 4102,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 1,
+        "col": 62890,
+        "offset": 62889
+      }
+    },
+    {
+      "name": "Iw",
+      "params": 0,
+      "chars": 4084,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5859,
+        "col": 1548,
+        "offset": 1221245
+      }
+    },
+    {
+      "name": "cv",
+      "params": 6,
+      "chars": 3991,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5345,
+        "col": 445,
+        "offset": 893173
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3968,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5859,
+        "col": 1620,
+        "offset": 1221317
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3891,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/kid-goku-beyond-the-clouds/game.js",
+        "line": 5345,
+        "col": 495,
+        "offset": 893223
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 5855,
+    "functions": 3762,
+    "newExpressions": 2321,
+    "calls": 18439
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:level-select",
+        "original": "82 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "78 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "42 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:settings",
+        "original": "40 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "3 references",
+        "port": "absent"
+      },
+      {
+        "feature": "host-platform postMessage hooks",
+        "original": "8 postMessage calls",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "audio",
+        "original": "127 audio API uses / 1 audio assets",
+        "port": "present"
+      },
+      {
+        "feature": "screen:results",
+        "original": "49 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "39 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:menu",
+        "original": "32 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "31 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:checkpoint",
+        "original": "24 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "23 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:game-over",
+        "original": "5 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "tonemapx71, bloomx21, tone_mappingx15, halox7",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "burstx33, trailx15, dustx11, smokex10",
+        "port": "present"
+      },
+      {
+        "feature": "persistence (storage)",
+        "original": "2 storage calls",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Space, Escape, KeyA, KeyD",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointerdown, pointermove, touchstart",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "Meshy-generated creatures and hero: not generated (Meshy needs an approved credit maximum). The creatures are original procedural meshes;",
+      "The original's painterly gouache post stack, comic callout art, ten cinematic camera modes, level select, journal and chapters other than 0",
+      "The simulation beyond the verified horizon (s ~190) is a faithful translation but has not been compared to the original beyond that"
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

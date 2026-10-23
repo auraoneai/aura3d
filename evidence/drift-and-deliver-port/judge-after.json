@@ -1,0 +1,1089 @@
+{
+  "schema": "a3d-drift-and-deliver-blind-judge/1",
+  "label": "after",
+  "generatedAt": "2026-10-23T14:55:59.616Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 5,
+    "shots": [
+      "z-idle",
+      "z-drive",
+      "z-drift",
+      "z-boost",
+      "x-idle",
+      "x-drive",
+      "origin",
+      "downtown-ne",
+      "downtown-sw",
+      "outer-e",
+      "outer-n"
+    ],
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32"
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D open-world driving game (a city of streets and blocks seen from a chase camera behind the player's car), labelled Image A and Image B. Both are taken at the same moment of the same recorded run (same spawn point, same heading, same driving input), with the on-screen HUD hidden. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge only what is visible in the 3D scene: sky, haze, streets and markings, buildings, lighting and shadows, traffic, props, the player's car and the camera.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "shot": "z-idle",
+        "look": "cruise",
+        "lumaJsd": 0.2661512488224374,
+        "rgbJsd": 0.7421173377174406,
+        "paletteDistance": 0.1609102793812544,
+        "edgeDensityOriginal": 0.23649911016862474,
+        "edgeDensityPort": 0.09285100608903768,
+        "edgeDensityRatio": 0.39260615409011296,
+        "lumaMeanDelta": -31.07398518079043
+      },
+      {
+        "shot": "z-drive",
+        "look": "cruise",
+        "lumaJsd": 0.2682182448935798,
+        "rgbJsd": 0.6883893968856885,
+        "paletteDistance": 0.07426821231860821,
+        "edgeDensityOriginal": 0.18520425209843375,
+        "edgeDensityPort": 0.102792570419414,
+        "edgeDensityRatio": 0.5550227343850671,
+        "lumaMeanDelta": -6.408558466607516
+      },
+      {
+        "shot": "z-drift",
+        "look": "drift",
+        "lumaJsd": 0.248422461289792,
+        "rgbJsd": 0.5319943549364022,
+        "paletteDistance": 0.09759415560986304,
+        "edgeDensityOriginal": 0.17902316289028142,
+        "edgeDensityPort": 0.07878416986574115,
+        "edgeDensityRatio": 0.4400780803656446,
+        "lumaMeanDelta": 7.137859485388262
+      },
+      {
+        "shot": "z-boost",
+        "look": "boost",
+        "lumaJsd": 0.32038417474793934,
+        "rgbJsd": 0.6013563301342402,
+        "paletteDistance": 0.12984185151799146,
+        "edgeDensityOriginal": 0.18064088314911664,
+        "edgeDensityPort": 0.07790456643733337,
+        "edgeDensityRatio": 0.4312676348743501,
+        "lumaMeanDelta": -7.7868696713256895
+      },
+      {
+        "shot": "x-idle",
+        "look": "cruise",
+        "lumaJsd": 0.3874783434492257,
+        "rgbJsd": 0.7486389255312181,
+        "paletteDistance": 0.11047013885293547,
+        "edgeDensityOriginal": 0.12479288407645049,
+        "edgeDensityPort": 0.0970205990849397,
+        "edgeDensityRatio": 0.7774529758083244,
+        "lumaMeanDelta": -19.18099582491905
+      },
+      {
+        "shot": "x-drive",
+        "look": "cruise",
+        "lumaJsd": 0.45048080348745334,
+        "rgbJsd": 0.8050186746706424,
+        "paletteDistance": 0.1514283710374645,
+        "edgeDensityOriginal": 0.08188835173227327,
+        "edgeDensityPort": 0.03526425605323987,
+        "edgeDensityRatio": 0.43063824472292767,
+        "lumaMeanDelta": 1.4934198364323805
+      },
+      {
+        "shot": "origin",
+        "look": "cruise",
+        "lumaJsd": 0.2512268453585638,
+        "rgbJsd": 0.7861903017012096,
+        "paletteDistance": 0.0934932778640054,
+        "edgeDensityOriginal": 0.1812920624313875,
+        "edgeDensityPort": 0.11087435308236225,
+        "edgeDensityRatio": 0.6115786405393462,
+        "lumaMeanDelta": -14.382207972472386
+      },
+      {
+        "shot": "downtown-ne",
+        "look": "downtown",
+        "lumaJsd": 0.3478075632186362,
+        "rgbJsd": 0.7199083500883068,
+        "paletteDistance": 0.12345881189269547,
+        "edgeDensityOriginal": 0.1327331801414184,
+        "edgeDensityPort": 0.0983945532773751,
+        "edgeDensityRatio": 0.7412958325306621,
+        "lumaMeanDelta": -25.018470438006247
+      },
+      {
+        "shot": "downtown-sw",
+        "look": "downtown",
+        "lumaJsd": 0.3423857787337437,
+        "rgbJsd": 0.7761617267240598,
+        "paletteDistance": 0.10582505175573209,
+        "edgeDensityOriginal": 0.14373163231212965,
+        "edgeDensityPort": 0.09410563423498366,
+        "edgeDensityRatio": 0.6547315487979886,
+        "lumaMeanDelta": -9.74787279694263
+      },
+      {
+        "shot": "outer-e",
+        "look": "outskirts",
+        "lumaJsd": 0.26366963838296165,
+        "rgbJsd": 0.7608580566821489,
+        "paletteDistance": 0.10243629513212302,
+        "edgeDensityOriginal": 0.12257341961174714,
+        "edgeDensityPort": 0.10351534532957854,
+        "edgeDensityRatio": 0.844517071135526,
+        "lumaMeanDelta": -27.83702624455323
+      },
+      {
+        "shot": "outer-n",
+        "look": "outskirts",
+        "lumaJsd": 0.28911493146317613,
+        "rgbJsd": 0.6946816500160825,
+        "paletteDistance": 0.10324180724985069,
+        "edgeDensityOriginal": 0.1848803671151053,
+        "edgeDensityPort": 0.12001813755906639,
+        "edgeDensityRatio": 0.649166482260087,
+        "lumaMeanDelta": -9.728288474405133
+      }
+    ],
+    "summary": {
+      "frames": 11,
+      "lumaJsd": 0.3123036394406827,
+      "rgbJsd": 0.714119555007949,
+      "paletteDistance": 0.1139062047829567,
+      "edgeDensityOriginal": 0.1593872096115426,
+      "edgeDensityPort": 0.09195683558482469,
+      "edgeDensityRatio": 0.5934868545009123,
+      "lumaMeanDelta": -12.957545068018334
+    }
+  },
+  "summary": {
+    "trials": 55,
+    "valid": 55,
+    "correct": 55,
+    "accuracy": 1,
+    "ci95": [
+      0.9347128562105721,
+      0.9999999999999999
+    ],
+    "pValueVsChance": 5.551115123125805e-17,
+    "distinguishable": true,
+    "sameGameYes": 0,
+    "sameGameRate": 0,
+    "pickedA": 30,
+    "byLook": {
+      "cruise": {
+        "valid": 25,
+        "correct": 25,
+        "accuracy": 1
+      },
+      "drift": {
+        "valid": 5,
+        "correct": 5,
+        "accuracy": 1
+      },
+      "boost": {
+        "valid": 5,
+        "correct": 5,
+        "accuracy": 1
+      },
+      "downtown": {
+        "valid": 10,
+        "correct": 10,
+        "accuracy": 1
+      },
+      "outskirts": {
+        "valid": 10,
+        "correct": 10,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed props, pedestrians, signage and a detailed car model, while A is simple low-poly boxes",
+        "A has flat-shaded uniform buildings with a different color palette and layout",
+        "B has richer lighting, soft shadows and atmospheric haze, while A is plain and flat"
+      ],
+      "shot": "z-idle"
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "A has detailed sports car with tire smoke, traffic and pedestrians; B's car is a plain box",
+        "A has richer props (water towers, bus stops, blocky people) and sharper shadows, while B has uniform repeating facades and no traffic",
+        "Different building style, palette and lighting: A's warm hazy sky with dark shaded towers vs B's flat saturated colors and awnings"
+      ],
+      "shot": "z-drive"
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "look": "drift",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has flat-shaded, low-detail boxy buildings with no real shadows, while B has textured facades, brick detail and cast shadows",
+        "A's street is a featureless olive-green plane with no lane markings, crosswalks or sidewalks, while B has detailed asphalt, crosswalk stripes and curbs",
+        "B has pedestrians, bus shelter, tire smoke and a detailed car, while A has a simple boxy sedan and sparse props"
+      ],
+      "shot": "z-drift"
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has richer detail: pedestrians, a shop awning, crates, traffic lights, and a detailed car with headlight glow",
+        "Image B has flat low-poly palms, simple untextured blocky buildings, and a plain car model",
+        "Different lighting and haze: A has warm directional sun with soft shadows, B has a flat muted brown haze"
+      ],
+      "shot": "z-boost"
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has a detailed low-poly sports car, whereas B has a plain boxy sedan",
+        "Image A has varied scenery with houses, trees, water towers, traffic and a billboard, whereas B has repetitive tiled towers",
+        "Image A has hazy peach-toned sky and depth fog, whereas B has flatter lighting and a wide, regular street grid"
+      ],
+      "shot": "x-idle"
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat, simplified brick buildings and a plain boxy car, with no haze or skyline depth",
+        "A has a warm hazy sky, distant silhouetted towers and detailed street props like the bus shelter, hedges and lamp post",
+        "A has richer sidewalk and pavement textures and more atmospheric lighting"
+      ],
+      "shot": "x-drive"
+    },
+    {
+      "step": 6,
+      "pass": 0,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has a detailed supercar model with an engine bay, while A has a plain boxy sedan",
+        "Image B has richer street props such as lamps, awnings, trees and a yellow taxi, and A has flat, simple geometry",
+        "Image B has more detailed shading and warm lighting, while A has flat, low-detail buildings and traffic lights"
+      ],
+      "shot": "origin"
+    },
+    {
+      "step": 7,
+      "pass": 0,
+      "look": "downtown",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.6,
+      "tells": [
+        "different player car model (batmobile-like sports car vs boxy sedan)",
+        "different city layout, building style and color palette (water towers and warm haze vs tall orange/blue towers)",
+        "different road markings and camera framing/lighting"
+      ],
+      "shot": "downtown-ne"
+    },
+    {
+      "step": 8,
+      "pass": 0,
+      "look": "downtown",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image B has a detailed, textured supercar model, water towers, power lines and varied props, while Image A uses a flat, low-poly boxy sedan and plain blocky buildings",
+        "Image B has soft atmospheric haze with faint distant skyline silhouettes, whereas Image A has a flat orange haze and solid-colored distant boxes",
+        "Image A has a clean, simplified geometric look with tidy crosswalks and uniform building facades, unlike the grittier, richer street detail in Image B"
+      ],
+      "shot": "downtown-sw"
+    },
+    {
+      "step": 9,
+      "pass": 0,
+      "look": "outskirts",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.72,
+      "tells": [
+        "B has a different car model, a blocky sedan versus the sleek dark car in A",
+        "Building style differs: B uses tall brick-and-glass towers, A uses lower mixed shops with a park",
+        "Lighting and sky differ: A has a warm sunset glow with soft haze, B has a flat tan sky and a uniform look"
+      ],
+      "shot": "outer-e"
+    },
+    {
+      "step": 10,
+      "pass": 0,
+      "look": "outskirts",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat-shaded low-poly boxy car, uniform tall buildings and a different player car model",
+        "B has richer detail: detailed supercar with engine, textured buildings, park with fences and benches, water tower",
+        "B has soft warm sunset lighting with cast shadows and varied building heights versus A's flat lighting and dense canyon of towers"
+      ],
+      "shot": "outer-n"
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed props, pedestrians, signage, a detailed car model and soft shadows, while A is flat low-poly",
+        "A has uniform repeated building facades with a plain car and sparse props",
+        "Different car model, camera framing and building style: A has colored brick and tan blocks, B has grey towers with glowing windows"
+      ],
+      "shot": "z-idle"
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat, simplified buildings, a different car model and no traffic or pedestrians, while B has detailed facades, rooftop water towers, bus stops and many pedestrians",
+        "B has a detailed sports car with tire smoke, shadows and a red traffic car; A has a plain boxy sedan",
+        "Different road layout and markings: A has a crosswalk, white arrows and wide lanes, while B has a yellow center line and a different street scale and horizon"
+      ],
+      "shot": "z-drive"
+    },
+    {
+      "step": 2,
+      "pass": 1,
+      "look": "drift",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has flat, untextured road and low-detail buildings, with no lane markings or crosswalks",
+        "A has richer detail: pedestrians, bus shelter, traffic light, shadows, smoke puff, textured brick",
+        "Different lighting and haze: A has warm directional sun with cast shadows, B has flat muted green-beige ambient"
+      ],
+      "shot": "z-drift"
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has richer detail: pedestrians, crates, awnings, traffic light, and a fenced park",
+        "Image B has flat, simplified buildings with plain blue-framed windows and low-poly palm trees",
+        "The player car, camera angle, and road markings differ (A has a crosswalk and a dark sports car; B has a boxy sedan and a large painted arrow)"
+      ],
+      "shot": "z-boost"
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Different player car model (sleek black sports car vs boxy sedan)",
+        "A has low-poly detailed props, trees, water towers, and a blue street sign, while B has plain boxy buildings",
+        "B has dense uniform skyscraper canyon and flat, simplified materials with a different warm haze"
+      ],
+      "shot": "x-idle"
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed props (bus shelter, lamp post, hedges, palm trees) and warm hazy sky with distant silhouettes",
+        "A has flat low-detail brick buildings and a simple boxy car with no sky visible",
+        "A's lighting and textures look uniform and simplified, whereas B has richer shadows and pavement detail"
+      ],
+      "shot": "x-drive"
+    },
+    {
+      "step": 6,
+      "pass": 1,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has detailed car model, textured buildings, awnings and street lamps",
+        "Image A has flat, simplified boxy car and plain blocky buildings",
+        "Image B shows richer traffic, props and soft lighting depth compared with A's flat shading"
+      ],
+      "shot": "origin"
+    },
+    {
+      "step": 7,
+      "pass": 1,
+      "look": "downtown",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.62,
+      "tells": [
+        "different player car model (sleek black supercar vs boxy sedan)",
+        "different building style and scale (water towers and low-poly mid-rises vs tall glassy orange/blue towers)",
+        "different street layout, markings and lighting (crosswalks and yellow dashes vs dashed white lines, warm haze vs flatter tone)"
+      ],
+      "shot": "downtown-ne"
+    },
+    {
+      "step": 8,
+      "pass": 1,
+      "look": "downtown",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed props: water towers, power lines, trees, street lamps, and a supercar with a detailed engine",
+        "A has flat, low-poly boxy buildings with a uniform orange haze and simple primitive car",
+        "A has a clean, stylized road layout with crosswalks, while B has hazy distant skyline and richer shading"
+      ],
+      "shot": "downtown-sw"
+    },
+    {
+      "step": 9,
+      "pass": 1,
+      "look": "outskirts",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Different player car model (sleek dark Batmobile-style vs. boxy sedan)",
+        "Different building style and density (small warm-lit shops and water towers vs. tall uniform red/white high-rises)",
+        "Different lighting and sky (golden sunset glow and bloom vs. flat muted tan haze)"
+      ],
+      "shot": "outer-e"
+    },
+    {
+      "step": 10,
+      "pass": 1,
+      "look": "outskirts",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has a detailed supercar model with an exposed engine, while B has a plain boxy sedan",
+        "Image A has richer props and shading: a water tower, fenced park with benches, varied trees and a distinct warm sunset haze",
+        "Image B has flat, uniform buildings, a simple crosswalk and lane layout, and primitive low-poly cars"
+      ],
+      "shot": "outer-n"
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "B has detailed props, pedestrians, signage, shop awnings and a detailed car model, while A is flat-shaded and simple",
+        "A has a boxy generic car, uniform colored buildings and sparse street furniture",
+        "B has richer lighting, soft shadows and atmospheric haze compared with A's flat look"
+      ],
+      "shot": "z-idle"
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "A has detailed sports car with tire smoke, pedestrians and bus stops",
+        "B has plain boxy car, flat uniform storefronts and no people or traffic",
+        "Different camera framing and building scale/density with a more generic look in B"
+      ],
+      "shot": "z-drive"
+    },
+    {
+      "step": 2,
+      "pass": 2,
+      "look": "drift",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has flat-shaded low-poly boxes with no textures, shadows or pedestrians, while B has detailed textured brick, shadows, crosswalk and people",
+        "A's road is a featureless olive-green plane with no lane markings, while B has asphalt, curbs, sidewalks and painted lines",
+        "B has tire smoke, a detailed car model and a warm sunset sky, while A has a plain hazy orange sky and a simple blocky car"
+      ],
+      "shot": "z-drift"
+    },
+    {
+      "step": 3,
+      "pass": 2,
+      "look": "boost",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.88,
+      "tells": [
+        "B has pedestrians, fenced park, shop awning with crates and a richer prop and building detail",
+        "A has flat low-poly buildings, a murky brown haze and a generic sedan",
+        "B has soft warm lighting with shadows and headlight glows, A is flat and unshaded"
+      ],
+      "shot": "z-boost"
+    },
+    {
+      "step": 4,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Different player car model (sleek low-poly sports car vs boxy sedan)",
+        "Different city layout and building style (low-rise houses and water towers vs dense towers and brick blocks)",
+        "Different lighting and haze (warm peach sky and soft depth fade vs flat tan fog)"
+      ],
+      "shot": "x-idle"
+    },
+    {
+      "step": 5,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.78,
+      "tells": [
+        "A has detailed props (bus shelter, lamp posts, hedges, palms), hazy skyline and layered atmospheric depth",
+        "B has flat, plain brick walls and window quads with simple untextured sidewalk and no haze",
+        "B's car is a simple blocky box with a different camera framing, while A's scene shows richer sunset lighting and shadows"
+      ],
+      "shot": "x-drive"
+    },
+    {
+      "step": 6,
+      "pass": 2,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.68,
+      "tells": [
+        "B has a flat, boxy car model, while A's car is detailed with a visible engine and a rounded body",
+        "B has crosswalk stripes and blue-glass storefronts with a different building style and street layout",
+        "A has warm hazy lighting, an orange sky, and soft shadows, while B is more flatly lit and desaturated"
+      ],
+      "shot": "origin"
+    },
+    {
+      "step": 7,
+      "pass": 2,
+      "look": "downtown",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.6,
+      "tells": [
+        "different player car model (sleek black sports car vs boxy sedan)",
+        "different building style and scale (low-poly water-tower skyline vs tall tiled glass towers)",
+        "different lighting and haze (warm orange sunset gradient vs flat muted tan sky)"
+      ],
+      "shot": "downtown-ne"
+    },
+    {
+      "step": 8,
+      "pass": 2,
+      "look": "downtown",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat-shaded boxy buildings with a uniform tiled-facade look, while A has more detailed, varied architecture (water towers, utility poles, wires, trees)",
+        "A's player car is a detailed sports car with an engine and exhaust, while B's car is a plain low-poly box sedan",
+        "A has soft atmospheric haze, silhouetted skyline and sun glow, while B has a flat orange-tan sky with solid block towers"
+      ],
+      "shot": "downtown-sw"
+    },
+    {
+      "step": 9,
+      "pass": 2,
+      "look": "outskirts",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "Image B has richer detail: detailed car model, shopfront awnings, park fences and playground props, water towers",
+        "Image A has flat, simplified blocky buildings with a uniform orange haze and a basic boxy car",
+        "Image B has soft lighting with a lens-flare/glow and varied traffic, while A has hard-edged flat shading"
+      ],
+      "shot": "outer-e"
+    },
+    {
+      "step": 10,
+      "pass": 2,
+      "look": "outskirts",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat-shaded, uniform low-poly buildings with a hazy orange sky, while B has detailed textured buildings and a soft gradient sky",
+        "The player car differs: A is a plain boxy sedan, B is a detailed supercar with an engine and exhausts",
+        "B has richer props (park benches, fences, water tower, houses, soft shadows) and A has simple traffic lights and cartoon trees"
+      ],
+      "shot": "outer-n"
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "A has detailed props (pedestrians, signage, traffic light, awnings, planters) and a sleek detailed car model; B has a plain boxy car and empty flat-colored storefronts",
+        "A has richer warm haze, soft shadows and varied building facades; B has uniform flat-shaded textures and tiled window patterns",
+        "A has an intersection with crosswalk markings, pedestrians and traffic; B has a bare street with no people or traffic"
+      ],
+      "shot": "z-idle"
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.68,
+      "tells": [
+        "B has a different car model and uniform flat-shaded block buildings, while A has a sports car with tire smoke",
+        "A has detailed pedestrians, traffic and props with richer lighting and cast shadows, while B is emptier with softer, flatter lighting",
+        "Street layout and building style differ: B has a crosswalk, storefront awnings and a narrow canyon of towers, while A has a wider avenue with water towers"
+      ],
+      "shot": "z-drive"
+    },
+    {
+      "step": 2,
+      "pass": 3,
+      "look": "drift",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.85,
+      "tells": [
+        "A has flat-shaded, low-detail geometry with no shadows, while B has textured brick, detailed facades and cast shadows",
+        "B has pedestrians, a bus stop, crosswalk markings, smoke particles and a detailed car, none of which appear in A",
+        "A has a flat olive-yellow ground and a uniform orange haze, while B has warm directional sunset lighting and distinct road and sidewalk surfaces"
+      ],
+      "shot": "z-drift"
+    },
+    {
+      "step": 3,
+      "pass": 3,
+      "look": "boost",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat, untextured low-poly buildings and palm trees, while A has detailed lit windows, pedestrians, props and a street-level shop",
+        "A has richer lighting with sun glow, soft shadows, headlight pools and a traffic light, but B's lighting is flat and hazy",
+        "The camera, car model and road markings differ; B's car is a boxy white sedan with a different camera angle"
+      ],
+      "shot": "z-boost"
+    },
+    {
+      "step": 4,
+      "pass": 3,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "A has a boxy, flat-shaded sedan, while B has a detailed sports car with a spoiler and vents",
+        "A's dense, uniform skyscraper canyon and blocky orange buildings differ from B's low-rise houses, water towers, trees and signage",
+        "B has richer props, traffic, street markings and a varied skyline, while A looks like a simplified procedural city"
+      ],
+      "shot": "x-idle"
+    },
+    {
+      "step": 5,
+      "pass": 3,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has a flat, simplistic brick-box building and a basic boxy car, while B has detailed props such as a bus shelter, hedges, lamp posts and palm trees",
+        "B has a warm sunset sky with hazy distant skyline and mountains, while A shows a muted, flat-lit scene",
+        "B has richer road markings, pavement texture and a more detailed car model than A"
+      ],
+      "shot": "x-drive"
+    },
+    {
+      "step": 6,
+      "pass": 3,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has a detailed supercar model, soft shadows and richer storefront and building detail, while A has a plain boxy sedan",
+        "Image B has varied street props, a traffic car, awnings and trees, while A has flat uniform buildings and sparse props",
+        "Different street layout and lighting: A has a yellow-orange flat haze and a crosswalk, B has a warm sunset glow and plain yellow lane lines"
+      ],
+      "shot": "origin"
+    },
+    {
+      "step": 7,
+      "pass": 3,
+      "look": "downtown",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has a detailed, sculpted black sports car with layered lighting, while A has a plain boxy sedan",
+        "B has varied low-poly buildings with water towers, awnings and traffic, while A has uniform tall brick-and-glass corner blocks",
+        "A has a flat brownish haze and a wide-angle camera with sharp street markings, while B has a warm gradient sky and softer atmospheric depth"
+      ],
+      "shot": "downtown-ne"
+    },
+    {
+      "step": 8,
+      "pass": 3,
+      "look": "downtown",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat-shaded, uniform blocky buildings and a plain boxy car, while A has detailed props and a detailed player car",
+        "A has richer scene detail: water towers, power lines, street lamps, trees, shopfronts, and soft layered haze",
+        "The street layout, markings and camera framing differ, with B showing zebra crossings and arrow markings and A showing yellow box lines"
+      ],
+      "shot": "downtown-sw"
+    },
+    {
+      "step": 9,
+      "pass": 3,
+      "look": "outskirts",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Different player car model (dark sleek car vs boxy blue sedan)",
+        "Different building style and density (water towers, shopfronts vs uniform tall red/white towers)",
+        "Different lighting and road markings (warm sunset glow and bloom vs flat hazy tan sky, crosswalks and yellow dashes)"
+      ],
+      "shot": "outer-e"
+    },
+    {
+      "step": 10,
+      "pass": 3,
+      "look": "outskirts",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has a detailed sports-car model with an engine bay, richer prop detail, and a soft sunset haze with long shadows",
+        "B has a flat, blocky sedan with simple low-poly textures and uniform lighting",
+        "B's buildings, crosswalks and road markings look generic and flat compared with A's varied, weathered scene"
+      ],
+      "shot": "outer-n"
+    },
+    {
+      "step": 0,
+      "pass": 4,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.88,
+      "tells": [
+        "A has detailed props, pedestrians, signage, a crosswalk and a sculpted car, while B is flat and blocky",
+        "A has warm hazy lighting with soft shadows, while B has flat, evenly lit untextured facades",
+        "B has a simple boxy car, a generic repeated building texture, and sparse street detail"
+      ],
+      "shot": "z-idle"
+    },
+    {
+      "step": 1,
+      "pass": 4,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat, simplified buildings with a toy-like car and no traffic, while B has detailed facades, water towers, pedestrians and a red traffic car",
+        "B has richer lighting with cast shadows, tire smoke and varied road markings, while A looks like a flat-shaded approximation",
+        "The street layouts differ: A is a narrow canyon with a crosswalk, B is a wide road with a yellow center line"
+      ],
+      "shot": "z-drive"
+    },
+    {
+      "step": 2,
+      "pass": 4,
+      "look": "drift",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has flat, untextured road and ground with no lane markings or crosswalks, while A has detailed road paint and sidewalks",
+        "A has richer detail: pedestrians, bus shelter, smoke particles, brick textures and warm directional lighting with shadows",
+        "B's buildings, awnings and lamp posts look simplified and uniformly lit, with a different palette and camera framing"
+      ],
+      "shot": "z-drift"
+    },
+    {
+      "step": 3,
+      "pass": 4,
+      "look": "boost",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.88,
+      "tells": [
+        "B has pedestrians, fenced park, shop awning with crates, and detailed props, while A is sparse and flat-shaded",
+        "B has richer lighting with soft shadows, headlight glow, and a sky gradient with clouds and distant hills, while A has a flat orange haze",
+        "A has simplified blocky buildings with large flat window panels and a low-poly look, unlike B's detailed facades"
+      ],
+      "shot": "z-boost"
+    },
+    {
+      "step": 4,
+      "pass": 4,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Different player car model (sleek dark sports car vs boxy sedan)",
+        "A has detailed low-poly props, suburban houses, water towers and a lit traffic vehicle; B has flat repeating tower blocks",
+        "Different atmosphere and layout: A has warm hazy sunset sky and open skyline, B has dense canyon of uniform buildings with flat shading"
+      ],
+      "shot": "x-idle"
+    },
+    {
+      "step": 5,
+      "pass": 4,
+      "look": "cruise",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.78,
+      "tells": [
+        "A has detailed props (bus shelter, lamp posts, hedges, textured pavement) and atmospheric haze with distant skyline and hills",
+        "B has flat, simplistic brick buildings with uniform windows and no haze or props",
+        "B's car is a plain blocky box with a much simpler camera view and lighting"
+      ],
+      "shot": "x-drive"
+    },
+    {
+      "step": 6,
+      "pass": 4,
+      "look": "cruise",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has a detailed supercar model with an engine bay, while A has a plain boxy sedan",
+        "Image B has richer props such as awnings, street lamps, trees and a yellow taxi, while A is flatter with simple traffic lights",
+        "Image B has more textured building facades and softer, warmer lighting than A's flat shading"
+      ],
+      "shot": "origin"
+    },
+    {
+      "step": 7,
+      "pass": 4,
+      "look": "downtown",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.95,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has detailed car model, water towers, varied low-poly storefronts and traffic",
+        "A has generic boxy sedan and repetitive tall orange/beige blocks with uniform windows",
+        "A's flat-shaded buildings, wide-angle distortion and simpler road markings look like a re-implementation"
+      ],
+      "shot": "downtown-ne"
+    },
+    {
+      "step": 8,
+      "pass": 4,
+      "look": "downtown",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "B has flat, low-poly boxy cars and a different player car model",
+        "B's buildings have repeating tiled facades with saturated colors, while A's look more varied with props like water towers, wires, and street lamps",
+        "A has a detailed player car with an engine, soft atmospheric haze, and warm lighting, while B looks flatter and more uniform"
+      ],
+      "shot": "downtown-sw"
+    },
+    {
+      "step": 9,
+      "pass": 4,
+      "look": "outskirts",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.7,
+      "tells": [
+        "B has a different player car (boxy sedan vs dark sports car)",
+        "B has dense, tall, uniform brick-and-glass towers, while A has a lower, sparser skyline with water towers",
+        "B has a flat, hazy sky with no warm glow, while A has a golden-hour gradient and bloom"
+      ],
+      "shot": "outer-e"
+    },
+    {
+      "step": 10,
+      "pass": 4,
+      "look": "outskirts",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.93,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has flat-shaded low-poly boxy car and trees; B has detailed car model with engine and textured shading",
+        "A has dense uniform skyscraper canyon with yellow dashes; B has varied buildings, houses, park with fences and benches",
+        "B has richer lighting: soft cast shadow, warm sky gradient, distant hills; A has flat orange haze"
+      ],
+      "shot": "outer-n"
+    }
+  ]
+}

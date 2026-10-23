@@ -5,7 +5,7 @@
  * points (`topology: "points"`), six riders and the chase camera. Visual assets
  * the original fetched as remote GLB/PNG files are re-created procedurally.
  */
-import { camera, geometry, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import {
   COURSE_LENGTH,
   GATES,
@@ -25,7 +25,7 @@ import { buildCourse, buildIslands, buildLoops, buildRamps, veilQuad, type MeshD
 import { axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
-import { mineralSpec, pointsSpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
+import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 
@@ -39,6 +39,21 @@ export interface WorldOptions {
 }
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
+
+/** Licensed catalog rock (diamondRock, 1.1 MB), bundled with the example so the built site serves it. */
+const ROCK_ASSET = defineAuraAssets({
+  moonRock: {
+    type: "model",
+    format: "glb",
+    url: new URL("./assets/moon-rock.glb", import.meta.url).href,
+    sha256: "debb9bb132ab6338b9df8b7129315f097f19dc7e5b4b65351b0c09ed5feb67e9",
+    sizeBytes: 1142612,
+    metadata: {
+      license: "Aura3D catalog (diamondRock.af699d5e), licensed for use with the engine",
+      provenance: { sourcePath: "public/aura-assets/diamondRock.af699d5e.glb" }
+    }
+  }
+}).moonRock;
 
 function dynamicFrom(m: MeshData, withPigments: boolean) {
   const attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> = {};
@@ -100,24 +115,38 @@ function riderRig(index: number, vehicle: Vehicle): Riderrig {
   const root = `rider-${index}`;
   const wheel = multiplyMat3(IDENTITY, axisRotation("x", Math.PI / 2));
   const lean = axisRotation("z", -0.45);
+  const acrossSide = axisRotation("x", Math.PI / 2); // cylinder axis Y -> Z
+  const alongForward = axisRotation("z", Math.PI / 2); // cylinder axis Y -> X
+  const part = (kind: string, offset: readonly [number, number, number], local: Mat3 = IDENTITY): PartSpec => ({ id: `${root}-${kind}`, offset, local });
   if (vehicle === "skate") {
     return {
       root,
       parts: [
-        { id: `${root}-deck`, offset: [0, 0.14, 0], local: IDENTITY },
-        { id: `${root}-torso`, offset: [0, 0.82, 0], local: IDENTITY },
-        { id: `${root}-head`, offset: [0.02, 1.32, 0], local: IDENTITY }
+        part("deck", [0, 0.14, 0]),
+        part("truckFL", [0.3, 0.07, 0.11], acrossSide), part("truckFR", [0.3, 0.07, -0.11], acrossSide),
+        part("truckRL", [-0.3, 0.07, 0.11], acrossSide), part("truckRR", [-0.3, 0.07, -0.11], acrossSide),
+        part("legL", [0, 0.48, 0.1]), part("legR", [0, 0.48, -0.1]),
+        part("torso", [0, 0.88, 0]),
+        part("armL", [0.05, 0.95, 0.24], axisRotation("z", -0.3)), part("armR", [0.05, 0.95, -0.24], axisRotation("z", -0.3)),
+        part("head", [0.02, 1.36, 0]), part("visor", [0.1, 1.38, 0])
       ]
     };
   }
   return {
     root,
     parts: [
-      { id: `${root}-frame`, offset: [0, 0.46, 0], local: IDENTITY },
-      { id: `${root}-wheelF`, offset: [0.58, 0.34, 0], local: wheel },
-      { id: `${root}-wheelR`, offset: [-0.58, 0.34, 0], local: wheel },
-      { id: `${root}-torso`, offset: [-0.02, 0.98, 0], local: lean },
-      { id: `${root}-head`, offset: [0.16, 1.4, 0], local: IDENTITY }
+      part("frame", [0.06, 0.52, 0]),
+      part("headlight", [0.64, 0.6, 0]),
+      part("seat", [-0.27, 0.76, 0]),
+      part("bar", [0.46, 0.93, 0], acrossSide),
+      part("wheelF", [0.58, 0.34, 0], wheel), part("wheelR", [-0.58, 0.34, 0], wheel),
+      part("tireF", [0.58, 0.34, 0]), part("tireR", [-0.58, 0.34, 0]),
+      part("hubF", [0.58, 0.34, 0], wheel), part("hubR", [-0.58, 0.34, 0], wheel),
+      part("nozzleL", [-0.72, 0.46, 0.13], alongForward), part("nozzleR", [-0.72, 0.46, -0.13], alongForward),
+      part("legL", [0, 0.58, 0.13], axisRotation("z", 0.44)), part("legR", [0, 0.58, -0.13], axisRotation("z", 0.44)),
+      part("torso", [-0.02, 0.98, 0], lean),
+      part("armL", [0.3, 1.08, 0.19], axisRotation("z", -0.68)), part("armR", [0.3, 1.08, -0.19], axisRotation("z", -0.68)),
+      part("head", [0.16, 1.4, 0]), part("visor", [0.25, 1.43, 0])
     ]
   };
 }
@@ -136,9 +165,21 @@ export interface World {
 export function buildWorld(options: WorldOptions): World {
   const { vehicle, rider } = options;
   const high = options.quality === "high";
+  /** Debug switch: `?off=lights,bloom,grade,vignette,sky,atmo,stars2,rocks,lintel` disables individual look upgrades (bisecting a render problem). */
+  const off = new Set((typeof location !== "undefined" ? new URLSearchParams(location.search).get("off") ?? "" : "").split(",").filter(Boolean));
   const builder: Scene = scene()
-    .background("#12151c")
+    .background("#05060d")
     .camera(camera.perspective({ position: [0, 40, 0], target: [0, 0, 0], fov: 72, near: 0.15, far: 2400 }));
+  // The original's rig (hemisphere + warm key + cool fill); custom materials evaluate it inline, the catalog rocks use it.
+  if (!off.has("lights")) {
+    builder
+      .add(lights.hemisphere({ name: "hemisphere", skyColor: "#f8d4a0", groundColor: "#2f3957", intensity: 1.1 }))
+      .add(lights.directional({ name: "key", position: [150, 280, -150], target: [0, 0, 0], intensity: 2.6, color: "#ffd09a" }))
+      .add(lights.directional({ name: "fill", position: [-140, 80, 210], target: [0, 0, 0], intensity: 1.0, color: "#8195bc" }));
+  }
+  if (!off.has("bloom")) builder.add(effects.bloom({ name: "bloom", intensity: 0.5, threshold: 0.78, radius: 0.55 }));
+  if (!off.has("grade")) builder.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.14 }));
+  if (!off.has("vignette")) builder.add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.7 }));
 
   /* ---- track, rails, islands, ramps, loops ---- */
   const course = buildCourse(high ? 1.3 : 2.1);
@@ -148,13 +189,20 @@ export function buildWorld(options: WorldOptions): World {
   builder.add(geometry.custom(dynamicFrom(buildRamps(vehicle), true), { name: "ramps", material: trackMaterial() }));
   if (vehicle === "skate") builder.add(geometry.custom(dynamicFrom(buildLoops(SKATE_LOOPS), true), { name: "loops", material: trackMaterial() }));
 
-  /* ---- planet + stars ---- */
+  /* ---- sky: nebula dome, planet with atmosphere, star layers ---- */
+  if (!off.has("sky")) builder.add(primitives.sphere({ name: "sky-dome", size: 3700, material: material.custom(skySpec()) }));
   builder.add(primitives.sphere({
     name: "planet",
     position: [-17, 83, 48],
     rotation: [0.1, 0.4, 1.12],
     size: 300,
     material: solidMaterial(hexLinear("#f9ece3"), hexLinear("#c98a68"), 0, 0.045)
+  }));
+  if (!off.has("atmo")) builder.add(primitives.sphere({
+    name: "planet-atmosphere",
+    position: [-17, 83, 48],
+    size: 318,
+    material: material.custom(atmosphereSpec(hexLinear("#ffb48c")))
   }));
   const rand = lehmer(77);
   const starCount = high ? 8000 : 3000;
@@ -176,6 +224,29 @@ export function buildWorld(options: WorldOptions): World {
     }
   }), { name: "stars", material: pointsMaterial(false) }));
 
+  /* bright foreground stars with a warm/cool spread (picked up by bloom) */
+  const rand2 = lehmer(991);
+  const brightCount = high ? 360 : 120;
+  const brightPositions: number[] = [];
+  const brightTints: number[] = [];
+  const brightSizes: number[] = [];
+  for (let i = 0; i < brightCount; i++) {
+    const y = rand2() * 2 - 1, a = rand2() * Math.PI * 2, r = 900 + rand2() * 600, k = Math.sqrt(1 - y * y);
+    const warm = rand2() > 0.5;
+    brightPositions.push(r * k * Math.cos(a), r * y, r * k * Math.sin(a));
+    brightTints.push(...(warm ? hexLinear("#ffd9ae") : hexLinear("#b8d4ff")).map((v) => v * (1.3 + rand2() * 1.2)));
+    brightSizes.push(2.6 + rand2() * 3.4);
+  }
+  if (!off.has("stars2")) builder.add(geometry.custom(geometry.dynamic({
+    positions: f32(brightPositions),
+    topology: "points",
+    attributes: {
+      size: { itemSize: 1, data: f32(brightSizes) },
+      tint: { itemSize: 3, data: f32(brightTints) },
+      fade: { itemSize: 1, data: f32(Array.from({ length: brightCount }, () => 1)) }
+    }
+  }), { name: "stars-bright", material: pointsMaterial(true) }));
+
   /* ---- checkpoints: veils + pillars ---- */
   GATES.forEach((gate, i) => {
     builder.add(geometry.custom(dynamicFrom(veilQuad(gate.s), false), {
@@ -191,9 +262,18 @@ export function buildWorld(options: WorldOptions): World {
         position: [p.x, p.y, p.z],
         rotation: rot,
         size: [1.1, 13, 1.1],
-        material: solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 1.4)
+        material: solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.2)
       }));
     }
+    const top = f.p.clone().addScaledVector(f.up, 13.1);
+    if (!off.has("lintel")) builder.add(primitives.roundedBox({
+      name: `gate-${i}-lintel`,
+      position: [top.x, top.y, top.z],
+      rotation: rot,
+      size: [0.9, 0.7, 23.2],
+      params: { radius: 0.2 },
+      material: solidMaterial(hexLinear("#f3ddaf"), hexLinear("#ecb75f"), 2.6)
+    }));
   });
 
   /* ---- crystal resonance clusters ---- */
@@ -215,12 +295,14 @@ export function buildWorld(options: WorldOptions): World {
   /* ---- meteors (moon rocks) ---- */
   const meteors = collectibles("painted").filter((c) => c.kind === "meteor");
   meteors.forEach((c) => {
-    builder.add(primitives.polyhedron({
-      name: `rock-${c.id}`,
-      params: { variant: "icosahedron", detail: 1, radius: 0.85 },
-      scale: [1, 0.8, 1.1],
-      material: solidMaterial(hexLinear("#6b6470"), hexLinear("#2a2630"), 0.05)
-    }).runtime({ id: `rock-${c.id}` }));
+    builder.add(off.has("rocks")
+      ? primitives.sphere({
+        name: `rock-${c.id}`,
+        size: 1.7,
+        scale: [1, 0.8, 1.1],
+        material: solidMaterial(hexLinear("#6b6470"), hexLinear("#2a2630"), 0.05)
+      }).runtime({ id: `rock-${c.id}` })
+      : model(ROCK_ASSET, { name: `rock-${c.id}`, targetMaxDimension: 2.1, castShadow: false, receiveShadow: false }).runtime({ id: `rock-${c.id}` }));
   });
 
   /* ---- stardust ---- */
@@ -255,17 +337,37 @@ export function buildWorld(options: WorldOptions): World {
   const riders = Array.from({ length: 6 }, (_, i) => riderRig(i, vehicle));
   riders.forEach((rig, i) => {
     const [bodyHex, accentHex] = i === 0 ? [RIDERS[rider]!.color, RIDERS[rider]!.accent] : RIVAL_COLORS[i - 1]!;
-    const body = hexLinear(bodyHex), accent = hexLinear(accentHex), skin = hexLinear("#e0b48f"), dark = hexLinear("#2a2f3b");
+    const body = hexLinear(bodyHex), accent = hexLinear(accentHex), dark = hexLinear("#2a2f3b");
     for (const part of rig.parts) {
       const kind = part.id.slice(rig.root.length + 1);
+      const suit = hexLinear("#d9d6cf");
+      const cyan = hexLinear("#8fe9ff");
       const make = (): ReturnType<typeof primitives.box> => {
         switch (kind) {
-          case "frame": return primitives.box({ name: part.id, size: [1.2, 0.09, 0.09], material: solidMaterial(body) });
-          case "deck": return primitives.box({ name: part.id, size: [0.95, 0.05, 0.27], material: solidMaterial(accent) });
+          case "frame": return primitives.roundedBox({ name: part.id, size: [1.04, 0.17, 0.22], params: { radius: 0.075 }, material: solidMaterial(body, accent, 0.12) });
+          case "deck": return primitives.roundedBox({ name: part.id, size: [0.95, 0.05, 0.27], params: { radius: 0.02 }, material: solidMaterial(accent, accent, 0.18) });
+          case "seat": return primitives.roundedBox({ name: part.id, size: [0.44, 0.1, 0.3], params: { radius: 0.04 }, material: solidMaterial(dark) });
+          case "bar": return primitives.cylinder({ name: part.id, size: [0.045, 0.62, 0.045], material: solidMaterial(dark) });
+          case "headlight": return primitives.sphere({ name: part.id, size: 0.15, material: solidMaterial(hexLinear("#fff3d6"), hexLinear("#ffe4a8"), 2.4) });
+          case "tireF":
+          case "tireR": return primitives.torus({ name: part.id, size: 0.8, material: solidMaterial(hexLinear("#171a22"), [0, 0, 0], 0) });
           case "wheelF":
-          case "wheelR": return primitives.cylinder({ name: part.id, size: [0.68, 0.07, 0.68], material: solidMaterial(dark) });
-          case "torso": return primitives.capsule({ name: part.id, size: [0.34, 0.89, 0.34], material: solidMaterial(accent) });
-          default: return primitives.sphere({ name: part.id, size: 0.3, material: solidMaterial(skin) });
+          case "wheelR": return primitives.cylinder({ name: part.id, size: [0.58, 0.05, 0.58], material: solidMaterial(hexLinear("#3a4150")) });
+          case "hubF":
+          case "hubR": return primitives.cylinder({ name: part.id, size: [0.5, 0.085, 0.5], material: solidMaterial(accent, accent, 0.9) });
+          case "nozzleL":
+          case "nozzleR": return primitives.cylinder({ name: part.id, size: [0.12, 0.3, 0.12], material: solidMaterial(cyan, cyan, 2.4) });
+          case "truckFL":
+          case "truckFR":
+          case "truckRL":
+          case "truckRR": return primitives.cylinder({ name: part.id, size: [0.12, 0.06, 0.12], material: solidMaterial(dark, accent, 0.4) });
+          case "legL":
+          case "legR": return primitives.capsule({ name: part.id, size: [vehicle === "skate" ? 0.14 : 0.13, vehicle === "skate" ? 0.6 : 0.62, vehicle === "skate" ? 0.14 : 0.13], material: solidMaterial(dark) });
+          case "armL":
+          case "armR": return primitives.capsule({ name: part.id, size: [0.1, 0.58, 0.1], material: solidMaterial(suit, accent, 0.06) });
+          case "torso": return primitives.capsule({ name: part.id, size: [0.34, 0.89, 0.34], material: solidMaterial(accent, accent, 0.1) });
+          case "visor": return primitives.sphere({ name: part.id, size: 0.17, material: solidMaterial(cyan, cyan, 2.0) });
+          default: return primitives.sphere({ name: part.id, size: 0.3, material: solidMaterial(suit) });
         }
       };
       builder.add(make().runtime({ id: part.id }));

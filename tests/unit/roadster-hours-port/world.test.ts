@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LEVELS, levelLayout, roadProfile, trafficPiece } from "../../../examples/roadster-hours-port/course";
+import { LEVELS, levelLayout, roadProfile } from "../../../examples/roadster-hours-port/course";
 import { buildWorld, roadPoint } from "../../../examples/roadster-hours-port/world";
 
 describe("roadster-hours-port world", () => {
@@ -15,15 +15,16 @@ describe("roadster-hours-port world", () => {
     }
   });
 
-  it("builds every route; all vehicles share one batched mesh with one instance per collision box", () => {
+  it("builds every route; vehicles are baked cars in per-material batched meshes plus box rigs", () => {
     LEVELS.forEach((level, i) => {
       const world = buildWorld(i);
       expect(world.level.id).toBe(level.id);
-      const lineupBoxes = levelLayout(level).vehicles.reduce((n, v) => n + v.boxes.length, 0);
-      const trafficBoxes = level.traffic.reduce((n, t) => n + trafficPiece(t.piece, t.v || 0).boxes.length, 0);
-      expect(world.vehicleSlots).toBe(lineupBoxes + trafficBoxes);
-      expect(world.vehicleSlots).toBeGreaterThan(20);
-      expect(world.vehicleGeometries).toBe(2);
+      const lineup = levelLayout(level).vehicles.length;
+      expect(world.vehicleCount).toBe(lineup + level.traffic.length);
+      expect(world.vehicleCount).toBeGreaterThan(20);
+      expect(world.vehicleSlots).toBeGreaterThan(world.vehicleCount);
+      expect(world.vehicleMeshes).toBeGreaterThanOrEqual(3);
+      expect(world.vehicleGeometries).toBeGreaterThan(2);
     });
   });
 });

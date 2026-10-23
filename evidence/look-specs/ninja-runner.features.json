@@ -1,0 +1,3894 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "ninja-runner",
+  "sources": [
+    {
+      "file": "tmp/crayon-raw-bundles/ninja-runner/capture-0.js",
+      "bytes": 4085,
+      "lines": 97,
+      "singleLine": false,
+      "hash": "4980820aebb40214"
+    },
+    {
+      "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+      "bytes": 867109,
+      "lines": 4447,
+      "singleLine": false,
+      "hash": "8b7fbd750a37400f"
+    },
+    {
+      "file": "evidence/crayon-runtime/ninja-runner/srcdoc.html#script0",
+      "bytes": 2901,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "caca263437649e3a"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "results",
+      "hits": 34,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 10026,
+          "offset": 205198
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 11001,
+          "offset": 206173
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 11872,
+          "offset": 207044
+        }
+      ]
+    },
+    {
+      "screen": "settings",
+      "hits": 33,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 5,
+          "col": 34379,
+          "offset": 56375
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 5,
+          "col": 34668,
+          "offset": 56664
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 10115,
+          "offset": 205287
+        }
+      ]
+    },
+    {
+      "screen": "level-select",
+      "hits": 30,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 39329,
+          "offset": 234501
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 40458,
+          "offset": 235630
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 40682,
+          "offset": 235854
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 25,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 53413,
+          "offset": 248585
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 53649,
+          "offset": 248821
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 53798,
+          "offset": 248970
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 19,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 45623,
+          "offset": 607773
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4330,
+          "col": 8758,
+          "offset": 671569
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4330,
+          "col": 9404,
+          "offset": 672215
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 11,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 5,
+          "col": 23468,
+          "offset": 45464
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 360,
+          "col": 447,
+          "offset": 315451
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 360,
+          "col": 49011,
+          "offset": 364015
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 25964,
+          "offset": 221136
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 53444,
+          "offset": 248616
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 56769,
+          "offset": 251941
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 12454,
+          "offset": 805246
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 14582,
+          "offset": 807374
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 16860,
+          "offset": 809652
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 8307,
+          "offset": 637381
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 9057,
+          "offset": 638131
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 9737,
+          "offset": 638811
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 30946,
+          "offset": 823738
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 30978,
+          "offset": 823770
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 31034,
+          "offset": 823826
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 65149,
+          "offset": 260321
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 13207,
+          "offset": 805999
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4443,
+          "col": 139,
+          "offset": 862718
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 1,
+        "col": 2826,
+        "offset": 2825
+      },
+      "cases": [
+        "XYX",
+        "YZY",
+        "ZXZ",
+        "XZX",
+        "YXY",
+        "ZYZ"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 1,
+        "col": 17401,
+        "offset": 17400
+      },
+      "cases": [
+        "scalar",
+        "double",
+        "float",
+        "number",
+        "integer",
+        "vector",
+        "vector2",
+        "vector3",
+        "vector4",
+        "color",
+        "quaternion",
+        "bool",
+        "boolean",
+        "string"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 8532,
+        "offset": 30528
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 47150,
+        "offset": 69146
+      },
+      "cases": [
+        "XYZ",
+        "YXZ",
+        "ZXY",
+        "ZYX",
+        "YZX",
+        "XZY"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 67787,
+        "offset": 89783
+      },
+      "cases": [
+        "rgb",
+        "rgba",
+        "hsl",
+        "hsla"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 9,
+        "col": 24855,
+        "offset": 220027
+      },
+      "cases": [
+        "arraybuffer",
+        "blob",
+        "document",
+        "json"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 13386,
+        "offset": 328390
+      },
+      "cases": [
+        "DirectionalLight",
+        "SpotLight",
+        "PointLight",
+        "HemisphereLight",
+        "RectAreaLight"
+      ]
+    },
+    {
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 35494,
+        "offset": 737185
+      },
+      "cases": [
+        "scene",
+        "node",
+        "mesh",
+        "accessor",
+        "bufferView",
+        "buffer",
+        "material",
+        "texture",
+        "skin",
+        "animation",
+        "camera"
+      ]
+    }
+  ],
+  "domIds": [
+    {
+      "id": "canvas",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 33849,
+        "offset": 826641
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "Enter",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 19014,
+          "offset": 811806
+        }
+      },
+      {
+        "key": "Escape",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 18998,
+          "offset": 811790
+        }
+      },
+      {
+        "key": "KeyP",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 19007,
+          "offset": 811799
+        }
+      },
+      {
+        "key": "ArrowDown",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 7306,
+          "offset": 636380
+        }
+      },
+      {
+        "key": "ArrowLeft",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 7255,
+          "offset": 636329
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 7286,
+          "offset": 636360
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 7270,
+          "offset": 636344
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "dispose",
+        "hits": 12,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 263,
+          "col": 346,
+          "offset": 283251
+        }
+      },
+      {
+        "event": "keydown",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 9147,
+          "offset": 638221
+        }
+      },
+      {
+        "event": "click",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 19624,
+          "offset": 812416
+        }
+      },
+      {
+        "event": "error",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 26633,
+          "offset": 221805
+        }
+      },
+      {
+        "event": "pointercancel",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 8937,
+          "offset": 638011
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 8869,
+          "offset": 637943
+        }
+      },
+      {
+        "event": "pointerup",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 2409,
+          "offset": 631483
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 30626,
+          "offset": 823418
+        }
+      },
+      {
+        "event": "visibilitychange",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 41841,
+          "offset": 237013
+        }
+      },
+      {
+        "event": "webglcontextlost",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 13614,
+          "offset": 575764
+        }
+      },
+      {
+        "event": "webglcontextrestored",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 13659,
+          "offset": 575809
+        }
+      },
+      {
+        "event": "contextmenu",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 9005,
+          "offset": 638079
+        }
+      },
+      {
+        "event": "end",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 2975,
+          "offset": 565125
+        }
+      },
+      {
+        "event": "inputsourceschange",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 3003,
+          "offset": 565153
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 6068,
+          "offset": 635142
+        }
+      },
+      {
+        "event": "load",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 9,
+          "col": 26601,
+          "offset": 221773
+        }
+      },
+      {
+        "event": "lostpointercapture",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 20243,
+          "offset": 813035
+        }
+      },
+      {
+        "event": "message",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 33399,
+          "offset": 826191
+        }
+      },
+      {
+        "event": "pagehide",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 20503,
+          "offset": 813295
+        }
+      },
+      {
+        "event": "pageshow",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 20534,
+          "offset": 813326
+        }
+      },
+      {
+        "event": "pointermove",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 2327,
+          "offset": 631401
+        }
+      },
+      {
+        "event": "select",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 2770,
+          "offset": 564920
+        }
+      },
+      {
+        "event": "selectend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 2837,
+          "offset": 564987
+        }
+      },
+      {
+        "event": "selectstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 2801,
+          "offset": 564951
+        }
+      },
+      {
+        "event": "sessionend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 21638,
+          "offset": 583788
+        }
+      },
+      {
+        "event": "sessionstart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 21599,
+          "offset": 583749
+        }
+      },
+      {
+        "event": "squeeze",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 2871,
+          "offset": 565021
+        }
+      },
+      {
+        "event": "squeezeend",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 2940,
+          "offset": 565090
+        }
+      },
+      {
+        "event": "squeezestart",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 2903,
+          "offset": 565053
+        }
+      },
+      {
+        "event": "touchmove",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 20295,
+          "offset": 813087
+        }
+      },
+      {
+        "event": "unhandledrejection",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 32965,
+          "offset": 825757
+        }
+      },
+      {
+        "event": "webglcontextcreationerror",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4112,
+          "col": 13708,
+          "offset": 575858
+        }
+      },
+      {
+        "event": "wheel",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4328,
+          "col": 9073,
+          "offset": 638147
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 6,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 6807,
+          "offset": 799599
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 3,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 7459,
+          "offset": 800251
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 7049,
+          "offset": 799841
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 6999,
+          "offset": 799791
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 7364,
+          "offset": 800156
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 2,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 7427,
+          "offset": 800219
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 6741,
+          "offset": 799533
+        }
+      },
+      {
+        "api": "webkitAudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 6762,
+          "offset": 799554
+        }
+      }
+    ],
+    "urls": [],
+    "oscillatorTypes": [],
+    "oscillatorCalls": 1,
+    "playCalls": 9
+  },
+  "storage": [],
+  "network": [
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 9,
+        "col": 24111,
+        "offset": 219283
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 9,
+        "col": 38707,
+        "offset": 233879
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4357,
+        "col": 170,
+        "offset": 690915
+      }
+    }
+  ],
+  "platform": [
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-0.js",
+        "line": 74,
+        "col": 129,
+        "offset": 3548
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-0.js",
+        "line": 78,
+        "col": 5,
+        "offset": 3705
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-0.js",
+        "line": 88,
+        "col": 5,
+        "offset": 3938
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-0.js",
+        "line": 92,
+        "col": 11,
+        "offset": 4018
+      }
+    }
+  ],
+  "three": {
+    "constructed": {},
+    "imports": [],
+    "importSources": []
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 90,
+      "hash": "be364785ff6859cc",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 173022,
+        "offset": 195018
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 59,
+      "hash": "58837176c7285557",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 7,
+        "col": 7,
+        "offset": 195114
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3417,
+      "hash": "78fefab878dca658",
+      "uniforms": [
+        "envMap",
+        "roughness",
+        "mipInt"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 9,
+        "col": 80496,
+        "offset": 275668
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1364,
+      "hash": "4cdf81576e50ed37",
+      "uniforms": [
+        "envMap",
+        "samples",
+        "weights",
+        "latitudinal",
+        "dTheta",
+        "mipInt",
+        "poleAxis"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 113,
+        "col": 413,
+        "offset": 279496
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 336,
+      "hash": "08febb139b250ce1",
+      "uniforms": [
+        "envMap"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 173,
+        "col": 170,
+        "offset": 281028
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 284,
+      "hash": "e97c440330ffa217",
+      "uniforms": [
+        "flipEnvMap",
+        "envMap"
+      ],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 192,
+        "col": 184,
+        "offset": 281546
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1012,
+      "hash": "24413bc4e935516e",
+      "uniforms": [],
+      "varyings": [
+        "vOutputDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 208,
+        "col": 66,
+        "offset": 281894
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 282,
+      "hash": "6cfc00f7ba80ef92",
+      "uniforms": [
+        "modelViewMatrix",
+        "projectionMatrix"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 263,
+        "col": 6770,
+        "offset": 289675
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1060,
+      "hash": "f1a9d8d522dd031b",
+      "uniforms": [
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 277,
+        "col": 22,
+        "offset": 289975
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 49,
+      "hash": "f5939168ddf07c1e",
+      "uniforms": [],
+      "varyings": [
+        "pc_fragColor"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 351,
+        "col": 51,
+        "offset": 313669
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 51,
+      "hash": "c6a9614f5fabb89a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 845,
+        "col": 12,
+        "offset": 416095
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 265,
+      "hash": "3b3d092e4a5b5318",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 931,
+        "col": 12,
+        "offset": 419223
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 145,
+      "hash": "e0009895ecfbe0fb",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 1817,
+        "col": 12,
+        "offset": 461753
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 173,
+      "hash": "abd3763c2b5ff946",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2016,
+        "col": 12,
+        "offset": 468893
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 70,
+      "hash": "7313886d8fcad0dc",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2101,
+        "col": 7,
+        "offset": 471941
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 273,
+      "hash": "bb4dba933faaf6c5",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2103,
+        "col": 12,
+        "offset": 472017
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 74,
+      "hash": "1b9447c9123fe30c",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2111,
+        "col": 50,
+        "offset": 472296
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 87,
+      "hash": "119495ad8c88755a",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2482,
+        "col": 12,
+        "offset": 487719
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 148,
+      "hash": "583283467cc1ea04",
+      "uniforms": [
+        "uvTransform"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2972,
+        "col": 12,
+        "offset": 505328
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 494,
+      "hash": "3e0648c50d47fe90",
+      "uniforms": [
+        "t2D",
+        "backgroundIntensity"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2977,
+        "col": 7,
+        "offset": 505482
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 211,
+      "hash": "e9dc7a6595f9d214",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2989,
+        "col": 7,
+        "offset": 505982
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 747,
+      "hash": "3bcaec40e063a045",
+      "uniforms": [
+        "envMap",
+        "backgroundBlurriness",
+        "backgroundIntensity",
+        "backgroundRotation"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 2996,
+        "col": 7,
+        "offset": 506199
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 211,
+      "hash": "e9dc7a6595f9d214",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3018,
+        "col": 7,
+        "offset": 506952
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 329,
+      "hash": "ad30c3bd9010804b",
+      "uniforms": [
+        "tCube",
+        "tFlip",
+        "opacity"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3025,
+        "col": 7,
+        "offset": 507169
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 792,
+      "hash": "2d7993945c5b9c2a",
+      "uniforms": [],
+      "varyings": [
+        "vHighPrecisionZW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3035,
+        "col": 7,
+        "offset": 507504
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1214,
+      "hash": "f1e724e778a24c6a",
+      "uniforms": [
+        "opacity"
+      ],
+      "varyings": [
+        "vHighPrecisionZW"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3062,
+        "col": 7,
+        "offset": 508302
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 770,
+      "hash": "6d1265e98acac316",
+      "uniforms": [],
+      "varyings": [
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3100,
+        "col": 7,
+        "offset": 509522
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 754,
+      "hash": "4efb5f697f31ad96",
+      "uniforms": [
+        "referencePosition",
+        "nearDistance",
+        "farDistance"
+      ],
+      "varyings": [
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3127,
+        "col": 7,
+        "offset": 510298
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 179,
+      "hash": "b7c5595953945f6c",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3150,
+        "col": 7,
+        "offset": 511058
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 297,
+      "hash": "cce0b06ce0b1d3dc",
+      "uniforms": [
+        "tEquirect"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3156,
+        "col": 7,
+        "offset": 511243
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 625,
+      "hash": "c2724939acbb4777",
+      "uniforms": [
+        "scale"
+      ],
+      "varyings": [
+        "vLineDistance"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3165,
+        "col": 7,
+        "offset": 511546
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 816,
+      "hash": "24705a10449f44ba",
+      "uniforms": [
+        "diffuse",
+        "opacity",
+        "dashSize",
+        "totalSize"
+      ],
+      "varyings": [
+        "vLineDistance"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3187,
+        "col": 7,
+        "offset": 512177
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 932,
+      "hash": "334e1058baa0d1c0",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3215,
+        "col": 7,
+        "offset": 512999
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1619,
+      "hash": "05380b1c9b875479",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [
+        "vNormal"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3247,
+        "col": 7,
+        "offset": 513937
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1134,
+      "hash": "844c4886370bd26b",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3295,
+        "col": 7,
+        "offset": 515562
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1988,
+      "hash": "27c42d7cf0b7a6e8",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3334,
+        "col": 7,
+        "offset": 516702
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 987,
+      "hash": "e698e9e2bf588427",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3392,
+        "col": 7,
+        "offset": 518696
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1506,
+      "hash": "d2ddf6e2881f3e51",
+      "uniforms": [
+        "diffuse",
+        "opacity",
+        "matcap"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3426,
+        "col": 7,
+        "offset": 519689
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1056,
+      "hash": "9d6ec940de6489f4",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3472,
+        "col": 7,
+        "offset": 521201
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 699,
+      "hash": "9d1b19363344181b",
+      "uniforms": [
+        "opacity"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3505,
+        "col": 7,
+        "offset": 522263
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1132,
+      "hash": "1a78f3d34122a917",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3526,
+        "col": 7,
+        "offset": 522968
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 2096,
+      "hash": "c1aee01447c167e2",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "specular",
+        "shininess",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3565,
+        "col": 7,
+        "offset": 524106
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1208,
+      "hash": "a96c520a0ebc4c64",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition",
+        "vWorldPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3625,
+        "col": 7,
+        "offset": 526208
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 3942,
+      "hash": "7487b380f5c9dfa7",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "roughness",
+        "metalness",
+        "opacity",
+        "ior",
+        "specularIntensity",
+        "specularColor",
+        "specularColorMap",
+        "specularIntensityMap",
+        "clearcoat",
+        "clearcoatRoughness",
+        "dispersion",
+        "iridescence",
+        "iridescenceIOR",
+        "iridescenceThicknessMinimum",
+        "iridescenceThicknessMaximum",
+        "sheenColor",
+        "sheenRoughness",
+        "sheenColorMap",
+        "sheenRoughnessMap",
+        "anisotropyVector",
+        "anisotropyMap"
+      ],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3668,
+        "col": 7,
+        "offset": 527422
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1075,
+      "hash": "1f011c7d23349f64",
+      "uniforms": [],
+      "varyings": [
+        "vViewPosition"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3793,
+        "col": 7,
+        "offset": 531370
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1767,
+      "hash": "44bbc89f57f353b6",
+      "uniforms": [
+        "diffuse",
+        "emissive",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3830,
+        "col": 7,
+        "offset": 532451
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 864,
+      "hash": "94a9ef30c4c60d58",
+      "uniforms": [
+        "size",
+        "scale",
+        "uvTransform"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3882,
+        "col": 7,
+        "offset": 534224
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 793,
+      "hash": "0340c843b39cea5b",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3913,
+        "col": 7,
+        "offset": 535094
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 663,
+      "hash": "9eeb08c07d5c41cf",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3938,
+        "col": 7,
+        "offset": 535893
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 491,
+      "hash": "cc8f46fabda59945",
+      "uniforms": [
+        "color",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3961,
+        "col": 7,
+        "offset": 536562
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 964,
+      "hash": "f44747c91d5c13c5",
+      "uniforms": [
+        "rotation",
+        "center"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 3977,
+        "col": 7,
+        "offset": 537059
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 768,
+      "hash": "b8d694e1396e1d89",
+      "uniforms": [
+        "diffuse",
+        "opacity"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4001,
+        "col": 7,
+        "offset": 538029
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 325,
+      "hash": "a03213cdb82efc61",
+      "uniforms": [],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4026,
+        "col": 17472,
+        "offset": 556268
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 277,
+      "hash": "3a56cf36e285da98",
+      "uniforms": [
+        "tEquirect"
+      ],
+      "varyings": [
+        "vWorldDirection"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4044,
+        "col": 21,
+        "offset": 556611
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 53,
+      "hash": "44875654b59c6658",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4061,
+        "col": 3555,
+        "offset": 560440
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1003,
+      "hash": "5a31ac121bfdf5bd",
+      "uniforms": [
+        "shadow_pass",
+        "resolution",
+        "radius"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4063,
+        "col": 7,
+        "offset": 560499
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 56,
+      "hash": "ebbd6dda9a565b8e",
+      "uniforms": [],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4088,
+        "col": 209,
+        "offset": 561710
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 379,
+      "hash": "365897cd3c0e57e8",
+      "uniforms": [
+        "depthColor",
+        "depthWidth",
+        "depthHeight"
+      ],
+      "varyings": [],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4093,
+        "col": 7,
+        "offset": 561772
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 134,
+      "hash": "23a6c7de4301a91f",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4112,
+        "col": 46818,
+        "offset": 608968
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 181,
+      "hash": "5673d83ffe1cea9d",
+      "uniforms": [
+        "opacity",
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4121,
+        "col": 21,
+        "offset": 609120
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 135,
+      "hash": "22b7d56e27f22f01",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4135,
+        "col": 6471,
+        "offset": 615769
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 493,
+      "hash": "67fb969b29c688ad",
+      "uniforms": [
+        "tDiffuse",
+        "defaultColor",
+        "defaultOpacity",
+        "luminosityThreshold",
+        "smoothWidth"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4145,
+        "col": 21,
+        "offset": 615922
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 144,
+      "hash": "d2e2d51449959e98",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4167,
+        "col": 5568,
+        "offset": 621980
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 743,
+      "hash": "5632f72a7e577de7",
+      "uniforms": [
+        "colorTexture",
+        "invSize",
+        "direction",
+        "gaussianCoefficients"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4176,
+        "col": 23,
+        "offset": 622142
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 144,
+      "hash": "d2e2d51449959e98",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4205,
+        "col": 326,
+        "offset": 623206
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1299,
+      "hash": "e0409f782756cacd",
+      "uniforms": [
+        "blurTexture1",
+        "blurTexture2",
+        "blurTexture3",
+        "blurTexture4",
+        "blurTexture5",
+        "bloomStrength",
+        "bloomRadius",
+        "bloomFactors",
+        "bloomTintColors"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4214,
+        "col": 23,
+        "offset": 623368
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 274,
+      "hash": "cfe554c70a28bafa",
+      "uniforms": [
+        "modelViewMatrix",
+        "projectionMatrix"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4249,
+        "col": 190,
+        "offset": 624852
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1092,
+      "hash": "0984d7ec3ae12810",
+      "uniforms": [
+        "tDiffuse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4265,
+        "col": 21,
+        "offset": 625144
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4320,
+        "col": 1705,
+        "offset": 627938
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 1025,
+      "hash": "624dacf41ac0f4d4",
+      "uniforms": [
+        "tDiffuse",
+        "tDepth",
+        "projectionInverse",
+        "resolution"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4320,
+        "col": 1823,
+        "offset": 628056
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 249,
+      "hash": "4ed97c114fdd0a6f",
+      "uniforms": [
+        "time"
+      ],
+      "varyings": [
+        "vWorld",
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4357,
+        "col": 5747,
+        "offset": 696492
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 593,
+      "hash": "7e377df7d95f5373",
+      "uniforms": [
+        "time",
+        "sun"
+      ],
+      "varyings": [
+        "vWorld",
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4357,
+        "col": 6014,
+        "offset": 696759
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 108,
+      "hash": "813a53c1297787f5",
+      "uniforms": [],
+      "varyings": [
+        "vDir"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4359,
+        "col": 3473,
+        "offset": 700850
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 690,
+      "hash": "4b89d845f417523c",
+      "uniforms": [
+        "sunDirection"
+      ],
+      "varyings": [
+        "vDir"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4359,
+        "col": 3599,
+        "offset": 700976
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 5681,
+        "offset": 707372
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 613,
+      "hash": "830159365c40228e",
+      "uniforms": [
+        "time"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 5799,
+        "offset": 707490
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 197,
+      "hash": "da9f2af765d5297b",
+      "uniforms": [],
+      "varyings": [
+        "p",
+        "n",
+        "v"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 51595,
+        "offset": 753286
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 377,
+      "hash": "82c9ebbfa0ae6f67",
+      "uniforms": [
+        "time",
+        "opacity"
+      ],
+      "varyings": [
+        "p",
+        "n",
+        "v"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 51810,
+        "offset": 753501
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 337,
+      "hash": "b1db284bcb5cc4ff",
+      "uniforms": [
+        "time",
+        "strength"
+      ],
+      "varyings": [
+        "alpha"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 53841,
+        "offset": 755532
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 116,
+      "hash": "7c002683d4e14e77",
+      "uniforms": [],
+      "varyings": [
+        "alpha"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 54196,
+        "offset": 755887
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 403,
+      "hash": "9e8b33f6eae30a51",
+      "uniforms": [
+        "time",
+        "runner"
+      ],
+      "varyings": [
+        "vUv",
+        "vFade"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 66803,
+        "offset": 768494
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 169,
+      "hash": "123f667ac692862e",
+      "uniforms": [
+        "map"
+      ],
+      "varyings": [
+        "vUv",
+        "vFade"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 67224,
+        "offset": 768915
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 283,
+      "hash": "e62a24010fd7ffee",
+      "uniforms": [
+        "pixelRatio"
+      ],
+      "varyings": [
+        "vColor",
+        "vAlpha"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 4366,
+        "offset": 797158
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 173,
+      "hash": "c2a26a6e759ed4d8",
+      "uniforms": [],
+      "varyings": [
+        "vColor",
+        "vAlpha"
+      ],
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 4667,
+        "offset": 797459
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "tonemap",
+      "hits": 79,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 1,
+          "col": 4584,
+          "offset": 4583
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 1,
+          "col": 4660,
+          "offset": 4659
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 5,
+          "col": 103847,
+          "offset": 125843
+        }
+      ]
+    },
+    {
+      "word": "bloom",
+      "hits": 17,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4167,
+          "col": 482,
+          "offset": 616894
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4167,
+          "col": 631,
+          "offset": 617043
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4167,
+          "col": 762,
+          "offset": 617174
+        }
+      ]
+    },
+    {
+      "word": "tone_mapping",
+      "hits": 15,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 346,
+          "col": 3108,
+          "offset": 313045
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4061,
+          "col": 503,
+          "offset": 557388
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4061,
+          "col": 530,
+          "offset": 557415
+        }
+      ]
+    },
+    {
+      "word": "halo",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 9044,
+          "offset": 801836
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 9471,
+          "offset": 802263
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "burst",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 5929,
+          "offset": 798721
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 25536,
+          "offset": 818328
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 25729,
+          "offset": 818521
+        }
+      ]
+    },
+    {
+      "word": "splash",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4361,
+          "col": 68129,
+          "offset": 769820
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4361,
+          "col": 68276,
+          "offset": 769967
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4362,
+          "col": 82,
+          "offset": 770105
+        }
+      ]
+    },
+    {
+      "word": "dust",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 5172,
+          "offset": 797964
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 26158,
+          "offset": 818950
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 26335,
+          "offset": 819127
+        }
+      ]
+    },
+    {
+      "word": "smoke",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 5,
+          "col": 66703,
+          "offset": 88699
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 5144,
+          "offset": 797936
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 25764,
+          "offset": 818556
+        }
+      ]
+    },
+    {
+      "word": "particle",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4026,
+          "col": 1515,
+          "offset": 540311
+        },
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4026,
+          "col": 1540,
+          "offset": 540336
+        }
+      ]
+    },
+    {
+      "word": "snow",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 5,
+          "col": 66532,
+          "offset": 88528
+        }
+      ]
+    },
+    {
+      "word": "trail",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+          "line": 4369,
+          "col": 9661,
+          "offset": 802453
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "generateMipmaps",
+        "internalFormat",
+        "minFilter",
+        "depthBuffer",
+        "stencilBuffer",
+        "resolveDepthBuffer",
+        "resolveStencilBuffer",
+        "depthTexture",
+        "samples",
+        "count",
+        "depth",
+        "multiview"
+      ],
+      "numbers": {
+        "generateMipmaps": null,
+        "depthBuffer": null,
+        "stencilBuffer": null,
+        "resolveDepthBuffer": null,
+        "resolveStencilBuffer": null,
+        "samples": 0,
+        "count": 1,
+        "depth": 1,
+        "multiview": null
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 33832,
+        "offset": 55828
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 1,
+        "mean": 0.25,
+        "head": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 37662,
+        "offset": 59658
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 148,
+      "keys": [
+        "aliceblue",
+        "antiquewhite",
+        "aqua",
+        "aquamarine",
+        "azure",
+        "beige",
+        "bisque",
+        "black",
+        "blanchedalmond",
+        "blue",
+        "blueviolet",
+        "brown",
+        "burlywood",
+        "cadetblue",
+        "chartreuse",
+        "chocolate",
+        "coral",
+        "cornflowerblue",
+        "cornsilk",
+        "crimson",
+        "cyan",
+        "darkblue",
+        "darkcyan",
+        "darkgoldenrod",
+        "darkgray",
+        "darkgreen",
+        "darkgrey",
+        "darkkhaki",
+        "darkmagenta",
+        "darkolivegreen",
+        "darkorange",
+        "darkorchid",
+        "darkred",
+        "darksalmon",
+        "darkseagreen",
+        "darkslateblue",
+        "darkslategray",
+        "darkslategrey",
+        "darkturquoise",
+        "darkviolet",
+        "deeppink",
+        "deepskyblue",
+        "dimgray",
+        "dimgrey",
+        "dodgerblue",
+        "firebrick",
+        "floralwhite",
+        "forestgreen",
+        "fuchsia",
+        "gainsboro",
+        "ghostwhite",
+        "gold",
+        "goldenrod",
+        "gray",
+        "green",
+        "greenyellow",
+        "grey",
+        "honeydew",
+        "hotpink",
+        "indianred"
+      ],
+      "numbers": {
+        "aliceblue": 15792383,
+        "antiquewhite": 16444375,
+        "aqua": 65535,
+        "aquamarine": 8388564,
+        "azure": 15794175,
+        "beige": 16119260,
+        "bisque": 16770244,
+        "black": 0,
+        "blanchedalmond": 16772045,
+        "blue": 255,
+        "blueviolet": 9055202,
+        "brown": 10824234,
+        "burlywood": 14596231,
+        "cadetblue": 6266528,
+        "chartreuse": 8388352,
+        "chocolate": 13789470,
+        "coral": 16744272,
+        "cornflowerblue": 6591981,
+        "cornsilk": 16775388,
+        "crimson": 14423100,
+        "cyan": 65535,
+        "darkblue": 139,
+        "darkcyan": 35723,
+        "darkgoldenrod": 12092939,
+        "darkgray": 11119017,
+        "darkgreen": 25600,
+        "darkgrey": 11119017,
+        "darkkhaki": 12433259,
+        "darkmagenta": 9109643,
+        "darkolivegreen": 5597999,
+        "darkorange": 16747520,
+        "darkorchid": 10040012,
+        "darkred": 9109504,
+        "darksalmon": 15308410,
+        "darkseagreen": 9419919,
+        "darkslateblue": 4734347,
+        "darkslategray": 3100495,
+        "darkslategrey": 3100495,
+        "darkturquoise": 52945,
+        "darkviolet": 9699539,
+        "deeppink": 16716947,
+        "deepskyblue": 49151,
+        "dimgray": 6908265,
+        "dimgrey": 6908265,
+        "dodgerblue": 2003199,
+        "firebrick": 11674146,
+        "floralwhite": 16775920,
+        "forestgreen": 2263842,
+        "fuchsia": 16711935,
+        "gainsboro": 14474460,
+        "ghostwhite": 16316671,
+        "gold": 16766720,
+        "goldenrod": 14329120,
+        "gray": 8421504,
+        "green": 32768,
+        "greenyellow": 11403055,
+        "grey": 8421504,
+        "honeydew": 15794160,
+        "hotpink": 16738740,
+        "indianred": 13458524
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 64064,
+        "offset": 86060
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 20,
+      "stats": {
+        "min": -0.5,
+        "max": 1,
+        "mean": 0.2,
+        "head": [
+          -0.5,
+          -0.5,
+          0,
+          0,
+          0,
+          0.5
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 114998,
+        "offset": 136994
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 60,
+      "stats": {
+        "min": 0,
+        "max": 11,
+        "mean": 5.5,
+        "head": [
+          0,
+          11,
+          5,
+          0,
+          5,
+          1
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 164615,
+        "offset": 186611
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 18,
+      "stats": {
+        "min": -1,
+        "max": 1,
+        "mean": 0,
+        "head": [
+          1,
+          0,
+          0,
+          -1,
+          0,
+          0
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 166269,
+        "offset": 188265
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 24,
+      "stats": {
+        "min": 0,
+        "max": 5,
+        "mean": 2.5,
+        "head": [
+          0,
+          2,
+          4,
+          0,
+          4,
+          3
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 166312,
+        "offset": 188308
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "MeshDepthMaterial",
+        "MeshDistanceMaterial",
+        "MeshNormalMaterial",
+        "MeshBasicMaterial",
+        "MeshLambertMaterial",
+        "MeshPhongMaterial",
+        "MeshToonMaterial",
+        "MeshStandardMaterial",
+        "MeshPhysicalMaterial",
+        "MeshMatcapMaterial",
+        "LineBasicMaterial",
+        "LineDashedMaterial",
+        "PointsMaterial",
+        "ShadowMaterial",
+        "SpriteMaterial"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 925,
+        "offset": 315929
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 512,
+      "stats": {
+        "min": 0,
+        "max": 15360,
+        "mean": 11576.578125,
+        "head": [
+          12469,
+          15057,
+          12620,
+          14925,
+          13266,
+          14620
+        ]
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4112,
+        "col": 9093,
+        "offset": 571243
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 48,
+      "keys": [
+        "phase",
+        "time",
+        "s",
+        "x",
+        "lane",
+        "y",
+        "vy",
+        "speed",
+        "health",
+        "chakra",
+        "attack",
+        "attackCooldown",
+        "attackSerial",
+        "attackStartedAt",
+        "lastStrikeAt",
+        "shurikenStartedAt",
+        "shurikenCast",
+        "dash",
+        "dashCooldown",
+        "slide",
+        "invulnerable",
+        "combo",
+        "bestCombo",
+        "comboTimer",
+        "kills",
+        "score",
+        "damageTaken",
+        "attacksFired",
+        "deflections",
+        "interrupts",
+        "projectileSerial",
+        "projectiles",
+        "entities",
+        "events",
+        "lastStep",
+        "form",
+        "clones",
+        "cloneCooldown",
+        "clonePulse",
+        "cloneStrikes",
+        "shurikenCooldown",
+        "shurikens",
+        "jutsuSerial",
+        "vaults",
+        "lastVault",
+        "falling",
+        "stumble",
+        "announcedUnlocks"
+      ],
+      "numbers": {
+        "time": 0,
+        "s": 0,
+        "x": 0,
+        "lane": 0,
+        "y": 0,
+        "vy": 0,
+        "attack": 0,
+        "attackCooldown": 0,
+        "attackSerial": 0,
+        "attackStartedAt": -100,
+        "lastStrikeAt": -100,
+        "shurikenStartedAt": -100,
+        "shurikenCast": 0,
+        "dash": 0,
+        "dashCooldown": 0,
+        "slide": 0,
+        "invulnerable": 0,
+        "combo": 0,
+        "bestCombo": 0,
+        "comboTimer": 0,
+        "kills": 0,
+        "score": 0,
+        "damageTaken": 0,
+        "attacksFired": 0,
+        "deflections": 0,
+        "interrupts": 0,
+        "projectileSerial": 0,
+        "lastStep": 0,
+        "clones": 0,
+        "cloneCooldown": 0,
+        "clonePulse": 0,
+        "cloneStrikes": 0,
+        "shurikenCooldown": 0,
+        "jutsuSerial": 0,
+        "vaults": 0,
+        "lastVault": -1,
+        "falling": null,
+        "stumble": 0
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4330,
+        "col": 8751,
+        "offset": 671562
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 24,
+      "keys": [
+        "length",
+        "laneWidth",
+        "baseSpeed",
+        "maxSpeed",
+        "gravity",
+        "jumpVelocity",
+        "attackDuration",
+        "attackCooldown",
+        "attackCost",
+        "attackReach",
+        "dashCost",
+        "dashDuration",
+        "health",
+        "hitChakraCost",
+        "stumbleDuration",
+        "maxChakra",
+        "chakraRegen",
+        "hitProtection",
+        "cloneCost",
+        "cloneDuration",
+        "cloneCooldown",
+        "shurikenCost",
+        "shurikenCooldown",
+        "shurikenWindup"
+      ],
+      "numbers": {
+        "length": 2640,
+        "laneWidth": 2.35,
+        "baseSpeed": 18,
+        "maxSpeed": 25,
+        "gravity": 25,
+        "jumpVelocity": 10.4,
+        "attackDuration": 0.78,
+        "attackCooldown": 0.25,
+        "attackCost": 14,
+        "attackReach": 4.6,
+        "dashCost": 38,
+        "dashDuration": 1.2,
+        "health": 5,
+        "hitChakraCost": 35,
+        "stumbleDuration": 1.1,
+        "maxChakra": 300,
+        "chakraRegen": 12,
+        "hitProtection": 6,
+        "cloneCost": 60,
+        "cloneDuration": 6,
+        "cloneCooldown": 10,
+        "shurikenCost": 75,
+        "shurikenCooldown": 4,
+        "shurikenWindup": 0.55
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4330,
+        "col": 19653,
+        "offset": 682464
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 23,
+      "keys": [
+        "KHR_BINARY_GLTF",
+        "KHR_DRACO_MESH_COMPRESSION",
+        "KHR_LIGHTS_PUNCTUAL",
+        "KHR_MATERIALS_CLEARCOAT",
+        "KHR_MATERIALS_DISPERSION",
+        "KHR_MATERIALS_IOR",
+        "KHR_MATERIALS_SHEEN",
+        "KHR_MATERIALS_SPECULAR",
+        "KHR_MATERIALS_TRANSMISSION",
+        "KHR_MATERIALS_IRIDESCENCE",
+        "KHR_MATERIALS_ANISOTROPY",
+        "KHR_MATERIALS_UNLIT",
+        "KHR_MATERIALS_VOLUME",
+        "KHR_TEXTURE_BASISU",
+        "KHR_TEXTURE_TRANSFORM",
+        "KHR_MESH_QUANTIZATION",
+        "KHR_MATERIALS_EMISSIVE_STRENGTH",
+        "EXT_MATERIALS_BUMP",
+        "EXT_TEXTURE_WEBP",
+        "EXT_TEXTURE_AVIF",
+        "EXT_MESHOPT_COMPRESSION",
+        "KHR_MESHOPT_COMPRESSION",
+        "EXT_MESH_GPU_INSTANCING"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 16761,
+        "offset": 718452
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "FLOAT",
+        "FLOAT_MAT3",
+        "FLOAT_MAT4",
+        "FLOAT_VEC2",
+        "FLOAT_VEC3",
+        "FLOAT_VEC4",
+        "LINEAR",
+        "REPEAT",
+        "SAMPLER_2D",
+        "POINTS",
+        "LINES",
+        "LINE_LOOP",
+        "LINE_STRIP",
+        "TRIANGLES",
+        "TRIANGLE_STRIP",
+        "TRIANGLE_FAN",
+        "UNSIGNED_BYTE",
+        "UNSIGNED_SHORT"
+      ],
+      "numbers": {
+        "FLOAT": 5126,
+        "FLOAT_MAT3": 35675,
+        "FLOAT_MAT4": 35676,
+        "FLOAT_VEC2": 35664,
+        "FLOAT_VEC3": 35665,
+        "FLOAT_VEC4": 35666,
+        "LINEAR": 9729,
+        "REPEAT": 10497,
+        "SAMPLER_2D": 35678,
+        "POINTS": 0,
+        "LINES": 1,
+        "LINE_LOOP": 2,
+        "LINE_STRIP": 3,
+        "TRIANGLES": 4,
+        "TRIANGLE_STRIP": 5,
+        "TRIANGLE_FAN": 6,
+        "UNSIGNED_BYTE": 5121,
+        "UNSIGNED_SHORT": 5123
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 31755,
+        "offset": 733446
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 15,
+      "keys": [
+        "orange",
+        "seam",
+        "black",
+        "navy",
+        "skin",
+        "shade",
+        "hair",
+        "hairLight",
+        "metal",
+        "ivory",
+        "vest",
+        "vestLight",
+        "pouch",
+        "red",
+        "white"
+      ],
+      "numbers": {
+        "orange": 15235110,
+        "seam": 16094013,
+        "black": 2238772,
+        "navy": 2700093,
+        "skin": 15118474,
+        "shade": 12552296,
+        "hair": 15381547,
+        "hairLight": 16042562,
+        "metal": 9214622,
+        "ivory": 14277838,
+        "vest": 5465163,
+        "vestLight": 7438437,
+        "pouch": 8157032,
+        "red": 10824756,
+        "white": 14209982
+      },
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 3437,
+        "offset": 796229
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 14,
+      "keys": [
+        "KeyA",
+        "ArrowLeft",
+        "KeyD",
+        "ArrowRight",
+        "Space",
+        "ArrowUp",
+        "KeyW",
+        "KeyS",
+        "ArrowDown",
+        "ShiftLeft",
+        "ShiftRight",
+        "Digit1",
+        "Digit2",
+        "Digit3"
+      ],
+      "numbers": {},
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 18675,
+        "offset": 811467
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/e049e3e4-677f-42d5-8c34-3aa4af454068/ninja-runner-v1/assets/.png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4328,
+        "col": 31765,
+        "offset": 660839
+      }
+    },
+    {
+      "path": ".json",
+      "ext": "json",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4357,
+        "col": 336,
+        "offset": 691081
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/e049e3e4-677f-42d5-8c34-3aa4af454068/ninja-runner-v1/assets/naruto/naruto-.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 56914,
+        "offset": 758605
+      }
+    },
+    {
+      "path": ".png",
+      "ext": "png",
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 14005,
+        "offset": 806797
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 238811,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 1,
+        "col": 21905,
+        "offset": 21904
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 209816,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 82763,
+        "offset": 397767
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 38008,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 13372,
+        "offset": 715063
+      }
+    },
+    {
+      "name": "CM",
+      "params": 7,
+      "chars": 30128,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 37467,
+        "offset": 352471
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 15568,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4328,
+        "col": 6384,
+        "offset": 635458
+      }
+    },
+    {
+      "name": "cM",
+      "params": 4,
+      "chars": 11725,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 339,
+        "col": 555,
+        "offset": 304044
+      }
+    },
+    {
+      "name": "HS",
+      "params": 4,
+      "chars": 11020,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4365,
+        "col": 9053,
+        "offset": 779372
+      }
+    },
+    {
+      "name": "EM",
+      "params": 2,
+      "chars": 10943,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 26524,
+        "offset": 341528
+      }
+    },
+    {
+      "name": "dM",
+      "params": 6,
+      "chars": 10521,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 810,
+        "offset": 315814
+      }
+    },
+    {
+      "name": "x0",
+      "params": 3,
+      "chars": 8716,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4359,
+        "col": 3163,
+        "offset": 700540
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 8298,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4167,
+        "col": 22,
+        "offset": 616434
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 8207,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 104435,
+        "offset": 126431
+      }
+    },
+    {
+      "name": "DM",
+      "params": 2,
+      "chars": 6691,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 71923,
+        "offset": 386927
+      }
+    },
+    {
+      "name": "x",
+      "params": 6,
+      "chars": 6437,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 1387,
+        "offset": 316391
+      }
+    },
+    {
+      "name": "AM",
+      "params": 3,
+      "chars": 6277,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 20247,
+        "offset": 335251
+      }
+    },
+    {
+      "name": "Y0",
+      "params": 2,
+      "chars": 5716,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4365,
+        "col": 20073,
+        "offset": 790392
+      }
+    },
+    {
+      "name": "Te",
+      "params": 3,
+      "chars": 5391,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 47984,
+        "offset": 362988
+      }
+    },
+    {
+      "name": "mx",
+      "params": 5,
+      "chars": 5221,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4112,
+        "col": 30263,
+        "offset": 592413
+      }
+    },
+    {
+      "name": "yM",
+      "params": 1,
+      "chars": 5150,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 14433,
+        "offset": 329437
+      }
+    },
+    {
+      "name": "D1",
+      "params": 2,
+      "chars": 4872,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 9,
+        "col": 70930,
+        "offset": 266102
+      }
+    },
+    {
+      "name": "qi",
+      "params": 0,
+      "chars": 4864,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 12546,
+        "offset": 805338
+      }
+    },
+    {
+      "name": "A0",
+      "params": 2,
+      "chars": 4391,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 51382,
+        "offset": 753073
+      }
+    },
+    {
+      "name": "RM",
+      "params": 2,
+      "chars": 4328,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 67595,
+        "offset": 382599
+      }
+    },
+    {
+      "name": "t",
+      "params": 2,
+      "chars": 4293,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 67612,
+        "offset": 382616
+      }
+    },
+    {
+      "name": "toJSON",
+      "params": 1,
+      "chars": 4102,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 5,
+        "col": 55522,
+        "offset": 77518
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 4014,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-0.js",
+        "line": 1,
+        "col": 67,
+        "offset": 66
+      }
+    },
+    {
+      "name": "update",
+      "params": 1,
+      "chars": 3726,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4328,
+        "col": 10896,
+        "offset": 639970
+      }
+    },
+    {
+      "name": "z1",
+      "params": 3,
+      "chars": 3719,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 9,
+        "col": 80238,
+        "offset": 275410
+      }
+    },
+    {
+      "name": "$0",
+      "params": 1,
+      "chars": 3605,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 8672,
+        "offset": 801464
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 6,
+      "chars": 3596,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4112,
+        "col": 41084,
+        "offset": 603234
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 3522,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4365,
+        "col": 3574,
+        "offset": 773893
+      }
+    },
+    {
+      "name": "ZS",
+      "params": 0,
+      "chars": 3439,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4369,
+        "col": 28715,
+        "offset": 821507
+      }
+    },
+    {
+      "name": "NM",
+      "params": 4,
+      "chars": 3335,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 78614,
+        "offset": 393618
+      }
+    },
+    {
+      "name": "o",
+      "params": 1,
+      "chars": 3311,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 15088,
+        "offset": 330092
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 3,
+      "chars": 3098,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 20778,
+        "offset": 335782
+      }
+    },
+    {
+      "name": "tu",
+      "params": 2,
+      "chars": 3062,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 4361,
+        "col": 59831,
+        "offset": 761522
+      }
+    },
+    {
+      "name": "L1",
+      "params": 6,
+      "chars": 3053,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 9,
+        "col": 67877,
+        "offset": 263049
+      }
+    },
+    {
+      "name": "Z1",
+      "params": 5,
+      "chars": 2979,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 263,
+        "col": 6425,
+        "offset": 289330
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2896,
+      "loc": {
+        "file": "evidence/crayon-runtime/ninja-runner/srcdoc.html#script0",
+        "line": 1,
+        "col": 2,
+        "offset": 1
+      }
+    },
+    {
+      "name": "je",
+      "params": 1,
+      "chars": 2866,
+      "loc": {
+        "file": "tmp/crayon-raw-bundles/ninja-runner/capture-3.js",
+        "line": 360,
+        "col": 61053,
+        "offset": 376057
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 3435,
+    "functions": 2485,
+    "newExpressions": 1543,
+    "calls": 9946
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:results",
+        "original": "34 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:settings",
+        "original": "33 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:level-select",
+        "original": "30 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "8 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:menu",
+        "original": "5 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:tutorial",
+        "original": "4 references",
+        "port": "absent"
+      },
+      {
+        "feature": "host-platform postMessage hooks",
+        "original": "4 postMessage calls",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "audio",
+        "original": "19 audio API uses / 0 audio assets",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "25 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "19 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "11 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "6 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "4 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "tonemapx79, bloomx17, tone_mappingx15, halox2",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "burstx6, splashx5, dustx4, smokex3",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "Enter, Escape, KeyP, ArrowDown, ArrowLeft, ArrowRight, ArrowUp",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointercancel, pointerdown, pointerup, lostpointercapture, pointermove, touchmove",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "The original's enemy attack code path (`rS`) is dead for approaching enemies and was never fired in any capture; it is transcribed but unverified.",
+      "`MODEL_YAW_OFFSET` (soldier facing) was chosen without a GPU run; check the frames in `evidence/ninja-runner-port/`."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

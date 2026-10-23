@@ -5,7 +5,7 @@
  */
 import type { material, texture } from "@aura3d/engine";
 import {
-  BALL_FRAGMENT, BALL_VERTEX, FALLS_FRAGMENT, FALLS_VERTEX, FLAME_FRAGMENT, FLAME_VERTEX, GROUND_FRAGMENT, GROUND_VERTEX, PARTICLE_FRAGMENT,
+  AURA_FRAGMENT, BALL_FRAGMENT, BALL_VERTEX, FALLS_FRAGMENT, FALLS_VERTEX, FLAME_FRAGMENT, FLAME_VERTEX, GROUND_FRAGMENT, GROUND_VERTEX, PARTICLE_FRAGMENT,
   PARTICLE_VERTEX, SKY_FRAGMENT, SKY_VERTEX, SOLID_FRAGMENT, SOLID_VERTEX, SPARKS_FRAGMENT, SPARKS_VERTEX, WATER_FRAGMENT, WATER_VERTEX
 } from "./shaders";
 import type { Rgb } from "./palette";
@@ -63,6 +63,14 @@ export const ballSpec = (): CustomSpec => ({
   blending: "additive"
 });
 
+export const auraSpec = (): CustomSpec => ({
+  glsl: { vertex: BALL_VERTEX, fragment: AURA_FRAGMENT },
+  uniforms: { auraTime: { type: "f32", value: 0 }, auraStrength: { type: "f32", value: 0 }, auraColor: { type: "color3", value: [1, 0.55, 0.15] } },
+  transparent: true,
+  depthWrite: false,
+  blending: "additive"
+});
+
 export const sparksSpec = (): CustomSpec => ({
   glsl: { vertex: SPARKS_VERTEX, fragment: SPARKS_FRAGMENT },
   uniforms: { sparkTime: { type: "f32", value: 0 }, sparkStrength: { type: "f32", value: 0 } },
@@ -95,6 +103,7 @@ export const allProgramSpecs = (flameMap: TextureHandle): readonly { readonly na
   { name: "water", spec: waterSpec() },
   { name: "falls", spec: fallsSpec() },
   { name: "ball", spec: ballSpec() },
+  { name: "aura", spec: auraSpec() },
   { name: "sparks", spec: sparksSpec() },
   { name: "flame", spec: flameSpec(flameMap) },
   { name: "particles", spec: particleSpec() }

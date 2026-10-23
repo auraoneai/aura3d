@@ -1,11 +1,16 @@
-# Where the Wind Wanders on Aura3D: rendered frames
+# Where the Wind Wanders on Aura3D: rendered frames and measurements
 
-Rendered by `tests/browser/where-the-wind-wanders-port.spec.ts` on the remote software-WebGL2 runner (ACR run
-`wind-20261023T050400Z`, SwiftShader, 960x540 viewport, 480x270 JPEG): `start.jpg` (the meadow at the start
-position), `walked.jpg` (4 seconds of walking east) and `end.jpg` (after the replayed 2,098-step run that collects the
-three letters and rings the bell). Measured: terrain/foliage cover 60% of the frame, 252+ distinct colours, 3,820
-foliage cards in one draw, 94 draw calls.
+Frames are rendered by `tests/browser/where-the-wind-wanders-port.spec.ts` on the remote software-WebGL2 runner (ACR run
+`wind-art-1023111305`, SwiftShader, 960x346 viewport = the original's canvas aspect) and live in `frames/`:
+`replay-<step>` at steps 306/700/1172/1500 of the recorded 2,098-step run, `view-*` close-ups, `epilogue-*` voyage frames,
+`page-*` the real-time title card, walking, journal and pause screens. `compare-<step>.jpg` are before | after sheets of the
+port only. The original's frames are third-party and stay local (`evidence/look-reference-frames/`, gitignored).
 
-Everything is procedural; the original's painted sprite art is not reproduced (see
-`examples/where-the-wind-wanders-port/PORTING-NOTES.md`). These frames show the port's own look, not a pixel comparison
-with the original.
+Blind judge (`tools/crayon-capture/where-the-wind-wanders-judge.ts`, a MODEL judgement via Kiro Prism, seed 20261023,
+4 matched states x 12 passes = 48 trials, 640x360 re-encodes): original picked 48/48 before and 48/48 after (chance 50%;
+"same game" never chosen). Structural distance to the original (mean over the 4 frames), before -> after: luma JSD
+0.196 -> 0.060, RGB JSD 0.722 -> 0.554, palette distance 0.172 -> 0.113, mean luma gap 15.6 -> 2.6, edge-density ratio 0.37 -> 0.53.
+So the look is much closer in colour and brightness, but a model still tells the two apart every time (flat low-poly
+trees and props, no painted texture detail, different traveller).
+
+Perf (software GL, not a GPU number): 23 draw calls, ~306k triangles, 18.8k foliage cards, 0 asset bytes. Replay worst delta 7.0e-10.

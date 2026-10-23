@@ -20,3 +20,25 @@ function _o(i,e){return i%(e.period||11)<(e.open||7)}
 function wo(i){let e=ju(i.fieldNotes).length;return{count:e,reserve:e>=3,wind:e>=7,aurora:e>=14,complete:e===21,pigments:["Original",...e>=3?["Tideglass"]:[],...e>=7?["Saffron"]:[],...e>=14?["Aurora"]:[]]}}
 
 function E0(i,e){return i.chapter!==1||i.exploring||i.restored.includes("watergate")||i.z>=Rn.z-14?!1:(i.x=Rn.station.x,i.z=Rn.station.z+24,i.y=Rn.station.y+4,i.yaw=0,i.hold=0,i.recoveries=(i.recoveries||0)+1,e.speed=0,e.vertical=0,e.turn=0,e.bank=0,e.boosting=!1,e.energy=Math.max(0,e.energy-.25),!0)}
+
+function hS(i,e){if(!i.profile)return i.r;let t=e-(i.base??i.bottom),n=i.profile[0],r=i.profile.at(-1);for(let s=1;s<i.profile.length;s++)if(t<=i.profile[s][0]){n=i.profile[s-1],r=i.profile[s];break}return n[1]+(r[1]-n[1])*Tm((t-n[0])/(r[0]-n[0]||1),0,1)}
+
+function uS(i,e,t=1.8,n=1){if(e.disabled||i.y+n<e.bottom||i.y-n>e.top)return null;let r=i.x-e.x,s=i.z-e.z;if(e.halfX!==void 0){let l=Tm(r,-e.halfX,e.halfX),c=Tm(s,-e.halfZ,e.halfZ),h=r-l,u=s-c,d=Math.hypot(h,u);if(d>=t)return null;if(d>1e-5)return{x:h/d*(t-d+.002),z:u/d*(t-d+.002)};let f=e.halfX-Math.abs(r),p=e.halfZ-Math.abs(s);return f<p?{x:(Math.sign(r)||1)*(f+t+.002),z:0}:{x:0,z:(Math.sign(s)||1)*(p+t+.002)}}let o=Math.hypot(r,s),a=hS(e,i.y)+t;return o>=a?null:(o<1e-5&&(r=0,s=1),{x:r/(o||1)*(a-o+.002),z:s/(o||1)*(a-o+.002)})}
+
+function ss(i,e,{radius:t=1.8,halfHeight:n=1,offsets:r=[0],yaw:s=0,passes:o=6}={}){let a=0;for(let l=0;l<o;l++){let c=!1;for(let h of r){let u={x:i.x+Math.sin(s)*h,y:i.y,z:i.z+Math.cos(s)*h};for(let d of e){let f=uS(u,d,t,n);f&&(i.x+=f.x,i.z+=f.z,u.x+=f.x,u.z+=f.z,c=!0,a++)}}if(!c)break}return a}
+
+function Bx(i,e,t,n={}){let r=i.x-e.x,s=i.z-e.z,o=Math.max(1,Math.ceil(Math.hypot(r,s)/.8));i.x=e.x,i.z=e.z;let a=0;for(let l=0;l<o;l++)i.x+=r/o,i.z+=s/o,a+=ss(i,t,n);return a}
+
+function rs(i,e){return i>-70&&i<225&&e>-365&&e<115}
+
+function Mo(i,e){let t=Math.abs(i-Tt(e));return t<25?-3+3.6*(t/25)**8:.6}
+
+function _i(i,e){return i<37||i>132||Math.abs(e+180)>10?null:.6+3.6*Math.sin(Math.PI*(i-37)/95)}
+
+function rv(i,e,t=1/0){let n=-1/0;for(let r of Um){let s=r.b.x-r.a.x,o=r.b.z-r.a.z,a=Math.hypot(s,o),l=((i-r.a.x)*s+(e-r.a.z)*o)/(a*a),c=Math.abs((i-r.a.x)*o-(e-r.a.z)*s)/a;if(l>=0&&l<=1&&c<=r.w/2){let h=.6+(r.y-.6)*Math.ceil(l*48)/48;t>=h-2.5&&(n=Math.max(n,h))}}return n}
+
+function sv(i,e,t=1/0){let n=-1/0;for(let r of[...km,...Bm])Math.abs(i-r.x)<r.w/2&&Math.abs(e-r.z)<r.d/2&&t>=r.y-2.5&&(n=Math.max(n,r.y));return n}
+
+function T0(i,e,t,n=1/0){let r=-1/0;for(let s of Rc(i))Math.abs(t-s.z)<6.5*s.scale&&e>s.left-14&&e<s.right+14&&n>=s.deckY-2.5&&(r=Math.max(r,s.deckY));if(i===1)for(let s of Qd)Math.abs(t-s.z)<9&&Math.abs(e)<218&&n>=s.deckY-2.5&&(r=Math.max(r,s.deckY));return r}
+
+function w0(i){return(i===0?oy:M0).map(e=>{let t=i===1?ms(e.z).x:0,n=42*e.scale,r=[t],s=i===1?205:172;for(let o of[-1,1])for(let a=1;o*(t+o*(a-1)*n)+22.5*e.scale<s;a++)r.push(t+o*a*n);return r.sort((o,a)=>o-a),{...e,axis:t,centres:r,deckY:e.y+36.05*e.scale,left:r[0]-22.5*e.scale,right:r.at(-1)+22.5*e.scale,purpose:i===0?"Town water conduit and cistern access":"Cliff service crossing and water conduit"}})}

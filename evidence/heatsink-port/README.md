@@ -6,40 +6,67 @@ Port: `examples/heatsink-port/` (Time Trial, Vesper Heights). See `examples/heat
 
 `evidence/crayon-capture/heatsink-reference.json` is a remote capture of the original: 4 independent browser sessions and 4 replays of a 6000-step recorded input script agree exactly (max delta 0, identical track fingerprint, 202 snapshots; runs cc1en and cc1ep, earlier runs cc1db/cc1ec/cc1ed). `tests/unit/heatsink-port/reference-replay.test.ts` replays that script through the port and holds it to 1e-6 (observed worst about 1.6e-10; the capture's stated tolerance is 1e-3). The replay covers a crash and respawn, boost pads, a pickup and a lap boundary. Track length, 48 sampled frames, checkpoints, sections, boost pads (10), pickups (6) and barrels (12) match the original.
 
-## 2. Blind A/B "same game": **FAILED again, the port is still distinguishable**
+## 2. Blind judge, before and after the art pass (two separately labelled questions)
 
-**This is a MODEL judgement, not a human one.** Judge: `claude-sonnet-5.5` through Kiro Prism (`/v1/messages`), tool `tools/crayon-capture/heatsink-judge.ts`, results in `judge-results.json` (every trial, the prompt, the seed). The prompt was not changed between passes of this exercise. 16 matched frame pairs (same simulation step of the same recorded run, original vs port, 800x450), 3 passes each with the A/B order re-drawn from a recorded seed (20261023; balanced within each pass), 48 trials, 0 errors.
+**Both are MODEL judgements, not human ones.** Judge: `claude-sonnet-5.5` through Kiro Prism (`/v1/messages`). 16 matched frame pairs (same simulation step of the same recorded run, original vs port, 800x450, original HUD overlays removed), 3 passes each, A/B order re-drawn from a recorded seed (20261023, balanced per pass), 48 trials, 0 errors. Prompts were not changed between passes.
 
-Two protocol runs were made. Run 1 used the first frames (port sky black, original frames still showing the minimap and Exit button). Run 2 is the improvement pass: the port's sky now draws and the original's minimap and Exit button are removed from the frames.
+`compare-before-after.jpg`: port only (before left, after right), steps 1200, 1500, 3000, 4500.
 
-| measure | run 1 | run 2 (current) |
+### Question 1, strict: "which image is the original?" (`judge-results.json`, `tools/crayon-capture/heatsink-judge.ts`)
+
+| | before art pass (run 2) | after (final, run f) |
 | --- | --- | --- |
-| identified the original | 48/48 = 100% | **48/48 = 100%** (95% CI 92.6% to 100%) |
-| chance / exact binomial p | 50%, p = 7e-15 | 50%, p = 7e-15 |
-| above the 70% bar, so distinguishable | yes | **yes** |
+| identified the original | 48/48 = 100% | **48/48 = 100%** (95% CI 92.6% to 100%, p = 7e-15 vs 50% chance) |
 | judged "same game" | 0/48 | 0/48 |
-| position bias (picked A / B) | 24 / 24 | 24 / 24 |
-| by look (run 2) | | cruise 18/18, heat 12/12, boost 18/18 |
+| by look | cruise 18/18, heat 12/12, boost 18/18 | cruise 18/18, heat 12/12, boost 18/18 |
 
-Structural metrics, run 2, mean over 16 frame pairs (0 = identical): luma-histogram Jensen-Shannon 0.385, 4-bit RGB histogram JSD 0.753, dominant-palette distance 0.082 (share-weighted, 0..1), edge density original 0.056 vs port 0.020 (port has 0.37x the edges). Per look: cruise luma JSD 0.307, heat 0.427, boost 0.434; edge-density ratio cruise 0.39, heat 0.42, boost 0.31. (Run 1: luma 0.388, RGB 0.736, palette 0.089, edge 0.057 vs 0.021.) The sky fix moved the luma and palette distances only slightly.
+**The strict reading of the Phase B exit (judge cannot tell them apart) is NOT met and was not moved by any iteration.** With procedural art the judge still finds a tell in every pair (top tells now: flat or low-poly look and missing texture detail on the vehicle and hills, then the vehicle model, terrain, road, props).
 
-Remaining visible differences, ranked by likely impact (ranking from how often the judge's stated tells name each, plus my own reading of the frames; counts are tells across 144 listed phrases):
-1. **Vehicle**: six primitives (orange boxes plus a white ball) vs the original's detailed multi-rotor drone with twin glowing thrusters (vehicle/drone/thruster named about 84 times).
-2. **Sky richness**: the dome now draws a dark gradient with faint aurora, but there is no large ringed planet, no strong aurora bands, no haze layering (sky/aurora/planet about 100).
-3. **Surface and material detail**: flat-shaded faceted cones for hills, no textures, normal detail, rock strata, foliage, arches or gantries (texture/terrain/mountain about 70; props, plants, arch a handful).
-4. **Motion effects**: the original draws speed streaks, thruster light trails and boost particles; the port has only a few exhaust points (about 34).
-5. **Road**: the original's asphalt has wear and neon curb detail; the port's is a flat fbm with thin lines (about 24).
-6. **Lighting and grade**: the original has bloom, haze and a teal grade; the port has simple bloom and exponential fog (about 33 across lighting/haze/fog).
-7. **Camera framing** (about 6).
-None of these is a bug in the simulation; they are art-fidelity gaps that a 800-line hand port of 49 node materials does not close.
+### Question 2, design: "same game design (track, HUD semantics, vehicle type, look-and-feel), even if rendering differs?" (`judge-results-design.json`, `tools/crayon-capture/heatsink-judge-design.ts`)
 
-Other limits: one judge model, one prompt. Original frames are Playwright JPEG screenshots (q92), port frames are in-page canvas JPEG (q92). "Rain" frames of the Phase B exit are unavailable: rain only occurs on the original's Grand Circuit map, which is not ported. The three looks judged are cruise (Vesper aurora sky), heat (overdrive burning, steps 1140-1230) and boost (pad/checkpoint burst).
+Symmetric: the judge is not asked which is the original. Same pairs, same seed.
 
-Conclusion: the Phase B exit item "HEATSINK blind A/B judged same game" is **not met**. The state-parity half is.
+| | before (run 2) | after (final, run f) |
+| --- | --- | --- |
+| "same design" | 13/48 = 27.1% | **38/48 = 79.2%** (Wilson 95% 65.7% to 88.3%) |
+| "no" trials by step (after) | | 750: 2, 3660: 3, 3750: 1, 4500: 3, 5340: 1 (step 4500 is the terrain-overhead glitch below) |
 
-### Black sky: what was found
+**The design reading (same game design, different rendering) is met by this measure**: a clear majority of trials say same design, up from about a quarter. It is one prompt, one judge model, a noisy yes/no; repeated runs on near-identical frames gave 34/48 to 40/48 (runs b, d, e, f below), so read it as "about 70 to 85%", not as 79.2% exactly.
 
-Remote probes (loading the port with a sky override and measuring the top of the frame; two runs) showed that even a solid-colour sky fragment shader produced no visible change with the original dome (`size: 3400`, `side: "back"`), and that `side: "double"` with `size: 900` was the only variant that changed the render. `side: "back"` at size 900 did nothing. The port now uses `side: "double"`, `size: 900`, and the frames show the dome. I did not isolate whether the 3400-unit size (a distance or culling limit) or the `back` cull setting is an engine defect; both were ruled out only empirically, and the solid-colour variants were inconclusive (that override may have failed to compile). No engine change was made, so no engine test was added. Open question for the engine team: `material.custom` `side: "back"` on `primitives.sphere` draws nothing when the camera is inside it.
+### Structural metrics (mean over 16 pairs; 0 = identical)
+
+| | before | after |
+| --- | --- | --- |
+| luma-histogram JSD | 0.385 | 0.121 |
+| 4-bit RGB histogram JSD | 0.753 | 0.465 |
+| dominant-palette distance | 0.082 | 0.048 |
+| edge density original / port | 0.056 / 0.020 (0.37x) | 0.056 / 0.057 (1.05x) |
+
+### Iterations (all same judge, same seed; strict was 48/48 every time)
+
+| run | change | strict | design |
+| --- | --- | --- | --- |
+| run2 (before) | six-primitive drone, faint sky | 48/48 | 13/48 |
+| a (`iterations/art-a`) | first art pass | 48/48 | not run |
+| b (`iterations/art-b`) | tuned: thinner plumes/veins, terrain | 48/48 | 40/48 |
+| c | aborted: finite-difference terrain bump exceeded the 1,500,000 ms test timeout (SwiftShader), 15 frames; 42-trial partial: strict 42/42, design 36/42 | | |
+| d (`iterations/art-d`) | screen-space-derivative bump; staged BEFORE engine fix `8045c31a9` | 48/48 | 34/48 |
+| e (`iterations/art-e`) | same tree on the fixed engine; frames nearly identical to d (the custom-material matrix fix did not change this port, which never relied on it) | 48/48 | 38/48 |
+| **f (final)** | hill footprint guard widened, terrain bump faded with distance | 48/48 | 38/48 |
+
+### What changed in the port (art pass, `examples/heatsink-port/`)
+
+23-primitive quad-rotor with spinning blades, twin thrusters, white-hot glow cores and thin additive plumes; ringed planet, two aurora ribbons, cloud layer, stars and moon on the **proper back-culled sky dome (no `side: "double"` workaround; the engine fix in `8045c31a9` and the 4.0.7 unused-uniform fix make it draw)**; textured procedural hills (smooth mounds, screen-space bump, snow line), ground plains, far ridges, rails with neon posts, gantry arches, floating shards; blue-grey mottled asphalt with cyan tracery and edge lines; 110 speed streaks; bloom, teal grade, vignette; chase camera framing. The simulation is untouched (reference replay still within 1e-6). No third-party art, textures, GLBs or code were used; original frames were look reference only.
+
+### Remaining visible differences (ranked; my reading plus the judge's stated tells)
+
+1. **Render quality**: no PBR, IBL or shadows; surfaces are procedural unlit shading, so they read flatter and lower-poly than the original's textured models.
+2. **Vehicle**: 23 primitives, still blocky next to the original's detailed drone; thruster plumes remain brighter and more orange than the original's.
+3. **Terrain**: bump shows blocky banding at some distances; no alien plants, ruins or cliff buildings.
+4. **Camera-inside-terrain glitch at step 4500**: a hill or plain from another stretch of track fills the top of the frame (3 of the 10 design "no" answers). Not diagnosed to root cause; the footprint guard widening in run f did not remove it, so it is probably a plain strip from a higher track section, not a hill.
+5. **Not ported**: title, pause and results screens, audio; the Grand Circuit (rain) map, so rain frames are unavailable.
+
+Other limits: one judge model, one prompt per question. Original frames are Playwright JPEG screenshots (q92), port frames in-page canvas JPEG (q92). No measured look specs (`evidence/look-specs/heatsink*.json`) existed, so the look was matched by eye against the committed original frames. Run 1 (earlier): strict 48/48, same-game 0/48, kept as `judge-results-run1.json`; run 2 as `judge-results-run2.json`.
 
 ## 3. Remote runs
 
@@ -49,6 +76,7 @@ Remote probes (loading the port with a sky override and measuring the top of the
 | cc1fm, cc1fn, cc1fp, cc1fq | original frames at 16 steps (run 1, 4 parts) |
 | cc1fu, cc1fv, cc1fw, cc1fx | original frames, overlays removed (run 2, 4 parts) |
 | `heatsink-20261023T070840Z` | run 2 port frames, spec exit 0 |
+| `heatsink2-a-20261023T083810Z`, `-b-20261023T090427Z`, `-c-20261023T090727Z` (failed at test timeout), `-d-20261023T093732Z`, `-e-20261023T095014Z`, `-f-20261023T101403Z` | art pass port frames (f is final; `frames/port-*.jpg` are from f) |
 | `heatsink-20261023T062559Z` (ACR chkk) | run 1 port spec: container exit 0 (the runner propagates the Playwright exit code); the log kept the 16 frame records but not the pass/fail summary lines. An earlier run of the same spec on the first visuals (`heatsink-20261023T052438Z`) also exited 0. |
 
-`frames/` holds the 16 original and 16 port JPEGs.
+`frames/` holds the 16 original JPEGs, the 16 final (run f) port JPEGs, and `run2-before/` (the 16 pre-art-pass port JPEGs).

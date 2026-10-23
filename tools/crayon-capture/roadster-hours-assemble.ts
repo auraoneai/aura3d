@@ -10,12 +10,34 @@
 import fs from "node:fs";
 import path from "node:path";
 import {
-  RH_CAPTURE_SCHEMA, RH_GAME, RH_SIM_STEP, compareSessions, parseMarkerBlocks, toleranceFrom, totalSteps, validateReport,
+  RH_CAPTURE_SCHEMA, RH_GAME, RH_SIM_STEP, compareSessions, comparePrefix, parseMarkerBlocks, toleranceFrom, totalSteps, validateReport,
   type ReferenceReport, type RunComparison, type SessionRecord
 } from "./roadster-hours-lib.js";
 
 const args = process.argv.slice(2);
 const values = (name: string): string[] => args.flatMap((a, i) => (a === name ? [args[i + 1]!] : []));
+/**
+ * `--add-ingame <log> --into <reference.json>`: fold the live-game cross-check (the real Drive button and countdown, the
+ * game's own loop under virtual time, stopped after N steps) into an existing report as `ingameCrossCheck`.
+ */
+const ingameLog = values("--add-ingame")[0];
+if (ingameLog) {
+  const into = values("--into")[0] ?? "evidence/crayon-capture/roadster-hours-reference.json";
+  const report = JSON.parse(fs.readFileSync(into, "utf8")) as ReferenceReport & { ingameCrossCheck?: unknown };
+  const live = (parseMarkerBlocks(fs.readFileSync(ingameLog, "utf8")) as SessionRecord[]).filter((s) => s.mode === "ingame" && !s.error);
+  if (!live.length) { process.stderr.write("no finished in-game session in the log\n"); process.exit(1); }
+  report.ingameCrossCheck = live.map((s) => {
+    const c = comparePrefix(report.reference, s);
+    return {
+      session: s.session, steps: s.steps, virtualFrames: s.virtualFrames, wallMs: s.wallMs, finalScreen: s.final?.screen ?? null,
+      note: "the original game started through its real Drive button and run by its own loop under virtual time, stopped at `steps`; compared with the same prefix of the direct-simulation reference",
+      comparison: c, tolerance: report.tolerance
+    };
+  });
+  fs.writeFileSync(into, `${JSON.stringify(report)}\n`);
+  process.stdout.write(`${JSON.stringify((report.ingameCrossCheck as { session: string; steps: number; comparison: unknown }[]).map((x) => ({ session: x.session, steps: x.steps, comparison: x.comparison })))}\n`);
+  process.exit(0);
+}
 const logs = values("--log");
 const out = values("--out")[0] ?? "evidence/crayon-capture/roadster-hours-reference.json";
 const fixture = values("--fixture")[0];

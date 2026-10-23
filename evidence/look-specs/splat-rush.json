@@ -1,0 +1,7369 @@
+{
+  "cameraPath": {
+    "count": 95,
+    "durationMs": 9400,
+    "length": 8.8907,
+    "maxSpeed": 4.0158,
+    "meanSpeed": 0.9458,
+    "samples": [
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0171,
+          -0.3455,
+          -0.9383
+        ],
+        "pos": [
+          -0.0856,
+          8.5174,
+          11.6349
+        ],
+        "t": 0.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0252,
+          -0.3299,
+          -0.9437
+        ],
+        "pos": [
+          -0.1673,
+          7.9332,
+          11.1166
+        ],
+        "t": 200.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0329,
+          -0.315,
+          -0.9485
+        ],
+        "pos": [
+          -0.2636,
+          7.4089,
+          10.6512
+        ],
+        "t": 400.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.04,
+          -0.3012,
+          -0.9527
+        ],
+        "pos": [
+          -0.3686,
+          6.9515,
+          10.245
+        ],
+        "t": 600.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0468,
+          -0.289,
+          -0.9562
+        ],
+        "pos": [
+          -0.4778,
+          6.5654,
+          9.902
+        ],
+        "t": 800.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.053,
+          -0.2787,
+          -0.9589
+        ],
+        "pos": [
+          -0.5882,
+          6.2536,
+          9.625
+        ],
+        "t": 1000.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0586,
+          -0.2706,
+          -0.9609
+        ],
+        "pos": [
+          -0.6973,
+          6.018,
+          9.4158
+        ],
+        "t": 1200.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0636,
+          -0.2649,
+          -0.9622
+        ],
+        "pos": [
+          -0.8034,
+          5.8571,
+          9.2728
+        ],
+        "t": 1400.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0679,
+          -0.2611,
+          -0.9629
+        ],
+        "pos": [
+          -0.9049,
+          5.7515,
+          9.179
+        ],
+        "t": 1600.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0716,
+          -0.2586,
+          -0.9633
+        ],
+        "pos": [
+          -1.0006,
+          5.6822,
+          9.1174
+        ],
+        "t": 1800.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0746,
+          -0.2569,
+          -0.9635
+        ],
+        "pos": [
+          -1.0895,
+          5.6367,
+          9.0771
+        ],
+        "t": 2000.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.077,
+          -0.2558,
+          -0.9637
+        ],
+        "pos": [
+          -1.1707,
+          5.6069,
+          9.0506
+        ],
+        "t": 2200.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0787,
+          -0.2551,
+          -0.9637
+        ],
+        "pos": [
+          -1.2433,
+          5.5873,
+          9.0332
+        ],
+        "t": 2400.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0798,
+          -0.2546,
+          -0.9638
+        ],
+        "pos": [
+          -1.3067,
+          5.5745,
+          9.0218
+        ],
+        "t": 2600.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0803,
+          -0.2543,
+          -0.9638
+        ],
+        "pos": [
+          -1.3603,
+          5.5661,
+          9.0143
+        ],
+        "t": 2800.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0801,
+          -0.2541,
+          -0.9639
+        ],
+        "pos": [
+          -1.4035,
+          5.5605,
+          9.0094
+        ],
+        "t": 3000.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0793,
+          -0.2539,
+          -0.964
+        ],
+        "pos": [
+          -1.436,
+          5.5569,
+          9.0061
+        ],
+        "t": 3200.5
+      },
+      {
+        "fov": 57.7778,
+        "fwd": [
+          -0.0779,
+          -0.2488,
+          -0.9654
+        ],
+        "pos": [
+          -1.4574,
+          5.594,
+          9.004
+        ],
+        "t": 3400.5
+      },
+      {
+        "fov": 56.3396,
+        "fwd": [
+          -0.0758,
+          -0.2506,
+          -0.9651
+        ],
+        "pos": [
+          -1.4672,
+          5.629,
+          9.0026
+        ],
+        "t": 3600.5
+      },
+      {
+        "fov": 55.646,
+        "fwd": [
+          -0.0729,
+          -0.2517,
+          -0.965
+        ],
+        "pos": [
+          -1.4653,
+          5.652,
+          9.0017
+        ],
+        "t": 3800.5
+      },
+      {
+        "fov": 55.3115,
+        "fwd": [
+          -0.0695,
+          -0.2525,
+          -0.9651
+        ],
+        "pos": [
+          -1.4513,
+          5.667,
+          9.0011
+        ],
+        "t": 4000.5
+      },
+      {
+        "fov": 55.1502,
+        "fwd": [
+          -0.0655,
+          -0.253,
+          -0.9652
+        ],
+        "pos": [
+          -1.4254,
+          5.6769,
+          9.0007
+        ],
+        "t": 4200.5
+      },
+      {
+        "fov": 55.0725,
+        "fwd": [
+          -0.0608,
+          -0.2534,
+          -0.9654
+        ],
+        "pos": [
+          -1.3875,
+          5.6834,
+          9.0005
+        ],
+        "t": 4400.5
+      },
+      {
+        "fov": 57.5,
+        "fwd": [
+          -0.0556,
+          -0.2596,
+          -0.9641
+        ],
+        "pos": [
+          -1.5275,
+          5.5799,
+          9.0003
+        ],
+        "t": 4600.5
+      },
+      {
+        "fov": 56.2056,
+        "fwd": [
+          -0.0452,
+          -0.2549,
+          -0.9659
+        ],
+        "pos": [
+          -1.4737,
+          5.4501,
+          9.0002
+        ],
+        "t": 4800.5
+      },
+      {
+        "fov": 55.5814,
+        "fwd": [
+          -0.042,
+          -0.2456,
+          -0.9685
+        ],
+        "pos": [
+          -1.2902,
+          5.3997,
+          9.0001
+        ],
+        "t": 5000.5
+      },
+      {
+        "fov": 55.2804,
+        "fwd": [
+          -0.0361,
+          -0.2467,
+          -0.9684
+        ],
+        "pos": [
+          -1.1516,
+          5.3963,
+          9.0001
+        ],
+        "t": 5200.5
+      },
+      {
+        "fov": 55.1352,
+        "fwd": [
+          -0.0297,
+          -0.2494,
+          -0.968
+        ],
+        "pos": [
+          -1.0498,
+          5.4514,
+          9.0001
+        ],
+        "t": 5400.5
+      },
+      {
+        "fov": 55.0652,
+        "fwd": [
+          -0.0229,
+          -0.2511,
+          -0.9677
+        ],
+        "pos": [
+          -0.9424,
+          5.4876,
+          9
+        ],
+        "t": 5600.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          -0.0157,
+          -0.2523,
+          -0.9675
+        ],
+        "pos": [
+          -0.8291,
+          5.5113,
+          9
+        ],
+        "t": 5800.5
+      },
+      {
+        "fov": 56.7361,
+        "fwd": [
+          -0.0131,
+          -0.2442,
+          -0.9696
+        ],
+        "pos": [
+          -0.6766,
+          5.1765,
+          9
+        ],
+        "t": 6000.5
+      },
+      {
+        "fov": 55.8372,
+        "fwd": [
+          0.0026,
+          -0.242,
+          -0.9703
+        ],
+        "pos": [
+          -0.619,
+          5.2331,
+          9
+        ],
+        "t": 6200.5
+      },
+      {
+        "fov": 55.4038,
+        "fwd": [
+          0.0056,
+          -0.245,
+          -0.9695
+        ],
+        "pos": [
+          -0.463,
+          5.248,
+          9
+        ],
+        "t": 6400.5
+      },
+      {
+        "fov": 55.1947,
+        "fwd": [
+          0.0152,
+          -0.2486,
+          -0.9685
+        ],
+        "pos": [
+          -0.3392,
+          5.3218,
+          9
+        ],
+        "t": 6600.5
+      },
+      {
+        "fov": 55.0939,
+        "fwd": [
+          0.0223,
+          -0.2506,
+          -0.9678
+        ],
+        "pos": [
+          -0.1977,
+          5.3643,
+          9
+        ],
+        "t": 6800.5
+      },
+      {
+        "fov": 55.0453,
+        "fwd": [
+          0.0294,
+          -0.2519,
+          -0.9673
+        ],
+        "pos": [
+          -0.0565,
+          5.3921,
+          9
+        ],
+        "t": 7000.5
+      },
+      {
+        "fov": 63.3333,
+        "fwd": [
+          0.0318,
+          -0.2614,
+          -0.9647
+        ],
+        "pos": [
+          0.0835,
+          5.5636,
+          9
+        ],
+        "t": 7200.5
+      },
+      {
+        "fov": 59.0188,
+        "fwd": [
+          0.021,
+          -0.2556,
+          -0.9665
+        ],
+        "pos": [
+          0.5023,
+          5.3587,
+          9
+        ],
+        "t": 7400.5
+      },
+      {
+        "fov": 56.9381,
+        "fwd": [
+          0.0134,
+          -0.2666,
+          -0.9637
+        ],
+        "pos": [
+          0.5528,
+          5.546,
+          9
+        ],
+        "t": 7600.5
+      },
+      {
+        "fov": 55.9346,
+        "fwd": [
+          0.0093,
+          -0.267,
+          -0.9636
+        ],
+        "pos": [
+          0.5915,
+          5.5237,
+          9
+        ],
+        "t": 7800.5
+      },
+      {
+        "fov": 55.4507,
+        "fwd": [
+          0.0118,
+          -0.262,
+          -0.965
+        ],
+        "pos": [
+          0.5162,
+          5.4504,
+          9
+        ],
+        "t": 8000.5
+      },
+      {
+        "fov": 55.2174,
+        "fwd": [
+          0.0147,
+          -0.2555,
+          -0.9667
+        ],
+        "pos": [
+          0.4412,
+          5.3786,
+          9
+        ],
+        "t": 8200.5
+      },
+      {
+        "fov": 55.1048,
+        "fwd": [
+          0.016,
+          -0.2552,
+          -0.9668
+        ],
+        "pos": [
+          0.415,
+          5.3709,
+          9
+        ],
+        "t": 8400.5
+      },
+      {
+        "fov": 55.0506,
+        "fwd": [
+          0.0169,
+          -0.2549,
+          -0.9668
+        ],
+        "pos": [
+          0.3978,
+          5.3659,
+          9
+        ],
+        "t": 8600.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          0.0175,
+          -0.2548,
+          -0.9668
+        ],
+        "pos": [
+          0.3865,
+          5.3625,
+          9
+        ],
+        "t": 8800.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          0.0179,
+          -0.2547,
+          -0.9669
+        ],
+        "pos": [
+          0.3791,
+          5.3604,
+          9
+        ],
+        "t": 9000.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          0.0181,
+          -0.2546,
+          -0.9669
+        ],
+        "pos": [
+          0.3742,
+          5.3589,
+          9
+        ],
+        "t": 9200.5
+      },
+      {
+        "fov": 55,
+        "fwd": [
+          0.0183,
+          -0.2545,
+          -0.9669
+        ],
+        "pos": [
+          0.371,
+          5.358,
+          9
+        ],
+        "t": 9400.5
+      }
+    ]
+  },
+  "effectSweep": [
+    {
+      "components": {
+        "instanced": 756,
+        "objects": 556,
+        "points": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 414
+      },
+      "score": 388.14,
+      "tS": 6
+    },
+    {
+      "components": {
+        "instanced": 756,
+        "objects": 556,
+        "points": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 475
+      },
+      "score": 388.75,
+      "tS": 7
+    },
+    {
+      "components": {
+        "instanced": 756,
+        "objects": 556,
+        "points": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 413
+      },
+      "score": 388.13,
+      "tS": 8
+    },
+    {
+      "components": {
+        "instanced": 756,
+        "objects": 556,
+        "points": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 413
+      },
+      "score": 388.13,
+      "tS": 9
+    }
+  ],
+  "errors": [],
+  "game": "splat-rush",
+  "inventory": {
+    "entries": [
+      {
+        "bytes": 176284,
+        "contentType": "application/json",
+        "ext": "",
+        "host": "api.usecrayon.ai",
+        "initiators": [
+          "pw:fetch"
+        ],
+        "kind": "json",
+        "path": "/explore",
+        "queryKeys": [],
+        "sha256": "30cb82d24de2cc2e63830666a86b6de66ccc9b8e5e246e93048b57be76552a53",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://api.usecrayon.ai/explore"
+      },
+      {
+        "bytes": 11,
+        "contentType": "application/json",
+        "ext": "",
+        "host": "api.usecrayon.ai",
+        "initiators": [
+          "pw:fetch"
+        ],
+        "kind": "json",
+        "path": "/play/e53a6e07-a4a1-465e-b546-0fb6c9b787c0",
+        "queryKeys": [
+          "comments",
+          "count_session",
+          "sort"
+        ],
+        "sha256": "4062edaf750fb8074e7e83e0c9028c94e32468a8b6f1614774328ef045150f93",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://api.usecrayon.ai/play/e53a6e07-a4a1-465e-b546-0fb6c9b787c0"
+      },
+      {
+        "bytes": 1180,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/action-48-DvctxCgg.webp",
+        "queryKeys": [],
+        "sha256": "7283a52dfbc4840b583c15ee479edcb0a093387b7f63f7b2b787bf39c76eb920",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/action-48-DvctxCgg.webp"
+      },
+      {
+        "bytes": 1046,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/adventure-48-C6d0c_HC.webp",
+        "queryKeys": [],
+        "sha256": "656d987821225bb062f0622e3f1ed5fd25af536d8b3c415dd14aa50dc89e780e",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/adventure-48-C6d0c_HC.webp"
+      },
+      {
+        "bytes": 986,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/all-48-BXtvGmI8.webp",
+        "queryKeys": [],
+        "sha256": "2a627530190fa61804a4bb9b26942d625f58328a3812e519983a9636c7870487",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/all-48-BXtvGmI8.webp"
+      },
+      {
+        "bytes": 1370904,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/assets-h84oL3tp.js",
+        "queryKeys": [],
+        "sha256": "395c531a5feb5807226babde71de6aad2214c92351dcb2672e8c1296bffa17d8",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/assets-h84oL3tp.js"
+      },
+      {
+        "bytes": 31398,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/core-CON8PBX9.js",
+        "queryKeys": [],
+        "sha256": "9c3c94270f4a4aca03f4f14c22fc485ba8d707a8e5ac52556228448323150ae7",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/core-CON8PBX9.js"
+      },
+      {
+        "bytes": 924,
+        "contentType": "text/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/engineBrand-C0Bpdqp4.js",
+        "queryKeys": [],
+        "sha256": "a6a76c742bb78e272bdd351fab1bb6f3add93d63584e0ab232e13d795e531005",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/engineBrand-C0Bpdqp4.js"
+      },
+      {
+        "bytes": 1014,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/featured-48-DAywgODZ.webp",
+        "queryKeys": [],
+        "sha256": "bc9b23ddf6d637b3c12f66895354890c71d0bc61de3940af71fa20736d569ec9",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/featured-48-DAywgODZ.webp"
+      },
+      {
+        "bytes": 1122,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/horror-48-DrJT900g.webp",
+        "queryKeys": [],
+        "sha256": "470c29f106bf47c9374b318fe9d54247d1c09aad90b25694e0822f363ac7fc41",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/horror-48-DrJT900g.webp"
+      },
+      {
+        "bytes": 194036,
+        "contentType": "text/css",
+        "ext": "css",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:stylesheet"
+        ],
+        "kind": "style",
+        "path": "/assets/index-DgqlU56m.css",
+        "queryKeys": [],
+        "sha256": "b318606c02bc5e696a3d365c5445f6fe1a834ead299bb686c58470333295d357",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/index-DgqlU56m.css"
+      },
+      {
+        "bytes": 1338975,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/index-ZRAAiZyC.js",
+        "queryKeys": [],
+        "sha256": "cd9a7b20a59daa5efab7c01bad8366293c655f51cf5d371ba7faee2d64e6b64a",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/index-ZRAAiZyC.js"
+      },
+      {
+        "bytes": 1258,
+        "contentType": "text/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/levelOverrides-DDYC_Z1K.js",
+        "queryKeys": [],
+        "sha256": "007d9d45c13fd9999f4a5afebadc5cc28aeb97eb32a68b85d90474c9ffc6e768",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/levelOverrides-DDYC_Z1K.js"
+      },
+      {
+        "bytes": 53623,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/messageRouter-BZwuBuoc.js",
+        "queryKeys": [],
+        "sha256": "7682743626660a26fc9f3cc41284cb29e1dbd86785f2340d39e6025c498a337e",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/messageRouter-BZwuBuoc.js"
+      },
+      {
+        "bytes": 1144,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/new-48-vTf_6wTz.webp",
+        "queryKeys": [],
+        "sha256": "ad72739e43a6d64ea700a78c240abbfdf89a00eeb3cc97da138e2036b3c6f20b",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/new-48-vTf_6wTz.webp"
+      },
+      {
+        "bytes": 1124,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/platformer-48-BCeKYWTI.webp",
+        "queryKeys": [],
+        "sha256": "5a38997bb866cf5ab13f5b7e9717d89f2d9654a2c66a0feab8b2f913998adc49",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/platformer-48-BCeKYWTI.webp"
+      },
+      {
+        "bytes": 19925,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/project-DucSD0ON.js",
+        "queryKeys": [],
+        "sha256": "5a315bf4f08234c8b177348bd17c92e3dffc993c69119dcbde86236c8c408223",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/project-DucSD0ON.js"
+      },
+      {
+        "bytes": 1028,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/puzzle-48-B7-aO1fK.webp",
+        "queryKeys": [],
+        "sha256": "9a267ca17e637ff25193103df6efcefe013d646ae3a3566559863f20f7bd7a5f",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/puzzle-48-B7-aO1fK.webp"
+      },
+      {
+        "bytes": 1054,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/racing-48-DFhAfkmH.webp",
+        "queryKeys": [],
+        "sha256": "4a25705e41dba9a5d3712950bb8bf204fcf8c99ceb49b1c768682b199ddd8d64",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/racing-48-DFhAfkmH.webp"
+      },
+      {
+        "bytes": 1288,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/remix-48-Dh7YIEid.webp",
+        "queryKeys": [],
+        "sha256": "620061e1320f1de079c79dae8da0d0e8f941078d177996c61f0726d6e42942c7",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/remix-48-Dh7YIEid.webp"
+      },
+      {
+        "bytes": 430,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/restoreVersion-CN2CyEUb.js",
+        "queryKeys": [],
+        "sha256": "6f1ea06b251aa9006c341ea25916ff1ca592ffb2a39412333aa24c109ae6ba2a",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/restoreVersion-CN2CyEUb.js"
+      },
+      {
+        "bytes": 1116,
+        "contentType": "text/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/rolldown-runtime-BgQAZz4g.js",
+        "queryKeys": [],
+        "sha256": "dc09d81cf14ed4050ce3dd7b9c8bd28b4b9084e2dd68aab9e430cc68612a8cd2",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/rolldown-runtime-BgQAZz4g.js"
+      },
+      {
+        "bytes": 1522,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/runners-48-CjHK7_yw.webp",
+        "queryKeys": [],
+        "sha256": "b8af299431c9d74612a904671cf711ff56340d075891de9e268ff814e91109f1",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/runners-48-CjHK7_yw.webp"
+      },
+      {
+        "bytes": 1510,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/shooter-48-rwA7epuc.webp",
+        "queryKeys": [],
+        "sha256": "551500429eb2b425a578ca64679e7257cf2a565d7ee6c430507b6a18023bcf65",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/shooter-48-rwA7epuc.webp"
+      },
+      {
+        "bytes": 1030,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/sim-48-DimQ2Ut0.webp",
+        "queryKeys": [],
+        "sha256": "ae077967694a9fa87385711f1067b946187af0f1ad5c5c41e14a369c73e70aea",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/sim-48-DimQ2Ut0.webp"
+      },
+      {
+        "bytes": 1276,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/sports-48-BjDGTOWD.webp",
+        "queryKeys": [],
+        "sha256": "4d722b31dfa2c40882acc14bf7a3e078c49561258720c99357621ffb5aacd681",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/sports-48-BjDGTOWD.webp"
+      },
+      {
+        "bytes": 992,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/strategy-48-rB-MT4aY.webp",
+        "queryKeys": [],
+        "sha256": "70618b5f81e8f7b61a69cb194fe24f4e352f1050c4aa97c37fca4f2cafc64a5e",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/strategy-48-rB-MT4aY.webp"
+      },
+      {
+        "bytes": 1004,
+        "contentType": "image/webp",
+        "ext": "webp",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/assets/trending-48-BlPGkNun.webp",
+        "queryKeys": [],
+        "sha256": "1d4e2780558bbaddc8277b832d278690a176ca90f9b18f2396cfd026473c126d",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/trending-48-BlPGkNun.webp"
+      },
+      {
+        "bytes": 677,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/uiContext-BEXoPgjz.js",
+        "queryKeys": [],
+        "sha256": "2bbc8ef852fc6dd1dd005afb157fcd430308df757da4ea7ff3fceb4ce6789bdd",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/uiContext-BEXoPgjz.js"
+      },
+      {
+        "bytes": 298002,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/assets/vendor-DHMZGLGA.js",
+        "queryKeys": [],
+        "sha256": "461fb286a64853bfab23864118c76c77280801f291ebf507549a5ada0007264f",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/assets/vendor-DHMZGLGA.js"
+      },
+      {
+        "bytes": 4427,
+        "contentType": "image/svg+xml",
+        "ext": "svg",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/crayon-logo.svg",
+        "queryKeys": [],
+        "sha256": "05bd81c2189451dac01221680a4bb9d7c3ed44b95b8031f3d94ce6daf1dc7552",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/crayon-logo.svg"
+      },
+      {
+        "bytes": 69436,
+        "contentType": "font/woff2",
+        "ext": "woff2",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:font"
+        ],
+        "kind": "font",
+        "path": "/fonts/Geist-Variable.woff2",
+        "queryKeys": [],
+        "sha256": "e24cec106619c03f0b3519e31b9bc55e0d5e926b6a95b8d798cd8cef215b1505",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/fonts/Geist-Variable.woff2"
+      },
+      {
+        "bytes": 71004,
+        "contentType": "font/woff2",
+        "ext": "woff2",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:font"
+        ],
+        "kind": "font",
+        "path": "/fonts/GeistMono-Variable.woff2",
+        "queryKeys": [],
+        "sha256": "5f687a5dd4c87da13deaff9f6b9503d5e62249ff501265a96b134565f9aa8c87",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/fonts/GeistMono-Variable.woff2"
+      },
+      {
+        "bytes": 5958,
+        "contentType": "image/webp",
+        "ext": "jpg",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/img/w320/e53a6e07-a4a1-465e-b546-0fb6c9b787c0/1783783323223-hero.jpg",
+        "queryKeys": [],
+        "sha256": "b4a057445d5710e12f4efd8b6abc1da4238d39b6524f4bb3c7ed86a54f9f6f7f",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/img/w320/e53a6e07-a4a1-465e-b546-0fb6c9b787c0/1783783323223-hero.jpg"
+      },
+      {
+        "bytes": 25768,
+        "contentType": "image/webp",
+        "ext": "jpg",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/img/w960/317eb930-d977-4884-91af-131a7fcd07f7/1788949201862-hero.jpg",
+        "queryKeys": [],
+        "sha256": "944d96a2976b538e31357831710792af303e02ae455a421a1a0fd0883c7980c8",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/img/w960/317eb930-d977-4884-91af-131a7fcd07f7/1788949201862-hero.jpg"
+      },
+      {
+        "bytes": 37346,
+        "contentType": "image/webp",
+        "ext": "jpg",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/img/w960/43532505-ecfb-4921-8f51-5bb62bb8fff1/1786635455716-hero.jpg",
+        "queryKeys": [],
+        "sha256": "6bc826cdc3d9aa066fca2f4b958e9ca577a861872e14f19b8c292e52bc3f41ce",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/img/w960/43532505-ecfb-4921-8f51-5bb62bb8fff1/1786635455716-hero.jpg"
+      },
+      {
+        "bytes": 34574,
+        "contentType": "image/webp",
+        "ext": "jpg",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/img/w960/5ee68f3c-e99e-433a-a826-93aff3a95f3b/1789027728296-hero.jpg",
+        "queryKeys": [],
+        "sha256": "88294cd90ff4ae49923bab8fa822d8590efed251846760d239730a93f5882243",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/img/w960/5ee68f3c-e99e-433a-a826-93aff3a95f3b/1789027728296-hero.jpg"
+      },
+      {
+        "bytes": 48762,
+        "contentType": "image/webp",
+        "ext": "jpg",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/img/w960/63d4f3a0-a560-43af-b26f-510e40154df0/1789641323002-hero.jpg",
+        "queryKeys": [],
+        "sha256": "311c1ca3aa71ca8bb86b9db73607e107bcd8a7cd052b544082d5d7f0a06019a8",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/img/w960/63d4f3a0-a560-43af-b26f-510e40154df0/1789641323002-hero.jpg"
+      },
+      {
+        "bytes": 50430,
+        "contentType": "image/webp",
+        "ext": "jpg",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:image"
+        ],
+        "kind": "image",
+        "path": "/img/w960/cb798125-b67b-4784-a04a-a8dfdabb4c35/1789024892646-hero.jpg",
+        "queryKeys": [],
+        "sha256": "f01403fd4a564b22969d9f7d5d7b2815315b070e4fa7c8756c377c1ada3125b4",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/img/w960/cb798125-b67b-4784-a04a-a8dfdabb4c35/1789024892646-hero.jpg"
+      },
+      {
+        "bytes": 3015,
+        "contentType": "text/html",
+        "ext": "",
+        "host": "app.usecrayon.ai",
+        "initiators": [
+          "pw:document"
+        ],
+        "kind": "html",
+        "path": "/play/e53a6e07-a4a1-465e-b546-0fb6c9b787c0",
+        "queryKeys": [],
+        "sha256": "6b2a6756fc08c4d481730854714d53f4a033666ad6e2f842d76667d491d5d142",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://app.usecrayon.ai/play/e53a6e07-a4a1-465e-b546-0fb6c9b787c0"
+      },
+      {
+        "bytes": 384222,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "cdn.jsdelivr.net",
+        "initiators": [
+          "pw:script",
+          "script"
+        ],
+        "kind": "script",
+        "path": "/npm/three@0.184.0/build/three.core.min.js",
+        "queryKeys": [],
+        "sha256": "6486aa0d719cfa87ec88dc47223b59b1fb8417a1a407fc0e52467c943e2f8cc9",
+        "status": 200,
+        "transferSize": 101428,
+        "url": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.core.min.js"
+      },
+      {
+        "bytes": 364998,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "cdn.jsdelivr.net",
+        "initiators": [
+          "other",
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/three@0.184.0/build/three.module.min.js",
+        "queryKeys": [],
+        "sha256": "36a60b0120335f89a80a0dab70292292b0ec414b3d05e83cd09a3ea428c6712a",
+        "status": 200,
+        "transferSize": 87234,
+        "url": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.min.js"
+      },
+      {
+        "bytes": 6476,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "cdn.jsdelivr.net",
+        "initiators": [
+          "pw:script",
+          "script"
+        ],
+        "kind": "script",
+        "path": "/npm/three@0.184.0/examples/jsm/geometries/RoundedBoxGeometry.js",
+        "queryKeys": [],
+        "sha256": "c1b7c9bd2cddff2e3f3a0723f618a3d364a47450e3d25771d21faed88410bec8",
+        "status": 200,
+        "transferSize": 2235,
+        "url": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/geometries/RoundedBoxGeometry.js"
+      },
+      {
+        "bytes": 324821,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/clerk-js@6.40.0/dist/clerk.browser.js",
+        "queryKeys": [],
+        "sha256": "fc59ebee1e3a96663ea418745a78c8a70e0fe0eb7507a1132b8b621707984f94",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/clerk-js@6.40.0/dist/clerk.browser.js"
+      },
+      {
+        "bytes": 0,
+        "contentType": null,
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/clerk-js@6/dist/clerk.browser.js",
+        "queryKeys": [],
+        "sha256": null,
+        "status": 307,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/clerk-js@6/dist/clerk.browser.js"
+      },
+      {
+        "bytes": 132706,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/ui@1.41.1/dist/framework_ui_4130e0_1.41.1.js",
+        "queryKeys": [],
+        "sha256": "d9bde3c454cfd4396da48d609eac6b1b3645d991f0aabe05c0f3f4b103731afc",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/ui@1.41.1/dist/framework_ui_4130e0_1.41.1.js"
+      },
+      {
+        "bytes": 14936,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/ui@1.41.1/dist/subscriptionDetails_ui_4130e0_1.41.1.js",
+        "queryKeys": [],
+        "sha256": "83832cfdbba37f07b0a0acdc620826df067ab857a9f4e9160aec6df6c7e8a33a",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/ui@1.41.1/dist/subscriptionDetails_ui_4130e0_1.41.1.js"
+      },
+      {
+        "bytes": 485527,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/ui@1.41.1/dist/ui-common_ui_4130e0_1.41.1.js",
+        "queryKeys": [],
+        "sha256": "fc2c75903fe2c4dc0ac18d13019f7711ccb19c12bd6d3663397e7135c15556b8",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/ui@1.41.1/dist/ui-common_ui_4130e0_1.41.1.js"
+      },
+      {
+        "bytes": 149913,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/ui@1.41.1/dist/ui.browser.js",
+        "queryKeys": [],
+        "sha256": "9f48b824f59c0d64fc4bb83d23187326544880007190afb7a949cd743a80e74e",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/ui@1.41.1/dist/ui.browser.js"
+      },
+      {
+        "bytes": 109187,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/ui@1.41.1/dist/vendors_ui_4130e0_1.41.1.js",
+        "queryKeys": [],
+        "sha256": "df8f38262039eed9b58686a5caf69e221520d31a008f7cf30a9a6a257c6c07c7",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/ui@1.41.1/dist/vendors_ui_4130e0_1.41.1.js"
+      },
+      {
+        "bytes": 0,
+        "contentType": null,
+        "ext": "js",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/npm/@clerk/ui@1/dist/ui.browser.js",
+        "queryKeys": [],
+        "sha256": null,
+        "status": 307,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/npm/@clerk/ui@1/dist/ui.browser.js"
+      },
+      {
+        "bytes": 309,
+        "contentType": "application/json",
+        "ext": "",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:fetch"
+        ],
+        "kind": "json",
+        "path": "/v1/client",
+        "queryKeys": [
+          "__clerk_api_version",
+          "_clerk_js_version"
+        ],
+        "sha256": "788974005b91989b9c29aa50a2c4c6dde928beab8cbece31ae64604d93e3fa9f",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/v1/client"
+      },
+      {
+        "bytes": 8894,
+        "contentType": "application/json",
+        "ext": "",
+        "host": "clerk.usecrayon.ai",
+        "initiators": [
+          "pw:fetch"
+        ],
+        "kind": "json",
+        "path": "/v1/environment",
+        "queryKeys": [
+          "__clerk_api_version",
+          "_clerk_js_version"
+        ],
+        "sha256": "183ae32cdda66bcb22934c7c721bf90ae086c20eeb1af3cc07891e42f516d951",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://clerk.usecrayon.ai/v1/environment"
+      },
+      {
+        "bytes": 3642,
+        "contentType": "text/css",
+        "ext": "",
+        "host": "fonts.googleapis.com",
+        "initiators": [
+          "css",
+          "link",
+          "pw:stylesheet"
+        ],
+        "kind": "style",
+        "path": "/css2",
+        "queryKeys": [
+          "display",
+          "family"
+        ],
+        "sha256": "19870b6ab3e12f42e074ef541d338705c75312c2debd724df4894019a22f7599",
+        "status": 200,
+        "transferSize": 2156,
+        "url": "https://fonts.googleapis.com/css2"
+      },
+      {
+        "bytes": 39128,
+        "contentType": "font/woff2",
+        "ext": "woff2",
+        "host": "fonts.gstatic.com",
+        "initiators": [
+          "pw:font"
+        ],
+        "kind": "font",
+        "path": "/s/nunito/v32/XRXV3I6Li01BKofINeaB.woff2",
+        "queryKeys": [],
+        "sha256": "ba344451eab25b217a165363b1982048a5e5830a0daf36577973955a04cac793",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://fonts.gstatic.com/s/nunito/v32/XRXV3I6Li01BKofINeaB.woff2"
+      },
+      {
+        "bytes": null,
+        "contentType": "application/json",
+        "ext": "json",
+        "host": "gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com",
+        "initiators": [
+          "pw:fetch"
+        ],
+        "kind": "json",
+        "path": "/assets/library.json",
+        "queryKeys": [],
+        "sha256": null,
+        "status": 200,
+        "transferSize": null,
+        "url": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/assets/library.json"
+      },
+      {
+        "bytes": 1252,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "us-assets.i.posthog.com",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/array/phc_uYc2WmzhsYFYNmw9Q2RJ9vYYEdKhPj6wPryiGPGRQsCz/config.js",
+        "queryKeys": [],
+        "sha256": "06b83572ecc09c26bfededc0a0dfde2e9356fb5b8a05dd3ffee46148f38982e6",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://us-assets.i.posthog.com/array/phc_uYc2WmzhsYFYNmw9Q2RJ9vYYEdKhPj6wPryiGPGRQsCz/config.js"
+      },
+      {
+        "bytes": 24085,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "us-assets.i.posthog.com",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/static/dead-clicks-autocapture.js",
+        "queryKeys": [
+          "v"
+        ],
+        "sha256": "02478cc1d6a4e711157158e4c6da6b900d78d69f87587b59acfbdb7e9b93e20c",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://us-assets.i.posthog.com/static/dead-clicks-autocapture.js"
+      },
+      {
+        "bytes": 17854,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "us-assets.i.posthog.com",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/static/exception-autocapture.js",
+        "queryKeys": [
+          "v"
+        ],
+        "sha256": "78c466a1cff832f383673c78baf4b9b6f6a8c6c4618d54cfc62abfe4847063b3",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://us-assets.i.posthog.com/static/exception-autocapture.js"
+      },
+      {
+        "bytes": 215347,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "us-assets.i.posthog.com",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/static/posthog-recorder.js",
+        "queryKeys": [
+          "v"
+        ],
+        "sha256": "dff8b19626b7416f2699c44312bc2fb22f12887f8def09b79408925b85a3c184",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://us-assets.i.posthog.com/static/posthog-recorder.js"
+      },
+      {
+        "bytes": 112135,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "us-assets.i.posthog.com",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/static/surveys.js",
+        "queryKeys": [
+          "v"
+        ],
+        "sha256": "acc211412e8172e5c13ed39f4b9b904a5f5ed007bef3a3f20c1ffd02ce8e544b",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://us-assets.i.posthog.com/static/surveys.js"
+      },
+      {
+        "bytes": 11042,
+        "contentType": "application/javascript",
+        "ext": "js",
+        "host": "us-assets.i.posthog.com",
+        "initiators": [
+          "pw:script"
+        ],
+        "kind": "script",
+        "path": "/static/web-vitals.js",
+        "queryKeys": [
+          "v"
+        ],
+        "sha256": "3c6ab8a4e21f4d7c63d523109e480930845952e816dd27d4a0bbf215865f107e",
+        "status": 200,
+        "transferSize": null,
+        "url": "https://us-assets.i.posthog.com/static/web-vitals.js"
+      }
+    ],
+    "totals": {
+      "font": {
+        "bytes": 179568,
+        "count": 3
+      },
+      "html": {
+        "bytes": 3015,
+        "count": 1
+      },
+      "image": {
+        "bytes": 225585,
+        "count": 23
+      },
+      "json": {
+        "bytes": 185498,
+        "count": 5
+      },
+      "script": {
+        "bytes": 5471733,
+        "count": 28
+      },
+      "style": {
+        "bytes": 197678,
+        "count": 2
+      }
+    }
+  },
+  "materials": {
+    "fromPhase": "mid+early+effect+title (union, users = max)",
+    "omitted": 0,
+    "rows": [
+      {
+        "id": "m0",
+        "instances": 24,
+        "names": [],
+        "signature": "87839c1d39116b48",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#f0433a",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 97
+      },
+      {
+        "id": "m1",
+        "instances": 90,
+        "names": [],
+        "signature": "192affe08799549f",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#ffffff",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 90
+      },
+      {
+        "id": "m2",
+        "instances": 2,
+        "names": [],
+        "signature": "16fa3fa701d22b26",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#f9c647",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 57
+      },
+      {
+        "id": "m3",
+        "instances": 2,
+        "names": [],
+        "signature": "8bb3ee1f203736ca",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#b868e8",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 29
+      },
+      {
+        "id": "m4",
+        "instances": 1,
+        "names": [],
+        "signature": "275a41bcd9fa1daf",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#5ecaf0",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 18
+      },
+      {
+        "id": "m5",
+        "instances": 1,
+        "names": [],
+        "signature": "2298278f001aced6",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#ffffff",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": false,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m6",
+        "instances": 1,
+        "names": [],
+        "signature": "3caae5989872d65d",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#ffffff",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 0.6,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": true,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m7",
+        "instances": 1,
+        "names": [],
+        "signature": "59712d97575f10c4",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "color": "#ffffff",
+          "colorWrite": true,
+          "ctor": "Ma",
+          "depthTest": true,
+          "depthWrite": false,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "opacity": 0.2765,
+          "reflectivity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": true,
+          "type": "MeshBasicMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m8",
+        "instances": 1,
+        "names": [],
+        "signature": "67d1c8aaf3853335",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "color": "#ffffff",
+          "colorWrite": true,
+          "ctor": "Ma",
+          "depthTest": true,
+          "depthWrite": false,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "opacity": 0.2292,
+          "reflectivity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": true,
+          "type": "MeshBasicMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m9",
+        "instances": 1,
+        "names": [],
+        "signature": "6d6910cbf132e706",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#c3b1f0",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m10",
+        "instances": 1,
+        "names": [],
+        "signature": "76f6c445c664efbd",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "color": "#5ecaf0",
+          "colorWrite": true,
+          "ctor": "Ma",
+          "depthTest": true,
+          "depthWrite": false,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "opacity": 0.22,
+          "reflectivity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": true,
+          "type": "MeshBasicMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m11",
+        "instances": 1,
+        "names": [],
+        "signature": "814919050977b08c",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#f0433a",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "maps": {
+            "map": {
+              "anisotropy": 1,
+              "canvas": true,
+              "colorGrid4x4": [
+                [
+                  246,
+                  143,
+                  138,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  244,
+                  119,
+                  112,
+                  255
+                ],
+                [
+                  242,
+                  95,
+                  87,
+                  255
+                ],
+                [
+                  242,
+                  95,
+                  87,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  242,
+                  95,
+                  87,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  244,
+                  115,
+                  108,
+                  255
+                ],
+                [
+                  240,
+                  67,
+                  58,
+                  255
+                ],
+                [
+                  240,
+                  70,
+                  62,
+                  255
+                ],
+                [
+                  242,
+                  88,
+                  80,
+                  255
+                ]
+              ],
+              "colorSpace": null,
+              "compressed": false,
+              "ctor": "uh",
+              "cube": false,
+              "data": false,
+              "depth": false,
+              "flipY": true,
+              "format": 1023,
+              "h": 256,
+              "magFilter": 1006,
+              "mapping": 300,
+              "minFilter": 1008,
+              "mipmaps": true,
+              "name": "",
+              "offset": [
+                0,
+                0
+              ],
+              "repeat": [
+                1,
+                1
+              ],
+              "rotation": 0,
+              "src": null,
+              "type": 1009,
+              "video": false,
+              "w": 256,
+              "wrapS": 1001,
+              "wrapT": 1001
+            }
+          },
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m12",
+        "instances": 1,
+        "names": [],
+        "signature": "b06fb7d2a5e0b05d",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "color": "#ffffff",
+          "colorWrite": true,
+          "ctor": "Ma",
+          "depthTest": true,
+          "depthWrite": false,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "opacity": 0.2696,
+          "reflectivity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": true,
+          "type": "MeshBasicMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m13",
+        "instances": 1,
+        "names": [],
+        "signature": "b31f0fab66271238",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#eaf4ff",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": false,
+          "lightMapIntensity": 1,
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m14",
+        "instances": 1,
+        "names": [],
+        "signature": "dca667e5ecc0cc90",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "color": "#ffffff",
+          "colorWrite": true,
+          "ctor": "Ma",
+          "depthTest": true,
+          "depthWrite": true,
+          "fog": false,
+          "lightMapIntensity": 1,
+          "maps": {
+            "map": {
+              "anisotropy": 1,
+              "canvas": true,
+              "colorGrid4x4": [
+                [
+                  34,
+                  132,
+                  203,
+                  255
+                ],
+                [
+                  34,
+                  132,
+                  203,
+                  255
+                ],
+                [
+                  34,
+                  132,
+                  203,
+                  255
+                ],
+                [
+                  34,
+                  132,
+                  202,
+                  255
+                ],
+                [
+                  56,
+                  166,
+                  224,
+                  255
+                ],
+                [
+                  56,
+                  166,
+                  224,
+                  255
+                ],
+                [
+                  56,
+                  166,
+                  224,
+                  255
+                ],
+                [
+                  56,
+                  166,
+                  224,
+                  255
+                ],
+                [
+                  97,
+                  193,
+                  235,
+                  255
+                ],
+                [
+                  97,
+                  193,
+                  236,
+                  255
+                ],
+                [
+                  97,
+                  194,
+                  236,
+                  255
+                ],
+                [
+                  97,
+                  193,
+                  236,
+                  255
+                ],
+                [
+                  145,
+                  215,
+                  243,
+                  255
+                ],
+                [
+                  145,
+                  215,
+                  243,
+                  255
+                ],
+                [
+                  145,
+                  215,
+                  243,
+                  255
+                ],
+                [
+                  145,
+                  215,
+                  244,
+                  255
+                ]
+              ],
+              "colorSpace": null,
+              "compressed": false,
+              "ctor": "uh",
+              "cube": false,
+              "data": false,
+              "depth": false,
+              "flipY": true,
+              "format": 1023,
+              "h": 512,
+              "magFilter": 1006,
+              "mapping": 300,
+              "minFilter": 1008,
+              "mipmaps": true,
+              "name": "",
+              "offset": [
+                0,
+                0
+              ],
+              "repeat": [
+                1,
+                1
+              ],
+              "rotation": 0,
+              "src": null,
+              "type": 1009,
+              "video": false,
+              "w": 2,
+              "wrapS": 1001,
+              "wrapT": 1001
+            }
+          },
+          "opacity": 1,
+          "reflectivity": 1,
+          "side": 1,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshBasicMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      },
+      {
+        "id": "m15",
+        "instances": 1,
+        "names": [],
+        "signature": "f2698004e43d989c",
+        "spec": {
+          "alphaTest": 0,
+          "aoMapIntensity": 1,
+          "blending": 1,
+          "bumpScale": 1,
+          "color": "#fdf0e0",
+          "colorWrite": true,
+          "ctor": "ec",
+          "depthTest": true,
+          "depthWrite": true,
+          "displacementScale": 1,
+          "emissive": "#000000",
+          "emissiveIntensity": 1,
+          "fog": true,
+          "lightMapIntensity": 1,
+          "maps": {
+            "map": {
+              "anisotropy": 1,
+              "canvas": true,
+              "colorGrid4x4": [
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ],
+                [
+                  253,
+                  240,
+                  224,
+                  255
+                ]
+              ],
+              "colorSpace": null,
+              "compressed": false,
+              "ctor": "uh",
+              "cube": false,
+              "data": false,
+              "depth": false,
+              "flipY": true,
+              "format": 1023,
+              "h": 512,
+              "magFilter": 1006,
+              "mapping": 300,
+              "minFilter": 1008,
+              "mipmaps": true,
+              "name": "",
+              "offset": [
+                0,
+                0
+              ],
+              "repeat": [
+                1,
+                1
+              ],
+              "rotation": 0,
+              "src": null,
+              "type": 1009,
+              "video": false,
+              "w": 512,
+              "wrapS": 1001,
+              "wrapT": 1001
+            }
+          },
+          "normalScale": [
+            1,
+            1
+          ],
+          "opacity": 1,
+          "side": 0,
+          "toneMapped": true,
+          "transparent": false,
+          "type": "MeshToonMaterial",
+          "vertexColors": false,
+          "wireframe": false
+        },
+        "users": 1
+      }
+    ]
+  },
+  "meta": {
+    "browser": "147.0.7727.15",
+    "capturedAt": "2026-10-23T10:16:20.365Z",
+    "clickSequence": [
+      {
+        "label": "PLAY NOW",
+        "method": "locator-click-force",
+        "t": 10872
+      }
+    ],
+    "clockManualStartPerfMs": 14258.5,
+    "dtMs": 50,
+    "earlyS": 1,
+    "effectWindowS": 4,
+    "frameUrl": "about:srcdoc",
+    "keysHeld": [
+      "KeyW",
+      "ArrowUp"
+    ],
+    "midS": 5,
+    "noStartControl": false,
+    "note": "Numbers, names, hashes and sizes only; no third-party bytes or shader source are stored.",
+    "sceneSettled": true,
+    "seed": 20261023,
+    "settleDetail": "objects within 3% for 4000 ms (556..556)",
+    "skipRender": true,
+    "stalls": [],
+    "viewport": {
+      "height": 540,
+      "width": 960
+    },
+    "waitedMs": 15419
+  },
+  "phases": {
+    "early": {
+      "background": {
+        "color": "#bfdcee"
+      },
+      "camera": {
+        "aspect": 2.7746,
+        "bounds": null,
+        "calls": 67,
+        "ctor": "iu",
+        "far": 500,
+        "forward": [
+          -0.0573,
+          -0.2724,
+          -0.9605
+        ],
+        "fov": 55,
+        "near": 0.1,
+        "ortho": false,
+        "position": [
+          -0.6703,
+          6.0697,
+          9.4617
+        ],
+        "up": [
+          -0.0162,
+          0.9622,
+          -0.2719
+        ],
+        "zoom": 1
+      },
+      "cameraCount": 1,
+      "canvasTextures": [
+        {
+          "colorGrid4x4": [
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              202,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              97,
+              193,
+              235,
+              255
+            ],
+            [
+              97,
+              193,
+              236,
+              255
+            ],
+            [
+              97,
+              194,
+              236,
+              255
+            ],
+            [
+              97,
+              193,
+              236,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              244,
+              255
+            ]
+          ],
+          "h": 512,
+          "material": "Ma",
+          "slot": "map",
+          "w": 2
+        },
+        {
+          "colorGrid4x4": [
+            [
+              246,
+              143,
+              138,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              244,
+              119,
+              112,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              244,
+              115,
+              108,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              70,
+              62,
+              255
+            ],
+            [
+              242,
+              88,
+              80,
+              255
+            ]
+          ],
+          "h": 256,
+          "material": "ec",
+          "slot": "map",
+          "w": 256
+        },
+        {
+          "colorGrid4x4": [
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ]
+          ],
+          "h": 512,
+          "material": "ec",
+          "slot": "map",
+          "w": 512
+        }
+      ],
+      "composers": [],
+      "counts": {
+        "batchedMeshes": 0,
+        "cameras": 0,
+        "groups": 283,
+        "instancedMeshes": 6,
+        "lights": 3,
+        "lines": 0,
+        "meshes": 269,
+        "objects": 556,
+        "points": 0,
+        "skinnedMeshes": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 414
+      },
+      "effectComponents": {
+        "instanced": 756,
+        "points": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 414
+      },
+      "environment": {
+        "anisotropy": 1,
+        "canvas": false,
+        "colorSpace": "srgb-linear",
+        "compressed": false,
+        "ctor": "qs",
+        "cube": false,
+        "data": false,
+        "depth": false,
+        "flipY": false,
+        "format": 1023,
+        "h": 64,
+        "magFilter": 1006,
+        "mapping": 306,
+        "minFilter": 1006,
+        "mipmaps": false,
+        "name": "PMREM.cubeUv",
+        "offset": [
+          0,
+          0
+        ],
+        "repeat": [
+          1,
+          1
+        ],
+        "rotation": 0,
+        "src": null,
+        "type": 1016,
+        "video": false,
+        "w": 336,
+        "wrapS": 1001,
+        "wrapT": 1001
+      },
+      "errors": [],
+      "fog": null,
+      "frameCalls": [
+        {
+          "camera": "iu",
+          "children": 100,
+          "ctor": "Er",
+          "kind": "scene"
+        }
+      ],
+      "lights": [
+        {
+          "castShadow": false,
+          "color": "#99bbff",
+          "ctor": "lu",
+          "intensity": 0.7854,
+          "name": "",
+          "position": [
+            -6,
+            8,
+            -6
+          ],
+          "shadow": {
+            "bias": 0,
+            "camera": {
+              "bottom": -5,
+              "far": 500,
+              "left": -5,
+              "near": 0.5,
+              "right": 5,
+              "top": 5
+            },
+            "mapSize": [
+              512,
+              512
+            ],
+            "normalBias": 0,
+            "radius": 1
+          },
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "type": "DirectionalLight"
+        },
+        {
+          "castShadow": true,
+          "color": "#ffffff",
+          "ctor": "lu",
+          "intensity": 2.042,
+          "name": "",
+          "position": [
+            6,
+            12,
+            6
+          ],
+          "shadow": {
+            "bias": 0,
+            "camera": {
+              "bottom": -14,
+              "far": 50,
+              "left": -14,
+              "near": 1,
+              "right": 14,
+              "top": 14
+            },
+            "mapSize": [
+              1024,
+              1024
+            ],
+            "normalBias": 0,
+            "radius": 1
+          },
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "type": "DirectionalLight"
+        },
+        {
+          "castShadow": false,
+          "color": "#ffffff",
+          "ctor": "qc",
+          "groundColor": "#7788aa",
+          "intensity": 1.7279,
+          "name": "",
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "type": "HemisphereLight"
+        }
+      ],
+      "mainScene": 0,
+      "mode": "manual",
+      "nodePipelines": [],
+      "particles": {
+        "instancedParticleLike": [],
+        "points": [],
+        "spriteMaps": {},
+        "sprites": []
+      },
+      "renderers": [
+        {
+          "autoClear": true,
+          "clearAlpha": 1,
+          "exposure": 1,
+          "info": {
+            "memory": {
+              "geometries": 11,
+              "textures": 6
+            },
+            "render": {
+              "calls": 65,
+              "lines": 0,
+              "points": 0,
+              "triangles": 363236
+            }
+          },
+          "kind": "WebGLRenderer",
+          "nonNullTargetSets": 59,
+          "outputColorSpace": "srgb",
+          "pixelRatio": 1,
+          "renderCalls": 59,
+          "shadowMap": {
+            "autoUpdate": true,
+            "enabled": true,
+            "type": "pcf"
+          },
+          "size": [
+            960,
+            346
+          ],
+          "targetSets": 106,
+          "toneMapping": 0,
+          "toneMappingName": "none"
+        }
+      ],
+      "scenes": [
+        {
+          "background": {
+            "color": "#bfdcee"
+          },
+          "backgroundBlurriness": 0,
+          "backgroundIntensity": 1,
+          "constructors": {
+            "Er": 1,
+            "Ra": 263,
+            "Tr": 283,
+            "lu": 2,
+            "no": 6,
+            "qc": 1
+          },
+          "counts": {
+            "batchedMeshes": 0,
+            "cameras": 0,
+            "groups": 283,
+            "instancedMeshes": 6,
+            "lights": 3,
+            "lines": 0,
+            "meshes": 269,
+            "objects": 556,
+            "points": 0,
+            "skinnedMeshes": 0,
+            "sprites": 0,
+            "transparent": 3,
+            "visible": 414
+          },
+          "environment": {
+            "anisotropy": 1,
+            "canvas": false,
+            "colorSpace": "srgb-linear",
+            "compressed": false,
+            "ctor": "qs",
+            "cube": false,
+            "data": false,
+            "depth": false,
+            "flipY": false,
+            "format": 1023,
+            "h": 64,
+            "magFilter": 1006,
+            "mapping": 306,
+            "minFilter": 1006,
+            "mipmaps": false,
+            "name": "PMREM.cubeUv",
+            "offset": [
+              0,
+              0
+            ],
+            "repeat": [
+              1,
+              1
+            ],
+            "rotation": 0,
+            "src": null,
+            "type": 1016,
+            "video": false,
+            "w": 336,
+            "wrapS": 1001,
+            "wrapT": 1001
+          },
+          "environmentIntensity": 0.12,
+          "estimatedTriangles": 422008,
+          "fog": null,
+          "geometryTypes": {
+            "BoxGeometry": 2,
+            "BufferGeometry": 2,
+            "CapsuleGeometry": 91,
+            "ConeGeometry": 10,
+            "CylinderGeometry": 41,
+            "ExtrudeGeometry": 20,
+            "SphereGeometry": 103
+          },
+          "index": 0,
+          "instanceTotal": 756,
+          "instanced": [
+            {
+              "count": 50,
+              "geometry": "CylinderGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 28
+            },
+            {
+              "count": 26,
+              "geometry": "BufferGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 3240
+            },
+            {
+              "count": 30,
+              "geometry": "BufferGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 3240
+            },
+            {
+              "count": 50,
+              "geometry": "BoxGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 24
+            },
+            {
+              "count": 400,
+              "geometry": "CapsuleGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 378
+            },
+            {
+              "count": 200,
+              "geometry": "BoxGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 24
+            }
+          ],
+          "lights": [
+            {
+              "castShadow": false,
+              "color": "#99bbff",
+              "ctor": "lu",
+              "intensity": 0.7854,
+              "name": "",
+              "position": [
+                -6,
+                8,
+                -6
+              ],
+              "shadow": {
+                "bias": 0,
+                "camera": {
+                  "bottom": -5,
+                  "far": 500,
+                  "left": -5,
+                  "near": 0.5,
+                  "right": 5,
+                  "top": 5
+                },
+                "mapSize": [
+                  512,
+                  512
+                ],
+                "normalBias": 0,
+                "radius": 1
+              },
+              "target": [
+                0,
+                0,
+                0
+              ],
+              "type": "DirectionalLight"
+            },
+            {
+              "castShadow": true,
+              "color": "#ffffff",
+              "ctor": "lu",
+              "intensity": 2.042,
+              "name": "",
+              "position": [
+                6,
+                12,
+                6
+              ],
+              "shadow": {
+                "bias": 0,
+                "camera": {
+                  "bottom": -14,
+                  "far": 50,
+                  "left": -14,
+                  "near": 1,
+                  "right": 14,
+                  "top": 14
+                },
+                "mapSize": [
+                  1024,
+                  1024
+                ],
+                "normalBias": 0,
+                "radius": 1
+              },
+              "target": [
+                0,
+                0,
+                0
+              ],
+              "type": "DirectionalLight"
+            },
+            {
+              "castShadow": false,
+              "color": "#ffffff",
+              "ctor": "qc",
+              "groundColor": "#7788aa",
+              "intensity": 1.7279,
+              "name": "",
+              "position": [
+                0,
+                1,
+                0
+              ],
+              "type": "HemisphereLight"
+            }
+          ],
+          "points": [],
+          "sky": [],
+          "spriteMaps": {},
+          "sprites": [],
+          "topGeometry": [
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "Ma",
+              "materialColor": "#ffffff",
+              "name": "",
+              "size": [
+                240,
+                240,
+                240
+              ],
+              "vertices": 1089,
+              "volume": 13824000
+            },
+            {
+              "center": [
+                -0.15,
+                0,
+                0
+              ],
+              "geometry": "BufferGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#eaf4ff",
+              "name": "",
+              "size": [
+                7.7,
+                5.2,
+                5.2
+              ],
+              "vertices": 3240,
+              "volume": 208.208
+            },
+            {
+              "center": [
+                -0.15,
+                0,
+                0
+              ],
+              "geometry": "BufferGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#ffffff",
+              "name": "",
+              "size": [
+                7.7,
+                5.2,
+                5.2
+              ],
+              "vertices": 3240,
+              "volume": 208.208
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "Ma",
+              "materialColor": "#5ecaf0",
+              "name": "",
+              "size": [
+                2,
+                2,
+                2
+              ],
+              "vertices": 357,
+              "volume": 8
+            },
+            {
+              "center": [
+                -0.2517,
+                0.142,
+                10.3218
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.4882,
+                0.264,
+                4.819
+              ],
+              "vertices": 2292,
+              "volume": 5.7099
+            },
+            {
+              "center": [
+                -1.0891,
+                0.1324,
+                4.5594
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.4972,
+                0.2365,
+                4.3336
+              ],
+              "vertices": 2292,
+              "volume": 4.6091
+            },
+            {
+              "center": [
+                -0.0262,
+                0.1324,
+                12.3949
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.5473,
+                0.2365,
+                3.9731
+              ],
+              "vertices": 2292,
+              "volume": 3.3331
+            },
+            {
+              "center": [
+                -1.0558,
+                0.1228,
+                7.2922
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.8566,
+                0.209,
+                3.6172
+              ],
+              "vertices": 2292,
+              "volume": 2.9156
+            },
+            {
+              "center": [
+                -1.162,
+                0.1228,
+                6.2188
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.7922,
+                0.209,
+                3.519
+              ],
+              "vertices": 2292,
+              "volume": 2.7891
+            },
+            {
+              "center": [
+                -0.3699,
+                0.1228,
+                13.2025
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.7901,
+                0.209,
+                3.5159
+              ],
+              "vertices": 2292,
+              "volume": 2.785
+            },
+            {
+              "center": [
+                -0.2219,
+                0.1228,
+                11.1813
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.389,
+                0.209,
+                3.7013
+              ],
+              "vertices": 2292,
+              "volume": 2.6217
+            },
+            {
+              "center": [
+                -0.409,
+                0.1324,
+                9.1174
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.9684,
+                0.2365,
+                3.5042
+              ],
+              "vertices": 2292,
+              "volume": 2.4601
+            },
+            {
+              "center": [
+                -1.3144,
+                0.1228,
+                3.4914
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.5855,
+                0.209,
+                3.232
+              ],
+              "vertices": 2292,
+              "volume": 2.422
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "BoxGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#fdf0e0",
+              "name": "",
+              "size": [
+                8,
+                0.3,
+                1
+              ],
+              "vertices": 24,
+              "volume": 2.4
+            },
+            {
+              "center": [
+                0.2662,
+                0.1183,
+                15.3869
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.2694,
+                0.1959,
+                3.5344
+              ],
+              "vertices": 2292,
+              "volume": 2.2631
+            },
+            {
+              "center": [
+                -0.988,
+                0.1132,
+                8.3032
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.4806,
+                0.1815,
+                3.4357
+              ],
+              "vertices": 2292,
+              "volume": 2.1704
+            },
+            {
+              "center": [
+                -1.3481,
+                0.1132,
+                2.9265
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.1644,
+                0.1815,
+                2.8746
+              ],
+              "vertices": 2292,
+              "volume": 1.651
+            },
+            {
+              "center": [
+                -1.8307,
+                0.55,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                1.1,
+                1.1789,
+                1.1789
+              ],
+              "vertices": 1089,
+              "volume": 1.5288
+            },
+            {
+              "center": [
+                0.1092,
+                0.1183,
+                14.2217
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4376,
+                0.1959,
+                2.8846
+              ],
+              "vertices": 2292,
+              "volume": 1.3772
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                -1.503,
+                0.0941,
+                1.7803
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.1315,
+                0.1265,
+                1.9056
+              ],
+              "vertices": 2292,
+              "volume": 0.5138
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            }
+          ]
+        }
+      ],
+      "sky": [],
+      "steps": 23,
+      "virtualMs": 1150,
+      "walkSteps": 1206
+    },
+    "effect": {
+      "background": {
+        "color": "#bfdcee"
+      },
+      "camera": {
+        "aspect": 2.7746,
+        "bounds": null,
+        "calls": 173,
+        "ctor": "iu",
+        "far": 500,
+        "forward": [
+          0.009,
+          -0.246,
+          -0.9692
+        ],
+        "fov": 55.3365,
+        "near": 0.1,
+        "ortho": false,
+        "position": [
+          -0.4454,
+          5.2759,
+          9
+        ],
+        "up": [
+          0.0023,
+          0.9693,
+          -0.246
+        ],
+        "zoom": 1
+      },
+      "cameraCount": 1,
+      "canvasTextures": [
+        {
+          "colorGrid4x4": [
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              202,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              97,
+              193,
+              235,
+              255
+            ],
+            [
+              97,
+              193,
+              236,
+              255
+            ],
+            [
+              97,
+              194,
+              236,
+              255
+            ],
+            [
+              97,
+              193,
+              236,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              244,
+              255
+            ]
+          ],
+          "h": 512,
+          "material": "Ma",
+          "slot": "map",
+          "w": 2
+        },
+        {
+          "colorGrid4x4": [
+            [
+              246,
+              143,
+              138,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              244,
+              119,
+              112,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              244,
+              115,
+              108,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              70,
+              62,
+              255
+            ],
+            [
+              242,
+              88,
+              80,
+              255
+            ]
+          ],
+          "h": 256,
+          "material": "ec",
+          "slot": "map",
+          "w": 256
+        },
+        {
+          "colorGrid4x4": [
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ]
+          ],
+          "h": 512,
+          "material": "ec",
+          "slot": "map",
+          "w": 512
+        }
+      ],
+      "composers": [],
+      "counts": {
+        "batchedMeshes": 0,
+        "cameras": 0,
+        "groups": 283,
+        "instancedMeshes": 6,
+        "lights": 3,
+        "lines": 0,
+        "meshes": 269,
+        "objects": 556,
+        "points": 0,
+        "skinnedMeshes": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 414
+      },
+      "effectComponents": {
+        "instanced": 756,
+        "points": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 414
+      },
+      "environment": {
+        "anisotropy": 1,
+        "canvas": false,
+        "colorSpace": "srgb-linear",
+        "compressed": false,
+        "ctor": "qs",
+        "cube": false,
+        "data": false,
+        "depth": false,
+        "flipY": false,
+        "format": 1023,
+        "h": 64,
+        "magFilter": 1006,
+        "mapping": 306,
+        "minFilter": 1006,
+        "mipmaps": false,
+        "name": "PMREM.cubeUv",
+        "offset": [
+          0,
+          0
+        ],
+        "repeat": [
+          1,
+          1
+        ],
+        "rotation": 0,
+        "src": null,
+        "type": 1016,
+        "video": false,
+        "w": 336,
+        "wrapS": 1001,
+        "wrapT": 1001
+      },
+      "errors": [],
+      "fog": null,
+      "frameCalls": [
+        {
+          "camera": "iu",
+          "children": 100,
+          "ctor": "Er",
+          "kind": "scene"
+        }
+      ],
+      "lights": [
+        {
+          "castShadow": false,
+          "color": "#99bbff",
+          "ctor": "lu",
+          "intensity": 0.7854,
+          "name": "",
+          "position": [
+            -6,
+            8,
+            -6
+          ],
+          "shadow": {
+            "bias": 0,
+            "camera": {
+              "bottom": -5,
+              "far": 500,
+              "left": -5,
+              "near": 0.5,
+              "right": 5,
+              "top": 5
+            },
+            "mapSize": [
+              512,
+              512
+            ],
+            "normalBias": 0,
+            "radius": 1
+          },
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "type": "DirectionalLight"
+        },
+        {
+          "castShadow": true,
+          "color": "#ffffff",
+          "ctor": "lu",
+          "intensity": 2.042,
+          "name": "",
+          "position": [
+            6,
+            12,
+            6
+          ],
+          "shadow": {
+            "bias": 0,
+            "camera": {
+              "bottom": -14,
+              "far": 50,
+              "left": -14,
+              "near": 1,
+              "right": 14,
+              "top": 14
+            },
+            "mapSize": [
+              1024,
+              1024
+            ],
+            "normalBias": 0,
+            "radius": 1
+          },
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "type": "DirectionalLight"
+        },
+        {
+          "castShadow": false,
+          "color": "#ffffff",
+          "ctor": "qc",
+          "groundColor": "#7788aa",
+          "intensity": 1.7279,
+          "name": "",
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "type": "HemisphereLight"
+        }
+      ],
+      "mainScene": 0,
+      "mode": "manual",
+      "nodePipelines": [],
+      "particles": {
+        "instancedParticleLike": [],
+        "points": [],
+        "spriteMaps": {},
+        "sprites": []
+      },
+      "renderers": [
+        {
+          "autoClear": true,
+          "clearAlpha": 1,
+          "exposure": 1,
+          "info": {
+            "memory": {
+              "geometries": 11,
+              "textures": 6
+            },
+            "render": {
+              "calls": 58,
+              "lines": 0,
+              "points": 0,
+              "triangles": 360676
+            }
+          },
+          "kind": "WebGLRenderer",
+          "nonNullTargetSets": 65,
+          "outputColorSpace": "srgb",
+          "pixelRatio": 1,
+          "renderCalls": 65,
+          "shadowMap": {
+            "autoUpdate": true,
+            "enabled": true,
+            "type": "pcf"
+          },
+          "size": [
+            960,
+            346
+          ],
+          "targetSets": 118,
+          "toneMapping": 0,
+          "toneMappingName": "none"
+        }
+      ],
+      "scenes": [
+        {
+          "background": {
+            "color": "#bfdcee"
+          },
+          "backgroundBlurriness": 0,
+          "backgroundIntensity": 1,
+          "constructors": {
+            "Er": 1,
+            "Ra": 263,
+            "Tr": 283,
+            "lu": 2,
+            "no": 6,
+            "qc": 1
+          },
+          "counts": {
+            "batchedMeshes": 0,
+            "cameras": 0,
+            "groups": 283,
+            "instancedMeshes": 6,
+            "lights": 3,
+            "lines": 0,
+            "meshes": 269,
+            "objects": 556,
+            "points": 0,
+            "skinnedMeshes": 0,
+            "sprites": 0,
+            "transparent": 3,
+            "visible": 414
+          },
+          "environment": {
+            "anisotropy": 1,
+            "canvas": false,
+            "colorSpace": "srgb-linear",
+            "compressed": false,
+            "ctor": "qs",
+            "cube": false,
+            "data": false,
+            "depth": false,
+            "flipY": false,
+            "format": 1023,
+            "h": 64,
+            "magFilter": 1006,
+            "mapping": 306,
+            "minFilter": 1006,
+            "mipmaps": false,
+            "name": "PMREM.cubeUv",
+            "offset": [
+              0,
+              0
+            ],
+            "repeat": [
+              1,
+              1
+            ],
+            "rotation": 0,
+            "src": null,
+            "type": 1016,
+            "video": false,
+            "w": 336,
+            "wrapS": 1001,
+            "wrapT": 1001
+          },
+          "environmentIntensity": 0.12,
+          "estimatedTriangles": 422008,
+          "fog": null,
+          "geometryTypes": {
+            "BoxGeometry": 2,
+            "BufferGeometry": 2,
+            "CapsuleGeometry": 91,
+            "ConeGeometry": 10,
+            "CylinderGeometry": 41,
+            "ExtrudeGeometry": 20,
+            "SphereGeometry": 103
+          },
+          "index": 0,
+          "instanceTotal": 756,
+          "instanced": [
+            {
+              "count": 50,
+              "geometry": "CylinderGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 28
+            },
+            {
+              "count": 26,
+              "geometry": "BufferGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 3240
+            },
+            {
+              "count": 30,
+              "geometry": "BufferGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 3240
+            },
+            {
+              "count": 50,
+              "geometry": "BoxGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 24
+            },
+            {
+              "count": 400,
+              "geometry": "CapsuleGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 378
+            },
+            {
+              "count": 200,
+              "geometry": "BoxGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 24
+            }
+          ],
+          "lights": [
+            {
+              "castShadow": false,
+              "color": "#99bbff",
+              "ctor": "lu",
+              "intensity": 0.7854,
+              "name": "",
+              "position": [
+                -6,
+                8,
+                -6
+              ],
+              "shadow": {
+                "bias": 0,
+                "camera": {
+                  "bottom": -5,
+                  "far": 500,
+                  "left": -5,
+                  "near": 0.5,
+                  "right": 5,
+                  "top": 5
+                },
+                "mapSize": [
+                  512,
+                  512
+                ],
+                "normalBias": 0,
+                "radius": 1
+              },
+              "target": [
+                0,
+                0,
+                0
+              ],
+              "type": "DirectionalLight"
+            },
+            {
+              "castShadow": true,
+              "color": "#ffffff",
+              "ctor": "lu",
+              "intensity": 2.042,
+              "name": "",
+              "position": [
+                6,
+                12,
+                6
+              ],
+              "shadow": {
+                "bias": 0,
+                "camera": {
+                  "bottom": -14,
+                  "far": 50,
+                  "left": -14,
+                  "near": 1,
+                  "right": 14,
+                  "top": 14
+                },
+                "mapSize": [
+                  1024,
+                  1024
+                ],
+                "normalBias": 0,
+                "radius": 1
+              },
+              "target": [
+                0,
+                0,
+                0
+              ],
+              "type": "DirectionalLight"
+            },
+            {
+              "castShadow": false,
+              "color": "#ffffff",
+              "ctor": "qc",
+              "groundColor": "#7788aa",
+              "intensity": 1.7279,
+              "name": "",
+              "position": [
+                0,
+                1,
+                0
+              ],
+              "type": "HemisphereLight"
+            }
+          ],
+          "points": [],
+          "sky": [],
+          "spriteMaps": {},
+          "sprites": [],
+          "topGeometry": [
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "Ma",
+              "materialColor": "#ffffff",
+              "name": "",
+              "size": [
+                240,
+                240,
+                240
+              ],
+              "vertices": 1089,
+              "volume": 13824000
+            },
+            {
+              "center": [
+                -0.15,
+                0,
+                0
+              ],
+              "geometry": "BufferGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#eaf4ff",
+              "name": "",
+              "size": [
+                7.7,
+                5.2,
+                5.2
+              ],
+              "vertices": 3240,
+              "volume": 208.208
+            },
+            {
+              "center": [
+                -0.15,
+                0,
+                0
+              ],
+              "geometry": "BufferGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#ffffff",
+              "name": "",
+              "size": [
+                7.7,
+                5.2,
+                5.2
+              ],
+              "vertices": 3240,
+              "volume": 208.208
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "Ma",
+              "materialColor": "#5ecaf0",
+              "name": "",
+              "size": [
+                2,
+                2,
+                2
+              ],
+              "vertices": 357,
+              "volume": 8
+            },
+            {
+              "center": [
+                -1.174,
+                0.1324,
+                4.1181
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.3317,
+                0.2365,
+                4.4963
+              ],
+              "vertices": 2292,
+              "volume": 4.6063
+            },
+            {
+              "center": [
+                -1.678,
+                0.1324,
+                8.9734
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.9482,
+                0.2365,
+                4.2681
+              ],
+              "vertices": 2292,
+              "volume": 3.9853
+            },
+            {
+              "center": [
+                -1.9146,
+                0.1228,
+                12.545
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.0003,
+                0.209,
+                3.985
+              ],
+              "vertices": 2292,
+              "volume": 3.3317
+            },
+            {
+              "center": [
+                -2.1921,
+                0.1228,
+                14.4482
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.0069,
+                0.209,
+                3.9658
+              ],
+              "vertices": 2292,
+              "volume": 3.3211
+            },
+            {
+              "center": [
+                -1.6732,
+                0.1228,
+                13.6886
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.9656,
+                0.209,
+                3.8106
+              ],
+              "vertices": 2292,
+              "volume": 3.1582
+            },
+            {
+              "center": [
+                -0.9991,
+                0.1228,
+                6.7299
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.764,
+                0.209,
+                3.4778
+              ],
+              "vertices": 2292,
+              "volume": 2.7359
+            },
+            {
+              "center": [
+                -1.0017,
+                0.1228,
+                7.2882
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.7466,
+                0.209,
+                3.4529
+              ],
+              "vertices": 2292,
+              "volume": 2.7038
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "BoxGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#fdf0e0",
+              "name": "",
+              "size": [
+                8,
+                0.3,
+                1
+              ],
+              "vertices": 24,
+              "volume": 2.4
+            },
+            {
+              "center": [
+                -1.7167,
+                0.1132,
+                9.8291
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.472,
+                0.1815,
+                3.4638
+              ],
+              "vertices": 2292,
+              "volume": 2.1827
+            },
+            {
+              "center": [
+                -0.8741,
+                0.1132,
+                5.2076
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.4799,
+                0.1815,
+                3.4424
+              ],
+              "vertices": 2292,
+              "volume": 2.1743
+            },
+            {
+              "center": [
+                -2.2782,
+                0.1132,
+                15.3469
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.1762,
+                0.1815,
+                3.3708
+              ],
+              "vertices": 2292,
+              "volume": 1.9432
+            },
+            {
+              "center": [
+                -1.918,
+                0.1228,
+                11.2005
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.703,
+                0.209,
+                3.1634
+              ],
+              "vertices": 2292,
+              "volume": 1.7871
+            },
+            {
+              "center": [
+                -1.2993,
+                0.1132,
+                7.8946
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.1819,
+                0.1815,
+                2.8983
+              ],
+              "vertices": 2292,
+              "volume": 1.6738
+            },
+            {
+              "center": [
+                -0.9898,
+                0.1132,
+                3.0714
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.6846,
+                0.1815,
+                3.0198
+              ],
+              "vertices": 2292,
+              "volume": 1.4714
+            },
+            {
+              "center": [
+                -0.253,
+                0.4453,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                0.8906,
+                1.216,
+                1.216
+              ],
+              "vertices": 1089,
+              "volume": 1.3169
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                -0.4301,
+                0.0941,
+                1.9351
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.0885,
+                0.1265,
+                2.2667
+              ],
+              "vertices": 2292,
+              "volume": 0.5989
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            }
+          ]
+        }
+      ],
+      "sky": [],
+      "steps": 129,
+      "sweepTimeS": 6,
+      "virtualMs": 6450,
+      "walkSteps": 1212
+    },
+    "mid": {
+      "background": {
+        "color": "#bfdcee"
+      },
+      "camera": {
+        "aspect": 2.7746,
+        "bounds": null,
+        "calls": 150,
+        "ctor": "iu",
+        "far": 500,
+        "forward": [
+          -0.0329,
+          -0.2482,
+          -0.9682
+        ],
+        "fov": 55.1947,
+        "near": 0.1,
+        "ortho": false,
+        "position": [
+          -1.1014,
+          5.4268,
+          9.0001
+        ],
+        "up": [
+          -0.0084,
+          0.9687,
+          -0.248
+        ],
+        "zoom": 1
+      },
+      "cameraCount": 1,
+      "canvasTextures": [
+        {
+          "colorGrid4x4": [
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              203,
+              255
+            ],
+            [
+              34,
+              132,
+              202,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              56,
+              166,
+              224,
+              255
+            ],
+            [
+              97,
+              193,
+              235,
+              255
+            ],
+            [
+              97,
+              193,
+              236,
+              255
+            ],
+            [
+              97,
+              194,
+              236,
+              255
+            ],
+            [
+              97,
+              193,
+              236,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              243,
+              255
+            ],
+            [
+              145,
+              215,
+              244,
+              255
+            ]
+          ],
+          "h": 512,
+          "material": "Ma",
+          "slot": "map",
+          "w": 2
+        },
+        {
+          "colorGrid4x4": [
+            [
+              246,
+              143,
+              138,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              244,
+              119,
+              112,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              242,
+              95,
+              87,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              244,
+              115,
+              108,
+              255
+            ],
+            [
+              240,
+              67,
+              58,
+              255
+            ],
+            [
+              240,
+              70,
+              62,
+              255
+            ],
+            [
+              242,
+              88,
+              80,
+              255
+            ]
+          ],
+          "h": 256,
+          "material": "ec",
+          "slot": "map",
+          "w": 256
+        },
+        {
+          "colorGrid4x4": [
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ],
+            [
+              253,
+              240,
+              224,
+              255
+            ]
+          ],
+          "h": 512,
+          "material": "ec",
+          "slot": "map",
+          "w": 512
+        }
+      ],
+      "composers": [],
+      "counts": {
+        "batchedMeshes": 0,
+        "cameras": 0,
+        "groups": 283,
+        "instancedMeshes": 6,
+        "lights": 3,
+        "lines": 0,
+        "meshes": 269,
+        "objects": 556,
+        "points": 0,
+        "skinnedMeshes": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 415
+      },
+      "effectComponents": {
+        "instanced": 756,
+        "points": 0,
+        "sprites": 0,
+        "transparent": 3,
+        "visible": 415
+      },
+      "environment": {
+        "anisotropy": 1,
+        "canvas": false,
+        "colorSpace": "srgb-linear",
+        "compressed": false,
+        "ctor": "qs",
+        "cube": false,
+        "data": false,
+        "depth": false,
+        "flipY": false,
+        "format": 1023,
+        "h": 64,
+        "magFilter": 1006,
+        "mapping": 306,
+        "minFilter": 1006,
+        "mipmaps": false,
+        "name": "PMREM.cubeUv",
+        "offset": [
+          0,
+          0
+        ],
+        "repeat": [
+          1,
+          1
+        ],
+        "rotation": 0,
+        "src": null,
+        "type": 1016,
+        "video": false,
+        "w": 336,
+        "wrapS": 1001,
+        "wrapT": 1001
+      },
+      "errors": [],
+      "fog": null,
+      "frameCalls": [
+        {
+          "camera": "iu",
+          "children": 100,
+          "ctor": "Er",
+          "kind": "scene"
+        }
+      ],
+      "lights": [
+        {
+          "castShadow": false,
+          "color": "#99bbff",
+          "ctor": "lu",
+          "intensity": 0.7854,
+          "name": "",
+          "position": [
+            -6,
+            8,
+            -6
+          ],
+          "shadow": {
+            "bias": 0,
+            "camera": {
+              "bottom": -5,
+              "far": 500,
+              "left": -5,
+              "near": 0.5,
+              "right": 5,
+              "top": 5
+            },
+            "mapSize": [
+              512,
+              512
+            ],
+            "normalBias": 0,
+            "radius": 1
+          },
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "type": "DirectionalLight"
+        },
+        {
+          "castShadow": true,
+          "color": "#ffffff",
+          "ctor": "lu",
+          "intensity": 2.042,
+          "name": "",
+          "position": [
+            6,
+            12,
+            6
+          ],
+          "shadow": {
+            "bias": 0,
+            "camera": {
+              "bottom": -14,
+              "far": 50,
+              "left": -14,
+              "near": 1,
+              "right": 14,
+              "top": 14
+            },
+            "mapSize": [
+              1024,
+              1024
+            ],
+            "normalBias": 0,
+            "radius": 1
+          },
+          "target": [
+            0,
+            0,
+            0
+          ],
+          "type": "DirectionalLight"
+        },
+        {
+          "castShadow": false,
+          "color": "#ffffff",
+          "ctor": "qc",
+          "groundColor": "#7788aa",
+          "intensity": 1.7279,
+          "name": "",
+          "position": [
+            0,
+            1,
+            0
+          ],
+          "type": "HemisphereLight"
+        }
+      ],
+      "mainScene": 0,
+      "mode": "manual",
+      "nodePipelines": [],
+      "particles": {
+        "instancedParticleLike": [],
+        "points": [],
+        "spriteMaps": {},
+        "sprites": []
+      },
+      "renderers": [
+        {
+          "autoClear": true,
+          "clearAlpha": 1,
+          "exposure": 1,
+          "info": {
+            "memory": {
+              "geometries": 11,
+              "textures": 6
+            },
+            "render": {
+              "calls": 55,
+              "lines": 0,
+              "points": 0,
+              "triangles": 359428
+            }
+          },
+          "kind": "WebGLRenderer",
+          "nonNullTargetSets": 62,
+          "outputColorSpace": "srgb",
+          "pixelRatio": 1,
+          "renderCalls": 62,
+          "shadowMap": {
+            "autoUpdate": true,
+            "enabled": true,
+            "type": "pcf"
+          },
+          "size": [
+            960,
+            346
+          ],
+          "targetSets": 112,
+          "toneMapping": 0,
+          "toneMappingName": "none"
+        }
+      ],
+      "scenes": [
+        {
+          "background": {
+            "color": "#bfdcee"
+          },
+          "backgroundBlurriness": 0,
+          "backgroundIntensity": 1,
+          "constructors": {
+            "Er": 1,
+            "Ra": 263,
+            "Tr": 283,
+            "lu": 2,
+            "no": 6,
+            "qc": 1
+          },
+          "counts": {
+            "batchedMeshes": 0,
+            "cameras": 0,
+            "groups": 283,
+            "instancedMeshes": 6,
+            "lights": 3,
+            "lines": 0,
+            "meshes": 269,
+            "objects": 556,
+            "points": 0,
+            "skinnedMeshes": 0,
+            "sprites": 0,
+            "transparent": 3,
+            "visible": 415
+          },
+          "environment": {
+            "anisotropy": 1,
+            "canvas": false,
+            "colorSpace": "srgb-linear",
+            "compressed": false,
+            "ctor": "qs",
+            "cube": false,
+            "data": false,
+            "depth": false,
+            "flipY": false,
+            "format": 1023,
+            "h": 64,
+            "magFilter": 1006,
+            "mapping": 306,
+            "minFilter": 1006,
+            "mipmaps": false,
+            "name": "PMREM.cubeUv",
+            "offset": [
+              0,
+              0
+            ],
+            "repeat": [
+              1,
+              1
+            ],
+            "rotation": 0,
+            "src": null,
+            "type": 1016,
+            "video": false,
+            "w": 336,
+            "wrapS": 1001,
+            "wrapT": 1001
+          },
+          "environmentIntensity": 0.12,
+          "estimatedTriangles": 422008,
+          "fog": null,
+          "geometryTypes": {
+            "BoxGeometry": 2,
+            "BufferGeometry": 2,
+            "CapsuleGeometry": 91,
+            "ConeGeometry": 10,
+            "CylinderGeometry": 41,
+            "ExtrudeGeometry": 20,
+            "SphereGeometry": 103
+          },
+          "index": 0,
+          "instanceTotal": 756,
+          "instanced": [
+            {
+              "count": 50,
+              "geometry": "CylinderGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 28
+            },
+            {
+              "count": 26,
+              "geometry": "BufferGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 3240
+            },
+            {
+              "count": 30,
+              "geometry": "BufferGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 3240
+            },
+            {
+              "count": 50,
+              "geometry": "BoxGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 24
+            },
+            {
+              "count": 400,
+              "geometry": "CapsuleGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 378
+            },
+            {
+              "count": 200,
+              "geometry": "BoxGeometry",
+              "hasColor": false,
+              "name": "",
+              "particleLike": false,
+              "vertices": 24
+            }
+          ],
+          "lights": [
+            {
+              "castShadow": false,
+              "color": "#99bbff",
+              "ctor": "lu",
+              "intensity": 0.7854,
+              "name": "",
+              "position": [
+                -6,
+                8,
+                -6
+              ],
+              "shadow": {
+                "bias": 0,
+                "camera": {
+                  "bottom": -5,
+                  "far": 500,
+                  "left": -5,
+                  "near": 0.5,
+                  "right": 5,
+                  "top": 5
+                },
+                "mapSize": [
+                  512,
+                  512
+                ],
+                "normalBias": 0,
+                "radius": 1
+              },
+              "target": [
+                0,
+                0,
+                0
+              ],
+              "type": "DirectionalLight"
+            },
+            {
+              "castShadow": true,
+              "color": "#ffffff",
+              "ctor": "lu",
+              "intensity": 2.042,
+              "name": "",
+              "position": [
+                6,
+                12,
+                6
+              ],
+              "shadow": {
+                "bias": 0,
+                "camera": {
+                  "bottom": -14,
+                  "far": 50,
+                  "left": -14,
+                  "near": 1,
+                  "right": 14,
+                  "top": 14
+                },
+                "mapSize": [
+                  1024,
+                  1024
+                ],
+                "normalBias": 0,
+                "radius": 1
+              },
+              "target": [
+                0,
+                0,
+                0
+              ],
+              "type": "DirectionalLight"
+            },
+            {
+              "castShadow": false,
+              "color": "#ffffff",
+              "ctor": "qc",
+              "groundColor": "#7788aa",
+              "intensity": 1.7279,
+              "name": "",
+              "position": [
+                0,
+                1,
+                0
+              ],
+              "type": "HemisphereLight"
+            }
+          ],
+          "points": [],
+          "sky": [],
+          "spriteMaps": {},
+          "sprites": [],
+          "topGeometry": [
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "Ma",
+              "materialColor": "#ffffff",
+              "name": "",
+              "size": [
+                240,
+                240,
+                240
+              ],
+              "vertices": 1089,
+              "volume": 13824000
+            },
+            {
+              "center": [
+                -0.15,
+                0,
+                0
+              ],
+              "geometry": "BufferGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#eaf4ff",
+              "name": "",
+              "size": [
+                7.7,
+                5.2,
+                5.2
+              ],
+              "vertices": 3240,
+              "volume": 208.208
+            },
+            {
+              "center": [
+                -0.15,
+                0,
+                0
+              ],
+              "geometry": "BufferGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#ffffff",
+              "name": "",
+              "size": [
+                7.7,
+                5.2,
+                5.2
+              ],
+              "vertices": 3240,
+              "volume": 208.208
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "Ma",
+              "materialColor": "#5ecaf0",
+              "name": "",
+              "size": [
+                2,
+                2,
+                2
+              ],
+              "vertices": 357,
+              "volume": 8
+            },
+            {
+              "center": [
+                -2.4297,
+                0.1324,
+                11.6021
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.4274,
+                0.2365,
+                4.53
+              ],
+              "vertices": 2292,
+              "volume": 4.7433
+            },
+            {
+              "center": [
+                -2.4692,
+                0.1324,
+                12.7165
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.2783,
+                0.2365,
+                4.4709
+              ],
+              "vertices": 2292,
+              "volume": 4.5237
+            },
+            {
+              "center": [
+                -2.6781,
+                0.1324,
+                5.7924
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.6692,
+                0.2365,
+                4.0662
+              ],
+              "vertices": 2292,
+              "volume": 3.5285
+            },
+            {
+              "center": [
+                -2.0473,
+                0.1228,
+                4.854
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                4.0079,
+                0.209,
+                3.9439
+              ],
+              "vertices": 2292,
+              "volume": 3.3036
+            },
+            {
+              "center": [
+                -2.3811,
+                0.1228,
+                3.7022
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.8559,
+                0.209,
+                3.9852
+              ],
+              "vertices": 2292,
+              "volume": 3.2116
+            },
+            {
+              "center": [
+                -2.419,
+                0.1228,
+                10.1309
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.6639,
+                0.209,
+                3.8855
+              ],
+              "vertices": 2292,
+              "volume": 2.9754
+            },
+            {
+              "center": [
+                -2.8463,
+                0.1228,
+                9.2732
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.3873,
+                0.209,
+                3.7002
+              ],
+              "vertices": 2292,
+              "volume": 2.6195
+            },
+            {
+              "center": [
+                -2.5548,
+                0.1228,
+                6.7123
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.6342,
+                0.209,
+                3.2971
+              ],
+              "vertices": 2292,
+              "volume": 2.5044
+            },
+            {
+              "center": [
+                -1.7479,
+                0.5566,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                1.1132,
+                1.4792,
+                1.4792
+              ],
+              "vertices": 1089,
+              "volume": 2.4356
+            },
+            {
+              "center": [
+                -2.7738,
+                0.1324,
+                14.0686
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.4831,
+                0.2365,
+                2.9433
+              ],
+              "vertices": 2292,
+              "volume": 2.4246
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "BoxGeometry",
+              "instanced": true,
+              "material": "ec",
+              "materialColor": "#fdf0e0",
+              "name": "",
+              "size": [
+                8,
+                0.3,
+                1
+              ],
+              "vertices": 24,
+              "volume": 2.4
+            },
+            {
+              "center": [
+                -3.0337,
+                0.1132,
+                14.7059
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                3.4504,
+                0.1815,
+                3.3237
+              ],
+              "vertices": 2292,
+              "volume": 2.0814
+            },
+            {
+              "center": [
+                -2.7935,
+                0.1228,
+                8.0671
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.904,
+                0.209,
+                3.3283
+              ],
+              "vertices": 2292,
+              "volume": 2.0201
+            },
+            {
+              "center": [
+                -2.7435,
+                0.1132,
+                8.7863
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.8354,
+                0.1815,
+                3.1353
+              ],
+              "vertices": 2292,
+              "volume": 1.6135
+            },
+            {
+              "center": [
+                -2.2464,
+                0.1037,
+                2.4673
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.6949,
+                0.154,
+                2.8601
+              ],
+              "vertices": 2292,
+              "volume": 1.187
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0.0358,
+                0.0575,
+                0.225
+              ],
+              "geometry": "ExtrudeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#f0433a",
+              "name": "",
+              "size": [
+                2.4188,
+                0.165,
+                2.0401
+              ],
+              "vertices": 2292,
+              "volume": 0.8142
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0.4,
+                0
+              ],
+              "geometry": "ConeGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 131,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            },
+            {
+              "center": [
+                0,
+                0,
+                0
+              ],
+              "geometry": "SphereGeometry",
+              "instanced": false,
+              "material": "ec",
+              "materialColor": "#b868e8",
+              "name": "",
+              "size": [
+                0.8,
+                0.8,
+                0.8
+              ],
+              "vertices": 1089,
+              "volume": 0.512
+            }
+          ]
+        }
+      ],
+      "sky": [],
+      "steps": 106,
+      "virtualMs": 5300,
+      "walkSteps": 1209
+    }
+  },
+  "postChain": {
+    "composers": [],
+    "frameCalls": [
+      {
+        "camera": "iu",
+        "children": 100,
+        "ctor": "Er",
+        "kind": "scene"
+      }
+    ],
+    "nodePipelines": [],
+    "renderers": [
+      {
+        "autoClear": true,
+        "clearAlpha": 1,
+        "exposure": 1,
+        "info": {
+          "memory": {
+            "geometries": 11,
+            "textures": 6
+          },
+          "render": {
+            "calls": 55,
+            "lines": 0,
+            "points": 0,
+            "triangles": 359428
+          }
+        },
+        "kind": "WebGLRenderer",
+        "nonNullTargetSets": 62,
+        "outputColorSpace": "srgb",
+        "pixelRatio": 1,
+        "renderCalls": 62,
+        "shadowMap": {
+          "autoUpdate": true,
+          "enabled": true,
+          "type": "pcf"
+        },
+        "size": [
+          960,
+          346
+        ],
+        "targetSets": 112,
+        "toneMapping": 0,
+        "toneMappingName": "none"
+      }
+    ]
+  },
+  "schema": "a3d-look-spec/1",
+  "url": "https://app.usecrayon.ai/play/e53a6e07-a4a1-465e-b546-0fb6c9b787c0"
+}

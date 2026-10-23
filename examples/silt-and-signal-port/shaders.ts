@@ -3,9 +3,8 @@
  *
  * SKY is a port of the original's sky dome (the shader attached to the 2100-radius inside-out
  * sphere in the captured bundle: day gradient from `bottom` to `top`, a night variant with an aurora band
- * and a star field, mixed by `night`). GROUND, WATER, RING and BIKE are stand-ins written for this
- * port: the original's equivalents depend on its terrain generator and GLB assets, which are not
- * reproduced (see PORTING-NOTES.md). Uniforms named `time` would lower to the engine's built-in
+ * and a star field, mixed by `night`). WATER and RING are written for this port; terrain, props and the rider
+ * are lit PBR surfaces (see world.ts). Uniforms named `time` would lower to the engine's built-in
  * `u_time`, so the port uses `siltTime`.
  */
 
@@ -29,6 +28,10 @@ void main() {
   vec3 dir = normalize(skyDirection);
   float h = smoothstep(-0.12, 0.62, dir.y);
   vec3 day = mix(skyBottom, skyTop, h);
+  vec2 cp = dir.xz / max(0.18, dir.y + 0.25) * 1.6;
+  float cl = noise(cp * 1.2) * 0.6 + noise(cp * 2.7 + 7.0) * 0.4;
+  float dayCloud = smoothstep(0.5, 0.8, cl) * smoothstep(0.02, 0.2, dir.y) * (1.0 - smoothstep(0.55, 0.95, dir.y));
+  day = mix(day, mix(vec3(1.0, 0.84, 0.7), skyBottom * 1.15, 0.3), dayCloud * 0.7);
   vec3 dark = mix(vec3(0.013, 0.029, 0.059), vec3(0.002, 0.005, 0.019), h);
   vec2 p = vec2(atan(dir.x, dir.z), asin(dir.y));
   float band = exp(-pow((p.y - 0.16 - sin(p.x * 2.0) * 0.10) * 9.0, 2.0));
@@ -58,35 +61,17 @@ float fbm(vec2 p) {
 }
 `;
 
-/** The original's road follows x = 82 + sin(z * 0.006) * 8 (`Tt`). */
+/** The original's road follows x = 82 + sin(z * 0.006) * 8 (`Tt`); the generated chapters run their canal 62 m west of it, chapters 0 and 6 along it (`canalShift`). */
 const ROAD = /* glsl */ `
 float roadX(float z) { return 82.0 + sin(z * 0.006) * 8.0; }
 `;
 
-export const GROUND_VERTEX = /* glsl */ `
+export const WATER_VERTEX = /* glsl */ `
 out vec3 vWorld;
 void main() {
   vec4 world = modelMatrix * vec4(position, 1.0);
   vWorld = world.xyz;
   gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
-}`;
-
-export const GROUND_FRAGMENT = /* glsl */ `
-in vec3 vWorld;
-out vec4 outColor;
-${NOISE}
-${ROAD}
-void main() {
-  float d = abs(vWorld.x - roadX(vWorld.z));
-  float grain = fbm(vWorld.xz * 0.045) * 0.5 + fbm(vWorld.xz * 0.31) * 0.25;
-  vec3 ground = mix(groundColor * 0.82, groundColor * 1.12, grain);
-  float road = 1.0 - smoothstep(9.0, 12.5, d);
-  vec3 stone = mix(stoneColor * 0.9, stoneColor * 1.06, fbm(vWorld.xz * 0.9));
-  vec3 c = mix(ground, stone, road);
-  float edge = smoothstep(11.0, 12.5, d) * (1.0 - smoothstep(12.5, 14.0, d));
-  c *= 1.0 - edge * 0.25;
-  float fogT = clamp(length(vWorld - cameraPosition) / fogFar, 0.0, 1.0);
-  outColor = vec4(mix(c, fogColor, fogT * fogT), 1.0);
 }`;
 
 export const WATER_FRAGMENT = /* glsl */ `
@@ -95,16 +80,21 @@ out vec4 outColor;
 ${NOISE}
 ${ROAD}
 void main() {
-  float d = abs(vWorld.x - (roadX(vWorld.z) - 62.0));
-  float bank = 1.0 - smoothstep(14.0, 24.0, d);
-  if (bank < 0.01) discard;
+  float d = abs(vWorld.x - (roadX(vWorld.z) - canalShift));
   vec2 flow = vec2(vWorld.x * 0.12, vWorld.z * 0.05 + siltTime * 0.35);
   float ripple = fbm(flow * 3.0) * 0.6 + fbm(flow * 9.0 + 3.7) * 0.4;
-  vec3 c = mix(waterColor * 0.7, waterColor * 1.35, ripple);
-  float spark = pow(max(0.0, vnoise(flow * 22.0) - 0.82) * 5.5, 2.0);
-  c += vec3(spark) * 0.35;
+  vec3 view = normalize(cameraPosition - vWorld);
+  float fres = pow(1.0 - clamp(view.y, 0.0, 1.0), 3.0);
+  vec3 body = mix(waterColor * 0.55, waterColor * 1.3, ripple);
+  vec3 skyTint = mix(waterColor * 1.7, vec3(0.78, 0.86, 0.9), 0.55);
+  vec3 c = mix(body, skyTint, fres * 0.6);
+  float glint = pow(max(0.0, vnoise(flow * 24.0 + siltTime * 0.4) - 0.8) * 5.0, 2.0);
+  c += vec3(1.0, 0.92, 0.78) * glint * 0.5;
+  float foam = smoothstep(canalHalf - 4.5, canalHalf - 1.2, d) * (0.45 + 0.55 * vnoise(flow * 15.0));
+  c = mix(c, vec3(0.93, 0.95, 0.9), foam * 0.7);
   float fogT = clamp(length(vWorld - cameraPosition) / fogFar, 0.0, 1.0);
-  outColor = vec4(mix(c, fogColor, fogT * fogT), bank * 0.88);
+  float alpha = 0.92 * (1.0 - smoothstep(canalHalf - 1.2, canalHalf, d));
+  outColor = vec4(mix(c, fogColor, fogT * fogT), alpha);
 }`;
 
 export const RING_VERTEX = /* glsl */ `
@@ -124,28 +114,34 @@ void main() {
   vec3 N = normalize(vNormal);
   float rim = pow(1.0 - abs(dot(N, normalize(cameraPosition - vWorld))), 1.6);
   float pulse = 0.65 + 0.35 * sin(siltTime * 3.0 + vWorld.z * 0.05);
-  vec3 c = ringColor * (0.55 + 1.6 * rim) * mix(1.0, pulse, ringActive);
-  outColor = vec4(c, mix(0.35, 0.95, ringActive));
+  vec3 c = ringColor * (0.3 + 0.8 * rim) * mix(1.0, pulse, ringActive);
+  outColor = vec4(c, mix(0.3, 0.85, ringActive));
 }`;
 
-export const BIKE_VERTEX = /* glsl */ `
-out vec3 vNormal;
-out vec3 vWorld;
+/** Cel pass over the final image: luma banding (the original's toon materials use a 4-step gradient) plus a Sobel outline. */
+export const TOON_FRAGMENT = /* glsl */ `
+uniform vec2 u_texel;
+uniform float u_bands;
+uniform float u_band_mix;
+uniform float u_outline;
+float lum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 void main() {
-  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
-  vNormal = normalize(normalMatrix * normal);
-  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0);
-}`;
-
-export const BIKE_FRAGMENT = /* glsl */ `
-in vec3 vNormal;
-in vec3 vWorld;
-out vec4 outColor;
-void main() {
-  vec3 N = normalize(vNormal);
-  if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
-  vec3 sun = normalize(vec3(0.45, 0.8, 0.35));
-  float lit = max(dot(N, sun), 0.0) * 0.75 + 0.35 * (N.y * 0.5 + 0.5);
-  vec3 c = bikeColor * lit + glowColor * glowAmount;
-  outColor = vec4(c, 1.0);
+  vec4 c = texture(u_color, v_uv);
+  float l = lum(c.rgb);
+  float banded = floor(l * u_bands + 0.5) / u_bands;
+  float target = mix(l, banded, u_band_mix);
+  vec3 col = c.rgb * (target / max(l, 0.02));
+  float tl = lum(texture(u_color, v_uv + u_texel * vec2(-1.0, 1.0)).rgb);
+  float t = lum(texture(u_color, v_uv + u_texel * vec2(0.0, 1.0)).rgb);
+  float tr = lum(texture(u_color, v_uv + u_texel * vec2(1.0, 1.0)).rgb);
+  float lf = lum(texture(u_color, v_uv + u_texel * vec2(-1.0, 0.0)).rgb);
+  float rt = lum(texture(u_color, v_uv + u_texel * vec2(1.0, 0.0)).rgb);
+  float bl = lum(texture(u_color, v_uv + u_texel * vec2(-1.0, -1.0)).rgb);
+  float b = lum(texture(u_color, v_uv + u_texel * vec2(0.0, -1.0)).rgb);
+  float br = lum(texture(u_color, v_uv + u_texel * vec2(1.0, -1.0)).rgb);
+  float gx = (tr + 2.0 * rt + br) - (tl + 2.0 * lf + bl);
+  float gy = (tl + 2.0 * t + tr) - (bl + 2.0 * b + br);
+  float edge = smoothstep(0.26, 0.6, sqrt(gx * gx + gy * gy));
+  vec3 ink = vec3(0.05, 0.09, 0.11);
+  outColor = vec4(mix(col, ink, edge * u_outline), c.a);
 }`;

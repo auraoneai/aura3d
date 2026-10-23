@@ -33,6 +33,7 @@ interface Api {
   setAutopilot(on: boolean): void;
   stepFrames(n: number, actions?: string[]): Record<string, unknown>;
   advanceUntil(form: string | null, maxSteps: number): Record<string, unknown>;
+  advanceTo(s: number, stops?: string[], maxSteps?: number): { stop: string | null; phase: string };
   state: State;
   courseDigest(): { entities: number; fnv1a: string };
   replay(text: string, max?: number): RunSummary;
@@ -46,7 +47,7 @@ interface Api {
 }
 
 test.describe("ninja-runner-port (Phase C)", () => {
-  test.setTimeout(1_500_000);
+  test.setTimeout(900_000);
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
@@ -62,7 +63,7 @@ test.describe("ninja-runner-port (Phase C)", () => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
-    await page.setViewportSize({ width: 960, height: 540 });
+    await page.setViewportSize({ width: 480, height: 270 });
     await page.goto(`${server.origin}${LAB}?manual=1&quality=low`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
@@ -76,7 +77,12 @@ test.describe("ninja-runner-port (Phase C)", () => {
     if (bootError) console.log("NINJA_RUNNER_BOOT_ERROR", bootError, JSON.stringify(errors.slice(0, 8)));
     expect(bootError, JSON.stringify(errors.slice(0, 8))).toBeNull();
 
-    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_NINJA_RUNNER__)`) as Promise<T>;
+    // software GL renders this scene slowly: every page call has a hard timeout, and long runs step the sim without rendering
+    const STEP_TIMEOUT = 240_000;
+    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => Promise.race([
+      page.evaluate(`(${fn.toString()})(window.__AURA_NINJA_RUNNER__)`) as Promise<T>,
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`step timed out after ${STEP_TIMEOUT} ms: ${fn.toString().slice(0, 90)}`)), STEP_TIMEOUT))
+    ]);
     const state = (): Promise<State> => api((o) => JSON.parse(JSON.stringify(o.state)) as State);
     const frame = async (name: string): Promise<void> => {
       const data = await api((o) => o.frame(480, 270, 0.7));
@@ -121,12 +127,14 @@ test.describe("ninja-runner-port (Phase C)", () => {
     await api((o) => { o.reset(); o.setAutopilot(true); return 0; });
     let sawClones = false, sawAttack = false;
     const stats = { visibleMax: 0, clonesFrame: 0 };
-    for (let chunk = 0; chunk < 400 && !(sawClones && sawAttack); chunk++) {
-      await api((o) => { o.stepFrames(30); return 0; });
-      const st = await state();
-      if (st.attack > 0 && !sawAttack) { sawAttack = true; await frame("rasengan"); }
-      if (st.clones > 0 && !sawClones) { sawClones = true; stats.clonesFrame = chunk; await frame("clones"); stats.visibleMax = (await api((o) => o.stats())).visibleActors; }
+    for (let guard = 0; guard < 20 && !(sawClones && sawAttack); guard++) {
+      const stops = [sawAttack ? "" : "attack", sawClones ? "" : "clones"].filter(Boolean);
+      const got = await page.evaluate(`window.__AURA_NINJA_RUNNER__.advanceTo(2640, ${JSON.stringify(stops)})`) as { stop: string | null; phase: string };
+      if (got.phase !== "running") break;
+      if (got.stop === "attack") { sawAttack = true; await frame("rasengan"); }
+      if (got.stop === "clones") { sawClones = true; stats.clonesFrame = guard; await frame("clones"); stats.visibleMax = (await api((o) => o.stats())).visibleActors; }
     }
+    if (sawAttack && sawClones) { const here = (await state()).s; await page.evaluate(`window.__AURA_NINJA_RUNNER__.advanceTo(${here + 90}, [])`); }
     expect(sawAttack, "the Rasengan fired during the autopilot run").toBe(true);
     expect(sawClones, "shadow clones were cast").toBe(true);
     expect(stats.visibleMax).toBeGreaterThanOrEqual(4);

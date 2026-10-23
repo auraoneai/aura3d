@@ -1,0 +1,84 @@
+{
+  "schema": "a3d-look-reference-frames/1",
+  "game": "kid-goku-beyond-the-clouds",
+  "frames": [
+    {
+      "file": "port-menu-clean.jpg",
+      "shot": "menu",
+      "variant": "clean",
+      "bytes": 79391
+    },
+    {
+      "file": "port-menu-hud.jpg",
+      "shot": "menu",
+      "variant": "hud",
+      "bytes": 109733
+    },
+    {
+      "file": "port-s0-clean.jpg",
+      "shot": "s0",
+      "variant": "clean",
+      "bytes": 106633
+    },
+    {
+      "file": "port-s0-hud.jpg",
+      "shot": "s0",
+      "variant": "hud",
+      "bytes": 112216
+    },
+    {
+      "file": "port-s60-clean.jpg",
+      "shot": "s60",
+      "variant": "clean",
+      "bytes": 109070
+    },
+    {
+      "file": "port-s300-clean.jpg",
+      "shot": "s300",
+      "variant": "clean",
+      "bytes": 117494
+    },
+    {
+      "file": "port-s570-clean.jpg",
+      "shot": "s570",
+      "variant": "clean",
+      "bytes": 112587
+    },
+    {
+      "file": "port-s700-clean.jpg",
+      "shot": "s700",
+      "variant": "clean",
+      "bytes": 83764
+    },
+    {
+      "file": "port-s700-hud.jpg",
+      "shot": "s700",
+      "variant": "hud",
+      "bytes": 92200
+    },
+    {
+      "file": "port-s900-clean.jpg",
+      "shot": "s900",
+      "variant": "clean",
+      "bytes": 98745
+    },
+    {
+      "file": "port-s1040-clean.jpg",
+      "shot": "s1040",
+      "variant": "clean",
+      "bytes": 103530
+    },
+    {
+      "file": "port-s1300-clean.jpg",
+      "shot": "s1300",
+      "variant": "clean",
+      "bytes": 86326
+    },
+    {
+      "file": "port-s1560-clean.jpg",
+      "shot": "s1560",
+      "variant": "clean",
+      "bytes": 104698
+    }
+  ]
+}

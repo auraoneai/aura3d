@@ -1,0 +1,1836 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "strange-orbit",
+  "sources": [
+    {
+      "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+      "bytes": 136670,
+      "lines": 2971,
+      "singleLine": false,
+      "hash": "c55a61a0c69227c5"
+    },
+    {
+      "file": "tests/fixtures/crayon/strange-orbit/game-module.mjs",
+      "bytes": 19300,
+      "lines": 1,
+      "singleLine": true,
+      "hash": "4d10bb5cf2dad02c"
+    },
+    {
+      "file": "evidence/crayon-runtime/strange-orbit/srcdoc.html#script0",
+      "bytes": 2549,
+      "lines": 32,
+      "singleLine": false,
+      "hash": "c88c718bebb2253f"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "level-select",
+      "hits": 139,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 239,
+          "col": 3,
+          "offset": 3923
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 248,
+          "col": 3,
+          "offset": 4066
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 257,
+          "col": 3,
+          "offset": 4210
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 39,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1015,
+          "col": 70,
+          "offset": 35541
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1019,
+          "col": 70,
+          "offset": 35742
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1019,
+          "col": 133,
+          "offset": 35805
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 27,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 306,
+          "col": 3,
+          "offset": 5938
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 339,
+          "col": 28,
+          "offset": 7148
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 363,
+          "col": 3,
+          "offset": 7944
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 24,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1518,
+          "col": 95,
+          "offset": 54147
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1518,
+          "col": 123,
+          "offset": 54175
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2461,
+          "col": 2,
+          "offset": 100275
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 22,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 294,
+          "col": 170,
+          "offset": 5427
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 294,
+          "col": 184,
+          "offset": 5441
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 354,
+          "col": 95,
+          "offset": 7704
+        }
+      ]
+    },
+    {
+      "screen": "checkpoint",
+      "hits": 18,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 551,
+          "col": 71,
+          "offset": 14993
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 835,
+          "col": 12,
+          "offset": 27704
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1481,
+          "col": 3,
+          "offset": 53432
+        }
+      ]
+    },
+    {
+      "screen": "menu",
+      "hits": 15,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1455,
+          "col": 10,
+          "offset": 53048
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2253,
+          "col": 23,
+          "offset": 89280
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2492,
+          "col": 49,
+          "offset": 101289
+        }
+      ]
+    },
+    {
+      "screen": "leaderboard",
+      "hits": 12,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 269,
+          "col": 3,
+          "offset": 4347
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 288,
+          "col": 3,
+          "offset": 4725
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 300,
+          "col": 38,
+          "offset": 5673
+        }
+      ]
+    },
+    {
+      "screen": "garage",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2654,
+          "col": 269,
+          "offset": 118966
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2717,
+          "col": 293,
+          "offset": 122809
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2751,
+          "col": 4,
+          "offset": 124477
+        }
+      ]
+    },
+    {
+      "screen": "settings",
+      "hits": 9,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2717,
+          "col": 207,
+          "offset": 122723
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2735,
+          "col": 64,
+          "offset": 123532
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2737,
+          "col": 3,
+          "offset": 123582
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2691,
+          "col": 4,
+          "offset": 121493
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2691,
+          "col": 41,
+          "offset": 121530
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2691,
+          "col": 104,
+          "offset": 121593
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2834,
+          "col": 55,
+          "offset": 129220
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-module.mjs",
+          "line": 1,
+          "col": 11,
+          "offset": 10
+        },
+        {
+          "file": "evidence/crayon-runtime/strange-orbit/srcdoc.html#script0",
+          "line": 19,
+          "col": 5,
+          "offset": 1680
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 1,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2782,
+          "col": 64,
+          "offset": 126685
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [],
+  "domIds": [
+    {
+      "id": "canvas",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-module.mjs",
+        "line": 1,
+        "col": 235,
+        "offset": 234
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "Escape",
+        "hits": 3,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2461,
+          "col": 9,
+          "offset": 100282
+        }
+      },
+      {
+        "key": "ShiftLeft",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2457,
+          "col": 9,
+          "offset": 100210
+        }
+      },
+      {
+        "key": "ArrowDown",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2680,
+          "col": 143,
+          "offset": 121023
+        }
+      },
+      {
+        "key": "ArrowLeft",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2680,
+          "col": 250,
+          "offset": 121130
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2680,
+          "col": 201,
+          "offset": 121081
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2682,
+          "col": 56,
+          "offset": 121285
+        }
+      },
+      {
+        "key": "Enter",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2815,
+          "col": 18,
+          "offset": 128520
+        }
+      },
+      {
+        "key": "KeyA",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2455,
+          "col": 8,
+          "offset": 100178
+        }
+      },
+      {
+        "key": "KeyC",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2460,
+          "col": 10,
+          "offset": 100266
+        }
+      },
+      {
+        "key": "KeyD",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2456,
+          "col": 9,
+          "offset": 100194
+        }
+      },
+      {
+        "key": "KeyG",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2459,
+          "col": 11,
+          "offset": 100249
+        }
+      },
+      {
+        "key": "KeyS",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2454,
+          "col": 9,
+          "offset": 100163
+        }
+      },
+      {
+        "key": "KeyW",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2453,
+          "col": 9,
+          "offset": 100147
+        }
+      },
+      {
+        "key": "ShiftRight",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2462,
+          "col": 104,
+          "offset": 100394
+        }
+      },
+      {
+        "key": "Space",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2458,
+          "col": 8,
+          "offset": 100230
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "visibilitychange",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2553,
+          "col": 9,
+          "offset": 104425
+        }
+      },
+      {
+        "event": "blur",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2825,
+          "col": 1,
+          "offset": 128966
+        }
+      },
+      {
+        "event": "keydown",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2796,
+          "col": 1,
+          "offset": 127370
+        }
+      },
+      {
+        "event": "keyup",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2821,
+          "col": 5,
+          "offset": 128835
+        }
+      },
+      {
+        "event": "message",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2968,
+          "col": 1,
+          "offset": 136227
+        }
+      },
+      {
+        "event": "pagehide",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2553,
+          "col": 59,
+          "offset": 104475
+        }
+      },
+      {
+        "event": "pageshow",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2555,
+          "col": 6,
+          "offset": 104561
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2352,
+          "col": 54,
+          "offset": 96530
+        }
+      },
+      {
+        "event": "webglcontextlost",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2884,
+          "col": 177,
+          "offset": 134182
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 10,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2507,
+          "col": 21,
+          "offset": 101917
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2510,
+          "col": 40,
+          "offset": 102595
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2510,
+          "col": 12,
+          "offset": 102567
+        }
+      },
+      {
+        "api": "createMediaElementSource",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2507,
+          "col": 455,
+          "offset": 102351
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2517,
+          "col": 11,
+          "offset": 102967
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2518,
+          "col": 15,
+          "offset": 103046
+        }
+      },
+      {
+        "api": "Audio",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2507,
+          "col": 190,
+          "offset": 102086
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2505,
+          "col": 12,
+          "offset": 101828
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2518,
+          "col": 122,
+          "offset": 103153
+        }
+      },
+      {
+        "api": "linearRampToValueAtTime",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2518,
+          "col": 78,
+          "offset": 103109
+        }
+      },
+      {
+        "api": "webkitAudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2505,
+          "col": 35,
+          "offset": 101851
+        }
+      }
+    ],
+    "urls": [
+      {
+        "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/47df78e2-1410-45d1-833c-196e1161c0b8/releases/20260912-synthwave-v1/assets/audio/afterglow-orbit.m4a",
+        "loc": {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2507,
+          "col": 200,
+          "offset": 102096
+        }
+      }
+    ],
+    "oscillatorTypes": [],
+    "oscillatorCalls": 1,
+    "playCalls": 3
+  },
+  "storage": [
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2596,
+        "col": 21,
+        "offset": 105450
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "getItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2600,
+        "col": 25,
+        "offset": 105563
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2600,
+        "col": 63,
+        "offset": 105601
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2607,
+        "col": 3,
+        "offset": 106090
+      }
+    },
+    {
+      "store": "localStorage",
+      "op": "setItem",
+      "key": null,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2607,
+        "col": 48,
+        "offset": 106135
+      }
+    }
+  ],
+  "network": [
+    {
+      "kind": "dynamic-import",
+      "target": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/47df78e2-1410-45d1-833c-196e1161c0b8/releases/20260912-synthwave-v1/runtime/game.js",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-module.mjs",
+        "line": 1,
+        "col": 19119,
+        "offset": 19118
+      }
+    },
+    {
+      "kind": "fetch",
+      "target": null,
+      "loc": {
+        "file": "evidence/crayon-runtime/strange-orbit/srcdoc.html#script0",
+        "line": 7,
+        "col": 32,
+        "offset": 1247
+      }
+    }
+  ],
+  "platform": [
+    {
+      "api": "getGamepads",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2678,
+        "col": 33,
+        "offset": 120713
+      }
+    },
+    {
+      "api": "vibrate",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2863,
+        "col": 24,
+        "offset": 133104
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2970,
+        "col": 32,
+        "offset": 136487
+      }
+    }
+  ],
+  "three": {
+    "constructed": {
+      "Audio": 1,
+      "Box3": 2,
+      "BufferAttribute": 3,
+      "BufferGeometry": 14,
+      "CanvasTexture": 5,
+      "CatmullRomCurve3": 3,
+      "Color": 7,
+      "DirectionalLight": 2,
+      "Float32BufferAttribute": 25,
+      "GLTFLoader": 1,
+      "Group": 7,
+      "HemisphereLight": 1,
+      "InstancedMesh": 4,
+      "Line": 3,
+      "LineBasicMaterial": 3,
+      "Matrix4": 5,
+      "Mesh": 20,
+      "MeshBasicMaterial": 6,
+      "MeshPhysicalMaterial": 2,
+      "MeshStandardMaterial": 14,
+      "Object3D": 2,
+      "PerspectiveCamera": 1,
+      "PlaneGeometry": 4,
+      "PointLight": 2,
+      "Points": 5,
+      "PointsMaterial": 4,
+      "Quaternion": 6,
+      "RingGeometry": 2,
+      "Scene": 1,
+      "ShaderMaterial": 2,
+      "Sprite": 2,
+      "SpriteMaterial": 2,
+      "TorusGeometry": 2,
+      "TubeGeometry": 3,
+      "Vector3": 38,
+      "WebGLRenderer": 1,
+      "WebGLRenderTarget": 1
+    },
+    "imports": [],
+    "importSources": [
+      "three"
+    ]
+  },
+  "shaders": [
+    {
+      "kind": "glsl",
+      "chars": 100,
+      "hash": "caeeb56c79671886",
+      "uniforms": [],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 878,
+        "col": 18,
+        "offset": 29183
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 532,
+      "hash": "e0ec517df3deb06d",
+      "uniforms": [
+        "time",
+        "pulse"
+      ],
+      "varyings": [
+        "vUv"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 879,
+        "col": 20,
+        "offset": 29306
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 185,
+      "hash": "4b0d972a07669be2",
+      "uniforms": [],
+      "varyings": [
+        "vColor"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2402,
+        "col": 17,
+        "offset": 98123
+      }
+    },
+    {
+      "kind": "glsl",
+      "chars": 130,
+      "hash": "0848e7e995387e2c",
+      "uniforms": [
+        "uMap"
+      ],
+      "varyings": [
+        "vColor"
+      ],
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2403,
+        "col": 19,
+        "offset": 98330
+      }
+    }
+  ],
+  "postFx": [
+    {
+      "word": "tonemap",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1987,
+          "col": 127,
+          "offset": 78682
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1987,
+          "col": 146,
+          "offset": 78701
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "dust",
+      "hits": 27,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1315,
+          "col": 11,
+          "offset": 49945
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1392,
+          "col": 50,
+          "offset": 51701
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1399,
+          "col": 10,
+          "offset": 51837
+        }
+      ]
+    },
+    {
+      "word": "ember",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1370,
+          "col": 9,
+          "offset": 51143
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 1670,
+          "col": 10,
+          "offset": 62418
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2834,
+          "col": 165,
+          "offset": 129330
+        }
+      ]
+    },
+    {
+      "word": "particle",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2319,
+          "col": 4,
+          "offset": 95172
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2377,
+          "col": 3,
+          "offset": 97280
+        },
+        {
+          "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+          "line": 2866,
+          "col": 2,
+          "offset": 133199
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 18,
+      "keys": [
+        "id",
+        "name",
+        "tag",
+        "description",
+        "color",
+        "tint",
+        "laps",
+        "trialLaps",
+        "radius",
+        "waves",
+        "elevation",
+        "dive",
+        "roll",
+        "geode",
+        "rocks",
+        "grip",
+        "unlock",
+        "shortcut"
+      ],
+      "numbers": {
+        "laps": 7,
+        "trialLaps": 5,
+        "radius": 220,
+        "waves": 13,
+        "elevation": 12,
+        "dive": 76,
+        "roll": 1,
+        "geode": null,
+        "rocks": 13,
+        "grip": 1,
+        "unlock": 0
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 133,
+        "col": 11,
+        "offset": 2203
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 71,
+      "keys": [
+        "groundedS",
+        "groundedRoute",
+        "gravityRescueReady",
+        "heading",
+        "steerRate",
+        "route",
+        "gatesPassed",
+        "courseId",
+        "round",
+        "equipment",
+        "difficulty",
+        "rules",
+        "course",
+        "hits",
+        "edgeTime",
+        "edgeWarning",
+        "shortcutTime",
+        "shortcut",
+        "recording",
+        "recordClock",
+        "vehicle",
+        "loop",
+        "loops",
+        "tricks",
+        "air",
+        "jumpHeld",
+        "jumpCooldown",
+        "jumpBuffer",
+        "stunts",
+        "stuntsCollected",
+        "checkpointsCollected",
+        "gravityCharges",
+        "gravityTime",
+        "gravityHeld",
+        "flight",
+        "phase",
+        "rider",
+        "mode",
+        "laps",
+        "s",
+        "lane",
+        "lateral",
+        "speed",
+        "time",
+        "energy",
+        "dust",
+        "score",
+        "surge",
+        "resonance",
+        "resonanceChain",
+        "nearMisses",
+        "lean",
+        "boostTime",
+        "draftTime",
+        "boosting",
+        "drafting",
+        "combo",
+        "comboTime",
+        "hitCooldown",
+        "respawns"
+      ],
+      "numbers": {
+        "gravityRescueReady": null,
+        "heading": 0,
+        "steerRate": 0,
+        "gatesPassed": 0,
+        "hits": 0,
+        "edgeTime": 0,
+        "edgeWarning": null,
+        "shortcutTime": 0,
+        "shortcut": null,
+        "recordClock": 0,
+        "loops": 0,
+        "tricks": 0,
+        "jumpHeld": null,
+        "jumpCooldown": 0,
+        "jumpBuffer": 0,
+        "stunts": 0,
+        "gravityTime": 0,
+        "gravityHeld": null,
+        "s": 0,
+        "lane": 0,
+        "lateral": 0,
+        "speed": 0,
+        "time": 0,
+        "energy": 55,
+        "dust": 0,
+        "score": 0,
+        "surge": 0,
+        "resonance": 0,
+        "resonanceChain": 0,
+        "nearMisses": 0,
+        "lean": 0,
+        "boostTime": 0,
+        "draftTime": 0,
+        "boosting": null,
+        "drafting": null,
+        "combo": 0,
+        "comboTime": 0,
+        "hitCooldown": 0,
+        "respawns": 0,
+        "lap": 1,
+        "checkpoint": 0,
+        "countdown": 3.2,
+        "place": 6,
+        "lapStart": 0
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1419,
+        "col": 9,
+        "offset": 52356
+      }
+    }
+  ],
+  "assets": [
+    {
+      "path": "cyclist-championship.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2004,
+        "col": 18,
+        "offset": 79483
+      }
+    },
+    {
+      "path": "planet.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2005,
+        "col": 18,
+        "offset": 79530
+      }
+    },
+    {
+      "path": "impasto.png",
+      "ext": "png",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2006,
+        "col": 25,
+        "offset": 79570
+      }
+    },
+    {
+      "path": "meteor.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2007,
+        "col": 18,
+        "offset": 79604
+      }
+    },
+    {
+      "path": "skater-championship.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2008,
+        "col": 18,
+        "offset": 79637
+      }
+    },
+    {
+      "path": "living-gate.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2009,
+        "col": 18,
+        "offset": 79683
+      }
+    },
+    {
+      "path": "opal-platform.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2010,
+        "col": 18,
+        "offset": 79721
+      }
+    },
+    {
+      "path": "cave-minerals.glb",
+      "ext": "glb",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2011,
+        "col": 18,
+        "offset": 79761
+      }
+    },
+    {
+      "path": "https://gamebuilderapi-thumbnailbucket3bc05c46-njaxbgcn5duh.s3.ap-south-1.amazonaws.com/47df78e2-1410-45d1-833c-196e1161c0b8/releases/20260912-synthwave-v1/assets/audio/afterglow-orbit.m4a",
+      "ext": "m4a",
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2507,
+        "col": 200,
+        "offset": 102096
+      }
+    }
+  ],
+  "functions": [
+    {
+      "name": "Om",
+      "params": 3,
+      "chars": 19089,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1981,
+        "col": 1,
+        "offset": 78364
+      }
+    },
+    {
+      "name": "Pf",
+      "params": 6,
+      "chars": 10319,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 691,
+        "col": 1,
+        "offset": 21462
+      }
+    },
+    {
+      "name": "xp",
+      "params": 8,
+      "chars": 9455,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1767,
+        "col": 1,
+        "offset": 68086
+      }
+    },
+    {
+      "name": "pp",
+      "params": 3,
+      "chars": 7076,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1521,
+        "col": 1,
+        "offset": 54259
+      }
+    },
+    {
+      "name": "je",
+      "params": 4,
+      "chars": 6144,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2250,
+        "col": 2,
+        "offset": 89126
+      }
+    },
+    {
+      "name": "gp",
+      "params": 3,
+      "chars": 4287,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1677,
+        "col": 1,
+        "offset": 62572
+      }
+    },
+    {
+      "name": "Im",
+      "params": 1,
+      "chars": 3842,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2491,
+        "col": 1,
+        "offset": 101179
+      }
+    },
+    {
+      "name": "tp",
+      "params": 4,
+      "chars": 3112,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1245,
+        "col": 1,
+        "offset": 46982
+      }
+    },
+    {
+      "name": "Yf",
+      "params": 3,
+      "chars": 2602,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1140,
+        "col": 1,
+        "offset": 42662
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2544,
+      "loc": {
+        "file": "evidence/crayon-runtime/strange-orbit/srcdoc.html#script0",
+        "line": 1,
+        "col": 2,
+        "offset": 1
+      }
+    },
+    {
+      "name": "p",
+      "params": 5,
+      "chars": 2361,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 704,
+        "col": 2,
+        "offset": 21803
+      }
+    },
+    {
+      "name": "Uf",
+      "params": 3,
+      "chars": 2272,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1031,
+        "col": 1,
+        "offset": 36367
+      }
+    },
+    {
+      "name": "ph",
+      "params": 0,
+      "chars": 2197,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2649,
+        "col": 1,
+        "offset": 118302
+      }
+    },
+    {
+      "name": "Lf",
+      "params": 3,
+      "chars": 2161,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 943,
+        "col": 1,
+        "offset": 31902
+      }
+    },
+    {
+      "name": "kh",
+      "params": 1,
+      "chars": 2093,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2855,
+        "col": 1,
+        "offset": 130822
+      }
+    },
+    {
+      "name": "Am",
+      "params": 3,
+      "chars": 2012,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2391,
+        "col": 1,
+        "offset": 97472
+      }
+    },
+    {
+      "name": "qd",
+      "params": 1,
+      "chars": 1850,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 278,
+        "col": 1,
+        "offset": 4482
+      }
+    },
+    {
+      "name": "jf",
+      "params": 2,
+      "chars": 1817,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 652,
+        "col": 1,
+        "offset": 18121
+      }
+    },
+    {
+      "name": "lp",
+      "params": 1,
+      "chars": 1771,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1417,
+        "col": 1,
+        "offset": 52151
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1535,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 660,
+        "col": 29,
+        "offset": 18342
+      }
+    },
+    {
+      "name": "hf",
+      "params": 1,
+      "chars": 1509,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 461,
+        "col": 1,
+        "offset": 11498
+      }
+    },
+    {
+      "name": "Xd",
+      "params": 2,
+      "chars": 1465,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 328,
+        "col": 1,
+        "offset": 6629
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1434,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2796,
+        "col": 29,
+        "offset": 127398
+      }
+    },
+    {
+      "name": "qf",
+      "params": 5,
+      "chars": 1424,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1096,
+        "col": 1,
+        "offset": 40002
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1320,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1834,
+        "col": 38,
+        "offset": 71910
+      }
+    },
+    {
+      "name": "he",
+      "params": 1,
+      "chars": 1275,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2166,
+        "col": 2,
+        "offset": 84584
+      }
+    },
+    {
+      "name": "Dh",
+      "params": 0,
+      "chars": 1248,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2828,
+        "col": 1,
+        "offset": 129080
+      }
+    },
+    {
+      "name": "Mf",
+      "params": 1,
+      "chars": 1246,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 664,
+        "col": 1,
+        "offset": 19939
+      }
+    },
+    {
+      "name": "Jf",
+      "params": 2,
+      "chars": 1193,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1110,
+        "col": 1,
+        "offset": 41427
+      }
+    },
+    {
+      "name": "ye",
+      "params": 10,
+      "chars": 1178,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2212,
+        "col": 2,
+        "offset": 86472
+      }
+    },
+    {
+      "name": "_f",
+      "params": 4,
+      "chars": 1134,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 508,
+        "col": 1,
+        "offset": 13277
+      }
+    },
+    {
+      "name": "mp",
+      "params": 2,
+      "chars": 1116,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1645,
+        "col": 1,
+        "offset": 61336
+      }
+    },
+    {
+      "name": "bp",
+      "params": 0,
+      "chars": 1104,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 1734,
+        "col": 1,
+        "offset": 66981
+      }
+    },
+    {
+      "name": "g",
+      "params": 4,
+      "chars": 1080,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 779,
+        "col": 2,
+        "offset": 25869
+      }
+    },
+    {
+      "name": "u",
+      "params": 5,
+      "chars": 1079,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 958,
+        "col": 2,
+        "offset": 32707
+      }
+    },
+    {
+      "name": "fn",
+      "params": 0,
+      "chars": 1078,
+      "loc": {
+        "file": "evidence/crayon-runtime/strange-orbit/srcdoc.html#script0",
+        "line": 1,
+        "col": 1051,
+        "offset": 1050
+      }
+    },
+    {
+      "name": "_",
+      "params": 0,
+      "chars": 1057,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 2503,
+        "col": 2,
+        "offset": 101790
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 1053,
+      "loc": {
+        "file": "evidence/crayon-runtime/strange-orbit/srcdoc.html#script0",
+        "line": 2,
+        "col": 2,
+        "offset": 1069
+      }
+    },
+    {
+      "name": "v",
+      "params": 3,
+      "chars": 1016,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 912,
+        "col": 2,
+        "offset": 30544
+      }
+    },
+    {
+      "name": "zf",
+      "params": 2,
+      "chars": 995,
+      "loc": {
+        "file": "tests/fixtures/crayon/strange-orbit/game-logic.demangled.js",
+        "line": 991,
+        "col": 1,
+        "offset": 34177
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 1192,
+    "functions": 320,
+    "newExpressions": 235,
+    "calls": 2152
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:level-select",
+        "original": "139 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "27 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:leaderboard",
+        "original": "12 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:garage",
+        "original": "9 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:settings",
+        "original": "9 references",
+        "port": "absent"
+      },
+      {
+        "feature": "particles",
+        "original": "dustx27, emberx3, particlex3",
+        "port": "absent"
+      },
+      {
+        "feature": "persistence (storage)",
+        "original": "5 storage calls",
+        "port": "absent"
+      },
+      {
+        "feature": "gamepad",
+        "original": "gamepad API use",
+        "port": "absent"
+      },
+      {
+        "feature": "host-platform postMessage hooks",
+        "original": "1 postMessage calls",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "audio",
+        "original": "26 audio API uses / 1 audio assets",
+        "port": "present"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "39 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "24 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:results",
+        "original": "22 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:checkpoint",
+        "original": "18 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:menu",
+        "original": "15 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "6 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "4 references",
+        "port": "present"
+      },
+      {
+        "feature": "post-processing",
+        "original": "tonemapx2",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "Escape, ShiftLeft, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Enter, KeyA",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": []
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

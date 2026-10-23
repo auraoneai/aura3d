@@ -1,0 +1,1865 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "silt-and-signal",
+  "sources": [
+    {
+      "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+      "bytes": 32882,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "20c83e98f76a7a26"
+    },
+    {
+      "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+      "bytes": 6605,
+      "lines": 45,
+      "singleLine": false,
+      "hash": "7b009729aa5a0413"
+    },
+    {
+      "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+      "bytes": 5647,
+      "lines": 3,
+      "singleLine": true,
+      "hash": "e2843b993d368fc4"
+    },
+    {
+      "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+      "bytes": 79715,
+      "lines": 3,
+      "singleLine": true,
+      "hash": "2d9901189fcb7671"
+    },
+    {
+      "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+      "bytes": 79715,
+      "lines": 3,
+      "singleLine": true,
+      "hash": "2d9901189fcb7671"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "level-select",
+      "hits": 44,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+          "line": 6,
+          "col": 181,
+          "offset": 1803
+        },
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+          "line": 8,
+          "col": 28,
+          "offset": 2670
+        },
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+          "line": 12,
+          "col": 168,
+          "offset": 2918
+        }
+      ]
+    },
+    {
+      "screen": "countdown",
+      "hits": 27,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+          "line": 12,
+          "col": 27,
+          "offset": 32529
+        },
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+          "line": 15,
+          "col": 27,
+          "offset": 32819
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 5462,
+          "offset": 5462
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 11,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+          "line": 5,
+          "col": 57,
+          "offset": 582
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 517,
+          "offset": 517
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 3087,
+          "offset": 3087
+        }
+      ]
+    },
+    {
+      "screen": "title",
+      "hits": 11,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+          "line": 5,
+          "col": 11,
+          "offset": 536
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 8647,
+          "offset": 8647
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 8663,
+          "offset": 8663
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 10,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 988,
+          "offset": 988
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 18382,
+          "offset": 18382
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 21660,
+          "offset": 21660
+        }
+      ]
+    },
+    {
+      "screen": "tutorial",
+      "hits": 10,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 17308,
+          "offset": 17308
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 18222,
+          "offset": 18222
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 74943,
+          "offset": 74943
+        }
+      ]
+    },
+    {
+      "screen": "game-over",
+      "hits": 7,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 630,
+          "offset": 630
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 645,
+          "offset": 645
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 678,
+          "offset": 678
+        }
+      ]
+    },
+    {
+      "screen": "leaderboard",
+      "hits": 6,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 2960,
+          "offset": 2960
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 3741,
+          "offset": 3741
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 4504,
+          "offset": 4504
+        }
+      ]
+    },
+    {
+      "screen": "pause",
+      "hits": 6,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+          "line": 14,
+          "col": 45,
+          "offset": 32661
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 5494,
+          "offset": 5494
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 23462,
+          "offset": 23462
+        }
+      ]
+    },
+    {
+      "screen": "victory",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+          "line": 6,
+          "col": 60,
+          "offset": 1682
+        },
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+          "line": 6,
+          "col": 939,
+          "offset": 2561
+        },
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+          "line": 12,
+          "col": 216,
+          "offset": 2966
+        }
+      ]
+    },
+    {
+      "screen": "settings",
+      "hits": 4,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 6638,
+          "offset": 6638
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 57659,
+          "offset": 57659
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+          "line": 2,
+          "col": 6638,
+          "offset": 6638
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+          "line": 14,
+          "col": 31,
+          "offset": 32647
+        },
+        {
+          "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+          "line": 14,
+          "col": 45,
+          "offset": 32661
+        }
+      ]
+    },
+    {
+      "screen": "garage",
+      "hits": 1,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 402,
+          "offset": 402
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [
+    {
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 16639,
+        "offset": 16639
+      },
+      "cases": [
+        "load",
+        "set-sky",
+        "restart",
+        "set-level",
+        "touch-controls",
+        "phone-check",
+        "probe-audit",
+        "pause",
+        "resume",
+        "simulate-input",
+        "get-screenshot",
+        "resync-scene",
+        "serialize-scene",
+        "apply-overrides",
+        "set-camera-override",
+        "scene-preview"
+      ]
+    },
+    {
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 45391,
+        "offset": 45391
+      },
+      "cases": [
+        "sphere",
+        "cylinder",
+        "cone",
+        "plane"
+      ]
+    },
+    {
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 16639,
+        "offset": 16639
+      },
+      "cases": [
+        "load",
+        "set-sky",
+        "restart",
+        "set-level",
+        "touch-controls",
+        "phone-check",
+        "probe-audit",
+        "pause",
+        "resume",
+        "simulate-input",
+        "get-screenshot",
+        "resync-scene",
+        "serialize-scene",
+        "apply-overrides",
+        "set-camera-override",
+        "scene-preview"
+      ]
+    },
+    {
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 45391,
+        "offset": 45391
+      },
+      "cases": [
+        "sphere",
+        "cylinder",
+        "cone",
+        "plane"
+      ]
+    }
+  ],
+  "domIds": [
+    {
+      "id": "hud-score",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+        "line": 2,
+        "col": 987,
+        "offset": 987
+      }
+    },
+    {
+      "id": "canvas",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 3515,
+        "offset": 3515
+      }
+    },
+    {
+      "id": "boot",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 4181,
+        "offset": 4181
+      }
+    },
+    {
+      "id": "boot-msg",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 6001,
+        "offset": 6001
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [
+      {
+        "key": "ArrowLeft",
+        "hits": 12,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 24135,
+          "offset": 24135
+        }
+      },
+      {
+        "key": "ArrowRight",
+        "hits": 12,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 24170,
+          "offset": 24170
+        }
+      },
+      {
+        "key": "ArrowDown",
+        "hits": 8,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71394,
+          "offset": 71394
+        }
+      },
+      {
+        "key": "ArrowUp",
+        "hits": 8,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71364,
+          "offset": 71364
+        }
+      },
+      {
+        "key": "Enter",
+        "hits": 6,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71027,
+          "offset": 71027
+        }
+      },
+      {
+        "key": "Space",
+        "hits": 6,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 24216,
+          "offset": 24216
+        }
+      },
+      {
+        "key": "Escape",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71756,
+          "offset": 71756
+        }
+      },
+      {
+        "key": "Tab",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71783,
+          "offset": 71783
+        }
+      },
+      {
+        "key": "KeyA",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71313,
+          "offset": 71313
+        }
+      },
+      {
+        "key": "KeyD",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71349,
+          "offset": 71349
+        }
+      },
+      {
+        "key": "KeyS",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71331,
+          "offset": 71331
+        }
+      },
+      {
+        "key": "KeyW",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71295,
+          "offset": 71295
+        }
+      },
+      {
+        "key": "ShiftLeft",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 71732,
+          "offset": 71732
+        }
+      }
+    ],
+    "listeners": [
+      {
+        "event": "pointerdown",
+        "hits": 8,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 3179,
+          "offset": 3179
+        }
+      },
+      {
+        "event": "message",
+        "hits": 5,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+          "line": 2,
+          "col": 5245,
+          "offset": 5245
+        }
+      },
+      {
+        "event": "click",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 4934,
+          "offset": 4934
+        }
+      },
+      {
+        "event": "mousedown",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 3283,
+          "offset": 3283
+        }
+      },
+      {
+        "event": "pointercancel",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 17670,
+          "offset": 17670
+        }
+      },
+      {
+        "event": "pointerup",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 17606,
+          "offset": 17606
+        }
+      },
+      {
+        "event": "visibilitychange",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 10699,
+          "offset": 10699
+        }
+      },
+      {
+        "event": "webglcontextlost",
+        "hits": 4,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 5129,
+          "offset": 5129
+        }
+      },
+      {
+        "event": "auxclick",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 3078,
+          "offset": 3078
+        }
+      },
+      {
+        "event": "blur",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 17804,
+          "offset": 17804
+        }
+      },
+      {
+        "event": "contextmenu",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 3002,
+          "offset": 3002
+        }
+      },
+      {
+        "event": "dragstart",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 3385,
+          "offset": 3385
+        }
+      },
+      {
+        "event": "error",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 7510,
+          "offset": 7510
+        }
+      },
+      {
+        "event": "pagehide",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 17839,
+          "offset": 17839
+        }
+      },
+      {
+        "event": "pointerleave",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 76388,
+          "offset": 76388
+        }
+      },
+      {
+        "event": "pointermove",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 17540,
+          "offset": 17540
+        }
+      },
+      {
+        "event": "touchmove",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 17738,
+          "offset": 17738
+        }
+      },
+      {
+        "event": "unhandledrejection",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 8080,
+          "offset": 8080
+        }
+      },
+      {
+        "event": "webglcontextrestored",
+        "hits": 2,
+        "first": {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 5390,
+          "offset": 5390
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [],
+    "urls": [],
+    "oscillatorTypes": [],
+    "oscillatorCalls": 0,
+    "playCalls": 2
+  },
+  "storage": [],
+  "network": [
+    {
+      "kind": "dynamic-import",
+      "target": "three",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 9558,
+        "offset": 9558
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "playlabs-boot",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 9574,
+        "offset": 9574
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "playlabs-voxel",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 9598,
+        "offset": 9598
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "@dimforge/rapier3d-compat",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 9746,
+        "offset": 9746
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "playlabs-2d",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 16780,
+        "offset": 16780
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 37034,
+        "offset": 37034
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/GLTFLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 39612,
+        "offset": 39612
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/DRACOLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 39657,
+        "offset": 39657
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/libs/meshopt_decoder.module.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 39755,
+        "offset": 39755
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/KTX2Loader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 39861,
+        "offset": 39861
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/FBXLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 40629,
+        "offset": 40629
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/OBJLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 40799,
+        "offset": 40799
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/utils/SkeletonUtils.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 41260,
+        "offset": 41260
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/environments/RoomEnvironment.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 43140,
+        "offset": 43140
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 9558,
+        "offset": 9558
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "playlabs-boot",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 9574,
+        "offset": 9574
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "playlabs-voxel",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 9598,
+        "offset": 9598
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "@dimforge/rapier3d-compat",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 9746,
+        "offset": 9746
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "playlabs-2d",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 16780,
+        "offset": 16780
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 37034,
+        "offset": 37034
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/GLTFLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 39612,
+        "offset": 39612
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/DRACOLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 39657,
+        "offset": 39657
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/libs/meshopt_decoder.module.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 39755,
+        "offset": 39755
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/KTX2Loader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 39861,
+        "offset": 39861
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/FBXLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 40629,
+        "offset": 40629
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/loaders/OBJLoader.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 40799,
+        "offset": 40799
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/utils/SkeletonUtils.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 41260,
+        "offset": 41260
+      }
+    },
+    {
+      "kind": "dynamic-import",
+      "target": "three/addons/environments/RoomEnvironment.js",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 43140,
+        "offset": 43140
+      }
+    }
+  ],
+  "platform": [
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+        "line": 12,
+        "col": 2,
+        "offset": 32504
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+        "line": 15,
+        "col": 2,
+        "offset": 32794
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+        "line": 2,
+        "col": 76,
+        "offset": 76
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 12,
+        "offset": 12
+      }
+    },
+    {
+      "api": "postMessage",
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 12,
+        "offset": 12
+      }
+    }
+  ],
+  "three": {
+    "constructed": {
+      "AmbientLight": 2,
+      "AnimationMixer": 2,
+      "Box3": 12,
+      "BoxGeometry": 2,
+      "BufferAttribute": 2,
+      "CanvasTexture": 2,
+      "Color": 4,
+      "ConeGeometry": 2,
+      "CylinderGeometry": 2,
+      "DRACOLoader": 2,
+      "Fog": 2,
+      "Group": 4,
+      "KTX2Loader": 2,
+      "Matrix3": 2,
+      "Matrix4": 2,
+      "Mesh": 4,
+      "MeshStandardMaterial": 4,
+      "PlaneGeometry": 4,
+      "PMREMGenerator": 2,
+      "Raycaster": 2,
+      "SphereGeometry": 2,
+      "Vector3": 14
+    },
+    "imports": [],
+    "importSources": []
+  },
+  "shaders": [],
+  "postFx": [],
+  "particles": [
+    {
+      "word": "rain",
+      "hits": 52,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 48331,
+          "offset": 48331
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 48359,
+          "offset": 48359
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 48384,
+          "offset": 48384
+        }
+      ]
+    },
+    {
+      "word": "splash",
+      "hits": 10,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 8647,
+          "offset": 8647
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 8663,
+          "offset": 8663
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 8770,
+          "offset": 8770
+        }
+      ]
+    },
+    {
+      "word": "particle",
+      "hits": 2,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 27990,
+          "offset": 27990
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+          "line": 2,
+          "col": 27990,
+          "offset": 27990
+        }
+      ]
+    },
+    {
+      "word": "spark",
+      "hits": 2,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+          "line": 2,
+          "col": 28006,
+          "offset": 28006
+        },
+        {
+          "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+          "line": 2,
+          "col": 28006,
+          "offset": 28006
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 12,
+      "keys": [
+        "speed",
+        "turn",
+        "bank",
+        "vertical",
+        "energy",
+        "boosting",
+        "boostLocked",
+        "boostMode",
+        "thrust",
+        "liftInput",
+        "impacts",
+        "collisionCooldown"
+      ],
+      "numbers": {
+        "speed": 0,
+        "turn": 0,
+        "bank": 0,
+        "vertical": 0,
+        "energy": 1,
+        "boosting": null,
+        "boostLocked": null,
+        "thrust": 0,
+        "liftInput": 0,
+        "impacts": 0,
+        "collisionCooldown": 0
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/silt-and-signal/logic-extract.js",
+        "line": 2,
+        "col": 21,
+        "offset": 132
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 1,
+        "mean": 0.25,
+        "head": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 31797,
+        "offset": 31797
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 1,
+        "mean": 0.25,
+        "head": [
+          1,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 31797,
+        "offset": 31797
+      }
+    }
+  ],
+  "assets": [],
+  "functions": [
+    {
+      "name": "launch",
+      "params": 1,
+      "chars": 32779,
+      "loc": {
+        "file": "tests/fixtures/crayon/silt-and-signal/game-shell.mjs",
+        "line": 2,
+        "col": 1,
+        "offset": 56
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 9179,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 16552,
+        "offset": 16552
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 9179,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 16552,
+        "offset": 16552
+      }
+    },
+    {
+      "name": "ut",
+      "params": 1,
+      "chars": 8664,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 46759,
+        "offset": 46759
+      }
+    },
+    {
+      "name": "ut",
+      "params": 1,
+      "chars": 8664,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 46759,
+        "offset": 46759
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 6670,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 48749,
+        "offset": 48749
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 6670,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 48749,
+        "offset": 48749
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5939,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 58733,
+        "offset": 58733
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5939,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 58733,
+        "offset": 58733
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 5631,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script0",
+        "line": 2,
+        "col": 2,
+        "offset": 2
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3239,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 18358,
+        "offset": 18358
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 3239,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 18358,
+        "offset": 18358
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 3111,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 64678,
+        "offset": 64678
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 3111,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 64678,
+        "offset": 64678
+      }
+    },
+    {
+      "name": "at",
+      "params": 10,
+      "chars": 2992,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 41391,
+        "offset": 41391
+      }
+    },
+    {
+      "name": "at",
+      "params": 10,
+      "chars": 2992,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 41391,
+        "offset": 41391
+      }
+    },
+    {
+      "name": "ze",
+      "params": 3,
+      "chars": 2788,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 29938,
+        "offset": 29938
+      }
+    },
+    {
+      "name": "ze",
+      "params": 3,
+      "chars": 2788,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 29938,
+        "offset": 29938
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 3,
+      "chars": 2575,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 51154,
+        "offset": 51154
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 3,
+      "chars": 2575,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 51154,
+        "offset": 51154
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2435,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 553,
+        "offset": 553
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2435,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 553,
+        "offset": 553
+      }
+    },
+    {
+      "name": "nt",
+      "params": 3,
+      "chars": 2104,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 39287,
+        "offset": 39287
+      }
+    },
+    {
+      "name": "nt",
+      "params": 3,
+      "chars": 2104,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 39287,
+        "offset": 39287
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1809,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 30062,
+        "offset": 30062
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1809,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 30062,
+        "offset": 30062
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1802,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 21636,
+        "offset": 21636
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1802,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 21636,
+        "offset": 21636
+      }
+    },
+    {
+      "name": "Pt",
+      "params": 0,
+      "chars": 1668,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 73850,
+        "offset": 73850
+      }
+    },
+    {
+      "name": "Pt",
+      "params": 0,
+      "chars": 1668,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 73850,
+        "offset": 73850
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 1590,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 65890,
+        "offset": 65890
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 1590,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 65890,
+        "offset": 65890
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 1584,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 62536,
+        "offset": 62536
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 1584,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 62536,
+        "offset": 62536
+      }
+    },
+    {
+      "name": "n",
+      "params": 0,
+      "chars": 1568,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 21794,
+        "offset": 21794
+      }
+    },
+    {
+      "name": "n",
+      "params": 0,
+      "chars": 1568,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 21794,
+        "offset": 21794
+      }
+    },
+    {
+      "name": "se",
+      "params": 1,
+      "chars": 1531,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 13548,
+        "offset": 13548
+      }
+    },
+    {
+      "name": "se",
+      "params": 1,
+      "chars": 1531,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 13548,
+        "offset": 13548
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1445,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/srcdoc.html#script1",
+        "line": 2,
+        "col": 39555,
+        "offset": 39555
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 1,
+      "chars": 1445,
+      "loc": {
+        "file": "evidence/crayon-runtime/silt-and-signal/module.js",
+        "line": 2,
+        "col": 39555,
+        "offset": 39555
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 1589,
+    "functions": 747,
+    "newExpressions": 143,
+    "calls": 2442
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:level-select",
+        "original": "44 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:countdown",
+        "original": "27 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:results",
+        "original": "10 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:tutorial",
+        "original": "10 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:game-over",
+        "original": "7 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:leaderboard",
+        "original": "6 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:victory",
+        "original": "5 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:settings",
+        "original": "4 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "2 references",
+        "port": "absent"
+      },
+      {
+        "feature": "host-platform postMessage hooks",
+        "original": "5 postMessage calls",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "screen:loading",
+        "original": "11 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "11 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:pause",
+        "original": "6 references",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "rainx52, splashx10, particlex2, sparkx2",
+        "port": "present"
+      },
+      {
+        "feature": "keyboard bindings",
+        "original": "ArrowLeft, ArrowRight, ArrowDown, ArrowUp, Enter, Space, Escape, Tab",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointerdown, mousedown, pointercancel, pointerup, pointerleave, pointermove, touchmove",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "Colliders and ground for chapters 1 to 5 (and chapter 6's colliders): the reference world was recorded for chapter 0 only. The",
+      "Tapered colliders (`profile` in the original's `hS`) and the original's creature colliders: not in the recorded data, so every collider is round or box.",
+      "Creature and exploration ticks (echoes, wind trials, herd), the chapter-1 spillway recovery (`E0`), voiced scene audio, save games,",
+      "The original's look is cel-shaded toon materials (`MeshToonMaterial`, 3-step gradient) with no tone mapping; the port uses PBR with",
+      "`time` (TSL) is not used; sky, water and rings are `material.custom` GLSL programs."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}

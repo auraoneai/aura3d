@@ -1,0 +1,867 @@
+{
+  "schema": "a3d-splat-rush-blind-judge/1",
+  "label": "before",
+  "generatedAt": "2026-10-23T10:17:22.905Z",
+  "kind": "MODEL judgement, not a human one",
+  "judge": {
+    "via": "https://prism.auraone.ai/v1/messages (Kiro Prism)",
+    "model": "claude-sonnet-5.5",
+    "seed": 20261023,
+    "passes": 8,
+    "order": "balanced A/B per pass, shuffled with a seeded mulberry32",
+    "states": [
+      "splash",
+      "s0040",
+      "s0200",
+      "s0500",
+      "s0800",
+      "gameover"
+    ]
+  },
+  "prompt": {
+    "intro": "You are shown two screenshots of a browser 3D casual runner game (a rolling paint ball steering through colour gates), labelled Image A and Image B. Both are taken at the same moment of the same recorded run (same game state), at the same window size. Exactly one of them is from the original, shipped game; the other is from an independent re-implementation that tries to reproduce it. Judge everything visible: the 3D scene (sky, road, gates, clouds, ball, paint, lighting), the on-screen HUD and the title or game-over cards.",
+    "question": "Answer with one JSON object and nothing else, with these keys: \"same_game\": true if a player would take both for the same game with the same art direction, false otherwise; \"same_game_confidence\": a number from 0 to 1; \"original\": \"A\" or \"B\", whichever you believe is the original shipped game (you must choose one); \"original_confidence\": a number from 0.5 to 1; \"tells\": up to three short phrases naming the visible differences that drove your choice."
+  },
+  "metrics": {
+    "perFrame": [
+      {
+        "state": "splash",
+        "lumaJsd": 0.05262109876036068,
+        "rgbJsd": 0.06952706127699328,
+        "paletteDistance": 0.003914553311057556,
+        "edgeDensityOriginal": 0.12855291501024502,
+        "edgeDensityPort": 0.11944186616696731,
+        "edgeDensityRatio": 0.9291260813296096,
+        "lumaMeanDelta": 2.8268721249823727
+      },
+      {
+        "state": "s0040",
+        "lumaJsd": 0.41788912143198087,
+        "rgbJsd": 0.5729715291249885,
+        "paletteDistance": 0.07649835552908771,
+        "edgeDensityOriginal": 0.0554149664629341,
+        "edgeDensityPort": 0.06290607870264969,
+        "edgeDensityRatio": 1.1351821126649286,
+        "lumaMeanDelta": -20.882017789043942
+      },
+      {
+        "state": "s0200",
+        "lumaJsd": 0.4397915365382013,
+        "rgbJsd": 0.6552036107767216,
+        "paletteDistance": 0.09228594852684652,
+        "edgeDensityOriginal": 0.07860632913609218,
+        "edgeDensityPort": 0.11991471252692597,
+        "edgeDensityRatio": 1.5255096357357691,
+        "lumaMeanDelta": -29.61939719522408
+      },
+      {
+        "state": "s0500",
+        "lumaJsd": 0.4068594335347758,
+        "rgbJsd": 0.6181289107213119,
+        "paletteDistance": 0.10906434639427569,
+        "edgeDensityOriginal": 0.08654839670058317,
+        "edgeDensityPort": 0.12129822595050875,
+        "edgeDensityRatio": 1.4015074868474302,
+        "lumaMeanDelta": -33.263480108306055
+      },
+      {
+        "state": "s0800",
+        "lumaJsd": 0.3543664708039765,
+        "rgbJsd": 0.6022346729009617,
+        "paletteDistance": 0.13051931583630466,
+        "edgeDensityOriginal": 0.0855195180469694,
+        "edgeDensityPort": 0.10114096075375212,
+        "edgeDensityRatio": 1.1826652331951057,
+        "lumaMeanDelta": -35.21166801041244
+      },
+      {
+        "state": "gameover",
+        "lumaJsd": 0.30524255219941954,
+        "rgbJsd": 0.4666927503276913,
+        "paletteDistance": 0.11623037552888735,
+        "edgeDensityOriginal": 0.08147405474510079,
+        "edgeDensityPort": 0.10019088982679814,
+        "edgeDensityRatio": 1.2297275511849106,
+        "lumaMeanDelta": -2.566561269229794
+      }
+    ],
+    "summary": {
+      "frames": 6,
+      "lumaJsd": 0.32946170221145243,
+      "rgbJsd": 0.49745975585477803,
+      "paletteDistance": 0.08808548252107658,
+      "edgeDensityOriginal": 0.08601936335032077,
+      "edgeDensityPort": 0.10414878898793366,
+      "edgeDensityRatio": 1.2339530168262924
+    }
+  },
+  "summary": {
+    "trials": 48,
+    "valid": 48,
+    "correct": 39,
+    "accuracy": 0.8125,
+    "ci95": [
+      0.6805986065115378,
+      0.8980872365179983
+    ],
+    "pValueVsChance": 0.000015221826110689537,
+    "distinguishable": true,
+    "sameGameYes": 34,
+    "sameGameRate": 0.7083333333333334,
+    "pickedA": 31,
+    "byLook": {
+      "splash": {
+        "valid": 8,
+        "correct": 6,
+        "accuracy": 0.75
+      },
+      "s0040": {
+        "valid": 8,
+        "correct": 2,
+        "accuracy": 0.25
+      },
+      "s0200": {
+        "valid": 8,
+        "correct": 7,
+        "accuracy": 0.875
+      },
+      "s0500": {
+        "valid": 8,
+        "correct": 8,
+        "accuracy": 1
+      },
+      "s0800": {
+        "valid": 8,
+        "correct": 8,
+        "accuracy": 1
+      },
+      "gameover": {
+        "valid": 8,
+        "correct": 8,
+        "accuracy": 1
+      }
+    }
+  },
+  "trials": [
+    {
+      "step": 0,
+      "pass": 0,
+      "look": "splash",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.72,
+      "tells": [
+        "Image A has bolder, heavier rounded title and button typography with a glow around the title",
+        "Image B uses a thinner, condensed font and has an extra sound button at lower left",
+        "Layout scale and card position differ, with the card cropped differently in B"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 0,
+      "look": "s0040",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A has a dark outlined/shadowed score font and a sound button at bottom-left, while B has a clean white score text with no sound button",
+        "Road surface is a warm cream colour with streaks in A versus whiter with thin dark lane lines in B",
+        "B shows a soft ball shadow and cloud shading that look more like the native rendering"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 0,
+      "look": "s0200",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.3,
+      "originalConfidence": 0.68,
+      "tells": [
+        "Image A's HUD text is dark and unstyled, with a doubled, overlapping PERFECT! popup, while B has polished white and gold outlined text",
+        "B's road has a detailed cracked texture, while A's is flatter and smoother",
+        "A shows an extra sound button and popup that B lacks"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 0,
+      "look": "s0500",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.72,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has overlapping, garbled milestone/perfect text rendered as dark blurry blobs over the HUD",
+        "Image A road is flat cream with no ball shadow, while B has a textured white road with a ball shadow and paint specks",
+        "Image A HUD text is flat dark gray, while B has outlined, styled score and combo text"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 0,
+      "look": "s0800",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has garbled overlapping text pile-up at top (MILESTONE/PERFECT +500 stacked)",
+        "Image B has a sound button and a thinner, less outlined HUD font for score/combo",
+        "Image A has larger, cleaner outlined HUD text and clouds that are chunkier and more shaded"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 0,
+      "look": "gameover",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled title text and a duplicated 'NEW BEST!: 184' line",
+        "Different card styling: A has a yellow button on a flat red backdrop, B has a red button over a translucent pink scene",
+        "Different scores (163 vs 184) and fonts, which suggests the runs were not the same state, so B looks like the re-implementation"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 1,
+      "look": "splash",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image A has a bold rounded heavy font with a glowing title, while B uses a thinner condensed font",
+        "Image A's card is vertically offset and scaled differently, with the title much larger",
+        "Image B adds a speaker/mute button at bottom-left that A lacks, and uses flatter button styling"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 1,
+      "look": "s0040",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A has a cream-tinted road with a lavender-lit sky look, while B's road is near-white with thin dark crack lines",
+        "Image A's score text is dark with a heavier stroke and a sound button is visible; B has white text and no sound button",
+        "Image B's ball has a visible shadow and its clouds are shaded differently"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 1,
+      "look": "s0200",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image B has overlapping, dark 'PERFECT! +100' text and a sound button not in A",
+        "Image B has a more saturated sky and a warmer, creamier road",
+        "Image A has softer, cleaner HUD text and paler, flatter clouds"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 1,
+      "look": "s0500",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has overlapping dark milestone/perfect popup text that is garbled",
+        "Image A road is flat cream with no shading, while B has a textured, shadowed road surface",
+        "Image A HUD text is plain dark, while B has outlined, styled score and combo text"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 1,
+      "look": "s0800",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has overlapping, garbled floating text (PERFECT/+500) layered over the HUD, which looks like a text-rendering bug",
+        "Image A's HUD text is dark and muddy, while B's is clean red with an outline",
+        "A has a sound button and a more cream road, while B has a clean white road and no extra button"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 1,
+      "look": "gameover",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image B has overlapping garbled title text and a duplicated HUD score behind the card",
+        "Different button styling (red vs yellow) and fonts, with extra 'NEW BEST' and hint text in B",
+        "Image A has a clean 'BURST!' title with a solid red backdrop, while B shows a translucent pink scene"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 2,
+      "look": "splash",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image B uses a bold rounded sans font with a glow around the title, while A uses a condensed display font with a hard offset shadow",
+        "Layout and scale differ: B's card is vertically shifted, its text is bolder, and its button is wider with different type",
+        "A has a sound toggle icon at lower left that B lacks"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 2,
+      "look": "s0040",
+      "originalIs": "A",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.9,
+      "originalConfidence": 0.68,
+      "tells": [
+        "B has a sound-toggle button and dark score text with speed-line streaks, which look like shipped UI details",
+        "A has white score text with outline and a smoother, flatter white road",
+        "B road is cream-toned with fine streak texture and a slightly different gradient"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 2,
+      "look": "s0200",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A's HUD text is dark grey and blurry, with a duplicated, overlapping 'PERFECT! +100' popup",
+        "Image B's score and combo text is crisp white and gold with a clean outline",
+        "Image B's road has subtle crack and texture detail, while Image A's is smooth and washed out"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 2,
+      "look": "s0500",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "originalConfidence": 0.68,
+      "tells": [
+        "Image A has overlapping dark milestone/perfect text overlays and a cream road, unlike B's clean HUD and white road",
+        "Image A shows a sound button, different cloud shading, and lacks B's soft ball shadow",
+        "Image B has crisp outlined score/combo text and a more detailed road texture"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 2,
+      "look": "s0800",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled popup text stacked at the top",
+        "Image B has a sound button and thinner, smaller score/combo text",
+        "Image A has a cleaner HUD with bolder text and larger, softer clouds"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 2,
+      "look": "gameover",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled title text and a stray HUD score behind the card",
+        "Different score values (163 vs 184) and button style (yellow vs red) with a different font",
+        "Image B adds extras like a 'NEW BEST!' line, sound icon and key hint, with a see-through background versus a solid red one"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 3,
+      "look": "splash",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A uses a condensed outlined display font with a hard offset shadow; Image B uses a rounder, bolder font with a soft glow",
+        "Image A has a speaker/mute button at the bottom left, which is missing in B",
+        "Image B has different card layout and scale, with bold body text and a smaller Play Now button"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 3,
+      "look": "s0040",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A has a cream-colored road with a dark, outlined score font and a sound button in the corner",
+        "Image B has a whiter road with thin dark line streaks and a plain white score font",
+        "Image B is missing the sound button and the horizontal speed streaks seen in Image A"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 3,
+      "look": "s0200",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.68,
+      "tells": [
+        "Image B has overlapping, dark 'PERFECT! +100' text that looks like a glitchy duplicated popup",
+        "Image B has a more saturated sky and a visible sound button, which looks like added UI",
+        "Image A has softer, cleaner white clouds and rounded HUD text with outlines that match a polished shipped look"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 3,
+      "look": "s0500",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.62,
+      "originalConfidence": 0.68,
+      "tells": [
+        "Image A has overlapping dark floating text (MILESTONE/PERFECT +300) with a muddled HUD, while B is clean with outlined score and combo text",
+        "Image A has a cream, flat road and puffier clouds, while B has a whiter, textured road with a soft ball shadow",
+        "Image A's HUD has a sound button and no outlined text, while B's score and combo text has a stylized outline"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 3,
+      "look": "s0800",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled floating text (PERFECT/+500) stacked over the HUD",
+        "Image B's combo/score text is thinner, with less outlined styling, and adds a sound button",
+        "Image B has smaller, flatter clouds and a different road tint, while A shows richer clouds and a cleaner HUD"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 3,
+      "look": "gameover",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image B has overlapping, garbled title text and a stray score overlay bleeding through the card",
+        "Different game-over styling: A has a yellow button, red backdrop and Nunito-style rounded font, while B has a red button, a different font and extra hint text",
+        "Scores differ (163 vs 184), so the game states don't match, and B has 'NEW BEST!' and a sound icon that A lacks"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 4,
+      "look": "splash",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image A has bolder, rounded title and button font with a glow around the title",
+        "Image B uses a thinner, condensed font and a flatter title with a hard offset shadow",
+        "Image B shows a sound toggle button and different card scaling, with the card cropped differently"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 4,
+      "look": "s0040",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A has a cream-tinted road with a soft shadow-less ball, while B has a whiter road with thin dark line streaks",
+        "Image A has a dark outlined SCORE text and a sound button in the corner that B lacks",
+        "Image B has a ball drop shadow and sharper white-shaded clouds"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 4,
+      "look": "s0200",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A's HUD text is dark and muddy with a doubled, overlapping PERFECT! +100 popup, which looks like a rendering bug",
+        "Image B's HUD is cleaner, with white score text and a yellow combo that has a consistent outline",
+        "Image B's road has subtle crack and texture detail, while Image A's is a flatter cream"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 4,
+      "look": "s0500",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled floating text (MILESTONE/PERFECT +300) at the top, which looks like a rendering bug",
+        "Image B has an extra sound button and a different, flatter HUD font treatment, with a more saturated sky and cream road",
+        "Image A has softer, whiter clouds, a paler road and smoother lavender edge bumpers, while B has beaded spheres"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 4,
+      "look": "s0800",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.72,
+      "tells": [
+        "Image A has overlapping, garbled duplicate text in the HUD and popups",
+        "Image A shows a mirrored speed-line and cloud layout with a cream road tint, unlike B's whiter road",
+        "Image B has clean, legible score and combo text with consistent outlines"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 4,
+      "look": "gameover",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.75,
+      "tells": [
+        "Image B has overlapping garbled title text and a different font",
+        "Image B's card uses a red button, a 'NEW BEST!: 184' line and a sound icon, while Image A uses a yellow button and a clean 'BURST!' title",
+        "The two images show different scores (163 vs 184) and different backgrounds (solid red vs translucent pink scene)"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 5,
+      "look": "splash",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.72,
+      "tells": [
+        "A has a heavier, rounder font with a glowing title and bolder text; B uses a thinner, condensed font",
+        "B has a sound-toggle button in the corner that A lacks",
+        "Layout and scale differ: B's card and title sit at different positions and the button text is lighter"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 5,
+      "look": "s0040",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A has a cream-tinted road and a dark, outlined score font plus a sound button, which look like added or re-styled UI",
+        "Image B has a white road with faint lane lines and a clean white score font with a soft shadow",
+        "Image A has no ball shadow, while B shows a contact shadow under the ball"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 5,
+      "look": "s0200",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image B has overlapping, dark 'PERFECT! +100' text and a sound button, which look like re-implementation artifacts",
+        "Image A has softer, whiter clouds and a paler sky with cleaner HUD text",
+        "Image B has a more saturated sky and a cream road with different edge bumps"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 5,
+      "look": "s0500",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has overlapping, garbled milestone and perfect text rendered over the HUD",
+        "Image A has a cream-coloured road and flat, bright white clouds, while B has a pale white road with soft shading",
+        "Image B has clean score text with outlines and a soft ball shadow on the road"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 5,
+      "look": "s0800",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled floating text (PERFECT/+500) stacked at the top",
+        "Image B's combo/score text is smaller and thinner, with an added sound button",
+        "Image A's clouds and HUD text are larger, with cleaner, bolder styling"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 5,
+      "look": "gameover",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has garbled overlapping title text and a different 'NEW BEST!' line",
+        "Image A shows a pink 3D backdrop with clouds and a red button, while B has a flat red background and a yellow button",
+        "Different fonts and card styling: B's rounded font with a clean 'BURST!' title looks more polished"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 6,
+      "look": "splash",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "A has bold, rounded title and button fonts with a soft glow, while B uses a thinner, condensed font",
+        "B has a sound toggle button in the corner that A lacks",
+        "A has a heavier card layout with larger text and spacing, while B's layout is looser and the card is cropped differently"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 6,
+      "look": "s0040",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.62,
+      "tells": [
+        "Image A has a cream-tinted road with sharper streak lines and a dark-outlined score font",
+        "Image B has a whiter road with thin grey lane lines and a plain white score font",
+        "Image B has a soft shadow under the ball and slightly different cloud shading"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 6,
+      "look": "s0200",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.58,
+      "tells": [
+        "B is missing the PERFECT!/+100 popup and the sound button that A shows",
+        "HUD text styling differs: A's score is dark, B's is white with a gold combo",
+        "road surface differs: A is smooth cream, B is whiter with crack texture"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 6,
+      "look": "s0500",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.6,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has overlapping, garbled milestone/perfect text with dark smeared fonts",
+        "Image A road is flat cream-colored with different lighting, while B has a whiter road with a ball shadow",
+        "Image A clouds are more uniformly puffy and the HUD text lacks the outlined styling seen in B"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 6,
+      "look": "s0800",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.85,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled floating text (PERFECT/+500) stacked at the top",
+        "Image B's HUD text is smaller and thinner, with a sound button added at the bottom left",
+        "Image A's HUD is cleaner, with bold outlined score and combo text and a different cloud layout"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 6,
+      "look": "gameover",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled title text and a duplicated 'NEW BEST!: 184' line",
+        "Different scores (163 vs 184) and different card styling: gold button and rounded font in A, red button and condensed font in B",
+        "Image A shows a clean 'BURST!' title on a solid red backdrop, while B shows a translucent pink scene with extra hints and a sound icon"
+      ]
+    },
+    {
+      "step": 0,
+      "pass": 7,
+      "look": "splash",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.7,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has a bold, rounded title font with a glow, while B uses a thinner, condensed font",
+        "Image A has a heavier, rounder PLAY NOW button label and text, while B looks lighter and narrower",
+        "Image B shows a sound icon and differs in layout and scale"
+      ]
+    },
+    {
+      "step": 1,
+      "pass": 7,
+      "look": "s0040",
+      "originalIs": "B",
+      "picked": "A",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.6,
+      "tells": [
+        "Image A has a warm cream road, a dark outlined score font and a sound button; B has a white road with thin dark lane lines",
+        "Image B shows a soft ball shadow and cooler, plainer shading; A has a warmer, more stylised look",
+        "Image B is missing the speaker button at bottom-left"
+      ]
+    },
+    {
+      "step": 2,
+      "pass": 7,
+      "look": "s0200",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": false,
+      "sameGameConfidence": 0.62,
+      "originalConfidence": 0.6,
+      "tells": [
+        "HUD text in A is dark and flat, with a duplicated overlapping PERFECT popup, while B has clean white and gold outlined text",
+        "B's road has subtle cracks and texture, while A's road is smoother and flatter",
+        "A adds a sound button that B lacks"
+      ]
+    },
+    {
+      "step": 3,
+      "pass": 7,
+      "look": "s0500",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled floating text overlays at the top (MILESTONE / PERFECT +300) and a sound button that Image A lacks",
+        "Different HUD typography: A uses outlined, polished score and combo text, while B uses a plain dark flat font",
+        "Different road and sky look: A has a pale white road with a soft light-blue sky, while B has a cream road, a more saturated sky and a different bead edge"
+      ]
+    },
+    {
+      "step": 4,
+      "pass": 7,
+      "look": "s0800",
+      "originalIs": "B",
+      "picked": "B",
+      "sameGame": true,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.7,
+      "tells": [
+        "Image A has garbled overlapping HUD text ('PERFECT', 'MILESTONE') stacked and smeared",
+        "Image B HUD text is clean with proper outlined fonts and a clear combo label",
+        "Image A has a mute button overlay and a creamier road tint, while B's road is whiter with visible texture"
+      ]
+    },
+    {
+      "step": 5,
+      "pass": 7,
+      "look": "gameover",
+      "originalIs": "A",
+      "picked": "A",
+      "sameGame": false,
+      "sameGameConfidence": 0.8,
+      "originalConfidence": 0.8,
+      "tells": [
+        "Image B has overlapping, garbled title text and a duplicated HUD behind the card",
+        "Different score values (163 vs 184) and button styling (yellow vs red) with different fonts",
+        "Image B adds extra elements like a 'NEW BEST!' line, sound icon and keyboard hint, with a translucent backdrop instead of a solid red one"
+      ]
+    }
+  ]
+}

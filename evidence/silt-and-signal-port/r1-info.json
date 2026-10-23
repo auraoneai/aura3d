@@ -1,0 +1,429 @@
+{
+  "title": {
+    "mode": "title",
+    "bootMs": 20255,
+    "stats": null,
+    "nodes": 12,
+    "draws": 191,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-obj0-chase": {
+    "mode": "play",
+    "bootMs": 6285,
+    "stats": {
+      "meanLuma": 213.1407159573661,
+      "edgeDensity": 0.9365759796165773,
+      "distinctColors": 285,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 191,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-obj2-chase": {
+    "mode": "play",
+    "bootMs": 5917,
+    "stats": {
+      "meanLuma": 220.57380434502636,
+      "edgeDensity": 0.6986911813810261,
+      "distinctColors": 254,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 154,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-obj2-fly": {
+    "mode": "play",
+    "bootMs": 5498,
+    "stats": {
+      "meanLuma": 191.58124806417945,
+      "edgeDensity": 0.6075520738793022,
+      "distinctColors": 270,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 177,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "emote-yes"
+    }
+  },
+  "ch0-village": {
+    "mode": "play",
+    "bootMs": 5837,
+    "stats": {
+      "meanLuma": 211.40552644014002,
+      "edgeDensity": 0.9180852202039661,
+      "distinctColors": 227,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 184,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-aqueduct": {
+    "mode": "play",
+    "bootMs": 5964,
+    "stats": {
+      "meanLuma": 200.345332723182,
+      "edgeDensity": 0.78451375102991,
+      "distinctColors": 233,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 161,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-canal": {
+    "mode": "play",
+    "bootMs": 6077,
+    "stats": {
+      "meanLuma": 203.07153241195633,
+      "edgeDensity": 0.5250893845274855,
+      "distinctColors": 168,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 136,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch0-overview": {
+    "mode": "play",
+    "bootMs": 5422,
+    "stats": {
+      "meanLuma": 212.35035718799386,
+      "edgeDensity": 0.8533328695166759,
+      "distinctColors": 185,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 187,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "rider-close": {
+    "mode": "play",
+    "bootMs": 5496,
+    "stats": {
+      "meanLuma": 208.78995210033463,
+      "edgeDensity": 0.9374416140294755,
+      "distinctColors": 317,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 191,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "rider-close-static": {
+    "mode": "play",
+    "bootMs": 5979,
+    "stats": {
+      "meanLuma": 211.02234088941313,
+      "edgeDensity": 0.8242617983355404,
+      "distinctColors": 281,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 191,
+    "world": {
+      "walls": 783,
+      "trees": 236,
+      "rocks": 243,
+      "houses": 51,
+      "lamps": 55,
+      "stone": 4,
+      "brass": 28,
+      "terrainTriangles": 60996
+    },
+    "rider": {
+      "bound": false,
+      "clip": null,
+      "error": "animation disabled (norig=1)"
+    }
+  },
+  "ch1-obj0": {
+    "mode": "play",
+    "bootMs": 6894,
+    "stats": {
+      "meanLuma": 194.27849673394988,
+      "edgeDensity": 0.815169174066455,
+      "distinctColors": 273,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 136,
+    "world": {
+      "walls": 0,
+      "trees": 520,
+      "rocks": 170,
+      "houses": 9,
+      "lamps": 120,
+      "stone": 24,
+      "brass": 0,
+      "terrainTriangles": 46200
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch2-obj0-night": {
+    "mode": "play",
+    "bootMs": 5602,
+    "stats": {
+      "meanLuma": 82.20768090034142,
+      "edgeDensity": 1.5174508336928711,
+      "distinctColors": 323,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 136,
+    "world": {
+      "walls": 0,
+      "trees": 520,
+      "rocks": 170,
+      "houses": 12,
+      "lamps": 118,
+      "stone": 24,
+      "brass": 0,
+      "terrainTriangles": 45540
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch3-obj0": {
+    "mode": "play",
+    "bootMs": 6016,
+    "stats": {
+      "meanLuma": 216.53608242287808,
+      "edgeDensity": 0.6343880118221799,
+      "distinctColors": 216,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 132,
+    "world": {
+      "walls": 0,
+      "trees": 520,
+      "rocks": 170,
+      "houses": 13,
+      "lamps": 118,
+      "stone": 24,
+      "brass": 0,
+      "terrainTriangles": 45320
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch4-obj0": {
+    "mode": "play",
+    "bootMs": 5829,
+    "stats": {
+      "meanLuma": 194.63658655230148,
+      "edgeDensity": 0.7632050165430794,
+      "distinctColors": 240,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 142,
+    "world": {
+      "walls": 0,
+      "trees": 520,
+      "rocks": 170,
+      "houses": 7,
+      "lamps": 140,
+      "stone": 28,
+      "brass": 0,
+      "terrainTriangles": 53460
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch5-obj0-night": {
+    "mode": "play",
+    "bootMs": 6181,
+    "stats": {
+      "meanLuma": 79.66277024859114,
+      "edgeDensity": 1.5072937485016755,
+      "distinctColors": 311,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 136,
+    "world": {
+      "walls": 0,
+      "trees": 520,
+      "rocks": 170,
+      "houses": 10,
+      "lamps": 128,
+      "stone": 26,
+      "brass": 0,
+      "terrainTriangles": 49280
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  },
+  "ch6-obj0": {
+    "mode": "play",
+    "bootMs": 6098,
+    "stats": {
+      "meanLuma": 208.32248642343316,
+      "edgeDensity": 0.8324143473656158,
+      "distinctColors": 249,
+      "width": 1280,
+      "height": 720
+    },
+    "nodes": 12,
+    "draws": 132,
+    "world": {
+      "walls": 0,
+      "trees": 520,
+      "rocks": 170,
+      "houses": 13,
+      "lamps": 118,
+      "stone": 24,
+      "brass": 0,
+      "terrainTriangles": 71208
+    },
+    "rider": {
+      "bound": true,
+      "clip": "idle"
+    }
+  }
+}

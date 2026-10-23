@@ -3,78 +3,175 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky. Independent Aura3D reconstruction; not affiliated with the original." />
-    <meta name="theme-color" content="#0b1020" />
-    <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/" />
-    <meta property="og:title" content="Serpentine Sky Run — Aura3D port of the mechanics" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/" />
-    <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Serpentine Sky Run — Aura3D port of the mechanics" />
-    <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+    <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
-    <title>Serpentine Sky Run — Aura3D port of the mechanics</title>
+      <meta name="description" content="Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no hell run or road home); title, pause, results and audio included; the runner is a stand-in character; a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
+  <meta name="theme-color" content="#0b1020" />
+  <meta property="og:title" content="Serpentine Sky Run — Aura3D port of the mechanics" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/" />
+  <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Serpentine Sky Run — Aura3D port of the mechanics" />
+  <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
+  <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
+  <title>Serpentine Sky Run — Aura3D port of the mechanics</title>
     <style>
-      :root { color-scheme: dark; --ink: #fbf4ec; --muted: #d9cfe6; --panel: rgba(34, 26, 52, 0.66); --line: rgba(251, 244, 236, 0.2); --warm: #ff7a52; --ki: #5fd0ff; }
+      :root {
+        color-scheme: dark;
+        --ink: #fff7f1; --muted: #e6d6ee; --panel: rgba(38, 24, 58, 0.62); --panel-hi: rgba(52, 34, 78, 0.78); --line: rgba(255, 240, 246, 0.22);
+        --warm: #ff8a5c; --warm-hi: #ffb08a; --spark: #6fd8ff; --gold: #ffd36e; --sky: #a8b4e8; --deep: #2a1b45;
+      }
       * { box-sizing: border-box; }
-      html, body { margin: 0; height: 100%; background: #a8b4e8; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; }
-      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+      html, body { margin: 0; height: 100%; background: #f2c6de; color: var(--ink); font: 400 13px/1.45 "Graphik Web", sans-serif; overflow: hidden; -webkit-font-smoothing: antialiased; }
+      canvas#world { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
       .hidden { display: none !important; }
       .num { font-variant-numeric: tabular-nums; }
       .meta { font-size: 12px; color: var(--muted); }
-      button { font: 500 13px/1 "Graphik Web", sans-serif; color: #1d1530; background: var(--warm); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; }
-      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; backdrop-filter: blur(6px); }
+      h1, h2, p { margin: 0; }
+      button { font: 500 13px/1 "Graphik Web", sans-serif; color: var(--deep); background: linear-gradient(180deg, var(--warm-hi), var(--warm)); border: 0; border-radius: 6px; height: 32px; padding: 0 16px; cursor: pointer; box-shadow: 0 2px 10px rgba(255, 138, 92, 0.35); }
+      button.ghost { color: var(--ink); background: rgba(255, 255, 255, 0.12); box-shadow: none; border: 1px solid var(--line); }
+      button:hover { filter: brightness(1.06); }
+      button:focus-visible { outline: 2px solid var(--spark); outline-offset: 2px; }
+      kbd { display: inline-block; min-width: 24px; height: 24px; padding: 0 7px; margin: 0 2px; border-radius: 5px; border: 1px solid var(--line); border-bottom-width: 2px; background: rgba(255, 255, 255, 0.1); font: 500 12px/22px "Graphik Web", sans-serif; text-align: center; color: var(--ink); }
+
+      .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; backdrop-filter: blur(8px); }
+
+      #speedfx, #fallfx { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.18s linear; }
+      #speedfx { background: radial-gradient(ellipse at 50% 55%, transparent 52%, rgba(255, 214, 236, 0.5) 100%); }
+      #fallfx { background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(60, 20, 90, 0.7) 100%); }
+
       #hud { position: fixed; inset: 0; pointer-events: none; }
-      #hud .top { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 12px; }
-      #hud .label { font-size: 12px; color: var(--muted); }
-      #hud .value { font-size: 20px; font-weight: 500; line-height: 1.2; }
-      #hud .bottom { position: absolute; left: 12px; bottom: 12px; display: grid; gap: 6px; width: 260px; }
-      .meter { height: 6px; border-radius: 3px; background: rgba(251, 244, 236, 0.2); overflow: hidden; }
+      .card-hud { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; backdrop-filter: blur(8px); box-shadow: 0 6px 20px rgba(20, 8, 40, 0.35); }
+      #player { position: absolute; top: 16px; left: 18px; width: 262px; padding: 10px 12px; display: grid; grid-template-columns: 40px 1fr; gap: 4px 10px; align-items: center; }
+      #badge { grid-row: span 3; width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--gold); background: radial-gradient(circle at 35% 30%, #ffb08a, #c4551d 70%); }
+      #player .pname { font-size: 12px; line-height: 14px; font-weight: 500; letter-spacing: 0.08em; }
+      .bar-row { display: grid; grid-template-columns: 1fr 34px; align-items: center; gap: 8px; }
+      .bar-row .num { font-size: 12px; color: var(--muted); text-align: right; }
+      .meter { height: 8px; border-radius: 2px; background: rgba(255, 255, 255, 0.14); overflow: hidden; -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 15px, transparent 15px 18px); mask-image: repeating-linear-gradient(90deg, #000 0 15px, transparent 15px 18px); }
       .meter > i { display: block; height: 100%; width: 0; }
-      #ki-bar { background: var(--ki); }
-      #strain-bar { background: var(--warm); }
-      #banner { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); font-size: 22px; font-weight: 500; text-align: center; text-shadow: 0 2px 12px rgba(30, 20, 60, 0.6); }
-      #sub { position: absolute; left: 50%; top: 116px; transform: translateX(-50%); font-size: 13px; color: var(--muted); }
-      #toast { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); font-size: 14px; text-shadow: 0 1px 8px rgba(30, 20, 60, 0.7); }
-      #phase { position: absolute; right: 12px; top: 84px; font-size: 12px; color: var(--muted); }
-      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(34, 26, 52, 0.55); }
-      .overlay .panel { width: min(440px, 90vw); display: grid; gap: 10px; padding: 16px; }
-      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #a8b4e8; color: #2a2145; z-index: 5; }
-      h1, h2 { margin: 0; line-height: 1.15; }
+      #ki-bar { background: linear-gradient(90deg, #3aa8e8, #bff0ff); }
+      #strain-bar { background: linear-gradient(90deg, #ffb36e, #ff5a4a); }
+      #surge-chip { position: absolute; top: 96px; left: 18px; padding: 4px 10px; font-size: 12px; line-height: 16px; letter-spacing: 0.06em; transition: box-shadow 0.2s, border-color 0.2s; }
+      #surge-chip.hot { border-color: var(--gold); box-shadow: 0 0 18px rgba(255, 138, 92, 0.6); color: var(--gold); }
+      #progress { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: min(420px, 38vw); display: grid; gap: 4px; }
+      #progress .rowp { display: flex; justify-content: space-between; font-size: 12px; line-height: 14px; color: var(--muted); letter-spacing: 0.06em; text-shadow: 0 1px 6px rgba(42, 27, 69, 0.7); }
+      #progress .rowp .num { font-size: 14px; color: var(--ink); }
+      #progress .track { height: 4px; border-radius: 2px; background: rgba(30, 14, 56, 0.7); overflow: hidden; }
+      #progress .track i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ffb36e, #ffd36e); }
+      #side { position: absolute; top: 16px; right: 18px; width: 164px; display: grid; gap: 8px; justify-items: stretch; }
+      #side .card-hud { padding: 8px 12px; text-align: right; }
+      #side .tag { display: inline-block; font-size: 12px; line-height: 16px; letter-spacing: 0.08em; padding: 0 8px; border-radius: 3px; background: #e8503a; color: #fff; }
+      #side .big { font-size: 34px; line-height: 38px; font-weight: 500; }
+      #side .unit { font-size: 12px; color: var(--muted); margin-left: 4px; }
+      #side .chip { display: inline-block; margin-top: 4px; font-size: 12px; line-height: 16px; padding: 0 8px; border: 1px solid rgba(120, 220, 255, 0.5); border-radius: 3px; color: #bfeaff; background: rgba(10, 20, 50, 0.6); }
+      #side .score { font-size: 24px; line-height: 28px; color: var(--gold); font-weight: 500; }
+      #side .label { font-size: 12px; line-height: 14px; color: var(--muted); letter-spacing: 0.08em; }
+      #pause-btn { position: absolute; left: 18px; bottom: 18px; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: rgba(34, 24, 70, 0.8); border: 1px solid var(--line); pointer-events: auto; padding: 0; }
+      #pause-btn i { display: block; width: 4px; height: 14px; background: var(--ink); margin: 0 2px; border-radius: 1px; }
+      #banner { position: absolute; left: 50%; top: 20%; transform: translateX(-50%); font-size: 46px; line-height: 50px; font-weight: 600; letter-spacing: 0.08em; text-align: center; color: #ffd84a; text-shadow: 0 3px 0 #3a1f78, 0 0 2px #3a1f78, 0 6px 18px rgba(42, 27, 69, 0.6); white-space: nowrap; }
+      #sub { position: absolute; left: 50%; top: calc(20% + 62px); transform: translateX(-50%); font-size: 12px; line-height: 20px; padding: 2px 14px; border-radius: 3px; background: rgba(22, 20, 56, 0.86); color: #e6e8ff; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; }
+      #sub:empty { display: none; }
+      #toast { position: absolute; left: 26px; bottom: 150px; font-size: 14px; line-height: 18px; font-weight: 500; letter-spacing: 0.06em; color: #e8f6ff; text-shadow: 0 1px 8px rgba(30, 20, 80, 0.9); white-space: nowrap; }
+      #phase { display: none; }
+      #count { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-size: 96px; font-weight: 500; letter-spacing: 0.08em; text-shadow: 0 6px 30px rgba(42, 27, 69, 0.8); }
+
+      .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 40%, rgba(42, 27, 69, 0.35), rgba(42, 27, 69, 0.72)); z-index: 3; }
+      .card { width: min(480px, 92vw); display: grid; gap: 12px; padding: 20px; background: var(--panel-hi); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(10px); box-shadow: 0 18px 60px rgba(20, 8, 40, 0.5); }
+      .card h1 { font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: 0.1em; }
+      .card h2 { font-size: 20px; line-height: 24px; font-weight: 500; letter-spacing: 0.06em; }
+      .card .tag { font-size: 13px; color: var(--muted); }
+      .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; }
+      .keys span { font-size: 13px; color: var(--ink); }
+      .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+      .results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .label { font-size: 12px; line-height: 14px; color: var(--muted); letter-spacing: 0.06em; }
+      .results-grid .stat { padding: 6px 12px; }
+      .results-grid .value { font-size: 20px; line-height: 24px; font-weight: 500; }
+      .results-grid .stat { text-align: left; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--line); border-radius: 8px; }
+      .runners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .runner { height: auto; display: grid; gap: 4px; justify-items: start; text-align: left; padding: 8px 10px; border-radius: 8px; }
+      .runner.selected { border-color: var(--warm-hi); background: rgba(255, 138, 92, 0.22); box-shadow: 0 0 0 1px var(--warm-hi) inset; }
+      .runner .swatch { display: flex; gap: 4px; }
+      .runner .swatch i { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.4); }
+      .runner .rname { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; }
+      .runner .rtag { font-size: 12px; line-height: 1.3; }
+      #loading { position: fixed; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, #7638b4, #dcc9f2 70%, #f2c6de); color: var(--ink); z-index: 5; }
+      #loading .card { width: min(360px, 90vw); }
+      #touch { position: fixed; right: 12px; bottom: 12px; display: none; gap: 8px; z-index: 2; }
+      #touch button { height: 44px; min-width: 64px; }
+      @media (pointer: coarse) { #touch { display: flex; } }
+      @media (max-width: 640px) { #banner { font-size: 28px; } #progress { width: 34vw; } #side { width: 120px; } #side .big { font-size: 26px; } #player { width: 200px; } }
     </style>
   </head>
   <body>
     <canvas id="world"></canvas>
-    <section id="loading"><div class="panel"><h2>Snake Way</h2><p id="loading-status" class="meta">Laying the road</p></div></section>
+    <div id="speedfx"></div>
+    <div id="fallfx"></div>
+    <section id="loading"><div class="card"><h2>Serpentine Sky Run</h2><p id="loading-status" class="meta">Laying the road</p></div></section>
     <section id="title" class="overlay">
-      <div class="panel">
-        <h1>SNAKE WAY</h1>
-        <p class="meta">One million kilometres of dead serpent, above Hell. A port of the Crayon game on the Aura3D engine.</p>
-        <p class="meta">A / D lane &middot; Space jump &middot; S slide &middot; Shift Boost &middot; E fly &middot; P pause</p>
-        <button id="start" type="button">Start the run</button>
+      <div class="card">
+        <h1>SERPENTINE SKY RUN</h1>
+        <p class="tag">One million kilometres of road, coiled over a sea of cloud. Collect spark, build your surge, and reach the tail before the days run out. A port of a Crayon browser game on the Aura3D engine.</p>
+        <div class="meta">CHOOSE YOUR RUNNER <span>(<kbd>&larr;</kbd><kbd>&rarr;</kbd> to switch; looks only, the run is the same)</span></div>
+        <div class="runners" id="runners"></div>
+        <div class="keys">
+          <span><kbd>A</kbd><kbd>D</kbd> or <kbd>&larr;</kbd><kbd>&rarr;</kbd></span><span>change lane</span>
+          <span><kbd>Space</kbd> <kbd>W</kbd></span><span>jump</span>
+          <span><kbd>S</kbd> <kbd>&darr;</kbd></span><span>slide under gates</span>
+          <span><kbd>Shift</kbd></span><span>surge: burn spark for speed and score</span>
+          <span><kbd>E</kbd></span><span>fly (hold <kbd>WASD</kbd> to steer)</span>
+          <span><kbd>P</kbd> <kbd>Esc</kbd> <kbd>M</kbd></span><span>pause &middot; mute</span>
+        </div>
+        <div class="row"><button id="start" type="button">Start the run</button><span class="meta">or press <kbd>Space</kbd> &middot; best <span class="num" id="best-title">0</span></span></div>
       </div>
     </section>
-    <section id="paused" class="overlay hidden"><div class="panel"><h2>Paused</h2><p class="meta">P or Esc to resume</p></div></section>
+    <section id="paused" class="overlay hidden">
+      <div class="card">
+        <h2>PAUSED</h2>
+        <p class="meta">The road waits. Press <kbd>P</kbd> or <kbd>Esc</kbd> to resume.</p>
+        <div class="row"><button id="resume" type="button">Resume</button><button id="restart" type="button" class="ghost">Restart run</button></div>
+      </div>
+    </section>
+    <section id="results" class="overlay hidden">
+      <div class="card">
+        <h2 id="results-title">RUN OVER</h2>
+        <p class="tag" id="results-sub"></p>
+        <div class="results-grid">
+          <div class="stat"><div class="label">DISTANCE KM</div><div class="value num" id="r-km">0</div></div>
+          <div class="stat"><div class="label">SCORE</div><div class="value num" id="r-score">0</div></div>
+          <div class="stat"><div class="label">BEST</div><div class="value num" id="r-best">0</div></div>
+        </div>
+        <div class="row"><button id="again" type="button">Run again</button><span class="meta">or press <kbd>R</kbd> / <kbd>Enter</kbd></span></div>
+      </div>
+    </section>
+    <div id="count" class="hidden"></div>
+    <div id="touch"><button id="t-slide" type="button" class="ghost">Slide</button><button id="t-fly" type="button" class="ghost">Fly</button><button id="t-surge" type="button">Surge</button></div>
     <div id="hud">
-      <div class="top">
-        <div class="panel"><div class="label">OUTBOUND KM</div><div class="value num" id="km">0</div></div>
-        <div class="panel"><div class="label">DAYS LEFT</div><div class="value num" id="days">365</div></div>
-        <div class="panel"><div class="label">BOOST</div><div class="value num" id="mult">×1</div></div>
-        <div class="panel"><div class="label">SCORE</div><div class="value num" id="score">0</div></div>
+      <div id="player" class="card-hud">
+        <div id="badge"></div>
+        <div class="pname">RUNNER</div>
+        <div class="bar-row"><div class="meter"><i id="ki-bar"></i></div><div class="num" id="ki-num">35</div></div>
+        <div class="bar-row"><div class="meter"><i id="strain-bar"></i></div><div class="num" id="strain-num">0</div></div>
+      </div>
+      <div id="surge-chip" class="card-hud"><span class="label">SURGE</span> <span class="num" id="mult">×1</span></div>
+      <div id="progress">
+        <div class="rowp"><span>OUTBOUND — KM COVERED</span><span class="num" id="km">0</span></div>
+        <div class="track"><i id="km-fill"></i></div>
+      </div>
+      <div id="side">
+        <div class="card-hud"><span class="tag">DAYS LEFT</span><div><span class="big num" id="days">365</span><span class="unit">DAYS</span></div><span class="chip">RUN ACTIVE</span></div>
+        <div class="card-hud"><div class="label">RUN SCORE</div><div class="score num" id="score">0</div></div>
       </div>
       <div id="phase"></div>
       <div id="banner"></div>
       <div id="sub"></div>
       <div id="toast"></div>
-      <div class="bottom">
-        <div><div class="label">KI</div><div class="meter"><i id="ki-bar"></i></div></div>
-        <div><div class="label">STRAIN</div><div class="meter"><i id="strain-bar"></i></div></div>
-      </div>
+      <button id="pause-btn" type="button" aria-label="Pause"><i></i><i></i></button>
     </div>
     <script type="module" src="./src/main.ts"></script>
-      <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky.</aside>
-  </body>
+    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Outbound run only (no hell run or road home); title, pause, results and audio included; the runner is a stand-in character; a blind model judge could still tell the port from the original.</aside>
+</body>
 </html>

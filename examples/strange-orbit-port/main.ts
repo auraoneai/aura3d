@@ -9,6 +9,8 @@
  * advances through `__orbit.advance` / `__AURA_STRANGE_ORBIT__.stepFrames`).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createOrbitAudio } from "./audio";
+import { installOrbitUi } from "./ui";
 import { RIDERS, sectionLabel, type Mode, type Vehicle } from "./course";
 import {
   STEP,
@@ -71,6 +73,8 @@ let hudTimer = 0;
 let lastPhase = "";
 let renderTime = 0;
 let frames = 0;
+const sound = createOrbitAudio();
+installOrbitUi(params, config.difficulty);
 
 function newRace(): RaceState {
   const state = createRace({ rider: config.rider, mode: config.mode, difficulty: config.difficulty, vehicle: config.vehicle });
@@ -113,7 +117,9 @@ function sampleInput(dt: number): Input {
 
 addEventListener("keydown", (e) => {
   if ((Object.values(BINDINGS) as string[]).includes(e.code) || e.code.startsWith("Arrow")) e.preventDefault();
+  sound.unlock();
   if (e.repeat) return;
+  if (e.code === "KeyM") { sound.toggleMute(); return; }
   if (e.code === BINDINGS.pause) { pause(); return; }
   if (e.code === BINDINGS.camera) { view = view === "chase" ? "wide" : "chase"; return; }
   if (e.code === "Enter" && race.phase === "menu") { begin(); return; }
@@ -127,6 +133,7 @@ addEventListener("blur", () => { down.clear(); steerSmooth = 0; if (race.phase =
 /* ------------------------------------------------------------------ flow */
 
 function begin(): void {
+  sound.unlock();
   race = newRace();
   checkpointOrder = [];
   runtime?.resetCamera();
@@ -145,6 +152,7 @@ function handleEvents(events: readonly RaceEvent[]): void {
   for (const ev of events) {
     if (ev.type === "gate" && typeof ev.gate === "number") checkpointOrder.push(ev.gate);
     if (ev.text) { notice = ev.text; noticeTime = 3; }
+    sound.cue(ev.type, ev.mult);
   }
 }
 
@@ -241,6 +249,7 @@ function tick(now: number): void {
       simAccumulator -= STEP;
     }
   }
+  sound.update({ speed: race.speed, boosting: Boolean(race.boosting), drafting: Boolean(race.drafting), flight: Boolean(race.flight), racing: race.phase === "racing" }, dt);
   hudTimer += dt;
   if (hudTimer >= 0.05 || lastPhase !== race.phase) { updateHud(hudTimer); hudTimer = 0; }
   render(["paused", "finished", "lost"].includes(race.phase) ? 0 : dt);
@@ -467,6 +476,7 @@ $("to-menu").addEventListener("click", () => orbit.menu());
 $("vehicle-bike").addEventListener("click", () => { params.set("vehicle", "bike"); location.search = params.toString(); });
 $("vehicle-skate").addEventListener("click", () => { params.set("vehicle", "skate"); location.search = params.toString(); });
 addEventListener("resize", () => { sizeCanvas(); });
+addEventListener("pointerdown", () => sound.unlock());
 requestAnimationFrame(tick);
 
 function reportError(error: unknown): void {

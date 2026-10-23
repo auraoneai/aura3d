@@ -1,11 +1,10 @@
-# Roadster Hours port: browser evidence
+# Roadster Hours port: browser evidence (art-fidelity pass)
 
-Remote run `roadster-hours-b14` (Azure ACR Task, SwiftShader WebGL2, 640x360), spec `tests/browser/roadster-hours-port.spec.ts`: 1 passed.
+Remote runs (Azure ACR Tasks, SwiftShader WebGL2, headed Chromium under Xvfb): `rh-art-5`/`rh-art-6` (`tests/browser/roadster-hours-art-frames.spec.ts`, after), `rh-art-before-3` (the committed port copied to a temp example, same spec), `rh-art-8` (`tests/browser/roadster-hours-port.spec.ts`: passes, replay exact), original-game frames `cc1mw` (`tools/crayon-capture/roadster-hours-frames.ts`, local only, never committed), in-game cross-check `cc1f3`.
 
-- `start.jpg`, `driving.jpg` (after 14 s of autopilot), `finish.jpg` (after the replayed reference run): 480x270 JPEGs read back through `app.capture`.
-- Frame stats: start lumaStd 50.3 / 135 colour buckets, driving lumaStd 48.7 / 142 buckets, different frame hashes.
-- Batching: 92 vehicle boxes in one `batched.mesh` (2 pooled geometries). GL counters for one frame: 3 `multiDrawElementsInstancedWEBGL` calls carrying 552 members (the batch is drawn by several passes), 90 plain `drawElements` for everything else. Before the engine fixes below the same frame issued 92 per-vehicle draws.
-- Replay: the reference input script captured from the original game replays in the live page to time 48.325 s, score 26949, 1 cell, 0 crashes, identical to the original's final state.
-- Reference: `evidence/crayon-capture/roadster-hours-reference.json` (6124 steps, two independent sessions, bit-identical, tolerance 0).
-
-Known visual gaps: boxes for vehicles, flat sky, no post-processing; the water shader aliases into moire at distance.
+- `before/`, `after/`: 960x540 JPEGs with HUD (menu, steps 720/1680/3000/3600, airborne, results; routes 1 and 2 at step 1680).
+- `compare/compare-<state>.jpg`: before | after at the judged 480x270 (canvas only). Triples with the original are local: `evidence/look-reference-frames/roadster-hours/sheets/`.
+- `judge-before.json`, `judge-after.json`: blind A/B judge (a MODEL judgement, not a human one), Kiro Prism, claude-sonnet-5.5, seed 20261023, 8 steps x 6 passes = 48 trials, original shown as A/B balanced. Identification of the original: before 48/48 (100%), after 39/48 (81%, 95% CI 0.68-0.90), chance 50%. Still distinguishable (> 70%). Steps 720 and lineup fooled it (0/6 and 3/6 correct); steps 30, air, 1680, 2400, 3000, 3600 were identified 6/6.
+- Structural metrics (mean of 8 frame pairs vs the original): luma JSD 0.585 -> 0.179, RGB JSD 0.914 -> 0.519, palette distance 0.221 -> 0.119, mean luma delta +66.4 -> +9.0, edge density ratio 1.08 -> 0.61 (the port is smoother than the original).
+- Replay: the recorded reference run still ends at 48.325 s, score 26949, 1 cell, 0 crashes (spec + unit test). `evidence/crayon-capture/roadster-hours-reference.json` now carries `ingameCrossCheck`: the original driven through its real Drive button for 1550 steps matches the direct-simulation reference exactly (script, transitions, trace delta 0 over 26 samples).
+- Perf (software GL, 960x540): 42 draw calls on route 0; 451 batched vehicle instances in 7 batched meshes (21 pooled geometries); one frame issues 30 multi-draw calls carrying 396 visible members. Added assets: 4 baked CC0 cars (cars.baked.ts, 340 KB base64), 3 DIN Pro WOFF cuts (138 KB); no network requests.

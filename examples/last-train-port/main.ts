@@ -3,7 +3,8 @@
  * The simulation lives in `sim.ts` (pure); `world.ts` renders it through the public engine surface.
  *
  * Query parameters (all optional): `autopilot=1` (drive the tram with the capture's controller),
- * `night=1`, `manual=1` (the sim only advances through `__AURA_LAST_TRAIN__.stepFrames`), `speed=N` (sim steps per frame).
+ * `night=1`, `manual=1` (the sim only advances through `__AURA_LAST_TRAIN__.stepFrames`; skips the title screen), `speed=N` (sim steps per frame),
+ * `title=0` (skip the title screen).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
 import { controllerInput, type ControllerParams } from "./replay";
@@ -11,7 +12,8 @@ import {
   DT, actionDepart, actionDoors, actionNewService, actionTimeOfDay, createState, step, tipOf,
   type SimData, type SimState, type StepInput
 } from "./sim";
-import { buildWorld, type WorldRuntime } from "./world";
+import { TrainSound, diffCues, type AudioState } from "./audio";
+import { TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
 
 /** Loaded at boot with `fetch`: the example dev server serves `.json` as application/json, which module imports reject. */
 let data: SimData;
@@ -38,6 +40,14 @@ let ready = false;
 let autopilot = flag("autopilot");
 const keys = new Set<string>();
 let seconds = 0;
+const sound = new TrainSound();
+let titleMode = !flag("manual") && !flag("autopilot") && params.get("title") !== "0";
+let prevAudio: AudioState | null = null;
+let resultsShown = false;
+let toastUntil = 0;
+const BEST_KEY = "aura3d.lasttrain.best";
+const readBest = (): number => { try { return Number(localStorage.getItem(BEST_KEY) ?? 0) || 0; } catch { return 0; } };
+const writeBest = (score: number): void => { try { localStorage.setItem(BEST_KEY, String(score)); } catch { /* storage is optional */ } };
 
 const phaseMessage: Record<string, string> = {
   docked: "Press E to open the doors.", opening: "Doors opening", deploying: "Steps out", alighting: "Passengers getting off",
@@ -123,12 +133,61 @@ function updateHud(): void {
   $("message").textContent = complete ? `Service complete (${sim.attempt.grade}). Press R for a new service.` : (phaseMessage[sim.phase] ?? sim.phase);
   const riders = $("riders");
   riders.classList.toggle("hidden", sim.trips.length === 0);
-  riders.innerHTML = sim.trips.map((t) => `<span class="meta">${t.name} → ${towns[t.destination]!.name} (${tipOf(t)})</span>`).join("");
+  riders.innerHTML = sim.trips.map((t) => `<span class="meta"><i class="dot" style="background:${TEMPERAMENT_COLORS[t.temperament]}"></i>${t.name} → ${towns[t.destination]!.name} (${tipOf(t)})</span>`).join("");
+  updateResults();
+}
+
+function toast(text: string, ms = 2600): void {
+  const el = $("toast");
+  el.textContent = text;
+  el.classList.remove("off");
+  toastUntil = performance.now() + ms;
+}
+
+function audioState(): AudioState {
+  return {
+    phase: sim.phase, speed: sim.speed, roll: sim.roll, fares: sim.attempt.fares, tips: sim.attempt.tips, lost: sim.attempt.lost,
+    night: sim.timeOfDay === "night", weather: weatherOf(data, sim), complete: sim.attempt.status === "complete" && sim.phase === "ready"
+  };
+}
+
+function updateAudio(dt: number): void {
+  const state = audioState();
+  for (const cue of diffCues(prevAudio, state)) {
+    sound.cue(cue);
+    if (cue === "arrive") toast(`Arrived at ${data.tables.towns[sim.leg]!.name}`);
+    if (cue === "lost") toast("A rider left unhappy");
+  }
+  prevAudio = state;
+  sound.update(state, dt);
+  if (toastUntil && performance.now() > toastUntil) { toastUntil = 0; $("toast").classList.add("off"); }
+}
+
+function updateResults(): void {
+  const complete = sim.attempt.status === "complete" && sim.phase === "ready";
+  const box = $("results");
+  if (complete && !resultsShown && !titleMode) {
+    resultsShown = true;
+    $("res-grade").textContent = sim.attempt.grade ?? "Complete";
+    $("res-score").textContent = `Score ${sim.score}${sim.score > readBest() ? " · new best" : ""}`;
+    $("res-grid").innerHTML = [["Fares", sim.attempt.fares], ["Tips", sim.attempt.tips], ["Bonuses", sim.attempt.bonuses], ["Riders lost", sim.attempt.lost], ["Catches", sim.catches]]
+      .map(([k, v]) => `<span>${k}</span><span class="num">${v}</span>`).join("");
+    if (sim.score > readBest()) writeBest(sim.score);
+    box.classList.remove("hidden");
+  }
+  if (!complete && resultsShown) { resultsShown = false; box.classList.add("hidden"); }
+}
+
+function startPlay(): void {
+  void sound.unlock();
+  if (!titleMode) return;
+  titleMode = false;
+  $("title").classList.add("hidden");
 }
 
 function render(): void {
   if (!app || !runtime) return;
-  runtime.update(sim, seconds);
+  runtime.update(sim, seconds, { orbit: titleMode });
   app.step(0);
 }
 
@@ -139,7 +198,8 @@ function tick(now: number): void {
   if (!ready) return;
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
-  if (!flag("manual")) {
+  if (titleMode) seconds += dt;
+  else if (!flag("manual")) {
     acc += dt;
     const perFrame = Math.max(1, Math.round(Number(params.get("speed") ?? 1)));
     let n = 0;
@@ -148,13 +208,20 @@ function tick(now: number): void {
   }
   render();
   updateHud();
+  updateAudio(dt);
 }
 
+$("start-btn").addEventListener("click", () => startPlay());
+addEventListener("pointerdown", () => { void sound.unlock(); if (titleMode) startPlay(); });
 addEventListener("keydown", (e) => {
+  if (titleMode) { if (e.code === "Enter" || e.code === "Space") startPlay(); return; }
+  void sound.unlock();
+  if (e.code === "Enter") $("results").classList.add("hidden");
+  if (e.code === "KeyM") { sound.setMuted(!sound.muted); toast(sound.muted ? "Sound off" : "Sound on", 1200); }
   keys.add(e.code);
   if (e.code === "KeyE" && sim.phase === "docked") actionDoors(sim);
   if (e.code === "KeyN") actionTimeOfDay(sim, sim.timeOfDay === "night" ? "day" : "night");
-  if (e.code === "KeyR") actionNewService(sim);
+  if (e.code === "KeyR") { actionNewService(sim); $("results").classList.add("hidden"); }
   if (e.code === "KeyP") autopilot = !autopilot;
 });
 addEventListener("keyup", (e) => keys.delete(e.code));
@@ -197,9 +264,27 @@ function pixels(): { width: number; height: number; litFraction: number; mean: n
   return { width: canvas.width, height: canvas.height, litFraction: lit / (px.length / 4), mean: sum / (px.length / 4) };
 }
 
+/** Model nodes (the windmill and watchtower landmarks) and how many have decoded into the scene yet. */
+function assetStatus(): { total: number; loaded: number } {
+  if (!app) return { total: 0, loaded: 0 };
+  const ids = app.nodes.ids().filter((id) => /^landmark-/.test(id));
+  const loaded = ids.filter((id) => (app!.nodes.require(id) as unknown as { importedAssetEvidence?: () => { bounds?: unknown } | undefined }).importedAssetEvidence?.()?.bounds).length;
+  return { total: ids.length, loaded };
+}
+
+function diag(): { drawCalls: number; triangles: number; nodes: number; assets: { total: number; loaded: number }; errors: number } {
+  const info = app?.info as unknown as { render?: { calls?: number; triangles?: number } } | undefined;
+  const errors = (app?.diagnostics() as unknown as { errors?: unknown[] } | undefined)?.errors?.length ?? 0;
+  return { drawCalls: info?.render?.calls ?? 0, triangles: info?.render?.triangles ?? 0, nodes: runtime?.nodeCount ?? 0, assets: assetStatus(), errors };
+}
+
 window.__AURA_LAST_TRAIN__ = {
   state: summary,
   memory,
+  assets: assetStatus,
+  diag,
+  title: () => titleMode,
+  startPlay,
   pixels,
   ready: () => ready,
   render: () => { render(); updateHud(); },
@@ -214,9 +299,11 @@ window.__AURA_LAST_TRAIN__ = {
   doors: () => { actionDoors(sim); },
   depart: () => { actionDepart(sim); },
   setAutopilot: (on: boolean) => { autopilot = on; },
-  setTimeOfDay: (v: "day" | "night") => { actionTimeOfDay(sim, v); },
+  /** Switching swaps the whole lighting rig (a scene swap), so this renders once and waits for the renderer to settle. */
+  setTimeOfDay: async (v: "day" | "night") => { actionTimeOfDay(sim, v); render(); await app?.ready(); render(); },
   newService: () => { actionNewService(sim); },
   applyInput: (input: StepInput) => stepOnce(input),
+  advance: (n: number, input?: StepInput) => { for (let i = 0; i < n; i++) stepOnce(input); return summary(); },
   stepFrames: (n: number, input?: StepInput) => { for (let i = 0; i < n; i++) stepOnce(input); render(); updateHud(); return summary(); },
   runLeg: (renderEvery = 0) => runLeg(renderEvery),
   finishStop: (renderEvery = 0) => finishStop(renderEvery),
@@ -249,16 +336,19 @@ async function boot(): Promise<void> {
   app = createAuraApp(canvas, {
     autoStart: false, resize: false, pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces", dither: false },
-    scene: world.scene
+    output: { toneMapping: (params.get("tm") as "aces" | "neutral" | "none" | "linear" | "agx" | null) ?? "none", exposure: Number(params.get("ev") ?? 1), dither: false },
+    scene: sim.timeOfDay === "night" ? world.nightScene : world.scene
   });
   mark("app created");
   await app.ready();
   mark("app ready");
-  runtime = world.bind(app, data);
+  runtime = world.bind(app, data, sim.timeOfDay === "night");
   mark("runtime bound");
   ready = true;
   $("loading").classList.add("hidden");
+  const best = readBest();
+  $("best").textContent = best ? `Best score on this device: ${best}` : "";
+  if (titleMode) $("title").classList.remove("hidden");
   render();
   updateHud();
   mark("first frame");

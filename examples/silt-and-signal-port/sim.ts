@@ -8,11 +8,13 @@
  * care / resonate / relay / lift / tow / portal, timed gates, stealth ceilings, wake speeds).
  * No rendering, no DOM, no randomness: `stepSim` is a fixed-timestep function of (state, input).
  *
- * Not ported (documented in PORTING-NOTES.md): world colliders and the collision response, the
- * terrain floor (a `floor` callback is injected; the default is the road baseline), creature /
- * exploration ticks, the chapter-1 spillway recovery, scenes and voice.
+ * Chapter 0 runs in the original's physical world (`world-ch0.ts`: terrain floor, platforms, ramps and the 1400 measured
+ * colliders, resolved by `collide.ts`); other chapters take an injected `floor` (default: the 0.6 plain) and no colliders.
+ * Not ported (documented in PORTING-NOTES.md): creature / exploration ticks, the chapter-1 spillway recovery, scenes and voice.
  */
 import { CHAPTERS, type Objective, type Point } from "./chapters-data";
+import { sweep, type Collider } from "./collide";
+import { chapterWorld } from "./world-ch0";
 
 export const STEP = 1 / 60;
 
@@ -68,6 +70,8 @@ export interface World {
   floor(x: number, z: number, y: number): number;
   /** hard ceiling (the original uses `r.ceiling || 205`) */
   ceiling: number;
+  /** round and box colliders the rider is pushed out of (chapter 0 only) */
+  colliders?: readonly Collider[];
   /** chapter length: z is clamped to [-length - 50, 150] */
   length: number;
 }
@@ -150,7 +154,7 @@ export function createSim(chapter: number, objective: number, world?: Partial<Wo
   return {
     state,
     flight: createFlight(),
-    world: { floor: () => 0.6, ceiling: 205, length: ch.length, ...world },
+    world: { floor: () => 0.6, ceiling: 205, length: ch.length, ...chapterWorld(chapter), ...world },
     time: start?.time ?? 0,
     ...(start?.clockMs !== undefined ? { clockMs: start.clockMs } : {}),
     steps: 0,
@@ -161,7 +165,7 @@ export function createSim(chapter: number, objective: number, world?: Partial<Wo
 /** Field notes unlock the reserve (3) and wind (7) perks (original `wo`); a fresh journey has none. */
 const perks = (state: PlayState): { reserve: boolean; wind: boolean } => ({ reserve: state.fieldNotes.length >= 3, wind: state.fieldNotes.length >= 7 });
 
-/** The flight model: original `e0`. Returns true when a collision impact was registered (none here: no colliders). */
+/** The flight model: original `e0`. Returns true when a collision impact was registered. */
 export function flightStep(state: PlayState, flight: FlightState, input: Input, dtIn: number, world: World): boolean {
   const n = Math.min(dtIn, 0.05);
   const s = clamp(input.throttle || 0, -1, 1);
@@ -184,16 +188,26 @@ export function flightStep(state: PlayState, flight: FlightState, input: Input, 
   state.yaw -= flight.turn * f * n * (flight.speed < -0.5 ? -1 : 1);
   flight.bank += (-flight.turn * Math.min(0.68, 0.2 + Math.abs(flight.speed) * 0.014) - flight.bank) * (1 - Math.exp(-n * 5));
   flight.vertical += (a * (p.wind ? 27 : 22) - flight.vertical) * (1 - Math.exp(-n * 3.4));
+  const previousX = state.x, previousZ = state.z;
   state.x -= Math.sin(state.yaw) * flight.speed * n;
   state.z -= Math.cos(state.yaw) * flight.speed * n;
   state.y = clamp(state.y + flight.vertical * n, world.floor(state.x, state.z, state.y) + 2.4, world.ceiling || 205);
   state.x = clamp(state.x, -640, 640);
   state.z = clamp(state.z, -world.length - 50, 150);
   flight.collisionCooldown = Math.max(0, flight.collisionCooldown - n);
+  let impact = false;
+  if (world.colliders && sweep(state, { x: previousX, z: previousZ }, world.colliders, { radius: 1.85, halfHeight: 1, offsets: [-2.2, 0, 2.7, 5.4], yaw: state.yaw }) > 0) {
+    if (flight.collisionCooldown === 0 && Math.abs(flight.speed) > 4) {
+      impact = true;
+      flight.impacts++;
+      flight.collisionCooldown = 0.7;
+    }
+    flight.speed *= 0.82;
+  }
   flight.thrust = Math.abs(s);
   flight.liftInput = a;
   flight.boostMode = flight.boosting ? "Turbo" : "Cruise";
-  return false;
+  return impact;
 }
 
 /** Marks the current objective restored and advances (original `$T`). */

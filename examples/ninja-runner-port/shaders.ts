@@ -193,6 +193,19 @@ void main() {
   outColor = vec4(col * (1.2 + swirl), (0.48 + swirl * 0.4 + rim * 0.12) * ballOpacity);
 }`;
 
+/** Form aura: a rim-lit flickering shell (the interior stays clear so the runner shows through), additive. */
+export const AURA_FRAGMENT = /* glsl */ `
+in vec3 vP;
+in vec3 vN;
+in vec3 vV;
+out vec4 outColor;
+void main() {
+  float rim = pow(1.0 - abs(dot(normalize(vN), vV)), 2.4);
+  float flame = 0.5 + 0.5 * sin(vP.y * 9.0 - auraTime * 7.0 + sin(atan(vP.z, vP.x) * 5.0 + auraTime * 2.0) * 1.7);
+  float k = (0.25 + 0.75 * rim) * (0.55 + 0.45 * flame) * auraStrength;
+  outColor = vec4(auraColor * (0.7 + 0.6 * flame), clamp(k * rim * 1.5 + k * 0.08, 0.0, 1.0));
+}`;
+
 /** Original Rasengan sparks: points orbiting the hand, seeded by `seed`. */
 export const SPARKS_VERTEX = /* glsl */ `
 attribute vec3 seed;

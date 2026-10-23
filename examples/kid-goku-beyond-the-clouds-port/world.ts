@@ -1,119 +1,491 @@
 /**
- * Rendering for the Kid Goku port: a painted-looking road ribbon along the original's centerline
- * (gaps cut out, bridges as plank strips), Power Pole spans, a cliff wall, a river, Dragon Balls, meat and
- * a placeholder hero on a Nimbus. Everything goes through the public `@aura3d/engine` surface; art is
- * procedural stand-ins (the original's assets and characters are not reproduced).
+ * Rendering for the Cloud Runner port: a sunlit sandstone-and-forest ridge in the sky. Sky dome with lit cumulus and hazy
+ * ridges, lofted ground (textured PBR track and grass, banded sandstone cliffs), merged foliage, mesas and cloud banks,
+ * a rigged GLB runner with skeletal animation, the sky cloud, star orbs, creatures, boulders, warning decals, pooled
+ * particles and post (bloom, grade, vignette). Everything goes through the public `@aura3d/engine` surface; art is
+ * original (procedural meshes, CC0 catalog model and textures).
  */
-import { camera, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, geometry, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import type { Chapter } from "./chapter";
-import type { SimState } from "./sim";
+import { at, frameAt, type V3 } from "./course";
+import { boulder, meatChunk, pteranodon, skyCloud, trex } from "./creatures";
+import { Fx } from "./fx";
+import type { Game } from "./game";
+import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
+import { Mesh, cylinder, hex } from "./mesh";
+import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
+import { smooth } from "./sim";
+import { ROAD_HALF, buildGround, buildScatter, buildValleyForest, groundHeight } from "./terrain";
 
-export type V3 = readonly [number, number, number];
-const ROAD_HALF = 6;
+const LICENSE_KAYKIT = "CC0 1.0, KayKit Adventurers (Aura3D curated library)";
+const LICENSE_ACG = "CC0 1.0, ambientCG";
+/* same-origin pathnames, not absolute URLs: the production bridge treats http(s) model URLs as unsafe and refuses the scene */
+export const ASSETS = defineAuraAssets({
+  runner: { type: "model", format: "glb", url: new URL("./assets/models/runner.glb", import.meta.url).pathname, hash: "sha256-cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6", metadata: { license: LICENSE_KAYKIT, animations: ["Idle", "Running_A", "Jump_Full_Short", "Jump_Idle", "Hit_A", "Hit_B", "Death_A", "Cheer", "Sit_Floor_Idle", "Block", "Unarmed_Melee_Attack_Punch_A", "Unarmed_Melee_Attack_Kick", "Unarmed_Pose", "Walking_A", "Spellcast_Raise", "Dodge_Left"] } },
+  pathColor: { type: "texture", format: "jpg", url: new URL("./assets/textures/path-color.jpg", import.meta.url).pathname, hash: "sha256-5b083a420d259ad70ec62babb666554b6dcb82a7b06e8dfec8d3f6ba0bb0c7e6", metadata: { license: LICENSE_ACG } },
+  pathNormal: { type: "texture", format: "jpg", url: new URL("./assets/textures/path-normal.jpg", import.meta.url).pathname, hash: "sha256-c8b9f181e2c5088f8cee915662401f5b02ac3ae9f0cbc82ea92d20dab9b97c4d", metadata: { license: LICENSE_ACG } },
+});
 
-/** Original `Hf` for the `journey` kind: the track centerline at distance `s`. */
-export function centerline(s: number): V3 {
-  const x = 14 * Math.sin(s * 9e-3) + 5 * Math.sin(s * 0.026);
-  const t = Math.min(s, 1880) + Math.max(0, s - 1880) * 0.15;
-  return [x, 70 - t * 0.032 + 3 * Math.sin(t * 0.014), -s];
+const f32 = (a: ArrayLike<number>): Float32Array => Float32Array.from(a as ArrayLike<number>);
+function meshGeometry(m: Mesh) {
+  const tone = new Float32Array(m.vertexCount * 3);
+  for (let i = 0; i < m.vertexCount; i++) { tone[i * 3] = m.colors[i * 4]!; tone[i * 3 + 1] = m.colors[i * 4 + 1]!; tone[i * 3 + 2] = m.colors[i * 4 + 2]!; }
+  return geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), attributes: { tone: { itemSize: 3, data: tone } } });
 }
-const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-const norm = (a: V3): V3 => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
-const cross = (a: V3, b: V3): V3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const plainGeometry = (m: Mesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
 
-export interface Frame { point: V3; forward: V3; right: V3; up: V3 }
-/** Original `Gf`/`Kf` for the journey kind (no banking outside walls): frame at `s`, offset by `lane`. */
-export function frameAt(s: number, lane = 0): Frame {
-  const forward = norm(sub(centerline(s + 0.4), centerline(s - 0.4)));
-  const right = norm(cross(forward, [0, 1, 0]));
-  const up = norm(cross(right, forward));
-  const c = centerline(s);
-  return { point: [c[0] + right[0] * lane, c[1] + right[1] * lane, c[2] + right[2] * lane], forward, right, up };
-}
-const at = (s: number, lane: number, lift = 0): V3 => {
-  const f = frameAt(s, lane);
-  return [f.point[0] + f.up[0] * lift, f.point[1] + f.up[1] * lift, f.point[2] + f.up[2] * lift];
-};
-
-function ribbon(ch: Chapter, from: number, to: number, halfWidth: number, y: number, skipGaps: boolean, step = 2): { positions: number[]; indices: number[] } {
-  const positions: number[] = [];
-  const indices: number[] = [];
-  let prev = -1;
-  for (let s = from; s <= to + 1e-6; s += step) {
-    const inGap = skipGaps && ch.gaps.some((g) => s > g.start - 1e-6 && s < g.end + 1e-6);
-    if (inGap) { prev = -1; continue; }
-    const l = at(s, -halfWidth, y), r = at(s, halfWidth, y);
-    const i = positions.length / 3;
-    positions.push(l[0], l[1], l[2], r[0], r[1], r[2]);
-    if (prev >= 0) indices.push(prev, prev + 1, i, prev + 1, i + 1, i);
-    prev = i;
-  }
-  return { positions, indices };
-}
-const ribbonGeometry = (r: { positions: number[]; indices: number[] }, name: string, mat: ReturnType<typeof material.pbr>) =>
-  geometry.custom(geometry.dynamic({ positions: Float32Array.from(r.positions), indices: r.indices }), { name, material: mat, side: "double" } as never);
-
+export interface WorldStats { drawNodes: number; chunks: number; triangles: number }
+export interface WorldRuntime { update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void; readonly stats: WorldStats; readonly camera: { eye: V3; target: V3 } }
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
-export interface WorldRuntime { update(state: SimState, aspect: number): void }
 
-export function buildWorld(ch: Chapter): World {
-  const b = scene().background("#9fd4e8").camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 900 }))
-    .add(lights.directional({ name: "sun", position: [60, 190, 40], target: [0, 70, -120], intensity: 2.2, color: "#fff0d0" }))
-    .add(lights.hemisphere({ name: "sky", skyColor: "#bfe3f2", groundColor: "#5f7a44", intensity: 0.6 }));
-  b.add(ribbonGeometry(ribbon(ch, -30, ch.length + 70, ROAD_HALF, 0, true), "road", material.pbr({ color: "#c9a46a", roughness: 0.92, metallic: 0 })));
-  b.add(ribbonGeometry(ribbon(ch, -30, ch.length + 70, ROAD_HALF + 14, -0.6, false, 6), "meadow", material.pbr({ color: "#7fae5b", roughness: 1, metallic: 0 })));
-  for (const [i, g] of ch.gaps.entries()) {
-    if (g.bridge) b.add(ribbonGeometry(ribbon(ch, g.start, g.end, 1.4, -0.05, false, 1), `bridge-${i}`, material.pbr({ color: "#7a5230", roughness: 0.9, metallic: 0 })));
+const ORB_CAP = 72;
+const SUN_POS: V3 = [48, 78, 38];
+const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+const mix = (a: number, b: number, k: number): number => a + (b - a) * k;
+
+export function buildWorld(ch: Chapter, rockMap: unknown, grassMap: unknown): World {
+  const b = scene().background(LOOK.fogHex).camera(camera.perspective({ position: [0, 74, 8], target: [0, 70, -20], fov: 55, near: 0.2, far: 4200 }));
+  b.add(looks.preset("outdoor-day", { sun: { azimuthDeg: 40, elevationDeg: 38 }, fogDensityScale: 0 }));
+  b.add(lights.directional({ name: "sun", position: SUN_POS, target: [0, 0, 0], intensity: 3.2, color: LOOK.sunHex, shadow: { cascades: 3, maxDistance: 120, blend: 0.14 } }));
+  b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#bcd6f2", groundColor: "#8a7448", intensity: 0.7 }));
+  b.add(effects.fog({ name: "haze", color: LOOK.fogHex, density: LOOK.fogDensity }));
+  b.add(effects.bloom({ name: "bloom", intensity: 0.38, threshold: 0.88, radius: 0.5 }));
+  b.add(effects.colorGrade({ name: "grade", exposure: 1.02, contrast: 1.07, saturation: 1.16 }));
+  b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
+
+  let triangles = 0, chunks = 0, drawNodes = 0;
+  const addMesh = (m: Mesh, name: string, spec: ReturnType<typeof scenerySpec>, id?: string): void => {
+    const node = geometry.custom(meshGeometry(m), { name, material: material.custom(spec) });
+    b.add(id ? node.runtime({ id }) : node);
+    triangles += m.indices.length / 3; chunks++; drawNodes++;
+  };
+
+  /* sky, valley */
+  b.add(primitives.sphere({ name: "sky", size: 3600, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
+  b.add(geometry.custom(geometry.dynamic({
+    positions: f32([-3200, 0, -3200, 3200, 0, -3200, 3200, 0, 3200, -3200, 0, 3200]), normals: f32([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
+    uvs: f32([0, 0, 1, 0, 1, 1, 0, 1]), indices: Uint32Array.from([0, 2, 1, 0, 3, 2])
+  }), { name: "valley", material: material.custom(valleySpec()) }).runtime({ id: "valley" }));
+
+  /* ground: textured PBR track and grass, banded sandstone and foliage-covered banks */
+  const ground = buildGround(ch);
+  const sampling = { wrap: "repeat" as const, anisotropy: 8 };
+  ground.road.forEach((m, i) => { b.add(geometry.custom(plainGeometry(m), { name: `road-${i}`, material: material.pbr({ color: "#ffffff", roughness: 1, metallic: 0, specularIntensity: 0.12, texture: ASSETS.pathColor, normal: ASSETS.pathNormal, normalScale: 0.9, sampling }), side: "double" } as never)); triangles += m.indices.length / 3; chunks++; });
+  ground.grass.forEach((m, i) => addMesh(m, `grass-${i}`, scenerySpec({ map: grassMap, mapMix: 0.7, mapScale: 0.9, rim: 0.12, sun: 1.2 })));
+  ground.slope.forEach((m, i) => addMesh(m, `slope-${i}`, scenerySpec({ map: rockMap, mapMix: 0.55, mapScale: 0.5, rim: 0.22 })));
+  const scatter = buildScatter(ch);
+  scatter.trees.forEach((m, i) => addMesh(m, `trees-${i}`, scenerySpec({ rim: 0.34 })));
+  scatter.bushes.forEach((m, i) => addMesh(m, `bushes-${i}`, scenerySpec({ rim: 0.3 })));
+  scatter.rocks.forEach((m, i) => addMesh(m, `rocks-${i}`, scenerySpec({ map: rockMap, mapMix: 0.5, mapScale: 1.2 })));
+  scatter.flowers.forEach((m, i) => addMesh(m, `flowers-${i}`, scenerySpec({ sun: 1.6, rim: 0.1 })));
+  buildValleyForest(ch).forEach((m, i) => addMesh(m, `valley-forest-${i}`, scenerySpec({ rim: 0.2, sun: 1.0 })));
+  buildMesas(ch).forEach((m, i) => addMesh(m, `mesas-${i}`, scenerySpec({ map: rockMap, mapMix: 0.35, mapScale: 0.18, rim: 0.3 })));
+  buildClouds(ch).forEach((m, i) => addMesh(m, `clouds-${i}`, scenerySpec({ sun: 0.85, rim: 0.5 })));
+  buildObstacles(ch).forEach((m, i) => addMesh(m, `obstacles-${i}`, scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.5 })));
+  addMesh(buildBridges(ch), "bridges", scenerySpec({ rim: 0.15 }));
+  addMesh(buildGorgePosts(ch), "gorge-posts", scenerySpec({ rim: 0.25 }));
+  const hut = buildHut(ch);
+  if (hut) addMesh(hut, "home", scenerySpec({ rim: 0.2 }));
+
+  /* water: a shallow stream across the track */
+  ch.waters.forEach((w, i) => {
+    const m = new Mesh();
+    let prev = -1;
+    for (let s = w.start - 2; s <= w.end + 2; s += 2) {
+      const l = at(s, -ROAD_HALF - 3, 0.07), r = at(s, ROAD_HALF + 3, 0.07);
+      const k = m.vertex(l, [0, 1, 0], [0, s / 12], [1, 1, 1]); m.vertex(r, [0, 1, 0], [1, s / 12], [1, 1, 1]);
+      if (prev >= 0) m.quad(prev, prev + 1, k + 1, k);
+      prev = k;
+    }
+    b.add(geometry.custom(plainGeometry(m), { name: `river-${i}`, material: material.custom(waterSpec()) }).runtime({ id: `river-${i}` }));
+  });
+
+  /* characters and set pieces */
+  b.add(model(ASSETS.runner, { name: "hero", targetHeight: 1.8, castShadow: true, receiveShadow: false, hiddenNodeNames: ["1H_Axe_Offhand", "Barbarian_Round_Shield", "1H_Axe", "2H_Axe", "Mug"] }).runtime({ id: "hero" }));
+  if (ch.log) {
+    const raw = cylinder(14, 1.0, 1.0, 6.4, hex("#7d583a"), hex("#7d583a"));
+    for (let i = 0; i < raw.vertexCount; i++) raw.positions[i * 3 + 1]! -= 3.2;
+    const logMesh = new Mesh();
+    logMesh.append(raw, [0, 0, 0], 1, Math.PI / 2, Math.PI / 2);
+    b.add(geometry.custom(meshGeometry(logMesh), { name: "ride-log", material: material.custom(scenerySpec({ map: rockMap, mapMix: 0.7, mapScale: 1.4, rim: 0.3 })) }).runtime({ id: "ride-log" }));
   }
-  for (const [i, w] of ch.waters.entries()) b.add(ribbonGeometry(ribbon(ch, w.start, w.end, ROAD_HALF + 8, -0.3, false, 4), `river-${i}`, material.pbr({ color: "#4aa3d8", roughness: 0.15, metallic: 0 })));
-  for (const [i, w] of ch.walls.entries()) b.add(ribbonGeometry(ribbon(ch, w.start, w.end, ROAD_HALF + 1, 6, false, 5), `wall-${i}`, material.pbr({ color: "#d6a64d", roughness: 0.95, metallic: 0 })));
-  for (const [i, p] of ch.poles.entries()) {
-    for (const [side, edge] of [[0, p.start], [1, p.end]] as const) {
-      const pos = at(edge, 0, 4);
-      b.add(primitives.cylinder({ name: `pole-${i}-${side}`, size: [0.5, 8, 0.5], material: material.pbr({ color: "#a84f38", roughness: 0.7, metallic: 0 }) }).position(pos[0], pos[1], pos[2]).runtime({ id: `pole-${i}-${side}` }));
+  const shadowQuad = new Mesh();
+  shadowQuad.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); shadowQuad.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); shadowQuad.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); shadowQuad.quad(0, 1, 2, 3);
+  b.add(geometry.custom(plainGeometry(shadowQuad), { name: "hero-shadow", material: material.custom(shadowSpec()) }).runtime({ id: "hero-shadow" }));
+  const cloudMesh = skyCloud();
+  b.add(geometry.custom(meshGeometry(cloudMesh), { name: "sky-cloud", material: material.custom(scenerySpec({ sun: 1.5, rim: 0.7 })) }).runtime({ id: "sky-cloud" }));
+  const staff = cylinder(10, 0.13, 0.13, 1, hex("#b53a2a"), hex("#b53a2a"));
+  staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0, 0]);
+  staff.append(cylinder(10, 0.2, 0.2, 0.06, hex("#f0c04a"), hex("#f0c04a")), [0, 0.94, 0]);
+  b.add(geometry.custom(meshGeometry(staff), { name: "staff", material: material.custom(scenerySpec({ rim: 0.4 })) }).runtime({ id: "staff" }));
+  for (const ball of ch.balls) b.add(primitives.sphere({ name: `ball-${ball.star}`, size: 0.95, material: material.custom(ballSpec(ball.star)) }).runtime({ id: `ball-${ball.star}` }));
+  if (ch.home) b.add(primitives.sphere({ name: `ball-${ch.home.star}`, size: 0.95, material: material.custom(ballSpec(ch.home.star)) }).runtime({ id: `ball-${ch.home.star}` }));
+  const meat = meatChunk();
+  ch.meat.forEach((_, i) => b.add(geometry.custom(meshGeometry(meat), { name: `meat-${i}`, material: material.custom(scenerySpec({ sun: 1.4, rim: 0.4 })) }).runtime({ id: `meat-${i}` })));
+  const rock = boulder();
+  ch.boulders.forEach((_, i) => b.add(geometry.custom(meshGeometry(rock), { name: `boulder-${i}`, material: material.custom(scenerySpec({ map: rockMap, mapMix: 0.4, mapScale: 1.2 })) }).runtime({ id: `boulder-${i}` })));
+  const ptera = pteranodon();
+  const dives = ch.creatures.filter((c) => c.type === "pteranodon");
+  dives.forEach((_, i) => {
+    b.add(geometry.custom(meshGeometry(ptera.body), { name: `ptera-body-${i}`, material: material.custom(scenerySpec({ rim: 0.4 })) }).runtime({ id: `ptera-body-${i}` }));
+    for (const w of ["l", "r"]) b.add(geometry.custom(meshGeometry(ptera.wing), { name: `ptera-wing-${w}-${i}`, material: material.custom(scenerySpec({ rim: 0.5 })) }).runtime({ id: `ptera-wing-${w}-${i}` }));
+  });
+  const rex = trex();
+  const hasRex = ch.creatures.some((c) => c.type === "trex");
+  if (hasRex) for (const [id, m] of [["rex-body", rex.body], ["rex-head", rex.head], ["rex-jaw", rex.jaw]] as const) b.add(geometry.custom(meshGeometry(m), { name: id, material: material.custom(scenerySpec({ rim: 0.45 })) }).runtime({ id }));
+
+  const quad = (() => { const m = new Mesh(); m.vertex([-0.5, 0, -0.5], [0, 1, 0], [0, 0], [1, 1, 1]); m.vertex([0.5, 0, -0.5], [0, 1, 0], [1, 0], [1, 1, 1]); m.vertex([0.5, 0, 0.5], [0, 1, 0], [1, 1], [1, 1, 1]); m.vertex([-0.5, 0, 0.5], [0, 1, 0], [0, 1], [1, 1, 1]); m.quad(0, 1, 2, 3); return m; })();
+  const warnIds: string[] = [];
+  const warn = (id: string, round: boolean): void => { warnIds.push(id); b.add(geometry.custom(plainGeometry(quad), { name: id, material: material.custom(warnSpec(round)) }).runtime({ id })); };
+  ch.boulders.forEach((_, i) => warn(`warn-boulder-${i}`, false));
+  dives.forEach((_, i) => warn(`warn-dive-${i}`, true));
+  const rexCreature = ch.creatures.find((c) => c.type === "trex");
+  [...(rexCreature?.bites ?? []).map((s) => ({ s, kind: "bite" })), ...(rexCreature?.swipes ?? []).map((s) => ({ s, kind: "swipe" }))].sort((x, y) => x.s - y.s).forEach((_, i) => warn(`warn-rex-${i}`, false));
+
+  b.add(geometry.custom(geometry.dynamic({
+    positions: f32(new Array(ORB_CAP * 3).fill(0)), topology: "points",
+    attributes: { tone: { itemSize: 3, data: f32(new Array(ORB_CAP * 3).fill(1)) }, aSize: { itemSize: 1, data: f32(new Array(ORB_CAP).fill(0)) }, aAlpha: { itemSize: 1, data: f32(new Array(ORB_CAP).fill(0)) } }
+  }), { name: "orbs", material: material.custom(glowSpec()) }).runtime({ id: "orbs" }));
+  const fx = new Fx();
+  fx.addTo(b);
+
+  return { scene: b, bind: (app) => bindRuntime(app, ch, fx, { triangles, chunks, drawNodes }) };
+}
+
+/* ------------------------------------------------------------------------------------- runtime */
+function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): WorldRuntime {
+  const cam = app.camera;
+  if (!cam) throw new Error("cloud-runner port: the app exposes no camera controller");
+  const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
+  const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
+  const hero = node("hero"), cloud = node("sky-cloud"), staff = node("staff"), sky = node("sky"), valley = node("valley");
+  const orbs = node("orbs");
+  const orbPos = new Float32Array(ORB_CAP * 3), orbTone = new Float32Array(ORB_CAP * 3), orbSize = new Float32Array(ORB_CAP), orbAlpha = new Float32Array(ORB_CAP);
+  const rexAttacks = [...(ch.creatures.find((c) => c.type === "trex")?.bites ?? []).map((s) => ({ s, kind: "bite" as const })), ...(ch.creatures.find((c) => c.type === "trex")?.swipes ?? []).map((s) => ({ s, kind: "swipe" as const }))].sort((x, y) => x.s - y.s);
+  const dives = ch.creatures.filter((c) => c.type === "pteranodon");
+  const riverIds = ch.waters.map((_, i) => `river-${i}`);
+  let eye: V3 | null = null, look: V3 | null = null;
+  let animClip = "", animT = 0, runDust = 0, wispT = 0, clock = 0;
+  let rexS = 0, rexInit = false;
+  const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
+  const foot = (g: Game): V3 => at(g.state.s, g.state.lane, g.state.jump);
+
+  const play = (clip: string, rate: number, dt: number): void => {
+    if (clip !== animClip) { animClip = clip; animT = 0; }
+    animT += dt * rate;
+    hero.play(clip, { loop: true, captureTime: animT, crossFade: 0.1 });
+  };
+
+  function emitEvents(g: Game, events: readonly string[]): void {
+    const s = g.state, f = frameAt(s.s, s.lane), p = foot(g), up = f.up;
+    const chest: V3 = [p[0] + up[0] * 1.3, p[1] + up[1] * 1.3, p[2] + up[2] * 1.3];
+    for (const e of events) {
+      if (e === "jump" || e === "land") fx.dust(p, up, e === "land" ? 7 : 5, "#e8d4a8", 0.9);
+      else if (e === "dismount") { fx.dust(p, up, 12, "#d9c08a", 1.3); fx.burst(p, up, "#ffe9a8", 10, 0.9); }
+      else if (e === "splash") { fx.dust(p, up, 10, "#d8f4ff", 1); fx.ring(at(s.s, s.lane, 0.1), up, "#d8f4ff", 0.8); }
+      else if (e === "extend") fx.ring(p, up, "#ffe27a", 1);
+      else if (e === "launch" || e === "power-launch") { fx.burst(chest, up, "#fff3b0", 18, 1.3); fx.ring(p, up, "#fff3b0", 1.4); }
+      else if (e === "perfect") { fx.burst(chest, up, "#ffffff", 26, 1.7); fx.ring(p, up, "#ffffff", 2); }
+      else if (e === "strike") fx.burst([p[0] + f.forward[0] * 2, p[1] + 1.2, p[2] + f.forward[2] * 2], up, "#fff0b0", 12, 1.1);
+      else if (e === "strike-hit" || e === "duel-won") { fx.burst(chest, up, "#ffe27a", e === "duel-won" ? 40 : 22, e === "duel-won" ? 2.2 : 1.6); fx.ring(p, up, "#ffffff", e === "duel-won" ? 2.6 : 1.8); }
+      else if (e === "dragonball") { fx.burst(chest, up, "#ffb347", 28, 1.7); fx.ring(p, up, "#ffd27a", 1.5); }
+      else if (e === "meat") fx.burst(chest, up, "#ffb98a", 18, 1.2);
+      else if (e === "orb") fx.burst(chest, up, "#fff0b8", 3, 0.5);
+      else if (e === "checkpoint") fx.ring(p, up, "#ffe9a0", 1.6);
+      else if (e === "nimbus-ready") fx.ring(p, up, "#fff0a8", 1.3);
+      else if (e === "nimbus-call" || e === "nimbus-mount") { fx.burst(p, up, "#fff3c0", 22, 1.4); fx.ring(p, up, "#ffe6a0", 1.3); }
+      else if (e === "nimbus-end") fx.burst(p, up, "#fff3c0", 14, 1);
+      else if (e === "nimbus-knocked") fx.burst(chest, up, "#ffd9c8", 26, 1.6);
+      else if (e === "hit" || e === "boulder-hit" || e === "trex-bite" || e === "trex-swipe" || e === "ptera-grab") { fx.burst(chest, up, "#ffd0b0", 16, 1.5); fx.dust(p, up, 8, "#cdb78e", 1.1); }
+      else if (e === "respawn") fx.ring(p, up, "#ffffff", 1.6);
     }
   }
-  for (const ball of ch.balls) {
-    const pos = at(ball.s, ball.lane, ball.height);
-    b.add(primitives.sphere({ name: `ball-${ball.star}`, size: 0.9, material: material.emissive({ color: "#f4a21e", emissive: "#ff8a1e" }) }).position(pos[0], pos[1], pos[2]).runtime({ id: `ball-${ball.star}` }));
-  }
-  for (const [i, m] of ch.meat.entries()) {
-    const pos = at(m.s, m.lane, m.height ?? 1.15);
-    b.add(primitives.sphere({ name: `meat-${i}`, size: 0.8, material: material.pbr({ color: "#a1522b", roughness: 0.8, metallic: 0 }) }).position(pos[0], pos[1], pos[2]).runtime({ id: `meat-${i}` }));
-  }
-  b.add(primitives.capsule({ name: "hero", size: [0.9, 1.9, 0.9], material: material.pbr({ color: "#f08a24", roughness: 0.6, metallic: 0 }) }).runtime({ id: "hero" }));
-  b.add(primitives.sphere({ name: "nimbus", size: [2.2, 0.7, 2.2], material: material.emissive({ color: "#fff3b0", emissive: "#ffe27a" }) }).runtime({ id: "nimbus" }));
 
   return {
-    scene: b,
-    bind(app: AuraApp): WorldRuntime {
-      const cam = app.camera;
-      if (!cam) throw new Error("kid-goku port: app exposes no camera controller");
-      const node = (id: string) => app.nodes.require(id);
-      const hero = node("hero"), nimbus = node("nimbus");
-      const balls = new Map(ch.balls.map((x) => [x.star, node(`ball-${x.star}`)] as const));
-      const meat = ch.meat.map((_, i) => node(`meat-${i}`));
-      let eye: V3 | null = null;
-      let look: V3 | null = null;
-      return {
-        update(state, aspect) {
-          const f = frameAt(state.s, state.lane);
-          const lift = state.jump + 0.95;
-          hero.setPosition(f.point[0] + f.up[0] * lift, f.point[1] + f.up[1] * lift, f.point[2] + f.up[2] * lift);
-          const riding = state.nimbus.active || state.nimbus.call > 0;
-          nimbus.setVisible(riding);
-          if (riding) nimbus.setPosition(f.point[0] + f.up[0] * (state.jump - 0.1), f.point[1] + f.up[1] * (state.jump - 0.1), f.point[2] + f.up[2] * (state.jump - 0.1));
-          for (const [star, h] of balls) h.setVisible(!state.balls.includes(star));
-          meat.forEach((h, i) => h.setVisible(!state.eaten.has((ch.meat[i] as { s: number }).s)));
-          // chase camera, as in the original (7.4 back, 3.3 up), eased
-          const back = frameAt(state.s - 7.4, state.lane * 0.65), ahead = frameAt(Math.min(ch.length, state.s + 7), state.lane * 0.65);
-          const wantEye: V3 = [back.point[0] + back.up[0] * (3.3 + state.jump * 0.35), back.point[1] + back.up[1] * (3.3 + state.jump * 0.35), back.point[2] + back.up[2] * (3.3 + state.jump * 0.35)];
-          const wantLook: V3 = [ahead.point[0] + ahead.up[0] * 1.5, ahead.point[1] + ahead.up[1] * 1.5, ahead.point[2] + ahead.up[2] * 1.5];
-          eye = eye ? [eye[0] + (wantEye[0] - eye[0]) * 0.35, eye[1] + (wantEye[1] - eye[1]) * 0.35, eye[2] + (wantEye[2] - eye[2]) * 0.35] : wantEye;
-          look = look ? [look[0] + (wantLook[0] - look[0]) * 0.35, look[1] + (wantLook[1] - look[1]) * 0.35, look[2] + (wantLook[2] - look[2]) * 0.35] : wantLook;
-          cam.setPose({ position: [eye[0], eye[1], eye[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov: aspect < 1 ? 62 : 55 + state.speed * 0.2 }, { cut: false });
-        }
+    stats,
+    camera: camPos,
+    cutCamera() { eye = null; look = null; },
+    update(g, dt, aspect, events) {
+      clock += dt;
+      const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
+      const n = s.nimbus, riding = n.active || n.call > 0;
+      emitEvents(g, events);
+
+      /* ---- hero pose ---- */
+      const logLift = ch.log ? 1.9 * (1 - smooth(ch.log - 0.3, ch.log, s.s)) : 0;
+      let h = s.jump + logLift;
+      let pos: V3 = at(s.s, s.lane, h);
+      let yaw = yawOf(f.forward) - s.laneVelocity * 0.035;
+      let roll = -s.laneVelocity * 0.012;
+      let pitch = 0;
+      if (phase === "falling" && g.falling) {
+        const fl = g.falling, ff = frameAt(fl.s, fl.lane);
+        pos = [ff.point[0] + ff.forward[0] * fl.t * 9 + ff.up[0] * (fl.jump + fl.y), ff.point[1] + ff.forward[1] * fl.t * 9 + ff.up[1] * (fl.jump + fl.y), ff.point[2] + ff.forward[2] * fl.t * 9 + ff.up[2] * (fl.jump + fl.y)];
+        pitch = fl.t * 5.5;
+      } else if ((s.grabTimer ?? 0) > 0) {
+        const k = Math.sin(Math.min(1, (0.9 - (s.grabTimer ?? 0)) / 0.9) * Math.PI) * 3.2;
+        pos = at(s.s, s.lane, h + k);
+      }
+      if (phase === "menu") yaw = yawOf(f.forward) + Math.PI * 0.85 + Math.sin(clock * 0.3) * 0.08;
+      if (phase === "result") yaw = yawOf(f.forward) + (g.result?.won ? Math.PI : 0);
+      if (phase === "finale") yaw = yawOf(f.forward) - 0.1;
+      let clip = "Running_A", rate = 0.95 + s.speed / 30;
+      if (phase === "menu") { clip = "Idle"; rate = 1; }
+      else if (phase === "result") { clip = g.result?.won ? "Cheer" : "Death_A"; rate = 1; }
+      else if (phase === "finale") { const t = g.finale?.t ?? 0; clip = t < 4 ? "Walking_A" : "Cheer"; rate = t < 4 ? 1.1 : 1; }
+      else if (phase === "falling") { clip = "Jump_Idle"; rate = 1; }
+      else if (s.janken) { clip = s.janken.t < 0.7 ? "Unarmed_Pose" : "Unarmed_Melee_Attack_Punch_A"; rate = 1.2; }
+      else if (s.strikeTimer > 0) { clip = "Unarmed_Melee_Attack_Punch_A"; rate = 1.8; }
+      else if ((s.grabTimer ?? 0) > 0) { clip = "Hit_B"; rate = 1.2; }
+      else if ((s.stumbleTimer ?? 0) > 0) { clip = "Hit_A"; rate = 1.4; }
+      else if (riding) { clip = "Sit_Floor_Idle"; rate = 1; }
+      else if (s.pole) { clip = "Block"; rate = 1; }
+      else if (s.jump > 0.12) { clip = s.jumpVelocity > 0.5 ? "Jump_Full_Short" : "Jump_Idle"; rate = 1.1; }
+      else if (phase === "paused") { clip = animClip || "Running_A"; rate = 0; }
+      if (phase === "playing" && s.invincible > 0 && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
+      hero.setPosition(pos[0], pos[1], pos[2]);
+      hero.setRotation(pitch, yaw, roll);
+      play(clip, rate, phase === "paused" ? 0 : dt);
+
+      if (ch.log) {
+        const lg = node("ride-log");
+        const sLog = s.s < ch.log ? s.s : ch.log + (s.s - ch.log) * 0.35;
+        const show = sLog - s.s > -30 && phase !== "falling";
+        lg.setVisible(show);
+        if (show) { const lp = at(sLog, s.s < ch.log ? s.lane : 0, 1.0); lg.setPosition(lp[0], lp[1], lp[2]); lg.setRotation(-(sLog * 1.0), yawOf(frameAt(sLog).forward), 0); }
+      }
+
+      const hs = node("hero-shadow");
+      const gp = at(s.s, s.lane, 0.07 + (ch.log && s.s < ch.log ? 0 : 0));
+      hs.setVisible(phase !== "falling" && phase !== "finale");
+      hs.setPosition(gp[0], gp[1], gp[2]);
+      hs.setRotation(0, yawOf(f.forward), 0);
+      const hk = Math.max(0.35, 1.5 - s.jump * 0.12);
+      hs.setScale([hk * 1.6, 1, hk * 1.6]);
+      hs.setUniform?.("shadowAlpha", Math.max(0.12, 0.42 - s.jump * 0.05));
+
+      /* ---- sky cloud ---- */
+      cloud.setVisible(riding || (phase === "menu" && false));
+      if (riding) {
+        const base = at(s.s, s.lane, Math.max(0, s.jump - 0.55));
+        cloud.setPosition(base[0], base[1], base[2]);
+        cloud.setRotation(0, yaw, Math.sin(clock * 3) * 0.04);
+        cloud.setScale(n.call > 0 ? 0.6 + (1 - n.call / 0.26) * 1.0 : 1.7);
+        wispT += dt;
+        if (wispT > 0.07) { wispT = 0; fx.wisp([base[0] - f.forward[0] * 1.3, base[1] + 0.2, base[2] - f.forward[2] * 1.3], "#fff3c0", 0.8); }
+      }
+
+      /* ---- staff over a gorge ---- */
+      const onPole = s.pole;
+      staff.setVisible(!!onPole);
+      if (onPole) {
+        const mid = (onPole.start + onPole.end) / 2, len = onPole.end - onPole.start + 2;
+        const pf = frameAt(mid, 0);
+        const reach = Math.min(1, Math.max(0.05, (s.s - onPole.start + 8) / (onPole.end - onPole.start)));
+        const l = Math.max(2, len * Math.min(1, reach + 0.25));
+        const c = at(onPole.start - 1 + l / 2, 0, 0.12);
+        staff.setPosition(c[0], c[1], c[2]);
+        staff.setRotation(Math.PI / 2, yawOf(pf.forward), 0);
+        staff.setScale([1, l, 1]);
+      }
+
+      /* ---- balls, meat ---- */
+      for (const ball of ch.balls) {
+        const nd = node(`ball-${ball.star}`);
+        const got = s.balls.includes(ball.star);
+        nd.setVisible(!got && Math.abs(ball.s - s.s) < 220);
+        if (!got) { const p = at(ball.s, ball.lane, ball.height + Math.sin(clock * 2 + ball.star) * 0.12); nd.setPosition(p[0], p[1], p[2]); nd.setRotation(0, clock * 1.6 + ball.star, 0); }
+      }
+      if (ch.home) { const nd = node(`ball-${ch.home.star}`); const show = !!g.finale || g.phase === "result"; nd.setVisible(show && s.balls.includes(ch.home.star)); const p = at(ch.home.s - 1.5, 9.5, 2.6 + Math.sin(clock * 2) * 0.1); nd.setPosition(p[0], p[1], p[2]); nd.setRotation(0, clock * 1.4, 0); }
+      ch.meat.forEach((m, i) => {
+        const nd = node(`meat-${i}`);
+        nd.setVisible(!s.eaten.has(m.s) && Math.abs(m.s - s.s) < 220);
+        const p = at(m.s, m.lane, (m.height ?? 1.15) + Math.sin(clock * 2.4 + i) * 0.1);
+        nd.setPosition(p[0], p[1], p[2]); nd.setRotation(0, clock * 1.8, 0.3);
+      });
+
+      /* ---- orb field: collectables near the runner, magnet-pulled when riding ---- */
+      let k = 0;
+      const put = (p: V3, size: number, alpha: number, tone: V3): void => {
+        if (k >= ORB_CAP) return;
+        orbPos[k * 3] = p[0]; orbPos[k * 3 + 1] = p[1]; orbPos[k * 3 + 2] = p[2];
+        orbTone[k * 3] = tone[0]; orbTone[k * 3 + 1] = tone[1]; orbTone[k * 3 + 2] = tone[2];
+        orbSize[k] = size; orbAlpha[k] = alpha; k++;
       };
+      const chestNow = at(s.s, s.lane, s.jump + 1.2);
+      for (const orb of g.orbs) {
+        if (orb.s < s.s - 3 || orb.s > s.s + 90) continue;
+        if (s.collected.has(orb.id)) continue;
+        const mag = g.magnet.get(orb.id);
+        let p = at(orb.s, orb.lane, 1.15 + Math.sin(clock * 3 + orb.id) * 0.1);
+        if (mag !== undefined) p = lerp3(p, chestNow, Math.min(1, 0.2 + mag * 0.6));
+        put(p, 0.55, 1, [1.0, 0.93, 0.62]);
+      }
+      for (const ball of ch.balls) if (!s.balls.includes(ball.star) && Math.abs(ball.s - s.s) < 90) put(at(ball.s, ball.lane, ball.height), 2.6, 0.55, [1.0, 0.55, 0.12]);
+      for (let i = k; i < ORB_CAP; i++) { orbAlpha[i] = 0; orbPos[i * 3 + 1] = -1e4; }
+      orbs.updateAttribute?.("position", { array: orbPos, offset: 0 });
+      orbs.updateAttribute?.("tone", { array: orbTone, offset: 0 });
+      orbs.updateAttribute?.("aSize", { array: orbSize, offset: 0 });
+      orbs.updateAttribute?.("aAlpha", { array: orbAlpha, offset: 0 });
+
+      /* ---- boulders and warning decals ---- */
+      const enc = g.enc;
+      ch.boulders.forEach((bd, i) => {
+        const nd = node(`boulder-${i}`), wz = node(`warn-boulder-${i}`);
+        const d = s.s - bd.s, vis = d > -62 && d < 22 && !(enc.boulders[i]?.passed && d > 6);
+        nd.setVisible(vis);
+        const lane = -16 + (d + 36) * 0.44;
+        if (vis) {
+          const fr = frameAt(bd.s, lane), bounce = Math.abs(Math.sin((lane + 16) * Math.PI / 4.4)) * 0.55 * (1 - smooth(10, 16, lane + 16));
+          const gh = groundHeight(ch, bd.s, lane);
+          nd.setPosition(fr.point[0] + fr.up[0] * (bounce + 1.9 + gh), fr.point[1] + fr.up[1] * (bounce + 1.9 + gh), fr.point[2] + fr.up[2] * (bounce + 1.9 + gh));
+          nd.setScale(1.9);
+          nd.setRotation(0, yawOf(fr.forward), -(lane + 16) / 2.0);
+          if (d > -50 && Math.random() < 0.0) fx.dust(at(bd.s, lane, 0.2), fr.up, 1);
+        }
+        const zc = at(bd.s, 0, 0.1), zf = frameAt(bd.s);
+        const wvis = !enc.boulders[i]?.passed && d > -46 && d < 0;
+        wz.setVisible(wvis);
+        if (wvis) { wz.setPosition(zc[0], zc[1] + 0.05, zc[2]); wz.setRotation(0, yawOf(zf.forward), 0); wz.setScale([11.2, 1, 2.6]); wz.setUniform?.("warnAlpha", smooth(-46, -30, d)); wz.setUniform?.("warnGold", 0); wz.setUniform?.("tClock", clock); }
+      });
+
+      /* ---- pteranodons ---- */
+      dives.forEach((c, i) => {
+        const body = node(`ptera-body-${i}`), wl = node(`ptera-wing-l-${i}`), wr = node(`ptera-wing-r-${i}`), wz = node(`warn-dive-${i}`);
+        const dv = enc.dives[i];
+        const d = s.s - c.s;
+        const alive = dv && !dv.hit && d > -70 && d < 26;
+        const gone = dv?.ko && d < 40 && d > -70 && dv.hit;
+        const show = !!alive || !!gone;
+        for (const n2 of [body, wl, wr]) n2.setVisible(show);
+        if (show && dv) {
+          const target = dv.target ?? s.lane;
+          const k2 = smooth(-40, 0, d);
+          let sp = c.s + 18 * (1 - k2) - Math.max(0, d) * 1.2, lat = mix(target > 0 ? -9 : 9, target, k2), hgt = 1.6 + 17 * (1 - smooth(-40, -2, d)) + (d > 0 ? d * 0.7 : 0);
+          let bank = (lat - target) * 0.03, flap = Math.sin(clock * 11 + i) * 0.55;
+          if (dv.hit && dv.ko) { const t = Math.max(0, clock % 100); void t; sp = c.s + (d * 0.4); hgt = 3 + Math.max(0, d) * 0.2; flap = 0.9; bank = clock * 6; lat = target + d * 0.5; }
+          const bp = at(sp, lat, hgt);
+          const bf = frameAt(sp);
+          const by = yawOf(bf.forward) + Math.PI + (dv.hit ? 0 : 0);
+          body.setPosition(bp[0], bp[1], bp[2]); body.setRotation(0.2 * (1 - k2), yawOf(bf.forward) + Math.PI, bank); body.setScale(1.5);
+          for (const [nd, sgn] of [[wl, -1], [wr, 1]] as const) {
+            const off: V3 = [bf.right[0] * sgn * 0.5 * 1.5, 0, bf.right[2] * sgn * 0.5 * 1.5];
+            nd.setPosition(bp[0] + off[0], bp[1] + 0.1, bp[2] + off[2]);
+            nd.setRotation(0, by + (sgn > 0 ? 0 : Math.PI), bank + flap * sgn);
+            nd.setScale(1.5);
+          }
+          void by;
+        }
+        const wvis = !!dv && !dv.passed && !dv.hit && dv.target !== null && d > -40 && d < 0;
+        wz.setVisible(wvis);
+        if (wvis && dv) {
+          const kk = smooth(-40, -2, d), zp = at(c.s, dv.target ?? 0, 0.1), zf = frameAt(c.s);
+          wz.setPosition(zp[0], zp[1] + 0.05, zp[2]); wz.setRotation(0, yawOf(zf.forward), 0); wz.setScale([3.5 + kk * 4, 1, 4.5 + kk * 4.5]);
+          wz.setUniform?.("warnAlpha", 0.35 + kk * 0.65); wz.setUniform?.("warnGold", 0); wz.setUniform?.("tClock", clock);
+        }
+      });
+
+      /* ---- tyrant lizard ---- */
+      const trexState = enc.trex;
+      if (trexState) {
+        const body = node("rex-body"), head = node("rex-head"), jaw = node("rex-jaw");
+        const tc = trexState.creature;
+        const present = s.s > tc.s - 30 && s.s < (tc.until ?? 0) + 14 && !trexState.beaten;
+        for (const n2 of [body, head, jaw]) n2.setVisible(present);
+        if (present) {
+          const next = trexState.attacks.find((a) => !a.done);
+          const targetS = next ? next.s - 2 : s.s + 6;
+          if (!rexInit) { rexS = Math.max(tc.s - 18, s.s + 14); rexInit = true; }
+          rexS += Math.max(-26 * dt, Math.min(26 * dt, targetS - rexS));
+          const stunned = s.s < trexState.stunnedUntil;
+          const lat = -10.2, bp = at(rexS, lat, groundHeight(ch, rexS, lat)), fwd = frameAt(rexS).forward;
+          const stomp = Math.abs(Math.sin(clock * 6)) * 0.22 * (stunned ? 0.2 : 1);
+          const nextAttack = next && !stunned ? next : null;
+          const dd = nextAttack ? s.s - nextAttack.s : -50;
+          const lunge = nextAttack ? smooth(-9, -1.5, dd) * (1 - smooth(0.5, 5, dd)) : 0;
+          const swipe = nextAttack && nextAttack.kind === "swipe" ? smooth(-8, -1, dd) * (1 - smooth(1, 5, dd)) : 0;
+          const yaw0 = Math.atan2(fwd[0], fwd[2]) + Math.PI * 0.72 - swipe * 0.5;
+          const sc = 1.15;
+          const rot = (x: number, y: number, z: number, yawAngle: number): V3 => [x * Math.cos(yawAngle) + z * Math.sin(yawAngle), y, -x * Math.sin(yawAngle) + z * Math.cos(yawAngle)];
+          body.setPosition(bp[0], bp[1] + stomp, bp[2]); body.setRotation(0, yaw0, stunned ? 0.08 : 0); body.setScale(sc);
+          const ho = rot(0, 5.5 * sc, 3.1 * sc, yaw0);
+          const hy = yaw0 + lunge * 0.55;
+          const reach = rot(0, 0, lunge * 6.0, yaw0 + Math.PI / 2 * 0.0 + 1.0);
+          const hp2: V3 = [bp[0] + ho[0] + reach[0], bp[1] + ho[1] + stomp - (stunned ? 3.4 : 0) - lunge * 1.1, bp[2] + ho[2] + reach[2]];
+          head.setPosition(hp2[0], hp2[1], hp2[2]); head.setRotation(stunned ? 0.5 : 0, hy, 0); head.setScale(sc);
+          const open = stunned ? 0.1 : 0.25 + lunge * 0.6 + Math.max(0, Math.sin(clock * 3)) * 0.12;
+          jaw.setPosition(hp2[0], hp2[1] - 0.1, hp2[2]); jaw.setRotation(open, hy, 0); jaw.setScale(sc);
+        }
+        rexAttacks.forEach((a, i) => {
+          const wz = node(`warn-rex-${i}`), tstate = trexState.attacks.find((x) => x.s === a.s);
+          const d = s.s - a.s;
+          const live = !!tstate && !tstate.done && s.s >= trexState.stunnedUntil && d > -30 && d < 0;
+          wz.setVisible(live);
+          if (live) {
+            const fr = frameAt(a.s), isBite = a.kind === "bite";
+            const lateral = isBite ? -3.0 : 0, width = isBite ? 5.2 : 11.2, length = isBite ? 7 : 3;
+            const zp = at(a.s, lateral, 0.1);
+            wz.setPosition(zp[0], zp[1] + 0.05, zp[2]); wz.setRotation(0, yawOf(fr.forward), 0); wz.setScale([width, 1, length]);
+            wz.setUniform?.("warnAlpha", smooth(-30, -18, d)); wz.setUniform?.("warnGold", g.state.jankenWindow && enc.threat?.s === a.s && isBite ? 1 : 0); wz.setUniform?.("tClock", clock);
+          }
+        });
+      }
+
+      /* ---- running dust, water, sky and valley follow ---- */
+      if (phase === "playing" && s.jump < 0.08 && !riding) {
+        runDust += dt;
+        if (runDust > 0.12) { runDust = 0; fx.dust(at(s.s, s.lane, 0.1), f.up, 2, "#e5cf9f", 0.7, 0.8); }
+      }
+      for (const id of riverIds) node(id).setUniform?.("tClock", clock);
+
+      /* ---- camera ---- */
+      let wantEye: V3, wantLook: V3, fov = aspect < 1 ? 62 : 55 + s.speed * 0.2;
+      let cut = false;
+      const hp = pos;
+      if (phase === "menu") {
+        const a = clock * 0.18 + 0.2;
+        wantEye = at(s.s + 7.2 * Math.cos(a) + 2.5, 5.0 * Math.sin(a) - 3.6, s.jump + logLift + 2.4);
+        wantLook = at(s.s + 0.2, s.lane, s.jump + logLift + 1.2);
+        fov = 40; cut = !eye;
+      } else if (phase === "finale" && ch.home) {
+        const t = g.finale?.t ?? 0;
+        const home = ch.home.s;
+        const a = 0.9 + t * 0.12;
+        wantEye = at(home - 7 - 3 * Math.cos(a), -2 + 5 * Math.sin(a), 2.4 + t * 0.12);
+        wantLook = at(home - 0.5, 8.0, 2.0);
+        fov = 46;
+      } else if (phase === "result") {
+        const a = clock * 0.2;
+        wantEye = at(s.s + 3.6 * Math.cos(a), 3.0 * Math.sin(a), s.jump + 1.8);
+        wantLook = at(s.s, s.lane, s.jump + 1.0);
+        fov = 44;
+      } else if (phase === "falling") {
+        const fl = g.falling;
+        wantEye = eye ?? at(s.s - 7.4, s.lane * 0.65, 3.3);
+        wantLook = [hp[0], hp[1] + 0.5, hp[2]];
+        void fl;
+      } else {
+        const back = frameAt(s.s - 7.4, s.lane * 0.65), ahead = frameAt(Math.min(ch.length + 20, s.s + 7), s.lane * 0.65);
+        const lift = 3.3 + s.jump * 0.35 + (riding ? 0.6 : 0) + logLift * 0.5;
+        wantEye = [back.point[0] + back.up[0] * lift, back.point[1] + back.up[1] * lift, back.point[2] + back.up[2] * lift];
+        wantLook = [ahead.point[0] + ahead.up[0] * 1.5, ahead.point[1] + ahead.up[1] * 1.5, ahead.point[2] + ahead.up[2] * 1.5];
+        if (g.chase) fov += 3;
+        fov += g.danger * 3;
+      }
+      const ek = eye && !cut ? 1 - Math.exp(-dt * (phase === "playing" ? 14 : 5)) : 1;
+      eye = eye ? lerp3(eye, wantEye, ek) : wantEye;
+      look = look ? lerp3(look, wantLook, ek) : wantLook;
+      const shake = g.impact * 0.28;
+      const shook: V3 = [eye[0] + Math.sin(clock * 83) * shake, eye[1] + Math.sin(clock * 71 + 1) * shake, eye[2] + Math.sin(clock * 97 + 2) * shake];
+      cam.setPose({ position: [shook[0], shook[1], shook[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov }, { cut: cut || ek >= 1 });
+      camPos.eye = shook; camPos.target = look;
+
+      sky.setPosition(shook[0], shook[1], shook[2]);
+      sky.setUniform?.("cloudPhase", clock);
+      valley.setPosition(shook[0], f.point[1] - 43, shook[2]);
+      valley.setUniform?.("cloudPhase", clock);
+
+      fx.update(dt, app);
     }
   };
 }

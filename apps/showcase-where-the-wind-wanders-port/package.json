@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-where-the-wind-wanders-port",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "private": true,
   "type": "module",
   "description": "Aura3D port of the mechanics of Where the Wind Wanders: Meadow only: no boat voyage, island, journal or audio; procedural art.",

@@ -1,0 +1,80 @@
+{
+ "reference": {
+  "lumaMean": 68.43,
+  "lumaStd": 48.13,
+  "edgeDensity": 0.0668,
+  "meanRGB": [
+   90.0,
+   63.5,
+   53.9
+  ]
+ },
+ "frames": {
+  "before-canvas-menu": {
+   "lumaMean": 135.34,
+   "lumaStd": 64.34,
+   "edgeDensity": 0.0191,
+   "meanRGB": [
+    157.3,
+    131.1,
+    113.0
+   ],
+   "lumaJSD": 0.3784,
+   "rgbJSD": 0.4565,
+   "paletteDistance": 53.7
+  },
+  "after-canvas-menu": {
+   "lumaMean": 87.64,
+   "lumaStd": 30.07,
+   "edgeDensity": 0.0189,
+   "meanRGB": [
+    111.9,
+    82.0,
+    72.4
+   ],
+   "lumaJSD": 0.2902,
+   "rgbJSD": 0.2893,
+   "paletteDistance": 31.3
+  },
+  "after-ui-menu": {
+   "lumaMean": 64.86,
+   "lumaStd": 40.15,
+   "edgeDensity": 0.066,
+   "meanRGB": [
+    78.0,
+    61.5,
+    59.9
+   ],
+   "lumaJSD": 0.2481,
+   "rgbJSD": 0.215,
+   "paletteDistance": 22.3
+  },
+  "before-race-start": {
+   "lumaMean": 109.82,
+   "lumaStd": 81.31,
+   "edgeDensity": 0.0202,
+   "meanRGB": [
+    128.4,
+    106.3,
+    89.8
+   ],
+   "lumaJSD": 0.4486,
+   "rgbJSD": 0.4389,
+   "paletteDistance": 38.6
+  },
+  "after-race-start": {
+   "lumaMean": 77.4,
+   "lumaStd": 39.02,
+   "edgeDensity": 0.0204,
+   "meanRGB": [
+    97.9,
+    72.0,
+    70.8
+   ],
+   "lumaJSD": 0.1334,
+   "rgbJSD": 0.1958,
+   "paletteDistance": 23.5
+  }
+ },
+ "note": "Numbers only. Reference is the original title screen (the only original frame captured, local-only); race frames are not matched states. saturation is dominated by dark pixels and is not informative."
+}

@@ -8,7 +8,7 @@
 import { camera, geometry, material, scene, texture, type AuraApp } from "@aura3d/engine";
 import { COLORS, CONFIG, POOL, type SplatRushSim } from "./sim";
 import { blobMesh, capsuleMesh, coneMesh, cylinderMesh, mergeMeshes, sphereMesh, transformMesh, type MeshData } from "./meshes";
-import { FLAT_FRAGMENT, FLAT_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_VERTEX, toonFragment } from "./shaders";
+import { FLAT_FRAGMENT, FLAT_VERTEX, SHADOW_FRAGMENT, SHADOW_VERTEX, SKY_FRAGMENT, SKY_VERTEX, TOON_VERTEX, toonFragment } from "./shaders";
 
 type Rgb = readonly [number, number, number];
 type Scene = ReturnType<typeof scene>;
@@ -55,6 +55,14 @@ export const flatSpec = (base: Rgb, alpha: number): CustomSpec => ({
   side: "double"
 });
 
+export const shadowSpec = (): CustomSpec => ({
+  glsl: { vertex: SHADOW_VERTEX, fragment: SHADOW_FRAGMENT },
+  uniforms: { baseColor: { type: "color3", value: [0.02, 0.02, 0.05] }, alpha: { type: "f32", value: 0.3 } },
+  transparent: true,
+  depthWrite: false,
+  side: "double"
+});
+
 export const skySpec = (): CustomSpec => ({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, side: "double", depthWrite: false });
 
 /** One of each distinct program, so a unit test can compile exactly what the app draws with. */
@@ -62,7 +70,8 @@ export const allProgramSpecs = (): readonly { readonly name: string; readonly sp
   { name: "toon", spec: toonSpec([0.5, 0.5, 0.5]) },
   { name: "toon-map", spec: toonSpec([0.5, 0.5, 0.5], texture.data({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }) as unknown as TextureHandle) },
   { name: "sky", spec: skySpec() },
-  { name: "flat", spec: flatSpec([1, 1, 1], 0.4) }
+  { name: "flat", spec: flatSpec([1, 1, 1], 0.4) },
+  { name: "shadow", spec: shadowSpec() }
 ];
 
 /* ---------------------------------------------------------------- canvases (painted from the sim's own draws) */
@@ -212,6 +221,9 @@ export function buildWorld(options: WorldOptions): World {
   /* player ball: sphere r 0.55, painted map x player colour */
   add("ball", sphereMesh(CONFIG.BALL_RADIUS, 32, 32), toonSpec(hexLinear(COLORS[0] as string), ballTex));
 
+  /* soft contact shadow under the ball */
+  add("ball-shadow", boxMesh(2, 0.002, 2), shadowSpec());
+
   /* road batches */
   const deck = new Batch(boxMesh(8, 0.3, 1), MAX_SEG);
   const rails = new Batch(sphereMesh(1, 8, 6), MAX_SEG * 2);
@@ -222,7 +234,7 @@ export function buildWorld(options: WorldOptions): World {
   spread(deck, MAX_SEG);
   for (let i = 0; i < MAX_SEG * 2; i++) rails.place(i, i % 2 === 0 ? -4.3 : 4.3, 0.3, 20 - Math.floor(i / 2) * 0.9, 0, 0.32, 0.32, 0.235);
   for (let i = 0; i < 60; i++) dashes.place(i, 0, 0.01, 20 - i * 3.6, 0, 1, 1, 1);
-  builder.add(geometry.custom(dynamicFrom(deck.mesh), { name: "deck", material: material.custom(toonSpec(hexLinear("#fdf0e0"), rampTex)) }).runtime({ id: "deck" }));
+  builder.add(geometry.custom(dynamicFrom(deck.mesh), { name: "deck", material: material.custom(toonSpec([1, 1, 1], rampTex)) }).runtime({ id: "deck" }));
   builder.add(geometry.custom(dynamicFrom(rails.mesh), { name: "rails", material: material.custom(toonSpec(hexLinear("#c3b1f0"))) }).runtime({ id: "rails" }));
   builder.add(geometry.custom(dynamicFrom(dashes.mesh), { name: "dashes", material: material.custom(toonSpec([1, 1, 1])) }).runtime({ id: "dashes" }));
 
@@ -301,6 +313,10 @@ export function buildWorld(options: WorldOptions): World {
           ball.setUniform?.("emissive", o.isRainbowActive ? [0.3 * rgb[0], 0.3 * rgb[1], 0.3 * rgb[2]] : [0, 0, 0]);
           ballColorKey = key;
         }
+        const lift = Math.max(0, p.y - CONFIG.BALL_RADIUS * p.scale);
+        const shadow = node("ball-shadow");
+        shadow.setVisible(p.visible).setPosition(p.x - 0.5 * p.y, 0.05, p.z - 0.5 * p.y).setScale(p.scale * 0.66 / (1 + 0.12 * lift));
+        shadow.setUniform?.("alpha", 0.3 / (1 + 0.25 * lift));
         /* shield bubble */
         const shield = node("shield");
         shield.setVisible(o.shieldActive && p.visible);

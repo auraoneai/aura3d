@@ -1,37 +1,107 @@
 /**
- * Ninja Runner world on the public `@aura3d/engine` surface: the route ribbon, buildings, trees, river and
- * sky (`geometry.dynamic` + `material.custom`), barriers/beams, chakra flames, Rasengan ball, wind
- * shuriken and particles, plus every character: one `cloneSkinned` call builds the hero, three shadow
- * clones and eight enemies with independent skeletons and mixers that share one set of GPU textures.
- * The original's GLB heroes/enemies and remote textures are not redistributed; the characters are the
- * repository's mixamo soldier fixture tinted per form/type (documented in PORTING-NOTES.md).
+ * Ninja Runner world on the public `@aura3d/engine` surface. The ground is lit PBR (one mesh per biome and surface),
+ * the village, rooftops, crossing, forest and valley are instanced PBR scenery (`scenery.ts`), lit by the outdoor-day
+ * look (HDRI, shadowed key light) plus a hemisphere fill, exponential fog, bloom, contact shadows and a vignette. The
+ * sky, river, falls, chakra flames, Rasengan orb, wind shuriken, auras and particles keep their ported `material.custom`
+ * shaders. Every character comes from one `cloneSkinned` call: the hero, three shadow clones and eight enemies share one
+ * rigged model (CC0, see assets/ATTRIBUTION.md) with independent skeletons and animation, differentiated by tint, scale
+ * and attached weapons.
  */
-import { camera, cloneSkinned, geometry, lights, looks, primitives, scene, texture, material, type AuraApp } from "@aura3d/engine";
+import { camera, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp } from "@aura3d/engine";
 import { attachRootRenderSource, type TypedGLBActor } from "@aura3d/engine/production-runtime";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
-import { ballSpec, fallsSpec, flameSpec, groundSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
-import { buildProps, buildRoute, buildSheet, buildWater, type MeshData } from "./meshes";
+import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
+import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
 import { hexLinear, type Rgb } from "./palette";
-import { isEnemy, seededRandom, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
+import { LAYERS, buildScenery, type LayerSpec, type ShapeId, type SurfaceKey } from "./scenery";
+import { unitBox, unitCone, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
+import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintLeaf, paintPlanks, paintPlaster, paintTiles, type Raster } from "./textures";
+import { TUNING, isEnemy, seededRandom, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 
-export const SOLDIER_URL = "/fixtures/threejs-parity/assets/character/soldier.glb";
-/** The soldier fixture faces +Z; characters are turned so +Z points along the route (or back at the runner). */
+export const RIG_URL = new URL("./assets/ninja-rig.glb", import.meta.url).href;
+/** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
 const MODEL_YAW_OFFSET = 0;
 export const ACTOR_COUNT = 12;
 const HERO = 0;
 const CLONE_SLOTS = [1, 2, 3] as const;
 const ENEMY_SLOTS = [4, 5, 6, 7, 8, 9, 10, 11] as const;
-const PARTICLES = 320;
+const PARTICLES = 480;
 const BARRIER_POOL = 8;
 const BEAM_POOL = 8;
 const SHURIKEN_POOL = 3;
+const TOWN_FLOOR_Y = 3.2;
+
+const CLIPS = {
+  run: "Sprint_Loop", jump: "Jump_Loop", idle: "Idle_Loop", slide: "Crouch_Idle_Loop", punch: "Punch_Cross", jab: "Punch_Jab", sword: "Sword_Attack",
+  block: "Sword_Block", hit: "Hit_Chest", death: "Death01"
+} as const;
+const ENEMY_ATTACK_CLIP: Record<EnemyKind, string> = { scout: CLIPS.jab, swordsman: CLIPS.sword, caster: CLIPS.block, heavy: CLIPS.punch };
 
 type Scene = ReturnType<typeof scene>;
+type Vec3 = [number, number, number];
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
-function dynamicFrom(m: MeshData, attributes: Record<string, { itemSize: 1 | 2 | 3 | 4; data: Float32Array }> = {}) {
-  return geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), attributes });
+function defineShape(s: Shape) {
+  return geometry.define({ positions: f32(s.positions), normals: f32(s.normals), uvs: f32(s.uvs), indices: Uint32Array.from(s.indices) });
 }
+const SHAPES: Record<ShapeId, () => Shape> = {
+  box: unitBox, gable: unitGable, hip: unitHip, cylinder: () => unitCylinder(10), cone: () => unitCone(9), sphere: () => unitSphere(12, 8), rock: () => unitRock(7)
+};
+type TextureHandle = ReturnType<typeof texture.canvas>;
+interface Surface { readonly albedo: TextureHandle; readonly normal?: TextureHandle }
+
+const canvasOf = (rgba: Uint8ClampedArray, w: number, h: number): HTMLCanvasElement => {
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  c.getContext("2d")!.putImageData(new ImageData(new Uint8ClampedArray(rgba), w, h), 0, 0);
+  return c;
+};
+
+/** Upload a painted raster as a repeating base-colour map and, with a strength, a normal map from its height field. */
+function surface(r: Raster, normalStrength: number | null, repeat: readonly [number, number] = [1, 1]): Surface {
+  const make = (rgba: Uint8ClampedArray, space: "srgb" | "linear"): TextureHandle => {
+    const t = texture.canvas({ canvas: canvasOf(rgba, r.width, r.height), colorSpace: space });
+    t.wrapS = "repeat"; t.wrapT = "repeat"; t.anisotropy = 8; t.repeat = repeat;
+    return t;
+  };
+  return { albedo: make(r.rgba, "srgb"), ...(normalStrength !== null ? { normal: make(normalFromHeight(r, normalStrength), "linear") } : {}) };
+}
+
+const mapped = (s: Surface, color: string, roughness: number, extra: { metallic?: number } = {}) => material.pbr({
+  color, roughness, ...(extra.metallic !== undefined ? { metallic: extra.metallic } : {}), texture: s.albedo as never, textureAnisotropy: 8,
+  ...(s.normal ? { normal: s.normal, normalScale: 1 } : {})
+});
+
+type PathKind = "cobble" | "tiles" | "planks" | "dirt";
+const PATH_SURFACE: Record<string, readonly [PathKind, string]> = {
+  village: ["cobble", "#ffffff"], alley: ["cobble", "#d6cabb"], stairs: ["cobble", "#ffffff"], rooftops: ["tiles", "#ffffff"], descent: ["cobble", "#ffffff"],
+  riverside: ["cobble", "#d6cabb"], bridge: ["planks", "#ffffff"], forest_entry: ["dirt", "#ffffff"], forest: ["dirt", "#ffffff"], forest_exit: ["dirt", "#ffffff"], water: ["cobble", "#ffffff"]
+};
+const VERGE_TINT: Record<string, string> = {
+  village: "#ffffff", alley: "#ffffff", stairs: "#ffffff", rooftops: "#b0a298", descent: "#ffffff", riverside: "#ffffff", bridge: "#ffffff", forest_entry: "#8fb088", forest: "#8fb088", forest_exit: "#8fb088", water: "#ffffff"
+};
+
+function paintSurfaces() {
+  return {
+    cobble: surface(paintCobble(512, 1), 2.4), dirt: surface(paintDirt(256, 2), 1.6), tiles: surface(paintTiles(256, 3, "#527c70"), 1.8, [0.5, 0.5]),
+    planks: surface(paintPlanks(256, 4), 1.4), grass: surface(paintGrass(256, 5), 0.8)
+  } as const;
+}
+
+const layerSurface = (key: SurfaceKey, repeat: readonly [number, number]): Surface => {
+  switch (key) {
+    case "plaster": return surface(paintPlaster(256, 6), 0.9, repeat);
+    case "tiles": return surface(paintTiles(256, 9, "#e6e6e6"), 1.8, repeat);
+    case "bark": return surface(paintBark(128, 7), 1.6, repeat);
+    case "leaf": return surface(paintLeaf(256, 8), 2.2, repeat);
+  }
+};
+
+const layerMaterial = (l: LayerSpec) => {
+  if (l.emissive) return material.emissive({ color: "#ffffff", emissive: l.emissive });
+  if (l.map) return mapped(layerSurface(l.map, l.repeat ?? [1, 1]), "#ffffff", l.roughness, { metallic: l.metalness });
+  return material.pbr({ color: "#ffffff", roughness: l.roughness, metallic: l.metalness });
+};
 
 /** Column-major model matrix: uniform scale, yaw about +Y, translation. */
 export function modelMatrix(x: number, y: number, z: number, yaw: number, scale: number): number[] {
@@ -62,20 +132,23 @@ export function chakraPickups(entities: readonly Entity[]): ChakraPickup[] {
   });
 }
 
-const FORM_TINT: Record<string, { base: readonly [number, number, number, number]; emissive: Rgb; strength: number }> = {
-  base: { base: [0.95, 0.52, 0.16, 1], emissive: [0.05, 0.03, 0.0], strength: 0.2 },
-  sage: { base: [0.98, 0.62, 0.18, 1], emissive: [1.0, 0.5, 0.1], strength: 0.9 },
-  kurama: { base: [1.0, 0.78, 0.2, 1], emissive: [1.0, 0.65, 0.1], strength: 2.2 }
+interface Tint { readonly base: readonly [number, number, number, number]; readonly emissive?: Rgb; readonly strength?: number }
+const FORM_TINT: Record<string, Tint> = {
+  base: { base: [1, 1, 1, 1], emissive: [0.03, 0.02, 0], strength: 0.1 },
+  sage: { base: [1, 0.84, 0.58, 1], emissive: [1, 0.5, 0.12], strength: 0.55 },
+  kurama: { base: [1, 0.9, 0.5, 1], emissive: [1, 0.68, 0.14], strength: 1.5 }
 };
 const ENEMY_TINT: Record<EnemyKind, readonly [number, number, number, number]> = {
-  scout: [0.9, 0.42, 0.2, 1], swordsman: [0.45, 0.5, 0.6, 1], caster: [0.55, 0.3, 0.7, 1], heavy: [0.28, 0.4, 0.28, 1]
+  scout: [1, 0.62, 0.45, 1], swordsman: [0.58, 0.66, 0.86, 1], caster: [0.74, 0.52, 0.96, 1], heavy: [0.48, 0.62, 0.44, 1]
 };
-const CLONE_TINT: readonly [number, number, number, number] = [0.55, 0.78, 1.0, 1];
+const CLONE_TINT: Tint = { base: [0.55, 0.8, 1, 1], emissive: [0.2, 0.5, 1], strength: 1.2 };
+const FLASH_TINT: Tint = { base: [1, 1, 1, 1], emissive: [1, 1, 1], strength: 1.4 };
 
 export interface ActorAssets {
   readonly actors: readonly TypedGLBActor[];
   readonly clip: string;
   readonly clipDuration: number;
+  readonly durations: Readonly<Record<string, number>>;
   readonly sharedTextureEntries: number;
   readonly sharedTextureRefs: number;
   readonly clips: readonly string[];
@@ -83,17 +156,20 @@ export interface ActorAssets {
 }
 
 export async function loadActors(canvas: HTMLCanvasElement): Promise<ActorAssets> {
-  const asset = { url: SOLDIER_URL, type: "model" as const, format: "glb" };
+  const asset = { url: RIG_URL, type: "model" as const, format: "glb" };
   const batch = await cloneSkinned(asset, ACTOR_COUNT, { width: canvas.width, height: canvas.height, idPrefix: "ninja" });
   const first = batch.actors[0]!;
   const clips = first.evidence.clips;
-  const clip = clips.includes("Run") ? "Run" : clips[0];
-  if (!clip) throw new Error("ninja-runner-port: the soldier fixture exposes no animation clips");
-  const info = first.animation.resolvedClipInfos().find((c) => c.name === clip);
+  const clip = clips.includes(CLIPS.run) ? CLIPS.run : clips[0];
+  if (!clip) throw new Error("ninja-runner-port: the character rig exposes no animation clips");
+  const infos = first.animation.resolvedClipInfos();
+  const durations: Record<string, number> = {};
+  for (const c of clips) { const info = infos.find((i) => i.name === c); durations[c] = info && info.duration > 0 ? info.duration : 1; }
   return {
     actors: batch.actors,
     clip,
-    clipDuration: info && info.duration > 0 ? info.duration : 1,
+    clipDuration: durations[clip] ?? 1,
+    durations,
     sharedTextureEntries: batch.sharedTextures.size,
     sharedTextureRefs: batch.sharedTextures.refCount,
     clips,
@@ -101,7 +177,7 @@ export async function loadActors(canvas: HTMLCanvasElement): Promise<ActorAssets
   };
 }
 
-export interface WorldOptions { readonly canvas: HTMLCanvasElement; readonly actors: ActorAssets; readonly entities: readonly Entity[] }
+export interface WorldOptions { readonly canvas: HTMLCanvasElement; readonly actors: ActorAssets; readonly entities: readonly Entity[]; readonly quality?: "low" | "high" }
 
 export interface WorldRuntime {
   update(state: SimState, dt: number, time: number, events: readonly SimEvent[]): void;
@@ -115,26 +191,72 @@ export interface WorldRuntime {
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
 export function buildWorld(options: WorldOptions): World {
-  const route = buildRoute(2);
+  const high = options.quality !== "low";
   const flameMap = texture.canvas({ canvas: (() => { const c = document.createElement("canvas"); c.width = c.height = 128; drawFlame(c.getContext("2d")!); return c; })(), colorSpace: "srgb" });
   const builder: Scene = scene()
     .background("#8fb7c9")
     .camera(camera.perspective({ position: [0, 6, 12], target: [0, 2, -20], fov: 57, near: 0.1, far: 3200 }))
-    .add(looks.preset("outdoor-day"))
-    .add(lights.directional({ position: [-40, 67, 31], intensity: 3, color: "#ffe3b1" }))
-    .add(lights.directional({ position: [30, 20, -40], intensity: 0.9, color: "#bcd9ff" }));
+    .add(environments.hdri({ name: "sky ibl", intensity: 0.7, background: false, texture: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" } as never }))
+    // Cast shadows are off on purpose: with this scene the engine's cascaded shadow lookup marks every receiver as fully shadowed (probes in PORTING-NOTES.md), so the sun shades by direction only and the actors keep blob shadows.
+    .add(lights.directional({ name: "sun", position: [-40, 67, 56], target: [0, 0, 0], intensity: 2.8, color: "#ffe3b1", shadow: false }))
+    .add(lights.hemisphere({ name: "sky fill", skyColor: "#d3ebf3", groundColor: "#80715b", intensity: 0.5 }))
+    .add(lights.directional({ name: "cool rim", position: [30, 20, -40], intensity: 0.4, color: "#bcd9ff" }))
+    .add(effects.fog({ name: "haze", color: "#b5c8c4", density: 0.0028 }));
+  if (high) builder.add(effects.ambientOcclusion({ name: "ao" }));
+  builder
+    .add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.0, radius: 0.4 }))
+    .add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.08 }))
+    .add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.7 }))
+    .add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
 
-  builder.add(geometry.custom(dynamicFrom(route, { tone: { itemSize: 3, data: f32(route.tones) } }), { name: "route", material: material.custom(groundSpec()) }).runtime({ id: "route" }));
-  const props = buildProps();
-  builder.add(geometry.custom(dynamicFrom(props, { tone: { itemSize: 3, data: f32(props.tones) } }), { name: "props", material: material.custom(groundSpec()) }).runtime({ id: "props" }));
+  const ground = paintSurfaces();
+  /* ground groups that share a surface and tint become one mesh (one draw call) */
+  const merged = new Map<string, { surf: Surface; tint: string; rough: number; positions: number[]; normals: number[]; uvs: number[]; indices: number[] }>();
+  for (const g of buildRouteGroups(2)) {
+    const [kind, pathTint] = PATH_SURFACE[g.biome]!;
+    const path = g.zone === "path";
+    const surf = path ? ground[kind] : g.biome === "rooftops" ? ground.tiles : ground.grass;
+    const tint = path ? pathTint : VERGE_TINT[g.biome]!;
+    const key = `${path ? kind : g.biome === "rooftops" ? "tiles" : "grass"}|${tint}`;
+    let m = merged.get(key);
+    if (!m) merged.set(key, m = { surf, tint, rough: path ? 0.92 : 1, positions: [], normals: [], uvs: [], indices: [] });
+    const base = m.positions.length / 3;
+    for (let i = 0; i < g.mesh.positions.length; i++) { m.positions.push(g.mesh.positions[i]!); m.normals.push(g.mesh.normals[i]!); }
+    for (let i = 0; i < g.mesh.uvs.length; i++) m.uvs.push(g.mesh.uvs[i]!);
+    for (const idx of g.mesh.indices) m.indices.push(idx + base);
+  }
+  for (const [key, m] of merged) {
+    const spec = geometry.define({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
+    builder.add(geometry.custom(spec, { name: `ground-${key}`, material: mapped(m.surf, m.tint, m.rough), castShadow: false, receiveShadow: true }));
+  }
+  const floor = buildTownFloor(520, 1030, 130, TOWN_FLOOR_Y);
+  builder.add(geometry.custom(geometry.define({ positions: f32(floor.positions), normals: f32(floor.normals), uvs: f32(floor.uvs), indices: Uint32Array.from(floor.indices) }), {
+    name: "town-floor", material: mapped(ground.cobble, "#a39b8a", 0.95), castShadow: false, receiveShadow: true
+  }));
+
+  for (const layer of buildScenery()) {
+    const spec = LAYERS.find((l) => l.id === layer.id)!;
+    const mesh = instances.mesh(defineShape(SHAPES[layer.shape]()), layerMaterial(spec), layer.placements.length);
+    layer.placements.forEach((p, i) => { mesh.setMatrixAt(i, p.matrix); mesh.setColorAt(i, [...hexLinear(p.color), 1]); });
+    mesh.computeBoundingSphere();
+    builder.add(spec.castShadow ? mesh : ({ ...mesh.toJSON(), castShadow: false } as ReturnType<typeof mesh.toJSON>));
+  }
+
   const water = buildWater();
-  builder.add(geometry.custom(dynamicFrom(water), { name: "river", material: material.custom(waterSpec()), position: [0, -2.5, 0] }).runtime({ id: "river" }));
+  builder.add(geometry.custom(geometry.dynamic({ positions: f32(water.positions), normals: f32(water.normals), uvs: f32(water.uvs), indices: Uint32Array.from(water.indices) }), { name: "river", material: material.custom(waterSpec()), position: [0, -2.5, 0] }).runtime({ id: "river" }));
   builder.add(primitives.sphere({ name: "sky", size: 4000, material: material.custom(skySpec()) }).runtime({ id: "sky" }));
   const endFrame = groundFrame(COURSE_LENGTH - 90, 0, 0);
-  builder.add(geometry.custom(dynamicFrom(buildSheet(56, 63)), { name: "valley-falls", material: material.custom(fallsSpec()), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
+  const sheet = buildSheet(56, 63);
+  builder.add(geometry.custom(geometry.dynamic({ positions: f32(sheet.positions), normals: f32(sheet.normals), uvs: f32(sheet.uvs), indices: Uint32Array.from(sheet.indices) }), { name: "valley-falls", material: material.custom(fallsSpec()), position: [endFrame.x + 30, endFrame.y - 40, endFrame.z - 30] }).runtime({ id: "valley-falls" }));
 
-  const wood = hexLinear("#8a5a35"), beam = hexLinear("#c2603a"), glowOrange = hexLinear("#ff8a3a");
-  for (let i = 0; i < BARRIER_POOL; i++) builder.add(primitives.box({ name: `barrier-${i}`, size: [2.0, 1.5, 0.55], material: material.custom(solidSpec(wood)) }).runtime({ id: `barrier-${i}` }));
+  const crate = material.pbr({ color: "#8a5a35", roughness: 0.86 });
+  const strap = material.pbr({ color: "#3a3028", roughness: 0.6, metallic: 0.3 });
+  const beam = hexLinear("#c2603a"), glowOrange = hexLinear("#ff8a3a");
+  for (let i = 0; i < BARRIER_POOL; i++) {
+    builder.add(primitives.box({ name: `barrier-${i}`, size: [2.0, 1.5, 0.55], material: crate, castShadow: true }).runtime({ id: `barrier-${i}` }));
+    builder.add(primitives.box({ name: `barrier-band-${i}`, size: [2.1, 0.2, 0.62], material: strap, castShadow: true }).runtime({ id: `barrier-band-${i}` }));
+    builder.add(primitives.box({ name: `barrier-top-${i}`, size: [2.2, 0.14, 0.7], material: material.pbr({ color: "#c8a57b", roughness: 0.8 }), castShadow: true }).runtime({ id: `barrier-top-${i}` }));
+  }
   for (let i = 0; i < BEAM_POOL; i++) builder.add(primitives.box({ name: `beam-${i}`, size: [2.5, 0.34, 0.34], material: material.custom(solidSpec(beam, { glow: 0.7, glowColor: glowOrange })) }).runtime({ id: `beam-${i}` }));
 
   const pickups = chakraPickups(options.entities);
@@ -152,6 +274,19 @@ export function buildWorld(options: WorldOptions): World {
     attributes: { seed: { itemSize: 3, data: f32(sparkSeeds) } }
   }), { name: "rasengan-sparks", material: material.custom(sparksSpec()) }).runtime({ id: "rasengan-sparks" }));
   for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(primitives.sphere({ name: `shuriken-${i}`, size: 1, material: material.custom(ballSpec()) }).runtime({ id: `shuriken-${i}` }));
+  builder.add(primitives.sphere({ name: "aura", size: 1, material: material.custom(auraSpec()) }).runtime({ id: "aura" }));
+
+  const steel = material.pbr({ color: "#cfd6dc", roughness: 0.28, metallic: 0.85 });
+  const club = material.pbr({ color: "#5a4332", roughness: 0.8 });
+  for (let i = 0; i < ENEMY_SLOTS.length; i++) {
+    builder.add(primitives.box({ name: `blade-${i}`, size: [0.07, 0.05, 1], material: steel, castShadow: false }).runtime({ id: `blade-${i}` }));
+    builder.add(primitives.box({ name: `club-${i}`, size: [0.26, 0.26, 1.1], material: club, castShadow: false }).runtime({ id: `club-${i}` }));
+    builder.add(primitives.sphere({ name: `orb-${i}`, size: 0.3, material: material.custom(ballSpec()) }).runtime({ id: `orb-${i}` }));
+  }
+
+  const blobShadow = solidSpec([0.02, 0.025, 0.02], { alpha: 0.4 });
+  const disc = defineShape(unitDisc(20));
+  for (let i = 0; i < ACTOR_COUNT; i++) builder.add(geometry.custom(disc, { name: `blob-${i}`, material: material.custom(blobShadow), castShadow: false, receiveShadow: false }).runtime({ id: `blob-${i}` }));
 
   builder.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array(PARTICLES * 3).fill(0)),
@@ -163,14 +298,20 @@ export function buildWorld(options: WorldOptions): World {
 }
 
 interface Particle { life: number; max: number; vx: number; vy: number; vz: number; gravity: number; size: number; r: number; g: number; b: number; x: number; y: number; z: number }
+interface Anim { clip: string; t?: number; rate?: number }
+interface SceneNodeLike { transform: { worldMatrix: ArrayLike<number> } }
+
+const normalize = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 
 function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly ChakraPickup[]): WorldRuntime {
   const cameraController = app.camera;
   if (!cameraController) throw new Error("ninja-runner-port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
-  const { actors, clip, clipDuration } = options.actors;
-  const clocks = actors.map((_, i) => (i * 0.137) % clipDuration);
+  const { actors, durations } = options.actors;
+  const clipLength = (clip: string): number => durations[clip] ?? options.actors.clipDuration;
+  const has = (clip: string): string => (options.actors.clips.includes(clip) ? clip : options.actors.clip);
+  const loopClock = actors.map((_, i) => i * 0.137);
   const visible = new Array<boolean>(actors.length).fill(false);
   const tints = new Array<string>(actors.length).fill("");
   const slotEntity = new Map<number, number>();
@@ -182,11 +323,24 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
   const pickupIndex = new Map(pickups.map((p, i) => [p.id, i]));
   let flamesDirty = false;
   let camPos: [number, number, number] | null = null;
-  let lastFogMix = -1;
-  const fogNodes = ["route", "props", ...Array.from({ length: BARRIER_POOL }, (_, i) => `barrier-${i}`), ...Array.from({ length: BEAM_POOL }, (_, i) => `beam-${i}`)];
-  let heroYaw = 0;
-  const cloneYaw = new Array<number>(CLONE_SLOTS.length).fill(0);
+  let lastDamage = -10, lostAt = -1, lastFormShift = -10, dustClock = 0, auraClock = 0;
   const entityById = new Map(options.entities.map((e) => [e.id, e]));
+  const mm = actors.map(() => modelMatrix(0, -1000, 0, 0, 1));
+  const graphs = actors.map((a) => a.pipeline.resources.scene);
+  const boneCache = actors.map(() => new Map<string, SceneNodeLike | undefined>());
+  const bone = (slot: number, name: string): SceneNodeLike | undefined => {
+    const cache = boneCache[slot]!;
+    if (!cache.has(name)) cache.set(name, graphs[slot]!.findByName(name)[0] as SceneNodeLike | undefined);
+    return cache.get(name);
+  };
+  /** World position of a joint after the slot's current pose (call `refresh` first). */
+  const boneWorld = (slot: number, name: string): Vec3 | null => {
+    const m = bone(slot, name)?.transform.worldMatrix;
+    if (!m) return null;
+    const x = m[12]!, y = m[13]!, z = m[14]!, t = mm[slot]!;
+    return [t[0]! * x + t[4]! * y + t[8]! * z + t[12]!, t[1]! * x + t[5]! * y + t[9]! * z + t[13]!, t[2]! * x + t[6]! * y + t[10]! * z + t[14]!];
+  };
+  const refresh = (slot: number): void => graphs[slot]!.updateWorldTransforms();
 
   const emit = (x: number, y: number, z: number, count: number, color: Rgb, speed: number, size: number, life: number, gravity: number): void => {
     for (let k = 0; k < count; k++) {
@@ -200,25 +354,46 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
     }
   };
 
-  const place = (slot: number, entity: { s: number; x: number; y: number }, yawExtra: number, scale: number, clipRate: number, dt: number, show: boolean, tint?: { key: string; base: readonly [number, number, number, number]; emissive?: Rgb; strength?: number }): void => {
+  const setTint = (slot: number, key: string, tint: Tint): void => {
+    if (tints[slot] === key) return;
+    tints[slot] = key;
+    actors[slot]!.setTint({ baseColor: tint.base, ...(tint.emissive ? { emissiveColor: tint.emissive } : {}), ...(tint.strength !== undefined ? { emissiveStrength: tint.strength } : {}) });
+  };
+
+  const place = (slot: number, entity: { s: number; x: number; y: number }, yawExtra: number, scale: number, anim: Anim, dt: number, show: boolean): void => {
     const actor = actors[slot]!;
     visible[slot] = show;
+    node(`blob-${slot}`).setVisible(show);
     if (!show) return;
     const f = groundFrame(entity.s, entity.x, entity.y);
-    clocks[slot] = (clocks[slot]! + dt * clipRate) % clipDuration;
-    actor.playClip(clip, clocks[slot]!);
-    if (tint && tints[slot] !== tint.key) {
-      tints[slot] = tint.key;
-      actor.setTint({ baseColor: tint.base, ...(tint.emissive ? { emissiveColor: tint.emissive } : {}), ...(tint.strength !== undefined ? { emissiveStrength: tint.strength } : {}) });
-    }
-    (actor as TypedGLBActor & { __mm?: number[] }).__mm = modelMatrix(f.x, f.y, f.z, Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra, scale);
+    const clip = has(anim.clip);
+    const length = clipLength(clip);
+    let t = anim.t;
+    if (t === undefined) { loopClock[slot] = (loopClock[slot]! + dt * (anim.rate ?? 1)) % length; t = loopClock[slot]!; }
+    actor.playClip(clip, Math.max(0, Math.min(length, t)) % (length + 1e-6));
+    mm[slot] = modelMatrix(f.x, f.y, f.z, Math.atan2(f.dx, f.dz) + MODEL_YAW_OFFSET + yawExtra, scale);
+    (actor as TypedGLBActor & { __mm?: number[] }).__mm = mm[slot];
+    const g = groundFrame(entity.s, entity.x, 0.1);
+    const lift = Math.max(0, entity.y);
+    const blob = node(`blob-${slot}`);
+    blob.setPosition(g.x, g.y, g.z);
+    blob.setScale([0.62 * scale * (1 - Math.min(0.5, lift * 0.1)), 1, 0.62 * scale * (1 - Math.min(0.5, lift * 0.1))]);
+    blob.setUniform?.("solidAlpha", 0.42 * (1 - Math.min(0.7, lift * 0.14)));
   };
 
   const detach = attachRootRenderSource(options.canvas, {
-    source: { collectRenderItems: () => actors.flatMap((actor, i) => visible[i] ? actor.collectRenderItems({ modelMatrix: (actor as TypedGLBActor & { __mm?: number[] }).__mm ?? modelMatrix(0, -1000, 0, 0, 1) }) : []) }
+    source: { collectRenderItems: () => actors.flatMap((actor, i) => visible[i] ? actor.collectRenderItems({ modelMatrix: mm[i]! }).map((item) => ({ ...item, castShadow: false })) : []) }
   });
 
-  const window60 = (e: Entity, s: number): number => e.s - s;
+  const aim = (id: string, from: Vec3, to: Vec3, length: number, grip = 0.12): void => {
+    const d = normalize([to[0] - from[0], to[1] - from[1], to[2] - from[2]]);
+    const h = node(id);
+    h.setVisible(true);
+    h.setPosition(to[0] + d[0] * (length / 2 - grip), to[1] + d[1] * (length / 2 - grip), to[2] + d[2] * (length / 2 - grip));
+    h.setRotation(-Math.asin(Math.max(-1, Math.min(1, d[1]))), Math.atan2(d[0], d[2]), 0);
+    h.setScale([1, 1, length]);
+  };
+  const hideWeapons = (i: number): void => { for (const k of ["blade", "club", "orb"]) node(`${k}-${i}`).setVisible(false); };
 
   return {
     update(state, dt, time, events) {
@@ -226,8 +401,6 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       /* sky, fog and animated uniforms */
       const sky = groundFrame(s, 0, 0);
       node("sky").setPosition(sky.x, 0, sky.z);
-      const forest = smooth(1470, 1660, s) * (1 - smooth(2110, 2300, s));
-      if (Math.abs(forest - lastFogMix) > 0.004) { lastFogMix = forest; for (const id of fogNodes) node(id).setUniform?.("fogMix", forest); }
       node("river").setUniform?.("waterTime", time);
       node("valley-falls").setUniform?.("fallsTime", time);
       const flames = node("chakra-flames");
@@ -239,41 +412,56 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
         const at = (es: number, lane: number, y = 0.9): [number, number, number] => { const p = groundFrame(es, lane * laneOffset(es), y); return [p.x, p.y, p.z]; };
         if (ev.type === "pickup") {
           const i = pickupIndex.get(ev.entity as number);
-          if (i !== undefined) { aliveFlags[i] = 0; flamesDirty = true; const p = pickups[i]!.position; emit(p[0], p[1], p[2], 10, [0.3, 0.85, 1], 3, 0.16, 0.5, -2); }
-        } else if (ev.type === "kill") { const p = at(ev.s as number, ev.lane as number, 1); emit(p[0], p[1], p[2], 26, ev.heavy ? [1, 0.55, 0.2] : [1, 0.85, 0.5], 6, 0.3, 0.7, 4); }
-        else if (ev.type === "land") { const p = groundFrame(s, state.x, 0.1); emit(p.x, p.y, p.z, 8, [0.8, 0.75, 0.6], 2.2, 0.28, 0.5, 1); }
-        else if (ev.type === "damage") { const p = groundFrame(s, state.x, 1.2); emit(p.x, p.y, p.z, 18, [1, 0.25, 0.2], 5, 0.26, 0.6, 3); }
-        else if (ev.type === "windImpact" || ev.type === "cloneStrike") { const p = at(ev.s as number, ev.lane as number, 1.1); emit(p[0], p[1], p[2], 22, [0.6, 0.95, 1], 6.5, 0.28, 0.6, 0); }
-        else if (ev.type === "break") { const p = at(ev.s as number, ev.lane as number, 0.8); emit(p[0], p[1], p[2], 22, [0.85, 0.6, 0.35], 5, 0.3, 0.65, 5); }
-        else if (ev.type === "dash") { const p = groundFrame(s, state.x, 1); emit(p.x, p.y, p.z, 20, [0.5, 0.9, 1], 4, 0.25, 0.5, 0); }
+          if (i !== undefined) { aliveFlags[i] = 0; flamesDirty = true; const p = pickups[i]!.position; emit(p[0], p[1], p[2], 12, [0.3, 0.85, 1], 3, 0.18, 0.55, -2); }
+        } else if (ev.type === "kill") { const p = at(ev.s as number, ev.lane as number, 1); emit(p[0], p[1], p[2], ev.heavy ? 40 : 28, ev.heavy ? [1, 0.55, 0.2] : [1, 0.85, 0.5], 6, 0.32, 0.75, 4); }
+        else if (ev.type === "land") { const p = groundFrame(s, state.x, 0.1); emit(p.x, p.y, p.z, 10, [0.8, 0.75, 0.6], 2.4, 0.3, 0.55, 1); }
+        else if (ev.type === "damage") { lastDamage = time; const p = groundFrame(s, state.x, 1.2); emit(p.x, p.y, p.z, 22, [1, 0.25, 0.2], 5, 0.28, 0.65, 3); }
+        else if (ev.type === "windImpact" || ev.type === "cloneStrike") { const p = at(ev.s as number, ev.lane as number, 1.1); emit(p[0], p[1], p[2], 24, [0.6, 0.95, 1], 6.5, 0.3, 0.65, 0); }
+        else if (ev.type === "break") { const p = at(ev.s as number, ev.lane as number, 0.8); emit(p[0], p[1], p[2], 26, [0.85, 0.6, 0.35], 5, 0.32, 0.7, 5); }
+        else if (ev.type === "dash") { const p = groundFrame(s, state.x, 1); emit(p.x, p.y, p.z, 24, [0.5, 0.9, 1], 4, 0.26, 0.55, 0); }
         else if (ev.type === "rasengan") { const p = groundFrame(s + 0.8, state.x, 1.2); emit(p.x, p.y, p.z, 12, [0.4, 0.8, 1], 3, 0.2, 0.4, 0); }
+        else if (ev.type === "form" || ev.type === "unlock") {
+          lastFormShift = time;
+          const p = groundFrame(s, state.x, 0.9);
+          emit(p.x, p.y, p.z, 46, ev.form === "kurama" ? [1, 0.7, 0.18] : [1, 0.62, 0.22], 7, 0.34, 0.9, -1.5);
+        } else if (ev.type === "enemyAttack") { const p = at(ev.s as number, ev.lane as number, 1.2); emit(p[0], p[1], p[2], 8, [1, 0.5, 0.3], 3, 0.2, 0.35, 0); }
       }
       if (flamesDirty) { flames.updateAttribute?.("aAlive", { array: aliveFlags, offset: 0 }); flamesDirty = false; }
 
-      /* hero */
-      const heroRate = state.phase === "running" ? 1.1 + (state.speed - 18) * 0.05 : 0.2;
-      const heroScale = state.form === "kurama" ? 1.14 : 1;
-      const tintKey = `${state.form}${state.invulnerable > 0 && Math.floor(state.time * 14) % 2 === 0 ? "-flash" : ""}`;
-      const base = FORM_TINT[state.form]!;
-      place(HERO, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.82 : 1), heroRate, dt, true,
-        { key: tintKey, base: tintKey.endsWith("-flash") ? [1, 1, 1, 1] : base.base, emissive: base.emissive, strength: base.strength });
-      const hf = groundFrame(s, state.x, state.y);
-      heroYaw = Math.atan2(hf.dx, hf.dz);
+      /* hero: pick a clip from the sim state */
+      if (state.phase === "lost" && lostAt < 0) lostAt = time;
+      if (state.phase !== "lost") lostAt = -1;
+      const grounded = state.y < 0.06 && !state.falling;
+      const hitAge = time - lastDamage;
+      let anim: Anim;
+      if (state.phase === "lost") anim = { clip: CLIPS.death, t: Math.min(clipLength(CLIPS.death) * 0.98, Math.max(0, time - lostAt) * 0.9) };
+      else if (state.phase === "intro" || state.phase === "paused") anim = { clip: CLIPS.idle, rate: 0.8 };
+      else if (hitAge < 0.32 && state.phase === "running") anim = { clip: CLIPS.hit, t: hitAge };
+      else if (state.shurikenCast > 0) anim = { clip: CLIPS.sword, t: Math.min(1, (state.time - state.shurikenStartedAt) / TUNING.shurikenWindup) * clipLength(CLIPS.sword) * 0.55 };
+      else if (state.attack > 0) anim = { clip: CLIPS.punch, t: Math.min(1, (state.time - state.attackStartedAt) / TUNING.attackDuration) * clipLength(CLIPS.punch) * 0.9 };
+      else if (!grounded) anim = { clip: CLIPS.jump, rate: 0.9 };
+      else if (state.slide > 0) anim = { clip: CLIPS.slide, rate: 1 };
+      else anim = { clip: CLIPS.run, rate: (state.dash > 0 ? 1.7 : 1) * (1.15 + (state.speed - 18) * 0.05) };
+      const heroScale = state.form === "kurama" ? 1.12 : 1;
+      const flash = state.invulnerable > 0 && Math.floor(state.time * 14) % 2 === 0;
+      const heroTint = flash ? FLASH_TINT : FORM_TINT[state.form]!;
+      setTint(HERO, flash ? "flash" : state.form, heroTint);
+      place(HERO, { s, x: state.x, y: Math.max(state.y, state.falling ? state.y : 0) }, MODEL_YAW_OFFSET, heroScale * (state.slide > 0 ? 0.9 : 1), anim, dt, true);
 
       /* shadow clones */
       CLONE_SLOTS.forEach((slot, k) => {
         const show = state.clones > 0;
         const lateral = [-1.5, 1.5, 0][k]!;
         const behind = [0.6, 0.6, 2.4][k]!;
-        cloneYaw[k] = heroYaw;
-        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.96, heroRate * (1 + k * 0.07), dt, show, { key: "clone", base: CLONE_TINT, emissive: [0.2, 0.5, 1], strength: 1.2 });
+        setTint(slot, "clone", CLONE_TINT);
+        place(slot, { s: s - behind, x: state.x + lateral, y: state.y }, 0, 0.96, state.attack > 0 ? anim : { clip: grounded ? CLIPS.run : CLIPS.jump, rate: 1.15 * (1 + k * 0.07) }, dt, show);
       });
 
       /* enemies: stable slot per entity while in window */
       const window: Entity[] = [];
       for (const e of state.entities) {
         if (!isEnemy(e)) continue;
-        const d = window60(e, s);
+        const d = e.s - s;
         if (d > 72 || d < -6) continue;
         if (!e.alive && state.time - e.defeatedAt > 0.45) continue;
         window.push(e);
@@ -287,24 +475,50 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
         const free = ENEMY_SLOTS.find((sl) => !slotEntity.has(sl));
         if (free !== undefined) { slotEntity.set(free, e.id); assigned.add(e.id); tints[free] = ""; }
       }
-      for (const slot of ENEMY_SLOTS) {
+      ENEMY_SLOTS.forEach((slot, w) => {
         const id = slotEntity.get(slot);
         const e = id === undefined ? undefined : entityById.get(id);
-        if (!e) { visible[slot] = false; continue; }
+        if (!e) { visible[slot] = false; node(`blob-${slot}`).setVisible(false); hideWeapons(w); return; }
+        const kind = e.type as EnemyKind;
         const dead = !e.alive;
         const pop = dead ? Math.max(0, 1 - (state.time - e.defeatedAt) / 0.45) : 1;
-        place(slot, { s: e.s, x: e.lane * laneOffset(e.s), y: e.y + (dead ? (1 - pop) * 1.6 : 0) }, Math.PI, (e.type === "heavy" ? 1.35 : 1) * (0.4 + 0.6 * pop), e.approachSpeed > 0 ? 1.4 : 0.5, dt, pop > 0.02,
-          { key: e.type, base: ENEMY_TINT[e.type as EnemyKind] });
-      }
+        let ea: Anim;
+        if (dead) ea = { clip: CLIPS.hit, t: Math.min(clipLength(CLIPS.hit), (state.time - e.defeatedAt) * 0.75) };
+        else if (e.intent) {
+          const i = e.intent;
+          const stageP = 1 - i.timer / Math.max(1e-3, i.duration);
+          const p = i.stage === "windup" ? stageP * 0.5 : i.stage === "release" ? 0.5 + stageP * 0.25 : 0.75 + stageP * 0.25;
+          ea = { clip: ENEMY_ATTACK_CLIP[kind], t: Math.max(0, Math.min(0.98, p)) * clipLength(ENEMY_ATTACK_CLIP[kind]) };
+        } else if (e.stagger > 0) ea = { clip: CLIPS.hit, t: 0.1 };
+        else ea = e.approachSpeed > 0 ? { clip: CLIPS.run, rate: 1.25 } : { clip: CLIPS.idle, rate: 0.9 };
+        setTint(slot, kind, { base: ENEMY_TINT[kind] });
+        place(slot, { s: e.s, x: e.lane * laneOffset(e.s), y: e.y + (dead ? (1 - pop) * 1.6 : 0) }, Math.PI, (kind === "heavy" ? 1.3 : 1) * (0.4 + 0.6 * pop), ea, dt, pop > 0.02);
+        hideWeapons(w);
+        if (pop > 0.5) {
+          refresh(slot);
+          const hand = boneWorld(slot, "hand_r"), fore = boneWorld(slot, "lowerarm_r");
+          if (hand && fore) {
+            if (kind === "swordsman") aim(`blade-${w}`, fore, hand, 1.15);
+            else if (kind === "scout") aim(`blade-${w}`, fore, hand, 0.5, 0.05);
+            else if (kind === "heavy") aim(`club-${w}`, fore, hand, 1.2 * 1.3, 0.25);
+          }
+          if (kind === "caster") {
+            const lh = boneWorld(slot, "hand_l");
+            if (lh) { const o = node(`orb-${w}`); o.setVisible(true); o.setPosition(lh[0], lh[1] + 0.12, lh[2]); o.setScale(0.8 + 0.5 * (e.intent?.stage === "windup" ? 1 - e.intent.timer / Math.max(1e-3, e.intent.duration) : 0)); o.setUniform?.("ballTime", time + w); o.setUniform?.("ballOpacity", 0.95); }
+          }
+        }
+      });
 
       /* barriers and beams */
       const barriers = state.entities.filter((e) => e.type === "barrier" && e.alive && e.s - s > -6 && e.s - s < 90);
       const beams = state.entities.filter((e) => e.type === "beam" && e.alive && e.s - s > -6 && e.s - s < 90);
       for (let i = 0; i < BARRIER_POOL; i++) {
         const e = barriers[i];
-        const h = node(`barrier-${i}`);
-        h.setVisible(!!e);
-        if (e) { const f = groundFrame(e.s, e.lane * laneOffset(e.s), 0.75); h.setPosition(f.x, f.y, f.z); h.setRotation(0, Math.atan2(f.dx, f.dz), 0); }
+        for (const [id, lift] of [[`barrier-${i}`, 0.75], [`barrier-band-${i}`, 0.45], [`barrier-top-${i}`, 1.52]] as const) {
+          const h = node(id);
+          h.setVisible(!!e);
+          if (e) { const f = groundFrame(e.s, e.lane * laneOffset(e.s), lift); h.setPosition(f.x, f.y, f.z); h.setRotation(0, Math.atan2(f.dx, f.dz), 0); }
+        }
       }
       for (let i = 0; i < BEAM_POOL; i++) {
         const e = beams[i];
@@ -313,20 +527,24 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
         if (e) { const f = groundFrame(e.s, e.lane * laneOffset(e.s), 1.1); h.setPosition(f.x, f.y, f.z); h.setRotation(0, Math.atan2(f.dx, f.dz), 0); }
       }
 
-      /* Rasengan ball + sparks, wind shuriken */
+      /* Rasengan orb in the hero's hand + sparks, wind shuriken */
       const ball = node("rasengan");
       const casting = state.attack > 0 || state.shurikenCast > 0;
       ball.setVisible(casting);
       const sparks = node("rasengan-sparks");
       sparks.setVisible(casting);
       if (casting) {
-        const f = groundFrame(s + 0.7, state.x + 0.25, state.y + 1.15);
+        refresh(HERO);
+        const hand = boneWorld(HERO, "hand_r"), fore = boneWorld(HERO, "lowerarm_r");
+        const fallback = groundFrame(s + 0.7, state.x + 0.25, state.y + 1.15);
+        const reach = hand && fore ? normalize([hand[0] - fore[0], hand[1] - fore[1], hand[2] - fore[2]]) : ([0, 0, 0] as Vec3);
+        const pos: Vec3 = hand ? [hand[0] + reach[0] * 0.28, hand[1] + reach[1] * 0.28, hand[2] + reach[2] * 0.28] : [fallback.x, fallback.y, fallback.z];
         const k = state.shurikenCast > 0 ? 3.2 : 1;
-        ball.setPosition(f.x, f.y, f.z);
+        ball.setPosition(pos[0], pos[1], pos[2]);
         ball.setScale(k);
         ball.setUniform?.("ballTime", time);
         ball.setUniform?.("ballOpacity", 1);
-        sparks.setPosition(f.x, f.y, f.z);
+        sparks.setPosition(pos[0], pos[1], pos[2]);
         sparks.setUniform?.("sparkTime", time);
         sparks.setUniform?.("sparkStrength", 1);
       }
@@ -341,6 +559,36 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
           h.setRotation(0, time * 18, 0);
           h.setUniform?.("ballTime", time);
           h.setUniform?.("ballOpacity", 0.9);
+        }
+      }
+
+      /* form aura: shell around the runner plus rising embers, dust at the feet */
+      const aura = node("aura");
+      const auraOn = state.phase !== "intro" && state.form !== "base";
+      aura.setVisible(auraOn);
+      if (auraOn) {
+        const c = groundFrame(s, state.x, state.y + 0.95 * heroScale);
+        const pulse = 1 + Math.sin(time * 6) * 0.05;
+        const kur = state.form === "kurama";
+        aura.setPosition(c.x, c.y, c.z);
+        aura.setScale([(kur ? 1.0 : 0.78) * pulse, (kur ? 1.35 : 1.15) * pulse, (kur ? 1.0 : 0.78) * pulse]);
+        aura.setUniform?.("auraTime", time);
+        aura.setUniform?.("auraStrength", (kur ? 1.1 : 0.7) + Math.max(0, 1 - (time - lastFormShift) / 1.2) * 0.8);
+        aura.setUniform?.("auraColor", kur ? [1, 0.78, 0.22] : [1, 0.5, 0.14]);
+        auraClock += dt * (kur ? 70 : 28);
+        while (auraClock >= 1) {
+          auraClock -= 1;
+          const hip = groundFrame(s - rng() * 0.8, state.x + (rng() - 0.5) * 0.9, state.y + 0.2 + rng() * 1.6);
+          emit(hip.x, hip.y, hip.z, 1, kur ? [1, 0.72 + rng() * 0.2, 0.2] : [1, 0.55, 0.2], kur ? 2.4 : 1.4, kur ? 0.3 : 0.22, kur ? 0.8 : 0.6, -2.4);
+        }
+      }
+      if (state.phase === "running" && grounded) {
+        dustClock += dt * (state.speed / 18) * 9;
+        while (dustClock >= 1) {
+          dustClock -= 1;
+          const f = groundFrame(s, state.x + (rng() - 0.5) * 0.5, 0.08);
+          const tone = hexLinear(state.s > 1500 && state.s < 2260 ? "#7a6a3a" : "#c9b693");
+          emit(f.x, f.y, f.z, 1, [Math.min(1, tone[0] * 1.5), Math.min(1, tone[1] * 1.5), Math.min(1, tone[2] * 1.5)], 1.1, 0.34, 0.5, -0.3);
         }
       }
 
@@ -365,20 +613,24 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       particles.updateAttribute?.("aSize", { array: pSize, offset: 0 });
       particles.updateAttribute?.("aAlpha", { array: pAlpha, offset: 0 });
 
-      /* chase camera: the original's offsets, eased with 1 - exp(-7 dt) */
+      /* chase camera: the original's offsets, eased with 1 - exp(-7 dt), with a short shake on damage */
       const widen = smooth(2220, 2410, s);
       const eyeF = groundFrame(s - 6.4 - widen * 3.4, state.x * 0.45, 3.35 + widen * 0.95 + state.y * 0.22);
       const lookF = groundFrame(s + 12 + widen * 6, state.x * 0.38, 1.6 + widen * 0.35 + state.y * 0.15);
       const k = camPos ? 1 - Math.exp(-7 * dt) : 1;
       camPos = camPos ? [camPos[0] + (eyeF.x - camPos[0]) * k, camPos[1] + (eyeF.y - camPos[1]) * k, camPos[2] + (eyeF.z - camPos[2]) * k] : [eyeF.x, eyeF.y, eyeF.z];
-      cameraController.setPose({ position: camPos, target: [lookF.x, lookF.y, lookF.z], fov: 57 }, { cut: false });
+      const shake = 0.3 * Math.exp(-9 * Math.max(0, hitAge)) * (hitAge < 1 ? 1 : 0);
+      const eye: Vec3 = [camPos[0] + Math.sin(time * 71) * shake, camPos[1] + Math.cos(time * 83) * shake * 0.7, camPos[2] + Math.sin(time * 57) * shake * 0.4];
+      cameraController.setPose({ position: eye, target: [lookF.x, lookF.y, lookF.z], fov: 57 + (state.dash > 0 ? 5 : 0) }, { cut: false });
     },
     resetCamera() { camPos = null; },
     probeBones(joint) {
       const names = actors[0]!.animation.skeletonJointNames();
-      const name = joint && names.includes(joint) ? joint : names.includes("mixamorig:LeftForeArm") ? "mixamorig:LeftForeArm" : names[0]!;
+      const name = joint && names.includes(joint) ? joint : names.includes("lowerarm_l") ? "lowerarm_l" : names.includes("mixamorig:LeftForeArm") ? "mixamorig:LeftForeArm" : names[0]!;
+      const clip = options.actors.clip;
+      const length = clipLength(clip);
       const translations: [number, number, number][] = actors.map((actor, i) => {
-        actor.playClip(clip, (i * 0.0713) % clipDuration);
+        actor.playClip(clip, (i * 0.0713) % length);
         const graph = actor.pipeline.resources.scene;
         graph.updateWorldTransforms();
         const n = graph.findByName(name)[0];

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-last-train-port",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "private": true,
   "type": "module",
   "description": "Aura3D port of the mechanics of Last Train to the Sea: No garage wear, requests or Gold grade; procedural models; night is a sky blend plus surface tints.",

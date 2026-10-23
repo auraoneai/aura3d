@@ -1,0 +1,909 @@
+{
+  "schema": "a3d-look-features/1",
+  "game": "splat-rush",
+  "sources": [
+    {
+      "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+      "bytes": 43212,
+      "lines": 1,
+      "singleLine": true,
+      "hash": "ecb8cee4a80c016b"
+    },
+    {
+      "file": "evidence/crayon-runtime/splat-rush/srcdoc.html#script0",
+      "bytes": 2895,
+      "lines": 18,
+      "singleLine": false,
+      "hash": "1f54ee6d6b2e0ea8"
+    }
+  ],
+  "screens": [
+    {
+      "screen": "title",
+      "hits": 13,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 530,
+          "offset": 529
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 17014,
+          "offset": 17013
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 18260,
+          "offset": 18259
+        }
+      ]
+    },
+    {
+      "screen": "results",
+      "hits": 10,
+      "first": [
+        {
+          "file": "evidence/crayon-runtime/splat-rush/srcdoc.html#script0",
+          "line": 1,
+          "col": 550,
+          "offset": 549
+        },
+        {
+          "file": "evidence/crayon-runtime/splat-rush/srcdoc.html#script0",
+          "line": 1,
+          "col": 637,
+          "offset": 636
+        },
+        {
+          "file": "evidence/crayon-runtime/splat-rush/srcdoc.html#script0",
+          "line": 1,
+          "col": 694,
+          "offset": 693
+        }
+      ]
+    },
+    {
+      "screen": "game-over",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 17696,
+          "offset": 17695
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 18269,
+          "offset": 18268
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 19393,
+          "offset": 19392
+        }
+      ]
+    },
+    {
+      "screen": "intro",
+      "hits": 4,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21346,
+          "offset": 21345
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 40342,
+          "offset": 40341
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 40354,
+          "offset": 40353
+        }
+      ]
+    },
+    {
+      "screen": "leaderboard",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 40048,
+          "offset": 40047
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 40063,
+          "offset": 40062
+        }
+      ]
+    },
+    {
+      "screen": "loading",
+      "hits": 2,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21301,
+          "offset": 21300
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 34107,
+          "offset": 34106
+        }
+      ]
+    }
+  ],
+  "stateSwitches": [],
+  "domIds": [
+    {
+      "id": "final-score",
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 17740,
+        "offset": 17739
+      }
+    },
+    {
+      "id": "btn-restart",
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 17740,
+        "offset": 17739
+      }
+    },
+    {
+      "id": "hud-powerups",
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 18485,
+        "offset": 18484
+      }
+    },
+    {
+      "id": "popup-container",
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 19881,
+        "offset": 19880
+      }
+    },
+    {
+      "id": "splash-best",
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 21385,
+        "offset": 21384
+      }
+    },
+    {
+      "id": "btn-start",
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 33837,
+        "offset": 33836
+      }
+    }
+  ],
+  "inputs": {
+    "keys": [],
+    "listeners": [
+      {
+        "event": "click",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 33837,
+          "offset": 33836
+        }
+      },
+      {
+        "event": "pointercancel",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 33787,
+          "offset": 33786
+        }
+      },
+      {
+        "event": "pointerdown",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 33347,
+          "offset": 33346
+        }
+      },
+      {
+        "event": "pointermove",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 33539,
+          "offset": 33538
+        }
+      },
+      {
+        "event": "pointerup",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 33741,
+          "offset": 33740
+        }
+      },
+      {
+        "event": "resize",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21145,
+          "offset": 21144
+        }
+      }
+    ]
+  },
+  "audio": {
+    "apiUse": [
+      {
+        "api": "createGain",
+        "hits": 14,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21791,
+          "offset": 21790
+        }
+      },
+      {
+        "api": "exponentialRampToValueAtTime",
+        "hits": 9,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 22467,
+          "offset": 22466
+        }
+      },
+      {
+        "api": "createOscillator",
+        "hits": 6,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 22355,
+          "offset": 22354
+        }
+      },
+      {
+        "api": "setValueAtTime",
+        "hits": 6,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 22437,
+          "offset": 22436
+        }
+      },
+      {
+        "api": "createBiquadFilter",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 23801,
+          "offset": 23800
+        }
+      },
+      {
+        "api": "createBufferSource",
+        "hits": 2,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 23753,
+          "offset": 23752
+        }
+      },
+      {
+        "api": "AudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21734,
+          "offset": 21733
+        }
+      },
+      {
+        "api": "webkitAudioContext",
+        "hits": 1,
+        "first": {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21755,
+          "offset": 21754
+        }
+      }
+    ],
+    "urls": [],
+    "oscillatorTypes": [
+      "sine",
+      "triangle"
+    ],
+    "oscillatorCalls": 3,
+    "playCalls": 4
+  },
+  "storage": [],
+  "network": [],
+  "platform": [],
+  "three": {
+    "constructed": {
+      "BoxGeometry": 2,
+      "BufferAttribute": 2,
+      "BufferGeometry": 1,
+      "CanvasTexture": 3,
+      "CapsuleGeometry": 3,
+      "Color": 2,
+      "ConeGeometry": 2,
+      "CylinderGeometry": 2,
+      "DirectionalLight": 2,
+      "ExtrudeGeometry": 1,
+      "Group": 13,
+      "HemisphereLight": 1,
+      "InstancedMesh": 6,
+      "Mesh": 22,
+      "MeshBasicMaterial": 3,
+      "MeshToonMaterial": 19,
+      "Object3D": 2,
+      "SphereGeometry": 12,
+      "Vector3": 1
+    },
+    "imports": [
+      "boot",
+      "tickVoxels"
+    ],
+    "importSources": [
+      "playlabs-boot",
+      "three"
+    ]
+  },
+  "shaders": [],
+  "postFx": [
+    {
+      "word": "tonemap",
+      "hits": 3,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21089,
+          "offset": 21088
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21103,
+          "offset": 21102
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 21119,
+          "offset": 21118
+        }
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "word": "rain",
+      "hits": 30,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 252,
+          "offset": 251
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 606,
+          "offset": 605
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 832,
+          "offset": 831
+        }
+      ]
+    },
+    {
+      "word": "splash",
+      "hits": 11,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 530,
+          "offset": 529
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 17014,
+          "offset": 17013
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 18260,
+          "offset": 18259
+        }
+      ]
+    },
+    {
+      "word": "trail",
+      "hits": 8,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 271,
+          "offset": 270
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 621,
+          "offset": 620
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 32489,
+          "offset": 32488
+        }
+      ]
+    },
+    {
+      "word": "burst",
+      "hits": 5,
+      "first": [
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 37608,
+          "offset": 37607
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 37621,
+          "offset": 37620
+        },
+        {
+          "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+          "line": 1,
+          "col": 39892,
+          "offset": 39891
+        }
+      ]
+    }
+  ],
+  "dataTables": [
+    {
+      "kind": "config-object",
+      "length": 23,
+      "keys": [
+        "BALL_RADIUS",
+        "FORWARD_SPEED_INIT",
+        "MAX_SPEED",
+        "SPEED_INCREMENT",
+        "STEER_SPEED",
+        "LANE_HALF_WIDTH",
+        "GATE_SPACING",
+        "SHRINK_FACTOR",
+        "GROW_FACTOR",
+        "MAX_LIVES",
+        "RAINBOW_DURATION",
+        "TRAIL_DURATION",
+        "SCORE_PER_METER",
+        "SEGMENT_LENGTH",
+        "CURVE_AMPLITUDE",
+        "PALETTE",
+        "POINTS_GATE",
+        "POINTS_PERFECT",
+        "PERFECT_WINDOW",
+        "MAX_MULT",
+        "COMBO_PER_MULT",
+        "SCOREX2_DURATION",
+        "MILESTONE_SCORE"
+      ],
+      "numbers": {
+        "BALL_RADIUS": 0.55,
+        "FORWARD_SPEED_INIT": 16,
+        "MAX_SPEED": 29,
+        "SPEED_INCREMENT": 0.26,
+        "STEER_SPEED": 10,
+        "LANE_HALF_WIDTH": 3,
+        "GATE_SPACING": 15,
+        "SHRINK_FACTOR": 0.8,
+        "GROW_FACTOR": 1.1,
+        "MAX_LIVES": 3,
+        "RAINBOW_DURATION": 5,
+        "TRAIL_DURATION": 6,
+        "SCORE_PER_METER": 1,
+        "SEGMENT_LENGTH": 1,
+        "CURVE_AMPLITUDE": 3,
+        "POINTS_GATE": 40,
+        "POINTS_PERFECT": 60,
+        "PERFECT_WINDOW": 0.55,
+        "MAX_MULT": 5,
+        "COMBO_PER_MULT": 3,
+        "SCOREX2_DURATION": 7,
+        "MILESTONE_SCORE": 750
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 86,
+        "offset": 85
+      }
+    },
+    {
+      "kind": "config-object",
+      "length": 25,
+      "keys": [
+        "phase",
+        "score",
+        "distance",
+        "lives",
+        "speed",
+        "laneOffset",
+        "rainbowTimer",
+        "trailTimer",
+        "scoreX2Timer",
+        "scoreX2Active",
+        "shieldActive",
+        "milestone",
+        "squashT",
+        "frameCount",
+        "segmentCounter",
+        "lastSegmentZ",
+        "lastGateZ",
+        "playerColorIndex",
+        "ballScale",
+        "lastCollisionRole",
+        "shakeTimer",
+        "isRainbowActive",
+        "_rainbowVisual",
+        "combo",
+        "multiplier"
+      ],
+      "numbers": {
+        "score": 0,
+        "distance": 0,
+        "lives": 3,
+        "laneOffset": 0,
+        "rainbowTimer": 0,
+        "trailTimer": 0,
+        "scoreX2Timer": 0,
+        "scoreX2Active": null,
+        "shieldActive": null,
+        "milestone": 750,
+        "squashT": 0,
+        "frameCount": 0,
+        "segmentCounter": 0,
+        "lastSegmentZ": 0,
+        "lastGateZ": -30,
+        "playerColorIndex": 0,
+        "ballScale": 1,
+        "shakeTimer": 0,
+        "isRainbowActive": null,
+        "_rainbowVisual": null,
+        "combo": 0,
+        "multiplier": 1
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 523,
+        "offset": 522
+      }
+    },
+    {
+      "kind": "numeric-array",
+      "length": 16,
+      "stats": {
+        "min": 0,
+        "max": 12,
+        "mean": 5,
+        "head": [
+          0,
+          4,
+          7,
+          4,
+          9,
+          7
+        ]
+      },
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 24962,
+        "offset": 24961
+      }
+    }
+  ],
+  "assets": [],
+  "functions": [
+    {
+      "name": "initUI",
+      "params": 0,
+      "chars": 11477,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 6804,
+        "offset": 6803
+      }
+    },
+    {
+      "name": "t",
+      "params": 0,
+      "chars": 9064,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 34121,
+        "offset": 34120
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 2890,
+      "loc": {
+        "file": "evidence/crayon-runtime/splat-rush/srcdoc.html#script0",
+        "line": 1,
+        "col": 2,
+        "offset": 1
+      }
+    },
+    {
+      "name": "L",
+      "params": 0,
+      "chars": 1287,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 21685,
+        "offset": 21684
+      }
+    },
+    {
+      "name": "fn",
+      "params": 0,
+      "chars": 1284,
+      "loc": {
+        "file": "evidence/crayon-runtime/splat-rush/srcdoc.html#script0",
+        "line": 1,
+        "col": 1191,
+        "offset": 1190
+      }
+    },
+    {
+      "name": "r",
+      "params": 0,
+      "chars": 1090,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 1869,
+        "offset": 1868
+      }
+    },
+    {
+      "name": "updateHUD",
+      "params": 6,
+      "chars": 1035,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 18292,
+        "offset": 18291
+      }
+    },
+    {
+      "name": "Ye",
+      "params": 0,
+      "chars": 1024,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 32269,
+        "offset": 32268
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 947,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 41441,
+        "offset": 41440
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 868,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 22101,
+        "offset": 22100
+      }
+    },
+    {
+      "name": "t",
+      "params": 0,
+      "chars": 672,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 22269,
+        "offset": 22268
+      }
+    },
+    {
+      "name": "p",
+      "params": 0,
+      "chars": 661,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 3184,
+        "offset": 3183
+      }
+    },
+    {
+      "name": "ue",
+      "params": 0,
+      "chars": 659,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 26504,
+        "offset": 26503
+      }
+    },
+    {
+      "name": "B",
+      "params": 1,
+      "chars": 645,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 23466,
+        "offset": 23465
+      }
+    },
+    {
+      "name": "(anonymous)",
+      "params": 0,
+      "chars": 624,
+      "loc": {
+        "file": "tests/fixtures/crayon/splat-rush/game-module.mjs",
+        "line": 1,
+        "col": 27858,
+        "offset": 27857
+      }
+    }
+  ],
+  "counts": {
+    "stringLiterals": 291,
+    "functions": 104,
+    "newExpressions": 103,
+    "calls": 605
+  },
+  "status": "MAPPED",
+  "unported": {
+    "absentInPort": [
+      {
+        "feature": "screen:leaderboard",
+        "original": "2 references",
+        "port": "absent"
+      },
+      {
+        "feature": "screen:loading",
+        "original": "2 references",
+        "port": "absent"
+      },
+      {
+        "feature": "post-processing",
+        "original": "tonemapx3",
+        "port": "absent"
+      }
+    ],
+    "presentInPort": [
+      {
+        "feature": "audio",
+        "original": "41 audio API uses / 0 audio assets",
+        "port": "present"
+      },
+      {
+        "feature": "screen:title",
+        "original": "13 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:results",
+        "original": "10 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:game-over",
+        "original": "8 references",
+        "port": "present"
+      },
+      {
+        "feature": "screen:intro",
+        "original": "4 references",
+        "port": "present"
+      },
+      {
+        "feature": "particles",
+        "original": "rainx30, splashx11, trailx8, burstx5",
+        "port": "present"
+      },
+      {
+        "feature": "pointer/touch input",
+        "original": "pointercancel, pointerdown, pointermove, pointerup",
+        "port": "present"
+      }
+    ],
+    "declaredNotPorted": [
+      "**Audio is not ported.** The original synthesises music and effects with Web Audio; the capture removes `AudioContext` because its",
+      "**Look**: the toon ramp, lights, colours and geometry dimensions match, but this is not pixel parity: screen-space flash and vignette overlays (DOM `mix-blend-mode`) and the bevel on the",
+      "**Platform SDKs** (`AstroSDK`, `CrazyPort`, leaderboard, saved best score) are absent; the game-over card shows the score only.",
+      "The rendered frame is verified for content (sky, deck, gates, ball) on a software-WebGL2 remote runner, not compared pixel by pixel."
+    ]
+  },
+  "note": "Inventory only: names, counts, numbers, hashes and file:line:col locations. No third-party source text is stored."
+}
