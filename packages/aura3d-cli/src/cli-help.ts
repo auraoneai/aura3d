@@ -39,6 +39,12 @@ Commands:
   aura3d assets admit <id> --quality prototype|candidate|release
   aura3d assets import-meshy artifacts/meshy/run --name assetKey --rights-evidence artifacts/meshy/run/rights.json [--file model.glb] [--thumbnail thumbnail.png] [--profile prop|environment|vehicle|humanoid] [--allowed-root artifacts/meshy] [--quality candidate] [--role ${assetRoleUsage}]
       Local-only candidate ingestion: confines paths, validates GLB/metadata, reports profile budgets, retains a local thumbnail without signed URLs, and never certifies release quality.
+  aura3d assets import-meshy artifacts/meshy/run --into examples/<game>/assets --prefix <game> --name <role> [--rights-evidence rights.json] [--profile prop|environment|vehicle|humanoid] [--overwrite] [--keep-temp]
+      Isolated mode (the default inside the Aura3D monorepo): admits in a temporary project and copies only the hashed GLB and its evidence into the game folder; shared root manifests are never written (pass --shared-manifest to opt out).
+  aura3d assets optimize --file in.glb --out out.glb [--role hero|vehicle|character|prop|background] [--max-verts N] [--tex N] [--no-simplify] [--meshopt] [--json]
+  aura3d assets merge-clips --base rigged.glb --out hero.glb run=animation_run.glb idle=animation_idle.glb [--keep-base-animations] [--tex 1024] [--json]
+  aura3d meshy ledger status|reserve|settle|reconcile|list [--ledger path] [--global-cap N]
+      reserve --game <tag> --op preview|refine|remesh|rigging|animate|retexture --cap N [--est N]; settle --rid <id> --status ok|failed|unconfirmed|--exit-code N [--task-id T] [--task-status S] [--actual N] [--note text]; reconcile --rid <id> --status ok|failed; list [--game <tag>]. Bookkeeping only: it never calls Meshy or sees a credential.
   aura3d assets scan ./assets
   aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
   aura3d assets validate [--asset assetId|--no-assets] [--source [src]] [--release] [--no-placeholders] [--require-license] [--provenance evidence.json]

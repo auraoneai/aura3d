@@ -125,7 +125,8 @@ lighting you evaluate materials and silhouettes against.
 - a generated Meshy GLB has not been decimated and compressed before admission
   (`> 20,000` vertices, `> 2 MB`, 32-bit indices instead of 16-bit `Uint16Array`
   with `byteStride === 0`, or `> 1024x1024` textures that stall glTF parsing and
-  exhaust GPU memory across the scene's look, lighting, and atmosphere);
+  exhaust GPU memory across the scene's look, lighting, and atmosphere; fix with
+  `assets optimize --file in.glb --out out.glb --role prop`);
 - it is placeholder-like, or only a generated thumbnail proves it is readable.
 
 ## Stop and report

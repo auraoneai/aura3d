@@ -32,6 +32,7 @@ import { writeRouteTypedAssets } from "./asset-route-typegen.js";
 import { runResolve, runSearch } from "./pull-bridge.js";
 import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
 import "./commands/registry.js";
+import { importMeshyIsolated, importMeshyIsolatedUsage, isAuraMonorepoRoot } from "./commands/assets/importMeshy.js";
 
 const args = process.argv.slice(2);
 const {
@@ -103,6 +104,37 @@ async function main(): Promise<void> {
         audio: readAudioMetadata()
       }));
     } else if (action === "import-meshy") {
+      // Inside the Aura3D monorepo a plain import rewrites shared root manifests, so it runs isolated by default.
+      const isolatedInto = readOption("--into");
+      if (isolatedInto !== undefined || (isAuraMonorepoRoot(process.cwd()) && !hasFlag("--shared-manifest"))) {
+        const downloadDir = args[2];
+        const prefix = readOption("--prefix");
+        const roleName = readOption("--name");
+        if (!downloadDir || !isolatedInto || !prefix || !roleName) {
+          throw new Error(`import-meshy runs in an isolated project here, so shared manifests are never touched: ${importMeshyIsolatedUsage()}  (pass --shared-manifest to write the project's own aura.assets.json deliberately).`);
+        }
+        const isolatedProfile = readOption("--profile");
+        if (isolatedProfile && !["prop", "environment", "vehicle", "humanoid"].includes(isolatedProfile)) {
+          throw new Error(`Unsupported Meshy --profile value "${isolatedProfile}". Use prop, environment, vehicle, or humanoid.`);
+        }
+        const isolated = importMeshyIsolated({
+          input: downloadDir,
+          into: isolatedInto,
+          prefix,
+          name: roleName,
+          rightsEvidence: readOption("--rights-evidence"),
+          file: readOption("--file"),
+          thumbnail: readOption("--thumbnail"),
+          quality: readAssetQuality(),
+          role: readAssetRole(),
+          profile: isolatedProfile as "prop" | "environment" | "vehicle" | "humanoid" | undefined,
+          overwrite: hasFlag("--overwrite"),
+          keepTemp: hasFlag("--keep-temp")
+        });
+        console.log(JSON.stringify(isolated, null, 2));
+        if (!isolated.ok) process.exitCode = 1;
+        return;
+      }
       const input = args[2];
       const name = readOption("--name");
       const rightsEvidence = readOption("--rights-evidence");

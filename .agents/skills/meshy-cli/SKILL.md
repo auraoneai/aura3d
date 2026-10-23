@@ -80,11 +80,9 @@ when a catalog candidate already passes the rubric.
    often contain `200,000–1,750,000` vertices and `20–65 MB` of uncompressed 4K
    PNG textures, which stall main-thread glTF parsing and exhaust GPU memory
    when multiple models share one scene look and lighting setup. Before
-   admission into `public/aura-assets/`, always simplify every generated Meshy
-   GLB (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit
-   `Uint16Array` indices, de-interleaved `byteStride === 0` buffers) and
-   compress textures to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) so silhouettes,
-   shadows, palette, and PBR reflections load fast.
+   admission run `assets optimize --file in.glb --out out.glb --role prop` on
+   every generated GLB (role vertex budgets, textures `<= 1024–2048` px,
+   float32 geometry kept; see [asset-tooling](references/asset-tooling.md)).
 7. Admit the local output with rights evidence.
 
    ```bash
@@ -93,6 +91,10 @@ when a catalog candidate already passes the rubric.
      --profile prop --role prop --thumbnail artifacts/meshy/arena-relic/thumbnail.png
    ```
 
+   Use `--into <game-assets> --prefix <game> --name <role>` for isolated import
+   (default in the monorepo; no shared root manifests are written). Merge each
+   `animate` clip into one rig with `assets merge-clips`, and reserve every paid
+   call with `meshy ledger`: see [asset-tooling](references/asset-tooling.md).
    Use `--file` when the run has several GLBs. Import defaults to
    `--quality candidate` and refuses release certification. Read the
    admission `blockers` and `unproven` lists; `routeReady: false` is a result

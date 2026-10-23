@@ -16,5 +16,6 @@ import "./prd11/index.js";
 import "./prd13/index.js";
 import "./prd14/index.js";
 import "./prd15/index.js";
+import "./assets/index.js";
 
 export {};
