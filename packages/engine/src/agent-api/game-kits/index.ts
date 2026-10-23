@@ -7,6 +7,7 @@ export * from "./arcadeKart";
 export * from "./carSoccer";
 export * from "./fighting";
 export * from "./racketSports";
+export * from "./racketAthleteRig";
 
 export const gameKits = {
   fighting,
