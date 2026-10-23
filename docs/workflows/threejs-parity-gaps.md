@@ -6,6 +6,7 @@ the **fixed-input captures for eight games** (R-25, partial), and **real-device
 verification** of WebXR, WebGPU compute and WebGPU canvas presentation (R-22). `material.node` (TSL) was verified on a remote software-WebGL2 runner in 4.0.6, not on a hardware GPU.
 `A3D_PARITY_BATCHING` and `A3D_PARITY_LINES` are default-on; the other four flags gate nothing.
 **Supersedes:** v2 (re-verified 2026-10-21 @ `94c85e8ad`) and the v1 "Parity Backlog" draft
+**Scope decision (owner, 2026-10-22):** the goal is the engine surface, not the game ports. Phase exits B, C and D and the Crayon fixed-input captures (R-25) are **descoped by the owner**, not completed; they stay unticked and are not claimed. Real-device verification of WebXR, WebGPU compute and WebGPU canvas presentation needs hardware the remote runner lacks and is also not claimed.
 **Companion:** [`crayon-game-reverse-engineering.md`](./crayon-game-reverse-engineering.md)
 (the ten Crayon ports this PRD unblocks)
 
@@ -972,9 +973,9 @@ means "implemented and tested".
 
 ### Phase exits
 - [x] A — Strange Orbit 7-lap capture matches (reference `evidence/crayon-capture/strange-orbit-reference.json`, 283.683 s finish, 7 laps, 35 checkpoints, bit-exact across 6 sessions / 4 ACR runs; `examples/strange-orbit-port/race.ts` replays the recorded 17,214-step input and reproduces finish time, all lap times and all checkpoints exactly, in Node and in the live page on ACR; GPU render passed, run `so-d-20261022T230635Z`). Caveat: simulation parity, not pixel parity; assets are procedural
-- [ ] B — HEATSINK blind A/B "same game" (not attempted: a port was started and stopped by decision; needs a human-judged blind comparison)
-- [ ] C — Ninja Runner 60 s with clones/combat (not attempted: port started and stopped by decision; the engine pieces it needs, `cloneSkinned` and `material.custom`, are shipped)
-- [ ] D — Last Train town loop, memory stable ×3 (not attempted; the engine pieces it needs are shipped)
+- [ ] B — HEATSINK blind A/B "same game" (not attempted: a port was started and stopped by decision; needs a human-judged blind comparison) **[DESCOPED by owner 2026-10-22; not done]**
+- [ ] C — Ninja Runner 60 s with clones/combat (not attempted: port started and stopped by decision; the engine pieces it needs, `cloneSkinned` and `material.custom`, are shipped) **[DESCOPED by owner 2026-10-22; not done]**
+- [ ] D — Last Train town loop, memory stable ×3 (not attempted; the engine pieces it needs are shipped) **[DESCOPED by owner 2026-10-22; not done]**
 
 ---
 
