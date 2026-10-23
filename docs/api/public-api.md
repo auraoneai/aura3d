@@ -26,7 +26,7 @@ pnpm verify:api-docs
 | `@aura3d/debug` | `4.0.8` | `packages/debug/src/index.ts` | 32 |
 | `@aura3d/ecs` | `4.0.8` | `packages/ecs/src/index.ts` | 25 |
 | `@aura3d/editor-runtime` | `4.0.8` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `4.0.8` | `packages/engine/src/index.ts` | 22 |
+| `@aura3d/engine` | `4.0.8` | `packages/engine/src/index.ts` | 24 |
 | `@aura3d/input` | `4.0.8` | `packages/input/src/index.ts` | 34 |
 | `@aura3d/math` | `4.0.8` | `packages/math/src/index.ts` | 30 |
 | `@aura3d/navigation-recast` | `4.0.8` | `packages/navigation-recast/src/index.ts` | 16 |
@@ -709,6 +709,7 @@ export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
+export * from "./qa/index.js";
 export type { A3DAppLifecycleSnapshot, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
 export * from "./contracts/index.js";
 export * from "./lanes/index.js";

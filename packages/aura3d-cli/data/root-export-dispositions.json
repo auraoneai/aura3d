@@ -8304,6 +8304,30 @@
       "owners": []
     },
     {
+      "name": "FixedStepLoop",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "FixedStepLoopOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "FocusCameraIntent",
       "kind": "type",
       "from": ".",
@@ -11741,6 +11765,18 @@
       "owners": []
     },
     {
+      "name": "InstalledQaHooks",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "KTX2BasisTargetFormat",
       "kind": "type",
       "from": ".",
@@ -13222,6 +13258,114 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "QaCountedRng",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaHookApp",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaHooks",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaHooksOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaParamSchema",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaParamSpec",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaParamValues",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaPixels",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "QaStandardHooks",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
       "owners": []
     },
     {
@@ -17140,6 +17284,18 @@
       ]
     },
     {
+      "name": "createCountedRng",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "createDiagnosticsOverlay",
       "kind": "value",
       "from": ".",
@@ -17290,6 +17446,18 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "createFixedStepLoop",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
       "owners": []
     },
     {
@@ -19798,6 +19966,18 @@
       ]
     },
     {
+      "name": "fixedStepLoop",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "flatVehicleSurface",
       "kind": "value",
       "from": ".",
@@ -20347,6 +20527,18 @@
       "disposition": "deprecated",
       "reason": "\u00a76.6 union name \u2014 deprecated until 4.0.0; \u00a76.6 union destination",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "installQaHooks",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
       "owners": []
     },
     {
@@ -22210,6 +22402,30 @@
       "owners": []
     },
     {
+      "name": "qaErrorGlobalName",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "qaHookGlobalName",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "quaternionFromForwardDirection",
       "kind": "value",
       "from": ".",
@@ -22281,6 +22497,18 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "readQaParams",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "QA and replay kit (docs/api/qa-kit.md): replaces the per-game window.__AURA_<GAME>__ hooks and fixed-timestep loops",
+      "consumers": [
+        "tests/unit/qa/qa-kit.test.ts"
+      ],
       "owners": []
     },
     {

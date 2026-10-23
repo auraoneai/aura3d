@@ -6,7 +6,7 @@
  * `__AURA_SPLAT_RUSH__.stepFrames`), `autostart=1`, `autopilot=1`, `warmup=N` (idle splash frames before
  * `autostart`, default 30 like the capture harness).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, readQaParams, type AuraApp } from "@aura3d/engine";
 import { Autopilot } from "./autopilot";
 import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor } from "./fx";
@@ -19,18 +19,13 @@ if (typeof FontFace !== "undefined" && typeof document !== "undefined") {
   const face = new FontFace("Splat Display", `url(${new URL("./assets/GT-Walsheim-Bold.woff2", import.meta.url).href})`, { weight: "700" });
   void face.load().then((f) => document.fonts.add(f)).catch(() => undefined);
 }
-const params = new URLSearchParams(location.search);
-const num = (key: string, fallback: number): number => {
-  const v = Number(params.get(key));
-  return params.has(key) && Number.isFinite(v) ? v : fallback;
-};
-const config = {
-  seed: num("seed", 20261023),
-  manual: params.get("manual") === "1",
-  autostart: params.get("autostart") === "1",
-  autopilot: params.get("autopilot") === "1",
-  warmup: num("warmup", 30)
-};
+const config = readQaParams({
+  seed: { type: "number", default: 20261023 },
+  manual: { type: "flag" },
+  autostart: { type: "flag" },
+  autopilot: { type: "flag" },
+  warmup: { type: "number", default: 30 }
+});
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
   const el = document.getElementById(id);
@@ -177,17 +172,10 @@ function advance(input: Input): void {
   steps++;
 }
 
-let lastTick = performance.now();
-let accumulator = 0;
-function tick(now: number): void {
-  requestAnimationFrame(tick);
-  const dt = Math.min(0.1, Math.max(0.001, (now - lastTick) / 1000));
-  lastTick = now;
-  if (!ready || config.manual) return;
-  accumulator += dt;
-  let guard = 0;
-  while (accumulator >= 1 / 60 && guard++ < 6) {
-    accumulator -= 1 / 60;
+const loop = createFixedStepLoop({
+  manual: config.manual,
+  isActive: () => ready,
+  step() {
     if (keyDir !== 0 && sim.o.phase === "playing") {
       if (!keyDragging) { pending.down = true; keyDragging = true; }
       pending.dx += keyDir * 12;
@@ -196,10 +184,12 @@ function tick(now: number): void {
     pending.start = pending.down = pending.up = false;
     pending.dx = 0;
     advance(input);
+  },
+  render() {
+    render();
+    updateHud();
   }
-  render();
-  updateHud();
-}
+});
 
 function sizeCanvas(): void {
   const dpr = 1;
@@ -302,15 +292,20 @@ addEventListener("resize", sizeCanvas);
 
 /* ------------------------------------------------------------------ hooks */
 
-const hooks = {
+function snapshotState() {
+  const o = sim.o;
+  return { ...o, phaseCode: PHASE_CODE[o.phase], steps, n: sim.n, rngCount: sim.rng.count, gates: sim.gates.length, powerups: sim.powerups.length, splatters: sim.splatters.length, segments: sim.segments.length, player: { ...sim.player }, camera: { ...sim.camera }, ye: sim.ye };
+}
+
+const qa = installQaHooks("splat-rush", {
   ready: () => ready,
   seed: config.seed,
-  state() {
-    const o = sim.o;
-    return { ...o, phaseCode: PHASE_CODE[o.phase], steps, n: sim.n, rngCount: sim.rng.count, gates: sim.gates.length, powerups: sim.powerups.length, splatters: sim.splatters.length, segments: sim.segments.length, player: { ...sim.player }, camera: { ...sim.camera }, ye: sim.ye };
-  },
+  state: snapshotState,
   traceRow: () => sim.traceRow(steps),
   traceColumns: TRACE_COLUMNS,
+  app: () => app,
+  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SG-05", "SG-01", "ST-01", "ST-02", "R-23"] }) : null),
+  nodeCount: () => runtime?.nodeCount ?? 0,
   begin() {
     advance({ start: true, down: false, up: false, dx: 0 });
     render();
@@ -321,62 +316,10 @@ const hooks = {
     for (let i = 0; i < n; i++) advance(i === 0 ? { ...IDLE, ...input } : IDLE);
     render();
     updateHud();
-    return hooks.state();
   },
   /** Headless replay of a capture script on a fresh sim (no rendering): returns the trace rows. */
   replay(text: string, warmup = config.warmup, seed = config.seed) {
     return replay(seed, warmup, expandScript(parseScript(text))).trace;
-  },
-  /** Drive `n` steps with the closed-loop autopilot (start, drag, then steer), rendering once at the end. */
-  runAutopilot(n: number, mistakeRows: number[] = []) {
-    const driver = new Autopilot({ maxDx: 14, mistakeRows, aimOffset: 0 });
-    for (let i = 0; i < n; i++) {
-      advance(driver.next(sim, i));
-      driver.observe(sim);
-    }
-    render();
-    updateHud();
-    return hooks.state();
-  },
-  /** Frame capture: reset, warm up like the capture harness, and store a recorded input script to play step by step. */
-  loadScript(text: string, warmup = config.warmup) {
-    sim = new SplatRushSim(config.seed);
-    steps = 0;
-    popupShown = 0;
-    pilot = null;
-    prevFrame = null;
-    lastPhase = "splash";
-    for (let i = 0; i < warmup; i++) advance(IDLE);
-    steps = 0;
-    scriptInputs = expandScript(parseScript(text));
-    scriptIdx = 0;
-    render();
-    updateHud();
-    return sim.o.phase;
-  },
-  /** Advance the stored script to step `to` (absolute index), then render once. */
-  advanceScript(to: number) {
-    while (scriptIdx < to) advance(scriptInputs[scriptIdx++] ?? IDLE);
-    render();
-    updateHud();
-    return scriptIdx;
-  },
-  /** Start a run and never steer until `phase` (or `max` steps), like the original's idle control. */
-  idleUntil(phase: string, max = 1500) {
-    let n = 0;
-    while (sim.o.phase !== phase && n < max) {
-      advance(scriptIdx === 0 ? { ...IDLE, start: true } : scriptIdx === 1 ? { ...IDLE, down: true } : IDLE);
-      scriptIdx++;
-      n++;
-    }
-    render();
-    updateHud();
-    return `${sim.o.phase}:${scriptIdx}`;
-  },
-  /** Start the autopilot on the live sim (like `?autopilot=1`), for tests. */
-  autopilot(on: boolean) {
-    pilot = on ? new Autopilot() : null;
-    steps = 0;
   },
   reset(seed = config.seed) {
     sim = new SplatRushSim(seed);
@@ -388,38 +331,66 @@ const hooks = {
     render();
     updateHud();
   },
-  async frame(width = 480, height = 270, quality = 0.7): Promise<string> {
-    const blob = (await app!.capture!({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const c = document.createElement("canvas");
-    c.width = width;
-    c.height = height;
-    (c.getContext("2d") as CanvasRenderingContext2D).drawImage(bitmap, 0, 0, width, height);
-    return c.toDataURL("image/jpeg", quality);
-  },
-  async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
-    const blob = (await app!.capture!({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const c = document.createElement("canvas");
-    c.width = bitmap.width;
-    c.height = bitmap.height;
-    const g = c.getContext("2d") as CanvasRenderingContext2D;
-    g.drawImage(bitmap, 0, 0);
-    const img = g.getImageData(0, 0, c.width, c.height);
-    return { width: c.width, height: c.height, data: img.data };
-  },
-  info: () => (app as unknown as { info?: () => unknown } | undefined)?.info?.() ?? null,
-  diagnostics: () => (app ? (app.diagnostics() as unknown) : null),
-  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SG-05", "SG-01", "ST-01", "ST-02", "R-23"] }) : null),
-  nodeCount: () => runtime?.nodeCount ?? 0
-};
-(window as unknown as Record<string, unknown>).__AURA_SPLAT_RUSH__ = hooks;
+  extras: {
+    /** Drive `n` steps with the closed-loop autopilot (start, drag, then steer), rendering once at the end. */
+    runAutopilot(n: number, mistakeRows: number[] = []) {
+      const driver = new Autopilot({ maxDx: 14, mistakeRows, aimOffset: 0 });
+      for (let i = 0; i < n; i++) {
+        advance(driver.next(sim, i));
+        driver.observe(sim);
+      }
+      render();
+      updateHud();
+      return snapshotState();
+    },
+    /** Frame capture: reset, warm up like the capture harness, and store a recorded input script to play step by step. */
+    loadScript(text: string, warmup = config.warmup) {
+      sim = new SplatRushSim(config.seed);
+      steps = 0;
+      popupShown = 0;
+      pilot = null;
+      prevFrame = null;
+      lastPhase = "splash";
+      for (let i = 0; i < warmup; i++) advance(IDLE);
+      steps = 0;
+      scriptInputs = expandScript(parseScript(text));
+      scriptIdx = 0;
+      render();
+      updateHud();
+      return sim.o.phase;
+    },
+    /** Advance the stored script to step `to` (absolute index), then render once. */
+    advanceScript(to: number) {
+      while (scriptIdx < to) advance(scriptInputs[scriptIdx++] ?? IDLE);
+      render();
+      updateHud();
+      return scriptIdx;
+    },
+    /** Start a run and never steer until `phase` (or `max` steps), like the original's idle control. */
+    idleUntil(phase: string, max = 1500) {
+      let n = 0;
+      while (sim.o.phase !== phase && n < max) {
+        advance(scriptIdx === 0 ? { ...IDLE, start: true } : scriptIdx === 1 ? { ...IDLE, down: true } : IDLE);
+        scriptIdx++;
+        n++;
+      }
+      render();
+      updateHud();
+      return `${sim.o.phase}:${scriptIdx}`;
+    },
+    /** Start the autopilot on the live sim (like `?autopilot=1`), for tests. */
+    autopilot(on: boolean) {
+      pilot = on ? new Autopilot() : null;
+      steps = 0;
+    }
+  }
+});
 
 function reportError(error: unknown): void {
-  (window as unknown as { __AURA_SPLAT_RUSH_ERROR__?: string }).__AURA_SPLAT_RUSH_ERROR__ = String((error as Error)?.stack ?? error);
+  qa.reportError(error);
 }
 
-requestAnimationFrame(tick);
+loop.start();
 boot().catch((error) => {
   reportError(error);
   throw error;

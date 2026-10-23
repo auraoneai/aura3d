@@ -64,6 +64,7 @@ export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";
 export * from "./testing/screenshot.js";
 export * from "./testing/routeHealth.js";
+export * from "./qa/index.js";
 export type {
   A3DAppLifecycleSnapshot,
   A3DDisposable,
