@@ -1,5 +1,5 @@
 import { createSceneRenderer } from "./renderer";
-import { STANDING_POSE } from "../main";
+import { STANDING_POSE } from "./standingPose";
 import { createAthletePose } from "./pose";
 import type { MatchState } from "../contract/sim";
 

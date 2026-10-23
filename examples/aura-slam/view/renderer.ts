@@ -8,7 +8,7 @@ import { CAMERA_EYE, CAMERA_FAR, CAMERA_FOV_DEG, CAMERA_NEAR, CAMERA_TARGET, pro
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { QUALITY_REBUILD } from "./lighting";
 import { resolveAppearance } from "./appearance";
-import { createLegacyRig } from "./legacyRig";
+import { createPoseRig } from "./poseRig";
 import type { AthleteRigPort } from "./rigPort";
 import { buildTennisScene } from "./scene";
 import { updateSpectators } from "./spectators";
@@ -20,7 +20,7 @@ export interface ServeCue { visible?: boolean; kind?: string }
 export interface SceneRendererOptions {
   /** Pose provider (M-POSE `AthletePose`). */
   pose: AthletePose;
-  /** Rig implementation; defaults to the legacy rig lifted from the live adapter. */
+  /** Rig implementation; defaults to the M-POSE rig (pixel-identical to the live adapter's rig). */
   rig?: AthleteRigPort<unknown>;
   /** Predicted landing for the beginner landing ring (PhysicsKit.landing). */
   landing?: (ball: BallState) => { x: number; y: number } | null | undefined;
@@ -45,7 +45,7 @@ type LooseState = MatchState & { serveSide?: string; outFeedback: (Record<string
 
 /** Mount the Aura Slam court on a canvas. Rendering is presentation only: it never mutates the sim state. */
 export function createSceneRenderer(options: SceneRendererOptions): SceneRendererHandle {
-  const rig = options.rig ?? (createLegacyRig({ resolveAppearance }) as AthleteRigPort<unknown>);
+  const rig = options.rig ?? (createPoseRig({ resolveAppearance }) as AthleteRigPort<unknown>);
   let app: AuraApp | null = null;
   let canvas: HTMLCanvasElement | null = null;
   let net: SafetyNet | null = null;

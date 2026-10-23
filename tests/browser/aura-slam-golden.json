@@ -1,0 +1,89 @@
+{
+ "generatedBy": "tests/unit/aura-slam/autoplay-golden.test.ts",
+ "scenarios": [
+  {
+   "scenario": {
+    "options": {
+     "difficulty": "club",
+     "venue": "hard"
+    },
+    "seed": 20261023,
+    "maxTicks": 400000,
+    "every": 2000
+   },
+   "result": {
+    "checkpoints": [
+     {
+      "tick": 0,
+      "hash": "e674df84"
+     },
+     {
+      "tick": 2000,
+      "hash": "c7939a25"
+     },
+     {
+      "tick": 4000,
+      "hash": "cc66f22c"
+     }
+    ],
+    "final": {
+     "tick": 4236,
+     "mode": "gameover",
+     "winner": "ai",
+     "games": [
+      0,
+      3
+     ],
+     "events": 853,
+     "hash": "3594a809"
+    }
+   }
+  },
+  {
+   "scenario": {
+    "options": {
+     "difficulty": "pro",
+     "venue": "clay"
+    },
+    "seed": 7,
+    "maxTicks": 400000,
+    "every": 2000
+   },
+   "result": {
+    "checkpoints": [
+     {
+      "tick": 0,
+      "hash": "ba00ffd4"
+     },
+     {
+      "tick": 2000,
+      "hash": "31544c68"
+     },
+     {
+      "tick": 4000,
+      "hash": "9c27b956"
+     },
+     {
+      "tick": 6000,
+      "hash": "ef2f0048"
+     },
+     {
+      "tick": 8000,
+      "hash": "dc95da71"
+     }
+    ],
+    "final": {
+     "tick": 8833,
+     "mode": "gameover",
+     "winner": "ai",
+     "games": [
+      0,
+      3
+     ],
+     "events": 2249,
+     "hash": "2f45d676"
+    }
+   }
+  }
+ ]
+}

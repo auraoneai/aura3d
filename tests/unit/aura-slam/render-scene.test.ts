@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { stadiumAssets } from "../../../examples/aura-slam/view/assets";
 import { buildTennisScene, SCENE_NODE_IDS } from "../../../examples/aura-slam/view/scene";
-import { createLegacyRig } from "../../../examples/aura-slam/view/legacyRig";
+import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { QUALITY_REBUILD, postEffects, sceneLights } from "../../../examples/aura-slam/view/lighting";
 import { SPECTATOR_COUNT, MARK_COUNT, TRAIL_COUNT } from "../../../examples/aura-slam/view/constants";
 
@@ -16,7 +16,7 @@ function flatten(nodes: Doc["nodes"] = []): string[] {
 }
 
 describe("aura-slam view: scene composition", () => {
-  const doc = buildTennisScene(createLegacyRig()).toJSON() as unknown as Doc;
+  const doc = buildTennisScene(createPoseRig()).toJSON() as unknown as Doc;
   const names = new Set(flatten(doc.nodes));
 
   it("declares the fixed court camera", () => {
