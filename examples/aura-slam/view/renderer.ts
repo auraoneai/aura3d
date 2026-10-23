@@ -7,6 +7,7 @@ import { resolveBallHandles, updateBall, type BallHandles } from "./ball";
 import { CAMERA_EYE, CAMERA_FAR, CAMERA_FOV_DEG, CAMERA_NEAR, CAMERA_TARGET, projectWorldPoint } from "./camera";
 import { COURT_X, COURT_Y, COURT_Z, HIDDEN_SCALE, SERVICE_Z, SINGLES_X, SPECTATOR_COUNT, clamp } from "./constants";
 import { QUALITY_REBUILD } from "./lighting";
+import { resolveAppearance } from "./appearance";
 import { createLegacyRig } from "./legacyRig";
 import type { AthleteRigPort } from "./rigPort";
 import { buildTennisScene } from "./scene";
@@ -25,6 +26,8 @@ export interface SceneRendererOptions {
   landing?: (ball: BallState) => { x: number; y: number } | null | undefined;
   /** Safety net settings; on by default so `?diag=1` and the black-frame self-heal work. */
   safety?: boolean | SafetySettings;
+  /** Debug: wrap every runtime node handle (used by the harness to trace non-finite transforms). */
+  wrapHandle?: (id: string, handle: AuraRuntimeNodeHandle) => AuraRuntimeNodeHandle;
   /** Page search string for the safety switches (defaults to `location.search`). */
   search?: string;
 }
@@ -42,7 +45,7 @@ type LooseState = MatchState & { serveSide?: string; outFeedback: (Record<string
 
 /** Mount the Aura Slam court on a canvas. Rendering is presentation only: it never mutates the sim state. */
 export function createSceneRenderer(options: SceneRendererOptions): SceneRendererHandle {
-  const rig = options.rig ?? (createLegacyRig() as AthleteRigPort<unknown>);
+  const rig = options.rig ?? (createLegacyRig({ resolveAppearance }) as AthleteRigPort<unknown>);
   let app: AuraApp | null = null;
   let canvas: HTMLCanvasElement | null = null;
   let net: SafetyNet | null = null;
@@ -91,8 +94,9 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
         qualityRebuild: QUALITY_REBUILD
       });
       await app.ready();
-      const req = (id: string): AuraRuntimeNodeHandle => app!.nodes.require(id);
-      rigs = { player: rig.resolve(app, "player"), rival: rig.resolve(app, "rival") };
+      const req = (id: string): AuraRuntimeNodeHandle => (options.wrapHandle ? options.wrapHandle(id, app!.nodes.require(id)) : app!.nodes.require(id));
+      const resolver = options.wrapHandle ? ({ nodes: { require: req } } as unknown as AuraApp) : app;
+      rigs = { player: rig.resolve(resolver, "player"), rival: rig.resolve(resolver, "rival") };
       ball = resolveBallHandles(req);
       h.ground = req("stadium-outer-ground");
       h.apron = req("court-apron");

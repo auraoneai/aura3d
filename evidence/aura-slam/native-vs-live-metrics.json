@@ -1,0 +1,87 @@
+{
+  "schema": "a3d-slam-native-vs-live/1",
+  "run": "slam-vs-5-20261023T232128Z",
+  "size": [
+    1280,
+    720
+  ],
+  "renderer": "software WebGL2 (SwiftShader), headed Chromium under Xvfb",
+  "note": "native renderer drew the exact sim state read from the live page's getState(); live canvas shown without DOM overlays",
+  "thresholds": {
+    "lumaJsd": 0.05,
+    "rgbJsd": 0.05,
+    "edgeRatio": [
+      0.9,
+      1.1
+    ],
+    "lumaDeltaAbs": 4
+  },
+  "venues": [
+    {
+      "venue": "hard",
+      "drawCalls": 212,
+      "lumaJsd": 0.0041,
+      "rgbJsd": 0.01,
+      "paletteDistance": 0,
+      "edgeRatio": 1.018,
+      "lumaLive": 64.76,
+      "lumaNative": 66.82,
+      "lumaDelta": 2.06
+    },
+    {
+      "venue": "grass",
+      "drawCalls": 220,
+      "lumaJsd": 0.0079,
+      "rgbJsd": 0.0097,
+      "paletteDistance": 0.0011,
+      "edgeRatio": 1.013,
+      "lumaLive": 75.49,
+      "lumaNative": 77.18,
+      "lumaDelta": 1.69
+    },
+    {
+      "venue": "clay",
+      "drawCalls": 212,
+      "lumaJsd": 0.0081,
+      "rgbJsd": 0.0208,
+      "paletteDistance": 0.007,
+      "edgeRatio": 1.025,
+      "lumaLive": 71.48,
+      "lumaNative": 73.19,
+      "lumaDelta": 1.71
+    },
+    {
+      "venue": "desert",
+      "drawCalls": 212,
+      "lumaJsd": 0.0153,
+      "rgbJsd": 0.023,
+      "paletteDistance": 0.0023,
+      "edgeRatio": 0.923,
+      "lumaLive": 92.78,
+      "lumaNative": 94.97,
+      "lumaDelta": 2.19
+    },
+    {
+      "venue": "beach",
+      "drawCalls": 212,
+      "lumaJsd": 0.0133,
+      "rgbJsd": 0.0119,
+      "paletteDistance": 0.0038,
+      "edgeRatio": 0.895,
+      "lumaLive": 106.07,
+      "lumaNative": 108.6,
+      "lumaDelta": 2.53
+    },
+    {
+      "venue": "moon",
+      "drawCalls": 204,
+      "lumaJsd": 0.004,
+      "rgbJsd": 0.0191,
+      "paletteDistance": 0.001,
+      "edgeRatio": 0.997,
+      "lumaLive": 64.34,
+      "lumaNative": 66.54,
+      "lumaDelta": 2.19
+    }
+  ]
+}
