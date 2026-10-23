@@ -1717,6 +1717,7 @@ uniform sampler2D u_source;
 uniform vec2 u_texelSize;
 uniform vec2 u_targetSize;
 out vec4 outColor;
+vec4 a3dFinite(vec4 c) { return (any(isnan(c)) || any(isinf(c))) ? vec4(0.0) : c; }
 void main() {
   // gl_FragCoord is expressed in destination pixels. Normalize by the
   // destination size so every downsample covers the complete source image;
@@ -1724,8 +1725,8 @@ void main() {
   // lower-left quarter of the preceding level.
   vec2 uv = gl_FragCoord.xy / u_targetSize;
   vec2 e = u_texelSize * 0.5;
-  vec4 sum = texture(u_source, uv - e) + texture(u_source, uv + vec2(e.x, -e.y))
-    + texture(u_source, uv + vec2(-e.x, e.y)) + texture(u_source, uv + e);
+  vec4 sum = a3dFinite(texture(u_source, uv - e)) + a3dFinite(texture(u_source, uv + vec2(e.x, -e.y)))
+    + a3dFinite(texture(u_source, uv + vec2(-e.x, e.y))) + a3dFinite(texture(u_source, uv + e));
   outColor = sum * 0.25;
 }
 `, "webgl2-bloom-downsample");

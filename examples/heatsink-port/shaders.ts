@@ -110,7 +110,7 @@ ${COMMON}
 void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(cameraPosition - vWorld);
-  float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+  float rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
   vec3 hot = vec3(1.0, 0.42, 0.08);
   vec3 color = lit(mix(baseColor, hot * 0.8, heat * 0.55), N);
   color += glowColor * glow * (0.85 + 0.15 * sin(u_time * 5.0));
@@ -171,8 +171,8 @@ void main() {
   // aurora ribbons (purple low, teal high), curtained by noise
   float c1 = 0.30 + 0.10 * sin(az * 1.6 + 0.8) + 0.04 * sin(az * 5.0);
   float c2 = 0.47 + 0.08 * sin(az * 2.1 + 3.1);
-  float r1 = exp(-pow((h - c1) / 0.05, 2.0));
-  float r2 = exp(-pow((h - c2) / 0.07, 2.0));
+  float r1 = exp(-(((h - c1) / 0.05) * ((h - c1) / 0.05)));
+  float r2 = exp(-(((h - c2) / 0.07) * ((h - c2) / 0.07)));
   float tex = 0.40 + 0.60 * fbm(vec2(az * 7.0, h * 14.0 + u_time * 0.03));
   vec3 aur = vec3(0.60, 0.24, 0.85) * r1 * tex * 1.0 + vec3(0.12, 0.80, 0.68) * r2 * tex * 0.8 + vec3(0.2, 0.75, 0.65) * r1 * 0.14;
   // ringed planet

@@ -138,13 +138,15 @@ out vec4 outColor;
 void main() {
   vec3 v = cameraPosition - vW;
   float d = length(v);
-  float facing = abs(dot(vN, v / max(d, 0.001)));
+  // dot() of two unit vectors can round to just over 1.0, and vT interpolates to just over 1.0: pow() of a negative
+  // base is NaN, which additive blending writes into the HDR target and bloom then smears over the whole frame.
+  float facing = clamp(abs(dot(vN, v / max(d, 0.001))), 0.0, 1.0);
   float a = beamAmount;
-  a *= 0.72 + 0.28 * pow(1.0 - facing, 1.6);
-  a *= pow(1.0 - vT, 1.25) * smoothstep(0.0, 0.07, vT);
+  a *= 0.72 + 0.28 * pow(max(1.0 - facing, 0.0), 1.6);
+  a *= pow(clamp(1.0 - vT, 0.0, 1.0), 1.25) * smoothstep(0.0, 0.07, vT);
   a *= smoothstep(beamRoadY - 0.15, beamRoadY + 1.5, vW.y);
   a *= smoothstep(beamNear, beamNear * 2.3, d);
-  outColor = vec4(beamColor, a);
+  outColor = vec4(beamColor, (a == a) ? clamp(a, 0.0, 1.0) : 0.0);
 }`;
 
 /** Uniform names avoid the engine's lowered built-ins (`color`, `near`... are fine, `time` would become `u_time`). */

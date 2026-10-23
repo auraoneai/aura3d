@@ -12,6 +12,7 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, geometry, material, primitives, type AuraApp } from "@aura3d/engine";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
+import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "./blackframe";
 import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
 import { beamGeometry, beamSpec } from "./headlights";
@@ -30,6 +31,7 @@ import {
 } from "./world";
 
 const params = new URLSearchParams(location.search);
+for (const [key, value] of Object.entries(healParams(healStage()))) if (!params.has(key)) params.set(key, value);
 const config = {
   manual: params.get("manual") === "1",
   autostart: params.get("autostart") === "1" || params.get("manual") === "1",
@@ -40,6 +42,11 @@ const config = {
   shadow: params.get("shadow") !== "0",
   fog: params.get("fog") !== "0",
   post: params.get("post") !== "0",
+  /** `aa=0` drops anti-aliasing only; `tm=aces|none|...` replaces the neutral tone-mapping operator */
+  aa: params.get("aa") !== "0",
+  tm: params.get("tm") ?? "neutral",
+  heal: params.get("heal") !== "0",
+  healFrames: Number(params.get("healframes")) || undefined,
   sky: params.get("sky") !== "0",
   exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
   sun: Number(params.get("sun") ?? "4.4") || 4.4
@@ -102,7 +109,7 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, sky: config.sky, sun: config.sun, start: { x: car.x, z: car.z } });
+  look = buildLook({ blocks, buildings, traffic, pickups }, { quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, start: { x: car.x, z: car.z } });
   const s = look.builder;
   s.add(geometry.custom(shellGeometry(look.playerShell.paint), { name: "car-paint", material: material.carPaint({ color: "#1d1e24", roughness: 0.28, envMapIntensity: 0.6 }), castShadow: true, receiveShadow: true }).runtime({ id: "car-paint" }));
   s.add(geometry.custom(shellGeometry(look.playerShell.detail), { name: "car-detail", material: material.pbr({ color: "#ffffff", roughness: 0.4, metallic: 0.1, texture: look.palette as never }), castShadow: true, receiveShadow: true }).runtime({ id: "car-detail" }));
@@ -118,6 +125,7 @@ let app: AuraApp | undefined;
 let ready = false;
 let renderTime = 0;
 let frames = 0;
+let blackWatch: BlackFrameWatch | undefined;
 let accumulator = 0;
 let hudTimer = 0;
 let renderFailed = false;
@@ -231,6 +239,7 @@ function render(dt: number): void {
     placeNodes(dt);
     app.step(0);
     frames++;
+    blackWatch?.sample(frames);
   } catch (error) {
     renderFailed = true;
     reportError(error);
@@ -448,11 +457,12 @@ async function boot(): Promise<void> {
     resize: false,
     pixelRatio: 1,
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "neutral", exposure: config.exposure, dither: false },
+    output: { toneMapping: config.tm as "neutral", exposure: config.exposure, dither: false },
     scene: buildScene()
   });
   await app.ready();
   ready = true;
+  blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
   syncQa();

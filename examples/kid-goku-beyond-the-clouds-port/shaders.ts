@@ -149,7 +149,7 @@ float starAt(vec3 l, vec3 axis, float R) {
 }
 void main() {
   vec3 n = normalize(vN);
-  float fres = pow(1.0 - max(dot(n, normalize(vV)), 0.0), 2.4);
+  float fres = pow(1.0 - clamp(dot(n, normalize(vV)), 0.0, 1.0), 2.4);
   float lam = 0.55 + 0.45 * max(dot(n, normalize(vec3(0.4, 0.8, 0.5))), 0.0);
   vec3 base = mix(vec3(1.0, 0.45, 0.06), vec3(1.0, 0.72, 0.2), smoothstep(-0.8, 0.9, vL.y));
   float stars = 0.0;
@@ -251,7 +251,7 @@ void main() {
   vec3 hemi = mix(groundFill, skyFill, n.y * 0.5 + 0.5);
   vec3 col = albedo * (sunColor * lit * sunStrength + hemi);
   vec3 vdir = normalize(cameraPosition - vW);
-  float rim = pow(1.0 - max(dot(n, vdir), 0.0), 2.6);
+  float rim = pow(1.0 - clamp(dot(n, vdir), 0.0, 1.0), 2.6);
   col += rimColor * rim * rimStrength * (0.4 + 0.6 * max(n.y, 0.0));
   float dist = length(vW - cameraPosition);
   float f = 1.0 - exp(-pow(dist * fogDensity, 2.0));

@@ -371,6 +371,22 @@ function aliasLines(uniforms: readonly LoweredUniform[], stageSource: string): s
   return lines;
 }
 
+/**
+ * GLSL leaves `pow(x, y)` undefined for x < 0 (and for x == 0 with y <= 0). Software GL evaluates it anyway; real GPUs
+ * (Apple/Metal, others) return NaN, which blending then writes into the HDR target and bloom smears over the frame. Author
+ * code written against three.js ShaderMaterial is full of `pow(1.0 - dot(n, v), k)` and `exp(-pow(x, 2.0))`, so custom
+ * shaders that call `pow` get a total version: `pow(max(abs(x), tiny), y)`.
+ */
+export const SAFE_POW_GLSL = [
+  "float a3dPow(float x, float y) { return pow(max(abs(x), 1e-30), y); }",
+  "vec2 a3dPow(vec2 x, vec2 y) { return pow(max(abs(x), vec2(1e-30)), y); }",
+  "vec3 a3dPow(vec3 x, vec3 y) { return pow(max(abs(x), vec3(1e-30)), y); }",
+  "vec4 a3dPow(vec4 x, vec4 y) { return pow(max(abs(x), vec4(1e-30)), y); }",
+  "#define pow(x, y) a3dPow(x, y)"
+].join("\n");
+
+const safePowLines = (userSource: string): string[] => (usesToken(userSource, "pow") ? [SAFE_POW_GLSL] : []);
+
 function vertexPreamble(uniforms: readonly LoweredUniform[], userSource: string): string {
   const lines: string[] = [...BUILTIN_DECLS];
   if (!declaresIdentifier(userSource, "a_position")) lines.push("in vec3 a_position;");
@@ -383,11 +399,12 @@ function vertexPreamble(uniforms: readonly LoweredUniform[], userSource: string)
   if (usesToken(userSource, "position") && !declaresIdentifier(userSource, "position")) lines.push("#define position a_position");
   if (wantNormal) lines.push("#define normal a_normal");
   if (wantUv) lines.push("#define uv a_uv");
+  lines.push(...safePowLines(userSource));
   return lines.join("\n");
 }
 
 function fragmentPreamble(uniforms: readonly LoweredUniform[], userSource: string): string {
-  return [...BUILTIN_DECLS, ...uniformDeclLines(uniforms), ...aliasLines(uniforms, userSource)].join("\n");
+  return [...BUILTIN_DECLS, ...uniformDeclLines(uniforms), ...aliasLines(uniforms, userSource), ...safePowLines(userSource)].join("\n");
 }
 
 /**

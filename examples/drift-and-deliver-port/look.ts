@@ -142,7 +142,7 @@ const geo = (m: MeshData, _name: string) => {
   return geometry.define({ positions: a.positions, normals: a.normals, uvs: a.uvs, colors: a.colors, indices: a.indices });
 };
 
-export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; sky: boolean; sun: number; start: { x: number; z: number } }): LookRig {
+export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; start: { x: number; z: number } }): LookRig {
   const high = opts.quality === "high";
   const tex = paintTextures(opts.quality);
   const city = buildCity(world.blocks, world.buildings);
@@ -176,7 +176,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
     b.add(effects.bloom({ name: "bloom", intensity: 0.35, threshold: 1.05, radius: 0.35 }));
     b.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.38 }));
     b.add(effects.vignette({ name: "vignette", intensity: 0.2, smoothness: 0.7 }));
-    b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
+    if (opts.aa !== false) b.add(effects.antiAlias({ name: "aa", mode: "fxaa" }));
   }
 
   if (opts.sky) b.add(primitives.sphere({ name: "sky-dome", size: 3600, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }));

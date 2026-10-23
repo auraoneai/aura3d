@@ -69,8 +69,8 @@ describe("beam shaders (ported from the original)", () => {
   const baked = () => createCustomShaderMaterial(beamSpec(), "drift-beam");
 
   it("keep the original's fade terms", () => {
-    expect(BEAM_FRAGMENT).toContain("pow(1.0 - facing, 1.6)");
-    expect(BEAM_FRAGMENT).toContain("pow(1.0 - vT, 1.25) * smoothstep(0.0, 0.07, vT)");
+    expect(BEAM_FRAGMENT).toContain("pow(max(1.0 - facing, 0.0), 1.6)");
+    expect(BEAM_FRAGMENT).toContain("pow(clamp(1.0 - vT, 0.0, 1.0), 1.25) * smoothstep(0.0, 0.07, vT)");
     expect(BEAM_FRAGMENT).toContain("smoothstep(beamNear, beamNear * 2.3, d)");
     expect(BEAM_VERTEX).toContain("mat3(modelMatrix) * normal");
   });
@@ -110,5 +110,15 @@ describe("beam shaders (ported from the original)", () => {
       m.dispose();
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("beam shader is NaN-safe (pow of a negative base is NaN on real GPUs)", () => {
+  it("never raises a possibly-negative value to a fractional power and always writes a finite alpha", () => {
+    const code = BEAM_FRAGMENT.split("\n").filter((line) => !line.trim().startsWith("//")).join("\n");
+    const powCalls = [...code.matchAll(/pow\(([^;]*?),\s*[0-9.]+\)/g)].map((m) => m[1]!);
+    expect(powCalls.length).toBeGreaterThan(0);
+    for (const base of powCalls) expect(base, base).toMatch(/^(max\(|clamp\()/);
+    expect(BEAM_FRAGMENT).toContain("(a == a) ? clamp(a, 0.0, 1.0) : 0.0");
   });
 });

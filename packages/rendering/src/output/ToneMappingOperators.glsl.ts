@@ -183,6 +183,8 @@ vec3 a3dApplyOutputOverlay(vec3 encoded, vec2 uv) {
 #endif
 void main() {
   vec4 scene = texture(u_scene, v_uv);
+  // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.
+  if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);
   vec3 hdr = scene.rgb;
   // Coverage: drawn content is tone-mapped, the clear colour is not (three
   // r185: the clear is a raw glClear, tone mapping is per material). Without
