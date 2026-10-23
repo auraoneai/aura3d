@@ -64,11 +64,19 @@
     "./src/agent-api/compiler/optionCoverage.ts",
     "./src/agent-api/feel/lint/evidenceOnlyFeel.ts",
     "./src/agent-api/looks/lookLint.ts",
+    "./src/agent-api/nodes/instancedMesh.ts",
+    "./src/agent-api/nodes/batched.ts",
+    "./src/agent-api/compiler/lines.ts",
+    "./src/agent-api/camera/rigs/*.ts",
     "./dist/lanes/**/*.js",
     "./dist/agent-api/compiler/diagnosticOnly.*.js",
     "./dist/agent-api/compiler/optionCoverage.js",
     "./dist/agent-api/feel/lint/evidenceOnlyFeel.js",
-    "./dist/agent-api/looks/lookLint.js"
+    "./dist/agent-api/looks/lookLint.js",
+    "./dist/agent-api/nodes/instancedMesh.js",
+    "./dist/agent-api/nodes/batched.js",
+    "./dist/agent-api/compiler/lines.js",
+    "./dist/agent-api/camera/rigs/*.js"
   ],
   "peerDependencies": {
     "@aura3d/navigation-recast": "workspace:*"

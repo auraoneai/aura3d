@@ -54,11 +54,11 @@ for (const slug of SLUGS) {
     const response = await page.goto(url, { waitUntil: "load", timeout: 90_000 });
     const status = response?.status() ?? 0;
 
-    const scripts = await page.evaluate(() => [...document.querySelectorAll("script[src]")].map((s) => (s as HTMLScriptElement).src));
+    const scripts = await page.evaluate(() => Array.from(document.querySelectorAll("script[src]")).map((s) => (s as HTMLScriptElement).src));
     await page.waitForTimeout(BOOT_WAIT_MS);
 
     const canvasInfo = await page.evaluate(() => {
-      const canvases = [...document.querySelectorAll("canvas")];
+      const canvases = Array.from(document.querySelectorAll("canvas"));
       return canvases.map((c) => ({ id: c.id, width: c.width, height: c.height, hasWebgl: (() => { try { return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; } })() }));
     });
     const hooks = await page.evaluate(() => Object.keys(window).filter((k) => /^__AURA_|^__orbit|^__AURA|^__PORT/i.test(k)).slice(0, 12));
@@ -66,15 +66,16 @@ for (const slug of SLUGS) {
     const shot1 = await page.screenshot({ type: "png" });
     const stats1 = await pixelStats(page, shot1);
 
-    // Press the start control if the page has one, then re-check a gameplay frame.
+    // Press the start control once it is enabled (boot can take a while on software GL), then re-check a gameplay frame.
     let started = false;
     const startButton = page.locator("#start, button#play, [data-action='start'], button.primary").first();
     if (await startButton.count()) {
       try {
-        await startButton.click({ timeout: 8_000 });
+        await expect(startButton).toBeEnabled({ timeout: 60_000 });
+        await startButton.click({ timeout: 10_000 });
         started = true;
-        await page.waitForTimeout(Math.min(BOOT_WAIT_MS, 6000));
-      } catch { /* start control may be disabled or absent; the first frame already counts */ }
+        await page.waitForTimeout(Math.min(BOOT_WAIT_MS, 7000));
+      } catch { /* start control may be absent or never enable; the first frame already counts */ }
     }
     const shot2 = await page.screenshot({ type: "png" });
     const stats2 = await pixelStats(page, shot2);
