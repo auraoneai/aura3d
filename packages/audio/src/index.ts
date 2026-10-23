@@ -108,3 +108,5 @@ export { VoicePool } from "./game-sound/Voice";
 export type { VoiceCueSpec, VoiceRecord, VoicePriority } from "./game-sound/Voice";
 export { syncListener } from "./game-sound/listenerSync";
 export type { ListenerLike } from "./game-sound/listenerSync";
+
+export * from "./synth";

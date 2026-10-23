@@ -69,7 +69,7 @@ x86-64 Linux; V8's `Math.sin` can differ in the last place on ARM), so the test 
 
 Simulation untouched (reference replay still exact). Added, all presentation-only:
 
-- `audio.ts`: Web Audio synth on the shared `AudioContextManager` (132 BPM arpeggio + bass, one cue per event); events come from `diffSounds(prev, next)` over observed state, never from the sim. M or the corner button mutes (persisted).
+- `audio.ts`: Web Audio synth built on the `@aura3d/audio` synth cue kit (shared `AudioContextManager`) (132 BPM arpeggio + bass, one cue per event); events come from `diffSounds(prev, next)` over observed state, never from the sim. M or the corner button mutes (persisted).
 - `fx.ts`: DOM screen effects: colour flash, circular burst reveal, combo-driven vignette.
 - Results card: 800 ms score count-up, persisted best score, solid ball-colour backdrop, gold play-again button; keyboard play (Space/Enter, arrows or A/D).
 - `world.ts`: hard-edged contact shadow offset away from the key light (the original's shadow map), deck base colour fixed to white (it was squaring the cream map), so the road reads as white like the original.
