@@ -43,6 +43,8 @@ import { lazyNamespace } from "../lazyNamespace.js";
 import { colorToRgba } from "../colorUtils.js";
 import { createModelMatrix } from "../sceneMath.js";
 import { createProductionPrimitiveGeometry, createProductionPrimitiveMaterial } from "../compiler/primitives.js";
+import { blankProductionPrimitiveTextureState, createProductionPrimitiveTextureIntent, upgradeProductionPrimitiveResource } from "../compiler/textures.js";
+import type { ProductionRuntimePrimitiveResource } from "./types.js";
 import type { AuraCustomGeometrySpec } from "../RootGeometry.js";
 import type { AuraBatchedNode, AuraBuiltinPrimitive, AuraColor, AuraMaterialSpec, AuraPrimitiveNode } from "./types.js";
 import {
@@ -231,6 +233,64 @@ function pseudoNodeFor(node: AuraBatchedNode, instances: readonly unknown[] | un
   return { kind: "primitive", primitive: "box", material: node.material, ...(instances ? { instances: instances as AuraPrimitiveNode["instances"] } : {}) } as AuraPrimitiveNode;
 }
 
+
+interface BatchedTextureUpgrade {
+  readonly resource: ProductionRuntimePrimitiveResource;
+  readonly source: unknown;
+}
+
+/**
+ * Textured material for a batched/instanced node. `createProductionPrimitiveMaterial` only builds the scalar PBR
+ * material; authored texture maps (`texture`, `normalMap`, `emissiveMap`, ... URLs, asset refs and `texture.*` handles)
+ * are applied to ordinary primitives by the post-mount textured upgrade. Batched and instanced nodes never joined that
+ * pass, so every map was dropped and the surface rendered white. This runs the same upgrade once per state and returns
+ * the textured material once it has resolved (the scalar material until then).
+ */
+function batchedTexturedMaterial<T>(
+  state: BatchedMeshState,
+  node: AuraBatchedNode,
+  geometry: Geometry | undefined,
+  scalar: T
+): T {
+  const spec = node.material;
+  if (!spec || !geometry) return scalar;
+  let upgrade = state.textureUpgrade as BatchedTextureUpgrade | undefined;
+  if (upgrade === undefined || upgrade.source !== spec) {
+    const intent = createProductionPrimitiveTextureIntent(spec);
+    const hasMaps = Boolean(
+      intent.baseColorUrl ?? intent.normalUrl ?? intent.roughnessUrl ?? intent.metalnessUrl ?? intent.occlusionUrl ?? intent.emissiveUrl
+      ?? intent.baseColorRef ?? intent.normalRef ?? intent.roughnessRef ?? intent.metalnessRef ?? intent.occlusionRef ?? intent.emissiveRef
+    ) || Object.keys(intent.extensionMaps ?? {}).length > 0 || Object.keys(intent.extensionRefs ?? {}).length > 0 || intent.proceduralInputs.length > 0;
+    if (!hasMaps) return scalar;
+    const sourceNode = pseudoNodeFor(node, [{}]);
+    const resource: ProductionRuntimePrimitiveResource = {
+      geometry,
+      material: scalar as ProductionRuntimePrimitiveResource["material"],
+      bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] },
+      name: node.name ?? node.batchedId ?? "batched",
+      materialSpec: spec,
+      sourceNode,
+      ...blankProductionPrimitiveTextureState()
+    } as ProductionRuntimePrimitiveResource;
+    upgrade = { resource, source: spec };
+    state.textureUpgrade = upgrade;
+    resource.textureStatus = "pending";
+    state.addDisposer(() => {
+      resource.textureDisposer?.();
+      resource.texturedMaterial?.dispose();
+      resource.texturedMaterial = null;
+    });
+    void upgradeProductionPrimitiveResource(resource, sourceNode, spec, intent, 4096)
+      .then(() => { state.version += 1; })
+      .catch((error: unknown) => {
+        resource.textureStatus = "fallback";
+        resource.textureWarnings.push(`textured upgrade failed for "${resource.name}" (${error instanceof Error ? error.message : String(error)}); scalar material retained`);
+        console.warn(`[a3d] batched node "${resource.name}": ${resource.textureWarnings[resource.textureWarnings.length - 1]}`);
+      });
+  }
+  return (upgrade.resource.texturedMaterial ?? scalar) as T;
+}
+
 /** Node transform (position/rotation/scale/quaternion) as a model matrix, sans fit/normalize. */
 function batchedNodeModelMatrix(node: AuraBatchedNode, bounds: Bounds3, time: number): Float32Array {
   return createModelMatrix(node as unknown as AuraPrimitiveNode, bounds, false, time);
@@ -244,6 +304,12 @@ export function resolveBatchedMode(state: BatchedMeshState, node: AuraBatchedNod
   }
   if (!qrCoreGeneratorOn(ctx.flags)) {
     return { mode: "instanced", fallbackReason: "generated-programs-off" };
+  }
+  // The packed route draws through marker items that only the tiers.batching submit path understands; without it the
+  // markers render as plain items with no draw data and a multi-geometry node draws nothing. Fall back to per-geometry
+  // instancing, which every renderer path supports.
+  if (!ctx.flags.on("A3D_QR_TIERS_BATCHING")) {
+    return { mode: "instanced", fallbackReason: "tiers-batching-off" };
   }
   return { mode: requested === "auto" ? "multi-draw" : requested };
 }
@@ -296,7 +362,8 @@ function emitBatchedItems(
         transforms.set(state.matrices.subarray(slot * 16, slot * 16 + 16), i * 16);
         colors.set(state.colors.subarray(slot * 4, slot * 4 + 4), i * 4);
       });
-      const material = state.materialFor(materialKey, () => createProductionPrimitiveMaterial(pseudo));
+      const scalarMaterial = state.materialFor(materialKey, () => createProductionPrimitiveMaterial(pseudo));
+      const material = batchedTexturedMaterial(state, node, state.geometries[0], scalarMaterial);
       items.push({
         geometry,
         material: material as RenderItem["material"],
@@ -314,7 +381,8 @@ function emitBatchedItems(
   const { geometry, entries } = state.packedGeometry();
   const drawData = state.packedDrawData();
   const pseudo = pseudoNodeFor(node, undefined);
-  const material = state.materialFor(node.material ?? SHARED_DEFAULT_MATERIAL, () => createProductionPrimitiveMaterial(pseudo)) as RenderItem["material"];
+  const scalarMaterial = state.materialFor(node.material ?? SHARED_DEFAULT_MATERIAL, () => createProductionPrimitiveMaterial(pseudo));
+  const material = batchedTexturedMaterial(state, node, geometry, scalarMaterial) as RenderItem["material"];
   const items: RenderItem[] = [];
   slots.forEach((slot, drawIndex) => {
     const gid = state.geometryIdAt(slot);

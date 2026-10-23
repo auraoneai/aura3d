@@ -278,7 +278,7 @@ describe("batchedNodeHandler — compiled route selection (L5-03)", () => {
   it("generated-programs on → packed multi-draw route with marker items", () => {
     const node = authoredNode();
     const out = collectOut();
-    batchedNodeHandler.compile(node as never, compileCtx("all"), out as never);
+    batchedNodeHandler.compile(node as never, compileCtx("parity.batching,tiers.batching,core"), out as never);
     const report = out.fields.get("parityBatched") as { mode: string; draws: number; instances: number };
     expect(report.mode).toBe("multi-draw");
     expect(report.instances).toBe(2);
@@ -313,8 +313,20 @@ describe("batchedNodeHandler — compiled route selection (L5-03)", () => {
     mesh.addGeometry(boxGeometry(1));
     const node = mesh.toJSON();
     const state = batchedStateForNode(node);
-    expect(resolveBatchedMode(state, node, compileCtx("all")).mode).toBe("loop");
+    expect(resolveBatchedMode(state, node, compileCtx("parity.batching,tiers.batching,core")).mode).toBe("loop");
     expect(resolveBatchedMode(state, node, compileCtx("none")).mode).toBe("instanced");
+  });
+
+  it("without tiers.batching the packed route is never chosen (its marker items would draw nothing)", () => {
+    const mesh = batched.mesh({ maxInstances: 2 });
+    mesh.addGeometry(boxGeometry());
+    mesh.addGeometry(boxGeometry(1));
+    const node = mesh.toJSON();
+    const state = batchedStateForNode(node);
+    const resolved = resolveBatchedMode(state, node, compileCtx("parity.batching,core"));
+    expect(resolved.mode).toBe("instanced");
+    expect(resolved.fallbackReason).toBe("tiers-batching-off");
+    expect(resolveBatchedMode(state, node, compileCtx("parity.batching,tiers.batching,core")).mode).toBe("multi-draw");
   });
 
   it("authored (non-builder) batched nodes materialize state from declarative fields", () => {

@@ -149,6 +149,9 @@ export class BatchedMeshState {
   private drawData: DrawDataTexture | null = null;
   private boundsCache: Bounds3 | null = null;
   private materialCache = new WeakMap<object, unknown>();
+  /** Textured-material upgrade owned by this state (see batched.ts `batchedTexturedMaterial`). */
+  textureUpgrade: unknown = undefined;
+  private readonly disposers: Array<() => void> = [];
 
   constructor(options: {
     readonly id: string;
@@ -451,12 +454,19 @@ export class BatchedMeshState {
     return this.boundsCache;
   }
 
+  /** Register cleanup that runs once on `dispose()` (decoded textures, textured materials). */
+  addDisposer(fn: () => void): void {
+    this.disposers.push(fn);
+  }
+
   dispose(): void {
     this.pool?.dispose();
     this.pool = null;
     this.pooledGeometry = null;
     this.drawData?.dispose();
     this.drawData = null;
+    for (const fn of this.disposers.splice(0)) fn();
+    this.textureUpgrade = undefined;
   }
 }
 
