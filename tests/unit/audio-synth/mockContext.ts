@@ -22,14 +22,23 @@ export class FakeNode {
   frequency: Param;
   detune: Param;
   Q: Param;
+  pan: Param;
+  playbackRate: Param;
+  startArgs: unknown[][] = [];
+  onended: (() => void) | null = null;
+  disconnected = 0;
   constructor(readonly kind: string, calls: Call[]) {
     this.gain = new Param(`${kind}.gain`, calls);
     this.frequency = new Param(`${kind}.frequency`, calls);
     this.detune = new Param(`${kind}.detune`, calls);
     this.Q = new Param(`${kind}.Q`, calls);
+    this.pan = new Param(`${kind}.pan`, calls);
+    this.playbackRate = new Param(`${kind}.playbackRate`, calls);
+    this.playbackRate.value = 1;
   }
   connect(node: FakeNode) { this.connections.push(node); return node; }
-  start(t = 0) { this.started.push(t); }
+  disconnect() { this.disconnected++; }
+  start(t = 0, ...rest: unknown[]) { this.started.push(t); this.startArgs.push([t, ...rest]); }
   stop(t = 0) { this.stopped.push(t); }
 }
 
@@ -52,7 +61,12 @@ export function createFakeContext(initialState = "running") {
     createBufferSource: () => make("source"),
     createPanner: () => make("panner"),
     createConvolver: () => make("convolver"),
-    createBuffer: (_c: number, length: number) => ({ length, getChannelData: () => new Float32Array(length) })
+    createStereoPanner: () => make("pan"),
+    decodeAudioData: async (bytes: ArrayBuffer) => ({ decoded: true, byteLength: bytes.byteLength, length: 100, getChannelData: () => new Float32Array(100) }),
+    createBuffer: (_c: number, length: number) => {
+      const data = new Float32Array(length);
+      return { length, data, getChannelData: () => data };
+    }
   };
   return { ctx: ctx as unknown as SynthContext & { currentTime: number; state: string; resumed: number }, nodes, calls, ofKind: (k: string) => nodes.filter((n) => n.kind === k) };
 }

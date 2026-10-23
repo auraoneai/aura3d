@@ -154,7 +154,9 @@ export class SynthCueBank<K extends string = string> {
       if (event.ctrlKey || event.metaKey || event.altKey) return;
       const tag = event.target?.tagName?.toUpperCase();
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      options.onMuteChange?.(this.toggleMute());
+      // Toggle first: `options.onMuteChange?.(this.toggleMute())` would skip the toggle when no callback is given.
+      const muted = this.toggleMute();
+      options.onMuteChange?.(muted);
     };
     if (this.muteKey !== false) host.addEventListener("keydown", onKey);
     const remove = (): void => {

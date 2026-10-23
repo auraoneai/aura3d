@@ -60,6 +60,8 @@ export interface CuePlayParams {
   readonly pitch?: number;
   /** Multiplies every layer's gain. */
   readonly gain?: number;
+  /** Free-form payload a layer function can read (a frequency list, a contact record...). Not interpreted by the bank. */
+  readonly data?: unknown;
 }
 
 export interface CueSpec {

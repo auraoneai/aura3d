@@ -57,6 +57,35 @@ Options: `cues`, `manager` or `context` (inject for tests/offline), `masterGain`
 - `createStepSequencer(bank, { bpm, stepsPerBeat, step })` is a lookahead scheduler on the music bus: your `step(index, at, stepSeconds, voice)` callback schedules notes at sample-accurate times. `start()`, `stop()`, `setBpm()`.
 - `createToneLoop(bank, { voices, noise, filter })` is a continuous, parameter-driven bed (engine drone, wind, pad). `set({ pitch, cutoff, gain, noiseGain })` moves it smoothly each frame.
 
+## Recorded takes: `createSampleSlices`
+
+For sounds that are recorded rather than synthesised (a racket hit, a footstep) several takes sit back to back in one sprite sheet. `createSampleSlices(bank, { sprites })` plays one slice per call on the bank's buses:
+
+```ts
+import { createCueBank, createSampleSlices } from "@aura3d/engine/audio";
+
+const bank = createCueBank({ cues: {}, sfxGain: 1 });
+const slices = createSampleSlices(bank, {
+  sprites: {
+    hit: {
+      url: "/audio/racket.wav",
+      offsets: [0, 0.3, 0.6], // three 0.24 s takes in one file
+      duration: 0.24,
+      fallback: (ctx) => makeSyntheticHit(ctx) // played whole if the sheet never loads
+    }
+  },
+  random: Math.random // optional; default is a seeded LCG
+});
+slices.preload(); // start fetching while a menu is open
+bank.install(); // first gesture unlocks the context
+// after bank.unlock(): slices.buildFallbacks() right away, slices.prepare() decodes the sheets
+slices.play("hit", { gain: 0.6, pan: -0.2, lowpass: 4400, rate: 1.01 });
+```
+
+A play never repeats the previous take of the same sprite (`(previous + 1 + floor(random * (takes - 1))) % takes`), plays only that slice, and builds `source -> low-pass (if `lowpass`) -> gain -> panner (if `pan`) -> bus`. Before the sheet is decoded, or if it fails, the `fallback` buffer is played whole. `play()` returns the take index (`-1` for the fallback) or `null` when nothing sounded (locked, muted, not running, no buffer). `stopAll()` silences sounding takes; `setBuffer(name, buffer)` supplies an already-decoded sheet.
+
+How a game maps a contact to gain, pan, filter and rate stays in the game; the kit only plays slices. `CuePlayParams.data` carries a free-form payload to a cue's layer function (a frequency, a contact record).
+
 ## Notes
 
 `midiToHz`, `semitoneHz`, `noteFrom(baseHz)`, `SCALES` (major, minor, pentatonic, minorPentatonic), `scaleSemitones(scale, degree)` (wraps by octaves, both directions) and `createNoiseSource(seed)`.
@@ -68,3 +97,5 @@ Options: `cues`, `manager` or `context` (inject for tests/offline), `masterGain`
 ## Migrated example
 
 `examples/splat-rush-port/audio.ts` is built on this kit: the cue table, a 132 BPM step sequencer and `setMusicLevel` replace about 190 lines of hand-rolled Web Audio.
+
+Aura Slam's sound layer (`examples/aura-slam/audio/audio.ts`) is built on the bank, `createSampleSlices` and the `data` payload; its tests replay the original `tennis-audio.js` against a recording fake context and compare every gain, pan, filter, rate and take.
