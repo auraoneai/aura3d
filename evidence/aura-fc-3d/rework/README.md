@@ -6,6 +6,12 @@ from the real game in CPU-vs-CPU demo mode; a QA hook freezes the sim at an exac
 at a time, so every frame is a known swing fraction. A real tackle cancelled the first attempt of one run; the spec retried
 (`RWFC_AFTER_ATTEMPT` lines in the run log), and the final run's first attempt completed.
 
+> **Mesh note.** The filmstrips below were captured on the original Meshy athlete meshes. While this lane ran, the texture lane
+> (`47b51e3f7`) replaced them with repainted, remeshed models (striker 5,221 triangles, keeper 3,584) on the same rig and clips.
+> The shipped GLBs are the kick clips and soft weights rebuilt from those repainted files (`fcSoccerStrikerMeshyAthlete.1b318c94.glb`,
+> `fcGoalkeeperMeshyAthlete.057b1a70.glb`); the numbers in the unit tests are for the shipped files, the frames are not re-captured
+> on them (a remote re-capture is the next step: `tests/browser/rework-fc.spec.ts`, label file `after full`).
+
 ## What was wrong (root causes, measured)
 
 1. **The doubled legs.** The GLBs' `Shoot` clip is not a kick: the right foot travels 0.28 m at a peak 1 m/s (test
@@ -38,7 +44,7 @@ at a time, so every frame is a known swing fraction. A real tackle cancelled the
 | Plant | kicker speed 2.8 to 3.8 m/s at swing start, 0.23 at 0.14, 0 from 0.28 to the strike (frames-after.json); plant-foot drift in the clip 7 mm | `frames-after.json`, `kick-clips.test.ts` |
 | Double-frame detector (library `detectSharedSkeleton`) | clean: one skinned body per athlete across all 10 athletes, rig source has no kit/limb nodes | `athlete-rig.test.ts` |
 | Foot slide, planted-foot RMS | run 0.055 to 0.10 m/s, sprint 0.106 to 0.112, walk 0.14 to 0.345 (up to 2.5 m/s); old fixed rates averaged 0.26 to 1.16 m/s | `locomotion-sync.test.ts` |
-| Skin stretch (worst triangle over walk, run, sprint, kick, jump, tackle) | striker: 21 triangles past 2x, max 4.7x; keeper 17 and 4.5x; originals reach 120x | `skin-repair.test.ts` |
+| Skin stretch (worst triangle over walk, run, sprint, kick, jump, tackle) | shipped repainted meshes: striker 2 triangles past 2x (max 2.0x), keeper 0 (max 1.6x); the unsmoothed repainted meshes have 155 and 222 triangles past 4x; the earlier meshes reached 120x | `skin-repair.test.ts` |
 | Console errors in the real game | 0 | `RWFC_AFTER_DONE` |
 
 Filmstrips: `kick-before.jpg` / `kick-after.jpg` (swing fractions in `frames-*.json`), `run-before.jpg` / `run-after.jpg`
