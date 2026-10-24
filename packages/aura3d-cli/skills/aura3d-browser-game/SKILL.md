@@ -95,7 +95,7 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
    (`idle`, `walk`, `run`, `attack`) for real pixel motion under the key shadow
    instead of sliding rigid statues. Never build stick-figure humans or box cars
    from primitives; ground `model()` actors (`minY = 0`) at `y + sy / 2` of
-   centered platforms; wind custom `primitives.mesh` triangles CCW from `+Y`; and
+   centered platforms; wind custom `geometry.custom` triangles CCW from `+Y`; and
    run Meshy GLBs through `assets optimize --role` before admission and mount
    them with a valid 64-char `sha256-...` `hash` (`defineModelAssets`).
 4. Camera state drives `app.camera` every frame — size `html, body, #app, canvas`

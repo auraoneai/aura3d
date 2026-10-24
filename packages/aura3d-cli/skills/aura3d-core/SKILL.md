@@ -143,6 +143,4 @@ spec lives in `aura3d-art-direction`.
 - [Known pitfalls](references/pitfalls.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
 - [Claims and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md)
-- [No hackjob rules](https://github.com/auraoneai/aura3d/blob/main/docs/agents/no-hackjob-rules.md)
-- [Anti-hallucination rules](https://github.com/auraoneai/aura3d/blob/main/docs/agents/anti-hallucination-rules.md)
 - [Agent quickstart](https://aura3d.auraone.ai/docs/agent-quickstart.html)

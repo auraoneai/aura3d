@@ -178,7 +178,7 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
   `primitives.cylinder` (`instances.box` / `instances.cylinder`) are centered on
   `[-0.5..+0.5]` so a platform at `(y, sy)` has its top surface at
   `y + sy / 2`. Always place grounded characters and vehicles at
-  `platform.y + platform.sy / 2`. Wind custom procedural `primitives.mesh`
+  `platform.y + platform.sy / 2`. Wind custom procedural `geometry.custom`
   triangles counter-clockwise (CCW) when viewed from `+Y` so `gl_FrontFacing`
   is true and vertex normals receive direct sunlight.
 - Bottom or half of the viewport is solid black, or fighters overlap at round
