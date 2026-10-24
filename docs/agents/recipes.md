@@ -10,7 +10,7 @@ Rules that every recipe follows:
 - Metals need something to reflect: add `environments.neutral(...)` (or a look preset) or a metallic material renders dark.
 - Instancing: `instances.cone/cylinder/sphere/box({ transforms, colors })` draws one draw call per shape; shapes are unit-sized, so `scale` sets the size.
 - A deformed surface needs vertices: build a grid with `geometry.define` and mount it with `geometry.custom(...)`.
-- Anything you move, rotate, or play at runtime needs `.runtime({ id, mutable: true })` on its node; `app.nodes.require(id)` throws without it. (If a callback in `onFrame` throws, 4.1.3 and later log `onFrame callback threw: ...` once and keep rendering; earlier versions stop drawing and leave a blank page.)
+- Anything you move, rotate, or play at runtime needs `.runtime({ id, mutable: true })` on its node; `app.nodes.require(id)` throws without it. (If a callback in `onFrame` throws, 4.1.4 and later log `onFrame callback threw: ...` once and keep rendering; 4.1.3 and earlier stop drawing and leave a blank page.)
 - Never silence a type error with `as never` or `as any`: the error is the real answer.
 
 ## 1. Rotating PBR cube with orbit control

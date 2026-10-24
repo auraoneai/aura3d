@@ -4,6 +4,11 @@ Version: 4.1.3
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.1.4 (unreleased)
+
+- **Fix: a throwing `app.onFrame` callback no longer stops the frame loop.** The exception used to unwind the render loop, so nothing was drawn again and the page stayed blank (found by the cold-start agent trial: a cube whose `onFrame` called `app.nodes.require("cube")` on a node without `.runtime({ id, mutable: true })` rendered black with 0 draw calls). The error is now caught per callback, reported once as `onFrame callback threw: ...` (console and `diagnostics().errors`), and the other callbacks and later frames keep running. Unit test `tests/unit/agent-api/on-frame-errors.test.ts`.
+- **Docs: `docs/agents/recipes.md`** (complete compiled scenes for the five common tasks) and the `.runtime({ id, mutable: true })` rule in the quickstart. In the cold-start trial, 8 of 15 runs spent all 40 turns reading `dist/` without writing a scene; with the recipes the median dropped from 40 to 13 turns (see `evidence/agent-eval/REPORT-after.md`).
+
 ## 4.1.3 (2026-10-24)
 
 A patch release: the stock-build fix, a large software-WebGL2 frame-cost cut, library kits extracted from the games, corrected API deprecation annotations, a remote-first `look capture`, a rewritten documentation set, and the native Aura Slam route polish. No export is removed or renamed.
