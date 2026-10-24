@@ -5,7 +5,7 @@
  * Query parameters (all optional): `autostart=1` (skip the menu), `manual=1` (the sim only advances through
  * `__AURA_HEATSINK__.stepFrames`), `quality=high|low`.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { expandSegments, parseInputScript } from "../../tools/crayon-capture/heatsink-lib";
 import { CFG } from "./config";
 import { HudModel, formatTime } from "./hud";
@@ -32,7 +32,7 @@ let runtime: WorldRuntime | undefined;
 let started = config.manual;
 let paused = false;
 let heldInput: Input | null = null;
-let accumulator = 0;
+let manualInput: Input | null = null;
 let renderTime = 0;
 let frames = 0;
 let lastHud: ReturnType<HudModel["update"]> | undefined;
@@ -68,7 +68,7 @@ function begin(): void {
   race = new Race(track);
   hudModel.current = new HudModel();
   runtime?.resetCamera();
-  accumulator = 0;
+  loop.resetAccumulator();
   started = true;
   paused = false;
   $("menu").classList.add("hidden");
@@ -105,14 +105,22 @@ function render(dt: number): void {
   frames++;
 }
 
+const loop = createFixedStepLoop({
+  stepSeconds: FRAME,
+  maxFrameSeconds: 0.1,
+  maxCatchUpSteps: 7,
+  manual: config.manual,
+  isActive: () => ready && started && !paused,
+  step() {
+    simulate(1, manualInput ?? undefined);
+  }
+});
+
 let last = performance.now();
 function tick(now: number): void {
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
-  if (!config.manual && ready && started && !paused) {
-    accumulator += dt;
-    while (accumulator >= FRAME) { simulate(1); accumulator -= FRAME; }
-  }
+  loop.tick(now);
   if (ready && !config.manual) { renderTime += dt; render(dt); }
   requestAnimationFrame(tick);
 }
@@ -142,14 +150,22 @@ function grabCanvas(): { w: number; h: number; lit: number; url: string } {
 
 let session: { inputs: Input[]; step: number } | null = null;
 
-const api = {
+const hooks = installQaHooks("heatsink", {
   ready: () => ready,
   state,
-  applyInput(input: Input | null) { heldInput = input; },
+  app: () => app,
   begin,
   reset() { begin(); },
+  nodeCount: () => runtime?.nodeCount ?? 0,
+  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-03", "SG-05", "SH-02", "R-23", "R-24"] }) : null),
   /** run `n` fixed 1/60 s steps (optionally with a fixed input), then render once */
-  stepFrames(n: number, input?: Input) { simulate(Math.max(0, n | 0), input ?? heldInput ?? IDLE); renderTime += n * FRAME; render(FRAME); return state(); },
+  stepFrames(n: number, input?: Partial<Input>) {
+    manualInput = (input as Input | undefined) ?? heldInput ?? IDLE;
+    loop.advance(n);
+    manualInput = null;
+    renderTime += n * FRAME;
+    render(FRAME);
+  },
   /** replay a recorded run-length input script step-exactly on a fresh race and return the final state */
   replay(text: string) {
     race = new Race(track);
@@ -161,65 +177,40 @@ const api = {
     render(FRAME);
     return { steps: n, ...state(), laps: race.laps, events: race.events.slice() };
   },
-  /** begin a stepwise replay of a recorded script on a fresh race (see `replayTo`) */
-  replayStart(text: string) {
-    race = new Race(track);
-    hudModel.current = new HudModel();
-    runtime?.resetCamera();
-    session = { inputs: expandSegments(parseInputScript(text)), step: 0 };
-    renderTime = 0;
-    return session.inputs.length;
-  },
-  /**
-   * advance the replay to `target` steps, drawing every step in the last `lead` so the chase camera settles; with `grab`
-   * the canvas is read back in the same task as the final render (the WebGL drawing buffer is only valid until then)
-   */
-  replayTo(target: number, lead = 30, grab = false) {
-    if (!session) throw new Error("replayStart first");
-    let shot: { w: number; h: number; lit: number; url: string } | null = null;
-    while (session.step < target && session.step < session.inputs.length) {
-      race.frame(FRAME, session.inputs[session.step] as Input);
-      lastHud = hudModel.current.update(FRAME, race);
-      session.step++;
-      renderTime = race.time;
-      if (session.step >= target - lead) {
-        render(FRAME);
-        if (grab && session.step === target) shot = grabCanvas();
+  extras: {
+    applyInput(input: Input | null) { heldInput = input; },
+    /** begin a stepwise replay of a recorded script on a fresh race (see `replayTo`) */
+    replayStart(text: string) {
+      race = new Race(track);
+      hudModel.current = new HudModel();
+      runtime?.resetCamera();
+      session = { inputs: expandSegments(parseInputScript(text)), step: 0 };
+      renderTime = 0;
+      return session.inputs.length;
+    },
+    /**
+     * advance the replay to `target` steps, drawing every step in the last `lead` so the chase camera settles; with `grab`
+     * the canvas is read back in the same task as the final render (the WebGL drawing buffer is only valid until then)
+     */
+    replayTo(target: number, lead = 30, grab = false) {
+      if (!session) throw new Error("replayStart first");
+      let shot: { w: number; h: number; lit: number; url: string } | null = null;
+      while (session.step < target && session.step < session.inputs.length) {
+        race.frame(FRAME, session.inputs[session.step] as Input);
+        lastHud = hudModel.current.update(FRAME, race);
+        session.step++;
+        renderTime = race.time;
+        if (session.step >= target - lead) {
+          render(FRAME);
+          if (grab && session.step === target) shot = grabCanvas();
+        }
       }
-    }
-    return { ...state(), shot };
-  },
-  frames: () => frames,
-  nodeCount: () => runtime?.nodeCount ?? 0,
-  info: () => app?.info ?? null,
-  diagnostics: () => app?.diagnostics() ?? null,
-  hud: () => lastHud ?? null,
-  async frame(width = 480, height = 270, quality = 0.72): Promise<string> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = document.createElement("canvas");
-    surface.width = width; surface.height = height;
-    surface.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-    return surface.toDataURL("image/jpeg", quality);
-  },
-  async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = surface.getContext("2d")!;
-    ctx.drawImage(bitmap, 0, 0);
-    const image = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-    return { width: image.width, height: image.height, data: image.data };
-  },
-  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-03", "SG-05", "SH-02", "R-23", "R-24"] }) : null)
-};
-
-declare global {
-  interface Window { __AURA_HEATSINK__?: typeof api; __AURA_HEATSINK_ERROR__?: string }
-}
-window.__AURA_HEATSINK__ = api;
+      return { ...state(), shot };
+    },
+    frames: () => frames,
+    hud: () => lastHud ?? null
+  }
+});
 
 /* ------------------------------------------------------------------ boot */
 
@@ -263,7 +254,7 @@ function reportError(error: unknown): void {
   const code = (error as { code?: unknown })?.code;
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
-  if (!window.__AURA_HEATSINK_ERROR__) window.__AURA_HEATSINK_ERROR__ = message;
+  hooks.reportError(message);
   $("loading-status").textContent = `The track could not load: ${message.slice(0, 300)}`;
   $("loading").classList.remove("hidden");
   console.error(error);
