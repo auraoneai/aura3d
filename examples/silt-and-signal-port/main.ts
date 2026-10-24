@@ -283,6 +283,7 @@ const row = (): Row => {
 function reset(chapter = config.chapter, objective = config.objective, start?: { clockMs?: number; time?: number }): void {
   const ch = Math.max(0, Math.min(6, Math.trunc(chapter)));
   sim = createSim(ch, Math.max(0, Math.min(CHAPTERS[ch]!.objectives.length - 1, Math.trunc(objective))), undefined, start);
+  loop.resetAccumulator();
   heldInput = null;
 }
 
