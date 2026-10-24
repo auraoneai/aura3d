@@ -11,6 +11,16 @@ an objective and a progression loop in the browser AND looks like its genre.
 Shared rules (claim labels, forbidden patterns, typed assets, benchmark mode)
 are in [boundaries](../aura3d-core/references/boundaries.md).
 
+## Start here
+
+Read `docs/agents/build-a-game.md` (one page, type-checked sample) and
+`docs/api/game-cheatsheet.md`. Build the route from the library shell
+(`createGame` from `@aura3d/engine/game`, `createFixedStepLoop`,
+`installQaHooks`, `defineModelAssets`, `installSafetyNet`); do not hand-roll a
+HUD, touch layer, loop, QA hooks, synth or black-frame guard. Verify remotely
+only (`tools/remote-acr/run.sh`): software WebGL2 is correctness and draw-call
+evidence, never GPU performance evidence.
+
 ## Look target
 
 Genre → recipe row (full table: `../aura3d-art-direction/references/look-recipes.md`):
@@ -71,7 +81,8 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
    `lights.studio()` / `lights.directional()` on top, pass `{ fogDensityScale: 0,
    exposureEv: -0.1 }` to `looks.preset(...)` if fog whitewashes a fast route,
    and never pin post-processing or the compiler off with a `qualityRebuild` flag
-   list (the engine defaults are right; install the safety net instead), and never
+   list (the engine defaults are right; `@aura3d/engine/game` already turns the
+   `game` lane on; install the safety net instead), and never
    set `emissive: "#ffffff"` on instanced pool materials (`instanceColors`
    multiply `u_baseColor`, not `u_emissiveColor`).
 3. Mount typed 3D GLBs for every character, athlete, enemy, vehicle, weapon,
@@ -145,7 +156,9 @@ per round until every category reads 7+, 6 rounds, or 2 flat rounds.
 - [Shared boundaries](../aura3d-core/references/boundaries.md)
 - [Look recipes](../aura3d-art-direction/references/look-recipes.md)
 - [Quality bar](../aura3d-art-direction/references/quality-bar.md)
-- [Build a browser game](https://github.com/auraoneai/aura3d/blob/main/docs/guides/build-a-browser-game.md)
+- Build a game (one page, type-checked sample): `docs/agents/build-a-game.md`
+- Game kit cheat sheet: `docs/api/game-cheatsheet.md`
+- [Build a browser game guide](https://github.com/auraoneai/aura3d/blob/main/docs/guides/build-a-browser-game.md)
 - [Game example standards](https://github.com/auraoneai/aura3d/blob/main/docs/agents/game-example-standards.md)
 - [Game runtime API](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-runtime.md)
 - [Genre looks in the frame](references/genre-looks.md)

@@ -57,4 +57,12 @@ Subpaths: `@aura3d/engine/game/art`, `@aura3d/engine/game/capture`, `@aura3d/eng
 
 - The kit is built from `packages/game` in this repository. `@aura3d/game` itself stays private; the published surface is the subpath.
 - The published `@aura3d/engine` tarball was installed and the `racing-starter` template built against it as the check for this page.
-- Ports of existing games under `examples/*-port` predate the kit and hand-roll their HUD, QA hooks and audio; new routes should start from the kit.
+- Most ports under `examples/*-port` and many showcase apps still hand-roll their HUD, QA hooks, audio and model loading; at the time of writing only Aura Slam and Splat Rush use the cue bank and QA hook kits. New routes start from the kit; migrating the rest is tracked as library work.
+- Rebindable keys (`createBindingStore`) are private to `@aura3d/game` today; publishing it through this entry is a follow-up.
+- `g.shell.showResults(values)` exists on the contract, but no shipped game uses it (they render their own results DOM). Verify it on your route before relying on it.
+
+## Related pages
+
+- One-page walkthrough with a type-checked sample: `docs/agents/build-a-game.md`.
+- Names on one page: `docs/api/game-cheatsheet.md`.
+- Deterministic loop and hooks: `docs/api/qa-kit.md`. Safety net: `docs/api/safety-net.md`. Procedural audio: `docs/api/audio-synth.md`. Production GLBs: `docs/api/model-loader.md`. Scatter and merge: `docs/api/scatter-merge.md`. Shader chunks: `docs/api/glsl-chunks.md`. Cel pass: `docs/api/toon.md`. Racket sports: `docs/api/ball-flight.md`, `docs/api/racket-athlete-rig.md`.

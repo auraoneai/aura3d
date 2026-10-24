@@ -3,8 +3,25 @@
 Use this when building or reviewing Aura3D game examples.
 
 Read `llms.txt`, `docs/agents/claims-and-boundaries.md`, and
-`docs/api/game-runtime.md` first. A route with a scene, keyboard listener, or
-proof replay is not automatically a game.
+`docs/agents/build-a-game.md` first (the one-page path), then
+`docs/api/game-cheatsheet.md` and `docs/api/game-runtime.md` for names. A route
+with a scene, keyboard listener, or proof replay is not automatically a game.
+
+## Build It From the Kits
+
+A public game starts from the library shell, not from hand-written glue:
+
+- `createGame` from `@aura3d/engine/game` for lifecycle, pause, HUD, touch
+  controls, sound and juice (the `@aura3d/engine` export is a headless stub);
+- `createFixedStepLoop`, `installQaHooks`, `readQaParams` and
+  `createCountedRng` for a deterministic, scriptable simulation;
+- `createCueBank` or `sfxUrl` for sound, bound to simulation events;
+- `defineModelAssets` for production GLBs (same-origin URL, sha256, provenance);
+- `installSafetyNet` on any route real players reach.
+
+Hand-rolling any of those in a new route is a review finding. If a rule is
+missing from the kit, write it route-local, say so in the route notes, and add a
+library task.
 
 ## Minimum Public Game Standard
 
@@ -27,7 +44,18 @@ A public game example must prove:
   `docs/agents/art-direction.md`), the frame shows environment light, a full
   key shadow, genre palette and fog/grade from the look — a mechanic-correct
   game on flat lighting and a void background is still `prototype`.
-- all current release, visual-QA, and deploy gates for that exact route pass;
+- the route works on a phone: touch preset bound to the same input actions as
+  the keyboard, no horizontal scroll at 390x844, HUD does not cover the play area;
+- QA hooks are installed (`window.__AURA_<NAME>__` with `ready`, `state`,
+  `stepFrames`, `reset`) and a seeded replay produces the same state hash twice;
+- browser specs ran remotely (`tools/remote-acr/run.sh`); software WebGL2 results
+  are labelled as software GL and never presented as GPU performance;
+- draw calls stay inside the route's written budget (read from
+  `app.diagnostics()` or `?diag=1`);
+- UI text uses only the licensed font library and the dense UI preset named in
+  the repository policy (`AGENTS.md`), never Inter, Roboto, Geist or system stacks;
+- all current release, visual-QA, and deploy gates for that exact route pass
+  (`aura3d assets validate-game`, `aura3d check-deploy --dist dist`);
   historical retained evidence cannot override a failing current gate.
 
 ## Session Length

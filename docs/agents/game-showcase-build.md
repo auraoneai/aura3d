@@ -1,135 +1,58 @@
-# Aura Clash Arena Showcase Build Guide
+# Showcase game build guide
 
-Version: 4.0.0
+Version: 4.1.2
 
-Use this guide when editing, reviewing, or documenting the active Aura3D game showcase in `apps/aura-clash-showcase`.
+Use this when you add, edit or review a game on the public showcase (`apps/showcase-*`, the 15 cards on `https://aura3d.auraone.ai/apps/showcase-index/`, the Crayon ports in `examples/*-port`, and `examples/aura-slam`). Build the game with `docs/agents/build-a-game.md`; this page is what a showcase route adds on top: route-health, evidence, honest disclosure and the review gate.
 
-Aura Clash Arena is the current browser-game development showcase for Aura3D.
-It exercises a scoped runtime foundation across root and lower-level Aura3D
-package surfaces: typed GLB assets, a game lifecycle, input, animation state,
-engine combat evidence, HUD updates, screenshots, deployment checks, and
-npm/CLI proof. It is not blanket root `createAuraApp` or flagship-quality
-evidence.
+## Non-negotiables
 
-It is a development showcase built with starter-grade fighter assets, focused on proving the engine's runtime, animation, and combat systems.
+- Read `llms.txt` and `docs/agents/claims-and-boundaries.md` before writing code.
+- Public imports only: `@aura3d/engine`, `@aura3d/engine/game`, `@aura3d/engine/audio`, `@aura3d/debug`. No renderer internals, no `three`, no deprecated subpaths (`production-runtime`, `advanced-runtime`). `tests/unit/agent-api/public-example-boundary.test.ts` fails the build on these.
+- Typed assets only: GLBs through `defineModelAssets` or `src/aura-assets.ts`; no string asset ids, invented URLs or route-local loaders. Characters, vehicles and landmarks are never primitives; primitives are for ground, lines, rings and debug.
+- The shell comes from the kit (`createGame` from `@aura3d/engine/game`); QA hooks from `installQaHooks`; safety net from `installSafetyNet`. A showcase route that hand-rolls these is a review finding.
+- Hitboxes, boxes and debug rigs are hidden in normal play; debug visuals live behind an explicit debug or evidence mode.
+- Remote verification only (`tools/remote-acr/run.sh`); never local Playwright, Docker or heavy builds. Software WebGL2 results are labelled as software GL.
+- Licensed fonts and the dense UI preset named in the repository policy (`AGENTS.md`).
 
-## Non-Negotiables
+## Route anatomy
 
-- Read `llms.txt` before authoring Aura3D code.
-- Use public imports from `@aura3d/engine`.
-- Use one app/runtime owner per route through the current public game-runtime path.
-- Use typed assets from `src/aura-assets.ts`; never pass string asset ids, invented GLB URLs, raw loaders, or direct Three.js imports.
-- Use the asset catalog profile for fighter prompts:
-
-```bash
-npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json
-npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name fighter --profile fighting-character
-npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset auraClashPlayerRig --asset auraClashRivalRig --no-placeholders --require-license
-```
-
-- If the catalog returns no production-ready candidate, stop and report the rejection reasons. Do not force a static prop, aircraft, spider, unlicensed sculpt, or broken-scale model into a fighter slot.
-- Do not use primitives as release-facing fighter art. Primitives are allowed for set dressing, debug modes, and deterministic tests only.
-- Hide hitboxes, boxes, line artifacts, and debug rigs in normal play. Debug visuals must be behind an explicit debug/evidence mode.
-- Keep public copy scoped to "development showcase" and "runtime proof" until gameplay, asset, art, audio, performance, deployment, and visual approval gates all pass.
-
-## Active App Shape
-
-| Area | Current source |
+| Piece | Where |
 | --- | --- |
-| App bootstrap | `apps/aura-clash-showcase/src/main.ts` |
-| Active playable route | `apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts` |
-| Active route stylesheet | `apps/aura-clash-showcase/src/playable/playable.css` |
-| Typed assets | `apps/aura-clash-showcase/src/aura-assets.ts` and `apps/aura-clash-showcase/aura.assets.json` |
-| Fighter definitions | `apps/aura-clash-showcase/src/fighters/` and `apps/aura-clash-showcase/src/data/` |
-| Runtime/game helpers | `apps/aura-clash-showcase/src/game/`, `src/state/`, `src/rendering/`, `src/arenas/` |
-| Route evidence | `apps/aura-clash-showcase/evidence/` and `apps/aura-clash-showcase/launch-evidence/` |
-| Browser tests | `apps/aura-clash-showcase/tests/` |
+| Entry and HTML | `apps/showcase-<slug>/index.html`, `src/main.ts` |
+| Pure simulation | `src/game/` or `examples/<game>/sim/` (no DOM, no `Math.random`) |
+| Typed assets | `src/aura-assets.ts` and `aura.assets.json`, or `defineModelAssets` |
+| Route health | `apps/showcase-<slug>/route-health.json` |
+| Evidence | `evidence/<game>/` (frames, `results.json`, README) |
+| Specs | `tests/browser/<game>*.spec.ts` |
+| Index card and disclosure | `apps/showcase-index/index.html`, generated pages in `tools/showcase-port-pages/` |
 
-Legacy numbered attempt directories must remain deleted. Do not recreate attempt-number source directories or proof object names.
+## Route health
 
-## Required Gameplay Surface
+`route-health.json` names the route, the renderer and fallback state, the exact primary assets, the claim label and its limits. `node scripts/check-route-health.mjs` validates it. Its rules: `publicShowcase: true` needs `qualityGate.status === "accepted"` with human reviewer logins in `acceptedBy` (agent ids are rejected), there are no free-text quality claims, and no route-local asset may self-assign `quality: "release"`. Agents never accept their own work.
 
-Every release-facing route must prove these controls in automated browser tests and runtime evidence:
+## Evidence a public game ships with
 
-| Control | Expected behavior |
-| --- | --- |
-| `A` / Left | Move left inside arena bounds. |
-| `D` / Right | Move right inside arena bounds. |
-| `S` / Down | Crouch or fast-fall; the visible state must change. |
-| `Space` | Jump high enough to read visually; landing should recover. |
-| `Shift` | Dash with bounded distance and recovery. |
-| `Q` | Guard without pausing or crashing. |
-| `J` | Light attack with a distinct visible clip/state/window. |
-| `K` | Heavy attack with a distinct visible clip/state/window. |
-| `L` | Special attack or explicit no-meter feedback; it must not pause, crash, or lock the route. |
-| `P` | Pause/resume. |
-| `R` | Reset/rematch; all HP, timer, input, AI, meter, hitboxes, and animation states return to baseline. |
+- The page and every JS, CSS, GLB, texture and audio request return 200; zero console errors and page errors; a non-blank canvas.
+- The QA global (`window.__AURA_<NAME>__`) reports `ready`, a plain-data `state()` and a stable replay hash for a seeded script.
+- Input changes state, restart works after win and fail, and at least 60 seconds of player-driven play is demonstrated.
+- Draw calls are within the route's budget, read from `app.diagnostics()` or `?diag=1` (Aura Slam: 150, measured 119 live).
+- Frames for first load, after input, mid-route, fail or reset, finish, and mobile 390x844. Original-game frames used for comparison stay local and gitignored.
+- For ports: a replay against a recorded reference (the Crayon ports match to 1e-6 or better; Aura Slam is bit-identical in differential tests) and a blind judge result stated as a model judge (`aura3d evidence judge`), never as human agreement.
+- `aura3d assets validate-game`, `aura3d assets validate --no-placeholders --require-license` and `aura3d check-deploy --dist dist` pass for the exact route.
 
-Combat must stop after KO until reset/rematch. Post-KO hitboxes must be inert, and KO animation must not loop as repeated combat.
+## Disclosure copy
 
-## Asset Rules
+State what the page is, what it is not, and the measured state. Examples that are in use: "Simulation port only: art is still visibly different from the original (a blind model judge picked the original in 35 of 48 trials)"; "Independent Aura3D reconstruction; not affiliated with the original." Never write "polished", "flagship", "Unity replacement", "Unreal competitor", "Babylon parity" or "drop-in three.js replacement". Software-GL numbers are never GPU numbers.
 
-The active release-facing fighters are contextual typed assets:
+## Review checklist
 
-- `assets.auraClashPlayerRig`
-- `assets.auraClashRivalRig`
+- [ ] Built from the kits (`build-a-game.md`), no hand-rolled shell
+- [ ] Typed assets, no primitives for characters or vehicles
+- [ ] Remote spec run id recorded; 0 console errors; frames saved
+- [ ] Replay stable twice; draw calls within budget
+- [ ] `route-health.json` valid; disclosure matches the evidence
+- [ ] Mobile frame checked; no horizontal scroll; HUD not covering play area
 
-Release-facing proof must not depend on:
+## History
 
-- same-model tinting as the only fighter distinction;
-- retired attempt-named catalog proof assets;
-- `assets.auraClashTrainingMannequin`;
-- string ids;
-- raw remote URLs;
-- route-local GLB loader code.
-
-When adding an arena prop, texture, music loop, or SFX, register it:
-
-```bash
-npx @aura3d/cli@latest assets add ./assets/hit.wav --name auraClashHitSfx --type audio
-```
-
-Then import through the generated `assets` object and include it in deployment proof.
-
-## Evidence Contract
-
-Normal proof must include:
-
-- page 200 for `/playable`, `/apps/aura-clash`, and `/showcase/aura-clash/playable/`;
-- JS/CSS/GLB/texture/image/audio 200s;
-- no console errors or page errors;
-- nonblank canvas;
-- runtime proof object `window.__AURA_CLASH_ARENA_PROOF__`;
-- typed asset names and hashes;
-- frame count advancement;
-- visible movement and attacks;
-- HP changes only through combat collision;
-- KO lock and reset recovery;
-- screenshots for first frame, action, hit, KO, reset, and mobile.
-
-Current release evidence is rolled up by:
-
-```bash
-pnpm --dir apps/aura-clash-showcase test:playable
-pnpm --dir apps/aura-clash-showcase test:flagship
-pnpm verify:aura-clash-flagship
-pnpm verify:aura3d110-performance
-pnpm verify:aura3d110-deployed-visual
-pnpm aura3d110:readiness
-```
-
-Do not mark a route as flagship quality without visual approval. A green smoke test can prove mechanics and still leave art, animation, audio, and game feel below the public bar.
-
-## Copy Boundary
-
-Allowed:
-
-> Aura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.
-
-Not allowed:
-
-- "Aura Clash is a polished flagship fighting game."
-- "Aura3D is a Unity replacement."
-- "Aura3D is an Unreal competitor."
-- "Aura3D has Babylon.js parity."
-- "The AI prompt catalog always finds production-ready fighters."
+Earlier versions of this page described only `apps/aura-clash-showcase` and referenced release scripts that no longer exist in `package.json` (`verify:aura-clash-flagship`, `verify:aura3d110-performance`, `verify:aura3d110-deployed-visual`, `aura3d110:readiness`). That app's own tests remain `pnpm --dir apps/aura-clash-showcase test:playable` and `test:flagship`; run them through the remote runner.
