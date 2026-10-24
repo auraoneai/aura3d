@@ -307,3 +307,16 @@ Use the labels in `docs/agents/claims-and-boundaries.md`. A game is `prototype` 
 - The kit's results screen is unexercised by shipped games.
 - `createBindingStore` (rebindable keys) is private to `@aura3d/game` until published through the game kit.
 - If a rule you need is missing, write it route-local, label it in the notes and add a library task.
+
+## Believable motion (characters, contacts)
+
+Use the motion kit from `@aura3d/engine/game` instead of hand-rolling per game:
+
+| Need | Use | Page |
+|---|---|---|
+| bat, club, ball in the hand | `attachToBone` | [motion-attach](../api/motion-attach.md) |
+| legs that match the ground | `createLocomotion`, `proceduralLegSwing` | [motion-locomotion](../api/motion-locomotion.md) |
+| prove there is no sliding | `createFootSlideMeter` | [motion-foot-slide](../api/motion-foot-slide.md) |
+| walls, gates, bridges that hit back | `createImpactWorld`, `createImpactFeedback` | [motion-impact](../api/motion-impact.md) |
+| no shake or jitter | `smoothDamp`, `createRenderInterpolator` | [motion-smoothing](../api/motion-smoothing.md) |
+| ghosted or doubled players | `checkDoubleFrame` | [motion-double-frame](../api/motion-double-frame.md) |

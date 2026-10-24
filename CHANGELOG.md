@@ -4,6 +4,10 @@ Version: 4.1.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.2.0 (unreleased)
+
+- **Motion kit in `@aura3d/engine/game` (additive).** `attachToBone` (role-resolved bone sockets with a loud `ATTACH_BONE_NOT_FOUND`), `createLocomotion` and `proceduralLegSwing` (stride-synced gaits), `createFootSlideMeter` (planted-foot drift and legs-not-stepping check), `createImpactWorld`, `createImpactFeedback`, `createHitStop` and `createCameraShake` (swept collision with one event per contact plus hit-stop, shake, cue, particles and damage), `smoothDamp`, `createSmoothFollow3`, `createRenderInterpolator` and `jitterReport`, and `checkDoubleFrame`. Docs: `docs/api/motion-*.md`. These are pure TypeScript with no DOM, so they run in unit tests and QA hooks.
+
 ## 4.1.3 (unreleased)
 
 A patch release: the stock-build fix, a large software-WebGL2 frame-cost cut, library kits extracted from the games, corrected API deprecation annotations, a remote-first `look capture`, a rewritten documentation set, and the native Aura Slam route polish. No export is removed or renamed.
