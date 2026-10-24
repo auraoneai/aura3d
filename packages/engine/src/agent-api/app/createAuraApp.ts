@@ -35,6 +35,7 @@ import { setQrAnimationFlags } from "./actorAnimationHandle.js";
 import { appExtensionsAll } from "../../contracts/app.js";
 import { diagnosticsSectionsAll } from "../../contracts/diagnostics.js";
 import type { AuraQualityTier } from "@aura3d/rendering/contracts";
+import { clearShaderFailures, setShaderFailureMode } from "@aura3d/rendering";
 import { createAuraRuntimeNodeRegistry } from "./runtimeNodes.js";
 import { setPrd01ModelMatrixCache } from "../compiler/renderInput.js";
 import { createModelMatrixCache } from "../sceneGraph.js";
@@ -106,6 +107,13 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   if (qrFlags.on("A3D_QR_CORE")) renderSnapshot = flattenAuraSceneSnapshot(snapshot, qrFlags);
   // 01-S5 (C-06): colorUtils helpers delegate to parseAuraColor under the flag.
   setPrd01ColorParsing(qrFlags.on("A3D_QR_CORE") ? { strict: options.strict ?? qrFlags.on("A3D_QR_STRICT") } : null);
+  // Custom-shader compile/link failures: a fresh app starts with a clean failure list; strict (or
+  // renderer.materialStrictness "strict") fails the frame with AuraRuntimeError("custom-shader-compile-failed"),
+  // otherwise the failing draw is skipped (magenta with ?diag=1) and the failure is reported in diagnostics.
+  clearShaderFailures();
+  setShaderFailureMode(
+    options.renderer?.shaderFailures ?? ((options.strict ?? qrFlags.on("A3D_QR_STRICT")) || options.renderer?.materialStrictness === "strict" ? "throw" : undefined)
+  );
   // T4.5 (PRD-15): under strict the removed renderer.mode/renderer.fallback
   // surface is an AuraMigrationError, not a silent ignore. Flag-off callers
   // keep today's normalization (the fields still work until 4.0.0).

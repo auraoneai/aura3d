@@ -177,4 +177,25 @@ describe("formatEngineSection", () => {
     expect(formatEngineSection({ diagnostics: () => { throw new Error("x"); } }, [])).toContain("diagnostics() threw");
     expect(formatEngineSection(undefined, [])).toContain("no diagnostics exposed");
   });
+
+  it("lists custom shader failures with code, material, line (authored line) and the offending source line", () => {
+    const text = formatEngineSection(
+      {
+        diagnostics: () => ({
+          backend: "webgl2",
+          drawCalls: 4,
+          errors: ["CUSTOM_SHADER_COMPILE_FAILED: material \"sky\" fragment line 23"],
+          shaderFailures: [{
+            code: "CUSTOM_SHADER_COMPILE_FAILED",
+            material: "sky",
+            stage: "fragment",
+            locations: [{ line: 23, authoredLine: 4, message: "'dup' : redefinition", window: [{ text: "float dup = 1.0;" }, { text: "  float dup = 2.0;", error: true }] }]
+          }]
+        })
+      },
+      []
+    );
+    expect(text).toContain('SHADER CUSTOM_SHADER_COMPILE_FAILED "sky" fragment line 23 (source line 4)');
+    expect(text).toContain("'dup' : redefinition >> float dup = 2.0;");
+  });
 });

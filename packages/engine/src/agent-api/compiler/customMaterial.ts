@@ -591,6 +591,8 @@ function adapterLibraryFor(_name: string): ShaderLibrary {
 export class AuraCustomShaderMaterial extends PortableShaderMaterial {
   private readonly fogRequested: boolean;
   private readonly unusedUniformNames: readonly string[];
+  /** The author's own GLSL per stage, so a compile error in the assembled program can be mapped back to the author's line (best effort: exact when no `#include` expands before the error line). Read by the renderer's shader-failure diagnostics. */
+  readonly shaderAuthoredSource: { readonly vertex: string; readonly fragment: string };
 
   constructor(spec: AuraCustomMaterialSpec, options: { readonly name?: string } = {}) {
     assertAuraCustomMaterialSpec(spec, options.name ?? "material.custom");
@@ -630,6 +632,7 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
       requiredAttributes: ["a_position", ...customAttributes]
     });
     this.fogRequested = spec.fog === true;
+    this.shaderAuthoredSource = { vertex: vertexSource, fragment: spec.glsl.fragment };
     const authoredSource = `${spec.glsl.vertex ?? ""}\n${spec.glsl.fragment}`;
     this.unusedUniformNames = uniforms
       .filter((uniform) => !new RegExp(`\\b(?:${uniform.publicName}|${uniform.name})\\b`).test(authoredSource))

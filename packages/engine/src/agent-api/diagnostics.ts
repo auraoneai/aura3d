@@ -9,6 +9,7 @@ import { labels } from "./nodes/labels.js";
 import { material } from "./nodes/material.js";
 import { renderer, createRendererDiagnosticReport } from "./rendererDiagnostics.js";
 import { assets } from "./AssetDecoders.js";
+import { formatShaderFailure, getShaderFailures, type ShaderFailureRecord } from "@aura3d/rendering";
 
 export function resolveAssetManifestHash(asset: AuraAssetRef): string | undefined {
   if (typeof asset.hash === "string" && asset.hash.length > 0) return asset.hash;
@@ -137,7 +138,20 @@ export function createInitialDiagnostics(snapshot: AuraSceneSnapshot, rendererOp
   };
 }
 
+/**
+ * Strict mode: the renderer throws a `CUSTOM_SHADER_*` device error; surface it as the named engine error.
+ * Non-strict failures never throw: they are listed in `diagnostics().shaderFailures` and `errors`.
+ */
+export function rethrowShaderFailure(error: unknown): never {
+  const code = (error as { readonly code?: string } | null)?.code;
+  if (typeof code === "string" && code.startsWith("CUSTOM_SHADER_")) {
+    throw new AuraRuntimeError("custom-shader-compile-failed", (error as Error).message, { cause: error });
+  }
+  throw error;
+}
+
 export function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics {
+  const shaderFailures: readonly ShaderFailureRecord[] = getShaderFailures();
   return {
     backend: value.backend,
     fps: value.fps,
@@ -147,7 +161,8 @@ export function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics 
     evidence: value.evidence,
     renderer: value.renderer,
     warnings: [...value.warnings],
-    errors: [...value.errors],
+    errors: shaderFailures.length > 0 ? [...value.errors, ...shaderFailures.map(formatShaderFailure)] : [...value.errors],
+    ...(shaderFailures.length > 0 ? { shaderFailures } : {}),
     ...(value.labels ? { labels: value.labels } : {}),
     ...(value.labelTelemetry ? { labelTelemetry: value.labelTelemetry } : {}),
     ...(value.textBuckets ? { textBuckets: value.textBuckets } : {})

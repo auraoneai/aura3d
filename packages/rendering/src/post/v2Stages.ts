@@ -29,6 +29,7 @@
 
 import type { WebGL2DeviceHost } from "../webgl2/DeviceHost";
 import { RenderDeviceError, type RenderTarget } from "../RenderDevice";
+import { reportShaderFailure } from "../ShaderFailures";
 import { invertMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   registeredPostPasses,
@@ -213,6 +214,14 @@ function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fr
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       const log = gl.getShaderInfoLog(shader);
       gl.deleteShader(shader);
+      // Loud: the caller falls back to the legacy chain, which silently drops a user `effects.shaderPass`.
+      reportShaderFailure(
+        { code: "SHADER_COMPILE_FAILED", details: { log: log ?? "", stage: type === gl.VERTEX_SHADER ? "vertex" : "fragment" } },
+        { name: `post:${key}`, shaderKey: `post:${key}` },
+        { vertex: VERTEX, fragment },
+        "skip",
+        "The post stage falls back to the legacy chain; the failing pass is not applied."
+      );
       throw new RenderDeviceError(`v2 post shader compile failed: ${log}`, "POST_GRAPH_V2_UNSUPPORTED", { key });
     }
     return shader;
@@ -228,6 +237,13 @@ function program(state: PostV2State, gl: WebGL2RenderingContext, key: string, fr
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
     const log = gl.getProgramInfoLog(prog);
     gl.deleteProgram(prog);
+    reportShaderFailure(
+      { code: "SHADER_LINK_FAILED", details: { log: log ?? "" } },
+      { name: `post:${key}`, shaderKey: `post:${key}` },
+      { vertex: VERTEX, fragment },
+      "skip",
+      "The post stage falls back to the legacy chain; the failing pass is not applied."
+    );
     throw new RenderDeviceError(`v2 post program link failed: ${log}`, "POST_GRAPH_V2_UNSUPPORTED", { key });
   }
   state.programs.set(key, prog);

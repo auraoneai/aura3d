@@ -698,6 +698,7 @@ export type {
   RendererTimingSampleSource,
   RendererTimingSnapshot
 } from "./RendererTiming";
+export { authoredLineOffset, buildShaderFailure, describeShaderFailure, reportShaderFailure, clearShaderFailures, formatShaderFailure, getShaderFailures, isShaderFailureError, parseShaderLog, recordShaderFailure, resolveShaderFailureMode, setShaderFailureMode, sourceWindow, type ShaderFailureCode, type ShaderFailureLocation, type ShaderFailureMode, type ShaderFailureRecord, type ShaderFailureSourceLine, type ShaderFailureSources } from "./ShaderFailures";
 export { ForwardPass, SkinningPaletteUploadManager, applyForwardSpotShadowMapUniforms, forwardPassFeatureAxes, splitForwardItems, forwardItemBucket, type ForwardBucket } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export { ensureMorphTargetTexture, releaseMorphScratchGeometry, releaseMorphTargetTexture, morphTextureDiagnostics } from "./ForwardPass";

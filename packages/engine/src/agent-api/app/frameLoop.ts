@@ -1,7 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraLabelNode, AuraSceneSnapshot, AuraFrameInfo, AuraRuntimeNodeRegistry, AuraCreateAppOptions, WebGLRenderController } from "../nodes/types.js";
-import type { MutableDiagnostics } from "../diagnostics.js";
+import { rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
 import { AuraRuntimeError } from "./errors.js";
 import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { animation } from "../nodes/animation.js";
@@ -171,7 +171,12 @@ export async function startProductionRender(
      * time passing on its own.
      */
     const renderTime = resolveRootRenderTime(time, explicit, isPaused, pausedRenderTime);
-    const drawCalls = submittedDrawCalls ?? renderer.render(renderTime);
+    let drawCalls: number;
+    try {
+      drawCalls = submittedDrawCalls ?? renderer.render(renderTime);
+    } catch (error) {
+      rethrowShaderFailure(error);
+    }
     diagnosticsState.backend = renderer.backend;
     diagnosticsState.fps = diagnosticsState.fps || 60;
     diagnosticsState.drawCalls = drawCalls;

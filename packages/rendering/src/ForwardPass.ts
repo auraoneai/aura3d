@@ -10,6 +10,7 @@ import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { MAX_UNIFORM_SKINNING_JOINTS as SHADER_MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
 import { type SkinningCpuFallbackReason } from "./WebGPUSkinningLimits";
 import { ShaderModule } from "./ShaderModule";
+import { formatShaderFailure, isShaderFailureError, reportShaderFailure, resolveShaderFailureMode, type ShaderFailureMode } from "./ShaderFailures";
 import { createLeanCoreShaderLibrary, type ShaderLibrary } from "./ShaderLibraryCore";
 import { type ShadowFilterKernel } from "./ShadowMap";
 import type { ForwardSpotShadowMapOptions } from "./shadows/SpotShadowMaps";
@@ -373,7 +374,27 @@ export class ForwardPass extends BaseRenderPass {
     const material = item.material ?? new UnlitMaterial();
     const baseMaterial = getBaseMaterial(material);
     this.applyLightUniforms(material);
-    let shader = this.getShader(baseMaterial, device, item);
+    let shader: RenderShaderProgram | undefined;
+    const knownFailure = this.shaderFailureOutcome(baseMaterial);
+    if (knownFailure === undefined) {
+      try {
+        shader = this.getShader(baseMaterial, device, item);
+      } catch (error) {
+        if (!isShaderFailureError(error)) throw error;
+        this.lastProgramFeatures = undefined;
+        const mode = this.handleShaderFailure(error, baseMaterial, device);
+        if (mode === "magenta") {
+          this.drawItem(device, { ...item, onBeforeRender: undefined, material: shaderFailureDebugMaterial() });
+        }
+        return;
+      }
+    } else {
+      // A program that already failed is not recompiled every frame: skip, or draw the magenta debug item.
+      if (knownFailure === "magenta") {
+        this.drawItem(device, { ...item, onBeforeRender: undefined, material: shaderFailureDebugMaterial() });
+      }
+      return;
+    }
     if (shader === undefined) return; // A3D_QR_CORE_GENERATOR async-skip (C-02 §A.2)
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
@@ -565,6 +586,47 @@ export class ForwardPass extends BaseRenderPass {
       material.setParameter("u_lightCount", packed.lightCount);
       material.setParameter("u_lightData", packed.data);
     }
+  }
+
+  private readonly failedShaders = new WeakMap<Material, { readonly revision: number; readonly mode: ShaderFailureMode }>();
+
+  /** Outcome for a material whose program already failed (undefined: not failed, or the shader library changed since). */
+  private shaderFailureOutcome(material: Material): ShaderFailureMode | undefined {
+    const failed = this.failedShaders.get(material);
+    if (!failed) return undefined;
+    if (failed.revision !== this.shaderLibrary.getRevision()) {
+      this.failedShaders.delete(material);
+      return undefined;
+    }
+    return failed.mode;
+  }
+
+  /** Records a compile/link/WGSL failure, logs it once, and returns how the item is handled. Strict rethrows. */
+  private handleShaderFailure(error: unknown, material: Material, device: RenderDevice): ShaderFailureMode {
+    const strict = rendererQrFlags(device).on("A3D_QR_STRICT");
+    const mode = resolveShaderFailureMode(strict);
+    let sources: { vertex?: string; fragment?: string } = {};
+    try {
+      const compiled = material.shaderVariant
+        ? this.shaderLibrary.compileVariant(material.shaderKey, material.shaderVariant)
+        : this.shaderLibrary.compileSource(material.shaderKey);
+      sources = { vertex: compiled.vertex, fragment: compiled.fragment };
+    } catch {
+      // the source registry no longer has the pair: the record keeps the driver log only
+    }
+    const authored = (material as { readonly shaderAuthoredSource?: { readonly vertex?: string; readonly fragment?: string } }).shaderAuthoredSource;
+    const record = reportShaderFailure(
+      error,
+      material,
+      { ...sources, ...(authored ? { authored } : {}) },
+      mode,
+      mode === "throw" ? "Strict mode: failing the frame." : mode === "magenta" ? "Drawing it magenta; other draws continue." : "The item is skipped; every other draw continues."
+    );
+    if (mode === "throw") {
+      throw new RenderDeviceError(formatShaderFailure(record), record.code, { material: record.material, stage: record.stage, log: record.log, locations: record.locations });
+    }
+    this.failedShaders.set(material, { revision: this.shaderLibrary.getRevision(), mode });
+    return mode;
   }
 
   private getShader(material: Material, device: RenderDevice, item?: RenderItem): RenderShaderProgram | undefined {
@@ -1086,6 +1148,12 @@ function resolveDrawRange(geometry: Geometry, range: RenderItemDrawRange | undef
   const start = Math.max(range.start, authoredStart);
   const end = Math.min(range.start + range.count, authoredEnd);
   return { start, count: Math.max(0, end - start) };
+}
+
+let shaderFailureMaterial: UnlitMaterial | undefined;
+function shaderFailureDebugMaterial(): UnlitMaterial {
+  shaderFailureMaterial ??= new UnlitMaterial({ name: "aura3d-shader-failure", color: [1, 0, 1, 1] });
+  return shaderFailureMaterial;
 }
 
 const warnedBindings = new WeakMap<Material, Set<string>>();

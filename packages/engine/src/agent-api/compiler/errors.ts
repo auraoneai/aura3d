@@ -23,6 +23,8 @@ export class AuraRuntimeError extends Error {
     | "invalid-model-assets"
     // `scene({ ... })` given options it does not understand (a silent empty scene before).
     | "invalid-scene-options"
+    // A custom shader (material.custom / material.node / shaderPass) failed to compile, link or has no WGSL twin; thrown only in strict mode (otherwise recorded in diagnostics().shaderFailures).
+    | "custom-shader-compile-failed"
     // L7/SC-01: `cameras.array` / `cameras.stereo` option violations (viewport rects, eye separation, focus, fov).
     | "invalid-camera-spec"
     // AD-15 (P2): `lights.lensFlare` option violations (element size/distance, occlusion, edgeFade, intensity).

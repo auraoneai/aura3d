@@ -4,9 +4,18 @@
  * bug reports ("open the page with ?diag=1 and send a screenshot"). Nothing is installed until the function is called,
  * and `dispose()` restores every patched browser prototype and console method.
  */
+/** Subset of the engine's `diagnostics().shaderFailures` records the panel prints. */
+export interface ShaderFailureLike {
+  readonly code?: string;
+  readonly material?: string;
+  readonly stage?: string;
+  readonly message?: string;
+  readonly locations?: readonly { readonly line?: number; readonly authoredLine?: number; readonly message?: string; readonly window?: readonly { readonly text?: string; readonly error?: boolean }[] }[];
+}
+
 export interface DiagnosticsAppLike {
   /** `AuraApp.diagnostics()` shape; only these members are read. */
-  diagnostics?(): { readonly backend?: unknown; readonly drawCalls?: unknown; readonly fps?: unknown; readonly warnings?: readonly string[]; readonly errors?: readonly string[] } | undefined;
+  diagnostics?(): { readonly backend?: unknown; readonly drawCalls?: unknown; readonly fps?: unknown; readonly warnings?: readonly string[]; readonly errors?: readonly string[]; readonly shaderFailures?: readonly ShaderFailureLike[] } | undefined;
 }
 
 export interface DiagnosticsPanelOptions {
@@ -68,6 +77,12 @@ export function formatEngineSection(app: DiagnosticsAppLike | undefined, canvase
       if (report.fps !== undefined) parts.push(`fps=${Number(report.fps).toFixed(0)}`);
       for (const warning of (report.warnings ?? []).slice(0, 3)) parts.push(`warn:${String(warning).slice(0, 80)}`);
       for (const error of (report.errors ?? []).slice(0, 3)) parts.push(`error:${String(error).slice(0, 80)}`);
+      for (const failure of (report.shaderFailures ?? []).slice(0, 2)) {
+        const first = failure.locations?.[0];
+        const offending = first?.window?.find((row) => row.error)?.text?.trim();
+        const where = first ? ` ${failure.stage ?? ""} line ${first.line}${first.authoredLine !== undefined ? ` (source line ${first.authoredLine})` : ""}` : ` ${failure.stage ?? ""}`;
+        parts.push(`\nSHADER ${failure.code ?? "FAILED"} "${failure.material ?? "?"}"${where}: ${String(first?.message ?? failure.message ?? "").slice(0, 100)}${offending ? ` >> ${offending.slice(0, 100)}` : ""}`);
+      }
     }
   } catch {
     parts.push("diagnostics() threw");

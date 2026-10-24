@@ -279,7 +279,7 @@ describe("shader compile failure message carries the GLSL info log (R-26)", () =
     expect(err.code).toBe("SHADER_COMPILE_FAILED");
     expect(err.message).toMatch(/shader compile failed/i);
     expect(err.message).toContain("'u_time' : redefinition");
-    expect(err.details).toEqual({ label: "custom:veil", log: LOG });
+    expect(err.details).toEqual({ label: "custom:veil", log: LOG, stage: "fragment" });
   });
 
   it("describeCompileError does not print the log twice for the new message", async () => {

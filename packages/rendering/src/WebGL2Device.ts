@@ -1744,7 +1744,7 @@ export class WebGL2Device implements RenderDevice {
     if (!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS)) {
       const log = this.gl.getShaderInfoLog(shader) ?? "Unknown shader compile error";
       this.gl.deleteShader(shader);
-      throw new RenderDeviceError(shaderCompileFailureMessage(log, { label }), "SHADER_COMPILE_FAILED", { label, log });
+      throw new RenderDeviceError(shaderCompileFailureMessage(log, { label }), "SHADER_COMPILE_FAILED", { label, log, stage: type === this.gl.VERTEX_SHADER ? "vertex" : "fragment" });
     }
     return shader;
   }

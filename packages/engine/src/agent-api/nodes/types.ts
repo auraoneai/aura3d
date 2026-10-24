@@ -1192,6 +1192,8 @@ export interface AuraCreateAppRendererOptions {
   readonly morph?: "gpu" | "cpu" /* C-19 (prd06) */;
   readonly skinnedPbr?: "unified" | "fork" /* C-19 (prd06) */;
   readonly materialStrictness?: "warn" | "strict" /* C-15 (prd04) */;
+  /** What to do with a draw whose shader failed to compile/link: `skip` (default, plus a diagnostic), `magenta` (flat debug colour; default with `?diag=1`) or `throw` (strict). */
+  readonly shaderFailures?: "skip" | "magenta" | "throw";
   readonly materialModel?: "legacy" | "physical-r185" /* C-15 (prd04) */;
   readonly transmission?: "auto" | "env" | "off" /* C-15 (prd04) */;
   readonly alphaToCoverage?: boolean /* C-15 (prd04) */;
@@ -2494,6 +2496,12 @@ export interface AuraDiagnostics {
   readonly renderer?: AuraRendererDiagnosticReport;
   readonly warnings: readonly string[];
   readonly errors: readonly string[];
+  /**
+   * Custom shaders that failed to compile or link (or have no WGSL twin on WebGPU): stable code, material name,
+   * stage, the driver log and the offending source lines. Each also appears once in `errors`; the failing item
+   * is skipped (or drawn magenta with `?diag=1`) while every other draw continues. Present only when non-empty.
+   */
+  readonly shaderFailures?: readonly import("@aura3d/rendering").ShaderFailureRecord[];
   /**
    * Labels the world-label layer actually placed on screen this frame, with their
    * projected pixel positions and visibility.
