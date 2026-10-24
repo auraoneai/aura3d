@@ -257,6 +257,7 @@ const stepping = (): boolean => counting <= 0 && started && !paused && !config.m
 const loop = createFixedStepLoop({
   stepSeconds: STEP,
   maxFrameSeconds: 0.1,
+  minFrameSeconds: 0,
   maxCatchUpSteps: 8,
   isActive: () => ready && stepping(),
   step() {

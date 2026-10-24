@@ -6,7 +6,7 @@
  * card, no sound), `start=1` (skip the title card), `quality=low`. The hooks mirror the capture harness: `applyInput(keys, act)` then
  * `stepFrames(n)`, or `runScript(segments)` to replay a recorded key script.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { CAMERA_FOLLOW, CAMERA_OFFSET, LETTERS, VIRTUAL_STEP_MS, createState, expandScript, stepFrame, type Action, type FrameInput, type ScriptSegment, type WindState } from "./sim";
 import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
@@ -138,6 +138,18 @@ function render(dtMs: number): void {
   frames++;
 }
 
+const loop = createFixedStepLoop({
+  manual,
+  stepSeconds: VIRTUAL_STEP_MS / 1000,
+  maxFrameSeconds: 0.1,
+  minFrameSeconds: 0,
+  isActive: () => ready && started && !paused,
+  step() {
+    advance({ keys: epilogueClock === null ? heldKeys() : "", act: epilogueClock === null ? pendingAct : null });
+    pendingAct = null;
+  }
+});
+
 window.addEventListener("keydown", (e) => {
   audio.resume();
   if (e.repeat) return;
@@ -165,22 +177,16 @@ ui.onTouch((k) => { touchKeys = k; }, (a) => { if (started && !paused && epilogu
 if (started) { ui.hideTitle(); }
 
 let last = performance.now();
-let acc = 0;
 function tick(now: number): void {
   requestAnimationFrame(tick);
   const dtMs = Math.min(100, now - last);
   last = now;
+  loop.tick(now);
   if (!ready || manual) return;
   if (!started || paused) {
     renderTime += dtMs / 1000;
     render(VIRTUAL_STEP_MS);
     return;
-  }
-  acc += dtMs;
-  while (acc >= VIRTUAL_STEP_MS) {
-    advance({ keys: epilogueClock === null ? heldKeys() : "", act: epilogueClock === null ? pendingAct : null });
-    pendingAct = null;
-    acc -= VIRTUAL_STEP_MS;
   }
   if (state.complete && epilogueClock === null) {
     completeClock += dtMs / 1000;
@@ -200,73 +206,72 @@ function sizeCanvas(): void {
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
 
-const hooks = {
+installQaHooks("wind", {
   ready: () => ready,
-  async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
-    render(VIRTUAL_STEP_MS);
-    const out = document.createElement("canvas");
-    out.width = 320;
-    out.height = 180;
-    const ctx = out.getContext("2d", { willReadFrequently: true });
-    if (!ctx) throw new Error("2d context unavailable");
-    ctx.drawImage(canvas, 0, 0, out.width, out.height);
-    const img = ctx.getImageData(0, 0, out.width, out.height);
-    return { width: img.width, height: img.height, data: img.data };
-  },
   state: () => JSON.parse(JSON.stringify({ step: state.step, pos: state.pos, facing: state.facing, stride: state.stride, found: state.found, complete: state.complete, hop: state.hop })),
-  applyInput(keys: string, act: Action = null): void { advance({ keys, act }); render(VIRTUAL_STEP_MS); },
-  stepFrames(n: number, keys = ""): void { for (let i = 0; i < n; i++) advance({ keys, act: null }); render(VIRTUAL_STEP_MS); },
-  /** Replay a recorded key script. Returns the per-step trajectory so a test can compare it with the reference. */
-  runScript(segments: readonly ScriptSegment[]): { xs: number[]; zs: number[]; found: number[]; complete: boolean } {
-    const xs: number[] = [];
-    const zs: number[] = [];
-    for (const frame of expandScript(segments)) {
-      advance(frame);
-      xs.push(state.pos.x);
-      zs.push(state.pos.z);
+  app: () => app,
+  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: PARITY_IDS }) : null),
+  extras: {
+    async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
+      render(VIRTUAL_STEP_MS);
+      const out = document.createElement("canvas");
+      out.width = 320;
+      out.height = 180;
+      const ctx = out.getContext("2d", { willReadFrequently: true });
+      if (!ctx) throw new Error("2d context unavailable");
+      ctx.drawImage(canvas, 0, 0, out.width, out.height);
+      const img = ctx.getImageData(0, 0, out.width, out.height);
+      return { width: img.width, height: img.height, data: img.data };
+    },
+    applyInput(keys: string, act: Action = null): void { advance({ keys, act }); render(VIRTUAL_STEP_MS); },
+    stepFrames(n: number, keys = ""): void { for (let i = 0; i < n; i++) advance({ keys, act: null }); render(VIRTUAL_STEP_MS); },
+    /** Replay a recorded key script. Returns the per-step trajectory so a test can compare it with the reference. */
+    runScript(segments: readonly ScriptSegment[]): { xs: number[]; zs: number[]; found: number[]; complete: boolean } {
+      const xs: number[] = [];
+      const zs: number[] = [];
+      for (const frame of expandScript(segments)) {
+        advance(frame);
+        xs.push(state.pos.x);
+        zs.push(state.pos.z);
+      }
+      render(VIRTUAL_STEP_MS);
+      return { xs, zs, found: [...state.found], complete: state.complete };
+    },
+    reset(): void {
+      state = createState(); renderTime = 0; epilogueClock = null; completeClock = 0; lastStrideCell = 0; lastHopPhase = "idle";
+      ui.clearLetters(); ui.showEpilogue(false); runtime?.reset(); updateHud(); render(VIRTUAL_STEP_MS);
+    },
+    /** Capture hook: place the traveller somewhere and settle the follow camera on it (resets the run). */
+    teleport(x: number, z: number): void {
+      state = createState();
+      state.pos = { x, z };
+      state.cam = { bx: x + CAMERA_FOLLOW.x, bz: z + CAMERA_FOLLOW.z, vx: x + CAMERA_FOLLOW.x + CAMERA_OFFSET.x, vz: z + CAMERA_FOLLOW.z + CAMERA_OFFSET.z };
+      runtime?.snap(state);
+      render(VIRTUAL_STEP_MS);
+    },
+    /** Capture hook: show the voyage epilogue at `seconds` (null returns to the follow camera). */
+    epilogue(seconds: number | null): void {
+      runtime?.setEpilogue(seconds);
+      ui.showEpilogue(seconds !== null);
+      render(VIRTUAL_STEP_MS);
+    },
+    get diagnostics() { return app ? app.diagnostics() : null; },
+    get frames() { return frames; },
+    get foliageCards() { return runtime?.foliageCards ?? 0; },
+    get nodeCount() { return runtime?.nodeCount ?? 0; },
+    get stats() { return runtime?.stats ?? null; },
+    async frame(width = 480, height = 270, quality = 0.72): Promise<string> {
+      render(VIRTUAL_STEP_MS);
+      const out = document.createElement("canvas");
+      out.width = width;
+      out.height = height;
+      const ctx = out.getContext("2d");
+      if (!ctx) throw new Error("2d context unavailable");
+      ctx.drawImage(canvas, 0, 0, width, height);
+      return out.toDataURL("image/jpeg", quality);
     }
-    render(VIRTUAL_STEP_MS);
-    return { xs, zs, found: [...state.found], complete: state.complete };
-  },
-  reset(): void {
-    state = createState(); renderTime = 0; epilogueClock = null; completeClock = 0; lastStrideCell = 0; lastHopPhase = "idle";
-    ui.clearLetters(); ui.showEpilogue(false); runtime?.reset(); updateHud(); render(VIRTUAL_STEP_MS);
-  },
-  /** Capture hook: place the traveller somewhere and settle the follow camera on it (resets the run). */
-  teleport(x: number, z: number): void {
-    state = createState();
-    state.pos = { x, z };
-    state.cam = { bx: x + CAMERA_FOLLOW.x, bz: z + CAMERA_FOLLOW.z, vx: x + CAMERA_FOLLOW.x + CAMERA_OFFSET.x, vz: z + CAMERA_FOLLOW.z + CAMERA_OFFSET.z };
-    runtime?.snap(state);
-    render(VIRTUAL_STEP_MS);
-  },
-  /** Capture hook: show the voyage epilogue at `seconds` (null returns to the follow camera). */
-  epilogue(seconds: number | null): void {
-    runtime?.setEpilogue(seconds);
-    ui.showEpilogue(seconds !== null);
-    render(VIRTUAL_STEP_MS);
-  },
-  routeHealth() {
-    if (!app) return null;
-    return createAuraRouteHealthSnapshot(app, { parityIds: PARITY_IDS });
-  },
-  get diagnostics() { return app ? app.diagnostics() : null; },
-  get frames() { return frames; },
-  get foliageCards() { return runtime?.foliageCards ?? 0; },
-  get nodeCount() { return runtime?.nodeCount ?? 0; },
-  get stats() { return runtime?.stats ?? null; },
-  async frame(width = 480, height = 270, quality = 0.72): Promise<string> {
-    render(VIRTUAL_STEP_MS);
-    const out = document.createElement("canvas");
-    out.width = width;
-    out.height = height;
-    const ctx = out.getContext("2d");
-    if (!ctx) throw new Error("2d context unavailable");
-    ctx.drawImage(canvas, 0, 0, width, height);
-    return out.toDataURL("image/jpeg", quality);
   }
-};
-window.__AURA_WIND__ = hooks;
+});
 
 function reportError(error: unknown): void {
   const base = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
