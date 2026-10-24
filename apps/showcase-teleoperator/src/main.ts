@@ -16,7 +16,7 @@ import { assets as rootAssets } from "../../../src/aura-assets";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 import { installGameBeacon } from "@aura3d/engine/game";
 
-let gameBeacon: ReturnType<typeof installGameBeacon> | sha256-30e5baa30a842b7a7acdf9739e88e26ed1c84ff505f27052546b706b4ee1e0cf;
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
   gameBeacon ??= installGameBeacon({ route: "showcase-teleoperator", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"] });
   gameBeacon.publishEvidence(evidence);
