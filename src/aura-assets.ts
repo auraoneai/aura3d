@@ -52302,14 +52302,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopAthleteDefender": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopAthleteDefender.c0947539.glb",
-    hash: "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+    url: "/aura-assets/rooftopAthleteDefenderClean.ece472eb.glb",
+    hash: "sha256-ece472eb35da3e93a9a4627b19c0181e871c854218ed69f6c410ecc64f091dfb",
     bounds: [
       0.998,
       1.95,
       0.606
     ],
-    sizeBytes: 1935316,
+    sizeBytes: 1723052,
     metadata: {
       "materials": [
         "Body_Mid_5",
@@ -52392,7 +52392,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteDefender.glb",
-      "outputPath": "public/aura-assets/rooftopAthleteDefender.c0947539.glb",
+      "outputPath": "public/aura-assets/rooftopAthleteDefenderClean.ece472eb.glb",
       "license": "CC-BY-4.0",
       "author": "3DDomino",
       "boundsMetadata": {
@@ -52490,14 +52490,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+        "assetHash": "sha256-ece472eb35da3e93a9a4627b19c0181e871c854218ed69f6c410ecc64f091dfb",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
         "checkedAt": "2026-09-01T19:22:38.203Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteDefender.png",
           "sha256": "sha256-e16ff91c0df7e40c49506b211738c5b05b0e0c7827db99809e18e6480f606482",
-          "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+          "assetHash": "sha256-ece472eb35da3e93a9a4627b19c0181e871c854218ed69f6c410ecc64f091dfb",
           "checkedAt": "2026-09-01T19:22:38.203Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender"
         },
@@ -52530,7 +52530,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender",
         "sha256": "sha256-e16ff91c0df7e40c49506b211738c5b05b0e0c7827db99809e18e6480f606482",
-        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+        "assetHash": "sha256-ece472eb35da3e93a9a4627b19c0181e871c854218ed69f6c410ecc64f091dfb",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451198,
@@ -52548,14 +52548,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopAthleteShooter": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopAthleteShooter.49b62313.glb",
-    hash: "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+    url: "/aura-assets/rooftopAthleteShooterClean.0c08002b.glb",
+    hash: "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
     bounds: [
       0.486,
       1.95,
       0.592
     ],
-    sizeBytes: 983868,
+    sizeBytes: 468428,
     metadata: {
       "materials": [
         "Body_Mid_5",
@@ -52638,7 +52638,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteShooter.glb",
-      "outputPath": "public/aura-assets/rooftopAthleteShooter.49b62313.glb",
+      "outputPath": "public/aura-assets/rooftopAthleteShooterClean.0c08002b.glb",
       "license": "CC-BY-4.0",
       "author": "3DDomino",
       "boundsMetadata": {
@@ -52736,14 +52736,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
         "checkedAt": "2026-09-01T19:22:32.722Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteShooter.png",
           "sha256": "sha256-b3875c60fffbf8e875f19cf0cd1f572e7ee9d1ee698c268884e9186fe0da8696",
-          "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+          "assetHash": "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
           "checkedAt": "2026-09-01T19:22:32.722Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter"
         },
@@ -52776,7 +52776,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter",
         "sha256": "sha256-b3875c60fffbf8e875f19cf0cd1f572e7ee9d1ee698c268884e9186fe0da8696",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
@@ -54767,14 +54767,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopDefender": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopDefender.6c43f9e1.glb",
-    hash: "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
+    url: "/aura-assets/rooftopDefenderClean.149f7d6f.glb",
+    hash: "sha256-149f7d6fd56b0cef784769b7e6f58416fe0894571047f0d4a76f62337be486e0",
     bounds: [
       1.808,
       1.863,
       0.399
     ],
-    sizeBytes: 9925052,
+    sizeBytes: 8421568,
     metadata: {
       "materials": [
         "Std_Tongue",
@@ -55884,7 +55884,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb",
-      "outputPath": "public/aura-assets/rooftopDefender.6c43f9e1.glb",
+      "outputPath": "public/aura-assets/rooftopDefenderClean.149f7d6f.glb",
       "license": "CC-BY-4.0",
       "author": "RiverofCreative (Sketchfab Man Player); Aura3D derivative authoring",
       "boundsMetadata": {
@@ -56338,7 +56338,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefender",
         "sha256": "sha256-df5364d4c9a70f28e997825615f383df9659f125a0313d48b07290df1203a7b6",
-        "assetHash": "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
+        "assetHash": "sha256-149f7d6fd56b0cef784769b7e6f58416fe0894571047f0d4a76f62337be486e0",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
@@ -56356,17 +56356,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopDefenderMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
-    hash: "sha256-783ec8135ef8aaf1e9d6b2351b37f0573a859b99612370a8fb072660121e6ce6",
+    url: "/aura-assets/rooftopDefenderMeshyClean.1e9df651.glb",
+    hash: "sha256-1e9df6514b4a34f62b7f6f0eead31724252bd7d02a495e752e61668ed9473c55",
     bounds: [
       0.831,
       1.886,
       0.646
     ],
-    sizeBytes: 1517348,
+    sizeBytes: 1409160,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "sha256-30e5baa30a842b7a7acdf9739e88e26ed1c84ff505f27052546b706b4ee1e0cf"
       ],
       "animations": [],
       "animationClips": [],
@@ -56428,7 +56428,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-14T20:41:04.404Z"
       },
       "sourcePath": "artifacts/meshy/rooftopDefenderMeshy/model.glb",
-      "outputPath": "public/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
+      "outputPath": "public/aura-assets/rooftopDefenderMeshyClean.1e9df651.glb",
       "license": "Meshy paid private generation terms",
       "boundsMetadata": {
         "min": [
@@ -57008,14 +57008,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopLayupScorer": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopLayupScorer.03a093f2.glb",
-    hash: "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
+    url: "/aura-assets/rooftopLayupScorerClean.21f193ae.glb",
+    hash: "sha256-21f193ae3334be228e40eedc2a8a2d3937b46a0feaff8907881f0d9b1c5141b9",
     bounds: [
       1.808,
       1.863,
       0.399
     ],
-    sizeBytes: 9925052,
+    sizeBytes: 8421568,
     metadata: {
       "materials": [
         "Std_Tongue",
@@ -58127,7 +58127,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopLayupScorer.glb",
-      "outputPath": "public/aura-assets/rooftopLayupScorer.03a093f2.glb",
+      "outputPath": "public/aura-assets/rooftopLayupScorerClean.21f193ae.glb",
       "license": "CC-BY-4.0",
       "author": "RiverofCreative (Sketchfab Man Player); Aura3D derivative authoring",
       "boundsMetadata": {
@@ -58581,7 +58581,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopLayupScorer",
         "sha256": "sha256-d4008346e385545c7367fda00421a8a3ea7fd2bca6ab42b5b2ff2b25b3107b2c",
-        "assetHash": "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
+        "assetHash": "sha256-21f193ae3334be228e40eedc2a8a2d3937b46a0feaff8907881f0d9b1c5141b9",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451199,
@@ -58885,14 +58885,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopShooter": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopShooter.49b62313.glb",
-    hash: "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+    url: "/aura-assets/rooftopAthleteShooterClean.0c08002b.glb",
+    hash: "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
     bounds: [
       0.486,
       1.95,
       0.592
     ],
-    sizeBytes: 983868,
+    sizeBytes: 468428,
     metadata: {
       "materials": [
         "Body_Mid_5",
@@ -58975,7 +58975,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-shooter-ball-free.glb",
-      "outputPath": "public/aura-assets/rooftopShooter.49b62313.glb",
+      "outputPath": "public/aura-assets/rooftopAthleteShooterClean.0c08002b.glb",
       "license": "CC-BY-4.0",
       "author": "3DDomino",
       "boundsMetadata": {
@@ -59073,14 +59073,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
         "checkedAt": "2026-09-01T00:59:41.179Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/rooftopShooter.png",
           "sha256": "sha256-9079a88e723e4f7feeb66a51c1a8bbf53f19e29aa47714d2c4d1e7be1486a459",
-          "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+          "assetHash": "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
           "checkedAt": "2026-09-01T00:59:41.179Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter"
         },
@@ -59113,7 +59113,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter",
         "sha256": "sha256-9079a88e723e4f7feeb66a51c1a8bbf53f19e29aa47714d2c4d1e7be1486a459",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-0c08002bf1dc9680433118090d20e61e08509e6ba3bddc0b399a8d0501bd0051",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
@@ -59159,14 +59159,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopShooterMeshyV1": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
-    hash: "sha256-554588531168dcb1fec857353d66b915dc2762e221201ddce52c6e2d4332c5aa",
+    url: "/aura-assets/rooftopShooterMeshyV1Clean.bc0ee112.glb",
+    hash: "sha256-bc0ee112b2585722df7cc9472555986ae16c719070bd2a184c8b7b2cbcf74685",
     bounds: [
       0.734,
       1.902,
       0.663
     ],
-    sizeBytes: 1513704,
+    sizeBytes: 1461720,
     metadata: {
       "materials": [
         "material"
@@ -59231,7 +59231,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-09-03T07:45:26.515Z"
       },
       "sourcePath": "artifacts/meshy/rooftop-shooter-v1/model-decimated.glb",
-      "outputPath": "public/aura-assets/rooftopShooterMeshyV1.ed5a33b3.glb",
+      "outputPath": "public/aura-assets/rooftopShooterMeshyV1Clean.bc0ee112.glb",
       "license": "Meshy paid private generation terms",
       "boundsMetadata": {
         "min": [
@@ -66109,14 +66109,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "showcaseCcByFormulaOpponent": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/showcaseCcByFormulaOpponent.5dba5c01.glb",
-    hash: "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+    url: "/aura-assets/showcaseCcByFormulaOpponentClean.5684561b.glb",
+    hash: "sha256-5684561bad5ff0e94dca95a774d2c796451cf54ca6179fe237171586cce90187",
     bounds: [
       1.859,
       1.091,
       4.847
     ],
-    sizeBytes: 1773552,
+    sizeBytes: 1507600,
     metadata: {
       "materials": [
         "Material.001",
@@ -66178,7 +66178,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/showcaseCcByFormulaOpponent.5dba5c01.glb",
+        "sourcePath": "public/aura-assets/showcaseCcByFormulaOpponentClean.5684561b.glb",
         "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-047/aeebdfa53e294e0390f3c2e8bbfe31b6.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-047/aeebdfa53e294e0390f3c2e8bbfe31b6.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-047/aeebdfa53e294e0390f3c2e8bbfe31b6.glb",
@@ -66189,7 +66189,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "author": "SDC PERFORMANCE™️ (https://sketchfab.com/3Duae)",
         "sourceFamily": "objaverse",
         "attribution": "SDC PERFORMANCE™️",
-        "sha256": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+        "sha256": "sha256-5684561bad5ff0e94dca95a774d2c796451cf54ca6179fe237171586cce90187",
         "retrievedAt": "2026-08-11T00:54:11.038Z",
         "resolveCandidate": {
           "catalogId": "objaverse:aeebdfa53e294e0390f3c2e8bbfe31b6",
@@ -66252,8 +66252,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         },
         "checkedAt": "2026-08-11T00:54:11.038Z"
       },
-      "sourcePath": "public/aura-assets/showcaseCcByFormulaOpponent.5dba5c01.glb",
-      "outputPath": "public/aura-assets/showcaseCcByFormulaOpponent.5dba5c01.glb",
+      "sourcePath": "public/aura-assets/showcaseCcByFormulaOpponentClean.5684561b.glb",
+      "outputPath": "public/aura-assets/showcaseCcByFormulaOpponentClean.5684561b.glb",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "SDC PERFORMANCE™️ (https://sketchfab.com/3Duae)",
       "boundsMetadata": {
@@ -66377,14 +66377,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "source": "manifest-override",
         "forwardAxis": "+Z",
         "upAxis": "+Y",
-        "assetHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+        "assetHash": "sha256-5684561bad5ff0e94dca95a774d2c796451cf54ca6179fe237171586cce90187",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts plus Turbo Drift route-facing inspection",
         "checkedAt": "2026-08-11T18:57:52.055Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCcByFormulaOpponent",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/showcaseCcByFormulaOpponent.png",
           "sha256": "sha256-3f7dd9fc9c9d8ad01cb62d71f8e2b30a7791bbfb6b5bbf45125c367483dcfd1b",
-          "assetHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+          "assetHash": "sha256-5684561bad5ff0e94dca95a774d2c796451cf54ca6179fe237171586cce90187",
           "checkedAt": "2026-08-11T18:57:52.055Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCcByFormulaOpponent"
         },
@@ -66435,7 +66435,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseCcByFormulaOpponent",
         "sha256": "sha256-3f7dd9fc9c9d8ad01cb62d71f8e2b30a7791bbfb6b5bbf45125c367483dcfd1b",
-        "assetHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+        "assetHash": "sha256-5684561bad5ff0e94dca95a774d2c796451cf54ca6179fe237171586cce90187",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 450704,
@@ -66451,7 +66451,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "gameGeometry": {
         "certification": "certified-racing-vehicle",
         "evidence": {
-          "manifestHash": "sha256-5dba5c019e43871770224ce0c5f03fa11943512abc65375edf5c026743de6958",
+          "manifestHash": "sha256-5684561bad5ff0e94dca95a774d2c796451cf54ca6179fe237171586cce90187",
           "routePrimaryScreenshot": "tests/reports/showcase-release-asset-probes/showcaseCcByFormulaOpponent.png",
           "routePrimaryScreenshotSha256": "sha256-3f7dd9fc9c9d8ad01cb62d71f8e2b30a7791bbfb6b5bbf45125c367483dcfd1b",
           "visualReview": "pass",
@@ -101137,14 +101137,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "showcaseTsukubaCircuit": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
-    hash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    url: "/aura-assets/showcaseTsukubaCircuitClean.a845b09b.glb",
+    hash: "sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70",
     bounds: [
       35.448,
       3.386,
       33.872
     ],
-    sizeBytes: 4145352,
+    sizeBytes: 4260860,
     metadata: {
       "materials": [
         "TSUKUB1",
@@ -101214,7 +101214,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+        "sourcePath": "public/aura-assets/showcaseTsukubaCircuitClean.a845b09b.glb",
         "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
@@ -101224,12 +101224,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "author": "Linnaeus (https://sketchfab.com/bordres)",
         "sourceFamily": "objaverse",
         "attribution": "Linnaeus",
-        "sha256": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+        "sha256": "sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70",
         "retrievedAt": "2026-06-18T07:12:45.970Z",
         "checkedAt": "2026-06-18T07:12:45.970Z"
       },
-      "sourcePath": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
-      "outputPath": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+      "sourcePath": "public/aura-assets/showcaseTsukubaCircuitClean.a845b09b.glb",
+      "outputPath": "public/aura-assets/showcaseTsukubaCircuitClean.a845b09b.glb",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
       "author": "Linnaeus (https://sketchfab.com/bordres)",
       "boundsMetadata": {
@@ -101412,14 +101412,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "orientation": {
         "source": "manifest-override",
         "view": "isolated-track-overview",
-        "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+        "assetHash": "sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts plus current Turbo Drift route inspection",
         "checkedAt": "2026-08-11T19:09:20.014Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseTsukubaCircuit",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
           "sha256": "sha256-6202fdb8417b0e734912e6191de5e2950f5b0bdf7132b809c42e27c309d145c6",
-          "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "assetHash": "sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70",
           "checkedAt": "2026-08-11T19:09:20.014Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseTsukubaCircuit"
         },
@@ -101595,7 +101595,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseTsukubaCircuit",
         "sha256": "sha256-6202fdb8417b0e734912e6191de5e2950f5b0bdf7132b809c42e27c309d145c6",
-        "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+        "assetHash": "sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
@@ -101611,12 +101611,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "gameGeometry": {
         "certification": "certified-racing-track",
         "evidence": {
-          "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "manifestHash": "sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70",
           "blockers": []
         },
         "racingTopology": {
           "assetId": "showcaseTsukubaCircuit",
-          "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "assetHash": "sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70",
           "source": "asset-mesh-extracted",
           "roadCenterline": [
             {
@@ -123419,14 +123419,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopCorvette": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopCorvette.e7009c34.glb",
-    hash: "sha256-e7009c3418b2d0c3163bd1af8737f3986bab9c372aea90ce81dab8fb37197598",
+    url: "/aura-assets/teleopCorvetteClean.859a329f.glb",
+    hash: "sha256-859a329f640baf5fd993d1c0dba5e1efe1a78c4f2c9e44127707c40c34e545ee",
     bounds: [
       2.0458,
       1.5638,
       4.6749
     ],
-    sizeBytes: 7637636,
+    sizeBytes: 13024048,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123438,7 +123438,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopCorvette.e7009c34.glb",
+      "sourcePath": "public/aura-assets/teleopCorvetteClean.859a329f.glb",
       "boundsMetadata": {
         "min": [
           -1.0229,
@@ -123460,14 +123460,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopCybercab": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopCybercab.08358a58.glb",
-    hash: "sha256-08358a58dd8d530ccc7b4249db3a9d2e11ccf8ecfac1c9d9d7afea452a1de291",
+    url: "/aura-assets/teleopCybercabClean.30e5baa3.glb",
+    hash: "sha256-30e5baa30a842b7a7acdf9739e88e26ed1c84ff505f27052546b706b4ee1e0cf",
     bounds: [
       1.7532,
       1.7856,
       4.4179
     ],
-    sizeBytes: 5234180,
+    sizeBytes: 9432132,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123479,7 +123479,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopCybercab.08358a58.glb",
+      "sourcePath": "public/aura-assets/teleopCybercabClean.30e5baa3.glb",
       "boundsMetadata": {
         "min": [
           -0.8765,
@@ -123723,14 +123723,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopWaymoHero": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
-    hash: "sha256-6d2a9bfb61613fd1e5a0fd64aa3b8222d237bc58b7486f009d014c61066ee45a",
+    url: "/aura-assets/teleopWaymoClean.26413873.glb",
+    hash: "sha256-2641387397d184ece3d6b5175c3a0936afc4fced971c798f0e973a961af78bf1",
     bounds: [
       2.2,
       2.4922,
       4.5678
     ],
-    sizeBytes: 5207840,
+    sizeBytes: 10087584,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123742,7 +123742,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
+      "sourcePath": "public/aura-assets/teleopWaymoClean.26413873.glb",
       "boundsMetadata": {
         "min": [
           -1.1,
@@ -123764,14 +123764,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopWaymoTraffic": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopWaymoTraffic.f476abe7.glb",
-    hash: "sha256-f476abe7f85470beff321bef6c521e425a549c13e1a10cfdd3c41e1f339b4559",
+    url: "/aura-assets/teleopWaymoClean.26413873.glb",
+    hash: "sha256-2641387397d184ece3d6b5175c3a0936afc4fced971c798f0e973a961af78bf1",
     bounds: [
       2.2016,
       2.1402,
       4.6207
     ],
-    sizeBytes: 618524,
+    sizeBytes: 10087584,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123783,7 +123783,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopWaymoTraffic.f476abe7.glb",
+      "sourcePath": "public/aura-assets/teleopWaymoClean.26413873.glb",
       "boundsMetadata": {
         "min": [
           -1.1,
@@ -141204,14 +141204,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "turboTsukubaVisualTrack": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/turboTsukubaVisualTrack.ab53a493.glb",
-    hash: "sha256-ab53a4932edb777e56506cffbb1237ea021e4feb7e43403d035c7b8d4fc6903c",
+    url: "/aura-assets/turboTsukubaVisualTrackClean.41022a3a.glb",
+    hash: "sha256-41022a3ad2c1d7266370b965ed6514d133a371c4d02eeaea9e0b103f28c20e1d",
     bounds: [
       35.448,
       3.386,
       33.872
     ],
-    sizeBytes: 4145396,
+    sizeBytes: 4261468,
     metadata: {
       "materials": [
         "TSUKUB1",
@@ -141293,13 +141293,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "attribution": "Linnaeus — CC BY 4.0; Aura3D deterministic derivative mutes only failed non-drivable scenery-card materials",
         "retrievedAt": "2026-06-18T07:12:45.970Z",
         "evidence": [
-          "Derived byte-for-byte from showcaseTsukubaCircuit hash sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031 by apps/showcase-turbo-drift-circuit/scripts/build-clean-tsukuba-visual.mjs; hierarchy, bounds, road, kerb, grass and drivable meshes remain unchanged.",
-          "Derived byte-for-byte from showcaseTsukubaCircuit hash sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031 by apps/showcase-turbo-drift-circuit/scripts/build-clean-tsukuba-visual.mjs; road, kerb, grass and drivable meshes remain unchanged."
+          "Derived byte-for-byte from showcaseTsukubaCircuit hash sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70 by apps/showcase-turbo-drift-circuit/scripts/build-clean-tsukuba-visual.mjs; hierarchy, bounds, road, kerb, grass and drivable meshes remain unchanged.",
+          "Derived byte-for-byte from showcaseTsukubaCircuit hash sha256-a845b09bff47720376eb48cd0166e43dc54d924f40cd3fa511ced338e06f8d70 by apps/showcase-turbo-drift-circuit/scripts/build-clean-tsukuba-visual.mjs; road, kerb, grass and drivable meshes remain unchanged."
         ],
         "checkedAt": "2026-06-18T07:12:45.970Z"
       },
       "sourcePath": "apps/showcase-turbo-drift-circuit/generated/turboTsukubaVisualTrack.glb",
-      "outputPath": "public/aura-assets/turboTsukubaVisualTrack.ab53a493.glb",
+      "outputPath": "public/aura-assets/turboTsukubaVisualTrackClean.41022a3a.glb",
       "license": "CC-BY-4.0",
       "author": "Linnaeus (clean visual derivative built by Aura3D)",
       "boundsMetadata": {
@@ -144634,13 +144634,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "diamondAthlete": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/diamondAthlete.4e29f649.glb",
-    hash: "sha256-47101736778411c780e093e8adb648eb80d7c4db8e2566b57e037778577592aa",
+    url: "/aura-assets/diamondAthleteClean.ef3c43ea.glb",
+    hash: "sha256-ef3c43ea52326c00ee7cc828fff9e4b080253bd93f13b876ebad1b6bddfceacc",
     bounds: [0.938, 1.903, 0.364],
-    sizeBytes: 1630948,
+    sizeBytes: 2574320,
     metadata: {
       "materials": [
-        "material-0"
+        "diamondAthleteClean-kit",
+        "diamondAthleteClean-shorts",
+        "diamondAthleteClean-skin",
+        "diamondAthleteClean-dark",
+        "diamondAthleteClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -144699,7 +144703,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:22:29.602Z"
       },
       "sourcePath": "artifacts/meshy/diamond-athlete/model.opt.glb",
-      "outputPath": "public/aura-assets/diamondAthlete.4e29f649.glb",
+      "outputPath": "public/aura-assets/diamondAthleteClean.ef3c43ea.glb",
       "boundsMetadata": {
         "min": [
           -0.899,
@@ -149520,13 +149524,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "hoopsAthleteBig": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteBig.a11d61c5.glb",
-    hash: "sha256-ba0008e3f395992ff7518ad2a346858640fc03e924e1d257632d16371c576830",
+    url: "/aura-assets/hoopsAthleteBigClean.bfc264d0.glb",
+    hash: "sha256-bfc264d02bf17a45b3b0b62bbcddfd6ca6469b19120e22e7667d941d7e16c0df",
     bounds: [0.878, 1.903, 0.429],
-    sizeBytes: 1491928,
+    sizeBytes: 2546544,
     metadata: {
       "materials": [
-        "material-0"
+        "hoopsAthleteBigClean-kit",
+        "hoopsAthleteBigClean-shorts",
+        "hoopsAthleteBigClean-skin",
+        "hoopsAthleteBigClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -149585,7 +149592,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:22:50.995Z"
       },
       "sourcePath": "artifacts/meshy/hoops-athlete-big/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteBig.a11d61c5.glb",
+      "outputPath": "public/aura-assets/hoopsAthleteBigClean.bfc264d0.glb",
       "boundsMetadata": {
         "min": [
           -0.838,
@@ -149648,13 +149655,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "hoopsAthleteGuard": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteGuard.fbef844e.glb",
-    hash: "sha256-b1468563ab80b4419d86a38c60c368018793626ae7efd13472dcf02c76aa7926",
+    url: "/aura-assets/hoopsAthleteGuardClean.178e3649.glb",
+    hash: "sha256-178e3649ae936eb9dd4ca9f7ec4623d4af72b6c2112fe2d06d9bbc1c11185ad4",
     bounds: [0.905, 1.903, 0.404],
-    sizeBytes: 1494272,
+    sizeBytes: 2529652,
     metadata: {
       "materials": [
-        "material-0"
+        "hoopsAthleteGuardClean-kit",
+        "hoopsAthleteGuardClean-shorts",
+        "hoopsAthleteGuardClean-skin",
+        "hoopsAthleteGuardClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -149713,7 +149723,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:22:16.647Z"
       },
       "sourcePath": "artifacts/meshy/hoops-athlete-guard/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteGuard.fbef844e.glb",
+      "outputPath": "public/aura-assets/hoopsAthleteGuardClean.178e3649.glb",
       "boundsMetadata": {
         "min": [
           -0.856,
@@ -153898,13 +153908,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "fcSoccerStrikerMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcSoccerStrikerMeshy.a675e393.glb",
-    hash: "sha256-8c056f070844d7384ee8ae2675dc8c32458d6d5d5010b21977be9dff096699b0",
+    url: "/aura-assets/fcSoccerStrikerClean.2e335ee3.glb",
+    hash: "sha256-2e335ee382a014f28004d6c12c15f0f18c0580d1e764cab0b770bb5a2deeef1c",
     bounds: [0.742, 1.891, 0.755],
-    sizeBytes: 1639852,
+    sizeBytes: 2590244,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "fcSoccerStrikerClean-kit",
+        "fcSoccerStrikerClean-shorts",
+        "fcSoccerStrikerClean-skin",
+        "fcSoccerStrikerClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -153962,7 +153975,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:26.112Z"
       },
       "sourcePath": "artifacts/meshy/fcSoccerStrikerMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcSoccerStrikerMeshy.a675e393.glb",
+      "outputPath": "public/aura-assets/fcSoccerStrikerClean.2e335ee3.glb",
       "boundsMetadata": {
             "min": [
                   -0.373,
@@ -154022,13 +154035,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "fcGoalkeeperMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcGoalkeeperMeshy.156eb05c.glb",
-    hash: "sha256-5e36f3be8a97ce264b3d572f50cf76f9813fd54c70deebe6657800287755f854",
+    url: "/aura-assets/fcGoalkeeperClean.4194514e.glb",
+    hash: "sha256-4194514e0bad612cb881c8b91ad0c824a7040a938ef600e9426af45d00c2eadc",
     bounds: [0.716, 1.899, 0.561],
-    sizeBytes: 1705960,
+    sizeBytes: 2595124,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "fcGoalkeeperClean-kit",
+        "fcGoalkeeperClean-shorts",
+        "fcGoalkeeperClean-skin",
+        "fcGoalkeeperClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -154086,7 +154102,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:46.781Z"
       },
       "sourcePath": "artifacts/meshy/fcGoalkeeperMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcGoalkeeperMeshy.156eb05c.glb",
+      "outputPath": "public/aura-assets/fcGoalkeeperClean.4194514e.glb",
       "boundsMetadata": {
             "min": [
                   -0.357,
@@ -154274,13 +154290,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rzQuarterbackMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
-    hash: "sha256-7999d60e829f92473394f12aa013cb52c5cdaa8dbe34f5e9c817be138b483891",
+    url: "/aura-assets/rzQuarterbackClean.2397b4cd.glb",
+    hash: "sha256-2397b4cd4a0d5418caedd04baff3d294eea8a481c37f13e540d096202ca4c831",
     bounds: [0.89, 1.897, 0.505],
-    sizeBytes: 1293916,
+    sizeBytes: 1473324,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "rzQuarterbackClean-kit",
+        "rzQuarterbackClean-shorts",
+        "rzQuarterbackClean-skin",
+        "rzQuarterbackClean-dark",
+        "rzQuarterbackClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -154338,7 +154358,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:36.326Z"
       },
       "sourcePath": "artifacts/meshy/rzQuarterbackMeshy/model.glb",
-      "outputPath": "public/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
+      "outputPath": "public/aura-assets/rzQuarterbackClean.2397b4cd.glb",
       "boundsMetadata": {
             "min": [
                   -0.447,
@@ -154398,13 +154418,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rzDefenderLinemanMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
-    hash: "sha256-dc3ffd55e0ae2eb250a7580c437e958987fc466e31c65bcd0c54b208221b440c",
+    url: "/aura-assets/rzDefenderLinemanClean.deec33d6.glb",
+    hash: "sha256-deec33d6c5179c6c979d1c5440f579a2bd004497b0d3223d8cdefb62186f4cfe",
     bounds: [1.147, 1.896, 1.672],
-    sizeBytes: 1423628,
+    sizeBytes: 1745932,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "rzDefenderLinemanClean-kit",
+        "rzDefenderLinemanClean-shorts",
+        "rzDefenderLinemanClean-skin",
+        "rzDefenderLinemanClean-dark",
+        "rzDefenderLinemanClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -154462,7 +154486,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:52.834Z"
       },
       "sourcePath": "artifacts/meshy/rzDefenderLinemanMeshy/model.glb",
-      "outputPath": "public/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
+      "outputPath": "public/aura-assets/rzDefenderLinemanClean.deec33d6.glb",
       "boundsMetadata": {
             "min": [
                   -0.565,
@@ -154650,13 +154674,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "linksGolferAthleteMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/linksGolferAthleteMeshy.a39990ad.glb",
-    hash: "sha256-960fb13c0821f603a9bf647c68ef6aa1a3f097f3b9c6bae137556f5219bc303d",
+    url: "/aura-assets/linksGolferAthleteClean.5a04c740.glb",
+    hash: "sha256-5a04c74031f568a027c62542800ebad090af6349afb5322f6379c37015e3c319",
     bounds: [0.701, 1.897, 0.555],
-    sizeBytes: 1123524,
+    sizeBytes: 1430904,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "linksGolferAthleteClean-kit",
+        "linksGolferAthleteClean-shorts",
+        "linksGolferAthleteClean-skin",
+        "linksGolferAthleteClean-dark",
+        "linksGolferAthleteClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -154714,7 +154742,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:16:55.807Z"
       },
       "sourcePath": "artifacts/meshy/linksGolferAthleteMeshy/model.glb",
-      "outputPath": "public/aura-assets/linksGolferAthleteMeshy.a39990ad.glb",
+      "outputPath": "public/aura-assets/linksGolferAthleteClean.5a04c740.glb",
       "boundsMetadata": {
             "min": [
                   -0.351,
