@@ -549,8 +549,8 @@ export { buildAxesHelper, buildBoundsHelper, buildCameraFrustumHelper, buildDire
 export type { AxesHelperOptions, BoundsHelperOptions, CameraFrustumHelperOptions, DebugColor, DebugVec3, DirectionalLightHelperOptions, GridHelperOptions, SkeletonHelperJoint } from "./SceneHelpers.js";
 export { ReportExporter } from "./ReportExporter.js";
 export type { DebugReport } from "./ReportExporter.js";
-export { DEFAULT_HEAL_LADDER, DEFAULT_HEAL_STORAGE_KEY, QR_HEAL_LADDER, createBlackFrameWatch, formatEngineSection, formatGpuProbe, healParams, healRungName, healStage, installBlackFrameGuard, installDiagnosticsPanel, installSafetyNet, isBlackFrame, probeGpu, qrHealRungName, qrHealStage, qrHealUrl, resolveQualitySwitches } from "./safety/index.js";
-export type { BlackFrameGuardOptions, BlackFrameWatch, BlackFrameWatchOptions, DiagnosticsAppLike, DiagnosticsPanelHandle, DiagnosticsPanelOptions, GpuProbe, HealGlobal, HealRung, QualitySwitches, ResolveQualitySwitchesOptions, SafetyNet, SafetyNetOptions, SafetyReport, SafetySettings } from "./safety/index.js";
+export { DEFAULT_HEAL_LADDER, DEFAULT_HEAL_STORAGE_KEY, QR_HEAL_LADDER, createBlackFrameWatch, formatEngineSection, formatGpuProbe, healParams, healRungName, healStage, installBlackFrameGuard, installDiagnosticsPanel, installFrameTap, installSafetyNet, isBlackFrame, probeGpu, qrHealRungName, qrHealStage, qrHealUrl, resolveQualitySwitches } from "./safety/index.js";
+export type { BlackFrameGuardOptions, BlackFrameWatch, BlackFrameWatchOptions, DiagnosticsAppLike, DiagnosticsPanelHandle, DiagnosticsPanelOptions, FrameTap, FrameTapOptions, GpuProbe, HealGlobal, HealRung, QualitySwitches, ResolveQualitySwitchesOptions, SafetyNet, SafetyNetOptions, SafetyReport, SafetySettings } from "./safety/index.js";
 ```
 
 ## @aura3d/ecs
