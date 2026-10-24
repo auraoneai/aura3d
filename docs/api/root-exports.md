@@ -92,7 +92,7 @@ Namespace objects list their members (builder functions) in the last column.
 | `AuraSceneBuilder` | class |  |
 | `batched` | namespace | `mesh` |
 | `camera` | namespace | `shoulder` `collisionAwareOrbit` `shake` `punchIn` `followRig` `gameRig` `perspective` `orbit` `dolly` `follow` `path` `flythrough` `orthographic` `isometric` `autoFrame` `frameAsset` `physics` `charts` `materials` `city` `product` `solar` `humanoid` `miniGolf` (+2) |
-| `cameras` | namespace | `cube` `array` `stereo` |
+| `cameras` | namespace | `chase` `cube` `array` `stereo` |
 | `character` | namespace | `builtInHumanoidAsset` `skeleton` `clips` `proceduralHumanMesh` `lowPolyHumanoid` `authoredHumanoid` `primitiveHumanoid` `performance` `importedRigRuntime` `visualQA` `validatePrimitiveHumanoid` |
 | `charts` | namespace | `barGrid3D` `dataBars3D` `configure` `withDataset` `themes` `cameraPreset` `visualQA` |
 | `city` | namespace | `createState` `bindDayNightToggle` `block` `cityBlock` `scene` `cameraPreset` `cameras` `instancing` `visualQA` |
@@ -130,7 +130,7 @@ Namespace objects list their members (builder functions) in the last column.
 | `particles` | namespace | `materialModes` `fountain` `diagnostics` |
 | `physics` | namespace | `world` `worldAsync` `worldFromScene` `worldFromSceneAsync` `body` `collider` `box` `sphere` `capsule` `plane` `constraint` `bindNode` `step` `contacts` `liveContactCount` `raycast` `sphereCast` `debug` `debugNodes` `sceneBinding` `nodeSpec` `resolveShape` |
 | `points` | function |  |
-| `prefabs` | namespace | `particleFountain` `cityBlock` `materialSwatches` `productStage` `productViewer` `physicsRamp` `physicsPlayground` `solarSystem` `dataBars3D` `neonTunnel` `miniGolfHole` `miniGolfCourse` `primitiveHumanoid` `lowPolyHumanoid` |
+| `prefabs` | namespace | `particleFountain` `cityBlock` `objectiveMarker` `objectiveMarkerPoses` `materialSwatches` `productStage` `productViewer` `physicsRamp` `physicsPlayground` `solarSystem` `dataBars3D` `neonTunnel` `miniGolfHole` `miniGolfCourse` `primitiveHumanoid` `lowPolyHumanoid` |
 | `primitives` | namespace | `box` `sphere` `plane` `cylinder` `capsule` `torus` `cone` `circle` `ring` `tube` `lathe` `extrude` `shape` `torusKnot` `polyhedron` `roundedBox` |
 | `product` | namespace | `placement` `stage` `viewer` `scene` `diagnostics` `visualQA` |
 | `promptPlanToScene` | function |  |
