@@ -97,6 +97,37 @@
       @media (max-width: 760px) {
         .aura3d-controls-hint { display: none; }
       }
+      body:has(.game-shell[data-mode=menu]) .aura3d-controls-hint { display: none; }
+      /* Desktop: stay clear of the pause button (right) and the scoreboard (left); the badge hides below 1500px. */
+      @media (min-width: 761px) {
+        .aura3d-top-bar { right: 84px; max-width: calc(100vw - 440px); flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+        .aura3d-top-bar::-webkit-scrollbar { display: none; }
+        .aura3d-top-bar button { flex: 0 0 auto; }
+      }
+      @media (min-width: 761px) and (max-width: 1499px) {
+        .aura3d-top-bar .aura-badge { display: none; }
+      }
+      /* Portrait play: one scrollable row above the scoreboard (its height is reserved via --quick-bar-space); venues live in the Modes menu. */
+      @media (max-width: 760px) and (orientation: portrait), (pointer: coarse) and (orientation: portrait) {
+        :root { --quick-bar-space: 38px; }
+        .aura3d-top-bar {
+          top: 0;
+          left: 0;
+          right: 0;
+          height: calc(var(--quick-bar-space) + env(safe-area-inset-top));
+          box-sizing: border-box;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          scrollbar-width: none;
+          padding: calc(6px + env(safe-area-inset-top)) 8px 6px;
+          border-radius: 0;
+          border-width: 0 0 1px;
+          box-shadow: none;
+        }
+        .aura3d-top-bar::-webkit-scrollbar { display: none; }
+        .aura3d-top-bar .aura-badge, .aura3d-top-bar [data-aura-venue] { display: none; }
+        .aura3d-top-bar button { flex: 0 0 auto; }
+      }
       .boot {
         position: fixed;
         inset: 0;

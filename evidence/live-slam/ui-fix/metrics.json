@@ -1,0 +1,338 @@
+{
+ "before": {
+  "1280": {
+   "boot": {
+    "bar": {
+     "x": 369,
+     "y": 12,
+     "w": 897,
+     "h": 40
+    },
+    "scoreboard": {
+     "x": 24,
+     "y": 22,
+     "w": 304,
+     "h": 161
+    },
+    "canvas": {
+     "x": 0,
+     "y": 0,
+     "w": 1280,
+     "h": 720
+    },
+    "menuPadding": "0px",
+    "menuGap": "normal",
+    "h1FontSize": "16px",
+    "pickerGap": "normal",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 1500,
+    "scrollWidth": 1280
+   },
+   "menu": {
+    "bar": {
+     "x": 369,
+     "y": 12,
+     "w": 897,
+     "h": 40
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 0,
+     "w": 1280,
+     "h": 720
+    },
+    "menuPadding": "0px",
+    "menuGap": "normal",
+    "h1FontSize": "16px",
+    "pickerGap": "normal",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 1280
+   },
+   "setup": {
+    "bar": {
+     "x": 369,
+     "y": 12,
+     "w": 897,
+     "h": 40
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 0,
+     "w": 1280,
+     "h": 720
+    },
+    "menuPadding": "0px",
+    "menuGap": "normal",
+    "h1FontSize": "16px",
+    "pickerGap": "normal",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 1280
+   }
+  },
+  "390": {
+   "boot": {
+    "bar": {
+     "x": 0,
+     "y": 12,
+     "w": 376,
+     "h": 104
+    },
+    "scoreboard": {
+     "x": 8,
+     "y": 6,
+     "w": 322,
+     "h": 106
+    },
+    "canvas": {
+     "x": 0,
+     "y": 156,
+     "w": 390,
+     "h": 844
+    },
+    "menuPadding": "0px",
+    "menuGap": "normal",
+    "h1FontSize": "16px",
+    "pickerGap": "normal",
+    "overlapBarScoreboardPx2": 32200,
+    "overlapBarPausePx2": 1444,
+    "scrollWidth": 390
+   },
+   "menu": {
+    "bar": {
+     "x": 0,
+     "y": 12,
+     "w": 376,
+     "h": 104
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 156,
+     "w": 390,
+     "h": 844
+    },
+    "menuPadding": "0px",
+    "menuGap": "normal",
+    "h1FontSize": "16px",
+    "pickerGap": "normal",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 390
+   },
+   "setup": {
+    "bar": {
+     "x": 0,
+     "y": 12,
+     "w": 376,
+     "h": 104
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 156,
+     "w": 390,
+     "h": 844
+    },
+    "menuPadding": "0px",
+    "menuGap": "normal",
+    "h1FontSize": "16px",
+    "pickerGap": "normal",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 390
+   }
+  }
+ },
+ "after": {
+  "1280": {
+   "boot": {
+    "bar": {
+     "x": 412,
+     "y": 12,
+     "w": 784,
+     "h": 40
+    },
+    "scoreboard": {
+     "x": 24,
+     "y": 22,
+     "w": 304,
+     "h": 161
+    },
+    "canvas": {
+     "x": 0,
+     "y": 0,
+     "w": 1280,
+     "h": 720
+    },
+    "menuPadding": "24px max(24px, 50% - 590px)",
+    "menuGap": "16px",
+    "h1FontSize": "56px",
+    "pickerGap": "16px",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 1280
+   },
+   "menu": {
+    "bar": {
+     "x": 412,
+     "y": 12,
+     "w": 784,
+     "h": 40
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 0,
+     "w": 1280,
+     "h": 720
+    },
+    "menuPadding": "24px 50px",
+    "menuGap": "16px",
+    "h1FontSize": "56px",
+    "pickerGap": "16px",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 1280
+   },
+   "setup": {
+    "bar": {
+     "x": 412,
+     "y": 12,
+     "w": 784,
+     "h": 40
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 0,
+     "w": 1280,
+     "h": 720
+    },
+    "menuPadding": "24px 50px",
+    "menuGap": "16px",
+    "h1FontSize": "56px",
+    "pickerGap": "16px",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 1280
+   }
+  },
+  "390": {
+   "boot": {
+    "bar": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 38
+    },
+    "scoreboard": {
+     "x": 8,
+     "y": 44,
+     "w": 322,
+     "h": 106
+    },
+    "canvas": {
+     "x": 0,
+     "y": 194,
+     "w": 390,
+     "h": 844
+    },
+    "menuPadding": "54px max(24px, 50% - 590px) 16px",
+    "menuGap": "16px",
+    "h1FontSize": "38px",
+    "pickerGap": "8px",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 390
+   },
+   "menu": {
+    "bar": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 38
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 194,
+     "w": 390,
+     "h": 844
+    },
+    "menuPadding": "54px 24px 16px",
+    "menuGap": "16px",
+    "h1FontSize": "38px",
+    "pickerGap": "8px",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 390
+   },
+   "setup": {
+    "bar": {
+     "x": 0,
+     "y": 0,
+     "w": 390,
+     "h": 38
+    },
+    "scoreboard": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "canvas": {
+     "x": 0,
+     "y": 194,
+     "w": 390,
+     "h": 844
+    },
+    "menuPadding": "54px 24px 16px",
+    "menuGap": "16px",
+    "h1FontSize": "38px",
+    "pickerGap": "8px",
+    "overlapBarScoreboardPx2": 0,
+    "overlapBarPausePx2": 0,
+    "scrollWidth": 390
+   }
+  }
+ }
+}

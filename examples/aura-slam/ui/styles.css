@@ -75,6 +75,22 @@ body :is(.wordmark, .brand, .menu-wordmark, .footer-brand, .scoreboard-brand, .a
   --font-sans: "Graphik", sans-serif;
   --font-display: "DIN Pro", "Graphik", sans-serif;
   --font-mono: "TT Commons Pro Mono", ui-monospace, Menlo, monospace;
+  /* Menu type, spacing and column tokens. The menu rules below read these; an undefined one drops the whole declaration (no padding, inherited type). */
+  --text-small: 13px;
+  --text-body: 14px;
+  --text-title: 18px;
+  --text-section: 24px;
+  --text-page: clamp(26px, 3vw, 32px);
+  --text-display: clamp(38px, 5vw, 56px);
+  --leading-label: 1.4;
+  --leading-body: 1.5;
+  --leading-heading: 1.15;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --content-width: 1180px;
+  --content-gutter: 24px;
 }
 
 /* ---- styles.css ---- */
@@ -213,22 +229,22 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 @media(max-width:760px) and (orientation:portrait),(pointer:coarse) and (orientation:portrait){
 .game-shell{--score-space:120px;background:#0c202b}
 #game{margin-top:calc(var(--score-space) + env(safe-area-inset-top));height:calc(100% - var(--score-space) - var(--control-space) - env(safe-area-inset-top) - env(safe-area-inset-bottom))}
-.scoreboard,.practice-hud{top:calc(6px + env(safe-area-inset-top));left:8px;width:calc(100% - 68px);box-shadow:none}
+.scoreboard,.practice-hud{top:calc(6px + var(--quick-bar-space,0px) + env(safe-area-inset-top));left:8px;width:calc(100% - 68px);box-shadow:none}
 .scoreboard-topline{height:18px;padding:0 8px}.scoreboard-brand{font-size:8px}
 .score-table thead{height:16px;font-size:7px}.score-table th:first-child{padding-left:8px}
 .score-row{height:24px}.score-label{font-size:11px}.score-games{font-size:17px}.score-points{font-size:19px}
 .scoreboard-footer{min-height:20px;padding:3px 8px;font-size:6px}
 .practice-hud-top{height:22px}.practice-hud-grid{padding:7px 10px}.practice-hud-last{min-height:24px;padding:5px 10px}
 .pause-btn,.sound-btn{right:8px;width:44px;height:44px}
-.pause-btn{top:calc(6px + env(safe-area-inset-top))}.sound-btn{top:calc(58px + env(safe-area-inset-top))}
+.pause-btn{top:calc(6px + var(--quick-bar-space,0px) + env(safe-area-inset-top))}.sound-btn{top:calc(58px + var(--quick-bar-space,0px) + env(safe-area-inset-top))}
 .fullscreen-btn{top:auto;bottom:calc(12px + env(safe-area-inset-bottom));right:calc(50% - 22px);width:44px;height:44px}
 .game-shell .power-hud,.game-shell[data-mode=playing] .power-hud{z-index:1;top:auto;bottom:calc(70px + env(safe-area-inset-bottom));left:calc(50% - 34px);width:68px;padding:6px 8px}
 .game-shell[data-mode=playing] .court-call{bottom:calc(var(--control-space) + env(safe-area-inset-bottom) + 40px);max-width:calc(100% - 36px);padding:5px 8px}
 }
 /* Keep serve feedback above the portrait court, including both target lanes. */
 @media(max-width:760px) and (orientation:portrait),(pointer:coarse) and (orientation:portrait){
-.game-shell{--score-space:156px}
-.serve-feedback{top:calc(113px + env(safe-area-inset-top));left:8px;right:8px;width:auto;min-height:36px;padding:5px 7px;gap:7px;grid-template-columns:118px minmax(0,1fr) 42px;align-items:center}
+.game-shell{--score-space:calc(156px + var(--quick-bar-space,0px))}
+.serve-feedback{top:calc(113px + var(--quick-bar-space,0px) + env(safe-area-inset-top));left:8px;right:8px;width:auto;min-height:36px;padding:5px 7px;gap:7px;grid-template-columns:118px minmax(0,1fr) 42px;align-items:center}
 .serve-feedback:not([hidden]){display:grid}.serve-feedback-reading{gap:5px}.serve-feedback-reading span{font-size:6px;max-width:49px}.serve-feedback-reading strong{font-size:14px}.serve-feedback #serve-hint{margin:0;font-size:7px}.serve-statistics{position:static}.serve-statistics summary{font-size:7px;min-height:24px;line-height:24px;white-space:nowrap}.serve-statistics[open]{width:auto;max-width:none;margin:0;padding:0;background:none}.serve-statistics[open] p{position:relative;z-index:4;margin:0;padding:7px 10px;background:#0d2032;border-top:1px solid #ffffff25}.serve-statistics[open]{position:absolute;right:0;top:4px;width:240px}.serve-statistics[open] summary{text-align:right;padding-right:7px}.serve-statistics[open] p:last-child{border-radius:0 0 6px 6px}
 }
 .touch-hit,.touch-lob,.touch-power-serve{-webkit-tap-highlight-color:transparent}
@@ -691,6 +707,15 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 .career-invite[data-loading="true"] { position:relative; }
 .career-invite[data-loading="true"] > * { visibility:hidden; }
 .career-invite[data-loading="true"]::after { content:""; position:absolute; inset:24px; background:linear-gradient(#17392e22,#17392e22) left 15% / 40% 24px no-repeat,linear-gradient(#17392e18,#17392e18) left 65% / 70% 16px no-repeat; }
+
+/* Menu masthead brand (the shared site-brand rules are not loaded on this route). */
+.site-brand { display:inline-flex; align-items:center; gap:8px; color:#f6f7e9; text-decoration:none; }
+.site-brand img { display:block; width:28px; height:28px; }
+.site-brand-name { font:italic 900 var(--text-title)/1 Arial,Helvetica,sans-serif; letter-spacing:-.054em; white-space:nowrap; color:#f6f7e9; }
+.site-brand-name > span { color:#dcf66d; margin-left:.1667em; }
+/* Clear the quick-switch bar that the wrapper pins above the menu. */
+.mode-menu .menu-location { top:64px; }
+@media(max-width:760px) and (orientation:portrait),(pointer:coarse) and (orientation:portrait) { .mode-menu { padding-top:calc(var(--space-3) + var(--quick-bar-space,0px) + env(safe-area-inset-top)); } }
 
 /* ---- controls-settings.css ---- */
 .control-settings{width:min(720px,calc(100% - 32px));max-height:calc(100dvh - 40px);padding:28px;border:1px solid #75918a;border-radius:12px;background:#102b30;color:#f4f2e9;box-shadow:0 24px 100px #0009;font:14px/1.5 Graphik,Arial,sans-serif;overflow:auto}.control-settings::backdrop{background:#021015d9}.control-settings button{font:inherit;cursor:pointer;border:1px solid #6d8b83;border-radius:5px;background:#21433f;color:#f4f2e9;padding:9px 13px;min-height:40px}.control-settings button:hover:not(:disabled){border-color:#dbf77b;background:#2f554b}.control-settings button:focus-visible{outline:3px solid #dbf77b;outline-offset:3px}.control-settings button:disabled{opacity:.5;cursor:not-allowed}.control-settings-header{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.control-settings-header h2{font-size:26px;line-height:1.2;letter-spacing:-.04em;margin:3px 0 14px}.control-settings-kicker{font-size:10px;letter-spacing:.17em;color:#dbf77b;margin:0}.control-settings-header>button{font-size:23px;line-height:1;padding:7px 12px}.control-settings>p{color:#c7d8cf}.control-settings-tabs{display:flex;gap:8px;margin:23px 0 16px}.control-settings-tabs button{flex:1}.control-settings-tabs [aria-pressed=true]{background:#dbf77b;color:#102b30;border-color:#dbf77b;font-weight:700}.control-settings-bindings{border-top:1px solid #527169}.control-settings-row{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:14px 0;border-bottom:1px solid #35574f}.control-settings-row strong,.control-settings-row small{display:block}.control-settings-row strong{font-size:14px}.control-settings-row small{color:#b9cdc3;font-size:12px;max-width:345px;margin-top:3px}.control-settings-keys{display:flex;gap:6px;align-items:center;flex-shrink:0}.control-settings-keys>button[data-binding-action]{min-width:78px;font-size:12px}.control-settings-keys .is-capturing{border-color:#dbf77b;color:#dbf77b;box-shadow:0 0 0 1px #dbf77b}.control-settings-reserved{padding:12px;background:#193a37;border-radius:5px;font-size:12px}.control-settings-notice{padding:12px;border:1px solid #e3b876;background:#4a3924;border-radius:5px}.control-settings-status{min-height:42px;font-size:13px;color:#dbf77b!important}.control-settings-status.is-error{color:#ffc9a5!important}.control-settings-footer{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-top:16px}.control-settings-footer>div{display:flex;gap:8px}.control-settings .control-settings-apply{background:#dbf77b;color:#102b30;border-color:#dbf77b;font-weight:700}.control-settings .control-settings-apply:hover:not(:disabled){background:#ecffb3}.control-settings-note{font-size:12px;color:#b9cdc3}
