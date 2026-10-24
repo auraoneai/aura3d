@@ -16,6 +16,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const REPORT_ROOT = resolve("tests/reports/heatsink-strike");
 const LAB = "/examples/heatsink-port/";
 const REFERENCE = "tests/browser/data/heatsink-reference-replay.json";
+const MOMENTS_COUNT = 7;
 const GOLDEN = { score: 2950, kills: 6, barrels: 4, shots: 872, hits: 33, bestChain: 3, hash: "e1d8bccd" };
 
 interface OpsState { score: number; kills: number; barrels: number; shots: number; hits: number; chain: number; bestChain: number; medal: string; targetsAlive: number; hash: string }
@@ -73,29 +74,24 @@ test.describe("heatsink strike layer", () => {
     const total = await page.evaluate(`window.__AURA_HEATSINK__.replayStart(${JSON.stringify(withFire(ref.script.text))})`) as number;
     expect(total).toBe(ref.script.totalSteps);
 
-    // walk the replay in 20-step strides; photograph the first sighting of each moment worth seeing
-    const wants = new Set(["fire", "hit", "kill", "barrel"]);
+    // moments worth seeing, as steps of this deterministic strike replay (found by the unit-level run of the same inputs):
+    // the first bolt in flight, the first hit, the first kill, a later kill, a barrel shot, and the triple barrel blast
+    const MOMENTS: readonly { name: string; step: number; check: (o: OpsState) => boolean }[] = [
+      { name: "fire", step: 200, check: (o) => o.shots >= 1 },
+      { name: "hit", step: 232, check: (o) => o.hits >= 1 },
+      { name: "kill", step: 323, check: (o) => o.kills >= 1 },
+      { name: "kill-2", step: 901, check: (o) => o.kills >= 2 },
+      { name: "barrel", step: 1148, check: (o) => o.barrels >= 1 },
+      { name: "kill-3", step: 2136, check: (o) => o.kills >= 3 },
+      { name: "barrels-chain", step: 4902, check: (o) => o.barrels >= 3 && o.kills >= 5 }
+    ];
     const shots: { moment: string; step: number; lit: number }[] = [];
-    let prev: OpsState | null = null;
-    let step = 200;
-    while (step <= total) {
-      const r = await page.evaluate(`window.__AURA_HEATSINK__.replayTo(${step}, 6, true)`) as ReturnType<Api["replayTo"]>;
-      const o = r.ops;
-      let moment: string | null = null;
-      if (prev) {
-        if (o.barrels > prev.barrels && wants.has("barrel")) moment = "barrel";
-        else if (o.kills > prev.kills && wants.has("kill")) moment = "kill";
-        else if (o.hits > prev.hits && wants.has("hit")) moment = "hit";
-        else if (o.shots > prev.shots && wants.has("fire")) moment = "fire";
-      }
-      if (moment && r.shot) {
-        wants.delete(moment);
-        console.log(`@@HEATSINK_STRIKE_FRAME ${moment}-${step} ${r.shot.url.split(",")[1]}`);
-        shots.push({ moment, step, lit: r.shot.lit });
-      }
-      prev = o;
-      if (wants.size === 0 && step > 3000) break;
-      step += 20;
+    for (const m of MOMENTS) {
+      const r = await page.evaluate(`window.__AURA_HEATSINK__.replayTo(${m.step}, 8, true)`) as ReturnType<Api["replayTo"]>;
+      expect(m.check(r.ops), `${m.name} at step ${m.step}: ${JSON.stringify(r.ops)}`).toBe(true);
+      expect(r.shot, `${m.name} canvas capture`).not.toBeNull();
+      console.log(`@@HEATSINK_STRIKE_FRAME ${m.name}-${m.step} ${(r.shot as { url: string }).url.split(",")[1]}`);
+      shots.push({ moment: m.name, step: m.step, lit: (r.shot as { lit: number }).lit });
     }
     console.log("HEATSINK_STRIKE_SHOTS", JSON.stringify(shots));
 
@@ -121,7 +117,7 @@ test.describe("heatsink strike layer", () => {
 
     expect(errors.filter((e) => /parity-not-implemented|Failed to resolve|shader|GLSL|compile|TypeError|ReferenceError/i.test(e)), errors.join("\n")).toEqual([]);
     expect(diag.errorCount).toBe(0);
-    expect(shots.length, "at least a fire frame and a kill frame were photographed").toBeGreaterThanOrEqual(2);
+    expect(shots).toHaveLength(MOMENTS_COUNT);
     for (const s of shots) expect(s.lit, `${s.moment} frame is not black`).toBeGreaterThan(0.02);
   });
 });
