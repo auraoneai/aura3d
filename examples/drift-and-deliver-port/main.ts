@@ -10,6 +10,7 @@
  * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, geometry, material, primitives, type AuraApp } from "@aura3d/engine";
+import { drawCanvasMinimap } from "@aura3d/engine/game";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "./blackframe";
@@ -267,6 +268,11 @@ function render(dt: number): void {
 /* ------------------------------------------------------------------ HUD */
 
 const hud = { nitro: $("nitro-fill"), speed: $("speed"), score: $("score"), streak: $("streak"), count: $("count"), map: $<HTMLCanvasElement>("minimap") };
+const MINIMAP_GRID: [number, number, number, number][] = [];
+for (let k = -8; k <= 7; k++) {
+  const o = k * PITCH + 30;
+  MINIMAP_GRID.push([o, -450, o, 506], [-450, o, 506, o]);
+}
 function updateHud(): void {
   hud.nitro.style.width = `${Math.max(0, Math.min(100, 100 * car.boost))}%`;
   hud.nitro.style.background = car.boost < 0.22 ? "linear-gradient(90deg,#ff6a4a,#c0392b)" : "linear-gradient(90deg,#ffd27a,#ff8a2b)";
@@ -277,42 +283,19 @@ function updateHud(): void {
   hud.count.textContent = `${game.collected} / ${pickups.length}`;
   const ctx = hud.map.getContext("2d");
   if (!ctx) return;
-  const e = 240;
-  const n = (v: number): number => (v / 1020 + 0.5) * e;
-  ctx.clearRect(0, 0, e, e);
-  ctx.fillStyle = "rgba(38,30,26,.82)";
-  ctx.beginPath();
-  ctx.roundRect(0, 0, e, e, 18);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,226,175,.5)";
-  ctx.lineWidth = 2.5;
-  for (let k = -8; k <= 7; k++) {
-    const o = n(k * PITCH + 30);
-    ctx.beginPath();
-    ctx.moveTo(o, n(-450));
-    ctx.lineTo(o, n(506));
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(n(-450), o);
-    ctx.lineTo(n(506), o);
-    ctx.stroke();
-  }
-  ctx.fillStyle = "rgba(70,160,205,.55)";
-  ctx.fillRect(0, n(506), e, e - n(506));
-  ctx.fillStyle = "#ffd15c";
-  for (const p of pickups) if (!p.taken) ctx.fillRect(n(p.x) - 1.4, n(p.z) - 1.4, 2.8, 2.8);
-  ctx.save();
-  ctx.translate(n(car.x), n(car.z));
-  ctx.rotate(-car.heading);
-  ctx.fillStyle = "#ff9a2e";
-  ctx.beginPath();
-  ctx.moveTo(0, -8);
-  ctx.lineTo(5.5, 7);
-  ctx.lineTo(0, 3.5);
-  ctx.lineTo(-5.5, 7);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
+  const loose: [number, number][] = [];
+  for (const p of pickups) if (!p.taken) loose.push([p.x, p.z]);
+  drawCanvasMinimap(ctx, {
+    size: 240,
+    bounds: [-510, -510, 510, 510],
+    background: { fill: "rgba(38,30,26,.82)", radius: 18 },
+    layers: [
+      { kind: "lines", segments: MINIMAP_GRID, stroke: "rgba(255,226,175,.5)", width: 2.5 },
+      { kind: "rect", rect: [-510, 506, 510, 510], fill: "rgba(70,160,205,.55)" },
+      { kind: "points", points: loose, fill: "#ffd15c", size: 2.8 }
+    ],
+    marker: { x: car.x, z: car.z, heading: car.heading, fill: "#ff9a2e" }
+  });
 }
 
 /* ------------------------------------------------------------------ input */

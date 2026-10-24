@@ -4,6 +4,7 @@ import type { AuraVec3, AuraColor, AuraAssetRef, AuraAnimationSpec, AuraSceneNod
 import { animation } from "../animation.js";
 import { chartThemePalette, dataBarColor } from "../charts.js";
 import { cityBlock } from "./cityBlock.js";
+import { objectiveMarker, objectiveMarkerPoses } from "./objectiveMarker.js";
 import { createLowPolyHumanoid } from "../character.js";
 import { effects } from "../effects.composite.js";
 import { interactions } from "../interactions.js";
@@ -66,6 +67,8 @@ export const prefabs = lazyNamespace(() => ({
     ];
   },
   cityBlock,
+  objectiveMarker,
+  objectiveMarkerPoses,
 
 
   materialSwatches: (): readonly AuraSceneNode[] => [

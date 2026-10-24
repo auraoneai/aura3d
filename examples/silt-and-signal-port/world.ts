@@ -7,7 +7,7 @@
  * chapter 0 follows the original's measured object positions (see terrain.ts).
  */
 import {
-  camera, createAnimationController, effects, environments, geometry, instances, lights, material, model, primitives, scene,
+  camera, createAnimationController, effects, environments, geometry, instances, lights, material, model, prefabs, primitives, scene,
   type AuraApp, type AuraMaterialSpec
 } from "@aura3d/engine";
 import { assets } from "./assets";
@@ -300,35 +300,8 @@ export function buildWorld(chapter: number): World {
   for (let i = 0; i < MAX_RINGS; i++) {
     builder.add(model(assets.ringclean, { name: `ring-${i}`, position: [...FAR], scale: 38, castShadow: false }).runtime({ id: `ring-${i}` }));
   }
-  // Active-ring beacon: a thick dark-teal ring body (reads as a dark band against sand and sky), a saturated cyan rim, an
-  // expanding cyan ripple and a wide cyan light column, all solid lit meshes so they survive every backend.
-  builder.add(primitives.torus({
-    name: "beacon-ring",
-    position: [...FAR],
-    size: [66, 66, 66],
-    params: { tube: 0.085 },
-    material: material.emissive({ color: "#021015", emissiveIntensity: 0.1 })
-  }).runtime({ id: "beacon-ring" }));
-  builder.add(primitives.torus({
-    name: "beacon-rim",
-    position: [...FAR],
-    size: [76, 76, 76],
-    params: { tube: 0.022 },
-    material: material.emissive({ color: "#19e6ff", emissiveIntensity: 3.4 })
-  }).runtime({ id: "beacon-rim" }));
-  builder.add(primitives.torus({
-    name: "beacon-halo",
-    position: [...FAR],
-    size: [66, 66, 66],
-    params: { tube: 0.018 },
-    material: material.emissive({ color: "#7df3ff", emissiveIntensity: 2.6 })
-  }).runtime({ id: "beacon-halo" }));
-  builder.add(primitives.cylinder({
-    name: "beacon-beam",
-    position: [...FAR],
-    size: [5.5, 360, 5.5],
-    material: material.emissive({ color: "#19e6ff", emissiveIntensity: 2.2 })
-  }).runtime({ id: "beacon-beam" }));
+  // Active-ring beacon: the library objective marker (dark-teal ring body, cyan rim, expanding halo, light column), sized to the 66 m rings.
+  builder.addMany(prefabs.objectiveMarker({ id: "beacon", diameter: 66, hiddenPosition: [...FAR] }));
 
   for (const side of ["l", "r"]) {
     builder.add(primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.7, 1.5, 0.7], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) }).runtime({ id: `thruster-${side}` }));
@@ -434,17 +407,12 @@ export function buildWorld(chapter: number): World {
           controller?.update(dt);
 
           const o = objectiveOf(state);
-          const beaconRing = node("beacon-ring"), beaconRim = node("beacon-rim"), beaconHalo = node("beacon-halo"), beaconBeam = node("beacon-beam");
           const active = o.points[state.point];
-          if (!active || state.scene || state.completed || NO_BEACON) {
-            beaconRing.setPosition(...FAR); beaconRim.setPosition(...FAR); beaconHalo.setPosition(...FAR); beaconBeam.setPosition(...FAR);
-          } else {
-            const pulse = 1 + 0.035 * Math.sin(time * 5);
-            const ripple = 1 + ((time * 0.8) % 1) * 0.5;
-            beaconRing.setPosition(active.x, active.y, active.z); beaconRing.setScale([pulse, pulse, pulse]);
-            beaconRim.setPosition(active.x, active.y, active.z); beaconRim.setScale([pulse, pulse, pulse]);
-            beaconHalo.setPosition(active.x, active.y, active.z); beaconHalo.setScale([ripple, ripple, ripple]);
-            beaconBeam.setPosition(active.x, active.y + 170, active.z);
+          const poses = prefabs.objectiveMarkerPoses(!active || state.scene || state.completed || NO_BEACON ? null : [active.x, active.y, active.z], time, { diameter: 66, hiddenPosition: [...FAR] });
+          for (const part of ["ring", "rim", "halo", "beam"] as const) {
+            const h = node(`beacon-${part}`);
+            h.setPosition(...poses[part]!.position);
+            h.setScale([...poses[part]!.scale]);
           }
           for (let i = 0; i < MAX_RINGS; i++) {
             const h = node(`ring-${i}`);

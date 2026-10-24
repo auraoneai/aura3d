@@ -138,6 +138,10 @@ export type { SfxId, SfxPack } from "./sfx";
 export { mountHud } from "./hud/HudKit.js";
 export { HUD_THEMES, HUD_FONT_FACES } from "./hud/themes.js";
 export { screenFraction } from "./hud/screenFraction.js";
+export { compassBearing, compassRotationDeg, updateCompass } from "./hud/compass.js";
+export type { CompassPoint, CompassNeedle } from "./hud/compass.js";
+export { drawCanvasMinimap } from "./hud/canvasMinimap.js";
+export type { CanvasMinimapBounds, CanvasMinimapContext, CanvasMinimapLayer, CanvasMinimapMarker, CanvasMinimapSpec } from "./hud/canvasMinimap.js";
 export type {
   Hud as GameHud,
   HudMountOptions as GameHudMountOptions,

@@ -8,6 +8,7 @@
  * `objective`, `autopilot`, `manual` or `start` goes straight into play with no screens.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, effects, type AuraApp } from "@aura3d/engine";
+import { updateCompass } from "@aura3d/engine/game";
 import { CHAPTERS } from "./chapters-data";
 import { autopilot } from "./autopilot";
 import { createSiltAudio, type SiltAudio } from "./audio";
@@ -268,8 +269,7 @@ function updateHud(): void {
   $<HTMLElement>("energy").style.width = `${(flight.energy * 100).toFixed(0)}%`;
   $("mode").textContent = flight.boostMode;
   $("hold").textContent = state.hold > 0 ? `holding ${state.hold.toFixed(1)} s` : "";
-  const bearing = Math.atan2(-(t.x - state.x), -(t.z - state.z)) - state.yaw;
-  $("compass").style.transform = `rotate(${(-bearing * 180) / Math.PI}deg)`;
+  updateCompass($("compass"), state, t, state.yaw);
 }
 
 /* ------------------------------------------------------------------ hooks */
