@@ -5,7 +5,8 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * Kid Goku rework: leg motion. Remote-only (tools/remote-acr/run.sh); never local Playwright.
  * Logs `KG_REWORK_GAIT` rows and `KG_REWORK_FRAME <name> <base64 jpeg>` frames (a run-cycle strip, idle, jump, land).
  */
-const LAB = "/examples/kid-goku-beyond-the-clouds-port/?manual=1&autostart=1";
+// open ground after the log (s=93); quality switches off only to keep software-GL frames affordable (leg motion, not look, is under test)
+const LAB = "/examples/kid-goku-beyond-the-clouds-port/?manual=1&autostart=1&chapterStart=110&post=0&shadow=0&aa=0";
 interface Gait { clip: string; phase: number; rate: number; gain: number; footSpeed: number; slideRatio: number; groundSpeed: number }
 interface Api {
   ready: boolean;
@@ -20,7 +21,7 @@ interface Api {
 declare global { interface Window { __AURA_KID_GOKU__?: Api } }
 
 test.describe("kid-goku rework: leg motion", () => {
-  test.setTimeout(900_000);
+  test.setTimeout(2_700_000);
   let server: ExampleDevServer;
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server.close(); });
@@ -29,19 +30,19 @@ test.describe("kid-goku rework: leg motion", () => {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
-    await page.setViewportSize({ width: 640, height: 360 });
+    await page.setViewportSize({ width: 960, height: 540 });
     await page.goto(`${server.origin}${LAB}`);
     await page.waitForFunction(() => window.__AURA_KID_GOKU__?.ready === true, undefined, { timeout: 300_000 });
 
     const IDLE = { steer: 0, jump: false, pole: false, nimbus: false, brake: false };
-    await page.evaluate((i) => { const a = window.__AURA_KID_GOKU__!; a.begin(); a.play(90, i); }, IDLE);
+    await page.evaluate((i) => { const a = window.__AURA_KID_GOKU__!; a.begin(); a.play(60, i); }, IDLE);
 
     const rows: Gait[] = [];
-    for (let k = 0; k < 8; k++) {
+    for (let k = 0; k < 6; k++) {
       const out = await page.evaluate(async (i) => {
         const a = window.__AURA_KID_GOKU__!;
         a.play(3, i);
-        const jpeg = await a.frame(640, 360, 0.7);
+        const jpeg = await a.frame(960, 540, 0.85);
         return { jpeg, gait: a.gait(), snap: a.snapshot() };
       }, IDLE);
       rows.push(out.gait!);
@@ -53,11 +54,11 @@ test.describe("kid-goku rework: leg motion", () => {
       const a = window.__AURA_KID_GOKU__!;
       a.play(1, { ...i, jump: true });
       a.play(10, i);
-      const air = await a.frame(640, 360, 0.7);
+      const air = await a.frame(960, 540, 0.85);
       const airSnap = a.snapshot();
       let guard = 0;
       while (a.snapshot().jump > 0.05 && guard++ < 240) a.play(1, i);
-      const land = await a.frame(640, 360, 0.7);
+      const land = await a.frame(960, 540, 0.85);
       return { air, land, airJump: airSnap.jump, gait: a.gait() };
     }, IDLE);
     console.log(`KG_REWORK_FRAME jump-air ${jump.air}`);
