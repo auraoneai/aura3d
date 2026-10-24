@@ -8,7 +8,7 @@
  * Keys: A/D or arrows change lane, Space/W jump, S/down slide, Shift toggles surge, E flies (hold
  * W/S/A/D to steer), P/Esc pauses, M mutes, R/Enter restarts from the results screen.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import {
   RUNGS, START_DAYS, STEP, ROAD_LENGTH, KM_TOTAL, createRun, expandScript, snapshot, stepRun, type InputSegment, type RunInput, type RunState
 } from "./sim";
@@ -41,7 +41,6 @@ let runtime: WorldRuntime | undefined;
 let ready = false;
 let started = config.autostart;
 let paused = false;
-let accumulator = 0;
 let renderTime = 0;
 let last = 0;
 let steps = 0;
@@ -253,21 +252,28 @@ function advance(input: RunInput): void {
   renderTime += STEP;
 }
 
+const stepping = (): boolean => counting <= 0 && started && !paused && !config.manual && !resultsShown;
+
+const loop = createFixedStepLoop({
+  stepSeconds: STEP,
+  maxFrameSeconds: 0.1,
+  maxCatchUpSteps: 8,
+  isActive: () => ready && stepping(),
+  step() {
+    advance(takeInput());
+  }
+});
+
 function tick(now: number): void {
   requestAnimationFrame(tick);
   const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
   last = now;
+  loop.tick(now);
   if (!ready) return;
   if (counting > 0 && !paused) {
     counting = Math.max(0, counting - dt);
     renderTime += dt;
-  } else if (started && !paused && !config.manual && !resultsShown) {
-    accumulator += dt;
-    while (accumulator >= STEP) {
-      advance(takeInput());
-      accumulator -= STEP;
-    }
-  } else if (!paused) renderTime += dt;
+  } else if (!stepping() && !paused) renderTime += dt;
   if (started && !paused && counting <= 0 && state.phase !== "run" && !config.manual) outroT += dt;
   if (started && !resultsShown && state.phase !== "run" && outroT > (RESULT_DELAY[state.phase] ?? 1.5)) showResults();
   cues();
@@ -279,7 +285,7 @@ function tick(now: number): void {
 function begin(): void {
   state = createRun();
   steps = 0;
-  accumulator = 0;
+  loop.resetAccumulator();
   started = true;
   paused = false;
   counting = 0;
@@ -308,69 +314,51 @@ function reportError(error: unknown): void {
 
 /* ------------------------------------------------------------------ capture hooks */
 
-const hooks = {
+installQaHooks("saiyan-snake-way", {
+  ready: () => ready,
   state: () => snapshot(state, steps),
-  raw: () => JSON.parse(JSON.stringify(state)) as RunState,
-  reset: () => { begin(); render(0); return snapshot(state, steps); },
-  /** Steps the simulation `n` fixed steps with `input` (idle by default) and renders once. */
-  stepFrames: (n: number, input: RunInput = {}) => {
-    for (let i = 0; i < n && state.phase === "run" && !state.atEnd; i++) advance(input);
-    render(0);
-    return snapshot(state, steps);
-  },
-  /** Replays recorded run-length segments from a fresh run and returns the final snapshot and steps taken. */
-  runSegments: (segments: readonly InputSegment[], maxSteps: number = Number.POSITIVE_INFINITY) => {
-    begin();
-    for (const input of expandScript(segments)) {
-      if (steps >= maxSteps) break;
-      advance(input);
-      if (state.phase !== "run" || state.atEnd) break;
-    }
-    render(0);
-    return { steps, final: snapshot(state, steps) };
-  },
-  start: () => { begin(); render(0); return snapshot(state, steps); },
-  /** Presentation-only: edits the live state (speed, aura, ...) so a capture can show a given look without a replay. */
-  setState: (patch: Partial<RunState>) => { Object.assign(state, patch); render(0); return snapshot(state, steps); },
-  /** Presentation-only: renders `seconds` of the post-run phase (fall / leap / over) after `setState` put the run there. */
-  outro: (seconds: number) => { outroT = seconds; render(0); return snapshot(state, steps); },
-  meta: () => ({ steps, renderTime, entityNodes: runtime?.entityNodes ?? 0, nodeCount: runtime?.nodeCount ?? 0 }),
+  app: () => app,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SG-05", "SG-06", "SG-07", "SC-01", "SR-02"] }) : null),
-  capture: async () => {
-    if (!app?.capture) throw new Error("not ready");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    return await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(reader.error);
-      reader.readAsDataURL(blob);
-    });
-  },
-  diagnostics: () => (app ? app.diagnostics() : null),
-  info: () => app?.info ?? null,
-  async frame(width = 480, height = 270, quality = 0.72): Promise<string> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = document.createElement("canvas");
-    surface.width = width;
-    surface.height = height;
-    surface.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-    return surface.toDataURL("image/jpeg", quality);
-  },
-  async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = surface.getContext("2d")!;
-    ctx.drawImage(bitmap, 0, 0);
-    const image = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-    return { width: image.width, height: image.height, data: image.data };
-  },
-  get ready() { return ready; }
-};
-window.__AURA_SAIYAN_SNAKE_WAY__ = hooks;
+  nodeCount: () => runtime?.nodeCount ?? 0,
+  extras: {
+    get ready() { return ready; },
+    raw: () => JSON.parse(JSON.stringify(state)) as RunState,
+    reset: () => { begin(); render(0); return snapshot(state, steps); },
+    /** Steps the simulation `n` fixed steps with `input` (idle by default) and renders once. */
+    stepFrames: (n: number, input: RunInput = {}) => {
+      for (let i = 0; i < n && state.phase === "run" && !state.atEnd; i++) advance(input);
+      render(0);
+      return snapshot(state, steps);
+    },
+    /** Replays recorded run-length segments from a fresh run and returns the final snapshot and steps taken. */
+    runSegments: (segments: readonly InputSegment[], maxSteps: number = Number.POSITIVE_INFINITY) => {
+      begin();
+      for (const input of expandScript(segments)) {
+        if (steps >= maxSteps) break;
+        advance(input);
+        if (state.phase !== "run" || state.atEnd) break;
+      }
+      render(0);
+      return { steps, final: snapshot(state, steps) };
+    },
+    start: () => { begin(); render(0); return snapshot(state, steps); },
+    /** Presentation-only: edits the live state (speed, aura, ...) so a capture can show a given look without a replay. */
+    setState: (patch: Partial<RunState>) => { Object.assign(state, patch); render(0); return snapshot(state, steps); },
+    /** Presentation-only: renders `seconds` of the post-run phase (fall / leap / over) after `setState` put the run there. */
+    outro: (seconds: number) => { outroT = seconds; render(0); return snapshot(state, steps); },
+    meta: () => ({ steps, renderTime, entityNodes: runtime?.entityNodes ?? 0, nodeCount: runtime?.nodeCount ?? 0 }),
+    capture: async () => {
+      if (!app?.capture) throw new Error("not ready");
+      const blob = (await app.capture({ type: "png-blob" })) as Blob;
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    },
+  }
+});
 
 function sizeCanvas(): void {
   const dpr = config.manual ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
