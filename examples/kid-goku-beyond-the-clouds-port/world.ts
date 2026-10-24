@@ -13,6 +13,8 @@ import { Fx } from "./fx";
 import type { Game } from "./game";
 import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { Mesh, cylinder, hex } from "./mesh";
+import { LEG_CLIPS } from "./legcycle";
+import { gaitFor, legOverlayPose, touchdowns, type LocoClip } from "./locomotion";
 import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
@@ -34,7 +36,9 @@ function meshGeometry(m: Mesh) {
 const plainGeometry = (m: Mesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
 
 export interface WorldStats { drawNodes: number; chunks: number; triangles: number }
-export interface WorldRuntime { update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void; readonly stats: WorldStats; readonly camera: { eye: V3; target: V3 } }
+/** What the legs are doing this frame: the clip, its phase in cycles, cadence, stride gain and the share of ground speed the planted feet still slide. */
+export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; gain: number; footSpeed: number; slideRatio: number }
+export interface WorldRuntime { update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void; readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 } }
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
 
 /* dev toggle for A/B frames: ?heroset=0 drops the instanced hero trees, rocks and mesas */
@@ -173,16 +177,31 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
   const riverIds = ch.waters.map((_, i) => `river-${i}`);
   const chase = cameras.chase();
   let eye: V3 | null = null, look: V3 | null = null;
-  let animClip = "", animT = 0, runDust = 0, wispT = 0, clock = 0;
+  let animClip = "", animT = 0, wispT = 0, clock = 0;
   let rexS = 0, rexInit = false;
   const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
   const foot = (g: Game): V3 => at(g.state.s, g.state.lane, g.state.jump);
 
-  const play = (clip: string, rate: number, dt: number): void => {
+  const gait: GaitReport = { clip: "", phase: 0, groundSpeed: 0, rate: 1, gain: 1, footSpeed: 0, slideRatio: 0 };
+  const play = (clip: string, rate: number, dt: number, groundSpeed = 0, stepFx?: (side: "left" | "right") => void): void => {
     if (clip !== animClip) { animClip = clip; animT = 0; }
+    const before = animT;
     animT += dt * rate;
     const hold = HERO_HOLD[clip];
     hero.play(clip, { loop: hold === undefined, captureTime: hold === undefined ? animT : hold.at ?? Math.min(animT, hold.end), crossFade: 0.1 });
+    gait.clip = clip; gait.groundSpeed = groundSpeed; gait.rate = rate;
+    if (clip === "run") {
+      const dur = LEG_CLIPS.run.duration;
+      const g = gaitFor("run", groundSpeed);
+      gait.gain = g.gain; gait.footSpeed = (g.footSpeed / g.rate) * rate; gait.slideRatio = groundSpeed > 1e-6 ? Math.max(0, 1 - gait.footSpeed / groundSpeed) : 0;
+      gait.phase = animT / dur;
+      hero.setAnimationPose(legOverlayPose("run" as LocoClip, gait.phase, g.gain));
+      const td = touchdowns("run", before / dur, animT / dur);
+      if (stepFx) { for (let i = 0; i < td.left; i++) stepFx("left"); for (let i = 0; i < td.right; i++) stepFx("right"); }
+    } else {
+      hero.setAnimationPose(undefined);
+      gait.gain = 1; gait.phase = 0; gait.footSpeed = 0; gait.slideRatio = 0;
+    }
   };
 
   function emitEvents(g: Game, events: readonly string[]): void {
@@ -212,6 +231,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
 
   return {
     stats,
+    gait,
     camera: camPos,
     cutCamera() { eye = null; look = null; chase.reset(); },
     update(g, dt, aspect, events) {
@@ -238,7 +258,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       if (phase === "menu") yaw = yawOf(f.forward) + Math.PI * 0.85 + Math.sin(clock * 0.3) * 0.08;
       if (phase === "result") yaw = yawOf(f.forward) + (g.result?.won ? Math.PI : 0);
       if (phase === "finale") yaw = yawOf(f.forward) - 0.1;
-      let clip = "run", rate = 0.95 + s.speed / 30;
+      let clip = "run", rate = gaitFor("run", s.speed).rate;
       if (phase === "menu") { clip = "idle"; rate = 1; }
       else if (phase === "result") { clip = g.result?.won ? "cheer" : "dead"; rate = 1; }
       else if (phase === "finale") { const t = g.finale?.t ?? 0; clip = t < 4 ? "walk" : "cheer"; rate = t < 4 ? 1.1 : 1; }
@@ -254,7 +274,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       if (phase === "playing" && s.invincible > 0 && Math.floor(clock * 14) % 2 === 0 && !riding) hero.setVisible(false); else hero.setVisible(true);
       hero.setPosition(pos[0], pos[1], pos[2]);
       hero.setRotation(pitch, yaw, roll);
-      play(clip, rate, phase === "paused" ? 0 : dt);
+      const stepDust = (side: "left" | "right"): void => {
+        if (phase !== "playing" || s.jump > 0.15 || riding) return;
+        const side2 = (side === "left" ? -1 : 1) * 0.28;
+        const base = at(s.s, Math.max(-5.1, Math.min(5.1, s.lane + side2)), 0.1);
+        fx.dust(base, f.up, 1, "#e5cf9f", 0.55, 0.7);
+      };
+      play(clip, rate, phase === "paused" ? 0 : dt, phase === "playing" ? s.speed : 0, stepDust);
 
       if (ch.log) {
         const lg = node("ride-log");
@@ -430,11 +456,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
         });
       }
 
-      /* ---- running dust, water, sky and valley follow ---- */
-      if (phase === "playing" && s.jump < 0.08 && !riding) {
-        runDust += dt;
-        if (runDust > 0.12) { runDust = 0; fx.dust(at(s.s, s.lane, 0.1), f.up, 2, "#e5cf9f", 0.7, 0.8); }
-      }
+      /* ---- water, sky and valley follow (footstep dust is emitted on foot touchdowns in play()) ---- */
       for (const id of riverIds) node(id).setUniform?.("tClock", clock);
 
       /* ---- camera ---- */

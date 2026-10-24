@@ -223,6 +223,8 @@ const qa = installQaHooks("kid-goku", {
       return btoa(bin);
     },
     stats: () => runtime?.stats ?? null,
+    /** Leg gait this frame: clip, phase (cycles), cadence rate, stride gain, planted-foot speed and the share of ground speed still slid. */
+    gait: () => (runtime ? { ...runtime.gait } : null),
     errors: () => errors.slice()
   }
 });
