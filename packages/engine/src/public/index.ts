@@ -16,138 +16,140 @@ export type { AuraModelAssetEntry, AuraModelAssetRefs, AuraModelAssetSet, AuraMo
 // QA and replay kit (docs/api/qa-kit.md).
 export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
 export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
-// ── Deprecated union (kept at 4.0.0 per §6.6 step 3 — removes in the next minor; each names its destination) ──
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+// ── Deprecated union (kept at 4.0.0 per §6.6 step 3 — removes in 5.0.0; each names its destination) ──
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
+export { createScatterRandom, mergeStatic, mergeStaticByKey, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance } from "../agent-api/index.js";
+export type { AuraMergeStaticOptions, AuraScatterAlongPathOptions, AuraScatterArea, AuraScatterExclusion, AuraScatterInAreaOptions, AuraScatterPoint, AuraScatterRange, AuraScatterSide, AuraStaticPart } from "../agent-api/index.js";
 export type { A3DEnvironment } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/renderer`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { A3DRenderer } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { A3DAppLifecycle } from "../agent-api/index.js";
 
 export { AnimationAction } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { AnimationClip } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { AnimationLayer } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { AnimationMixer } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/animation`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { AnimationTrack } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraColor } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraCreateAppOptions } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraCreateGameAppOptions } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export type { AuraDiagnosticsOverlay } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraEffectNode } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraLightNode } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraModelOptions } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { AuraNodeBuilder } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraPerformanceQuality } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { AuraPrimitiveNode } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { captureAuraAppScreenshot } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { captureScreenshot } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { character } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { collectAuraSceneEvidence } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { collectPromptAnimationEvidence } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { compilePromptPlan } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { compositeMetallicRoughnessPixels } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createA3DApp } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createAnimationController } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { createAssetCompatibilityReport } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createAssetViewerWorkflow } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { createCaptionTimingProof } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createExternalParityEnvironmentPipeline } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createGameAppRuntime } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createInteractiveSceneWorkflow } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createProductConfiguratorWorkflow } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createProductionPrimitiveTextureIntent } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { crowds } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { decals } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { describeProductionSpotShadow } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { editor } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { evaluatePromptAnimationPublishReadiness } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { gameAssetValidation } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { GamePlatformerEvent } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export type { CharacterAssemblyValidationReport } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/assets`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/assets`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { GLTFLoader } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { inspectAsset } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/assets`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/assets`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { inspectGLTFAsset } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { listExternalParityEnvironmentTargets } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { loadAsset } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/assets`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/assets`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { loadRenderableAsset } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { meshVehicleSurface } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { mipChainBytesCoarseToFine } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { navigation } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { normalizeSceneSnapshot } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { normalizeTextureBudgetBytes } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { quaterniusGameReadyFighterValidationContract } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/renderer`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/renderer`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { Renderer } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { resolveProductionRuntimeShadowTuning } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { resolveProductionShadowCasterIndex } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { sky } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { summarizeExternalParityGLTFCorpus } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { unsafeModelUrl } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { upgradeProductionPrimitiveTextures } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { validatePlatformerMotion } from "../agent-api/index.js";
-/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */
+/** @deprecated Use `@aura3d/engine/devtools`. Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */
 export { validateQuaterniusGameReadyFighterAsset } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { water } from "../agent-api/index.js";
-/** @deprecated No replacement — removes next minor. Kept at 4.0.0 once its blocking lane's request lands. */
+/** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { weather } from "../agent-api/index.js";
 
 // ── Lane-facing leaves consumed by shipped tests (prd02/prd03 contract

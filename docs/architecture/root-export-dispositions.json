@@ -4366,6 +4366,18 @@
       "owners": []
     },
     {
+      "name": "AuraMergeStaticOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/mergeStatic.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "AuraMiniGolfMetrics",
       "kind": "type",
       "from": ".",
@@ -4403,6 +4415,54 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "AuraModelAssetEntry",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Production model loader (docs/api/model-loader.md)",
+      "consumers": [
+        "tests/unit/agent-api/production-models.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraModelAssetRefs",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Production model loader (docs/api/model-loader.md)",
+      "consumers": [
+        "tests/unit/agent-api/production-models.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraModelAssetSet",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Production model loader (docs/api/model-loader.md)",
+      "consumers": [
+        "tests/unit/agent-api/production-models.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraModelAssetsOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Production model loader (docs/api/model-loader.md)",
+      "consumers": [
+        "tests/unit/agent-api/production-models.test.ts"
+      ],
       "owners": []
     },
     {
@@ -5858,6 +5918,90 @@
       "owners": []
     },
     {
+      "name": "AuraScatterAlongPathOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraScatterArea",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraScatterExclusion",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraScatterInAreaOptions",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraScatterPoint",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraScatterRange",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "AuraScatterSide",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "AuraSceneBuilder",
       "kind": "value",
       "from": ".",
@@ -5910,6 +6054,18 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "AuraSceneInit",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Production model loader (docs/api/model-loader.md)",
+      "consumers": [
+        "tests/unit/agent-api/production-models.test.ts"
+      ],
       "owners": []
     },
     {
@@ -6242,6 +6398,18 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "AuraStaticPart",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/mergeStatic.test.ts"
+      ],
       "owners": []
     },
     {
@@ -18785,6 +18953,18 @@
       "owners": []
     },
     {
+      "name": "createScatterRandom",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "createSceneKitPerformanceDiagnostics",
       "kind": "value",
       "from": ".",
@@ -19410,6 +19590,18 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; evidence/report name \u2192 devtools (\u00a76.6)",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "defineModelAssets",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Production model loader (docs/api/model-loader.md)",
+      "consumers": [
+        "tests/unit/agent-api/production-models.test.ts"
+      ],
       "owners": []
     },
     {
@@ -21307,6 +21499,30 @@
       "owners": []
     },
     {
+      "name": "mergeStatic",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/mergeStatic.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "mergeStaticByKey",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/mergeStatic.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "meshVehicleSurface",
       "kind": "value",
       "from": ".",
@@ -21481,6 +21697,18 @@
       "owners": [
         "??"
       ]
+    },
+    {
+      "name": "modelsEnabledFromUrl",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Production model loader (docs/api/model-loader.md)",
+      "consumers": [
+        "tests/unit/agent-api/production-models.test.ts"
+      ],
+      "owners": []
     },
     {
       "name": "moveCameraKeyframe",
@@ -23172,6 +23400,42 @@
       "owners": []
     },
     {
+      "name": "scatterAlongPath",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "scatterInArea",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
+      "name": "scatterTransforms",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "scatterWindOffset",
       "kind": "value",
       "from": ".",
@@ -23634,6 +23898,18 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; not in \u00a76.6 keep-set; no destination subpath applies",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "splitScatterByDistance",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Scatter planning and static merge (docs/api/scatter-merge.md)",
+      "consumers": [
+        "tests/unit/scatter/scatter.test.ts"
+      ],
       "owners": []
     },
     {

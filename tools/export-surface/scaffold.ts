@@ -171,11 +171,11 @@ export function emitPublicIndex(dispositions: readonly Disposition[]): string {
   lines.push(...chunk(liveValues));
   lines.push(...chunkType(liveTypes));
   lines.push("");
-  lines.push("// ── Deprecated union (kept at 4.0.0 per §6.6 step 3 — removes in the next minor; each names its destination) ──");
+  lines.push("// ── Deprecated union (kept at 4.0.0 per §6.6 step 3 — removes in 5.0.0; each names its destination) ──");
   for (const d of dep) {
-    const use = d.to === "deleted" ? "No replacement — removes next minor." : `Use \`${d.to.replace(/^\./, "@aura3d/engine")}\`.`;
+    const use = d.to === "deleted" ? "No replacement — removes in 5.0.0." : `Use \`${d.to.replace(/^\./, "@aura3d/engine")}\`.`;
     const kw = d.kind === "type" ? "export type" : "export";
-    lines.push(`/** @deprecated ${use} Kept at 4.0.0 — removes in the next minor once its blocking lane's request lands. */`);
+    lines.push(`/** @deprecated ${use} Kept at 4.0.0 — removes in 5.0.0 once its blocking lane's request lands. */`);
     lines.push(`${kw} { ${d.name} } from "../agent-api/index.js";`);
   }
   lines.push("");
@@ -214,9 +214,9 @@ export function emitSubpathEntry(dispositions: readonly Disposition[], subpath: 
       '// type-only exports until their lanes ship the value exports.',
       'export type { PortableShaderMaterial, ShaderPreprocessor, RenderTarget, Texture, Sampler } from "@aura3d/rendering";',
       "",
-      '/** @deprecated 3.1.0, kept at 4.0.0 — removes in the next minor. Alias of Renderer. */',
+      '/** @deprecated 3.1.0, kept at 4.0.0 — removes in 5.0.0. Alias of Renderer. */',
       'export { Renderer as A3DRenderer } from "@aura3d/rendering";',
-      '/** @deprecated 3.1.0, kept at 4.0.0 — removes in the next minor. Alias of RendererCreateOptions. */',
+      '/** @deprecated 3.1.0, kept at 4.0.0 — removes in 5.0.0. Alias of RendererCreateOptions. */',
       'export type { RendererCreateOptions as A3DRendererOptions } from "@aura3d/rendering/contracts";',
       ""
     );
