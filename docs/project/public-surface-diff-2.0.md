@@ -4,7 +4,7 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12598**
+- Baseline symbols: **13007**; current symbols: **12732**
 - Classified removals: **2120**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
@@ -2224,6 +2224,7 @@ The JSON receipt contains the normalized before/after declaration contract for e
 - `@aura3d/engine:runtime:AuraSceneBuilder` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:runtime:compilePromptPlan` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:runtime:createAuraRouteHealthSnapshot` — reviewed-2.0-public-declaration-contract-change
+- `@aura3d/engine:runtime:scene` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:runtime:validatePlatformerMotion` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraApp` — reviewed-2.0-public-declaration-contract-change
 - `@aura3d/engine:type:AuraAssetDefinition` — reviewed-2.0-public-declaration-contract-change

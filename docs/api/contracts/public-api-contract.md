@@ -5,7 +5,7 @@ Generated reproducibly by `pnpm check:public-api` from packed current source.
 ## Summary
 
 - Checks passing: 7/7
-- Engine exports: 270
+- Engine exports: 279
 - React exports: 21
 - Docs named imports checked: 61
 
