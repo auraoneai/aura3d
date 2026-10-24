@@ -1,10 +1,102 @@
 # Troubleshooting
 
-- Missing canvas: ensure the selector passed to `createAuraApp("#app", ...)`
-  exists or pass a real canvas element.
-- Missing asset: run `assets add` and import the generated `assets` object.
-- Failed GLB/glTF load: run `assets validate` and check file paths.
-- Unsupported texture: use png, jpg, jpeg, webp, or ktx2.
+Read the code first. Every runtime message below is real and greppable in `packages/*/src`. Where a check is given, run it before changing code.
+
+How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `errors`, `drawCalls`, `assets` (load state per asset) and, when a custom shader failed, `shaderFailures` (code, material, stage, driver log, source lines). Open any route with `?diag=1` for an on-page panel (GPU, limits, draw calls, shader failures, recent errors, heal reason; failing custom shaders draw magenta). Under the strict quality-rebuild flag (`A3D_QR_STRICT`) custom-shader failures throw instead of being recorded.
+
+## 1. Build and install
+
+**`"readFileSync" is not exported by "__vite-browser-external"` during `vite build` (or `node:fs` in the browser bundle)**
+- Cause: the engine root reached the Node-only `@aura3d/assets` index through `ModelTextureShare`. Present in 4.1.2 and earlier.
+- Fix: upgrade to 4.1.3 (the import now uses `@aura3d/assets/browser`). On 4.1.2, add the small Vite plugin that stubs Node built-ins plus `@aura3d/assets/vite` (example: `tools/bench-vs-threejs/shared/aura-vite.ts`).
+- Check: `tools/release/consumer-build-smoke.mjs` (see its header) builds a temp project from packed tarballs and fails if a browser entry still reaches a `node:*` import.
+
+**`npm ci` fails: lockfile out of sync with `package.json`**
+- Cause: a template lockfile pinned an older `@aura3d/assets` than the manifest. The repo `mini-game` template has no lockfile.
+- Fix: delete the stale `package-lock.json` and run `npm install`; do not hand-edit it.
+
+## 2. Runtime errors (`AuraRuntimeError`, `error.code`)
+
+**`missing-canvas`** - "Aura3D could not find canvas target "#app"".
+- Cause: the selector matched nothing, or `document` is unavailable (SSR).
+- Fix: add `<canvas id="app"></canvas>` (a non-canvas element gets a canvas appended), or pass an `HTMLCanvasElement`. Run `createAuraApp` in the browser only.
+- Check: `document.querySelector("#app")` is non-null before `createAuraApp`.
+
+**`missing-asset` / `failed-glb-load`** - an asset id has no typed definition, or a GLB could not load.
+- Fix: `aura3d assets add ./file.glb --name x`, import the generated `assets`, then `aura3d assets validate`. `sceneKits.productViewer` requires a typed model asset.
+- Check: `app.diagnostics().assets` shows each asset's load state.
+
+**`unsupported-texture`** - bad `texture.data` size or format ("requires exactly N bytes for WxH"), or a texture type outside png, jpg, jpeg, webp, ktx2.
+- Fix: match the byte length to width x height x channels; convert other formats.
+
+**`invalid-scene-options`** - "scene(init) does not understand ...". `scene()` accepts only `children`, `background`, `camera`, `timeline`, `diagnostics`.
+- Fix: put nodes in `.add(...)`, or pass `{ children: [...] }`.
+
+**`invalid-primitive-params`** - "params "radius" has no effect on this kind". Only segment-style keys are accepted for `box`, `sphere`, `plane`, `cylinder`, `capsule`, `torus`; size comes from `size`/`scale`.
+- Fix: use the supported key named in the message.
+- Known issue: in the 4.1.2 benchmark `primitives.plane({ params: { widthSegments, heightSegments } })` was accepted but rendered as a single quad (flat displacement). If you need a subdivided plane, build the grid with `geometry.dynamic` and confirm vertex count in the frame.
+
+**`invalid-model-assets`** - from `defineModelAssets`: "needs a 64-character hex sha256", "has no url", "points at another origin ... without sourcePath under public/aura-assets/", "unknown model id".
+- Cause: the production bridge refuses a model without a valid hash and same-origin provenance, and would draw nothing.
+- Fix: `aura3d assets add` or `shasum -a 256 <file>` and pass the digest; keep files under `public/aura-assets/`; never leave `hash` out of `defineAuraAssets(...)` either (the bridge requires `createAssetProvenance(asset).source === "typed-aura-assets-manifest"`).
+
+**`invalid-material-spec`** - `material.custom(spec)` or `setUniform` misuse: malformed spec, WGSL-only input, reserved uniform names, invalid values.
+- Fix: read the message; it names the field.
+
+**`custom-shader-compile-failed`** - thrown only under `A3D_QR_STRICT`; see CUSTOM_SHADER_* below for the default behaviour.
+
+**`compute-requires-webgpu`**, **`invalid-compute-spec`** - `compute.*` needs a bound WebGPU device and WGSL; GLSL input is rejected. **`invalid-tsl-graph`**, **`tsl-*`** - the TSL subset covers a limited set of node names; see `docs/api/root-exports.md` (`tsl` members).
+
+**`FEATURE_UNIMPLEMENTED` / `GAME_SHELL_NOT_IN_ENGINE`** - you called DOM or sound members of the root `createGame`, which is a stub.
+- Fix: `import { createGame } from "@aura3d/engine/game"` (`docs/api/game-kit.md`).
+
+## 3. Diagnostics codes you will see in the console or `diagnostics().warnings`
+
+**`CUSTOM_SHADER_COMPILE_FAILED`, `CUSTOM_SHADER_LINK_FAILED`, `CUSTOM_SHADER_WGSL_MISSING`**
+- Cause: a `material.custom`, `material.node` or `effects.shaderPass` shader failed to compile or link, or has no WGSL twin on WebGPU. Logged once with `console.error` (`[aura3d] ...` with the driver log and a source window) and stored in `diagnostics().shaderFailures`.
+- Effect: the failing draw is skipped; every other draw continues (4.1.1 and later). On 4.1.0 and earlier a failure could blank the whole frame.
+- Fix: read `shaderFailures[i].locations` (driver line and authored line); the usual causes are a duplicate GLSL variable, a prelude name used wrongly (`position`, `modelMatrix`, `outColor`), or GLSL given to a WebGPU path. See `docs/api/shader-diagnostics.md`.
+- Check: `app.diagnostics().shaderFailures` is undefined or empty.
+
+**`CUSTOM_ATTRIBUTE_UNUSED`, `CUSTOM_UNIFORM_UNUSED`** (warnings)
+- Cause: a declared attribute or uniform is not active in the linked program (unused or optimised out). It is not uploaded and the draw is not skipped (4.1.x).
+- Fix: use it in the shader or remove the declaration. Harmless otherwise.
+
+**`INSTANCES_EMPTY`** (warning) - "instances.box "x" has no instances this frame; nothing is drawn."
+- Cause: an instance pool with zero transforms. Valid; the node is skipped (4.1 and later; earlier versions blanked the canvas).
+- Fix: none needed unless you expected instances; check the transform array you pass per frame.
+
+**`ENV_FETCH_FAILED`** - "environment probe not ready; rendering with the neutral floor (ENV_FETCH_FAILED:/aura-environments/neutral.manifest.json:404)".
+- Cause: the baked environment files are served from `public/aura-environments` in this repository but are not in the published packages, so an app built from npm gets a 404 and falls back to a neutral floor lighting.
+- Effect: it still renders, but not with the authored environment look.
+- Fix (workaround): copy the repo's `public/aura-environments` into your app's `public/`, or author an explicit environment (`environments.studio()`, `environments.hdri(...)`). A self-contained neutral environment is planned (`docs/workflows/aura3d-vs-threejs-analysis-and-plan.md`, WP-2).
+- Check: the network panel shows no 404 for `/aura-environments/*`.
+
+**`ENVIRONMENT_SOURCE_TIE:<ids>`** - two environment sources registered at the same priority; one wins deterministically. Give one a different priority.
+
+**`POSTPROCESS_V2_UNMIGRATED:<reason>`** (warning)
+- Cause: the legacy postprocess chain is kept under core output; it tone-maps and encodes on its own and bypasses `OutputPass`. It can appear even when you authored no post effect.
+- Effect: frames with bloom or vignette are about 25 to 40% darker and less saturated than with post off.
+- Fix: raise exposure for that route, or open with `?post=0` to compare. The migration to PostGraph is a planned change (plan WP-5); do not hide the warning.
+
+**`WEIGHTS_0 normalized: ... degenerate vertex(es) set to [1,0,0,0]`** - the glTF loader repaired skin weights. Informational.
+
+## 4. Black frame, blank canvas, self-heal
+
+**Page is black or objects are missing on a real GPU but fine in CI**
+- Cause: CI used software GL, which is not real-GPU proof. Typical real-GPU causes: NaN from `pow` of a negative base, `normalize` of zero, divide by zero (the engine's own shaders are NaN-safe; custom shaders must be too); a shader that failed to compile on that GPU.
+- Fix: open with `?diag=1`, then toggle `?post=0`, `?shadow=0`, `?env=0`, `?sky=0`, `?aa=0`, `?quality=low`, `?tm=aces` one at a time. Use the `a3d_math` chunk helpers in custom shaders.
+- Check: `diagnostics().shaderFailures` and the `?diag=1` panel.
+
+**`SAFETY_BLACK_FRAME` / `SAFETY_COMPAT_MODE`** (from `@aura3d/debug` `installSafetyNet`, opt-in)
+- Meaning: a black frame was detected and the page reloads one rung down the ladder: rung 1 `no-vfx-fog`, rung 2 `no-post`, rung 3 `legacy-compile` (URL `a3d-qr=game,...`). `SAFETY_COMPAT_MODE` says which rung is active and why.
+- `?heal=0` disables it; an `a3d-qr` you set yourself is never rewritten. See `docs/api/safety-net.md`.
+- Misfire note: 4.1.1 reloaded healthy games on slow or non-preserved drawing buffers; 4.1.2 fixed it with a frame tap read right after the draw. If a healthy game still reloads, upgrade, then check `?diag=1` for the recorded reason.
+
+**Textured model drawn through `instances.mesh` or `batched.mesh` is white** - fixed in 4.1; upgrade and give the texture `colorSpace: "srgb"`.
+
+## 5. Look, gameplay and scene problems
+
 - Deployment missing files: run `check-deploy` and upload hashed assets.
 - Particle prompt shows zero particles: replace symbolic emitter geometry with
   `effects.particles(...)` or `prefabs.particleFountain(...)`; use a real
@@ -98,13 +190,3 @@
   nodes at the same position. In fighting and sports games, enforce a minimum
   horizontal pushbox separation (`>= 1.4m`) every frame and spawn fighters at
   `|x| >= 1.8m`.
-- Page is black or objects are missing on a real GPU but fine in CI: software GL
-  is not real-GPU proof. Open the route with `?diag=1` (GPU, limits, draw calls,
-  shader failures, last errors), try `?post=0`, `?shadow=0`, `?env=0`, `?sky=0`,
-  `?quality=low` one at a time, and check custom shaders for NaN sources (`pow`
-  of a negative base, `normalize` of zero, divide by zero) via the `a3d_math`
-  chunk helpers. See `packages/aura3d-cli/skills/aura3d-core/references/pitfalls.md`.
-- Textured model drawn through `instances.mesh` or `batched.mesh` is white: fixed
-  in 4.1; upgrade, and give the texture `colorSpace: "srgb"`.
-- Whole canvas goes blank when an instance list is empty: fixed in 4.1 (empty
-  instance arrays are a no-op with an `INSTANCES_EMPTY` diagnostic).

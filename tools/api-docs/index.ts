@@ -132,6 +132,8 @@ export function renderApiDocs(packages: readonly PublicPackageApi[], appendix?: 
     "This file is generated from every non-private package entrypoint under `packages/*/src/index.ts`.",
     "It documents the public export surface that package consumers can import today.",
     "",
+    "**Agents: do not read this file whole.** It is the exhaustive declaration dump (roughly 40k tokens) kept for gates and diffs. For `@aura3d/engine` start at [`root-exports.md`](root-exports.md) (generated from the real root entry `packages/engine/src/public/index.ts`; the `@aura3d/engine` section below lists a legacy entry file). For tasks, use `docs/agents/api-surface.md`.",
+    "",
     "Regenerate and verify it with:",
     "",
     "```sh",
