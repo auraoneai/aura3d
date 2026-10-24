@@ -1230,3 +1230,7 @@ because their parity is not first.
 
 Games 5–10 are not blocked on each other; run them in parallel once their parity
 phase is green, with disjoint file ownership per the repo's parallel-agent rules.
+
+## 8. Current status
+
+This document describes the reverse-engineering workflow. For the current state of all eleven ports (simulation parity, art and Meshy passes, real-device findings, engine fixes, the Aura Slam 3D conversion and open items) see [`threejs-parity-gaps.md`](./threejs-parity-gaps.md) sections 12.5 to 12.13.
