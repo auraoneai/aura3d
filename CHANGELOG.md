@@ -1,15 +1,28 @@
 # Changelog
 
-Version: 4.1.1
+Version: 4.1.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.1.2 (unreleased)
+## 4.1.2 (2026-10-24)
+
+A patch release for the black-frame guard misfiring on healthy games in the 4.1.1 production build. No API removals; one new export (`installFrameTap`).
 
 ### Fixes
 
 - **Fix: the black-frame guard no longer reloads healthy games.** 4.1.1's guard sampled the world canvas after every `requestAnimationFrame` callback. A WebGL canvas without `preserveDrawingBuffer` reads as zeros outside the task that drew it, so on pages with several animation-frame callbacks per frame (or draws from timers) the guard read black from healthy games and walked them down the ladder; on the 4.1.1 production build Cross Hop, Iron Crown and Bunker Zero each reloaded three times (`?a3d-qr=game,-vfxFog,-post,-compiler`) although `?heal=0` pages rendered fully. The guard now taps the GL draw calls (`installFrameTap`, exported from `@aura3d/debug`) and samples in the task that drew to the default framebuffer, before the browser composites. Draws into an offscreen framebuffer do not count, minimap and HUD canvases are never judged, and `installBlackFrameGuard({ sampling: "raf" })` keeps the old behaviour for pages without WebGL draw calls. A scene that draws but outputs black still reloads exactly once per page load.
 - **Verified:** unit tests with a fake GL (draw task, offscreen framebuffer, multi-draw, small canvases, observer errors, dispose) and a simulated browser with HUD callbacks that never draw; a remote spec with a real WebGL2 context without `preserveDrawingBuffer` (lit, sparse draws, timer-driven draws, offscreen-pass-first, dark: no reload; black output: one reload); and the new guard injected into the live 4.1.1 Cross Hop, Iron Crown and Bunker Zero pages (no navigation, rung 0, 4-6 sampled frames each, none black; the same guard reloads Cross Hop exactly once when colour writes are masked). Before/after evidence is in `evidence/guard-fix/`. Software WebGL2 only: not run on a real GPU.
+
+### Tooling and tests (not published packages)
+
+- **Evidence and docs:** live verification of 4.1.0 and 4.1.1 on the production site (`evidence/live-410/`, `evidence/live-411/`), the pin-regression analysis (`evidence/regress-fix/`: Cross Hop and Iron Crown were not rendering regressions, the guard misfired during slow loads) and the guard fix before and after (`evidence/guard-fix/`); `docs/workflows/threejs-parity-gaps.md` is at v10.
+- **Specs:** a real-canvas WebGL2 lab for the guard and live-game guard specs (`tests/browser/guard-canvas.spec.ts`, `guard-real-games.spec.ts`, `guardfix-probe.spec.ts`; `selfheal.spec.ts` keeps the synthetic cases).
+
+### Known issues
+
+- The legacy post chain tone-maps and encodes on its own and bypasses `OutputPass` until PostGraph v2 migrates it, so frames with bloom or vignette on are about 25 to 40% darker and less saturated than with post off. This is an engine finding and is not patched in 4.1.2.
+- Phase B (a blind model judge cannot tell a Crayon port from its original) is still not met: the judge still separates every port from its original.
+- Real-GPU confirmation is pending for several ports (Drift & Deliver, Silt & Signal, Last Train's full Enter, E, W path, HEATSINK and Last Train in an automated run); all automated checks ran on software WebGL2, including the guard fix.
 
 ## 4.1.1 (2026-10-24)
 
