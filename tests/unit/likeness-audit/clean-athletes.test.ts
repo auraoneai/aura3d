@@ -7,16 +7,21 @@ const ROOT = path.resolve(__dirname, "../../..");
 const read = (rel: string) => readFileSync(path.join(ROOT, rel), "utf8");
 
 // Repainted athletes: flat region colours, no photographic face, lettering, crest or brand mark anywhere in the file.
-const CLEAN: Record<string, string> = {
-  diamondAthlete: "diamondAthleteClean",
-  fcSoccerStrikerMeshy: "fcSoccerStrikerClean",
-  fcGoalkeeperMeshy: "fcGoalkeeperClean",
-  linksGolferAthleteMeshy: "linksGolferAthleteClean",
-  rzQuarterbackMeshy: "rzQuarterbackClean",
-  rzDefenderLinemanMeshy: "rzDefenderLinemanClean",
-  hoopsAthleteBig: "hoopsAthleteBigClean",
-  hoopsAthleteGuard: "hoopsAthleteGuardClean"
+// A key may map to several accepted file stems: Aura FC rebuilt its repainted models with kick clips and soft hip skinning
+// (`...MeshyAthlete.<hash>.glb`); the content checks below, not the file name, prove they are still clean.
+const CLEAN: Record<string, string[]> = {
+  diamondAthlete: ["diamondAthleteClean"],
+  fcSoccerStrikerMeshy: ["fcSoccerStrikerClean", "fcSoccerStrikerMeshyAthlete"],
+  fcGoalkeeperMeshy: ["fcGoalkeeperClean", "fcGoalkeeperMeshyAthlete"],
+  linksGolferAthleteMeshy: ["linksGolferAthleteClean"],
+  rzQuarterbackMeshy: ["rzQuarterbackClean"],
+  rzDefenderLinemanMeshy: ["rzDefenderLinemanClean"],
+  hoopsAthleteBig: ["hoopsAthleteBigClean"],
+  hoopsAthleteGuard: ["hoopsAthleteGuardClean"]
 };
+// Hoops uses a flat palette strip (a 1x? PNG of a few bytes, one unnamed material) instead of four named flat materials.
+const PALETTE = new Set(["hoopsAthleteBig", "hoopsAthleteGuard"]);
+const stemMatches = (url: string, stems: string[]) => stems.some((stem) => url.includes(`/aura-assets/${stem}.`));
 const ORIGINALS = [
   "diamondAthlete.4e29f649", "fcSoccerStrikerMeshy.a675e393", "fcGoalkeeperMeshy.156eb05c", "linksGolferAthleteMeshy.a39990ad",
   "rzQuarterbackMeshy.9368c81f", "rzDefenderLinemanMeshy.38e261b9", "hoopsAthleteBig.a11d61c5", "hoopsAthleteGuard.fbef844e"
@@ -38,14 +43,14 @@ function entry(text: string, key: string): { url: string; hash: string; sizeByte
 }
 
 describe("repainted athlete models", () => {
-  for (const [key, stem] of Object.entries(CLEAN)) {
+  for (const [key, stems] of Object.entries(CLEAN)) {
     it(`${key}: every manifest entry names the repainted file, with a matching hash and size`, () => {
       let seen = 0;
       for (const file of ASSET_FILES) {
         const e = entry(read(file), key);
         if (!e) continue;
         seen += 1;
-        expect(e.url, `${file} ${key}`).toContain(`/aura-assets/${stem}.`);
+        expect(stemMatches(e.url, stems), `${file} ${key} ${e.url}`).toBe(true);
         const buf = readFileSync(path.join(ROOT, "public", e.url));
         expect(`sha256-${createHash("sha256").update(buf).digest("hex")}`, `${file} ${key}`).toBe(e.hash);
         if (e.sizeBytes !== undefined) expect(buf.length, `${file} ${key}`).toBe(e.sizeBytes);
@@ -53,7 +58,7 @@ describe("repainted athlete models", () => {
       expect(seen).toBeGreaterThan(0);
       const manifest = JSON.parse(read("aura.assets.json")) as { assets: Array<{ id: string; url: string; hash: string; sizeBytes: number; outputPath: string }> };
       const m = manifest.assets.find((a) => a.id === key)!;
-      expect(m.url).toContain(`/aura-assets/${stem}.`);
+      expect(stemMatches(m.url, stems), m.url).toBe(true);
       expect(m.outputPath).toBe(`public${m.url}`);
       const buf = readFileSync(path.join(ROOT, "public", m.url));
       expect(`sha256-${createHash("sha256").update(buf).digest("hex")}`).toBe(m.hash);
@@ -64,18 +69,30 @@ describe("repainted athlete models", () => {
       const e = entry(read("src/aura-assets.ts"), key)!;
       const buf = readFileSync(path.join(ROOT, "public", e.url));
       const json = JSON.parse(buf.subarray(20, 20 + buf.readUInt32LE(12)).toString("utf8"));
-      expect(json.images ?? []).toHaveLength(0);
-      expect(json.textures ?? []).toHaveLength(0);
+      const palette = PALETTE.has(key);
+      if (palette) {
+        const images = (json.images ?? []) as Array<{ bufferView: number }>;
+        expect(images.length).toBeLessThanOrEqual(1);
+        for (const im of images) expect(json.bufferViews[im.bufferView].byteLength, "a palette strip, not a photo").toBeLessThanOrEqual(1024);
+        expect((json.materials as unknown[]).length).toBe(1);
+      } else {
+        expect(json.images ?? []).toHaveLength(0);
+        expect(json.textures ?? []).toHaveLength(0);
+      }
       const prims = json.meshes[0].primitives as Array<{ attributes: Record<string, number>; material: number }>;
-      expect(prims.length).toBeGreaterThanOrEqual(4);
-      expect(prims.length).toBeLessThanOrEqual(5);
+      if (!palette) {
+        expect(prims.length).toBeGreaterThanOrEqual(4);
+        expect(prims.length).toBeLessThanOrEqual(5);
+      }
       for (const p of prims) { expect(p.attributes.JOINTS_0).toBeTypeOf("number"); expect(p.attributes.COLOR_0).toBeUndefined(); }
       expect(json.skins[0].joints).toHaveLength(15);
       const clips = (json.animations as Array<{ name: string }>).map((a) => a.name);
-      expect(clips).toHaveLength(23);
+      expect(clips.length).toBeGreaterThanOrEqual(23);
       for (const needed of ["Idle", "Ready", "Run", "Jump"]) expect(clips).toContain(needed);
-      const names = (json.materials as Array<{ name: string }>).map((x) => x.name);
-      expect(names.some((n) => n.endsWith("-kit"))).toBe(true);
+      if (!palette) {
+        const names = (json.materials as Array<{ name: string }>).map((x) => x.name);
+        expect(names.some((n) => n.endsWith("-kit"))).toBe(true);
+      }
     });
   }
 

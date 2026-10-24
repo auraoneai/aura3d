@@ -85,19 +85,21 @@ export const assets = defineAuraAssets({
     hash: "sha256-4d66273f50e7fe1ba1b814f8c44f665186d9e74292dfce10e7308454dca72bd9",
     bounds: [0.739, 1.896, 0.483]
   },
-  hoopsAthleteGuard: {
+  "hoopsAthleteGuard": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteGuardClean.178e3649.glb",
-    hash: "sha256-178e3649ae936eb9dd4ca9f7ec4623d4af72b6c2112fe2d06d9bbc1c11185ad4",
-    bounds: [0.905, 1.903, 0.404]
+    url: "/aura-assets/hoopsAthleteGuardClean.95937ba1.glb",
+    hash: "sha256-95937ba13647e35c5af1da7a19f63e46cc97eb397f7df68155db161bab8a52b8",
+    bounds: [0.905, 1.903, 0.404],
+    sizeBytes: 1567088,
   },
-  hoopsAthleteBig: {
+  "hoopsAthleteBig": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteBigClean.bfc264d0.glb",
-    hash: "sha256-bfc264d02bf17a45b3b0b62bbcddfd6ca6469b19120e22e7667d941d7e16c0df",
-    bounds: [0.878, 1.903, 0.429]
+    url: "/aura-assets/hoopsAthleteBigClean.b6f83ac5.glb",
+    hash: "sha256-b6f83ac504ead6568260b4107bcf7798ea539a8fe1e04948d3b0a8def63697d8",
+    bounds: [0.878, 1.903, 0.429],
+    sizeBytes: 1546976,
   },
   diamondDugout: {
     type: "model",
