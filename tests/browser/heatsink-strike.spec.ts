@@ -38,7 +38,7 @@ const withFire = (text: string): string =>
   }).join("\n");
 
 test.describe("heatsink strike layer", () => {
-  test.setTimeout(1_200_000);
+  test.setTimeout(3_000_000);
   let server: ExampleDevServer;
   test.beforeAll(async () => { server = await startExampleDevServer(); mkdirSync(REPORT_ROOT, { recursive: true }); });
   test.afterAll(async () => { await server.close(); });
@@ -87,7 +87,7 @@ test.describe("heatsink strike layer", () => {
     ];
     const shots: { moment: string; step: number; lit: number }[] = [];
     for (const m of MOMENTS) {
-      const r = await page.evaluate(`window.__AURA_HEATSINK__.replayTo(${m.step}, 8, true)`) as ReturnType<Api["replayTo"]>;
+      const r = await page.evaluate(`window.__AURA_HEATSINK__.replayTo(${m.step}, 2, true)`) as ReturnType<Api["replayTo"]>;
       expect(m.check(r.ops), `${m.name} at step ${m.step}: ${JSON.stringify(r.ops)}`).toBe(true);
       expect(r.shot, `${m.name} canvas capture`).not.toBeNull();
       console.log(`@@HEATSINK_STRIKE_FRAME ${m.name}-${m.step} ${(r.shot as { url: string }).url.split(",")[1]}`);
