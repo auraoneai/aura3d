@@ -1,6 +1,6 @@
 # Aura3D 4.1.2 vs three.js 0.185.1: feature and ecosystem matrix
 
-Status: v1, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap register, per-game results), `game-conversion-playbook.md`, and the measured size/performance benchmarks produced separately (this file makes no benchmark claims of its own).
+Status: v2, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap register, per-game results), `game-conversion-playbook.md`, `evidence/vs-threejs/RESULTS.md` (measured size and performance, software GL) and `aura3d-vs-threejs-analysis-and-plan.md`. Rows quote measured figures only where they cite RESULTS.
 
 ## 0. How to read this
 
@@ -92,7 +92,7 @@ Status: v1, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap regis
 | 46 | Release history | 314 published versions | 42 published versions | three.js better | `npm view` at time of survey | doc claim only |
 | 47 | Third-party ecosystem (R3F, drei, tutorials, jobs) | Very large | Essentially none outside this repo | three.js better | n/a | doc claim only |
 | 48 | Core bundle size | Tree-shakable; a minimal app is small | Engine core critical path 3,924,895 B (1,141,998 gzip) against a 190,000 budget: fails; product-viewer and mini-game budgets also fail | three.js better | `BUNDLE_SIZES.md` | verified in code |
-| 49 | Source size for the same scene | Verbose imperative code | Smaller authored source (measured by the separate benchmark agent) | unknown | see benchmark document | unknown |
+| 49 | Source size for the same scene | Verbose imperative code | Shorter scene source in 4 of 5 scenes (non-blank lines: 24 vs 49, 49 vs 71, 45 vs 62, 61 vs 82); cube 18 vs 15 and water 87 vs 86 not shorter; extra build files needed in 4.1.2; one author, software-GL harness | Aura3D better (scene source only) | `evidence/vs-threejs/RESULTS.md` sections 1 to 3 | verified in code (counted; one-author caveat) |
 | 50 | API hygiene | Stable, slowly evolving | Root surface has 186 live exports and 66 `@deprecated` annotations | three.js better | `packages/engine/src/public/index.ts` | verified in code |
 | 51 | Test baseline | Large upstream suite | About 106 to 116 failing unit tests in the baseline (docs/claim gates reading missing files, legacy WebGPU mocks, removed planners) | three.js better | full `tests/unit` run not finishing here in 560 s; baseline counts from earlier runs | doc claim only |
 | 52 | Real-GPU verification | Upstream CI plus massive field use | Software WebGL2 only; three real-device checks came from the owner's M4 Max | three.js better | evidence folders; parity doc | doc claim only |
@@ -105,12 +105,12 @@ Counts are computed from the table above by the verdict column (see section 8 fo
 
 | Verdict | Rows |
 |---|---|
-| Aura3D better | 9 |
+| Aura3D better | 10 |
 | three.js better | 19 |
 | tie | 14 |
 | Aura3D only | 9 |
 | three only | 1 |
-| unknown (verdict withheld) | 2 |
+| unknown (verdict withheld) | 1 |
 
 Counting rows is not a score. The three.js-better rows are the ones a heavy graphics project hits first; the Aura3D rows are mostly workflow and safety advantages.
 
@@ -172,9 +172,9 @@ Separated into genuinely unique and convenience wrappers over things three.js ca
 **Does not prove:**
 - Render parity on real GPUs. Parity metrics (luma/RGB JSD, edge density, mean luma delta) were collected on SwiftShader.
 - Human-perceived equality. The blind judge is a model (claude-sonnet-5.5 through Kiro Prism, seed 20261023, 48 trials); for HEATSINK it picked the original in 35 of 48 trials, so the art is still visibly different.
-- That the Aura Slam swap is done. Auto-mode replay parity (G1), render parity (G3), draw-call budget (at most 150) and the route swap branch are still open, and the live route still ships the legacy renderer bundles.
+- Aura Slam on real GPUs. The swap is done: the native route is live (merge `09ccc9518`), G1 replay and G3 render gates passed, and `evidence/live-slam/` shows 119 draw calls against the 150 budget with 0 console errors, but that live check ran on software GL. Tournament, online play and character select are not in the native game.
 - Performance advantage. Frame times were not measured on real hardware here.
-- That three.js is gone from everything. A separate audit agent is removing the remaining legacy bundles.
+- That three.js is gone from every app in the repo. The 15 index games and 11 ports scan clean (no three.js code, vendored engine bundles, internal imports or patch markers; `docs/workflows/aura3d-only-audit.md`); apps outside those 26 were not re-scanned.
 
 ## 7. Caveats
 

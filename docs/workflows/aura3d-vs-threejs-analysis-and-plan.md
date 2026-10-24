@@ -1,6 +1,6 @@
 # Making Aura3D the better choice: superiority thesis and execution plan
 
-Status: v2, 2026-10-24. Agent-handoff PRD (policy section 6). Replaces v1, which was a competitor scorecard. Inputs: `aura3d-vs-threejs-matrix.md`, `evidence/vs-threejs/RESULTS.md`, `aura3d-only-audit.md`, `threejs-parity-gaps.md`, `evidence/live-slam/`, `evidence/perf-frame-cost/`, `docs/aura-slam/ARCHITECTURE.md`.
+Status: v2, 2026-10-24; statuses refreshed against main the same day. Agent-handoff PRD (policy section 6). Replaces v1, which was a competitor scorecard. Inputs: `aura3d-vs-threejs-matrix.md`, `evidence/vs-threejs/RESULTS.md`, `aura3d-only-audit.md`, `threejs-parity-gaps.md`, `evidence/live-slam/`, `evidence/perf-frame-cost/`, `docs/aura-slam/ARCHITECTURE.md`.
 
 Claims discipline (`docs/agents/claims-and-boundaries.md` applies): every number here is software WebGL2 (SwiftShader) or counted from source, never real-GPU. A target is a target until `evidence/` holds a run that meets it.
 
@@ -52,7 +52,7 @@ Each is measured, reproducible, and currently loses developers in the first hour
 
 | # | Dealbreaker | Evidence | Fix | WP |
 |---|---|---|---|---|
-| D1 | Stock `vite build` of `@aura3d/engine@4.1.2` fails on `node:fs` in `ThreeCompatAssetRegistry`; shipped template fails the same way and its lockfile is out of sync | RESULTS 12.1, 12.2 | Browser-safe `exports`, no Node-only import on the browser path, regenerated lockfiles | WP-1 (in flight) |
+| D1 | Stock `vite build` of `@aura3d/engine@4.1.2` fails on `node:fs` in `ThreeCompatAssetRegistry`; shipped template fails the same way and its lockfile is out of sync | RESULTS 12.1, 12.2 | Browser-safe `exports`, no Node-only import on the browser path, regenerated lockfiles | WP-1: import fix on main (`04b7726ef`), remote smoke pending |
 | D2 | Options that type-check and do nothing (`plane` segments, `orbit` options) | RESULTS 12.4, 12.5 | Implement or reject with a diagnostic naming the field; lint rule for ignored options | WP-2 |
 | D3 | 404 on `/aura-environments/neutral.manifest.json` in every app from published packages | RESULTS 12.3 | Self-contained neutral environment, no fetch | WP-2 |
 | D4 | 2.9 MB over 25 requests for a cube; 7.7x to 8.7x three.js | RESULTS 4, 5 | Lazy and subpath-only heavy subsystems; precise `sideEffects` | WP-3 |
@@ -133,20 +133,20 @@ Ordered by developer pull per unit effort. All reuse existing code (promotion su
 
 ## 8. Work packages (parallel, disjoint ownership)
 
-- **WP-1 Stock build.** In flight (`fix-stock-build`). Browser-safe exports, template lockfiles. Test: remote `vite build` of cube app and `mini-game` from packed tarballs on Vite 7.3.2 and 7.3.7, npm and pnpm.
+- **WP-1 Stock build.** Status: root cause fixed (`ModelTextureShare` now imports `@aura3d/assets/browser`, `04b7726ef`); `mini-game` built once against patched 4.1.2; remote smoke across all templates and Vite versions pending. Browser-safe exports, template lockfiles (the repo `mini-game` has no lockfile, so the reported mismatch did not reproduce). Test: remote `vite build` of cube app and `mini-game` from packed tarballs on Vite 7.3.2 and 7.3.7, npm and pnpm.
 - **WP-2 Silent no-ops and offline environment.** Plane segments, orbit validation, self-contained `neutral`. Tests: `tests/unit/agent-api/plane-segments.test.ts`, `orbit-options.test.ts`, `environment-neutral-offline.test.ts`. Add an "ignored option" diagnostic path used by all typed builders.
 - **WP-3 Bundle.** Per-module size report; lazy or subpath-only animation, audio, physics, devtools, legacy post and WebGPU; stage targets in section 5; gate in `BUNDLE_SIZES.md`.
-- **WP-4 Frame cost.** Cascade selection, shadow batching, named profiles; re-bench against a packed 4.1.3 tarball.
+- **WP-4 Frame cost.** Status: partly landed (`a816facf6`: cube 666 to 50 ms, 18,000-instance forest 38 s to 6.4 s per frame on software GL); cascade selection and shadow batching open. Cascade selection, shadow batching, named profiles; re-bench against a packed 4.1.3 tarball.
 - **WP-5 Post chain.** PostGraph migration; luma regression test; ships in 4.2.0.
 - **WP-6 Fault-injection suite and safety demo.** Five faults (black frame, bad shader, missing/unvetted asset, NaN uniform, empty instances); same fault in raw three.js for the comparison page; `apps/showcase-safety`.
 - **WP-7 Real-GPU lane.** Hardware runner under the serverless-first policy, or the owner's M4 Max checklist (Drift world, Silt rings, Last Train Enter/E/W, native Tennis); record under `evidence/real-gpu/`.
 - **WP-8 Independent authoring trial.** Fresh agent, no repo context, `llms.txt` plus types only, five scenes in both libraries; replaces RESULTS section 13; repeat after WP-1 and WP-2.
 - **WP-9 One-command game.** `aura3d new game`; TTFP measurement on three prompts; Meshy through Kiro Prism with cap and provenance.
 - **WP-10 Showcase and playground.** Metrics and evidence badges on the index; playground MVP with share links.
-- **WP-11 Capability fill.** `effects.toon`, Matcap, Lambert, camera rigs, TSL names, surface sampler; one package per row, each with docs, codemod row and test.
+- **WP-11 Capability fill.** Status: `effects.toon` landed (`09a29e514`); camera rig, objective marker and minimap in flight; judge CLI landed (`2c2218d71`). Remaining: `effects.toon`, Matcap, Lambert, camera rigs, TSL names, surface sampler; one package per row, each with docs, codemod row and test.
 - **WP-12 Evidence on every game.** Replay gate plus render gate plus `check-deploy` for all 15 index games, following the Aura Slam recipe (`docs/aura-slam/ARCHITECTURE.md`).
 - **WP-13 Test baseline.** Triage the 106 to 116 baseline unit failures (fix, delete removed features, or quarantine with a reason); goal is a green remote unit run.
-- **WP-14 Aura Slam follow-ups.** Portrait framing needs a camera change gated by G3; Phase 2 modes deferred; deploy `259acdd14` with the next release.
+- **WP-14 Aura Slam follow-ups.** Portrait framing needs a camera change gated by G3; Phase 2 modes deferred; menu and quick-bar fixes landed (`259acdd14`), deploy with the next release.
 
 ## 9. Verification and acceptance checklist
 
