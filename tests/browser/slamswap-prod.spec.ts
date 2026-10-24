@@ -86,6 +86,7 @@ test("production Aura Slam route: boots native, menu, Quick Match, pause card, d
   const dc = Number(/drawCalls=(\d+)/.exec(panel)?.[1] ?? 0);
   out("panel1", panel.slice(0, 600));
   expect(dc).toBeGreaterThan(0);
+  expect(dc).toBeLessThanOrEqual(150);
   expectPanelClean(panel);
   await page.screenshot({ path: "tests/reports/slamswap/01-boot.png" });
 
@@ -141,6 +142,7 @@ test("production Aura Slam route: boots native, menu, Quick Match, pause card, d
   panel = await panelText();
   out("panel2", panel.slice(0, 600));
   expect(Number(/drawCalls=(\d+)/.exec(panel)?.[1] ?? 0)).toBeGreaterThan(0);
+  expect(Number(/drawCalls=(\d+)/.exec(panel)?.[1] ?? 0)).toBeLessThanOrEqual(150);
   expectPanelClean(panel);
 
   out("assets", assets);
