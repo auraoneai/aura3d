@@ -5,12 +5,21 @@ import type { AuraVec3, AuraMaterialSpec, AuraAnimationSpec, AuraRuntimeNodeSpec
 export class AuraNodeBuilder<TNode extends AuraSceneNode> {
   constructor(private readonly value: TNode) {}
 
-  position(x: number, y: number, z: number): AuraNodeBuilder<TNode & { readonly position: AuraVec3 }> {
-    return this.with({ position: [x, y, z] as const });
+  /** `position(x, y, z)` or `position([x, y, z])` (the array form matches `scale` and the scene option shapes). */
+  position(x: number, y: number, z: number): AuraNodeBuilder<TNode & { readonly position: AuraVec3 }>;
+  position(value: AuraVec3): AuraNodeBuilder<TNode & { readonly position: AuraVec3 }>;
+  position(x: number | AuraVec3, y?: number, z?: number): AuraNodeBuilder<TNode & { readonly position: AuraVec3 }> {
+    const v = typeof x === "number" ? ([x, y as number, z as number] as const) : ([x[0], x[1], x[2]] as const);
+    return this.with({ position: v });
   }
 
-  rotate(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }> {
-    return this.with(order === undefined ? { rotation: [x, y, z] as const } : { rotation: [x, y, z] as const, rotationOrder: order });
+  /** `rotate(x, y, z, order?)` or `rotate([x, y, z], order?)`, Euler radians. */
+  rotate(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }>;
+  rotate(value: AuraVec3, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }>;
+  rotate(x: number | AuraVec3, y?: number | import("../../contracts/sceneGraph").AuraEulerOrder, z?: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<TNode & { readonly rotation: AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }> {
+    const vec = typeof x === "number" ? ([x, y as number, z as number] as const) : ([x[0], x[1], x[2]] as const);
+    const eulerOrder = typeof x === "number" ? order : (y as import("../../contracts/sceneGraph").AuraEulerOrder | undefined);
+    return this.with(eulerOrder === undefined ? { rotation: vec } : { rotation: vec, rotationOrder: eulerOrder });
   }
 
   /** C-06 (PR 0a): quaternion rotation; wins over `rotation` in the compiled transform. */
@@ -22,8 +31,12 @@ export class AuraNodeBuilder<TNode extends AuraSceneNode> {
     return this.with({ scale: value });
   }
 
-  lookAt(x: number, y: number, z: number): AuraNodeBuilder<TNode & { readonly lookAt: AuraVec3 }> {
-    return this.with({ lookAt: [x, y, z] as const });
+  /** `lookAt(x, y, z)` or `lookAt([x, y, z])`. */
+  lookAt(x: number, y: number, z: number): AuraNodeBuilder<TNode & { readonly lookAt: AuraVec3 }>;
+  lookAt(value: AuraVec3): AuraNodeBuilder<TNode & { readonly lookAt: AuraVec3 }>;
+  lookAt(x: number | AuraVec3, y?: number, z?: number): AuraNodeBuilder<TNode & { readonly lookAt: AuraVec3 }> {
+    const v = typeof x === "number" ? ([x, y as number, z as number] as const) : ([x[0], x[1], x[2]] as const);
+    return this.with({ lookAt: v });
   }
 
   material(material: AuraMaterialSpec): AuraNodeBuilder<TNode & { readonly material: AuraMaterialSpec }> {

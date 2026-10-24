@@ -74,6 +74,8 @@ function fakeHost(gl: WebGL2RenderingContext): { host: WebGL2DeviceHost; invalid
       }
     },
     resolveMultisampleTarget: () => undefined,
+    // runV2LdrTail binds the default output through host.lifecycle (SC-01, 4.0.4); the double must provide it
+    lifecycle: { bindOutput: () => undefined },
     activeRenderTarget: null
   } as unknown as WebGL2DeviceHost;
   return { host, invalidations: () => invalidations };

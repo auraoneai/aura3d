@@ -498,11 +498,18 @@ export class AuraBatchedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {
 
   // Chainables keep the base signatures (a chained call still returns a live
   // handle sharing `state` — the cast only erases the builder's patch type).
-  override position(x: number, y: number, z: number): AuraNodeBuilder<AuraBatchedNode & { readonly position: import("./types.js").AuraVec3 }> {
-    return this.rewrap(super.position(x, y, z) as never) as never;
+  override position(x: number, y: number, z: number): AuraNodeBuilder<AuraBatchedNode & { readonly position: import("./types.js").AuraVec3 }>;
+  override position(value: import("./types.js").AuraVec3): AuraNodeBuilder<AuraBatchedNode & { readonly position: import("./types.js").AuraVec3 }>;
+  override position(x: number | import("./types.js").AuraVec3, y?: number, z?: number): AuraNodeBuilder<AuraBatchedNode & { readonly position: import("./types.js").AuraVec3 }> {
+    const v = typeof x === "number" ? [x, y as number, z as number] : x;
+    return this.rewrap(super.position(v[0], v[1], v[2]) as never) as never;
   }
-  override rotate(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<AuraBatchedNode & { readonly rotation: import("./types.js").AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }> {
-    return this.rewrap(super.rotate(x, y, z, order) as never) as never;
+  override rotate(x: number, y: number, z: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<AuraBatchedNode & { readonly rotation: import("./types.js").AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }>;
+  override rotate(value: import("./types.js").AuraVec3, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<AuraBatchedNode & { readonly rotation: import("./types.js").AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }>;
+  override rotate(x: number | import("./types.js").AuraVec3, y?: number | import("../../contracts/sceneGraph").AuraEulerOrder, z?: number, order?: import("../../contracts/sceneGraph").AuraEulerOrder): AuraNodeBuilder<AuraBatchedNode & { readonly rotation: import("./types.js").AuraVec3; readonly rotationOrder?: import("../../contracts/sceneGraph").AuraEulerOrder }> {
+    const v = typeof x === "number" ? [x, y as number, z as number] : x;
+    const eulerOrder = typeof x === "number" ? order : (y as import("../../contracts/sceneGraph").AuraEulerOrder | undefined);
+    return this.rewrap(super.rotate(v[0], v[1], v[2], eulerOrder) as never) as never;
   }
   override quaternion(x: number, y: number, z: number, w: number): AuraNodeBuilder<AuraBatchedNode & { readonly quaternion: import("../../contracts/sceneGraph").AuraQuat }> {
     return this.rewrap(super.quaternion(x, y, z, w) as never) as never;
@@ -510,8 +517,11 @@ export class AuraBatchedMeshHandle extends AuraNodeBuilder<AuraBatchedNode> {
   override scale(value: number | import("./types.js").AuraVec3): AuraNodeBuilder<AuraBatchedNode & { readonly scale: number | import("./types.js").AuraVec3 }> {
     return this.rewrap(super.scale(value as never) as never) as never;
   }
-  override lookAt(x: number, y: number, z: number): AuraNodeBuilder<AuraBatchedNode & { readonly lookAt: import("./types.js").AuraVec3 }> {
-    return this.rewrap(super.lookAt(x, y, z) as never) as never;
+  override lookAt(x: number, y: number, z: number): AuraNodeBuilder<AuraBatchedNode & { readonly lookAt: import("./types.js").AuraVec3 }>;
+  override lookAt(value: import("./types.js").AuraVec3): AuraNodeBuilder<AuraBatchedNode & { readonly lookAt: import("./types.js").AuraVec3 }>;
+  override lookAt(x: number | import("./types.js").AuraVec3, y?: number, z?: number): AuraNodeBuilder<AuraBatchedNode & { readonly lookAt: import("./types.js").AuraVec3 }> {
+    const v = typeof x === "number" ? [x, y as number, z as number] : x;
+    return this.rewrap(super.lookAt(v[0], v[1], v[2]) as never) as never;
   }
   override material(spec: AuraMaterialSpec): AuraNodeBuilder<AuraBatchedNode & { readonly material: AuraMaterialSpec }> {
     return this.rewrap(super.material(spec) as never) as never;

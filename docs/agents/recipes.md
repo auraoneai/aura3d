@@ -178,6 +178,15 @@ await app.ready();
 
 `material.custom` auto-declares the uniforms you list. Prelude names available in both stages: `position`, `modelViewProjectionMatrix`, `eyePos`, and `outColor` in the fragment stage (GLSL 3 `in`/`out`). If the shader fails to compile the engine logs `CUSTOM_SHADER_COMPILE_FAILED` with the GLSL log (see [`troubleshooting.md`](troubleshooting.md)).
 
+## Type traps (strict `tsc` errors agents hit on a first draft)
+
+| Error | Cause | Fix |
+|---|---|---|
+| `TS18048: 'app.camera' is possibly 'undefined'` | `app.camera` is an optional app extension. | Move the camera with `app.camera?.setPose(...)`, or declare it in the scene (`camera.orbit(...)`, `camera.perspective(...)`) and use `interactions.orbit` for user control. |
+| `TS2339: Property 'translate' does not exist on type 'AuraNodeBuilder<...>'` | `translate` is on the live runtime handle (`app.nodes.require("name")`), not on the builders (`primitives.box(...)`). | On a builder use `.position(x, y, z)` or `.position([x, y, z])` (the array form needs 4.1.4 or later; on 4.1.3 and earlier pass three numbers). After mounting, move it with the handle's `translate` or `setPosition`. |
+| `position([x, y, z])` rejected on 4.1.3 and earlier | `.position`, `.rotate` and `.lookAt` took three numbers there while `.scale` took a number or an array. | Spread the array (`.position(...pos)`), or upgrade to 4.1.4 or later where both forms work. |
+| `TS2322` on `material.custom({ glsl })` | `glsl` is an object (`{ fragment }`, optionally `vertex`), and uniforms are `{ type: "f32", value }` objects, not bare numbers. | Copy the water recipe above. |
+
 ## Where next
 
 [`agent-quickstart.md`](agent-quickstart.md) (assets, verification, habit table), [`api-surface.md`](api-surface.md) (names by task), [`build-a-game.md`](build-a-game.md), [`art-direction.md`](art-direction.md), [`claims-and-boundaries.md`](claims-and-boundaries.md).
