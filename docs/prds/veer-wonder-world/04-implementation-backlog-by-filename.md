@@ -1,0 +1,203 @@
+# PRD 04 — Implementation Backlog BY EXACT PROPOSED FILENAME
+Status: **PROPOSED FILES, NOT YET IMPLEMENTED** · Owner: engineering lead · Date: 2026-10-24
+Scope root: `apps/veer-wonder-world/` unless a row explicitly starts at repo root. The documentation in `docs/prds/veer-wonder-world/` **is** committed; the implementation paths listed below do **not** yet exist. Order: `P0 → P1a vertical slice → P1b pilot → P2 → P3`. Link to [architecture](03-aura3d-architecture-and-contracts.md), [content](05-episodes-games-and-curriculum.md) and [QA](06-qa-release-and-execution.md).
+
+## Legend
+- **P0** critical SDK/engine feasibility, **P1a** minimal end-to-end playable story, **P1b** six-episode pilot, **P2** twenty-episode/twelve-activity expansion, **P3** optional microphone.
+- `BE` engine/game, `FE` UI, `ART` animation, `AUDIO` audio, `EDU` SLP/content, `QA` tests/release.
+- Each checklist is an *uncompleted task*. File paths/specifications are implementation targets, not claimed existing APIs.
+
+## A. Bootstrap and shared app files (P0)
+| ID | Proposed path | Owner | Detailed task / done condition |
+| --- | --- | --- | --- |
+| A01 | `apps/veer-wonder-world/package.json` | BE | [ ] Declare workspace app scripts `dev`, `typecheck`, `build`, `test:unit`, `test:browser`; pin working Aura3D engine version; avoid unpublished dependency |
+| A02 | `apps/veer-wonder-world/tsconfig.json` | BE | [ ] Strict TS checks with public package exports; fail undocumented imports and type casts |
+| A03 | `apps/veer-wonder-world/vite.config.ts` | BE | [ ] Verify base path, asset bundling, same-origin GLBs and routes; no Node-only browser imports; smoke build |
+| A04 | `apps/veer-wonder-world/index.html` | FE | [ ] Accessible root target + parent-friendly start/audio prompt; prevent automatic audible playback |
+| A05 | `apps/veer-wonder-world/src/main.ts` | BE | [ ] Thin bootstrap mounting `createGame` **from `@aura3d/engine/game`**; install safety/QA; no app logic hidden in entry |
+| A06 | `apps/veer-wonder-world/src/app.ts` | BE | [ ] Compose catalog, episode director, scene, narrator, input and parent settings; cleanup on route leave |
+| A07 | `apps/veer-wonder-world/src/types.ts` | BE | [ ] Public app-only episode/beat/event/word ids and typed tagged unions; no privacy-sensitive child profile |
+| A08 | `apps/veer-wonder-world/src/aura-assets.ts` | ART/BE | [ ] **Generate**, never hand-edit, typed approved GLB asset refs using isolated app CLI workflow; validate hashes/rights |
+| A09 | `apps/veer-wonder-world/public/aura-assets/**` | ART | [ ] Admit only optimized/owned or redistributable assets with same-origin paths, hashes and provenance; no raw private files |
+| A10 | `apps/veer-wonder-world/src/scenes/looks.ts` | ART/BE | [ ] Fixed low-stimulus look presets and no accidental post-chain over-darkening; captured evidence |
+| A11 | `apps/veer-wonder-world/README.md` | PM/BE | [ ] Exact local/remote build and validation commands, app flow, no-promise/known-gaps list |
+
+### P0 foundation gate
+- [ ] F0.1 Run documented app scaffold (`create-aura3d --template mini-game`) **in a scratch directory** and adapt checked files into repo app; do not overwrite unrelated root manifests.
+- [ ] F0.2 Demonstrate pinned SDK build/launch; resolve 4.1.2 documented stock Vite failure with an evidenced fixed released version/commit.
+- [ ] F0.3 Verify all imported APIs against `docs/agents/api-surface.md` and `docs/api/game-kit.md`; root `createGame` stub must not be used.
+- [ ] F0.4 Render one licensed, typed character model and first frame with route-health capture.
+- [ ] F0.5 Exercise audio unlock after genuine gesture and silent fallback; no mic in P0.
+- [ ] F0.6 Save redacted proof in repo-approved `evidence/veer-wonder-world/p0/` and label status prototype.
+
+## B. Game/language runtime (P1a)
+| ID | Proposed path | Owner | Detailed task / done condition |
+| --- | --- | --- | --- |
+| B01 | `src/runtime/episode-director.ts` | BE | [ ] Pure deterministic finite-state story machine; NEXT, TOUCH, PARENT_CONFIRM, TIMEOUT, PAUSE, RESUME, END, DISPOSE |
+| B02 | `src/runtime/beat-runner.ts` | BE | [ ] Drive authored cue timing from content, not loose setTimeout webs; cancel/skip safely |
+| B03 | `src/runtime/turn-taking.ts` | BE/EDU | [ ] Wait for child/caregiver; 4–6s **configurable initial proposal** reviewed by SLP; timeout proceeds without “incorrect” state |
+| B04 | `src/runtime/touch-router.ts` | BE/FE | [ ] Huge semantic hit targets, tap and parent-confirm actions; ignore stale double taps; drag optional |
+| B05 | `src/runtime/narration-player.ts` | AUDIO/BE | [ ] Recorded narration queue keyed by beat/locale; play/pause/cancel/replay; exposed cue timing for mouth/gesture |
+| B06 | `src/runtime/audio-mixer.ts` | AUDIO | [ ] One audio-owner integration; speech ducking, capped levels, music off, no overlap; browser unlock |
+| B07 | `src/runtime/animation-director.ts` | ART/BE | [ ] Actor clip map and gaze/talk/idle/wait events; verify exact imported animation names and fallback mouth |
+| B08 | `src/runtime/session-gate.ts` | BE/FE | [ ] Pause on hide, “all done,” manual next, finite episode ending; no auto-next |
+| B09 | `src/runtime/asset-preloader.ts` | BE | [ ] Preload current+next required same-origin assets; missing model/audio fallback without deadlock |
+| B10 | `src/runtime/locale.ts` | EDU/BE | [ ] Keyed scripts and language pack selection; no hard-coded English in reusable logic |
+| B11 | `src/runtime/feature-flags.ts` | BE | [ ] Explicit OFF-by-default `voiceInput` flag and optional future modules; no accidental mic prompt |
+| B12 | `src/qa/install-hooks.ts` | QA/BE | [ ] `installQaHooks` standard ready/state/reset/replay/stepFrames/routeHealth; snapshots omit private data |
+
+### P1a runtime checklist
+- [ ] F1.1 Define finite semantic event ids `GO` / `STOP` / `OPEN` / `POP` / `MORE` / `FETCH` and one unified dispatcher for touch/parent pathways.
+- [ ] F1.2 Code transition table and golden deterministic tests for every transition including silent/no-response, pause/restart, audio failure, context loss, repeated touch.
+- [ ] F1.3 Do not hand-roll generic engine loop, HUD, QA hooks, safety net, SFX bank or black-frame guard; use actual documented Aura3D helpers.
+- [ ] F1.4 Never import `three`, `GLTFLoader`, private engine packages or raw GLB strings into runtime.
+- [ ] F1.5 Ensure narrator/caption words exactly match approved content and visual event; no two characters speaking over each other.
+- [ ] F1.6 No automated word score, correct pronunciation enforcement, or runtime speech inference.
+
+## C. Content schemas and base curriculum (P1a)
+| ID | Proposed path | Owner | Detailed task / done condition |
+| --- | --- | --- | --- |
+| C01 | `src/content/schema.ts` | BE/EDU | [ ] `EpisodeSpec`/`BeatSpec`/`ActivitySpec` runtime validator; reject missing target words/actions/audio/rights |
+| C02 | `src/content/catalog.ts` | BE | [ ] Explicit available episode/activity manifest; never list unapproved or missing content |
+| C03 | `src/content/words.ts` | EDU | [ ] Target vocabulary, category, clear model phrase, optional extension, related episodes and offline prompt |
+| C04 | `src/content/letters.ts` | EDU | [ ] Letter name, first sound, object mapping; never equate symbol name with phoneme |
+| C05 | `src/content/numbers.ts` | EDU | [ ] Explicit quantity/object count sequences 1–3 before 1–5/1–10 expansions |
+| C06 | `src/content/songs.ts` | AUDIO/EDU | [ ] Track ids, short original lyrics, motion/audio timing, content review/rights record |
+| C07 | `src/localization/en.ts` | EDU | [ ] All narration/captions/parent guidance; avoid unscripted LLM dialogue in MVP |
+| C08 | `src/localization/pa.ts` | EDU | [ ] **P2 optional**, native reviewed Punjabi content, not autogenerated copy; do not turn on until approved |
+
+### Content lint checklist
+- [ ] All references resolve (beat → word → localized phrase → approved recorded audio → animation cue).
+- [ ] Each episode has 1–3 primary target words, no target word unrelated to onscreen action, at least one natural pause, finite ending and offline bridge.
+- [ ] Letters use validated names and phonemes; counting matches actual objects; translated scripts reviewed naturally.
+- [ ] Build fails on missing rights, missing audio, missing objects, missing translations or unreachable beat.
+
+## D. Characters, scenes and approved media
+| ID | Proposed path | Owner | Detailed task / done condition |
+| --- | --- | --- | --- |
+| D01 | `src/characters/momo.ts` | ART/BE | [ ] Rigged GLB actor + pointing, idle, talk, wait, react, wave; validates exact clips |
+| D02 | `src/characters/lulu.ts` | ART/BE | [ ] Rigged GLB actor with slow stomp/dance/freeze/clap and lip/mouth motion |
+| D03 | `src/characters/sheru.ts` | ART/BE | [ ] Rigged stylized canine GLB and fetch/carry/return + bark cues; family privacy/rights review |
+| D04 | `src/characters/pip.ts` | ART/BE | [ ] P2 chick hide/pop/wave actor |
+| D05 | `src/characters/lumi.ts` | ART/BE | [ ] P2 glowing star with letter/object cue mapping and reduced glow |
+| D06 | `src/characters/gogo.ts` | ART/BE | [ ] P2 train body/wheels/doors and passenger cues |
+| D07 | `src/characters/character-registry.ts` | BE | [ ] Character id to typed model + permitted animation list; missing clip errors tested |
+| D08 | `src/scenes/meadow.ts` | ART | [ ] P1 ball, bubbles and toy garden; camera locked, visible hit targets |
+| D09 | `src/scenes/music-garden.ts` | ART | [ ] P1 stomp/clap stage with quiet background |
+| D10 | `src/scenes/home-nook.ts` | ART | [ ] P1 simple prop set for picnic/daily objects, generic non-identifying home |
+| D11 | `src/scenes/station.ts` | ART | [ ] P2 GoGo track/tunnel and one-to-one countable passengers |
+| D12 | `src/scenes/peekaboo-barn.ts` | ART | [ ] P2 barn with two doors and gentle reveal |
+| D13 | `src/scenes/learning-cloud.ts` | ART | [ ] P2 letters/numbers with animated associated real objects |
+| D14 | `src/assets/rights-manifest.ts` | ART/PM | [ ] Build-readable license/owner/review records; no private PII in public files |
+| D15 | `public/audio/en/{dialogue,songs,sfx}/**` | AUDIO | [ ] Approved compressed voiced lines/original songs; volume-normalized; no unconsented family recordings |
+| D16 | `public/aura-assets/provenance/**` | ART | [ ] Per-asset origin, SHA, optimization/admission evidence, generation rights |
+
+### Art / media acceptance
+- [ ] Every primary subject uses typed approved GLB (no primitive-only substitute in a production claim).
+- [ ] Character silhouette, facial expression and target prop recognizable on small mobile viewport.
+- [ ] Low-motion variant and neutral expression path; no sudden scream/bark/strobe/jerky camera.
+- [ ] Audio cues and mouth/gaze gestures inspected on physical tablet and phone, not just mocked.
+- [ ] Media bundle has ownership, release rights and provenance records.
+
+## E. User interface and parent controls (P1a / P1b)
+| ID | Proposed path | Owner | Detailed task / done condition |
+| --- | --- | --- | --- |
+| E01 | `src/ui/child-controls.ts` | FE | [ ] Big obvious primary touch object; no text instructions necessary for child |
+| E02 | `src/ui/episode-menu.ts` | FE | [ ] Six finite episode thumbnails with familiar characters, parent-start, no infinite recommendations |
+| E03 | `src/ui/parent-panel.ts` | FE | [ ] Settings + session exit + captions + mute/music + motion + language; accessible controls |
+| E04 | `src/ui/parent-gate.ts` | FE | [ ] Distinguish parent-only settings from play, with recoverable entry; not a security guarantee |
+| E05 | `src/ui/offline-card.ts` | FE/EDU | [ ] “All done; now try ...” physical task; app stops playback and does not auto-next |
+| E06 | `src/ui/styles.css` | FE | [ ] Mobile-first safe areas, large taps, clear overlays, portrait/landscape, reduced-motion/high contrast |
+| E07 | `src/ui/parent-wordlist.ts` | FE/EDU | [ ] Local shortlist of selected words, no automated learning claims |
+| E08 | `src/ui/accessibility.ts` | FE | [ ] Screen-reader text, captions and keyboard parent navigation, audio/calm controls |
+
+## F. **P1 six episodes**, each its own explicit content file
+| ID | File | Primary owner | Core acceptance |
+| --- | --- | --- | --- |
+| F01 | `src/content/episodes/momo-magic-mouth.ts` | EDU/AUDIO | [ ] Sound play, gestures and model of “ah/oh/mmm”; no tongue/lip accuracy scoring |
+| F02 | `src/content/episodes/peekaboo-palace.ts` | EDU/ART | [ ] Gentle hide/reveal, “hi/open/bye”, parent gesture opportunity |
+| F03 | `src/content/episodes/baby-animal-orchestra.ts` | EDU/AUDIO | [ ] “moo/baa/quack/woof” paired with animal + rhythm; not auditory overload |
+| F04 | `src/content/episodes/sheru-ball-adventure.ts` | EDU/ART | [ ] Ball/go/more fetch story; golden pilot with real-ball endcard |
+| F05 | `src/content/episodes/lulu-dino-dance.ts` | EDU/AUDIO | [ ] Clap/go/stop/stomp and optional physical dance breaks |
+| F06 | `src/content/episodes/counting-cookies.ts` | EDU/ART | [ ] Cookie visible count 1–3, “one more/eat/all gone”; no speed quiz |
+
+## G. **P1 three interactive activities**
+| ID | File | Core interaction | Done condition |
+| --- | --- | --- | --- |
+| G01 | `src/content/activities/bubble-garden.ts` | Make/pop bubbles, “more” | [ ] All taps work with speech off; three bubbles → finite outro |
+| G02 | `src/content/activities/gogo-train.ts` | Go/stop/passenger (could use simple temporary train prop until original GoGo GLB approved; label prototype) | [ ] Start/stop controllable; no required speech; safe automatic finish |
+| G03 | `src/content/activities/sheru-ball.ts` | Roll/fetch/another turn | [ ] One tap → ball roll → fetch → return → repeat or end; real-ball bridge |
+
+## H. P2: fourteen additional episodes (one source file each)
+- [ ] H01 `src/content/episodes/alphabet-zoo.ts` — animal + isolated letter/word/sound, not 26 fast symbol flashes.
+- [ ] H02 `src/content/episodes/gogo-abc-train.ts` — letter carriage, associated object reveal, finite story.
+- [ ] H03 `src/content/episodes/magic-colour-machine.ts` — colour + familiar concrete object.
+- [ ] H04 `src/content/episodes/wheres-sheru.ts` — search; in/out/under/behind.
+- [ ] H05 `src/content/episodes/momos-hungry-belly.ts` — food noun, eat, more, all done.
+- [ ] H06 `src/content/episodes/number-balloon-rescue.ts` — one-to-one count three balloons.
+- [ ] H07 `src/content/episodes/magic-shape-bakery.ts` — circle/square/triangle shape-object pairing.
+- [ ] H08 `src/content/episodes/silly-robot-factory.ts` — body/cloth words; harmless mismatched props.
+- [ ] H09 `src/content/episodes/lost-teddy-adventure.ts` — look/find/under with short journey.
+- [ ] H10 `src/content/episodes/momo-bubble-universe.ts` — reveal/noun/pop/more word repetition.
+- [ ] H11 `src/content/episodes/little-birthday-party.ts` — cake/candle/blow and count.
+- [ ] H12 `src/content/episodes/sheru-big-adventure.ts` — ball/bird/water/run outdoor vocabulary.
+- [ ] H13 `src/content/episodes/whos-at-the-door.ts` — greetings; no family voices without consent.
+- [ ] H14 `src/content/episodes/momos-day.ts` — wake/wash/eat/brush/sleep routine.
+- [ ] H15 `src/content/episodes/little-story-machine.ts` — **extra original concept** from previous brainstorming: three props → small story. Treat as P2+ (twenty-one total including this), OR substitute it for a different episode only by explicit editorial decision.
+
+**Editorial reconciliation:** prior brainstorming contained **twenty episodes**, not twenty-one: the set above should be **14 follow-on files** after P1 six; retain “Little Story Machine” in the official twenty and remove one duplicate from the above enumerated catalog during P2 freeze. Proposed resolution: `momo-bubble-universe` overlaps the P1 Bubble Garden activity; **keep `little-story-machine.ts` and omit `momo-bubble-universe.ts` from the default P2 release set**, documenting Bubble Universe as a bonus variant. The content bible `05` is the canonical 20-episode catalog.
+
+## I. P2: nine additional interactive activities (12 total)
+- [ ] I01 `src/content/activities/peekaboo-animal-barn.ts` — touch-open door, names/animal sounds, finite 3 reveals.
+- [ ] I02 `src/content/activities/teddy-snack-picnic.ts` — choice of 2 foods, feed Teddy, “more/all done.”
+- [ ] I03 `src/content/activities/splashy-car-wash.ts` — water/sponge/towel with tap fallback.
+- [ ] I04 `src/content/activities/little-lift.ts` — in/out/up/down, one level per tap.
+- [ ] I05 `src/content/activities/build-and-tumble.ts` — count 1–3 blocks, tower fall, repeat.
+- [ ] I06 `src/content/activities/family-doorbells.ts` — generic door greetings; optional family packs handled privately/local.
+- [ ] I07 `src/content/activities/bears-little-band.ts` — tap/take turns, clapping, musical rhythms.
+- [ ] I08 `src/content/activities/magic-sound-garden.ts` — v0 **tap-to-open flower**; audio-reaction version only P3 gated.
+- [ ] I09 `src/content/activities/find-my-real-toy.ts` — show toy then pause app; parent confirms physical play and end.
+
+## J. QA, release, rights and evidence (P0–P2)
+| ID | Path | Acceptance task |
+| --- | --- | --- |
+| J01 | `tests/unit/runtime/episode-director.test.ts` | [ ] Deterministic transitions and timeouts; all states and no-speech path |
+| J02 | `tests/unit/runtime/turn-taking.test.ts` | [ ] No wrong-answer branches, timeout auto-progress, cancel safety |
+| J03 | `tests/unit/runtime/touch-router.test.ts` | [ ] Debounce, visible-target-only, tap equivalence, parent confirm |
+| J04 | `tests/unit/runtime/narration-player.test.ts` | [ ] Queue/stop/duck/mute/pause; no dangling audio on unmount |
+| J05 | `tests/unit/content/content-schema.test.ts` | [ ] Unique IDs, all references, rights, valid finite story graphs, translations |
+| J06 | `tests/unit/content/letters-and-counts.test.ts` | [ ] Correct phoneme/name mapping, one-to-one counted visible items |
+| J07 | `tests/unit/privacy/no-child-data.test.ts` | [ ] No PII in logs/telemetry/prod bundles, raw mic handling absent P1 |
+| J08 | `tests/browser/first-frame.spec.ts` | [ ] Non-black render on remote WebGL2, expected cast/object and screenshot |
+| J09 | `tests/browser/episode-playback.spec.ts` | [ ] All 6 P1 watch modes and three interactive activities finish |
+| J10 | `tests/browser/touch-and-layout.spec.ts` | [ ] Touch on narrow/portrait tablet, orientation safe areas, no blocking overlay |
+| J11 | `tests/browser/audio-and-pausing.spec.ts` | [ ] Start gesture, mute, background/foreground, skip, no overlapping voice |
+| J12 | `tests/browser/no-speech-required.spec.ts` | [ ] Every story/activity completes with microphone disabled and zero child sounds |
+| J13 | `tests/browser/low-motion.spec.ts` | [ ] Reduced animation, no flashing and SFX volume guard |
+| J14 | `tools/validate-wonder-world-content.mjs` | [ ] CI lint for content references/rights, all episodes reachable, captions/audio keys |
+| J15 | `evidence/veer-wonder-world/p1/README.md` | [ ] Build/version, route-health, redacted captures, actual device reports, issue log |
+| J16 | `apps/veer-wonder-world/DEPLOYMENT.md` | [ ] Deployment steps, cache/assets, rollback, no-PII logging and owner |
+
+## K. P3 OPTIONAL voice module — explicit separate go/no-go
+- [ ] K01 `src/runtime/voice-input.ts` — parent opt-in, short turn mic, visible indicator, permission errors, no storage, touch fallback.
+- [ ] K02 `src/runtime/sound-presence-detector.ts` — distinguish “a sound happened” from “said word X”; cap sensitivity; adult noise caveat.
+- [ ] K03 `src/ui/voice-permission-dialog.ts` — honest privacy implications, on/off, revocation; no coercive UX.
+- [ ] K04 `tests/browser/voice-permissions.spec.ts` — permission denial, unsupported Safari, false negative, immediate stop/dispose.
+- [ ] K05 `docs/prds/veer-wonder-world/07-optional-voice-validation.md` — **not created yet**; future privacy/accuracy device matrix/SLP review prior to enabling.
+- [ ] K06 Do not ship word-level ASR without browser/device evidence, informed consent, no-retention proof and privacy/legal approval.
+
+## L. Implementation order with dependency edges
+1. **P0** A01–A11 + J08 foundation; prove SDK import, GLB, build and first-frame evidence.
+2. **P1a** B01–B12, C01–C07, D01/D03/D08, E01/E03/E05/E06, F04, G03, J01–J07/J09/J11/J12: golden Momo–Sheru ball story and touch play.
+3. **P1b** D02/D09/D10, F01/F02/F03/F05/F06, G01/G02, E02/E04/E07/E08, remaining QA + music. Release only after `06`.
+4. **P2** Characters D04–D06, worlds D11–D13, all H/I additions, approved locale and 20-episode catalog.
+5. **P3** K01–K06 independent experiment, no launch dependency.
+
+## M. Definition-of-done template per implemented source file
+- [ ] Named file exists in repo on feature branch; links back to PRD task ID in PR.
+- [ ] Strict TypeScript passes; public Aura3D API use confirmed; no undefined GLB refs or unreviewed assets.
+- [ ] Unit test covers transitions/edge cases; content files pass referential and rights validation.
+- [ ] Target route captured, scene not blank, character/audio/tap semantically correct.
+- [ ] Parent control, silent-child/no mic, reduced motion and no-autoplay constraints remain intact.
+- [ ] Redacted artifacts saved for remote/real-device proof; owner + reviewer sign off.
+- [ ] Status changed only after evidence; docs distinguish planned, prototype, pilot and production.
