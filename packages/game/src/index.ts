@@ -66,6 +66,22 @@ export { GameSessionImpl } from "./session/GameSession";
 export { attachSessionLifecycle } from "./session/lifecycle";
 export { createAccessibility } from "./session/accessibility";
 export { installGameBeacon } from "./evidence/beacon";
+export {
+  smoothDamp, createSmoothFollow3, lerpAngle, createRenderInterpolator, secondDifferenceRms, jitterReport,
+  createLocomotion, proceduralLegSwing, createFootSlideMeter,
+  createImpactWorld, createHitStop, createCameraShake, createImpactFeedback,
+  attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance,
+  checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend
+} from "./motion/index";
+export type {
+  DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
+  LocomotionGait, LocomotionOptions, LocomotionFrame, Locomotion, LegPose, ProceduralGait,
+  FootSlideOptions, FootSlideReport, FootSlideMeter,
+  ImpactBoxCollider, ImpactSphereCollider, ImpactCollider, ImpactBody, Impact, ImpactWorldOptions, ImpactWorld,
+  HitStop, CameraShake, ParticleBurst, ImpactFeedbackOptions, ImpactFeedbackResult,
+  BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment,
+  DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport
+} from "./motion/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";
 export type {
