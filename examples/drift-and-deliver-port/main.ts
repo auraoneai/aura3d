@@ -459,9 +459,9 @@ function tick(now: number): void {
   requestAnimationFrame(tick);
   const dt = Math.min(1 / 24, Math.max(0.001, (now - lastTick) / 1000));
   lastTick = now;
+  loop.tick(now);
   if (!ready) return;
   renderTime += dt;
-  loop.tick(now);
   audio?.update(game.phase === "playing" ? car : { speed: 0, drifting: false, boosting: false, boost: car.boost }, game.phase === "playing" && keys.w, dt);
   hudTimer += dt;
   if (hudTimer >= 0.05) {
