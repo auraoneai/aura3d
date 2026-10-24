@@ -1,0 +1,1 @@
+{ "PINREG_SLUGS": "iron-crown,cross-hop", "PINREG_BOOT_MS": "30000", "PINREG_IMG": "1", "PINREG_VARIANTS": "default:,oldpin:game|-compiler|-post|-vfxFog,nopost:game|-post" }
