@@ -1,6 +1,6 @@
 # Migration From low-level renderer code
 
-Version: 4.1.0
+Version: 4.1.1
 
 Current release: Aura3D 4.0.0.
 

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-silt-and-signal-port",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "private": true,
   "type": "module",
   "description": "Aura3D port of the mechanics of Silt & Signal: Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes.",
