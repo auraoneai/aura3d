@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of HEATSINK: Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only, no AI or audio.",
+  "description": "Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

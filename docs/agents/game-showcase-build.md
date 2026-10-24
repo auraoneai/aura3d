@@ -42,7 +42,7 @@ Use this when you add, edit or review a game on the public showcase (`apps/showc
 
 ## Disclosure copy
 
-State what the page is, what it is not, and the measured state. Examples that are in use: "Simulation port only: art is still visibly different from the original (a blind model judge picked the original in 35 of 48 trials)"; "Independent Aura3D reconstruction; not affiliated with the original." Never write "polished", "flagship", "Unity replacement", "Unreal competitor", "Babylon parity" or "drop-in three.js replacement". Software-GL numbers are never GPU numbers.
+State what the page is, what it is not, and the measured state. Examples that are in use: "Time Trial mode only; the art is generated and checked on software WebGL2 only"; "Independent game built with Aura3D; not affiliated with any other game or studio." Games are named for themselves: no "port" or "reconstruction" wording and no other game's name in titles, UI or metadata. Never write "polished", "flagship", "Unity replacement", "Unreal competitor", "Babylon parity" or "drop-in three.js replacement". Software-GL numbers are never GPU numbers.
 
 ## Review checklist
 

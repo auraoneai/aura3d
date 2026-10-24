@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Serpentine Sky Run: Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky.",
+  "description": "Endless runner on a winding sky road: eight stages with boost rungs, roll sections and traffic hazards (outbound run).",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

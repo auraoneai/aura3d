@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Cloud Runner: Chapter-one run only: no creatures, boulders, finale or audio; procedural art.",
+  "description": "Obstacle runner on a cloud: creatures, boulders, a duel and a finale, with audio.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

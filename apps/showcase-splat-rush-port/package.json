@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Splat Rush: No audio; the original's DOM flash and vignette overlays and platform SDKs are not ported.",
+  "description": "Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

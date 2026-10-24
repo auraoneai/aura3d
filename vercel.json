@@ -4,6 +4,94 @@
   "outputDirectory": "marketing/dist",
   "rewrites": [
     {
+      "source": "/apps/craterline-gp",
+      "destination": "/apps/showcase-strange-orbit-port/"
+    },
+    {
+      "source": "/apps/craterline-gp/:path*",
+      "destination": "/apps/showcase-strange-orbit-port/:path*"
+    },
+    {
+      "source": "/apps/chroma-roll",
+      "destination": "/apps/showcase-splat-rush-port/"
+    },
+    {
+      "source": "/apps/chroma-roll/:path*",
+      "destination": "/apps/showcase-splat-rush-port/:path*"
+    },
+    {
+      "source": "/apps/serpentine-sky-run",
+      "destination": "/apps/showcase-serpentine-sky-run-port/"
+    },
+    {
+      "source": "/apps/serpentine-sky-run/:path*",
+      "destination": "/apps/showcase-serpentine-sky-run-port/:path*"
+    },
+    {
+      "source": "/apps/gridlock-courier",
+      "destination": "/apps/showcase-drift-and-deliver-port/"
+    },
+    {
+      "source": "/apps/gridlock-courier/:path*",
+      "destination": "/apps/showcase-drift-and-deliver-port/:path*"
+    },
+    {
+      "source": "/apps/ion-circuit",
+      "destination": "/apps/showcase-heatsink-port/"
+    },
+    {
+      "source": "/apps/ion-circuit/:path*",
+      "destination": "/apps/showcase-heatsink-port/:path*"
+    },
+    {
+      "source": "/apps/shadowstep-gauntlet",
+      "destination": "/apps/showcase-ninja-runner-port/"
+    },
+    {
+      "source": "/apps/shadowstep-gauntlet/:path*",
+      "destination": "/apps/showcase-ninja-runner-port/:path*"
+    },
+    {
+      "source": "/apps/lamplight-line",
+      "destination": "/apps/showcase-last-train-port/"
+    },
+    {
+      "source": "/apps/lamplight-line/:path*",
+      "destination": "/apps/showcase-last-train-port/:path*"
+    },
+    {
+      "source": "/apps/saltwind-highway",
+      "destination": "/apps/showcase-roadster-hours-port/"
+    },
+    {
+      "source": "/apps/saltwind-highway/:path*",
+      "destination": "/apps/showcase-roadster-hours-port/:path*"
+    },
+    {
+      "source": "/apps/the-bellkeepers-walk",
+      "destination": "/apps/showcase-where-the-wind-wanders-port/"
+    },
+    {
+      "source": "/apps/the-bellkeepers-walk/:path*",
+      "destination": "/apps/showcase-where-the-wind-wanders-port/:path*"
+    },
+    {
+      "source": "/apps/duneglide",
+      "destination": "/apps/showcase-silt-and-signal-port/"
+    },
+    {
+      "source": "/apps/duneglide/:path*",
+      "destination": "/apps/showcase-silt-and-signal-port/:path*"
+    },
+    {
+      "source": "/apps/cumulus-dash",
+      "destination": "/apps/showcase-cloud-runner-port/"
+    },
+    {
+      "source": "/apps/cumulus-dash/:path*",
+      "destination": "/apps/showcase-cloud-runner-port/:path*"
+    },
+    {
       "source": "/fonts/:path*",
       "destination": "/marketing/public/fonts/:path*"
     },
@@ -50,6 +138,118 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/apps/showcase-strange-orbit-port",
+      "destination": "/apps/craterline-gp/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-strange-orbit-port/",
+      "destination": "/apps/craterline-gp/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-splat-rush-port",
+      "destination": "/apps/chroma-roll/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-splat-rush-port/",
+      "destination": "/apps/chroma-roll/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-serpentine-sky-run-port",
+      "destination": "/apps/serpentine-sky-run/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-serpentine-sky-run-port/",
+      "destination": "/apps/serpentine-sky-run/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-drift-and-deliver-port",
+      "destination": "/apps/gridlock-courier/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-drift-and-deliver-port/",
+      "destination": "/apps/gridlock-courier/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-heatsink-port",
+      "destination": "/apps/ion-circuit/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-heatsink-port/",
+      "destination": "/apps/ion-circuit/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-ninja-runner-port",
+      "destination": "/apps/shadowstep-gauntlet/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-ninja-runner-port/",
+      "destination": "/apps/shadowstep-gauntlet/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-last-train-port",
+      "destination": "/apps/lamplight-line/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-last-train-port/",
+      "destination": "/apps/lamplight-line/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-roadster-hours-port",
+      "destination": "/apps/saltwind-highway/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-roadster-hours-port/",
+      "destination": "/apps/saltwind-highway/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-where-the-wind-wanders-port",
+      "destination": "/apps/the-bellkeepers-walk/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-where-the-wind-wanders-port/",
+      "destination": "/apps/the-bellkeepers-walk/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-silt-and-signal-port",
+      "destination": "/apps/duneglide/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-silt-and-signal-port/",
+      "destination": "/apps/duneglide/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-cloud-runner-port",
+      "destination": "/apps/cumulus-dash/",
+      "permanent": true
+    },
+    {
+      "source": "/apps/showcase-cloud-runner-port/",
+      "destination": "/apps/cumulus-dash/",
+      "permanent": true
     }
   ]
 }

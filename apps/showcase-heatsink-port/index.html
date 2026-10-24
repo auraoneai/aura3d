@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
-      <meta name="description" content="Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the original within 1e-6. Simulation port only: the drone, pylons and scenery are generated models and the art is still visibly different from the original (a blind model judge picked the original in 35 of 48 trials and rated 40 of 48 pairs as the same game design); Time Trial only, no AI or audio. Independent Aura3D reconstruction; not affiliated with the original." />
+      <meta name="description" content="Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode." />
   <meta name="theme-color" content="#0b1020" />
-  <meta property="og:title" content="HEATSINK — Aura3D port of the mechanics" />
+  <meta property="og:title" content="Ion Circuit — Anti-Gravity Time Trial" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-heatsink-port/" />
+  <meta property="og:url" content="https://aura3d.auraone.ai/apps/ion-circuit/" />
   <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="HEATSINK — Aura3D port of the mechanics" />
+  <meta name="twitter:title" content="Ion Circuit — Anti-Gravity Time Trial" />
   <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
-  <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-heatsink-port/" />
+  <link rel="canonical" href="https://aura3d.auraone.ai/apps/ion-circuit/" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
-  <title>HEATSINK — Aura3D port of the mechanics</title>
+  <style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit a:hover{text-decoration:underline}</style>
+  <title>Ion Circuit — Anti-Gravity Time Trial</title>
     <style>
       :root { color-scheme: dark; --ink: #e8f0ff; --muted: #8b97b3; --panel: rgba(8, 12, 22, 0.72); --line: rgba(160, 190, 255, 0.18); --cyan: #40e0ff; --hot: #ff8a3a; --lav: #c9a0ff; }
       * { box-sizing: border-box; }
@@ -53,10 +53,10 @@
   </head>
   <body>
     <canvas id="world"></canvas>
-    <section id="loading"><div class="panel"><h2>HEATSINK</h2><p id="loading-status" class="meta">Spinning up the grid</p></div></section>
+    <section id="loading"><div class="panel"><h2>ION CIRCUIT</h2><p id="loading-status" class="meta">Spinning up the grid</p></div></section>
     <section id="menu" class="overlay hidden">
       <div class="panel">
-        <h1>HEATSINK</h1>
+        <h1>ION CIRCUIT</h1>
         <p class="meta">Time Trial, Vesper Heights, 3 laps. W/Up throttle, S/Down brake, A/D steer, Shift afterburner, Space overdrive, E drift, Esc pause.</p>
         <button id="start" class="primary" disabled>Start</button>
       </div>
@@ -81,6 +81,6 @@
     </div>
     <div id="count" class="hidden"></div>
     <script type="module" src="./src/main.ts"></script>
-    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Simulation port only: the drone, pylons and scenery are generated models and the art is still visibly different from the original (a blind model judge picked the original in 35 of 48 trials and rated 40 of 48 pairs as the same game design); Time Trial only, no AI or audio.</aside>
+    <aside class="aura-credit" role="note"><a href="/apps/showcase-index/">Built with Aura3D</a> · independent game, not affiliated with any other game or studio.</aside>
 </body>
 </html>

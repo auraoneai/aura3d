@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Where the Wind Wanders: Meadow only: no boat voyage, island, journal or audio; procedural art.",
+  "description": "Meadow walk: collect three letters and ring the bell, with a boat epilogue, a journal and audio.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

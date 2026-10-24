@@ -48,7 +48,7 @@ Kit documentation: [`docs/api/game-kit.md`](./docs/api/game-kit.md), [`qa-kit.md
 
 ## Built with it
 
-The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) has 15 playable games, including Aura Slam 3D (tennis, a native Aura3D port with a deterministic replay gate) and Apex Overdrive (racing), plus 11 Aura3D ports of the mechanics of existing browser games. Each page states what is and is not reproduced; ports are independent reconstructions, not affiliated with the originals. Games are checked on software WebGL2 in remote runs; real-GPU confirmation is partial and tracked in [`evidence/`](./evidence/).
+The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) has 15 playable games, including Aura Slam 3D (tennis, with a deterministic replay gate) and Apex Overdrive (racing), plus eleven more games (Craterline GP, Chroma Roll, Serpentine Sky Run, Gridlock Courier, Ion Circuit, Shadowstep Gauntlet, Lamplight Line, Saltwind Highway, The Bellkeeper's Walk, Duneglide and Cumulus Dash). Each page states its limits; the games are independent work, not affiliated with any other game or studio. Games are checked on software WebGL2 in remote runs; real-GPU confirmation is partial and tracked in [`evidence/`](./evidence/).
 
 ## Compared with three.js
 

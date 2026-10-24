@@ -112,7 +112,7 @@ export class Ui {
     menu.innerHTML = `<div class="title"><h1><span>Beyond the</span>Cloud Runner</h1><p>Seven star orbs. One long run home along the ridge.</p></div>
       <div class="menu"><button class="primary" data-a="play">Play  ▸</button><div class="row"><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="how">How to play</button></div><div class="best" data-q="best"></div></div>
       <div class="keys"><span><kbd>←</kbd><kbd>→</kbd>steer</span><span><kbd>Space</kbd>jump</span><span><kbd>E</kbd>staff</span><span><kbd>Q</kbd>sky cloud</span><span><kbd>↓</kbd>brake</span><span><kbd>P</kbd>pause</span></div>
-      <div class="credit">Independent Aura3D reconstruction</div>`;
+      <div class="credit">Built with Aura3D</div>`;
     const hud = el("div", "scr");
     hud.innerHTML = `<div class="danger" data-q="danger"></div><div class="flash" data-q="flash"></div>
       <div class="hud-top"><div class="left"><button class="pausebtn" data-a="pause" aria-label="Pause">❚❚</button><div class="stack"><div class="hearts" data-q="hearts"></div><div class="orbs" data-q="orbs"></div></div></div>

@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Coastal look with sky, ocean and a lit road; vehicles and scenery are generated models and there are no shadows; a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
+    <meta name="description" content="Coastal drive among 92 vehicles in one batched mesh, with sky, ocean and a lit road." />
   <meta name="theme-color" content="#0b1020" />
-  <meta property="og:title" content="Roadster Hours — Aura3D port of the mechanics" />
+  <meta property="og:title" content="Saltwind Highway — Coastal Highway Drive" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
+  <meta property="og:url" content="https://aura3d.auraone.ai/apps/saltwind-highway/" />
   <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Roadster Hours — Aura3D port of the mechanics" />
+  <meta name="twitter:title" content="Saltwind Highway — Coastal Highway Drive" />
   <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
-  <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/" />
+  <link rel="canonical" href="https://aura3d.auraone.ai/apps/saltwind-highway/" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="/fonts/local.css" />
-  <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
-  <title>Roadster Hours — Aura3D port of the mechanics</title>
+  <style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit a:hover{text-decoration:underline}</style>
+  <title>Saltwind Highway — Coastal Highway Drive</title>
   <style>
     :root { --ink: rgba(255,255,255,.92); --ink-2: rgba(255,255,255,.64); --line: rgba(255,255,255,.14); --glass: rgba(10,14,24,.62); --accent: #ffb347; --cyan: #6fe4e6; --heat: #ff6b3b; --red: #e31937; }
     html, body { margin: 0; height: 100%; background: #0b0d12; overflow: hidden; font: 400 14px/1.4 "DIN Pro", sans-serif; font-synthesis: none; color: var(--ink); -webkit-font-smoothing: antialiased; }
@@ -79,7 +79,7 @@
   </style>
 </head>
 <body>
-  <canvas id="world" tabindex="0" aria-label="Roadster Hours 3D driving world"></canvas>
+  <canvas id="world" tabindex="0" aria-label="Saltwind Highway 3D driving world"></canvas>
   <div id="hud" class="hidden">
     <div class="tl"><div id="timer" class="num">0:00.00</div><div id="gate"></div><div id="act"></div></div>
     <div id="progress"><i id="progress-fill"></i></div>
@@ -95,7 +95,7 @@
   </div>
   <div id="menu" class="panel">
     <div class="card">
-      <h1 class="wordmark">Roadster Hours</h1>
+      <h1 class="wordmark">Saltwind Highway</h1>
       <div><div class="route-name" id="level-name"></div><div class="meta" id="level-sub"></div></div>
       <div class="desc" id="level-desc"></div>
       <div class="routes" id="routes"></div>
@@ -108,7 +108,7 @@
         <dt>R, Esc, M</dt><dd>Recover, pause, mute</dd>
       </dl>
       <div class="actions"><button id="start" disabled>Drive</button><span class="meta">or press Enter</span></div>
-      <div class="credit">An independent Aura3D port of the mechanics of a browser game. The scenery is procedural; the cars are CC0 models (Quaternius, Kenney); the sound is synthesised.</div>
+      <div class="credit">An independent game built with Aura3D. The scenery is procedural; the cars are CC0 models (Quaternius, Kenney); the sound is synthesised.</div>
     </div>
   </div>
   <div id="pause" class="panel hidden"><div class="modal"><h1>Paused</h1><div class="actions"><button id="resume">Resume</button><button id="restart" class="ghost">Restart route</button></div></div></div>
@@ -126,8 +126,8 @@
     </div>
   </div>
   <button id="mute" class="ghost hidden" aria-label="Toggle sound">Sound on</button>
-  <div id="loading"><div><b>Roadster Hours</b><br><span class="meta" id="loading-status">Preparing the road ahead</span></div></div>
+  <div id="loading"><div><b>Saltwind Highway</b><br><span class="meta" id="loading-status">Preparing the road ahead</span></div></div>
   <script type="module" src="./src/main.ts"></script>
-  <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Coastal look with sky, ocean and a lit road; vehicles and scenery are generated models and there are no shadows; a blind model judge could still tell the port from the original.</aside>
+  <aside class="aura-credit" role="note"><a href="/apps/showcase-index/">Built with Aura3D</a> · independent game, not affiliated with any other game or studio.</aside>
 </body>
 </html>

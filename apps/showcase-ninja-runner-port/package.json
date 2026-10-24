@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Ninja Runner: A single soldier model tinted per form, procedural environment, no audio.",
+  "description": "Lane-running combat with a dozen skinned clones, form changes and a full course finish.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

@@ -1,9 +1,9 @@
 /**
- * Player-facing text for the port, written for it (the original's chapter names, objective titles and voiced
+ * Player-facing text for the game, written for it (chapter names, objective titles and voiced
  * lines are not reused). Keys are the objective, chapter and scene ids from `chapters-data.ts`; the sim and the
  * reference replay never read this file.
  */
-export const GAME_TITLE = "Silt & Signal";
+export const GAME_TITLE = "Duneglide";
 
 export const CHAPTER_COPY: Record<string, { name: string; tagline: string }> = {
   home: { name: "Lantern Road", tagline: "One small village, one long road, one favour to repay." },

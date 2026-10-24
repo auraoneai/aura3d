@@ -43,9 +43,9 @@ export function extractAppExtras(appHtml) {
     .map((m) => m[0])
     .filter((tag) => !/charset=|name="viewport"/.test(tag));
   const links = [...head.matchAll(/<link\b[^>]*>/g)].map((m) => m[0]);
-  const noteStyle = (head.match(/<style>\.aura-port-note[\s\S]*?<\/style>/) ?? [""])[0];
+  const noteStyle = (head.match(/<style>\.aura-(?:port-note|credit)[\s\S]*?<\/style>/) ?? [""])[0];
   const title = (head.match(/<title>[\s\S]*?<\/title>/) ?? [""])[0];
-  const note = (appHtml.match(/<aside class="aura-port-note"[\s\S]*?<\/aside>/) ?? [""])[0];
+  const note = (appHtml.match(/<aside class="aura-(?:port-note|credit)"[\s\S]*?<\/aside>/) ?? [""])[0];
   return { metas, links, noteStyle, title, note };
 }
 
@@ -80,9 +80,9 @@ export function composePortPage({ exampleHtml, appHtml, labels = [] }) {
  * Replace names in visible text and a few accessible-name attributes only. Ids, classes, CSS and scripts are left
  * untouched so the game's own element lookups keep working.
  */
-export function applyNeutralLabels(html, labels) {
+export function applyNeutralLabels(html, labels, caseAware = false) {
   if (labels.length === 0) return html;
-  const swap = (text) => labels.reduce((acc, [from, to]) => acc.replace(new RegExp(escapeRegExp(from), "gi"), to), text);
+  const swap = (text) => labels.reduce((acc, [from, to]) => acc.replace(new RegExp(escapeRegExp(from), "gi"), (m) => (caseAware && /[A-Z]/.test(m) && m === m.toUpperCase() ? to.toUpperCase() : to)), text);
   let skip = null; // "style" | "script" while inside those elements
   return html.split(/(<[^>]*>)/g).map((chunk) => {
     if (chunk.startsWith("<")) {

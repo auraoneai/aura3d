@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Roadster Hours: Box vehicles, flat sky, no post-processing or audio.",
+  "description": "Coastal drive among 92 vehicles in one batched mesh, with sky, ocean and a lit road.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

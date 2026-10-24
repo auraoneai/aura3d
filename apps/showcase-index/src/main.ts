@@ -220,7 +220,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget, rebuilt from a recorded run of the original. Simulation parity verified against the original's recorded seven-lap run; procedural art, no career, garage or audio."
+    notes: "Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a recorded seven-lap run; procedural art, no career, garage or audio."
   },
   {
     id: "showcase-splat-rush-port",
@@ -231,7 +231,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches the original's recorded run. No audio; the original's DOM flash and vignette overlays and platform SDKs are not ported."
+    notes: "Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. No audio; platform SDKs are not included."
   },
   {
     id: "showcase-serpentine-sky-run-port",
@@ -242,7 +242,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky."
+    notes: "Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no menus, audio or later phases); primitive avatars and a gradient sky."
   },
   {
     id: "showcase-drift-and-deliver-port",
@@ -253,7 +253,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera; all four recorded scenarios reproduce exactly. Headlight beam cone does not draw yet; collision response untested; no audio, story or shadows."
+    notes: "Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera; all four recorded scenarios reproduce exactly. Headlight beam cone does not draw yet; collision response untested; no audio, story or shadows."
   },
   {
     id: "showcase-heatsink-port",
@@ -264,7 +264,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the original within 1e-6. Simulation port only: the art is visibly different from the original (a blind model judge told them apart 48 of 48 times); Time Trial only, no AI or audio."
+    notes: "Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within 1e-6. the art is generated; Time Trial only, no AI or audio."
   },
   {
     id: "showcase-ninja-runner-port",
@@ -275,7 +275,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Lane-running combat with twelve skinned clones, form changes and a full course win; the recorded 106-second run replays event for event. A single soldier model tinted per form, procedural environment, no audio."
+    notes: "Lane-running combat with twelve skinned clones, form changes and a full course win; the recorded 106-second run replays event for event. A single soldier model tinted per form, procedural environment, no audio."
   },
   {
     id: "showcase-last-train-port",
@@ -286,7 +286,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Train-driving loop with day and night, passengers, fares and tips; loop length and score match the original's recorded loop and memory stays flat over three loops. No garage wear, requests or Gold grade; procedural models; night is a sky blend plus surface tints."
+    notes: "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. No garage wear, requests or Gold grade; procedural models; night is a sky blend plus surface tints."
   },
   {
     id: "showcase-roadster-hours-port",
@@ -297,7 +297,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Box vehicles, flat sky, no post-processing or audio."
+    notes: "Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Box vehicles, flat sky, no post-processing or audio."
   },
   {
     id: "showcase-where-the-wind-wanders-port",
@@ -308,7 +308,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the original within 1e-9 over 2,098 steps. Meadow only: no boat voyage, island, journal or audio; procedural art."
+    notes: "Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps. Meadow only: no boat voyage, island, journal or audio; procedural art."
   },
   {
     id: "showcase-silt-and-signal-port",
@@ -319,7 +319,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Free-ride flying over a silt world; three recorded rides reproduce the original's simulation state to 1e-9. Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes."
+    notes: "Free-ride flying over a silt world; three recorded rides reproduce the recorded simulation state to 1e-9. Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes."
   },
   {
     id: "showcase-cloud-runner-port",
@@ -330,7 +330,7 @@ const apps = [
     primaryAssetStatus: "primitive-only",
     primitiveStatus: "primary-subject-proxy",
     claimStatus: "bounded",
-    notes: "Simulation port. Obstacle runner on a cloud: the first chapter's run model replays the original's recorded run to 1e-12. Chapter-one run only: no creatures, boulders, finale or audio; procedural art."
+    notes: "Obstacle runner on a cloud: the first chapter's run model matches a recorded reference run to 1e-12. Chapter-one run only: no creatures, boulders, finale or audio; procedural art."
   }
 ] as const;
 

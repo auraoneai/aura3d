@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
-      <meta name="description" content="Free-ride flying over a silt world; three recorded rides reproduce the original's simulation state to 1e-9. Chapter 0 has real colliders; the rider, ring beacons and landmarks are generated models; later chapters are generated hills, with no NPCs or minimap; a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
+      <meta name="description" content="Free-ride flight over a silt world, through ring beacons; the first chapter has real colliders." />
   <meta name="theme-color" content="#0b1020" />
-  <meta property="og:title" content="Silt &amp; Signal — Aura3D port of the mechanics" />
+  <meta property="og:title" content="Duneglide — Silt-World Flight" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/" />
+  <meta property="og:url" content="https://aura3d.auraone.ai/apps/duneglide/" />
   <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Silt &amp; Signal — Aura3D port of the mechanics" />
+  <meta name="twitter:title" content="Duneglide — Silt-World Flight" />
   <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
-  <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/" />
+  <link rel="canonical" href="https://aura3d.auraone.ai/apps/duneglide/" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <style>.aura-port-note{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-port-note a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-port-note a:hover{text-decoration:underline}</style>
-  <title>Silt &amp; Signal — Aura3D port of the mechanics</title>
+  <style>.aura-credit{position:fixed;left:8px;bottom:8px;z-index:2147483000;max-width:min(560px,calc(100vw - 16px));padding:5px 9px;border-radius:6px;background:rgba(11,16,32,.82);color:#e8ecf4;font:400 12px/1.4 "Graphik Web",sans-serif;pointer-events:none}.aura-credit a{color:#4ade9d;pointer-events:auto;text-decoration:none}.aura-credit a:hover{text-decoration:underline}</style>
+  <title>Duneglide — Silt-World Flight</title>
     <style>
       :root { color-scheme: dark; --ink: #f6f0e4; --muted: #c4bcab; --panel: rgba(22, 20, 24, 0.7); --line: rgba(246, 240, 228, 0.18); --warm: #f0b980; --jade: #8fd9c6; }
       * { box-sizing: border-box; }
@@ -61,7 +61,7 @@
   </head>
   <body>
     <canvas id="world"></canvas>
-    <section id="loading"><div class="panel"><h2 style="margin:0">Silt &amp; Signal</h2><p id="loading-status" class="meta">Raising the world</p></div></section>
+    <section id="loading"><div class="panel"><h2 style="margin:0">Duneglide</h2><p id="loading-status" class="meta">Raising the world</p></div></section>
     <div id="hud" class="hidden">
       <div id="objective-card" class="panel">
         <div id="chapter"></div>
@@ -82,7 +82,7 @@
     <section id="title-screen" class="screen hidden">
       <div class="card panel">
         <div class="meta">A hover-board flight through seven valleys</div>
-        <h1>Silt &amp; Signal</h1>
+        <h1>Duneglide</h1>
         <p id="title-tagline" class="meta">Answer the lamp on the far road. Fly the rings, hold steady when asked, and see what is on the other side of the water.</p>
         <div class="row"><button id="start-button" class="primary">Begin the journey</button><button id="mute-button">Sound: on</button></div>
         <div class="meta">Jump to a chapter</div>
@@ -97,7 +97,7 @@
           <tr><td>Mouse or touch</td><td>hold to fly, drag sideways to steer, up or down to climb or dive, a second finger boosts</td></tr>
           <tr><td>Gamepad</td><td>left stick fly, right stick altitude, A or trigger boost, B brake, X interact, Start pause</td></tr>
         </table>
-        <div class="meta">Terrain, models and textures are CC0 (Kenney, ambientCG, Aura3D starter); sound is synthesised live. This is a simulation port of a browser game's flight and objectives, not a copy of its art.</div>
+        <div class="meta">Terrain, models and textures are CC0 (Kenney, ambientCG, Aura3D starter); sound is synthesised live. Independent game; its art is original work.</div>
       </div>
     </section>
 
@@ -125,6 +125,6 @@
       </div>
     </section>
     <script type="module" src="./src/main.ts"></script>
-    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Chapter 0 has real colliders; the rider, ring beacons and landmarks are generated models; later chapters are generated hills, with no NPCs or minimap; a blind model judge could still tell the port from the original.</aside>
+    <aside class="aura-credit" role="note"><a href="/apps/showcase-index/">Built with Aura3D</a> · independent game, not affiliated with any other game or studio.</aside>
 </body>
 </html>

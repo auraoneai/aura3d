@@ -1,0 +1,25 @@
+# Web screening of candidate game names (Prism web_search emulation, 2026-10-24). Raw model-plus-source output; low-signal results are expected for unique names. This is a screen, not trademark clearance. (Nimbus Dash was an earlier candidate for the last game; it became Cumulus Dash.)
+## pass 1: "NAME" game
+Craterline GP :: Sources: 1. Google Labs is working on a new AI-powered game-creation platform ... - https://www.facebook.com/techcrunch/posts/google-labs-is-working-on-a-new-ai-powered-game-creation-platform-called-playgro/1448206877173175/ The video introduces Google Playground, an AI- powered tool that allows users to build video games instantly without coding or a game engine ... 2. [PDF] GameGoogle: A Search 
+Chroma Roll :: Sources: 1. Chroma demo—Anton Troynikov | Stripe AI Day - YouTube - https://www.youtube.com/watch?v=MMFykgidz34 Anton Troynikov, cofounder of Chroma (https://trychroma.com), gives a demo at Stripe AI Day. 2. Query and Get - Chroma Docs - https://docs.trychroma.com/docs/querying-collections/query-and-get ## [​](https://docs.trychroma.com/docs/querying-collections/query-and-get#query-2) Query ``` aw
+Gridlock Courier :: Sources: 1. Module 2 Review Questions Flashcards - Quizlet - https://quizlet.com/520064696/module-2-review-questions-flash-cards/ # Module 2 Review Questions ## Get the Introduction to Computer Technology essentials ### Students also studied A. utility app C. web app Yes Yes Yes Yes Yes Yes Yes 2. The #1 technical and creative solutions provider to the global ... - https://www.keywordsstudios.com/
+Ion Circuit :: Sources: 1. [PDF] ED110028.pdf - ERIC - https://files.eric.ed.gov/fulltext/ED110028.pdf ( ( ion circuit transmission). CATV - An acronym for Community Antenna Television. Now used to designate cable television as in "lodal CATV ... 2. Full text of "Creative Computing (better Scan) 1979 09" - https://archive.org/stream/CreativeComputingbetterScan197909/Creative%20Computing%20%28better%20scan%29%201
+Shadowstep Gauntlet :: Sources: 1. This AI built a game for 19 hours straight using the Gauntlet Loop. It's ... - https://www.youtube.com/watch?v=7eiSrT5y1Iw The Gauntlet Loop is redefining autonomous AI workflows. By creating its own judging tools and sub-agents, an AI agent system can iterate on ... 2. Building playable 3D video games from scratch used to require months ... - https://www.facebook.com/SpaceXdaily/video
+Lamplight Line :: Sources: 1. Lesson 2 Quiz Flashcards - Quizlet - https://quizlet.com/519365344/lesson-2-quiz-flash-cards/ The "deep" or "invisible" web is a collection of databases that are inaccessible to the spider and webcrawler type of general search engines. True False. True. 2. Virginia Natural Gas - https://www.virginianaturalgas.com/ With roots that stretch back to 1850, Virginia Natural Gas serves more t
+Saltwind Highway :: Sources: 1. Module 2 Concepts Exam Flashcards - Quizlet - https://quizlet.com/605550747/module-2-concepts-exam-flash-cards/ Rating 5.0(105)Study with Quizlet and memorize flashcards containing terms like _____ is a nonprofit organization that helps content creators keep copyright to their ... 2. Saltwind — 3D Sailing Regatta - OpenAI - https://cdn.openai.com/ctf-cdn/sites/saltwind-game-1-1/index.h
+Duneglide :: Sources: No results found.
+Nimbus Dash :: Sources: No results found.
+The Bellkeeper's Walk :: Sources: No results found.
+## pass 2: storefront sites
+Craterline GP :: The search query is too long.
+Chroma Roll :: Sources: No results found.
+Gridlock Courier :: The search query is too long.
+Ion Circuit :: Sources: No results found.
+Shadowstep Gauntlet :: The search query is too long.
+Lamplight Line :: The search query is too long.
+Saltwind Highway :: The search query is too long.
+Duneglide :: Sources: No results found.
+Nimbus Dash :: Sources: No results found.
+The Bellkeeper's Walk :: The search query is too long.
+## pass 3 (plain query): Cumulus Dash, Serpentine Sky Run, Bellkeeper's Walk, and storefront query for the first two
+Cumulus Dash, Serpentine Sky Run and Bellkeeper's Walk were checked in a later run (plain query, and a storefront query for the first two): only unrelated study-site and generic results came back; raw output was not kept.

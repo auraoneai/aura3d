@@ -1,7 +1,7 @@
 /** Player-facing copy. Original names are replaced with generic ones; the simulation's ids (`base`, `sage`, `kurama`, `rasengan`, ...) are unchanged. */
 import type { Form } from "./sim";
 
-export const TITLE = "NINJA RUNNER";
+export const TITLE = "SHADOWSTEP GAUNTLET";
 
 export const FORM_LABEL: Readonly<Record<Form, string>> = { base: "Lantern Runner", sage: "Sunfire Form", kurama: "Ember Spirit Form" };
 export const FORM_SHORT: Readonly<Record<Form, string>> = { base: "Runner", sage: "Sunfire", kurama: "Ember" };

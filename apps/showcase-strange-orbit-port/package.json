@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Strange Orbit: Simulation parity verified against the original's recorded seven-lap run; procedural art, no career, garage or audio.",
+  "description": "Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura3D port of the mechanics of Silt & Signal: Stand-in ground, canal, rings and rider; no chapters, colliders or voiced scenes.",
+  "description": "Free-ride flight over a silt world, through ring beacons; the first chapter has real colliders.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
