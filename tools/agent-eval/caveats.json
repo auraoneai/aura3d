@@ -1,0 +1,11 @@
+[
+  "Model sampling is not seedable through Prism: seeds fix the run plan order and run ids only, so a rerun gives different transcripts.",
+  "Agents get no shell. Their tools are list/read/search/write/edit, a typecheck, and finish. They cannot run vite build or look at a rendered frame, so first-try build and render are what a cold agent actually ships without that feedback. Both arms are treated identically.",
+  "The three.js arm is advantaged by pre-training: the model has seen far more three.js than Aura3D. This is the point of a cold-start test, and it is why the arm is only a reference, not a fair fight between documentation sets.",
+  "The Aura3D arm uses published @aura3d/engine 4.1.2 plus the one-line stock-build fix (04b7726ef) applied to the installed dist, because the published package fails a stock vite build. The published package also ships templates/ inside node_modules, which an agent can read.",
+  "The Aura3D arm's AGENTS.md is the repository one, which still carries AuraOne policy text (machine paths that do not exist in the sandbox). That is the current doc state and is part of what the docs rewrite should fix.",
+  "Render checks use software WebGL2: slow scenes (forest) can time out where a GPU would not. A readyTimeout is counted as not rendering and is reported separately.",
+  "Judge-derived fields (judge checklist, silent no-ops, glue lines) come from a model judge (claude-sonnet-5.5) reading source plus browser probes. They are estimates, not human review. Probe checks are deterministic.",
+  "n is small. Medians with min-max are shown; no significance test is claimed.",
+  "Task 7 (prop asset) is harness-ready with a provided GLB for both arms; the Aura3D Meshy-generation path is not exercised because agents have no shell. Task 6 probes exist but were not part of the baseline."
+]

@@ -1,0 +1,57 @@
+{
+  "1": [
+    { "id": "pbr", "text": "The cube uses a PBR material with visible metalness/roughness configuration (not unlit/basic)." },
+    { "id": "lighting", "text": "Key light plus fill or environment lighting is authored so the cube is readable." },
+    { "id": "autorotate", "text": "The cube rotates continuously by itself." },
+    { "id": "orbit", "text": "Mouse-drag orbit control is wired to the camera and actually responds (see probes.orbitResponds)." },
+    { "id": "framing", "text": "The camera frames the whole cube centred on a dark-grey background." }
+  ],
+  "2": [
+    { "id": "instancing", "text": "Trees and rocks are drawn with instancing (instanced mesh/instances API), not 10,000 separate meshes." },
+    { "id": "count", "text": "Exactly 10,000 objects: 8,000 trees (trunk + canopy instanced) and 2,000 rocks." },
+    { "id": "seeded", "text": "Placement is deterministic from a fixed seed (no Math.random)." },
+    { "id": "colour", "text": "Per-instance colour variation is applied and effective." },
+    { "id": "shadow", "text": "One directional light with shadows enabled and casting/receiving configured." },
+    { "id": "fog", "text": "Exponential fog is configured and effective." },
+    { "id": "camera", "text": "The camera slowly orbits the forest and frames the scene." }
+  ],
+  "3": [
+    { "id": "load", "text": "/assets/soldier.glb is loaded, scaled/positioned on a ground plane and framed." },
+    { "id": "idle", "text": "Idle clip plays at start." },
+    { "id": "crossfade", "text": "R cross-fades to Run over 0.4 s and I cross-fades back over 0.4 s, using a real crossfade (not a hard cut)." },
+    { "id": "shadow", "text": "One shadow-casting light with a shadow on the ground." },
+    { "id": "hook", "text": "window.__EVAL__.clip() returns the current target clip name (see probes.clipSwitchWorks)." }
+  ],
+  "4": [
+    { "id": "fixedstep", "text": "Simulation uses a fixed 1/60 s timestep accumulator." },
+    { "id": "coins", "text": "At least 8 coins; collecting gives +1 and respawns a coin with seeded randomness." },
+    { "id": "round", "text": "30 s round timer; lost at 30 s, won immediately at score 15." },
+    { "id": "pauserestart", "text": "P pauses (simulation frozen), R restarts the round." },
+    { "id": "hud", "text": "DOM HUD with ids score, time and status that follows state." },
+    { "id": "hook", "text": "window.__EVAL__.state() and step(frames) behave as specified (see probes)." }
+  ],
+  "5": [
+    { "id": "customshader", "text": "Water uses a custom GLSL shader/material, not a stock material." },
+    { "id": "displacement", "text": "Wave vertex displacement on a subdivided grid (real geometry displacement), and it takes effect." },
+    { "id": "fresnel", "text": "Fresnel term and sun specular glint are implemented." },
+    { "id": "noise", "text": "Procedural noise ripple detail." },
+    { "id": "sky", "text": "Gradient sky dome/background that the water reflects." },
+    { "id": "animated", "text": "Time uniform animates the water (see probes.animated)." },
+    { "id": "colour", "text": "Tone mapping/colour output is correct (not washed out or black)." }
+  ],
+  "6": [
+    { "id": "game", "text": "Dodge game with 3D scene, fixed step, seeded RNG, three lives, score, game over." },
+    { "id": "hud", "text": "DOM HUD with score, lives, best score." },
+    { "id": "touch", "text": "On-screen touch buttons with pointer events and large hit targets; keyboard controls too." },
+    { "id": "sound", "text": "Procedural WebAudio sounds started after a user gesture, with mute toggle." },
+    { "id": "pause", "text": "Pause button and P key, restart R, overlays for pause and game over." },
+    { "id": "responsive", "text": "Works at 390x844 (see probes.mobile)." },
+    { "id": "replay", "text": "Deterministic replay hook works (see probes.replayDeterministic)." }
+  ],
+  "7": [
+    { "id": "load", "text": "/assets/prop.glb loaded and standing on a round pedestal, scaled and centred." },
+    { "id": "light", "text": "Soft lighting with ground shadow and fitting background." },
+    { "id": "turn", "text": "The model slowly turns on the pedestal." },
+    { "id": "fallback", "text": "A visible fallback and logged error if loading fails." }
+  ]
+}
