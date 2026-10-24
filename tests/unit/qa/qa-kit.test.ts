@@ -137,7 +137,7 @@ describe("createFixedStepLoop", () => {
     const loop = createFixedStepLoop({ step: vi.fn() });
     loop.tick(0);
     loop.tick(10);
-    expect(loop.accumulator).toBeCloseTo(0.01, 9);
+    expect(loop.accumulator).toBeCloseTo(0.011, 9); // 1 ms minimum frame on tick(0) plus 10 ms
     loop.resetAccumulator();
     expect(loop.accumulator).toBe(0);
     expect(loop.tick(20)).toBe(0); // 10 ms alone is not a step
