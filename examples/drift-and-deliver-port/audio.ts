@@ -3,7 +3,7 @@
  * Engine note follows speed, tyres squeal while drifting, nitro adds a rushing noise, pickups chime and traffic hits thud.
  * The context is only created from a user gesture (`resume`) so autoplay policies and headless runs stay quiet.
  */
-import { AudioContextManager } from "@aura3d/engine/audio";
+import { AudioContextManager, createCueBank, type CueSpec } from "@aura3d/engine/audio";
 
 export interface AudioCar {
   speed: number;
@@ -41,6 +41,19 @@ export function chimeNotes(kind: "coin" | "star" | "heart", combo: number): numb
   return [base, base * 1.5];
 }
 
+const chimeCue = (kind: "coin" | "star" | "heart"): CueSpec => ({
+  layers: ({ level }) =>
+    chimeNotes(kind, level).map((freq, i) => ({ freq, type: kind === "heart" ? ("triangle" as const) : ("sine" as const), dur: 0.28, gain: 0.16, attack: 0.012, delay: i * 0.065 }))
+});
+
+/** One-shot effects on the shared cue bank; the continuous engine, squeal and rush beds below stay hand-built (they ramp live parameters). */
+export const CUES = {
+  chimeCoin: chimeCue("coin"),
+  chimeStar: chimeCue("star"),
+  chimeHeart: chimeCue("heart"),
+  thud: { layers: [{ kind: "noise" as const, type: "lowpass" as const, freq: 260, q: 1, gain: 0.6, dur: 0.35 }] } satisfies CueSpec
+};
+
 export interface PortAudio {
   resume(): void;
   update(car: AudioCar, throttle: boolean, dt: number): void;
@@ -63,6 +76,7 @@ function noiseBuffer(ctx: AudioContext, seconds: number): AudioBuffer {
 
 export function createAudio(): PortAudio {
   const manager = new AudioContextManager();
+  const bank = createCueBank({ cues: CUES, manager, masterGain: 0.8, sfxGain: 1, noiseSeed: 0x2f6e2b1, muteKey: false });
   let ctx: AudioContext | undefined;
   let master: GainNode | undefined;
   let muted = false;
@@ -126,6 +140,7 @@ export function createAudio(): PortAudio {
     },
     resume() {
       start();
+      void bank.unlock();
       if (ctx && ctx.state === "suspended") void ctx.resume();
     },
     update(car, throttle, dt) {
@@ -138,39 +153,14 @@ export function createAudio(): PortAudio {
       ramp(rush.gain, rushGain(car.boosting, car.speed), dt);
     },
     chime(kind, combo) {
-      if (!ctx || !master) return;
-      const notes = chimeNotes(kind, combo);
-      notes.forEach((hz, i) => {
-        const o = ctx!.createOscillator();
-        const g = ctx!.createGain();
-        o.type = kind === "heart" ? "triangle" : "sine";
-        o.frequency.value = hz;
-        const t = ctx!.currentTime + i * 0.065;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.16, t + 0.012);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
-        o.connect(g).connect(master!);
-        o.start(t);
-        o.stop(t + 0.3);
-      });
+      bank.play(kind === "star" ? "chimeStar" : kind === "heart" ? "chimeHeart" : "chimeCoin", { level: combo });
     },
     thud() {
-      if (!ctx || !master || !noise) return;
-      const src = ctx.createBufferSource();
-      src.buffer = noise;
-      const f = ctx.createBiquadFilter();
-      f.type = "lowpass";
-      f.frequency.value = 260;
-      const g = ctx.createGain();
-      const t = ctx.currentTime;
-      g.gain.setValueAtTime(0.6, t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
-      src.connect(f).connect(g).connect(master);
-      src.start(t);
-      src.stop(t + 0.4);
+      bank.play("thud");
     },
     setMuted(value) {
       muted = value;
+      bank.setMuted(value);
       if (master && ctx) master.gain.setTargetAtTime(muted ? 0 : 0.8, ctx.currentTime, 0.03);
       return muted;
     }

@@ -9,7 +9,7 @@
  * Query parameters (all optional): `manual=1` (the sim only advances through `__sim` /
  * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, geometry, material, primitives, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, type AuraApp } from "@aura3d/engine";
 import { drawCanvasMinimap } from "@aura3d/engine/game";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
@@ -134,7 +134,7 @@ let ready = false;
 let renderTime = 0;
 let frames = 0;
 let blackWatch: BlackFrameWatch | undefined;
-let accumulator = 0;
+let manualInput: Keys | null = null;
 let hudTimer = 0;
 let renderFailed = false;
 /** Headlight beam strength 0..1 (the original ties it to night; `L` toggles it here). */
@@ -370,13 +370,13 @@ function status() {
   return { phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready };
 }
 
-const api = {
+const hooks = installQaHooks("drift-and-deliver", {
   ready: () => ready,
   state: status,
+  app: () => app,
   begin,
-  applyInput(input: Partial<Keys>) {
-    Object.assign(keys, NO_KEYS, input);
-  },
+  nodeCount: () => handles.size,
+  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-01", "SG-10", "SH-03", "ST-01", "R-23"] }) : null),
   reset() {
     Object.assign(car, createCar());
     pickups.forEach((p) => (p.taken = false));
@@ -384,63 +384,32 @@ const api = {
     game.collected = 0;
     Object.assign(camState, snapChase({ x: car.x, z: car.z, y: 0, heading: car.heading, speed: 0, boosting: false, shake: 0 }));
     syncQa();
-    return status();
-  },
-  teleport(x: number, z: number, heading?: number) {
-    (qa.__tp as (x: number, z: number, h?: number) => void)(x, z, heading);
-    return status();
   },
   /** Run `n` fixed 1/60 s steps with the given keys (default: held keys), then render once. */
   stepFrames(n: number, input?: Partial<Keys>) {
     game.phase = "playing";
-    const held = input ? { ...NO_KEYS, ...input } : keys;
-    for (let i = 0; i < Math.max(0, n | 0); i++) {
-      simulateStep(held);
-      followCamera(1);
-    }
+    manualInput = input ? { ...NO_KEYS, ...input } : keys;
+    loop.advance(n);
+    manualInput = null;
     updateHud();
     render(0);
-    return status();
   },
-  headlights(amount?: number) {
-    if (amount !== undefined) headlightAmount = Math.max(0, Math.min(1, amount));
-    return headlightAmount;
-  },
-  pickups: () => pickups.map((p) => ({ kind: p.kind, x: p.x, z: p.z, taken: p.taken })),
-  counts: () => ({ blocks: blocks.length, buildings: buildings.length, trees: look?.stats.trees ?? 0, traffic: traffic.length, pickups: pickups.length, solids: solids.length }),
-  nodeCount: () => handles.size,
-  info: () => app?.info ?? null,
-  diagnostics: () => app?.diagnostics() ?? null,
-  async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = surface.getContext("2d")!;
-    ctx.drawImage(bitmap, 0, 0);
-    const image = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-    return { width: image.width, height: image.height, data: image.data };
-  },
-  async frame(width = 480, height = 270, quality = 0.72): Promise<string> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = document.createElement("canvas");
-    surface.width = width;
-    surface.height = height;
-    surface.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-    return surface.toDataURL("image/jpeg", quality);
-  },
-  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-01", "SG-10", "SH-03", "ST-01", "R-23"] }) : null)
-};
-
-declare global {
-  interface Window {
-    __AURA_DRIFT_AND_DELIVER__?: typeof api;
-    __AURA_DRIFT_AND_DELIVER_ERROR__?: string;
+  extras: {
+    applyInput(input: Partial<Keys>) {
+      Object.assign(keys, NO_KEYS, input);
+    },
+    teleport(x: number, z: number, heading?: number) {
+      (qa.__tp as (x: number, z: number, h?: number) => void)(x, z, heading);
+      return status();
+    },
+    headlights(amount?: number) {
+      if (amount !== undefined) headlightAmount = Math.max(0, Math.min(1, amount));
+      return headlightAmount;
+    },
+    pickups: () => pickups.map((p) => ({ kind: p.kind, x: p.x, z: p.z, taken: p.taken })),
+    counts: () => ({ blocks: blocks.length, buildings: buildings.length, trees: look?.stats.trees ?? 0, traffic: traffic.length, pickups: pickups.length, solids: solids.length })
   }
-}
-window.__AURA_DRIFT_AND_DELIVER__ = api;
+});
 
 /* ------------------------------------------------------------------ boot */
 
@@ -471,6 +440,20 @@ async function boot(): Promise<void> {
   if (config.autostart) begin();
 }
 
+const loop = createFixedStepLoop({
+  stepSeconds: STEP,
+  maxFrameSeconds: 1 / 24,
+  maxCatchUpSteps: 7,
+  manual: config.manual,
+  isActive: () => ready && game.phase === "playing",
+  step() {
+    if (manualInput) {
+      simulateStep(manualInput);
+      followCamera(1);
+    } else simulate(1);
+  }
+});
+
 let lastTick = performance.now();
 function tick(now: number): void {
   requestAnimationFrame(tick);
@@ -478,13 +461,7 @@ function tick(now: number): void {
   lastTick = now;
   if (!ready) return;
   renderTime += dt;
-  if (!config.manual && game.phase === "playing") {
-    accumulator = Math.min(0.12, accumulator + dt);
-    while (accumulator >= STEP) {
-      simulate(1);
-      accumulator -= STEP;
-    }
-  }
+  loop.tick(now);
   audio?.update(game.phase === "playing" ? car : { speed: 0, drifting: false, boosting: false, boost: car.boost }, game.phase === "playing" && keys.w, dt);
   hudTimer += dt;
   if (hudTimer >= 0.05) {
@@ -505,7 +482,7 @@ function reportError(error: unknown): void {
   const code = (error as { code?: unknown })?.code;
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
-  if (!window.__AURA_DRIFT_AND_DELIVER_ERROR__) window.__AURA_DRIFT_AND_DELIVER_ERROR__ = message;
+  hooks.reportError(message);
   $("loading-status").textContent = `The city could not load: ${message.slice(0, 300)}`;
   $("loading").classList.remove("hidden");
   console.error(error);
