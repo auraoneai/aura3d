@@ -79,3 +79,15 @@ Nine generated models (see `assets/ATTRIBUTION.md` for prompts, task ids, sizes 
 **Capture spec**: `tests/browser/heatsink-port-meshy.spec.ts` is the Phase B spec with 8 frame steps and a 10-frame camera lead; under SwiftShader the 16-step, 30-frame version now exceeds its 25-minute timeout because the lit scene is heavier.
 
 **Public packages only.** `track.ts` imports `CatmullRomCurve3` and `Vector3` from `@aura3d/math`. That is a published, documented package (`docs/api/public-api.md`, `## @aura3d/math`), not an internal or deprecated path, and the `@aura3d/engine` root has no spline class, so the import stays. The port imports nothing from `@aura3d/engine/production-runtime`, `/rendering` or other deprecated subpaths.
+
+## Strike layer (2026-10-24, game rework)
+
+The ported Time Trial had no goal beyond the clock: the original's weapons, rivals and items were out of scope, so the player flew a lap with nothing to hit. `operation.ts` adds an objective loop **on top of** the ported rules, as a pure layer that only reads the player and writes the gun fields (`gunHeat`, `gunCd`, `gunLocked`), `takedowns` and the barrels' `alive`/`respawn`. None of those feed the drone's movement, so `reference-replay.test.ts` is unchanged and still exact; `strike.test.ts` additionally replays the reference movement with the gun held down and requires identical player state at every sampled step.
+
+- **Targets**: 16 per lap, seeded (`STRIKE.seed`) along the lap with lateral offsets inside 55% of the road half-width, every fourth a heavy (6 hp, 250 points; sentries 3 hp, 100). They hover 5 m over the road, revive each lap, and are drawn as a glowing core in a spinning ring (two primitives each).
+- **Gun**: the original's tuning (`CFG.weapons`: 330 m/s, 0.75 s life, 0.085 s rate, 0.05 heat per shot, cool 0.45/s, lockout 0.35) on the existing heat meter. Hit tests are swept sphere checks against targets and barrels, with 1.5 m of aim slack in place of the original's cone assist. Overheat locks the gun until it cools below the lockout.
+- **Barrels**: a shot barrel pays 150, respawns after 25 s, and blasts targets within 14 m for 3 damage (it never hurts the player, unlike driving into one).
+- **Score**: kills x multiplier (1 + one per two kills in the chain, max 5, 3 s window, reset by a crash), barrels the same, plus unmultiplied boost pad 25, checkpoint 100, pickup 50 and a 500 clean-lap bonus.
+- **Medals**: only for a finished race: bronze 16, silver 30, gold 42 of 48 kills. Calibration: the reference movement with the trigger held and no aiming lands 6 kills in 1.55 laps (about 12 over three), so a medal needs real aiming.
+- **HUD and flow**: score, multiplier, targets block; objective line from the countdown, then the next target distance and the next medal; results show medal, score, kills, barrels, best chain and accuracy.
+- **Not verified**: the full game never completes automated checks on software GL, so the live feel of aiming, the camera shake and the audio were not judged by a person; see `evidence/heatsink-port/rework/README.md` for what was and was not run.

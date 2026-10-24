@@ -24,7 +24,7 @@ function aim(race: Race, target: { s: number; x: number; world: { y: number } },
   p.theta = 0;
   p.s = race.track.wrap(target.s - back);
   p.x = target.x;
-  p.position = race.track.toWorld(p.s, p.x, target.world.y);
+  Object.assign(p.position, race.track.toWorld(p.s, p.x, target.world.y));
 }
 
 const shoot = (race: Race, substeps: number): void => {
@@ -176,16 +176,16 @@ describe("combat rules", () => {
     const barrel = race.barrels[0]!;
     const w = race.track.toWorld(barrel.s, barrel.x, barrel.y + 1.1);
     const t = race.ops.targets.find((x) => x.kind === "sentry")!;
-    t.world.x = w.x + 3;
-    t.world.y = w.y + 1;
+    t.world.x = w.x;
+    t.world.y = w.y + 8;
     t.world.z = w.z;
     const p = race.player;
     race.state = "race";
     p.crashed = false;
     p.theta = 0;
-    p.s = race.track.wrap(barrel.s - 30);
+    p.s = race.track.wrap(barrel.s - 15);
     p.x = barrel.x;
-    p.position = race.track.toWorld(p.s, p.x, barrel.y + 1.1);
+    Object.assign(p.position, race.track.toWorld(p.s, p.x, barrel.y + 1.1));
     p.gunCd = 0;
     shoot(race, 12);
     expect(barrel.alive).toBe(false);

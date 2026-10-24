@@ -7,6 +7,7 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { expandSegments, parseInputScript } from "../../tools/crayon-capture/heatsink-lib";
+import { createHeatsinkAudio } from "./audio";
 import { CFG } from "./config";
 import { HudModel, formatTime } from "./hud";
 import { STRIKE } from "./operation";
@@ -25,6 +26,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 };
 const canvas = $<HTMLCanvasElement>("world");
 
+const audio = config.manual ? null : createHeatsinkAudio();
 const track = new Track();
 let race = new Race(track);
 const hudModel = { current: new HudModel() };
@@ -72,6 +74,7 @@ function begin(): void {
   race = new Race(track);
   hudModel.current = new HudModel();
   runtime?.resetCamera();
+  audio?.reset();
   loop.resetAccumulator();
   started = true;
   paused = false;
@@ -107,6 +110,7 @@ function updateHud(v: NonNullable<typeof lastHud>): void {
 function render(dt: number): void {
   if (!app || !runtime) return;
   const v = lastHud ?? hudModel.current.update(0, race);
+  audio?.update(race);
   updateHud(v);
   runtime.update(race, v, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
   app.step(0);

@@ -4,6 +4,7 @@
  * pickups, barrels, the player drone (primitives), exhaust points, chase camera, bloom and vignette. The original's
  * GLB/texture assets are re-created procedurally; see PORTING-NOTES.md.
  */
+import { createCameraShake } from "@aura3d/engine/game";
 import { camera, cameras, effects, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
@@ -184,6 +185,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
   if (!cam) throw new Error("heatsink-port: the app exposes no camera controller");
   const cameraController: NonNullable<typeof cam> = cam;
   const chase = cameras.chase();
+  const shake = createCameraShake({ maxOffset: 0.55, maxRoll: 0.02 });
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => {
     let h = handles.get(id);
@@ -269,7 +271,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     const fovBase = c.fovBase + (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0);
     const fov = Math.min(c.fovMax, aspect < 0.85 ? fovBase + 8 : fovBase);
     const pose = chase.step({ wantEye: eye, wantLook: look, fovTarget: fov }, dt);
-    cameraController.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
+    const sh = shake.update(dt);
+    cameraController.setPose({ position: [pose.eye[0] + fz * sh.x, pose.eye[1] + sh.y, pose.eye[2] - fx * sh.x], target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
     node("sky").setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
 
     /* speed streaks radiate from the vanishing point: world-fixed lines along the heading, respawned ahead once passed */
@@ -348,8 +351,8 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
         const ev = ops.events[opsSeen]!;
         if (!ev.world) continue;
         if (ev.type === "hit") { targetFlash[ev.detail as number] = 1; burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9); }
-        else if (ev.type === "kill") burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22);
-        else if (ev.type === "barrel") burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30);
+        else if (ev.type === "kill") { shake.add(0.45); burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22); }
+        else if (ev.type === "barrel") { shake.add(0.8); burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30); }
       }
       for (const t of ops.targets) {
         const core = node(`target-${t.id}`), ring = node(`target-ring-${t.id}`);
