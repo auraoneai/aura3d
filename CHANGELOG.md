@@ -4,7 +4,7 @@ Version: 4.1.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.1.3 (unreleased)
+## 4.1.3 (2026-10-24)
 
 A patch release: the stock-build fix, a large software-WebGL2 frame-cost cut, library kits extracted from the games, corrected API deprecation annotations, a remote-first `look capture`, a rewritten documentation set, and the native Aura Slam route polish. No export is removed or renamed.
 
