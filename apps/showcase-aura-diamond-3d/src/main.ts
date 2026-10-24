@@ -39,10 +39,17 @@ import {
   createRumbleDriver,
   createTweenEngine,
   createFxParticlePass,
-  mountTouchControls
+  mountTouchControls,
+  installGameBeacon
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-aura-diamond-3d", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 installBlackFrameGuard();
 
@@ -4233,8 +4240,7 @@ function boot(): void {
       audio: (audio as any).evidence ? { unlocked: (audio as any).evidence.unlocked, cueCount: (audio as any).evidence.cueCount, playedCueCount: (audio as any).evidence.playedCueCount } : null,
       touch: touchControls?.evidence?.() ?? null
     };
-    (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
-    (window as any).__AURA3D_GAME__ = evidence;
+    publishBeacon(evidence);
     (window as any).__AURA3D_GAME_DIAMOND__ = {
       start: (m: ModeId) => startMode(m),
       setPark,

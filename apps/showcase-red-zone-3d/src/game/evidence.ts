@@ -7,6 +7,13 @@
  */
 import type { GameState } from "./types";
 import type { Director } from "./director";
+import { installGameBeacon } from "@aura3d/engine/game";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-red-zone-3d", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__", "__gameEvidence", "__auraEvidence"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 export interface EvidenceExtras {
   framesRendered: number;
@@ -89,9 +96,6 @@ export function publishEvidence(s: GameState, director: Director, x: EvidenceExt
     meshyAssets: x.meshyAssets,
     deterministic: { rng: "lcg:0x7ed2f00d", ik: "game.racketSports.solveArmElbow", seeded: true }
   };
-  (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
-  (window as any).__AURA3D_GAME__ = evidence;
-  (window as any).__gameEvidence = evidence;
-  (window as any).__auraEvidence = evidence;
+  publishBeacon(evidence);
   return evidence;
 }

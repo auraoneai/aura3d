@@ -41,9 +41,16 @@ import {
   createTweenEngine,
   createFxParticlePass,
   mountTouchControls,
+  installGameBeacon
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-aura-hoops-3d", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 installBlackFrameGuard();
 
@@ -2763,8 +2770,7 @@ function publishEvidence(): void {
       "hoopsAthleteGuard", "hoopsAthleteBig", "hoopsHoopRig", "hoopsRim", "hoopsBackboard", "hoopsBall", "hoopsCourtShell", "showcaseStadiumSeats", "hoopsScoreboard", "hoopsFloodlight", "hoopsBallCart", "hoopsSkyline", "hoopsTower", "hoopsEarth", "hoopsOrbitArena", "hoopsCanopy", "hoopsLamp", "hoopsPalm", "hoopsTrophy"
     ]
   };
-  (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
-  (window as any).__AURA3D_GAME__ = evidence;
+  publishBeacon(evidence);
 }
 
 /* ------------------------------------------------------------------ *

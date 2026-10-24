@@ -42,7 +42,8 @@ import {
   createFxParticlePass,
   mountTouchControls,
   sfx,
-  sfxUrl
+  sfxUrl,
+  installGameBeacon
 } from "@aura3d/engine/game";
 import { assets } from "../../../src/aura-assets";
 import type {
@@ -84,6 +85,12 @@ import {
 } from "./game/sim";
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-aura-links-3d", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__", "__AURA3D_SHOWCASE_AURA_LINKS_3D__"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 installBlackFrameGuard();
 
@@ -2381,9 +2388,7 @@ function publishEvidence(): void {
     ],
     deterministic: { terrain: "buildHoleTerrain", ball: "stepBall", seed: "lcg" }
   };
-  (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
-  (window as any).__AURA3D_GAME__ = evidence;
-  (window as any).__AURA3D_SHOWCASE_AURA_LINKS_3D__ = evidence;
+  publishBeacon(evidence);
 }
 
 /* ------------------------------------------------------------------ *

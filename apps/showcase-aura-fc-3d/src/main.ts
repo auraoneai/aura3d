@@ -15,7 +15,8 @@ import {
 } from "@aura3d/engine";
 import {
   createJuice, createOverlayDriver, createRumbleDriver, createTweenEngine,
-  createFxParticlePass, mountTouchControls
+  createFxParticlePass, mountTouchControls,
+  installGameBeacon
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R } from "./game/sim";
@@ -26,6 +27,12 @@ import { createModes } from "./game/modes";
 import { VENUES, VENUE_ORDER } from "./game/content";
 import type { UserInputFrame, PlayerState, SimEvent } from "./game/types";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-aura-fc-3d", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__", "__gameEvidence", "__auraEvidence"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 installBlackFrameGuard();
 
@@ -595,10 +602,7 @@ function boot(): void {
         }) ?? null,
         deterministic: { ik: "solveArmElbow", ballSim: "sim.ts", seed: "lcg:0xf0a7ba11" }
       };
-      (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
-      (window as any).__AURA3D_GAME__ = evidence;
-      (window as any).__gameEvidence = evidence;
-      (window as any).__auraEvidence = evidence;
+      publishBeacon(evidence);
     };
     return f;
   }
