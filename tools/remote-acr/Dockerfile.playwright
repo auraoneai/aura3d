@@ -67,6 +67,7 @@ COPY public/ ./public/
 COPY tools/naming-taxonomy/ ./tools/naming-taxonomy/
 COPY tools/remote-acr/ ./tools/remote-acr/
 COPY tools/crayon-capture/ ./tools/crayon-capture/
+COPY tools/bench-vs-threejs/ ./tools/bench-vs-threejs/
 COPY playwright.config.ts tsconfig.base.json index.html favicon.svg vite.config.ts vite.aliases.generated.ts tsconfig.paths.generated.json ./
 
 # Fail the build, not the run, if the runner script failed to land.

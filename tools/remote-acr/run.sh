@@ -126,6 +126,9 @@ rsync -aR assets/packs "$CTX/"
 for extra in ${EXTRA_DIRS:-}; do rsync -aR --exclude node_modules --exclude dist "$extra" "$CTX/"; done
 mkdir -p "$CTX/tools"
 rsync -a tools/naming-taxonomy tools/remote-acr tools/crayon-capture "$CTX/tools/"
+# The Dockerfile COPYs tools/bench-vs-threejs unconditionally, so the (possibly empty) directory always exists in the context.
+mkdir -p "$CTX/tools/bench-vs-threejs"
+[ -d tools/bench-vs-threejs ] && rsync -a --exclude node_modules --exclude dist tools/bench-vs-threejs "$CTX/tools/"
 
 du -sh "$CTX" | awk '{print "   context size: "$1}'
 
