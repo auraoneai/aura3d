@@ -2,7 +2,7 @@
 
 Aura3D is a TypeScript engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize. Do not import `three`, write a loader or add a render loop.
 
-Read first: this page, then `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
+Read first: this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
 
 ## 1. Scaffold and run
 

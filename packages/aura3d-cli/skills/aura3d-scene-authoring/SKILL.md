@@ -121,6 +121,7 @@ one change per round (lint first, then the weakest category). Full loop spec:
 ## References
 
 - [Shared boundaries](../aura3d-core/references/boundaries.md)
+- [Recipes](https://github.com/auraoneai/aura3d/blob/main/docs/agents/recipes.md) (complete compiled scenes for the common tasks: copy one, then adapt; read this before opening any `dist/` file)
 - [Agent quickstart](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-quickstart.md) (zero to a rendering scene, mistakes agents make)
 - [Build playbook](https://github.com/auraoneai/aura3d/blob/main/docs/agents/build-playbook.md) (games and assets)
 - [Prompt to 3D workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/prompt-to-3d-workflow.md)
