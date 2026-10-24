@@ -7,7 +7,7 @@
  * only advances through `__AURA_SILT__.stepFrames` / `replay`), `start=1` (skip the title screen). Any of
  * `objective`, `autopilot`, `manual` or `start` goes straight into play with no screens.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, effects, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, effects, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { updateCompass } from "@aura3d/engine/game";
 import { CHAPTERS } from "./chapters-data";
 import { autopilot } from "./autopilot";
@@ -54,7 +54,6 @@ let ready = false;
 let autopilotOn = config.autopilot;
 let renderTime = 0;
 let frames = 0;
-let accumulator = 0;
 let hudTimer = 0;
 let toastTimer = 0;
 let heldInput: Input | null = null;
@@ -227,18 +226,19 @@ function onEvents(events: readonly SimEvent[]): void {
   }
 }
 
-function tick(now: number, last: number): void {
-  const dt = Math.min(0.1, (now - last) / 1000);
-  renderTime += dt;
-  if (ready && !config.manual) {
+/** The sim steps only in play mode; in other modes the loop still drains its clock so resuming never bursts. */
+const loop = createFixedStepLoop({
+  stepSeconds: STEP,
+  maxCatchUpSteps: 8,
+  manual: config.manual,
+  step: () => {
+    if (mode !== "play") return;
+    const events = stepSim(sim, sampleInput(), STEP);
+    if (events.length) onEvents(events);
+  },
+  render: (dt) => {
+    renderTime += dt;
     if (mode === "play") {
-      accumulator += dt;
-      let guard = 0;
-      while (accumulator >= STEP && guard++ < 8) {
-        const events = stepSim(sim, sampleInput(), STEP);
-        if (events.length) onEvents(events);
-        accumulator -= STEP;
-      }
       if (!qa || params.get("start") === "1") {
         if (sim.state.completed) openDone();
         else if (sim.state.scene) openScene();
@@ -250,8 +250,7 @@ function tick(now: number, last: number): void {
     if (hudTimer > 0.08) { hudTimer = 0; updateHud(); }
     if (toastTimer > 0 && (toastTimer -= dt) <= 0) $("toast").classList.remove("show");
   }
-  requestAnimationFrame((t) => tick(t, now));
-}
+});
 
 /* ------------------------------------------------------------------ HUD */
 
@@ -284,7 +283,6 @@ const row = (): Row => {
 function reset(chapter = config.chapter, objective = config.objective, start?: { clockMs?: number; time?: number }): void {
   const ch = Math.max(0, Math.min(6, Math.trunc(chapter)));
   sim = createSim(ch, Math.max(0, Math.min(CHAPTERS[ch]!.objectives.length - 1, Math.trunc(objective))), undefined, start);
-  accumulator = 0;
   heldInput = null;
 }
 
@@ -302,16 +300,20 @@ function replay(segments: readonly { steps: number; input: Input }[]): Row[] {
 
 function installHooks(): void {
   const routeHealth = app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SH-01", "SG-05", "ST-01"] }) : null;
-  Object.assign(window as unknown as Record<string, unknown>, {
-    __AURA_SILT__: {
+  installQaHooks("silt", {
+    ready: () => ready,
+    state: () => structuredClone({ state: sim.state, flight: sim.flight, time: sim.time, steps: sim.steps }),
+    stepFrames: (n, input) => stepFrames(n, input as Input | undefined),
+    app: () => app,
+    routeHealth: () => routeHealth,
+    nodeCount: () => runtime?.nodeCount ?? 0,
+    extras: {
       get ready() { return ready; },
       config,
       reset,
-      stepFrames,
       replay,
       applyInput(input: Input | null) { heldInput = input; },
       setAutopilot(on: boolean) { autopilotOn = on; },
-      state: () => structuredClone({ state: sim.state, flight: sim.flight, time: sim.time, steps: sim.steps }),
       row,
       render: () => render(0),
       /** a fixed camera pose for evidence frames; passing false returns to the chase camera */
@@ -379,7 +381,7 @@ async function boot(): Promise<void> {
   installHooks();
   render(0);
   updateHud();
-  requestAnimationFrame((t) => tick(t, t));
+  loop.start();
 }
 
 boot().catch((error) => {
