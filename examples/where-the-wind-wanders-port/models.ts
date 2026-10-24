@@ -6,6 +6,7 @@ import { instances, model, type AuraApp, type scene } from "@aura3d/engine";
 
 type Scene = ReturnType<typeof scene>;
 import { MODEL_ASSETS, hasModel } from "./model-assets";
+import { CLIP_SECONDS, STRIDE_SPEED, pickGait, type Gait } from "./locomotion";
 import type { ModelPlacement, Scenery } from "./scenery";
 
 export interface ModelSet { letter: boolean; bell: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; boat: boolean; stones: boolean; shrubs: boolean }
@@ -47,15 +48,43 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
   if (set.boat) builder.add(model(MODEL_ASSETS.boat, { name: "boat", targetLength: 5.4, castShadow: false, collider: false }).runtime({ id: "boat" }));
 }
 
-export interface HeroAnimator { play(clip: string, rate: number, dt: number): void }
+export interface HeroDrive { x: number; z: number; airborne: boolean; onBoat: boolean; time: number }
+export interface HeroAnimator { update(drive: HeroDrive): Gait; reset(x: number, z: number, time?: number): void; readonly gait: Gait; readonly groundSpeed: number }
+/**
+ * Drives the traveller's walk, run and idle clips from the distance travelled. The clip phase advances by
+ * distance / planted-foot speed, so a foot on the ground moves exactly as fast as the ground whatever the frame rate or
+ * how often `update` is called (the stepped QA path calls it twice per sim step). The phase is pinned each frame
+ * (`loop: false` plus `captureTime`), and `play` only gets a crossfade on a gait change: re-issuing a fresh crossfade
+ * on every frame restarts the blend, and a looped clip with a moving `captureTime` also runs on the engine's own clock.
+ */
 export function createHeroAnimator(app: AuraApp): HeroAnimator {
   const hero = app.nodes.require("hero");
-  let clip = "", t = 0;
+  let gait: Gait = "Idle", phase = 0, issued: Gait | "" = "", lastX = 0, lastZ = 0, lastTime = 0, groundSpeed = 0, primed = false;
   return {
-    play(next, rate, dt) {
-      if (next !== clip) { clip = next; t = 0; }
-      t += dt * rate;
-      hero.play(next, { loop: true, captureTime: t, crossFade: 0.15 });
+    get gait() { return gait; },
+    get groundSpeed() { return groundSpeed; },
+    reset(x, z, time) { gait = "Idle"; phase = 0; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; groundSpeed = 0; primed = true; },
+    update({ x, z, airborne, onBoat, time }) {
+      if (!primed) { lastX = x; lastZ = z; lastTime = time; primed = true; }
+      const dt = time - lastTime;
+      const distance = onBoat ? 0 : Math.hypot(x - lastX, z - lastZ);
+      if (dt > 0) {
+        groundSpeed += (distance / dt - groundSpeed) * (1 - Math.exp(-dt / 0.08));
+        lastTime = time;
+      }
+      lastX = x; lastZ = z;
+      const next = onBoat ? "Idle" : pickGait(gait, groundSpeed, airborne);
+      if (next !== gait) {
+        const walkRun = gait !== "Idle" && next !== "Idle";
+        phase = walkRun ? (phase / CLIP_SECONDS[gait]) * CLIP_SECONDS[next] : 0;
+        gait = next;
+      }
+      if (gait === "Idle") phase = time % CLIP_SECONDS.Idle;
+      else if (airborne) phase = (phase + Math.max(0, dt)) % CLIP_SECONDS.Run;
+      else phase = (phase + distance / STRIDE_SPEED[gait]) % CLIP_SECONDS[gait];
+      hero.play(gait, { loop: false, captureTime: phase, crossFade: issued !== gait ? 0.15 : false });
+      issued = gait;
+      return gait;
     }
   };
 }

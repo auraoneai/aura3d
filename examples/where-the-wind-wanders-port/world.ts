@@ -403,10 +403,10 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
         stats: { trees: sc.treeCount, propTriangles, foliageTriangles: f.indices.length / 3, terrainTriangles: terrain.indices.length / 3 },
         get nodeCount() { return handles.size; },
         setEpilogue(seconds) { epilogue = seconds; },
-        snap(state) { look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
+        snap(state) { heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
         reset() {
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
-          lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
+          lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; heroAnim?.reset(START.x, START.z, 0); gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
         },
         update(state, dt, time, aspect) {
           const { x, z } = state.pos;
@@ -419,6 +419,7 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
             walkAmt += ((speed > 0.4 ? 1 : 0) - walkAmt) * Math.min(1, dt * 10);
             lastX = x; lastZ = z; lastStep = state.step;
           }
+
           gait = state.stride * Math.PI * 2;
           const targetYaw = FACING_YAW[state.facing] ?? 0;
           let dy = targetYaw - yaw;
@@ -439,8 +440,7 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
             node("shadow").setPosition(x, y + 0.06, z).setScale(1 - 0.35 * Math.min(1, hop / 1.2));
           }
           if (heroAnim) {
-            const clip = onBoat ? "Idle" : state.hop.phase !== "idle" ? "Run" : walkAmt > 0.5 ? "Walk" : "Idle";
-            heroAnim.play(clip, clip === "Walk" ? 0.9 + 0.5 * walkAmt : 1, dt);
+            heroAnim.update({ x, z, airborne: state.hop.phase !== "idle", onBoat, time });
           } else tr.setScale(1.3);
           if (!heroAnim) {
             tr.setUniform?.("gait", gait);

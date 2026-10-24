@@ -1,0 +1,28 @@
+{
+ "idle": {
+  "name": "idle",
+  "frames": 30,
+  "clips": {
+   "Idle": 29
+  },
+  "haveAnim": 29,
+  "groundSpeedMedian": 0,
+  "phaseRateMedian": 3,
+  "plantedFootSlideMedian": null,
+  "stanceSamples": 0,
+  "plantedFootSlideRatio": null
+ },
+ "walk": {
+  "name": "walk",
+  "frames": 90,
+  "clips": {
+   "Walk": 89
+  },
+  "haveAnim": 89,
+  "groundSpeedMedian": 3.2,
+  "phaseRateMedian": 3.8,
+  "plantedFootSlideMedian": 5.499,
+  "stanceSamples": 103,
+  "plantedFootSlideRatio": 1.718
+ }
+}

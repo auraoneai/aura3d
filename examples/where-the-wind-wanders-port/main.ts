@@ -212,6 +212,12 @@ installQaHooks("wind", {
   app: () => app,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: PARITY_IDS }) : null),
   extras: {
+    /** The hero's current animation command and the render clock (null without the hero model); motion specs derive foot slide from it. */
+    heroRig(): { renderTime: number; animation: unknown } | null {
+      const hero = app?.nodes.get?.("hero");
+      const snap = hero?.snapshot?.() as { animation?: unknown } | undefined;
+      return snap ? { renderTime, animation: snap.animation ?? null } : null;
+    },
     async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
       render(VIRTUAL_STEP_MS);
       const out = document.createElement("canvas");
