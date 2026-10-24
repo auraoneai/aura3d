@@ -117,7 +117,7 @@ Scope root: `apps/veer-wonder-world/` unless a row explicitly starts at repo roo
 | F01 | `src/content/episodes/momo-magic-mouth.ts` | EDU/AUDIO | [ ] Sound play, gestures and model of “ah/oh/mmm”; no tongue/lip accuracy scoring |
 | F02 | `src/content/episodes/peekaboo-palace.ts` | EDU/ART | [ ] Gentle hide/reveal, “hi/open/bye”, parent gesture opportunity |
 | F03 | `src/content/episodes/baby-animal-orchestra.ts` | EDU/AUDIO | [ ] “moo/baa/quack/woof” paired with animal + rhythm; not auditory overload |
-| F04 | `src/content/episodes/sheru-ball-adventure.ts` | EDU/ART | [ ] Ball/go/more fetch story; golden pilot with real-ball endcard |
+| F04 | `src/content/episodes/sheru-big-adventure.ts` | EDU/ART | [ ] Ball/go/more fetch *chapter* in canonical Sheru’s Big Adventure E17; golden pilot with real-ball endcard |
 | F05 | `src/content/episodes/lulu-dino-dance.ts` | EDU/AUDIO | [ ] Clap/go/stop/stomp and optional physical dance breaks |
 | F06 | `src/content/episodes/counting-cookies.ts` | EDU/ART | [ ] Cookie visible count 1–3, “one more/eat/all gone”; no speed quiz |
 
@@ -129,23 +129,21 @@ Scope root: `apps/veer-wonder-world/` unless a row explicitly starts at repo roo
 | G03 | `src/content/activities/sheru-ball.ts` | Roll/fetch/another turn | [ ] One tap → ball roll → fetch → return → repeat or end; real-ball bridge |
 
 ## H. P2: fourteen additional episodes (one source file each)
-- [ ] H01 `src/content/episodes/alphabet-zoo.ts` — animal + isolated letter/word/sound, not 26 fast symbol flashes.
-- [ ] H02 `src/content/episodes/gogo-abc-train.ts` — letter carriage, associated object reveal, finite story.
-- [ ] H03 `src/content/episodes/magic-colour-machine.ts` — colour + familiar concrete object.
-- [ ] H04 `src/content/episodes/wheres-sheru.ts` — search; in/out/under/behind.
-- [ ] H05 `src/content/episodes/momos-hungry-belly.ts` — food noun, eat, more, all done.
-- [ ] H06 `src/content/episodes/number-balloon-rescue.ts` — one-to-one count three balloons.
-- [ ] H07 `src/content/episodes/magic-shape-bakery.ts` — circle/square/triangle shape-object pairing.
-- [ ] H08 `src/content/episodes/silly-robot-factory.ts` — body/cloth words; harmless mismatched props.
-- [ ] H09 `src/content/episodes/lost-teddy-adventure.ts` — look/find/under with short journey.
-- [ ] H10 `src/content/episodes/momo-bubble-universe.ts` — reveal/noun/pop/more word repetition.
-- [ ] H11 `src/content/episodes/little-birthday-party.ts` — cake/candle/blow and count.
-- [ ] H12 `src/content/episodes/sheru-big-adventure.ts` — ball/bird/water/run outdoor vocabulary.
-- [ ] H13 `src/content/episodes/whos-at-the-door.ts` — greetings; no family voices without consent.
-- [ ] H14 `src/content/episodes/momos-day.ts` — wake/wash/eat/brush/sleep routine.
-- [ ] H15 `src/content/episodes/little-story-machine.ts` — **extra original concept** from previous brainstorming: three props → small story. Treat as P2+ (twenty-one total including this), OR substitute it for a different episode only by explicit editorial decision.
-
-**Editorial reconciliation:** prior brainstorming contained **twenty episodes**, not twenty-one: the set above should be **14 follow-on files** after P1 six; retain “Little Story Machine” in the official twenty and remove one duplicate from the above enumerated catalog during P2 freeze. Proposed resolution: `momo-bubble-universe` overlaps the P1 Bubble Garden activity; **keep `little-story-machine.ts` and omit `momo-bubble-universe.ts` from the default P2 release set**, documenting Bubble Universe as a bonus variant. The content bible `05` is the canonical 20-episode catalog.
+These are the **other fourteen** entries in the canonical twenty of `05`; the P1 six are E01/E02/E05/E06/E09/E17.
+- [ ] H01 `src/content/episodes/alphabet-zoo.ts` — animal + isolated letter/word/sound; not 26 fast symbol flashes (E03).
+- [ ] H02 `src/content/episodes/gogo-abc-train.ts` — letter carriage, associated object reveal, finite story (E04).
+- [ ] H03 `src/content/episodes/magic-colour-machine.ts` — colour + familiar concrete object (E07).
+- [ ] H04 `src/content/episodes/wheres-sheru.ts` — search; in/out/under/behind (E08).
+- [ ] H05 `src/content/episodes/momos-hungry-belly.ts` — food nouns, eat/more/all done (E10).
+- [ ] H06 `src/content/episodes/number-balloon-rescue.ts` — one-to-one count of three balloons (E11).
+- [ ] H07 `src/content/episodes/magic-shape-bakery.ts` — circle/square/triangle shape-object pairing (E12).
+- [ ] H08 `src/content/episodes/silly-robot-factory.ts` — body/clothing words; harmless mismatched props (E13).
+- [ ] H09 `src/content/episodes/lost-teddy-adventure.ts` — look/find/under with short journey (E14).
+- [ ] H10 `src/content/episodes/momo-bubble-universe.ts` — bubble/reveal/noun/pop/more; separate **episode** from Bubble Garden activity (E15).
+- [ ] H11 `src/content/episodes/little-birthday-party.ts` — cake/candle/blow and visible count (E16).
+- [ ] H12 `src/content/episodes/whos-at-the-door.ts` — greetings; no family voices without consent (E18).
+- [ ] H13 `src/content/episodes/momos-day.ts` — wake/wash/eat/brush/sleep routines (E19).
+- [ ] H14 `src/content/episodes/little-story-machine.ts` — preapproved 2-noun + action micro-stories; no on-the-fly LLM speech (E20).
 
 ## I. P2: nine additional interactive activities (12 total)
 - [ ] I01 `src/content/activities/peekaboo-animal-barn.ts` — touch-open door, names/animal sounds, finite 3 reveals.
