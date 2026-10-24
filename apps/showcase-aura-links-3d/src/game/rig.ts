@@ -69,6 +69,7 @@ export type GolferPhase =
 const golfKit = game.racketSports("aura-links-golfer");
 
 const HIDDEN = 0.0001;
+const GOLFER_BONES = ["Root", "Hips", "Spine", "Chest", "Head", "LeftUpperLeg", "LeftLowerLeg", "LeftFoot", "RightUpperLeg", "RightLowerLeg", "RightFoot", "LeftUpperArm", "LeftForearm", "RightUpperArm", "RightForearm"] as const;
 const UNI: [number, number, number] = [1, 1, 1];
 const STANCE_MID: [number, number, number] = [0.52, 0.012, -0.02];
 
@@ -253,6 +254,8 @@ function calibrateClub(rig: GolferRig, root: RootFrame, groundDy: number): void 
     try {
       const attachment = attachToBone((rig.hero as any).animation, {
         bone: "RightForearm",
+        // the rig is known (GLB joint list), so skip the live socket probe: the actor may not have loaded its skeleton yet
+        boneNames: GOLFER_BONES,
         target: part.id,
         position: [...part.position] as [number, number, number],
         rotation: [...part.rotation] as [number, number, number]
