@@ -144634,13 +144634,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "diamondAthlete": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/diamondAthlete.4e29f649.glb",
-    hash: "sha256-47101736778411c780e093e8adb648eb80d7c4db8e2566b57e037778577592aa",
+    url: "/aura-assets/diamondAthleteClean.ef3c43ea.glb",
+    hash: "sha256-ef3c43ea52326c00ee7cc828fff9e4b080253bd93f13b876ebad1b6bddfceacc",
     bounds: [0.938, 1.903, 0.364],
-    sizeBytes: 1630948,
+    sizeBytes: 2574320,
     metadata: {
       "materials": [
-        "material-0"
+        "diamondAthleteClean-kit",
+        "diamondAthleteClean-shorts",
+        "diamondAthleteClean-skin",
+        "diamondAthleteClean-dark",
+        "diamondAthleteClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -144699,7 +144703,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:22:29.602Z"
       },
       "sourcePath": "artifacts/meshy/diamond-athlete/model.opt.glb",
-      "outputPath": "public/aura-assets/diamondAthlete.4e29f649.glb",
+      "outputPath": "public/aura-assets/diamondAthleteClean.ef3c43ea.glb",
       "boundsMetadata": {
         "min": [
           -0.899,
@@ -149520,13 +149524,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "hoopsAthleteBig": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteBig.a11d61c5.glb",
-    hash: "sha256-ba0008e3f395992ff7518ad2a346858640fc03e924e1d257632d16371c576830",
+    url: "/aura-assets/hoopsAthleteBigClean.bfc264d0.glb",
+    hash: "sha256-bfc264d02bf17a45b3b0b62bbcddfd6ca6469b19120e22e7667d941d7e16c0df",
     bounds: [0.878, 1.903, 0.429],
-    sizeBytes: 1491928,
+    sizeBytes: 2546544,
     metadata: {
       "materials": [
-        "material-0"
+        "hoopsAthleteBigClean-kit",
+        "hoopsAthleteBigClean-shorts",
+        "hoopsAthleteBigClean-skin",
+        "hoopsAthleteBigClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -149585,7 +149592,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:22:50.995Z"
       },
       "sourcePath": "artifacts/meshy/hoops-athlete-big/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteBig.a11d61c5.glb",
+      "outputPath": "public/aura-assets/hoopsAthleteBigClean.bfc264d0.glb",
       "boundsMetadata": {
         "min": [
           -0.838,
@@ -149648,13 +149655,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "hoopsAthleteGuard": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteGuard.fbef844e.glb",
-    hash: "sha256-b1468563ab80b4419d86a38c60c368018793626ae7efd13472dcf02c76aa7926",
+    url: "/aura-assets/hoopsAthleteGuardClean.178e3649.glb",
+    hash: "sha256-178e3649ae936eb9dd4ca9f7ec4623d4af72b6c2112fe2d06d9bbc1c11185ad4",
     bounds: [0.905, 1.903, 0.404],
-    sizeBytes: 1494272,
+    sizeBytes: 2529652,
     metadata: {
       "materials": [
-        "material-0"
+        "hoopsAthleteGuardClean-kit",
+        "hoopsAthleteGuardClean-shorts",
+        "hoopsAthleteGuardClean-skin",
+        "hoopsAthleteGuardClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -149713,7 +149723,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:22:16.647Z"
       },
       "sourcePath": "artifacts/meshy/hoops-athlete-guard/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteGuard.fbef844e.glb",
+      "outputPath": "public/aura-assets/hoopsAthleteGuardClean.178e3649.glb",
       "boundsMetadata": {
         "min": [
           -0.856,
@@ -153898,13 +153908,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "fcSoccerStrikerMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcSoccerStrikerMeshy.a675e393.glb",
-    hash: "sha256-8c056f070844d7384ee8ae2675dc8c32458d6d5d5010b21977be9dff096699b0",
+    url: "/aura-assets/fcSoccerStrikerClean.2e335ee3.glb",
+    hash: "sha256-2e335ee382a014f28004d6c12c15f0f18c0580d1e764cab0b770bb5a2deeef1c",
     bounds: [0.742, 1.891, 0.755],
-    sizeBytes: 1639852,
+    sizeBytes: 2590244,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "fcSoccerStrikerClean-kit",
+        "fcSoccerStrikerClean-shorts",
+        "fcSoccerStrikerClean-skin",
+        "fcSoccerStrikerClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -153962,7 +153975,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:26.112Z"
       },
       "sourcePath": "artifacts/meshy/fcSoccerStrikerMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcSoccerStrikerMeshy.a675e393.glb",
+      "outputPath": "public/aura-assets/fcSoccerStrikerClean.2e335ee3.glb",
       "boundsMetadata": {
             "min": [
                   -0.373,
@@ -154022,13 +154035,16 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "fcGoalkeeperMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcGoalkeeperMeshy.156eb05c.glb",
-    hash: "sha256-5e36f3be8a97ce264b3d572f50cf76f9813fd54c70deebe6657800287755f854",
+    url: "/aura-assets/fcGoalkeeperClean.4194514e.glb",
+    hash: "sha256-4194514e0bad612cb881c8b91ad0c824a7040a938ef600e9426af45d00c2eadc",
     bounds: [0.716, 1.899, 0.561],
-    sizeBytes: 1705960,
+    sizeBytes: 2595124,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "fcGoalkeeperClean-kit",
+        "fcGoalkeeperClean-shorts",
+        "fcGoalkeeperClean-skin",
+        "fcGoalkeeperClean-dark"
       ],
       "animations": [],
       "animationClips": [],
@@ -154086,7 +154102,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:46.781Z"
       },
       "sourcePath": "artifacts/meshy/fcGoalkeeperMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcGoalkeeperMeshy.156eb05c.glb",
+      "outputPath": "public/aura-assets/fcGoalkeeperClean.4194514e.glb",
       "boundsMetadata": {
             "min": [
                   -0.357,
@@ -154274,13 +154290,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rzQuarterbackMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
-    hash: "sha256-7999d60e829f92473394f12aa013cb52c5cdaa8dbe34f5e9c817be138b483891",
+    url: "/aura-assets/rzQuarterbackClean.2397b4cd.glb",
+    hash: "sha256-2397b4cd4a0d5418caedd04baff3d294eea8a481c37f13e540d096202ca4c831",
     bounds: [0.89, 1.897, 0.505],
-    sizeBytes: 1293916,
+    sizeBytes: 1473324,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "rzQuarterbackClean-kit",
+        "rzQuarterbackClean-shorts",
+        "rzQuarterbackClean-skin",
+        "rzQuarterbackClean-dark",
+        "rzQuarterbackClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -154338,7 +154358,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:36.326Z"
       },
       "sourcePath": "artifacts/meshy/rzQuarterbackMeshy/model.glb",
-      "outputPath": "public/aura-assets/rzQuarterbackMeshy.9368c81f.glb",
+      "outputPath": "public/aura-assets/rzQuarterbackClean.2397b4cd.glb",
       "boundsMetadata": {
             "min": [
                   -0.447,
@@ -154398,13 +154418,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rzDefenderLinemanMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
-    hash: "sha256-dc3ffd55e0ae2eb250a7580c437e958987fc466e31c65bcd0c54b208221b440c",
+    url: "/aura-assets/rzDefenderLinemanClean.deec33d6.glb",
+    hash: "sha256-deec33d6c5179c6c979d1c5440f579a2bd004497b0d3223d8cdefb62186f4cfe",
     bounds: [1.147, 1.896, 1.672],
-    sizeBytes: 1423628,
+    sizeBytes: 1745932,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "rzDefenderLinemanClean-kit",
+        "rzDefenderLinemanClean-shorts",
+        "rzDefenderLinemanClean-skin",
+        "rzDefenderLinemanClean-dark",
+        "rzDefenderLinemanClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -154462,7 +154486,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:52.834Z"
       },
       "sourcePath": "artifacts/meshy/rzDefenderLinemanMeshy/model.glb",
-      "outputPath": "public/aura-assets/rzDefenderLinemanMeshy.38e261b9.glb",
+      "outputPath": "public/aura-assets/rzDefenderLinemanClean.deec33d6.glb",
       "boundsMetadata": {
             "min": [
                   -0.565,
@@ -154650,13 +154674,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "linksGolferAthleteMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/linksGolferAthleteMeshy.a39990ad.glb",
-    hash: "sha256-960fb13c0821f603a9bf647c68ef6aa1a3f097f3b9c6bae137556f5219bc303d",
+    url: "/aura-assets/linksGolferAthleteClean.5a04c740.glb",
+    hash: "sha256-5a04c74031f568a027c62542800ebad090af6349afb5322f6379c37015e3c319",
     bounds: [0.701, 1.897, 0.555],
-    sizeBytes: 1123524,
+    sizeBytes: 1430904,
     metadata: {
       "materials": [
-        "BakedMaterial"
+        "linksGolferAthleteClean-kit",
+        "linksGolferAthleteClean-shorts",
+        "linksGolferAthleteClean-skin",
+        "linksGolferAthleteClean-dark",
+        "linksGolferAthleteClean-cap"
       ],
       "animations": [],
       "animationClips": [],
@@ -154714,7 +154742,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:16:55.807Z"
       },
       "sourcePath": "artifacts/meshy/linksGolferAthleteMeshy/model.glb",
-      "outputPath": "public/aura-assets/linksGolferAthleteMeshy.a39990ad.glb",
+      "outputPath": "public/aura-assets/linksGolferAthleteClean.5a04c740.glb",
       "boundsMetadata": {
             "min": [
                   -0.351,

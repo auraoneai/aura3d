@@ -4,19 +4,31 @@
 // into four material primitives (kit, shorts, skin, dark) from the mesh's own skin weights, drops the base-colour, normal and
 // metal/rough textures, and leaves the skeleton and clips untouched. Four draws per athlete, no texture memory.
 // (The engine ignores glTF COLOR_0 on this skinned path, so vertex colours render white.)
-// Usage: node tools/hoops-athlete-retexture/retexture.mjs <in.glb> <out-dir> <name>
+// Usage: node tools/hoops-athlete-retexture/retexture.mjs <in.glb> <out-dir> <name> [config.json | inline-json]
+// Optional config (defaults reproduce the basketball athletes): { palette: {jersey,shorts,skin,hair,sock,shoe,sole,trim,cap},
+//   legs: "shorts" | "pants", sleeves: "short" | "long", sockHeight: 0.13, shoeGroup: "kit" | "dark",
+//   headCap: false | true (paint the top of the head as a cap/helmet group), capFraction: 0.45,
+//   heightRules: true | false (false = classify by joint only, for crouched or posed bind poses) }
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { NodeIO } from "@gltf-transform/core";
 
-const [, , inFile, outDir, name] = process.argv;
+const [, , inFile, outDir, name, configArg] = process.argv;
 if (!inFile || !outDir || !name) { console.error("usage: retexture.mjs <in.glb> <out-dir> <name>"); process.exit(2); }
 
-const PALETTE = {
+const BASE_PALETTE = {
   jersey: [236, 236, 230], shorts: [52, 58, 74], skin: [168, 108, 78], hair: [30, 24, 20],
-  sock: [232, 232, 226], shoe: [236, 236, 230], sole: [40, 42, 48], trim: [220, 120, 40]
+  sock: [232, 232, 226], shoe: [236, 236, 230], sole: [40, 42, 48], trim: [220, 120, 40], cap: [28, 44, 84]
 };
+const CONFIG = configArg ? JSON.parse(configArg.trim().startsWith("{") ? configArg : readFileSync(configArg, "utf8")) : {};
+const PALETTE = { ...BASE_PALETTE, ...(CONFIG.palette ?? {}) };
+const LEGS = CONFIG.legs ?? "shorts";
+const SLEEVES = CONFIG.sleeves ?? "short";
+const SOCK_H = CONFIG.sockHeight ?? 0.13;
+const HEAD_CAP = CONFIG.headCap ?? false;
+const CAP_FRACTION = CONFIG.capFraction ?? 0.45;
+const HEIGHT_RULES = CONFIG.heightRules ?? true;
 
 const io = new NodeIO();
 const doc = await io.read(inFile);
@@ -57,14 +69,14 @@ function classify(i) {
   const j = dom[i];
   const y = P[i * 3 + 1];
   const h = (y - ymin) / H;
-  if (j === "Head") return y > hy1 - (hy1 - hy0) * 0.4 ? "hair" : "skin";
-  if (j === "Chest" || j === "Spine") return h > 0.835 ? "skin" : "jersey";
+  if (j === "Head") return HEAD_CAP ? (y > hy1 - (hy1 - hy0) * CAP_FRACTION ? "cap" : "skin") : y > hy1 - (hy1 - hy0) * 0.4 ? "hair" : "skin";
+  if (j === "Chest" || j === "Spine") return HEIGHT_RULES && h > 0.835 ? "skin" : "jersey";
   if (j === "Hips") return "shorts";
-  if (j.endsWith("UpperLeg")) return h > 0.4 ? "shorts" : "skin";
-  if (j.endsWith("LowerLeg")) return h < 0.13 ? "sock" : "skin";
-  if (j.endsWith("Foot")) return h < 0.018 ? "sole" : "shoe";
-  if (j.endsWith("UpperArm")) return h > 0.74 ? "jersey" : "skin";
-  if (j.endsWith("Forearm")) return "skin";
+  if (j.endsWith("UpperLeg")) return !HEIGHT_RULES || h > 0.4 ? "shorts" : "skin";
+  if (j.endsWith("LowerLeg")) return HEIGHT_RULES && h < SOCK_H ? "sock" : LEGS === "pants" ? "shorts" : "skin";
+  if (j.endsWith("Foot")) return HEIGHT_RULES && h < 0.018 ? "sole" : "shoe";
+  if (j.endsWith("UpperArm")) return !HEIGHT_RULES || h > 0.74 ? "jersey" : "skin";
+  if (j.endsWith("Forearm")) return SLEEVES === "long" ? "jersey" : "skin";
   return "skin";
 }
 const cls = new Array(n);
@@ -72,13 +84,13 @@ for (let i = 0; i < n; i += 1) cls[i] = classify(i);
 
 const lin = (v) => { const c = v / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
 // Four material groups keep it to four draws per athlete: white kit (jersey, socks, shoes), shorts, skin, dark (hair, soles).
-const GROUP = { jersey: "kit", sock: "kit", shoe: "kit", trim: "kit", shorts: "shorts", skin: "skin", hair: "dark", sole: "dark" };
-const GROUP_COLOR = { kit: PALETTE.jersey, shorts: PALETTE.shorts, skin: PALETTE.skin, dark: PALETTE.hair };
+const GROUP = { jersey: "kit", sock: "kit", shoe: CONFIG.shoeGroup ?? "kit", trim: "kit", shorts: "shorts", skin: "skin", hair: "dark", sole: "dark", cap: "cap" };
+const GROUP_COLOR = { kit: PALETTE.jersey, shorts: PALETTE.shorts, skin: PALETTE.skin, dark: PALETTE.hair, cap: PALETTE.cap };
 const groupOf = (v) => GROUP[cls[v]];
 const buffer = root.listBuffers()[0];
 const srcAttrs = ["POSITION", "NORMAL", "TEXCOORD_0", "JOINTS_0", "WEIGHTS_0"].filter((k) => prim.getAttribute(k));
 const srcArrays = Object.fromEntries(srcAttrs.map((k) => [k, { acc: prim.getAttribute(k), size: prim.getAttribute(k).getElementSize() }]));
-const tris = { kit: [], shorts: [], skin: [], dark: [] };
+const tris = { kit: [], shorts: [], skin: [], dark: [], cap: [] };
 for (let t = 0; t < idx.length; t += 3) {
   const votes = {};
   for (let k = 0; k < 3; k += 1) { const g = groupOf(idx[t + k]); votes[g] = (votes[g] ?? 0) + 1; }
