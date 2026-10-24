@@ -1,6 +1,6 @@
 # Support Policy
 
-Version: 4.0.0
+Version: 4.1.0
 
 Current release: Aura3D 4.0.0.
 

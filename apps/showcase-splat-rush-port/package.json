@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-splat-rush-port",
-  "version": "4.0.8",
+  "version": "4.1.0",
   "private": true,
   "type": "module",
   "description": "Aura3D port of the mechanics of Splat Rush: No audio; the original's DOM flash and vignette overlays and platform SDKs are not ported.",
