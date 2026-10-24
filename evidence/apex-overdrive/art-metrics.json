@@ -1,0 +1,143 @@
+{
+ "summary": {
+  "frames": 10,
+  "meanLumaJSD": 0.0671,
+  "meanRgbJSD": 0.0622,
+  "meanEdgeBefore": 0.0525,
+  "meanEdgeAfter": 0.0572,
+  "meanLumaBefore": 79.98,
+  "meanLumaAfter": 89.06
+ },
+ "frames": [
+  {
+   "frame": "01-start-grid",
+   "lumaJSD": 0.0367,
+   "rgbJSD": 0.0289,
+   "meanLuma": {
+    "before": 64.7,
+    "after": 74.5
+   },
+   "edgeDensity": {
+    "before": 0.0592,
+    "after": 0.0568
+   }
+  },
+  {
+   "frame": "02-cruise",
+   "lumaJSD": 0.0757,
+   "rgbJSD": 0.0443,
+   "meanLuma": {
+    "before": 69.6,
+    "after": 73.6
+   },
+   "edgeDensity": {
+    "before": 0.0475,
+    "after": 0.0551
+   }
+  },
+  {
+   "frame": "03-barrel-roll",
+   "lumaJSD": 0.0785,
+   "rgbJSD": 0.0475,
+   "meanLuma": {
+    "before": 71.2,
+    "after": 73.3
+   },
+   "edgeDensity": {
+    "before": 0.051,
+    "after": 0.0609
+   }
+  },
+  {
+   "frame": "04-thrust-flight",
+   "lumaJSD": 0.0814,
+   "rgbJSD": 0.0782,
+   "meanLuma": {
+    "before": 74.0,
+    "after": 79.0
+   },
+   "edgeDensity": {
+    "before": 0.0533,
+    "after": 0.0575
+   }
+  },
+  {
+   "frame": "05-ramp-launch",
+   "lumaJSD": 0.0757,
+   "rgbJSD": 0.0625,
+   "meanLuma": {
+    "before": 80.5,
+    "after": 97.2
+   },
+   "edgeDensity": {
+    "before": 0.0602,
+    "after": 0.0622
+   }
+  },
+  {
+   "frame": "06-sky-lane",
+   "lumaJSD": 0.0833,
+   "rgbJSD": 0.1376,
+   "meanLuma": {
+    "before": 63.3,
+    "after": 74.4
+   },
+   "edgeDensity": {
+    "before": 0.0474,
+    "after": 0.0473
+   }
+  },
+  {
+   "frame": "07-high-traffic",
+   "lumaJSD": 0.0543,
+   "rgbJSD": 0.0511,
+   "meanLuma": {
+    "before": 86.6,
+    "after": 93.1
+   },
+   "edgeDensity": {
+    "before": 0.0514,
+    "after": 0.0645
+   }
+  },
+  {
+   "frame": "08-dusk",
+   "lumaJSD": 0.0552,
+   "rgbJSD": 0.0586,
+   "meanLuma": {
+    "before": 94.8,
+    "after": 105.6
+   },
+   "edgeDensity": {
+    "before": 0.0505,
+    "after": 0.0618
+   }
+  },
+  {
+   "frame": "09-night",
+   "lumaJSD": 0.0382,
+   "rgbJSD": 0.0439,
+   "meanLuma": {
+    "before": 102.3,
+    "after": 104.4
+   },
+   "edgeDensity": {
+    "before": 0.0472,
+    "after": 0.0543
+   }
+  },
+  {
+   "frame": "10-crash",
+   "lumaJSD": 0.0916,
+   "rgbJSD": 0.0696,
+   "meanLuma": {
+    "before": 92.8,
+    "after": 115.5
+   },
+   "edgeDensity": {
+    "before": 0.0577,
+    "after": 0.0514
+   }
+  }
+ ]
+}

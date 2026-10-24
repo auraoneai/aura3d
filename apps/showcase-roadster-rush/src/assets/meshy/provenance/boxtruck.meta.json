@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a16b0f-029d-7386-a92b-70bbd3ca7e18",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792797508265,
+  "started_at": 1792797508271,
+  "finished_at": 1792797593107,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a16b0f-029d-7386-a92b-70bbd3ca7e18/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a16b0f-029d-7386-a92b-70bbd3ca7e18/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a16b0f-029d-7386-a92b-70bbd3ca7e18/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a16b0f-029d-7386-a92b-70bbd3ca7e18/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a16b0f-029d-7386-a92b-70bbd3ca7e18/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/google-oauth2%7C110030252026118023658/tasks/01a16b0f-029d-7386-a92b-70bbd3ca7e18/output/preview.png",
+  "prompt": "a medium box delivery truck, cream coloured cargo container with a blue stripe and a dark blue cab, stylised game vehicle, clean readable silhouette, PBR materials, car facing forward, single object, no ground",
+  "texture_prompt": "",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 2666155327,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "artifacts/meshy/apex-boxtruck/model.glb",
+  "artifacts/meshy/apex-boxtruck/thumbnail.png",
+  "artifacts/meshy/apex-boxtruck/texture_0_base_color.png",
+  "artifacts/meshy/apex-boxtruck/texture_0_metallic.png",
+  "artifacts/meshy/apex-boxtruck/texture_0_normal.png",
+  "artifacts/meshy/apex-boxtruck/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-23T23:20:19.677Z"
+}

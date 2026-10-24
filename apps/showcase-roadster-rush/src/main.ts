@@ -14,8 +14,13 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { createNativeRoadster, findDrawCalls } from "./native";
+import { POWERUP_SECONDS } from "./native/constants";
 import { assets } from "../../../src/aura-assets";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { SHIELD_SIZE, shieldSpec } from "./art/shield";
+import { groundSpec } from "./art/ground";
+import { meshyVehicles } from "./meshy-vehicles";
+import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 
 installBlackFrameGuard();
 
@@ -37,6 +42,10 @@ type PickupKind = "bolt" | "air" | "magnet" | "rocket" | "shield" | "multiplier"
 const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
 const HIDDEN_POS: Vec3 = [0, -80, 120];
 
+/** Meshy model for a vehicle type when it is shipped and enabled (`?models=0` turns it off), else the original showcase asset. */
+const pickVehicleAsset = (key: string, fallback: AuraAssetRef<"model">): AuraAssetRef<"model"> =>
+  meshyVehicles.enabled && key in meshyVehicles.refs ? ((meshyVehicles.refs as Record<string, AuraAssetRef<"model">>)[key] as AuraAssetRef<"model">) : fallback;
+
 const VEHICLE_POOL_SPEC: Record<
   VehicleType,
   {
@@ -46,15 +55,15 @@ const VEHICLE_POOL_SPEC: Record<
     asset: AuraAssetRef<"model">;
   }
 > = {
-  sedan: { count: 4, maxDim: 4.64, role: "setDressing", asset: assets.roadsterRushSedan },
-  hatch: { count: 3, maxDim: 4.04, role: "setDressing", asset: assets.roadsterRushHatch },
-  suv: { count: 3, maxDim: 4.94, role: "setDressing", asset: assets.roadsterRushSuv },
-  taxi: { count: 2, maxDim: 4.74, role: "setDressing", asset: assets.roadsterRushTaxi },
-  van: { count: 2, maxDim: 5.34, role: "setDressing", asset: assets.roadsterRushVan },
-  pickup: { count: 2, maxDim: 5.58, role: "setDressing", asset: assets.roadsterRushPickup },
-  boxtruck: { count: 2, maxDim: 8.14, role: "setDressing", asset: assets.roadsterRushBoxtruck },
-  bus: { count: 1, maxDim: 12.22, role: "setDressing", asset: assets.roadsterRushBus },
-  carrier: { count: 2, maxDim: 16.12, role: "primaryVehicle", asset: assets.roadsterRushCarrier }
+  sedan: { count: 4, maxDim: 4.64, role: "setDressing", asset: pickVehicleAsset("sedan", assets.roadsterRushSedan) },
+  hatch: { count: 3, maxDim: 4.04, role: "setDressing", asset: pickVehicleAsset("hatch", assets.roadsterRushHatch) },
+  suv: { count: 3, maxDim: 4.94, role: "setDressing", asset: pickVehicleAsset("suv", assets.roadsterRushSuv) },
+  taxi: { count: 2, maxDim: 4.74, role: "setDressing", asset: pickVehicleAsset("taxi", assets.roadsterRushTaxi) },
+  van: { count: 2, maxDim: 5.34, role: "setDressing", asset: pickVehicleAsset("van", assets.roadsterRushVan) },
+  pickup: { count: 2, maxDim: 5.58, role: "setDressing", asset: pickVehicleAsset("pickup", assets.roadsterRushPickup) },
+  boxtruck: { count: 2, maxDim: 8.14, role: "setDressing", asset: pickVehicleAsset("boxtruck", assets.roadsterRushBoxtruck) },
+  bus: { count: 1, maxDim: 12.22, role: "setDressing", asset: pickVehicleAsset("bus", assets.roadsterRushBus) },
+  carrier: { count: 2, maxDim: 16.12, role: "primaryVehicle", asset: pickVehicleAsset("carrier", assets.roadsterRushCarrier) }
 };
 
 const VEHICLE_TYPES: readonly VehicleType[] = [
@@ -205,20 +214,21 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         target: [0, 0.9, -6.0]
       })
     )
-    .add(lights.ambient({ color: "#ffd8c4", intensity: 0.68 }))
+    .add(lights.ambient({ color: "#ffd8c4", intensity: 0.5 }))
     .add(
       lights.hemisphere({
         skyColor: "#ff9e75",
         groundColor: "#2a1b38",
-        intensity: 0.85
+        intensity: 0.7
       })
     )
     .add(
       lights.directional({
         color: "#ffb178",
-        intensity: 2.35,
+        intensity: 1.9,
         position: [22, 38, -45],
-        shadow: true
+        target: [0, 0, -10],
+        shadow: { cascades: 2, maxDistance: 90, blend: 0.12 }
       })
     )
     .add(
@@ -229,7 +239,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         distance: 65
       })
     )
-    .add(effects.bloom({ intensity: 0.24, threshold: 0.78, radius: 0.52 }))
+    .add(effects.bloom({ intensity: 0.24, threshold: 0.9, radius: 0.52 }))
     .add(effects.vignette({ intensity: 0.2, smoothness: 0.65 }))
     .add(effects.colorGrade({ contrast: 1.07, saturation: 1.12 }));
 
@@ -239,32 +249,28 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-outer-ground",
         size: [1200, 0.12, 520],
-        material: material.pbr({ color: "#150e20", roughness: 0.96 })
-      })
+        material: material.custom(groundSpec()), castShadow: false })
       .position(0, -0.22, -160)
       .runtime(game.runtimeNode("freeway-outer-ground")),
     primitives
       .box({
         name: "freeway-asphalt-deck",
         size: [24, 0.12, 380],
-        material: material.pbr({ color: "#1c1f28", roughness: 0.84, metalness: 0.08 })
-      })
+        material: material.pbr({ color: "#1c1f28", roughness: 0.84, metalness: 0.08 }), castShadow: false })
       .position(0, -0.06, -150)
       .runtime(game.runtimeNode("freeway-asphalt-deck")),
     primitives
       .box({
         name: "freeway-shoulder-left",
         size: [0.18, 0.02, 380],
-        material: material.emissive({ color: "#ffc72c", emissive: "#ffc72c", emissiveIntensity: 0.45 })
-      })
+        material: material.emissive({ color: "#ffc72c", emissive: "#ffc72c", emissiveIntensity: 0.45 }), castShadow: false })
       .position(-9.0, 0.012, -150)
       .runtime(game.runtimeNode("freeway-shoulder-left")),
     primitives
       .box({
         name: "freeway-shoulder-right",
         size: [0.18, 0.02, 380],
-        material: material.emissive({ color: "#f1f5f9", emissive: "#f1f5f9", emissiveIntensity: 0.38 })
-      })
+        material: material.emissive({ color: "#f1f5f9", emissive: "#f1f5f9", emissiveIntensity: 0.38 }), castShadow: false })
       .position(9.0, 0.012, -150)
       .runtime(game.runtimeNode("freeway-shoulder-right")),
     primitives
@@ -303,43 +309,27 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "freeway-neon-trim-left",
         size: [0.12, 0.14, 380],
-        material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.35 })
-      })
+        material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.35 }), castShadow: false })
       .position(-11.3, 2.42, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-left")),
     primitives
       .box({
         name: "freeway-neon-trim-right",
         size: [0.12, 0.14, 380],
-        material: material.emissive({ color: "#ff2a6d", emissive: "#ff2a6d", emissiveIntensity: 1.35 })
-      })
+        material: material.emissive({ color: "#ff2a6d", emissive: "#ff2a6d", emissiveIntensity: 1.35 }), castShadow: false })
       .position(11.3, 2.42, -150)
       .runtime(game.runtimeNode("freeway-neon-trim-right")),
-    // Sunset / Dusk / Night Horizon Backdrop & Blazing Sun Disc + Corona
-    primitives
-      .box({
-        name: "horizon-sky-wall",
-        size: [1400, 340, 2],
-        material: material.emissive({ color: "#2c1638", emissive: "#ff6b4a", emissiveIntensity: 0.32 })
-      })
-      .position(0, 64, -320)
-      .runtime(game.runtimeNode("horizon-sky-wall")),
+    // Sunset / Dusk / Night sky dome: gradient, lit clouds, sun disc and corona, haze, city glow and stars (art/sky.ts)
     primitives
       .sphere({
-        name: "sunset-sun-disc",
-        size: [28, 28, 4],
-        material: material.emissive({ color: "#ff9d5c", emissive: "#ff7b3a", emissiveIntensity: 1.85 })
+        name: "horizon-sky-wall",
+        size: [SKY_DOME_SIZE, SKY_DOME_SIZE, SKY_DOME_SIZE],
+        material: material.custom(skySpec()),
+        castShadow: false,
+        receiveShadow: false
       })
-      .position(24, 34, -290)
-      .runtime(game.runtimeNode("sunset-sun-disc")),
-    primitives
-      .torus({
-        name: "sunset-sun-corona",
-        size: [18, 18, 1.6],
-        material: material.emissive({ color: "#ff5277", emissive: "#ff5277", emissiveIntensity: 1.15 })
-      })
-      .position(24, 34, -288)
-      .runtime(game.runtimeNode("sunset-sun-corona"))
+      .position(0, 0, 0)
+      .runtime(game.runtimeNode("horizon-sky-wall"))
   ]);
 
   // 2. Scrolling White Lane Dashes (4 dividers × 14 dashes)
@@ -353,8 +343,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
           .box({
             name: id,
             size: [0.14, 0.02, 4.2],
-            material: dashMat
-          })
+            material: dashMat, castShadow: false })
           .position(lx, 0.015, -i * DASH_STRIDE_Z)
           .runtime(game.runtimeNode(id))
       );
@@ -389,11 +378,11 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .position(4.6, 8.85, gz + 0.22)
         .runtime(game.runtimeNode(`gantry-board-r-${i}`)),
       primitives
-        .box({ name: `gantry-trim-l-${i}`, size: [7.0, 0.22, 0.26], material: signTrimMat })
+        .box({ name: `gantry-trim-l-${i}`, size: [7.0, 0.22, 0.26], material: signTrimMat, castShadow: false })
         .position(-4.4, 9.55, gz + 0.24)
         .runtime(game.runtimeNode(`gantry-trim-l-${i}`)),
       primitives
-        .box({ name: `gantry-trim-r-${i}`, size: [6.2, 0.22, 0.26], material: signTrimMat })
+        .box({ name: `gantry-trim-r-${i}`, size: [6.2, 0.22, 0.26], material: signTrimMat, castShadow: false })
         .position(4.6, 9.45, gz + 0.24)
         .runtime(game.runtimeNode(`gantry-trim-r-${i}`))
     ]);
@@ -411,8 +400,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .cylinder({
           name: id,
           size: [0.34, 9.2, 0.34],
-          material: palmTrunkMat
-        })
+          material: palmTrunkMat, castShadow: false })
         .position(px, 4.5, pz)
         .runtime(game.runtimeNode(id))
     );
@@ -430,11 +418,11 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .position(px, 3.8, pz)
         .runtime(game.runtimeNode(`light-pole-${i}`)),
       primitives
-        .box({ name: `light-arm-${i}`, size: [1.8, 0.12, 0.12], material: poleMat })
+        .box({ name: `light-arm-${i}`, size: [1.8, 0.12, 0.12], material: poleMat, castShadow: false })
         .position(px - side * 0.8, 7.55, pz)
         .runtime(game.runtimeNode(`light-arm-${i}`)),
       primitives
-        .sphere({ name: `light-lamp-${i}`, size: [0.36, 0.18, 0.48], material: lampMat })
+        .sphere({ name: `light-lamp-${i}`, size: [0.36, 0.18, 0.48], material: lampMat, castShadow: false })
         .position(px - side * 1.55, 7.45, pz)
         .runtime(game.runtimeNode(`light-lamp-${i}`))
     ]);
@@ -476,7 +464,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
   });
 
   s.addMany([
-    model(assets.roadsterRushPlayerCar, {
+    model(pickVehicleAsset("hero", assets.roadsterRushPlayerCar), {
       name: "player-roadster-car",
       role: "primaryVehicle",
       scaleMode: "fit",
@@ -489,8 +477,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .box({
         name: "player-lightbar",
         size: [1.72, 0.085, 0.09],
-        material: material.emissive({ color: "#ff1830", emissive: "#ff1830", emissiveIntensity: 1.85 })
-      })
+        material: material.emissive({ color: "#ff1830", emissive: "#ff1830", emissiveIntensity: 1.85 }), castShadow: false })
       .position(0, 0.72, 2.12)
       .runtime(game.runtimeNode("player-lightbar")),
 
@@ -498,8 +485,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .sphere({
         name: "player-headlight-l",
         size: [0.26, 0.1, 0.16],
-        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 })
-      })
+        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 }), castShadow: false })
       .position(-0.74, 0.56, -2.08)
       .runtime(game.runtimeNode("player-headlight-l")),
 
@@ -507,8 +493,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .sphere({
         name: "player-headlight-r",
         size: [0.26, 0.1, 0.16],
-        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 })
-      })
+        material: material.emissive({ color: "#eef8ff", emissive: "#bae6fd", emissiveIntensity: 1.6 }), castShadow: false })
       .position(0.74, 0.56, -2.08)
       .runtime(game.runtimeNode("player-headlight-r")),
 
@@ -517,16 +502,14 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .cylinder({
         name: "player-plume-rear-l",
         size: [0.34, 1.45, 0.34],
-        material: rearPlumeMat
-      })
+        material: rearPlumeMat, castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-plume-rear-l")),
     primitives
       .cylinder({
         name: "player-plume-rear-r",
         size: [0.34, 1.45, 0.34],
-        material: rearPlumeMat
-      })
+        material: rearPlumeMat, castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-plume-rear-r")),
 
@@ -534,8 +517,10 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
     primitives
       .sphere({
         name: "player-power-shield",
-        size: [3.2, 2.1, 4.9],
-        material: material.emissive({ color: "#29c6ff", emissive: "#29c6ff", emissiveIntensity: 0.85 })
+        size: SHIELD_SIZE,
+        material: material.custom(shieldSpec()),
+        castShadow: false,
+        receiveShadow: false
       })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-power-shield")),
@@ -543,16 +528,14 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .cylinder({
         name: "player-power-rocket",
         size: [0.68, 2.6, 0.68],
-        material: material.emissive({ color: "#ff6b1a", emissive: "#ff3b00", emissiveIntensity: 2.3 })
-      })
+        material: material.emissive({ color: "#ff6b1a", emissive: "#ff3b00", emissiveIntensity: 2.3 }), castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-power-rocket")),
     primitives
       .torus({
         name: "player-power-magnet",
         size: [1.65, 1.65, 0.08],
-        material: material.emissive({ color: "#a855f7", emissive: "#c084fc", emissiveIntensity: 1.5 })
-      })
+        material: material.emissive({ color: "#a855f7", emissive: "#c084fc", emissiveIntensity: 1.5 }), castShadow: false })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-power-magnet")),
 
@@ -561,8 +544,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
       .cylinder({
         name: "player-contact-shadow",
         size: [2.25, 0.012, 4.45],
-        material: material.pbr({ color: "#07090f", roughness: 0.96 })
-      })
+        material: material.pbr({ color: "#07090f", roughness: 0.96 }), castShadow: false })
       .position(0, 0.03, 0)
       .runtime(game.runtimeNode("player-contact-shadow"))
   ]);
@@ -575,8 +557,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .cylinder({
           name: id,
           size: [0.28, 1.15, 0.28],
-          material: downPlumeMat
-        })
+          material: downPlumeMat, castShadow: false })
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(id))
     );
@@ -589,16 +570,14 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .cylinder({
           name: `player-plume-side-l-${i}`,
           size: [0.22, 0.95, 0.22],
-          material: sidePlumeMat
-        })
+          material: sidePlumeMat, castShadow: false })
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(`player-plume-side-l-${i}`)),
       primitives
         .cylinder({
           name: `player-plume-side-r-${i}`,
           size: [0.22, 0.95, 0.22],
-          material: sidePlumeMat
-        })
+          material: sidePlumeMat, castShadow: false })
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(`player-plume-side-r-${i}`))
     ]);
@@ -632,8 +611,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
                 color: "#ffc928",
                 emissive: "#ff9e00",
                 emissiveIntensity: 0.68
-              })
-            })
+              }), castShadow: false })
             .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
             .scale(HIDDEN_SCALE)
             .runtime(game.runtimeNode(rampId))
@@ -651,8 +629,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .box({
           name: id,
           size: [1.58, 0.16, 0.09],
-          material: brakeBarMat
-        })
+          material: brakeBarMat, castShadow: false })
         .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(id))
@@ -667,8 +644,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .sphere({
           name: id,
           size: [0.28, 0.2, 0.34],
-          material: blinkerMat
-        })
+          material: blinkerMat, castShadow: false })
         .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(id))
@@ -695,8 +671,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .cylinder({
           name: plumeId,
           size: [0.42, 1.65, 0.42],
-          material: rearPlumeMat
-        })
+          material: rearPlumeMat, castShadow: false })
         .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(plumeId)),
@@ -704,8 +679,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .torus({
           name: haloId,
           size: [1.55, 1.55, 0.075],
-          material: skyHaloMat
-        })
+          material: skyHaloMat, castShadow: false })
         .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(haloId))
@@ -725,8 +699,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .torus({
           name: id,
           size: [0.48, 0.48, 0.14],
-          material: boltMat
-        })
+          material: boltMat, castShadow: false })
         .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(id))
@@ -745,8 +718,7 @@ function buildRoadsterRushScene(): ReturnType<typeof scene> {
         .sphere({
           name: id,
           size: [0.95, 0.95, 0.95],
-          material: powerupInitMat
-        })
+          material: powerupInitMat, castShadow: false })
         .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
         .scale(HIDDEN_SCALE)
         .runtime(game.runtimeNode(id))
@@ -800,8 +772,6 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   const neonTrimLeftHandle = req("freeway-neon-trim-left");
   const neonTrimRightHandle = req("freeway-neon-trim-right");
   const horizonWallHandle = req("horizon-sky-wall");
-  const sunDiscHandle = req("sunset-sun-disc");
-  const sunCoronaHandle = req("sunset-sun-corona");
 
   const dashHandles: AuraRuntimeNodeHandle[][] = LANE_DIVIDER_X.map((_, d) =>
     Array.from({ length: DASH_COUNT_PER_DIVIDER }, (__, i) => req(`lane-dash-${d}-${i}`))
@@ -890,56 +860,30 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
   function updateAtmosphereForTod(todRaw: number): void {
     const tod = clamp(manualTodOverride ?? todRaw, 0, 1);
-    const sunY = lerp(34, 14, tod);
-    sunDiscHandle
-      .setPosition(24, sunY, -290)
-      .setScale([1, 1, 1])
-      .setVisible(true);
-    sunCoronaHandle
-      .setPosition(24, sunY, -288)
-      .setRotation(0, 0, framesRendered * 0.01)
-      .setScale([1.15, 1.15, 1])
-      .setVisible(true);
-    horizonWallHandle.setPosition(0, 64, -320);
-
-    const bucket = Math.round(tod * 25);
+    const bucket = Math.round(tod * 60);
     if (bucket === lastTodBucket) return;
     lastTodBucket = bucket;
 
-    let skyHex: string;
-    let emissiveHex: string;
-    let sunHex: string;
-    let groundHex: string;
-    if (tod <= 0.5) {
-      const k = tod * 2;
-      skyHex = lerpHexColor("#2c1638", "#16122b", k);
-      emissiveHex = lerpHexColor("#ff8a5b", "#c85a82", k);
-      sunHex = lerpHexColor("#ff9d5c", "#ff477e", k);
-      groundHex = lerpHexColor("#190f24", "#100d1e", k);
-    } else {
-      const k = (tod - 0.5) * 2;
-      skyHex = lerpHexColor("#16122b", "#090b16", k);
-      emissiveHex = lerpHexColor("#c85a82", "#1e3a8a", k);
-      sunHex = lerpHexColor("#ff477e", "#38bdf8", k);
-      groundHex = lerpHexColor("#100d1e", "#070912", k);
-    }
+    const look = skyLook(tod);
+    const skyUniforms: Array<[string, Vec3 | [number, number] | number]> = [
+      ["skyHorizon", look.skyHorizon],
+      ["skyMid", look.skyMid],
+      ["skyTop", look.skyTop],
+      ["sunColor", look.sunColor],
+      ["cityGlow", look.cityGlow],
+      ["sunDir", look.sunDir],
+      ["sunDirXZ", look.sunDirXZ],
+      ["nightAmount", look.nightAmount]
+    ];
+    for (const [name, value] of skyUniforms) horizonWallHandle.setUniform?.(name, value as never);
+    (auraApp.scene as any).background = rgbToHex(look.skyHorizon[0] * 80, look.skyHorizon[1] * 60, look.skyHorizon[2] * 90);
 
-    (auraApp.scene as any).background = skyHex;
-    horizonWallHandle.setMaterial(
-      material.emissive({
-        color: skyHex,
-        emissive: emissiveHex,
-        emissiveIntensity: lerp(0.36, 0.22, tod)
-      })
-    );
-    sunDiscHandle.setMaterial(
-      material.emissive({
-        color: sunHex,
-        emissive: sunHex,
-        emissiveIntensity: lerp(1.9, 1.35, tod)
-      })
-    );
-    outerGroundHandle.setMaterial(material.pbr({ color: groundHex, roughness: 0.95 }));
+    let groundHex: string;
+    if (tod <= 0.5) groundHex = lerpHexColor("#190f24", "#100d1e", tod * 2);
+    else groundHex = lerpHexColor("#100d1e", "#070912", (tod - 0.5) * 2);
+    const [gr, gg, gb] = hexToRgb(groundHex);
+    outerGroundHandle.setUniform?.("groundColor", [gr / 255, gg / 255, gb / 255] as never);
+    outerGroundHandle.setUniform?.("groundFogColor", [look.skyHorizon[0] * 0.8, look.skyHorizon[1] * 0.75, look.skyHorizon[2] * 0.8] as never);
   }
 
   function runSmartFreewayAutopilot(g: any): void {
@@ -1327,11 +1271,16 @@ async function bootRoadsterRushAura3D(): Promise<void> {
 
     // Active Powerup Visuals on Player
     if ((p.shieldTimer ?? 0) > 0) {
+      const shieldLeft = Number(p.shieldTimer ?? 0);
+      // Fades in over the first 0.25 s, flickers over the last 1.5 s so the player can read it running out.
+      const shieldFade = Math.min(1, (POWERUP_SECONDS.shield - shieldLeft) / 0.25 + 0.3);
+      const shieldBlink = shieldLeft < 1.5 ? 0.55 + 0.45 * Math.sin(simTime * 22) : 1;
       playerHandles.shieldSphere
-        .setPosition(pRoot[0], pRoot[1] + 0.65, pRoot[2])
-        .setRotation(0, simTime * 2.2, 0)
+        .setPosition(pRoot[0], pRoot[1] + 0.62, pRoot[2])
+        .setRotation(pitch * 0.5, yaw, roll * 0.5)
         .setScale([1, 1, 1])
         .setVisible(true);
+      playerHandles.shieldSphere.setUniform?.("shieldPulse", clamp(shieldFade, 0, 1) * shieldBlink);
     } else {
       playerHandles.shieldSphere.setScale(HIDDEN_SCALE).setVisible(false);
     }
