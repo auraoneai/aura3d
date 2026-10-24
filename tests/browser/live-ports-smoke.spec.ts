@@ -19,7 +19,11 @@ const SLUGS = (process.env.LIVE_SLUGS ?? (existsSync(SLUGS_FILE) ? readFileSync(
 // Heavy art-pass scenes render at well under 1 fps on the CPU rasteriser; a smaller viewport keeps the smoke measurable.
 const SMALL_VIEWPORT: Record<string, { width: number; height: number }> = {
   "ninja-runner": { width: 360, height: 270 },
-  "last-train": { width: 360, height: 270 }
+  "last-train": { width: 360, height: 270 },
+  "drift-and-deliver": { width: 360, height: 270 },
+  "heatsink": { width: 360, height: 270 },
+  "silt-and-signal": { width: 360, height: 270 },
+  "cloud-runner": { width: 360, height: 270 }
 };
 const START_SELECTOR: Record<string, string> = {
   "splat-rush": "#btn-start",
@@ -178,7 +182,9 @@ for (const slug of SLUGS) {
     const failedRequests: string[] = [];
     const badResponses: string[] = [];
     const bridgeWarnings: string[] = [];
+    const compat: string[] = [];
     page.on("console", (m) => {
+      if (/SAFETY_COMPAT_MODE|AURA3D_COMPAT_MODE|SAFETY_BLACK_FRAME|black.?frame|self.?heal/i.test(m.text())) compat.push(m.text().slice(0, 200));
       if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300));
       if (/production GLTF bridge|unsafe-url|unsafe model|skipped by the production/i.test(m.text())) bridgeWarnings.push(m.text().slice(0, 240));
     });
@@ -268,7 +274,7 @@ for (const slug of SLUGS) {
     const jpeg = await page.screenshot({ type: "jpeg", quality: 45, scale: "css" });
 
     const summary = {
-      slug, url, status, scripts: scripts.map((s) => s.replace(BASE, "")), canvases: canvasInfo, hooks, started, startNote, errorsAfterStart, fpsBoot, fpsPlay, hung,
+      slug, url, finalUrl: page.url().replace(BASE, ""), compat: compat.slice(0, 4), status, scripts: scripts.map((s) => s.replace(BASE, "")), canvases: canvasInfo, hooks, started, startNote, errorsAfterStart, fpsBoot, fpsPlay, hung,
       beforeStart: stats1, afterStart: stats2, afterPlay: stats3, canvasOnly: canvasStats, drawCalls: snapPlay.drawCalls, bridgeWarnings: bridgeWarnings.slice(0, 4),
       progress: { hook: snapPlay.hook, accessorErrors: snapPlay.accessorErrors, accessor: snapPlay.accessor, stateChanged, numericFields: Object.keys(snapPlay.nums).length, hudChanged, hudBefore: snapBefore.hud.slice(0, 120), hudAfter: snapPlay.hud.slice(0, 120), startDiff, playDiff },
       consoleErrors: consoleErrors.slice(0, 8), pageErrors: pageErrors.slice(0, 8),

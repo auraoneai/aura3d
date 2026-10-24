@@ -1,0 +1,1344 @@
+{
+ "game:top-tennis": {
+  "app": "showcase-top-tennis",
+  "url": "https://aura3d.auraone.ai/apps/showcase-top-tennis/",
+  "finalUrl": "/apps/showcase-top-tennis/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "game",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_GAME__",
+   "__AURA3D_SHOWCASE_TOP_TENNIS__"
+  ],
+  "notes": [
+   "clicked \"Quick Match\""
+  ],
+  "shotOk": true,
+  "nonBlack": 0.924,
+  "colors": 600,
+  "meanLuma": 51.4,
+  "changedFraction": 0.0581,
+  "drawCalls": 616,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-a.log"
+ },
+ "game:roadster-rush": {
+  "app": "showcase-roadster-rush",
+  "url": "https://aura3d.auraone.ai/apps/showcase-roadster-rush/",
+  "finalUrl": "/apps/showcase-roadster-rush/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "game",
+    "w": 800,
+    "h": 500
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_GAME__",
+   "__AURA3D_SHOWCASE_ROADSTER_RUSH__"
+  ],
+  "notes": [],
+  "shotOk": true,
+  "nonBlack": 0.99,
+  "colors": 1482,
+  "meanLuma": 67.5,
+  "changedFraction": 0.2544,
+  "drawCalls": 721,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-a.log"
+ },
+ "game:heatsink": {
+  "app": "showcase-heatsink",
+  "url": "https://aura3d.auraone.ai/apps/showcase-heatsink/",
+  "finalUrl": "/apps/showcase-heatsink/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   },
+   {
+    "id": "minimap",
+    "w": 136,
+    "h": 136
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA3D_SHOWCASE_HEATSINK__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_GAME__"
+  ],
+  "notes": [],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 2118,
+  "meanLuma": 84.9,
+  "changedFraction": 0.5073,
+  "drawCalls": 1281,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-a.log"
+ },
+ "game:teleoperator": {
+  "app": "showcase-teleoperator",
+  "url": "https://aura3d.auraone.ai/apps/showcase-teleoperator/",
+  "finalUrl": "/apps/showcase-teleoperator/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "c",
+    "w": 800,
+    "h": 600
+   },
+   {
+    "id": "miniC",
+    "w": 400,
+    "h": 400
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__"
+  ],
+  "notes": [],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 2537,
+  "meanLuma": 96.1,
+  "changedFraction": 0.2409,
+  "drawCalls": 520,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-a.log"
+ },
+ "game:iron-crown": {
+  "app": "showcase-iron-crown",
+  "url": "https://aura3d.auraone.ai/apps/showcase-iron-crown/",
+  "finalUrl": "/apps/showcase-iron-crown/?a3d-qr=game%2C-vfxFog",
+  "compat": [
+   "AURA3D_BLACK_FRAME: reloading at rung 1 (no-vfx-fog)",
+   "AURA3D_COMPAT_MODE: rung 1 (no-vfx-fog) after a black frame was detected"
+  ],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "game",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME__",
+   "__AURA3D_GAME_SOUND__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_SHOWCASE_IRON_CROWN__",
+   "__AURA3D_GAME_RUNTIME__",
+   "__AURA3D_GAME_DEBUG__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "notes": [
+   "clicked \"Player Studio\""
+  ],
+  "shotOk": true,
+  "nonBlack": 0.887,
+  "colors": 2649,
+  "meanLuma": 51.7,
+  "changedFraction": 0.794,
+  "drawCalls": null,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-a.log"
+ },
+ "game:pips-big-leap": {
+  "app": "showcase-pips-big-leap",
+  "url": "https://aura3d.auraone.ai/apps/showcase-pips-big-leap/",
+  "finalUrl": "/apps/showcase-pips-big-leap/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME__",
+   "__AURA3D_GAME_SOUND__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA3D_SHOWCASE_PIPS_BIG_LEAP__"
+  ],
+  "notes": [
+   "clicked \"Quick Play\""
+  ],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 4007,
+  "meanLuma": 152.4,
+  "changedFraction": 0.8703,
+  "drawCalls": 497,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-b.log"
+ },
+ "game:aura-hoops-3d": {
+  "app": "showcase-aura-hoops-3d",
+  "url": "https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/",
+  "finalUrl": "/apps/showcase-aura-hoops-3d/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_GAME__"
+  ],
+  "notes": [
+   "clicked \"QUICK PLAY\""
+  ],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 1437,
+  "meanLuma": 93.1,
+  "changedFraction": 0.8053,
+  "drawCalls": 95,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-b.log"
+ },
+ "game:aura-diamond-3d": {
+  "app": "showcase-aura-diamond-3d",
+  "url": "https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/",
+  "finalUrl": "/apps/showcase-aura-diamond-3d/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__"
+  ],
+  "notes": [
+   "clicked \"Quick Play\""
+  ],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 1666,
+  "meanLuma": 78,
+  "changedFraction": 0.2719,
+  "drawCalls": 488,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-b.log"
+ },
+ "game:aura-fc-3d": {
+  "app": "showcase-aura-fc-3d",
+  "url": "https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/",
+  "finalUrl": "/apps/showcase-aura-fc-3d/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_GAME__",
+   "__auraEvidence",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "notes": [
+   "clicked \"Quick Play\""
+  ],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 2639,
+  "meanLuma": 106.1,
+  "changedFraction": 0.6984,
+  "drawCalls": 207,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-b.log"
+ },
+ "game:aura-links-3d": {
+  "app": "showcase-aura-links-3d",
+  "url": "https://aura3d.auraone.ai/apps/showcase-aura-links-3d/",
+  "finalUrl": "/apps/showcase-aura-links-3d/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_GAME__",
+   "__AURA3D_SHOWCASE_AURA_LINKS_3D__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "notes": [
+   "clicked \"QUICK PLAY\""
+  ],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 1172,
+  "meanLuma": 132.3,
+  "changedFraction": 0.443,
+  "drawCalls": 56,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-c.log"
+ },
+ "game:bunker-zero": {
+  "app": "showcase-bunker-zero",
+  "url": "https://aura3d.auraone.ai/apps/showcase-bunker-zero/",
+  "finalUrl": "/apps/showcase-bunker-zero/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME__",
+   "__AURA3D_GAME_SOUND__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "notes": [
+   "clicked \"Quick Play\""
+  ],
+  "shotOk": true,
+  "nonBlack": 0.952,
+  "colors": 947,
+  "meanLuma": 67.7,
+  "changedFraction": 0.4419,
+  "drawCalls": null,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-c.log"
+ },
+ "game:slingshot-siege": {
+  "app": "showcase-slingshot-siege",
+  "url": "https://aura3d.auraone.ai/apps/showcase-slingshot-siege/",
+  "finalUrl": "/apps/showcase-slingshot-siege/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 800,
+    "h": 600
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_ROUTE__"
+  ],
+  "notes": [
+   "clicked \"Player Studio\""
+  ],
+  "shotOk": true,
+  "nonBlack": 0.97,
+  "colors": 3173,
+  "meanLuma": 106.8,
+  "changedFraction": 0.1149,
+  "drawCalls": 298,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-c.log"
+ },
+ "game:red-zone-3d": {
+  "app": "showcase-red-zone-3d",
+  "url": "https://aura3d.auraone.ai/apps/showcase-red-zone-3d/",
+  "finalUrl": "/apps/showcase-red-zone-3d/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "game",
+    "w": 640,
+    "h": 360
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_GAME__",
+   "__auraEvidence",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "notes": [
+   "clicked \"Quick Play\""
+  ],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 1834,
+  "meanLuma": 104.8,
+  "changedFraction": 0.299,
+  "drawCalls": 334,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx-r.log"
+ },
+ "game:dot-dash-3d": {
+  "app": "showcase-dot-dash-3d",
+  "url": "https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/",
+  "finalUrl": "/apps/showcase-dot-dash-3d/",
+  "compat": [],
+  "status": 200,
+  "canvases": [
+   {
+    "id": "",
+    "w": 640,
+    "h": 360
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_HEAL_INSTALLED__",
+   "__AURA3D_HEAL__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_GAME__",
+   "__AURA3D_GAME_SOUND__",
+   "__AURA3D_GAME_EVIDENCE__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA3D_DOT_DASH__"
+  ],
+  "notes": [
+   "clicked \"Quick Play\""
+  ],
+  "shotOk": true,
+  "nonBlack": 0.778,
+  "colors": 1385,
+  "meanLuma": 21.4,
+  "changedFraction": 0.0316,
+  "drawCalls": 102,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx2.log"
+ },
+ "game:cross-hop": {
+  "app": "showcase-cross-hop",
+  "url": "https://aura3d.auraone.ai/apps/showcase-cross-hop/",
+  "finalUrl": "/apps/showcase-cross-hop/?a3d-qr=game%2C-vfxFog%2C-post%2C-compiler",
+  "compat": [
+   "AURA3D_BLACK_FRAME: reloading at rung 1 (no-vfx-fog)",
+   "AURA3D_COMPAT_MODE: rung 1 (no-vfx-fog) after a black frame was detected",
+   "AURA3D_BLACK_FRAME: reloading at rung 2 (no-post)",
+   "AURA3D_COMPAT_MODE: rung 2 (no-post) after a black frame was detected"
+  ],
+  "status": 200,
+  "canvases": [],
+  "hooks": [
+   "__aura3dInFlightByteFetches"
+  ],
+  "notes": [],
+  "shotOk": true,
+  "nonBlack": 1,
+  "colors": 1,
+  "meanLuma": 13.8,
+  "changedFraction": 0,
+  "drawCalls": null,
+  "errors": [],
+  "bad": [],
+  "_kind": "INDEX_JSON",
+  "_log": "live410-idx2.log"
+ },
+ "port:strange-orbit": {
+  "slug": "strange-orbit",
+  "url": "https://aura3d.auraone.ai/apps/showcase-strange-orbit-port/",
+  "finalUrl": "/apps/showcase-strange-orbit-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-strange-orbit-port-DwBvi5Mf.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 800,
+    "height": 600,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_STRANGE_ORBIT__",
+   "__orbit",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked #start \"Let's ride\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.5158760865640081,
+  "fpsPlay": 0.41183617157095004,
+  "hung": [],
+  "beforeStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 1302,
+   "lumaStdDev": 45.8669103154329
+  },
+  "afterStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 1898,
+   "lumaStdDev": 47.774569203735794
+  },
+  "afterPlay": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 1894,
+   "lumaStdDev": 47.68986543578797
+  },
+  "canvasOnly": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 1823,
+   "lumaStdDev": 39.908564182210725
+  },
+  "drawCalls": 27,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_STRANGE_ORBIT__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [],
+   "numericFields": 43,
+   "hudChanged": true,
+   "hudBefore": "One impossible world|Ride the rings. Find your own way.|Bike|Skate|Sol|Bike|Explorer|Racer|Expert|Precise lines, 3 rescu",
+   "hudAfter": "Position|6 / 6|The painted rings|Lap 1 / 7|Race time|0:00.00|Best lap -|1|Orion|LEAD|2|Nova|+5m|3|Atlas|+10m|4|Io|+15m|5",
+   "startDiff": {
+    "changedFraction": 0.75660625,
+    "meanAbsLuma": 34.18593263889038
+   },
+   "playDiff": {
+    "changedFraction": 0.007889583333333334,
+    "meanAbsLuma": 0.7629131944442834
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports-a.log"
+ },
+ "port:splat-rush": {
+  "slug": "splat-rush",
+  "url": "https://aura3d.auraone.ai/apps/showcase-splat-rush-port/",
+  "finalUrl": "/apps/showcase-splat-rush-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-splat-rush-port-CUUfFOzz.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 800,
+    "height": 600,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_SPLAT_RUSH__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked #btn-start \"PLAY NOW\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.7793928529675276,
+  "fpsPlay": 0.8278145695364238,
+  "hung": [],
+  "beforeStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 833,
+   "lumaStdDev": 59.97304069801642
+  },
+  "afterStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 3693,
+   "lumaStdDev": 54.51295450113135
+  },
+  "afterPlay": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 3637,
+   "lumaStdDev": 52.709468931126324
+  },
+  "canvasOnly": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 3299,
+   "lumaStdDev": 42.12420642864831
+  },
+  "drawCalls": 107,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_SPLAT_RUSH__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [
+    "state.score:3.20->24.29",
+    "state.distance:3.20->24.29",
+    "state.speed:16.05->16.39",
+    "state.laneOffset:0.00->0.03",
+    "state.frameCount:12.00->90.00",
+    "state.segmentCounter:204.00->225.00",
+    "state.lastSegmentZ:-180.79->-180.70",
+    "state.lastGateZ:-111.79->-90.70",
+    "state.introT:0.30->-0.00",
+    "state.steps:102.00->180.00"
+   ],
+   "numericFields": 43,
+   "hudChanged": true,
+   "hudBefore": "SCORE: 0|PLAY NOW|Mouse or touch: drag \u00b7 Keyboard: Space to start, \u2190 \u2192 or A / D to steer, M to mute|Aura3D simulation po",
+   "hudAfter": "SCORE: 24|Aura3D simulation port",
+   "startDiff": {
+    "changedFraction": 0.9078791666666667,
+    "meanAbsLuma": 41.50350555560694
+   },
+   "playDiff": {
+    "changedFraction": 0.30309583333333334,
+    "meanAbsLuma": 16.52963541667233
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports-a.log"
+ },
+ "port:serpentine-sky-run": {
+  "slug": "serpentine-sky-run",
+  "url": "https://aura3d.auraone.ai/apps/showcase-serpentine-sky-run-port/",
+  "finalUrl": "/apps/showcase-serpentine-sky-run-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-serpentine-sky-run-port-DXVBafrv.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 800,
+    "height": 600,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_SAIYAN_SNAKE_WAY__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked #start \"Start the run\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.5278298276635482,
+  "fpsPlay": 0.5129915099905158,
+  "hung": [],
+  "beforeStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 827,
+   "lumaStdDev": 33.83481589346501
+  },
+  "afterStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 2135,
+   "lumaStdDev": 54.52705728389994
+  },
+  "afterPlay": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 2178,
+   "lumaStdDev": 54.5131851030893
+  },
+  "canvasOnly": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 1,
+   "distinctColors": 1729,
+   "lumaStdDev": 32.95263044849348
+  },
+  "drawCalls": 19,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_SAIYAN_SNAKE_WAY__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [],
+   "numericFields": 37,
+   "hudChanged": true,
+   "hudBefore": "SERPENTINE SKY RUN|One million kilometres of road, coiled over a sea of cloud. Collect spark, build your surge, and reac",
+   "hudAfter": "RUNNER|35|0|SURGE|\u00d71|OUTBOUND \u2014 KM COVERED|0|DAYS LEFT|365|DAYS|RUN ACTIVE|RUN SCORE|0|Aura3D simulation port",
+   "startDiff": {
+    "changedFraction": 0.9552625,
+    "meanAbsLuma": 93.44714374999839
+   },
+   "playDiff": {
+    "changedFraction": 0.016702083333333333,
+    "meanAbsLuma": 0.789954861111061
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports-a.log"
+ },
+ "port:roadster-hours": {
+  "slug": "roadster-hours",
+  "url": "https://aura3d.auraone.ai/apps/showcase-roadster-hours-port/",
+  "finalUrl": "/apps/showcase-roadster-hours-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-roadster-hours-port-BUyGmDp4.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 800,
+    "height": 600,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_ROADSTER_HOURS__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked #start \"Drive\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.32931568201277367,
+  "fpsPlay": 0.31548229355627416,
+  "hung": [],
+  "beforeStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9999729166666667,
+   "distinctColors": 931,
+   "lumaStdDev": 47.862765450394186
+  },
+  "afterStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9999729166666667,
+   "distinctColors": 1075,
+   "lumaStdDev": 47.649440984177005
+  },
+  "afterPlay": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9999729166666667,
+   "distinctColors": 1065,
+   "lumaStdDev": 47.566656746058925
+  },
+  "canvasOnly": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9999729166666667,
+   "distinctColors": 1020,
+   "lumaStdDev": 44.54194534290083
+  },
+  "drawCalls": 71,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_ROADSTER_HOURS__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [
+    "state.countdown:2.65->2.10"
+   ],
+   "numericFields": 61,
+   "hudChanged": true,
+   "hudBefore": "Roadster Hours|Sunbreak Coast|A road above the sea|Thread the coastal highway, cut through the skyline, and bring the re",
+   "hudAfter": "0:00.00|Relay 1 / 5|THE FIRST LEAP|0|3|Thrust|0|km/h|Heat|Aura3D simulation port",
+   "startDiff": {
+    "changedFraction": 0.5937958333333333,
+    "meanAbsLuma": 35.65193958333154
+   },
+   "playDiff": {
+    "changedFraction": 0.14777083333333332,
+    "meanAbsLuma": 2.900390277776462
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports-b.log"
+ },
+ "port:where-the-wind-wanders": {
+  "slug": "where-the-wind-wanders",
+  "url": "https://aura3d.auraone.ai/apps/showcase-where-the-wind-wanders-port/",
+  "finalUrl": "/apps/showcase-where-the-wind-wanders-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-where-the-wind-wanders-port-DOUcK-IW.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 800,
+    "height": 600,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_WIND__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked #wwui-begin \"Begin the walk (Enter)\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.27517886626307103,
+  "fpsPlay": 0.3296304842271864,
+  "hung": [],
+  "beforeStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9992270833333333,
+   "distinctColors": 5235,
+   "lumaStdDev": 57.90737850704061
+  },
+  "afterStart": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9991604166666667,
+   "distinctColors": 6738,
+   "lumaStdDev": 48.48625019509614
+  },
+  "afterPlay": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9991541666666667,
+   "distinctColors": 6690,
+   "lumaStdDev": 48.48258708918806
+  },
+  "canvasOnly": {
+   "width": 800,
+   "height": 600,
+   "nonBlackFraction": 0.9991395833333333,
+   "distinctColors": 6551,
+   "lumaStdDev": 35.877949124369145
+  },
+  "drawCalls": 16,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_WIND__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [
+    "state.step:5.00->71.00",
+    "state.pos.x:-12.00->-11.68",
+    "state.pos.z:4.00->4.02",
+    "state.stride:0.00->0.15"
+   ],
+   "numericFields": 6,
+   "hudChanged": true,
+   "hudBefore": "0 / 3 discovered|WASD or arrows to walk \u00b7 Space to hop \u00b7 E to interact|Aura3D simulation port|Where the Wind Wanders|A s",
+   "hudAfter": "0 / 3 discovered|WASD or arrows to walk \u00b7 Space to hop \u00b7 E to interact|Aura3D simulation port|Take your time. The wind w",
+   "startDiff": {
+    "changedFraction": 0.6121104166666667,
+    "meanAbsLuma": 32.68620694444427
+   },
+   "playDiff": {
+    "changedFraction": 0.45936041666666666,
+    "meanAbsLuma": 18.041157638887825
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports-b.log"
+ },
+ "port:ninja-runner": {
+  "slug": "ninja-runner",
+  "url": "https://aura3d.auraone.ai/apps/showcase-ninja-runner-port/",
+  "finalUrl": "/apps/showcase-ninja-runner-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-ninja-runner-port-D4A6R026.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 360,
+    "height": 270,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_NINJA_RUNNER__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked #start \"Run the Village \u2192\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.22349615027881117,
+  "fpsPlay": 0.23085624581573147,
+  "hung": [],
+  "beforeStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 333,
+   "lumaStdDev": 55.700926163845466
+  },
+  "afterStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1308,
+   "lumaStdDev": 52.58718031504284
+  },
+  "afterPlay": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1361,
+   "lumaStdDev": 52.125212513824884
+  },
+  "canvasOnly": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1589,
+   "lumaStdDev": 25.86518525416088
+  },
+  "drawCalls": 41,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_NINJA_RUNNER__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [],
+   "numericFields": 193,
+   "hudChanged": true,
+   "hudBefore": "NINJA RUNNER|Ready.|Run the Village \u2192|A / D|change lane|W|jump|S|slide|1|echo clones|2|spiral orb|3|gale star|Shift|surg",
+   "hudAfter": "Aura3D simulation port",
+   "startDiff": {
+    "changedFraction": 0.9382201646090536,
+    "meanAbsLuma": 56.90647805213292
+   },
+   "playDiff": {
+    "changedFraction": 0.062109053497942386,
+    "meanAbsLuma": 3.5800308641969574
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports-c.log"
+ },
+ "port:drift-and-deliver": {
+  "slug": "drift-and-deliver",
+  "url": "https://aura3d.auraone.ai/apps/showcase-drift-and-deliver-port/",
+  "finalUrl": "/apps/showcase-drift-and-deliver-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-drift-and-deliver-port-ZCBAWl6j.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 360,
+    "height": 270,
+    "hasWebgl": true
+   },
+   {
+    "id": "minimap",
+    "width": 240,
+    "height": 240,
+    "hasWebgl": false
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_DRIFT_AND_DELIVER__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked #start \"Start\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.311371279113214,
+  "fpsPlay": 0.15344719114916547,
+  "hung": [],
+  "beforeStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 362,
+   "lumaStdDev": 49.23634599777808
+  },
+  "afterStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 362,
+   "lumaStdDev": 49.21972257036169
+  },
+  "afterPlay": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 362,
+   "lumaStdDev": 49.21958613912946
+  },
+  "canvasOnly": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1030,
+   "lumaStdDev": 38.73641007159592
+  },
+  "drawCalls": 107,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_DRIFT_AND_DELIVER__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [
+    "state.frames:18.00->29.00"
+   ],
+   "numericFields": 15,
+   "hudChanged": false,
+   "hudBefore": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Sound on (M)|AN OPEN-CITY DRIVING GAME|Drift & Deliver|A getaway city of 225 blocks, 8",
+   "hudAfter": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Sound on (M)|AN OPEN-CITY DRIVING GAME|Drift & Deliver|A getaway city of 225 blocks, 8",
+   "startDiff": {
+    "changedFraction": 0.010185185185185186,
+    "meanAbsLuma": 0.4662551440329442
+   },
+   "playDiff": {
+    "changedFraction": 1.02880658436214e-05,
+    "meanAbsLuma": 0.032836076817559096
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports2-r1.log"
+ },
+ "port:silt-and-signal": {
+  "slug": "silt-and-signal",
+  "url": "https://aura3d.auraone.ai/apps/showcase-silt-and-signal-port/",
+  "finalUrl": "/apps/showcase-silt-and-signal-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-silt-and-signal-port-y0EFf1M_.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 360,
+    "height": 270,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__",
+   "__AURA_SILT__"
+  ],
+  "started": true,
+  "startNote": "clicked #start-button \"Begin the journey\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.3942751251823541,
+  "fpsPlay": 0.3812937296246214,
+  "hung": [],
+  "beforeStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 428,
+   "lumaStdDev": 43.59043071968447
+  },
+  "afterStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1338,
+   "lumaStdDev": 59.35386770766135
+  },
+  "afterPlay": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1378,
+   "lumaStdDev": 58.48323265773896
+  },
+  "canvasOnly": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 0.9976748971193415,
+   "distinctColors": 1133,
+   "lumaStdDev": 43.08552086856789
+  },
+  "drawCalls": 156,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_SILT__",
+   "accessorErrors": [],
+   "accessor": "state",
+   "stateChanged": [
+    "state.state.yaw:0.00->-0.05",
+    "state.state.elapsed:0.10->1.20",
+    "state.flight.turn:0.00->0.09",
+    "state.flight.bank:0.00->-0.03",
+    "state.time:0.10->1.20",
+    "state.steps:6.00->72.00"
+   ],
+   "numericFields": 21,
+   "hudChanged": true,
+   "hudBefore": "A hover-board flight through seven valleys|Silt & Signal|One small village, one long road, one favour to repay.|Begin th",
+   "hudAfter": "Lantern Road|Fly to the gatehouse on the far road|40 m|1/4 \u00b7 ring 1/8|Speed|0|Altitude|4|Mode|Cruise|W/S throttle \u00b7 A/D ",
+   "startDiff": {
+    "changedFraction": 0.6343312757201646,
+    "meanAbsLuma": 32.33425925925951
+   },
+   "playDiff": {
+    "changedFraction": 0.28636831275720165,
+    "meanAbsLuma": 12.122472565154865
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports2-r1.log"
+ },
+ "port:cloud-runner": {
+  "slug": "cloud-runner",
+  "url": "https://aura3d.auraone.ai/apps/showcase-cloud-runner-port/",
+  "finalUrl": "/apps/showcase-cloud-runner-port/",
+  "compat": [],
+  "status": 200,
+  "scripts": [
+   "/assets/showcase-cloud-runner-port-C2YXLRD2.js"
+  ],
+  "canvases": [
+   {
+    "id": "world",
+    "width": 360,
+    "height": 270,
+    "hasWebgl": true
+   }
+  ],
+  "hooks": [
+   "__aura3dInFlightByteFetches",
+   "__AURA_KID_GOKU__",
+   "__AURA3D_LIVE_APPS__",
+   "__AURA3D_ROUTE_READY__"
+  ],
+  "started": true,
+  "startNote": "clicked # \"Play  \u25b8\"",
+  "errorsAfterStart": 0,
+  "fpsBoot": 0.6564264145989135,
+  "fpsPlay": 0.24041640120688965,
+  "hung": [],
+  "beforeStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1316,
+   "lumaStdDev": 64.2201630965232
+  },
+  "afterStart": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1690,
+   "lumaStdDev": 61.7178719266792
+  },
+  "afterPlay": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1971,
+   "lumaStdDev": 62.062076895806015
+  },
+  "canvasOnly": {
+   "width": 360,
+   "height": 270,
+   "nonBlackFraction": 1,
+   "distinctColors": 1794,
+   "lumaStdDev": 35.36718751262598
+  },
+  "drawCalls": 187,
+  "bridgeWarnings": [],
+  "progress": {
+   "hook": "__AURA_KID_GOKU__",
+   "accessorErrors": [],
+   "accessor": "snapshot",
+   "stateChanged": [
+    "snapshot.s:0.20->12.50",
+    "snapshot.lane:0.00->0.67",
+    "snapshot.speed:3.50->13.97",
+    "snapshot.score:0.00->7.00"
+   ],
+   "numericFields": 13,
+   "hudChanged": true,
+   "hudBefore": "Aura3D simulation port|Beyond the|Seven star orbs. One long run home along the ridge.|Play  \u25b8|Sound on|How to play|\u2190|\u2192|S",
+   "hudAfter": "Aura3D simulation port|\u275a\u275a|1|2|3|4|5|6|7|\u2302|7|THE RUN BEGINS|RIDE THE ROLLING LOG|\u2190 \u2192 OR A D TO STEER|Sky cloud|Q",
+   "startDiff": {
+    "changedFraction": 0.6785493827160494,
+    "meanAbsLuma": 28.585137174214317
+   },
+   "playDiff": {
+    "changedFraction": 0.2851851851851852,
+    "meanAbsLuma": 10.960884773661567
+   }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "_kind": "SMOKE_JSON",
+  "_log": "live410-ports2-r1.log"
+ }
+}
