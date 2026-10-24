@@ -1,4 +1,4 @@
-import { GLTFSharedTextureCache } from "@aura3d/assets";
+import { GLTFSharedTextureCache } from "@aura3d/assets/browser";
 
 /**
  * Ref-counted registry of one `GLTFSharedTextureCache` per (asset, decode options), so repeated

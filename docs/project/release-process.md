@@ -41,7 +41,14 @@ pnpm verify:api-docs -- --write
 pnpm verify:package-install-smoke:fresh
 pnpm verify:package-provenance
 npm pack --dry-run --json
+node tools/release/publish-all.mjs --pack-only
+node tools/release/consumer-build-smoke.mjs
 ```
+
+`consumer-build-smoke.mjs` is a required gate: it installs the packed tarballs into a temp project outside the
+repository and runs a stock `vite build` and `vite dev` for the `mini-game`, `racing-starter`,
+`falling-blocks-starter` and `product-viewer` templates plus a config-less `createAuraApp` hello-world, and fails
+if a `node:*` import is reachable from the engine browser entry. It runs offline once the npm cache holds `vite`.
 
 Run only the commands relevant to the selected package change for local
 iteration. Run the full package gate before publishing.
