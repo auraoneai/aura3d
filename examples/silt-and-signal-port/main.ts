@@ -9,6 +9,7 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, effects, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { updateCompass } from "@aura3d/engine/game";
+import { createSiltPresenter, viewOf } from "./presentation";
 import { CHAPTERS } from "./chapters-data";
 import { autopilot } from "./autopilot";
 import { createSiltAudio, type SiltAudio } from "./audio";
@@ -47,6 +48,9 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 const canvas = $<HTMLCanvasElement>("world");
 
 let sim: Sim = createSim(config.chapter, config.objective);
+const presenter = createSiltPresenter(() => sim);
+/** True while a QA hook draws the exact latest step (stepFrames, replay) instead of the interpolated pose. */
+let drawLatest = false;
 let app: AuraApp | undefined;
 let world: World | undefined;
 let runtime: WorldRuntime | undefined;
@@ -209,7 +213,8 @@ function titlePose(): Pose {
 
 function render(dt: number): void {
   if (!app || !runtime) return;
-  runtime.update(sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  const live = mode === "play" && !config.manual && !drawLatest;
+  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
   const pose = overridePose ?? (mode === "title" ? titlePose() : null);
   if (pose) app.camera?.setPose(pose, { cut: true });
   app.step(0);
@@ -234,6 +239,7 @@ const loop = createFixedStepLoop({
   step: () => {
     if (mode !== "play") return;
     const events = stepSim(sim, sampleInput(), STEP);
+    presenter.afterStep();
     if (events.length) onEvents(events);
   },
   render: (dt) => {
@@ -284,18 +290,25 @@ function reset(chapter = config.chapter, objective = config.objective, start?: {
   const ch = Math.max(0, Math.min(6, Math.trunc(chapter)));
   sim = createSim(ch, Math.max(0, Math.min(CHAPTERS[ch]!.objectives.length - 1, Math.trunc(objective))), undefined, start);
   loop.resetAccumulator();
+  presenter.reset();
   heldInput = null;
 }
 
 function stepFrames(n: number, input: Input = IDLE): void {
   for (let i = 0; i < n; i++) stepSim(sim, input, STEP);
+  presenter.reset();
+  drawLatest = true;
   render(STEP);
+  drawLatest = false;
 }
 
 function replay(segments: readonly { steps: number; input: Input }[]): Row[] {
   const trace: Row[] = [];
   for (const seg of segments) for (let i = 0; i < seg.steps; i++) { stepSim(sim, seg.input, STEP); trace.push(row()); }
+  presenter.reset();
+  drawLatest = true;
   render(STEP);
+  drawLatest = false;
   return trace;
 }
 

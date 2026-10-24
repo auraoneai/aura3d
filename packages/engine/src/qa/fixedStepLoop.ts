@@ -31,6 +31,8 @@ export interface FixedStepLoop {
   readonly steps: number;
   /** Seconds of unsimulated time carried to the next frame. */
   readonly accumulator: number;
+  /** Progress through the current step, `accumulator / stepSeconds` clamped to 0..1: the blend factor for render interpolation. */
+  readonly alpha: number;
   /** Drop the carried time so a restart does not inherit a partial step from before it. */
   resetAccumulator(): void;
   /** Run one animation frame at `nowMs` (what the scheduler calls); returns the steps it executed. */
@@ -74,6 +76,9 @@ export function createFixedStepLoop(options: FixedStepLoopOptions): FixedStepLoo
     },
     get accumulator() {
       return accumulator;
+    },
+    get alpha() {
+      return Math.max(0, Math.min(1, accumulator / stepSeconds));
     },
     tick(nowMs) {
       const frameSeconds = Math.min(maxFrame, Math.max(minFrame, (nowMs - last) / 1000));

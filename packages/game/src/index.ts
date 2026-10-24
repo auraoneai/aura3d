@@ -71,7 +71,8 @@ export {
   createLocomotion, proceduralLegSwing, createFootSlideMeter,
   createImpactWorld, createHitStop, createCameraShake, createImpactFeedback,
   attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance,
-  checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend
+  checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend,
+  createFixedStepPresenter, createRecordBlend, runMotionGate
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
@@ -80,7 +81,8 @@ export type {
   ImpactBoxCollider, ImpactSphereCollider, ImpactCollider, ImpactBody, Impact, ImpactWorldOptions, ImpactWorld,
   HitStop, CameraShake, ParticleBurst, ImpactFeedbackOptions, ImpactFeedbackResult,
   BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment,
-  DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport
+  DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport,
+  AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport
 } from "./motion/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";
