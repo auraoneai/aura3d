@@ -114,6 +114,96 @@ describe("look capture", () => {
     expect(lint.findings[0].code).toBe("look/no-ibl");
   });
 
+  it("defaults to the remote runner: starts no process, writes a capture request and exits 2 pending", async () => {
+    const cwd = project();
+    const calls: string[] = [];
+    const { io, err } = makeIo(cwd);
+    const code = await runLookCapture(["--shots", "opening", "--out", "dist/lookdev/9"], io, {
+      exec: (command) => { calls.push(command); return { status: 0, stdout: "", stderr: "" }; },
+      sleep: () => {}
+    });
+    expect(code).toBe(2);
+    expect(calls).toEqual([]);
+    const request = JSON.parse(readFileSync(join(cwd, "dist/lookdev/9/capture-request.json"), "utf8")) as { shots: string; env: Record<string, string> };
+    expect(request.shots).toBe("opening");
+    expect(request.env.A3D_LOOKDEV_SHOTS).toBe("opening");
+    expect(err.join("\n")).toContain("No remote runner is configured");
+    expect(err.join("\n")).toContain("tools/remote-acr/run.sh");
+  });
+
+  it("remote runner with --json reports pending and steps", async () => {
+    const cwd = project();
+    const { io, out } = makeIo(cwd);
+    const code = await runLookCapture(["--json", "--out", "dist/lookdev/1"], io, { exec: () => ({ status: 0, stdout: "", stderr: "" }) });
+    expect(code).toBe(2);
+    const result = JSON.parse(out.join("")) as { pending: boolean; runner: string; steps: string[] };
+    expect(result.pending).toBe(true);
+    expect(result.runner).toBe("remote");
+    expect(result.steps.length).toBeGreaterThan(2);
+  });
+
+  it("remote runner runs a configured --remote-cmd with the request and out dir", async () => {
+    const cwd = project();
+    const { io, out } = makeIo(cwd);
+    const seen: { command: string; args: readonly string[] }[] = [];
+    const code = await runLookCapture(["--remote-cmd", "my-runner --fast", "--out", "dist/lookdev/4"], io, {
+      exec: (command, args) => {
+        seen.push({ command, args });
+        const outDir = args[args.length - 1]!;
+        writeFileSync(join(outDir, "shot.png"), Buffer.from([137, 80, 78, 71]));
+        return { status: 0, stdout: "", stderr: "" };
+      }
+    });
+    expect(code).toBe(0);
+    expect(seen[0]!.command).toBe("my-runner");
+    expect(seen[0]!.args[0]).toBe("--fast");
+    expect(seen[0]!.args[1]).toMatch(/capture-request\.json$/);
+    expect(out.join("\n")).toContain("shot.png");
+  });
+
+  it("remote runner fails when the configured command leaves no captures", async () => {
+    const cwd = project();
+    const { io, err } = makeIo(cwd);
+    const code = await runLookCapture(["--remote-cmd", "noop"], io, { exec: () => ({ status: 0, stdout: "", stderr: "" }) });
+    expect(code).toBe(2);
+    expect(err.join("\n")).toContain("no .png captures");
+  });
+
+  it("remote runner collects a finished remote run with --from", async () => {
+    const cwd = project();
+    mkdirSync(join(cwd, "fetched/desktop"), { recursive: true });
+    writeFileSync(join(cwd, "fetched/desktop/opening.png"), Buffer.from([137, 80, 78, 71]));
+    writeFileSync(join(cwd, "fetched/screenshot.json"), JSON.stringify({ profile: { appliedLook: { id: "studio" }, lint: { findings: [] } } }));
+    const { io, out } = makeIo(cwd);
+    const code = await runLookCapture(["--from", "fetched", "--out", "dist/lookdev/2"], io, { exec: () => ({ status: 1, stdout: "", stderr: "must not run" }) });
+    expect(code).toBe(0);
+    expect(out.join("\n")).toContain("opening.png");
+    expect(readFileSync(join(cwd, "dist/lookdev/2/appliedLook.json"), "utf8")).toContain("studio");
+  });
+
+  it("remote runner reports a missing --from directory", async () => {
+    const cwd = project();
+    const { io, err } = makeIo(cwd);
+    expect(await runLookCapture(["--from", "nope"], io)).toBe(2);
+    expect(err.join("\n")).toContain("--from directory not found");
+  });
+
+  it("local and gh-actions runners warn that they are not the default", async () => {
+    const cwd = project();
+    const local = makeIo(cwd);
+    await runLookCapture(["--runner", "local"], local.io, { exec: () => ({ status: 127, stdout: "", stderr: "" }) });
+    expect(local.err.join("\n")).toContain("warning: --runner local");
+    const gh = makeIo(cwd);
+    await runLookCapture(["--runner", "gh-actions"], gh.io, { exec: () => ({ status: 127, stdout: "", stderr: "" }) });
+    expect(gh.err.join("\n")).toContain("legacy option");
+  });
+
+  it("rejects unknown runners", async () => {
+    const { io, err } = makeIo(project());
+    expect(await runLookCapture(["--runner", "cloud"], io)).toBe(2);
+    expect(err.join("\n")).toContain("remote (default)");
+  });
+
   it("nextLookdevRound picks the next free integer", () => {
     const cwd = project();
     expect(nextLookdevRound(cwd)).toBe(1);

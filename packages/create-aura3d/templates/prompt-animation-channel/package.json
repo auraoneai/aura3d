@@ -8,7 +8,8 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts --workers=1"
+    "test": "node -e \"console.log('Browser specs run on a remote runner, not on this machine. On the remote runner run: npm run test:browser (AuraOne repos: tools/remote-acr/run.sh). Local checks: npm run typecheck && npm run build.')\" && npm run typecheck",
+    "test:browser": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts --workers=1"
   },
   "dependencies": {
     "@aura3d/engine": "4.1.2",

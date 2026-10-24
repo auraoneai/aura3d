@@ -279,7 +279,7 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
   patchScaffoldPlaywrightConfig(appDir, port + 100);
   const install = scaffold.ok ? run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], appDir) : scaffold;
   const build = install.ok ? run("npm", ["run", "build"], appDir) : install;
-  const devRouteHealth = build.ok ? run("npm", ["test"], appDir) : build;
+  const devRouteHealth = build.ok ? run("npm", ["run", "test:browser"], appDir) : build;
   const screenshotReport = readScreenshotReport(appDir, "tests/reports/screenshot.json");
   const screenshotBytes = Math.max(readScreenshotBytes(appDir, "tests/reports/screenshot.png"), screenshotReport.bytes);
   const screenshotSha256 = readFileSha256(appDir, "tests/reports/screenshot.png");

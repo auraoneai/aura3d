@@ -8,7 +8,8 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts tests/sample-episode-visual.spec.ts tests/concept-2-5d.spec.ts tests/puppet-2d.spec.ts tests/image-puppet.spec.ts tests/concept-2-5d-animation.spec.ts tests/puppet-2d-animation.spec.ts tests/image-puppet-animation.spec.ts --workers=1",
+    "test": "node -e \"console.log('Browser specs run on a remote runner, not on this machine. On the remote runner run: npm run test:browser (AuraOne repos: tools/remote-acr/run.sh). Local checks: npm run typecheck && npm run build.')\" && npm run typecheck",
+    "test:browser": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts tests/sample-episode-visual.spec.ts tests/concept-2-5d.spec.ts tests/puppet-2d.spec.ts tests/image-puppet.spec.ts tests/concept-2-5d-animation.spec.ts tests/puppet-2d-animation.spec.ts tests/image-puppet-animation.spec.ts --workers=1",
     "test:negative-failed-puppets": "playwright test tests/concept-2-5d.spec.ts tests/puppet-2d.spec.ts tests/image-puppet.spec.ts tests/concept-2-5d-animation.spec.ts tests/puppet-2d-animation.spec.ts tests/image-puppet-animation.spec.ts --workers=1"
   },
   "dependencies": {

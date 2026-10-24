@@ -89,7 +89,7 @@ aura3d look judge --validate look-judgement.json [--judge self|prism]
      # PNGs: tests/reports/remote-acr/look-1/artifacts/
      ```
 
-   - **Your own project:** `aura3d look capture --route / --shots opening,mid,action --viewports desktop,mobile --runner gh-actions|local`. `gh-actions` dispatches the project's `aura3d-lookdev` workflow through your `gh` login (it is the CLI default); `local` runs the project's Playwright spec and needs Playwright installed. Use whichever your environment allows; neither is allowed on AuraOne machines.
+   - **Your own project:** `aura3d look capture --route / --shots opening,mid,action --viewports desktop,mobile`. The default `--runner remote` never starts a browser on your machine: it writes `capture-request.json` and prints the remote-run steps, or runs your configured runner (`--remote-cmd` or `AURA3D_REMOTE_RUNNER`), and `--from <reports-dir>` collects a finished remote run. `--runner local` (explicit opt-in, warns) and the legacy `--runner gh-actions` (warns) remain, and neither is allowed on AuraOne machines.
 2. **Judge** each PNG against the 12-category rubric (`aura3d-art-direction/references/quality-bar.md`); write `look-judgement.json` and validate it.
 3. **Change the single highest-leverage thing:** lint codes first, then the lowest rubric category.
 4. **Repeat** until every category reads 7 or more, 6 rounds are spent, or two rounds gain nothing. Record remaining gaps with their lint code or engine limitation; never paint over a gap with fake geometry.
