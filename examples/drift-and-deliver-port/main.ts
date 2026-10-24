@@ -10,7 +10,8 @@
  * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, type AuraApp } from "@aura3d/engine";
-import { drawCanvasMinimap } from "@aura3d/engine/game";
+import { createRenderInterpolator, drawCanvasMinimap } from "@aura3d/engine/game";
+import { blendPresented, type Presented } from "./presentation";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "./blackframe";
@@ -167,6 +168,14 @@ function simulateStep(input: Keys): void {
   car.boost = ps.boost;
 }
 
+function presentedNow(): Presented {
+  const tr = new Float64Array(traffic.length * 3);
+  traffic.forEach((t, i) => { tr[3 * i] = t.x; tr[3 * i + 1] = t.z; tr[3 * i + 2] = t.yaw; });
+  return { car: { x: car.x, z: car.z, heading: car.heading, lean: car.lean, steer: car.steer, speed: car.speed }, traffic: tr };
+}
+const presenter = createRenderInterpolator<Presented>(blendPresented);
+presenter.reset(presentedNow());
+
 function simulate(steps: number, input: Keys = keys): void {
   for (let i = 0; i < steps; i++) simulateStep(input);
 }
@@ -179,14 +188,14 @@ const beamWorldPositions = new Float32Array(beam.positions.length);
 const beamWorldNormals = new Float32Array(beam.normals.length);
 
 /** The beams live in world space (their node stays at the origin): the cone is rotated and translated here each frame. */
-function placeBeams(yaw: number): void {
+function placeBeams(yaw: number, carX: number, carZ: number): void {
   const s = Math.sin(yaw);
   const c = Math.cos(yaw);
   for (let i = 0; i < beam.positions.length; i += 3) {
     const lx = beam.positions[i]!, ly = beam.positions[i + 1]!, lz = beam.positions[i + 2]!;
-    beamWorldPositions[i] = car.x + lx * c + lz * s;
+    beamWorldPositions[i] = carX + lx * c + lz * s;
     beamWorldPositions[i + 1] = ly;
-    beamWorldPositions[i + 2] = car.z - lx * s + lz * c;
+    beamWorldPositions[i + 2] = carZ - lx * s + lz * c;
     const nx = beam.normals[i]!, ny = beam.normals[i + 1]!, nz = beam.normals[i + 2]!;
     beamWorldNormals[i] = nx * c + nz * s;
     beamWorldNormals[i + 1] = ny;
@@ -197,20 +206,18 @@ function placeBeams(yaw: number): void {
   h.updateAttribute?.("normal", { array: beamWorldNormals });
 }
 
-function placeTraffic(): void {
+function placeTraffic(shown: Float64Array): void {
   for (const rig of look.traffic) {
     rig.cars.forEach((carIndex, n) => {
-      const t = traffic[carIndex]!;
-      const m = mat(t.x, 0, t.z, t.yaw, 0, 1, 1, 1);
+      const m = mat(shown[3 * carIndex]!, 0, shown[3 * carIndex + 1]!, shown[3 * carIndex + 2]!, 0, 1, 1, 1);
       rig.paint.setMatrixAt(n, m);
       rig.detail.setMatrixAt(n, m);
     });
   }
   for (const i of look.modelTraffic) {
-    const t = traffic[i]!;
     const h = node(`traffic-${i}`);
-    h.setPosition(t.x, 0, t.z);
-    h.setRotation(0, t.yaw, 0);
+    h.setPosition(shown[3 * i]!, 0, shown[3 * i + 1]!);
+    h.setRotation(0, shown[3 * i + 2]!, 0);
   }
 }
 
@@ -221,14 +228,15 @@ function placePickups(): void {
   look.hearts.forEach((p, i) => look.heartMesh.setMatrixAt(i, p.taken ? HIDDEN : mat(p.x, 1.3 + 0.18 * Math.sin(2.4 * renderTime + p.spin), p.z, p.spin + renderTime * 2.4, 0, 1.0, 1.0, 1.0)));
 }
 
-function placeNodes(dt: number): void {
-  const yaw = car.heading + 0.72 * car.lean;
-  const roll = -Math.max(-0.16, Math.min(0.16, car.steer * Math.min(1, Math.abs(car.speed) / 34) * 0.09 + 0.1 * car.lean));
+function placeNodes(dt: number, shown: Presented): void {
+  const view = shown.car;
+  const yaw = view.heading + 0.72 * view.lean;
+  const roll = -Math.max(-0.16, Math.min(0.16, view.steer * Math.min(1, Math.abs(view.speed) / 34) * 0.09 + 0.1 * view.lean));
   const place = (id: string, ox: number, oy: number, oz: number, extra: [number, number, number] = [0, 0, 0]) => {
     const s = Math.sin(yaw);
     const c = Math.cos(yaw);
     const h = node(id);
-    h.setPosition(car.x + ox * c + oz * s, oy, car.z - ox * s + oz * c);
+    h.setPosition(view.x + ox * c + oz * s, oy, view.z - ox * s + oz * c);
     h.setRotation(extra[0], yaw + extra[1], roll + extra[2]);
   };
   if (config.models) {
@@ -239,22 +247,23 @@ function placeNodes(dt: number): void {
     place("car-light-l", -0.6, 0.62, 2.1);
     place("car-light-r", 0.6, 0.62, 2.1);
   }
-  placeBeams(yaw);
+  placeBeams(yaw, view.x, view.z);
   if (!beamsUncullable) {
     node("car-beams").frustumCulled = false;
     beamsUncullable = true;
   }
   node("car-beams").setUniform?.("beamAmount", headlightAmount);
-  placeTraffic();
+  placeTraffic(shown.traffic);
   placePickups();
-  stepChase(camState, { x: car.x, z: car.z, y: 0, heading: car.heading, speed: car.speed, boosting: car.boosting, shake: car.shake }, dt);
+  stepChase(camState, { x: view.x, z: view.z, y: 0, heading: view.heading, speed: view.speed, boosting: car.boosting, shake: car.shake }, dt);
   app!.camera!.setPose({ position: [...camState.eye], target: [...camState.look], up: [0, 1, 0], fov: camState.fov }, { cut: false });
 }
 
-function render(dt: number): void {
+function render(dt: number, alpha = 1): void {
   if (!app || !ready || renderFailed) return;
   try {
-    placeNodes(dt);
+    const live = !config.manual && game.phase === "playing";
+    placeNodes(dt, live && alpha < 1 ? presenter.sample(alpha) ?? presentedNow() : presentedNow());
     app.step(0);
     frames++;
     blackWatch?.sample(frames);
@@ -451,6 +460,7 @@ const loop = createFixedStepLoop({
       simulateStep(manualInput);
       followCamera(1);
     } else simulate(1);
+    presenter.push(presentedNow());
   }
 });
 
@@ -468,7 +478,7 @@ function tick(now: number): void {
     updateHud();
     hudTimer = 0;
   }
-  render(config.manual ? 0 : dt);
+  render(config.manual ? 0 : dt, loop.accumulator / STEP);
 }
 
 $("start").addEventListener("click", begin);
