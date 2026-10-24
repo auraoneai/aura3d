@@ -24,6 +24,7 @@ import {
   puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
 } from "./game/stage";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installGameBeacon } from "@aura3d/engine/game";
 
 installBlackFrameGuard();
 
@@ -1243,8 +1244,7 @@ gameApp.onFrame(({ dt }) => {
 // deterministic evidence hooks for capture tooling
 const w = window as unknown as Record<string, unknown>;
 // canonical §7.2.1 beacon: route + app handle + live state getters
-w.__AURA3D_GAME__ = {
-  route: "showcase-slingshot-siege",
+installGameBeacon({ route: "showcase-slingshot-siege" }).publishEvidence({
   get app() { return app; },
   get scene() { return app.scene; },
   get state() { return paused ? "paused" : resultOpen ? "result" : sim.isShotActive() ? "shot-in-flight" : "aiming"; },
@@ -1252,7 +1252,7 @@ w.__AURA3D_GAME__ = {
   get level() { return level.id; },
   get mode() { return mode; },
   get evidence() { return evidence(); }
-};
+});
 w.__SS_STATE__ = () => evidence();
 w.__SS_PUMP__ = (n = 60) => { for (let i = 0; i < n; i += 1) app.advance(1 / 60); return evidence(); };
 w.__SS_FIRE__ = (ammo: AmmoId = "stone") => {

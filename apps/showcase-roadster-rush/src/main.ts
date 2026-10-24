@@ -21,6 +21,13 @@ import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { groundSpec } from "./art/ground";
 import { meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
+import { installGameBeacon } from "@aura3d/engine/game";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-roadster-rush", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 installBlackFrameGuard();
 
@@ -1568,8 +1575,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
         powerups: powerUsed
       }
     };
-    (window as any).__AURA3D_GAME_EVIDENCE__ = evidence;
-    (window as any).__AURA3D_GAME__ = evidence;
+    publishBeacon(evidence);
     (window as any).__AURA3D_SHOWCASE_ROADSTER_RUSH__ = {
       app: auraApp,
       evidence,

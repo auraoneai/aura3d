@@ -14,6 +14,13 @@ import {
 } from "@aura3d/engine";
 import { assets as rootAssets } from "../../../src/aura-assets";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installGameBeacon } from "@aura3d/engine/game";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-teleoperator", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 installBlackFrameGuard();
 
@@ -2728,8 +2735,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
       }))
     };
 
-    (window as unknown as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ = evidence;
-    (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = evidence;
+    publishBeacon(evidence);
     (window as unknown as Record<string, unknown>).__AURA3D_SHOWCASE_TELEOPERATOR__ = {
       app: auraApp,
       evidence,

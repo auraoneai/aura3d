@@ -17,6 +17,13 @@ import {
 import { AudioContextManager } from "@aura3d/engine/audio";
 import { assets as catalogAssets } from "../../../src/aura-assets";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installGameBeacon } from "@aura3d/engine/game";
+
+let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
+const publishBeacon = (evidence: object): void => {
+  gameBeacon ??= installGameBeacon({ route: "showcase-heatsink", evidenceGlobals: ["__AURA3D_GAME_EVIDENCE__"] });
+  gameBeacon.publishEvidence(evidence);
+};
 
 installBlackFrameGuard();
 
@@ -1966,8 +1973,7 @@ async function bootThermalDriftShowcase(): Promise<void> {
       modelNodeCount: 30,
       admittedAssetKeyCount: 26
     };
-    (window as unknown as Record<string, unknown>).__AURA3D_GAME_EVIDENCE__ = frameEvidence;
-    (window as unknown as Record<string, unknown>).__AURA3D_GAME__ = frameEvidence;
+    publishBeacon(frameEvidence);
   });
 
   const globalApi = {
