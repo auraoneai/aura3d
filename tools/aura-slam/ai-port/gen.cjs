@@ -1,7 +1,7 @@
 const ts = require('typescript');
 const fs = require('fs');
 const S = require('./sets.cjs');
-const file = '' + process.cwd() + '/apps/showcase-top-tennis/public/toptennis/match-engine.js';
+const file = '' + process.cwd() + '/tests/fixtures/aura-slam-original/toptennis/match-engine.js';
 const text = fs.readFileSync(file, 'utf8');
 const program = ts.createProgram([file], { allowJs: true, checkJs: false, noResolve: true, target: ts.ScriptTarget.ES2020, noLib: true });
 const sf = program.getSourceFile(file); const checker = program.getTypeChecker();

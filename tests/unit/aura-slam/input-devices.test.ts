@@ -8,7 +8,7 @@ import {
 import { createInputMapper, createTouchStick, TOUCH_DEAD_ZONE, TOUCH_RADIUS, TOUCH_TAP_MS } from "../../../examples/aura-slam/input/mapper";
 
 const ctx = (patch: Partial<KeyboardContext> = {}): KeyboardContext => ({
-  overlayOpen: false, touchPlayEnabled: true, workMode: false, mode: "playing", online: false, swipeActive: false,
+  overlayOpen: false, touchPlayEnabled: true, mode: "playing", online: false, swipeActive: false,
   documentActive: true, fullscreen: false, selectedShot: "neutral", ...patch,
 });
 const ev = (code: string, patch: Partial<KeyEventLike> = {}): KeyEventLike => ({ code, key: code, target: { isBody: true, insideShell: true }, ...patch });
@@ -97,17 +97,9 @@ describe("M-INPUT keyboard: game.js handleKeyDown branches", () => {
     expect(t.handleKeyDown(ev("Space", { target: { tagName: "BUTTON", isBody: false, insideShell: true } }), ctx()).preventDefault).toBe(false);
   });
 
-  it("work mode (Backquote): toggles from play, exits work mode, is ignored online or held", () => {
+  it("the backquote key has no game command (Busted Mode was removed)", () => {
     const t = tracker();
-    expect(t.handleKeyDown(ev("Backquote"), ctx()).command).toEqual({ type: "workMode" });
-    t.handleKeyUp(ev("Backquote"));
-    expect(t.handleKeyDown(ev("Backquote"), ctx({ workMode: true })).command).toEqual({ type: "workMode" });
-    t.handleKeyUp(ev("Backquote"));
-    expect(t.handleKeyDown(ev("Backquote"), ctx({ workMode: true })).command).toEqual({ type: "workMode" });
-    expect(t.handleKeyDown(ev("Backquote", { repeat: true }), ctx({ workMode: true })).command).toBeNull();
-    expect(t.handleKeyDown(ev("Space"), ctx({ workMode: true })).command).toBeNull();
-    t.handleKeyUp(ev("Backquote"));
-    expect(t.handleKeyDown(ev("Backquote"), ctx({ online: true })).command).toBeNull();
+    expect(t.handleKeyDown(ev("Backquote"), ctx()).command).toBeNull();
   });
 
   it("targets outside the shell, text fields and activatable controls keep their own semantics", () => {
@@ -179,7 +171,7 @@ describe("M-INPUT keyboard: game.js handleKeyDown branches", () => {
 /* ---- gamepad ---- */
 
 const gates = (patch: Partial<GamepadGates> = {}): GamepadGates => ({
-  documentActive: true, workMode: false, overlayOpen: false, editableFocused: false, touchPlayEnabled: true, swipeActive: false, ...patch,
+  documentActive: true, overlayOpen: false, editableFocused: false, touchPlayEnabled: true, swipeActive: false, ...patch,
 });
 function pad(patch: { pressed?: number[]; axes?: number[]; index?: number; id?: string; mapping?: string; connected?: boolean } = {}): PadLike {
   const pressed = new Set(patch.pressed ?? []);
@@ -240,7 +232,7 @@ describe("M-INPUT gamepad: pollController semantics", () => {
   it("gates (hidden document, work mode, overlay, text field) re-block; swipe and disabled touch-play drop movement but keep neutral tracking", () => {
     const p = poller();
     p.poll([pad()], gates());
-    for (const g of [gates({ documentActive: false }), gates({ workMode: true }), gates({ overlayOpen: true }), gates({ editableFocused: true })]) {
+    for (const g of [gates({ documentActive: false }), gates({ overlayOpen: true }), gates({ editableFocused: true })]) {
       const r = p.poll([pad({ pressed: [0] })], g);
       expect(r).toMatchObject({ blocked: true, pressed: { hit: false } });
       p.poll([pad()], gates()); // neutral again

@@ -30,7 +30,6 @@ export interface KeyEventLike {
 export interface KeyboardContext {
   overlayOpen: boolean;
   touchPlayEnabled: boolean;
-  workMode: boolean;
   mode: GameMode;
   online: boolean;
   swipeActive: boolean;
@@ -45,7 +44,6 @@ export interface KeyboardContext {
 export type KeyboardCommand =
   | { type: "pause" }
   | { type: "fullscreen" }
-  | { type: "workMode" }
   | { type: "swing" }
   | { type: "lobSwing" }
   | { type: "selectShot"; shot: ShotPreset }
@@ -106,18 +104,10 @@ export function createKeyboardTracker(bindings: Pick<BindingsStore, "actionForKe
       const prevent = ctx.touchPlayEnabled && Boolean(bindings.actionForKey(event.code)) && !(tag !== undefined && NATIVE_TAGS.includes(tag)) && !target.isContentEditable;
       return prevent ? { preventDefault: true, unlockAudio: false, command: null } : NONE;
     }
-    const workKey = event.code === "Backquote" || event.key === "~" || event.key === "`";
-    if (ctx.workMode) {
-      if (workKey && !event.repeat) return { preventDefault: true, unlockAudio: false, command: { type: "workMode" } };
-      return NONE;
-    }
     // Native controls and external forms keep their own input semantics.
     if (target.isBody !== true && target.insideShell === false) return NONE;
     if (ctx.menuHandlesKey?.(event)) return { preventDefault: false, unlockAudio: false, command: { type: "menuKey" } };
     if ((tag !== undefined && EDITABLE_TAGS.includes(tag)) || target.isContentEditable) return NONE;
-    if (workKey && !ctx.online && ctx.mode === "playing") {
-      return { preventDefault: true, unlockAudio: false, command: event.repeat ? null : { type: "workMode" } };
-    }
     if (event.code === "Space" && tag !== undefined && ACTIVATABLE_TAGS.includes(tag)) return NONE;
     const action = bindings.actionForKey(event.code);
     let preventDefault = Boolean(action) && ctx.touchPlayEnabled;

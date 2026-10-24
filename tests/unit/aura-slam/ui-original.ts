@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 /** The original game scripts are hand-written UMD modules; the UI tests evaluate them as data (CommonJS shim) to compare behaviour. */
-const dir = resolve(process.cwd(), "apps/showcase-top-tennis/public/toptennis");
+const dir = resolve(process.cwd(), "tests/fixtures/aura-slam-original/toptennis");
 const cache = new Map<string, unknown>();
 function require(spec: string): any {
   const file = resolve(dir, spec.endsWith(".js") ? spec : `${spec}.js`);

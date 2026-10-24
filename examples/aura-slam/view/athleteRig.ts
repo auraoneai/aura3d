@@ -1,6 +1,6 @@
 /**
  * M-POSE rig: builds the athlete's scene nodes and applies a pose to them (transcription of the athlete rig in
- * apps/showcase-top-tennis/src/main.ts). Only this module and the renderer touch engine scene nodes; the pose itself is
+ * tests/fixtures/aura-slam-original/adapter/main.ts). Only this module and the renderer touch engine scene nodes; the pose itself is
  * computed by ./pose. Costume colours come from an injectable appearance resolver (Phase 2 roster/appearance data).
  */
 import { game, material, primitives, racketSports, type AuraRuntimeNodeHandle, type AuraSceneNode } from "@aura3d/engine";

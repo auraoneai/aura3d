@@ -7,7 +7,7 @@ import { createMatchEngine } from "../../../examples/aura-slam/sim/create";
 import { SWIPE_ENV_NAMES, SWIPE_OWNED_NAMES, createSwipeModule } from "../../../examples/aura-slam/sim/swipe";
 
 const EXPOSE_NAMES = () => [...AI_OWNED_NAMES, ...SWIPE_OWNED_NAMES].join(",");
-const DIR = join(process.cwd(), "apps/showcase-top-tennis/public/toptennis");
+const DIR = join(process.cwd(), "tests/fixtures/aura-slam-original/toptennis");
 const SOURCE = readFileSync(join(DIR, "match-engine.js"), "utf8");
 
 export type OracleEngine = Record<string, any> & { state: any };

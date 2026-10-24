@@ -8,7 +8,6 @@ export interface GamepadDeps {
   poller: GamepadPoller;
   /** Called with the active standard pad (or null) so the settings dialog can capture a button. */
   onPad?(pad: Gamepad | null): void;
-  workModeActive(): boolean;
   overlayOpen(): boolean;
   playActive(): boolean;
   touchPlayEnabled(): boolean;
@@ -31,7 +30,6 @@ export function createController(deps: GamepadDeps): { state: ControllerState; p
     try { pads = Array.from(navigator.getGamepads?.() || []); } catch { /* gamepad API unavailable */ }
     const result = poller.poll(pads as unknown as PadLike[], {
       documentActive: !document.hidden && document.hasFocus(),
-      workMode: deps.workModeActive(),
       overlayOpen: deps.overlayOpen(),
       editableFocused: Boolean((document.activeElement as Element | null)?.matches?.('input,textarea,select,[contenteditable="true"]')),
       touchPlayEnabled: deps.touchPlayEnabled(),

@@ -13,7 +13,7 @@ import { humanPolicy, mulberry32 } from "../../browser/aura-slam-policy";
  * written to tests/browser/aura-slam-golden.json, which the remote browser spec replays inside a real browser against the
  * same engine code (the runner image does not ship the original scripts). UPDATE_GOLDEN=1 rewrites the file.
  */
-const DIR = fileURLToPath(new URL("../../../apps/showcase-top-tennis/public/toptennis/", import.meta.url));
+const DIR = fileURLToPath(new URL("../../../tests/fixtures/aura-slam-original/toptennis/", import.meta.url));
 const GOLDEN = fileURLToPath(new URL("../../browser/aura-slam-golden.json", import.meta.url));
 
 function loadUmd(file: string, modules: Record<string, unknown> = {}): any {

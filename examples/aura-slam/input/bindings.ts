@@ -1,5 +1,5 @@
 /**
- * M-INPUT bindings: TypeScript transcription of apps/showcase-top-tennis/public/toptennis/controls.js.
+ * M-INPUT bindings: TypeScript transcription of tests/fixtures/aura-slam-original/toptennis/controls.js.
  * Same storage key, version, validation rules, error messages and labels; pure (no DOM, storage is injected).
  */
 import {

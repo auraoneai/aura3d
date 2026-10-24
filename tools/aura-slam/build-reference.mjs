@@ -16,7 +16,7 @@ const root = resolve(new URL("../..", import.meta.url).pathname);
 const read = (f) => JSON.parse(readFileSync(join(rawDir, f), "utf8"));
 const sha = (p) => createHash("sha256").update(readFileSync(p)).digest("hex").slice(0, 16);
 
-const gameDir = join(root, "apps/showcase-top-tennis/public/toptennis");
+const gameDir = join(root, "tests/fixtures/aura-slam-original/toptennis");
 const scripts = Object.fromEntries(readdirSync(gameDir).filter((f) => f.endsWith(".js")).sort().map((f) => [f, sha(join(gameDir, f))]));
 
 const thin = (rows) => rows.filter((r) => r[0] < 200 || r[0] % 50 === 0);
@@ -45,7 +45,7 @@ const reference = {
   kind: "first-party baseline (own game); not a third-party capture",
   url: "https://aura3d.auraone.ai/apps/showcase-top-tennis/",
   capturedAt: new Date().toISOString(),
-  source: { repoCommit: commit, scriptSha256Prefix16: scripts, adapter: "apps/showcase-top-tennis/src/main.ts" },
+  source: { repoCommit: commit, scriptSha256Prefix16: scripts, adapter: "tests/fixtures/aura-slam-original/adapter/main.ts" },
   method: {
     determinism: "Page booted without ?autoplay; in ONE synchronous evaluate the match is configured through the page's own controls (difficulty button, venue toolbar button, Auto toggle) and launched with TennisMenu.launch(); window.advanceTime(1000/60) is then called once per step so the real-time rAF loop never interleaves (the first advanceTime switches the game to manual stepping). The sim is seeded from game time/serve counters only (no Date.now/Math.random in match-engine.js); audio and tournament code use Math.random but never touch sim state.",
     hooks: ["window.advanceTime(ms)", "window.render_game_to_text()", "window.__TOP_TENNIS_CONTROL__.getState()/getEngine()", "window.TennisMenu.launch()/debug()", "window.TennisLocal.selectVenue()", "wrapped window.TennisEngine.create(opts.onEvent) for engine events", "wrapped window.TennisScene.createRenderer().render to count renders"],

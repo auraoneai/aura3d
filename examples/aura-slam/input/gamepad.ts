@@ -13,7 +13,6 @@ export interface PadLike {
 export interface GamepadGates {
   /** `!document.hidden && document.hasFocus()`. */
   documentActive: boolean;
-  workMode: boolean;
   /** Any settings/select/tournament overlay is open. */
   overlayOpen: boolean;
   /** A text field / select / contenteditable element has focus. */
@@ -92,7 +91,7 @@ export function createGamepadPoller(bindings: Pick<BindingsStore, "buttonFor" | 
     const buttons = pad.buttons.map((b) => b.pressed || b.value > 0.5);
     const pressed = (i: number | null): boolean => i !== null && Boolean(buttons[i]) && !controller.buttons[i];
     if (previousIndex !== pad.index || previousId !== pad.id) controller.blocked = true;
-    const gated = !gates.documentActive || gates.workMode || gates.overlayOpen || gates.editableFocused;
+    const gated = !gates.documentActive || gates.overlayOpen || gates.editableFocused;
     if (gated) {
       controller.blocked = true; controller.buttons = buttons; result.blocked = true; return result;
     }

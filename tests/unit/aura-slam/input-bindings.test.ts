@@ -21,7 +21,7 @@ interface OriginalControls {
   labelFor(action: string, device?: string, options?: unknown): string;
   subscribe(listener: (event: unknown) => void): () => void;
 }
-const original = loadUmd("apps/showcase-top-tennis/public/toptennis/controls.js") as {
+const original = loadUmd("tests/fixtures/aura-slam-original/toptennis/controls.js") as {
   create(options: { storage?: StorageLike | null }): OriginalControls;
   validateBindings(device: string, profile: unknown): { valid: boolean; errors: unknown[] };
   labelInput(input: unknown, device?: string, options?: unknown): string;

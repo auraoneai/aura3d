@@ -1,5 +1,5 @@
 /**
- * M-INPUT swipe: TypeScript transcription of apps/showcase-top-tennis/public/toptennis/mobile-swipe.js.
+ * M-INPUT swipe: TypeScript transcription of tests/fixtures/aura-slam-original/toptennis/mobile-swipe.js.
  * Touch gestures describe shots; the match engine owns movement and contact. Pure (storage is injected).
  */
 import { SWIPE_STORAGE_KEY, type ControlStyle, type RawSwipeGesture, type SwipeShot } from "../contract/input";

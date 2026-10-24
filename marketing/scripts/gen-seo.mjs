@@ -104,7 +104,6 @@ const MANIFEST = {
   "/apps/wow-damaged-helmet-pbr-detail/": { source: "apps/wow-damaged-helmet-pbr-detail/index.html", freq: "weekly", priority: "0.72" },
   "/apps/showcase-index/": { source: "apps/showcase-index/index.html", freq: "weekly", priority: "0.80" },
   "/apps/showcase-top-tennis/": { source: "apps/showcase-top-tennis/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-top-tennis-v2/": { source: "apps/showcase-top-tennis-v2/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-roadster-rush/": { source: "apps/showcase-roadster-rush/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-roadster-rush-v2/": { source: "apps/showcase-roadster-rush-v2/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-heatsink/": { source: "apps/showcase-heatsink/index.html", freq: "weekly", priority: "0.70" },
