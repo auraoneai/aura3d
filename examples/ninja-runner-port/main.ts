@@ -12,6 +12,8 @@ import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
 import { GameAudio } from "./audio";
 import { announcement, districtLabel, resultCopy } from "./labels";
+import { createCameraShake, createHitStop, createImpactFeedback } from "@aura3d/engine/game";
+import { TIER_FEEDBACK, type DebrisTier } from "./impact";
 import {
   DEFAULT_SEED, SIM_STEP, TUNING, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
   type Action, type SimEvent, type SimState
@@ -25,6 +27,8 @@ const config = {
   autostart: params.get("autostart") === "1",
   autopilot: params.get("autopilot") === "1",
   manual: params.get("manual") === "1",
+  /** `rules=original` reproduces the original game's obstacle contact (crates vanish, no knock-back); the default is the reworked contact rules. */
+  ram: params.get("rules") !== "original",
   quality: (params.get("quality") === "low" ? "low" : "high") as "low" | "high"
 };
 
@@ -37,7 +41,7 @@ const canvas = $<HTMLCanvasElement>("world");
 
 /* ------------------------------------------------------------------ state */
 
-let z: SimState = createState(config.seed);
+let z: SimState = createState(config.seed, { ram: config.ram });
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let actors: ActorAssets | undefined;
@@ -51,6 +55,13 @@ let pendingEvents: SimEvent[] = [];
 let notice: { title: string; small: string; until: number } | null = null;
 let renderFailed = false;
 let countdown = 0;
+const hitStop = createHitStop();
+const shake = createCameraShake({ maxOffset: 0.6 });
+const impactFeedback = Object.fromEntries((Object.keys(TIER_FEEDBACK) as DebrisTier[]).map((tier) => {
+  const t = TIER_FEEDBACK[tier];
+  return [tier, createImpactFeedback({ hitStop, shake, cue: (name) => audio.play(name as Parameters<GameAudio["play"]>[0]), cueName: t.cue, fullSpeed: t.fullSpeed, hitStopMs: t.hitStopMs })];
+})) as Record<DebrisTier, ReturnType<typeof createImpactFeedback>>;
+const feel = (tier: DebrisTier, speed: number): void => { impactFeedback[tier].handle({ colliderId: "obstacle", tag: tier, point: [0, 0, 0], normal: [0, 0, -1], speed, impulse: speed }); };
 let shownDistrict = "";
 const audio = new GameAudio();
 const maxCooldown: Record<string, number> = { dash: 1 };
@@ -58,7 +69,7 @@ const maxCooldown: Record<string, number> = { dash: 1 };
 function say(title: string, small: string, seconds: number): void { notice = { title, small, until: renderTime + seconds }; }
 
 const SFX_FOR_EVENT: Readonly<Record<string, Parameters<GameAudio["play"]>[0]>> = {
-  jump: "jump", land: "land", dash: "dash", rasengan: "orb", rasenshuriken: "gale", clones: "clones", damage: "hurt", break: "crate", armorBreak: "crate",
+  jump: "jump", land: "land", dash: "dash", rasengan: "orb", rasenshuriken: "gale", clones: "clones", damage: "hurt", armorBreak: "crate",
   windImpact: "galeHit", cloneStrike: "orbHit", deflect: "orbHit", interrupt: "orbHit", unlock: "unlock", form: "form", won: "win", lost: "lose", dropWarning: "warn"
 };
 
@@ -68,6 +79,8 @@ function handle(events: readonly SimEvent[]): void {
     const note = announcement(ev.type, ev.form as string | undefined);
     if (note) say(note.title, note.small, note.seconds);
     if (ev.type === "damage") flashHurt();
+    if (ev.type === "break") feel("smash", z.speed);
+    if (ev.type === "ram") feel(ev.tier as DebrisTier, ev.speed as number);
     if (ev.type === "pickup") audio.play("pickup", renderTime);
     else if (ev.type === "kill") audio.play(ev.heavy ? "heavyKill" : "kill");
     else { const sfx = SFX_FOR_EVENT[ev.type]; if (sfx) audio.play(sfx); }
@@ -86,7 +99,7 @@ function showHud(on: boolean): void {
 }
 
 function begin(): void {
-  z = createState(config.seed);
+  z = createState(config.seed, { ram: config.ram });
   startRun(z);
   loop.resetAccumulator();
   simSteps = 0;
@@ -107,7 +120,7 @@ function startWithCountdown(): void {
   if (!ready || countdown > 0) return;
   audio.unlock();
   audio.play("click");
-  z = createState(config.seed);
+  z = createState(config.seed, { ram: config.ram });
   runtime?.resetCamera();
   $("overlay").classList.add("hidden");
   $("result").classList.add("hidden");
@@ -213,9 +226,10 @@ const loop = createFixedStepLoop({
   stepSeconds: SIM_STEP,
   maxCatchUpSteps: 12,
   isActive: () => ready,
-  step: () => { if (!config.manual && z.phase === "running") step(1); },
+  step: () => { if (!config.manual && z.phase === "running" && hitStop.timeScale() === 1) step(1); },
   render: (dt) => {
     renderTime += dt;
+    hitStop.update(dt);
     if (countdown > 0) {
       countdown -= dt;
       $("countdown").textContent = countdown <= 0.35 ? "GO" : String(Math.ceil((countdown - 0.35) / 0.62));
@@ -296,6 +310,8 @@ const api = {
     render(0);
     return { steps: n, stop, ...snapshot(z) };
   },
+  /** Step the live sim `n` fixed steps without rendering (cheap on software GL); pair with `stepFrames(0)` to draw. */
+  stepRaw(n: number) { step(Math.max(0, n | 0)); return snapshot(z); },
   setAutopilot(on: boolean, next?: PolicyParams) { autopilotOn = on; if (next) policy = next; },
   /** Render `frames` real-time frames of `dt` seconds (animation clocks, particles) without advancing the sim; for captures. */
   settle(frames = 6, dt = 1 / 60) { for (let i = 0; i < frames; i++) { renderTime += dt; render(dt); } updateHud(); },
@@ -306,7 +322,7 @@ const api = {
   runIdle: (maxSteps = 40000) => summary(runIdle(maxSteps)),
   courseDigest: () => courseDigest(createState(config.seed)),
   probeBones: () => runtime?.probeBones(),
-  stats: () => ({ ...(runtime?.stats() ?? { visibleActors: 0, actors: ACTOR_COUNT, pickups: 0, particles: 0 }), shared: actors ? { textureEntries: actors.sharedTextureEntries, refs: actors.sharedTextureRefs, clips: actors.clips, clip: actors.clip } : null }),
+  stats: () => ({ ...(runtime?.stats() ?? { visibleActors: 0, actors: ACTOR_COUNT, pickups: 0, particles: 0, debris: 0 }), shared: actors ? { textureEntries: actors.sharedTextureEntries, refs: actors.sharedTextureRefs, clips: actors.clips, clip: actors.clip } : null }),
   diagnostics: () => app?.diagnostics() ?? null,
   appInfo: () => app?.info ?? null,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-03", "SG-05", "SH-02", "SH-01", "SA-04", "ST-02", "R-23", "R-26"] }) : null),
@@ -388,7 +404,7 @@ function sizeCanvas(): void {
 async function boot(): Promise<void> {
   sizeCanvas();
   actors = await loadActors(canvas);
-  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality });
+  const world = buildWorld({ canvas, actors, entities: z.entities, quality: config.quality, shake });
   app = createAuraApp(canvas, {
     autoStart: false,
     resize: false,

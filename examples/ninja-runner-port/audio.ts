@@ -6,7 +6,7 @@
 import { AudioContextManager } from "@aura3d/engine/audio";
 
 export type Sfx =
-  | "jump" | "land" | "slide" | "dash" | "orb" | "orbHit" | "gale" | "galeHit" | "clones" | "pickup" | "hurt" | "kill" | "heavyKill" | "crate"
+  | "jump" | "land" | "slide" | "dash" | "orb" | "orbHit" | "gale" | "galeHit" | "clones" | "pickup" | "hurt" | "kill" | "heavyKill" | "crate" | "ramBump" | "ramCrash" | "crateSmash"
   | "unlock" | "form" | "win" | "lose" | "warn" | "step" | "click";
 
 /** D minor pentatonic over three octaves, as MIDI notes. */
@@ -117,6 +117,9 @@ export class GameAudio {
       case "kill": this.tone(150, 0.22, "square", 0.2, 70); this.burst(0.2, 0.4, 2600, 500, 0.9); break;
       case "heavyKill": this.tone(80, 0.5, "sine", 0.5, 38); this.burst(0.45, 0.5, 1800, 120, 0.7); this.tone(220, 0.18, "square", 0.14, 90); break;
       case "crate": this.burst(0.3, 0.45, 900, 180, 0.6); this.tone(120, 0.18, "square", 0.2, 60); break;
+      case "ramBump": this.tone(95, 0.22, "sine", 0.5, 45); this.burst(0.18, 0.5, 1200, 200, 0.6, "lowpass"); this.tone(180, 0.1, "square", 0.18, 90); break;
+      case "ramCrash": this.tone(70, 0.45, "sine", 0.6, 32); this.burst(0.5, 0.6, 2200, 140, 0.7); this.tone(150, 0.25, "sawtooth", 0.22, 50); this.burst(0.22, 0.35, 3600, 500, 0.8); break;
+      case "crateSmash": this.burst(0.45, 0.55, 3200, 300, 0.7); this.tone(130, 0.2, "square", 0.22, 55); this.tone(520, 0.08, "triangle", 0.1, 220); break;
       case "unlock": [0, 2, 4, 7].forEach((s, i) => this.tone(midiToHz(SCALE[4 + s % 8]!), 0.4, "triangle", 0.22, undefined, i * 0.1)); break;
       case "form": this.tone(200, 0.7, "sawtooth", 0.14, 800); this.tone(400, 0.7, "sine", 0.2, 1600); this.burst(0.6, 0.18, 500, 5000, 1); break;
       case "win": [0, 2, 4, 5, 7, 9].forEach((s, i) => this.tone(midiToHz(SCALE[3 + s % 9]!), 0.55, "triangle", 0.24, undefined, i * 0.14)); break;

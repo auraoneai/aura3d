@@ -68,6 +68,8 @@ export interface SimState {
   events: SimEvent[]; lastStep: number; form: Form; clones: number; cloneCooldown: number; clonePulse: number;
   cloneStrikes: number; shurikenCooldown: number; shurikens: Shuriken[]; jutsuSerial: number; vaults: number;
   lastVault: number; falling: boolean; stumble: number; announcedUnlocks: string[];
+  /** Reworked contact rules (see `RAM`): off reproduces the original bit for bit. */
+  ram: boolean; stumbleDrag: number;
 }
 
 /** xorshift32 in [0, 1). Original `iS`. */
@@ -138,15 +140,33 @@ export function generateEntities(seed: number = DEFAULT_SEED): Entity[] {
   return list.filter((l) => !nearGap(l.s, 10)).sort((l, c) => l.s - c.s || l.id - c.id);
 }
 
+/**
+ * Contact rules for solid obstacles (barrier crates and beams), active only with `createState(seed, { ram: true })`.
+ * The original lets a runner hit a crate and pass through the space where it stood at 68% speed; here the hit stops the
+ * runner (`stumbleDrag` is the share of speed lost at the instant of impact, recovering as the stumble ends), knocks
+ * it back along the course, and reports an impact tier so the renderer can break the crate by how hard it was hit.
+ */
+export const RAM = Object.freeze({
+  /** Impact speed (m/s) from which a hit is a crash instead of a bump. */
+  crashSpeed: 21.5,
+  bumpKnockback: 0.55, crashKnockback: 0.95,
+  bumpDrag: 0.7, crashDrag: 0.88
+});
+
+export type RamTier = "bump" | "crash" | "glance";
+
+export interface CreateStateOptions { ram?: boolean }
+
 /** A fresh run, in the intro phase. Original `uf`. */
-export function createState(seed: number = DEFAULT_SEED): SimState {
+export function createState(seed: number = DEFAULT_SEED, options: CreateStateOptions = {}): SimState {
   return {
     phase: "intro", time: 0, s: 0, x: 0, lane: 0, y: 0, vy: 0, speed: TUNING.baseSpeed, health: TUNING.health, chakra: TUNING.maxChakra,
     attack: 0, attackCooldown: 0, attackSerial: 0, attackStartedAt: -100, lastStrikeAt: -100, shurikenStartedAt: -100, shurikenCast: 0,
     dash: 0, dashCooldown: 0, slide: 0, invulnerable: 0, combo: 0, bestCombo: 0, comboTimer: 0, kills: 0, score: 0, damageTaken: 0,
     attacksFired: 0, deflections: 0, interrupts: 0, projectileSerial: 0, projectiles: [], entities: generateEntities(seed), events: [],
     lastStep: 0, form: "base", clones: 0, cloneCooldown: 0, clonePulse: 0, cloneStrikes: 0, shurikenCooldown: 0, shurikens: [],
-    jutsuSerial: 0, vaults: 0, lastVault: -1, falling: false, stumble: 0, announcedUnlocks: ["base"]
+    jutsuSerial: 0, vaults: 0, lastVault: -1, falling: false, stumble: 0, announcedUnlocks: ["base"],
+    ram: options.ram === true, stumbleDrag: 0.32
   };
 }
 
@@ -230,6 +250,7 @@ function damage(i: SimState, source: { id: number }, kind = "contact"): void {
   i.damageTaken++;
   i.chakra = Math.max(0, i.chakra - TUNING.hitChakraCost);
   i.stumble = TUNING.stumbleDuration;
+  i.stumbleDrag = 0.32;
   i.invulnerable = TUNING.hitProtection + (i.form === "kurama" ? 2 : 0);
   i.combo = 0;
   i.comboTimer = 0;
@@ -238,6 +259,17 @@ function damage(i: SimState, source: { id: number }, kind = "contact"): void {
     i.phase = "lost";
     i.events.push({ type: "lost" });
   }
+}
+
+/** A solid obstacle was hit unavoided (reworked rules only): classify the impact, stop and knock the runner back, report it. A dash or attack breaks a crate before contact (the original's `break` event), so it never reaches here. */
+function ram(i: SimState, r: Entity, impactSpeed: number, protectedRun: boolean): void {
+  const tier: RamTier = protectedRun ? "glance" : impactSpeed >= RAM.crashSpeed ? "crash" : "bump";
+  if (tier !== "glance") {
+    const crash = tier === "crash";
+    i.s = Math.max(0, i.s - (crash ? RAM.crashKnockback : RAM.bumpKnockback));
+    i.stumbleDrag = crash ? RAM.crashDrag : RAM.bumpDrag;
+  }
+  i.events.push({ type: "ram", entity: r.id, kind: r.type, tier, speed: impactSpeed, lane: r.lane, s: r.s, x: i.x, health: i.health });
 }
 
 /** Strike an enemy (`serial` de-duplicates one swing; `power` is damage). Original `cf`. */
@@ -430,7 +462,7 @@ export function stepSim(i: SimState, dtRaw: number): void {
     i.form = "base";
     i.events.push({ type: "form", form: "base" });
   }
-  i.speed = Math.min(TUNING.maxSpeed, TUNING.baseSpeed + i.time * 0.11) * (i.dash > 0 ? 1.65 : i.form === "kurama" ? 1.12 : 1) * (1 - (0.32 * i.stumble) / TUNING.stumbleDuration);
+  i.speed = Math.min(TUNING.maxSpeed, TUNING.baseSpeed + i.time * 0.11) * (i.dash > 0 ? 1.65 : i.form === "kurama" ? 1.12 : 1) * (1 - (i.stumbleDrag * i.stumble) / TUNING.stumbleDuration);
   i.s += i.speed * e;
   for (const form of ["sage", "kurama"] as const) {
     if (formUnlocked(i, form) && !i.announcedUnlocks.includes(form)) {
@@ -494,7 +526,12 @@ export function stepSim(i: SimState, dtRaw: number): void {
       if (!r.approach) enemyAttack(i, r, e);
       if ((r.y || 0) < 0.7 && o < 0.88 && r.s >= prevS - 0.85 && r.s <= i.s + 0.65) {
         const avoided = r.type === "beam" ? i.slide > 0 : r.type === "barrier" ? i.y > 0.85 : i.y > 1.4 || (r.approach && i.slide > 0);
-        if (!avoided) damage(i, r);
+        if (!avoided) {
+          const protectedRun = i.invulnerable > 0 || i.dash > 0;
+          const impactSpeed = i.speed;
+          damage(i, r);
+          if (i.ram && (r.type === "barrier" || r.type === "beam")) ram(i, r, impactSpeed, protectedRun);
+        }
         r.alive = false;
         r.passed = true;
         r.intent = null;

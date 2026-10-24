@@ -15,7 +15,9 @@ import { hexLinear, type Rgb } from "./palette";
 import { LAYERS, buildScenery, type LayerSpec, type ModelSink, type ShapeId, type SurfaceKey } from "./scenery";
 import { unitBox, unitCone, unitCylinder, unitDisc, unitGable, unitHip, unitRock, unitSphere, type Shape } from "./shapes";
 import { normalFromHeight, paintBark, paintCobble, paintDirt, paintGrass, paintLeaf, paintPlanks, paintPlaster, paintTiles, type Raster } from "./textures";
-import { TUNING, isEnemy, seededRandom, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
+import type { CameraShake } from "@aura3d/engine/game";
+import { TIER_FEEDBACK, pieceScale, spawnPieces, stepPieces, type Piece } from "./impact";
+import { TUNING, isEnemy, seededRandom, type RamTier, type Entity, type EnemyKind, type SimEvent, type SimState } from "./sim";
 import { CHARACTER_URLS, PROP_ASSETS, SLOT_MODEL, type CharacterId } from "./models";
 
 /** The rig faces +Z; characters are turned so +Z points along the route (or back at the runner). */
@@ -32,6 +34,7 @@ const BONES = { handR: "RightHand", foreR: "RightForeArm", handL: "LeftHand" } a
 const PARTICLES = 480;
 const BARRIER_POOL = 8;
 const BEAM_POOL = 8;
+const PLANK_POOL = 32, STRAP_POOL = 12, BEAM_PIECE_POOL = 12;
 const SHURIKEN_POOL = 3;
 const TOWN_FLOOR_Y = 3.2;
 
@@ -199,14 +202,14 @@ export async function loadActors(canvas: HTMLCanvasElement): Promise<ActorAssets
   };
 }
 
-export interface WorldOptions { readonly canvas: HTMLCanvasElement; readonly actors: ActorAssets; readonly entities: readonly Entity[]; readonly quality?: "low" | "high" }
+export interface WorldOptions { readonly canvas: HTMLCanvasElement; readonly actors: ActorAssets; readonly entities: readonly Entity[]; readonly quality?: "low" | "high"; /** Camera shake the loop's impact feedback adds trauma to. */ readonly shake: CameraShake }
 
 export interface WorldRuntime {
   update(state: SimState, dt: number, time: number, events: readonly SimEvent[]): void;
   resetCamera(): void;
   /** World translation of `joint` on every actor after posing each at a staggered clip phase (independence probe). */
   probeBones(joint?: string): { joint: string; translations: [number, number, number][]; distinct: number };
-  readonly stats: () => { visibleActors: number; actors: number; pickups: number; particles: number };
+  readonly stats: () => { visibleActors: number; actors: number; pickups: number; particles: number; debris: number };
   dispose(): void;
 }
 
@@ -293,6 +296,10 @@ export function buildWorld(options: WorldOptions): World {
   }
   for (let i = 0; i < BEAM_POOL; i++) builder.add(primitives.box({ name: `beam-${i}`, size: [2.5, 0.34, 0.34], material: material.custom(solidSpec(beam, { glow: 0.7, glowColor: glowOrange })) }).runtime({ id: `beam-${i}` }));
 
+  for (let i = 0; i < PLANK_POOL; i++) builder.add(primitives.box({ name: `plank-${i}`, size: [1, 1, 1], material: crate, castShadow: false }).runtime({ id: `plank-${i}` }));
+  for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false }).runtime({ id: `strap-${i}` }));
+  for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.7, glowColor: glowOrange })) }).runtime({ id: `beampiece-${i}` }));
+
   const pickups = chakraPickups(options.entities);
   builder.add(geometry.custom(geometry.dynamic({
     positions: f32(pickups.flatMap((p) => [...p.position])),
@@ -362,6 +369,10 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
   let flamesDirty = false;
   const chase = cameras.chase({ lag: { eye: 7 } });
   let lastDamage = -10, lostAt = -1, lastFormShift = -10, dustClock = 0, auraClock = 0;
+  let pieces: Piece[] = [];
+  const shake = options.shake;
+  const POOL_CAP: Record<Piece["kind"], number> = { plank: PLANK_POOL, strap: STRAP_POOL, beam: BEAM_PIECE_POOL };
+  const addPieces = (list: Piece[]): void => { pieces = pieces.concat(list); for (const k of ["plank", "strap", "beam"] as const) { let over = pieces.filter((q) => q.kind === k).length - POOL_CAP[k]; if (over > 0) pieces = pieces.filter((q) => (q.kind === k && over > 0 ? (over--, false) : true)); } };
   const entityById = new Map(options.entities.map((e) => [e.id, e]));
   const mm = actors.map(() => modelMatrix(0, -1000, 0, 0, 1));
   const graphs = actors.map((a) => a.pipeline.resources.scene);
@@ -453,9 +464,15 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
           if (i !== undefined) { aliveFlags[i] = 0; flamesDirty = true; const p = pickups[i]!.position; emit(p[0], p[1], p[2], 12, [0.3, 0.85, 1], 3, 0.18, 0.55, -2); }
         } else if (ev.type === "kill") { const p = at(ev.s as number, ev.lane as number, 1); emit(p[0], p[1], p[2], ev.heavy ? 40 : 28, ev.heavy ? [1, 0.55, 0.2] : [1, 0.85, 0.5], 6, 0.32, 0.75, 4); }
         else if (ev.type === "land") { const p = groundFrame(s, state.x, 0.1); emit(p.x, p.y, p.z, 10, [0.8, 0.75, 0.6], 2.4, 0.3, 0.55, 1); }
-        else if (ev.type === "damage") { lastDamage = time; const p = groundFrame(s, state.x, 1.2); emit(p.x, p.y, p.z, 22, [1, 0.25, 0.2], 5, 0.28, 0.65, 3); }
+        else if (ev.type === "damage") { lastDamage = time; shake.add(0.3); const p = groundFrame(s, state.x, 1.2); emit(p.x, p.y, p.z, 22, [1, 0.25, 0.2], 5, 0.28, 0.65, 3); }
+        else if (ev.type === "ram") {
+          const tier = ev.tier as RamTier, fb = TIER_FEEDBACK[tier];
+          addPieces(spawnPieces(ev.kind === "beam" ? "beam" : "barrier", tier, ev.entity as number, ev.s as number, ev.lane as number));
+          const p = at(ev.s as number, ev.lane as number, 0.7);
+          emit(p[0], p[1], p[2], fb.dust, [0.82, 0.66, 0.45], tier === "crash" ? 6.5 : 3.5, 0.34, 0.8, 3);
+        }
         else if (ev.type === "windImpact" || ev.type === "cloneStrike") { const p = at(ev.s as number, ev.lane as number, 1.1); emit(p[0], p[1], p[2], 24, [0.6, 0.95, 1], 6.5, 0.3, 0.65, 0); }
-        else if (ev.type === "break") { const p = at(ev.s as number, ev.lane as number, 0.8); emit(p[0], p[1], p[2], 26, [0.85, 0.6, 0.35], 5, 0.32, 0.7, 5); }
+        else if (ev.type === "break") { addPieces(spawnPieces("barrier", "smash", Math.round((ev.s as number) * 10), ev.s as number, ev.lane as number)); const p = at(ev.s as number, ev.lane as number, 0.8); emit(p[0], p[1], p[2], 26, [0.85, 0.6, 0.35], 5, 0.32, 0.7, 5); }
         else if (ev.type === "dash") { const p = groundFrame(s, state.x, 1); emit(p.x, p.y, p.z, 24, [0.5, 0.9, 1], 4, 0.26, 0.55, 0); }
         else if (ev.type === "rasengan") { const p = groundFrame(s + 0.8, state.x, 1.2); emit(p.x, p.y, p.z, 12, [0.4, 0.8, 1], 3, 0.2, 0.4, 0); }
         else if (ev.type === "form" || ev.type === "unlock") {
@@ -568,6 +585,21 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
         if (e) { const f = groundFrame(e.s, e.lane * laneOffset(e.s), 1.1); h.setPosition(f.x, f.y, f.z); h.setRotation(0, Math.atan2(f.dx, f.dz), 0); }
       }
 
+      /* debris from broken crates and beams */
+      pieces = stepPieces(pieces, dt);
+      const slot: Record<Piece["kind"], number> = { plank: 0, strap: 0, beam: 0 };
+      const poolName: Record<Piece["kind"], string> = { plank: "plank", strap: "strap", beam: "beampiece" };
+      for (const piece of pieces) {
+        const h = node(`${poolName[piece.kind]}-${slot[piece.kind]++}`);
+        const f = groundFrame(piece.s + piece.ds, piece.lane * laneOffset(piece.s) + piece.lx, piece.h);
+        const k = pieceScale(piece);
+        h.setVisible(k > 0);
+        h.setPosition(f.x, f.y, f.z);
+        h.setRotation(piece.pitch, Math.atan2(f.dx, f.dz) + piece.yaw, piece.roll);
+        h.setScale([piece.size[0] * k, piece.size[1] * k, piece.size[2] * k]);
+      }
+      for (const kind of ["plank", "strap", "beam"] as const) for (let i = slot[kind]; i < POOL_CAP[kind]; i++) node(`${poolName[kind]}-${i}`).setVisible(false);
+
       /* Rasengan orb in the hero's hand + sparks, wind shuriken */
       const ball = node("rasengan");
       const casting = state.attack > 0 || state.shurikenCast > 0;
@@ -658,12 +690,12 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       const widen = smooth(2220, 2410, s);
       const eyeF = groundFrame(s - 6.4 - widen * 3.4, state.x * 0.45, 3.35 + widen * 0.95 + state.y * 0.22);
       const lookF = groundFrame(s + 12 + widen * 6, state.x * 0.38, 1.6 + widen * 0.35 + state.y * 0.15);
-      const shake = 0.3 * Math.exp(-9 * Math.max(0, hitAge)) * (hitAge < 1 ? 1 : 0);
+      const jolt = shake.update(dt);
       const pose = chase.step({
         wantEye: [eyeF.x, eyeF.y, eyeF.z],
         wantLook: [lookF.x, lookF.y, lookF.z],
         fovTarget: 57 + (state.dash > 0 ? 5 : 0),
-        shakeOffset: [Math.sin(time * 71) * shake, Math.cos(time * 83) * shake * 0.7, Math.sin(time * 57) * shake * 0.4]
+        shakeOffset: [jolt.x, jolt.y, jolt.x * 0.4]
       }, dt);
       cameraController.setPose({ position: pose.eye, target: pose.look, fov: pose.fov }, { cut: false });
     },
@@ -683,7 +715,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       });
       return { joint: name, translations, distinct: new Set(translations.map((t) => t.map((v) => v.toFixed(4)).join(","))).size };
     },
-    stats: () => ({ visibleActors: visible.filter(Boolean).length, actors: actors.length, pickups: pickups.length, particles: pool.filter((p) => p.life > 0).length }),
+    stats: () => ({ visibleActors: visible.filter(Boolean).length, actors: actors.length, pickups: pickups.length, particles: pool.filter((p) => p.life > 0).length, debris: pieces.length }),
     dispose() { detach(); }
   };
 }
