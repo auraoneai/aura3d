@@ -6,6 +6,8 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 
 ## 4.2.0 (unreleased)
 
+- **Every game has its own name.** The eleven games previously titled as ports now carry unique names (Craterline GP, Chroma Roll, Serpentine Sky Run, Gridlock Courier, Ion Circuit, Shadowstep Gauntlet, Lamplight Line, Saltwind Highway, The Bellkeeper's Walk, Duneglide, Cumulus Dash). Titles, UI, metadata, the index cards and the sitemap no longer say "port", "reconstruction" or name another game; each game shows one neutral "Built with Aura3D" credit. New public URLs are `/apps/<name>/`; the old `/apps/showcase-<slug>-port/` roots redirect (308). Mapping: `tools/showcase-port-pages/names.json`; record and name screen: `docs/workflows/game-names.md`.
+
 - **Motion kit in `@aura3d/engine/game` (additive).** `attachToBone` (role-resolved bone sockets with a loud `ATTACH_BONE_NOT_FOUND`), `createLocomotion` and `proceduralLegSwing` (stride-synced gaits), `createFootSlideMeter` (planted-foot drift and legs-not-stepping check), `createImpactWorld`, `createImpactFeedback`, `createHitStop` and `createCameraShake` (swept collision with one event per contact plus hit-stop, shake, cue, particles and damage), `smoothDamp`, `createSmoothFollow3`, `createRenderInterpolator` and `jitterReport`, and `checkDoubleFrame`. Docs: `docs/api/motion-*.md`. These are pure TypeScript with no DOM, so they run in unit tests and QA hooks.
 
 ## 4.1.3 (unreleased)
