@@ -1,8 +1,9 @@
 /**
- * Stride-synced locomotion for the hero. The Meshy run clip plants a foot at about 3.3 m/s of ground speed at 1x, but the run
- * sim moves the kid at 14.5 m/s, so a clip played only faster slides. This maps sim speed to a cadence (clip rate, capped so the
- * legs never strobe) and a stride gain that widens the leg swing, and builds the leg-bone overlay pose for it.
- * Pure TypeScript: no engine imports. Candidate for promotion once the library stride helper lands.
+ * Stride widening for the hero's run. Cadence and phase come from the library's `createLocomotion` (`@aura3d/engine/game`), which
+ * clamps playback rate to ground speed. The Meshy run clip plants a foot at about 3.3 m/s at 1x while the sim moves the kid at
+ * 14.5 m/s, so even the capped rate leaves a short stride; this module widens the leg swing about its cycle mean (bone overlay)
+ * by the factor that closes the remaining gap, and reports the slide that is left. Pure TypeScript, no engine imports.
+ * The library has no stride-gain concept yet: this is the part to promote.
  */
 import { LEG_BONES, LEG_CLIPS, LEG_SAMPLES, type LegBone } from "./legcycle";
 
@@ -16,17 +17,16 @@ export const CONTACT_PHASE: Readonly<Record<LocoClip, { left: number; right: num
 export const MAX_RATE = 1.8;
 export const MAX_GAIN = 1.8;
 
-export interface Gait { readonly rate: number; readonly gain: number; readonly footSpeed: number; readonly slideRatio: number }
+export interface Stride { readonly gain: number; readonly footSpeed: number; readonly slideRatio: number }
 
-/** Cadence and stride gain for a ground speed. footSpeed is the planted-foot speed the legs deliver; slideRatio is the share of ground speed the feet still slide (0 = planted). */
-export function gaitFor(clip: LocoClip, speed: number): Gait {
+/** Stride gain for a ground speed at a given playback rate. footSpeed is the planted-foot speed the legs deliver; slideRatio is the share of ground speed the feet still slide (0 = planted). */
+export function strideGain(clip: LocoClip, speed: number, rate: number): Stride {
   const f = CLIP_FOOT_SPEED[clip];
   const v = Math.max(0, speed);
-  const rate = Math.min(MAX_RATE, Math.max(0.35, v / f));
-  const gain = v > 0 ? Math.min(MAX_GAIN, Math.max(1, v / (f * rate))) : 1;
+  const gain = v > 0 && rate > 0 ? Math.min(MAX_GAIN, Math.max(1, v / (f * rate))) : 1;
   const footSpeed = f * rate * gain;
   const slideRatio = v > 1e-6 ? Math.max(0, 1 - footSpeed / v) : 0;
-  return { rate, gain, footSpeed, slideRatio };
+  return { gain, footSpeed, slideRatio };
 }
 
 const qdot = (a: Quat, b: Quat): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];

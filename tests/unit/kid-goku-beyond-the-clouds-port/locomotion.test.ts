@@ -1,16 +1,27 @@
 import { describe, expect, it } from "vitest";
+import { createLocomotion } from "../../../packages/game/src/motion/locomotion";
 import { LEG_BONES, LEG_CLIPS, LEG_SAMPLES } from "../../../examples/kid-goku-beyond-the-clouds-port/legcycle";
 import {
   CLIP_FOOT_SPEED,
   MAX_GAIN,
   MAX_RATE,
-  gaitFor,
+  strideGain,
   legOverlayPose,
   legRotationAt,
   touchdowns,
   widenedLegRotation
 } from "../../../examples/kid-goku-beyond-the-clouds-port/locomotion";
 
+const rateAt = (speed: number): number => {
+  const loco = createLocomotion({ gaits: [{ name: "idle", speed: 0, cycle: 4.03 }, { name: "run", speed: CLIP_FOOT_SPEED.run, cycle: LEG_CLIPS.run.duration }], minRate: 0.6, maxRate: MAX_RATE, blendRate: 1000 });
+  let r = 1;
+  for (let i = 0; i < 30; i++) r = loco.update(speed, 1 / 60).rates.run ?? 1;
+  return r;
+};
+const gaitFor = (_clip: "run", speed: number): { rate: number; gain: number; footSpeed: number; slideRatio: number } => {
+  const rate = rateAt(speed);
+  return { rate, ...strideGain("run", speed, rate) };
+};
 const angleOf = (q: readonly number[]): number => 2 * Math.acos(Math.min(1, Math.abs(q[3]!)));
 
 describe("kid goku locomotion", () => {

@@ -9,12 +9,13 @@ import { camera, cameras, defineAuraAssets, effects, environments, geometry, ins
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { meatChunk } from "./creatures";
+import { createLocomotion } from "@aura3d/engine/game";
 import { Fx } from "./fx";
 import type { Game } from "./game";
 import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { Mesh, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
-import { gaitFor, legOverlayPose, touchdowns, type LocoClip } from "./locomotion";
+import { CLIP_FOOT_SPEED, MAX_RATE, legOverlayPose, strideGain, touchdowns, type LocoClip } from "./locomotion";
 import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
@@ -37,7 +38,7 @@ const plainGeometry = (m: Mesh) => geometry.dynamic({ positions: f32(m.positions
 
 export interface WorldStats { drawNodes: number; chunks: number; triangles: number }
 /** What the legs are doing this frame: the clip, its phase in cycles, cadence, stride gain and the share of ground speed the planted feet still slide. */
-export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; gain: number; footSpeed: number; slideRatio: number }
+export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; gain: number; footSpeed: number; slideRatio: number; overspeed: boolean }
 export interface WorldRuntime { update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void; readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 } }
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
 
@@ -182,7 +183,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
   const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
   const foot = (g: Game): V3 => at(g.state.s, g.state.lane, g.state.jump);
 
-  const gait: GaitReport = { clip: "", phase: 0, groundSpeed: 0, rate: 1, gain: 1, footSpeed: 0, slideRatio: 0 };
+  const gait: GaitReport = { clip: "", phase: 0, groundSpeed: 0, rate: 1, gain: 1, footSpeed: 0, slideRatio: 0, overspeed: false };
+  const loco = createLocomotion({ gaits: [{ name: "idle", speed: 0, cycle: 4.03 }, { name: "run", speed: CLIP_FOOT_SPEED.run, cycle: LEG_CLIPS.run.duration }], minRate: 0.6, maxRate: MAX_RATE });
   const play = (clip: string, rate: number, dt: number, groundSpeed = 0, stepFx?: (side: "left" | "right") => void): void => {
     if (clip !== animClip) { animClip = clip; animT = 0; }
     const before = animT;
@@ -192,15 +194,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
     gait.clip = clip; gait.groundSpeed = groundSpeed; gait.rate = rate;
     if (clip === "run") {
       const dur = LEG_CLIPS.run.duration;
-      const g = gaitFor("run", groundSpeed);
-      gait.gain = g.gain; gait.footSpeed = (g.footSpeed / g.rate) * rate; gait.slideRatio = groundSpeed > 1e-6 ? Math.max(0, 1 - gait.footSpeed / groundSpeed) : 0;
+      const g = strideGain("run", groundSpeed, rate);
+      gait.gain = g.gain; gait.footSpeed = g.footSpeed; gait.slideRatio = g.slideRatio; gait.overspeed = groundSpeed > CLIP_FOOT_SPEED.run * MAX_RATE * 1.8;
       gait.phase = animT / dur;
       hero.setAnimationPose(legOverlayPose("run" as LocoClip, gait.phase, g.gain));
       const td = touchdowns("run", before / dur, animT / dur);
       if (stepFx) { for (let i = 0; i < td.left; i++) stepFx("left"); for (let i = 0; i < td.right; i++) stepFx("right"); }
     } else {
       hero.setAnimationPose(undefined);
-      gait.gain = 1; gait.phase = 0; gait.footSpeed = 0; gait.slideRatio = 0;
+      gait.gain = 1; gait.phase = 0; gait.footSpeed = 0; gait.slideRatio = 0; gait.overspeed = false;
     }
   };
 
@@ -258,7 +260,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       if (phase === "menu") yaw = yawOf(f.forward) + Math.PI * 0.85 + Math.sin(clock * 0.3) * 0.08;
       if (phase === "result") yaw = yawOf(f.forward) + (g.result?.won ? Math.PI : 0);
       if (phase === "finale") yaw = yawOf(f.forward) - 0.1;
-      let clip = "run", rate = gaitFor("run", s.speed).rate;
+      const lf = loco.update(phase === "playing" ? s.speed : 0, phase === "paused" ? 0 : dt);
+      let clip = "run", rate = lf.rates.run ?? 1;
       if (phase === "menu") { clip = "idle"; rate = 1; }
       else if (phase === "result") { clip = g.result?.won ? "cheer" : "dead"; rate = 1; }
       else if (phase === "finale") { const t = g.finale?.t ?? 0; clip = t < 4 ? "walk" : "cheer"; rate = t < 4 ? 1.1 : 1; }
