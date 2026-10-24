@@ -1,0 +1,2 @@
+Silt & Signal before (origin/main, own toon shader) vs after (`effects.toon`), remote software WebGL2, 1280x720, runs `toon-before` / `toon-after`. See metrics.txt.
+Two frames are pixel-identical; ch0-rings differs in 0.025% of pixels and ch0-gatehouse in 5% at edges (mean luma 164.56 vs 164.13), consistent with animation-time variance between separate runs rather than a pass change (identical shader math and constants). Software GL, not real-GPU evidence.

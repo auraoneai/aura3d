@@ -117,31 +117,3 @@ void main() {
   vec3 c = ringColor * (0.3 + 0.8 * rim) * mix(1.0, pulse, ringActive);
   outColor = vec4(c, mix(0.3, 0.85, ringActive));
 }`;
-
-/** Cel pass over the final image: luma banding (the original's toon materials use a 4-step gradient) plus a Sobel outline. */
-export const TOON_FRAGMENT = /* glsl */ `
-uniform vec2 u_texel;
-uniform float u_bands;
-uniform float u_band_mix;
-uniform float u_outline;
-float lum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
-void main() {
-  vec4 c = texture(u_color, v_uv);
-  float l = lum(c.rgb);
-  float banded = floor(l * u_bands + 0.5) / u_bands;
-  float target = mix(l, banded, u_band_mix);
-  vec3 col = c.rgb * (target / max(l, 0.02));
-  float tl = lum(texture(u_color, v_uv + u_texel * vec2(-1.0, 1.0)).rgb);
-  float t = lum(texture(u_color, v_uv + u_texel * vec2(0.0, 1.0)).rgb);
-  float tr = lum(texture(u_color, v_uv + u_texel * vec2(1.0, 1.0)).rgb);
-  float lf = lum(texture(u_color, v_uv + u_texel * vec2(-1.0, 0.0)).rgb);
-  float rt = lum(texture(u_color, v_uv + u_texel * vec2(1.0, 0.0)).rgb);
-  float bl = lum(texture(u_color, v_uv + u_texel * vec2(-1.0, -1.0)).rgb);
-  float b = lum(texture(u_color, v_uv + u_texel * vec2(0.0, -1.0)).rgb);
-  float br = lum(texture(u_color, v_uv + u_texel * vec2(1.0, -1.0)).rgb);
-  float gx = (tr + 2.0 * rt + br) - (tl + 2.0 * lf + bl);
-  float gy = (tl + 2.0 * t + tr) - (bl + 2.0 * b + br);
-  float edge = smoothstep(0.26, 0.6, sqrt(gx * gx + gy * gy));
-  vec3 ink = vec3(0.05, 0.09, 0.11);
-  outColor = vec4(mix(col, ink, edge * u_outline), c.a);
-}`;

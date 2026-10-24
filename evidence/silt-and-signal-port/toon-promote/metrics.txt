@@ -1,0 +1,4 @@
+ch0-obj0-chase: size=(1280, 720) mean_abs_diff=0.000/255 max=0 frac_pixels_diff>8=0.00000
+ch0-rings: size=(1280, 720) mean_abs_diff=0.008/255 max=73 frac_pixels_diff>8=0.00025
+rider-close: size=(1280, 720) mean_abs_diff=0.000/255 max=0 frac_pixels_diff>8=0.00000
+ch0-gatehouse: size=(1280, 720) mean_abs_diff=1.979/255 max=172 frac_pixels_diff>8=0.05088

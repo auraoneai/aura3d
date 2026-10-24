@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createCustomShaderMaterial } from "../../../packages/engine/src/agent-api/compiler/customMaterial";
 import { allProgramSpecs } from "../../../examples/silt-and-signal-port/world";
-import { TOON_FRAGMENT } from "../../../examples/silt-and-signal-port/shaders";
+import { TOON_FRAGMENT } from "../../../packages/engine/src/agent-api/nodes/effects.toon.js";
 
 /**
  * Bakes every `material.custom` program the port draws with through the engine's own prelude

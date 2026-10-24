@@ -13,7 +13,6 @@ import { autopilot } from "./autopilot";
 import { createSiltAudio, type SiltAudio } from "./audio";
 import { CHAPTER_COPY, ENDING_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "./copy";
 import { IDLE, STEP, createSim, objectiveOf, stepSim, targetOf, type Input, type Sim, type SimEvent } from "./sim";
-import { TOON_FRAGMENT } from "./shaders";
 import { buildWorld, type World, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
@@ -370,12 +369,7 @@ async function boot(): Promise<void> {
   await app.ready();
   if (config.toon) {
     const texel = (): number[] => [1 / Math.max(1, canvas.width), 1 / Math.max(1, canvas.height)];
-    app.post?.addPostPass?.(effects.shaderPass({
-      name: "silt-cel",
-      order: "after-tonemap",
-      glsl: TOON_FRAGMENT,
-      uniforms: { u_texel: texel(), u_bands: 5, u_band_mix: 0.75, u_outline: 0.75 }
-    }));
+    app.post?.addPostPass?.(effects.toon({ name: "silt-cel", bands: 5, bandMix: 0.75, outline: 0.75, size: [canvas.width, canvas.height] }));
     addEventListener("resize", () => app?.post?.setPassUniform?.("silt-cel", "u_texel", texel()));
   }
   runtime = world.bind(app, { animate: !config.norig });

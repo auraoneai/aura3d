@@ -3,11 +3,13 @@
 import { lightingEffectBuilders } from "./effects.lighting.js";
 import { postEffectBuilders } from "./effects.post.js";
 import { vfxEffectBuilders } from "./effects.js";
+import { toonEffectBuilders } from "./effects.toon.js";
 import { lazyNamespace } from "../lazyNamespace.js";
 
 
 export const effects = lazyNamespace(() => ({
   ...vfxEffectBuilders,
   ...postEffectBuilders,
+  ...toonEffectBuilders,
   ...lightingEffectBuilders
 } as const));
