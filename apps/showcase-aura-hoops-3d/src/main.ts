@@ -41,10 +41,14 @@ import {
   createTweenEngine,
   createFxParticlePass,
   mountTouchControls,
-  installGameBeacon
+  installGameBeacon,
+  createFootSlideMeter
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { createFrameErrorBoundary } from "@aura3d/debug";
+import { pickLocomotion } from "./locomotionRates";
+import { BALL_R, DRIB_CYCLE_RUN, DRIB_CYCLE_STAND, DRIB_SHOULDER_FALLBACK, dribbleBallXZ, dribbleCycleY } from "./dribble";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -152,7 +156,6 @@ const BOARD_Z = -0.35;
 const BOARD_HALF_W = 0.9;
 const BOARD_Y0 = 2.82;
 const BOARD_Y1 = 3.9;
-const BALL_R = 0.13;
 const ARC_R = 6.75; // street "two" line
 const CHECK_SPOT: Vec3 = [0, 0, 8.6];
 const COURT_X = 7.6;
@@ -1194,6 +1197,39 @@ const inputCtl = auraApp.input({
 // Direct key fallback so gameplay works even before canvas focus.
 const keysHeld = new Set<string>();
 const keysPressed = new Set<string>();
+/* Foot-slide evidence (?diag=1): planted-foot world speed per athlete from the live bone sockets. */
+const footMeters = new Map<string, ReturnType<typeof createFootSlideMeter>>();
+let footReports: Record<string, unknown> = {};
+function sampleFeet(a: AthleteState, root: AnyHandle): void {
+  if (initialParams.get("diag") !== "1") return;
+  const anim = (root as any)?.animation;
+  if (typeof anim?.socket !== "function") return;
+  const cy = Math.cos(a.yaw), sy = Math.sin(a.yaw);
+  const body = Math.hypot(a.vx, a.vz);
+  for (const bone of ["LeftFoot", "RightFoot"]) {
+    const sock = anim.socket(bone) as BoneSocketView;
+    if (!sock?.valid) continue;
+    const m = sock.worldMatrix();
+    const lx = m[12]!, ly = m[13]!, lz = m[14]!;
+    const key = `${a.nodeId}:${bone}`;
+    let meter = footMeters.get(key);
+    if (!meter) { meter = createFootSlideMeter({ plantedHeight: 0.07, threshold: 0.15 }); footMeters.set(key, meter); }
+    meter.feed(game_.time, [a.x + lx * cy + lz * sy, 0.96 + a.y + ly, a.z - lx * sy + lz * cy], { bodySpeed: body });
+  }
+}
+function footEvidence(): Record<string, unknown> {
+  if (initialParams.get("diag") !== "1") return {};
+  if (framesRendered % 90 === 0 || Object.keys(footReports).length === 0) {
+    const out: Record<string, unknown> = {};
+    for (const [key, meter] of footMeters) {
+      const r = meter.report();
+      out[key] = { planted: r.plantedSamples, max: Number(r.maxPlantedSpeed.toFixed(3)), p95: Number(r.p95PlantedSpeed.toFixed(3)), lift: Number(r.liftRange.toFixed(3)), notStepping: r.notStepping, passed: r.passed };
+    }
+    footReports = out;
+  }
+  return footReports;
+}
+
 let lastManualInputAt = -999;
 
 // Blur any clicked button so Space/Enter never re-clicks UI buttons during play.
@@ -1587,48 +1623,8 @@ const trailHist: Vec3[] = [];
  *  any torso posture, and the ball follows gravity-like easing (fast   *
  *  at the floor, slow at the top) between meets.                       *
  * ------------------------------------------------------------------ */
-const DRIB_RIDE_END = 0.35;
-const DRIB_PALM_TURN = 0.60;
-const DRIB_FLOOR_AT = 0.66;
-const DRIB_BALL_GAP = 0.11; // palm centroid rides this far above the ball crown
-const DRIB_FLOOR_Y = BALL_R + 0.03;
-const DRIB_CYCLE_STAND = 0.46;
-const DRIB_CYCLE_RUN = 0.34;
-const DRIB_SHOULDER_FALLBACK = 1.19; // world shoulder Y before sockets resolve
 const dribbleClock = { key: "", phase: 0, moving: false };
 let dribbleEvidence: { t: number; palmY: number; ballY: number; moving: boolean } | null = null;
-
-function dribbleCycleY(t: number, shoulderY: number): { palmY: number; ballY: number; effort: number } {
-  const top = shoulderY - 0.10;
-  const push = Math.max(0.52, shoulderY - 0.64);
-  const low = push - 0.05;
-  let palmY: number;
-  let effort: number;
-  if (t < DRIB_RIDE_END) {
-    const s = t / DRIB_RIDE_END;
-    effort = Math.pow(s, 1.6);
-    palmY = lerp(top, push, effort); // palm accelerates down with the ball
-  } else if (t < DRIB_PALM_TURN) {
-    const s = (t - DRIB_RIDE_END) / (DRIB_PALM_TURN - DRIB_RIDE_END);
-    effort = 1 - smoothstep(s);
-    palmY = lerp(push, low, 1 - (1 - s) * (1 - s)); // decelerate into the turnaround
-  } else {
-    const s = (t - DRIB_PALM_TURN) / (1 - DRIB_PALM_TURN);
-    effort = 0;
-    palmY = lerp(low, top, smoothstep(s)); // rise back to the meet
-  }
-  let ballY: number;
-  if (t < DRIB_RIDE_END) {
-    ballY = palmY - DRIB_BALL_GAP; // glued under the riding palm
-  } else if (t < DRIB_FLOOR_AT) {
-    const s = (t - DRIB_RIDE_END) / (DRIB_FLOOR_AT - DRIB_RIDE_END);
-    ballY = lerp(push - DRIB_BALL_GAP, DRIB_FLOOR_Y, Math.pow(s, 1.2)); // thrown down after separation
-  } else {
-    const s = (t - DRIB_FLOOR_AT) / (1 - DRIB_FLOOR_AT);
-    ballY = lerp(DRIB_FLOOR_Y, top - DRIB_BALL_GAP, 1 - Math.pow(1 - s, 1.7)); // gravity rise into the palm
-  }
-  return { palmY, ballY, effort };
-}
 
 function stepBallSim(dt: number): void {
   dribbleHand = null;
@@ -1800,11 +1796,9 @@ function stepBallSim(dt: number): void {
         } else {
           // Contact point tracks the palm solve, nudged outward so the fingers
           // don't clip the ball, and carried slightly with the handler's stride.
-          const ox = aim.palm[0] - h.x;
-          const oz = aim.palm[2] - h.z;
-          const olen = Math.hypot(ox, oz) || 1;
-          ball.x = aim.palm[0] + (ox / olen) * 0.045 + h.vx * 0.04;
-          ball.z = aim.palm[2] + (oz / olen) * 0.045 + h.vz * 0.04;
+          const at = dribbleBallXZ(aim.palm, h, dribbleClock.phase);
+          ball.x = at.x;
+          ball.z = at.z;
           ball.y = cyc.ballY;
         }
       } else {
@@ -2445,19 +2439,14 @@ function syncAthlete(a: AthleteState, dt: number): void {
 
   // Ground the 1.92m Meshy athlete model (centered at origin, H*0.5 = 0.96) so sneakers sit at y=0
   r.root.setPosition(a.x, 0.96 + a.y + bob, a.z).setRotation(0, a.yaw, 0);
+  sampleFeet(a, r.root);
 
   // Clip selection with hysteresis when nothing explicit is playing
   if (!a.shooting && a.dunkT <= 0 && a.jumpT <= 0 && a.stumble <= 0 && a.actionUntil <= 0) {
     const idleClip = a.hasBall ? "Crouch_Idle_Loop" : "Ready";
-    if (speed > 5.2 || (a.clip === "Sprint_Loop" && speed > 4.6)) {
-      setClip(a, "Sprint_Loop", 1.35);
-    } else if (speed > 0.85 || ((a.clip === "Run" || a.clip === "Sprint_Loop") && speed > 0.65)) {
-      setClip(a, "Run", 1.2);
-    } else if (speed > 0.35 || ((a.clip === "Walk_Loop" || a.clip === "Run") && speed >= 0.20)) {
-      setClip(a, "Walk_Loop", 1.1);
-    } else {
-      setClip(a, idleClip, 1.0);
-    }
+    const pick = pickLocomotion(speed, a.clip);
+    if (pick.clip === "idle") setClip(a, idleClip, 1.0);
+    else setClip(a, pick.clip, pick.rate);
   }
   if (a.stumble > 0) setClip(a, "Crouch_Idle_Loop", 1.2);
 
@@ -2730,6 +2719,8 @@ function publishEvidence(): void {
     engineVersion: "4.0.2",
     ready: appReady && document.body.dataset.aura3dReady === "true",
     framesRendered,
+    frameErrors: frameBoundary.stats(),
+    footSlide: footEvidence(),
     autopilot: game_.autopilot,
     look: venue.look,
     mode: game_.mode,
@@ -2988,14 +2979,19 @@ function frame(dtRaw: number): void {
   keysPressed.clear();
 }
 
+const frameBoundary = createFrameErrorBoundary({
+  onFatal: () => { if (renderError) (renderError as HTMLElement).hidden = false; }
+});
 auraApp.onFrame(({ dt }) => {
-  if (!appReady) {
-    for (const a of athletes) syncAthlete(a, 0);
-    updateCamera(0.016);
-    syncHud();
-    return;
-  }
-  frame(dt);
+  frameBoundary.run(() => {
+    if (!appReady) {
+      for (const a of athletes) syncAthlete(a, 0);
+      updateCamera(0.016);
+      syncHud();
+      return;
+    }
+    frame(dt);
+  });
 });
 
 /* ------------------------------------------------------------------ *
