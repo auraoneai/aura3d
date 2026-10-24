@@ -1,0 +1,498 @@
+{
+  "threshold": 16,
+  "errors": {
+    "pre": {
+      "silt-and-signal": "[]",
+      "ninja-runner": "[]",
+      "roadster-hours": "[]",
+      "drift-and-deliver": "[]",
+      "strange-orbit": "[]",
+      "saiyan-snake-way": "[]",
+      "where-the-wind-wanders": "[]",
+      "kid-goku-beyond-the-clouds": "[]"
+    },
+    "head": {
+      "silt-and-signal": "[]",
+      "ninja-runner": "[]",
+      "roadster-hours": "[]",
+      "drift-and-deliver": "[]",
+      "strange-orbit": "[]",
+      "saiyan-snake-way": "[]",
+      "where-the-wind-wanders": "[]",
+      "kid-goku-beyond-the-clouds": "[]"
+    },
+    "t": {
+      "silt-and-signal": "[]"
+    }
+  },
+  "rows": [
+    {
+      "frame": "drift-and-deliver/drive240",
+      "noise_pre": {
+        "meanAbsLuma": 9.205,
+        "pctOver": 32.019
+      },
+      "noise_head": {
+        "meanAbsLuma": 9.205,
+        "pctOver": 32.019
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "drift-and-deliver/spawn",
+      "noise_pre": {
+        "meanAbsLuma": 0.704,
+        "pctOver": 0.067
+      },
+      "noise_head": {
+        "meanAbsLuma": 0.704,
+        "pctOver": 0.067
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "drift-and-deliver/turn20",
+      "noise_pre": {
+        "meanAbsLuma": 8.129,
+        "pctOver": 30.8
+      },
+      "noise_head": {
+        "meanAbsLuma": 8.129,
+        "pctOver": 30.8
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "kid-goku-beyond-the-clouds/run120",
+      "noise_pre": {
+        "meanAbsLuma": 19.034,
+        "pctOver": 30.635
+      },
+      "noise_head": {
+        "meanAbsLuma": 19.034,
+        "pctOver": 30.635
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "kid-goku-beyond-the-clouds/steer240",
+      "noise_pre": {
+        "meanAbsLuma": 17.869,
+        "pctOver": 32.01
+      },
+      "noise_head": {
+        "meanAbsLuma": 17.869,
+        "pctOver": 32.01
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0.001,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "ninja-runner/jump24",
+      "noise_pre": {
+        "meanAbsLuma": 0.634,
+        "pctOver": 0.639
+      },
+      "noise_head": {
+        "meanAbsLuma": 0.634,
+        "pctOver": 0.639
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "ninja-runner/run120",
+      "noise_pre": {
+        "meanAbsLuma": 0.442,
+        "pctOver": 0.162
+      },
+      "noise_head": {
+        "meanAbsLuma": 0.442,
+        "pctOver": 0.162
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "ninja-runner/run300",
+      "noise_pre": {
+        "meanAbsLuma": 0.461,
+        "pctOver": 0.042
+      },
+      "noise_head": {
+        "meanAbsLuma": 0.461,
+        "pctOver": 0.042
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "roadster-hours/auto1680",
+      "noise_pre": {
+        "meanAbsLuma": 8.106,
+        "pctOver": 19.593
+      },
+      "noise_head": {
+        "meanAbsLuma": 6.991,
+        "pctOver": 17.245
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 4.775,
+        "pctOver": 11.626
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "roadster-hours/auto240",
+      "noise_pre": {
+        "meanAbsLuma": 2.652,
+        "pctOver": 5.1
+      },
+      "noise_head": {
+        "meanAbsLuma": 2.709,
+        "pctOver": 4.976
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 1.495,
+        "pctOver": 1.535
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "roadster-hours/start",
+      "noise_pre": {
+        "meanAbsLuma": 2.379,
+        "pctOver": 4.761
+      },
+      "noise_head": {
+        "meanAbsLuma": 2.399,
+        "pctOver": 4.839
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0.58,
+        "pctOver": 0.779
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "saiyan-snake-way/run330",
+      "noise_pre": {
+        "meanAbsLuma": 1.543,
+        "pctOver": 1.983
+      },
+      "noise_head": {
+        "meanAbsLuma": 1.536,
+        "pctOver": 1.944
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0.228,
+        "pctOver": 0.157
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "saiyan-snake-way/start30",
+      "noise_pre": {
+        "meanAbsLuma": 0.732,
+        "pctOver": 1.331
+      },
+      "noise_head": {
+        "meanAbsLuma": 0.736,
+        "pctOver": 1.353
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0.206,
+        "pctOver": 0.285
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "silt-and-signal/chase0.l0",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0.127,
+        "pctOver": 0.059
+      },
+      "pre_vs_t": {
+        "meanAbsLuma": 0.072,
+        "pctOver": 0.045
+      },
+      "t_vs_head": {
+        "meanAbsLuma": 0.13,
+        "pctOver": 0.062
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "silt-and-signal/chase0.l1",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0.122,
+        "pctOver": 0.05
+      },
+      "pre_vs_t": {
+        "meanAbsLuma": 0.044,
+        "pctOver": 0.018
+      },
+      "t_vs_head": {
+        "meanAbsLuma": 0.123,
+        "pctOver": 0.053
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "silt-and-signal/fly240",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "t_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "silt-and-signal/gatehouse.l0",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "t_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "silt-and-signal/gatehouse.l1",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "t_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "silt-and-signal/rings.l0",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0.112,
+        "pctOver": 0.058
+      },
+      "pre_vs_t": {
+        "meanAbsLuma": 0.089,
+        "pctOver": 0.039
+      },
+      "t_vs_head": {
+        "meanAbsLuma": 0.127,
+        "pctOver": 0.06
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "silt-and-signal/rings.l1",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_t": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 5.026,
+        "pctOver": 9.487
+      },
+      "pre_vs_t": {
+        "meanAbsLuma": 0.091,
+        "pctOver": 0.034
+      },
+      "t_vs_head": {
+        "meanAbsLuma": 5.03,
+        "pctOver": 9.491
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "strange-orbit/auto120",
+      "noise_pre": {
+        "meanAbsLuma": 0.452,
+        "pctOver": 0.079
+      },
+      "noise_head": {
+        "meanAbsLuma": 0.452,
+        "pctOver": 0.079
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "strange-orbit/auto480",
+      "noise_pre": {
+        "meanAbsLuma": 0.774,
+        "pctOver": 0.4
+      },
+      "noise_head": {
+        "meanAbsLuma": 0.774,
+        "pctOver": 0.4
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "where-the-wind-wanders/idle60",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    },
+    {
+      "frame": "where-the-wind-wanders/walk300",
+      "noise_pre": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "noise_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "pre_vs_head": {
+        "meanAbsLuma": 0,
+        "pctOver": 0
+      },
+      "simStateIdentical": true
+    }
+  ]
+}

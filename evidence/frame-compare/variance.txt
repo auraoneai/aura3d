@@ -1,0 +1,42 @@
+# Silt rings, 6 loads per tree
+silt-and-signal/rings loads pre=6 head=6
+  within pre : min 0 med 0 max 0 (luma); pct>16 max 0
+  within head: min 0 med 0 max 0 (luma); pct>16 max 0
+  pre vs head: min 0 med 0 max 0 (luma); pct>16 max 0
+
+# Roadster Hours and Saiyan, 4 loads per tree
+roadster-hours/start loads pre=4 head=4
+  within pre : min 0.867 med 1.419 max 1.794 (luma); pct>16 max 2.024
+  within head: min 0.505 med 1.311 max 1.812 (luma); pct>16 max 1.921
+  pre vs head: min 0.404 med 1.411 max 1.838 (luma); pct>16 max 2.025
+roadster-hours/auto240 loads pre=4 head=4
+  within pre : min 0.175 med 1.716 max 1.842 (luma); pct>16 max 1.992
+  within head: min 0.127 med 1.468 max 1.762 (luma); pct>16 max 2.037
+  pre vs head: min 0.929 med 1.619 max 1.871 (luma); pct>16 max 2.135
+saiyan-snake-way/start30 loads pre=4 head=4
+  within pre : min 0.015 med 0.41 max 0.479 (luma); pct>16 max 0.975
+  within head: min 0 med 0.015 max 0.015 (luma); pct>16 max 0.001
+  pre vs head: min 0 med 0.282 max 0.411 (luma); pct>16 max 0.883
+
+# Silt load-to-load and toon-only step (pre, toon-only commit t, head)
+gatehouse
+  load0 vs load1 within pre   0.000 / 0.000%
+  load0 vs load1 within t     0.000 / 0.000%
+  load0 vs load1 within head  0.000 / 0.000%
+  pre→t     l0 0.000 / 0.000%  l1 0.000 / 0.000%
+  t→head    l0 0.000 / 0.000%  l1 0.000 / 0.000%
+  pre.l0→head.l1 0.000 / 0.000%  pre.l1→head.l0 0.000 / 0.000%
+rings
+  load0 vs load1 within pre   0.091 / 0.034%
+  load0 vs load1 within t     0.089 / 0.039%
+  load0 vs load1 within head  4.974 / 9.444%
+  pre→t     l0 0.089 / 0.039%  l1 0.091 / 0.034%
+  t→head    l0 0.127 / 0.060%  l1 5.030 / 9.491%
+  pre.l0→head.l1 5.030 / 9.491%  pre.l1→head.l0 0.108 / 0.055%
+chase0
+  load0 vs load1 within pre   0.057 / 0.029%
+  load0 vs load1 within t     0.070 / 0.041%
+  load0 vs load1 within head  0.000 / 0.000%
+  pre→t     l0 0.072 / 0.045%  l1 0.044 / 0.018%
+  t→head    l0 0.130 / 0.062%  l1 0.123 / 0.053%
+  pre.l0→head.l1 0.127 / 0.059%  pre.l1→head.l0 0.122 / 0.050%
