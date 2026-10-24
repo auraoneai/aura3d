@@ -6,7 +6,7 @@
  * Query parameters: `manual=1` (the sim advances only through the hooks, and the run starts at once), `menu=1` (show the title
  * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, texture, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
 import { MOUNT_PAOZU } from "./chapter";
 import { Game } from "./game";
 import { GameAudio } from "./audio";
@@ -128,104 +128,107 @@ function loop(now: number): void {
 }
 
 interface Segment { readonly steps: number; readonly input: StepInput }
-const API = {
-  get ready() { return ready; },
-  snapshot,
+const qa = installQaHooks("kid-goku", {
+  ready: () => ready,
+  state: snapshot,
+  app: () => app,
+  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-05"] }) : null),
   /** Fresh run at the start of the track (playing). */
   reset() { game.start(CHAPTER_ZERO()); stepper.resetAccumulator(); },
   /** Fresh run plus the original's settle frames, so a recorded script starts from the same state. */
   begin() { game.start(0); for (let i = 0; i < SETTLE_FRAMES; i++) stepFrame(game.state, IDLE, STEP, CH); stepper.resetAccumulator(); },
-  /** Advance the pure sim `n` frames (no encounter layer, no rendering) with a fixed input; returns the events raised. */
-  stepFrames(n: number, input: StepInput = IDLE): string[] {
-    const events: string[] = [];
-    for (let i = 0; i < n; i++) events.push(...stepFrame(game.state, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }, STEP, CH));
-    return events;
-  },
-  /** Advance the whole game layer (encounters, falls, duels, finale) `n` frames; returns the events raised. */
-  play(n: number, input: StepInput = IDLE): string[] {
-    const events: string[] = [];
-    for (let i = 0; i < n; i++) events.push(...game.frame(STEP, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }));
-    pending = events;
-    return events;
-  },
-  /** Replay a recorded run-length input script from the current state; trace every `every` steps. */
-  replay(segments: readonly Segment[], every = 5): { steps: number; trace: ReturnType<typeof snapshot>[] } {
-    const trace: ReturnType<typeof snapshot>[] = [];
-    let step = 0;
-    for (const seg of segments) {
-      for (let i = 0; i < seg.steps; i++) {
-        stepFrame(game.state, seg.input, STEP, CH);
-        step++;
-        if ((step - 1) % every === 0) trace.push(snapshot());
+  extras: {
+    /** A boolean property (the specs read `ready === true`), not the kit's `ready()` function. */
+    get ready() { return ready; },
+    snapshot,
+    /** Advance the pure sim `n` frames (no encounter layer, no rendering) with a fixed input; returns the events raised. */
+    stepFrames(n: number, input: StepInput = IDLE): string[] {
+      const events: string[] = [];
+      for (let i = 0; i < n; i++) events.push(...stepFrame(game.state, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }, STEP, CH));
+      return events;
+    },
+    /** Advance the whole game layer (encounters, falls, duels, finale) `n` frames; returns the events raised. */
+    play(n: number, input: StepInput = IDLE): string[] {
+      const events: string[] = [];
+      for (let i = 0; i < n; i++) events.push(...game.frame(STEP, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }));
+      pending = events;
+      return events;
+    },
+    /** Replay a recorded run-length input script from the current state; trace every `every` steps. */
+    replay(segments: readonly Segment[], every = 5): { steps: number; trace: ReturnType<typeof snapshot>[] } {
+      const trace: ReturnType<typeof snapshot>[] = [];
+      let step = 0;
+      for (const seg of segments) {
+        for (let i = 0; i < seg.steps; i++) {
+          stepFrame(game.state, seg.input, STEP, CH);
+          step++;
+          if ((step - 1) % every === 0) trace.push(snapshot());
+        }
       }
-    }
-    return { steps: step, trace };
-  },
-  /** Teleport the run to distance `s` (look-dev and capture), with the progress a player would have there. */
-  place(s: number, opts: { lane?: number; nimbus?: boolean; phase?: "playing" | "menu" } = {}) {
-    if (opts.phase === "menu") { game.menu(); runtime?.cutCamera(); return snapshot(); }
-    game.start(0);
-    const st = game.state;
-    st.s = s; st.lane = opts.lane ?? 0; st.speed = CH.speed; st.invincible = 0;
-    for (const b of CH.balls) if (b.s < s - 2) st.balls.push(b.star);
-    for (const o of game.orbs) if (o.s < s) st.collected.add(o.id);
-    for (const m of CH.meat) if (m.s < s) st.eaten.add(m.s);
-    if (opts.nimbus) { st.nimbus.charge = 1; st.nimbus.active = true; st.nimbus.time = 7; st.jump = 3.2; }
-    game.enc.rewind(s);
-    runtime?.cutCamera();
-    return snapshot();
-  },
-  /** Run the game layer for `n` frames (with the current phase) and render once: for deterministic captures. */
-  settle(n = 30, sim = false) { for (let i = 0; i < n; i++) { if (sim) game.frame(STEP, IDLE); render(STEP); } return snapshot(); },
-  render,
-  raw: () => game.state,
-  game: () => game,
-  info: () => app?.info ?? null,
-  async capture(): Promise<string> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const buf = new Uint8Array(await blob.arrayBuffer());
-    let bin = "";
-    for (const b of buf) bin += String.fromCharCode(b);
-    return btoa(bin);
-  },
-  async pixels(): Promise<{ width: number; height: number; data: number[] }> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    render(STEP);
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = surface.getContext("2d");
-    if (!ctx) throw new Error("no 2d context for readback");
-    ctx.drawImage(bitmap, 0, 0);
-    const image = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-    return { width: image.width, height: image.height, data: Array.from(image.data) };
-  },
-  /** A compact JPEG of the current frame as base64 (ACR runs cannot return files). */
-  async frame(w = 480, h = 270, q = 0.6): Promise<string> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    render(STEP);
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = new OffscreenCanvas(w, h);
-    const ctx = surface.getContext("2d");
-    if (!ctx) throw new Error("no 2d context");
-    ctx.drawImage(bitmap, 0, 0, w, h);
-    const jpeg = await surface.convertToBlob({ type: "image/jpeg", quality: q });
-    const buf = new Uint8Array(await jpeg.arrayBuffer());
-    let bin = "";
-    for (const b of buf) bin += String.fromCharCode(b);
-    return btoa(bin);
-  },
-  diagnostics: () => app?.diagnostics?.() ?? null,
-  stats: () => runtime?.stats ?? null,
-  routeHealth() { return app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-05"] }) : null; },
-  errors: () => errors.slice()
-};
+      return { steps: step, trace };
+    },
+    /** Teleport the run to distance `s` (look-dev and capture), with the progress a player would have there. */
+    place(s: number, opts: { lane?: number; nimbus?: boolean; phase?: "playing" | "menu" } = {}) {
+      if (opts.phase === "menu") { game.menu(); runtime?.cutCamera(); return snapshot(); }
+      game.start(0);
+      const st = game.state;
+      st.s = s; st.lane = opts.lane ?? 0; st.speed = CH.speed; st.invincible = 0;
+      for (const b of CH.balls) if (b.s < s - 2) st.balls.push(b.star);
+      for (const o of game.orbs) if (o.s < s) st.collected.add(o.id);
+      for (const m of CH.meat) if (m.s < s) st.eaten.add(m.s);
+      if (opts.nimbus) { st.nimbus.charge = 1; st.nimbus.active = true; st.nimbus.time = 7; st.jump = 3.2; }
+      game.enc.rewind(s);
+      runtime?.cutCamera();
+      return snapshot();
+    },
+    /** Run the game layer for `n` frames (with the current phase) and render once: for deterministic captures. */
+    settle(n = 30, sim = false) { for (let i = 0; i < n; i++) { if (sim) game.frame(STEP, IDLE); render(STEP); } return snapshot(); },
+    render,
+    raw: () => game.state,
+    game: () => game,
+    async capture(): Promise<string> {
+      if (!app?.capture) throw new Error("capture unavailable");
+      const blob = (await app.capture({ type: "png-blob" })) as Blob;
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      let bin = "";
+      for (const b of buf) bin += String.fromCharCode(b);
+      return btoa(bin);
+    },
+    async pixels(): Promise<{ width: number; height: number; data: number[] }> {
+      if (!app?.capture) throw new Error("capture unavailable");
+      render(STEP);
+      const blob = (await app.capture({ type: "png-blob" })) as Blob;
+      const bitmap = await createImageBitmap(blob);
+      const surface = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const ctx = surface.getContext("2d");
+      if (!ctx) throw new Error("no 2d context for readback");
+      ctx.drawImage(bitmap, 0, 0);
+      const image = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
+      return { width: image.width, height: image.height, data: Array.from(image.data) };
+    },
+    /** A compact JPEG of the current frame as base64 (ACR runs cannot return files). */
+    async frame(w = 480, h = 270, q = 0.6): Promise<string> {
+      if (!app?.capture) throw new Error("capture unavailable");
+      render(STEP);
+      const blob = (await app.capture({ type: "png-blob" })) as Blob;
+      const bitmap = await createImageBitmap(blob);
+      const surface = new OffscreenCanvas(w, h);
+      const ctx = surface.getContext("2d");
+      if (!ctx) throw new Error("no 2d context");
+      ctx.drawImage(bitmap, 0, 0, w, h);
+      const jpeg = await surface.convertToBlob({ type: "image/jpeg", quality: q });
+      const buf = new Uint8Array(await jpeg.arrayBuffer());
+      let bin = "";
+      for (const b of buf) bin += String.fromCharCode(b);
+      return btoa(bin);
+    },
+    stats: () => runtime?.stats ?? null,
+    errors: () => errors.slice()
+  }
+});
 const CHAPTER_ZERO = (): number => (Number.isFinite(startParam) && startParam > 0 ? startParam : 0);
 void createState;
-declare global { interface Window { __AURA_KID_GOKU__?: typeof API } }
-window.__AURA_KID_GOKU__ = API;
+void qa;
 
 async function boot(): Promise<void> {
   ui = new Ui(CH, {
