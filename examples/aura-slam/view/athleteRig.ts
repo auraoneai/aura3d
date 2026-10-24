@@ -14,6 +14,9 @@ const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
 
 const { localToWorld } = racketSports;
 
+/** Small rig parts (hands, knees, racket pieces, accessories) do not cast sun shadows: their shadows are sub-pixel at the game camera and each caster is an extra draw per cascade. `?rigshadows=full` restores them. */
+const SMALL_CAST = typeof location !== "undefined" && new URLSearchParams(location.search).get("rigshadows") === "full";
+
 export interface RigNodeResolver {
   nodes: { require(id: string): AuraRuntimeNodeHandle };
 }
@@ -75,6 +78,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .cylinder({
         name: `${prefix}-shadow`,
+        castShadow: SMALL_CAST,
         size: [0.84, 0.008, 0.84],
         material: material.pbr({ color: "#102024", roughness: 0.95 })
       })
@@ -94,6 +98,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .cylinder({
         name: `${prefix}-collar`,
+        castShadow: SMALL_CAST,
         size: [0.29, 0.07, 0.29],
         material: material.pbr({ color: isPlayer ? "#214b3e" : "#f3f0dc", roughness: 0.75 })
       })
@@ -130,6 +135,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .box({
         name: `${prefix}-visor`,
+        castShadow: SMALL_CAST,
         size: [0.22, 0.028, 0.16],
         material: material.pbr({ color: isPlayer ? "#214b3e" : "#f3f0dc", roughness: 0.65 })
       })
@@ -139,6 +145,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .sphere({
         name: `${prefix}-apollo-helmet`,
+        castShadow: SMALL_CAST,
         size: [0.38, 0.38, 0.38],
         material: material.pbr({ color: "#d8b458", metalness: 0.82, roughness: 0.2 })
       })
@@ -149,6 +156,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .box({
         name: `${prefix}-apollo-pack`,
+        castShadow: SMALL_CAST,
         size: [0.3, 0.4, 0.18],
         material: material.pbr({ color: "#e5e7eb", roughness: 0.55 })
       })
@@ -178,6 +186,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
       primitives
         .sphere({
           name: `${prefix}-${legSide}-knee`,
+          castShadow: SMALL_CAST,
           size: [0.136, 0.136, 0.136],
           material: material.pbr({ color: skinColor, roughness: 0.76 })
         })
@@ -215,6 +224,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
       primitives
         .sphere({
           name: `${prefix}-${armSide}-hand`,
+          castShadow: SMALL_CAST,
           size: [0.104, 0.104, 0.104],
           material: material.pbr({ color: skinColor, roughness: 0.74 })
         })
@@ -228,6 +238,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .cylinder({
         name: `${prefix}-racket-handle`,
+        castShadow: SMALL_CAST,
         size: [1, 1, 1],
         material: material.pbr({ color: "#f3efdf", roughness: 0.68 })
       })
@@ -236,6 +247,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .cylinder({
         name: `${prefix}-racket-throat-left`,
+        castShadow: SMALL_CAST,
         size: [1, 1, 1],
         material: material.pbr({ color: racketColor, metalness: 0.35, roughness: 0.42 })
       })
@@ -244,6 +256,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .cylinder({
         name: `${prefix}-racket-throat-right`,
+        castShadow: SMALL_CAST,
         size: [1, 1, 1],
         material: material.pbr({ color: racketColor, metalness: 0.35, roughness: 0.42 })
       })
@@ -252,6 +265,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .torus({
         name: `${prefix}-racket-hoop`,
+        castShadow: SMALL_CAST,
         size: [0.35, 0.35, 0.032],
         material: material.pbr({ color: racketColor, metalness: 0.4, roughness: 0.38 })
       })
@@ -260,6 +274,7 @@ export function buildAthleteNodes(prefix: string, isPlayer: boolean): AuraSceneN
     primitives
       .cylinder({
         name: `${prefix}-racket-strings`,
+        castShadow: SMALL_CAST,
         size: [0.32, 0.006, 0.32],
         material: material.pbr({ color: "#e4e4cd", roughness: 0.5 })
       })

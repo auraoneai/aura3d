@@ -87,7 +87,8 @@ test.describe("aura-slam render parity (G3)", () => {
         results.push(row);
         expect(stats.lumaMean, `${venue} not blank`).toBeGreaterThan(8);
         expect(stats.lumaMean, `${venue} not blown out`).toBeLessThan(245);
-        if (process.env.SLAMR_STRICT_DRAWCALLS === "1") expect(drawCalls ?? 0, `${venue} draw calls`).toBeLessThanOrEqual(150);
+        console.log(`SLAMR_DRAWCALLS ${venue} ${size.width} ${drawCalls}`);
+        expect(drawCalls ?? 0, `${venue} draw calls`).toBeLessThanOrEqual(150);
       }
     }
     console.log(`SLAMR_REFERENCE ${reference.length > 0 ? "compared" : "pending (evidence/aura-slam/frames-reference.json not present)"}`);

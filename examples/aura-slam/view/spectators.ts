@@ -1,4 +1,4 @@
-import { game, material, primitives, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
+import { game, instances, material, type AuraMaterialSpec, type AuraRuntimeNodeHandle } from "@aura3d/engine";
 import type { Vec3 } from "../contract/units";
 import type { NodeInput } from "./rigPort";
 import { SPECTATOR_COUNT } from "./constants";
@@ -22,22 +22,21 @@ export function buildBleacherNodes(statics: { box(key: string, material: AuraMat
   return [];
 }
 
+/** All spectators are one instanced capsule (one draw, per-instance colours) instead of 24 nodes. */
 export function buildSpectatorNodes(): NodeInput[] {
-  const nodes: NodeInput[] = [];
-  for (let i = 0; i < SPECTATOR_COUNT; i++) {
-    const [sx, sy, sz] = spectatorSeat(i);
-    nodes.push(
-      primitives
-        .capsule({
-          castShadow: false, name: `spectator-${i}`,
-          size: [0.32, 0.6, 0.32],
-          material: material.pbr({ color: SPECTATOR_COLORS[i % SPECTATOR_COLORS.length]!, roughness: 0.78 })
-        })
-        .position(sx, sy, sz)
-        .runtime(game.runtimeNode(`spectator-${i}`))
-    );
-  }
-  return nodes;
+  const transforms = Array.from({ length: SPECTATOR_COUNT }, (_, i) => ({ position: spectatorSeat(i), scale: [1, 1, 1] as Vec3 }));
+  const colors = Array.from({ length: SPECTATOR_COUNT }, (_, i) => SPECTATOR_COLORS[i % SPECTATOR_COLORS.length]!);
+  return [
+    instances
+      .capsule({
+        castShadow: false, name: "spectators",
+        size: [0.32, 0.6, 0.32],
+        material: material.pbr({ color: "#ffffff", roughness: 0.78 }),
+        transforms,
+        colors
+      })
+      .runtime(game.runtimeNode("spectators")) as unknown as NodeInput
+  ];
 }
 
 /** Idle sway, or a bounce when the point is over / the match ended. */
@@ -45,9 +44,10 @@ export function spectatorBounce(i: number, t: number, cheering: boolean): number
   return cheering ? Math.abs(Math.sin(t * 9 + i * 1.3)) * 0.12 : Math.sin(t * 2.2 + i) * 0.015;
 }
 
-export function updateSpectators(handles: readonly AuraRuntimeNodeHandle[], t: number, cheering: boolean): void {
-  for (let i = 0; i < handles.length; i++) {
+export function updateSpectators(handle: AuraRuntimeNodeHandle, t: number, cheering: boolean): void {
+  const transforms = Array.from({ length: SPECTATOR_COUNT }, (_, i) => {
     const [sx, sy, sz] = spectatorSeat(i);
-    handles[i]!.setPosition(sx, sy + spectatorBounce(i, t, cheering), sz);
-  }
+    return { position: [sx, sy + spectatorBounce(i, t, cheering), sz] as Vec3, scale: [1, 1, 1] as Vec3 };
+  });
+  handle.setInstances(transforms);
 }

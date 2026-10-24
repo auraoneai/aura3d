@@ -5,7 +5,7 @@ import { stadiumAssets } from "../../../examples/aura-slam/view/assets";
 import { buildTennisScene, SCENE_NODE_IDS } from "../../../examples/aura-slam/view/scene";
 import { createPoseRig } from "../../../examples/aura-slam/view/poseRig";
 import { QUALITY_REBUILD, postEffects, sceneLights } from "../../../examples/aura-slam/view/lighting";
-import { SPECTATOR_COUNT, MARK_COUNT, TRAIL_COUNT } from "../../../examples/aura-slam/view/constants";
+import { MARK_COUNT, TRAIL_COUNT } from "../../../examples/aura-slam/view/constants";
 
 type Doc = { nodes?: Array<{ name?: string; id?: string; kind?: string; children?: unknown[] }>; camera?: { fov?: number; position?: number[]; target?: number[] }; background?: unknown };
 
@@ -28,7 +28,7 @@ describe("aura-slam view: scene composition", () => {
   it("contains every node the renderer resolves at runtime", () => {
     for (const id of SCENE_NODE_IDS) expect(names.has(id), id).toBe(true);
     for (let i = 0; i < 8; i++) expect(names.has(`grass-stripe-${i}`)).toBe(true);
-    for (let i = 0; i < SPECTATOR_COUNT; i++) expect(names.has(`spectator-${i}`)).toBe(true);
+    expect(names.has("spectators")).toBe(true);
     for (let i = 0; i < MARK_COUNT; i++) expect(names.has(`court-mark-${i}`)).toBe(true);
     for (let i = 0; i < TRAIL_COUNT; i++) expect(names.has(`ball-trail-${i}`)).toBe(true);
     for (const n of ["tennis-ball", "tennis-ball-shadow", "retiring-ball"]) expect(names.has(n)).toBe(true);
@@ -53,7 +53,7 @@ describe("aura-slam view: scene composition", () => {
   it("keeps the four-light rig, three post effects and the live quality flags", () => {
     expect(sceneLights()).toHaveLength(4);
     expect(postEffects()).toHaveLength(3);
-    expect(QUALITY_REBUILD.flags).toEqual(["game", "-compiler", "-post", "-vfxFog"]);
+    expect(QUALITY_REBUILD.flags).toEqual(["game"]);
   });
 });
 

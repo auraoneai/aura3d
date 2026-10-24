@@ -54,7 +54,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
   let ball: BallHandles | null = null;
   const h: Record<string, AuraRuntimeNodeHandle> = {};
   let grassStripes: AuraRuntimeNodeHandle[] = [];
-  let spectators: AuraRuntimeNodeHandle[] = [];
+  let spectators: AuraRuntimeNodeHandle | null = null;
 
   let viewportWidth = 1280;
   let viewportHeight = 800;
@@ -110,7 +110,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
       h.faultLeft = req("net-fault-left");
       h.faultRight = req("net-fault-right");
       grassStripes = Array.from({ length: 8 }, (_, i) => req(`grass-stripe-${i}`));
-      spectators = Array.from({ length: SPECTATOR_COUNT }, (_, i) => req(`spectator-${i}`));
+      spectators = req("spectators");
       net = installSafetyNet({
         safety: options.safety ?? true,
         canvas: target,
@@ -178,7 +178,7 @@ export function createSceneRenderer(options: SceneRendererOptions): SceneRendere
 
       const t = Number(state.time ?? 0);
       const cheering = (state.phase as string) === "pointOver" || state.mode === "gameover";
-      updateSpectators(spectators, t, cheering);
+      if (spectators) updateSpectators(spectators, t, cheering);
 
       const pPose = options.pose.pose(state.player, state);
       const aiPose = options.pose.pose(state.ai, state);

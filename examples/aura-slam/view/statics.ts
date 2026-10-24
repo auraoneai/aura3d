@@ -47,11 +47,12 @@ export function mergeBoxes(parts: ReadonlyArray<{ size: Vec3; position: Vec3 }>)
 
 /** Collects static boxes per material and bakes each group into a single mesh (one draw call per material). */
 export function createStaticBoxes() {
-  const groups = new Map<string, { material: AuraMaterialSpec; parts: Array<{ size: Vec3; position: Vec3 }> }>();
+  const groups = new Map<string, { material: AuraMaterialSpec; castShadow: boolean; parts: Array<{ size: Vec3; position: Vec3 }> }>();
   return {
-    box(key: string, material: AuraMaterialSpec, size: Vec3, position: Vec3): void {
+    /** Solid decor (stands, boards, chair, net) casts the sun shadows the live page shows; the flat court lines never do. */
+    box(key: string, material: AuraMaterialSpec, size: Vec3, position: Vec3, castShadow: boolean = key !== "lines"): void {
       let g = groups.get(key);
-      if (!g) groups.set(key, (g = { material, parts: [] }));
+      if (!g) groups.set(key, (g = { material, castShadow, parts: [] }));
       g.parts.push({ size, position });
     },
     count(): number {
@@ -65,7 +66,7 @@ export function createStaticBoxes() {
       for (const [key, g] of groups) {
         const merged = mergeBoxes(g.parts);
         if (!merged) continue;
-        nodes.push(geometry.custom(merged, { name: `${prefix}-${key}`, material: g.material, castShadow: false }) as unknown as NodeInput);
+        nodes.push(geometry.custom(merged, { name: `${prefix}-${key}`, material: g.material, castShadow: g.castShadow }) as unknown as NodeInput);
       }
       return nodes;
     }
