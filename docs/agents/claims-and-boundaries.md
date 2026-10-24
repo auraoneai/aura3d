@@ -1,324 +1,126 @@
-# Claims And Boundaries
+# Claims and Boundaries
 
-This is the canonical claim boundary for agent-authored Aura3D work. Read this
-after `llms.txt` and before writing examples, showcase routes, templates,
-README copy, release notes, or public capability claims.
+Version: 4.1.2
 
-The core rule is simple: a public claim may describe only the path that has
-evidence. Do not let production-runtime, rendering package, template, roadmap,
-or prototype capability leak into claims about the root `createAuraApp` safe
-API.
+The one rulebook for agent-authored Aura3D work: what you may build, what you may say, and what evidence a claim needs. It absorbs the former anti-hallucination and no-hackjob lists (`anti-hallucination-rules.md` and `no-hackjob-rules.md` now redirect here). Read it after `llms.txt`, before writing examples, routes, templates, README copy or release notes.
 
-Aura3D 4.0 comparison claims use repository-locked `three@0.185.1`. The 15
-selected exact-installed correctness workloads are bounded evidence, not a
-universal parity verdict; full repeated performance, clean-machine replication,
-and independent gallery review remain separate gates.
+**Core rule: a public claim may describe only the path that has evidence.** When evidence is missing, label the work `prototype` or `roadmap` and say what is missing.
 
-## Capability Labels
+## 1. Claim labels
 
-Use one of these labels for every public claim:
+Pick exactly one per claim.
 
 | Label | Meaning | Evidence required |
 | --- | --- | --- |
-| `createAuraApp` root safe API | A browser route imports only public `@aura3d/engine` APIs and mounts through `createAuraApp(...)`. | Build, route-health or equivalent diagnostics, typed asset manifest, browser screenshot, and claim-specific pixel or runtime assertion. |
-| `production-runtime` | Capability exists in production-runtime packages or adapters, but is not necessarily exposed by root agent APIs. | Package tests or browser tests for that package, plus wording that does not imply root support. |
-| `rendering` package | Capability exists in the public lower-level `@aura3d/rendering` package but is not necessarily exposed by root agent APIs. | Public package exports plus renderer unit/browser evidence, with explicit package-level wording. |
-| CLI asset pipeline | Capability belongs to asset search, add, resolve, validation, provenance, type generation, screenshots, or deploy checks. | CLI command output, `aura.assets.json`, generated `src/aura-assets.ts`, source/license metadata, and validation reports. |
-| Template-only scaffold | A template starts a project or route but does not itself prove production capability. | Template generation smoke test and honest scaffold wording. |
-| Prototype | A route or API illustrates direction but lacks release-quality evidence. | Prototype label on route/docs and no flagship or production wording. |
-| Roadmap | Planned capability that is not implemented or not public. | Future-tense wording and a linked issue, PRD item, or roadmap document. |
+| `createAuraApp` root safe API | A route imports only public `@aura3d/engine` APIs and mounts through `createAuraApp(...)`. | Build, route-health or diagnostics, typed asset manifest, browser screenshot, a claim-specific pixel or runtime assertion. |
+| `production-runtime` | Exists in production-runtime packages, not necessarily in root agent APIs. | Package or browser tests for that package; wording that does not imply root support. |
+| `rendering` package | Exists in the lower-level `@aura3d/rendering` package. | Public exports plus renderer unit or browser evidence; package-level wording. |
+| CLI asset pipeline | Asset search, add, resolve, validate, provenance, typegen, thumbnails, deploy checks. | CLI output, `aura.assets.json`, generated `src/aura-assets.ts`, license metadata, validation reports. |
+| Template-only scaffold | A template starts a project; it proves nothing by itself. | Template generation smoke test and honest scaffold wording. |
+| `prototype` | Illustrates direction without release-quality evidence. | The label on the route and docs; no flagship or production wording. |
+| `roadmap` | Planned, not implemented or not public. | Future tense and a linked plan. |
 
-If the evidence does not exist, use `prototype` or `roadmap`. A route that
-loads, compiles, or creates a large screenshot is not enough.
+A route that loads, compiles or produces a large screenshot is not evidence. See [rendering-proof-required.md](rendering-proof-required.md) for the evidence each rendering claim needs.
 
-## Root API Boundary
+## 2. Never invent (anti-hallucination)
 
-The public agent path is normal TypeScript or JavaScript against
-`@aura3d/engine`, mounted with `createAuraApp(...)`.
+- **APIs.** Use only public exports in `docs/agents/api-surface.md` and the root imports shown in `llms.txt`. Check a name exists (`rg` the export list or let `tsc` fail) before teaching it.
+- **Assets.** Never invent paths, ids, URLs or GLB names, and never paste a remembered CDN URL (a remembered URL is hallucinated provenance). Add a file with `npx @aura3d/cli@latest assets add ./assets/model.glb --name model`, read `src/aura-assets.ts`, and use `model(assets.model)`. For a named real-world object, run `assets search "<object>"` then `assets resolve "<object>" --name <name>`; pick an auto-pullable candidate (CC0 or CC-BY, verified, direct download). Do not fall back to a primitive or an invented URL.
+- **Forbidden forms:** `model("robot")`, `model("/assets/x.glb")`, `model("https://...")`, `unsafeModelUrl(...)` in release-facing code.
+- **three.js.** No `import * as THREE`, no `three` or `three/examples/...` imports, no `new GLTFLoader()`, no hand-wired scene, renderer, camera loop, loader or controls. `createAuraApp(...)` owns the renderer, scene graph, camera and loop. If the task is explicitly about renderer internals or migration, label it internal and do not use it as root proof.
+- **Physics.** Do not import `PhysicsWorld`, `Shape` or `PhysicsDebugAdapter` from `@aura3d/engine`; use the root `physics` namespace (`physics.world`, `physics.box`, `physics.sphere`, `physics.step`, `physics.worldFromScene`, `physics.debugNodes`).
+- **Kits before custom systems.** Start from the matching `sceneKits.*`, `prefabs.*` or `game.*` helper (mini golf, charts, city, product, humanoid, particles, racket sports) and make only prompt-required edits.
+- **Product identity.** Aura3D is a TypeScript/JavaScript engine API, asset CLI, template system, diagnostics surface and deploy checker. It is not an AI model, an asset store, or a runtime for arbitrary generated code.
+- **Naming.** New files, docs, routes, packages, tests and APIs are named for what they do, not for release numbers (`v2`, `v3`, `v4`). Do not revive legacy provider runtimes or legacy scene IR in new examples.
+- **Done.** Do not say a route, feature or performance comparison works until the finite build, test or check command passes with all evidence inputs present.
 
-The root safe API can be claimed for:
+## 3. No hackjobs
 
-- typed GLB/glTF asset usage through `model(assets.name)`;
-- scene composition with public helpers such as `scene()`, `model(...)`,
-  `camera`, `lights`, `material`, `effects`, `prefabs`, `sceneKits`,
-  `primitives`, `group`, `groups`, `timeline`, `interactions`, `physics`,
-  `labels`, `environments`, `game`, `games`, `charts`, `character`, `city`,
-  `product`, `solar`, `particles`, `ui`, `instances`, `distanceLod`, `text3D`,
-  and `geometry`, when those imports are actually
-  exported and tested from root `@aura3d/engine`;
-- browser route mounting through one `createAuraApp(...)` call per route;
-- runtime node mutation and frame updates through public app/runtime methods;
-- diagnostics, evidence helpers, screenshots, and deploy checks when they are
-  run and attached to the route or PR.
+The right response to a bad screenshot is root-cause work, not a route-local illusion.
 
-Do not claim these for root `createAuraApp` unless root-only browser evidence
-proves the exact result:
+Do not ship or present examples that rely on:
 
-- production renderer parity or "Three.js-quality" rendering;
-- full PBR material parity;
-- HDR, IBL, PMREM-style environment filtering, production tone mapping, or
-  high-quality shadows;
-- pixel-backed bloom, SSAO, DOF, FXAA/TAA, color grading, or other postprocess;
-- native WebGPU, compute dispatch, or WebGPU rendering;
-- skinned GLB animation or morph rendering beyond the bounded fixtures and
-  behaviors in `docs/rendering/animation.md`;
-- production-quality character, racing, platformer, falling-block, or generic
-  collision/gameplay kits;
-- generic physics/collision behavior not exported and tested from the root API.
+- CSS, DOM or canvas stand-ins for particles, bloom, trails, labels, lighting, scanlines, shadows or 3D effects (DOM is fine for HUD, menus and debug panels);
+- primitives as the main character, vehicle, product, world, track, weapon or hero object for a named real-world or game prompt;
+- autoplay or deterministic replay as a substitute for player input;
+- route-local scale, camera or gameplay math that contradicts the public API docs;
+- a blanket `qualityRebuild` pin or post-processing disabled for everyone to hide a GPU fault (ship `installSafetyNet` instead);
+- stale route-health, README or launch evidence that names assets or claims the source no longer uses.
 
-`PortableShaderMaterial` is a supported `@aura3d/rendering` package extension
-API for paired GLSL/WGSL custom materials. Its real WebGL2/WebGPU evidence does
-not make custom shader authoring a root `createAuraApp` claim and does not prove
-general TSL/node-material parity. See
-`docs/rendering/portable-custom-materials.md`.
+When a screenshot is tiny, cropped, blank, floating, primitive-heavy or unplayable:
 
-PBR/glTF evidence is also path-specific. The bounded current-Three.js receipt
-in `docs/rendering/pbr-gltf-correctness.md` proves selected root primitive
-behaviors, production-runtime textured materials and transmission, and
-package-level loader semantics. It does not make production-runtime
-transmission, full textured PBR, skinning, morphs, or every glTF extension a
-root `createAuraApp` claim, and it does not prove universal Three.js ecosystem
-parity.
+1. Classify it: renderer or material gap, asset quality or provenance gap, scale or camera gap, effects gap, game-runtime gap, docs or claim gap, unknown.
+2. Map it to exact source files and the public API boundary.
+3. Prove the fix in a root-only validation app or test before touching showcase presentation.
+4. Update docs and route evidence after the proof passes.
 
-Lighting/environment evidence follows the same rule. The current comparison in
-`docs/rendering/lighting-environment-color.md` proves selected
-production-runtime light, shadow, HDR/IBL, PMREM, background, and display-color
-workloads. Finite rectangular lights and the bounded receiver-contact
-approximation are rendering/runtime claims, not automatic root
-`createAuraApp` claims; the latter is not a general screen-space or ray-traced
-contact-shadow system.
+Swapping GLBs, repainting primitives or changing a look preset without a recapture and re-judge is the same hack.
 
-Geometry evidence is also bounded. The root-only browser and large-scene
-receipt in `docs/rendering/geometry-instancing-lod-text.md` proves native lit
-instancing for supported instanced materials, camera-distance LOD with
-hysteresis, a documented uppercase alphanumeric extruded mesh-text catalog,
-custom indexed triangle geometry, CPU camera-frustum culling, and a static
-bounds BVH. It does not prove one-draw support for every advanced material,
-arbitrary font loading or shaping, SDF/MSDF text, or GPU occlusion/Hi-Z. DOM
-world labels remain accessible UI and must not be described as 3D mesh text.
+## 4. What the root API may claim
 
-Animation evidence is bounded in the same way. The receipt in
-`docs/rendering/animation.md` proves root typed-GLB skinned playback, named clip
-controls, and named morph-target deformation with a stable camera and
-subject-region pixels. Additive layers, root motion, events, explicit humanoid
-retargeting, and imported two-bone IK are package-level behaviors. The selected
-Robot Expressive comparisons against actual Three.js r185 do not prove
-automatic arbitrary-rig retargeting, full-body IK, or universal animation
-parity.
+Root `createAuraApp` can claim: typed GLB/glTF via `model(assets.name)`; scene composition with the public helpers (`scene`, `camera`, `lights`, `material`, `effects`, `prefabs`, `sceneKits`, `primitives`, `group`, `timeline`, `interactions`, `physics`, `labels`, `environments`, `game`, `games`, `particles`, `instances`, `distanceLod`, `text3D`, `geometry`, `looks` and the rest of the root surface, when exported and tested); one `createAuraApp(...)` mount per route; runtime node mutation; diagnostics, evidence helpers, screenshots and deploy checks that were actually run and attached.
 
-Controls, picking, XR, and recovery evidence is bounded in
-`docs/rendering/controls-picking-xr-context.md`. Rendered routes and focused
-package tests prove the named orbit, trackball, first-person, input, picking,
-and transform-gizmo behaviors. WebXR proof uses injected sessions and must not
-be presented as physical-device or compositor evidence. Context recovery is a
-root app-owned pause and explicit scene remount after restoration; it is not a
-blanket guarantee that every lower-level consumer or external GPU resource is
-recreated transparently.
+Do not claim for the root API, without root-only browser evidence of the exact result: production renderer parity or "Three.js-quality" rendering; full PBR parity; HDR, IBL, PMREM filtering, tone mapping or high-quality shadows; pixel-backed bloom, SSAO, DOF, FXAA/TAA or grading; native WebGPU or compute; skinned animation or morphs beyond the bounded fixtures; production-quality character, racing, platformer or falling-block kits; generic physics or collision.
 
-Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
-has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,
-convex-hull GJK/EPA, triangle-backed mesh/heightfield contacts, and
-contact-point angular impulses with world-space principal inertia. Do not turn
-package physics tests or a `cannon-es` route into a generic root collision
-claim.
+### Bounded evidence by area
 
-Performance claims require current comparative reports. A passing hand-authored
-feature inventory, stale visual capture, package benchmark, or missing-evidence
-performance report is not proof that Aura3D matches or exceeds another engine.
+Each receipt proves only the named behaviors. Anything beyond it needs its own evidence.
 
-## Asset Boundary
+| Area | Receipt | Does not prove |
+| --- | --- | --- |
+| Custom shaders | `docs/rendering/portable-custom-materials.md` (`PortableShaderMaterial`, paired GLSL/WGSL, a `@aura3d/rendering` package API) | Custom shader authoring as a root claim, general TSL or node-material parity |
+| PBR/glTF | `docs/rendering/pbr-gltf-correctness.md` (selected root primitives, production-runtime textured materials and transmission, package loader semantics) | Full textured PBR, skinning, morphs or every glTF extension on the root; universal three.js parity |
+| Lighting, environment | `docs/rendering/lighting-environment-color.md` (selected production-runtime light, shadow, HDR/IBL, PMREM, background, color workloads) | Rectangular lights or the receiver-contact approximation as automatic root claims; general screen-space or ray-traced contact shadows |
+| Geometry | `docs/rendering/geometry-instancing-lod-text.md` (native lit instancing for supported materials, distance LOD with hysteresis, uppercase alphanumeric mesh text, custom indexed geometry, CPU frustum culling, static bounds BVH) | One draw for every advanced material, arbitrary fonts, SDF text, GPU occlusion. DOM labels are UI, never 3D text |
+| Animation | `docs/rendering/animation.md` (root typed-GLB skinned playback, named clips, named morph targets, subject-region pixels) | Automatic retargeting, full-body IK, universal animation parity. Layers, root motion, events, humanoid retargeting and two-bone IK are package-level |
+| Controls, XR | `docs/rendering/controls-picking-xr-context.md` (named orbit, trackball, first-person, picking, gizmo; injected XR sessions; app-owned context-loss pause and remount) | Physical-device XR, transparent recovery of every external GPU resource |
+| Physics | `@aura3d/physics` native backend (adaptive CCD, Coulomb friction, rotated box SAT, convex GJK/EPA, mesh and heightfield contacts) | A generic root collision claim from package tests or a `cannon-es` route |
+| Performance | A current like-for-like comparative report | Parity from an inventory, a stale capture, a package benchmark or a report with missing inputs |
 
-Do not invent assets. Use the Aura3D CLI so the route has durable provenance
-and typed references.
+Comparison claims use repository-locked `three@0.185.1`; the selected correctness workloads are bounded evidence, not a universal verdict. Honest numbers against three.js live in `evidence/vs-threejs/RESULTS.md` (software GL, not GPU).
 
-For local files:
+## 5. Assets, primitives, DOM
 
-```bash
-npx @aura3d/cli@latest assets add ./assets/model.glb --name model
-```
+- **Provenance.** Primary assets appear in `aura.assets.json` and generated `src/aura-assets.ts`, with durable source page, download URL, license name and URL, author, acquisition time, hash and typed key. Temp paths (`/var/folders/.../aura3d-resolve-*`) are not provenance unless the asset is marked local-only and excluded from public claims.
+- **Primitives** are allowed for set dressing, collision guides and debug markers, HUD anchors, local prototypes and labelled abstract visualization. A primitive-only public showcase must be labelled abstract or blocked.
+- **DOM and CSS** may provide UI, controls, menus, HUD text and debug panels. They are not scene geometry, particles, bloom, shadows or renderer evidence. If a route claims Aura3D particles, changing the controls must change rendered pixels and runtime telemetry, not just DOM nodes.
 
-For catalog assets:
+## 6. Games, ports and the production bridge
 
-```bash
-npx @aura3d/cli@latest assets search "battle-worn knight helmet"
-npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
-```
+A route is not a game claim because it has a 3D scene and key listeners. A public game route proves: input visibly changes state; an objective, score or fail, reset and progression loop; automated tests for movement, restart and at least one win, fail, score or completion mechanic; typed primary assets unless explicitly abstract; route-health that names primary assets, primitive count, renderer mode and claims.
 
-Then import and render the typed asset:
+Reusable and public: the game kit (`@aura3d/engine/game`: HUD, touch, session, juice, game sound), the QA kit, the audio synth kit and `game.racketSports()`. The root `createGame` is a headless stub. Opponent behavior, level layout, art and challenge scoring are route-local: say so, and claim no reusable platformer, racing, falling-block or character-controller kit beyond the root-tested `game.*` genre kits.
 
-```ts
-import { createAuraApp, lights, model, scene } from "@aura3d/engine";
-import { assets } from "./aura-assets";
+The production bridge draws a model only for a same-origin URL with a valid `sha256`; http(s) and unhashed models draw nothing. After deploying, request every asset URL and expect 200.
 
-createAuraApp("#app", {
-  scene: scene().add(model(assets.helmet)).add(lights.studio())
-});
-```
+Ports and rebuilds add three limits:
 
-Forbidden in public safe examples:
+- **"Same simulation"** needs a recorded reference and a replay test with a stated tolerance (bit for bit, or 1e-6) and the game build that produced the reference.
+- **"Looks the same"** needs matched-state frames and metrics (luma and RGB JSD, edge-density ratio, mean luma delta). A blind model judge is a model's opinion, reported as identification accuracy against 50% chance with trial count and seed; it is never "pixel parity" and never a human review.
+- **"Works on GPUs"** needs a real-device run. Software GL (SwiftShader) evidence is labelled "software GL" and proves correctness and draw-call counts only.
 
-```ts
-model("helmet");
-model("/assets/helmet.glb");
-model("https://example.com/helmet.glb");
-unsafeModelUrl("https://example.com/helmet.glb");
-```
+## 7. Checklist before calling anything ready
 
-Primary assets must appear in `aura.assets.json` and generated
-`src/aura-assets.ts`. Release-facing asset evidence must include durable source
-page, download URL when available, license name, license URL, author when
-available, acquisition timestamp, hash, and generated typed key. Temp paths such
-as `/var/folders/.../T/aura3d-resolve-*` are not durable provenance unless the
-asset is explicitly marked local-only and excluded from public release claims.
+- [ ] No raw string model ids, raw `.glb`/`.gltf` URLs or `unsafeModelUrl(...)` in public examples.
+- [ ] No `three`, `three/examples/...` or `GLTFLoader` imports.
+- [ ] No DOM/CSS particles in a route that claims Aura3D particles.
+- [ ] No primitive-only primary subject unless labelled abstract.
+- [ ] Primary assets are in `aura.assets.json` and `src/aura-assets.ts` with durable provenance.
+- [ ] Desktop and mobile screenshots show the subject readable at first load.
+- [ ] Games prove movement, reset, objective and score or fail.
+- [ ] Animation claims show the animated subject changing in subject-region pixels.
+- [ ] WebGPU claims include adapter, backend, dispatch, rendering and pixels.
+- [ ] Route-health declares assets, fallback status, primitive count, backend, screenshots and claims, and matches source.
+- [ ] Wording does not exceed detected capability. If a required command does not exist, the work is `blocked` or `prototype`; never weaken the claim.
 
-## Primitive Boundary
+## 8. Short claims
 
-Primitives are allowed for:
+Safe when backed by the app's files and evidence:
 
-- set dressing around a resolved real asset;
-- collision guides and debug markers;
-- HUD anchors and measurement helpers;
-- placeholder geometry inside explicitly local prototypes;
-- simple abstract visualization where the route is labeled abstract.
-
-Primitives are not allowed as the primary character, vehicle, product, creature,
-weapon, world, hero object, or primary environment for a named real-world or
-game prompt. With the asset catalog available, a named object should start from
-a real typed GLB/glTF asset. A primitive-only public showcase must be labeled
-abstract visualization or blocked.
-
-## DOM And CSS Boundary
-
-CSS, DOM, and canvas overlays can provide UI, controls, menus, HUD text, route
-chrome, and debug panels.
-
-They cannot be used as:
-
-- fake Aura3D particles;
-- fake bloom, trails, lighting, labels, shadows, explosions, or 3D effects;
-- substitute scene geometry;
-- screenshot evidence for renderer capability;
-- proof that WebGPU, postprocess, animation, or physics exists.
-
-If a route claims Aura3D particles, changing particle controls must visibly
-change rendered pixels and telemetry from Aura3D runtime state, not only DOM
-nodes.
-
-## Three.js Boundary
-
-Public agent-authored examples must not import:
-
-```ts
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-```
-
-Do not hand-wire `new THREE.Scene()`, `new THREE.WebGLRenderer(...)`, camera
-loops, loaders, or controls in public safe examples. If a task explicitly
-targets renderer internals or migration diagnostics, label that work internal
-and do not use it as proof for root `createAuraApp`.
-
-## Game Boundary
-
-A route is not a game claim just because it has a 3D scene and key listeners.
-
-A public game route must prove:
-
-- keyboard input visibly changes gameplay state;
-- objective, scoring or fail condition, reset, and progression loop;
-- automated tests for movement, restart, and at least one win, fail, scoring,
-  lap, checkpoint, line-clear, collection, or completion mechanic;
-- typed primary character, vehicle, world, or playfield assets unless the game
-  is explicitly abstract;
-- route-health or equivalent evidence that names primary assets, primitive
-  count, renderer mode, fallback mode, and claims.
-
-Reusable pieces are public: the game kit (`@aura3d/engine/game`: HUD, touch,
-session, juice, game sound), the QA kit, the audio synth kit and
-`game.racketSports()`. Claim a reusable kit only for the exports above and only with
-their unit tests; the root `createGame` is a headless stub. Opponent behaviour,
-level layout, art direction, challenge scoring and duration proofs stay
-**route-local**: say so, and do not claim a reusable platformer, racing,
-falling-block or character-controller kit beyond the public `game.*` genre kits that
-root-only tests cover.
-
-Ports and rebuilds of existing games add three claim limits:
-
-- "Same simulation" needs a recorded reference and a replay test with a stated
-  tolerance (bit for bit, or 1e-6). Say which game build produced the reference.
-- "Looks the same" needs matched-state frames and metrics (luma and RGB JSD,
-  edge-density ratio, mean luma delta). A blind model judge is a model's opinion,
-  reported as identification accuracy against 50% chance; it is never "pixel parity"
-  and never a human review.
-- "Works on GPUs" needs a real-device run. Software GL (SwiftShader) evidence is
-  labelled "software GL" and proves correctness and draw-call counts only.
-
-## Evidence Checklist
-
-Before marking a public example, doc, README, or release claim as ready, verify:
-
-- no raw string model IDs in public examples;
-- no raw `.glb` or `.gltf` URLs in public examples unless inside an unsafe
-  diagnostics document;
-- no `unsafeModelUrl(...)` in release-facing examples;
-- no `three`, `three/examples/...`, or `GLTFLoader` imports;
-- no CSS/DOM particle implementation for examples claiming Aura3D particles;
-- no primary character, vehicle, world, product, weapon, or creature made only
-  from primitives unless explicitly abstract;
-- all primary assets are present in `aura.assets.json` and `src/aura-assets.ts`;
-- all primary assets have durable source/license/provenance metadata;
-- screenshots show the main subject readable at first load on desktop and
-  mobile;
-- game routes prove movement, reset, objective, and scoring/fail/progression;
-- animation claims include pixel-backed proof of the animated subject changing,
-  not only camera or UI movement;
-- WebGPU claims include adapter, backend, dispatch, rendering, and pixel
-  evidence;
-- route-health or equivalent evidence declares primary assets, fallback status,
-  primitive count, renderer backend, screenshots, and claims;
-- public wording does not exceed detected capability.
-
-This checklist mirrors the current release checklist and static-source
-requirements. If a required validation command does not exist yet,
-state that the route is blocked or prototype rather than weakening the claim.
-
-## Allowed Short Claims
-
-These claims are safe when supported by the app's files and evidence:
-
-- Aura3D is a TypeScript SDK and asset deployment pipeline for agent-authored
-  browser 3D.
-- Agents write editable TypeScript or JavaScript against public
-  `@aura3d/engine` APIs.
-- The CLI can add, resolve, validate, hash, type-generate, and track GLB/glTF
-  assets when those commands have been run.
-- A route uses typed assets when it imports `assets` from generated
-  `src/aura-assets.ts` and calls `model(assets.name)`.
-- A template scaffolds a starting project when template generation has been
-  tested.
+- Aura3D is a TypeScript SDK and asset pipeline for agent-authored browser 3D.
+- Agents write editable TypeScript or JavaScript against public `@aura3d/engine` APIs.
+- The CLI adds, resolves, validates, hashes, type-generates and tracks GLB/glTF assets, when those commands were run.
+- A route uses typed assets when it imports `assets` from `src/aura-assets.ts` and calls `model(assets.name)`.
 - A screenshot proves only what is visible in that screenshot.
 
-## Disallowed Short Claims
-
-Do not write:
-
-- "Aura3D automatically matches production renderer quality" unless the root
-  production bridge and pixel tests prove it.
-- "WebGPU particle lab" unless native WebGPU adapter, backend, dispatch,
-  rendering, and pixels are verified.
-- "PBR material parity" unless the exact material features are tested and
-  visible from the claimed API path.
-- "Skinned character animation" unless a real skinned GLB changes pose in
-  pixel-backed evidence.
-- "Playable platformer/racer/fighting/falling-block kit" unless root exported
-  game APIs and automated input tests prove that kit.
-- "Real-time simulation" when telemetry is disconnected from scene state.
-- "Asset-backed" when the primary subject is primitives or raw URLs.
-- "Pixel parity" or "indistinguishable from the original" from histograms and a
-  model judge.
-- "Runs on every GPU" from a software-renderer run, or "fixed on real hardware"
-  without a real-device confirmation.
-- "Same as the original" for a port without a recorded reference and a replay test.
-
-When in doubt, lower the label to `prototype` and describe the missing evidence.
+Never write: "matches production renderer quality" (without root pixel proof); "WebGPU particle lab" (without native adapter, backend, dispatch, pixels); "PBR parity" (without exact tested features); "skinned character animation" (without pixel-backed pose change); "playable kit" (without root exports and input tests); "real-time simulation" (when telemetry is disconnected from scene state); "asset-backed" (when the subject is primitives or raw URLs); "pixel parity" or "indistinguishable" (from histograms and a model judge); "runs on every GPU" (from a software run); "fixed on real hardware" (without a real-device confirmation); "same as the original" (without a reference and a replay test); "faster" or "smaller" than three.js (the measured results favor three.js on bundle size and software-GL frame cost).

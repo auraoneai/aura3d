@@ -15,18 +15,15 @@ not prove root safe API behavior.
 
 ## Claim Labels
 
-Every rendering claim must use one of these labels:
-
-- `createAuraApp` root safe API;
-- `production-runtime`;
-- `rendering` internals;
-- CLI asset pipeline;
-- template-only scaffold;
-- prototype;
-- roadmap.
-
-If the evidence is not root-only browser evidence, do not phrase it as a root
+Every rendering claim uses one of the seven labels in
+[claims-and-boundaries.md](claims-and-boundaries.md#1-claim-labels). If the
+evidence is not root-only browser evidence, do not phrase it as a root
 `createAuraApp` public capability.
+
+Capture the pixels on a remote runner (`tools/remote-acr/run.sh`; see
+[verification.md](verification.md)), never with local Playwright. Software GL
+(SwiftShader) pixels prove correctness and draw-call counts; label them
+"software GL" and do not use them as real-GPU proof.
 
 ## Required Evidence By Claim
 
