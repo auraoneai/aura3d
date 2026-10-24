@@ -7,7 +7,7 @@
 // idle drift and the authored camera-feel punch on quads/level-ups; audio rides
 // the legacy cue controller on admitted sfx ids until C-25 (stand-in R-14-09).
 import { game as engineGame, scene, type AuraCameraPose, type GameInputController } from "@aura3d/engine";
-import { createGame, type Game, lookManifest } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/engine/game";
 import {
   DEFAULT_SEED,
   HIDDEN_ROWS,

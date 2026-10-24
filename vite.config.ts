@@ -17,7 +17,12 @@ const repoRoot = fileURLToPath(new URL(".", import.meta.url));
 
 const installedAliases = installedAuraPackageAliases();
 const gamePackageEntry = fileURLToPath(new URL("./packages/game/src/index.ts", import.meta.url));
+const gamePackageDir = fileURLToPath(new URL("./packages/game/src/", import.meta.url));
 const gameAliases = [
+  { find: /^@aura3d\/engine\/game\/art$/, replacement: `${gamePackageDir}art/index.ts` },
+  { find: /^@aura3d\/engine\/game\/capture$/, replacement: `${gamePackageDir}capture/index.ts` },
+  { find: /^@aura3d\/engine\/game\/util$/, replacement: `${gamePackageDir}util/index.ts` },
+  { find: /^@aura3d\/engine\/game\/styles\.css$/, replacement: `${gamePackageDir}styles.css` },
   { find: /^@aura3d\/engine\/game$/, replacement: gamePackageEntry },
   { find: /^@aura3d\/game$/, replacement: gamePackageEntry },
 ];

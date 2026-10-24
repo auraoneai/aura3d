@@ -5,7 +5,7 @@ import { strikeSpeedFor } from "../gameplay/cue";
 import type { RulesEngine, ShotOutcome } from "../gameplay/rules";
 import { createTableSimulation, CUE_SPOT } from "../gameplay/table";
 import type { createBilliardsAudio } from "../legacy/billiards-audio";
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 import { wireBankShotFx } from "./scene/fx";
 import { strikeAudioMap, type StrikeAudioParams } from "./audio-map";
 import { BALL_SURFACE_Y } from "./scene/world";

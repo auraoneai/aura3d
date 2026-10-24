@@ -1,6 +1,6 @@
 // apps/aura-clash-showcase/art/direction.ts — C-35 art direction (PRD-14 §6.9.3).
 // Fantasy: rain-soaked neon rooftop street fight, 2.5D.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "aura-clash-showcase",

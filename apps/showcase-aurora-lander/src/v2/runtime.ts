@@ -1,6 +1,6 @@
 // Site flow + grading + sim tick + control edges — extracted from boot.ts for 14-LOC.
 import { game as engineGame, createMeshSurfaceQuery, type GameInputController, type MeshSurfaceQuery, type SurfaceSample } from "@aura3d/engine";
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 import { SITES, campaignScore, type LanderSite } from "../gameplay/sites";
 import { createLanderState, gustTelegraphActive, hspeedOf, stepLander, type Controls, type LanderState } from "../gameplay/lander";
 import { sampleGridHeight } from "../gameplay/terrain";

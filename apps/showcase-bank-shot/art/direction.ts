@@ -1,6 +1,6 @@
 // apps/showcase-bank-shot/art/direction.ts — C-35 art direction (PRD-14 §6.9.1).
 // Fantasy: late-night pool hall, one warm lamp over felt, the room falls into darkness.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-bank-shot",

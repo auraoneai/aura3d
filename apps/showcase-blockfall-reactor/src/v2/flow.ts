@@ -1,5 +1,5 @@
 // Event wiring — extracted from boot.ts for 14-LOC.
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 import { DEFAULT_SEED, HIDDEN_ROWS, VISIBLE_HEIGHT, pieceCells, type BlockfallState } from "../gameplay/rules";
 import type { BlockfallAudioCue } from "../gameplay/blockfall-audio-manifest";
 import type { createClearFx } from "../legacy/clear-fx";

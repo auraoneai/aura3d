@@ -231,6 +231,10 @@ export default {
   },
   resolve: {
     alias: [
+      { find: /^@aura3d\\/engine\\/game\\/art$/, replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "art", "index.ts"))} },
+      { find: /^@aura3d\\/engine\\/game\\/capture$/, replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "capture", "index.ts"))} },
+      { find: /^@aura3d\\/engine\\/game\\/util$/, replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "util", "index.ts"))} },
+      { find: /^@aura3d\\/engine\\/game\\/styles\\.css$/, replacement: ${JSON.stringify(path.join(repoRoot, "packages", "game", "src", "styles.css"))} },
       { find: /^@aura3d\\/engine\\/game$/, replacement: ${JSON.stringify(gamePackageEntry)} },
       { find: /^@aura3d\\/game$/, replacement: ${JSON.stringify(gamePackageEntry)} },
       { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(enginePublicEntry)} },

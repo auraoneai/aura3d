@@ -92,7 +92,8 @@ trap cleanup_ctx EXIT
 
 echo "== staging context in ${CTX}"
 rsync -a package.json pnpm-lock.yaml pnpm-workspace.yaml \
-        playwright.config.ts tsconfig.base.json index.html favicon.svg "$CTX/"
+        playwright.config.ts tsconfig.base.json index.html favicon.svg \
+        vite.config.ts vite.aliases.generated.ts tsconfig.paths.generated.json "$CTX/"
 rsync -a patches "$CTX/"
 # public/ mirrors at the origin root in the dev server (vite contract) —
 # /aura-environments/*.manifest.json are lazily fetched by the engine.
@@ -119,7 +120,9 @@ else
 fi
 rsync -a examples "$CTX/"
 # EXTRA_DIRS: space-separated repo-relative dirs (e.g. apps/showcase-foo) the spec serves through the dev server.
-mkdir -p "$CTX/apps" "$CTX/src"
+mkdir -p "$CTX/apps"
+rsync -a src "$CTX/"
+rsync -aR assets/packs "$CTX/"
 for extra in ${EXTRA_DIRS:-}; do rsync -aR --exclude node_modules --exclude dist "$extra" "$CTX/"; done
 mkdir -p "$CTX/tools"
 rsync -a tools/naming-taxonomy tools/remote-acr tools/crayon-capture "$CTX/tools/"

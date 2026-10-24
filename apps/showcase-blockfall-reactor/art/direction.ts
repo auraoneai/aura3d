@@ -1,7 +1,7 @@
 // apps/showcase-blockfall-reactor/art/direction.ts — C-35 art direction (PRD-14 §6.9.16).
 // Fantasy: falling-blocks cabinet in a living arcade — jewel tiles catch
 // reflections, clears detonate.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-blockfall-reactor",

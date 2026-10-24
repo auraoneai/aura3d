@@ -8,7 +8,7 @@
 // prediction/ghost) are unchanged; audio plays through the legacy cue
 // controller until C-25 lands (standIn R-14-09).
 import { game as engineGame, createMeshSurfaceQuery, scene, type AuraCameraPose, type GameInputController, type MeshSurfaceQuery, type SurfaceSample } from "@aura3d/engine";
-import { createGame, type Game, lookManifest } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/engine/game";
 import { SITES, campaignScore, type LanderSite } from "../gameplay/sites";
 import { sampleGridHeight, type TerrainField } from "../gameplay/terrain";
 import {

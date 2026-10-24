@@ -4,7 +4,7 @@
 // (table/ball-flow/flippers/plunger/missions/scoring) are unchanged; audio
 // plays through the legacy cue map until C-25 game-sfx is real (standIn R-14-09).
 import { scene } from "@aura3d/engine";
-import { createGame, type Game, lookManifest } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/engine/game";
 import { createTableSimulation, quatToEuler } from "../gameplay/table";
 import { VaultFlow } from "../gameplay/ball-flow";
 import { FlipperController } from "../gameplay/flippers";

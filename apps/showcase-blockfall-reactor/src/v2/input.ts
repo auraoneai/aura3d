@@ -1,6 +1,6 @@
 // Input map + DAS repeat + touch zones — extracted from boot.ts for 14-LOC.
 import { game as engineGame, type GameInputController } from "@aura3d/engine";
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 import type { BlockfallCtx } from "./state";
 
 export function createBlockfallInput(): GameInputController {

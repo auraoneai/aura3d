@@ -1,7 +1,7 @@
 // Node/HUD sync family — extracted from boot.ts for 14-LOC. Functions moved
 // verbatim; they share `ctx` plus the deps below.
 import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 import {
   ACTIVE_FOCUS_NODE_ID, BEAT_NODE_IDS, CLEAR_WAVE_NODE_ID, DROP_GUIDE_NODE_ID,
   HIDDEN_BLOCK_SCALE, BLOCK_SCALE, ACTIVE_BLOCK_SCALE, GHOST_BLOCK_SCALE,

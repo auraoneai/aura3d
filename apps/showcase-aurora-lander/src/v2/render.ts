@@ -1,6 +1,6 @@
 // Render sync (aurora bands / pad lights / HUD) — extracted from boot.ts for 14-LOC.
 import type { AuraRuntimeNodeHandle } from "@aura3d/engine";
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 import { SITES, campaignScore } from "../gameplay/sites";
 import { LANDER_MAX_HULL } from "../gameplay/touchdown";
 import { sampleGridHeight } from "../gameplay/terrain";

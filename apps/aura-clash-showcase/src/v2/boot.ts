@@ -5,7 +5,7 @@
 // glue, HUD and evidence. The kept src/gameplay/** modules (combat data,
 // clip maps, secondary motion, replay) back the content wave; the shell
 // keeps positions/facing on the UBC rigs until clip playback lands.
-import { createGame, lookManifest } from "@aura3d/game";
+import { createGame, lookManifest } from "@aura3d/engine/game";
 import { camera, createFightingGameKit, scene } from "@aura3d/engine";
 import type { FightingGameSnapshot } from "@aura3d/engine";
 import { auraClashEnvironment, auraClashLights } from "./scene/lighting";

@@ -4,7 +4,7 @@
 // are unchanged (rules/racks/table/cue/ball-visuals); audio plays through the
 // existing route samples until C-25 game-sfx is real (standIn R-14-09).
 import { scene } from "@aura3d/engine";
-import { createGame, type Game, lookManifest } from "@aura3d/game";
+import { createGame, type Game, lookManifest } from "@aura3d/engine/game";
 import { CueController, AIM_STEP, SPIN_STEP } from "../gameplay/cue";
 import { RulesEngine } from "../gameplay/rules";
 import {

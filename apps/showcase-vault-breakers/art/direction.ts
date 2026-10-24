@@ -1,7 +1,7 @@
 // apps/showcase-vault-breakers/art/direction.ts — C-35 art direction (PRD-14 §6.9.5).
 // Fantasy: heist-themed pinball cabinet in a dark arcade — chrome ball, lit
 // inserts, printed playfield.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-vault-breakers",

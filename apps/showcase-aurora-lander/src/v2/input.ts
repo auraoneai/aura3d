@@ -1,6 +1,6 @@
 // Input map + timed flight controls + touch zones — extracted for 14-LOC.
 import { game as engineGame, type GameInputController } from "@aura3d/engine";
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 export type TimedFlightControl = "thrust" | "left" | "right";
 
 const FIXED_DT = 1 / 60;

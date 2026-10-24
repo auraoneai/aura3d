@@ -10,21 +10,6 @@ const repoRoot = path.resolve(appDir, "..", "..");
 const sharedPublicDir = path.join(repoRoot, "public");
 const appPublicDir = path.resolve(appDir, "public");
 
-// Same alias discipline as showcase-cross-hop / showcase-iron-crown:
-// `@aura3d/engine/game` needs a local-src entry because the root generated
-// alias maps bare `@aura3d/engine` to packages/engine/src/public/index.ts,
-// and its prefix match would otherwise rewrite `@aura3d/engine/game` to
-// `public/index.ts/game` (ENOTDIR). tsconfig paths map these specifiers to
-// packages/game/src — mirror that here. Subpath finds precede the bare
-// specifier — Vite prefix-matches in order.
-const gameAlias = [
-  { find: "@aura3d/engine/game/capture", replacement: path.join(repoRoot, "packages/game/src/capture/index.ts") },
-  { find: "@aura3d/engine/game/util", replacement: path.join(repoRoot, "packages/game/src/util/index.ts") },
-  { find: "@aura3d/engine/game/art", replacement: path.join(repoRoot, "packages/game/src/art/index.ts") },
-  { find: "@aura3d/engine/game", replacement: path.join(repoRoot, "packages/game/src/index.ts") },
-  { find: "@aura3d/game/art", replacement: path.join(repoRoot, "packages/game/src/art/index.ts") },
-  { find: "@aura3d/game", replacement: path.join(repoRoot, "packages/game/src/index.ts") }
-];
 const baseAlias = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
 
 // The facade keeps `backdrop`/NPC refs in the shared repo catalog, whose
@@ -70,7 +55,7 @@ const serveSharedAuraAssets: Plugin = {
 
 export default defineConfig({
   plugins: [...(rootConfig.plugins ?? []), serveSharedAuraAssets],
-  resolve: { ...rootConfig.resolve, alias: [...gameAlias, ...baseAlias] },
+  resolve: { ...rootConfig.resolve, alias: baseAlias },
   optimizeDeps: rootConfig.optimizeDeps,
   // App-local public tree: the Meshy-imported catalog lives under
   // public/aura-assets (aura.assets.json outputDir), and public/packs is a

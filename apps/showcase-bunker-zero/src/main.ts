@@ -9,9 +9,7 @@ import {
   camera, effects, game, gameFeel, lights, looks, material, model,
   primitives, scene, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
-// `@aura3d/engine/game` is missing from vite.aliases.generated (stale); the
-// app vite.config maps `@aura3d/game` -> packages/game/src/index.ts directly.
-import { createGame, sfxUrl } from "@aura3d/game";
+import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, type FloorDef } from "./maps";
 import {

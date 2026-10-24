@@ -5,7 +5,7 @@
 // Plus the lane-standard sections: loading.sceneSwaps, appliedLook parity,
 // audio cue log, touchEngaged, boardView parity, beat/clearFx proofs.
 import type { BlockfallAudioProof } from "../../gameplay/reactor-audio";
-import type { Game } from "@aura3d/game";
+import type { Game } from "@aura3d/engine/game";
 import type { ClearFxProof } from "../../legacy/clear-fx";
 import type { CameraFeelProof } from "../../legacy/camera-feel";
 

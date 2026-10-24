@@ -1,7 +1,7 @@
 // apps/showcase-aurora-lander/art/direction.ts — C-35 art direction (PRD-14 §6.9.12).
 // Fantasy: night landing on an icy moon under a moving aurora; the exhaust
 // lights the regolith.
-import { defineArtDirection } from "@aura3d/game/art";
+import { defineArtDirection } from "@aura3d/engine/game/art";
 
 export default defineArtDirection({
   id: "showcase-aurora-lander",
