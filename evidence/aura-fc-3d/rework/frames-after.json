@@ -1,0 +1,228 @@
+{
+ "kick-0": {
+  "i": 0,
+  "attempt": 0,
+  "frac": 0,
+  "clip": "KickShot",
+  "phase": 0,
+  "kickerSpeed": 2.8,
+  "pend": true,
+  "stunT": 0,
+  "ball": {
+   "x": 1,
+   "z": 0.47,
+   "y": 0.16,
+   "speed": 2.8,
+   "mode": "dribble"
+  }
+ },
+ "kick-1": {
+  "i": 1,
+  "attempt": 0,
+  "frac": 0.139,
+  "clip": "KickShot",
+  "phase": 0.084,
+  "kickerSpeed": 0.23,
+  "pend": true,
+  "stunT": 0,
+  "ball": {
+   "x": 0.71,
+   "z": 0.17,
+   "y": 0.16,
+   "speed": 0.23,
+   "mode": "dribble"
+  }
+ },
+ "kick-2": {
+  "i": 2,
+  "attempt": 0,
+  "frac": 0.279,
+  "clip": "KickShot",
+  "phase": 0.167,
+  "kickerSpeed": 0.02,
+  "pend": true,
+  "stunT": 0,
+  "ball": {
+   "x": 0.68,
+   "z": 0.02,
+   "y": 0.16,
+   "speed": 0.02,
+   "mode": "dribble"
+  }
+ },
+ "kick-3": {
+  "i": 3,
+  "attempt": 0,
+  "frac": 0.418,
+  "clip": "KickShot",
+  "phase": 0.251,
+  "kickerSpeed": 0,
+  "pend": true,
+  "stunT": 0,
+  "ball": {
+   "x": 0.68,
+   "z": -0.01,
+   "y": 0.16,
+   "speed": 0,
+   "mode": "dribble"
+  }
+ },
+ "kick-4": {
+  "i": 4,
+  "attempt": 0,
+  "frac": 0.557,
+  "clip": "KickShot",
+  "phase": 0.334,
+  "kickerSpeed": 0,
+  "pend": true,
+  "stunT": 0,
+  "ball": {
+   "x": 0.68,
+   "z": -0.01,
+   "y": 0.16,
+   "speed": 0,
+   "mode": "dribble"
+  }
+ },
+ "kick-5": {
+  "i": 5,
+  "attempt": 0,
+  "frac": 0.696,
+  "clip": "KickShot",
+  "phase": 0.418,
+  "kickerSpeed": 0,
+  "pend": true,
+  "stunT": 0,
+  "ball": {
+   "x": 0.68,
+   "z": -0.01,
+   "y": 0.16,
+   "speed": 0,
+   "mode": "dribble"
+  }
+ },
+ "kick-6": {
+  "i": 6,
+  "attempt": 0,
+  "frac": 0.836,
+  "clip": "KickShot",
+  "phase": 0.501,
+  "kickerSpeed": 3.04,
+  "pend": false,
+  "stunT": 0,
+  "ball": {
+   "x": 0.1,
+   "z": -0.01,
+   "y": 0.31,
+   "speed": 17.54,
+   "mode": "flight"
+  }
+ },
+ "kick-7": {
+  "i": 7,
+  "attempt": 0,
+  "frac": 0.975,
+  "clip": "Run",
+  "phase": 0.019,
+  "kickerSpeed": 5.18,
+  "pend": false,
+  "stunT": 0,
+  "ball": {
+   "x": -0.78,
+   "z": -0.01,
+   "y": 0.52,
+   "speed": 17.45,
+   "mode": "flight"
+  }
+ },
+ "kick-8": {
+  "i": 8,
+  "attempt": 0,
+  "frac": 1,
+  "clip": "Sprint_Loop",
+  "phase": 0.433,
+  "kickerSpeed": 6.03,
+  "pend": false,
+  "stunT": 0,
+  "ball": {
+   "x": -1.65,
+   "z": -0.01,
+   "y": 0.7,
+   "speed": 17.36,
+   "mode": "flight"
+  }
+ },
+ "kick-9": {
+  "i": 9,
+  "attempt": 0,
+  "frac": 1,
+  "clip": "Sprint_Loop",
+  "phase": 0.478,
+  "kickerSpeed": 6.37,
+  "pend": false,
+  "stunT": 0,
+  "ball": {
+   "x": -2.51,
+   "z": -0.01,
+   "y": 0.86,
+   "speed": 17.28,
+   "mode": "flight"
+  }
+ },
+ "run-0": {
+  "i": 0,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.145
+ },
+ "run-1": {
+  "i": 1,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.193
+ },
+ "run-2": {
+  "i": 2,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.241
+ },
+ "run-3": {
+  "i": 3,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.29
+ },
+ "run-4": {
+  "i": 4,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.338
+ },
+ "run-5": {
+  "i": 5,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.386
+ },
+ "run-6": {
+  "i": 6,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.434
+ },
+ "run-7": {
+  "i": 7,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0.002
+ }
+}

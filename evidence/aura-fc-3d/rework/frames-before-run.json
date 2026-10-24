@@ -1,0 +1,58 @@
+{
+ "run-0": {
+  "i": 0,
+  "id": "a-mf",
+  "speed": 6.34,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ },
+ "run-1": {
+  "i": 1,
+  "id": "a-mf",
+  "speed": 6.5,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ },
+ "run-2": {
+  "i": 2,
+  "id": "a-mf",
+  "speed": 6.56,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ },
+ "run-3": {
+  "i": 3,
+  "id": "a-mf",
+  "speed": 6.58,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ },
+ "run-4": {
+  "i": 4,
+  "id": "a-mf",
+  "speed": 6.59,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ },
+ "run-5": {
+  "i": 5,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ },
+ "run-6": {
+  "i": 6,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ },
+ "run-7": {
+  "i": 7,
+  "id": "a-mf",
+  "speed": 6.6,
+  "clip": "Sprint_Loop",
+  "phase": 0
+ }
+}
