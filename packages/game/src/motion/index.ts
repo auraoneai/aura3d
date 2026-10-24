@@ -13,3 +13,7 @@ export { attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDi
 export type { BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment } from "./boneAttach";
 export { checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend } from "./doubleFrame";
 export type { DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport } from "./doubleFrame";
+export { createFixedStepPresenter, createRecordBlend } from "./presenter";
+export type { AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions } from "./presenter";
+export { runMotionGate } from "./motionGate";
+export type { MotionGateOptions, MotionGateReport } from "./motionGate";
