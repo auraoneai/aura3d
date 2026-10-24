@@ -120,7 +120,7 @@ function repoSourceIndex(repoRoot) {
   const raw = execFileSync("git", ["ls-files", "-z", "--", ...FORBIDDEN_ROOTS], { cwd: repoRoot, encoding: "utf8", maxBuffer: 1 << 28 });
   const index = new Map();
   for (const path of raw.split("\0")) {
-    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/")) continue;
+    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/") || path.startsWith("evidence/agent-eval/")) continue;
     const name = basename(path);
     if (!index.has(name)) index.set(name, []);
     index.get(name).push(path);

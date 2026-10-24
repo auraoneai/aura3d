@@ -2,7 +2,7 @@
 
 Aura3D is a TypeScript engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize. Do not import `three`, write a loader or add a render loop.
 
-Read first: this page, then `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
+Read first: this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
 
 ## 1. Scaffold and run
 
@@ -95,6 +95,7 @@ Not mapped: Matcap, Lambert, Phong and Toon materials (toon is `effects.toon`, a
 | --- | --- | --- |
 | `primitives.plane({ params: { widthSegments, heightSegments } })` for a displaced surface | Reported as a single 4-vertex quad in 4.1.2 (flat result, found only by comparing frames) | Check vertex count in diagnostics; for vertex displacement build the grid with `geometry.dynamic` |
 | `interactions.orbit({ position, autoRotate })` behind `as never` | Nothing happens; `orbit` takes only `{ target?: string }`, a node **name** | Name the node, pass `target`; never cast to silence a type error |
+| `app.nodes.require("x")` on a node without `.runtime({ id: "x", mutable: true })`, then rotating it in `onFrame` | `require` throws every frame; in 4.1.3 and earlier the loop stops and the page is blank with no obvious message | Add `.runtime({ id, mutable: true })` to the node; see [`recipes.md`](recipes.md) |
 | Any `as never` / `as any` on an Aura3D call | The type error was the real answer; the call is wrong | Fix the call to match the declared options |
 | `model("robot")`, a raw `.glb` URL or `unsafeModelUrl(...)` | Fails the boundary check; in production nothing draws | `model(assets.robot)` from `src/aura-assets.ts`, with a `sha256-...` `hash` |
 | Writing `hash` or entries by hand | Wrong hash means the production bridge refuses the model | Admit with `assets add`; regenerate, do not edit |

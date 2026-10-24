@@ -292,6 +292,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   };
   registerDeclaredBodies(renderSnapshot);
   const frameCallbacks = new Set<AuraFrameCallback>();
+  const reportedFrameCallbackErrors = new Set<string>();
   let runtimePaused = options.autoStart === false;
   let runtimeFrame = 0;
   let runtimeTime = 0;
@@ -314,7 +315,19 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       substep: 1,
       substeps: 1
     };
-    for (const callback of [...frameCallbacks]) callback(frame);
+    for (const callback of [...frameCallbacks]) {
+      try {
+        callback(frame);
+      } catch (error) {
+        // A throwing callback used to unwind the frame loop: nothing was drawn again and the page stayed blank.
+        const message = `onFrame callback threw: ${error instanceof Error ? error.message : String(error)}`;
+        if (!reportedFrameCallbackErrors.has(message)) {
+          reportedFrameCallbackErrors.add(message);
+          diagnosticsState.errors.push(message);
+          if (typeof console !== "undefined") console.error(`[aura3d] ${message}`, error);
+        }
+      }
+    }
   };
   const shouldUseProductionRendererForCurrentScene = () =>
     Boolean(canvas && hasRootRenderableContent(canvas, declaresWebGLContent(renderSnapshot.nodes)) && typeof window !== "undefined");

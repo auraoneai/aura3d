@@ -42,9 +42,12 @@ function ensureBase(arm) {
   if (!existsSync(join(baseDir, "node_modules"))) {
     mkdirSync(baseDir, { recursive: true });
     const spec = manifest.bases[arm];
-    const pkg = basePackageJson(arm, { auraVersion: spec.auraVersion });
+    // Score against the same library the agents authored against: staged tarballs win over the published version.
+    const tarballs = arm === "aura" && spec.tarballs ? join(stage, spec.tarballs) : null;
+    const pkg = basePackageJson(arm, { auraVersion: spec.auraVersion, tarballs });
     writeFileSync(join(baseDir, "package.json"), JSON.stringify(pkg, null, 2));
     execFileSync("npm", ["install", "--no-audit", "--no-fund", "--loglevel=error"], { cwd: baseDir, stdio: "inherit", timeout: 600000 });
+    if (arm === "aura") emit("AGENTEVAL_BASE_SOURCE", { arm, tarballs: spec.tarballs ?? null, engine: (() => { try { return JSON.parse(readFileSync(join(baseDir, "node_modules/@aura3d/engine/package.json"), "utf8")).version; } catch { return null; } })() });
     if (arm === "aura" && spec.patch) emit("AGENTEVAL_BASE", { arm, patch: applyStockBuildPatch(join(baseDir, "node_modules")) });
   }
   return baseDir;
@@ -115,8 +118,11 @@ async function analyze(analysis, pngBuffer) {
 
 const gridDiff = (a, b) => a.grid.reduce((s, v, i) => s + Math.abs(v - b.grid[i]), 0) / a.grid.length;
 
+// Task 2 (10,000 instances) costs several seconds per frame on software GL: it is scored on a reduced canvas and frame plan.
+let HEAVY = false;
+
 async function shot(page, analysis) {
-  const png = await page.screenshot({ type: "png", timeout: 120000, clip: { x: 0, y: 0, width: 640, height: 360 }, animations: "allow" });
+  const png = await page.screenshot({ type: "png", timeout: HEAVY ? 240000 : 120000, clip: { x: 0, y: 0, width: HEAVY ? 320 : 640, height: HEAVY ? 180 : 360 }, animations: "allow" });
   return analyze(analysis, png);
 }
 
@@ -168,8 +174,8 @@ async function probes(task, page, analysis, ctx) {
   ctx.frames.push(a.jpeg);
   const cx = 320;
   const cy = 180;
-  await waitFrames(page, 6);
-  await sleep(500);
+  await waitFrames(page, HEAVY ? 2 : 6, HEAVY ? 120000 : 60000);
+  await sleep(HEAVY ? 0 : 500);
   const b = await shot(page, analysis);
   out.animatedDiff = Math.round(gridDiff(a, b) * 100) / 100;
   out.animated = out.animatedDiff > 0.2;
@@ -306,6 +312,16 @@ async function scoreSnapshot(browser, snap, baseDir) {
     const { server, port } = await serve(join(work, "dist"));
     const context = await browser.newContext({ viewport: snap.task === 6 ? { width: 800, height: 600 } : { width: 800, height: 600 }, deviceScaleFactor: 1 });
     await context.addInitScript(INIT);
+    HEAVY = snap.task === 2;
+    if (HEAVY) {
+      await context.addInitScript(() => {
+        document.addEventListener("DOMContentLoaded", () => {
+          const style = document.createElement("style");
+          style.textContent = "canvas{width:320px!important;height:180px!important}";
+          document.head.appendChild(style);
+        });
+      });
+    }
     const page = await context.newPage();
     const analysis = await context.newPage();
     await analysis.goto("about:blank");

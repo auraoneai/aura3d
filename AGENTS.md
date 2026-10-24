@@ -25,7 +25,7 @@ npx @aura3d/cli@latest assets resolve "robot" --name robot   # model(assets.robo
 npm run build && npx @aura3d/cli@latest check-deploy --dist dist
 ```
 
-Read, in order: [`llms.txt`](llms.txt) (fast path, about 2.5k tokens; long form in [`llms-full.txt`](llms-full.txt)), [`docs/agents/agent-quickstart.md`](docs/agents/agent-quickstart.md), [`docs/agents/claims-and-boundaries.md`](docs/agents/claims-and-boundaries.md). Index of everything else: [`docs/agents/README.md`](docs/agents/README.md). Whether this path really is faster than starting from three.js is measured by the cold-start trial in `evidence/agent-eval/`; until it reports, do not claim it. Comparison numbers live only in `evidence/vs-threejs/RESULTS.md` (software WebGL2, one author, five small scenes).
+Read, in order: [`llms.txt`](llms.txt) (fast path, about 2.5k tokens; long form in [`llms-full.txt`](llms-full.txt)), [`docs/agents/agent-quickstart.md`](docs/agents/agent-quickstart.md), [`docs/agents/recipes.md`](docs/agents/recipes.md) (copy a working scene for your task, then adapt it; do not start by reading `dist/`), [`docs/agents/claims-and-boundaries.md`](docs/agents/claims-and-boundaries.md). Index of everything else: [`docs/agents/README.md`](docs/agents/README.md). Whether this path really is faster than starting from three.js is measured by the cold-start trial in `evidence/agent-eval/`; until it reports, do not claim it. Comparison numbers live only in `evidence/vs-threejs/RESULTS.md` (software WebGL2, one author, five small scenes).
 
 Inside this monorepo, browsers, Playwright and heavy builds run on the remote runner (`tools/remote-acr/run.sh`); never local Docker or local Playwright.
 

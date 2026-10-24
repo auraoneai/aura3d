@@ -7,13 +7,13 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * G3 render parity for the native Aura Slam scene (remote only; software WebGL2 under Xvfb).
  * Renders each venue from the render-only harness, logs frame metrics as `SLAMR_METRICS <json>`, asserts structural
  * sanity (non-blank, no console errors, draw calls within the 150 budget) and, when the committed live-game reference
- * (evidence/aura-slam/frames-reference.json) is present, the parity thresholds:
+ * (evidence/aura-slam/frames-reference.json, or a staged tests/browser/aura-slam-frames-reference.json) has a row for the venue, the parity thresholds:
  * luma/RGB histogram JSD <= 0.05, edge-density ratio 0.9..1.1, mean luma delta <= 4.
  * Remote run: SPECS="@headed-xvfb tests/browser/aura-slam-render.spec.ts" PUBLIC_ASSETS="showcaseStadiumSeats.afb44897.glb rooftopScoreboardRigMeshy.866123b7.glb rooftopFloodlightTowerMeshy.1bfcdd0b.glb" tools/remote-acr/run.sh
  */
 const VENUES = ["hard", "grass", "clay", "desert", "beach", "moon"] as const;
 const SIZES = [{ width: 1280, height: 720 }, { width: 640, height: 360 }] as const;
-const REFERENCE_PATH = "evidence/aura-slam/frames-reference.json";
+const REFERENCE_PATH = ["evidence/aura-slam/frames-reference.json", "tests/browser/aura-slam-frames-reference.json"].find((f) => existsSync(f)) ?? "evidence/aura-slam/frames-reference.json";
 
 interface RefFrame { venue?: string; width?: number; height?: number; stats?: ImageStats; metrics?: ImageStats }
 
@@ -91,7 +91,8 @@ test.describe("aura-slam render parity (G3)", () => {
         expect(drawCalls ?? 0, `${venue} draw calls`).toBeLessThanOrEqual(150);
       }
     }
-    console.log(`SLAMR_REFERENCE ${reference.length > 0 ? "compared" : "pending (evidence/aura-slam/frames-reference.json not present)"}`);
+    const matched = results.filter((r) => r.lumaJsd !== undefined).length;
+    console.log(`SLAMR_REFERENCE ${reference.length === 0 ? "pending (frames-reference.json not present)" : matched > 0 ? `compared ${matched}/${results.length} rows` : "present but matched 0 rows: its frames are keyed by predicate name, not venue, so no threshold was applied (use native-vs-live-metrics.json for G3)"}`);
     expect(errors.filter((e) => !/favicon/.test(e))).toEqual([]);
     expect(results.length).toBe(VENUES.length * SIZES.length);
   });

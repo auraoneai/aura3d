@@ -1,0 +1,59 @@
+{
+ "reference_vs_quantized": {
+  "ninja-runner/run120.png": {
+   "shape": [
+    270,
+    480,
+    3
+   ],
+   "mean_abs_diff_0_255": 0.2292,
+   "max_abs_diff": 168,
+   "pct_pixels_diff_gt2": 0.392,
+   "pct_pixels_diff_gt8": 0.1806,
+   "mean_luma_ref": 89.474,
+   "mean_luma_new": 89.49
+  },
+  "silt-and-signal/rings.png": {
+   "shape": [
+    270,
+    480,
+    3
+   ],
+   "mean_abs_diff_0_255": 0.0744,
+   "max_abs_diff": 50,
+   "pct_pixels_diff_gt2": 0.3943,
+   "pct_pixels_diff_gt8": 0.0363,
+   "mean_luma_ref": 76.441,
+   "mean_luma_new": 76.442
+  }
+ },
+ "reference_vs_reference_noise_floor": {
+  "ninja-runner/run120.png": {
+   "shape": [
+    270,
+    480,
+    3
+   ],
+   "mean_abs_diff_0_255": 0.2262,
+   "max_abs_diff": 167,
+   "pct_pixels_diff_gt2": 0.3889,
+   "pct_pixels_diff_gt8": 0.2045,
+   "mean_luma_ref": 89.474,
+   "mean_luma_new": 89.455
+  },
+  "silt-and-signal/rings.png": {
+   "shape": [
+    270,
+    480,
+    3
+   ],
+   "mean_abs_diff_0_255": 0.0,
+   "max_abs_diff": 0,
+   "pct_pixels_diff_gt2": 0.0,
+   "pct_pixels_diff_gt8": 0.0,
+   "mean_luma_ref": 76.441,
+   "mean_luma_new": 76.441
+  }
+ },
+ "setup": "neutral-embedded-blocked.spec.ts, 480x270, software WebGL2 (SwiftShader) on serverless ACR; reference = origin/main 1a5f1ebb9 (full-precision embed); quantized = this change; second reference run measures run-to-run noise."
+}

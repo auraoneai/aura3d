@@ -133,4 +133,22 @@ describe("agent-eval scoring", () => {
     cpSync(stage, join(repo, "copy"), { recursive: true });
     rmSync(repo, { recursive: true, force: true });
   });
+  it("stages the packed tarballs a batch was authored against so remote scoring installs the same library", () => {
+    const repo = mkdtempSync(join(tmpdir(), "agent-eval-tgz-"));
+    const tarballs = join(repo, "tarballs-src");
+    mkdirSync(tarballs, { recursive: true });
+    writeFileSync(join(tarballs, "aura3d-engine-4.1.2.tgz"), "x");
+    writeFileSync(join(tarballs, "notes.txt"), "ignored");
+    const runs = join(repo, "evidence/agent-eval/b/runs/r");
+    mkdirSync(join(runs, "snapshots/final/src"), { recursive: true });
+    writeFileSync(join(runs, "snapshots/final/src/main.ts"), "A");
+    writeFileSync(join(runs, "run.json"), JSON.stringify({ runId: "r", arm: "aura", task: 1, draftIsFinal: true }));
+    writeFileSync(join(repo, "evidence/agent-eval/b/plan.json"), JSON.stringify({ args: { auraTarballs: tarballs } }));
+    const { manifest, stage } = stageBatch({ repoRoot: repo, batch: "b", stageRoot: join(repo, "stage") });
+    expect(manifest.bases.aura.tarballs).toBe("tarballs");
+    expect(manifest.bases.aura.patch).toBe(false);
+    expect(existsSync(join(stage, "tarballs/aura3d-engine-4.1.2.tgz"))).toBe(true);
+    expect(existsSync(join(stage, "tarballs/notes.txt"))).toBe(false);
+    rmSync(repo, { recursive: true, force: true });
+  });
 });
