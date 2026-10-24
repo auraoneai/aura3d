@@ -44,6 +44,7 @@ import {
   installGameBeacon
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
+import { createRealtimeHitStop } from "./hitStop";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
@@ -1044,7 +1045,8 @@ let fxCtl: ReturnType<typeof game.effects> | null = null;
 let touchControls: any = null;
 let reducedMotion = false;
 let reducedFlash = false;
-let hitStopUntil = 0;
+// Real-time hit-stop: counts down on the raw frame delta, never on game time (game time stands still while frozen).
+const hitStop = createRealtimeHitStop();
 let jamFlashT = 0;
 
 const JUICE_EVENTS: Record<string, { fx?: { kind: any; count?: number; color?: string; speed?: number }; cue?: string; shake?: number; punch?: { fovDeg?: number; dolly?: number; ms?: number }; hitStop?: number; flash?: { color: string; peak: number; ms: number }; rumble?: { ms: number; strong?: number; weak?: number } }> = {
@@ -1137,7 +1139,7 @@ function setupSystems(): void {
     session: {
       reducedMotion,
       reducedFlash,
-      hitStop: (seconds: number) => { hitStopUntil = game_.time + seconds; },
+      hitStop: (seconds: number) => { hitStop.trigger(seconds); },
       slowMo: () => { /* sessionless route */ }
     } as any,
     fx,
@@ -2777,8 +2779,7 @@ function publishEvidence(): void {
  *  Main loop                                                          *
  * ------------------------------------------------------------------ */
 function frame(dtRaw: number): void {
-  const now = game_.time;
-  const frozen = hitStopUntil > now;
+  const frozen = hitStop.advance(dtRaw);
   const dt = frozen ? 0 : clamp(dtRaw, 1 / 240, 0.05);
   game_.time += dt;
   if (game_.phase === "live" || game_.phase === "shot") game_.matchT += dt;
