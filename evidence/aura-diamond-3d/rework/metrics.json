@@ -1,0 +1,714 @@
+{
+ "note": "software WebGL2 (SwiftShader), remote ACR; run 4 = before the pose-format fix, runs 8 and 9 = after",
+ "run4_before": {
+  "samples": [
+   {
+    "label": "boot",
+    "swing": {
+     "phase": "stance",
+     "t": 0
+    },
+    "bat": {
+     "socketStage": "attached",
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": null
+    }
+   },
+   {
+    "label": "stance",
+    "swing": {
+     "phase": "stance",
+     "t": 0
+    },
+    "bat": {
+     "socketStage": "attached",
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": null
+    }
+   },
+   {
+    "label": "swing-0",
+    "swing": {
+     "phase": "load",
+     "t": 0.06
+    },
+    "bat": {
+     "socketStage": "attached",
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": null
+    }
+   },
+   {
+    "label": "swing-1",
+    "swing": {
+     "phase": "load",
+     "t": 0.119
+    },
+    "bat": {
+     "socketStage": "attached",
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": null
+    }
+   },
+   {
+    "label": "swing-2",
+    "swing": {
+     "phase": "load",
+     "t": 0.179
+    },
+    "bat": {
+     "socketStage": "attached",
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": null
+    }
+   },
+   {
+    "label": "swing-3",
+    "swing": {
+     "phase": "follow-through",
+     "t": 0.702
+    },
+    "bat": {
+     "socketStage": "attached",
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": null
+    }
+   }
+  ],
+  "note": "Before the fix the bat socket reported attached and setAnimationPose reported applied, but the arms never moved (see before-*.jpg). The grip metric did not exist yet in this run."
+ },
+ "run8_after": {
+  "samples": [
+   {
+    "label": "boot",
+    "swing": {
+     "phase": "stance",
+     "t": 0,
+     "sweetVelocity": [
+      -0.02,
+      19.01,
+      0
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.931
+    }
+   },
+   {
+    "label": "stance",
+    "swing": {
+     "phase": "stance",
+     "t": 0,
+     "sweetVelocity": [
+      0.01,
+      0.01,
+      -0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.033
+    }
+   },
+   {
+    "label": "swing-0",
+    "swing": {
+     "phase": "load",
+     "t": 0.06,
+     "sweetVelocity": [
+      0.21,
+      0.05,
+      0.42
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.033
+    }
+   },
+   {
+    "label": "swing-1",
+    "swing": {
+     "phase": "load",
+     "t": 0.119,
+     "sweetVelocity": [
+      0.33,
+      -0.04,
+      1.36
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.034
+    }
+   },
+   {
+    "label": "swing-2",
+    "swing": {
+     "phase": "load",
+     "t": 0.179,
+     "sweetVelocity": [
+      0.22,
+      -0.09,
+      1.41
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.036
+    }
+   },
+   {
+    "label": "swing-3",
+    "swing": {
+     "phase": "follow-through",
+     "t": 0.702,
+     "sweetVelocity": [
+      -2.1,
+      4.82,
+      0.81
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.028
+    }
+   },
+   {
+    "label": "swing-4",
+    "swing": {
+     "phase": "follow-through",
+     "t": 0.758,
+     "sweetVelocity": [
+      -21.94,
+      6.2,
+      16.47
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.026
+    }
+   },
+   {
+    "label": "swing-5",
+    "swing": {
+     "phase": "recover",
+     "t": 1,
+     "sweetVelocity": [
+      0.52,
+      -0.36,
+      0.83
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.146
+    }
+   },
+   {
+    "label": "swing-6",
+    "swing": {
+     "phase": "recover",
+     "t": 1,
+     "sweetVelocity": [
+      2.18,
+      0.26,
+      1.88
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.145
+    }
+   },
+   {
+    "label": "swing-7",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.01,
+      0,
+      0.02
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.029
+    }
+   },
+   {
+    "label": "swing-8",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      0,
+      -0.01,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.029
+    }
+   },
+   {
+    "label": "swing-9",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.02,
+      -0.01,
+      0.02
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   },
+   {
+    "label": "swing-10",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.01,
+      0,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   },
+   {
+    "label": "swing-11",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      0,
+      -0.01,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   },
+   {
+    "label": "after",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.02,
+      -0.02,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   }
+  ],
+  "contacts": [
+   {
+    "lastContact": {
+     "normal": [
+      -0.255,
+      -0.49,
+      -0.833
+     ],
+     "sprayDeg": -38.7,
+     "launchDeg": -4,
+     "normalBatSpeed": 19.1,
+     "blendedSprayDeg": -17.9,
+     "blendedLaunchDeg": 14.2
+    },
+    "sweetVelocity": [
+     2.45,
+     1.16,
+     -5.65
+    ],
+    "exitVelo": 116.6,
+    "launchDeg": 14.2,
+    "grade": "PERFECT",
+    "knobToPalm": 0.095
+   }
+  ]
+ },
+ "run9_after": {
+  "samples": [
+   {
+    "label": "boot",
+    "swing": {
+     "phase": "stance",
+     "t": 0,
+     "sweetVelocity": [
+      -0.02,
+      19.01,
+      0
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.931
+    }
+   },
+   {
+    "label": "stance",
+    "swing": {
+     "phase": "stance",
+     "t": 0,
+     "sweetVelocity": [
+      0.01,
+      0.01,
+      -0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.033
+    }
+   },
+   {
+    "label": "swing-0",
+    "swing": {
+     "phase": "load",
+     "t": 0.06,
+     "sweetVelocity": [
+      0.21,
+      0.05,
+      0.42
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.033
+    }
+   },
+   {
+    "label": "swing-1",
+    "swing": {
+     "phase": "load",
+     "t": 0.119,
+     "sweetVelocity": [
+      0.33,
+      -0.04,
+      1.36
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.049
+    }
+   },
+   {
+    "label": "swing-2",
+    "swing": {
+     "phase": "load",
+     "t": 0.179,
+     "sweetVelocity": [
+      0.22,
+      -0.09,
+      1.41
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.061
+    }
+   },
+   {
+    "label": "swing-3",
+    "swing": {
+     "phase": "follow-through",
+     "t": 0.702,
+     "sweetVelocity": [
+      -2.1,
+      4.82,
+      0.81
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.105
+    }
+   },
+   {
+    "label": "swing-4",
+    "swing": {
+     "phase": "follow-through",
+     "t": 0.758,
+     "sweetVelocity": [
+      -21.94,
+      6.2,
+      16.47
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.089
+    }
+   },
+   {
+    "label": "swing-5",
+    "swing": {
+     "phase": "recover",
+     "t": 1,
+     "sweetVelocity": [
+      0.52,
+      -0.36,
+      0.83
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.146
+    }
+   },
+   {
+    "label": "swing-6",
+    "swing": {
+     "phase": "recover",
+     "t": 1,
+     "sweetVelocity": [
+      2.18,
+      0.26,
+      1.88
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.145
+    }
+   },
+   {
+    "label": "swing-7",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.01,
+      0,
+      0.02
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   },
+   {
+    "label": "swing-8",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      0,
+      -0.01,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.029
+    }
+   },
+   {
+    "label": "swing-9",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.02,
+      -0.01,
+      0.02
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   },
+   {
+    "label": "swing-10",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.01,
+      0,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   },
+   {
+    "label": "swing-11",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      0,
+      -0.01,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   },
+   {
+    "label": "after",
+    "swing": {
+     "phase": "stance",
+     "t": 1,
+     "sweetVelocity": [
+      -0.02,
+      -0.02,
+      0.03
+     ]
+    },
+    "bat": {
+     "socketStage": "attached",
+     "socketError": null,
+     "poseApplied": true,
+     "poseError": null,
+     "gripKnobToPalmM": 0.03
+    }
+   }
+  ],
+  "contacts": [
+   {
+    "lastContact": {
+     "normal": [
+      -0.253,
+      -0.605,
+      -0.755
+     ],
+     "sprayDeg": -52.6,
+     "launchDeg": -4,
+     "normalBatSpeed": 18,
+     "blendedSprayDeg": -11,
+     "blendedLaunchDeg": 23.4
+    },
+    "sweetVelocity": [
+     5.66,
+     0.86,
+     -9.68
+    ],
+    "exitVelo": 116.6,
+    "launchDeg": 23.4,
+    "grade": "PERFECT",
+    "knobToPalm": 0.444
+   }
+  ]
+ }
+}
