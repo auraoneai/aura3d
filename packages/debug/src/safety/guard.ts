@@ -1,11 +1,13 @@
 import { createBlackFrameWatch, findWorldCanvas, healRungName, type BlackFrameWatch, type HealRung, type WatchObservation } from "./blackFrame.js";
+import { installFrameTap } from "./frameTap.js";
 
 /**
  * Black-frame guard for pages that run on the engine's `a3d-qr` URL flag list (the showcase games). It installs once,
- * before the app starts drawing, wraps `requestAnimationFrame` so the world canvas is sampled right after each frame
- * callback (same task, before the browser composites), and reloads one rung down when the canvas stays black. It is a
- * thin shell around `createBlackFrameWatch`: readiness gating, black-versus-dark detection, once-per-load stepping and
- * the recorded reason all live there.
+ * before the app starts drawing. By default it taps the WebGL draw calls (`installFrameTap`) so the world canvas is
+ * sampled in the same task that drew it, before the browser composites: a canvas without `preserveDrawingBuffer` reads as
+ * zeros anywhere else, which is how an earlier version reloaded healthy games. It reloads one rung down when the canvas
+ * stays black. It is a thin shell around `createBlackFrameWatch`: readiness gating, black-versus-dark detection,
+ * once-per-load stepping and the recorded reason all live there.
  *
  * `?heal=0` disables it; an `a3d-qr` supplied in the URL by the author or player is never rewritten.
  */
@@ -60,8 +62,16 @@ export interface BlackFrameGuardOptions {
   readonly isReady?: () => boolean;
   /** Engine draw calls for the current frame; when given and not > 0 the frame is not judged. */
   readonly getDrawCalls?: () => number | undefined;
-  /** Which canvas to judge. Defaults to the largest non-HUD canvas on the page. */
+  /** Which canvas to judge. Defaults to the largest canvas that was drawn to (never a minimap or HUD canvas). */
   readonly canvas?: () => HTMLCanvasElement | null | undefined;
+  /**
+   * How frames are observed. `draw` (default) samples in the task of each GL draw to the default framebuffer.
+   * `raf` samples after every animation-frame callback (non-WebGL pages and tests; unreliable for WebGL canvases
+   * created without `preserveDrawingBuffer`).
+   */
+  readonly sampling?: "draw" | "raf";
+  /** Tests only: forwarded to `installFrameTap` (fake GL prototypes, a fake microtask queue). */
+  readonly tap?: { readonly prototypes?: readonly object[]; readonly enqueue?: (fn: () => void) => void };
   /** Test hooks forwarded to the watch (clock, probe, storage, navigation, logging). */
   readonly watch?: Partial<Pick<Parameters<typeof createBlackFrameWatch>[1], "now" | "readProbe" | "storage" | "navigate" | "log" | "isHidden" | "currentUrl" | "minBlackMs" | "blackFramesBudget" | "minFramesAfterReady" | "sampleEvery" | "samplesNeeded">>;
 }
@@ -73,7 +83,8 @@ export function installBlackFrameGuard(options: BlackFrameGuardOptions = {}): Bl
   const params = new URLSearchParams(location.search);
   const enabled = options.enabled ?? params.get("heal") !== "0";
   const key = `aura3d-heal:${location.pathname}`;
-  const watch = createBlackFrameWatch(options.canvas ?? (() => findWorldCanvas()), {
+  let worldCanvas: () => HTMLCanvasElement | undefined = () => undefined;
+  const watch = createBlackFrameWatch(options.canvas ?? (() => worldCanvas() ?? findWorldCanvas()), {
     enabled,
     ladder: QR_RUNGS,
     storageKey: key,
@@ -85,6 +96,17 @@ export function installBlackFrameGuard(options: BlackFrameGuardOptions = {}): Bl
   });
   window.__AURA3D_HEAL__ = { rung: watch.stage, name: qrHealRungName(watch.stage), enabled, observation: () => watch.observation() };
   if (!enabled) return watch;
+  if ((options.sampling ?? "draw") === "draw") {
+    const tap = installFrameTap({
+      ...(options.tap ?? {}),
+      onFrame: (canvas) => {
+        const target = options.canvas?.() ?? tap.worldCanvas();
+        if (target && canvas === target) watch.sample(canvas);
+      }
+    });
+    worldCanvas = () => tap.worldCanvas();
+    return watch;
+  }
   const originalRaf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = (callback: FrameRequestCallback): number =>
     originalRaf((time) => {

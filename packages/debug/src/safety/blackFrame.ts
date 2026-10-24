@@ -217,8 +217,11 @@ export interface BlackFrameWatchOptions {
 }
 
 export interface BlackFrameWatch {
-  /** Call right after a frame was drawn, in the same task (before the browser composites it). The argument is unused and kept for compatibility. */
-  sample(framesDrawn?: number): void;
+  /**
+   * Call right after a frame was drawn, in the same task (before the browser composites it). Pass the canvas that was just
+   * drawn when it is known (the frame tap does); a number (a frame counter) is accepted and ignored for compatibility.
+   */
+  sample(drawn?: HTMLCanvasElement | number): void;
   readonly stage: number;
   readonly rung: string;
   /** True once the watch decided to reload one rung down. */
@@ -322,7 +325,7 @@ export function createBlackFrameWatch(canvas: HTMLCanvasElement | (() => HTMLCan
         reason
       };
     },
-    sample(): void {
+    sample(drawn?: HTMLCanvasElement | number): void {
       const t = now();
       if (lastTime !== undefined && t >= lastTime) {
         deltas.push(t - lastTime);
@@ -356,7 +359,7 @@ export function createBlackFrameWatch(canvas: HTMLCanvasElement | (() => HTMLCan
         resetStreak();
         return;
       }
-      const target = typeof canvas === "function" ? canvas() : canvas;
+      const target = drawn !== undefined && typeof drawn === "object" ? drawn : typeof canvas === "function" ? canvas() : canvas;
       if (!target) return;
       let stats: FrameStats;
       try {

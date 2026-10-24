@@ -33,6 +33,17 @@ A game decides what each switch changes in its own options. Parameters implied b
 
 ## Black-frame self-heal
 
+**Sampling happens in the task that drew the frame.** A WebGL canvas created without `preserveDrawingBuffer` (the default, and
+what every showcase game uses) only holds its pixels until the browser composites the frame; read from any other task it
+returns zeros. An earlier version of the guard sampled after every `requestAnimationFrame` callback, so on pages with several
+callbacks per frame, or draws from timers, healthy games read black and were reloaded two or three rungs down (found on the
+4.1.1 production build for Cross Hop, Iron Crown and Bunker Zero). `installFrameTap` fixes that: it wraps the GL draw calls
+(`drawArrays`, `drawElements`, the instanced and `WEBGL_multi_draw` forms) and, for the first draw to the default framebuffer
+in a task, queues a microtask that calls `onFrame(canvas)` after the drawing code has returned and before the browser
+composites. Draws into an offscreen framebuffer do not count. The tap never renders, never changes context attributes and
+only reports canvases of at least 128 x 96, so a minimap is never judged; the largest drawing canvas is the world view.
+`installBlackFrameGuard({ sampling: "raf" })` keeps the old behaviour for pages without WebGL draw calls.
+
 `installSafetyNet({ canvas })` (or `createBlackFrameWatch` directly) judges the canvas after each drawn frame and reloads one
 rung down the ladder (`no-aa`, `no-post`, `aces-tone`, `no-env`, `no-shadow`, `low-quality`) only when the frame is **broken**:
 the scene is drawing but the output is black. It is deliberately conservative, because a false positive reloads a healthy
@@ -41,7 +52,8 @@ page at lower quality:
 - **Ready first.** Nothing is judged until the app is ready: the document has loaded, no loading overlay is visible
   (`#boot`, `#loading`, `.loading`, `[aria-busy="true"]` and similar), no asset fetches are in flight
   (`window.__aura3dInFlightByteFetches`), and your own `isReady()` (for example the app's `ready()` promise) agrees. Frames are
-  counted from the moment the app became ready, with `rAF` frames, not wall-clock time, so a slow CPU renderer waits longer.
+  counted from the moment the app became ready, as frames the app actually drew (not wall-clock time), so a slow CPU
+  renderer waits longer.
 - **Black, not dark.** The canvas is copied to a 48x32 grid with nearest-neighbour sampling (one texel per block, so thin
   bright features are not averaged away, and any HiDPI size reads the same). A frame is black only if at most 0.2 percent of
   the samples have a colour channel above 4. A dim but valid scene, or a frame with a real HUD drawn into the canvas, is not
@@ -56,10 +68,10 @@ page at lower quality:
 
 `watch.observation()` returns what it has seen (frames, ready frame, samples, black samples, last probe statistics, skips for
 not-ready / no draw calls / hidden page, the reason). Pages that run on the engine's `a3d-qr` flag list use
-`installBlackFrameGuard()`, which wraps `requestAnimationFrame`, steps `-vfxFog`, then `-post`, then `-compiler`, honours
+`installBlackFrameGuard()`, which installs the frame tap, steps `-vfxFog`, then `-post`, then `-compiler`, honours
 `?heal=0` and never rewrites an author-supplied `a3d-qr`, and publishes `window.__AURA3D_HEAL__` with a live `observation()`.
 Pass `safety: { ladder }` to change the rungs. `isBlackFrame`, `analyseFrame`, `findWorldCanvas`, `hasVisibleLoadingOverlay`
-and `createBlackFrameWatch` are exported for custom wiring.
+`createBlackFrameWatch`, `installFrameTap` and `FrameTap` are exported for custom wiring.
 
 ## Diagnostics panel
 

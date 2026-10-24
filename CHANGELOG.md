@@ -4,6 +4,13 @@ Version: 4.1.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.1.2 (unreleased)
+
+### Fixes
+
+- **Fix: the black-frame guard no longer reloads healthy games.** 4.1.1's guard sampled the world canvas after every `requestAnimationFrame` callback. A WebGL canvas without `preserveDrawingBuffer` reads as zeros outside the task that drew it, so on pages with several animation-frame callbacks per frame (or draws from timers) the guard read black from healthy games and walked them down the ladder; on the 4.1.1 production build Cross Hop, Iron Crown and Bunker Zero each reloaded three times (`?a3d-qr=game,-vfxFog,-post,-compiler`) although `?heal=0` pages rendered fully. The guard now taps the GL draw calls (`installFrameTap`, exported from `@aura3d/debug`) and samples in the task that drew to the default framebuffer, before the browser composites. Draws into an offscreen framebuffer do not count, minimap and HUD canvases are never judged, and `installBlackFrameGuard({ sampling: "raf" })` keeps the old behaviour for pages without WebGL draw calls. A scene that draws but outputs black still reloads exactly once per page load.
+- **Verified:** unit tests with a fake GL (draw task, offscreen framebuffer, multi-draw, small canvases, observer errors, dispose) and a simulated browser with HUD callbacks that never draw; a remote spec with a real WebGL2 context without `preserveDrawingBuffer` (lit, sparse draws, timer-driven draws, offscreen-pass-first, dark: no reload; black output: one reload); and the new guard injected into the live 4.1.1 Cross Hop, Iron Crown and Bunker Zero pages (no navigation, rung 0, 4-6 sampled frames each, none black; the same guard reloads Cross Hop exactly once when colour writes are masked). Before/after evidence is in `evidence/guard-fix/`. Software WebGL2 only: not run on a real GPU.
+
 ## 4.1.1 (2026-10-24)
 
 A patch release for the problems found by live verification of 4.1.0 and by the Apex Overdrive art pass. No API removals.

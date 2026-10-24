@@ -90,7 +90,7 @@ describe("installBlackFrameGuard (simulated browser)", () => {
 
   it("reloads one rung down after a sustained black frame, using the engine a3d-qr list", () => {
     setup("");
-    installBlackFrameGuard({ fast: true });
+    installBlackFrameGuard({ fast: true, sampling: "raf" });
     const win = (globalThis as unknown as { window: { requestAnimationFrame: (cb: (t: number) => void) => number; __AURA3D_HEAL__?: { rung: number } } }).window;
     win.requestAnimationFrame(() => win.requestAnimationFrame(() => undefined));
     // Re-arm the loop like a game would, then run frames.
@@ -106,7 +106,7 @@ describe("installBlackFrameGuard (simulated browser)", () => {
   it("does nothing while frames are lit, when heal=0, or when the URL carries its own a3d-qr", () => {
     for (const [search, isBlack] of [["", false], ["?heal=0", true], ["?a3d-qr=game,post", true]] as const) {
       setup(search);
-      installBlackFrameGuard({ fast: true });
+      installBlackFrameGuard({ fast: true, sampling: "raf" });
       black = isBlack;
       const win = (globalThis as unknown as { window: { requestAnimationFrame: (cb: (t: number) => void) => number } }).window;
       const loop = (): void => { win.requestAnimationFrame(loop); };
@@ -120,7 +120,7 @@ describe("installBlackFrameGuard (simulated browser)", () => {
   it("continues down the ladder from the stored rung and stops at the last one", () => {
     setup("?a3d-qr=game%2C-vfxFog");
     store["aura3d-heal:/apps/g/"] = "1";
-    installBlackFrameGuard({ fast: true });
+    installBlackFrameGuard({ fast: true, sampling: "raf" });
     const win = (globalThis as unknown as { window: { requestAnimationFrame: (cb: (t: number) => void) => number; __AURA3D_HEAL__?: { rung: number } } }).window;
     const loop = (): void => { win.requestAnimationFrame(loop); };
     win.requestAnimationFrame(loop);
@@ -133,7 +133,7 @@ describe("installBlackFrameGuard (simulated browser)", () => {
   it("does not reload while the loading overlay is up (slow first frame on a CPU renderer), and does once it is gone", () => {
     setup("");
     bootVisible = true;
-    installBlackFrameGuard({ fast: true });
+    installBlackFrameGuard({ fast: true, sampling: "raf" });
     const win = (globalThis as unknown as { window: { requestAnimationFrame: (cb: (t: number) => void) => number; __AURA3D_HEAL__?: { observation?: () => { skipped: { notReady: number }; readyAtCall: number | null } } } }).window;
     const loop = (): void => { win.requestAnimationFrame(loop); };
     win.requestAnimationFrame(loop);
@@ -149,7 +149,7 @@ describe("installBlackFrameGuard (simulated browser)", () => {
   it("never reloads a dark but valid scene", () => {
     setup("");
     black = false;
-    installBlackFrameGuard({ fast: true });
+    installBlackFrameGuard({ fast: true, sampling: "raf" });
     const win = (globalThis as unknown as { window: { requestAnimationFrame: (cb: (t: number) => void) => number } }).window;
     const loop = (): void => { win.requestAnimationFrame(loop); };
     win.requestAnimationFrame(loop);

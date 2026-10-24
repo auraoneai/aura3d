@@ -4,6 +4,7 @@ import { resolveQualitySwitches, type QualitySwitches } from "./switches.js";
 
 export * from "./blackFrame.js";
 export * from "./guard.js";
+export * from "./frameTap.js";
 export * from "./diagnosticsPanel.js";
 export * from "./switches.js";
 
