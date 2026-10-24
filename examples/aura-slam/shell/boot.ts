@@ -16,9 +16,10 @@ import { createTouchControls, type TouchControls } from "../ui/touch";
 import { SHOT_DEFAULTS, type CreateSlamEngine, type HudState, type ServeFeedback, type SlamEngine } from "../ui/types";
 import { themeFor } from "../ui/venues";
 import { createWorkMode } from "../ui/workMode";
-import { createAutopilot, type Autopilot } from "./autopilot";
+import { createAdapterController, type AdapterController } from "./controller";
 import { createController } from "./gamepad";
 import { playerFrame, type PlayerFrameContext } from "./inputFrame";
+import { matchResetOptions } from "./matchSetup";
 import { createMatchLoop, type MatchLoop } from "./loop";
 import { installSlamQa } from "./qa";
 import { renderGameToText } from "./qaText";
@@ -58,7 +59,8 @@ export interface AuraSlamHandle {
   hud: Hud;
   loop: MatchLoop;
   controlSettings: ControlSettings;
-  autopilot: Autopilot;
+  /** The live page's adapter-side controller (Auto demo player, serve-phase movement and the toss-apex assist swing). */
+  autopilot: AdapterController;
   startMatch(practice?: boolean): void;
   togglePause(): void;
   dispose(): void;
@@ -82,8 +84,10 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   let selectedShot: ShotPreset = "neutral";
   let soundEnabled = document.documentElement.dataset.embed !== "true";
   if (!soundEnabled) audio.setEnabled(false);
-  let autoFrame: InputFrame | null = null;
-  const autopilot = createAutopilot(deps.autoplay ?? (params.get("autoplay") === "1" || params.get("demo") === "1"));
+  const autopilot = createAdapterController({
+    engine: () => engine, state: () => getState() as never,
+    autoplay: deps.autoplay ?? (params.get("autoplay") === "1" || params.get("demo") === "1")
+  });
   // The menu and quick bar fire callbacks while they are being constructed; those wait until everything is wired.
   let booted = false;
 
@@ -122,7 +126,6 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     modernServe: modernServe(), strategic: strategic(), state: getState() as PlayerFrameContext["state"]
   });
   function readPlayerInput(): InputFrame | undefined {
-    if (autopilot.enabled && autoFrame) return autoFrame;
     return playerFrame(deps.input, frameContext());
   }
   const hitKeyLabel = (): string => {
@@ -150,8 +153,6 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
 
   function update(dt: number): void {
     menu.tick(dt);
-    const s = getState();
-    autoFrame = autopilot.enabled ? autopilot.step(s, engine, dt) : null;
     engine.step(dt);
     syncSwipeBoundary();
   }
@@ -331,6 +332,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   /* ---- render ---- */
   function render(frameSeconds: number = FIXED_DT): void {
     const s = getState();
+    autopilot.step(s as never, FIXED_DT);
     const feedback = serveFeedback();
     renderer.render(s, frameSeconds, feedback);
     if (!canvas.dataset.ready) canvas.dataset.ready = "true";
@@ -346,10 +348,10 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   function resetMatch(options: { difficulty?: string; venue?: string; practice: boolean }): void {
     clearInputs();
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
-    engine.resetMatch({
+    engine.resetMatch(matchResetOptions({
       difficulty: (options.difficulty ?? "beginner") as never, venue: options.venue ?? "hard", practice: options.practice,
       allowSwipe: swipeEnabled && mobileTouchAvailable(), controlStyle: swipeEnabled ? swipePort.getPreference() ?? "classic" : "classic"
-    });
+    }));
     swipeOverlay?.setBoundaryKey(""); syncSwipeBoundary();
     const s = getState() as { paused: boolean; venue: string; player: { selectedShot?: ShotPreset } };
     s.paused = false;
@@ -444,12 +446,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
       if (event.code === "Space" || (event.code === "KeyR" && s.mode === "gameover")) { event.preventDefault(); requestSwing(event); }
       return;
     }
-    // Quick-shot extras kept from the live page: J short, K deep with power, L lob.
-    if ((event.code === "KeyJ" || event.code === "KeyK" || event.code === "KeyL") && s.mode === "playing" && !s.paused && !swipeActive()) {
-      const shot: ShotPreset = event.code === "KeyJ" ? "short" : event.code === "KeyL" ? "lob" : "deep";
-      if (shot !== "lob" || intentionalLobEnabled()) { engine.selectShot(shot, "player"); selectShotUI(shot); engine.requestSwing("player", s.time, event.code === "KeyK"); }
-      return;
-    }
+    // J short, K deep with power and L lob are handled by the adapter controller (shell/controller.ts), as on the live page.
     if (!touchPlayEnabled() || swipeActive() || !action) return;
     event.preventDefault();
     // Alternate keys are one logical button: release both before a second hit.
@@ -460,6 +457,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     if (action === "deep") toggleShot("deep");
   }
 
+  const uninstallController = autopilot.install();
   window.addEventListener("keydown", trackPhysicalKeyDown, true);
   window.addEventListener("keyup", trackPhysicalKeyUp, true);
   window.addEventListener("keydown", handleKeyDown, { passive: false });
@@ -509,7 +507,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     ready: () => true,
     state: () => getState() as never,
     stepFrames: (n, input) => { loop.manual = true; loop.loop.advance(n, (i) => { if (i === 0 && input) engine.applyInput((input.side as "player" | "ai" | undefined) ?? "player", input as InputFrame); }); },
-    reset: () => { const s = menu.settings(); engine.resetMatch({ difficulty: s.difficulty, venue: s.venue, practice: false }); },
+    reset: () => { const s = menu.settings(); engine.resetMatch(matchResetOptions({ difficulty: s.difficulty as never, venue: s.venue, practice: false })); },
     begin: () => menu.quickStart("single"),
     app: () => deps.app?.(),
     renderText: text,
@@ -535,6 +533,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     engine, get state() { return getState(); }, menu, hud, loop, controlSettings, autopilot, startMatch, togglePause,
     dispose() {
       loop.loop.stop();
+      uninstallController();
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", trackPhysicalKeyUp);
       window.removeEventListener("keydown", trackPhysicalKeyDown, true);

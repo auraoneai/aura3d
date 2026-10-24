@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { ReferenceCapture } from "../../../examples/aura-slam/contract/reference";
 import type { LoggedEvent } from "../../../examples/aura-slam/contract/events";
 import { createMatchEngine } from "../../../examples/aura-slam/sim/create";
+import { firstRowDivergence, loadReference, nativeFactory, originalFactory, replayScenario, type ReferenceFile, type ReferenceScenario, type ReplayResult } from "./replay-lib";
 
 /**
  * Gate G1: replay the scripted run captured from the ORIGINAL engine (evidence/aura-slam/reference.json, schema
@@ -89,8 +90,71 @@ describe.skipIf(!scenarioSchema)("baseline reference (live page capture): struct
     }
     expect(ref!.tolerance.sampledAbsTolerance).toBeLessThanOrEqual(1e-6);
   });
-  it.todo("replay each scenario through the native SHELL in a browser (keys -> input mapper -> engine, advanceTime(1000/60) per step; the Auto scenarios need the original adapter's autoplay controller, which nudges the player directly): compare sampled rows within 1e-6 and event steps exactly");
   it("the sim itself equals the original engine over full matches (see autoplay-golden.test.ts, remote replay in aura-slam-int.spec.ts)", () => {
     expect(existsSync(fileURLToPath(new URL("../../browser/aura-slam-golden.json", import.meta.url)))).toBe(true);
   });
+});
+
+/**
+ * Gate G1 at shell level: the six live-page scenarios (five Auto matches and the scripted manual run with its saved key
+ * events) replayed through the native engine, native input mapper and adapter controller, compared with the baseline.
+ * The baseline was captured on Linux x64; libm results differ from this machine's by ~1e-16, which only matters when a
+ * rounded value lands on a rounding boundary and then compounds (the legend scenario). So a scenario passes when the
+ * native replay is exact against the baseline, or, on a platform whose libm drifts, when it is identical to the ORIGINAL
+ * engine replayed in this process through the same driver and equals the baseline up to the point the original's own
+ * replay leaves it. The remote spec tests/browser/aura-slam-replay.spec.ts requires exact digests in the real shell.
+ */
+describe.skipIf(!scenarioSchema)("gate G1: shell-level replay of the live page's scenarios", () => {
+  const reference: ReferenceFile | null = scenarioSchema ? loadReference() : null;
+  const ids = reference?.scenarios.map((s) => s.id) ?? [];
+  const results = new Map<string, { native: ReplayResult; original: ReplayResult | null }>();
+  const run = (sc: ReferenceScenario) => {
+    let entry = results.get(sc.id);
+    if (!entry) {
+      const native = replayScenario(sc, nativeFactory);
+      const exact = native.digest === sc.reference.digest && native.steps === sc.reference.steps;
+      entry = { native, original: exact ? null : replayScenario(sc, originalFactory()) };
+      results.set(sc.id, entry);
+    }
+    return entry;
+  };
+  const tol = reference?.tolerance.sampledAbsTolerance ?? 1e-6;
+
+  it("covers the six scenarios, including the manual run's saved key events", () => {
+    expect(ids).toEqual(expect.arrayContaining(["auto-beginner-hard", "auto-beginner-moon", "auto-club-grass", "auto-pro-clay", "auto-legend-hard", "manual-human-policy"]));
+    const manual = reference!.scenarios.find((s) => s.id === "manual-human-policy")!;
+    expect(manual.script.inputs?.length).toBe(286);
+  });
+
+  for (const id of ids) {
+    it(`${id}: steps, result, score timeline, event log and sampled rows match the baseline`, () => {
+      const sc = reference!.scenarios.find((s) => s.id === id)!;
+      const { native, original } = run(sc);
+      const exact = native.digest === sc.reference.digest;
+      if (exact) {
+        expect(native.steps).toBe(sc.reference.steps);
+        expect({ mode: native.finalMode, phase: native.finalPhase, winner: native.winner, matchWon: native.matchWon, score: native.score }).toEqual({
+          mode: sc.reference.finalMode, phase: sc.reference.finalPhase, winner: sc.reference.winner, matchWon: sc.reference.matchWon, score: sc.reference.score });
+        expect(native.stats).toEqual(sc.reference.stats);
+        expect(native.timeline).toEqual(sc.reference.timeline);
+        expect(native.eventCounts).toEqual(sc.reference.eventCounts);
+        expect(native.events).toEqual(sc.events);
+        expect(firstRowDivergence(native.rows, sc, tol)).toBeNull();
+        return;
+      }
+      // Platform libm drift: native must equal the original engine here, and the baseline wherever the original does.
+      expect(original, "original replay computed").not.toBeNull();
+      expect(native.digest, "native replay is bit-identical to the original engine's on this platform").toBe(original!.digest);
+      expect(native.steps).toBe(original!.steps);
+      expect(native.timeline).toEqual(original!.timeline);
+      expect(native.events).toEqual(original!.events);
+      expect([...native.rows]).toEqual([...original!.rows]);
+      const drift = firstRowDivergence(native.rows, sc, tol);
+      expect(drift, "the baseline leaves the replay only at libm drift").not.toBeNull();
+      expect(drift!.step, "drift starts late in the match").toBeGreaterThan(1000);
+      const early = sc.events.filter((e) => e.step < drift!.step - 5);
+      expect(native.events.filter((e) => e.step < drift!.step - 5)).toEqual(early);
+      expect(native.timeline.filter((t) => t.step < drift!.step - 5)).toEqual(sc.reference.timeline.filter((t) => t.step < drift!.step - 5));
+    }, 240_000);
+  }
 });

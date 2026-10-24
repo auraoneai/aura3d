@@ -3,7 +3,7 @@ import { createMenuMachine, INTRO_SECONDS, INTRO_SECONDS_REDUCED } from "../../.
 import { playerFrame } from "../../../examples/aura-slam/shell/inputFrame";
 import { createInputMapper } from "../../../examples/aura-slam/input/mapper";
 import { createMatchLoop } from "../../../examples/aura-slam/shell/loop";
-import { createAutopilot } from "../../../examples/aura-slam/shell/autopilot";
+import { createAdapterController } from "../../../examples/aura-slam/shell/controller";
 import { COORDINATE_SYSTEM, renderGameToText } from "../../../examples/aura-slam/shell/qaText";
 import { controlText, movementLabel } from "../../../examples/aura-slam/ui/format";
 import type { HudState } from "../../../examples/aura-slam/ui/types";
@@ -165,20 +165,57 @@ describe("match loop", () => {
   });
 });
 
-describe("autopilot", () => {
-  it("serves on a timer and swings at an incoming ball through the engine", () => {
+describe("adapter controller (live page autoplay, serve-phase movement and toss assist)", () => {
+  const make = (autoplay: boolean, state: unknown, calls: unknown[][]) => {
+    const engine = { requestSwing: (...args: unknown[]) => calls.push(["swing", ...args]), selectShot: (...args: unknown[]) => calls.push(["shot", ...args]) };
+    return createAdapterController({ engine: () => engine, state: () => state as never, autoplay });
+  };
+  it("serves on a 0.45 s timer and moves toward the incoming ball with the live page's arithmetic", () => {
     const calls: unknown[][] = [];
-    const engine = { requestSwing: (...args: unknown[]) => calls.push(["swing", ...args]), selectShot: (...args: unknown[]) => calls.push(["shot", ...args]) } as never;
-    const ap = createAutopilot(true);
-    const serve = { mode: "playing", paused: false, phase: "serve", server: "player", time: 1 } as unknown as HudState;
-    for (let i = 0; i < 30; i++) ap.step(serve, engine, 1 / 60);
+    const serve = { mode: "playing", paused: false, phase: "serve", server: "player", time: 1, player: { x: 0, y: 1, vx: 0, vy: 0, swing: 0, swingCooldown: 0 }, ball: { x: 0, y: 0, z: 0, vz: 0, vy: 0, active: false, lastHit: null, bounceCount: 0 } } as never;
+    const ap = make(true, serve, calls);
+    for (let i = 0; i < 30; i++) ap.step(serve, 1 / 60);
     expect(calls.filter((c) => c[0] === "swing")).toHaveLength(1);
-    const rally = { mode: "playing", paused: false, phase: "rally", time: 3, player: { x: 0, y: 0.9, swing: 0, swingCooldown: 0 },
-      ball: { active: true, lastHit: "ai", vy: 1, x: 0.01, y: 0.9, z: 0.2, targetX: 0.5, targetY: 0.8, isServe: false, bounceCount: 1 } } as unknown as HudState;
-    const frame = ap.step(rally, engine, 1 / 60);
-    expect(frame!.x).toBeGreaterThan(0);
+    const rally = { mode: "playing", paused: false, phase: "rally", server: "ai", time: 3, player: { x: 0, y: 0.9, vx: 0, vy: 0, swing: 0, swingCooldown: 0, moveBlend: 0, stride: 0 },
+      ball: { active: true, lastHit: "ai", vy: 1, x: 0.01, y: 0.9, z: 0.2, vz: 0, targetX: 0.5, targetY: 0.8, isServe: false, bounceCount: 1 } } as never;
+    ap.step(rally, 1 / 60);
+    const dx = 0.5 - 0, dy = 0.88 - 0.9, dist = Math.hypot(dx, dy), spd = Math.min(1.32, dist * 6.5);
+    expect((rally as { player: { x: number } }).player.x).toBeCloseTo((dx / dist) * spd / 60, 12);
+    expect((rally as { player: { y: number } }).player.y).toBeCloseTo(0.9 + (dy / dist) * spd / 60, 12);
     expect(calls.some((c) => c[0] === "shot" && c[1] === "deep")).toBe(true);
-    expect(createAutopilot(false).step(rally, engine, 1 / 60)).toBeNull();
+    const far = { ...(rally as object), player: { x: -0.9, y: 0.9, vx: 0, vy: 0, swing: 0, swingCooldown: 0 } } as never;
+    const before = calls.length;
+    ap.step(far, 1 / 60);
+    expect(calls).toHaveLength(before);
+  });
+  it("moves the server during serve setup from held keys and assists the toss-apex swing when Auto is off", () => {
+    const calls: unknown[][] = [];
+    const state = { mode: "playing", paused: false, phase: "serve", server: "player", time: 2, serveAttempt: null,
+      player: { x: 0, y: 1.035, vx: 0, vy: 0, swing: 0, swingCooldown: 0 }, ball: { x: 0, y: 0, z: 0, vz: 0, vy: 0, active: false, lastHit: null, bounceCount: 0 } } as never;
+    const ap = make(false, state, calls);
+    ap.keyDown({ code: "KeyD" });
+    ap.step(state, 1 / 60);
+    const s = state as unknown as { player: { x: number; vx: number }; ball: { x: number } };
+    expect(s.player.vx).toBeCloseTo(1.35, 12);
+    expect(s.player.x).toBeCloseTo(1.35 / 60, 12);
+    expect(s.ball.x).toBeCloseTo(s.player.x + 0.035, 12);
+    ap.keyUp({ code: "KeyD" });
+    const toss = { ...(state as object), phase: "serveToss", serveAttempt: { swingAt: null }, ball: { x: 0, y: 0, z: 0.9, vz: 0.1, vy: 0, active: true, lastHit: null, bounceCount: 0 } } as never;
+    ap.step(toss, 1 / 60);
+    expect(calls.filter((c) => c[0] === "swing")).toHaveLength(1);
+  });
+  it("J, K and L select short, deep (with power) and lob and swing; text fields are ignored; nothing runs while paused", () => {
+    const calls: unknown[][] = [];
+    const playing = { mode: "playing", paused: false, time: 4 } as never;
+    const ap = make(false, playing, calls);
+    ap.keyDown({ code: "KeyJ" }); ap.keyDown({ code: "KeyK" }); ap.keyDown({ code: "KeyL" });
+    expect(calls).toEqual([["shot", "short", "player"], ["swing", "player", 4, false], ["shot", "deep", "player"], ["swing", "player", 4, true], ["shot", "lob", "player"], ["swing", "player", 4, false]]);
+    const before = calls.length;
+    ap.keyDown({ code: "KeyJ", target: { tagName: "INPUT" } });
+    expect(calls).toHaveLength(before);
+    const paused = make(false, { mode: "playing", paused: true, time: 1 }, calls);
+    paused.keyDown({ code: "KeyK" });
+    expect(calls).toHaveLength(before);
   });
 });
 
