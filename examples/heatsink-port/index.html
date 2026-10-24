@@ -35,6 +35,11 @@
       #speedo { position: absolute; right: 12px; bottom: 12px; text-align: right; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; }
       #speedo .value { font-size: 28px; font-weight: 500; }
       #count { position: fixed; inset: 0; display: grid; place-items: center; font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); pointer-events: none; }
+      .hidden-pos { display: none; }
+      #h-mult.hot { color: var(--hot); }
+      #objective { position: absolute; top: 86px; left: 50%; transform: translateX(-50%); max-width: min(720px, 92vw); text-align: center; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); font-size: 13px; color: var(--ink); }
+      #objective:empty { display: none; }
+      #medal-line { font-size: 16px; font-weight: 500; }
       #notice { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #02040a; z-index: 5; }
     </style>
@@ -45,19 +50,24 @@
     <section id="menu" class="overlay hidden">
       <div class="panel">
         <h1>ION CIRCUIT</h1>
-        <p class="meta">Time Trial, Vesper Heights, 3 laps. W/Up throttle, S/Down brake, A/D steer, Shift afterburner, Space overdrive, E drift, Esc pause.</p>
+        <p class="meta">Objective: destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and finish 3 laps for a medal (bronze 16, silver 30, gold 42 kills).</p>
+        <p class="meta">W/Up throttle, S/Down brake, A/D steer, Shift afterburner, Space overdrive, E drift, F or click fire, Esc pause.</p>
         <button id="start" class="primary" disabled>Start</button>
       </div>
     </section>
-    <section id="results" class="overlay hidden"><div class="panel"><h2 id="results-title">Finished</h2><p id="results-body" class="meta num"></p><button id="again" class="primary">Race again</button></div></section>
+    <section id="results" class="overlay hidden"><div class="panel"><h2 id="results-title">Finished</h2><p id="medal-line"></p><p id="results-body" class="meta num"></p><button id="again" class="primary">Race again</button></div></section>
     <div id="hud">
       <div class="top">
-        <div class="block"><div class="meta">POSITION</div><div class="value"><span id="h-pos">1</span>/<span id="h-posof">1</span></div></div>
+        <div class="block"><div class="meta">SCORE</div><div class="value" id="h-score">0</div></div>
+        <div class="block"><div class="meta">MULTIPLIER</div><div class="value" id="h-mult">x1</div></div>
+        <div class="block"><div class="meta">TARGETS</div><div class="value" id="h-targets">0/48</div></div>
+        <div class="block hidden-pos"><div class="meta">POSITION</div><div class="value"><span id="h-pos">1</span>/<span id="h-posof">1</span></div></div>
         <div class="block"><div class="meta">LAP</div><div class="value" id="h-lap">LAP 1/3</div></div>
         <div class="block"><div class="meta">TIME</div><div class="value" id="h-time">00:00.000</div></div>
         <div class="block"><div class="meta">BEST LAP</div><div class="value" id="h-best">--:--.---</div></div>
         <div class="block"><div class="meta">TAKEDOWNS</div><div class="value" id="h-td">0</div></div>
       </div>
+      <div id="objective" class="meta"></div>
       <div id="notice" class="meta"></div>
       <div class="bottom">
         <div class="meter"><span>AFTERBURNER</span><div class="bar"><i id="h-ab"></i></div><span id="h-ab-p" class="num">100%</span></div>

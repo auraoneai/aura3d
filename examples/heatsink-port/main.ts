@@ -9,6 +9,7 @@ import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, inst
 import { expandSegments, parseInputScript } from "../../tools/crayon-capture/heatsink-lib";
 import { CFG } from "./config";
 import { HudModel, formatTime } from "./hud";
+import { STRIKE } from "./operation";
 import { FRAME, Race } from "./race";
 import { Track } from "./track";
 import { IDLE, type Input } from "./vehicle";
@@ -40,16 +41,17 @@ let lastCount = "";
 
 /* ------------------------------------------------------------------ input */
 
-const BIND = { throttle: ["KeyW", "ArrowUp"], brake: ["KeyS", "ArrowDown"], left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"], afterburner: ["ShiftLeft", "ShiftRight"], ramjet: ["Space"], drift: ["KeyE"] } as const;
+const BIND = { throttle: ["KeyW", "ArrowUp"], brake: ["KeyS", "ArrowDown"], left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"], afterburner: ["ShiftLeft", "ShiftRight"], ramjet: ["Space"], drift: ["KeyE"], fire: ["KeyF", "KeyJ"] } as const;
 const down = new Set<string>();
 let steerSmooth = 0;
+let pointerFire = false;
 const held = (keys: readonly string[]): boolean => keys.some((k) => down.has(k));
 
 function sampleInput(dt: number): Input {
   if (heldInput) return heldInput;
   const target = (held(BIND.right) ? 1 : 0) - (held(BIND.left) ? 1 : 0);
   steerSmooth += (target - steerSmooth) * (1 - Math.exp(-dt * 12));
-  return { throttle: held(BIND.throttle) ? 1 : 0, brake: held(BIND.brake) ? 1 : 0, steer: steerSmooth, afterburner: held(BIND.afterburner), ramjet: held(BIND.ramjet), drift: held(BIND.drift), fire: false };
+  return { throttle: held(BIND.throttle) ? 1 : 0, brake: held(BIND.brake) ? 1 : 0, steer: steerSmooth, afterburner: held(BIND.afterburner), ramjet: held(BIND.ramjet), drift: held(BIND.drift), fire: held(BIND.fire) || pointerFire };
 }
 
 addEventListener("keydown", (e) => {
@@ -60,7 +62,9 @@ addEventListener("keydown", (e) => {
   down.add(e.code);
 });
 addEventListener("keyup", (e) => down.delete(e.code));
-addEventListener("blur", () => { down.clear(); steerSmooth = 0; });
+addEventListener("blur", () => { down.clear(); steerSmooth = 0; pointerFire = false; });
+canvas.addEventListener("pointerdown", () => { pointerFire = true; });
+addEventListener("pointerup", () => { pointerFire = false; });
 
 /* ------------------------------------------------------------------ flow */
 
@@ -84,6 +88,8 @@ function simulate(steps: number, input?: Input): void {
 
 function updateHud(v: NonNullable<typeof lastHud>): void {
   const set = (id: string, text: string): void => { const el = $(id); if (el.textContent !== text) el.textContent = text; };
+  set("h-score", v.score); set("h-mult", v.multiplier); set("h-targets", v.targets); set("objective", v.objective);
+  $("h-mult").classList.toggle("hot", v.chain >= 2);
   set("h-pos", v.pos); set("h-posof", v.posOf); set("h-lap", v.lap); set("h-time", v.time); set("h-best", v.best); set("h-td", v.takedowns); set("h-speed", v.speed);
   set("h-ab-p", v.pct.ab); set("h-heat-p", v.pct.heat); set("h-shield-p", v.pct.shield); set("h-gun-p", v.pct.gun); set("h-heat-label", v.heatLabel);
   $("h-ab").style.width = v.width.ab; $("h-heat").style.width = v.width.heat; $("h-shield").style.width = v.width.shield; $("h-gun").style.width = v.width.gun;
@@ -91,8 +97,10 @@ function updateHud(v: NonNullable<typeof lastHud>): void {
   if (count !== lastCount) { lastCount = count; const el = $("count"); el.textContent = count; el.classList.toggle("hidden", !count); }
   if (race.resultsOpen) {
     $("results").classList.remove("hidden");
+    const ops = race.ops;
     $("results-title").textContent = race.state === "dnf" ? "DNF" : "Finished";
-    $("results-body").textContent = `Time ${formatTime(race.player.finished ? race.player.finishTime : race.raceTime)}   Best lap ${race.bestLap ? formatTime(race.bestLap) : "--"}   Crashes ${race.player.crashes}`;
+    $("medal-line").textContent = race.state === "dnf" ? "No medal: finish the race to earn one" : ops.medal === "none" ? `No medal: ${ops.kills} of ${ops.totalTargets} kills (bronze needs ${STRIKE.medals.bronze})` : `${ops.medal.toUpperCase()} medal`;
+    $("results-body").textContent = `Score ${ops.score}   Kills ${ops.kills}/${ops.totalTargets}   Barrels ${ops.barrelsShot}   Best chain ${ops.bestChain}   Accuracy ${ops.shots ? Math.round((ops.hits / ops.shots) * 100) : 0}%   Time ${formatTime(race.player.finished ? race.player.finishTime : race.raceTime)}   Best lap ${race.bestLap ? formatTime(race.bestLap) : "--"}   Crashes ${race.player.crashes}`;
   }
 }
 
@@ -132,7 +140,8 @@ const state = () => {
   return {
     state: race.state, step: race.frames, raceTime: race.raceTime, countdown: race.countdown, lapIdx: race.lapIdx, bestLap: race.bestLap,
     player: { s: p.s, x: p.x, dist: p.dist, v: p.v, ab: p.ab, heat: p.heat, shield: p.shield, gunHeat: p.gunHeat, theta: p.theta, phi: p.phi, yW: p.yW, vyW: p.vyW, steerVal: p.steerVal, burning: p.burning, invuln: p.invuln, burstT: p.burstT, landT: p.landT, crashT: p.crashT, crashes: p.crashes, crashed: p.crashed, finished: p.finished, takedowns: p.takedowns },
-    events: race.events.length
+    events: race.events.length,
+    ops: { score: race.ops.score, kills: race.ops.kills, barrels: race.ops.barrelsShot, shots: race.ops.shots, hits: race.ops.hits, chain: race.ops.chain, bestChain: race.ops.bestChain, medal: race.ops.medal, targetsAlive: race.ops.targets.filter((t) => t.alive).length, hash: race.ops.hash() }
   };
 };
 

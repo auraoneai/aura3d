@@ -4,6 +4,7 @@
  * recorded DOM values. Pure; `main.ts` writes the returned strings into the DOM.
  */
 import { CFG } from "./config";
+import { STRIKE } from "./operation";
 import type { Race } from "./race";
 
 export const formatTime = (t: number): string => {
@@ -30,6 +31,33 @@ export interface HudValues {
   hull: number;
   hullMax: number;
   takedowns: string;
+  score: string;
+  multiplier: string;
+  targets: string;
+  chain: number;
+  /** the line under the HUD: the objective during the countdown, then the next target and the next medal */
+  objective: string;
+  medal: string;
+  gunLocked: boolean;
+}
+
+export const OBJECTIVE_TEXT = `Destroy sentry drones and shoot barrels for points. Chain kills to raise the multiplier. Finish ${CFG.track.laps} laps. Bronze ${STRIKE.medals.bronze}, silver ${STRIKE.medals.silver}, gold ${STRIKE.medals.gold} kills.`;
+
+function objectiveLine(race: Race): string {
+  const o = race.ops;
+  if (race.state === "countdown") return OBJECTIVE_TEXT;
+  if (race.state !== "race") return "";
+  const p = race.player;
+  let nearest = Infinity;
+  for (const t of o.targets) {
+    if (!t.alive) continue;
+    const d = race.track.wrapDelta(p.s, t.s);
+    if (d > 0 && d < nearest) nearest = d;
+  }
+  const next = nearest < Infinity ? `NEXT TARGET ${Math.round(nearest)} m` : "NO TARGETS AHEAD";
+  const medal = o.nextMedal();
+  const goal = medal ? `${medal.medal.toUpperCase()} AT ${medal.needed} KILLS` : "GOLD EARNED";
+  return `${next}   ·   ${goal}   ·   F or click to fire`;
 }
 
 export class HudModel {
@@ -63,7 +91,14 @@ export class HudModel {
       shieldLow: p.shield < p.shieldMax * 0.3,
       hull: Math.max(0, budget - p.crashes),
       hullMax: budget,
-      takedowns: String(p.takedowns)
+      takedowns: String(p.takedowns),
+      score: String(race.ops.score),
+      multiplier: `x${race.ops.multiplier}`,
+      targets: `${race.ops.kills}/${race.ops.totalTargets}`,
+      chain: race.ops.chain,
+      objective: objectiveLine(race),
+      medal: race.ops.medal,
+      gunLocked: p.gunLocked
     };
   }
 }

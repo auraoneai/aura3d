@@ -11,6 +11,7 @@ import { pointsSpec, roadSpec, skySpec, solidSpec, streakSpec, terrainSpec, veil
 import { axisRotation, droneEuler, matrixToEulerZYX, multiplyMat3 } from "./orient";
 import type { Race } from "./race";
 import { barrelModel, droneHull, gatePylonNodes, sceneryNodes, pickupModel } from "./models";
+import { Operation, STRIKE } from "./operation";
 import { seededRandom } from "./rng";
 import { Track, type Frame } from "./track";
 import type { HudValues } from "./hud";
@@ -51,6 +52,9 @@ const DRONE_PARTS: readonly PartSpec[] = [
 ];
 
 const STREAKS = 110;
+const BOLTS = STRIKE.boltPool;
+const BOLT_LENGTH = CFG.weapons.length;
+const BOLT_HALF_WIDTH = 0.22;
 /** chase-camera framing of the art pass (lower and closer than `CFG.camera`, matching the original's frames); the sim never reads it */
 const FRAMING = { dist: 7.6, height: 2.0 };
 
@@ -120,6 +124,22 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
     b.add(barrelModel(i).runtime({ id: fogTracked(`barrel-${i}`, `barrel-${i}`) }));
   });
 
+  /* strike targets: a glowing core in a spinning ring, one pair per sentry or heavy drone */
+  const strike = new Operation(track);
+  for (const t of strike.targets) {
+    const heavy = t.kind === "heavy";
+    const r = STRIKE.radius[t.kind];
+    b.add(primitives.sphere({ name: `target-${t.id}`, size: r * 1.3, material: material.custom(solidSpec(hexLinear(heavy ? "#7a1c1c" : "#c82828"), hexLinear("#ff5a3a"), 1.3)) }).runtime({ id: `target-${t.id}` }));
+    b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.45, 0.14, 0.14], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 1.8)) }).runtime({ id: `target-ring-${t.id}` }));
+  }
+
+  /* bolt tracers: a pooled strip of camera-facing quads, rebuilt every frame */
+  {
+    const uv: number[] = [], idx: number[] = [];
+    for (let k = 0; k < BOLTS; k++) { uv.push(0, 0, 1, 0, 1, 1, 0, 1); idx.push(k * 4, k * 4 + 1, k * 4 + 2, k * 4, k * 4 + 2, k * 4 + 3); }
+    b.add(geometry.custom(geometry.dynamic({ positions: f32(new Array<number>(BOLTS * 12).fill(0)), uvs: f32(uv), indices: Uint32Array.from(idx) }), { name: "bolts", material: material.custom(streakSpec()) }).runtime({ id: "bolts" }));
+  }
+
   /* player drone */
   for (const part of DRONE_PARTS) {
     if (part.model) { b.add(droneHull().runtime({ id: fogTracked(part.id, part.id) })); continue; }
@@ -141,7 +161,7 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   }
 
   /* exhaust / dust points */
-  const POINTS = 220;
+  const POINTS = 420;
   b.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array<number>(POINTS * 3).fill(0)),
     topology: "points",
@@ -171,6 +191,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     return h;
   };
   const gatePulse = track.checkpoints.map(() => 0);
+  const targetFlash = new Array<number>(STRIKE.perLap).fill(0);
+  const boltGeo = new Float32Array(BOLTS * 12);
+  let opsSeen = 0;
   const padPulse = track.boostPads.map(() => 0);
   let seen = 0;
   const pos = new Float32Array(points * 3);
@@ -188,6 +211,18 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
   let streaksReady = false;
   let rig: [number, number, number] | null = null;
   const frame: Partial<Frame> = {};
+
+  function burst(x: number, y: number, z: number, count: number, r: number, g: number, bl: number, speed: number): void {
+    for (let i = 0; i < count; i++) {
+      const k = head++ % points;
+      const a = rng() * Math.PI * 2, e = (rng() - 0.3) * 1.4;
+      const sp = speed * (0.35 + rng() * 0.65);
+      pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;
+      vel[k * 3] = Math.cos(a) * Math.cos(e) * sp; vel[k * 3 + 1] = Math.sin(e) * sp; vel[k * 3 + 2] = Math.sin(a) * Math.cos(e) * sp;
+      tint[k * 3] = r; tint[k * 3 + 1] = g; tint[k * 3 + 2] = bl;
+      age[k] = 0;
+    }
+  }
 
   const rotationOf = (e: readonly [number, number, number]) => multiplyMat3(multiplyMat3(axisRotation("z", e[2]), axisRotation("y", e[1])), axisRotation("x", e[0]));
 
@@ -305,6 +340,48 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       h.setPosition(w.x, w.y, w.z);
     });
 
+    /* strike targets, bolt tracers, hit flashes and bursts */
+    {
+      const ops = race.ops;
+      if (opsSeen > ops.events.length) opsSeen = 0;
+      for (; opsSeen < ops.events.length; opsSeen++) {
+        const ev = ops.events[opsSeen]!;
+        if (!ev.world) continue;
+        if (ev.type === "hit") { targetFlash[ev.detail as number] = 1; burst(ev.world.x, ev.world.y, ev.world.z, 6, 1, 0.9, 0.4, 9); }
+        else if (ev.type === "kill") burst(ev.world.x, ev.world.y, ev.world.z, 36, 1, 0.45, 0.12, 22);
+        else if (ev.type === "barrel") burst(ev.world.x, ev.world.y, ev.world.z, 60, 1, 0.6, 0.15, 30);
+      }
+      for (const t of ops.targets) {
+        const core = node(`target-${t.id}`), ring = node(`target-ring-${t.id}`);
+        core.setVisible(t.alive);
+        ring.setVisible(t.alive);
+        targetFlash[t.id] = Math.max(0, (targetFlash[t.id] ?? 0) - dt * 4);
+        if (!t.alive) continue;
+        const bob = Math.sin(time * 1.7 + t.id) * 0.35;
+        core.setPosition(t.world.x, t.world.y + bob, t.world.z);
+        core.setUniform?.("flash", targetFlash[t.id] ?? 0);
+        ring.setPosition(t.world.x, t.world.y + bob, t.world.z);
+        ring.setRotation(Math.PI / 2 + Math.sin(time + t.id) * 0.3, time * 2.2 + t.id, 0);
+      }
+      for (let k = 0; k < BOLTS; k++) {
+        const bolt = ops.bolts[k]!;
+        const o = k * 12;
+        if (!bolt.alive) { boltGeo.fill(0, o, o + 12); continue; }
+        const vx = bolt.x - pose.eye[0], vy = bolt.y - pose.eye[1], vz = bolt.z - pose.eye[2];
+        let wx = bolt.dy * vz - bolt.dz * vy, wy = bolt.dz * vx - bolt.dx * vz, wz = bolt.dx * vy - bolt.dy * vx;
+        const wl = Math.hypot(wx, wy, wz) || 1;
+        wx = (wx / wl) * BOLT_HALF_WIDTH; wy = (wy / wl) * BOLT_HALF_WIDTH; wz = (wz / wl) * BOLT_HALF_WIDTH;
+        const ex = bolt.x + bolt.dx * BOLT_LENGTH, ey = bolt.y + bolt.dy * BOLT_LENGTH, ez = bolt.z + bolt.dz * BOLT_LENGTH;
+        boltGeo[o] = bolt.x - wx; boltGeo[o + 1] = bolt.y - wy; boltGeo[o + 2] = bolt.z - wz;
+        boltGeo[o + 3] = bolt.x + wx; boltGeo[o + 4] = bolt.y + wy; boltGeo[o + 5] = bolt.z + wz;
+        boltGeo[o + 6] = ex + wx; boltGeo[o + 7] = ey + wy; boltGeo[o + 8] = ez + wz;
+        boltGeo[o + 9] = ex - wx; boltGeo[o + 10] = ey - wy; boltGeo[o + 11] = ez - wz;
+      }
+      const bn = node("bolts");
+      bn.updateAttribute?.("position", { array: boltGeo, offset: 0 });
+      bn.setUniform?.("streakAlpha", 1.6);
+    }
+
     /* exhaust */
     if (!p.crashed && p.v > 4) {
       budget += Math.min(0.1, dt) * (p.abActive ? 520 : 90 + p.v * 1.4);
@@ -338,5 +415,5 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     void hud;
   }
 
-  return { update, resetCamera() { rig = null; seen = 0; }, get nodeCount() { return handles.size; } };
+  return { update, resetCamera() { rig = null; seen = 0; opsSeen = 0; }, get nodeCount() { return handles.size; } };
 }

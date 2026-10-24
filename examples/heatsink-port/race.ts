@@ -5,6 +5,7 @@
  * Pure and deterministic: the same input sequence always reproduces the same state.
  */
 import { CFG } from "./config";
+import { Operation } from "./operation";
 import { expSmooth } from "./rng";
 import { Track, MAP, type Barrel, type Pickup } from "./track";
 import { Vehicle, type Input } from "./vehicle";
@@ -27,6 +28,8 @@ export interface RaceEvent {
 export class Race {
   readonly track: Track;
   readonly player: Vehicle;
+  /** the strike layer: targets, bolt gun, score and medals (additive; never feeds the drone's movement) */
+  readonly ops: Operation;
   readonly events: RaceEvent[] = [];
   state: RaceState = "countdown";
   countdown = COUNTDOWN_START;
@@ -49,6 +52,7 @@ export class Race {
   constructor(track: Track = new Track()) {
     this.track = track;
     this.player = new Vehicle(track);
+    this.ops = new Operation(track);
     this.pickups = track.pickups.map((p) => ({ ...p, respawn: 0 }));
     this.barrels = track.barrels.map((b) => ({ ...b, alive: true, respawn: 0, y: track.frame(b.s).y }));
     this.barrelPos = this.barrels.map((b) => track.toWorld(b.s, b.x, b.y));
@@ -74,6 +78,7 @@ export class Race {
     for (const p of this.pickups) p.respawn = 0;
     for (const b of this.barrels) { b.alive = true; b.respawn = 0; }
     this.events.length = 0;
+    this.ops.reset();
   }
 
   /** one displayed frame (dt = 1/60): substeps, countdown, results timer, then the visual position update */
@@ -120,6 +125,7 @@ export class Race {
     p.shieldT -= e;
     if (p.shieldT <= 0) p.shield = Math.min(p.shieldMax, p.shield + W.shieldRegen * e);
     if (racing) this.updateProps(e);
+    this.ops.advance(e, input, this);
     for (const ev of p.events) this.onPlayerEvent(ev);
     p.events.length = 0;
     if (this.state === "race" && !p.finished) {
