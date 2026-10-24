@@ -112,7 +112,7 @@ function runTargets(i: HeroInput): Targets {
   const swR = Math.sin(i.phase + Math.PI);
   const stride = clamp(0.55 + i.speed / 70, 0.7, 1.15);
   return {
-    pelvisY: HIP_Y - 0.12 + 0.07 * Math.cos(2 * i.phase),
+    pelvisY: HIP_Y - 0.12 + 0.04 * Math.cos(2 * i.phase),
     pitch: 0.16 + Math.min(0.18, i.speed * 0.0022),
     torsoLean: 0.06,
     twist: 0.2 * sw,

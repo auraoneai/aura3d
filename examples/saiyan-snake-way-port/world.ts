@@ -10,6 +10,7 @@ import {
   PALETTE, auraSpec, blobSpec, flatSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb
 } from "./materials";
 import { PROFILE, buildRoadMesh, buildRoadSamples, frameAt, onRoad, type RoadFrame, type V3 } from "./road";
+import { advanceRunPhase, stepChaseRig, withSample, type ChaseRig, type PresentSample } from "./presentation";
 import { ROAD_LENGTH, entityHeight, entityLateral, type Entity, type RunState } from "./sim";
 import type { RunnerStyle } from "./styles";
 import { ENTITY_MODELS, ISLAND_COUNT, LANTERN_COUNT, MESHY } from "./models";
@@ -131,7 +132,8 @@ export interface WorldOptions {
 
 export interface WorldRuntime {
   /** `outro` is the render time in seconds since the run left the `run` phase (fall, leap or game over). */
-  update(state: RunState, dt: number, time: number, aspect: number, outro?: number): void;
+  /** `blend` is the interpolated sample to draw instead of the simulated runner state; omit it to draw `state` as is. */
+  update(state: RunState, dt: number, time: number, aspect: number, outro?: number, blend?: PresentSample): void;
   resetCamera(): void;
   setRunnerStyle(style: RunnerStyle): void;
   readonly nodeCount: number;
@@ -269,17 +271,16 @@ export function buildWorld(options: WorldOptions = {}): World {
       if (runner && options.canvas) {
         attachRootRenderSource(options.canvas, { source: { collectRenderItems: () => (actorVisible ? runner.actor.collectRenderItems({ modelMatrix: actorMatrix }) : []) } });
       }
-      let rig: { f: V3; u: V3 } | null = null;
+      let rig: ChaseRig | null = null;
       let alive = 0;
       let phaseAcc = 0;
       let prevS: number | null = null;
       let prevPulse = 0;
       let burstT = 1;
-      const lerp3 = (a: V3, b: V3, k: number): V3 => [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
-      const norm3 = (a: V3): V3 => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
       const mod = (x: number, m: number): number => ((x % m) + m) % m;
 
-      const update = (S: RunState, dt: number, time: number, aspect: number, outro = 0): void => {
+      const update = (simState: RunState, dt: number, time: number, aspect: number, outro = 0, blend?: PresentSample): void => {
+        const S = blend ? withSample(simState, blend) : simState;
         const frame = frameAt(samples, Math.min(S.s, ROAD_LENGTH));
         node("sky").setPosition(frame.p[0], frame.p[1], frame.p[2]);
         node("sky").setUniform?.("skyTime", time);
@@ -306,7 +307,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         if (prevS === null) prevS = S.s;
         const ds = S.s - prevS;
         prevS = S.s;
-        phaseAcc += ds > 1e-5 ? ds * 0.62 : dt * 2.5;
+        phaseAcc = advanceRunPhase(phaseAcc, ds, dt);
         const surge = Math.max(0, Math.min(1, S.auraVis === undefined ? 0 : S.auraVis));
         const B = frameBasis(frame, -lean);
         const parts = poseHero({
@@ -470,13 +471,7 @@ export function buildWorld(options: WorldOptions = {}): World {
         }
 
         /* chase camera */
-        const up: V3 = norm3([frame.U[0], frame.U[1], frame.U[2]]);
-        if (!rig) rig = { f: [...frame.F], u: up };
-        else {
-          const k = 1 - Math.exp(-dt * 6);
-          rig.f = norm3(lerp3(rig.f, frame.F, k));
-          rig.u = norm3(lerp3(rig.u, up, k));
-        }
+        rig = stepChaseRig(rig, frame.F, frame.U, dt);
         const back = flying ? 9.5 : 7 + Math.min(1.6, S.speed * 0.03);
         const rise = flying ? 4.4 : 3.4;
         const shake = Math.min(1, Math.max(0, S.shake ?? 0)) * 0.25;

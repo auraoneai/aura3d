@@ -9,9 +9,11 @@
  * W/S/A/D to steer), P/Esc pauses, M mutes, R/Enter restarts from the results screen.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
+import { createRenderInterpolator } from "@aura3d/engine/game";
 import {
   RUNGS, START_DAYS, STEP, ROAD_LENGTH, KM_TOTAL, createRun, expandScript, snapshot, stepRun, type InputSegment, type RunInput, type RunState
 } from "./sim";
+import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";
 import { RUNNER_STYLES, hexCss } from "./styles";
 import { displayText } from "./text";
@@ -42,6 +44,7 @@ let ready = false;
 let started = config.autostart;
 let paused = false;
 let renderTime = 0;
+const interpolator = createRenderInterpolator<PresentSample>(blendSamples);
 let last = 0;
 let steps = 0;
 let renderFailed = false;
@@ -235,10 +238,12 @@ function cues(): void {
 
 /* ------------------------------------------------------------------ loop */
 
-function render(dt: number): void {
+/** `blend` draws between the last two simulation steps (live play); captures and manual stepping draw the exact state. */
+function render(dt: number, blend = false): void {
   if (!app || !runtime || renderFailed) return;
   try {
-    runtime.update(state, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT);
+    const alpha = blend ? Math.min(1, loop.accumulator / STEP) : 1;
+    runtime.update(state, dt, renderTime + (alpha < 1 ? loop.accumulator : 0), canvas.clientWidth / Math.max(1, canvas.clientHeight), outroT, alpha < 1 ? interpolator.sample(alpha) : undefined);
     app.step(0);
   } catch (error) {
     renderFailed = true;
@@ -248,6 +253,7 @@ function render(dt: number): void {
 
 function advance(input: RunInput): void {
   stepRun(state, input, STEP);
+  interpolator.push(sampleOf(state));
   steps++;
   renderTime += STEP;
 }
@@ -278,13 +284,14 @@ function tick(now: number): void {
   if (started && !paused && counting <= 0 && state.phase !== "run" && !config.manual) outroT += dt;
   if (started && !resultsShown && state.phase !== "run" && outroT > (RESULT_DELAY[state.phase] ?? 1.5)) showResults();
   cues();
-  render(dt);
+  render(dt, stepping());
   updateHud();
 }
 
 /** Instant start (capture hooks and tests). */
 function begin(): void {
   state = createRun();
+  interpolator.reset(sampleOf(state));
   steps = 0;
   loop.resetAccumulator();
   started = true;
