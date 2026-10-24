@@ -45,3 +45,13 @@ Done: F2 (QA hook) and F3 (fixed-step loop) for these four ports; F4 (audio) del
 - Other apps outside the 26 (`aurora-lander`, `bank-shot`, `blockfall-reactor`, `vault-breakers`, the `-v2` apps) also assign the beacon by hand; out of scope here.
 - `apps/showcase-vault-breakers` still carries a documented workaround for a vendored Rapier flipper-joint sign bug; not one of the 26.
 - Scan script: re-run with the commands in this file's history (`/tmp/leftover-scan.sh` was ephemeral); the patterns are `readPixels|isBlackFrame`, `accumulator|fixedStep`, `window.__AURA`, `new AudioContext|\.resume\(\)`, `GLTFLoader|createHash`, `mulberry32|1664525`, `touchstart`, `mergeGeometries|scatter`, and the font names above.
+
+## Migration status, group C (drift-and-deliver, heatsink, kid-goku)
+
+| Port | F2 QA hook (`installQaHooks`) | F3 fixed-step loop (`createFixedStepLoop`) | F4 audio (`createCueBank`) |
+|---|---|---|---|
+| drift-and-deliver | migrated (every hook key kept; `reset` now returns nothing, the specs ignore it) | migrated (accumulator, 1/24 s frame clamp and step order unchanged) | partial: pickup chimes and the traffic thud are on the bank; the engine, squeal and rush beds stay hand-built because they ramp live parameters. Cue parameters and the noise samples are compared with the old code in `tests/unit/drift-and-deliver-port/audio-cues.test.ts`. Only difference: voices stop 10 ms later, after the envelope reached silence |
+| heatsink | migrated (all keys kept, including `replay`, `replayStart`, `replayTo`, `applyInput`, `frames`, `hud`) | migrated | n/a (the port has no audio) |
+| kid-goku-beyond-the-clouds | not migrated: its hook object has a different shape (`ready` is a boolean property the specs read as `=== true`, `stepFrames` returns events, `replay` takes segments, `frame` returns base64). Needs the specs changed or a kit option for a property `ready` | migrated | partial: 17 oscillator-only events (jump, orb, dragonball, checkpoint, perfect, jan, ken, rock-paper-scissors, dodge, fall-start, respawn, nimbus-ready/end/empty, finish, dead, screech) are on the bank, compared with the old code in `tests/unit/kid-goku-beyond-the-clouds-port/audio-cues.test.ts`. The noise-bearing events stay (the bank's one-shot noise has no 10 ms attack and a different buffer), as does `ui` (it fires in the same tick as the unlock, and the bank drops cues until its context is running) |
+
+Audio equivalence is parameter-level only: frequencies, glides, envelopes, delays, gains and (Drift thud) the noise samples. Nobody listened to it. `createFixedStepLoop` gained `resetAccumulator()` for the restart paths.
