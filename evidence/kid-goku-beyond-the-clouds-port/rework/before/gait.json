@@ -1,0 +1,41 @@
+{
+ "gait": [
+  {
+   "k": 0,
+   "speed": 13.836877294775794
+  },
+  {
+   "k": 1,
+   "speed": 13.92243081660334
+  },
+  {
+   "k": 2,
+   "speed": 13.996946554564591
+  },
+  {
+   "k": 3,
+   "speed": 14.061848560762567
+  },
+  {
+   "k": 4,
+   "speed": 14.118377161616154
+  },
+  {
+   "k": 5,
+   "speed": 14.167612661435939
+  },
+  {
+   "k": "after-jump",
+   "airJump": 2.0233333333333334
+  }
+ ],
+ "summary": {
+  "groundSpeed": null,
+  "rate": null,
+  "gain": null,
+  "footSpeed": null,
+  "slideRatio": null,
+  "phaseSpan": null,
+  "errors": 0
+ }
+}
