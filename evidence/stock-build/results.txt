@@ -1,0 +1,13 @@
+PASS hello-world (vite 7.3.2) raw 3258 kB, gzip 963 kB, largest chunk 921 kB
+PASS mini-game (vite 7.3.2) raw 4064 kB, gzip 1166 kB, largest chunk 1171 kB
+PASS hello-world (vite 7.3.7) raw 3258 kB, gzip 963 kB, largest chunk 921 kB
+PASS mini-game (vite 7.3.7) raw 4064 kB, gzip 1166 kB, largest chunk 1171 kB
+PASS hello-world (vite 7.3.7) raw 3258 kB, gzip 963 kB, largest chunk 921 kB
+PASS racing-starter (vite 7.3.2) raw 4061 kB, gzip 1165 kB, largest chunk 1167 kB
+PASS falling-blocks-starter (vite 7.3.2) raw 4064 kB, gzip 1165 kB, largest chunk 1171 kB
+PASS product-viewer (vite 7.3.2) raw 3815 kB, gzip 1082 kB, largest chunk 922 kB
+PASS mini-game (vite 7.3.7) raw 4064 kB, gzip 1166 kB, largest chunk 1171 kB
+PASS racing-starter (vite 7.3.7) raw 4061 kB, gzip 1165 kB, largest chunk 1167 kB
+PASS falling-blocks-starter (vite 7.3.7) raw 4064 kB, gzip 1166 kB, largest chunk 1171 kB
+PASS product-viewer (vite 7.3.7) raw 3815 kB, gzip 1082 kB, largest chunk 922 kB
+PASS hello-world (vite 7.3.7) raw 3258 kB, gzip 963 kB, largest chunk 921 kB

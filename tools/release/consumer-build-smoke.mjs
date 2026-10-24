@@ -14,7 +14,7 @@
 //
 // Usage (offline once the npm cache holds vite and its dependencies):
 //   node tools/release/publish-all.mjs --pack-only
-//   node tools/release/consumer-build-smoke.mjs [--tarballs DIR] [--templates a,b] [--out FILE] [--keep]
+//   node tools/release/consumer-build-smoke.mjs [--tarballs DIR] [--templates a,b] [--vite 7.3.2] [--out FILE] [--keep]
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -95,7 +95,7 @@ const HELLO_FILES = {
   "src/main.ts": 'import { camera, createAuraApp, lights, primitives, material, scene } from "@aura3d/engine";\n\ncreateAuraApp("#app", {\n  scene: scene({ background: "#07080a" })\n    .add(primitives.box({ material: material.standard({ color: "#4ade9d" }) }))\n    .add(lights.studio())\n    .camera(camera.orbit({ distance: 4, target: [0, 0, 0] }))\n});\n'
 };
 
-function stageProject(name, tarballs, workRoot) {
+function stageProject(name, tarballs, workRoot, viteVersion) {
   const project = join(workRoot, name);
   if (name === HELLO) {
     for (const [file, content] of Object.entries(HELLO_FILES)) {
@@ -113,6 +113,10 @@ function stageProject(name, tarballs, workRoot) {
   for (const [pkg, { path }] of tarballs) overrides[pkg] = `file:${path}`;
   for (const section of ["dependencies", "devDependencies"]) {
     for (const dep of Object.keys(manifest[section] ?? {})) if (tarballs.has(dep)) manifest[section][dep] = overrides[dep];
+  }
+  if (viteVersion) {
+    manifest.devDependencies = { ...(manifest.devDependencies ?? {}), vite: viteVersion };
+    overrides.vite = viteVersion;
   }
   manifest.overrides = { ...(manifest.overrides ?? {}), ...overrides };
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
@@ -151,9 +155,10 @@ export async function runConsumerBuildSmoke(options = {}) {
       const result = { name, ok: false, problems: [] };
       results.push(result);
       try {
-        const project = stageProject(name, tarballs, workRoot);
+        const project = stageProject(name, tarballs, workRoot, options.vite);
         const env = { ...process.env, npm_config_audit: "false", npm_config_fund: "false", npm_config_prefer_offline: "true" };
         execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--prefer-offline"], { cwd: project, env, stdio: "pipe", timeout: 600000 });
+        result.vite = JSON.parse(readFileSync(join(project, "node_modules", "vite", "package.json"), "utf8")).version;
         const engineDist = join(project, "node_modules", "@aura3d", "engine", "dist");
         for (const hit of findNodeBuiltinImports(engineDist, "engine/public/index.js")) result.problems.push(`browser entry reaches ${hit.builtins.join(",")} via ${hit.chain.join(" -> ")}`);
         try {
@@ -178,10 +183,10 @@ export async function runConsumerBuildSmoke(options = {}) {
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const args = process.argv.slice(2);
   const value = (flag) => (args.includes(flag) ? args[args.indexOf(flag) + 1] : undefined);
-  const results = await runConsumerBuildSmoke({ tarballs: value("--tarballs"), templates: value("--templates")?.split(","), keep: args.includes("--keep") });
+  const results = await runConsumerBuildSmoke({ vite: value("--vite"), tarballs: value("--tarballs"), templates: value("--templates")?.split(","), keep: args.includes("--keep") });
   for (const r of results) {
     const size = r.build ? ` raw ${(r.build.raw / 1024).toFixed(0)} kB, gzip ${(r.build.gzip / 1024).toFixed(0)} kB, largest chunk ${(r.build.largest / 1024).toFixed(0)} kB` : "";
-    console.log(`${r.ok ? "PASS" : "FAIL"} ${r.name}${size}`);
+    console.log(`${r.ok ? "PASS" : "FAIL"} ${r.name} (vite ${r.vite ?? "?"})${size}`);
     for (const problem of r.problems) console.log(`  - ${problem}`);
   }
   if (value("--out")) writeFileSync(resolve(ROOT, value("--out")), `${JSON.stringify(results, null, 2)}\n`);
