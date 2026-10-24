@@ -69,11 +69,11 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
 
 2. The look supplies sky light, key shadow, fog, and grade — never stack extra
    `lights.studio()` / `lights.directional()` on top, pass `{ fogDensityScale: 0,
-   exposureEv: -0.1 }` to `looks.preset(...)` and
-   `qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }` on fast
-   arcade routes so contrast and frame pacing stay crisp, and never set
-   `emissive: "#ffffff"` on instanced pool materials (`instanceColors` multiply
-   `u_baseColor`, not `u_emissiveColor`).
+   exposureEv: -0.1 }` to `looks.preset(...)` if fog whitewashes a fast route,
+   and never pin post-processing or the compiler off with a `qualityRebuild` flag
+   list (the engine defaults are right; install the safety net instead), and never
+   set `emissive: "#ffffff"` on instanced pool materials (`instanceColors`
+   multiply `u_baseColor`, not `u_emissiveColor`).
 3. Mount typed 3D GLBs for every character, athlete, enemy, vehicle, weapon,
    tree, and landmark (`model(assets.<name>, { targetMaxDimension, role })`,
    emissive 3–5 on pickups, and explicit `material: material.pbr({ color })` on
@@ -85,8 +85,8 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
    instead of sliding rigid statues. Never build stick-figure humans or box cars
    from primitives; ground `model()` actors (`minY = 0`) at `y + sy / 2` of
    centered platforms; wind custom `primitives.mesh` triangles CCW from `+Y`; and
-   decimate/compress Meshy GLBs (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices,
-   `<= 1024x1024` textures, valid 64-char `sha256-...` `hash` for clean look).
+   run Meshy GLBs through `assets optimize --role` before admission and mount
+   them with a valid 64-char `sha256-...` `hash` (`defineModelAssets`).
 4. Camera state drives `app.camera` every frame — size `html, body, #app, canvas`
    to `100vw × 100vh` (`position: fixed; inset: 0`), extend the 3D ground apron
    deep in `+Z`/`-Z` so the bottom frame is never a black void, disable
@@ -117,13 +117,16 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
    `assets certify-game-geometry --asset track --category racing`.
 9. Runtime evidence: pause, step one frame, then `game.evidence` over input,
    bodies, events, HUD, and look state — see `aura3d-evidence-review` (one link).
+10. Build the shell from the kits, not by hand: `@aura3d/engine/game` (HUD, touch,
+    session, sound), `installQaHooks` + `createFixedStepLoop` for deterministic
+    replay, `createCueBank` for sound, `installSafetyNet` for `?diag=1` and
+    black-frame self-heal — [kits and hooks](references/kits-and-hooks.md).
 
 ## Look-dev loop
 
-Run the `aura3d look capture` → judge → iterate loop from
-`aura3d-art-direction`: lint first (`aura3d look lint`), then the weakest
-rubric category; one change per round until every category reads 7+, 6
-rounds, or 2 flat rounds.
+Run the `aura3d look capture` → judge → iterate loop from `aura3d-art-direction`:
+lint first (`aura3d look lint`), then the weakest rubric category; one change
+per round until every category reads 7+, 6 rounds, or 2 flat rounds.
 
 ## Stop and report
 
@@ -134,8 +137,7 @@ rounds, or 2 flat rounds.
 - The primary player, vehicle, or world is a primitive stand-in: `prototype`.
 - `assets validate-game` crashes or fails: report the exact message, label
   `blocked` for public claims.
-- A kit is missing a needed rule (fail state, collision semantics, path
-  alignment): write it route-local, say so, file a library gap.
+- A kit is missing a needed rule: write it route-local, say so, file a gap.
 - Benchmark mode without `look capture`: build, stop, label `prototype`.
 
 ## References
@@ -147,3 +149,4 @@ rounds, or 2 flat rounds.
 - [Game example standards](https://github.com/auraoneai/aura3d/blob/main/docs/agents/game-example-standards.md)
 - [Game runtime API](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-runtime.md)
 - [Genre looks in the frame](references/genre-looks.md)
+- [Kits and hooks (4.1)](references/kits-and-hooks.md)

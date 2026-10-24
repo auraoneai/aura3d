@@ -88,6 +88,20 @@ model strings, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports,
 `GLTFLoader`, CSS particle stand-ins, primitive-only primary subjects, or
 renderer/game/WebGPU/animation claims that exceed root API evidence.
 
+## What 4.1 adds for agents
+
+Kits that replace code every game used to copy (API pages in `docs/api/`):
+`game-kit.md` (`@aura3d/engine/game`), `qa-kit.md` (deterministic replay hooks),
+`safety-net.md` (`?diag=1` and black-frame self-heal), `audio-synth.md`,
+`model-loader.md` (`defineModelAssets`), `glsl-chunks.md`, `scatter-merge.md`,
+`ball-flight.md` and `racket-athlete-rig.md` (`game.racketSports()`), and
+`cli-asset-tools.md` (`assets optimize`, `merge-clips`, isolated `import-meshy`, the
+Meshy credit ledger). Start browser games from them, and read
+`packages/aura3d-cli/skills/aura3d-core/references/pitfalls.md` before shipping:
+it lists the bugs that passed CI and failed on real GPUs (NaN from `pow`, empty
+instance arrays, unhashed model URLs, instanced textures, shadow depth range,
+custom-shader colour encoding).
+
 ## Agent Skills
 
 Load-on-demand procedures live in `packages/aura3d-cli/skills/` (canonical;
@@ -103,11 +117,11 @@ core`). Worked example logs are in `docs/agents/skills-examples/`.
 | Prompt to scene or route | `aura3d-scene-authoring` |
 | Named real object or user GLB | `aura3d-assets` |
 | Before calling work done, public, or shippable | `aura3d-evidence-review` |
-| `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, Aura Clash | `aura3d-browser-game` |
+| `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, Aura Clash, game HUD/touch/session, QA replay hooks, converting an existing game | `aura3d-browser-game` (`references/kits-and-hooks.md`) |
 | Rigged humanoids, clips, morphs, visemes, assembled characters | `aura3d-character-animation` |
 | `animation-studio` episodes (Scene-Tool CLI) | `aura3d-animation-studio` |
 | three.js ports, `three-compat-*` templates | `aura3d-threejs-migration` |
-| Materials, textures, HDRI, sky, weather, water | `aura3d-materials-environments` |
+| Materials, textures, HDRI, sky, weather, water, `material.custom` shaders and the `a3d_*` chunks | `aura3d-materials-environments` |
 | Flipbook VFX sheets, HUD icons | `aura3d-game-art` |
 | Restyling a finished mesh | `aura3d-retexture` |
 | Paid Meshy generation | `meshy-cli` |

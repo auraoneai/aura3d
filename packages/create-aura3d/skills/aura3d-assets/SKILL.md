@@ -78,23 +78,19 @@ lighting you evaluate materials and silhouettes against.
 
    `--source` scans `src` for raw ids, URLs, and loader code, and lists
    `typedAssetUsages`. Add `--no-placeholders --require-license` for anything
-   public. Refresh stale manifest bounds by re-adding the file. Ensure every
-   admitted entry in `aura.assets.json` and `src/aura-assets.ts` carries a valid
-   64-character `sha256-...` `hash` and `public/aura-assets/...` path for clean
-   look and silhouette so `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`
-   preserves PBR lighting, palette, contrast, and reflection in the production
-   glTF bridge. Never omit `hash` in custom `defineAuraAssets(...)` /
-   `defineAssets` declarations (keeps look and shadow intact) and never place
-   unhashed duplicate GLBs in route-local `apps/<route>/public/aura-assets/`
-   that collide with root `public/aura-assets/` (keeps composition readable).
+   public. Refresh stale manifest bounds by re-adding the file. Every admitted
+   entry in `aura.assets.json` and `src/aura-assets.ts` needs a valid 64-character
+   `sha256-...` `hash` and a `public/aura-assets/...` path: the production glTF
+   bridge only accepts `createAssetProvenance(node.asset).source ===
+   "typed-aura-assets-manifest"`. Never omit `hash` in `defineAuraAssets(...)`
+   and never place unhashed duplicate GLBs in route-local
+   `apps/<route>/public/aura-assets/` that collide with root `public/aura-assets/`.
 7. Use the key as generated. Every character, athlete, enemy, vehicle, weapon,
-   tree, and landmark must mount a real 3D GLB via `model(assets.<name>,
-   { targetMaxDimension, role })` for a readable silhouette — use `targetHeight`
-   only for upright humanoids and `targetMaxDimension` for vehicles, rackets,
-   paddles, weapons, and wide props so aspect ratios never stretch vertically;
-   drive rigged characters (`skins > 0`) with `handle.setAnimation({ clip,
-   loop: true, speed })` so limbs articulate under the key light and shadow; and
-   never build stick-figure humans or box cars from primitives.
+   tree, and landmark mounts a real 3D GLB via `model(assets.<name>,
+   { targetMaxDimension, role })`: `targetHeight` only for upright humanoids,
+   `targetMaxDimension` for vehicles, rackets, weapons, and wide props. Drive
+   rigged characters (`skins > 0`) with `handle.setAnimation({ clip, loop: true,
+   speed })`, and never build stick-figure humans or box cars from primitives.
 
    ```ts
    import { createAuraApp, groundedRenderedAssetPlacement, looks, model, scene } from "@aura3d/engine";
@@ -109,7 +105,15 @@ lighting you evaluate materials and silhouettes against.
    });
    ```
 
-8. Hand off: fighters and games to `aura3d-browser-game`
+8. Games and examples without a project manifest declare models with
+   `defineModelAssets` (same-origin URL, `sha256`, license; `?models=0` falls
+   back to a procedural stand-in) and never use an http(s) URL: the production
+   bridge refuses it and the scene draws nothing. Admit generated models in an
+   isolated project: `assets import-meshy <dir> --into <assets-dir> --prefix
+   <game> --name <role>`. Never run `import-meshy`, `validate` or `typegen` from
+   the repo root while other work is open: they rewrite `aura.assets.json`,
+   `src/aura-assets.ts` (a 100k-line diff) and `public/aura-assets/*`.
+9. Hand off: fighters and games to `aura3d-browser-game`
    (`assets validate-game`), rigs and clips to `aura3d-character-animation`
    (`assets validate-animation`), release checks to `aura3d-evidence-review`.
 
@@ -122,11 +126,9 @@ lighting you evaluate materials and silhouettes against.
 - bounds are extreme, pivot is bad, or orientation is unknown and public APIs
   cannot correct it;
 - the hash duplicates another asset without an explanation;
-- a generated Meshy GLB has not been decimated and compressed before admission
-  (`> 20,000` vertices, `> 2 MB`, 32-bit indices instead of 16-bit `Uint16Array`
-  with `byteStride === 0`, or `> 1024x1024` textures that stall glTF parsing and
-  exhaust GPU memory across the scene's look, lighting, and atmosphere; fix with
-  `assets optimize --file in.glb --out out.glb --role prop`);
+- a generated Meshy GLB has not been through `assets optimize --file in.glb --out
+  out.glb --role prop` (role budgets: prop 6k, character 30k, hero or vehicle 40k
+  vertices; textures capped at 1024 to 2048 px; 16-bit indices);
 - it is placeholder-like, or only a generated thumbnail proves it is readable.
 
 ## Stop and report
@@ -135,13 +137,12 @@ lighting you evaluate materials and silhouettes against.
   reject list: stop, list the query, profile, and rejection reasons, and offer
   two options: a user-supplied licensed file, or Meshy generation (load
   `meshy-cli`, dry run first). Do not model the subject from primitives.
-- Search prints a catalog fetch warning (for example an HTTP 404 from the
-  index): report it verbatim, label asset-dependent work `blocked`, and do not
-  treat fallback deep-links as auto-pullable.
+- Search prints a catalog fetch warning (for example an HTTP 404): report it
+  verbatim, label asset-dependent work `blocked`, and never treat fallback
+  deep-links as auto-pullable.
 - `assets validate --release` fails on provenance: keep the route `prototype`
   until durable evidence is added; never weaken the check.
-- A needed key is absent from `src/aura-assets.ts` after typegen: stop and fix
-  the admission.
+- A needed key is absent from `src/aura-assets.ts` after typegen: fix the admission.
 
 ## References
 

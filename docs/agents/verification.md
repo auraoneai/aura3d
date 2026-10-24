@@ -51,3 +51,30 @@ Visual review:
   by a neutral human reviewer or opposite-vendor model.
 - Treat a report with missing evidence inputs as non-passing even if the report
   generator command exits successfully.
+
+Deterministic replay and QA hooks (4.1):
+
+- Drive games and simulations through `installQaHooks` (`window.__AURA_<NAME>__`:
+  `ready`, `state`, `stepFrames`, `reset`, `replay`, `frame`, `pixels`,
+  `diagnostics`). `state()` is plain data. Use `createFixedStepLoop` with
+  `manual: true` for captures and replays, and `createCountedRng` so a replay can
+  assert the exact draw count (`docs/api/qa-kit.md`).
+- Record a scripted input run from the reference build in at least two independent
+  sessions, derive the tolerance from their spread, and replay it as a unit test.
+  Pure ports compare bit for bit or within 1e-6; say which.
+
+Production build and real hardware:
+
+- Test the production build, not the dev server: assert a non-blank canvas,
+  `drawCalls > 0`, zero console errors, and 200 for every asset URL. A simulation
+  state that advances is not proof the scene draws.
+- Software GL (SwiftShader) proves correctness and draw-call counts, not real-GPU
+  behaviour or frame rate. Install the safety net (`docs/api/safety-net.md`) and ask
+  for a `?diag=1` screenshot from a real device before claiming a page works on GPUs.
+
+Parity against an original game:
+
+- Report histogram and edge metrics (luma and RGB JSD, edge-density ratio, mean luma
+  delta) and a blind A/B judge as identification accuracy against 50% chance, with
+  trial count and seed. A model judge is a model's opinion, not a human's, and
+  "same game design" is a weaker claim than "indistinguishable".

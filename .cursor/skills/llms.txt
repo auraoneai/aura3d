@@ -82,7 +82,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 <!-- agent-guide: everything below this marker is the long-form agent guide; gen-seo.mjs preserves it verbatim -->
 Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,
 lighting, materials, typed assets, camera rigs, gameFeel, SDF text, decals, rigid bodies, and gameplay through
-`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: Aura3D 4.0.2 (succeeding 4.0.1).
+`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: see Facts above (4.1 adds the game kit, QA replay hooks, safety net, audio synth, model loader, GLSL chunks, scatter/merge, racket-sports kits and CLI asset tools).
 
 Hello world: every scene gets a look first.
 
@@ -195,22 +195,31 @@ Mandatory 3D game & scene anti-failure guardrails:
    - Gate Frame 1 on `await app.ready()` before fading out `#boot-gate` (`opacity: 0; pointer-events: none` then remove) and starting the gameplay simulation loop so lighting, shadow, and GLB silhouettes never pop in mid-frame.
    - Default `autopilot` / AI demo mode to `false` (immediate manual control on Frame 1 once `#boot-gate` clears); enable AI autopilot only when `?autoplay=1` or `?demo=1` is present in the URL or when the user clicks the HUD `Auto` toggle button, and yield back to manual control on keyboard (`keydown`), pointer, touch, or gamepad input.
    - Keep mode, stage, camera, `Auto`, and roster selectors in a compact, non-blocking top HUD bar that preserves camera framing, and always call `button.blur()` after button clicks so `Space` or `Enter` gameplay keys never re-trigger focused HUD buttons.
-3. Always decimate and compress Meshy 3D GLBs before admission (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices):
+3. Always optimize Meshy 3D GLBs before admission (`aura3d assets optimize --file in.glb --out out.glb --role <role>`):
    - Raw Meshy exports often contain `200,000–1,750,000` vertices and `20–65 MB` of uncompressed 4K PNG textures, which stall main-thread glTF parsing and exhaust GPU memory when multiple models load in one scene.
-   - Every generated Meshy GLB must be simplified (`MeshoptSimplifier` to `<= 20,000` vertices for props/vehicles, 16-bit `Uint16Array` indices, de-interleaved `byteStride === 0` buffers) and have its textures compressed to `<= 1024x1024` (`~0.5–2.0 MB` per GLB) before being admitted into `public/aura-assets/` so PBR palette, contrast, and reflection stay responsive.
+   - Role budgets: prop 6,000, background 15,000, character 30,000, hero or vehicle 40,000 vertices; textures capped at 1024 to 2048 px; 16-bit indices; keep a game's assets near 25 MB. Admit in an isolated project (`assets import-meshy <dir> --into <assets-dir> --prefix <game> --name <role>`), never from the repo root while other work is open.
 4. Always use canonical typed asset manifest refs (`hash` required):
    - The production glTF bridge requires `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`, which requires a valid 64-character `sha256-...` `hash` and `public/aura-assets/...` provenance from `aura.assets.json` / `src/aura-assets.ts` so the rendered look and silhouette load cleanly.
    - Never omit `hash` in custom `defineAssets(...)` declarations and never place unhashed duplicate GLBs in route-local `apps/<route>/public/aura-assets/` that collide with root `public/aura-assets/`.
 5. Mutate node handles instead of calling `app.setScene()` on every restart:
    - Do not call `app.setScene()` when restarting a round, hole, or bout on the same stage/world; tearing down and remounting the scene disposes live GPU resources, breaks lighting and postprocess continuity, and aborts in-flight GLB loads. Track a scene signature (`stageId` / `worldId`) and reset positions, visibility, and animations through runtime node handles (`app.nodes.require(...)`).
-6. Prevent fog whitewash, overexposure, and instanced emissive blowout (`qualityRebuild.flags`):
-   - Pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` and include `qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }` alongside `...looks.appOptions(...)` on fast action/arcade routes unless distance haze is explicitly desired (`looks.preset` emits `density: 24 / far`, which under `A3D_QR_VFX_FOG` creates an `exp2` haze wall at 20–30m). Never stack duplicate high-intensity `lights.directional`, `lights.ambient`, or `lights.hemisphere` nodes on top of `looks.preset(...)`.
-   - Never set `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool material (`instances.box` / `primitives.box({ instances })`): per-instance `instanceColors` multiply `u_baseColor`, not `u_emissiveColor`, so white emissive blows out every instance to pure white regardless of instance color. Always pass an explicit `material: material.pbr({ color })` on untextured preview GLBs.
+6. Prevent fog whitewash, overexposure, and instanced emissive blowout:
+   - If a fast route whitewashes, pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` for that route. Never pin post-processing, the compiler or fog off for every player with a `qualityRebuild.flags` list: it hides bugs and flattens the look. Install `installSafetyNet` from `@aura3d/debug` so a machine that renders black steps down one rung on its own and `?diag=1` shows the GPU, limits and shader failures.
+   - Never set `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool material (`instances.box` / `primitives.box({ instances })`): per-instance `instanceColors` multiply `u_baseColor`, not `u_emissiveColor`.
 7. Ground `model()` feet on platform top surfaces (`y + sy / 2`) & wind custom meshes CCW:
    - `model(asset, { targetHeight })` normalizes the GLB with `minY = 0` (feet at `position[1]`), whereas `primitives.box` and `primitives.cylinder` (`instances.box` / `instances.cylinder`) are centered on `[-0.5..+0.5]` so a platform at `(y, sy)` has its top surface at `y + sy / 2`. Always place grounded characters and vehicles at `platform.y + platform.sy / 2` so they never sink into logs, pads, or road lanes. Wind custom `primitives.mesh` triangles CCW when viewed from `+Y`.
 8. Enforce full-viewport `100vw × 100vh` canvas, deep ground apron, and pushbox separation:
    - Size `html, body, #app, canvas` to `100vw × 100vh` (`position: fixed; inset: 0; overflow: hidden`) and extend the 3D ground/stage apron deep enough in `+Z`/`-Z` under the camera frustum so the bottom third of the viewport never shows a black clear-color void. Disable `collision: true` on `camera.rigs.shoulder` when the target character has attached child runtime nodes, and enforce `>= 1.4m` fighter pushbox separation (`|x| >= 1.8m` at spawn).
 
+
+Aura3D 4.1 kits (build the shell from these, do not hand-roll it):
+
+- `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, touch, juice, game sound); the root `createGame` is a headless stub.
+- `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks` (`window.__AURA_<NAME>__`), `readQaParams`, `createCountedRng` for deterministic replay and automated checks; `defineModelAssets` for hashed same-origin models with a `?models=0` procedural fallback; `scatterAlongPath`, `scatterInArea`, `splitScatterByDistance`, `mergeStatic` for draw-call budgets; `game.racketSports()` with `ballFlight`, `scoring`, `athleteRig`.
+- `@aura3d/engine/audio`: `createCueBank`, `createStepSequencer`, `createToneLoop`, `createSampleSlices` on the single `AudioContextManager` (never `new AudioContext(`).
+- `@aura3d/debug`: `installSafetyNet` (`?diag=1`, quality switches `?post=0 ?shadow=0 ?env=0 ?sky=0 ?quality=low`, black-frame self-heal).
+- `material.custom` shaders: `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<colorspace_decode>`; custom shaders write linear light, so use `a3dSrgbToLinear` with `toneMapping: "none"` for authored colours, and keep `pow`, `normalize`, `sqrt` and divides NaN-safe (Apple GPUs return NaN where software renderers do not).
+- Production checks that CI missed: the bridge refuses http(s) or unhashed model URLs and then draws nothing; instanced and batched meshes honour texture maps; empty instance arrays are no-ops; software-GL passes are not real-GPU proof. Docs: `docs/api/game-kit.md`, `qa-kit.md`, `safety-net.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`; pitfalls: `aura3d-core/references/pitfalls.md`.
 
 Claims: use every feature freely. Claim only what a judged capture shows.
 
@@ -235,6 +244,7 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
 
 
 

@@ -58,7 +58,20 @@ manual quality override invalidates every measurement that follows.
    `instances.capsule`, `instances.torus`) node with a transform list. Advanced
    PBR extensions can fall back to expanded draws, so confirm native instanced
    submissions in diagnostics before claiming one draw.
-4. Distant detail: use `distanceLod` with increasing `maxDistance` levels and a
+   Repeated `model()` nodes of one asset share decoded textures (4.1) but still
+   upload geometry per node: use `instances.model` for repeats. `instances.mesh` and
+   `batched.mesh` apply texture maps since 4.1; older builds drew them white.
+   An empty instance array is a no-op with an `INSTANCES_EMPTY` diagnostic, not a
+   crash, so plan for zero placements instead of special-casing them.
+4. Scattered props (trees, rocks, lamps, houses): plan placements with
+   `scatterAlongPath` or `scatterInArea` (seeded, exclusion zones, `minDistance`,
+   slope and height filters), split them by distance with `splitScatterByDistance`
+   (detailed model near, cheap instance far), and feed `scatterTransforms` into
+   `instances.model` / `instances.*`. Bake static sets that share a material with
+   `mergeStatic` / `mergeStaticByKey` (one draw per material). Turn off shadow
+   casting on small props and actors: the ports went from 1,249, 1,980 and 677
+   draw calls to 133, about 100 and 137 this way, with the look unchanged.
+   Distant detail: use `distanceLod` with increasing `maxDistance` levels and a
    `hysteresis` band so the camera cannot flap between levels.
 5. Large scenes: rely on CPU frustum culling plus the static-bounds BVH. Give
    custom geometry explicit bounds via `geometry.custom`. There is no GPU
@@ -86,6 +99,8 @@ manual quality override invalidates every measurement that follows.
 - A performance change alters the rendered scene: rerun screenshot review
   through `aura3d-evidence-review` before shipping.
 - GPU timing is unavailable or noisy on the device: say so; do not fill in.
+- Numbers came from a software renderer (SwiftShader): they prove draw-call
+  counts and correctness, not frame rate. Say "software GL" and ask for a real GPU run.
 
 ## References
 
@@ -94,4 +109,5 @@ manual quality override invalidates every measurement that follows.
 - [Bundle sizes](https://github.com/auraoneai/aura3d/blob/main/BUNDLE_SIZES.md)
 - [Texture compression](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/texture-compression.md)
 - [Geometry, instancing, LOD, text](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/geometry-instancing-lod-text.md)
+- [Scatter and merge](https://github.com/auraoneai/aura3d/blob/main/docs/api/scatter-merge.md)
 - [Deployment](https://aura3d.auraone.ai/docs/deployment.html)

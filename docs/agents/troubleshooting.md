@@ -47,11 +47,11 @@
   gameplay keys never re-trigger focused HUD buttons.
 - Meshy GLB stalls main-thread glTF parsing or exhausts GPU memory: raw Meshy
   exports often contain `200,000–1,750,000` vertices and `20–65 MB` of
-  uncompressed 4K PNG textures. Before admission into `public/aura-assets/`,
-  simplify every generated Meshy GLB (`MeshoptSimplifier` to `<= 20,000`
-  vertices for props/vehicles, 16-bit `Uint16Array` indices, de-interleaved
-  `byteStride === 0` buffers) and compress textures to `<= 1024x1024`
-  (`~0.5–2.0 MB` per GLB) so PBR palette, contrast, and reflection load fast.
+  uncompressed 4K PNG textures. Before admission, run
+  `assets optimize --file in.glb --out out.glb --role <role>` (prop 6,000,
+  background 15,000, character 30,000, hero or vehicle 40,000 vertices; textures
+  capped at 1024 to 2048 px) and admit with `assets import-meshy --into <dir>
+  --prefix <game> --name <role>`.
 - Custom `defineAssets(...)` model is dropped by the production glTF bridge or
   collides across routes: the production glTF bridge requires
   `createAssetProvenance(node.asset).source === "typed-aura-assets-manifest"`,
@@ -69,10 +69,11 @@
   visibility, and animations through runtime node handles
   (`app.nodes.require(...)`).
 - Scene looks foggy, washed-out, or characters/floors blow out to pure white:
-  pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` and
-  include `"-vfxFog"` in `qualityRebuild.flags` unless distance haze is
-  explicitly desired (`looks.preset` emits `density: 24 / far`, which under
-  `A3D_QR_VFX_FOG` creates an `exp2` haze wall at 20–30m). Do not stack
+  pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` for that
+  route (`looks.preset` emits `density: 24 / far`, which under `A3D_QR_VFX_FOG`
+  can create an `exp2` haze wall at 20–30m). Never pin post-processing or the
+  compiler off for every player with a `qualityRebuild.flags` list; install the
+  safety net instead. Do not stack
   duplicate high-intensity `lights.directional`, `lights.ambient`, or
   `lights.hemisphere` nodes on top of `looks.preset(...)`. Never set
   `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool
@@ -97,4 +98,13 @@
   nodes at the same position. In fighting and sports games, enforce a minimum
   horizontal pushbox separation (`>= 1.4m`) every frame and spawn fighters at
   `|x| >= 1.8m`.
-
+- Page is black or objects are missing on a real GPU but fine in CI: software GL
+  is not real-GPU proof. Open the route with `?diag=1` (GPU, limits, draw calls,
+  shader failures, last errors), try `?post=0`, `?shadow=0`, `?env=0`, `?sky=0`,
+  `?quality=low` one at a time, and check custom shaders for NaN sources (`pow`
+  of a negative base, `normalize` of zero, divide by zero) via the `a3d_math`
+  chunk helpers. See `packages/aura3d-cli/skills/aura3d-core/references/pitfalls.md`.
+- Textured model drawn through `instances.mesh` or `batched.mesh` is white: fixed
+  in 4.1; upgrade, and give the texture `colorSpace: "srgb"`.
+- Whole canvas goes blank when an instance list is empty: fixed in 4.1 (empty
+  instance arrays are a no-op with an `INSTANCES_EMPTY` diagnostic).

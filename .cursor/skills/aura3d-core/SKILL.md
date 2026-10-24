@@ -83,14 +83,14 @@ without a look ships flat shading, void background and floating props.
    fading `#boot-gate` so lighting, shadow, and GLB silhouettes are fully
    mounted; default `autopilot` to `false` (manual control on Frame 1) unless
    `?autoplay=1` / `?demo=1` is in the URL or the user clicks the HUD `Auto`
-   button (with `button.blur()` for clean framing). Pass
-   `qualityRebuild: { flags: ["game", "-compiler", "-post", "-vfxFog"] }` when
-   fast arcade contrast and frame pacing are required, decimate Meshy GLBs
-   (`<= 20,000` vertices, `<= 2 MB`, 16-bit indices, `<= 1024x1024` textures for
-   sharp reflection and palette), keep canonical `sha256-...` `hash` provenance
-   in `defineAuraAssets(...)` for clean look and silhouette, and mutate runtime
-   node handles (`app.nodes.require(...)`) instead of calling `app.setScene()`
-   on same-stage restarts so lighting, shadow, and postprocess grade never drop.
+   button (with `button.blur()` for clean framing), keep canonical `sha256-...`
+   `hash` provenance in `defineAuraAssets(...)` or `defineModelAssets(...)`, run
+   Meshy GLBs through `assets optimize --role` first, never pin post-processing or
+   the compiler off with a `qualityRebuild` list (use the safety net), and mutate
+   runtime node handles (`app.nodes.require(...)`) instead of calling
+   `app.setScene()` on same-stage restarts so lighting and grade never drop.
+   Build the HUD, replay hooks and sound from the kits:
+   [kits and hooks](../aura3d-browser-game/references/kits-and-hooks.md).
 
 ## Routing table
 
@@ -136,6 +136,7 @@ spec lives in `aura3d-art-direction`.
 ## References
 
 - [Shared boundaries](references/boundaries.md)
+- [Known pitfalls](references/pitfalls.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)
 - [Claims and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/agents/claims-and-boundaries.md)
 - [No hackjob rules](https://github.com/auraoneai/aura3d/blob/main/docs/agents/no-hackjob-rules.md)

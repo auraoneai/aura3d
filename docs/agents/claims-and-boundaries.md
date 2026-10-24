@@ -234,10 +234,25 @@ A public game route must prove:
 - route-health or equivalent evidence that names primary assets, primitive
   count, renderer mode, fallback mode, and claims.
 
-Until production-quality game kits are exported and tested from root
-`@aura3d/engine`, describe route-local game logic as route-local. Do not claim a
-reusable platformer, racing, falling-block, character-controller, or collision
-kit unless that public API exists and passes root-only tests.
+Reusable pieces are public: the game kit (`@aura3d/engine/game`: HUD, touch,
+session, juice, game sound), the QA kit, the audio synth kit and
+`game.racketSports()`. Claim a reusable kit only for the exports above and only with
+their unit tests; the root `createGame` is a headless stub. Opponent behaviour,
+level layout, art direction, challenge scoring and duration proofs stay
+**route-local**: say so, and do not claim a reusable platformer, racing,
+falling-block or character-controller kit beyond the public `game.*` genre kits that
+root-only tests cover.
+
+Ports and rebuilds of existing games add three claim limits:
+
+- "Same simulation" needs a recorded reference and a replay test with a stated
+  tolerance (bit for bit, or 1e-6). Say which game build produced the reference.
+- "Looks the same" needs matched-state frames and metrics (luma and RGB JSD,
+  edge-density ratio, mean luma delta). A blind model judge is a model's opinion,
+  reported as identification accuracy against 50% chance; it is never "pixel parity"
+  and never a human review.
+- "Works on GPUs" needs a real-device run. Software GL (SwiftShader) evidence is
+  labelled "software GL" and proves correctness and draw-call counts only.
 
 ## Evidence Checklist
 
@@ -300,5 +315,10 @@ Do not write:
   game APIs and automated input tests prove that kit.
 - "Real-time simulation" when telemetry is disconnected from scene state.
 - "Asset-backed" when the primary subject is primitives or raw URLs.
+- "Pixel parity" or "indistinguishable from the original" from histograms and a
+  model judge.
+- "Runs on every GPU" from a software-renderer run, or "fixed on real hardware"
+  without a real-device confirmation.
+- "Same as the original" for a port without a recorded reference and a replay test.
 
 When in doubt, lower the label to `prototype` and describe the missing evidence.

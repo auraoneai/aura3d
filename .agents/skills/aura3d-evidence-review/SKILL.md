@@ -42,6 +42,18 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
    local agent process. It writes route-health output and
    `tests/reports/screenshot.png` plus pixel metrics. Capture desktop and
    mobile viewports and retain the PNGs with hashes.
+   Games and simulations: drive the page through `installQaHooks`
+   (`window.__AURA_<NAME>__.stepFrames/state/replay`) and compare the `state` hook with a
+   recorded reference whose tolerance comes from two independent sessions.
+   Test the **production build**, not the dev server: bundling can drop modules
+   and the production bridge refuses unhashed model URLs, so assert a non-blank
+   canvas, `drawCalls > 0`, zero console errors and 200 for every asset URL. A
+   state hook that advances proves nothing about pixels (a page can run its
+   simulation under a black canvas).
+   Software GL (SwiftShader) proves correctness and draw-call counts only. Ship
+   the safety net (`installSafetyNet`, `?diag=1`, black-frame self-heal) on any
+   route you deploy, ask for a real-device `?diag=1` screenshot before claiming it
+   works on GPUs, and label software-only runs as such.
 4. For kit-based or prompt-plan scenes, collect structured evidence:
    `collectAuraSceneEvidence(scene)` for bodies, cameras, clips, and asset
    provenance; `app.diagnostics().look` (resolved look, expansion, lint
@@ -59,7 +71,11 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
 7. Grade cinematic scenes on the ladder: L0 text only, L1 primitive sketch,
    L2 asset-backed draft, L3 realtime cinematic scene, L4 production handoff.
    Only L3 or better is public product proof.
-8. Bake-offs: when comparing a catalog candidate against a Meshy candidate,
+8. Parity and look claims against an original: report a seeded, randomised
+   blind A/B judge as identification accuracy against chance (50%) with trial
+   count and seed, and say it is a model's judgement, not a human's. "Same game
+   design" and "indistinguishable" are different claims; never say pixel parity
+   from histograms and a judge. Bake-offs: when comparing a catalog candidate against a Meshy candidate,
    use one brief, one rubric, one camera and lighting setup, and the same
    gates for both. Report both verdict sets and pick on evidence, not source.
 9. Thumbnails and posters: run `npx @aura3d/cli@latest assets thumbnail` for
@@ -80,7 +96,9 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
   diagnoses, it does not prove pixels;
 - an in-repo scorer as release proof (use a neutral human or opposite-vendor
   model reviewer);
-- a report generated with missing evidence inputs, even when it exits 0.
+- a report generated with missing evidence inputs, even when it exits 0;
+- software-GL frames offered as proof of real-GPU behaviour;
+- a live smoke that only checks the simulation state advanced.
 
 ## Stop and report
 
@@ -100,6 +118,8 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
 ## References
 
 - [Boundaries](../aura3d-core/references/boundaries.md)
+- [QA and replay kit](https://github.com/auraoneai/aura3d/blob/main/docs/api/qa-kit.md)
+- [Runtime safety net](https://github.com/auraoneai/aura3d/blob/main/docs/api/safety-net.md)
 - [Verification](https://github.com/auraoneai/aura3d/blob/main/docs/agents/verification.md)
 - [Rendering proof required](https://github.com/auraoneai/aura3d/blob/main/docs/agents/rendering-proof-required.md)
 - [Cinematic scene quality](https://github.com/auraoneai/aura3d/blob/main/docs/agents/cinematic-scene-quality.md)

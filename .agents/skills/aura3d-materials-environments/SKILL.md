@@ -111,6 +111,12 @@ Checks (all steps):
 13. Screenshots (normal mode only) run through `npm run test` on CI or a remote
     worker. Hand the claim label to `aura3d-evidence-review`.
 
+14. Custom shaders (`material.custom`): write linear light, use
+    `#include <colorspace_decode>` with `toneMapping: "none"` for authored hex
+    colours, take hash/noise/sky/fog from the `a3d_*` chunks, and keep every
+    `pow`, `normalize`, `sqrt` and divide NaN-safe —
+    [custom shader chunks](references/custom-shader-chunks.md).
+
 ## Look-dev loop
 
 `aura3d look capture` → judge against the quality-bar rubric → `aura3d look
@@ -127,10 +133,12 @@ per round.
 - The HDRI is not 2:1, has a seam, or never reaches `iblPixelBacked`: report
   it and keep the built-in environment.
 - A PBR role is missing roughness or metalness: reject the set.
+- A custom-shader colour looks grey or the frame goes black on a real GPU: fix the colour contract or the NaN source; do not pin post off.
 - Any check above was not run: the route is `prototype`, not release.
 
 ## References
 
+- [Custom shader chunks (4.1)](references/custom-shader-chunks.md)
 - [Environment lighting](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/environment-lighting.md)
 - [HDR, IBL, tone mapping, and color](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/lighting-environment-color.md)
 - [Texture compression (KTX2/Basis)](https://github.com/auraoneai/aura3d/blob/main/docs/rendering/texture-compression.md)

@@ -159,5 +159,47 @@ Round 1 failure repairs:
   and dolly camera in frame. Do not replace it with a single portal, flat
   gradient, or CSS-only animation.
 
+## Browser games and ports (4.1)
+
+Do not hand-roll the game shell. The pieces below are library surface (API pages in
+`docs/api/`):
+
+- **Lifecycle, pause, results, DOM HUD, touch, juice, game sound:** `createGame`
+  from `@aura3d/engine/game` (`game-kit.md`). Importing that entry turns the `game`
+  lane on; the root `createGame` is a headless stub that logs `CREATE_GAME_STUB`.
+- **Deterministic simulation and automated checks:** `createFixedStepLoop`,
+  `installQaHooks`, `readQaParams`, `createCountedRng` (`qa-kit.md`).
+- **Sound:** `createCueBank`, `createStepSequencer`, `createToneLoop`,
+  `createSampleSlices` from `@aura3d/engine/audio` (`audio-synth.md`).
+- **Models for production:** `defineModelAssets` (`model-loader.md`): same-origin
+  URL, `sha256`, license, `?models=0` procedural fallback.
+- **Draw-call budgets:** `scatterAlongPath`, `scatterInArea`, `splitScatterByDistance`,
+  `mergeStatic` (`scatter-merge.md`).
+- **Custom shaders:** `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`,
+  `<a3d_toon>`, `<colorspace_decode>` (`glsl-chunks.md`).
+- **Racket sports:** `game.racketSports()` with `ballFlight`, `scoring`, `athleteRig`
+  (`ball-flight.md`, `racket-athlete-rig.md`).
+- **Shipping safety:** `installSafetyNet` from `@aura3d/debug` (`safety-net.md`).
+
+Converting an existing browser game: capture a deterministic reference of the
+original, write a typed contract, transcribe the pure simulation behind
+differential tests, port render, input, audio and UI behind the contract, then gate
+on replay, matching frames, a real-input play-through and a production-build check
+before swapping the route (`docs/aura-slam/ARCHITECTURE.md`,
+`docs/workflows/crayon-game-reverse-engineering.md`). Do not copy the original's
+art, text or audio; reproduce mechanics, tuning and look.
+
+## Generated 3D assets
+
+1. Try the catalog first (`aura3d-assets`); generate only what it lacks.
+2. Write a text prompt in your own words; never image-to-3D from screenshots of
+   someone else's game.
+3. Keep a credit ledger (`aura3d meshy ledger reserve | settle | status`) with a
+   per-game cap; a rate-limited call is `unconfirmed`, not failed.
+4. `assets optimize --role`, then `assets import-meshy --into <dir> --prefix <game>
+   --name <role>` (isolated admission), then declare it with `defineModelAssets`.
+5. Prove it renders in the production build, with a non-blank canvas and
+   `drawCalls > 0`. Details: `docs/api/cli-asset-tools.md` and the `meshy-cli` skill.
+
 Keep edits scoped to active product paths. Archived legacy runtime files are
 historical reference only.
