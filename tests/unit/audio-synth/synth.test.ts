@@ -57,6 +57,33 @@ describe("SynthCueBank", () => {
     expect(filterSlide?.args[0]).toBe(4000);
   });
 
+  it("noise layers ramp up over `attack` and loop the buffer only when asked", async () => {
+    const f = createFakeContext("running");
+    const bank = createCueBank({
+      context: f.ctx,
+      cues: {
+        plain: { layers: [{ kind: "noise" as const, dur: 0.5, gain: 0.1 }] },
+        swell: { layers: [{ kind: "noise" as const, dur: 0.5, gain: 0.1, attack: 0.125, loop: true }] }
+      }
+    });
+    await bank.unlock();
+    bank.play("plain");
+    const plainSource = f.ofKind("source")[0]!;
+    expect(plainSource.loop).toBe(false);
+    const plainGain = f.calls.filter((c) => c.node === "gain.gain" && c.method === "setValueAtTime" && c.args[0] === 0.1);
+    expect(plainGain).toHaveLength(1);
+    f.calls.length = 0;
+    bank.play("swell");
+    const swellSource = f.ofKind("source")[1]!;
+    expect(swellSource.loop).toBe(true);
+    const gainCalls = f.calls.filter((c) => c.node === "gain.gain");
+    expect(gainCalls).toEqual([
+      { node: "gain.gain", method: "setValueAtTime", args: [0.0001, 0] },
+      { node: "gain.gain", method: "expRamp", args: [0.1, 0.125] },
+      { node: "gain.gain", method: "expRamp", args: [0.0001, 0.5] }
+    ]);
+  });
+
   it("passes level to layer functions and scales pitch and gain", async () => {
     const { f, bank } = await unlocked();
     bank.play("rising", { level: 3, pitch: 2 });

@@ -306,17 +306,24 @@ export class SynthCueBank<K extends string = string> {
 
   private noiseHit(layer: NoiseLayer, t0: number, gainScale: number): number {
     const ctx = this.ctx as SynthContext;
-    const { dur = 0.2, gain = 0.15, freq = 1200, q = 1, type = "bandpass", slideTo, delay = 0 } = layer;
+    const { dur = 0.2, gain = 0.15, freq = 1200, q = 1, type = "bandpass", slideTo, delay = 0, attack, loop = false } = layer;
     const at = t0 + delay;
     const src = ctx.createBufferSource();
     src.buffer = this.getNoiseBuffer();
+    if (loop) src.loop = true;
     const filter = ctx.createBiquadFilter();
     filter.type = type;
     filter.frequency.setValueAtTime(freq, at);
     filter.Q.value = q;
     if (slideTo) filter.frequency.exponentialRampToValueAtTime(Math.max(40, slideTo), at + dur);
     const g = ctx.createGain();
-    g.gain.setValueAtTime(Math.max(MIN_GAIN, gain * gainScale), at);
+    const peak = Math.max(MIN_GAIN, gain * gainScale);
+    if (attack !== undefined && attack > 0) {
+      g.gain.setValueAtTime(MIN_GAIN, at);
+      g.gain.exponentialRampToValueAtTime(peak, at + attack);
+    } else {
+      g.gain.setValueAtTime(peak, at);
+    }
     g.gain.exponentialRampToValueAtTime(MIN_GAIN, at + dur);
     src.connect(filter);
     filter.connect(g);

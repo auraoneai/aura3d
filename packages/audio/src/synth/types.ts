@@ -48,6 +48,10 @@ export interface NoiseLayer {
   readonly type?: BiquadFilterType;
   readonly slideTo?: number;
   readonly delay?: number;
+  /** Seconds to ramp up from silence to `gain`. Default: none (the burst starts at full level). */
+  readonly attack?: number;
+  /** Loop the shared noise buffer for the whole `dur` (it is 0.4 s long). Default false: one pass, then silence. */
+  readonly loop?: boolean;
   readonly bus?: SynthBus;
 }
 
