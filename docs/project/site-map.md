@@ -1,11 +1,11 @@
 # Site Map
 
-Version: 4.0.0
+Version: 4.1.1
 
-Current release: Aura3D 4.0.0.
+Current release: Aura3D 4.1.1.
 
 Date: 2026-10-15
-Status: Aura3D 4.0.0 site map
+Status: Aura3D 4.1.1 site map
 
 ## Public Marketing Pages
 
@@ -26,11 +26,10 @@ copy boundary and must not present prototypes as public release examples.
 ## Canonical Repo Docs
 
 - [Current state](status/current-state.md)
-- [Product boundaries](status/product-boundaries.md)
+- [Product boundaries](../agents/claims-and-boundaries.md)
 - [Known limits](status/known-limits.md)
 - [Claim guidelines](claim-guidelines.md)
-- [Launch positioning](launch-positioning.md)
-- [Release tracks](release-tracks.md)
+- [Competitive positioning](competitive-positioning.md)
 - [Release checklist](release/release-checklist.md)
 - [Release process](release-process.md)
 - [Aura3D 4.0.0 release notes](aura3d-400-release-notes.md)
@@ -43,7 +42,7 @@ copy boundary and must not present prototypes as public release examples.
 - [`createAuraApp` production bridge architecture](architecture/create-aura-app-production-bridge.md)
 - [Frozen benchmark release gates](frozen-benchmark-release-gates.md)
 - [Superiority evidence workflow](superiority-evidence-workflow.md)
-- [Marketing site](marketing-site.md)
+- [Marketing site](../../marketing/index.html)
 
 ## Local Example Routes
 

@@ -224,6 +224,8 @@ site/
 *.bundle.js
 *.bundle.js.map
 !apps/showcase-top-tennis/public/toptennis/tour-guest.bundle.js
+!apps/showcase-top-tennis-v2/public/toptennis-v2/tour-guest.bundle.js
+!public/toptennis-v2/tour-guest.bundle.js
 
 # ============================================================================
 # Misc
