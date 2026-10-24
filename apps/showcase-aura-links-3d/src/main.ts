@@ -84,6 +84,7 @@ import {
   suggestClub
 } from "./game/sim";
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
+import { sweptClubContact, type ClubContact } from "./game/contact";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
@@ -1264,6 +1265,33 @@ let pendingCommit: import("./game/types").ShotCommit | null = null;
 /** simTime of the last ball strike (camera keeps the golfer framed past it) */
 let impactAt = -10;
 
+/** club-head radius added to the ball radius for the swept strike test (m) */
+const CLUB_HEAD_REACH_R = 0.04;
+/** fallback: if the head never touched the ball this long after the downswing, strike anyway so the shot cannot soft-lock */
+const CONTACT_FALLBACK_S = 0.06;
+let prevClubHead: Vec3 | null = null;
+let lastContact: (ClubContact & { fallback: boolean; simTime: number }) | null = null;
+
+/** The strike is decided by the club head's swept path against the ball, not by a timer. */
+function checkClubContact(dt: number, shotYaw: number): void {
+  const driving = swingDrive.phase === "downswing" || swingDrive.phase === "follow";
+  const head = golferTelemetry().clubHeadWorld as Vec3;
+  if (!driving || swingDrive.impactFired || !golferRig) {
+    prevClubHead = driving ? head : null;
+    return;
+  }
+  const ball = golferTelemetry().ballWorld as Vec3;
+  const hit = prevClubHead
+    ? sweptClubContact(prevClubHead, head, ball, BALL_R + CLUB_HEAD_REACH_R, dt, shotYaw)
+    : null;
+  prevClubHead = head;
+  if (!hit) return;
+  swingDrive.impactFired = true;
+  impactAt = simTime;
+  lastContact = { ...hit, fallback: false, simTime };
+  fireImpact();
+}
+
 /** drive → (pose phase, normalized t) for poseGolfer */
 function drivePose(): [GolferPhase, number] {
   const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
@@ -1323,12 +1351,7 @@ function advanceSwingDrive(dt: number): void {
       case "downswing": {
         const dur = swingDrive.putt ? SWING_TIMING.puttDownS : SWING_TIMING.downswingS;
         if (swingDrive.t >= dur) {
-          // IMPACT — the clubhead crosses the ball at the bottom of the arc
-          if (!swingDrive.impactFired) {
-            swingDrive.impactFired = true;
-            impactAt = simTime;
-            fireImpact();
-          }
+          // the head is at the ball now; `checkClubContact` fires the strike from the swept path
           swingDrive.phase = "follow";
           swingDrive.t = 0;
           continue;
@@ -1336,6 +1359,15 @@ function advanceSwingDrive(dt: number): void {
         return;
       }
       case "follow": {
+        if (!swingDrive.impactFired && swingDrive.t >= CONTACT_FALLBACK_S) {
+          swingDrive.impactFired = true;
+          impactAt = simTime;
+          lastContact = {
+            u: 1, point: golferTelemetry().clubHeadWorld as Vec3, pathDir: [0, 0, 1], speed: 0,
+            pathYawDeg: 0, offsetM: golferTelemetry().impactDistance ?? 0, fallback: true, simTime
+          };
+          fireImpact();
+        }
         const dur = swingDrive.putt ? SWING_TIMING.puttFollowS : SWING_TIMING.followS;
         if (swingDrive.t >= dur) {
           swingDrive.phase = "settle";
@@ -2061,6 +2093,7 @@ function frame(dt: number): void {
         phase = "idle";
       }
       poseGolfer(golferRig, phase, u, g.pos, g.yaw, (x, z) => t.height(x, z));
+      checkClubContact(dt, g.yaw);
     }
 
     // flag flutter + cup pulse
@@ -2345,7 +2378,16 @@ function publishEvidence(): void {
         clubHeadWorld: tl.clubHeadWorld,
         gripWorld: tl.gripWorld,
         ballWorld: tl.ballWorld,
-        clubAttached: tl.attached
+        clubAttached: tl.attached,
+        contact: lastContact
+          ? {
+              fallback: lastContact.fallback,
+              speed: lastContact.speed,
+              pathYawDeg: lastContact.pathYawDeg,
+              offsetM: lastContact.offsetM,
+              u: lastContact.u
+            }
+          : null
       };
     })(),
     ballStatus: state.ball?.status ?? null,

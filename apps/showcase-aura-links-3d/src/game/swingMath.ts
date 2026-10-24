@@ -271,8 +271,8 @@ const K_TAKE: SwingKey = { grip: [0.37, 0.92, -0.11], dir: unit([-0.08, -0.84, -
 const K_TOP: SwingKey = { grip: [0.36, 1.46, -0.52], dir: unit([-0.07, 0.50, -0.86]), coil: 0.88, flex: 0.02, bend: 0.10, hipY: -0.03 };
 const K_LAG: SwingKey = { grip: [0.40, 1.06, -0.20], dir: unit([-0.14, -0.60, -0.79]), coil: 0.46, flex: 0.04, bend: 0.02, hipY: -0.025 };
 const K_IMPACT = keyAtBall([-0.33, -0.93, -0.08], { coil: 0.10, flex: 0.10, bend: -0.05, hipY: -0.02 });
-const K_THRU: SwingKey = { grip: [0.39, 1.05, 0.28], dir: unit([-0.05, 0.26, 0.97]), coil: -0.5, flex: -0.08, bend: -0.12, hipY: 0.0 };
-const K_FINISH: SwingKey = { grip: [0.44, 1.36, 0.22], dir: unit([0.10, 0.80, 0.59]), coil: -1.05, flex: -0.16, bend: -0.24, hipY: 0.01 };
+const K_THRU: SwingKey = { grip: [0.39, 1.05, 0.28], dir: unit([-0.05, 0.26, 0.97]), coil: -0.5, flex: -0.08, bend: -0.12, hipY: -0.01 };
+const K_FINISH: SwingKey = { grip: [0.44, 1.36, 0.22], dir: unit([0.10, 0.80, 0.59]), coil: -1.05, flex: -0.16, bend: -0.24, hipY: -0.005 };
 
 /** putting pendulum — compact arc, same solve; impact at the ball exactly */
 const KP_ADDR = keyAtBall([-0.33, -0.94, -0.02], { coil: 0.04, flex: 0.08, bend: 0.02, hipY: -0.08 });
@@ -320,7 +320,48 @@ export function evaluateSwing(phase: SwingPosePhase, t: number): SwingKey {
 }
 
 /** base address spine flex split across Hips/Spine/Chest (rad, + = forward over the ball) */
-export const FLEX_SPLIT = { hips: 0.30, spine: 0.20, chest: 0.14 };
+export const FLEX_SPLIT = { hips: 0.30, spine: 0.19, chest: 0.12 };
+
+/** golfer leg bind (GLB model space): thigh/shin lengths and hip-joint offsets from Hips */
+export const LEG = {
+  thigh: 0.4123,
+  shin: 0.3373,
+  hipJointL: [0.1143, -0.0375, 0] as V3,
+  hipJointR: [-0.1624, -0.0375, 0] as V3,
+  /** hips sit this much lower (m) than the standing bind: the knee-flex crouch */
+  crouch: 0.012,
+  /** hips sit this far behind the ankle line (m): hinge at the hips, not a lean from the feet */
+  hipsBack: 0.03
+};
+const BIND_ANKLE_Y = RIG.hipsBind[1] + LEG.hipJointL[1] - LEG.thigh - LEG.shin;
+const ANKLE_L: V3 = [RIG.hipsBind[0] + LEG.hipJointL[0], BIND_ANKLE_Y, 0];
+const ANKLE_R: V3 = [RIG.hipsBind[0] + LEG.hipJointR[0], BIND_ANKLE_Y, 0];
+const DOWN: V3 = [0, -1, 0];
+const KNEE_POLE: V3 = [0, 0, 1];
+
+/** two-bone leg IK onto a planted ankle; knees bend toward +Z (the facing direction) */
+function solveLeg(hip: V3, ankle: V3): { thighW: Quat; shinW: Quat; knee: V3; flexRad: number; miss: number } {
+  const toA = vSub(ankle, hip);
+  const maxD = LEG.thigh + LEG.shin - 1e-4;
+  const minD = Math.abs(LEG.thigh - LEG.shin) + 1e-4;
+  const d = Math.min(maxD, Math.max(minD, vLen(toA)));
+  const dir = unit(toA);
+  const cosA = (LEG.thigh * LEG.thigh + d * d - LEG.shin * LEG.shin) / (2 * LEG.thigh * d);
+  const a = Math.acos(Math.max(-1, Math.min(1, cosA)));
+  const perp = unit(ortho(KNEE_POLE, dir));
+  const thighDir = unit(vAdd(vScale(dir, Math.cos(a)), vScale(perp, Math.sin(a))));
+  const knee = vAdd(hip, vScale(thighDir, LEG.thigh));
+  const reach = vAdd(hip, vScale(dir, d));
+  const shinDir = unit(vSub(reach, knee));
+  const cosK = (LEG.thigh * LEG.thigh + LEG.shin * LEG.shin - d * d) / (2 * LEG.thigh * LEG.shin);
+  return {
+    thighW: qFromTo(DOWN, thighDir),
+    shinW: qFromTo(DOWN, shinDir),
+    knee,
+    flexRad: Math.PI - Math.acos(Math.max(-1, Math.min(1, cosK))),
+    miss: vDist(ankle, reach)
+  };
+}
 
 /* ------------------------------------------------------------------ *
  *  Pose solve — keyframe → skeleton local rotations + club telemetry  *
@@ -347,6 +388,23 @@ export interface SolvedSwing {
   readonly reachR: number;
   readonly reachL: number;
   readonly wristError: number;
+  /** posture read-outs for the acceptance trace and the unit tests */
+  readonly posture: GolferPosture;
+}
+
+export interface GolferPosture {
+  /** angle of hips→head from vertical (deg): the spine tilt a viewer sees */
+  readonly spineTiltDeg: number;
+  /** lateral part of the spine tilt (deg, shot-local side bend) */
+  readonly sideBendDeg: number;
+  /** thigh angle from vertical (deg) */
+  readonly thighTiltDeg: number;
+  /** knee flexion (deg), mean of both legs */
+  readonly kneeFlexDeg: number;
+  /** horizontal distance head → ball (m, shot-local) */
+  readonly headOverBallM: number;
+  /** horizontal drift of the planted ankles from the bind stance (m, model space) */
+  readonly ankleDriftM: number;
 }
 
 /**
@@ -374,12 +432,20 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   const spineW = qMul(hipsW, spineLocal);
   const chestW = qMul(spineW, chestLocal);
   const headW = qMul(chestW, headLocal);
-  const hipsPos = vAdd(RIG.hipsBind, [0, key.hipY, 0.02 * (flexScale - 1)]);
+  const hipsPos = vAdd(RIG.hipsBind, [0, key.hipY - LEG.crouch, -LEG.hipsBack + 0.02 * (flexScale - 1)]);
   const spinePos = vAdd(hipsPos, qRotate(hipsW, RIG.tSpine));
   const chestPos = vAdd(spinePos, qRotate(spineW, RIG.tChest));
   const headPos = vAdd(chestPos, qRotate(chestW, RIG.tHead)); // eslint-disable-line @typescript-eslint/no-unused-vars
   const shoulderR = vAdd(chestPos, qRotate(chestW, RIG.tShoulderR));
   const shoulderL = vAdd(chestPos, qRotate(chestW, RIG.tShoulderL));
+
+  // legs: planted ankles at the bind stance, knees bent toward the facing direction.
+  // The legs are children of Hips, so the hip hinge must be cancelled in their local rotations.
+  const hipJointL = vAdd(hipsPos, qRotate(hipsW, LEG.hipJointL));
+  const hipJointR = vAdd(hipsPos, qRotate(hipsW, LEG.hipJointR));
+  const legL = solveLeg(hipJointL, ANKLE_L);
+  const legR = solveLeg(hipJointR, ANKLE_R);
+  const hipsInv = qConj(hipsW);
 
   // targets into model space
   const gripM = toModel(root, key.grip);
@@ -404,13 +470,35 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   const clubHead = toShot(root, headM);
   const leftPalmShot = toShot(root, vAdd(elbowL, qRotate(foreWorldL, RIG.palmL)));
 
+  const headShot = toShot(root, headPos);
+  const spineVec = vSub(headPos, hipsPos);
+  const spineTiltDeg = (Math.acos(Math.max(-1, Math.min(1, spineVec[1] / vLen(spineVec)))) * 180) / Math.PI;
+  const sideBendDeg = (Math.atan2(Math.abs(spineVec[0]), spineVec[1]) * 180) / Math.PI;
+  const thighVec = vSub(legL.knee, hipJointL);
+  const thighTiltDeg = (Math.acos(Math.max(-1, Math.min(1, -thighVec[1] / vLen(thighVec)))) * 180) / Math.PI;
+  const posture: GolferPosture = {
+    spineTiltDeg,
+    sideBendDeg,
+    thighTiltDeg,
+    kneeFlexDeg: ((legL.flexRad + legR.flexRad) / 2) * (180 / Math.PI),
+    headOverBallM: Math.hypot(headShot[0] - BALL_SHOT[0], headShot[2] - BALL_SHOT[2]),
+    ankleDriftM: Math.max(legL.miss, legR.miss)
+  };
+
   return {
+    posture,
     bones: {
       Root: qIdentity,
       Hips: hipsLocal,
       Spine: spineLocal,
       Chest: chestLocal,
       Head: headLocal,
+      LeftUpperLeg: qMul(hipsInv, legL.thighW),
+      LeftLowerLeg: qMul(qConj(legL.thighW), legL.shinW),
+      LeftFoot: qConj(legL.shinW),
+      RightUpperLeg: qMul(hipsInv, legR.thighW),
+      RightLowerLeg: qMul(qConj(legR.thighW), legR.shinW),
+      RightFoot: qConj(legR.shinW),
       RightUpperArm: upperLocalR,
       RightForearm: foreLocalR,
       LeftUpperArm: upperLocalL,
