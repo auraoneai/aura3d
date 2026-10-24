@@ -99,17 +99,6 @@ if (FREEZE_MS > 0) setTimeout(() => {
   try { app.pause(); } catch { /* */ }
 }, FREEZE_MS);
 
-// The engine beacon __AURA3D_GAME__ embeds `app`/`scene` — circular — which
-// crashes JSON dumps in remote capture harnesses. Re-publish a JSON-safe copy.
-setInterval(() => {
-  const w = window as unknown as Record<string, unknown>;
-  const b = w.__AURA3D_GAME__ as Record<string, unknown> | undefined;
-  if (!b || typeof b !== "object") return;
-  if (b.app !== undefined || b.scene !== undefined || b.session !== undefined) {
-    w.__AURA3D_GAME__ = { route: b.route, state: b.state, frame: b.frame, firstFrameAt: b.firstFrameAt, sessionStartedAt: b.sessionStartedAt };
-  }
-}, 200);
-
 const rawInput = g.input;
 const keysHeld = new Set<string>();
 const keysPressed = new Set<string>();
