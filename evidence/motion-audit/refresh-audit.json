@@ -1,0 +1,372 @@
+{
+  "drift-and-deliver": {
+    "60Hz": {
+      "latest": {
+        "frames": 482,
+        "meanStep": 0.46827250221514016,
+        "cv": 0.08807261187090414,
+        "stillFrames": 2,
+        "camCv": 0.05000238415190267,
+        "flipsPer10s": 5
+      },
+      "interp": {
+        "frames": 482,
+        "meanStep": 0.4691034484120044,
+        "cv": 0.03816909404025978,
+        "stillFrames": 0,
+        "camCv": 0.042847285847018544,
+        "flipsPer10s": 0
+      }
+    },
+    "60Hz+-1.5ms": {
+      "latest": {
+        "frames": 481,
+        "meanStep": 0.4692460417207848,
+        "cv": 0.24027135821247567,
+        "stillFrames": 13,
+        "camCv": 0.07910513388944235,
+        "flipsPer10s": 32.5
+      },
+      "interp": {
+        "frames": 481,
+        "meanStep": 0.4689412596240626,
+        "cv": 0.06565668682659466,
+        "stillFrames": 0,
+        "camCv": 0.07101122655719751,
+        "flipsPer10s": 0
+      }
+    },
+    "120Hz": {
+      "latest": {
+        "frames": 960,
+        "meanStep": 0.2351118188205183,
+        "cv": 0.9993323471130289,
+        "stillFrames": 479,
+        "camCv": 0.053241900395234125,
+        "flipsPer10s": 1195
+      },
+      "interp": {
+        "frames": 960,
+        "meanStep": 0.23461175778508409,
+        "cv": 0.03763624965960935,
+        "stillFrames": 0,
+        "camCv": 0.042407616854926486,
+        "flipsPer10s": 0
+      }
+    },
+    "144Hz": {
+      "latest": {
+        "frames": 1152,
+        "meanStep": 0.19592651568376523,
+        "cv": 1.1825388653163738,
+        "stillFrames": 671,
+        "camCv": 0.057077964193984435,
+        "flipsPer10s": 1200
+      },
+      "interp": {
+        "frames": 1152,
+        "meanStep": 0.19550979815423872,
+        "cv": 0.037635854852983146,
+        "stillFrames": 0,
+        "camCv": 0.04243471845098449,
+        "flipsPer10s": 0
+      }
+    }
+  },
+  "where-the-wind-wanders": {
+    "60Hz": {
+      "latest": {
+        "frames": 482,
+        "meanStep": 0.03352172542010641,
+        "cv": 0.7200148396151302,
+        "stillFrames": 1,
+        "camCv": 0.6928580445604409,
+        "flipsPer10s": 2.5
+      },
+      "interp": {
+        "frames": 482,
+        "meanStep": 0.033537605503668994,
+        "cv": 0.7170098727334582,
+        "stillFrames": 0,
+        "camCv": 0.6900701324859166,
+        "flipsPer10s": 0
+      }
+    },
+    "60Hz+-1.5ms": {
+      "latest": {
+        "frames": 481,
+        "meanStep": 0.033472345458477694,
+        "cv": 0.8116286926297244,
+        "stillFrames": 19,
+        "camCv": 0.6927610734642731,
+        "flipsPer10s": 46.25
+      },
+      "interp": {
+        "frames": 481,
+        "meanStep": 0.033568255699692844,
+        "cv": 0.7155550643497639,
+        "stillFrames": 0,
+        "camCv": 0.6898391311402344,
+        "flipsPer10s": 0
+      }
+    },
+    "120Hz": {
+      "latest": {
+        "frames": 960,
+        "meanStep": 0.016771039756534135,
+        "cv": 1.4265922502085668,
+        "stillFrames": 481,
+        "camCv": 0.691572923126013,
+        "flipsPer10s": 1196.25
+      },
+      "interp": {
+        "frames": 960,
+        "meanStep": 0.01678096323323379,
+        "cv": 0.7164370480960948,
+        "stillFrames": 0,
+        "camCv": 0.6886914776934574,
+        "flipsPer10s": 0
+      }
+    },
+    "144Hz": {
+      "latest": {
+        "frames": 1152,
+        "meanStep": 0.013975866463778444,
+        "cv": 1.625484093439908,
+        "stillFrames": 673,
+        "camCv": 0.6916254474513283,
+        "flipsPer10s": 1196.25
+      },
+      "interp": {
+        "frames": 1152,
+        "meanStep": 0.013984498432981725,
+        "cv": 0.7165197837462421,
+        "stillFrames": 0,
+        "camCv": 0.6885809560754079,
+        "flipsPer10s": 0
+      }
+    }
+  },
+  "ninja-runner": {
+    "60Hz": {
+      "latest": {
+        "frames": 482,
+        "meanStep": 0.30402922145381917,
+        "cv": 0.08182437142763738,
+        "stillFrames": 0,
+        "camCv": 0.06649092680357518,
+        "flipsPer10s": 0
+      },
+      "interp": {
+        "frames": 482,
+        "meanStep": 0.3043441966728137,
+        "cv": 0.07160373359663247,
+        "stillFrames": 0,
+        "camCv": 0.06580223613866605,
+        "flipsPer10s": 0
+      }
+    },
+    "60Hz+-1.5ms": {
+      "latest": {
+        "frames": 481,
+        "meanStep": 0.30433037512512534,
+        "cv": 0.2049859541437908,
+        "stillFrames": 0,
+        "camCv": 0.09202431142883315,
+        "flipsPer10s": 0
+      },
+      "interp": {
+        "frames": 481,
+        "meanStep": 0.3042001065030707,
+        "cv": 0.09128140387938609,
+        "stillFrames": 0,
+        "camCv": 0.08804079333306279,
+        "flipsPer10s": 0
+      }
+    },
+    "120Hz": {
+      "latest": {
+        "frames": 960,
+        "meanStep": 0.15232404660493837,
+        "cv": 0.09190951729311264,
+        "stillFrames": 1,
+        "camCv": 0.06677719812828994,
+        "flipsPer10s": 2.5
+      },
+      "interp": {
+        "frames": 960,
+        "meanStep": 0.15215824799382766,
+        "cv": 0.07172991316321213,
+        "stillFrames": 0,
+        "camCv": 0.06589324562545935,
+        "flipsPer10s": 0
+      }
+    },
+    "144Hz": {
+      "latest": {
+        "frames": 1152,
+        "meanStep": 0.12693670550411532,
+        "cv": 0.4526750790455469,
+        "stillFrames": 191,
+        "camCv": 0.06870622707679681,
+        "flipsPer10s": 477.5
+      },
+      "interp": {
+        "frames": 1152,
+        "meanStep": 0.12679853999485802,
+        "cv": 0.0716309531552239,
+        "stillFrames": 0,
+        "camCv": 0.06588788005509684,
+        "flipsPer10s": 0
+      }
+    }
+  },
+  "silt-and-signal": {
+    "60Hz": {
+      "latest": {
+        "frames": 482,
+        "meanStep": 0.6866603944622031,
+        "cv": 0.08504082076005991,
+        "stillFrames": 2,
+        "camCv": 0.0427880679793576,
+        "flipsPer10s": 5
+      },
+      "interp": {
+        "frames": 482,
+        "meanStep": 0.687912828402236,
+        "cv": 0.03053063625085117,
+        "stillFrames": 0,
+        "camCv": 0.034690016065970594,
+        "flipsPer10s": 0
+      }
+    },
+    "60Hz+-1.5ms": {
+      "latest": {
+        "frames": 481,
+        "meanStep": 0.6880879628498583,
+        "cv": 0.23809586134151092,
+        "stillFrames": 13,
+        "camCv": 0.07450285084565791,
+        "flipsPer10s": 32.5
+      },
+      "interp": {
+        "frames": 481,
+        "meanStep": 0.6876728249947689,
+        "cv": 0.061240524133731586,
+        "stillFrames": 0,
+        "camCv": 0.06611455575852898,
+        "flipsPer10s": 0
+      }
+    },
+    "120Hz": {
+      "latest": {
+        "frames": 960,
+        "meanStep": 0.34476073971956445,
+        "cv": 0.9988207838661199,
+        "stillFrames": 479,
+        "camCv": 0.04736236068857545,
+        "flipsPer10s": 1195
+      },
+      "interp": {
+        "frames": 960,
+        "meanStep": 0.34403160615701395,
+        "cv": 0.03006126752830534,
+        "stillFrames": 0,
+        "camCv": 0.034297531329231086,
+        "flipsPer10s": 0
+      }
+    },
+    "144Hz": {
+      "latest": {
+        "frames": 1152,
+        "meanStep": 0.28730061643297033,
+        "cv": 1.1820201140164661,
+        "stillFrames": 671,
+        "camCv": 0.051368812525986,
+        "flipsPer10s": 1200
+      },
+      "interp": {
+        "frames": 1152,
+        "meanStep": 0.2866930051308486,
+        "cv": 0.03006089658410512,
+        "stillFrames": 0,
+        "camCv": 0.03432159692192145,
+        "flipsPer10s": 0
+      }
+    }
+  },
+  "kid-goku-beyond-the-clouds": {
+    "60Hz": {
+      "latest": {
+        "frames": 482,
+        "meanStep": 0.2456239319889284,
+        "cv": 0.276672994131659,
+        "stillFrames": 2,
+        "camCv": 0.0399672706306348,
+        "flipsPer10s": 5
+      },
+      "interp": {
+        "frames": 482,
+        "meanStep": 0.2461232230702191,
+        "cv": 0.26489181620954527,
+        "stillFrames": 0,
+        "camCv": 0.03412200970795683,
+        "flipsPer10s": 0
+      }
+    },
+    "60Hz+-1.5ms": {
+      "latest": {
+        "frames": 481,
+        "meanStep": 0.24613458465418606,
+        "cv": 0.34987923335433563,
+        "stillFrames": 13,
+        "camCv": 0.07268421045138809,
+        "flipsPer10s": 32.5
+      },
+      "interp": {
+        "frames": 481,
+        "meanStep": 0.24572076216682898,
+        "cv": 0.18529595577551256,
+        "stillFrames": 0,
+        "camCv": 0.06508492275889868,
+        "flipsPer10s": 0
+      }
+    },
+    "120Hz": {
+      "latest": {
+        "frames": 960,
+        "meanStep": 0.12332368251944113,
+        "cv": 1.065908876348111,
+        "stillFrames": 479,
+        "camCv": 0.04858546145492544,
+        "flipsPer10s": 1195
+      },
+      "interp": {
+        "frames": 960,
+        "meanStep": 0.12307194640832625,
+        "cv": 0.26541757573534724,
+        "stillFrames": 0,
+        "camCv": 0.03351331390174769,
+        "flipsPer10s": 0
+      }
+    },
+    "144Hz": {
+      "latest": {
+        "frames": 1152,
+        "meanStep": 0.10276973543286762,
+        "cv": 1.2503575805397538,
+        "stillFrames": 671,
+        "camCv": 0.05110727651629107,
+        "flipsPer10s": 1200
+      },
+      "interp": {
+        "frames": 1152,
+        "meanStep": 0.10249239218718703,
+        "cv": 0.24517784903021592,
+        "stillFrames": 0,
+        "camCv": 0.033281297581785226,
+        "flipsPer10s": 0
+      }
+    }
+  }
+}
