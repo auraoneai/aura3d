@@ -1,128 +1,56 @@
-# Aura3D Agent Manual
+# Aura3D agent map
 
-Aura3D Agent Manual: browser 3D SDK for AI coding agents. Use this guide for prompt-to-3D TypeScript apps, typed GLB/glTF assets, scene kits, diagnostics, screenshots, and deploy checks.
+Aura3D is a TypeScript engine API, an asset CLI, templates, diagnostics and a deploy checker for agents that write browser 3D apps and games. Describe the scene, bring the GLB, own the TypeScript. This page tells an agent what to read and in what order; read only the tier you need.
 
-Aura3D is the 3D SDK for AI coding agents.
+## Tier 0: five minutes (read all three)
 
-Describe the scene. Bring the GLB. Own the TypeScript.
+1. [`agent-quickstart.md`](agent-quickstart.md): scaffold, smallest scene, typed model, verify, three.js habit table, the mistakes agents actually make.
+2. [`claims-and-boundaries.md`](claims-and-boundaries.md): forbidden patterns and claim labels (root safe API, production-runtime, rendering internals, CLI pipeline, template scaffold, prototype, roadmap).
+3. [`../../llms.txt`](../../llms.txt): index of everything else.
 
-Aura3D gives agents a product-ready browser 3D surface instead of asking them
-to improvise raw renderer glue. Agents write TypeScript/JavaScript using
-`@aura3d/engine`; users bring authored GLB/glTF assets; the Aura3D CLI validates,
-hashes, type-generates, screenshots, and deployment-checks the project.
+Hard rules (details in claims-and-boundaries): hero subjects are typed GLBs (`model(assets.x)` from the generated `src/aura-assets.ts`, never a string id or URL); no `three`, `GLTFLoader` or CSS fake effects; every scene starts from `looks.preset(id)`; a compiling app is not done until you have looked at the first frame; never name an export you have not seen in the installed type declarations.
 
-The goal is simple: turn a prompt into a real app that a human team can inspect,
-edit, build, screenshot, and ship.
+## Tier 1: build one thing
 
-## First Rules
+| You are building | Read |
+| --- | --- |
+| A scene, viewer or prompt-to-scene route | [`prompt-to-3d-workflow.md`](prompt-to-3d-workflow.md), [`art-direction.md`](art-direction.md) |
+| A browser game or port (HUD, touch, audio, replay) | [`build-playbook.md`](build-playbook.md), `docs/api/game-kit.md`, `docs/api/qa-kit.md` |
+| Which template to start from (20 shipped) | [`templates.md`](templates.md) |
+| Models (catalog, your GLB, Meshy) | [`asset-workflow.md`](asset-workflow.md), [`asset-selection.md`](asset-selection.md) |
+| Shipping it | [`verification.md`](verification.md), [`deployment.md`](deployment.md), [`rendering-proof-required.md`](rendering-proof-required.md) |
 
-Read `llms.txt` first, then read `docs/agents/claims-and-boundaries.md`.
-
-Do not build around missing engine features with primitive slop, raw asset IDs,
-Three.js loaders, CSS particles, or overclaimed README text. If root
-`createAuraApp` cannot prove a capability through public `@aura3d/engine`
-imports and browser evidence, label the work as `production-runtime`,
-`rendering` internals, `template-only scaffold`, `prototype`, or `roadmap`
-instead of implying root support.
-
-## What Aura3D gives an agent
-
-- A small public API for scenes, models, cameras, lights, materials, effects,
-  timelines, interactions, physics, particles, charts, cities, characters, and
-  product viewers.
-- Prompt-plan helpers and scene kits so generated scenes begin with product
-  intent instead of disconnected primitives.
-- Typed GLB/glTF asset references so agents cannot invent asset URLs.
-- Diagnostics, route-health checks, screenshots, and deployment checks so a
-  generated scene has to prove it runs.
-- Boundary rules that keep public claims tied to evidence. Aura3D is not a
-  hidden asset store or a prompt-only scene generator. It is source code plus
-  typed assets.
-
-Read these first:
-
-- `llms.txt`
-- `docs/agents/prompt-to-3d-workflow.md`
-- `docs/agents/claims-and-boundaries.md`
-- `docs/agents/no-hackjob-rules.md`
-- `docs/agents/asset-selection.md`
-- `docs/agents/game-example-standards.md`
-- `docs/agents/rendering-proof-required.md`
-- `docs/agents/benchmark-recipes.md`
-- `docs/agents/api-surface.md`
-- `docs/agents/asset-workflow.md`
-- `docs/agents/cinematic-scene-quality.md`
-- `docs/agents/templates.md`
-- `docs/agents/deployment.md`
-- `docs/agents/troubleshooting.md`
-- `docs/agents/anti-hallucination-rules.md`
-
-Golden path:
-
-```bash
-npx create-aura3d@latest my-scene --template product-viewer
-cd my-scene
-npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
-npm run dev
-npm run test
-```
-
-Safe asset pattern:
-
-```ts
-import { createAuraApp, lights, model, scene } from "@aura3d/engine";
-import { assets } from "./aura-assets";
-
-createAuraApp("#app", {
-  scene: scene().add(model(assets.robot)).add(lights.studio())
-});
-```
-
-Benchmark rule: if a prompt matches `docs/agents/benchmark-recipes.md`, copy
-the smallest matching recipe, run `npm run build`, and stop. Do not run a dev
-server, Playwright, browser screenshots, or manual visual verification inside
-the benchmark agent process.
-
-Release-facing examples must also satisfy the claim-boundary checklist: no raw
-model strings, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports,
-`GLTFLoader`, CSS particle stand-ins, primitive-only primary subjects, or
-renderer/game/WebGPU/animation claims that exceed root API evidence.
-
-## What 4.1 adds for agents
-
-Kits that replace code every game used to copy (API pages in `docs/api/`):
-`game-kit.md` (`@aura3d/engine/game`), `qa-kit.md` (deterministic replay hooks),
-`safety-net.md` (`?diag=1` and black-frame self-heal), `audio-synth.md`,
-`model-loader.md` (`defineModelAssets`), `glsl-chunks.md`, `scatter-merge.md`,
-`ball-flight.md` and `racket-athlete-rig.md` (`game.racketSports()`), and
-`cli-asset-tools.md` (`assets optimize`, `merge-clips`, isolated `import-meshy`, the
-Meshy credit ledger). Start browser games from them, and read
-`packages/aura3d-cli/skills/aura3d-core/references/pitfalls.md` before shipping:
-it lists the bugs that passed CI and failed on real GPUs (NaN from `pow`, empty
-instance arrays, unhashed model URLs, instanced textures, shadow depth range,
-custom-shader colour encoding).
-
-## Agent Skills
-
-Load-on-demand procedures live in `packages/aura3d-cli/skills/` (canonical;
-`pnpm skills:sync` mirrors them to `.cursor/skills`, `.claude/skills`,
-`.agents/skills`, and the `create-aura3d` bundle; `pnpm check:skills` gates
-them). Downstream projects get them from `npx @aura3d/cli@latest init --agent all
---skills core|all|none` or from `create-aura3d` (default `--agent all --skills
-core`). Worked example logs are in `docs/agents/skills-examples/`.
+Skills hold the procedures; load one when its signal matches (canonical sources `packages/aura3d-cli/skills/`; `pnpm skills:sync` mirrors them to `.cursor/skills`, `.claude/skills`, `.agents/skills` and the `create-aura3d` bundle; `pnpm check:skills` gates them; downstream projects get them from `npx @aura3d/cli@latest init --agent all --skills core|all|none`):
 
 | Task | Skill |
 | --- | --- |
-| Any Aura3D task, public examples, claims | `aura3d-core` (shared rules in `aura3d-core/references/boundaries.md`) |
+| Any Aura3D task, public examples, claims | `aura3d-core` |
 | Prompt to scene or route | `aura3d-scene-authoring` |
+| Look, lighting, flat or dark screenshots | `aura3d-art-direction` |
 | Named real object or user GLB | `aura3d-assets` |
-| Before calling work done, public, or shippable | `aura3d-evidence-review` |
-| `mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, Aura Clash, game HUD/touch/session, QA replay hooks, converting an existing game | `aura3d-browser-game` (`references/kits-and-hooks.md`) |
-| Rigged humanoids, clips, morphs, visemes, assembled characters | `aura3d-character-animation` |
-| `animation-studio` episodes (Scene-Tool CLI) | `aura3d-animation-studio` |
-| three.js ports, `three-compat-*` templates | `aura3d-threejs-migration` |
-| Materials, textures, HDRI, sky, weather, water, `material.custom` shaders and the `a3d_*` chunks | `aura3d-materials-environments` |
+| Before calling work done or shippable | `aura3d-evidence-review` |
+| Game templates, HUD, touch, QA replay hooks, converting a game | `aura3d-browser-game` |
+| Rigged humanoids, clips, morphs, visemes | `aura3d-character-animation` |
+| `animation-studio` episodes | `aura3d-animation-studio` |
+| three.js ports | `aura3d-threejs-migration` |
+| Materials, textures, HDRI, sky, weather, water, `material.custom` | `aura3d-materials-environments` |
 | Flipbook VFX sheets, HUD icons | `aura3d-game-art` |
 | Restyling a finished mesh | `aura3d-retexture` |
 | Paid Meshy generation | `meshy-cli` |
-| Slow or heavy routes, performance claims | `aura3d-performance` |
+| Slow or heavy routes, bundle size | `aura3d-performance` |
+
+A listed skill that is not installed is a gap to report, not permission to improvise its procedure.
+
+## Tier 2: reference (open when a question needs it)
+
+[`api-surface.md`](api-surface.md) (what the root exports), [`anti-hallucination-rules.md`](anti-hallucination-rules.md) and [`no-hackjob-rules.md`](no-hackjob-rules.md) (what not to write), [`troubleshooting.md`](troubleshooting.md), [`game-example-standards.md`](game-example-standards.md), [`cinematic-scene-quality.md`](cinematic-scene-quality.md), [`benchmark-recipes.md`](benchmark-recipes.md) (smallest recipe per benchmark prompt), [`codebase-map.md`](codebase-map.md), and the 4.1 kit pages in `docs/api/`: `game-kit`, `qa-kit`, `safety-net`, `audio-synth`, `model-loader`, `glsl-chunks`, `scatter-merge`, `ball-flight`, `racket-athlete-rig`, `cli-asset-tools`, `toon`. Worked example logs: `skills-examples/`.
+
+Before shipping read `packages/aura3d-cli/skills/aura3d-core/references/pitfalls.md`: the bugs that passed CI and failed on real GPUs.
+
+## Where code lives
+
+`packages/engine/src/agent-api/` (public scene helpers and scene kits), `packages/aura3d-cli/src/` (assets, init, doctor, check-deploy), `packages/create-aura3d/templates/` (starters), `packages/game/` (game kit), `packages/react/src/` (React adapter). Superseded runtime docs are removed; use git history for archaeology, never restore historical APIs without a current ADR.
+
+## Benchmark mode
+
+If a prompt matches [`benchmark-recipes.md`](benchmark-recipes.md): copy the smallest recipe, run `npm install && npm run build`, and stop. A runner owns the browser; do not start a dev server, Playwright or screenshots inside the agent process.

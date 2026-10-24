@@ -48,22 +48,26 @@ without a look ships flat shading, void background and floating props.
    });
    ```
 
-3. Translate any three.js instinct with this table:
+3. Translate any three.js instinct with this table (every row compiles against
+   the engine types; the full table and the mistakes agents make are in
+   [agent-quickstart.md](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-quickstart.md)):
 
    | three.js habit | Aura3D |
    | --- | --- |
-   | `Mesh` plus a glTF loader | `model(assets.x)` (typed asset) |
-   | `new Scene()` | `scene()` |
-   | `PerspectiveCamera` | `camera.perspective(...)`, `camera.rigs.*` |
-   | `AmbientLight` | `lights.hemisphere(...)` or the look fill |
-   | `DirectionalLight`/`PointLight` | the look's key/rim slots, `lights.*` |
-   | `scene.environment` + PMREM | `environments.studio`/`hdri`, `world.biome` |
-   | `toneMapping`, exposure | `output.preset`, the look's grade |
-   | `setPixelRatio` | `quality: "auto"` via `looks.appOptions` |
-   | `castShadow` | `shadow: true` |
-   | `EffectComposer` passes | `output.preset` + `effects.*` |
-   | `AnimationMixer` | `AnimationController` |
-   | OrbitControls | `interactions.orbit(...)` |
+   | `new Scene()` | `scene()`, then `.add(node)` |
+   | `GLTFLoader` + `Mesh` | `model(assets.x, { targetHeight })` |
+   | `PerspectiveCamera` | `scene({ camera: camera.perspective({ fov, position, target }) })` |
+   | `AmbientLight`/`HemisphereLight` | `lights.ambient(...)`/`lights.hemisphere(...)` or the look |
+   | `DirectionalLight` + `castShadow` | `lights.directional({ shadow: true })`; models cast by default |
+   | `FogExp2` | `effects.fog({ density })` |
+   | `EffectComposer` + bloom | `effects.bloom()` |
+   | `ShaderMaterial` | `material.custom({ glsl: { fragment }, uniforms: { uTime: { type: "f32", value: 0 } } })` |
+   | `InstancedMesh` | `instances.cone/box/sphere({ transforms, colors })` |
+   | `OrbitControls` | `interactions.orbit({ target: "<node name>" })` |
+   | `AnimationMixer` | `app.nodes.require(name).play(clip, { crossFade })` |
+
+   There is no root `output` or `world` namespace: tone mapping and grade come
+   from the look (`looks.appOptions`), environment from `environments.*`.
 
 4. If the prompt names a real object, resolve it through the catalog before
    writing model code (load `aura3d-assets`).

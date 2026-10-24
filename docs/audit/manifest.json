@@ -3,29 +3,29 @@
   "generated": "2026-10-24",
   "tokenizer": "gpt-tokenizer o200k_base (OpenAI BPE; a proxy, Claude's tokenizer is not public)",
   "baseCommit": "origin/main at audit time",
-  "files": 793,
+  "files": 796,
   "note": "792 tracked .md files plus llms.txt (the only non-md entry doc)."
  },
  "summary": {
   "byVerdict": {
-   "KEEP": 579,
+   "KEEP": 582,
    "ARCHIVE": 85,
-   "REWRITE": 31,
+   "REWRITE": 32,
    "DELETE-GENERATED": 55,
-   "MERGE-INTO": 43
+   "MERGE-INTO": 42
   },
   "byAudience": {
    "generated": 154,
-   "internal-history": 300,
-   "agent": 98,
-   "human": 241
+   "internal-history": 301,
+   "agent": 99,
+   "human": 242
   },
   "tokensByVerdict": {
-   "KEEP": 731404,
+   "KEEP": 733618,
    "ARCHIVE": 703277,
-   "REWRITE": 72716,
+   "REWRITE": 72853,
    "DELETE-GENERATED": 64685,
-   "MERGE-INTO": 37989
+   "MERGE-INTO": 33853
   }
  },
  "rows": [
@@ -1031,8 +1031,8 @@
   },
   {
    "path": "CHANGELOG.md",
-   "bytes": 112249,
-   "tokens": 26777,
+   "bytes": 113537,
+   "tokens": 27119,
    "audience": "human",
    "topic": "release history",
    "lastCommit": "2026-10-24",
@@ -1851,8 +1851,8 @@
   },
   {
    "path": "docs/agents/README.md",
-   "bytes": 5924,
-   "tokens": 1589,
+   "bytes": 4848,
+   "tokens": 1285,
    "audience": "agent",
    "topic": "agent map",
    "lastCommit": "2026-10-23",
@@ -1861,18 +1861,18 @@
   },
   {
    "path": "docs/agents/agent-context.md",
-   "bytes": 5682,
-   "tokens": 1329,
+   "bytes": 348,
+   "tokens": 89,
    "audience": "agent",
    "topic": "agent map",
    "lastCommit": "2026-10-06",
    "verdict": "MERGE-INTO docs/agents/README.md",
-   "reason": "Overlaps the map and quickstart."
+   "reason": "Merged into README.md (lane 2); kept as a one-line redirect until the prune lane deletes it."
   },
   {
    "path": "docs/agents/agent-quickstart.md",
-   "bytes": 10531,
-   "tokens": 2660,
+   "bytes": 7610,
+   "tokens": 2122,
    "audience": "agent",
    "topic": "quickstart",
    "lastCommit": "2026-10-23",
@@ -1941,13 +1941,13 @@
   },
   {
    "path": "docs/agents/build-playbook.md",
-   "bytes": 11741,
-   "tokens": 2896,
+   "bytes": 6601,
+   "tokens": 1712,
    "audience": "agent",
-   "topic": "workflow",
+   "topic": "games and assets playbook",
    "lastCommit": "2026-10-23",
-   "verdict": "MERGE-INTO docs/agents/prompt-to-3d-workflow.md",
-   "reason": "Same workflow in two docs."
+   "verdict": "REWRITE",
+   "reason": "Lane 2: now the games and generated-assets playbook (kits, guardrails, Meshy); the scene workflow lives in prompt-to-3d-workflow."
   },
   {
    "path": "docs/agents/cinematic-scene-quality.md",
@@ -2021,13 +2021,13 @@
   },
   {
    "path": "docs/agents/prompt-to-3d-workflow.md",
-   "bytes": 11102,
-   "tokens": 2594,
+   "bytes": 7289,
+   "tokens": 1822,
    "audience": "agent",
    "topic": "workflow",
    "lastCommit": "2026-09-25",
    "verdict": "REWRITE",
-   "reason": "Keep as the workflow doc; absorb build-playbook and benchmark recipes."
+   "reason": "Lane 2 rewrite done: policy, prompt plans, scene kits and prompt-family recipes; games and assets moved to build-playbook."
   },
   {
    "path": "docs/agents/rendering-proof-required.md",
@@ -2171,8 +2171,8 @@
   },
   {
    "path": "docs/agents/templates.md",
-   "bytes": 4766,
-   "tokens": 1125,
+   "bytes": 4127,
+   "tokens": 996,
    "audience": "agent",
    "topic": "templates",
    "lastCommit": "2026-10-11",
@@ -2371,11 +2371,11 @@
   },
   {
    "path": "docs/api/cli-asset-tools.md",
-   "bytes": 4325,
-   "tokens": 1181,
+   "bytes": 5513,
+   "tokens": 1484,
    "audience": "agent",
    "topic": "API kit docs",
-   "lastCommit": "2026-10-23",
+   "lastCommit": "2026-10-24",
    "verdict": "KEEP",
    "reason": "Kit documentation added in 4.1; add to the cheat sheet."
   },
@@ -2481,11 +2481,11 @@
   },
   {
    "path": "docs/api/qa-kit.md",
-   "bytes": 3323,
-   "tokens": 912,
+   "bytes": 3542,
+   "tokens": 967,
    "audience": "agent",
    "topic": "API kit docs",
-   "lastCommit": "2026-10-23",
+   "lastCommit": "2026-10-24",
    "verdict": "KEEP",
    "reason": "Kit documentation added in 4.1; add to the cheat sheet."
   },
@@ -2543,6 +2543,16 @@
    "path": "docs/api/skinned-actors.md",
    "bytes": 1294,
    "tokens": 340,
+   "audience": "agent",
+   "topic": "API kit docs",
+   "lastCommit": "2026-10-24",
+   "verdict": "KEEP",
+   "reason": "Kit documentation added in 4.1; add to the cheat sheet."
+  },
+  {
+   "path": "docs/api/toon.md",
+   "bytes": 1333,
+   "tokens": 398,
    "audience": "agent",
    "topic": "API kit docs",
    "lastCommit": "2026-10-24",
@@ -2826,6 +2836,16 @@
    "audience": "human",
    "topic": "misc",
    "lastCommit": "2026-06-08",
+   "verdict": "KEEP",
+   "reason": "Unclassified: keep."
+  },
+  {
+   "path": "docs/audit/README.md",
+   "bytes": 3453,
+   "tokens": 998,
+   "audience": "human",
+   "topic": "misc",
+   "lastCommit": "2026-10-24",
    "verdict": "KEEP",
    "reason": "Unclassified: keep."
   },
@@ -4830,6 +4850,16 @@
    "reason": "Evidence or test input; not documentation, excluded from agent reading paths."
   },
   {
+   "path": "evidence/silt-and-signal-port/toon-promote/README.md",
+   "bytes": 461,
+   "tokens": 123,
+   "audience": "internal-history",
+   "topic": "evidence and test inputs",
+   "lastCommit": "2026-10-24",
+   "verdict": "KEEP",
+   "reason": "Evidence or test input; not documentation, excluded from agent reading paths."
+  },
+  {
    "path": "evidence/strange-orbit-port/README.md",
    "bytes": 3689,
    "tokens": 1053,
@@ -5171,11 +5201,11 @@
   },
   {
    "path": "examples/silt-and-signal-port/PORTING-NOTES.md",
-   "bytes": 9670,
-   "tokens": 2589,
+   "bytes": 9647,
+   "tokens": 2584,
    "audience": "internal-history",
    "topic": "game/app notes",
-   "lastCommit": "2026-10-23",
+   "lastCommit": "2026-10-24",
    "verdict": "KEEP",
    "reason": "Per-game README, attribution or porting notes."
   },
@@ -5591,8 +5621,8 @@
   },
   {
    "path": "packages/aura3d-cli/skills/aura3d-core/SKILL.md",
-   "bytes": 7941,
-   "tokens": 2110,
+   "bytes": 8437,
+   "tokens": 2246,
    "audience": "agent",
    "topic": "skills core",
    "lastCommit": "2026-10-23",
@@ -5691,8 +5721,8 @@
   },
   {
    "path": "packages/aura3d-cli/skills/aura3d-scene-authoring/SKILL.md",
-   "bytes": 7039,
-   "tokens": 1785,
+   "bytes": 7071,
+   "tokens": 1817,
    "audience": "agent",
    "topic": "skills core",
    "lastCommit": "2026-10-06",
