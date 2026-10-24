@@ -91,7 +91,7 @@ function copyMarketingPublicFiles() {
       mkdirSync(outDir, { recursive: true });
       mirrorMarketingHtmlOutput(outDir);
       copyAdvancedGalleryAssets(outDir);
-      for (const file of ["favicon.svg", "favicon.ico", "robots.txt", "sitemap.xml", "llms.txt"]) {
+      for (const file of ["favicon.svg", "favicon.ico", "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt"]) {
         const marketingSource = resolve(marketingDir, file);
         const source = existsSync(marketingSource) ? marketingSource : resolve(repoRoot, file);
         if (existsSync(source)) copyFileSync(source, resolve(outDir, file));

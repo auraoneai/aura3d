@@ -1,0 +1,141 @@
+# Aura3D
+
+> Aura3D {{VERSION}}: a TypeScript SDK for browser 3D apps and games. You write a typed, declarative scene with `@aura3d/engine`; the `@aura3d/cli` toolchain handles typed GLB/glTF assets, checks and deploy gates. Built to be driven by AI coding agents. Site: {{ORIGIN}}
+
+## Fast path (read this first)
+
+What it is, in five lines:
+
+- `@aura3d/engine` exports `createAuraApp(selector, { scene, ...looks.appOptions(id) })` and typed nodes (`scene`, `model`, `looks`, `lights`, `camera`, `effects`, `interactions`, `primitives`, `instances`, `game`).
+- Every scene starts from a `looks.preset(...)`, which supplies light, shadow, fog, background and grade together.
+- Models come from generated typed assets (`model(assets.robot)`), never raw URLs.
+- A game kit, QA/replay hooks, a runtime safety net and an audio synth ship as published subpaths (see Kits).
+- `@aura3d/cli` searches and admits assets (including Meshy generation), checks routes and deploys.
+
+Five commands to a running scene:
+
+```bash
+npx create-aura3d@latest my-scene --template mini-game   # also writes this file and the Aura3D skills
+cd my-scene && npm install
+npm run dev                                              # Vite on 127.0.0.1
+npx @aura3d/cli@latest assets resolve "robot" --name robot   # then use model(assets.robot) from ./src/aura-assets
+npm run build && npx @aura3d/cli@latest check-deploy --dist dist
+```
+
+Other templates: `product-viewer` (default), `cinematic-scene`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, `arena-shooter`. List them with `npx create-aura3d@latest --help`. Known issue: a stock `vite build` of 4.1.2 fails on a Node-only import; use 4.1.3 or later.
+
+Read next, in this order: `docs/agents/README.md` (index), `docs/agents/agent-quickstart.md` (first scene, step by step), `docs/agents/claims-and-boundaries.md` (what you may claim). This path is meant to get a new agent to a rendering scene in minutes; the controlled cold-start trial that measures it is in `evidence/agent-eval/` (in progress).
+
+Working inside the Aura3D monorepo itself: run browsers, Playwright and heavy builds on the remote runner (`tools/remote-acr/run.sh`), never local Docker or local Playwright.
+
+## Hello world
+
+```ts
+import { createAuraApp, looks, model, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+createAuraApp("#app", {
+  scene: scene().add(looks.preset("product-studio")).add(model(assets.robot)),
+  ...looks.appOptions("product-studio")
+});
+```
+
+## Quality floor and the never list
+
+- A `looks.preset` supplies image-based light, a shadow-casting key, fog, background and a post grade as one unit. Never wire `lights.ambient()` as the only fill.
+- Never a solid void background; the look's sky, biome or studio backdrop owns it.
+- Never `pixelRatio`, `qualityProfile`, `safe-basic`, FXAA or `replaceTextures: true` overrides; `looks.appOptions(id)` carries the renderer contract.
+- Never a hero subject made of primitives; use `model(assets.x)` with a typed asset. Primitives are for ground, lines, rings, beams and colliders.
+- Never emissive cards or sprites faking reflections, puddles or glows; use the look's grade and `effects.*`.
+- Never CSS/DOM particles or labels standing in for rendered output. HUD lives in the DOM, the scene does not.
+- Gate frame 1 on `await app.ready()`; mutate node handles on restart instead of calling `app.setScene()` again.
+
+## Genre looks (starting points)
+
+Pick the look first, then tune. Palette and atmosphere cues per genre:
+
+| Genre | Look | Camera | Palette and atmosphere |
+| --- | --- | --- | --- |
+| platformer | `outdoor-day` | follow2d, fov 50 | greens, sky, wood + gold; fog 0.0025 |
+| racing | `golden-hour` | chase, fov 60 | asphalt, orange + amber; fog 30 to 180 m |
+| fighting | `arena-fight` | fighting, fov 45 | dark arena, crowd + rim light |
+| arena shooter | `space` | topDown, fov 55 | space blue, teal + magenta; no fog |
+| sports or table | `interior-industrial` | topDown, fov 40 | turf, white + ball; soft shadow |
+| product | `product-studio` | orbit, fov 35 | grey, white, metal + brand colour; soft shadow |
+| character | `character-showcase` | orbit, fov 40 | costume neutrals + rim light |
+| outdoor environment | `overcast` | wide, fov 55 | green, slate + fog blue; fog 0.004 |
+| night city | `night-city` | tele, fov 35 | sodium, neon + cyan; fog 15 to 90 m |
+| cinematic | `polar-night` | dolly, fov 35 | aurora, snow + lantern; sky glow |
+
+## three.js habit to Aura3D
+
+| three.js | Aura3D |
+| --- | --- |
+| `new THREE.Scene()` | `scene()` |
+| `GLTFLoader` + `Mesh` | `model(assets.x)` (typed asset) |
+| `PerspectiveCamera` | `camera.perspective(...)`, `camera.rigs.*` |
+| `DirectionalLight` + `AmbientLight` | the look's key, rim and environment slots |
+| `scene.environment` + PMREM | `environments.preset`, `environments.hdri`, `world.biome` |
+| `castShadow = true` | `shadow: true` on the light or node |
+| `EffectComposer` passes | `output.preset` + `effects.*` |
+| `AnimationMixer` | `AnimationController` |
+| `OrbitControls` | `interactions.orbit({ target: "node-name" })` |
+| `InstancedMesh` | `instances.mesh`, `instances.box`, `instances.cone` ... |
+
+Porting existing three.js code: `aura3d migrate three` and the `aura3d-threejs-migration` skill record every approximation; the codemod is not a drop-in claim.
+
+## Assets
+
+Never invent asset paths, URLs or ids. Every model comes from a generated `assets.<key>`.
+
+- `npx @aura3d/cli@latest assets search "<object>"` searches the license-verified catalog.
+- `assets resolve "<object>" --name <name>` pulls the top match and types it as `assets.<name>`.
+- `assets add ./assets/model.glb --name model` adds a local file; then read the generated `src/aura-assets.ts`.
+- No catalog match: generate with Meshy (`meshy-cli` skill), optimize (`assets optimize --file in.glb --out out.glb --role <role>`), then admit (`assets import-meshy`).
+- Production needs every model to have a same-origin URL, a 64-character sha256 and provenance, otherwise it draws nothing.
+
+## Kits (build the shell from these)
+
+- `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, touch, juice, game sound).
+- `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks`, `readQaParams`, `createCountedRng` (deterministic replay); `defineModelAssets`; `game.racketSports()`, `game.platformer`, `game.racing`, `game.fallingBlocks`, `game.fighting`; `effects.toon`.
+- `@aura3d/engine/audio`: `createCueBank`, `createStepSequencer`, `createToneLoop`, `createSampleSlices` on the single `AudioContextManager` (never `new AudioContext(`).
+- `@aura3d/debug`: `installSafetyNet` (`?diag=1`, quality switches, black-frame self-heal).
+- `material.custom` shaders: `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_toon>`; keep `pow`, `normalize`, `sqrt` and divides NaN-safe.
+- Scatter and merge helpers (`scatterAlongPath`, `scatterInArea`, `mergeStatic`) are exported from the root; the root currently annotates them `@deprecated` (removal planned for 5.0.0), so check `docs/api/public-api.md` before relying on them.
+
+Details: `docs/api/game-kit.md`, `qa-kit.md`, `safety-net.md`, `audio-synth.md`, `model-loader.md`, `glsl-chunks.md`, `scatter-merge.md`, `cli-asset-tools.md`, `toon.md`.
+
+## Look-dev loop
+
+1. Pick a genre look and 1 to 3 reference frames; write a three-line brief.
+2. Build with the look preset and typed assets.
+3. Capture frames, judge each against the rubric, fix the single highest-leverage thing, repeat.
+4. Stop when every category reads 7 or higher or the loop exits flat. Skill: `aura3d-art-direction`.
+
+## Claims
+
+Use every feature freely. Claim only what a judged capture shows.
+
+- Label every capability as one of: `createAuraApp` root safe API, `production-runtime`, `rendering` internals, CLI asset pipeline, template-only scaffold, prototype, or roadmap.
+- Public examples prove only what the safe API renders through `@aura3d/engine`.
+- A compiling route is not proof: route health, typed provenance and a readable frame are required.
+- Comparison numbers against three.js exist only in `evidence/vs-threejs/RESULTS.md`: software WebGL2, one author, five small scenes. They are not GPU results and not a general "less code" or "faster" claim.
+
+Release integrity rules:
+- no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
+- no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives unless the route is explicitly abstract visualization;
+- no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;
+- no WebGPU, PBR, postprocess, skinned animation, morph, or game-runtime claim without matching browser evidence;
+- no public showcase or README claim that exceeds detected capability, route-health evidence, or screenshots.
+
+| Scene Kit | API | Status |
+| --- | --- | --- |
+| Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
+## More
+
+- Full agent guide, genre recipes, guardrails and the page and example map: {{ORIGIN}}/llms-full.txt
+- Docs: {{ORIGIN}}/docs/api.html, {{ORIGIN}}/docs/agent-quickstart.html, {{ORIGIN}}/docs/claims.html
+- Showcase (15 playable games): {{ORIGIN}}/apps/showcase-index/
+- Sitemap: {{ORIGIN}}/sitemap.xml; crawl policy: {{ORIGIN}}/robots.txt
+- Last updated: {{LASTMOD}}

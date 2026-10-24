@@ -5,7 +5,7 @@
  * Generates and guards the marketing/docs static-site SEO surface:
  *   marketing/robots.txt   (+ repo-root copy)
  *   marketing/sitemap.xml  (+ repo-root copy)
- *   marketing/public/llms.txt (+ repo-root copy)
+ *   marketing/public/llms.txt and llms-full.txt (+ repo-root and public/ copies)
  *
  * - robots: 14 named AI-crawler Allow groups + "*", each repeating the real
  *   defensive disallows for this static origin (/node_modules/, /src/,
@@ -253,15 +253,19 @@ const showcaseRoutes = Object.keys(MANIFEST).filter((r) => r.startsWith("/showca
 const appRoutes = Object.keys(MANIFEST).filter((r) => r.startsWith("/apps/"));
 
 const GUIDE_MARKER = "<!-- agent-guide: everything below this marker is the long-form agent guide; gen-seo.mjs preserves it verbatim -->";
+// llms-full.txt carries the page map and the long-form guide; llms.txt is the tight fast-path index
+// generated from marketing/content/llms-core.txt.
+const llmsFullPath = join(marketingDir, "public", "llms-full.txt");
 const llmsPath = join(marketingDir, "public", "llms.txt");
-const current = readFileSync(llmsPath, "utf8");
+const guideSource = existsSync(llmsFullPath) ? llmsFullPath : llmsPath;
+const current = readFileSync(guideSource, "utf8");
 const guideBody = current.includes(GUIDE_MARKER)
   ? current.slice(current.indexOf(GUIDE_MARKER) + GUIDE_MARKER.length).replace(/^\n+/, "")
   : current; // first run: the whole existing file is the agent guide
 
-const llms = `# Aura3D
+const llmsFull = `# Aura3D (full agent guide)
 
-> ${esc(pageMeta(MANIFEST["/"].source).title)} — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through \`@aura3d/engine\` plus the \`@aura3d/cli\` toolchain, for browser 3D apps and interactive websites.
+> ${esc(pageMeta(MANIFEST["/"].source).title)} — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through \`@aura3d/engine\` plus the \`@aura3d/cli\` toolchain, for browser 3D apps and interactive websites. Start with ${ORIGIN}/llms.txt (fast path); this file is the long form.
 
 ${esc(pageMeta(MANIFEST["/"].source).description ?? "")}
 
@@ -294,11 +298,16 @@ ${appRoutes.map(link).join("\n")}
 
 ## Notes
 
-- Domain: ${ORIGIN} is a placeholder — swap AURA3D_SITE_URL (or the generator's ORIGIN) at deploy time; every URL in robots.txt, sitemap.xml, and this file follows.
+- Domain: ${ORIGIN} is a placeholder — swap AURA3D_SITE_URL (or the generator's ORIGIN) at deploy time; every URL in robots.txt, sitemap.xml, and these files follows.
 
 ${GUIDE_MARKER}
 ${guideBody}
 `;
+
+const llms = readFileSync(join(marketingDir, "content", "llms-core.txt"), "utf8")
+  .replaceAll("{{VERSION}}", version)
+  .replaceAll("{{ORIGIN}}", ORIGIN)
+  .replaceAll("{{LASTMOD}}", LASTMOD_MAX.slice(0, 10));
 
 // ---- write marketing files + identical repo-root copies --------------------
 
@@ -306,9 +315,13 @@ const outputs = [
   [join(marketingDir, "robots.txt"), robots],
   [join(marketingDir, "sitemap.xml"), sitemap],
   [llmsPath, llms],
+  [llmsFullPath, llmsFull],
   [join(repoRoot, "robots.txt"), robots],
   [join(repoRoot, "sitemap.xml"), sitemap],
   [join(repoRoot, "llms.txt"), llms],
+  [join(repoRoot, "llms-full.txt"), llmsFull],
+  [join(repoRoot, "public", "llms.txt"), llms],
+  [join(repoRoot, "public", "llms-full.txt"), llmsFull],
 ];
 for (const [path, body] of outputs) writeFileSync(path, body, "utf8");
 
