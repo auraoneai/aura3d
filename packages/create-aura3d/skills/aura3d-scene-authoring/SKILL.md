@@ -1,6 +1,6 @@
 ---
 name: aura3d-scene-authoring
-description: Turns a scene prompt into editable `@aura3d/engine` source by picking a scene kit or prompt plan, compiling it, and repairing weak screenshots from the compiled report. Use when writing a scene or route from a prompt, choosing among `sceneKits.*`, `prefabs.*`, or `primitives.*`, or using `definePromptPlan`, `compilePromptPlan`, `promptPlanToScene`, or `collectAuraSceneEvidence`.
+description: Turns a scene prompt into editable `@aura3d/engine` source by picking a scene kit or prompt plan, mounting it, and repairing weak screenshots with the look-dev loop. Use when writing a scene or route from a prompt, choosing among `sceneKits.*`, `prefabs.*`, or `primitives.*`, or using `definePromptPlan` or `promptPlanToScene`.
 ---
 
 # Aura3D scene authoring
@@ -66,7 +66,7 @@ look renders flat on a void.
 4. Plan path, when the prompt is product intent rather than a kit family:
 
    ```ts
-   import { compilePromptPlan, createAuraApp, definePromptPlan, promptPlanToScene } from "@aura3d/engine";
+   import { createAuraApp, definePromptPlan, promptPlanToScene } from "@aura3d/engine";
    import { assets } from "./aura-assets";
 
    const plan = definePromptPlan({
@@ -78,28 +78,26 @@ look renders flat on a void.
      acceptanceCriteria: ["product is centered and recognizable"]
    } as const);
 
-   const compiled = compilePromptPlan(plan);
    createAuraApp("#app", { scene: promptPlanToScene(plan), diagnostics: { overlay: true } });
-   console.log(compiled.report.visualSystems, compiled.report.repairHints);
    ```
 
-5. Read the compiled report before editing: `visualSystems` lists what the
-   compiled scene actually contains; `rejected` lists what the engine could
-   not do (each with a code such as `unsupported-effect`); `repairHints`
-   carries the `lookLint` findings; `negativeCriteria` lists what must not
-   ship. Repair from `repairHints` plus `aura3d look lint` output.
+   `compilePromptPlan` is deprecated with no replacement (removed in 5.0.0): do
+   not use it in new code.
+5. Judge the first frame, not the build. Repair from `kit.diagnostics`, the
+   console warnings and `aura3d look lint` output; each warning names its cause.
+   `prefabs.*` return node arrays, so mount them with `scene().addMany(...)`.
 6. Controls go through `ui.*` helpers and must change rendered pixels; CSS and
    DOM are UI only and never stand in for particles, bloom, trails, labels, or
    renderer output.
 7. Mount one app per route. Never dispose and recreate the app inside a frame
    loop to animate values.
-8. Normal mode only: collect `collectAuraSceneEvidence(scene)` or the kit
-   evidence, run `npm run build`, and hand screenshots and route health to
+8. Normal mode only: collect `collectAuraSceneEvidence(scene)` (import it from
+   `@aura3d/engine/devtools`; the root export is deprecated) or the kit evidence, run `npm run build`, and hand screenshots and route health to
    `aura3d-evidence-review`. The template `npm run test` gate runs Playwright;
    run it in CI or on a remote runner, not on the local machine.
-9. Weak screenshot: apply the repair hints (tighter framing, foreground and
-   background structure, key/fill/rim contrast, visible state) or switch back
-   to the matching kit before changing any label or claim.
+9. Weak screenshot: fix the single biggest issue (tighter framing, foreground
+   and background structure, key/fill/rim contrast, visible state) or switch
+   back to the matching kit before changing any label or claim.
 
 ## Look-dev loop
 
@@ -123,7 +121,8 @@ one change per round (lint first, then the weakest category). Full loop spec:
 ## References
 
 - [Shared boundaries](../aura3d-core/references/boundaries.md)
-- [Build playbook](https://github.com/auraoneai/aura3d/blob/main/docs/agents/build-playbook.md)
+- [Agent quickstart](https://github.com/auraoneai/aura3d/blob/main/docs/agents/agent-quickstart.md) (zero to a rendering scene, mistakes agents make)
+- [Build playbook](https://github.com/auraoneai/aura3d/blob/main/docs/agents/build-playbook.md) (games and assets)
 - [Prompt to 3D workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/prompt-to-3d-workflow.md)
 - [Benchmark recipes](https://github.com/auraoneai/aura3d/blob/main/docs/agents/benchmark-recipes.md)
 - [Agent guide llms.txt](https://github.com/auraoneai/aura3d/blob/main/llms.txt)

@@ -1,6 +1,6 @@
 ---
 name: aura3d-performance
-description: Measures and reduces Aura3D frame cost, draw calls, and bundle size with diagnostics, scene-kit budgets, instancing, distance LOD, frustum culling, and KTX2 textures, without turning counters into visual claims. Use when a route is slow, draw calls or bundle size exceed budget, or the task mentions `diagnostics: { overlay: true }`, `sceneKitPerformanceBudget`, `instances.*`, `distanceLod`, `text3D`, KTX2 texture compression, BUNDLE_SIZES, `doctor`, or `check-deploy`.
+description: Measures and reduces Aura3D frame cost, draw calls, and bundle size with diagnostics, scene-kit budgets, instancing, distance LOD, frustum culling, and KTX2 textures, without turning counters into visual claims. Use when a route is slow, draw calls or bundle size exceed budget, or the task mentions `diagnostics: { overlay: true }`, `scene kit budgets`, `instances.*`, `distanceLod`, `text3D`, KTX2 texture compression, BUNDLE_SIZES, `doctor`, or `check-deploy`.
 ---
 
 # Aura3D performance
@@ -24,10 +24,15 @@ manual quality override invalidates every measurement that follows.
 2. Read `src/aura-assets.ts` and `aura.assets.json`. Note each asset's
    `sizeBytes`, texture list, and bounds; heavy GLBs and uncompressed textures
    are usually the first cost.
-3. Check which entry the app imports. New product and game apps should use
-   `@aura3d/lean`, `@aura3d/lean/product`, or `@aura3d/lean/game`. The
-   `@aura3d/engine` root is a compatibility entry and is far over the new-app
-   gzip budget.
+3. Check which entry the app imports. `@aura3d/lean` was retired in 4.0.0
+   (the package is a deprecated shim), so import from `@aura3d/engine` and its
+   subpaths (`@aura3d/engine/game`, `@aura3d/engine/devtools`). Size is a known
+   weak spot: a one-cube app built from 4.1.2 measured 3,841 KB raw JS (1,089 KB
+   gzip) over about 25 requests, against 496 KB / 125 KB for the equivalent
+   three.js app (`evidence/vs-threejs/RESULTS.md`, section 4), and
+   `BUNDLE_SIZES.md` records the engine critical path failing its budget.
+   Import only what the route uses and keep devtools and cinematic helpers out
+   of the critical path.
 4. Decide the mode. Benchmark mode: `npm install && npm run build`, then stop.
    No profiling, dev server, or browser capture from the agent.
 
@@ -42,17 +47,18 @@ manual quality override invalidates every measurement that follows.
    The app's diagnostics report `backend`, `fps`, `drawCalls`, `renderSize`,
    asset load states, `warnings`, and `errors`. Record them with the viewport,
    device, and route so the finding reproduces.
-2. Compare against the budget for the kit you started from:
+2. Compare against the budget for the kit you started from. Each scene kit
+   reports its own budget in its `diagnostics`:
 
    ```ts
-   import { sceneKitPerformanceBudget, sceneKits } from "@aura3d/engine";
+   import { sceneKits } from "@aura3d/engine";
 
-   console.log(sceneKitPerformanceBudget("miniGolf"));
    console.log(sceneKits.miniGolf().diagnostics);
    ```
 
    Budgets carry `maxDrawCalls`, `estimatedDrawCalls`, `maxGzipBytes`, and
    `targetP50Fps`. FPS targets require calibration on the measuring machine.
+   (There is no root `sceneKitPerformanceBudget` export; do not import one.)
 3. Many repeated objects: replace per-node primitives with one `instances.box`
    (or `instances.sphere`, `instances.plane`, `instances.cylinder`,
    `instances.capsule`, `instances.torus`) node with a transform list. Advanced
@@ -83,13 +89,15 @@ manual quality override invalidates every measurement that follows.
 8. Textures: prefer KTX2/Basis-compressed textures supplied through typed
    assets. Compression support is bounded to the tested decoder paths; verify
    in the browser before claiming a memory or load-time win.
-9. Bundle: keep new imports on the lean entry and avoid pulling devtools or
-   cinematic helpers into the critical path. In the Aura3D monorepo,
+9. Bundle: avoid pulling devtools or cinematic helpers into the critical path
+   and measure with a production `vite build`. In the Aura3D monorepo,
    `pnpm check:bundle-size` regenerates BUNDLE_SIZES; never raise a budget to
    manufacture a pass.
 10. Ship check: `npm run build`, then
     `npx @aura3d/cli@latest check-deploy --dist dist`. Browser frame-time and
-    screenshot runs (`npm run test`, Playwright) go to CI or a remote runner.
+    screenshot runs (`npm run test`, Playwright) go to a remote runner, never
+    local Playwright or GitHub Actions (`tools/remote-acr/run.sh` in the Aura3D
+    repository).
 
 ## Stop and report
 

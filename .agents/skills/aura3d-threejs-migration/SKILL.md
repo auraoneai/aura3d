@@ -67,8 +67,14 @@ toneMapping constants.
 
 3. When the port must stay three-shaped for a while, run the CLI codemod
    and keep its output as a report, not as proof:
-   `aura3d migrate three "src/**/*.ts" --report` walks each file and prints
-   the per-construct verdicts; `--write` applies the rewrite in place. The
+   `aura3d migrate three "src/**/*.ts"` walks each file and prints
+   the per-construct verdicts (`--report` is accepted and is the default);
+   `--write` saves the annotated rewrite in place. The rewrite does not
+   compile as is: on the benchmark PBR viewer it emitted
+   `const scene = scene()` and left `renderer.*` and `THREE.*` references, so
+   finish the port by hand. The verified 40-API mapping, measured codemod
+   output and a before and after are in
+   [docs/migration/from-threejs.md](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md). The
    underlying adapter `migrateThreeToA3D(source)` returns `code`,
    `rewrittenImports`, and `warnings`. Imports in `THREE_COMPAT_UNSUPPORTED_THREE_IMPORTS`
    (`EffectComposer`, `RenderPass`, `UnrealBloomPass`, and others) are left
@@ -116,6 +122,8 @@ toneMapping constants.
 
 ## References
 
+- [Verified mapping, codemod limits, measured before and after](https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md)
+- [Honest comparison with three.js](https://github.com/auraoneai/aura3d/blob/main/docs/aura3d-vs-threejs.md)
 - [Migration guide and boundaries](https://github.com/auraoneai/aura3d/blob/main/docs/project/migration.md)
 - [Migration codemod adapter](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/ThreeToA3DAdapter.ts)
 - [Codemod import map](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/migrate-three/ImportMap.ts)

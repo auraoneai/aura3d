@@ -50,3 +50,51 @@ overlay reads as a bug).
 - fighting: drama lives in the dark crowd and the spot's hard edge.
 - blocks: rhythm is the palette — every piece hue distinct at a glance.
 - character: the silhouette is the gameplay; rim keeps it readable.
+
+## Recipe rows by template
+
+### mini-game
+
+- Look preset: `outdoor-day`
+- Camera: `follow` (side-on) fov 50
+- Palette and mood: saturated greens, sky blue, warm wood + coin gold
+- Atmosphere and finish: fog 0.0025; `daylight-outdoor` post; coin sparkle + land dust
+
+### racing-starter
+
+- Look preset: `golden-hour`
+- Camera: `chase` fov 60
+- Palette and mood: warm asphalt, burnt orange, charcoal + headlight amber
+- Atmosphere and finish: low sun haze; `cinematic-film` post; brake glow
+
+### falling-blocks-starter
+
+- Look preset: `neon-arcade`
+- Camera: `orthographic` (top-down) fov 45
+- Palette and mood: neon palette per piece colour, dark glossy board + accent rim
+- Atmosphere and finish: `neon-night` post; line-clear flash
+
+### fighting-game
+
+- Look preset: `arena-fight`
+- Camera: `follow` (side-on) fov 45
+- Palette and mood: arena dark, rope colour, crowd shadow + spotlight rim
+- Atmosphere and finish: haze cone; `arena-fight` post; hit sparks
+
+### character-controller
+
+- Look preset: `outdoor-day`
+- Camera: `shoulder` fov 55
+- Palette and mood: open world greens + cloth accent
+- Atmosphere and finish: fog to horizon; `daylight-outdoor` post
+
+
+## Frame composition rules
+
+- Read the key light direction from the long shadows on the ground, not from the sky.
+- Keep the horizon in the upper third so fog has room to fade the distance.
+- Hold the palette to the recipe row; accent colours go on pickups and hazards only.
+- Separate the hero silhouette from the backdrop in luminance, not only in hue.
+- In dark scenes add a rim on the hero edge so the shape survives the grade.
+- Warm key against cool shadow keeps the mood readable at small sizes.
+- Let bloom touch emissive accents only; a bloomed backdrop flattens the contrast.

@@ -38,8 +38,17 @@ benchmark exception are in [boundaries](../aura3d-core/references/boundaries.md)
    ```
 
    Read `failures` in the JSON, not only the exit code. Keep the reports.
-3. Run the browser gate (`npm run test`) in CI or a remote runner, not in the
-   local agent process. It writes route-health output and
+   `check-deploy` covers assets only: hashed files present in `dist`, no
+   unreferenced files under the asset base path, derived files present, and
+   the asset validation (`--release` adds provenance and license gates). It
+   never proves a frame draws; `assertAuraScreenshotNotBlank` and
+   `assertAuraRouteReady` from `@aura3d/engine/devtools` do the pixel side
+   inside the browser gate.
+3. Run the browser gate (`npm run test`, a Playwright suite) on a remote runner,
+   never in the local agent process, never as local Playwright, never through
+   GitHub Actions. In the Aura3D repository:
+   `RUN_ID=ev-1 SPECS="tests/browser/<route>.spec.ts" tools/remote-acr/run.sh`
+   (artifacts in `tests/reports/remote-acr/ev-1/artifacts/`). It writes route-health output and
    `tests/reports/screenshot.png` plus pixel metrics. Capture desktop and
    mobile viewports and retain the PNGs with hashes.
    Games and simulations: drive the page through `installQaHooks`

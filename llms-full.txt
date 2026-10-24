@@ -206,7 +206,7 @@ Mandatory 3D game & scene anti-failure guardrails:
    - If a fast route whitewashes, pass `{ fogDensityScale: 0, exposureEv: -0.1 }` to `looks.preset(...)` for that route. Never pin post-processing, the compiler or fog off for every player with a `qualityRebuild.flags` list: it hides bugs and flattens the look. Install `installSafetyNet` from `@aura3d/debug` so a machine that renders black steps down one rung on its own and `?diag=1` shows the GPU, limits and shader failures.
    - Never set `emissive: "#ffffff"` with high `emissiveIntensity` on an instanced pool material (`instances.box` / `primitives.box({ instances })`): per-instance `instanceColors` multiply `u_baseColor`, not `u_emissiveColor`.
 7. Ground `model()` feet on platform top surfaces (`y + sy / 2`) & wind custom meshes CCW:
-   - `model(asset, { targetHeight })` normalizes the GLB with `minY = 0` (feet at `position[1]`), whereas `primitives.box` and `primitives.cylinder` (`instances.box` / `instances.cylinder`) are centered on `[-0.5..+0.5]` so a platform at `(y, sy)` has its top surface at `y + sy / 2`. Always place grounded characters and vehicles at `platform.y + platform.sy / 2` so they never sink into logs, pads, or road lanes. Wind custom `primitives.mesh` triangles CCW when viewed from `+Y`.
+   - `model(asset, { targetHeight })` normalizes the GLB with `minY = 0` (feet at `position[1]`), whereas `primitives.box` and `primitives.cylinder` (`instances.box` / `instances.cylinder`) are centered on `[-0.5..+0.5]` so a platform at `(y, sy)` has its top surface at `y + sy / 2`. Always place grounded characters and vehicles at `platform.y + platform.sy / 2` so they never sink into logs, pads, or road lanes. Wind custom `geometry.custom` triangles CCW when viewed from `+Y`.
 8. Enforce full-viewport `100vw × 100vh` canvas, deep ground apron, and pushbox separation:
    - Size `html, body, #app, canvas` to `100vw × 100vh` (`position: fixed; inset: 0; overflow: hidden`) and extend the 3D ground/stage apron deep enough in `+Z`/`-Z` under the camera frustum so the bottom third of the viewport never shows a black clear-color void. Disable `collision: true` on `camera.rigs.shoulder` when the target character has attached child runtime nodes, and enforce `>= 1.4m` fighter pushbox separation (`|x| >= 1.8m` at spawn).
 
@@ -243,6 +243,8 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
+
 
 
 

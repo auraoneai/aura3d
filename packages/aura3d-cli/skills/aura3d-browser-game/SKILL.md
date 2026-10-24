@@ -23,15 +23,7 @@ evidence, never GPU performance evidence.
 
 ## Look target
 
-Genre → recipe row (full table: `../aura3d-art-direction/references/look-recipes.md`):
-
-| Template | Look | Camera | Frame mood |
-| --- | --- | --- | --- |
-| `mini-game` | `outdoor-day` | `follow` (side-on) fov 50 | saturated greens, sky blue, warm wood + coin gold; fog 0.0025; `daylight-outdoor` post; coin sparkle + land dust |
-| `racing-starter` | `golden-hour` | `chase` fov 60 | warm asphalt, burnt orange, charcoal + headlight amber; low sun haze; `cinematic-film` post; brake glow |
-| `falling-blocks-starter` | `neon-arcade` | `orthographic` (top-down) fov 45 | neon palette per piece colour, dark glossy board + accent rim; `neon-night` post; line-clear flash |
-| `fighting-game` | `arena-fight` | `follow` (side-on) fov 45 | arena dark, rope colour, crowd shadow + spotlight rim; haze cone; `arena-fight` post; hit sparks |
-| `character-controller` | `outdoor-day` | `shoulder` fov 55 | open world greens + cloth accent; fog to horizon; `daylight-outdoor` post |
+Pick the genre's recipe row before adding props: [genre looks](references/genre-looks.md) (template, look id, camera, mood) and the full table in `../aura3d-art-direction/references/look-recipes.md`.
 
 ## Establish the contract
 
@@ -113,16 +105,7 @@ Genre → recipe row (full table: `../aura3d-art-direction/references/look-recip
 6. Reset without tearing down the scene: mutate runtime node handles
    (`app.nodes.require(...)`) instead of calling `app.setScene()` on same-stage
    (`stageId` / `worldId`) restarts so shadow and postprocess grade never drop.
-7. Genre gates (plan for 60 seconds of meaningful play):
-
-   | Genre | Must have |
-   | --- | --- |
-   | racing | throttle, brake, steer, ordered checkpoints, lap or finish, penalty or timeout |
-   | platformer | move, jump, fall, collision matching visible ledges, collectibles, hazards, camera keeps player visible |
-   | falling blocks | move, rotate, soft + hard drop, lock, line clear, scoring, levels, game over |
-   | fighting | strikes/blocks, hit reactions, round + KO state, both fighters readable |
-   | character controller | walk/run/jump clips playing, camera shoulder follow, locomotion direction matches travel |
-
+7. Genre gates (plan for 60 seconds of meaningful play): [genre gates](references/genre-gates.md).
 8. `npx @aura3d/cli@latest assets validate --no-placeholders --require-license`
    and `assets validate-game`; racing/platformer also
    `assets certify-game-geometry --asset track --category racing`.

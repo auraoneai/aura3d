@@ -82,8 +82,8 @@ again under the real grade.
    ```
 
    Carry the source license forward; a derived file inherits its terms.
-6. Capture the filmstrip (normal mode, via `npm run test` on CI or a remote
-   worker): the same camera, lights, environment, exposure, and viewport for
+6. Capture the filmstrip (normal mode, on a remote runner: `tools/remote-acr/run.sh`
+   in the monorepo, never local Playwright): the same camera, lights, environment, exposure, and viewport for
    before and after, 3 to 5 fixed views, for example
    `camera.frameAsset(assets.source)` plus fixed `camera.perspective(...)`
    positions. Only the asset key may differ between the paired frames. Place
@@ -112,4 +112,5 @@ again under the real grade.
 - [Geometry hash script](references/geometry-hash.mjs)
 - [Asset workflow and `assets inspect`](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md)
 - [Rendering proof rule](https://github.com/auraoneai/aura3d/blob/main/docs/agents/rendering-proof-required.md)
-- Meshy retexture runs, approval, and `--max-credits`: load `meshy-cli`.
+- Meshy retexture runs (10 credits, reserve in `aura3d meshy ledger`), approval, and `--max-credits`: load `meshy-cli`.
+- [Asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md)

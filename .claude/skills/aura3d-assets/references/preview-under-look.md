@@ -24,3 +24,19 @@ Evaluate candidates under the route's look preset.
 4. Palette: the asset's dominant hue must sit inside the genre palette or be
    the declared accent — clashing saturation reads as wrong-asset even when
    the mesh is fine.
+
+## Grounded placement example
+
+```ts
+import { createAuraApp, groundedRenderedAssetPlacement, looks, model, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const place = groundedRenderedAssetPlacement(assets.helmet, { targetMaxDimension: 1.2, floorY: 0 });
+createAuraApp("#app", {
+  scene: scene()
+    .add(looks.preset("product-studio"))
+    .add(model(assets.helmet).position(...place.position).scale(place.scale)),
+  ...looks.appOptions("product-studio")
+});
+```
+

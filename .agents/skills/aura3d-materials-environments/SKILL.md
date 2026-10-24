@@ -1,6 +1,6 @@
 ---
 name: aura3d-materials-environments
-description: Chooses and verifies surface looks and lighting environments: built-in `material.*`, `environments.*`, `sky.dayNight`, `weather`, and `water` first, then licensed local textures or HDRIs admitted with `assets add --type texture`, with seam, PBR-channel, and visual-QA checks. Use when a route needs a material, texture set, PBR maps, HDRI or IBL, skybox, night or daytime sky, rain, snow, water, KTX2 textures, or `@aura3d/materials` / `@aura3d/environments` validation.
+description: Chooses and verifies surface looks and lighting environments: built-in `material.*`, `environments.*`, `sky.dayNight`, `weather`, and `water` first, then licensed local textures or HDRIs admitted with `assets add --type texture`, with seam, PBR-channel, and visual-QA checks. Use when a route needs a material, texture set, PBR maps, HDRI or IBL, skybox, night or daytime sky, rain, snow, water, or KTX2 textures.
 ---
 
 # Aura3D materials and environments
@@ -25,10 +25,14 @@ descend into manual environments when the look cannot express the mood.
    `--type texture|environment` option.
 2. Read `src/aura-assets.ts` and `aura.assets.json`. Map slots take typed
    `assets.<key>` refs only, never a URL string.
-3. Check the installed `@aura3d/engine`, `@aura3d/materials`, and
-   `@aura3d/environments` versions. The validators below come from the
-   `/node` subpaths (`@aura3d/materials/node`, `@aura3d/environments/node`)
-   and run in Node scripts, not in browser routes.
+3. Check the installed `@aura3d/engine` version. `@aura3d/materials` and
+   `@aura3d/environments` were retired in 4.0.0: everything here ships from
+   `@aura3d/engine` (`material`, `environments`, `sky`, `weather`, `water`,
+   `looks`). The Node-side material and HDRI validators (names such as
+   `validateGameReadyMaterialPreset`, `inspectProductionHDR`) live in
+   `packages/engine/src/devtools/` and are not exported from the root or the
+   `@aura3d/engine/devtools` subpath, so do not import them from a project;
+   use the capture checks below.
 4. Benchmark mode: `npm install && npm run build`, then stop.
 
 ## Procedure
@@ -54,11 +58,12 @@ Step 1, presets (always try first):
    `weather.wetGround(...)`; `water.surface({ preset: "calm" | "moderate" |
    "rough" | "storm" })`. Add their `nodes` with `scene().addMany(...)` and use
    the returned `background`.
-4. Library references for choosing values: `GAME_READY_MATERIAL_PRESETS` (car
-   paint, thin glass, brushed metal, skin approximation, and more),
-   `listThreeCompatPbrMaterials()`, and `THREE_COMPAT_TEXTURE_SETS`. Check a
-   preset in Node with `validateGameReadyMaterialPreset(preset)` or the whole
-   library with `validateGameReadyMaterialLibrary()`.
+4. Choosing values: start from `material.presets()` and the named builders
+   above (car paint is `material.clearcoatPaint`, thin glass is
+   `material.glass`, brushed metal is `material.brushedMetal`); the in-repo
+   preset library (`GAME_READY_MATERIAL_PRESETS` in
+   `packages/engine/src/devtools/materials/MaterialValidation.ts`) is a source
+   reference for values, not an import.
 
 Step 2, a licensed local file (Poly Haven or another CC0 / CC-BY source you
 downloaded yourself):
@@ -89,11 +94,10 @@ route `prototype` until the checks below pass.
 
 Checks (all steps):
 
-8. HDRI file: in Node, `inspectProductionHDR(path, [width, height])` must
-   report a Radiance header and a 2:1 `declaredResolution`. For a manifest
-   preset, `verifyThreeCompatHdriFile(preset)` checks the file hash and
-   `createThreeCompatEnvironmentDiagnostics(preset)` reports memory and PMREM
-   warnings.
+8. HDRI file: it must be a Radiance `.hdr` with a 2:1 aspect ratio (check with
+   `file` or an image viewer before `assets add`); `assets add` records the
+   hash, and `assets validate` fails on a missing or changed file. Watch the
+   console for memory and PMREM warnings on the first load.
 9. Equirect seam: capture the sky at a yaw that puts the left and right edge
    in frame and confirm no visible seam. `environments.hdri` renders a
    procedural studio fallback first and swaps in the HDRI after load, so
@@ -108,8 +112,10 @@ Checks (all steps):
     renderer coverage exists only for selected tested cases. Keep a
     PNG/JPG fallback, and make no compression or memory claim without a
     route-level capture.
-13. Screenshots (normal mode only) run through `npm run test` on CI or a remote
-    worker. Hand the claim label to `aura3d-evidence-review`.
+13. Screenshots (normal mode only) run through `npm run test` on a remote
+    runner, never local Playwright or GitHub Actions (`RUN_ID=mat-1
+    SPECS="tests/browser/<route>.spec.ts" tools/remote-acr/run.sh` in the
+    Aura3D repository). Hand the claim label to `aura3d-evidence-review`.
 
 14. Custom shaders (`material.custom`): write linear light, use
     `#include <colorspace_decode>` with `toneMapping: "none"` for authored hex
@@ -119,8 +125,8 @@ Checks (all steps):
 
 ## Look-dev loop
 
-`aura3d look capture` → judge against the quality-bar rubric → `aura3d look
-lint`. Judge only frames where the HDRI actually loaded (`iblPixelBacked`
+Capture (remote runner, see `aura3d-art-direction`) → judge against the
+quality-bar rubric → `aura3d look lint`. Judge only frames where the HDRI actually loaded (`iblPixelBacked`
 true); a seam visible in one capture re-checks at a different yaw. One change
 per round.
 

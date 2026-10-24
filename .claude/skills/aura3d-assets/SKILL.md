@@ -7,7 +7,11 @@ description: Finds, admits, inspects, validates, and types GLB/glTF, texture, en
 
 The CLI is the only path from a file or catalog hit to a typed `assets.<key>`.
 Shared rules (catalog-first, typed assets, paid generation) are in
-[boundaries](../aura3d-core/references/boundaries.md).
+[boundaries](../aura3d-core/references/boundaries.md). The canonical end-to-end
+page (catalog, Meshy, optimise, isolated admission, rig and clips, production
+rules, budgets) is
+[asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md);
+this skill is the short procedure.
 
 ## Look target
 
@@ -92,18 +96,7 @@ lighting you evaluate materials and silhouettes against.
    rigged characters (`skins > 0`) with `handle.setAnimation({ clip, loop: true,
    speed })`, and never build stick-figure humans or box cars from primitives.
 
-   ```ts
-   import { createAuraApp, groundedRenderedAssetPlacement, looks, model, scene } from "@aura3d/engine";
-   import { assets } from "./aura-assets";
-
-   const place = groundedRenderedAssetPlacement(assets.helmet, { targetMaxDimension: 1.2, floorY: 0 });
-   createAuraApp("#app", {
-     scene: scene()
-       .add(looks.preset("product-studio"))
-       .add(model(assets.helmet).position(...place.position).scale(place.scale)),
-     ...looks.appOptions("product-studio")
-   });
-   ```
+   Worked example: [preview under look](references/preview-under-look.md#grounded-placement-example).
 
 8. Games and examples without a project manifest declare models with
    `defineModelAssets` (same-origin URL, `sha256`, license; `?models=0` falls
@@ -135,8 +128,9 @@ lighting you evaluate materials and silhouettes against.
 
 - Search returns no auto-pullable candidate, or every candidate fails the
   reject list: stop, list the query, profile, and rejection reasons, and offer
-  two options: a user-supplied licensed file, or Meshy generation (load
-  `meshy-cli`, dry run first). Do not model the subject from primitives.
+  two options: a user-supplied licensed file, or Meshy generation from a text
+  prompt (load `meshy-cli`, dry run and an approved credit maximum first; never
+  from screenshots or frames of another game or product). Do not model the subject from primitives.
 - Search prints a catalog fetch warning (for example an HTTP 404): report it
   verbatim, label asset-dependent work `blocked`, and never treat fallback
   deep-links as auto-pullable.

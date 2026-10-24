@@ -96,18 +96,7 @@ lighting you evaluate materials and silhouettes against.
    rigged characters (`skins > 0`) with `handle.setAnimation({ clip, loop: true,
    speed })`, and never build stick-figure humans or box cars from primitives.
 
-   ```ts
-   import { createAuraApp, groundedRenderedAssetPlacement, looks, model, scene } from "@aura3d/engine";
-   import { assets } from "./aura-assets";
-
-   const place = groundedRenderedAssetPlacement(assets.helmet, { targetMaxDimension: 1.2, floorY: 0 });
-   createAuraApp("#app", {
-     scene: scene()
-       .add(looks.preset("product-studio"))
-       .add(model(assets.helmet).position(...place.position).scale(place.scale)),
-     ...looks.appOptions("product-studio")
-   });
-   ```
+   Worked example: [preview under look](references/preview-under-look.md#grounded-placement-example).
 
 8. Games and examples without a project manifest declare models with
    `defineModelAssets` (same-origin URL, `sha256`, license; `?models=0` falls

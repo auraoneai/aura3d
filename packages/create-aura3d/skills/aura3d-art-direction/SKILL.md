@@ -48,7 +48,7 @@ description: Sets the visual target and runs the look-dev loop for any Aura3D sc
 
 Run until every rubric category scores >= 7, or 6 rounds, or 2 rounds with no gain:
 
-1. Capture: `aura3d look capture --route / --shots opening,mid,action --viewports desktop,mobile` (`--runner gh-actions` is the default where the template ships `.github/workflows/aura3d-lookdev.yml`; `--runner local` is the downstream user's choice).
+1. Capture opening, mid and action frames at desktop and mobile. In the Aura3D repository and on AuraOne machines (no GitHub Actions, no local Playwright) run the route's screenshot spec on the remote runner: `RUN_ID=look-1 SPECS="tests/browser/<route-look>.spec.ts" tools/remote-acr/run.sh`, then read the PNGs from `tests/reports/remote-acr/look-1/artifacts/`. In your own project: `aura3d look capture --route / --shots opening,mid,action --viewports desktop,mobile --runner gh-actions|local` (`gh-actions` is the CLI default and needs the template's `aura3d-lookdev` workflow plus `gh`; `local` needs Playwright installed). Use only the path your environment allows.
 2. Judge: open each PNG and fill `look-judgement.json` against `references/quality-bar.md`; validate with `aura3d look judge --validate look-judgement.json`. Read `aura3d look lint` plus `app.diagnostics().look`.
 3. Change the single highest-leverage thing: lint codes first, then the lowest category. One change per round.
 4. Repeat. Record remaining gaps with their lint code or engine limitation — never paint over a gap with fake geometry.
@@ -73,6 +73,10 @@ Hard checklist (all must hold before claiming done):
 - Stop after the loop exits (>= 7 everywhere, 6 rounds, or 2 flat rounds) and report the final `look-judgement.json` summary with remaining lint codes.
 - Label `prototype` when the loop could not run (no capture runner available): say which step failed.
 - A self-judgement is not a pass of the quality bar; only a panel round passes it. Report medians and the weakest category.
+
+## Default-look facts
+
+No environment authored means the built-in neutral floor (4.1.2 published builds also log `ENV_FETCH_FAILED` for `/aura-environments/neutral.manifest.json`); the legacy post chain makes frames with bloom or vignette 25% to 40% darker (`POSTPROCESS_V2_UNMIGRATED`, known issue); exposure runs brighter than three.js for the same intensities. Judge the captured frame with the same post settings, and read the full list in `docs/agents/art-direction.md` section 3.
 
 ## References
 

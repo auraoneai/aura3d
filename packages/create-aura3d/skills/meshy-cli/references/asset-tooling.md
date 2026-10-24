@@ -70,3 +70,26 @@ charged. `settle --exit-code` records it as `unconfirmed`, which keeps counting 
 task with `meshy <resource> get <id>` instead of paying again, then
 `meshy ledger reconcile --rid <id> --status ok` (or `failed`). Only a confirmed no-charge outcome (auth
 exit 3, validation exit 4, credits exit 9, or a FAILED task) settles as `failed` and counts 0.
+
+## Profile traps
+
+| `--profile` | Max triangles | Min triangles | Max textures | Max texture px |
+| --- | --- | --- | --- | --- |
+| `prop` | 100,000 | none | 8 | 4096 |
+| `vehicle` | 250,000 | 1,000 | 12 | 4096 |
+| `humanoid` | 150,000 | 3,000 | 12 | 4096 |
+| `environment` | 500,000 | none | 16 | 8192 |
+
+Meshy `--texture-resolution` defaults to `4k`; `8k` fails every profile
+except `environment`. With `--enable-pbr` each map counts toward the
+texture limit. Non-indexed geometry leaves the triangle check `unproven`.
+Omitting `--profile` infers it from `--role` (`character` to humanoid,
+`vehicle` to vehicle, `world`/`environment`/`track` to environment, else
+prop). Remesh defaults to 30,000; about 10,000 rigs well. Raw Meshy exports
+often contain `200,000–1,750,000` vertices and `20–65 MB` of uncompressed 4K
+PNG textures, which stall main-thread glTF parsing and exhaust GPU memory
+when multiple models share one scene look and lighting setup. Before
+admission run `assets optimize --file in.glb --out out.glb --role prop` on
+every generated GLB (role vertex budgets, textures `<= 1024–2048` px,
+float32 geometry kept; see [asset-tooling](asset-tooling.md)).
+
