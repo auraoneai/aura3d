@@ -19,7 +19,7 @@ import { createWorkMode } from "../ui/workMode";
 import { createAdapterController, type AdapterController } from "./controller";
 import { createController } from "./gamepad";
 import { playerFrame, type PlayerFrameContext } from "./inputFrame";
-import { matchResetOptions } from "./matchSetup";
+import { applyCharacterIds, matchResetOptions } from "./matchSetup";
 import { createMatchLoop, type MatchLoop } from "./loop";
 import { installSlamQa } from "./qa";
 import { renderGameToText } from "./qaText";
@@ -352,6 +352,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
       difficulty: (options.difficulty ?? "beginner") as never, venue: options.venue ?? "hard", practice: options.practice,
       allowSwipe: swipeEnabled && mobileTouchAvailable(), controlStyle: swipeEnabled ? swipePort.getPreference() ?? "classic" : "classic"
     }));
+    applyCharacterIds(getState() as never, options.practice);
     swipeOverlay?.setBoundaryKey(""); syncSwipeBoundary();
     const s = getState() as { paused: boolean; venue: string; player: { selectedShot?: ShotPreset } };
     s.paused = false;
@@ -512,7 +513,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     app: () => deps.app?.(),
     renderText: text,
     advanceTime: (ms) => { pad.poll(); loop.advanceTime(ms); },
-    togglePause, startOffline: () => menu.quickStart(menu.practice() ? "practice" : "single"), getEngine: () => engine,
+    togglePause, startOffline: (settings) => menu.quickStart(menu.practice() ? "practice" : "single", settings), getEngine: () => engine,
     routeHealth: deps.routeHealth, nodeCount: deps.nodeCount,
     traceRow: () => { const s = getState(); return [s.tick, s.ball.x, s.ball.y, s.ball.z, s.player.x, s.player.y, s.ai.x, s.ai.y, s.score.playerPoints, s.score.aiPoints]; }
   });

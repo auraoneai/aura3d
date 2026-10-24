@@ -6,6 +6,8 @@ import { serveAttemptOf, lastServeOf } from "../ui/serveFeedback";
 import { summarizeMatch, type MatchResultsModel } from "../ui/results";
 import { SHOT_DEFAULTS, type HudState, type ScoreboardNames, type ShotConstants, type SlamEngine } from "../ui/types";
 import { themeFor } from "../ui/venues";
+import { appearance } from "../sim/appearance";
+import { DEFAULT_ROSTER } from "./matchSetup";
 
 export const COORDINATE_SYSTEM =
   "World court coordinates: origin at net center; x increases right; y increases toward player/bottom; z is height. Court x=-1..1, y=-1..1.";
@@ -59,7 +61,14 @@ export function renderGameToText(input: QaTextInput): string {
     phase: state.phase,
     difficulty: state.difficulty,
     cpuTactics: (state.ai as { controller?: string; tactics?: unknown }).controller === "computer" ? (state.ai as { tactics?: unknown }).tactics ?? null : null,
-    roster: { enabled: false, selection: { player: "classic", ai: "classic" }, player: "classic", rival: "classic", customRatings: { player: null, rival: null }, chooserOpen: false },
+    roster: {
+      enabled: true, selection: { ...DEFAULT_ROSTER }, player: (state.player as { rosterId?: string }).rosterId || "classic", rival: (state.ai as { rosterId?: string }).rosterId || "classic",
+      customRatings: { player: (state.player as { customRatings?: unknown }).customRatings || null, rival: (state.ai as { customRatings?: unknown }).customRatings || null }, chooserOpen: false
+    },
+    offlineBuild: null,
+    multiplayerBuild: null,
+    characters: { player: (state.player as { characterId?: string }).characterId || null, rival: (state.ai as { characterId?: string }).characterId || null },
+    appearance: { selection: appearance.defaults("player"), player: (state.player as { appearance?: unknown }).appearance || null, rival: (state.ai as { appearance?: unknown }).appearance || null, chooserOpen: false },
     assistance: input.swipeActive,
     controlMode: input.swipeActive ? "swipe" : "manual",
     mobileControls: input.mobileControls,

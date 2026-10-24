@@ -5,7 +5,7 @@ import { pointLabel } from "../ui/format";
 import { scoreboardState } from "../ui/scoreboard";
 import { serveAttemptOf, lastServeOf } from "../ui/serveFeedback";
 import { summarizeMatch, type MatchResultsModel } from "../ui/results";
-import { SHOT_DEFAULTS, type ShotConstants, type HudState, type ScoreboardNames, type SlamEngine } from "../ui/types";
+import { SHOT_DEFAULTS, type ShotConstants, type HudState, type MenuSettings, type ScoreboardNames, type SlamEngine } from "../ui/types";
 import { themeFor } from "../ui/venues";
 
 export interface SlamQaDeps {
@@ -19,7 +19,8 @@ export interface SlamQaDeps {
   renderText: () => string;
   advanceTime: (ms: number) => void;
   togglePause: () => void;
-  startOffline: () => void;
+  /** Starts the offline match; optional settings pick difficulty and venue exactly (the replay specs use it). */
+  startOffline: (settings?: Partial<MenuSettings>) => void;
   getEngine: () => SlamEngine;
   routeHealth?: () => unknown;
   nodeCount?: () => number;
