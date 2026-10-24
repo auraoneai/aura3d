@@ -40,15 +40,12 @@ export function installGameBeacon(options: BeaconOptions): { refresh(): void; di
 
   const publish = () => {
     const app = options.getApp?.();
-    win.__AURA3D_GAME__ = Object.freeze({
-      route: options.route,
-      state,
-      frame,
-      firstFrameAt,
-      sessionStartedAt,
-      ...(app !== undefined ? { app, scene: app.scene } : {}),
-      ...(options.getSession !== undefined ? { session: options.getSession() } : {})
-    });
+    const beacon: Record<string, unknown> = { route: options.route, state, frame, firstFrameAt, sessionStartedAt };
+    // Live handles stay reachable for audit lanes but are not enumerable, so JSON.stringify and remote capture serialize the beacon (app.post is circular).
+    const hidden = (value: unknown) => ({ value, enumerable: false, writable: false, configurable: false });
+    if (app !== undefined) Object.defineProperties(beacon, { app: hidden(app), scene: hidden(app.scene) });
+    if (options.getSession !== undefined) Object.defineProperty(beacon, "session", hidden(options.getSession()));
+    win.__AURA3D_GAME__ = Object.freeze(beacon) as unknown as GameBeacon;
   };
 
   /** Re-publish now — call from session "state" events and first-frame. */

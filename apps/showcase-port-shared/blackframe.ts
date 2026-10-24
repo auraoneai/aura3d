@@ -13,7 +13,7 @@ import {
   qrHealStage,
   qrHealUrl,
   type BlackFrameGuardOptions
-} from "../../packages/debug/src/safety/index";
+} from "@aura3d/debug";
 
 export const HEAL_LADDER = QR_HEAL_LADDER;
 export const healStage = qrHealStage;

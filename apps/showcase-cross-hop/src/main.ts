@@ -12,26 +12,6 @@ const params = new URLSearchParams(window.location.search);
 const AUTOPLAY = params.get("autoplay") === "1" || params.get("demo") === "1";
 const AUTOSTART = params.get("autostart") !== "0";
 
-// Sanitize the engine's __AURA3D_GAME__ beacon — it embeds the live `app`
-// object (circular via app.post) which breaks remote capture serialization.
-let beaconStore: Record<string, unknown> = {};
-Object.defineProperty(window, "__AURA3D_GAME__", {
-  configurable: true,
-  get: () => beaconStore,
-  set: (v: unknown) => {
-    if (v && typeof v === "object") {
-      const src = v as Record<string, unknown>;
-      beaconStore = {
-        route: src.route,
-        state: src.state,
-        frame: src.frame,
-        firstFrameAt: src.firstFrameAt,
-        sessionStartedAt: src.sessionStartedAt
-      };
-    } else beaconStore = {};
-  }
-});
-
 const inputOptions = {
   actions: {
     up: ["KeyW", "ArrowUp", "Space", "Enter"],

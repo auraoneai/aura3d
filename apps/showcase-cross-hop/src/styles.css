@@ -1,6 +1,6 @@
 html, body { margin: 0; padding: 0; height: 100%; background: #0b0e14; overflow: hidden; }
 #app { position: fixed; inset: 0; }
-#hud { position: fixed; inset: 0; pointer-events: none; font-family: system-ui, -apple-system, sans-serif; }
+#hud { position: fixed; inset: 0; pointer-events: none; font-family: "Graphik Web", sans-serif; }
 
 #ch-hud { position: absolute; inset: 0; pointer-events: none; }
 #ch-hud .ch-panel { pointer-events: auto; }
