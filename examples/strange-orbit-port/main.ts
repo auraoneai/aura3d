@@ -8,7 +8,7 @@
  * `laps=N` (test override), `autostart=1`, `autopilot=1`, `manual=1` (the sim only
  * advances through `__orbit.advance` / `__AURA_STRANGE_ORBIT__.stepFrames`).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { createOrbitAudio } from "./audio";
 import { installOrbitUi } from "./ui";
 import { RIDERS, sectionLabel, type Mode, type Vehicle } from "./course";
@@ -68,7 +68,6 @@ let script: readonly InputSegment[] = [];
 let heldInput: Input | null = null;
 let notice = "";
 let noticeTime = 0;
-let simAccumulator = 0;
 let hudTimer = 0;
 let lastPhase = "";
 let renderTime = 0;
@@ -138,7 +137,7 @@ function begin(): void {
   checkpointOrder = [];
   runtime?.resetCamera();
   startCountdown(race);
-  simAccumulator = 0;
+  loop.resetAccumulator();
   lastPhase = "";
   noticeTime = 0;
 }
@@ -164,6 +163,16 @@ function simulate(steps: number, input?: Input): void {
     gravityEdge = false;
   }
 }
+
+const loop = createFixedStepLoop({
+  manual: config.manual,
+  stepSeconds: STEP,
+  maxFrameSeconds: 0.08,
+  isActive: () => ready,
+  step() {
+    simulate(1);
+  }
+});
 
 /* ------------------------------------------------------------------ HUD */
 
@@ -240,15 +249,9 @@ function tick(now: number): void {
   const t = Math.max(0.001, (now - lastTick) / 1000);
   const dt = Math.min(0.08, t);
   lastTick = now;
+  loop.tick(now);
   if (!ready) return;
   renderTime += dt;
-  if (!config.manual) {
-    simAccumulator = Math.min(0.12, simAccumulator + dt);
-    while (simAccumulator >= STEP) {
-      simulate(1);
-      simAccumulator -= STEP;
-    }
-  }
   sound.update({ speed: race.speed, boosting: Boolean(race.boosting), drafting: Boolean(race.drafting), flight: Boolean(race.flight), racing: race.phase === "racing" }, dt);
   hudTimer += dt;
   if (hudTimer >= 0.05 || lastPhase !== race.phase) { updateHud(hudTimer); hudTimer = 0; }
@@ -331,110 +334,91 @@ const orbit = {
   }
 };
 
-const api = {
+/**
+ * Replay a recorded run-length input script step-exactly through the simulation (fresh race,
+ * no rendering per step) and return the facts the original's capture records.
+ */
+function replayScript(text: string) {
+  race = newRace();
+  checkpointOrder = [];
+  runtime?.resetCamera();
+  startCountdown(race);
+  const checkpoints: { step: number; gate: number; lap: number }[] = [];
+  const routeEvents: { step: number; text: string }[] = [];
+  const lapSteps: number[] = [];
+  let step = 0;
+  for (const input of decodeInputScript(text)) {
+    stepRace(race, input, STEP);
+    step++;
+    handleEvents(race.events);
+    for (const ev of race.events) {
+      if (ev.type === "gate") checkpoints.push({ step, gate: ev.gate!, lap: race.lap });
+      if (ev.type === "route" && ev.text) routeEvents.push({ step, text: ev.text });
+      if (ev.type === "lap") lapSteps.push(step);
+    }
+    if (race.phase === "finished" || race.phase === "lost") break;
+  }
+  updateHud(0);
+  render(0);
+  return {
+    phase: race.phase,
+    steps: step,
+    time: race.time,
+    lapTimes: race.lapTimes.slice(),
+    bestLap: race.bestLap,
+    checkpoints,
+    routeEvents,
+    lapSteps,
+    counters: { gatesPassed: race.gatesPassed, hits: race.hits, respawns: race.respawns, nearMisses: race.nearMisses, dust: race.dust, tricks: race.tricks, stunts: race.stunts, loops: race.loops, score: race.score, place: race.place, medal: race.end?.medal ?? null },
+    standings: raceOrder(race).map((r) => ({ id: r.id, name: r.name, place: r.place, gap: r.gap, finished: r.finished, finishTime: Number.isFinite(r.finishTime) ? r.finishTime : null, s: r.s }))
+  };
+}
+
+installQaHooks("strange-orbit", {
   ready: () => ready,
-  config: () => ({ ...config }),
-  /** State fields the PRD Phase A gate compares: lap, checkpoint order, elapsed time, finished. */
   state: () => ({ ...runStatus(), ...snapshot() }),
-  status: runStatus,
-  applyInput(input: Input | null) { heldInput = input; autopilotOn = false; },
-  setScript(next: readonly InputSegment[]) { script = next; heldInput = null; autopilotOn = false; },
-  setAutopilot(on: boolean) { autopilotOn = on; if (on) { heldInput = null; script = []; } },
   begin,
   reset() { orbit.menu(); begin(); },
-  /** Run `n` fixed 1/60 s steps (input optional), then render once. */
-  stepFrames(n: number, input?: Input) {
-    simulate(Math.max(0, n | 0), input);
-    updateHud(0);
-    render(0);
-    return runStatus();
-  },
-  /** Step until finished/lost or `maxFrames`; returns the run status. */
-  runToFinish(maxFrames = 60 * 60 * 8, chunk = 600) {
-    let done = 0;
-    while (done < maxFrames && race.phase !== "finished" && race.phase !== "lost") {
-      const n = Math.min(chunk, maxFrames - done);
-      simulate(n);
-      done += n;
-    }
-    updateHud(0);
-    render(0);
-    return { ...runStatus(), steps: done };
-  },
-  /**
-   * Replay a recorded run-length input script step-exactly through the simulation (fresh race,
-   * no rendering per step) and return the facts the original's capture records.
-   */
-  replay(text: string) {
-    race = newRace();
-    checkpointOrder = [];
-    runtime?.resetCamera();
-    startCountdown(race);
-    const checkpoints: { step: number; gate: number; lap: number }[] = [];
-    const routeEvents: { step: number; text: string }[] = [];
-    const lapSteps: number[] = [];
-    let step = 0;
-    for (const input of decodeInputScript(text)) {
-      stepRace(race, input, STEP);
-      step++;
-      handleEvents(race.events);
-      for (const ev of race.events) {
-        if (ev.type === "gate") checkpoints.push({ step, gate: ev.gate!, lap: race.lap });
-        if (ev.type === "route" && ev.text) routeEvents.push({ step, text: ev.text });
-        if (ev.type === "lap") lapSteps.push(step);
-      }
-      if (race.phase === "finished" || race.phase === "lost") break;
-    }
-    updateHud(0);
-    render(0);
-    return {
-      phase: race.phase,
-      steps: step,
-      time: race.time,
-      lapTimes: race.lapTimes.slice(),
-      bestLap: race.bestLap,
-      checkpoints,
-      routeEvents,
-      lapSteps,
-      counters: { gatesPassed: race.gatesPassed, hits: race.hits, respawns: race.respawns, nearMisses: race.nearMisses, dust: race.dust, tricks: race.tricks, stunts: race.stunts, loops: race.loops, score: race.score, place: race.place, medal: race.end?.medal ?? null },
-      standings: raceOrder(race).map((r) => ({ id: r.id, name: r.name, place: r.place, gap: r.gap, finished: r.finished, finishTime: Number.isFinite(r.finishTime) ? r.finishTime : null, s: r.s }))
-    };
-  },
-  frames: () => frames,
+  replay: replayScript,
+  app: () => app,
+  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-03", "SG-05", "SH-02", "R-23"] }) : null),
   nodeCount: () => runtime?.nodeCount ?? 0,
-  info: () => app?.info ?? null,
-  diagnostics: () => app?.diagnostics() ?? null,
-  async frame(width = 480, height = 270, quality = 0.72): Promise<string> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = document.createElement("canvas");
-    surface.width = width;
-    surface.height = height;
-    surface.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-    return surface.toDataURL("image/jpeg", quality);
-  },
-  async pixels(): Promise<{ width: number; height: number; data: Uint8ClampedArray }> {
-    if (!app?.capture) throw new Error("capture unavailable");
-    const blob = (await app.capture({ type: "png-blob" })) as Blob;
-    const bitmap = await createImageBitmap(blob);
-    const surface = new OffscreenCanvas(bitmap.width, bitmap.height);
-    const ctx = surface.getContext("2d")!;
-    ctx.drawImage(bitmap, 0, 0);
-    const image = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-    return { width: image.width, height: image.height, data: image.data };
-  },
-  routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-03", "SG-05", "SH-02", "R-23"] }) : null)
-};
+  extras: {
+    config: () => ({ ...config }),
+    status: runStatus,
+    applyInput(input: Input | null) { heldInput = input; autopilotOn = false; },
+    setScript(next: readonly InputSegment[]) { script = next; heldInput = null; autopilotOn = false; },
+    setAutopilot(on: boolean) { autopilotOn = on; if (on) { heldInput = null; script = []; } },
+    /** Run `n` fixed 1/60 s steps (input optional), then render once. */
+    stepFrames(n: number, input?: Input) {
+      simulate(Math.max(0, n | 0), input);
+      updateHud(0);
+      render(0);
+      return runStatus();
+    },
+    /** Step until finished/lost or `maxFrames`; returns the run status. */
+    runToFinish(maxFrames = 60 * 60 * 8, chunk = 600) {
+      let done = 0;
+      while (done < maxFrames && race.phase !== "finished" && race.phase !== "lost") {
+        const n = Math.min(chunk, maxFrames - done);
+        simulate(n);
+        done += n;
+      }
+      updateHud(0);
+      render(0);
+      return { ...runStatus(), steps: done };
+    },
+    frames: () => frames
+  }
+});
 
 declare global {
   interface Window {
-    __AURA_STRANGE_ORBIT__?: typeof api;
+    __AURA_STRANGE_ORBIT__?: unknown;
     __orbit?: typeof orbit;
     __AURA_STRANGE_ORBIT_ERROR__?: string;
   }
 }
-window.__AURA_STRANGE_ORBIT__ = api;
 window.__orbit = orbit;
 
 /* ------------------------------------------------------------------ boot */
