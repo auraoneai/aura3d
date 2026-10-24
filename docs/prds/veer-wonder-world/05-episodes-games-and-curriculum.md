@@ -51,7 +51,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Caregiver:** Play with real toy train or picture of apple; **one featured letter per short episode**, not 26 rapidly.
 - **Done:** Train/letter asset rights and clip mapping signed off.
 
-### E05 — The Counting Cookie Monster (P1)
+### E05 — Momo's Counting Cookies (P1)
 **File:** `src/content/episodes/counting-cookies.ts`. **Hero:** Momo as cookie-loving, original friendly creature; **do not imitate copyrighted Cookie Monster**. **Core:** “one,” “two,” “three,” plus “cookie.”
 - **Hook:** Momo finds a plate of three cookies and his tummy rumbles.
 - **Action:** Place cookie #1, #2, #3 visibly and count at slow tempo, with one object per spoken number; Momo eats one.
