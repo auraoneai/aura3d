@@ -154,3 +154,46 @@ export function findReentry(from: Vec3, to: Vec3, vehicle: Vehicle = "bike", hin
   }
   return best;
 }
+
+export interface UndersideHit {
+  readonly point: Vec3;
+  /** Unit normal pointing down, away from the strip, toward the rider. */
+  readonly normal: Vec3;
+  readonly t: number;
+  readonly route: Route;
+}
+
+/**
+ * Sweep a sphere of `radius` up through the drivable strips from below (the underside of the
+ * bridges, split routes, ramps and island platforms). `findReentry` ignores motion along a
+ * triangle's normal, so a rider flying up under a strip used to pass straight through it.
+ */
+export function findUndersideBlock(from: Vec3, to: Vec3, vehicle: Vehicle = "bike", radius = 0.8): UndersideHit | null {
+  const hashes = ensureHashes();
+  const hash = vehicle === "skate" ? hashes.skate : hashes.bike;
+  const candidates = new Set<Tri>();
+  const margin = radius + SKIN;
+  const min = new Vec3(Math.min(from.x, to.x) - margin, Math.min(from.y, to.y) - margin, Math.min(from.z, to.z) - margin);
+  const max = new Vec3(Math.max(from.x, to.x) + margin, Math.max(from.y, to.y) + margin, Math.max(from.z, to.z) + margin);
+  forEachCell(min, max, (key) => hash.get(key)?.forEach((tri) => candidates.add(tri)));
+
+  let best: UndersideHit | null = null;
+  const motion = to.clone().sub(from);
+  for (const tri of candidates) {
+    if (motion.dot(tri.normal) <= 1e-5) continue;
+    const c = from.clone().sub(tri.a).dot(tri.normal);
+    const l = to.clone().sub(tri.a).dot(tri.normal);
+    if (c >= 0 || l <= -radius) continue;
+    const u = c < -radius ? (-radius - c) / Math.max(1e-9, l - c) : 0;
+    if (u > 1 || (best && u >= best.t)) continue;
+    const point = from.clone().addScaledVector(motion, u);
+    point.addScaledVector(tri.normal, -point.clone().sub(tri.a).dot(tri.normal));
+    if (!triangleContainsPoint(point, tri.a, tri.b, tri.c)) {
+      const closest = triangleClosestPoint(point, tri.a, tri.b, tri.c, new Vec3());
+      if (closest.distanceToSquared(point) > 0.3 ** 2) continue;
+      point.copy(closest);
+    }
+    best = { point, normal: tri.normal.clone().negate(), t: u, route: tri.route };
+  }
+  return best;
+}

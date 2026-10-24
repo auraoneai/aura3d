@@ -66,6 +66,7 @@ export default defineConfig({
       // deprecated subpaths whose prefix collides with a live parent MUST
       // precede that parent (assets/*, animation/browser, workflows/*,
       // scene-kits/*, rendering/*).
+      "@aura3d/engine/game": new URL("./packages/game/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering/production-runtime": new URL("./packages/engine/src/deprecated/rendering-production-runtime.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering/webgpu": new URL("./packages/engine/src/deprecated/rendering-webgpu.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering": new URL("./packages/engine/src/deprecated/rendering.ts", import.meta.url).pathname,

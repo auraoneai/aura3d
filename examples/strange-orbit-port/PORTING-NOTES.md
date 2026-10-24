@@ -153,3 +153,12 @@ Wiring notes:
 - `?meshy=0` restores the primitive riders and the plain pillars (bisecting a render problem).
 - Set dressing: 14 boulders and spires along the rim (deterministic Lehmer seed 48271), a lander at s = 330 and two observatories at s = 790 and 1260.
 - Meshy rigging/animation was not used: the riders are single combined meshes (a rider fused to a bike cannot be rigged as a humanoid).
+
+## Solid scenery in zero-G flight (rework)
+
+The original only collided the rider with the drivable strips (`findReentry`) and the moon rocks; the gate pillars and lintels, rim boulders and spires, lander and observatories were visual only, and a rider flying up under a strip passed through it. The port now treats them as solid in drift flight:
+
+- `obstacles.ts` holds the placement of the rim dressing (`dressingPlan()`, used by `world.ts` for the meshes) and the capsule colliders built from the same frames and the GLB bounds (`staticColliders()`); `impactColliders()` feeds the library `createImpactWorld` as sphere chains.
+- The drift step moves through that world (restitution 0.4, friction 0.18). A contact above 3 m/s is one impact: it counts in `impacts`, applies the moon-rock penalty once per 1 s cooldown (energy -10, combo reset) and raises a `hit` event with the surface, point, normal and approach speed, which drives the library hit-stop, camera shake and the hit cue. Slower grazes bounce silently.
+- `findUndersideBlock` (`reentry.ts`) stops a rider flying up through a strip from below.
+- On-track riders and rivals are unchanged (the lane clamp keeps them away from these pieces), so the reference replay and the 7-lap autopilot pin are unchanged. Numbers: `evidence/strange-orbit-port/rework/README.md`.

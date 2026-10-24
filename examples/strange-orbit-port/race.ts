@@ -50,8 +50,10 @@ import {
   type Route,
   type Vehicle
 } from "./course";
-import { findReentry } from "./reentry";
-import { centrifugalDrift, mainFrame, routeFrame, routeLengthScale, setActiveCourse, surfaceNoise } from "./track";
+import { createImpactWorld, type ImpactWorld } from "@aura3d/engine/game";
+import { impactColliders } from "./obstacles";
+import { findReentry, findUndersideBlock } from "./reentry";
+import { activeCourse, centrifugalDrift, mainFrame, routeFrame, routeLengthScale, setActiveCourse, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
 
 /** The original's fixed simulation step. */
@@ -68,7 +70,7 @@ export interface Input {
   gravity?: boolean;
 }
 
-export interface RaceEvent { type: string; text?: string; mult?: number; gate?: number }
+export interface RaceEvent { type: string; text?: string; mult?: number; gate?: number; impact?: number; colliderId?: string; point?: [number, number, number]; normal?: [number, number, number] }
 
 export interface Air {
   height: number;
@@ -142,6 +144,8 @@ export interface RaceState {
   rules: DifficultyRules;
   course: CourseDef;
   hits: number;
+  /** Solid-scenery impacts during zero-G flight (every contact above `IMPACT.minSpeed`, penalised or not). */
+  impacts: number;
   edgeTime: number;
   edgeWarning: boolean;
   shortcutTime: number;
@@ -236,6 +240,7 @@ export function createRace(options: RaceOptions = {}): RaceState {
     rules,
     course,
     hits: 0,
+    impacts: 0,
     edgeTime: 0,
     edgeWarning: false,
     shortcutTime: 0,
@@ -376,6 +381,7 @@ const GRAVITY_DEFAULTS = { charges: 3, duration: 6, driftLimit: 12, slingTime: 1
 const JUMP = { gravity: 14, platformGravity: 30, fieldHeight: 8.5, cooldown: 0.35, buffer: 0.24, coyote: 0.1 } as const;
 
 function enterFlight(e: RaceState, t: number = e.s): void {
+  impactWorld().reset();
   const frame = routeFrame(e.s, e.route);
   const air = e.air;
   const forward = frame.tangent.clone().multiplyScalar(Math.cos(e.heading || 0)).addScaledVector(frame.side, Math.sin(e.heading || 0));
@@ -443,6 +449,51 @@ function useGravity(e: RaceState): boolean {
   return true;
 }
 
+/** Rider sphere and bounce tuning for collisions with solid scenery in zero-G flight. */
+const IMPACT = { radius: 0.8, restitution: 0.4, friction: 0.18, minSpeed: 3, energyLoss: 10, cooldown: 1 };
+
+let impactCache: { readonly id: string; readonly world: ImpactWorld } | undefined;
+
+function impactWorld(): ImpactWorld {
+  const id = activeCourse().id;
+  if (!impactCache || impactCache.id !== id) {
+    impactCache = { id, world: createImpactWorld({ colliders: impactColliders(), restitution: IMPACT.restitution, friction: IMPACT.friction, eventMinSpeed: IMPACT.minSpeed }) };
+  }
+  return impactCache.world;
+}
+
+interface FlightStrike { readonly colliderId: string; readonly tag?: string; readonly point: [number, number, number]; readonly normal: [number, number, number]; readonly speed: number }
+
+/** Count a solid impact and apply the moon-rock penalty (once per cooldown). */
+function registerImpact(e: RaceState, strike: FlightStrike): void {
+  e.impacts++;
+  if (e.hitCooldown > 0) return;
+  e.hits++;
+  e.energy = Math.max(0, e.energy - IMPACT.energyLoss);
+  e.combo = 0;
+  e.hitCooldown = IMPACT.cooldown;
+  e.events.push({
+    type: "hit",
+    text: `Crashed into the ${strike.tag ?? "scenery"} · steer clear`,
+    impact: strike.speed,
+    colliderId: strike.colliderId,
+    point: strike.point,
+    normal: strike.normal
+  });
+}
+
+/** Bounce the drifter off the underside of a strip (the library impact world collides spheres and boxes only). */
+function bounceOffUnderside(e: RaceState, f: Flight, point: Vec3, normal: Vec3): void {
+  f.position.copy(point).addScaledVector(normal, IMPACT.radius + 0.02);
+  const vn = f.velocity.dot(normal);
+  if (vn >= 0) return;
+  f.velocity.addScaledVector(normal, -(1 + IMPACT.restitution) * vn);
+  const slide = f.velocity.clone().addScaledVector(normal, -f.velocity.dot(normal));
+  f.velocity.addScaledVector(slide, -IMPACT.friction);
+  if (-vn < IMPACT.minSpeed) return;
+  registerImpact(e, { colliderId: "track-underside", tag: "underside of the track", point: [point.x, point.y, point.z], normal: [normal.x, normal.y, normal.z], speed: -vn });
+}
+
 /** Advance zero-G flight; returns true when the rider re-entered the track. */
 function stepFlight(e: RaceState, dt: number, input: Input): boolean | undefined {
   const f = e.flight!;
@@ -458,7 +509,13 @@ function stepFlight(e: RaceState, dt: number, input: Input): boolean | undefined
     if (f.velocity.length() > 65) f.velocity.setLength(65);
     const previous = f.position.clone();
     f.age += dt;
-    f.position.addScaledVector(f.velocity, dt);
+    const body = { position: [f.position.x, f.position.y, f.position.z] as [number, number, number], velocity: [f.velocity.x, f.velocity.y, f.velocity.z] as [number, number, number], radius: IMPACT.radius };
+    const strikes = impactWorld().step(body, dt);
+    f.position.set(body.position[0], body.position[1], body.position[2]);
+    f.velocity.set(body.velocity[0], body.velocity[1], body.velocity[2]);
+    for (const strike of strikes) registerImpact(e, strike);
+    const under = f.age > 0.12 && findUndersideBlock(previous, f.position, e.vehicle, IMPACT.radius);
+    if (under) bounceOffUnderside(e, f, under.point, under.normal);
     const hit = f.age > 0.12 && findReentry(previous, f.position, e.vehicle, e.s);
     if (hit) {
       const frame = hit.frame;

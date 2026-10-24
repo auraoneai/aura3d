@@ -9,6 +9,7 @@
  * advances through `__orbit.advance` / `__AURA_STRANGE_ORBIT__.stepFrames`).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
+import { createCameraShake, createHitStop, createImpactFeedback } from "@aura3d/engine/game";
 import { createOrbitAudio } from "./audio";
 import { installOrbitUi } from "./ui";
 import { RIDERS, sectionLabel, type Mode, type Vehicle } from "./course";
@@ -27,6 +28,7 @@ import {
   type RaceEvent,
   type RaceState
 } from "./race";
+import { staticColliders } from "./obstacles";
 import { setActiveCourse } from "./track";
 import { buildWorld, type WorldRuntime } from "./world";
 
@@ -73,6 +75,9 @@ let lastPhase = "";
 let renderTime = 0;
 let frames = 0;
 const sound = createOrbitAudio();
+const hitStop = createHitStop();
+const shake = createCameraShake({ maxOffset: 0.5, maxRoll: 0.05 });
+const impactFeedback = createImpactFeedback({ hitStop, shake, cue: (_name, gain) => sound.cue("hit", gain), fullSpeed: 30 });
 installOrbitUi(params, config.difficulty);
 
 function newRace(): RaceState {
@@ -151,6 +156,10 @@ function handleEvents(events: readonly RaceEvent[]): void {
   for (const ev of events) {
     if (ev.type === "gate" && typeof ev.gate === "number") checkpointOrder.push(ev.gate);
     if (ev.text) { notice = ev.text; noticeTime = 3; }
+    if (ev.impact !== undefined) {
+      impactFeedback.handle({ colliderId: ev.colliderId ?? "", tag: undefined, point: ev.point ?? [0, 0, 0], normal: ev.normal ?? [0, 1, 0], speed: ev.impact, impulse: ev.impact });
+      continue;
+    }
     sound.cue(ev.type, ev.mult);
   }
 }
@@ -168,7 +177,7 @@ const loop = createFixedStepLoop({
   manual: config.manual,
   stepSeconds: STEP,
   maxFrameSeconds: 0.08,
-  isActive: () => ready,
+  isActive: () => ready && !hitStop.active,
   step() {
     simulate(1);
   }
@@ -233,7 +242,7 @@ let renderFailed = false;
 function render(dt: number): void {
   if (!app || !runtime || renderFailed) return;
   try {
-    runtime.update(race, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+    runtime.update(race, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight), shake.update(dt));
     app.step(0);
     frames++;
   } catch (error) {
@@ -249,6 +258,7 @@ function tick(now: number): void {
   const t = Math.max(0.001, (now - lastTick) / 1000);
   const dt = Math.min(0.08, t);
   lastTick = now;
+  hitStop.update(dt);
   loop.tick(now);
   if (!ready) return;
   renderTime += dt;
@@ -369,7 +379,7 @@ function replayScript(text: string) {
     checkpoints,
     routeEvents,
     lapSteps,
-    counters: { gatesPassed: race.gatesPassed, hits: race.hits, respawns: race.respawns, nearMisses: race.nearMisses, dust: race.dust, tricks: race.tricks, stunts: race.stunts, loops: race.loops, score: race.score, place: race.place, medal: race.end?.medal ?? null },
+    counters: { gatesPassed: race.gatesPassed, hits: race.hits, impacts: race.impacts, respawns: race.respawns, nearMisses: race.nearMisses, dust: race.dust, tricks: race.tricks, stunts: race.stunts, loops: race.loops, score: race.score, place: race.place, medal: race.end?.medal ?? null },
     standings: raceOrder(race).map((r) => ({ id: r.id, name: r.name, place: r.place, gap: r.gap, finished: r.finished, finishTime: Number.isFinite(r.finishTime) ? r.finishTime : null, s: r.s }))
   };
 }
@@ -407,6 +417,24 @@ installQaHooks("strange-orbit", {
       updateHud(0);
       render(0);
       return { ...runStatus(), steps: done };
+    },
+    /** QA: solid scenery as plain data (label, capsule ends, radius, approach direction). */
+    colliders: () => staticColliders().map((c) => ({ id: c.id, label: c.label, a: [c.a.x, c.a.y, c.a.z], b: [c.b.x, c.b.y, c.b.z], radius: c.radius, approach: [c.approach.x, c.approach.y, c.approach.z] })),
+    /** QA: put a racing rider into zero-G drift 8 m from collider `id`, flying straight at it at `speed` m/s. */
+    flyInto(id: string, speed = 35) {
+      const c = staticColliders().find((x) => x.id === id);
+      if (!c || race.phase !== "racing") return false;
+      race.lane = 40;
+      stepRace(race, { pedal: true }, STEP);
+      const f = race.flight;
+      if (!f) return false;
+      const mid = c.a.clone().add(c.b).multiplyScalar(0.5);
+      f.position.copy(mid).addScaledVector(c.approach, -(c.radius + 8));
+      f.velocity.copy(c.approach).multiplyScalar(speed);
+      f.forward.copy(c.approach);
+      f.age = 1;
+      race.hitCooldown = 0;
+      return true;
     },
     frames: () => frames
   }

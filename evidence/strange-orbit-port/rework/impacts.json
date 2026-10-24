@@ -1,0 +1,226 @@
+{
+  "rows": [
+    {
+      "surface": "gate pillar",
+      "speed": 15,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.002,
+      "reboundSpeed": 6.12,
+      "approachSpeedReported": 14.9,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "gate pillar",
+      "speed": 35,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.13,
+      "reboundSpeed": 14.29,
+      "approachSpeedReported": 34.77,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "gate pillar",
+      "speed": 60,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.2,
+      "reboundSpeed": 24.49,
+      "approachSpeedReported": 59.61,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "gate lintel",
+      "speed": 15,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.02,
+      "reboundSpeed": 6,
+      "approachSpeedReported": 15,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "gate lintel",
+      "speed": 35,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.153,
+      "reboundSpeed": 14,
+      "approachSpeedReported": 35,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "gate lintel",
+      "speed": 60,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.2,
+      "reboundSpeed": 24,
+      "approachSpeedReported": 60,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "rock spire",
+      "speed": 15,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.02,
+      "reboundSpeed": 6,
+      "approachSpeedReported": 15,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "rock spire",
+      "speed": 35,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.153,
+      "reboundSpeed": 14,
+      "approachSpeedReported": 35,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "rock spire",
+      "speed": 60,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.2,
+      "reboundSpeed": 24,
+      "approachSpeedReported": 60,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "boulder",
+      "speed": 15,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.02,
+      "reboundSpeed": 6,
+      "approachSpeedReported": 15,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "boulder",
+      "speed": 35,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.153,
+      "reboundSpeed": 14,
+      "approachSpeedReported": 35,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "boulder",
+      "speed": 60,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.2,
+      "reboundSpeed": 24,
+      "approachSpeedReported": 60,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "lander",
+      "speed": 15,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": -0.039,
+      "reboundSpeed": 6.22,
+      "approachSpeedReported": 14.82,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "lander",
+      "speed": 35,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.085,
+      "reboundSpeed": 14.52,
+      "approachSpeedReported": 34.58,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "lander",
+      "speed": 60,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.2,
+      "reboundSpeed": 24.89,
+      "approachSpeedReported": 59.28,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "observatory",
+      "speed": 15,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.02,
+      "reboundSpeed": 6,
+      "approachSpeedReported": 15,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "observatory",
+      "speed": 35,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.153,
+      "reboundSpeed": 14,
+      "approachSpeedReported": 35,
+      "energy": 45.01833333333333
+    },
+    {
+      "surface": "observatory",
+      "speed": 60,
+      "impacts": 1,
+      "events": 1,
+      "hits": 1,
+      "minGap": 0.2,
+      "reboundSpeed": 24,
+      "approachSpeedReported": 60,
+      "energy": 45.01833333333333
+    }
+  ],
+  "underside": [
+    {
+      "surface": "track underside",
+      "speed": 15,
+      "impacts": 1,
+      "maxHeightAboveStrip": -0.789,
+      "passedThrough": false
+    },
+    {
+      "surface": "track underside",
+      "speed": 35,
+      "impacts": 1,
+      "maxHeightAboveStrip": -0.789,
+      "passedThrough": false
+    },
+    {
+      "surface": "track underside",
+      "speed": 60,
+      "impacts": 1,
+      "maxHeightAboveStrip": -0.789,
+      "passedThrough": false
+    }
+  ],
+  "colliders": 32
+}

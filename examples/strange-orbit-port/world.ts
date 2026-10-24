@@ -24,11 +24,14 @@ import {
 import { buildCourse, buildIslands, buildLoops, buildRamps, veilQuad, type MeshData } from "./meshes";
 import { axisRotation, basisMatrix, matrixToEulerZYX, multiplyMat3, type Mat3 } from "./orient";
 import { MESHY, MESHY_ENABLED, MESHY_SIZE } from "./models";
+import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
 import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
+
+export { lehmer };
 
 type Rgb = readonly [number, number, number];
 type Scene = ReturnType<typeof scene>;
@@ -77,12 +80,6 @@ const trackMaterial = () => material.custom(trackSpec());
 const solidMaterial = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}) => material.custom(solidSpec(base, glow, glowAmount, banding, extra));
 const mineralMaterial = (base: Rgb, opal: boolean) => material.custom(mineralSpec(base, opal));
 const pointsMaterial = (additive: boolean) => material.custom(pointsSpec(additive));
-
-/** Deterministic Lehmer generator (same constants the original uses for its star field). */
-export function lehmer(seed: number): () => number {
-  let s = seed;
-  return () => { s = s * 16807 % 2147483647; return s / 2147483647; };
-}
 
 function hslToRgb(h: number, s: number, l: number): Rgb {
   const k = (n: number): number => (n + h * 12) % 12;
@@ -166,7 +163,7 @@ function riderRig(index: number, vehicle: Vehicle): Riderrig {
 }
 
 export interface WorldRuntime {
-  update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number): void;
+  update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }): void;
   resetCamera(): void;
   readonly nodeCount: number;
 }
@@ -312,23 +309,14 @@ export function buildWorld(options: WorldOptions): World {
 
   /* ---- Meshy set dressing: boulders along the rim, a lander and an observatory on the horizon ---- */
   if (MESHY_ENABLED) {
-    const rand = lehmer(48271);
-    const dress = (name: string, asset: (typeof MESHY)[keyof typeof MESHY], s: number, lateral: number, drop: number, size: number, spin: number, rock = false): void => {
-      const f = mainFrame(s);
-      const p = f.p.clone().addScaledVector(f.side, lateral).addScaledVector(f.up, drop);
-      const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", spin));
-      builder.add(model(asset, { name, position: [p.x, p.y, p.z], rotation: euler(rock ? multiplyMat3(base, axisRotation("z", (rand() - 0.5) * 0.5)) : base), targetMaxDimension: size, castShadow: false, receiveShadow: false }));
-    };
-    for (let k = 0; k < 14; k++) {
-      const s = 40 + k * (COURSE_LENGTH - 80) / 14 + rand() * 40;
-      const side = k % 2 === 0 ? 1 : -1;
-      const lateral = side * (13.5 + rand() * 9);
-      if (k % 3 === 1) dress(`dress-spire-${k}`, MESHY.boulderB, s, lateral, -0.5, 6 + rand() * 4, rand() * 6.28, true);
-      else dress(`dress-boulder-${k}`, MESHY.boulderA, s, lateral, -0.3, 2.6 + rand() * 2.4, rand() * 6.28, true);
+    const ASSET = { boulder: MESHY.boulderA, spire: MESHY.boulderB, lander: MESHY.lander, observatory: MESHY.observatory } as const;
+    for (const d of dressingPlan()) {
+      const f = mainFrame(d.s);
+      const p = f.p.clone().addScaledVector(f.side, d.lateral).addScaledVector(f.up, d.drop);
+      const base = multiplyMat3(basisMatrix(f.tangent, f.up, f.side), axisRotation("y", d.spin));
+      const rock = d.kind === "boulder" || d.kind === "spire";
+      builder.add(model(ASSET[d.kind], { name: d.name, position: [p.x, p.y, p.z], rotation: euler(rock ? multiplyMat3(base, axisRotation("z", d.tilt)) : base), targetMaxDimension: d.size, castShadow: false, receiveShadow: false }));
     }
-    dress("dress-lander", MESHY.lander, 330, 14.5, -0.2, 6.5, 2.2);
-    dress("dress-observatory", MESHY.observatory, 790, -16, -0.2, 12, 0.6);
-    dress("dress-observatory-far", MESHY.observatory, 1260, 17, -0.2, 14, 3.9);
   }
 
   /* ---- meteors (moon rocks) ---- */
@@ -517,7 +505,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     for (const part of input.riders[index]!.parts) node(part.id).setVisible(true);
   };
 
-  function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number): void {
+  function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }): void {
     const menu = state.phase === "menu";
     const sForPlayer = menu ? 35 : state.s;
     const scale = menu ? 1.3 : 1.15;
@@ -584,13 +572,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       fov = 48;
     } else {
       eye = origin.clone().addScaledVector(rig.forward, -params.back).addScaledVector(cu, params.height);
+      if (shake) eye.addScaledVector(cs, shake.x).addScaledVector(cu, shake.y);
       look = origin.clone().addScaledVector(rig.forward, 3).addScaledVector(cu, 1.4);
       fov = aspect < 0.85 ? params.portraitFov : params.fov;
     }
     cameraController.setPose({
       position: [eye.x, eye.y, eye.z],
       target: [look.x, look.y, look.z],
-      up: menu ? [frame.up.x, frame.up.y, frame.up.z] : [cu.x, cu.y, cu.z],
+      up: menu ? [frame.up.x, frame.up.y, frame.up.z] : [cu.x + cs.x * (shake?.roll ?? 0), cu.y + cs.y * (shake?.roll ?? 0), cu.z + cs.z * (shake?.roll ?? 0)],
       fov
     }, { cut: false });
 
