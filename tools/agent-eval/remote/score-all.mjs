@@ -42,9 +42,12 @@ function ensureBase(arm) {
   if (!existsSync(join(baseDir, "node_modules"))) {
     mkdirSync(baseDir, { recursive: true });
     const spec = manifest.bases[arm];
-    const pkg = basePackageJson(arm, { auraVersion: spec.auraVersion });
+    // Score against the same library the agents authored against: staged tarballs win over the published version.
+    const tarballs = arm === "aura" && spec.tarballs ? join(stage, spec.tarballs) : null;
+    const pkg = basePackageJson(arm, { auraVersion: spec.auraVersion, tarballs });
     writeFileSync(join(baseDir, "package.json"), JSON.stringify(pkg, null, 2));
     execFileSync("npm", ["install", "--no-audit", "--no-fund", "--loglevel=error"], { cwd: baseDir, stdio: "inherit", timeout: 600000 });
+    if (arm === "aura") emit("AGENTEVAL_BASE_SOURCE", { arm, tarballs: spec.tarballs ?? null, engine: (() => { try { return JSON.parse(readFileSync(join(baseDir, "node_modules/@aura3d/engine/package.json"), "utf8")).version; } catch { return null; } })() });
     if (arm === "aura" && spec.patch) emit("AGENTEVAL_BASE", { arm, patch: applyStockBuildPatch(join(baseDir, "node_modules")) });
   }
   return baseDir;

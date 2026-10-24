@@ -54,6 +54,14 @@ export function stageBatch({ repoRoot, batch, stageRoot = join(repoRoot, "tools/
     }
   }
   const manifest = { batch, snapshots, assets, bases: { aura: { auraVersion: AURA_VERSION, patch: true }, three: {} } };
+  // A batch authored against packed tarballs (run.mjs --aura-tarballs) must be scored against the same tarballs.
+  const planFile = join(batchDir, "plan.json");
+  const planned = existsSync(planFile) ? JSON.parse(readFileSync(planFile, "utf8")).args?.auraTarballs : null;
+  if (planned && existsSync(planned)) {
+    mkdirSync(join(stage, "tarballs"), { recursive: true });
+    for (const file of readdirSync(planned).filter((f) => f.endsWith(".tgz"))) cpSync(join(planned, file), join(stage, "tarballs", file));
+    manifest.bases.aura = { ...manifest.bases.aura, tarballs: "tarballs", patch: false };
+  }
   writeFileSync(join(stage, "manifest.json"), JSON.stringify(manifest, null, 2));
   return { stage, manifest };
 }

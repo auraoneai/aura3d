@@ -10,6 +10,7 @@ Rules that every recipe follows:
 - Metals need something to reflect: add `environments.neutral(...)` (or a look preset) or a metallic material renders dark.
 - Instancing: `instances.cone/cylinder/sphere/box({ transforms, colors })` draws one draw call per shape; shapes are unit-sized, so `scale` sets the size.
 - A deformed surface needs vertices: build a grid with `geometry.define` and mount it with `geometry.custom(...)`.
+- Anything you move, rotate, or play at runtime needs `.runtime({ id, mutable: true })` on its node; `app.nodes.require(id)` throws without it. (If a callback in `onFrame` throws, 4.1.3 and later log `onFrame callback threw: ...` once and keep rendering; earlier versions stop drawing and leave a blank page.)
 - Never silence a type error with `as never` or `as any`: the error is the real answer.
 
 ## 1. Rotating PBR cube with orbit control
@@ -22,7 +23,7 @@ const app = createAuraApp("#app", {
     .add(environments.neutral({ intensity: 1, background: false })) // metals need something to reflect
     .add(lights.directional({ name: "key", position: [4, 5, 4], target: [0, 0, 0], intensity: 3, shadow: true }))
     .add(lights.directional({ name: "fill", position: [-5, 2, 3], target: [0, 0, 0], intensity: 1.2, color: "#9db8ff" }))
-    .add(primitives.box({ name: "cube", material: material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 }) }))
+    .add(primitives.box({ name: "cube", material: material.pbr({ color: "#c8ccd4", metallic: 0.9, roughness: 0.38 }) }).runtime({ id: "cube", mutable: true })) // runtime + mutable: required to move it later
     .add(interactions.orbit({ target: "cube" })) // target is a node NAME
     .camera(camera.orbit({ position: [2.8, 1.9, 3.4], target: [0, 0, 0], fov: 40 }))
 });
