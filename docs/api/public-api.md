@@ -26,7 +26,7 @@ pnpm verify:api-docs
 | `@aura3d/debug` | `4.1.0` | `packages/debug/src/index.ts` | 32 |
 | `@aura3d/ecs` | `4.1.0` | `packages/ecs/src/index.ts` | 25 |
 | `@aura3d/editor-runtime` | `4.1.0` | `packages/editor-runtime/src/index.ts` | 82 |
-| `@aura3d/engine` | `4.1.0` | `packages/engine/src/index.ts` | 24 |
+| `@aura3d/engine` | `4.1.0` | `packages/engine/src/index.ts` | 23 |
 | `@aura3d/input` | `4.1.0` | `packages/input/src/index.ts` | 34 |
 | `@aura3d/math` | `4.1.0` | `packages/math/src/index.ts` | 30 |
 | `@aura3d/navigation-recast` | `4.1.0` | `packages/navigation-recast/src/index.ts` | 16 |
@@ -36,7 +36,7 @@ pnpm verify:api-docs
 | `@aura3d/physics/world` | `4.1.0` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `4.1.0` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `4.1.0` | `packages/react/src/index.ts` | 39 |
-| `@aura3d/rendering` | `4.1.0` | `packages/rendering/src/index.ts` | 418 |
+| `@aura3d/rendering` | `4.1.0` | `packages/rendering/src/index.ts` | 419 |
 | `@aura3d/rendering/extension-scalar-atlas` | `4.1.0` | `packages/rendering/src/extension-scalar-atlas.ts` | 2 |
 | `@aura3d/rendering/reflection-surfaces` | `4.1.0` | `packages/rendering/src/reflection-surfaces.ts` | 4 |
 | `@aura3d/rendering/webgpu` | `4.1.0` | `packages/rendering/src/webgpu.ts` | 8 |
@@ -1187,6 +1187,7 @@ export type { CompiledShaderSource, ShaderSourcePair } from "./ShaderLibrary";
 export type { ShaderVariantDescriptor } from "./ShaderLibrary";
 export { MAX_UNIFORM_SKINNING_JOINTS, SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
 export type { ShaderChunk } from "./ShaderChunks";
+export { A3D_AUTHOR_GLSL_CHUNKS, A3D_AUTHOR_GLSL_CHUNK_NAMES, type A3dAuthorGlslChunk } from "./shaders/chunks/author";
 export { DEFAULT_RENDER_STATE, Material, validateRenderState } from "./Material";
 export type { CullMode, DepthCompare, MaterialDescriptor, MaterialUniformDescriptor, MaterialUniformKind, RenderState } from "./Material";
 export { MaterialInstance } from "./MaterialInstance";
@@ -1788,8 +1789,6 @@ registerShaderChunk(name, glsl)    // SH-10 registry — resolves #include in
                                    // material.custom / effects.shaderPass
 ```
 
-Built-in author chunks for `material.custom` (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<colorspace_decode>`, `<colorspace_encode>`) are listed in [`glsl-chunks.md`](./glsl-chunks.md).
-
 Fixtures: `tests/unit/parity/shader-material.test.ts`,
 `shader-pass-order.test.ts`.
 
@@ -1810,6 +1809,22 @@ geometry.wireframe(source: AuraCustomGeometrySpec)
 geometry.merge(specs: readonly AuraCustomGeometrySpec[])
   // BufferGeometryUtils.mergeGeometries over specs
 ```
+
+**Scatter planning and static merge (4.1.0, root exports, pure TypeScript).** Deterministic placement and baking
+utilities extracted from the Crayon ports; full reference in `docs/api/scatter-merge.md`.
+
+```ts
+createScatterRandom(seed?: number): () => number
+scatterAlongPath(options: AuraScatterAlongPathOptions): AuraScatterPoint[]
+scatterInArea(options: AuraScatterInAreaOptions): AuraScatterPoint[]
+splitScatterByDistance(points: readonly AuraScatterPoint[], origin: readonly [number, number], radii: readonly number[]): AuraScatterPoint[][]
+scatterTransforms(points: readonly AuraScatterPoint[], options?: { kind?: number; baseScale?: number | AuraVec3 }): AuraTransformSpec[]
+mergeStatic(parts: readonly AuraStaticPart[], options?: AuraMergeStaticOptions): AuraCustomGeometrySpec | undefined
+mergeStaticByKey(parts: readonly (AuraStaticPart & { key: K })[], options?: AuraMergeStaticOptions): Map<K, AuraCustomGeometrySpec>
+```
+
+Built-in author chunks for `material.custom` (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<colorspace_decode>`, `<colorspace_encode>`) are listed in [`glsl-chunks.md`](./glsl-chunks.md).
+
 
 `geometry.toNonIndexed` does not exist as a public member — the equivalent
 `auraGeometryToNonIndexed` helper is internal-only (parity-tested, but not
