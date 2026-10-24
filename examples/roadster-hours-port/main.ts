@@ -92,6 +92,7 @@ function begin(): void {
   sound.reset();
   screen = "play";
   paused = false;
+  loop.resetAccumulator();
   panels();
 }
 
