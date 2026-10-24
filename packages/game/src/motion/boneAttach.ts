@@ -1,39 +1,131 @@
 export type BoneRole =
   | "rightHand" | "leftHand" | "head" | "hips" | "spine" | "rightFoot" | "leftFoot"
-  | "rightLowerArm" | "leftLowerArm" | "rightShoulder" | "leftShoulder";
+  | "rightForearm" | "leftForearm" | "rightLowerArm" | "leftLowerArm"
+  | "rightUpperArm" | "leftUpperArm" | "rightShoulder" | "leftShoulder"
+  | "rightShin" | "leftShin" | "rightThigh" | "leftThigh";
 
-const ROLE_ALIASES: Readonly<Record<BoneRole, readonly string[]>> = {
-  rightHand: ["RightHand", "Hand_R", "hand_r", "Hand.R", "R_Hand", "right_hand", "Bip01 R Hand", "mixamorig:RightHand", "RightHandMiddle1"],
-  leftHand: ["LeftHand", "Hand_L", "hand_l", "Hand.L", "L_Hand", "left_hand", "Bip01 L Hand", "mixamorig:LeftHand"],
-  head: ["Head", "head", "mixamorig:Head", "Bip01 Head"],
-  hips: ["Hips", "hips", "Pelvis", "pelvis", "mixamorig:Hips", "Bip01 Pelvis"],
-  spine: ["Spine", "spine", "Spine1", "mixamorig:Spine", "Chest"],
-  rightFoot: ["RightFoot", "Foot_R", "foot_r", "Foot.R", "R_Foot", "mixamorig:RightFoot", "Bip01 R Foot"],
-  leftFoot: ["LeftFoot", "Foot_L", "foot_l", "Foot.L", "L_Foot", "mixamorig:LeftFoot", "Bip01 L Foot"],
-  rightLowerArm: ["RightForeArm", "RightLowerArm", "ForeArm_R", "lowerarm_r", "mixamorig:RightForeArm"],
-  leftLowerArm: ["LeftForeArm", "LeftLowerArm", "ForeArm_L", "lowerarm_l", "mixamorig:LeftForeArm"],
-  rightShoulder: ["RightShoulder", "Shoulder_R", "clavicle_r", "mixamorig:RightShoulder"],
-  leftShoulder: ["LeftShoulder", "Shoulder_L", "clavicle_l", "mixamorig:LeftShoulder"]
+type Side = "right" | "left" | "none";
+type Part = "hand" | "forearm" | "upperArm" | "shoulder" | "thigh" | "shin" | "foot" | "hips" | "spine" | "head";
+
+const ROLE_PARTS: Readonly<Record<BoneRole, { readonly side: Side; readonly part: Part }>> = {
+  rightHand: { side: "right", part: "hand" }, leftHand: { side: "left", part: "hand" },
+  rightForearm: { side: "right", part: "forearm" }, leftForearm: { side: "left", part: "forearm" },
+  rightLowerArm: { side: "right", part: "forearm" }, leftLowerArm: { side: "left", part: "forearm" },
+  rightUpperArm: { side: "right", part: "upperArm" }, leftUpperArm: { side: "left", part: "upperArm" },
+  rightShoulder: { side: "right", part: "shoulder" }, leftShoulder: { side: "left", part: "shoulder" },
+  rightThigh: { side: "right", part: "thigh" }, leftThigh: { side: "left", part: "thigh" },
+  rightShin: { side: "right", part: "shin" }, leftShin: { side: "left", part: "shin" },
+  rightFoot: { side: "right", part: "foot" }, leftFoot: { side: "left", part: "foot" },
+  hips: { side: "none", part: "hips" }, spine: { side: "none", part: "spine" }, head: { side: "none", part: "head" }
+};
+
+/** Normalised synonyms per part (lowercase, no punctuation). Mixamo, Meshy, Rigify, Unreal, glTF Avatar (VRM, Ready Player Me), 3ds Max Biped. */
+const PART_WORDS: Readonly<Record<Part, readonly string[]>> = {
+  hand: ["hand"],
+  forearm: ["forearm", "lowerarm", "lowarm"],
+  upperArm: ["upperarm", "uparm", "arm"],
+  shoulder: ["shoulder", "clavicle"],
+  thigh: ["upleg", "upperleg", "thigh"],
+  shin: ["leg", "lowerleg", "lowleg", "shin", "calf"],
+  foot: ["foot"],
+  hips: ["hips", "pelvis", "hip"],
+  spine: ["spine", "spine1", "chest"],
+  head: ["head"]
+};
+
+const RIG_PREFIXES = ["mixamorig", "bip001", "bip01", "def", "org", "tweak", "ctrl"];
+
+/** Written forms tried when probing without a bone list, most common rigs first. */
+const PART_WRITTEN: Readonly<Record<Part, readonly string[]>> = {
+  hand: ["Hand", "hand"],
+  forearm: ["ForeArm", "Forearm", "forearm", "LowerArm", "lowerarm"],
+  upperArm: ["Arm", "UpperArm", "upperarm", "arm"],
+  shoulder: ["Shoulder", "shoulder", "clavicle"],
+  thigh: ["UpLeg", "UpperLeg", "Thigh", "upperleg", "thigh"],
+  shin: ["Leg", "LowerLeg", "calf", "shin", "leg"],
+  foot: ["Foot", "foot"],
+  hips: ["Hips", "hips", "Pelvis", "pelvis"],
+  spine: ["Spine", "spine", "Spine1", "Chest"],
+  head: ["Head", "head"]
 };
 
 const normalize = (name: string): string => {
   const colon = name.lastIndexOf(":");
-  const base = colon >= 0 ? name.slice(colon + 1) : name;
-  return base.toLowerCase().replace(/[^a-z0-9]/g, "");
+  let base = (colon >= 0 ? name.slice(colon + 1) : name).toLowerCase().replace(/[^a-z0-9]/g, "");
+  for (const prefix of RIG_PREFIXES) {
+    if (base.startsWith(prefix) && base.length > prefix.length) {
+      base = base.slice(prefix.length);
+      break;
+    }
+  }
+  return base;
 };
 
-/** Names a role may go by across Mixamo, Blender and Meshy rigs. */
-export function boneAliases(role: BoneRole): readonly string[] {
-  return ROLE_ALIASES[role];
+const sideForms = (side: Side): { readonly prefix: readonly string[]; readonly suffix: readonly string[] } =>
+  side === "none"
+    ? { prefix: [""], suffix: [] }
+    : side === "right"
+      ? { prefix: ["Right", "right_", "R_", "right", "R"], suffix: [".R", "_R", "_r", ".r", "Right", "_right"] }
+      : { prefix: ["Left", "left_", "L_", "left", "L"], suffix: [".L", "_L", "_l", ".l", "Left", "_left"] };
+
+/** Normalised strings that name a role: side+part and part+side forms of every synonym. */
+function roleNormals(role: BoneRole): Set<string> {
+  const { side, part } = ROLE_PARTS[role];
+  const out = new Set<string>();
+  const sideWords = side === "none" ? [""] : side === "right" ? ["right", "r"] : ["left", "l"];
+  for (const word of PART_WORDS[part]) {
+    if (side === "none") out.add(word);
+    for (const sw of sideWords) {
+      if (side === "none") continue;
+      out.add(sw + word);
+      out.add(word + sw);
+    }
+  }
+  return out;
 }
 
-/** Resolve a role or exact bone name against a skeleton's bone names; undefined when nothing matches. */
+/** Candidate bone names to probe for a role, ordered from most to least common rig naming. */
+export function boneAliases(role: BoneRole): readonly string[] {
+  const { side, part } = ROLE_PARTS[role];
+  const forms = sideForms(side);
+  const out: string[] = [];
+  const add = (n: string) => {
+    if (!out.includes(n)) out.push(n);
+  };
+  for (const w of PART_WRITTEN[part]) {
+    for (const pre of forms.prefix) add(`mixamorig:${pre}${w}`);
+    for (const pre of forms.prefix) add(`${pre}${w}`);
+  }
+  for (const w of PART_WRITTEN[part]) {
+    for (const suf of forms.suffix) {
+      add(`${w}${suf}`);
+      add(`${w.toLowerCase()}${suf}`);
+    }
+  }
+  if (side !== "none") {
+    const letter = side === "right" ? "R" : "L";
+    for (const w of PART_WRITTEN[part]) add(`Bip01 ${letter} ${w}`);
+    for (const w of PART_WRITTEN[part]) for (const suf of forms.suffix) add(`DEF-${w.toLowerCase()}${suf}`);
+  } else {
+    for (const w of PART_WRITTEN[part]) {
+      add(`mixamorig:${w}`);
+      add(`Bip01 ${w}`);
+    }
+  }
+  // Exotic casing last, so common rigs hit within the first probes.
+  for (const n of [...out]) {
+    add(n.toLowerCase());
+    add(n.toUpperCase());
+  }
+  return out;
+}
+
+/** Resolve a role or exact bone name against a skeleton's bone names; case-, punctuation- and rig-prefix-insensitive. */
 export function resolveBone(boneNames: readonly string[], roleOrName: BoneRole | string): string | undefined {
   const exact = boneNames.find((b) => b === roleOrName);
   if (exact !== undefined) return exact;
   const wanted = new Set<string>([normalize(roleOrName)]);
-  const aliases = ROLE_ALIASES[roleOrName as BoneRole];
-  if (aliases !== undefined) for (const a of aliases) wanted.add(normalize(a));
+  if (roleOrName in ROLE_PARTS) for (const n of roleNormals(roleOrName as BoneRole)) wanted.add(n);
   return boneNames.find((b) => wanted.has(normalize(b)));
 }
 
@@ -74,16 +166,21 @@ export interface BoneAttachment {
 /** Pin a node to a bone (bat to hand, club to hand, ball to hand) with bone-name resolution and a loud failure. */
 export function attachToBone(actor: AttachableActor, options: AttachToBoneOptions): BoneAttachment {
   let bone: string | undefined;
+  let tried: readonly string[] = [];
   if (options.boneNames !== undefined) {
     bone = resolveBone(options.boneNames, options.bone);
+    tried = [String(options.bone), ...(options.bone in ROLE_PARTS ? [...roleNormals(options.bone as BoneRole)] : [])];
   } else {
-    const candidates = [options.bone, ...(ROLE_ALIASES[options.bone as BoneRole] ?? [])];
+    const candidates = [options.bone, ...(options.bone in ROLE_PARTS ? boneAliases(options.bone as BoneRole) : [])];
+    tried = candidates;
     bone = candidates.find((c) => actor.socket(c).valid);
   }
   if (bone === undefined) {
-    const near = options.boneNames?.filter((b) => normalize(b).includes(normalize(String(options.bone)).slice(0, 4))).slice(0, 8) ?? [];
+    const key = normalize(String(options.bone)).slice(0, 4);
+    const near = options.boneNames?.filter((b) => normalize(b).includes(key)).slice(0, 8) ?? [];
+    const shown = tried.slice(0, 24).join(", ") + (tried.length > 24 ? `, +${tried.length - 24} more` : "");
     throw new Error(
-      `ATTACH_BONE_NOT_FOUND: no bone matches "${String(options.bone)}"${near.length ? ` (similar: ${near.join(", ")})` : ""}. Pass boneNames from the skeleton or an exact bone name.`
+      `ATTACH_BONE_NOT_FOUND: no bone matches "${String(options.bone)}". Tried: ${shown}.${near.length ? ` Similar bones: ${near.join(", ")}.` : ""} Pass boneNames from the skeleton or an exact bone name.`
     );
   }
   const spec: { socket: string; target: string | object; position?: readonly [number, number, number]; rotation?: readonly [number, number, number]; scale?: number } = {

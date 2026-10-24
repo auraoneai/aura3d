@@ -9,9 +9,9 @@ const hand = attachToBone(batter, { bone: "rightHand", target: "bat", position: 
 // hand.bone === "mixamorig:RightHand"; hand.detach() releases it
 ```
 
-- `bone` is a role (`rightHand`, `leftHand`, `head`, `hips`, `spine`, `rightFoot`, `leftFoot`, lower arms, shoulders) or an exact bone name. Roles resolve across Mixamo, Blender (`Hand.R`), and generic (`hand_r`) naming.
-- Pass `boneNames` (from the skeleton) for exact matching; without it the aliases are probed with `actor.socket(name).valid`.
-- No match throws `ATTACH_BONE_NOT_FOUND` listing similar names. Never swallow it: a missing bone is why a bat ends up on the ground.
+- `bone` is a role (`rightHand`/`leftHand`, `rightForearm`/`leftForearm`, `rightUpperArm`/`leftUpperArm`, `rightShoulder`/`leftShoulder`, `rightThigh`/`leftThigh`, `rightShin`/`leftShin`, `rightFoot`/`leftFoot`, `hips`, `spine`, `head`; `rightLowerArm` is an alias of `rightForearm`) or an exact bone name. Matching is case-, punctuation- and rig-prefix-insensitive: `mixamorig:RightForeArm`, `RightForearm`, `right_forearm`, `R_Forearm`, `forearm.R`, `DEF-forearm.R`, `lowerarm_r` and `Bip01 R Forearm` all resolve. Covered rigs: Mixamo, Meshy and glTF Avatar (VRM, Ready Player Me), Blender Rigify, Unreal mannequin, 3ds Max Biped.
+- Pass `boneNames` (from the skeleton) for matching by normalised name. Without it the common spellings are probed one by one with `actor.socket(name).valid`, and each miss logs `ANIMATION_SOCKET_UNKNOWN_BONE` once, so prefer `boneNames`, or an exact name, when you know the rig.
+- No match throws `ATTACH_BONE_NOT_FOUND` listing the names it tried (and similar bones when `boneNames` is given). Never swallow it: a missing bone is why a bat ends up on the ground.
 - The target must be a root-level runtime node that your code no longer drives.
 - Measure in a test or QA hook: `attachmentDistance(nodeWorldPosition, boneWorldPosition(actor, bone))`. For a zero-offset attach it should stay under 0.05 m on every frame of idle, swing and follow-through.
 
