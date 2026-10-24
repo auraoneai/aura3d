@@ -6,7 +6,7 @@
  * Query parameters: `manual=1` (the sim advances only through the hooks, and the run starts at once), `menu=1` (show the title
  * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, texture, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, texture, type AuraApp } from "@aura3d/engine";
 import { MOUNT_PAOZU } from "./chapter";
 import { Game } from "./game";
 import { GameAudio } from "./audio";
@@ -39,7 +39,6 @@ let frames = 0;
 const errors: string[] = [];
 const held = new Set<string>();
 let oneShot = { jump: false, pole: false, nimbus: false };
-let accumulator = 0;
 let last = 0;
 let pending: string[] = [];
 
@@ -104,18 +103,24 @@ function consume(events: readonly string[]): void {
   if (game.result && game.best > saved.best) { saved.best = game.best; save(); }
 }
 
+const stepper = createFixedStepLoop({
+  stepSeconds: STEP,
+  maxFrameSeconds: 0.1,
+  maxCatchUpSteps: 7,
+  manual,
+  isActive: () => ready,
+  step() {
+    pending.push(...game.frame(STEP, currentInput()));
+  }
+});
+
 function loop(now: number): void {
   requestAnimationFrame(loop);
   const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
   last = now;
   pending = [];
+  stepper.tick(now);
   if (!manual && ready) {
-    accumulator += dt;
-    while (accumulator >= STEP) {
-      const ev = game.frame(STEP, currentInput());
-      pending.push(...ev);
-      accumulator -= STEP;
-    }
     consume(pending);
     audio.update({ running: game.phase === "playing" || game.phase === "falling", speed: game.state.speed, s: game.state.s, grounded: game.state.jump < 0.1, playing: game.phase === "playing", menu: game.phase === "menu" });
   }
@@ -127,9 +132,9 @@ const API = {
   get ready() { return ready; },
   snapshot,
   /** Fresh run at the start of the track (playing). */
-  reset() { game.start(CHAPTER_ZERO()); accumulator = 0; },
+  reset() { game.start(CHAPTER_ZERO()); stepper.resetAccumulator(); },
   /** Fresh run plus the original's settle frames, so a recorded script starts from the same state. */
-  begin() { game.start(0); for (let i = 0; i < SETTLE_FRAMES; i++) stepFrame(game.state, IDLE, STEP, CH); accumulator = 0; },
+  begin() { game.start(0); for (let i = 0; i < SETTLE_FRAMES; i++) stepFrame(game.state, IDLE, STEP, CH); stepper.resetAccumulator(); },
   /** Advance the pure sim `n` frames (no encounter layer, no rendering) with a fixed input; returns the events raised. */
   stepFrames(n: number, input: StepInput = IDLE): string[] {
     const events: string[] = [];
@@ -261,8 +266,9 @@ async function boot(): Promise<void> {
   addEventListener("resize", resize);
   runtime = world.bind(app);
   applyStartMode();
-  ready = true;
   last = performance.now();
+  stepper.tick(last);
+  ready = true;
   requestAnimationFrame(loop);
   ui.ready();
 }
