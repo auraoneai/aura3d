@@ -14,7 +14,16 @@ import {
 } from "@aura3d/engine";
 import { assets as rootAssets } from "../../../src/aura-assets";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
-import { installGameBeacon } from "@aura3d/engine/game";
+import { installGameBeacon, createCameraShake, createHitStop } from "@aura3d/engine/game";
+import { createCueBank, type CueSpec, type NoiseLayer, type ToneLayer } from "@aura3d/engine/audio";
+import { applyCollisionPenalty, createTrafficContacts, createTrafficRecovery, type PlayerBody, type TrafficBody } from "./collision";
+
+const IMPACT_SPARK_COUNT = 12;
+const HIT_TONE = (freq: number, to: number, dur: number, gain: number): ToneLayer => ({ freq, slideTo: to, dur, type: "sawtooth", gain, delay: 0, attack: 0.008 });
+const HIT_NOISE = (dur: number, from: number, to: number, gain: number): NoiseLayer => ({ kind: "noise", dur, freq: from, slideTo: to, gain, delay: 0, q: 0.9, type: "bandpass", attack: dur * 0.2 });
+const COLLISION_CUES: Readonly<Record<"collision", CueSpec>> = {
+  collision: { layers: [HIT_TONE(150, 48, 0.26, 0.11), HIT_NOISE(0.2, 1500, 220, 0.12)], cooldownMs: 60 }
+};
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -1123,6 +1132,16 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
       })
       .scale(HIDDEN_SCALE)
       .runtime(game.runtimeNode("player-headlight-r")),
+    ...Array.from({ length: IMPACT_SPARK_COUNT }, (_, i) =>
+      primitives
+        .sphere({
+          name: `impact-spark-${i}`,
+          size: [0.16, 0.16, 0.16],
+          material: material.emissive({ color: "#fff3c4", emissive: "#ffb347", emissiveIntensity: 3.2 })
+        })
+        .scale(HIDDEN_SCALE)
+        .runtime(game.runtimeNode(`impact-spark-${i}`))
+    ),
     primitives
       .box({
         name: "player-tailbar",
@@ -1611,6 +1630,43 @@ async function bootGridDispatchAura3D(): Promise<void> {
       phase: i * 1.3
     };
   });
+
+  // Player-vs-traffic contact: impact kit (hit-stop, shake, cue, sparks) plus the Teleoperator comfort/bounty rule.
+  const sparkHandles = Array.from({ length: IMPACT_SPARK_COUNT }, (_, i) => req(`impact-spark-${i}`));
+  const sparks = Array.from({ length: IMPACT_SPARK_COUNT }, () => ({ life: 0, p: [0, 0, 0] as Vec3, v: [0, 0, 0] as Vec3 }));
+  let sparkCursor = 0;
+  const hitStop = createHitStop();
+  const cameraShake = createCameraShake({ maxOffset: 0.4 });
+  const collisionCues = createCueBank({ cues: COLLISION_CUES, masterGain: 0.5, muteKey: false, noiseSeed: 424242 });
+  collisionCues.install(window);
+  const collisionLog: Array<{ slot: number; speed: number; point: [number, number, number]; time: number }> = [];
+  let collisionCount = 0;
+  const trafficContacts = createTrafficContacts(trafficCars.length, {
+    hitStop,
+    shake: cameraShake,
+    cue: (name, gain) => {
+      collisionCues.play(name as "collision", { gain });
+    },
+    cueName: "collision",
+    particles: (burst) => {
+      const n = Math.min(burst.count, IMPACT_SPARK_COUNT);
+      for (let k = 0; k < n; k++) {
+        const s = sparks[sparkCursor++ % IMPACT_SPARK_COUNT]!;
+        const a = (k / n) * Math.PI * 2;
+        const speed = 2 + burst.speed * 0.18;
+        s.life = 0.45;
+        s.p = [burst.point[0], 0.6 + 0.9 * ((k % 3) / 2), burst.point[2]];
+        s.v = [
+          burst.normal[0] * speed + Math.cos(a) * speed * 0.6,
+          2.2 + (k % 4) * 0.9,
+          burst.normal[2] * speed + Math.sin(a) * speed * 0.6
+        ];
+      }
+    },
+    fullSpeed: 20
+  });
+  let lastPenaltyAtSec = -10;
+  const trafficRecovery = createTrafficRecovery(trafficCars.map((c) => c.speed));
 
   // Keyboard Controls
   const keysHeld = new Set<string>();
@@ -2269,7 +2325,9 @@ async function bootGridDispatchAura3D(): Promise<void> {
   let lastSignalPhase = -1;
 
   auraApp.onFrame(({ dt }) => {
-    const safeDt = clamp(dt || 1 / 60, 0.001, 0.05);
+    const realDt = clamp(dt || 1 / 60, 0.001, 0.05);
+    const safeDt = realDt * hitStop.timeScale();
+    hitStop.update(realDt);
     framesRendered += 1;
     simTime += safeDt;
 
@@ -2374,6 +2432,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
     const boostHeld = keysHeld.has("ShiftLeft") || keysHeld.has("ShiftRight");
     const driftHeld = keysHeld.has("Space");
 
+    const xBeforeDrive = playerX;
     if (manualActive) {
       const steerInput = (rightHeld ? 1 : 0) - (leftHeld ? 1 : 0);
       playerSteer = lerp(playerSteer, steerInput, safeDt * 7.5);
@@ -2421,6 +2480,52 @@ async function bootGridDispatchAura3D(): Promise<void> {
 
     // Advance Player World Z along California Street
     playerZ -= playerSpeedMps * safeDt;
+
+    // Advance AI traffic (positions only; handles are synced in step 7), then resolve player-vs-traffic contact.
+    trafficRecovery.update(trafficCars, simTime, safeDt);
+    for (let i = 0; i < trafficCars.length; i++) {
+      const tc = trafficCars[i]!;
+      if (tc.direction === 1) {
+        tc.z -= tc.speed * safeDt;
+        if (tc.z > playerZ + 18) tc.z = playerZ - 195;
+        if (tc.z < playerZ - 205) tc.z = playerZ + 12;
+      } else {
+        tc.z += tc.speed * safeDt;
+        if (tc.z > playerZ + 22) tc.z = playerZ - 210 - (i % 3) * 18;
+      }
+    }
+    {
+      const body: PlayerBody = {
+        x: playerX,
+        z: playerZ,
+        speed: playerSpeedMps,
+        lateral: (playerX - xBeforeDrive) / Math.max(safeDt, 1e-4)
+      };
+      const hits = trafficContacts.step(body, trafficCars as readonly TrafficBody[], safeDt);
+      playerX = clamp(body.x, -9.2, 9.2);
+      playerZ = body.z;
+      playerSpeedMps = body.speed;
+      if (hits.length > 0) playerSteer = clamp(body.lateral / Math.max(4, playerSpeedMps * 0.55), -1, 1);
+      for (const h of hits) {
+        collisionCount += 1;
+        // An oncoming car that is struck head-on stops dead and recovers; a same-direction car keeps its speed.
+        if (h.impact.speed >= 1.5 && trafficCars[h.slot]!.direction === -1) {
+          trafficCars[h.slot]!.speed = 0;
+          trafficRecovery.onHit(h.slot, simTime);
+        }
+        collisionLog.push({ slot: h.slot, speed: Number(h.impact.speed.toFixed(2)), point: [...h.impact.point] as [number, number, number], time: Number(simTime.toFixed(3)) });
+        if (collisionLog.length > 64) collisionLog.shift();
+        if (h.impact.speed >= 1.5 && simTime - lastPenaltyAtSec > 0.5) {
+          lastPenaltyAtSec = simTime;
+          const pen = { comfortScore, streetBounty, streetMultiplier };
+          const result = applyCollisionPenalty(pen, rideStyle, h.impact.speed);
+          comfortScore = pen.comfortScore;
+          streetBounty = pen.streetBounty;
+          streetMultiplier = pen.streetMultiplier;
+          pushPenaltyOrBonusPopup(result.label, result.detail, "bad");
+        }
+      }
+    }
     playerYaw = clamp(-playerSteer * 0.16, -0.28, 0.28);
     playerRoll = clamp(playerSteer * 0.045, -0.08, 0.08);
     playerPitch = clamp((targetSpeedMps - playerSpeedMps) * 0.004, -0.03, 0.03);
@@ -2437,8 +2542,9 @@ async function bootGridDispatchAura3D(): Promise<void> {
       3: { y: 2.15, z: 7.4 }
     };
     const camOff = camOffsets[camMode];
-    const rx = (wx: number) => wx - playerX * 0.72;
-    const ry = (wy: number) => wy - playerY + camOff.y;
+    const shakeOffset = cameraShake.update(realDt);
+    const rx = (wx: number) => wx - playerX * 0.72 + shakeOffset.x;
+    const ry = (wy: number) => wy - playerY + camOff.y + shakeOffset.y;
     const rz = (wz: number) => wz - playerZ + camOff.z;
 
     // 3. Sync Player Hero Vehicle & Spinning Apex Roof LiDAR Sensor Suite
@@ -2642,16 +2748,6 @@ async function bootGridDispatchAura3D(): Promise<void> {
       const tc = trafficCars[i]!;
       const th = trafficHandles[i]!;
 
-      if (tc.direction === 1) {
-        tc.z -= tc.speed * safeDt;
-        if (tc.z > playerZ + 18) tc.z = playerZ - 195;
-        if (tc.z < playerZ - 205) tc.z = playerZ + 12;
-      } else {
-        // Oncoming Westbound traffic
-        tc.z += tc.speed * safeDt;
-        if (tc.z > playerZ + 22) tc.z = playerZ - 210 - (i % 3) * 18;
-      }
-
       const tvx = rx(tc.laneX);
       const tvy = ry(0);
       const tvz = rz(tc.z);
@@ -2661,6 +2757,21 @@ async function bootGridDispatchAura3D(): Promise<void> {
         .setRotation(0, tyaw, 0)
         .setScale([1, 1, 1])
         .setVisible(tvz < 18 && tvz > -220);
+    }
+
+    // Impact sparks: short ballistic burst from the contact point
+    for (let i = 0; i < sparks.length; i++) {
+      const s = sparks[i]!;
+      const handle = sparkHandles[i]!;
+      if (s.life <= 0) {
+        handle.setScale(HIDDEN_SCALE).setVisible(false);
+        continue;
+      }
+      s.life -= realDt;
+      s.v[1] -= 9.8 * realDt;
+      s.p = [s.p[0] + s.v[0] * realDt, Math.max(0.05, s.p[1] + s.v[1] * realDt), s.p[2] + s.v[2] * realDt];
+      const k = clamp(s.life / 0.45, 0, 1);
+      handle.setPosition(rx(s.p[0]), ry(s.p[1]), rz(s.p[2])).setScale([k, k, k]).setVisible(k > 0.02);
     }
 
     // 8. Update Speedometer Dial (#hud / #dial), District (#where), Apex Cards & Vector Minimap
@@ -2723,6 +2834,8 @@ async function bootGridDispatchAura3D(): Promise<void> {
       ratingAvg,
       comfortScore,
       streetBounty,
+      streetMultiplier,
+      collisions: { count: collisionCount, last: collisionLog[collisionLog.length - 1] ?? null },
       player: {
         position: [Number(playerX.toFixed(2)), Number(playerY.toFixed(2)), Number(playerZ.toFixed(2))],
         speedMps: Number(playerSpeedMps.toFixed(2)),
@@ -2744,7 +2857,28 @@ async function bootGridDispatchAura3D(): Promise<void> {
       setCameraMode,
       setWeatherPreset,
       advanceApexFareStage,
-      teleportToPeer
+      teleportToPeer,
+      // QA drive: stage a traffic car and the player so a contact can be reproduced without live traffic timing.
+      qaPlaceTrafficCar(slot: number, state: { laneX: number; zAhead: number; speed: number; direction: 1 | -1 }) {
+        const tc = trafficCars[slot];
+        if (!tc) return false;
+        tc.laneX = state.laneX;
+        tc.z = playerZ - state.zAhead;
+        tc.speed = state.speed;
+        trafficRecovery.setBaseSpeed(slot, state.speed);
+        tc.direction = state.direction;
+        return true;
+      },
+      qaSetPlayer(state: { x?: number; speed?: number }) {
+        if (state.x !== undefined) playerX = state.x;
+        if (state.speed !== undefined) playerSpeedMps = state.speed;
+      },
+      qaCollisions: () => ({
+        count: collisionCount,
+        log: collisionLog.slice(),
+        player: { x: playerX, z: playerZ, speed: playerSpeedMps },
+        cars: trafficCars.map((c) => ({ laneX: c.laneX, z: c.z, speed: c.speed, direction: c.direction }))
+      })
     };
   });
 

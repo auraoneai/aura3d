@@ -1,0 +1,11 @@
+[
+  {"kind":"rear","speed":8,"events":1,"firstImpactSpeed":5.5,"passedThrough":false,"minGapZ":4.76,"speedAfter":0,"carSpeed":4,"frames":23,"run":"rwtel-4"},
+  {"kind":"rear","speed":16,"events":1,"firstImpactSpeed":11.36,"passedThrough":false,"minGapZ":4.73,"speedAfter":0,"carSpeed":4,"frames":17,"run":"rwtel-4,rwtel-6"},
+  {"kind":"rear","speed":30,"events":1,"firstImpactSpeed":25.68,"passedThrough":false,"minGapZ":4.77,"speedAfter":0,"carSpeed":4,"frames":15,"run":"rwtel-4"},
+  {"kind":"head","speed":8,"events":1,"firstImpactSpeed":22.5,"passedThrough":false,"minGapZ":4.82,"speedAfter":0,"carSpeed":0,"frames":22,"run":"rwtel-4"},
+  {"kind":"head","speed":16,"events":1,"firstImpactSpeed":27.88,"passedThrough":false,"minGapZ":4.82,"speedAfter":0,"carSpeed":0,"frames":20,"run":"rwtel-4,rwtel-6"},
+  {"kind":"head","speed":30,"events":1,"firstImpactSpeed":42.2,"passedThrough":false,"minGapZ":4.93,"speedAfter":0,"carSpeed":0,"frames":18,"run":"rwtel-4"},
+  {"kind":"side","speed":8,"events":1,"firstImpactSpeed":4.98,"passedThrough":false,"minGapZ":0.15,"speedAfter":0,"carSpeed":8,"frames":20,"run":"rwtel-4"},
+  {"kind":"side","speed":16,"events":1,"firstImpactSpeed":7.56,"passedThrough":false,"minGapZ":0.55,"speedAfter":0,"carSpeed":16,"frames":18,"run":"rwtel-4,rwtel-6"},
+  {"kind":"side","speed":30,"events":1,"firstImpactSpeed":12.27,"passedThrough":false,"minGapZ":0.55,"speedAfter":13.9,"carSpeed":30,"frames":16,"run":"rwtel-5"}
+]

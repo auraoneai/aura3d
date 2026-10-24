@@ -1,0 +1,104 @@
+[
+  {
+    "case": "rear-end",
+    "playerSpeed": 8,
+    "carSpeed": 4,
+    "events": 1,
+    "approachSpeedMps": 4,
+    "startSpeedMps": 8,
+    "speedAfterMps": 3.4,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "head-on",
+    "playerSpeed": 8,
+    "carSpeed": 13,
+    "events": 1,
+    "approachSpeedMps": 21,
+    "startSpeedMps": 8,
+    "speedAfterMps": 0,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "side-swipe",
+    "playerSpeed": 10,
+    "lateralSpeed": 2,
+    "carSpeed": 10,
+    "events": 1,
+    "approachSpeedMps": 2,
+    "startSpeedMps": 10,
+    "speedAfterMps": 10,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "rear-end",
+    "playerSpeed": 16,
+    "carSpeed": 4,
+    "events": 1,
+    "approachSpeedMps": 12,
+    "startSpeedMps": 16,
+    "speedAfterMps": 2.2,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "head-on",
+    "playerSpeed": 16,
+    "carSpeed": 13,
+    "events": 1,
+    "approachSpeedMps": 29,
+    "startSpeedMps": 16,
+    "speedAfterMps": 0,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "side-swipe",
+    "playerSpeed": 10,
+    "lateralSpeed": 4,
+    "carSpeed": 10,
+    "events": 1,
+    "approachSpeedMps": 4,
+    "startSpeedMps": 10,
+    "speedAfterMps": 10,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "rear-end",
+    "playerSpeed": 30,
+    "carSpeed": 4,
+    "events": 1,
+    "approachSpeedMps": 26,
+    "startSpeedMps": 30,
+    "speedAfterMps": 0.1,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "head-on",
+    "playerSpeed": 30,
+    "carSpeed": 13,
+    "events": 1,
+    "approachSpeedMps": 43,
+    "startSpeedMps": 30,
+    "speedAfterMps": 0,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  },
+  {
+    "case": "side-swipe",
+    "playerSpeed": 10,
+    "lateralSpeed": 7.5,
+    "carSpeed": 10,
+    "events": 1,
+    "approachSpeedMps": 7.5,
+    "startSpeedMps": 10,
+    "speedAfterMps": 10,
+    "maxPenetrationM": 0,
+    "passedThrough": false
+  }
+]
