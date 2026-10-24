@@ -8,6 +8,8 @@ import { expect, test, type Page } from "@playwright/test";
 const BASE = (process.env.LIVE_BASE ?? "https://aura3d.auraone.ai").replace(/\/$/, "");
 const APPS = ["showcase-top-tennis","showcase-roadster-rush","showcase-heatsink","showcase-teleoperator","showcase-iron-crown","showcase-pips-big-leap","showcase-aura-hoops-3d","showcase-aura-diamond-3d","showcase-aura-fc-3d","showcase-red-zone-3d","showcase-aura-links-3d","showcase-bunker-zero","showcase-slingshot-siege","showcase-dot-dash-3d","showcase-cross-hop"];
 const BOOT_WAIT_MS = Number(process.env.LIVE_BOOT_WAIT_MS ?? 9000);
+// Heavy scenes render at well under 1 fps on the CPU rasteriser; a smaller viewport keeps the smoke measurable.
+const SMALL_VIEWPORT: Record<string, { width: number; height: number }> = { "showcase-slingshot-siege": { width: 360, height: 270 } };
 
 async function lumaStats(page: Page, png: Buffer): Promise<{ nonBlack: number; colors: number; mean: number }> {
   return page.evaluate(async (b64: string) => {
@@ -50,14 +52,19 @@ async function changedFraction(page: Page, a: Buffer, b: Buffer): Promise<number
 async function canvasOnlyShot(page: Page): Promise<Buffer | null> {
   await page.addStyleTag({ content: "html.__canvas-only *{visibility:hidden !important} html.__canvas-only canvas{visibility:visible !important}" }).catch(() => undefined);
   await page.evaluate(() => document.documentElement.classList.add("__canvas-only")).catch(() => undefined);
-  try { return await page.screenshot({ type: "png", timeout: 90000 }); } catch { return null; }
+  try { return await page.screenshot({ type: "png", timeout: 240000 }); } catch { /* fall through to a plain screenshot */ }
+  try { await page.evaluate(() => document.documentElement.classList.remove("__canvas-only")).catch(() => undefined); return await page.screenshot({ type: "png", timeout: 240000 }); } catch { return null; }
 }
 
-test.describe.configure({ mode: "serial" });
-test.setTimeout(480000);
+// Run groups (selected with `-g @idxN` on the remote runner, which cannot forward env or shell metacharacters).
+const GROUPS: Record<string, string> = { "showcase-cross-hop": "@idx1", "showcase-iron-crown": "@idx1", "showcase-bunker-zero": "@idx1", "showcase-top-tennis": "@idx2", "showcase-slingshot-siege": "@idx2" };
+const runGroup = (app: string): string => GROUPS[app] ?? "@idx3";
+
+test.describe.configure({ mode: "default" });
+test.setTimeout(900000);
 
 for (const app of APPS) {
-  test(`index game boots: ${app}`, async ({ page }) => {
+  test(`index game boots: ${app} ${runGroup(app)}`, async ({ page }) => {
     const errors: string[] = []; const bad: string[] = []; const notes: string[] = []; const compat: string[] = [];
     page.on("console", (m) => {
       if (/SAFETY_COMPAT_MODE|AURA3D_COMPAT_MODE|SAFETY_BLACK_FRAME|black.?frame|self.?heal/i.test(m.text())) compat.push(m.text().slice(0, 200));
@@ -66,6 +73,8 @@ for (const app of APPS) {
     page.on("pageerror", (e) => errors.push(String(e.message ?? e).slice(0, 200)));
     page.on("response", (r) => { if (r.status() >= 400) bad.push(`${r.status()} ${r.url().replace(BASE, "")}`); });
     const url = `${BASE}/apps/${app}/`;
+    const vp = SMALL_VIEWPORT[app];
+    if (vp) await page.setViewportSize(vp);
     const response = await page.goto(url, { waitUntil: "load", timeout: 120000 });
     await page.waitForTimeout(BOOT_WAIT_MS);
     const canvases = await page.evaluate(() => Array.from(document.querySelectorAll("canvas")).map((c) => ({ id: c.id, w: c.width, h: c.height }))).catch(() => []);

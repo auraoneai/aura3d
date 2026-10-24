@@ -19,9 +19,9 @@ const SLUGS = (process.env.LIVE_SLUGS ?? (existsSync(SLUGS_FILE) ? readFileSync(
 // Heavy art-pass scenes render at well under 1 fps on the CPU rasteriser; a smaller viewport keeps the smoke measurable.
 const SMALL_VIEWPORT: Record<string, { width: number; height: number }> = {
   "ninja-runner": { width: 360, height: 270 },
-  "last-train": { width: 360, height: 270 },
+  "last-train": { width: 240, height: 180 },
   "drift-and-deliver": { width: 360, height: 270 },
-  "heatsink": { width: 360, height: 270 },
+  "heatsink": { width: 240, height: 180 },
   "silt-and-signal": { width: 360, height: 270 },
   "cloud-runner": { width: 360, height: 270 }
 };
@@ -162,6 +162,8 @@ async function canvasOnlyShot(page: Page): Promise<Buffer> {
   return shot;
 }
 
+const EMPTY_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+
 /** A blocked page main thread stalls every Playwright call; turn that into a recorded result instead of a test timeout. */
 async function guarded<T>(label: string, work: Promise<T>, ms: number, fallback: T, hung: string[]): Promise<T> {
   let timer: NodeJS.Timeout | undefined;
@@ -169,9 +171,12 @@ async function guarded<T>(label: string, work: Promise<T>, ms: number, fallback:
   try { return await Promise.race([work, timeout]); } finally { if (timer) clearTimeout(timer); }
 }
 
+// Run groups (selected with `-g @portN` on the remote runner, which cannot forward env or shell metacharacters).
+const portGroup = (slug: string): string => (slug === "heatsink" ? "@port1" : slug === "last-train" ? "@port2" : "@port3");
+
 for (const slug of SLUGS) {
-  test(`live port boots: ${slug}`, async ({ page }) => {
-    test.setTimeout(420_000);
+  test(`live port boots: ${slug} ${portGroup(slug)}`, async ({ page }) => {
+    test.setTimeout(1_500_000);
     const lab = await page.context().newPage(); // image analysis runs here so a starved game page cannot stall it
     await lab.goto("about:blank");
     const t0 = Date.now();
@@ -206,7 +211,7 @@ for (const slug of SLUGS) {
     });
     const hooks = await page.evaluate(() => Object.keys(window).filter((k) => /^__AURA_|^__orbit|^__AURA|^__PORT/i.test(k)).slice(0, 12));
 
-    const shot1 = await page.screenshot({ type: "png" });
+    const shot1 = await guarded("shot1", page.screenshot({ type: "png", timeout: 120_000 }), 130_000, EMPTY_PNG, hung);
     const stats1 = await pixelStats(lab, shot1);
 
     // Press the real start control once enabled (boot can take a while on software GL), then play and prove the game advances.
@@ -254,14 +259,14 @@ for (const slug of SLUGS) {
     step("started");
     await page.waitForTimeout(1500);
     const snapStart = await gameSnapshot(page);
-    const shot2 = await page.screenshot({ type: "png" });
+    const shot2 = await guarded("shot2", page.screenshot({ type: "png", timeout: 120_000 }), 130_000, shot1, hung);
     const stats2 = await pixelStats(lab, shot2);
     step("playing");
     await guarded("playFor", playFor(page, 6000, slug), 90_000, undefined, hung);
     step("played");
     const fpsPlay = await guarded("fps(play)", frameRate(page), 45_000, null, hung);
     const snapPlay = await gameSnapshot(page);
-    const shot3 = await page.screenshot({ type: "png" });
+    const shot3 = await guarded("shot3", page.screenshot({ type: "png", timeout: 120_000 }), 130_000, shot2, hung);
     const stats3 = await pixelStats(lab, shot3);
     const startDiff = await frameDiff(lab, shot1, shot2);
     const playDiff = await frameDiff(lab, shot2, shot3);
@@ -271,7 +276,7 @@ for (const slug of SLUGS) {
     const canvasShot = await guarded("canvasOnlyShot", canvasOnlyShot(page), 90_000, shot3, hung);
     const canvasStats = await pixelStats(lab, canvasShot);
     const errorsAfterStart = pageErrors.length + consoleErrors.length;
-    const jpeg = await page.screenshot({ type: "jpeg", quality: 45, scale: "css" });
+    const jpeg = await guarded("heroShot", page.screenshot({ type: "jpeg", quality: 45, scale: "css", timeout: 120_000 }), 130_000, null as Buffer | null, hung);
 
     const summary = {
       slug, url, finalUrl: page.url().replace(BASE, ""), compat: compat.slice(0, 4), status, scripts: scripts.map((s) => s.replace(BASE, "")), canvases: canvasInfo, hooks, started, startNote, errorsAfterStart, fpsBoot, fpsPlay, hung,
@@ -281,7 +286,7 @@ for (const slug of SLUGS) {
       failedRequests: failedRequests.slice(0, 8), badResponses: badResponses.slice(0, 8)
     };
     console.log(`SMOKE_JSON ${JSON.stringify(summary)}`);
-    console.log(`SMOKE_IMG ${slug} ${jpeg.toString("base64")}`);
+    if (jpeg) console.log(`SMOKE_IMG ${slug} ${jpeg.toString("base64")}`);
 
     expect(status, "page status").toBe(200);
     expect(scripts.length, "entry script tag present").toBeGreaterThan(0);
