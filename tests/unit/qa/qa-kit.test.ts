@@ -133,6 +133,17 @@ describe("createFixedStepLoop", () => {
     expect(step).toHaveBeenLastCalledWith(1 / 60, 1);
   });
 
+  it("resetAccumulator drops carried time without touching the step count", () => {
+    const loop = createFixedStepLoop({ step: vi.fn() });
+    loop.tick(0);
+    loop.tick(10);
+    expect(loop.accumulator).toBeCloseTo(0.01, 9);
+    loop.resetAccumulator();
+    expect(loop.accumulator).toBe(0);
+    expect(loop.tick(20)).toBe(0); // 10 ms alone is not a step
+    expect(loop.steps).toBe(0);
+  });
+
   it("clamps long frames and caps catch-up steps", () => {
     const step = vi.fn();
     const loop = createFixedStepLoop({ step });

@@ -5,7 +5,7 @@ Public helpers (all exported from `@aura3d/engine`) that replace the hooks and f
 | Export | Purpose |
 | --- | --- |
 | `readQaParams(schema, search?)` | Typed parser for the QA query parameters (`manual=1`, `autostart=1`, `warmup=30`, `seed=7`, `quality=low`). Flags, numbers, ints, enums and strings with defaults. |
-| `createFixedStepLoop(options)` (alias `fixedStepLoop`) | Variable frame time in, fixed simulation steps out. Frame clamp (0.1 s), catch-up cap (6 steps), manual mode, `isActive` pause, one `render` per frame, `advance(n)` for exact stepping. |
+| `createFixedStepLoop(options)` (alias `fixedStepLoop`) | Variable frame time in, fixed simulation steps out. Frame clamp (0.1 s), catch-up cap (6 steps), manual mode, `isActive` pause, one `render` per frame, `advance(n)` for exact stepping, `resetAccumulator()` for restarts. |
 | `installQaHooks(name, options)` | Installs `window.__AURA_<NAME>__` with the standard hooks plus your extras, and the `__AURA_<NAME>_ERROR__` first-error slot. |
 | `createCountedRng(seed)` | mulberry32 stream with a draw counter (`count`, also readable as `draws`), `range`, `int` and `reset`. The library's one mulberry32: the Bunker Zero, Dot Dash, Iron Crown, Apex Overdrive, HEATSINK, Drift & Deliver and Splat Rush games use it instead of inline copies, with bit-identical streams. Matches the stream recorded by the Crayon ports, so replays can assert the exact draw count. |
 | `qaHookGlobalName(name)`, `qaErrorGlobalName(name)` | `splat-rush` becomes `__AURA_SPLAT_RUSH__` and `__AURA_SPLAT_RUSH_ERROR__`. |

@@ -31,6 +31,8 @@ export interface FixedStepLoop {
   readonly steps: number;
   /** Seconds of unsimulated time carried to the next frame. */
   readonly accumulator: number;
+  /** Drop the carried time so a restart does not inherit a partial step from before it. */
+  resetAccumulator(): void;
   /** Run one animation frame at `nowMs` (what the scheduler calls); returns the steps it executed. */
   tick(nowMs: number): number;
   /** Run exactly `count` steps now, ignoring the clock, then render once. Returns the step count. */
@@ -87,6 +89,9 @@ export function createFixedStepLoop(options: FixedStepLoopOptions): FixedStepLoo
       if (executed === maxCatchUp && accumulator >= stepSeconds) accumulator = 0;
       options.render?.(frameSeconds);
       return executed;
+    },
+    resetAccumulator() {
+      accumulator = 0;
     },
     advance(count, beforeStep) {
       const n = Math.max(0, Math.trunc(count));
