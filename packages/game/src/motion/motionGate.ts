@@ -5,6 +5,8 @@ export interface MotionGateOptions {
   displayHz: number;
   /** Seconds of play to simulate. Default 8. */
   seconds?: number;
+  /** Seconds at the start excluded from the statistics (acceleration from rest). Default 0. */
+  warmupSeconds?: number;
   /** Fixed step length. Default 1/60. */
   stepSeconds?: number;
   /** Frame time jitter in seconds (deterministic, +/-). Default 0. */
@@ -63,6 +65,7 @@ export function runMotionGate(options: MotionGateOptions): MotionGateReport {
   });
 
   const frames = Math.round(seconds * options.displayHz);
+  const warmupFrames = Math.round((options.warmupSeconds ?? 0) * options.displayHz);
   const previous: number[] = [];
   const displacement: number[] = [];
   let still = 0;
@@ -74,7 +77,7 @@ export function runMotionGate(options: MotionGateOptions): MotionGateReport {
     clock += frameMs + (jitterMs ? rand() * 2 * jitterMs : 0);
     loop.tick(clock);
     const values = options.drawn(loop.alpha);
-    if (previous.length === values.length && f > 1) {
+    if (previous.length === values.length && f > 1 + warmupFrames) {
       let moved = 0;
       for (let i = 0; i < values.length; i += 1) moved += Math.abs(values[i]! - previous[i]!);
       displacement.push(moved);
