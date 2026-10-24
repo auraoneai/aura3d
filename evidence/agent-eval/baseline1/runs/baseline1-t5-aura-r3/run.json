@@ -1,0 +1,608 @@
+{
+  "runId": "baseline1-t5-aura-r3",
+  "batch": "baseline1",
+  "arm": "aura",
+  "task": 5,
+  "idx": 3,
+  "order": 22,
+  "seed": 20261024022,
+  "model": "claude-sonnet-5.5",
+  "startedAt": "2026-10-24T15:19:38.066Z",
+  "docsCommit": "04b7726ef",
+  "docs": {
+    "files": 74,
+    "sha256": "d90cca032286e58e9c5422fa4d3c2825e0ed07332bd40a2f5c97fefc2da2c54f"
+  },
+  "base": {
+    "versions": {
+      "engine": "4.1.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "max_turns",
+  "wallMs": 244240,
+  "usage": {
+    "input": 3301312,
+    "uncachedInput": 3301312,
+    "output": 5212,
+    "turns": 40
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 2270,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 20
+    },
+    {
+      "i": 1,
+      "t": 2270,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 73
+    },
+    {
+      "i": 2,
+      "t": 2270,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 23
+    },
+    {
+      "i": 3,
+      "t": 5887,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 5887,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 5,
+      "t": 5887,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 6,
+      "t": 7490,
+      "type": "read",
+      "path": "docs/agents/api-surface.md",
+      "lines": 256
+    },
+    {
+      "i": 7,
+      "t": 7507,
+      "type": "search",
+      "pattern": "(?i)shader|glsl|ShaderMaterial"
+    },
+    {
+      "i": 8,
+      "t": 10303,
+      "type": "search",
+      "pattern": "."
+    },
+    {
+      "i": 9,
+      "t": 10303,
+      "type": "read",
+      "path": "docs/agents/README.md",
+      "lines": 50
+    },
+    {
+      "i": 10,
+      "t": 14369,
+      "type": "read",
+      "path": ".agents/skills/aura3d-materials-environments/SKILL.md",
+      "lines": 148
+    },
+    {
+      "i": 11,
+      "t": 14369,
+      "type": "read",
+      "path": ".agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md",
+      "lines": 54
+    },
+    {
+      "i": 12,
+      "t": 14369,
+      "type": "list",
+      "path": ".agents/skills/aura3d-materials-environments/references"
+    },
+    {
+      "i": 13,
+      "t": 18668,
+      "type": "search",
+      "pattern": "custom\\(|CustomMaterial|glsl\\??:"
+    },
+    {
+      "i": 14,
+      "t": 18668,
+      "type": "list",
+      "path": "docs"
+    },
+    {
+      "i": 15,
+      "t": 20789,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js",
+      "lines": 95
+    },
+    {
+      "i": 16,
+      "t": 20809,
+      "type": "search",
+      "pattern": "custom"
+    },
+    {
+      "i": 17,
+      "t": 23393,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.d.ts",
+      "lines": 116
+    },
+    {
+      "i": 18,
+      "t": 23436,
+      "type": "search",
+      "pattern": "interface (AuraCustomMaterial|CustomMaterial)\\w*"
+    },
+    {
+      "i": 19,
+      "t": 26497,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 150
+    },
+    {
+      "i": 20,
+      "t": 26502,
+      "type": "search",
+      "pattern": "AuraCustomUniformType|toneMapping|interface AuraAppOptions|AuraOutputOptions|pla"
+    },
+    {
+      "i": 21,
+      "t": 29887,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/geometry.js",
+      "lines": 69
+    },
+    {
+      "i": 22,
+      "t": 29891,
+      "type": "search",
+      "pattern": "."
+    },
+    {
+      "i": 23,
+      "t": 32301,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/output.d.ts",
+      "lines": 47
+    },
+    {
+      "i": 24,
+      "t": 32305,
+      "type": "search",
+      "pattern": "AuraCustomGeometrySpec|AuraCreateAppOptions|interface AuraAppOptions|readonly ba"
+    },
+    {
+      "i": 25,
+      "t": 35864,
+      "type": "search",
+      "pattern": "material\\.custom|setUniform|onFrame|uTime"
+    },
+    {
+      "i": 26,
+      "t": 35871,
+      "type": "search",
+      "pattern": "material\\.custom|setUniform|onFrame|uTime"
+    },
+    {
+      "i": 27,
+      "t": 35871,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 28,
+      "t": 38450,
+      "type": "read",
+      "path": ".agents/skills/aura3d-character-animation/SKILL.md",
+      "lines": 60
+    },
+    {
+      "i": 29,
+      "t": 38456,
+      "type": "search",
+      "pattern": "export interface AuraSceneSpec|export interface AuraAppOptions|export interface "
+    },
+    {
+      "i": 30,
+      "t": 40489,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 130
+    },
+    {
+      "i": 31,
+      "t": 40502,
+      "type": "search",
+      "pattern": "onFrame\\(|setUniform\\("
+    },
+    {
+      "i": 32,
+      "t": 43639,
+      "type": "search",
+      "pattern": "uTime|u_time|uResolution|cameraPosition|#define|in vec|layout"
+    },
+    {
+      "i": 33,
+      "t": 43639,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/AuraAppHandle.d.ts",
+      "lines": 61
+    },
+    {
+      "i": 34,
+      "t": 45744,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 200
+    },
+    {
+      "i": 35,
+      "t": 47908,
+      "type": "search",
+      "pattern": "prelude|u_time|in vec3 a_|a_position|a_normal|a_uv|builtinLoweredUniformNames"
+    },
+    {
+      "i": 36,
+      "t": 50147,
+      "type": "search",
+      "pattern": "u_time"
+    },
+    {
+      "i": 37,
+      "t": 50151,
+      "type": "search",
+      "pattern": "u_time|uTime|#version|a_position|layout|in vec"
+    },
+    {
+      "i": 38,
+      "t": 54049,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 230
+    },
+    {
+      "i": 39,
+      "t": 60228,
+      "type": "search",
+      "pattern": "\"u_time\"|u_time\\b"
+    },
+    {
+      "i": 40,
+      "t": 60228,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+      "lines": 60
+    },
+    {
+      "i": 41,
+      "t": 65200,
+      "type": "read",
+      "path": "node_modules/@aura3d/rendering/dist/shaders/chunks/author/index.js",
+      "lines": 77
+    },
+    {
+      "i": 42,
+      "t": 65200,
+      "type": "read",
+      "path": "docs/agents/agent-quickstart.md",
+      "lines": 126
+    },
+    {
+      "i": 43,
+      "t": 69007,
+      "type": "search",
+      "pattern": "export interface AuraPrimitiveNode|export interface AuraSceneBuilder|export inte"
+    },
+    {
+      "i": 44,
+      "t": 69034,
+      "type": "search",
+      "pattern": "mesh:|mesh\\(|export const primitives"
+    },
+    {
+      "i": 45,
+      "t": 71505,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/primitives.js",
+      "lines": 91
+    },
+    {
+      "i": 46,
+      "t": 71505,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 47,
+      "t": 78096,
+      "type": "search",
+      "pattern": "background|export const camera|export function scene|class AuraSceneBuilder"
+    },
+    {
+      "i": 48,
+      "t": 78103,
+      "type": "error",
+      "tool": "search"
+    },
+    {
+      "i": 49,
+      "t": 81189,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/scene.d.ts",
+      "lines": 55
+    },
+    {
+      "i": 50,
+      "t": 81189,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/cameras.js",
+      "lines": 80
+    },
+    {
+      "i": 51,
+      "t": 81189,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/package.json",
+      "lines": 300
+    },
+    {
+      "i": 52,
+      "t": 84693,
+      "type": "search",
+      "pattern": "export interface AuraCameraSpec|export type AuraCameraSpec"
+    },
+    {
+      "i": 53,
+      "t": 84698,
+      "type": "search",
+      "pattern": "geometry|createAuraApp|\\bmaterial\\b"
+    },
+    {
+      "i": 54,
+      "t": 84703,
+      "type": "search",
+      "pattern": "custom"
+    },
+    {
+      "i": 55,
+      "t": 86954,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 70
+    },
+    {
+      "i": 56,
+      "t": 86954,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/public/index.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 57,
+      "t": 91700,
+      "type": "search",
+      "pattern": "runtimeNode\\(|\\.runtime\\(|\\bid\\("
+    },
+    {
+      "i": 58,
+      "t": 91704,
+      "type": "search",
+      "pattern": "readonly output\\?"
+    },
+    {
+      "i": 59,
+      "t": 94631,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 100
+    },
+    {
+      "i": 60,
+      "t": 94636,
+      "type": "search",
+      "pattern": "interface AuraRuntimeNodeSpec|setUniform|interface AuraCreateAppOptions|__EVAL|r"
+    },
+    {
+      "i": 61,
+      "t": 98162,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 62,
+      "t": 98163,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 63,
+      "t": 98204,
+      "type": "search",
+      "pattern": "AuraToneMappingOperatorLike ="
+    },
+    {
+      "i": 64,
+      "t": 152741,
+      "type": "search",
+      "pattern": "outColor|fragColor"
+    },
+    {
+      "i": 65,
+      "t": 152790,
+      "type": "search",
+      "pattern": "glsl: \\{"
+    },
+    {
+      "i": 66,
+      "t": 155170,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/tsl/emit.js",
+      "lines": 72
+    },
+    {
+      "i": 67,
+      "t": 155170,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+      "lines": 150
+    },
+    {
+      "i": 68,
+      "t": 209489,
+      "type": "search",
+      "pattern": "\"u_cameraPosition\"|\"u_time\"|u_resolution\"|\"u_viewMatrix\""
+    },
+    {
+      "i": 69,
+      "t": 214748,
+      "type": "read",
+      "path": "node_modules/@aura3d/rendering/dist/ForwardPass.js",
+      "lines": 80
+    },
+    {
+      "i": 70,
+      "t": 214764,
+      "type": "search",
+      "pattern": "timeSeconds:"
+    },
+    {
+      "i": 71,
+      "t": 228296,
+      "type": "search",
+      "pattern": "HTMLCanvasElement|querySelector|createElement\\(\"canvas\"\\)|resize"
+    },
+    {
+      "i": 72,
+      "t": 228296,
+      "type": "list",
+      "path": "."
+    },
+    {
+      "i": 73,
+      "t": 230473,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 74,
+      "t": 230473,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 75,
+      "t": 230474,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.js",
+      "lines": 150
+    },
+    {
+      "i": 76,
+      "t": 234105,
+      "type": "search",
+      "pattern": "function resolveCanvas|function configureCanvas"
+    },
+    {
+      "i": 77,
+      "t": 235989,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/canvas.js",
+      "lines": 88
+    },
+    {
+      "i": 78,
+      "t": 241873,
+      "type": "search",
+      "pattern": "ready\\(|export interface AuraApp\\b|nodes:|presented|onFrame"
+    },
+    {
+      "i": 79,
+      "t": 241878,
+      "type": "search",
+      "pattern": "ready\\(|ready:"
+    },
+    {
+      "i": 80,
+      "t": 244239,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 80
+    },
+    {
+      "i": 81,
+      "t": 244240,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.js",
+      "lines": 60
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-character-animation/SKILL.md",
+    ".agents/skills/aura3d-materials-environments/SKILL.md",
+    ".agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md",
+    "AGENTS.md",
+    "docs/agents/README.md",
+    "docs/agents/agent-quickstart.md",
+    "docs/agents/api-surface.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/AuraAppHandle.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/canvas.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/cameras.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/geometry.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/primitives.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/scene.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/tsl/emit.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/output.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/public/index.d.ts",
+    "node_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js",
+    "node_modules/@aura3d/engine/package.json",
+    "node_modules/@aura3d/rendering/dist/ForwardPass.js",
+    "node_modules/@aura3d/rendering/dist/shaders/chunks/author/index.js"
+  ],
+  "filesWritten": [
+    "index.html",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": true,
+  "summary": null,
+  "finalTypecheckPass": false,
+  "finalTypecheckOutput": "error TS18003: No inputs were found in config file '/private/tmp/agent-eval-runs/baseline1/baseline1-t5-aura-r3/sandbox/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'.",
+  "firstTryTypecheck": false
+}

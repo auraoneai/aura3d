@@ -1,0 +1,509 @@
+{
+  "runId": "baseline1-cap100-t1-aura-r2",
+  "batch": "baseline1-cap100",
+  "arm": "aura",
+  "task": 1,
+  "idx": 2,
+  "order": 4,
+  "seed": 20261025004,
+  "model": "claude-sonnet-5.5",
+  "startedAt": "2026-10-24T16:43:53.334Z",
+  "docsCommit": "04b7726ef",
+  "docs": {
+    "files": 74,
+    "sha256": "d90cca032286e58e9c5422fa4d3c2825e0ed07332bd40a2f5c97fefc2da2c54f"
+  },
+  "base": {
+    "versions": {
+      "engine": "4.1.2",
+      "three": null,
+      "vite": "7.3.2",
+      "typescript": "5.9.3"
+    },
+    "patch": "already"
+  },
+  "invalid": false,
+  "endReason": "finished",
+  "wallMs": 151140,
+  "usage": {
+    "input": 2733880,
+    "uncachedInput": 2733880,
+    "output": 4379,
+    "turns": 34
+  },
+  "events": [
+    {
+      "i": 0,
+      "t": 1997,
+      "type": "read",
+      "path": "TASK.md",
+      "lines": 21
+    },
+    {
+      "i": 1,
+      "t": 1997,
+      "type": "read",
+      "path": "llms.txt",
+      "lines": 73
+    },
+    {
+      "i": 2,
+      "t": 1997,
+      "type": "read",
+      "path": "AGENTS.md",
+      "lines": 23
+    },
+    {
+      "i": 3,
+      "t": 4935,
+      "type": "list",
+      "path": "docs/agents"
+    },
+    {
+      "i": 4,
+      "t": 4935,
+      "type": "list",
+      "path": ".agents/skills"
+    },
+    {
+      "i": 5,
+      "t": 4935,
+      "type": "list",
+      "path": "node_modules/@aura3d"
+    },
+    {
+      "i": 6,
+      "t": 7239,
+      "type": "read",
+      "path": "docs/agents/api-surface.md",
+      "lines": 256
+    },
+    {
+      "i": 7,
+      "t": 7239,
+      "type": "read",
+      "path": "docs/agents/benchmark-recipes.md",
+      "lines": 268
+    },
+    {
+      "i": 8,
+      "t": 7239,
+      "type": "read",
+      "path": ".agents/skills/aura3d-core/SKILL.md",
+      "lines": 145
+    },
+    {
+      "i": 9,
+      "t": 11502,
+      "type": "search",
+      "pattern": "orbit|appOptions|cube"
+    },
+    {
+      "i": 10,
+      "t": 11502,
+      "type": "list",
+      "path": "node_modules/@aura3d/engine"
+    },
+    {
+      "i": 11,
+      "t": 11502,
+      "type": "list",
+      "path": "src"
+    },
+    {
+      "i": 12,
+      "t": 13819,
+      "type": "read",
+      "path": ".agents/skills/aura3d-scene-authoring/SKILL.md",
+      "lines": 133
+    },
+    {
+      "i": 13,
+      "t": 13819,
+      "type": "list",
+      "path": "node_modules/@aura3d/engine/dist"
+    },
+    {
+      "i": 14,
+      "t": 17202,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/package.json",
+      "lines": 300
+    },
+    {
+      "i": 15,
+      "t": 17221,
+      "type": "search",
+      "pattern": "export declare (function|const) (createAuraApp|scene|primitives|material|lights|"
+    },
+    {
+      "i": 16,
+      "t": 20243,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/primitives.d.ts",
+      "lines": 23
+    },
+    {
+      "i": 17,
+      "t": 20243,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/interactions.d.ts",
+      "lines": 35
+    },
+    {
+      "i": 18,
+      "t": 20243,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.d.ts",
+      "lines": 98
+    },
+    {
+      "i": 19,
+      "t": 20243,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/lights.d.ts",
+      "lines": 112
+    },
+    {
+      "i": 20,
+      "t": 20243,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/scene.d.ts",
+      "lines": 55
+    },
+    {
+      "i": 21,
+      "t": 27784,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/builder.d.ts",
+      "lines": 40
+    },
+    {
+      "i": 22,
+      "t": 27796,
+      "type": "search",
+      "pattern": "interface (AuraMaterialSpec|AuraPrimitiveOptions|AuraCameraSpec|AuraTimelineSpec"
+    },
+    {
+      "i": 23,
+      "t": 27796,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.d.ts",
+      "lines": 3
+    },
+    {
+      "i": 24,
+      "t": 34884,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 120
+    },
+    {
+      "i": 25,
+      "t": 34884,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 180
+    },
+    {
+      "i": 26,
+      "t": 34885,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 27,
+      "t": 34889,
+      "type": "search",
+      "pattern": "interface AuraCreateAppOptions|interface AuraApp\\b"
+    },
+    {
+      "i": 28,
+      "t": 38914,
+      "type": "search",
+      "pattern": "(interface|type) (AuraCreateAppOptions|AuraApp|AuraRuntimeNodeHandle|AuraNodeReg"
+    },
+    {
+      "i": 29,
+      "t": 40657,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 242
+    },
+    {
+      "i": 30,
+      "t": 43456,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 125
+    },
+    {
+      "i": 31,
+      "t": 43460,
+      "type": "search",
+      "pattern": "AuraFrameCallback =|interface AuraFrameInfo|AuraFrameContext"
+    },
+    {
+      "i": 32,
+      "t": 49391,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+      "lines": 195
+    },
+    {
+      "i": 33,
+      "t": 49392,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+      "lines": 30
+    },
+    {
+      "i": 34,
+      "t": 49392,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.d.ts",
+      "lines": 75
+    },
+    {
+      "i": 35,
+      "t": 54755,
+      "type": "search",
+      "pattern": "interactions\\.orbit|\"orbit\""
+    },
+    {
+      "i": 36,
+      "t": 58365,
+      "type": "search",
+      "pattern": "addEventListener\\([\"']pointerdown|addEventListener\\([\"']mousedown"
+    },
+    {
+      "i": 37,
+      "t": 58365,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/orbit.js",
+      "lines": 118
+    },
+    {
+      "i": 38,
+      "t": 61990,
+      "type": "search",
+      "pattern": "bindOrbitPointer"
+    },
+    {
+      "i": 39,
+      "t": 61994,
+      "type": "search",
+      "pattern": "readonly camera|orbit"
+    },
+    {
+      "i": 40,
+      "t": 68285,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/public/index.d.ts",
+      "lines": 61
+    },
+    {
+      "i": 41,
+      "t": 68289,
+      "type": "search",
+      "pattern": "camera"
+    },
+    {
+      "i": 42,
+      "t": 75802,
+      "type": "search",
+      "pattern": "mode === \"orbit\"|dragBy|orbitDrag|OrbitControls"
+    },
+    {
+      "i": 43,
+      "t": 78957,
+      "type": "search",
+      "pattern": "orbit"
+    },
+    {
+      "i": 44,
+      "t": 78963,
+      "type": "search",
+      "pattern": "orbit|drag"
+    },
+    {
+      "i": 45,
+      "t": 83530,
+      "type": "search",
+      "pattern": "kind === \"interaction\"|case \"interaction\"|\"pointermove\""
+    },
+    {
+      "i": 46,
+      "t": 87769,
+      "type": "search",
+      "pattern": "OrbitRig|bindOrbit"
+    },
+    {
+      "i": 47,
+      "t": 87769,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/orbit.d.ts",
+      "lines": 44
+    },
+    {
+      "i": 48,
+      "t": 87769,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/fromSpec.js",
+      "lines": 170
+    },
+    {
+      "i": 49,
+      "t": 95416,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/contracts/app.d.ts",
+      "lines": 41
+    },
+    {
+      "i": 50,
+      "t": 95420,
+      "type": "search",
+      "pattern": "AuraAppExtensionMap"
+    },
+    {
+      "i": 51,
+      "t": 98787,
+      "type": "search",
+      "pattern": "member: \"camera\""
+    },
+    {
+      "i": 52,
+      "t": 101330,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/lanes/prd08.js",
+      "lines": 110
+    },
+    {
+      "i": 53,
+      "t": 104659,
+      "type": "search",
+      "pattern": "A3D_QR_CAMERA"
+    },
+    {
+      "i": 54,
+      "t": 107787,
+      "type": "search",
+      "pattern": "use\\(|setPose\\(|presented\\("
+    },
+    {
+      "i": 55,
+      "t": 109687,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+      "lines": 170
+    },
+    {
+      "i": 56,
+      "t": 115979,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.composite.d.ts",
+      "lines": 38
+    },
+    {
+      "i": 57,
+      "t": 115979,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/looks/looks.d.ts",
+      "lines": 60
+    },
+    {
+      "i": 58,
+      "t": 115982,
+      "type": "search",
+      "pattern": "interface AuraLightingOptions"
+    },
+    {
+      "i": 59,
+      "t": 119654,
+      "type": "search",
+      "pattern": "."
+    },
+    {
+      "i": 60,
+      "t": 121221,
+      "type": "read",
+      "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.d.ts",
+      "lines": 101
+    },
+    {
+      "i": 61,
+      "t": 125416,
+      "type": "read",
+      "path": "index.html",
+      "lines": 17
+    },
+    {
+      "i": 62,
+      "t": 141276,
+      "type": "write",
+      "tool": "write_file",
+      "path": "src/main.ts",
+      "bytes": 4095
+    },
+    {
+      "i": 63,
+      "t": 141733,
+      "type": "typecheck",
+      "pass": true
+    },
+    {
+      "i": 64,
+      "t": 146060,
+      "type": "search",
+      "pattern": "turntable.*rotation|rotation: \\[0, .*(Math\\.PI|time)"
+    },
+    {
+      "i": 65,
+      "t": 151140,
+      "type": "finish"
+    }
+  ],
+  "docsOpened": [
+    ".agents/skills/aura3d-core/SKILL.md",
+    ".agents/skills/aura3d-scene-authoring/SKILL.md",
+    "AGENTS.md",
+    "docs/agents/api-surface.md",
+    "docs/agents/benchmark-recipes.md",
+    "llms.txt"
+  ],
+  "typesOpened": [
+    "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/extension.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/fromSpec.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/orbit.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/camera/rigs/orbit.js",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/looks/looks.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/builder.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.composite.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/interactions.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/lights.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/primitives.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/scene.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/app.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/contracts/camera.d.ts",
+    "node_modules/@aura3d/engine/dist/engine/lanes/prd08.js",
+    "node_modules/@aura3d/engine/dist/engine/public/index.d.ts",
+    "node_modules/@aura3d/engine/package.json"
+  ],
+  "filesWritten": [
+    "index.html",
+    "src/main.ts",
+    "tsconfig.json"
+  ],
+  "draftIsFinal": false,
+  "summary": "I wrote `src/main.ts` and it passes `typecheck`. I haven't run `vite build` or loaded it in a browser, so the rendering, the orbit drag and `__EVAL_READY__` are untested.\n\n- **Cube and material:** one 1.7-unit cube using `material.pbr` (metallic 0.9, roughness 0.38, steel-grey).\n- **Lighting and background:** a neutral image-based environment for reflections, a hemisphere fill, and warm key, cool fill and white rim directional lights. The background is dark grey (`#2a2a2e`).\n- **Rotation:** the cube spins on all three axes. It is driven each frame by an `app.onFrame` callback that sets its rotation on the runtime node handle. This assumes the angle is in radians, which I inferred from the engine code rather than confirmed.\n- **Orbit control:** `interactions.orbit()` in this engine only records that orbit is enabled and does no dragging. I mounted the orbit camera rig from `camera.rigs.orbit` and wired canvas pointer events to its `dragBy`. This works while the cube keeps spinning. The rig has no typed `dragBy`, so I cast it to a small local interface.\n- **Framing:** the orbit rig is aimed at the origin with a 40° field of view at distance 6.4, so the whole cube should be centred.\n- **Canvas and ready flag:** the app draws into the existing `canvas#app` with `resize: false` and `pixelRatio: 1`. `window.__EVAL_READY__` is set one animation frame after the first frame callback.\n\n",
+  "finalTypecheckPass": true,
+  "finalTypecheckOutput": "",
+  "firstTryTypecheck": true
+}

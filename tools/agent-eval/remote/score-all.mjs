@@ -116,8 +116,33 @@ async function analyze(analysis, pngBuffer) {
 const gridDiff = (a, b) => a.grid.reduce((s, v, i) => s + Math.abs(v - b.grid[i]), 0) / a.grid.length;
 
 async function shot(page, analysis) {
-  const png = await page.locator("#app").screenshot({ type: "png", timeout: 60000 });
+  const png = await page.screenshot({ type: "png", timeout: 120000, clip: { x: 0, y: 0, width: 640, height: 360 }, animations: "allow" });
   return analyze(analysis, png);
+}
+
+/** Silhouette of non-background pixels on the 64x36 grid: vertical centre and height in grid rows. */
+function silhouette(shotResult) {
+  const { grid } = shotResult;
+  const border = [];
+  for (let x = 0; x < 64; x += 1) border.push(grid[x], grid[35 * 64 + x]);
+  for (let y = 0; y < 36; y += 1) border.push(grid[y * 64], grid[y * 64 + 63]);
+  border.sort((a, b) => a - b);
+  const bg = border[Math.floor(border.length / 2)];
+  let top = 36;
+  let bottom = -1;
+  let sumY = 0;
+  let n = 0;
+  for (let y = 0; y < 36; y += 1) {
+    for (let x = 0; x < 64; x += 1) {
+      if (Math.abs(grid[y * 64 + x] - bg) > 12) {
+        top = Math.min(top, y);
+        bottom = Math.max(bottom, y);
+        sumY += y;
+        n += 1;
+      }
+    }
+  }
+  return n ? { cy: sumY / n, h: bottom - top + 1, n } : { cy: 18, h: 0, n: 0 };
 }
 
 async function waitFrames(page, n, timeoutMs = 60000) {
@@ -141,25 +166,36 @@ async function probes(task, page, analysis, ctx) {
   out.frameStd = Math.round(a.std * 10) / 10;
   out.blank = a.mean < 6 || a.std < 2;
   ctx.frames.push(a.jpeg);
-  await waitFrames(page, 3);
+  const cx = 320;
+  const cy = 180;
+  await waitFrames(page, 6);
+  await sleep(500);
   const b = await shot(page, analysis);
   out.animatedDiff = Math.round(gridDiff(a, b) * 100) / 100;
-  out.animated = out.animatedDiff > 0.3;
-  if (task === 1 || task === 2 || task === 7) {
-    const box = await page.locator("#app").boundingBox();
-    if (box) {
-      const cx = box.x + box.width / 2;
-      const cy = box.y + box.height / 2;
-      await page.mouse.move(cx, cy);
-      await page.mouse.down();
-      for (let i = 1; i <= 10; i += 1) await page.mouse.move(cx + i * 12, cy + i * 2);
-      await page.mouse.up();
-      await waitFrames(page, 3);
-      const c = await shot(page, analysis);
-      out.dragDiff = Math.round(gridDiff(b, c) * 100) / 100;
-      out.orbitResponds = out.dragDiff > out.animatedDiff * 1.5 + 0.5;
-      ctx.frames.push(c.jpeg);
-    }
+  out.animated = out.animatedDiff > 0.2;
+  if (task === 1) {
+    // Auto-rotation about the vertical axis confounds a plain frame diff, so orbit is judged on the silhouette: a
+    // vertical drag tilts the camera (silhouette height/centre move), a hover with no button must not.
+    const base = silhouette(b);
+    await page.mouse.move(cx, cy - 40);
+    for (let i = 1; i <= 20; i += 1) await page.mouse.move(cx, cy - 40 + i * 8);
+    await waitFrames(page, 10);
+    await sleep(900);
+    const control = await shot(page, analysis);
+    const cs = silhouette(control);
+    out.controlMoved = Math.round(Math.max(Math.abs(cs.cy - base.cy), Math.abs(cs.h - base.h) / 2) * 100) / 100;
+    await page.mouse.move(cx, cy - 40);
+    await page.mouse.down();
+    for (let i = 1; i <= 20; i += 1) await page.mouse.move(cx, cy - 40 + i * 8);
+    await page.mouse.up();
+    await waitFrames(page, 10);
+    await sleep(900);
+    const dragged = await shot(page, analysis);
+    const ds = silhouette(dragged);
+    out.dragMoved = Math.round(Math.max(Math.abs(ds.cy - cs.cy), Math.abs(ds.h - cs.h) / 2) * 100) / 100;
+    out.dragDiff = Math.round(gridDiff(control, dragged) * 100) / 100;
+    out.orbitResponds = out.dragMoved >= 1.2 && out.dragMoved > out.controlMoved * 2 + 0.5;
+    ctx.frames.push(dragged.jpeg);
   } else {
     ctx.frames.push(b.jpeg);
   }
@@ -175,15 +211,21 @@ async function probes(task, page, analysis, ctx) {
   out.gl = await page.evaluate(() => ({ draws: window.__GLC__.draws, maxInstances: window.__GLC__.maxInstances, tris: Math.round(window.__GLC__.tris) }));
   void gl;
   if (task === 3) {
+    const idleShot = await shot(page, analysis);
     await page.keyboard.press("r");
-    await waitFrames(page, 2);
+    await waitFrames(page, 12);
+    await sleep(600);
     const clipRun = await page.evaluate(() => (window.__EVAL__?.clip ? String(window.__EVAL__.clip()) : null)).catch(() => null);
+    const runShot = await shot(page, analysis);
+    out.runMotionDiff = Math.round(gridDiff(idleShot, runShot) * 100) / 100;
+    out.animated = out.animated || out.runMotionDiff > 0.2;
     await page.keyboard.press("i");
-    await waitFrames(page, 2);
+    await waitFrames(page, 6);
     const clipIdle = await page.evaluate(() => (window.__EVAL__?.clip ? String(window.__EVAL__.clip()) : null)).catch(() => null);
     out.clipAfterR = clipRun;
     out.clipAfterI = clipIdle;
     out.clipSwitchWorks = /run/i.test(clipRun ?? "") && /idle/i.test(clipIdle ?? "");
+    ctx.frames.push(runShot.jpeg);
   }
   if (task === 4) {
     const s0 = await evalState();

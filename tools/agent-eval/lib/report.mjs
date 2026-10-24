@@ -17,6 +17,7 @@ function rateCell(values) {
 }
 
 const ROWS = [
+  ["ended at the turn cap (unfinished)", (m) => m.hitTurnCap, "rate"],
   ["first-try typecheck", (m) => m.firstTryTypecheck, "rate"],
   ["first-try build (vite, stock)", (m) => m.firstTryBuild, "rate"],
   ["first-try renders non-black", (m) => m.firstTryRender, "rate"],
@@ -55,21 +56,22 @@ export function renderReport({ batches, metrics, meta = {} }) {
   if (meta.docs) lines.push(`Aura3D arm docs: ${meta.docs}`);
   if (meta.library) lines.push(`Library under test: ${meta.library}`);
   if (meta.docs || meta.library) lines.push("");
+  const arms = ["aura", "three", ...[...new Set(metrics.map((m) => m.arm))].filter((a) => a !== "aura" && a !== "three").sort()].filter((a) => metrics.some((m) => m.arm === a));
+  const ARM_LABEL = { aura: "Aura3D (docs-only, 40-turn budget)", three: "three.js (40-turn budget)", "aura-cap100": "Aura3D (docs-only, 100-turn budget)" };
   for (const task of tasks) {
     const byArm = (arm) => valid.filter((m) => m.task === task && m.arm === arm);
-    const a = byArm("aura");
-    const t = byArm("three");
+    const groups = arms.map((arm) => ({ arm, runs: byArm(arm) }));
     lines.push(`## Task ${task}: ${TASK_NAMES[task] ?? ""}`);
     lines.push("");
-    lines.push(`| Metric | Aura3D (docs-only), n=${a.length} | three.js, n=${t.length} |`);
-    lines.push("| --- | --- | --- |");
+    lines.push(`| Metric | ${groups.map((g) => `${ARM_LABEL[g.arm] ?? g.arm}, n=${g.runs.length}`).join(" | ")} |`);
+    lines.push(`| --- | ${groups.map(() => "---").join(" | ")} |`);
     for (const [label, pick, kind] of ROWS) {
       const cell = (runs) => {
         const values = runs.map(pick);
         if (kind === "rate") return rateCell(values);
         return numCell(values, kind === "num2" ? 2 : kind === "num0" ? 0 : 1);
       };
-      lines.push(`| ${label} | ${cell(a)} | ${cell(t)} |`);
+      lines.push(`| ${label} | ${groups.map((g) => cell(g.runs)).join(" | ")} |`);
     }
     lines.push("");
     const failedProbes = (runs) => {
@@ -80,7 +82,7 @@ export function renderReport({ batches, metrics, meta = {} }) {
         .map(([k, n]) => `${k} x${n}`)
         .join(", ");
     };
-    lines.push(`Failed probe checks: Aura3D: ${failedProbes(a) || "none"}; three.js: ${failedProbes(t) || "none"}.`);
+    lines.push(`Failed probe checks: ${groups.map((g) => `${ARM_LABEL[g.arm] ?? g.arm}: ${failedProbes(g.runs) || "none"}`).join("; ")}.`);
     lines.push("");
   }
   if (invalid.length) {

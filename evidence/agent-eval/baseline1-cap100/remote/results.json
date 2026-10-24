@@ -1,0 +1,850 @@
+[
+  {
+    "id": "baseline1-cap100-t1-aura-r1-draft",
+    "run": "baseline1-cap100-t1-aura-r1",
+    "arm": "aura",
+    "task": 1,
+    "kind": "draft",
+    "build": {
+      "ok": true,
+      "ms": 10620
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3255.6,
+      "gzipKB": 961.7
+    },
+    "readyMs": 1522,
+    "probes": {
+      "frameMean": 83.9,
+      "frameStd": 70.3,
+      "blank": false,
+      "animatedDiff": 5.61,
+      "animated": true,
+      "controlMoved": 0.5,
+      "dragMoved": 1,
+      "dragDiff": 9.03,
+      "orbitResponds": false,
+      "gl": {
+        "draws": 8,
+        "maxInstances": 0,
+        "tris": 52
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/studio.manifest.json"
+      ]
+    },
+    "scoreMs": 205652
+  },
+  {
+    "id": "baseline1-cap100-t1-aura-r3-final",
+    "run": "baseline1-cap100-t1-aura-r3",
+    "arm": "aura",
+    "task": 1,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 14627
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3255.5,
+      "gzipKB": 961.7
+    },
+    "readyMs": 1439,
+    "probes": {
+      "frameMean": 83.6,
+      "frameStd": 71.2,
+      "blank": false,
+      "animatedDiff": 10.83,
+      "animated": true,
+      "controlMoved": 1,
+      "dragMoved": 2,
+      "dragDiff": 12.62,
+      "orbitResponds": false,
+      "gl": {
+        "draws": 8,
+        "maxInstances": 0,
+        "tris": 52
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 145796
+  },
+  {
+    "id": "baseline1-cap100-t2-aura-r2-final",
+    "run": "baseline1-cap100-t2-aura-r2",
+    "arm": "aura",
+    "task": 2,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 12839
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3256.6,
+      "gzipKB": 962.2
+    },
+    "readyMs": 3383,
+    "probes": {
+      "frameMean": 181.1,
+      "frameStd": 19.8,
+      "blank": false,
+      "animatedDiff": 6.78,
+      "animated": true,
+      "gl": {
+        "draws": 3404,
+        "maxInstances": 8000,
+        "tris": 7680012
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 313340
+  },
+  {
+    "id": "baseline1-cap100-t3-aura-r1-final",
+    "run": "baseline1-cap100-t3-aura-r1",
+    "arm": "aura",
+    "task": 3,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 17478
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3255.5,
+      "gzipKB": 961.9
+    },
+    "readyMs": 2005,
+    "probes": {
+      "frameMean": 89.8,
+      "frameStd": 74.1,
+      "blank": false,
+      "animatedDiff": 0.15,
+      "animated": true,
+      "gl": {
+        "draws": 30,
+        "maxInstances": 0,
+        "tris": 113775
+      },
+      "runMotionDiff": 3.81,
+      "clipAfterR": "Run",
+      "clipAfterI": "Idle",
+      "clipSwitchWorks": true
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 161118
+  },
+  {
+    "id": "baseline1-cap100-t3-aura-r3-final",
+    "run": "baseline1-cap100-t3-aura-r3",
+    "arm": "aura",
+    "task": 3,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 16302
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3255.6,
+      "gzipKB": 961.9
+    },
+    "readyMs": 2134,
+    "probes": {
+      "frameMean": 81,
+      "frameStd": 92.4,
+      "blank": false,
+      "animatedDiff": 0.19,
+      "animated": true,
+      "gl": {
+        "draws": 24,
+        "maxInstances": 0,
+        "tris": 91020
+      },
+      "runMotionDiff": 4.86,
+      "clipAfterR": "Run",
+      "clipAfterI": "Idle",
+      "clipSwitchWorks": true
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 188817
+  },
+  {
+    "id": "baseline1-cap100-t4-aura-r3-draft",
+    "run": "baseline1-cap100-t4-aura-r3",
+    "arm": "aura",
+    "task": 4,
+    "kind": "draft",
+    "build": {
+      "ok": true,
+      "ms": 22345
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3413.5,
+      "gzipKB": 1013.1
+    },
+    "readyMs": 240,
+    "probes": {
+      "frameMean": 0,
+      "frameStd": 0,
+      "blank": true,
+      "animatedDiff": 0,
+      "animated": false,
+      "gl": {
+        "draws": 0,
+        "maxInstances": 0,
+        "tris": 0
+      },
+      "hasState": true,
+      "hudIds": true,
+      "stepAdvancesTime": true,
+      "pauseFreezes": true,
+      "restartResets": true,
+      "endState": {
+        "status": "lost",
+        "time": 30
+      },
+      "roundEndsAt30": true,
+      "hudFollowsState": true
+    },
+    "page": {
+      "consoleErrors": [
+        "Aura3D mount failed TypeError: A.cylinder(...).position(...).scale(...).rotation is not a function\n    at http://127.0.0.1:42295/assets/index-BXJObS5Y.js:506:69051\n    at Array.map (<anonymous>)\n    a"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "scoreMs": 23737
+  },
+  {
+    "id": "baseline1-cap100-t5-aura-r2-final",
+    "run": "baseline1-cap100-t5-aura-r2",
+    "arm": "aura",
+    "task": 5,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 10771
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3277.1,
+      "gzipKB": 968.9
+    },
+    "readyMs": 2154,
+    "probes": {
+      "frameMean": 150.2,
+      "frameStd": 36.2,
+      "blank": false,
+      "animatedDiff": 13.1,
+      "animated": true,
+      "gl": {
+        "draws": 12,
+        "maxInstances": 0,
+        "tris": 469892
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 97413
+  },
+  {
+    "id": "baseline1-cap100-t1-aura-r1-final",
+    "run": "baseline1-cap100-t1-aura-r1",
+    "arm": "aura",
+    "task": 1,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 10186
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3255.6,
+      "gzipKB": 961.7
+    },
+    "readyMs": 1674,
+    "probes": {
+      "frameMean": 81.8,
+      "frameStd": 68.5,
+      "blank": false,
+      "animatedDiff": 1.31,
+      "animated": true,
+      "controlMoved": 0.5,
+      "dragMoved": 1,
+      "dragDiff": 12.11,
+      "orbitResponds": false,
+      "gl": {
+        "draws": 8,
+        "maxInstances": 0,
+        "tris": 52
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/studio.manifest.json"
+      ]
+    },
+    "scoreMs": 210402
+  },
+  {
+    "id": "baseline1-cap100-t2-aura-r1-final",
+    "run": "baseline1-cap100-t2-aura-r1",
+    "arm": "aura",
+    "task": 2,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 14877
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3256.7,
+      "gzipKB": 962.2
+    },
+    "readyMs": 2183,
+    "probes": {
+      "frameMean": 187,
+      "frameStd": 15.5,
+      "blank": false,
+      "animatedDiff": 3.98,
+      "animated": true,
+      "gl": {
+        "draws": 1024,
+        "maxInstances": 8000,
+        "tris": 3120396
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 221533
+  },
+  {
+    "id": "baseline1-cap100-t2-aura-r3-draft",
+    "run": "baseline1-cap100-t2-aura-r3",
+    "arm": "aura",
+    "task": 2,
+    "kind": "draft",
+    "build": {
+      "ok": true,
+      "ms": 19277
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3256.5,
+      "gzipKB": 962.2
+    },
+    "readyMs": 3636,
+    "pageFailure": "page.screenshot: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 157976
+  },
+  {
+    "id": "baseline1-cap100-t3-aura-r2-draft",
+    "run": "baseline1-cap100-t3-aura-r2",
+    "arm": "aura",
+    "task": 3,
+    "kind": "draft",
+    "build": {
+      "ok": true,
+      "ms": 16610
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3256.2,
+      "gzipKB": 962
+    },
+    "readyMs": 15218,
+    "probes": {
+      "frameMean": 0,
+      "frameStd": 0,
+      "blank": true,
+      "animatedDiff": 0,
+      "animated": false,
+      "gl": {
+        "draws": 0,
+        "maxInstances": 0,
+        "tris": 0
+      },
+      "runMotionDiff": 0,
+      "clipAfterR": "Run",
+      "clipAfterI": "Idle",
+      "clipSwitchWorks": true
+    },
+    "page": {
+      "consoleErrors": [],
+      "consoleErrorCount": 0,
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "scoreMs": 716518
+  },
+  {
+    "id": "baseline1-cap100-t4-aura-r1-final",
+    "run": "baseline1-cap100-t4-aura-r1",
+    "arm": "aura",
+    "task": 4,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 9791
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3414.1,
+      "gzipKB": 1013.1
+    },
+    "readyMs": 2000,
+    "probes": {
+      "frameMean": 201.8,
+      "frameStd": 21.7,
+      "blank": false,
+      "animatedDiff": 0,
+      "animated": false,
+      "gl": {
+        "draws": 348,
+        "maxInstances": 0,
+        "tris": 345126
+      },
+      "hasState": true,
+      "hudIds": true,
+      "stepAdvancesTime": true,
+      "pauseFreezes": true,
+      "restartResets": true,
+      "endState": {
+        "status": "lost",
+        "time": 30
+      },
+      "roundEndsAt30": true,
+      "hudFollowsState": true
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 2,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /hdri/autumn_field_puresky_1k.hdr",
+        "404 /hdri/autumn_field_puresky_1k.hdr"
+      ]
+    },
+    "scoreMs": 89860
+  },
+  {
+    "id": "baseline1-cap100-t4-aura-r3-final",
+    "run": "baseline1-cap100-t4-aura-r3",
+    "arm": "aura",
+    "task": 4,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 21112
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3413.4,
+      "gzipKB": 1013.1
+    },
+    "readyMs": 1894,
+    "probes": {
+      "frameMean": 154.6,
+      "frameStd": 56.8,
+      "blank": false,
+      "animatedDiff": 0.16,
+      "animated": false,
+      "gl": {
+        "draws": 230,
+        "maxInstances": 0,
+        "tris": 91685
+      },
+      "hasState": true,
+      "hudIds": true,
+      "stepAdvancesTime": true,
+      "pauseFreezes": true,
+      "restartResets": true,
+      "endState": {
+        "status": "lost",
+        "time": 30
+      },
+      "roundEndsAt30": true,
+      "hudFollowsState": true
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 2,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /hdri/autumn_field_puresky_1k.hdr",
+        "404 /hdri/autumn_field_puresky_1k.hdr"
+      ]
+    },
+    "scoreMs": 106483
+  },
+  {
+    "id": "baseline1-cap100-t5-aura-r3-final",
+    "run": "baseline1-cap100-t5-aura-r3",
+    "arm": "aura",
+    "task": 5,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 20464
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3276.3,
+      "gzipKB": 968.7
+    },
+    "readyMs": 451,
+    "probes": {
+      "frameMean": 182,
+      "frameStd": 40.3,
+      "blank": false,
+      "animatedDiff": 16.63,
+      "animated": true,
+      "gl": {
+        "draws": 9,
+        "maxInstances": 0,
+        "tris": 252291
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 80825
+  },
+  {
+    "id": "baseline1-cap100-t1-aura-r2-final",
+    "run": "baseline1-cap100-t1-aura-r2",
+    "arm": "aura",
+    "task": 1,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 11002
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3255.7,
+      "gzipKB": 961.8
+    },
+    "readyMs": 1993,
+    "probes": {
+      "frameMean": 75.1,
+      "frameStd": 66.2,
+      "blank": false,
+      "animatedDiff": 8.93,
+      "animated": true,
+      "controlMoved": 0.77,
+      "dragMoved": 2,
+      "dragDiff": 10.31,
+      "orbitResponds": false,
+      "gl": {
+        "draws": 8,
+        "maxInstances": 0,
+        "tris": 52
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 146059
+  },
+  {
+    "id": "baseline1-cap100-t2-aura-r2-draft",
+    "run": "baseline1-cap100-t2-aura-r2",
+    "arm": "aura",
+    "task": 2,
+    "kind": "draft",
+    "build": {
+      "ok": true,
+      "ms": 13267
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3256.6,
+      "gzipKB": 962.2
+    },
+    "readyMs": 3338,
+    "probes": {
+      "frameMean": 181.2,
+      "frameStd": 19.8,
+      "blank": false,
+      "animatedDiff": 6.5,
+      "animated": true,
+      "gl": {
+        "draws": 3404,
+        "maxInstances": 8000,
+        "tris": 7680012
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 301224
+  },
+  {
+    "id": "baseline1-cap100-t2-aura-r3-final",
+    "run": "baseline1-cap100-t2-aura-r3",
+    "arm": "aura",
+    "task": 2,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 19118
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3256.5,
+      "gzipKB": 962.1
+    },
+    "readyMs": 3265,
+    "pageFailure": "page.screenshot: Timeout 120000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 208504
+  },
+  {
+    "id": "baseline1-cap100-t3-aura-r2-final",
+    "run": "baseline1-cap100-t3-aura-r2",
+    "arm": "aura",
+    "task": 3,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 18753
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3256.2,
+      "gzipKB": 962
+    },
+    "readyMs": 15273,
+    "probes": {
+      "frameMean": 0,
+      "frameStd": 0,
+      "blank": true,
+      "animatedDiff": 0,
+      "animated": false,
+      "gl": {
+        "draws": 0,
+        "maxInstances": 0,
+        "tris": 0
+      },
+      "runMotionDiff": 0,
+      "clipAfterR": "Run",
+      "clipAfterI": "Idle",
+      "clipSwitchWorks": true
+    },
+    "page": {
+      "consoleErrors": [],
+      "consoleErrorCount": 0,
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    "scoreMs": 717469
+  },
+  {
+    "id": "baseline1-cap100-t4-aura-r2-final",
+    "run": "baseline1-cap100-t4-aura-r2",
+    "arm": "aura",
+    "task": 4,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 10687
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3415.1,
+      "gzipKB": 1013.5
+    },
+    "readyMs": 1785,
+    "probes": {
+      "frameMean": 45.5,
+      "frameStd": 33.2,
+      "blank": false,
+      "animatedDiff": 0.91,
+      "animated": true,
+      "gl": {
+        "draws": 128,
+        "maxInstances": 0,
+        "tris": 73996
+      },
+      "hasState": true,
+      "hudIds": true,
+      "stepAdvancesTime": true,
+      "pauseFreezes": true,
+      "restartResets": true,
+      "endState": {
+        "status": "lost",
+        "time": 30
+      },
+      "roundEndsAt30": true,
+      "hudFollowsState": true
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 64115
+  },
+  {
+    "id": "baseline1-cap100-t5-aura-r1-final",
+    "run": "baseline1-cap100-t5-aura-r1",
+    "arm": "aura",
+    "task": 5,
+    "kind": "final",
+    "build": {
+      "ok": true,
+      "ms": 20525
+    },
+    "bundle": {
+      "files": 34,
+      "rawKB": 3276.9,
+      "gzipKB": 969
+    },
+    "readyMs": 2177,
+    "probes": {
+      "frameMean": 186.9,
+      "frameStd": 45.6,
+      "blank": false,
+      "animatedDiff": 20.06,
+      "animated": true,
+      "gl": {
+        "draws": 9,
+        "maxInstances": 0,
+        "tris": 302691
+      }
+    },
+    "page": {
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "consoleErrorCount": 1,
+      "pageErrors": [],
+      "failedRequests": [
+        "404 /aura-environments/neutral.manifest.json"
+      ]
+    },
+    "scoreMs": 88929
+  }
+]

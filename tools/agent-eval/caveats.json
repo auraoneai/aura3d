@@ -7,5 +7,8 @@
   "Render checks use software WebGL2: slow scenes (forest) can time out where a GPU would not. A readyTimeout is counted as not rendering and is reported separately.",
   "Judge-derived fields (judge checklist, silent no-ops, glue lines) come from a model judge (claude-sonnet-5.5) reading source plus browser probes. They are estimates, not human review. Probe checks are deterministic.",
   "n is small. Medians with min-max are shown; no significance test is claimed.",
-  "Task 7 (prop asset) is harness-ready with a provided GLB for both arms; the Aura3D Meshy-generation path is not exercised because agents have no shell. Task 6 probes exist but were not part of the baseline."
+  "Task 7 (prop asset) is harness-ready with a provided GLB for both arms; the Aura3D Meshy-generation path is not exercised because agents have no shell. Task 6 probes exist but were not part of the baseline.",
+  "Task 1 orbit control is judged from source by the model judge, not by a browser probe: with an auto-rotating subject a drag probe was unreliable (the same code scored differently across two passes), so orbitResponds is recorded in the raw remote results as informational only.",
+  "The agent turn budget is 40. Aura3D-arm agents often spent most of it reading docs and packages, and some wrote nothing before the cap; the cap100 batch re-runs the Aura3D arm with 100 turns to separate 'cannot do it' from 'ran out of turns'.",
+  "A screenshot that times out on a heavy scene under software GL (seen on the 10,000-instance forest) is scored as not rendering and flagged captureFailed, not as a black frame."
 ]

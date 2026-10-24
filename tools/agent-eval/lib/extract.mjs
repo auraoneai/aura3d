@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 /** Pull AGENTEVAL_RESULT / AGENTEVAL_FRAME lines out of remote run logs. Later lines for the same id win. */
@@ -24,8 +24,9 @@ export function parseRemoteLog(text) {
   return { results: [...results.values()], frames };
 }
 
-export function writeRemote({ outDir, logs }) {
+export function writeRemote({ outDir, logs, merge = false }) {
   const merged = new Map();
+  if (merge && existsSync(join(outDir, "results.json"))) for (const r of JSON.parse(readFileSync(join(outDir, "results.json"), "utf8"))) merged.set(r.id, r);
   const frames = [];
   for (const text of logs) {
     const parsed = parseRemoteLog(text);

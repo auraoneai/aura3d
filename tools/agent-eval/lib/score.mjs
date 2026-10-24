@@ -3,9 +3,10 @@ import { countLoc, countTokens, editsToGreen } from "./metrics.mjs";
 /** Deterministic probe checks per task, from the remote browser result. Returns { items, passed, total }. */
 export function probeChecks(task, remote) {
   const p = remote?.probes ?? {};
-  const rendered = Boolean(remote?.build?.ok && !remote?.readyTimeout && !p.blank && !(remote?.page?.pageErrors?.length > 0));
+  const rendered = Boolean(remote?.build?.ok && !remote?.readyTimeout && remote?.probes && p.blank === false && !(remote?.page?.pageErrors?.length > 0));
   const items = { builds: Boolean(remote?.build?.ok), rendersNonBlank: rendered, noPageErrors: !(remote?.page?.pageErrors?.length > 0) };
-  if (task === 1) Object.assign(items, { rotates: p.animated === true, orbitResponds: p.orbitResponds === true });
+  // orbitResponds is recorded in the raw probes but not scored: with an auto-rotating subject the frame-diff/silhouette check is not reliable (the same code scored differently across passes); the model judge decides the orbit item from source.
+  if (task === 1) Object.assign(items, { rotates: p.animated === true });
   if (task === 2) Object.assign(items, { animated: p.animated === true, instanced: (p.gl?.maxInstances ?? 0) >= 2000 || (p.gl?.draws ?? 0) >= 10000 });
   if (task === 3) Object.assign(items, { animated: p.animated === true, clipSwitchWorks: p.clipSwitchWorks === true });
   if (task === 4)
@@ -31,7 +32,7 @@ export function probeChecks(task, remote) {
   return { items, passed: values.filter(Boolean).length, total: values.length };
 }
 
-const rendered = (r) => Boolean(r?.build?.ok && !r?.readyTimeout && !r?.probes?.blank && !(r?.page?.pageErrors?.length > 0));
+const rendered = (r) => Boolean(r?.build?.ok && !r?.readyTimeout && r?.probes && r.probes.blank === false && !(r?.page?.pageErrors?.length > 0));
 
 export function computeRunMetrics({ run, remoteDraft, remoteFinal, sources = {}, judge = null }) {
   const events = run.events ?? [];
@@ -51,6 +52,7 @@ export function computeRunMetrics({ run, remoteDraft, remoteFinal, sources = {},
     valid: !run.invalid,
     invalidReason: run.invalidReason ?? null,
     endReason: run.endReason,
+    hitTurnCap: run.endReason === "max_turns",
     firstTryTypecheck: run.firstTryTypecheck ?? null,
     finalTypecheck: run.finalTypecheckPass ?? null,
     typechecked: e2g.typechecked,
@@ -60,6 +62,7 @@ export function computeRunMetrics({ run, remoteDraft, remoteFinal, sources = {},
     finalBuild: remoteFinal ? Boolean(remoteFinal.build?.ok) : null,
     finalRender: remoteFinal ? rendered(remoteFinal) : null,
     readyTimeout: remoteFinal?.readyTimeout === true,
+    captureFailed: Boolean(remoteFinal?.build?.ok && !remoteFinal?.readyTimeout && !remoteFinal?.probes),
     probeItems: probes.items,
     probePassFraction: remoteFinal ? probes.passed / probes.total : null,
     turns: run.usage?.turns ?? null,

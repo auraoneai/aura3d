@@ -1,0 +1,1727 @@
+[
+ {
+  "role": "user",
+  "content": "Start by reading TASK.md, then complete the assignment."
+ },
+ {
+  "role": "assistant",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PhAJuyKFKS8wrPJRBu7kUN",
+    "name": "read_file",
+    "input": {
+     "path": "TASK.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01F49TzsiueUhPJ1QGDKaqjj",
+    "name": "read_file",
+    "input": {
+     "path": "llms.txt"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Y2fvAE8MzjWDsbNL6L7mHQ",
+    "name": "read_file",
+    "input": {
+     "path": "AGENTS.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 1,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PhAJuyKFKS8wrPJRBu7kUN",
+    "content": "1\t# Task 5: custom shader water\n2\t\n3\tBuild a scene with Aura3D (`@aura3d/engine`, already installed in node_modules).\n4\t\n5\tRequirements:\n6\t1. A water surface made with a custom GLSL shader (not a stock material): vertex displacement by animated waves (the surface must be a subdivided grid so the waves are geometry, not just colour), a fresnel term (more sky reflection at grazing angles), a procedural noise-based ripple detail and a sun specular glint.\n7\t2. A sky: a gradient sky dome or background that the water reflects (a colour gradient is fine; no external textures).\n8\t3. The water animates over time (time uniform), the camera sits above the water looking toward the horizon.\n9\t4. Tone mapping and colour output must be correct (not washed out or black).\n10\t\n11\tThe rendering contract in the next section applies.\n12\t\n13\t## Rendering contract (all tasks)\n14\t\n15\t- Draw into the existing `<canvas id=\"app\">` (640x360 CSS pixels, device pixel ratio 1). Do not resize it or create another canvas.\n16\t- Render continuously with `requestAnimationFrame`. When the first frame has been drawn set `window.__EVAL_READY__ = true`.\n17\t- No network access: load assets only from `/assets/...` (served from `public/assets`). Do not import from CDNs.\n18\t- Code goes in `src/` (TypeScript, strict). The entry is `src/main.ts`. It must pass `typecheck` and build with `vite build`.\n19\t- When you are done, call `finish`.\n20\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01F49TzsiueUhPJ1QGDKaqjj",
+    "content": "1\t# Aura3D\n2\t\n3\t> Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through `@aura3d/engine` plus the `@aura3d/cli` toolchain, for browser 3D apps and interactive websites.\n4\t\n5\tAura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks.\n6\t\n7\t## Facts\n8\t\n9\t- Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits\n10\t- Website: https://aura3d.auraone.ai\n11\t- Current release: Aura3D 4.1.2 (per the repo manifest — the same source the build's version guard uses)\n12\t- Docs: https://aura3d.auraone.ai/docs/api.html\n13\t- Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/\n14\t- Sitemap: https://aura3d.auraone.ai/sitemap.xml\n15\t- Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)\n16\t- Last updated: 2026-10-23\n17\t\n18\t## Pages\n19\t\n20\t- [Home](https://aura3d.auraone.ai/): Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks.\n21\t\n22\t### Docs\n23\t\n24\t- [Aura3D Agent Quickstart for TypeScript 3D Apps](https://aura3d.auraone.ai/docs/agent-quickstart.html): Create an Aura3D browser 3D app "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Y2fvAE8MzjWDsbNL6L7mHQ",
+    "content": "1\t<!-- AURAONE-POLICY-POINTER:START -->\n2\t# AuraOne AI Coding Agent Policy (repository pointer)\n3\t\n4\tCanonical policy: `/Users/gurbakshchahal/.config/agent-policy/AI_AGENT_POLICY.md` (loaded globally by Codex, Claude Code, Qwen, Kiro, Gemini, Grok, OpenCode; other agents must read it before starting). Synced by `installclis.sh`; edit only `/Users/gurbakshchahal/.config/agent-policy/`.\n5\t\n6\tHard rules (always binding):\n7\t- **Remote-first, No Local Docker, Search Guard, Cloud Browser & On-Demand MCPs:** Never start/install/repair/use local Docker (`/Users/gurbakshchahal/.config/agent-policy/reference/remote-execution.md`). Run Playwright E2E/visual-regression suites, heavy builds/scans, DBs, and large models remotely — never via local Playwright on the Mac. Never run unbounded `find`/`du`/`grep`/`rg` from `~` or `/` (scope to repo/dir; exclude `.codex/sessions`, `Library/Caches`, `node_modules`, `.git`). When a model lacks a built-in cloud browser, use cloud **`prism_browser`** (`https://prism.auraone.ai`, Cloudflare Browser Rendering + Workers AI Clef); local `playwright` MCP is disabled so agents never pop open or fall back to local Chrome (attaching to local headless/debug Chrome on `127.0.0.1:9222` is permitted **only** when `rea` MCP requires a loopback CDP attachment or when inspecting a local dev server that cloud `prism_browser` cannot reach). Local MCPs (`rea`, `prism_browser`, `aws-auraone`, `azure-auraone-gurbaksh`, `azure-foundation`, `azure-auraone-gchahal`, `gcp-g"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 2,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "That AGENTS.md reference seems mostly unrelated here, so I'll move on and check the docs/agents folder and node_modules type definitions instead.\n\n",
+    "signature": "CAQSggUKEggTEAEYAjgBQgh0aGlua2luZxIM4Ma4r+unfoZbn+tVGgxnXFSvFQHmITSBlSEiML97bRzadU/97usUdfox5xohuf905G8cOMifH966NpqFelzavIQsR30lHtFvsl6AvSqdBFDh4vNkF/RgGstPtDDcJKQuoav/2zLKKNVucVV5fkI5kpLv9PkqO1eXp5tgaQCGEWziH1lZvoR8Lomuow0TLLdQRIVrM/0l8v2XQjlRaxS1NBL8tjwAhS4Q9LZg2Maun2As0XrLl/1z0zisiIvFcBO/P5+CQ0HxmYhkHtGzMeBpoIN5jYxsmmzwjO9HSqurPw7Y95in9pEO8dbiSwHVo6rVn3iAmccIe7bz2wsTX5bg3FYv5Wh6FEson3mDNb/gHF/mhgmZtycw9ZuQYK0ckYgpdK2mBOOgHYWYUjoLPXkN6bbHOEQvJPOMyUE7U9tRsUjYHBo+RxGLqzn94LXL1b5FTA0saMvgSIVALwqFAx38H4Y+0IqTvW+7QmePXBSqE2bbhg3KNvPFV34z8e8jC76/tLU+LY/yV8uyazR/tBAf3BIbMMCT+aP+EoD33DoGex17/2iS+Hx5/+4b3YzkRK5KhcGP+Zn2i+4iz3Tc6kqnwGR4m7uBQV0HJKZMNz7iUvfwKlx6B++6iznFUE/OiIQIFdFim1UqYqOWOcWX+LUryFaq22HMVPLIrBx0J06H+adlu8yCWLYs1kyD3+W9fBWeOQAqBOyLzdVQ4JIzNU/wlX85iE4Env8wLVDMzrsN2tr+jWPuZF4JHil2tM0ZlXJdKo5DytSDSYDjkIaEj3n0/bZX865HkWNNGM4auUmaia+vwnwqliGcDFnLRx8YAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018gtH9sKvG8W5JKuHBsAW4r",
+    "name": "list_dir",
+    "input": {
+     "path": "docs/agents"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Qt6F1BeRTw8zn3W4n7mYdQ",
+    "name": "list_dir",
+    "input": {
+     "path": "node_modules/@aura3d"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01HXCdAaShkXLZ8FEHm1k9Cd",
+    "name": "list_dir",
+    "input": {
+     "path": ".agents/skills"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 2,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018gtH9sKvG8W5JKuHBsAW4r",
+    "content": "README.md\nagent-context.md\nagent-quickstart.md\nanti-hallucination-rules.md\napi-surface.md\nart-direction.md\nasset-selection.md\nasset-workflow.md\nbenchmark-recipes.md\nbuild-playbook.md\ncinematic-scene-quality.md\nclaims-and-boundaries.md\ncodebase-map.md\ndeployment.md\ngame-example-standards.md\ngame-showcase-build.md\nno-hackjob-rules.md\nprompt-to-3d-workflow.md\nrendering-proof-required.md\nskills-examples/\ntemplates.md\ntroubleshooting.md\nverification.md"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Qt6F1BeRTw8zn3W4n7mYdQ",
+    "content": "animation/\nassets/\ncore/\nengine/\nmath/\nrendering/\nscene/"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01HXCdAaShkXLZ8FEHm1k9Cd",
+    "content": "AUTHORING.md\nagent-files/\naura3d-animation-studio/\naura3d-art-direction/\naura3d-assets/\naura3d-browser-game/\naura3d-character-animation/\naura3d-core/\naura3d-evidence-review/\naura3d-game-art/\naura3d-materials-environments/\naura3d-performance/\naura3d-retexture/\naura3d-scene-authoring/\naura3d-threejs-migration/\nllms.txt\nmanifest.json\nmeshy-cli/"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012QxbKfpQLW9EvK34ctSWhH",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/api-surface.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01KoPKEUp7za4E7p8Fcu3ZuH",
+    "name": "search",
+    "input": {
+     "pattern": "(?i)shader|glsl|ShaderMaterial",
+     "path": "docs/agents"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 3,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012QxbKfpQLW9EvK34ctSWhH",
+    "content": "1\t# API Surface\n2\t\n3\tRead `llms.txt` and `docs/agents/claims-and-boundaries.md` first. Importable\n4\tnames are not the same as public proof of every rendering or gameplay claim.\n5\tCapability wording must identify whether it is root safe API,\n6\tproduction-runtime, rendering internals, CLI asset pipeline, template-only\n7\tscaffold, prototype, or roadmap.\n8\t\n9\t## Public Root Package\n10\t\n11\tAgent-authored browser apps should import public APIs from root\n12\t`@aura3d/engine`:\n13\t\n14\t```ts\n15\timport {\n16\t  createAuraApp,\n17\t  collectAuraSceneEvidence,\n18\t  definePromptPlan,\n19\t  compilePromptPlan,\n20\t  promptPlanToScene,\n21\t  defineAuraAssets,\n22\t  scene,\n23\t  model,\n24\t  unsafeModelUrl,\n25\t  primitives,\n26\t  group,\n27\t  groups,\n28\t  shadows,\n29\t  prefabs,\n30\t  sceneKits,\n31\t  camera,\n32\t  lights,\n33\t  material,\n34\t  effects,\n35\t  timeline,\n36\t  interactions,\n37\t  physics,\n38\t  labels,\n39\t  environments,\n40\t  games,\n41\t  charts,\n42\t  character,\n43\t  city,\n44\t  product,\n45\t  solar,\n46\t  particles,\n47\t  ui,\n48\t  createAuraRouteHealthSnapshot,\n49\t  captureAuraAppScreenshot\n50\t} from \"@aura3d/engine\";\n51\t```\n52\t\n53\tReact apps can use `@aura3d/react` for component wrappers around the same root\n54\tsafe API. Keep typed assets in props and keep public capability claims tied to\n55\tbrowser evidence for the mounted route.\n56\t\n57\t`unsafeModelUrl` is listed because it may exist for explicit diagnostics or\n58\ttemporary local work. It is not allowed in public safe examples, benchmark\n59\troutes, show"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01KoPKEUp7za4E7p8Fcu3ZuH",
+    "content": "docs/agents/deployment.md:30:  GPU, limits, draw calls, shader failures and recent errors, `?post=0`,\ndocs/agents/verification.md:71:- Software GL (SwiftShader) proves correctness and draw-call counts, not real-GPU\ndocs/agents/README.md:96:`model-loader.md` (`defineModelAssets`), `glsl-chunks.md`, `scatter-merge.md`,\ndocs/agents/README.md:103:custom-shader colour encoding).\ndocs/agents/README.md:124:| Materials, textures, HDRI, sky, weather, water, `material.custom` shaders and the `a3d_*` chunks | `aura3d-materials-environments` |\ndocs/agents/claims-and-boundaries.md:69:`PortableShaderMaterial` is a supported `@aura3d/rendering` package extension\ndocs/agents/claims-and-boundaries.md:70:API for paired GLSL/WGSL custom materials. Its real WebGL2/WebGPU evidence does\ndocs/agents/claims-and-boundaries.md:71:not make custom shader authoring a root `createAuraApp` claim and does not prove\ndocs/agents/claims-and-boundaries.md:254:- \"Works on GPUs\" needs a real-device run. Software GL (SwiftShader) evidence is\ndocs/agents/troubleshooting.md:103:  shader failures, last errors), try `?post=0`, `?shadow=0`, `?env=0`, `?sky=0`,\ndocs/agents/troubleshooting.md:104:  `?quality=low` one at a time, and check custom shaders for NaN sources (`pow`\ndocs/agents/build-playbook.md:178:- **Custom shaders:** `#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`,\ndocs/agents/build-playbook.md:179:  `<a3d_toon>`, `<colorspace_decode>` (`glsl-chunks.md`).\ndocs/agents/skills-examples/aura3d-thr"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01U7V9EJWKer6nniPpqU57w5",
+    "name": "search",
+    "input": {
+     "path": ".agents/skills/aura3d-materials-environments",
+     "pattern": "."
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01P6KwN8GX3Q1hPmJuqrEd6k",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/README.md",
+     "offset": 80,
+     "limit": 60
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 4,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01U7V9EJWKer6nniPpqU57w5",
+    "content": ".agents/skills/aura3d-materials-environments/SKILL.md:1:---\n.agents/skills/aura3d-materials-environments/SKILL.md:2:name: aura3d-materials-environments\n.agents/skills/aura3d-materials-environments/SKILL.md:3:[Omitted long matching line]\n.agents/skills/aura3d-materials-environments/SKILL.md:4:---\n.agents/skills/aura3d-materials-environments/SKILL.md:6:# Aura3D materials and environments\n.agents/skills/aura3d-materials-environments/SKILL.md:8:Order is fixed: looks/biomes/env presets first, then built-ins, then a\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:1:# Custom shaders: colour contract, chunks and NaN safety (4.1)\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:3:`material.custom({ glsl: { vertex, fragment } })` is the escape hatch for effects the\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:4:built-in materials do not cover (sky, water, energy, toon ramps). It has a colour\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:5:contract and three failure modes that cost real time on real GPUs. Chunk names and\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:6:signatures: `docs/api/glsl-chunks.md`.\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:8:## Colour contract\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01P6KwN8GX3Q1hPmJuqrEd6k",
+    "content": "80\t\n81\tBenchmark rule: if a prompt matches `docs/agents/benchmark-recipes.md`, copy\n82\tthe smallest matching recipe, run `npm run build`, and stop. Do not run a dev\n83\tserver, Playwright, browser screenshots, or manual visual verification inside\n84\tthe benchmark agent process.\n85\t\n86\tRelease-facing examples must also satisfy the claim-boundary checklist: no raw\n87\tmodel strings, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports,\n88\t`GLTFLoader`, CSS particle stand-ins, primitive-only primary subjects, or\n89\trenderer/game/WebGPU/animation claims that exceed root API evidence.\n90\t\n91\t## What 4.1 adds for agents\n92\t\n93\tKits that replace code every game used to copy (API pages in `docs/api/`):\n94\t`game-kit.md` (`@aura3d/engine/game`), `qa-kit.md` (deterministic replay hooks),\n95\t`safety-net.md` (`?diag=1` and black-frame self-heal), `audio-synth.md`,\n96\t`model-loader.md` (`defineModelAssets`), `glsl-chunks.md`, `scatter-merge.md`,\n97\t`ball-flight.md` and `racket-athlete-rig.md` (`game.racketSports()`), and\n98\t`cli-asset-tools.md` (`assets optimize`, `merge-clips`, isolated `import-meshy`, the\n99\tMeshy credit ledger). Start browser games from them, and read\n100\t`packages/aura3d-cli/skills/aura3d-core/references/pitfalls.md` before shipping:\n101\tit lists the bugs that passed CI and failed on real GPUs (NaN from `pow`, empty\n102\tinstance arrays, unhashed model URLs, instanced textures, shadow depth range,\n103\tcustom-shader colour encoding).\n104\t\n105\t## Agent Skills\n106\t\n107\t"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PPNs6tsN1VnaQiPXZi79rj",
+    "name": "read_file",
+    "input": {
+     "path": ".agents/skills/aura3d-materials-environments/SKILL.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01HrwjKDgnRF9kTnPjMaX16U",
+    "name": "read_file",
+    "input": {
+     "path": ".agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019jNyUsLLLkmduuN4wLkDtw",
+    "name": "list_dir",
+    "input": {
+     "path": ".agents/skills/aura3d-materials-environments/references"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 5,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PPNs6tsN1VnaQiPXZi79rj",
+    "content": "1\t---\n2\tname: aura3d-materials-environments\n3\tdescription: Chooses and verifies surface looks and lighting environments: built-in `material.*`, `environments.*`, `sky.dayNight`, `weather`, and `water` first, then licensed local textures or HDRIs admitted with `assets add --type texture`, with seam, PBR-channel, and visual-QA checks. Use when a route needs a material, texture set, PBR maps, HDRI or IBL, skybox, night or daytime sky, rain, snow, water, KTX2 textures, or `@aura3d/materials` / `@aura3d/environments` validation.\n4\t---\n5\t\n6\t# Aura3D materials and environments\n7\t\n8\tOrder is fixed: looks/biomes/env presets first, then built-ins, then a\n9\tlicensed local file, then a generated plate as a candidate. There is no\n10\tcatalog search for textures or HDRIs today (the asset index has no texture or\n11\tHDRI adapter), so `assets search` will not find them. Shared rules (claim\n12\tlabels, typed assets, catalog-first for models, benchmark mode) are in\n13\t[../aura3d-core/references/boundaries.md](../aura3d-core/references/boundaries.md).\n14\t\n15\t## Look target\n16\t\n17\tMost scenes need no per-file HDRI at all: `looks.preset(<genre>)` already\n18\tsupplies environment light, sky/background, fog and grade — pick it from the\n19\trecipe row in `../aura3d-art-direction/references/look-recipes.md` and only\n20\tdescend into manual environments when the look cannot express the mood.\n21\t\n22\t## Establish the contract\n23\t\n24\t1. Run `npx @aura3d/cli@latest --help` and read the `assets add` line and its"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01HrwjKDgnRF9kTnPjMaX16U",
+    "content": "1\t# Custom shaders: colour contract, chunks and NaN safety (4.1)\n2\t\n3\t`material.custom({ glsl: { vertex, fragment } })` is the escape hatch for effects the\n4\tbuilt-in materials do not cover (sky, water, energy, toon ramps). It has a colour\n5\tcontract and three failure modes that cost real time on real GPUs. Chunk names and\n6\tsignatures: `docs/api/glsl-chunks.md`.\n7\t\n8\t## Colour contract\n9\t\n10\t- A custom shader writes **linear light**. The output stage always sRGB-encodes it,\n11\t  and the default ACES operator tones it down further, so a hex colour written\n12\t  straight to `outColor` comes out greyer than authored (a day sky read grey for\n13\t  exactly this reason). Post effects are not the cause: bloom, grade, vignette and\n14\t  fxaa leave a custom shader's colour unchanged.\n15\t- To show a hex colour as authored: `#include <colorspace_decode>`, wrap the colour\n16\t  in `a3dSrgbToLinear`, and set `output: { toneMapping: \"none\" }` on the app.\n17\t  `<colorspace_encode>` provides `a3dLinearToSrgb` for the other direction.\n18\t- Any other tone-mapping operator still tone-maps custom colours; tune the exposure\n19\t  instead of compensating in the shader.\n20\t\n21\t## Chunks\n22\t\n23\t`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`\n24\tand `<a3d_toon>` are tested GLSL ES 3.00 helpers prefixed `a3d`. Use them instead of\n25\tpasting hashes, fbm, sky gradients or fog into every shader. Precedence when names\n26\tcollide: built-in chunks, then these, then `registerSha"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019jNyUsLLLkmduuN4wLkDtw",
+    "content": "custom-shader-chunks.md"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 6,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should check whether docs/api/glsl-chunks.md exists and look into the material.custom types for reference.\n\n",
+    "signature": "CAQSywUKEggTEAEYAjgBQgh0aGlua2luZxIMTeRG87qO+x5y8ck9GgxSlKdPnxFIPoCBmIMiMFiYzIOiEi+1SEjmhm5mfR4XFM6RMt4Ggbhdj2ILSsckfywA6CBT5bLUNYROglvAuCrmBAUtRxyMEqUC+7hlQogU0snzS/P+4CxewQ/cyf6tSV3/DClkdsscAOaxGv6eIb8RHdRC0KzZzQv4TFS1J7Nz2ld+5IFRUUI2j28xvng39S2ybMQ9fb3bl2W59NDWYaO/Th8bhFEBsRoWNwinTaVITPSFRTqIPmLxczCrF9lXgX32yDkQ+Ti/4IJT7gpBgbz+ba9ZYM4T9OfDfOiDe0CFKei9o5w0EgGJoNpSMcWpRKQvjg1gdCzJPlfp7A9Xnq37cvCQz9Z+eusGFqp9bKFfk/yqrLdUYkIENKsz3APQtyZc8UOJaNeoNR2SJCoOHUvmIRlQdRoVfxp444X+6Q68de9QaJttxhd3rKzEW6KA0IkKYe0TgVebtGeUsxwT18mjnozyW8KosUnUJdcV9udcDLjFIdDWr/DQPsrl4My87UK3qkCtXzo07hj3sGeO7aUdE3WATK/lMkg2NUmx1PWx1nWCh83L/MqCzLXXPAlGu/uypxppFWOK1cRTq6NGJ5gIaAxMZF639NJMStx8CkEumc64RUc5PJtmap4BIQW5uabL2Xy0pi3VwiLYkluIGUbpkFx/+jRmSqYeaudj7cqtPf1XjJaRz53a0JZsRi5ogPUkPKD8aX8aDN73Ze9l78FkJADGHGcFZlpzcwoDEZUSxyQkZCL9kVFhJAYpTKnjwZa9VvsKxIgOHdMDrfc3Z9cZtfxH79ZxmYM5YNlpp2Oao/fVaM/myPWOJp4nOwdW5bGX0UwqkcEfJK7TOeL4jLKamBhjtRStJWWAkovAAUfjeNbXxHYFtY2GPuR8RwgqaKos4uqfKBkpGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012sd7cdiz6WfYEZwb5qzivu",
+    "name": "search",
+    "input": {
+     "pattern": "custom\\(|CustomMaterial|glsl\\??:",
+     "path": "node_modules/@aura3d"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Bgogk1KKB8gT5S6YtjwD6x",
+    "name": "list_dir",
+    "input": {
+     "path": "docs"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 6,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012sd7cdiz6WfYEZwb5qzivu",
+    "content": "node_modules/@aura3d/rendering/dist/ShaderLibraryCore.js:868:/* `material.custom(spec)` compiles to `PortableShaderMaterial` inside the   */\nnode_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js:868:/* `material.custom(spec)` compiles to `PortableShaderMaterial` inside the   */\nnode_modules/@aura3d/rendering/dist/post/ScreenFeelPass.js:119:    fragment: { glsl: SCREEN_FEEL_GLSL },\nnode_modules/@aura3d/rendering/dist/post/v2Stages.d.ts:62:export declare function customPassFragmentSource(glsl: string): string;\nnode_modules/@aura3d/rendering/dist/probes/ProbeBoxProjection.js:47:    glsl: PROBE_BOX_CHUNK_GLSL\nnode_modules/@aura3d/engine/dist/engine/public/renderer.js:13:// L1): `material.custom(spec)` compiles to `PortableShaderMaterial`; the public\nnode_modules/@aura3d/rendering/dist/post/chunks/indirectFraction.glsl.js:6:    glsl: `// f_ind = luminance(indirect) / max(luminance(radiance), 1e-4)  (§6.3)\nnode_modules/@aura3d/rendering/dist/post/chunks/indirectFraction.glsl.js:42:    glsl: `#if !defined(ALPHA_BLEND) && !defined(ALPHA_TO_COVERAGE)\nnode_modules/@aura3d/rendering/dist/post/chunks/velocity.glsl.js:6:    glsl: `// AURA_VELOCITY — C-14 velocity MRT (PRD-03 §8.6)\nnode_modules/@aura3d/rendering/dist/post/chunks/velocity.glsl.js:23:    glsl: `vec4 a3dWorldPos = u_model * vec4(a_position, 1.0);\nnode_modules/@aura3d/rendering/dist/post/chunks/velocity.glsl.js:32:    glsl: `// AURA_VELOCITY outputs (VELOCITY_MRT contract): velocity location 1\nnode_modules/@aura3d/re"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Bgogk1KKB8gT5S6YtjwD6x",
+    "content": "agents/"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PHo96AA6au4dLbW4cPVLU4",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/rendering/ShaderLibraryCore.js",
+     "offset": 850,
+     "limit": 200
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0133xHyS7zyehhEm1KnQEnrY",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine",
+     "pattern": "custom"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 7,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PHo96AA6au4dLbW4cPVLU4",
+    "content": "850\t    });\n851\t}\n852\texport function createLeanCoreShaderLibrary() {\n853\t    const library = new ShaderLibrary();\n854\t    validateShaderChunks();\n855\t    for (const chunk of SHADER_CHUNKS) {\n856\t        library.registerChunk(chunk.name, chunk.source);\n857\t    }\n858\t    registerLeanUnlitShader(library);\n859\t    registerLeanPbrShader(library);\n860\t    registerLeanDepthShader(library);\n861\t    registerLeanEnvironmentBackgroundShader(library);\n862\t    return library;\n863\t}\n864\texport const DEFAULT_TEXTURED_PBR_EXTENSION_ATLAS_VARIANT = \"extension-scalar-atlas\";\n865\t/* ------------------------------------------------------------------------ */\n866\t/* threejs-parity SH-02/SH-10 — process-wide shader chunk + source registry   */\n867\t/*                                                                          */\n868\t/* `material.custom(spec)` compiles to `PortableShaderMaterial` inside the   */\n869\t/* engine adapter (`agent-api/compiler/customMaterial.ts`); the material     */\n870\t/* registers its pair here so the renderer-owned ShaderLibrary (which the    */\n871\t/* adapter never sees) resolves the same `aura3d/portable/…` key.            */\n872\t/*                                                                          */\n873\t/* `registerShaderChunk(name, glsl, wgsl?)` is the public, mutable chunk     */\n874\t/* surface (SH-10): registered GLSL lands in every library's `#include`      */\n875\t/* map (below instance chunks and per-compile `includes`/patch overrides),   */\n876\t/* regist"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0133xHyS7zyehhEm1KnQEnrY",
+    "content": "node_modules/@aura3d/engine/dist/engine/contracts/post.d.ts:33: * threejs-parity SH-03 (§5.0, task B-01): named order slots for custom passes.\nnode_modules/@aura3d/engine/dist/engine/contracts/post.d.ts:55:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/runtime/ResourceManager.js:33:            throw new Error(`Resource \"${descriptor.id}\" requires either a url or custom load() function.`);\nnode_modules/@aura3d/engine/dist/engine/production-runtime/effects/ProductionEffectSystem.d.ts:146:     * (§6.9). Syncs authored decal nodes (plane quads + projected customs) into\nnode_modules/@aura3d/engine/dist/engine/public/renderer.js:13:// L1): `material.custom(spec)` compiles to `PortableShaderMaterial`; the public\nnode_modules/@aura3d/engine/dist/engine/production-runtime/effects/ProductionEffectSystem.js:108: * transformed quad (`decalQuadGeometry`); `primitive: \"custom\"` decals keep\nnode_modules/@aura3d/engine/dist/engine/production-runtime/effects/ProductionEffectSystem.js:463:     * (§6.9). Syncs authored decal nodes (plane quads + projected customs) into\nnode_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.js:40:            throw new Error(\"Aura3D custom point geometry requires at least one position.\");\nnode_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.js:44:            throw new Error(`Aura3D custom ${lines ? \"line\" : \"triangle\"} geometry requires at least ${lines ? \"two\" : \"three\"} positions.`);\nnode_modules/@aura3d/engine/dist/engin"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 8,
+  "content": [
+   {
+    "type": "text",
+    "text": "Find the compiler for custom material."
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PbmNFXLb3vbE4wBEMVe8G9",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_015vCeTmZvKfubSY1tw5wnNL",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist",
+     "pattern": "interface (AuraCustomMaterial|CustomMaterial)\\w*"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 8,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PbmNFXLb3vbE4wBEMVe8G9",
+    "content": "1\t/**\n2\t * threejs-parity SH-02/SH-09/SH-10 (L1) — `material.custom(spec)` →\n3\t * `PortableShaderMaterial` compiler adapter.\n4\t *\n5\t * GLSL is the authoritative path (`createAuraApp` mounts WebGL2): `glsl.fragment`\n6\t * is required; `wgsl` is optional and only feeds the WebGPU backend. A WGSL-only\n7\t * spec fails validation rather than silently producing a material that cannot\n8\t * draw on the live backend.\n9\t *\n10\t * three-style surface: the adapter prepends a generated prelude so authored\n11\t * shaders can use `uTime`, `uResolution`, `modelMatrix`, `viewMatrix`,\n12\t * `projectionMatrix`, `modelViewMatrix`, `modelViewProjectionMatrix`,\n13\t * `normalMatrix` (mat3), `cameraPosition`, and (vertex only) `position`,\n14\t * `normal`, `uv`. The prelude declares the matching `u_*` uniforms and emits\n15\t * `#define` aliases. Authored uniform `foo` lowers to `uniform <type> u_foo;\n16\t * #define foo …`; an already `u_`-prefixed name is used verbatim.\n17\t *\n18\t * `patch` (SH-09) replaces named `#include` chunks at bake time and salts the\n19\t * cache key; `registerShaderChunk` chunks (SH-10) resolve through the same\n20\t * include map (built-ins < global chunks < patch). The baked pair is published\n21\t * via `registerGlobalShaderSource` so the renderer-owned ShaderLibrary\n22\t * resolves it at compile time.\n23\t *\n24\t * Known honest limits (documented, not silently applied):\n25\t *   - `i32`/`bool` ride the float uniform channel; GLSL aliases emit int()/bool() casts.\n26\t *   - `mat3` is padde"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_015vCeTmZvKfubSY1tw5wnNL",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:2288:export interface AuraCustomMaterialSpec {\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0172YQKZVZ7anF6Lq3QpdXV7",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "offset": 2230,
+     "limit": 150
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01U8cjfFzbpq8HnBDrU8DByb",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "pattern": "AuraCustomUniformType|toneMapping|interface AuraAppOptions|AuraOutputOptions|plane\\(|geometry:"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 9,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0172YQKZVZ7anF6Lq3QpdXV7",
+    "content": "2230\t/** ST-03 (L4): create opts per `texture.*` factory; `source` is the live canvas/video/image. */\n2231\texport interface AuraTextureDataOptions {\n2232\t    readonly width: number;\n2233\t    readonly height: number;\n2234\t    readonly data: Uint8Array | Uint8ClampedArray | Float32Array | Uint16Array | Uint32Array;\n2235\t    readonly format?: \"rgba8\" | \"rgb8\" | \"r8\" | \"rgba16f\" | \"rgba32f\" | \"depth24\";\n2236\t    readonly colorSpace?: AuraTextureColorSpace;\n2237\t}\n2238\texport interface AuraTextureCanvasOptions {\n2239\t    readonly canvas: unknown;\n2240\t    readonly colorSpace?: AuraTextureColorSpace;\n2241\t    readonly flipY?: boolean;\n2242\t}\n2243\texport interface AuraTextureVideoOptions {\n2244\t    readonly video: unknown;\n2245\t    readonly colorSpace?: AuraTextureColorSpace;\n2246\t}\n2247\texport interface AuraTextureCompressedOptions {\n2248\t    readonly mipmaps: readonly {\n2249\t        readonly data: Uint8Array;\n2250\t        readonly width: number;\n2251\t        readonly height: number;\n2252\t    }[];\n2253\t    readonly format: string;\n2254\t}\n2255\texport interface AuraTextureDepthOptions {\n2256\t    readonly width: number;\n2257\t    readonly height: number;\n2258\t}\n2259\texport interface AuraTextureCubeOptions {\n2260\t    readonly faces: readonly unknown[];\n2261\t    readonly colorSpace?: AuraTextureColorSpace;\n2262\t}\n2263\texport interface AuraTextureDataArrayOptions extends Omit<AuraTextureDataOptions, \"width\" | \"height\" | \"data\"> {\n2264\t    readonly width: number;\n2265\t    readonly height: "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01U8cjfFzbpq8HnBDrU8DByb",
+    "content": "875:    readonly toneMapping: \"aces-filmic\";\n958:    readonly output?: import(\"../../contracts/output.js\").AuraOutputOptions;\n990:    readonly toneMapping: \"aces-filmic\";\n2274:export type AuraCustomUniformType = \"f32\" | \"i32\" | \"bool\" | \"vec2\" | \"vec3\" | \"vec4\" | \"color3\" | \"mat3\" | \"mat4\" | \"texture2d\";\n2276:export type AuraCustomUniformSpec = AuraCustomUniformType | {\n2277:    readonly type: AuraCustomUniformType;\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 10,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to figure out how to set up a subdivided plane geometry and handle time-based uniform updates, so I should check the docs for GLSL chunks and geometry node setups.\n\n",
+    "signature": "CAQSswcKEggTEAEYAjgBQgh0aGlua2luZxIM4pVxvGUHSTK8bzXsGgyevpytY/Bd+T7XuqoiMDdUbxQx9wIJScyUjqq5yEhLgCJqJMnaysHy2xCiSJC0VoW160GCaJzvmX4O1aIQQSrOBlVkYXXxS1JIx1k5Gn0Idx5mqqhMh6ZIBe8Ocx9tjA2lYt6SqgbQDDUksY7bT3wc0081vwvTDuZVsjt7O+Ji0Iy58AV0YtqXAdO+SVL/2MIxpOavMyzuTfSNEYFRg6AaX4hHtCWbnjYM52PQoijP5jggVUNnHwXHa7e/sI7VnTa7rfSQGLWt7m+5wYv2uZGg7ro3/YZukLzDYLhVNKFEYlcSQS0ep266Avug5TeawDSgKMpwOIvWnZBK+sq2wbqPyJ9ezTcgN5RJxsJUa2NPRkx5NsAYSvjwB6qKodj24q55FhSiLvpXauy8YA3yEvAdPEME6QyfRGgwYe7ttL5ByEb1McgCX6hq0CMlf4B+j9N4VCDipuMj7pj9ewu/iMCT84HJkX0y9VhcHMy3dogppZprGVe2rYPQumMR4EcGTUIfBgqKe/H8wHFMva+wn/l6idGqKyIcjOwakRAWbOWu1T9RpYnujkJICcxppV2xImLYxCwpwU31DxmVNkP6HwiJ/FLf4Gi3DoORBvfoY+AzeIcBb4L8hqel21f+R6SpRj7ov+Dyfw4McJkmN7DmKioKntaqnww8wtacfENCqUK78I5uxmjAfrIT+NQaOpRLHI3dZWEX3iUOiX3lI/xEThfGeq+yzg7R08kp1W/sdlYa6UQX5h5zZjV6EnoVVFAnd9CCEdRPzefKw8OWZv8dmlCilfGsqNeyakPl1OTvJAdqENn8fR3PPyskfbROUfYwf+9Jgq6Lolsy57IZ5NBDsVFZkxqeIhYQDfeYt7Z9HFArBGzrr00c2F300nGWLYMAWCiGUM7dUySczLHukmJWNF8IgneTYBqmLvL9e+vXJKfFtB+3IoB5YIkAE0kw0hBX9p3gonB6VYGQxAwR07FO8/SXn7s7cQxofYN28jf40fQJGhu6H5EOv+LggmZ8C9bCCMYdMjvnr7fEUuscKwgPkiWomzMzbQ5x2nOYdcRhV5iNlH4SVBT2JYn7zTVOLz6eNe8iyNEcvZFjPP1U67HDcYOrUQgcnf2Kd25j6Mv2+XfkEvK6KshYFPHhvX1ov2ulBsY4AcPqSCDZSZx+1lamsbSaB0/TM/WxfHOcv8GJ+ez6WgMtXlvvmuSKVV9xTs6X3hgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JgNxbJub8Tw7qTxocsRLKZ",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/geometry.js"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_015t5cdXPyQf7JHyAsGePKDe",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/contracts/output.d.ts",
+     "pattern": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 10,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JgNxbJub8Tw7qTxocsRLKZ",
+    "content": "1\t// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.\n2\timport { auraGeometryToNonIndexed, defineAuraCustomGeometry, defineAuraDynamicGeometry, mergeAuraGeometries, normalizeGeometryAttributes } from \"../RootGeometry.js\";\n3\timport { convexParityMesh, edgesParityMesh, wireframeParityMesh } from \"../../../rendering/index.js\";\n4\timport { primitive } from \"./primitives.js\";\n5\timport { lazyNamespace } from \"../lazyNamespace.js\";\n6\texport const geometry = lazyNamespace(() => ({\n7\t    define: defineAuraCustomGeometry,\n8\t    custom: (spec, options = {}) => primitive(\"custom\", { ...options, geometry: defineAuraCustomGeometry(spec) }),\n9\t    /**\n10\t     * threejs-parity SG-05 (L2-03): typed-array dynamic geometry — `geometry.dynamic`\n11\t     * validates + tags the spec so `handle.setGeometry(spec)`/`updateAttribute`\n12\t     * rewrite the live buffers in place (no realloc while vertex count is stable).\n13\t     */\n14\t    dynamic: defineAuraDynamicGeometry,\n15\t    /**\n16\t     * threejs-parity SG-04 (L2-06): three's `EdgesGeometry(geometry, thresholdAngle)` —\n17\t     * emits a `\"lines\"` topology spec holding one segment per sharp edge.\n18\t     */\n19\t    edges: (source, thresholdAngle = 1) => {\n20\t        const normalized = normalizeGeometryAttributes(source);\n21\t        const mesh = edgesParityMesh({ positions: normalized.positions, indices: normalized.indices ? Array.from(normalized.indices) : undefined }, thresholdAngle);\n22\t   "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_015t5cdXPyQf7JHyAsGePKDe",
+    "content": "1:/**\n2: * C-05 — output surface (engine side, CONTRACTS.md). Provider: PRD 01. Flag: A3D_QR_CORE.\n3: */\n4:import type { AuraToneMappingOperatorLike } from \"../../rendering/contracts/index.js\";\n5:import type { AuraAutoExposureOptions, AuraPostPresetId } from \"./post.js\";\n6:export type AuraToneMappingOperator = AuraToneMappingOperatorLike;\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 11,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01HE6gNHbLnVC6dQdzLb67Rx",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/contracts/output.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LQoWSniPPuM3Ct4x9TsEki",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "pattern": "AuraCustomGeometrySpec|AuraCreateAppOptions|interface AuraAppOptions|readonly background|export interface AuraSceneOptions|readonly camera\\??:"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 11,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01HE6gNHbLnVC6dQdzLb67Rx",
+    "content": "1\t/**\n2\t * C-05 — output surface (engine side, CONTRACTS.md). Provider: PRD 01. Flag: A3D_QR_CORE.\n3\t */\n4\timport type { AuraToneMappingOperatorLike } from \"../../rendering/contracts/index.js\";\n5\timport type { AuraAutoExposureOptions, AuraPostPresetId } from \"./post.js\";\n6\texport type AuraToneMappingOperator = AuraToneMappingOperatorLike;\n7\texport interface AuraOutputOptions {\n8\t    readonly toneMapping?: AuraToneMappingOperator;\n9\t    readonly exposure?: number;\n10\t    readonly dither?: boolean;\n11\t    readonly backgroundPassthrough?: boolean;\n12\t    readonly autoExposure?: false | AuraAutoExposureOptions;\n13\t    readonly preset?: AuraPostPresetId;\n14\t}\n15\texport interface AuraOutputOverlay {\n16\t    readonly flash?: readonly [number, number, number, number];\n17\t    readonly vignette?: readonly [number, number, number, number];\n18\t    readonly shape?: readonly [number, number];\n19\t    readonly fade?: readonly [number, number, number, number];\n20\t}\n21\texport interface AuraOutputSurface {\n22\t    setOutput(output: Partial<AuraOutputOptions>): void;\n23\t    setOutputOverlay(overlay: AuraOutputOverlay): {\n24\t        readonly applied: boolean;\n25\t        readonly reason?: \"no-post-pass\" | \"disposed\" | \"dom-fallback\";\n26\t    };\n27\t    capture(options?: {\n28\t        readonly type?: \"image-bitmap\" | \"png-blob\";\n29\t    }): Promise<ImageBitmap | Blob>;\n30\t    onRendererError(listener: (e: {\n31\t        readonly code: string;\n32\t        readonly message: string;\n33\t        readonly cause?:"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LQoWSniPPuM3Ct4x9TsEki",
+    "content": "1:import type { AuraCustomGeometrySpec, AuraText3DGeometry } from \"../RootGeometry.js\";\n360:    readonly geometry?: AuraCustomGeometrySpec;\n434:    readonly geometry?: AuraCustomGeometrySpec;\n648:    readonly geometry?: AuraCustomGeometrySpec;\n835:    readonly background?: AuraColor;\n1421:    readonly background: AuraColor;\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 12,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I should check the AuraCustomGeometrySpec and createAuraApp options, plus the toneMapping operator type, and see if there are existing examples in the docs or skills-examples for custom shaders or water effects to reference.\n\n",
+    "signature": "CAQSkgcKEggTEAEYAjgBQgh0aGlua2luZxIMj3rvHYe7FfrlZrHwGgw/BV23io+Rkm3XzBkiMM15RjHHML3c/dtZQ6tdDmcOsuoZMuGvVJssZOru7pTzRgyHN0v0w1KpgoVdZV5eJSqtBl2UoJIdOcLLYvHOwVoPFb+YL6USLBp+gkn4t0YTB3+PItkSOLB7DWYobtRMd0Di143ZvMqi0tNDlkRznZtSaFqPw/hHHYu+z+JSJMbItCspGf9WlzyPQhKNcCkVhAxAiow6iA666llmxwwXsw9lxheB+ew9M7/1dpNJv+wc5+KGwKIsmBIjSSDkhzwaH7iXUxcON31cf63Gd4xgtv0RKeT9yguNrADrP3PjYL5+kXoCZ5KwrKM7tTyapMMjp3gxVMWiKJZHoBxZsIV2fhdvKhOa7wDPe5Bx1dgYDy922/Wn3s0hP/00ZsxqAIE9x0BTWtPNALb9krb/7EPNQi7kKe5hGevyaa85anzu+hOxthzPo4KYBZi1BvcjWZAK3Xwfy+pGDs2Z/hIDTjqt9K0Azi4ZVRfsSaRZ6NpxwKmOpJtzNAoclElV8d0z+bf3cvzFi13WbxLuripT+m9nb8HPacNCn1tiCpcAd9SnobY+shkMvSdGqFW+HIdOXNcTVaj5bYaLjWNfwzK/X2ISYj8PorNPlwgo3zOs4VwvTwaMJVXBwDi6lhNu5V5vvBnqx73IkC1IzSfF8OzC35c40dsYKRLBP+HeUfmB2JWps8ZnehiUhLVrVEVlMg8Hc1c3Y52GUbDEOg5UC/UK5pMEl5tR8hyWUjt/PZnzrV+IpvPQy2/Nb2rmSkg141kOZnAiQ3xdP+hggrYpOjwd372gfzFAgi0bUaiTn3qLU1JPev/Kv2rzIWCaREpHdcv46P2vN8vdJYfCNjqU78tGEz6HJz9dsvPQiQmdBE8WWSyHV/+luMa2Eg9JPy7uJW37ADEMY2siKoCj7Jv2FvEPOx1OpHnUecuft03feV2VU8u8uSzADaeAyBR0QLUfp3rGGXiAKHQyrj/FW9PObM1n/SZWT2tfcCxUkRvEZco6NnsEF7aIz5KszO5pRajvq8M8CNdXwB4CnbHxIxSLJYe56bHVRpmBSj1ANGANvv5HvMMUQdWBBUtor64FDVBts1VEgqLmcr2+AjGuA+MnecKIWx6hDjsDK9C7fyYENrM3q2LFYF5WpL4BJSBj3qJVzRsOhPZ8qRgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014D4J1YdKKMjoAF9jpzQwkq",
+    "name": "search",
+    "input": {
+     "path": "docs",
+     "pattern": "material\\.custom|setUniform|onFrame|uTime"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017zFJmP3MEYPcM4dSB3YPNS",
+    "name": "search",
+    "input": {
+     "path": ".agents",
+     "pattern": "material\\.custom|setUniform|onFrame|uTime"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01VhZRGSbWyZ2dB2hPNPUhcg",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/RootGeometry.d.ts",
+     "limit": 80
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 12,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014D4J1YdKKMjoAF9jpzQwkq",
+    "content": "docs/agents/README.md:124:| Materials, textures, HDRI, sky, weather, water, `material.custom` shaders and the `a3d_*` chunks | `aura3d-materials-environments` |\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017zFJmP3MEYPcM4dSB3YPNS",
+    "content": ".agents/skills/aura3d-character-animation/SKILL.md:77:   app.onFrame(({ dt }) => {\n.agents/skills/aura3d-character-animation/SKILL.md:96:   app.onFrame(({ time }) => {\n.agents/skills/aura3d-browser-game/SKILL.md:63:   app.onFrame(({ dt }) => {\n.agents/skills/aura3d-materials-environments/SKILL.md:114:14. Custom shaders (`material.custom`): write linear light, use\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:3:`material.custom({ glsl: { vertex, fragment } })` is the escape hatch for effects the\n.agents/skills/aura3d-materials-environments/references/custom-shader-chunks.md:39:- The engine now injects a total `pow` into `material.custom` shaders that call\n.agents/skills/aura3d-core/references/pitfalls.md:12:  `a3d_math` chunk helpers; 4.1 injects a total `pow` into `material.custom` and\n.agents/skills/llms.txt:220:[Omitted long matching line]\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01VhZRGSbWyZ2dB2hPNPUhcg",
+    "content": "1\timport type { SdfTextStyle } from \"../../rendering/index.js\";\n2\timport type { AuraColor } from \"./nodes/types.js\";\n3\texport type AuraRootVec3 = readonly [number, number, number];\n4\t/**\n5\t * SG-05 (threejs-parity L2): vertex data accepts the legacy tuple layout or a\n6\t * flat packed array (Float32Array or plain number[]). Tuple input keeps the\n7\t * pre-L2 `defineAuraCustomGeometry` shape bit-for-bit; flat input is the\n8\t * typed-array `geometry.dynamic` / `handle.setGeometry` path.\n9\t */\n10\texport type AuraVec3Attribute = readonly AuraRootVec3[] | Float32Array | readonly number[];\n11\texport type AuraVec2Attribute = readonly (readonly [number, number])[] | Float32Array | readonly number[];\n12\texport type AuraIndexAttribute = readonly number[] | Uint16Array | Uint32Array;\n13\texport interface AuraGeometryGroupSpec {\n14\t    readonly start: number;\n15\t    readonly count: number;\n16\t    readonly materialIndex?: number;\n17\t}\n18\texport interface AuraGeometryDrawRangeSpec {\n19\t    readonly start: number;\n20\t    readonly count: number;\n21\t}\n22\texport interface AuraGeometryMorphTargetSpec {\n23\t    readonly name?: string;\n24\t    readonly positions: Float32Array | readonly number[];\n25\t}\n26\t/**\n27\t * R-23: one author-named per-vertex attribute (three's `setAttribute(name, new\n28\t * BufferAttribute(array, itemSize))`). `data.length` must equal\n29\t * `vertexCount * itemSize`; the vertex shader reads it as `in <type> <name>;`.\n30\t */\n31\texport interface AuraCustomVertexAttributeSpec {\n32\t  "
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 13,
+  "content": [
+   {
+    "type": "text",
+    "text": "Now examples with onFrame, and the app options (createAuraApp)."
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019MP34qDFMqGH2cZnAwgX4A",
+    "name": "read_file",
+    "input": {
+     "path": ".agents/skills/aura3d-character-animation/SKILL.md",
+     "offset": 60,
+     "limit": 60
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_018oxiYjYf7xuazCJmwoP377",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "pattern": "export interface AuraSceneSpec|export interface AuraAppOptions|export interface AuraCreateApp|interface AuraApp\\b|setUniform|onFrame"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 13,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019MP34qDFMqGH2cZnAwgX4A",
+    "content": "60\t   import { assets } from \"./aura-assets\";\n61\t\n62\t   const app = createAuraApp(\"#app\", {\n63\t     scene: scene()\n64\t       .add(model(assets.hero).runtime(game.runtimeNode(\"hero\", { tags: [\"player\"] })))\n65\t       .add(lights.studio())\n66\t   });\n67\t   const hero = app.nodes.require(\"hero\");\n68\t   const controller = createAnimationController({\n69\t     id: \"hero-animation\",\n70\t     clipRegistry: assets.hero,\n71\t     requiredClips: [\"idle\", \"walk\", \"sprint\"],\n72\t     suppressRootMotion: true\n73\t   });\n74\t   controller.bindRuntimeNode(hero, { id: \"hero-binding\", defaultClipId: \"idle\" });\n75\t\n76\t   let moving = false; // set from your input or kinematic body each frame\n77\t   app.onFrame(({ dt }) => {\n78\t     controller.crossFade(moving ? \"walk\" : \"idle\", 0.12);\n79\t     controller.update(dt);\n80\t   });\n81\t   ```\n82\t\n83\t4. Clip-local gameplay events (event names such as \"hitbox.open\", \"sfx\", \"vfx\",\n84\t   \"camera.impulse\", \"caption\", \"viseme\") go through the controller's event subscription. Bridge\n85\t   them into public systems such as `game.combatWorld`; never call private\n86\t   hitbox or renderer internals.\n87\t5. Pose and morph state go through the runtime node handle (its animation-pose\n88\t   and morph-target setters). App code never reaches into renderer skinning.\n89\t6. Voice sync: sample the bridge package at the frame time and apply the\n90\t   viseme weights to the node's morph targets, using only morph names the\n91\t   inspection reported.\n92\t\n93\t   ```ts\n94\t   import { animat"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_018oxiYjYf7xuazCJmwoP377",
+    "content": "938:export interface AuraCreateAppRendererOptions {\n2280:/** Runtime uniform write (handle.setUniform / setPassUniform). */\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 14,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_014uJwPaHQKGWcQj4XA9SthF",
+    "name": "read_file",
+    "input": {
+     "limit": 130,
+     "offset": 820,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01UDxgrzPZtySg9BiDSREb4n",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api",
+     "pattern": "onFrame\\(|setUniform\\("
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 14,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_014uJwPaHQKGWcQj4XA9SthF",
+    "content": "820\t    readonly name?: string;\n821\t    readonly text: string;\n822\t    readonly target?: string;\n823\t    /**\n824\t     * World point the label is attached to.\n825\t     *\n826\t     * `position` is where the label box sits; `anchorWorldPosition` is what a\n827\t     * leader line points at. When omitted the label anchors to its own position.\n828\t     * Both are projected every frame by the world-label layer, so a label tracks\n829\t     * its subject as the camera moves.\n830\t     */\n831\t    readonly anchorWorldPosition?: AuraVec3;\n832\t    /** Behaviour when the anchor projects outside the viewport. Defaults to \"clamp\". */\n833\t    readonly offscreenPolicy?: \"hide\" | \"clamp\" | \"draw\";\n834\t    readonly color?: AuraColor;\n835\t    readonly background?: AuraColor;\n836\t    readonly size?: number;\n837\t    readonly leader?: boolean;\n838\t    readonly screenAnchor?: \"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\";\n839\t    readonly occlusionAware?: boolean;\n840\t    readonly collisionAvoidance?: boolean;\n841\t    readonly animation?: AuraAnimationSpec;\n842\t    readonly runtime?: AuraRuntimeNodeSpec;\n843\t}\n844\texport interface AuraEnvironmentNode {\n845\t    readonly kind: \"environment\";\n846\t    readonly environment: \"studio\" | \"material-lab\" | \"product-hero\" | \"night-cinematic\" | \"metal-studio\" | \"glass-studio\" | \"hdri\";\n847\t    readonly name?: string;\n848\t    readonly intensity: number;\n849\t    readonly color?: AuraColor;\n850\t    /**\n851\t     * B3 root HDRI input (muse3jsparity-PRD). Only"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01UDxgrzPZtySg9BiDSREb4n",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/FrameLoop.d.ts:104:    onFrame(callback: FrameLoopCallback): () => void;\nnode_modules/@aura3d/engine/dist/engine/agent-api/GameEvidence.js:267:            evidence: \"Aura3D owns app.onFrame(), app.pause(), app.resume(), and app.step(); app code owns per-frame gameplay decisions.\"\nnode_modules/@aura3d/engine/dist/engine/agent-api/GameAppRuntime.d.ts:78:    onFrame(callback: AuraAppFrameCallback): () => void;\nnode_modules/@aura3d/engine/dist/engine/agent-api/FrameLoop.js:45:                        : (callback) => globalThis.requestAnimationFrame(callback));\nnode_modules/@aura3d/engine/dist/engine/agent-api/FrameLoop.js:52:                        : (handle) => globalThis.cancelAnimationFrame(handle));\nnode_modules/@aura3d/engine/dist/engine/agent-api/FrameLoop.js:68:    onFrame(callback) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js:453:        // region parity:L1 — SH-02 `setUniform(name, value)`: write into the\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js:460:        setUniform(name, value) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js:717:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/GameAppRuntime.js:76:    const loopFrameUnsubscribe = loop.onFrame(cameraLoopOn && advance\nnode_modules/@aura3d/engine/dist/engine/agent-api/GameAppRuntime.js:92:    const internalFrameUnsubscribe = app.onFrame((frame) => {\nnode_modules/@a"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 15,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm wondering if `uTime` is an auto-updated builtin, so I should check the prelude section of customMaterial.js to confirm.\n\n",
+    "signature": "CAQSrwYKEggTEAEYAjgBQgh0aGlua2luZxIMrZTxSr0yFN42pJBEGgxDsRWaBFr6Nj+x8zIiMOheCGSq4vHOMt/p18OuHF033/keOI/EYF+S9nHBe8zHaLBRoM2LD/aBGWEFuciGxirKBblQbj1yfDGIUJfvt0vL4ayxhR2O6uGJXHwWX+Arb9zZ3JBrRpPSMA41rCV3fKo0asIHCrGowyUUfrr8KS/Vt01jO/U5IoTwMiTNaEAFCYxHXm4MrqczWNUMPdEUhwqw7CYfKydH0EqarrwrO75TJ9b3TxzgIzO7O+E7F5k7lEZHQnCL2DhYbAQFSaWkuwY+v/2Ngzy3XOoZ9Nq+UjfyPHsJYnn6MAyp9RVgIXLJ6sWDu0clDvf/vXoOjfZUYDnWOlJ7ogZ1/R9ap+vMs2s9OA8U6J962DzWcMwfhfhWvwNip47ahEua1EpCoUid34MRahYxnBw3xM+wqlp1h8x4MusTfyBnMRu0oGiXg6xsgCa0irUV0QdM40x70gogS9/4cZ0SThQTDAh3ngprjk2Rt6vpuDPecqO/t2CZakbmvNVOQEqRs2/naAmIGdMDaCIqlEdj/WVOjn5hsBhHUoii5OqqLNAOtJXv1dzHc7lW3r6z53elvrWRFk0ugGMTFxYOtZYaGL0hM/SDmjtqJVWJHgrLciOEZbgCtfzVLA09vt9vvpV12cAfXFvLoIvx/5WDyGHhWs8Ix+wcmVFkkweFNij2IVmic2SoXQ0ZR7ka93j8Aw7s+I0gRCLcXrFOlfyK+v+0phEKwrnXXclsAiWelpUOkvuX7J+H2dHcMs/8+YbTn87NLjGDvab0yN82wMCfdnQ/J/dxyfRYY9VPYN31SgLayV9Ko3ocwFuu4ZDTjVV8ADNNLV+gPIyLwsFii55W1alJFAdoU1JC7Vl94ftpOB071kfLNWVrHZj7mRE6baxLXUphkqfoDZC+5mrWxUfcw81P/7/4s2tqbuSO1Vzpw5rLsgON+T9NyQzk2JKe/cQ8pC61IJ+zA9ZDhvVzrTjoAJvFVmTSqiznPDB1Uv1XwcrvJdPTslYD6eu5bQBKNacPZNh0o/PEo9d10xgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01JPGQkX7f7x6qBXYGAZ6SJo",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+     "pattern": "uTime|u_time|uResolution|cameraPosition|#define|in vec|layout"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01189qpGQXnticsFR7pNZ6dR",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/AuraAppHandle.d.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 15,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01JPGQkX7f7x6qBXYGAZ6SJo",
+    "content": "11: * shaders can use `uTime`, `uResolution`, `modelMatrix`, `viewMatrix`,\n13: * `normalMatrix` (mat3), `cameraPosition`, and (vertex only) `position`,\n15: * `#define` aliases. Authored uniform `foo` lowers to `uniform <type> u_foo;\n16: * #define foo …`; an already `u_`-prefixed name is used verbatim.\n49:    \"uTime\", \"u_time\", \"uResolution\", \"u_resolution\", \"cameraPosition\", \"u_cameraPosition\",\n98:        // prelude's own `u_time` and would fail GLSL compile with a redefinition.\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01189qpGQXnticsFR7pNZ6dR",
+    "content": "1\timport type { GameRuntimeEvidence, GameRuntimeEvidenceOptions } from \"./GameEvidence.js\";\n2\timport type { GameInputController, GameInputOptions } from \"./GameRuntime.js\";\n3\texport interface AuraAppRuntimeState {\n4\t    readonly paused: boolean;\n5\t    readonly frame: number;\n6\t    readonly time: number;\n7\t    readonly fixedDt?: number;\n8\t    readonly alpha?: number;\n9\t}\n10\texport interface AuraAppFrame {\n11\t    readonly dt: number;\n12\t    readonly fixedDt: number;\n13\t    readonly time: number;\n14\t    readonly frame: number;\n15\t    readonly alpha: number;\n16\t    readonly paused: boolean;\n17\t    readonly source: \"raf\" | \"manual\" | \"fixed\";\n18\t    readonly substep: number;\n19\t    readonly substeps: number;\n20\t}\n21\texport type AuraAppFrameCallback = (frame: AuraAppFrame) => void;\n22\texport interface AuraAppNodeRegistryLike<TNode = unknown> {\n23\t    get(id: string): TNode | undefined;\n24\t    require(id: string): TNode;\n25\t    has(id: string): boolean;\n26\t    ids(): readonly string[];\n27\t    all(): readonly TNode[];\n28\t}\n29\texport interface AuraAppScreenshot {\n30\t    readonly mimeType: \"image/png\";\n31\t    readonly dataUrl: string;\n32\t    readonly width: number;\n33\t    readonly height: number;\n34\t}\n35\texport interface AuraAppHandle<TScene = unknown, TDiagnostics = unknown, TNode = unknown> {\n36\t    readonly canvas?: HTMLCanvasElement;\n37\t    readonly scene: TScene;\n38\t    readonly backend: \"webgl2\" | \"webgpu\" | \"canvas2d\" | \"headless\" | string;\n39\t    readonly nodes: AuraAppNodeRegi"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 16,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NNJqUKMMVFenFV6qzLRnEf",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+     "offset": 35,
+     "limit": 200
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 16,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NNJqUKMMVFenFV6qzLRnEf",
+    "content": "35\t *     (`CUSTOM_TEXTURE_UNBOUND`). The handle's `repeat/offset/rotation` are not\n36\t *     applied: a custom shader receives raw UVs and owns its own transform.\n37\t *   - `fog` is recorded in `customDiagnostics`, never silently applied.\n38\t */\n39\timport { PortableShaderMaterial, ShaderPreprocessor, ShaderLibrary, SHADER_CHUNKS, A3D_AUTHOR_GLSL_CHUNKS, Texture, TextureBinding, globalShaderChunkEntries, globalShaderWgslChunkSource, isTextureBinding, registerGlobalShaderSource, unregisterGlobalShaderSource } from \"../../../rendering/index.js\";\n40\timport { AuraRuntimeError } from \"./errors.js\";\n41\timport { assertCustomAttributeName } from \"../RootGeometry.js\";\n42\timport { auraTextureRefTexture } from \"../nodes/texture.js\";\n43\timport { auraTextureRefSampler, auraTextureRefTransform, isAuraTextureRef } from \"./textures.js\";\n44\t/* ------------------------------------------------------------------------- */\n45\t/* Validation (SH-02)                                                         */\n46\t/* ------------------------------------------------------------------------- */\n47\t/** Names the generated prelude owns — user uniforms may not shadow them. */\n48\tconst RESERVED_UNIFORM_NAMES = new Set([\n49\t    \"uTime\", \"u_time\", \"uResolution\", \"u_resolution\", \"cameraPosition\", \"u_cameraPosition\",\n50\t    \"modelMatrix\", \"u_modelMatrix\", \"viewMatrix\", \"u_viewMatrix\", \"projectionMatrix\", \"u_projectionMatrix\",\n51\t    \"modelViewMatrix\", \"modelViewProjectionMatrix\", \"u_modelViewProjection\", \"normal"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 17,
+  "content": [
+   {
+    "type": "text",
+    "text": "Now the prelude generation and the u_time update."
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017yFDKZcyj8ua7ShubH2L53",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js",
+     "pattern": "prelude|u_time|in vec3 a_|a_position|a_normal|a_uv|builtinLoweredUniformNames"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 17,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017yFDKZcyj8ua7ShubH2L53",
+    "content": "10: * three-style surface: the adapter prepends a generated prelude so authored\n14: * `normal`, `uv`. The prelude declares the matching `u_*` uniforms and emits\n47:/** Names the generated prelude owns — user uniforms may not shadow them. */\n49:    \"uTime\", \"u_time\", \"uResolution\", \"u_resolution\", \"cameraPosition\", \"u_cameraPosition\",\n98:        // prelude's own `u_time` and would fail GLSL compile with a redefinition.\n100:        if (builtinLoweredUniformNames().has(lowered)) {\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 18,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01TQvPNK3aupAMaz8TM8nfbt",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler",
+     "pattern": "u_time"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Wy4gievLr1CvGpCTeqGeoW",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/rendering/dist/PortableShaderMaterial.js",
+     "pattern": "u_time|uTime|#version|a_position|layout|in vec"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 18,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01TQvPNK3aupAMaz8TM8nfbt",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:49:    \"uTime\", \"u_time\", \"uResolution\", \"u_resolution\", \"cameraPosition\", \"u_cameraPosition\",\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:98:        // prelude's own `u_time` and would fail GLSL compile with a redefinition.\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:295:    \"uniform float u_time;\",\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:314:        [\"uTime\", \"u_time\"],\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Wy4gievLr1CvGpCTeqGeoW",
+    "content": "25: * Aura3D owns bind-group layout generation and binary packing so application code\n46:            requiredAttributes: options.requiredAttributes ?? [\"a_position\"],\n169:    const version = source.match(/^(\\s*#version[^\\n]*\\n)/);\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 19,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012baiRNfXTzkNGhsrdgvRPW",
+    "name": "read_file",
+    "input": {
+     "limit": 230,
+     "offset": 236,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 19,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012baiRNfXTzkNGhsrdgvRPW",
+    "content": "236\t        invalidSpec(\"material.custom\", `uniform \"${name}\" contains non-finite values`);\n237\t    return normalized.length === 1 ? normalized[0] : [...normalized];\n238\t}\n239\tconst LOWERED_TYPES = {\n240\t    f32: { kind: \"float\", glsl: \"float\" },\n241\t    i32: { kind: \"float\", glsl: \"float\" }, // f32-carried; alias emits int(u_x)\n242\t    bool: { kind: \"float\", glsl: \"float\" }, // 0/1 — alias emits bool(u_x)\n243\t    vec2: { kind: \"vec2\", glsl: \"vec2\" },\n244\t    vec3: { kind: \"vec3\", glsl: \"vec3\" },\n245\t    vec4: { kind: \"vec4\", glsl: \"vec4\" },\n246\t    color3: { kind: \"vec3\", glsl: \"vec3\" },\n247\t    mat3: { kind: \"mat4\", glsl: \"mat4\" }, // padded — alias emits mat3(u_x)\n248\t    mat4: { kind: \"mat4\", glsl: \"mat4\" },\n249\t    texture2d: { kind: \"texture2d\", glsl: \"sampler2D\" }\n250\t};\n251\tconst DEFAULT_VALUES = {\n252\t    f32: 0, i32: 0, bool: 0,\n253\t    vec2: [0, 0], vec3: [0, 0, 0], color3: [1, 1, 1], vec4: [0, 0, 0, 0],\n254\t    mat3: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],\n255\t    mat4: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]\n256\t};\n257\tfunction lowerUniforms(spec) {\n258\t    const out = [];\n259\t    for (const [publicName, uniform] of Object.entries(spec.uniforms ?? {})) {\n260\t        const auraType = (isRecord(uniform) ? uniform.type : uniform);\n261\t        const lowered = LOWERED_TYPES[auraType];\n262\t        const uniformName = publicName.startsWith(\"u_\") ? publicName : `u_${publicName}`;\n263\t        const value = isRecord(uniform) && uniform.value !== undefine"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 20,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to check whether u_time gets auto-updated by the runtime or if I need my own uniform updated each frame via setUniform, so let me search for where u_time, u_normalMatrix, and u_modelMatrix are handled.\n\n",
+    "signature": "CAQSgggKEggTEAEYAjgBQgh0aGlua2luZxIM4116TGfrZYTwizq7GgzPfCOoFllTHu1V5wYiMGnoy+RHG4JLWumDNT2O7D0R05quuvJ8QzbvG3C+3+NtAHYtUHLv5i+TRsRPnMaDoSqdB+9xT36uB9DSze5e5INC9/JKny8b/FobR2jw7qeD2varhHPX02ljtl4FvTz5sv8/WuTU0CscOjprHusLWUL3+xN+LlRu0WNwyzbuXEcfomqiBucqEkMzAqSn5uS0xd6VgM12u8Ll/ZJibgXTRTVGHJMNhKNdIAqle72f/eFiY+BFysfGSKRY1Ch6BC7gGHoDM0jUDchYzo4vgQp2ScMR3st857uyWK9XxaizfJwU2QGZM0ZrvfF+w7gOgUp48fWzLj+WNl6fNBd/eJwY4USwedAWEfgE/bhjMfCQmRz9xSOULuiY4Y1ePfzMA10CCJ4jTNZYIkEeyoR/GzE4krw7MCTqBJ8WFT5QmT2ndNGAlnhwfDlI7fC1F4+V2izWFX+YmRbLfrLHbHKzbVuPvBZbUyWAleGIAIRvPmK+Q0WDwysW9IpBmC7SxzghqFwzZLcehe0OHuqzuXG/OEEYCMpXxhWhRtIVhSEpWG78x/GGhibiPUKIoMzPuFhlckPi7JPggYRDQhmuKcvpGpSyEoH21lfga9dRir76UocOYS+CF7lINcIIhuzGATQ47fDOVY++YM0I3k9oz+kFlAJiGmQydhHrxpgUYhraCZKCnrqFnWGdMzN5fLca95ssbTesbjxxDjZaHqd+sKYM2LWFYkF1z+0NOPM+31deSGQziDEaRA2BsbfjuxwzTBXqRkb0Rfb0CQBABpcnbHefIJlIW255A+ucwrt3df0bv2GC3OF93hRuofZjTXLY7d9JDys7pz6Ap8U9e0pmHrXwcCtTZVlijcJ+6MgMCLHFPnWFIHTFv9QbWiQciDGt1kraZe6Nw6bCHAHWyWBOCmmNVD/VnMV+rZllY2uT8VyuLuQ+9pQqG5hlOpsb+S+wunOlayFXu4af3rh1gyADL6esQV94/ttwrdpNt+0tWnXpaqy6UoE6DZZqlAqdKShN30uGaGslZpvdQHQwnFzIz38ULcTreH19JbaEdzuBsnfAV7r0ZCpKhaIkYFWIsL1UP+ktqoSQeuYgIM0eUmKxzRvKq2bwSmmFEnF2ziMITGV1V0cYYkTWfz02g193ARUr4hpHRZ/z5vsMMSv/lVegBWKdvGFDoNjR//v3nuWdhuf74Sc1bmNT2KVS3s6YL1gn+OGm3iziKDEQKnY/W3Gm84LOsFtQc7V9lplqTnDiEKVD0vZ3/20bWuHuTdM+/eyUgsAhkrU/345RXFK3U1RPMy0qMN/6TYwYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Q922sVysAQUZtagU5qPsiY",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine",
+     "pattern": "\"u_time\"|u_time\\b"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01BNz1u6TRQfxLjz5XXd9ZaH",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js",
+     "offset": 440,
+     "limit": 60
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 20,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Q922sVysAQUZtagU5qPsiY",
+    "content": "node_modules/@aura3d/engine/dist/engine/production-runtime/world/WaterRuntime.js:321:                    [\"u_time\", t],\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:49:    \"uTime\", \"u_time\", \"uResolution\", \"u_resolution\", \"cameraPosition\", \"u_cameraPosition\",\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:98:        // prelude's own `u_time` and would fail GLSL compile with a redefinition.\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:295:    \"uniform float u_time;\",\nnode_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:314:        [\"uTime\", \"u_time\"],\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01BNz1u6TRQfxLjz5XXd9ZaH",
+    "content": "440\t        },\n441\t        morphInfluence(name, weight) {\n442\t            const normalizedName = name.trim();\n443\t            if (!normalizedName) {\n444\t                throw new AuraRuntimeError(\"missing-asset\", \"Aura3D morph target name is required.\");\n445\t            }\n446\t            if (weight === undefined) {\n447\t                return morphTargetWeights.get(normalizedName) ?? 0;\n448\t            }\n449\t            morphTargetWeights.set(normalizedName, sanitizeMorphWeight(weight));\n450\t            bumpVersion();\n451\t            return this;\n452\t        },\n453\t        // region parity:L1 — SH-02 `setUniform(name, value)`: write into the\n454\t        // material's uniform block without recompiling (frozen in\n455\t        // nodes/types/runtime.ts; owner lane L1, do not edit outside this region).\n456\t        // The write is staged in `customMaterial.ts`'s per-runtime store; the\n457\t        // production compiler applies it to the live `PortableShaderMaterial` each\n458\t        // frame via `Material.setParameter` — the shader key never changes, so no\n459\t        // program is recompiled (program count stays flat across updates).\n460\t        setUniform(name, value) {\n461\t            // A GLB model node has no authored custom material to write into. Ports used to wrap every call in try/catch;\n462\t            // it is now a documented, once-per-uniform diagnostic no-op (a model with `material: material.custom(...)` still writes).\n463\t            if (node.kind === \"model\" && ((\"ma"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 21,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "Since u_time isn't automatically available outside WaterRuntime, I'll set up my own uniform called \"waterTime\" through setUniform instead. Now I need to check how the scene API and node builder expose things like primitives.custom.\n\n",
+    "signature": "CAQS2AkKEggTEAEYAjgBQgh0aGlua2luZxIMwy5PkBiEAR+qzpw5GgyMbd9jvT7YUghaCIUiMPZslxr4t/CMGGYFxpLMXsDV77eWx7ZsSpOk8QOADDCG6HpfpBVBI2kqazGAmAclEirzCEc6n1Bl6SJGSBFEma1BKwsovcD9WeFs5GA9MOIwA+WqwrIZuZjm/BPdgiQON0Jlf7BQt4FeZBZtgEau7sL3WJiK2znjtNIp4VNRVoYUmm89ulnI0frTq6+I2W5d4PODiTpkdcyDfOsRSmIpCEfrjUIABZvdWevzuGuOqgHGWSVk0ak+qWZYA8gPyv+wZeXQchye6YSF5iQ72meUCjXNTvXm4Oj4dbCgpBw/X5om3GpCEOJBl06BLKHD+GZ1+3wV3Q+Lwk+Q761R9PP8uqU80FXslcL8vL1NOpRrRwrtUg2OfPC/b3Uvbd0m8VtboGASWBMuofcT+YUc409p91iv0ReMUkB71tv/l1zvmdQbMU9obmb5lz9WmvGHC5X8mjJi1bDhbWPpVvgt5ecB8UkM87I4DuG1VGVex2CET220R9P+p1hsryV2VlBNAJg2tMTdBahoEUreWm6ayb5XVXyCWEYfIQi+A4TbWzHT50Y3AtbjhcoFMdhYdw91AeRPZSkGX5YDZc8MX0qnPiP5378zcln2XtyQTx6msqu1v9He7U+isj4lB0rLAqpcRG+4VUU/KXarc+rs6tgSLXVIeA46UJoA4w64blESu5XxaFYgxCHSNVQUdoRvFAWm42L85etL8+vs9N5aPJ5nv5z2IOM3Guod8n8mVHXZ/qcwZm53PbhPq5b4Yxo/StjNB9re0WSS3ouke2cW6A1R5+ug2CzVUz9L3v3HWQLDhhJjQpIRflMyiSNku6qlDycXrmenJioIDP18aWKSYDepnMSd63RG/QIeVvTFv+lrYVfIkQs0peJTHJz8PiK/ET94sarcGELaOW8qXL/xVp4yy8SLBtmniQ949a+VGesJiWuJviL01znmttDaZyS7kvTS2xUWhNHG9FnNpMKvJSQjccC7ekHzKnRg00FYvE9x20Mt9NKIAYsBDW1tXd4enNQCSccr/f2YBDwiBqSnZ0BNNmawV+OsR/jfWbi5Am6ZrP1M3ZiStNoN97vmX4lgxNrQyoCIlrseitbe9C6vRozA79ttwvvY/IS+fPxff2hp6Dj/YK888AGTY2BtaXYGJdpuKoHviywDJvd/7zi4G70U1WHFAZH4Dh/kjaCDPC0YUNXHieLg7Bea4gnAvq82I03fGtzVyquLlnb9xYiwqlZZKWZYQLVVV31rYS6A2ckT17CMGZeW18zQu5MJykTLVuWZc4pqa1zcezDpbk94dXXUlgxwoZzJz+FJ7ojrV1OJjlaOKuUBDV3eRG2X/qtUx2heMUPvFzxNwQGQfHaD0aIn0gT/sHz60His9z2n0Zc4jLrBPpLmfIWPtDXWOYY6yTGSE9El8FKpa/ehmWC9sqVyzYOJtbCdOiCaTuA5W8Q4WNZnXakmLpCcM5rmnCPiAgpW7Y8j+mQzBCFipkdshOEO0ExV9sMJ0PtM9NxtfZBjfucrtiBNVme6BE6WbcvsBjwx4pt7PfKIJst9eVPVe9fSozi66TNCvKfI+k3USd2GpRy+RG4ULOBk8uRKGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01VH6ebhLB1MtUkMQC7xKY8F",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/rendering/dist/shaders/chunks/author/index.js"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LkWD5MueoAk3eur12meyYW",
+    "name": "read_file",
+    "input": {
+     "path": "docs/agents/agent-quickstart.md"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 21,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01VH6ebhLB1MtUkMQC7xKY8F",
+    "content": "1\timport { A3D_FOG_GLSL } from \"./fog.glsl.js\";\n2\timport { A3D_MATH_GLSL } from \"./math.glsl.js\";\n3\timport { A3D_NOISE_GLSL } from \"./noise.glsl.js\";\n4\timport { A3D_SKY_GLSL } from \"./sky.glsl.js\";\n5\timport { A3D_TOON_GLSL } from \"./toon.glsl.js\";\n6\timport { A3D_TRIPLANAR_GLSL } from \"./triplanar.glsl.js\";\n7\timport { COLORSPACE_DECODE_GLSL, COLORSPACE_ENCODE_GLSL } from \"./colorspace.glsl.js\";\n8\t/**\n9\t * Author-facing GLSL ES 3.00 chunks for `material.custom({ glsl })`. Names are prefixed `a3d` so they never collide with\n10\t * author helpers. None of them calls `pow`, so they compose with the automatic safe-`pow` define.\n11\t */\n12\texport const A3D_AUTHOR_GLSL_CHUNKS = [\n13\t    {\n14\t        name: \"a3d_math\",\n15\t        source: A3D_MATH_GLSL,\n16\t        stages: [\"vertex\", \"fragment\"],\n17\t        provides: [\n18\t            \"float|vec2|vec3|vec4 a3dSaturate(x)\", \"float a3dSq(float)\", \"float a3dLuma(vec3)\",\n19\t            \"float a3dSafeDiv(float a, float b)\", \"vec3 a3dSafeDiv(vec3 a, float b)\", \"float a3dSafeSqrt(float)\",\n20\t            \"float a3dSafeAcos(float)\", \"float a3dSafeAsin(float)\", \"vec2|vec3 a3dSafeNormalize(v[, fallback])\",\n21\t            \"float a3dRemap(x, inLo, inHi, outLo, outHi)\", \"float|vec3|vec4 a3dFinite(x)\", \"mat2 a3dRot2(float angle)\"\n22\t        ]\n23\t    },\n24\t    {\n25\t        name: \"a3d_noise\",\n26\t        source: A3D_NOISE_GLSL,\n27\t        stages: [\"vertex\", \"fragment\"],\n28\t        provides: [\n29\t            \"float a3dHash11(float)\", \"float a3dHash21(vec2)\", "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LkWD5MueoAk3eur12meyYW",
+    "content": "1\t# Agent Quickstart\n2\t\n3\tAura3D Agent Quickstart: prompt to browser 3D with TypeScript, scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks.\n4\t\n5\tUse this quickstart to build AI-generated browser 3D scenes, GLB product viewers, and Vite 3D apps with Codex, Claude Code, Cursor, Copilot-style agents, or any coding agent that writes TypeScript.\n6\t\n7\tAura3D is a scaffolded path from a 3D product prompt to an app a team can keep.\n8\t\n9\tRead `llms.txt` first. Then read `docs/agents/claims-and-boundaries.md` for the\n10\thard rules that prevent primitive slop, raw asset IDs, Three.js loader code, CSS\n11\tscene effects, and overclaimed root `createAuraApp` capabilities.\n12\t\n13\tThe workflow is intentionally simple:\n14\t\n15\t1. Describe the 3D experience.\n16\t2. Resolve or add the real GLB/glTF asset.\n17\t3. Generate typed asset refs.\n18\t4. Compose the scene with the public Aura3D API.\n19\t5. Capture evidence and deploy.\n20\t\n21\t## Golden path\n22\t\n23\t1. Scaffold with `npx create-aura3d@latest my-scene --template product-viewer`.\n24\t2. Search/resolve a catalog asset or add a user-approved local asset:\n25\t\n26\t   ```bash\n27\t   npx @aura3d/cli@latest assets search \"studio robot\"\n28\t   npx @aura3d/cli@latest assets resolve \"studio robot\" --name robot\n29\t   npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot\n30\t   ```\n31\t\n32\t3. Import `assets` from `src/aura-assets.ts`.\n33\t4. Compose a scene with `scene()`, `model(assets.robot)`, `camera"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 22,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to check the primitives.mesh/custom API, the scene() signature, camera and background settings, and the runtime/node ID conventions before proceeding.\n\n",
+    "signature": "CAQSqAYKEggTEAEYAjgBQgh0aGlua2luZxIMlvudFZuOYnFaVl83Ggw7f7yi4mZQJ4gDmgAiMFtnxoTSF/ZDgRB1/1r45nzuamFI6uFhXipFdjYfech1TmfrnehZsqJyY7zNVgBsrirDBbn2gNtDKVEh0jKjngmShtmSd4fT+hVmXUzhhGvFtiTHo5Ty5/3g24dwDB+GVp2blQPPYpAa9Dn5C9X3BcUlhl5eBCnA5at8609BfqyWHg+UZK583dirUE9w4Pmn/+pl7G19S6k7/myuElQh22yp4Z84x/Vu4Ebot+qvqtBTT+A+HKxP5PY1P6j68og1Ixdxs6AK1HXDyvR7KX+OiMuHIn1YHdT7mj2AlJqqwV4NT/h6pdrhPo5FktdahGXe25Vsb5+pNmZuMyNtM05IWOCv8rPFChUS0v38B4FxdxtrxRk6P76XWUPD3FSYN+EhqjXytQkceGSEtBCKEatNO9iwYafECVWarlgS6EKJ6zwHMymxWNa0RmbQkhePCUqkSoVgngag3bJI0cq3SjLqwFDc6OEBDlqfGSAjvIpewzBzbNL+aiiFw/2cRhYnL35H4pGd54MO9CUBoCbqZWfPAjBSjnRxqNVPCYPFKs8sbndkqpoUMKxhEUSPxEfFRVg2DSdBq5wGJ2kM9BfJFEfJGitrdxYxJN46nIFL9xnIIdXKftHS1zk89xnu1uHJQ+CEH7lZwSJTxz/iQtLtH7BCpU834uJ3f9OhJcOYp7vrzAUavee/RJ7IF2Clxt0sl8jxID2Nyjz+qrQtfluXE8Dh1HbUj5XAx/Cu8/DalleduSaZXgNbFktpfWrPmTRuOW7Gvjdmx98+rwAU1u33Hnlj6Suhd8TZKw92b5GHALeHfNgZ3d1WFji/xX0Xopehq9vAtl4181BMzWm8OokOyEfRFMvJA/N2w0XCIirAvV6CcsGjsem29n+sQn/rpXFHcgw6dnmvfIO4qv80qDyYXSjBuKWkFLfYrUX2RaZayUlrxqPEhOPNb7XqBYyX41xeL267N2OBcYlOFF5yaMVpi2WpIDt1ttcn4d2GPfpuhmq73IDPqsvQNfdlGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01E7SgCgpWWGUoWEPTmUywVy",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "pattern": "export interface AuraPrimitiveNode|export interface AuraSceneBuilder|export interface AuraCameraNode|export interface AuraSceneBackground|AuraBackground"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01AC8BAZWXxHHcRHuQn33HMR",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes",
+     "pattern": "mesh:|mesh\\(|export const primitives"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 22,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01E7SgCgpWWGUoWEPTmUywVy",
+    "content": "634:export interface AuraPrimitiveNode extends AuraTransformSpec {\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01AC8BAZWXxHHcRHuQn33HMR",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/batched.js:514:    mesh: batchedMesh\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/effects.js:304:        mesh: options.mesh ?? \"tetrahedron\"\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instances.js:37:     * SG-01 (parity-L5): `instances.mesh(geometry, material, count)` — three.js\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instances.js:43:    mesh: (geometry, material, count) => instancedMeshFactory()(geometry, material, count),\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/batched.d.ts:94:    readonly mesh: typeof batchedMesh;\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.js:2: * SG-01 / parity-L5 — `instances.mesh(geometry, material, count)`: three.js\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.js:126: * `instances.mesh(geometry, material, count)` — three.js `new InstancedMesh`\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts:2: * SG-01 / parity-L5 — `instances.mesh(geometry, material, count)`: three.js\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/instancedMesh.d.ts:83: * `instances.mesh(geometry, material, count)` — three.js `new InstancedMesh`\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/primitives.js:70:export const primitives = {\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:2408: * SG-02 (L5): `batched.mesh({...})` — multi-geometry instancing. Rendered"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 23,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FzheXUGXWXsMenHoD5kxsH",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/primitives.js"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01GB7X45ZzmcSu2GrRbMTLc7",
+    "name": "read_file",
+    "input": {
+     "limit": 80,
+     "offset": 620,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 23,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FzheXUGXWXsMenHoD5kxsH",
+    "content": "1\t// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.\n2\timport { AuraNodeBuilder } from \"./builder.js\";\n3\timport { AuraRuntimeError } from \"../compiler/errors.js\";\n4\timport { geometry } from \"./geometry.js\";\n5\timport { instances } from \"./instances.js\";\n6\timport { material } from \"./material.js\";\n7\timport { physics } from \"./physics.js\";\n8\timport { text3D } from \"./text3d.js\";\n9\t/**\n10\t * The six original kinds are unit-sized shapes scaled by `size` / the node\n11\t * transform, so their `params` carry tessellation (and, for cylinder / torus,\n12\t * the profile ratios) only. A shape-defining key such as `radius` or `height`\n13\t * would never take effect, so it is rejected instead of being silently\n14\t * ignored. The SG-03 kinds (cone, circle, ring, ...) read their own params.\n15\t */\n16\tconst UNIT_PRIMITIVE_PARAM_KEYS = {\n17\t    box: [\"widthSegments\", \"heightSegments\", \"depthSegments\"],\n18\t    sphere: [\"widthSegments\", \"heightSegments\"],\n19\t    plane: [\"widthSegments\", \"heightSegments\"],\n20\t    cylinder: [\"radialSegments\", \"heightSegments\", \"radiusTop\", \"radiusBottom\", \"openEnded\"],\n21\t    capsule: [\"radialSegments\", \"capSegments\"],\n22\t    torus: [\"radialSegments\", \"tubularSegments\", \"tube\"]\n23\t};\n24\tconst SIZE_HINT = {\n25\t    box: \"size: [width, height, depth]\",\n26\t    sphere: \"size: diameter (radius * 2)\",\n27\t    plane: \"size: [width, 1, depth]\",\n28\t    cylinder: \"size: [diameter, height, diameter]\",\n29\t    capsule: \"s"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01GB7X45ZzmcSu2GrRbMTLc7",
+    "content": "620\t    readonly scaleMode?: AuraModelScaleMode;\n621\t    readonly targetHeight?: number;\n622\t    readonly targetMaxDimension?: number;\n623\t    readonly targetLength?: number;\n624\t    readonly animation?: AuraAnimationSpec;\n625\t    readonly interaction?: AuraInteractionSpec;\n626\t    readonly physics?: AuraNodePhysicsSpec;\n627\t    readonly hiddenNodeNames?: readonly string[];\n628\t    readonly materialOverrides?: readonly import(\"../../contracts/materials.js\").AuraModelMaterialOverride[];\n629\t    readonly variant?: string;\n630\t    readonly runtime?: AuraRuntimeNodeSpec;\n631\t    /** Wrinkle-detail hook; see `AuraModelOptions.wrinkle`. */\n632\t    readonly wrinkle?: WrinkleMapHook;\n633\t}\n634\texport interface AuraPrimitiveNode extends AuraTransformSpec {\n635\t    readonly kind: \"primitive\";\n636\t    readonly primitive: AuraBuiltinPrimitive | \"custom\";\n637\t    readonly name?: string;\n638\t    readonly material?: AuraMaterialSpec;\n639\t    readonly size?: number | AuraVec3;\n640\t    readonly castShadow?: boolean;\n641\t    readonly receiveShadow?: boolean;\n642\t    readonly animation?: AuraAnimationSpec;\n643\t    readonly interaction?: AuraInteractionSpec;\n644\t    readonly physics?: AuraNodePhysicsSpec;\n645\t    readonly runtime?: AuraRuntimeNodeSpec;\n646\t    readonly instances?: readonly AuraTransformSpec[];\n647\t    readonly instanceColors?: readonly AuraColor[];\n648\t    readonly geometry?: AuraCustomGeometrySpec;\n649\t    readonly text3D?: Omit<AuraText3DGeometry, \"geometry\">;\n650\t    readonly"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 24,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm deciding to build my own custom grid geometry rather than rely on a plane primitive, so I have explicit control over vertex positions, UVs, and normals for the displacement shader.\n\nSince displacement can expand the mesh beyond its default bounds, I should set slightly larger bounding volumes manually to avoid frustum culling artifacts. I also need to verify how geometry utilities are exported at the root level, then check the scene builder options for background, camera, and overall app setup.\n\n",
+    "signature": "CAQSlgoKEggTEAEYAjgBQgh0aGlua2luZxIMr2WmoWDz40sj6sQuGgwl4oUQcgUSKseiY+siMEjFyWb9Kmnm41ABw6hKxNjNnPeJrSmwyldvDXaZkkrGlxNienCFjJG6cEjk4Ea63iqxCZPdlmwfZ1+L5SxyWnID5I58QvENphh+aLdNN07gq9vN8tYeY4V4qkKRRsFNNb1ecwHrV2Jb79JlozUXU1DncboZw4F3Cy0kJLt19VTPAeugm/ZOyLrXMkd0rv+KcUtzzhhBWCHbeow9FRXKSVvSKetspBpQ+gRVPiF3tFjmha2Gaw6dGuMaPXc1qv9zntDuX+/TFYfkIBb+VAT5to/tMb2HQuwz1EjqC5s1e3P6do5koNj88HAY60TOeWdL92xeIsl7tNerhu+rayQbWX0hMMOwgUu22ZsPLonilbaMPyL5EkN8hH5YDN8adzsEF+qIk8cHX7YJE4wBlU/5E8kp0xzcmQa0oyoQFp4ShN4AbrvQEiXNjo/NT0aChyytVhtxTCy7h/sgwmUhQFPuakB4c5ckLGFHW8cfY8CWG9wySf4YgZeWbWP+Nkiw6ZjhvY7rDhqzCerJ+XpjbmLOcvih0RdzCukIvXBeOnKgyM6HjKBv9fhkFLBw2RcXjDwcsIrDDftRdEpfW7Cl6pDHMGJsa0Fu1mA+bfJOf+Q1/QmIU4zM7LulVmBZo/2+H7dkJ6M7FK22bNWGZdLbItS9HSZjg1ZD4yynZ0SShic0eGEkOiEqsRMiJwC428+rwBbJi8yx88iMZhU48R0F/EbKWJ8lGlLF7jdzsPUQgbNOPGVYmzXAy1u9q5OauAMXHHlvMZN7mH9/Msc6jquhQaN/j0NAueXhO5QMtoL91YpV+OQEZgRr5gKSNhWyRjp4QKKKqPT7Rrg7PsHq7+Yjsig8iOC1asNVChu89UN0lOIARfO8OyEnxagbGw/EqIQ/fkub2hWideIsfvt3Nw5Ta2SnjWZbkJFmwSbLzZjXNLI+Ma0+irRrYdyYpEe5my8Zj4e8Qu8jDNf2eQsCN5ER08Iw77gWTZcIIxtXWj9pVN6v6ANhODlvTh+3s9oRDXW1xGPVWEOS/jKrw7cve+0rbOlZiXpkTthbB1Mf3ZhzqeGeLv5319l1uI+tYCJP58FWmzV5fJ8/qldG/Jtvs0nPWzz+g2wTSktk2bp66U7RSWfshbrVd2QUwsDuovRsViSuKZw/G9HGfLgLJREFd+hZyAZmiPl185+9XpTFQCYt7d13cZky56VQ6D/0/eBgOyLOOGzLbcceIvmKuLBhBu1dbuvmKhlFCzPswC9ocvthn4I+afcDGL8zgrPUa1c92fhtv+eQm5JO1OK/aQl+pwvPFjjQl2KUG1nPGpUDXZSFEgvVkTuooAO1EKnIfGEI893f9+6FZjfF7YDB1ZmQHH8uayMGW6HdzFRmF2yDe4i4guNQ2rGCLIthwNHI03XtAHgeHUzBZnH6NULoDJASpcMRI75lOF3zDYqMRRK/feMvADnRX72jAZ4MblEtj1L24iir4wfmYc3u6pLIX+x3u/n/w4sGBh4+w7oD+Cd4/PE2UaJLH+ZnVJbdQZIZkmBJTFm5masGhXBseFao58YdV1lQmiDfNBj8pEecI29LTlXPdnaDebPlTMUyMGh8dv65/i+rOpshYFDAy5Ur18RYTG6i26bc7UusLrG7mOz/dglOF7qH6FKXjbOoth5KUBX2Lwu77iVRHHuRJBwYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01TabMEoDXTKoj1rj75XZ4PN",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes",
+     "pattern": "background|export const camera|export function scene|class AuraSceneBuilder"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01AiNmCQcNWgUYMTwC3Z429V",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/index.d.ts",
+     "pattern": "geometry|material|createAuraApp|scene\\b"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 24,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01TabMEoDXTKoj1rj75XZ4PN",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.js:10:    /** Real prebaked HDRI preset (§6.2); background on by default. */\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.js:20:        ...(options.background !== undefined ? { background: options.background } : { background: true }),\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.js:23:    /** Code-generated RoomEnvironment probe; the implicit default (background off). */\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.js:32:        background: options.background ?? false,\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.js:41:        background: false\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/environments.js:52:        ...(options.background !== undefined ? { background: options.background } : { background: true }),\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/solar.js:32:        .background(\"#020617\")\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/product.js:32:        .background(\"#f6f8fb\")\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/cameras.js:39:export const cameras = {\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/sceneKits.js:73:    const makeScene = () => scene().background(built.background).addMany(kitNodes).camera(built.camera).timeline(timeline.loop({ seconds: id === \"solarSystem\" ? 18 : 8 }));\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types."
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01AiNmCQcNWgUYMTwC3Z429V",
+    "content": "search failed: rg: node_modules/@aura3d/engine/dist/index.d.ts: IO error for operation on node_modules/@aura3d/engine/dist/index.d.ts: No such file or directory (os error 2)\n",
+    "is_error": true
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 25,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01XkD2w9uhXTNF7izzx5mRi4",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/scene.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017nKDznPq3RNhUyEve79dSz",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/cameras.js",
+     "limit": 80
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01YAfcXWoESewYeyknP1kLPw",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/package.json"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 25,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01XkD2w9uhXTNF7izzx5mRi4",
+    "content": "1\timport type { AuraColor, AuraMaterialSpec, AuraSceneBackgroundImage, AuraSceneNode, AuraPhysicsWorldController, AuraCameraSpec, AuraCameraFrameAssetOptions, AuraTimelineSpec, AuraSceneSnapshot } from \"./types.js\";\n2\timport { boundsFromAsset } from \"../SceneGroundingUtils.js\";\n3\timport { AuraNodeBuilder } from \"./builder.js\";\n4\texport declare function resolveFrameAssetRenderScale(bounds: ReturnType<typeof boundsFromAsset>, options: AuraCameraFrameAssetOptions): number;\n5\texport declare class AuraSceneBuilder {\n6\t    private readonly nodes;\n7\t    private backgroundColor;\n8\t    private backgroundExplicit;\n9\t    private backgroundToneMapped;\n10\t    private backgroundImageSpec;\n11\t    private cameraSpec;\n12\t    private timelineSpec;\n13\t    private physicsController;\n14\t    private diagnosticsEnabled;\n15\t    private overrideMaterialSpec;\n16\t    /**\n17\t     * threejs-parity SG-10: three's `scene.overrideMaterial`. Every primitive\n18\t     * (including instanced and distance-LOD ones), model and `instances.mesh` /\n19\t     * `batched.mesh` node renders with `spec` instead of its own material;\n20\t     * geometry and per-node transforms are untouched. Pass `null` to restore the\n21\t     * authored materials. Lines, points, sprites and procedural character parts\n22\t     * keep their own materials. Applies to nodes authored before `toJSON()`/mount\n23\t     * (nodes added later at runtime through the app keep their own material).\n24\t     */\n25\t    overrideMaterial(spec: AuraMaterialSpec | n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017nKDznPq3RNhUyEve79dSz",
+    "content": "1\t/**\n2\t * threejs-parity L7/SC-01: `cameras.cube` — three's `CubeCamera`.\n3\t *\n4\t * Emits an additive `\"cube-camera\"` scene node (the same builder-cast pattern\n5\t * `probes.ts` uses for `\"probe\"`). The production runtime renders the scene\n6\t * into a cube render target once per `updateEvery` frames via\n7\t * `Renderer.renderProbeFace`; the captured cube texture is consumable as an\n8\t * environment map by authored materials (`material.*({ envMap: { cubeCamera } })`\n9\t * → `RenderItem.environmentCube`).\n10\t */\n11\timport { AuraNodeBuilder } from \"./builder.js\";\n12\timport { AuraRuntimeError } from \"../compiler/errors.js\";\n13\timport { STEREO_DEFAULT_EYE_SEPARATION, STEREO_DEFAULT_FOCUS } from \"../stereoMath.js\";\n14\texport function isAuraCameraArrayNode(node) {\n15\t    return node.kind === \"camera-array\";\n16\t}\n17\texport function isAuraCameraStereoNode(node) {\n18\t    return node.kind === \"camera-stereo\";\n19\t}\n20\tconst positiveFinite = (value) => typeof value === \"number\" && Number.isFinite(value) && value > 0;\n21\tfunction validateViewport(label, viewport) {\n22\t    if (!viewport || typeof viewport !== \"object\") {\n23\t        throw new AuraRuntimeError(\"invalid-camera-spec\", `${label} requires a viewport { x, y, width, height }`);\n24\t    }\n25\t    const { x, y, width, height } = viewport;\n26\t    if (![x, y, width, height].every((value) => typeof value === \"number\" && Number.isFinite(value))) {\n27\t        throw new AuraRuntimeError(\"invalid-camera-spec\", `${label} viewport values must be "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01YAfcXWoESewYeyknP1kLPw",
+    "content": "1\t{\n2\t  \"name\": \"@aura3d/engine\",\n3\t  \"version\": \"4.1.2\",\n4\t  \"private\": false,\n5\t  \"type\": \"module\",\n6\t  \"files\": [\n7\t    \"dist/animation\",\n8\t    \"dist/assets\",\n9\t    \"dist/audio\",\n10\t    \"dist/aura3d-cli\",\n11\t    \"dist/apps\",\n12\t    \"dist/controls\",\n13\t    \"dist/engine\",\n14\t    \"dist/create-aura3d\",\n15\t    \"dist/core\",\n16\t    \"dist/debug\",\n17\t    \"dist/ecs\",\n18\t    \"dist/editor-runtime\",\n19\t    \"dist/environments\",\n20\t    \"dist/game\",\n21\t    \"dist/input\",\n22\t    \"dist/math\",\n23\t    \"dist/navigation-recast\",\n24\t    \"dist/physics\",\n25\t    \"dist/physics-rapier\",\n26\t    \"dist/product-studio\",\n27\t    \"dist/react\",\n28\t    \"dist/rendering\",\n29\t    \"dist/scene\",\n30\t    \"dist/scripting\",\n31\t    \"dist/workflows\",\n32\t    \"templates/product-viewer\",\n33\t    \"templates/cinematic-scene\",\n34\t    \"templates/mini-game\",\n35\t    \"templates/production-product-viewer\",\n36\t    \"templates/production-product-configurator\",\n37\t    \"templates/production-asset-inspector\",\n38\t    \"templates/production-material-studio\",\n39\t    \"README.md\",\n40\t    \"LICENSE\"\n41\t  ],\n42\t  \"exports\": {\n43\t    \".\": {\n44\t      \"types\": \"./dist/engine/public/index.d.ts\",\n45\t      \"browser\": \"./dist/engine/public/index.js\",\n46\t      \"import\": \"./dist/engine/public/index.js\",\n47\t      \"default\": \"./dist/engine/public/index.js\"\n48\t    },\n49\t    \"./math\": \"./dist/math/index.js\",\n50\t    \"./scene\": \"./dist/scene/index.js\",\n51\t    \"./scene/math\": \"./dist/scene/MathTypes.js\",\n52\t    \"./ecs\": \"./dist/ecs/index.js\",\n53\t    \"./controls\":"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 26,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to check the camera spec type and createAuraApp options, including how time uniforms and background work, so let me look at the public index.d.ts exports for geometry, material, createAuraApp, and AuraCameraSpec.\n\n",
+    "signature": "CAQS3wYKEggTEAEYAjgBQgh0aGlua2luZxIMUFXPtd21XuND3rrOGgwA1AvT2mh4XdgRPL4iMNTUYksIcqQn4svnHbE/5oz8DX0aIab9F6jpC9Drgo6ksmURcgv09UWXiq+5BqnKbSr6BRv/jcuZw1A6vRXjjJB4Ma4Wi6WKJo5J8ogOUAZ8nKz3jX34Je2Clm5VzZElX47YYBcU0DAjjFm3F5UsfyXnAJzGea3uG2HUXsxUYLtdshSeVEGAMSWpn32RX8sOOKCiVC9RtpeVXydbHhLxE224vzkcwVAfFI1F/T3WiwETpMOeGvZHgEXVbpOuhTWLStWX/XuPv5r2eqC13f3dhso/HOMLc+F3xL7c5Y04R/hWanOVh7Bym6XeVcYrubEi2KExlTT0qmyHfnF6/AvqIrT5o55mLgfp+e/YOM7/zZcLu0G19LdLo79G42fbrO5y9Pt8n8FJlWOStjedQkM4K2VWZrgiBQP1CEwjnzbQpPAAxEg+SDjz1Ic/LJv/oj9zA+nBnVOXNCSzK2E1d86nUgISCwl4Cdt/pujnmxB42NQh8eEa+IOKkO1x0LK46eZHer0cmTwGbvKmqaJe0dvMWza4SAjwXstEZ/GFUCRXX+jEWnjedQARLJ1ORF3JRwL9wyaqr8JHdHgXrhyHspReOnti40WLM27eWxZQs91AA3nUWTLi5EArzUhn9io4dI8BRHRND1A1MtscHdR9OKvvlD3PO184yWU5W52JllOCLygYsOMgh2n6d60+tSFBVuHs+zRCHNxde+Gg+ctN7+hwyOVrHK/19Rip6yBSb2XkcfCGDz9J3D9pC5qJQT61MtptIsT98E/8B4BCVaVJ9X7hdTbf32j9kgteZUEED56hidXch0yO6MF1OX29kjJHlGNICjyJzZ8PGLj1nf8N6X42jL1m3gzUNAx1QLokHrTySc8gLd8XrJ9kHD0iej1JPyA0TqGJmY+aO82MLZTUXuvR5gyPgyKEmgXN5d+UdfaKE9yGsTBu13IUlk5cxePEfJptZzQL5b/V/YHXcBhGwCuuCMLXjzXdx5+5hcKDhDmsxnhAHUjKsVNeUBFymQCnOnIFGdTx/Yqdix/ZGOROWcGfQ2AsYBoXCNSN+nluK5/5+4hN2d6loQnBChZAP6Zb5xgB"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_013mYUiSnbGoMu71sZ9S7S1d",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "pattern": "export interface AuraCameraSpec|export type AuraCameraSpec"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01UoWJenzJsVcvqGzYUBJkKy",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/public/index.d.ts",
+     "pattern": "geometry|createAuraApp|\\bmaterial\\b"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_019TMvy551VBkDTeA8BFvL56",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/material.js",
+     "pattern": "custom"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 26,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_013mYUiSnbGoMu71sZ9S7S1d",
+    "content": "1234:export interface AuraCameraSpec {\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01UoWJenzJsVcvqGzYUBJkKy",
+    "content": "10:[Omitted long matching line]\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_019TMvy551VBkDTeA8BFvL56",
+    "content": "3:import { assertAuraCustomMaterialSpec } from \"../compiler/customMaterial.js\";\n46:     * threejs-parity SH-02 (L1): three-style custom shader material. `spec.glsl`\n52:    custom: (spec) => {\n54:        return { kind: \"custom\", custom: spec };\n58:     * graphs built with `tsl.*` lower to a GLSL `material.custom` spec. GLSL only; see `tsl`.\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 27,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PenuVRa4pS1o9CPBaBBrDG",
+    "name": "read_file",
+    "input": {
+     "limit": 70,
+     "offset": 1225,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QnWjL83VLNxHxwuFMrZC7m",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/public/index.d.ts",
+     "limit": 30
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 27,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PenuVRa4pS1o9CPBaBBrDG",
+    "content": "1225\t    liveContactCount(): number;\n1226\t    raycast(origin: AuraVec3, direction: AuraVec3, options?: RaycastOptions): RaycastHit | undefined;\n1227\t    sphereCast(origin: AuraVec3, radius: number, direction: AuraVec3, options?: RaycastOptions): SphereCastHit | undefined;\n1228\t    debug(): AuraPhysicsDebugSnapshot;\n1229\t    debugNodes(): readonly AuraSceneNode[];\n1230\t    snapshot(): AuraPhysicsSceneSummary;\n1231\t}\n1232\texport type AuraNodeInput = AuraNodeBuilder<AuraSceneNode> | AuraSceneNode;\n1233\texport type AuraCameraMode = \"perspective\" | \"orbit\" | \"dolly\" | \"follow\" | \"path\" | \"flythrough\" | \"orthographic\" | \"isometric\";\n1234\texport interface AuraCameraSpec {\n1235\t    readonly mode: AuraCameraMode;\n1236\t    readonly position?: AuraVec3;\n1237\t    readonly target?: AuraVec3;\n1238\t    /** C-22/CCR-08-1 (#228): camera up vector + roll — diagnostic-only until Q-15-1. */\n1239\t    readonly up?: AuraVec3;\n1240\t    readonly roll?: number;\n1241\t    readonly offset?: AuraVec3;\n1242\t    readonly targetOffset?: AuraVec3;\n1243\t    readonly offsetMode?: \"scene\" | \"target-yaw\";\n1244\t    readonly fov?: number;\n1245\t    /** Positive near clipping distance in world units; defaults to 0.05. */\n1246\t    readonly near?: number;\n1247\t    /** Far clipping distance in world units, greater than near; defaults to 100. */\n1248\t    readonly far?: number;\n1249\t    /**\n1250\t     * SR-04: three's `camera.layers` as a bitmask. Nodes whose `layers` mask does\n1251\t     * not intersect it (runtime handle "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QnWjL83VLNxHxwuFMrZC7m",
+    "content": "1\t/**\n2\t * `@aura3d/engine` \".\" — the PRD-15 §6.6 public surface.\n3\t * Explicit named exports only: the §6.6 keep-set (game/template/benchmark\n4\t * import tally + contracts + lane contracts) as live exports, plus the\n5\t * union of still-consumed names as @deprecated re-exports kept at 4.0.0\n6\t * (§6.6 step 3). Generated by tools/export-surface/scaffold.ts — regenerate with\n7\t * `pnpm exec tsx --tsconfig tsconfig.base.json tools/export-surface/scaffold.ts --write`.\n8\t */\n9\timport \"../lanes/index.js\";\n10\texport { AnimationController, appExtensionsAll, asRuntimeCompiled, atmosphere, auditArtDirection, AuraColorParseError, AuraSceneBuilder, batched, bindGameTouchControls, bindRuntimeCompiled, blendSkyBandColor, camera, cameras, captionCueAtTime, captureFromUrl, characterAssembly, characters, charts, checkSpatialInvariants, city, clearFocus, Clock, cloneSkinned, combatFrameAdvantage, compilePromptEpisodePlan, compilePromptPlanV2, compilerSlot, compileScene, composeWorldMatrix, compute, computeLineDistances, createAnimationPerformanceCoverage, createAnimationRenderOutputPackageMetadata, createArchitectureKit, createAssetDiagnostics, createAudioStemManifest, createAuraApp, createAuraRouteHealthSnapshot, createAuraText3DGeometry, createAuraVoiceBridgePackage, createAuraVoiceVisemeTrack, createCameraPathFromPreset, createCinematicKit, createCollisionLayers, createCombatAi, createDiagnosticsPanel, createDigitalTwinKit, createEnvironment, createFightingGameKit, createFrameLoop, createGa"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 28,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm looking into the createAuraApp options to find how runtime node IDs get configured, checking for something like a `.runtime()` call on the node builder with output and post settings.\n\n",
+    "signature": "CAQS+wYKEggTEAEYAjgBQgh0aGlua2luZxIMwL6VMIaEIGkiA0DlGgx/md2M4QX5EosoFDMiMJ2Gmm61cxU8iKIhfpZXq8MelkzuFQiBIFyT7xl4beXltVKkmIRwqSskT/s/zvZpXiqWBlXRy7dl4foowWpDOTVvyvVKEIRp+M2W8HbCfOBycD2GKFvQiKwP3QO2ttAveq4QuHQKn/+wFfQqJ80M50LS7jHgln/WzD6/6FChWge1DBLDlwJbrG6D05FXlSiOnWnq8z5OAVSPwii7s5Xd6WrU8s2tUHp4Rva6PzzxGYCnw3yA53VO8ZnVTR+CvkvZDTZ+GFgYXbkieUhJYF6kE/+n1KETawdHtshpsp0j1A9rMfWMXE6Xvyw78xmkLtJemDMZDHbYe4Nh6Lliv+YQsCVH/E7hnUpRRmm3nI4/7Mwq7FYxnwuqCvAB8vyoZgprmicl4wCQkOsVUhGwbanlzJ5ptVmWy+x3rdTNeUrXjaYO1XeBYMHj9E0V5K6skBC5EP0dC2Em989jx198mTxnIYNM5gQ3pifhc2cQ0C1sWl171D14qCMqhqZUb48eH9FIqTbCK0DqInpAbV9lE4MNSPewMBNdZW/UE+XJUVEZj5C4uAbf1aOB2I8XWuNfOaT7lkJ3+3HArhV9RgdIy2bJhJQakiC99C+2Je8RU1aOWdC+d42rKTiVUHcaYgxpmoaV6f4ZdaHSNpKF3Zdm4EmGHjieBL0OnpCmJPVao0gAuD6pMMV6ppmQOgB1V4xYyqoWckiz1Kmbto7vaL8focj5J6zFufzNcado8g4yE3M7Q0E9/VRWVxsv6LIyBtABwDPg9H8TBXpuWyIut2QBLbN4RQ0Pm8iSaeC1mO38YT8/BFoMxrUHOryJV2O5W0j9Wgv+YSFsbjVoeZfMqddZ2elZAHk1o282qeYVbTI/iB6X4w3QGpVvPd5Ea+2LEp8vdYlQt67AKUVPbmSt1Gd/rCrg35kruHZjacbaQCGYBHH8GXshhyzj9L1L4jqlq0QPKxeH0/Sw2PGOczx6gN6u6/qn8wlI6yGuSMQRhwa5IdENLmJjFrNeVPjIr2aXGt1IszniKCQx1zXHiES3udmE+QJRWm54hRb1vmKAqAq600lybFJRltnY2BFJoxvyF5wAeorld5pFUGTqbXe8z4+BPZQ/gyZXOHKUBQNcWxkYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LVTMDLYUZek61NBMFKktM9",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api",
+     "pattern": "runtimeNode\\(|\\.runtime\\(|\\bid\\("
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_016n8dcPnQzHdssotKs2onRy",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts",
+     "pattern": "readonly output\\?"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 28,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LVTMDLYUZek61NBMFKktM9",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/VisemeController.js:10:        \"Register the mouth card with game.runtimeNode(`${characterId}:mouth`) and update it from sampleVisemeTrack.\"\nnode_modules/@aura3d/engine/dist/engine/agent-api/Decals.js:168:    }).runtime(legacyDecalTag());\nnode_modules/@aura3d/engine/dist/engine/agent-api/Decals.js:233:    }).runtime(legacyDecalTag());\nnode_modules/@aura3d/engine/dist/engine/agent-api/Decals.js:281:    }).runtime(legacyDecalTag());\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/runtimeNodes.js:80:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/batched.js:432:        return this.rewrap(super.runtime(spec));\nnode_modules/@aura3d/engine/dist/engine/agent-api/GameEvidence.js:64:        ...(ids.length === 0 && expectsGame ? [\"No runtime nodes were registered. Add .runtime(game.runtimeNode(\\\"id\\\")) to mutable scene nodes.\"] : []),\nnode_modules/@aura3d/engine/dist/engine/agent-api/GameEvidence.js:261:            evidence: \"Aura3D registers scene nodes marked with .runtime(game.runtimeNode(id)); app code mutates the returned handles.\"\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/sky.js:69:        const tag = (builder) => builder.runtime({ id: `prd07.legacySky.${legacyIndex++}`, tags: [\"prd07.legacySky\"] }).toJSON();\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/weather.js:35:                    .position(x, y, z).scale(0.035).runtime(legacyTag(index)).toJSON());\nnode_modu"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_016n8dcPnQzHdssotKs2onRy",
+    "content": "958:    readonly output?: import(\"../../contracts/output.js\").AuraOutputOptions;\n2162:    readonly output?: unknown;\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 29,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01R2GhokJ3yBJ83CAAJ7nWuK",
+    "name": "read_file",
+    "input": {
+     "limit": 100,
+     "offset": 950,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01AeQtcgyUBcJiSB54j2XGW7",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+     "pattern": "interface AuraRuntimeNodeSpec|setUniform|interface AuraCreateAppOptions|__EVAL|readonly scene"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 29,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01R2GhokJ3yBJ83CAAJ7nWuK",
+    "content": "950\t    readonly qualityProfile?: AuraRendererQualityProfileId;\n951\t    /**\n952\t     * M2 texture streaming budget in bytes (muse3jsparity-PRD). Funds the\n953\t     * distance-prioritized mip residency; the unfunded tail surfaces as\n954\t     * over-budget telemetry instead of silent thrash. Default 256 MiB.\n955\t     */\n956\t    readonly textureBudgetBytes?: number;\n957\t    readonly quality?: unknown;\n958\t    readonly output?: import(\"../../contracts/output.js\").AuraOutputOptions;\n959\t    readonly resolution?: unknown;\n960\t    readonly msaa?: unknown;\n961\t    readonly compile?: unknown;\n962\t    readonly strictMount?: boolean;\n963\t    readonly debug?: unknown;\n964\t    readonly renderScale?: number;\n965\t    readonly backend?: unknown;\n966\t    readonly adaptive?: unknown;\n967\t    readonly targetFrameRate?: number;\n968\t    readonly batching?: unknown;\n969\t    readonly vfx?: unknown;\n970\t    readonly vfxOverrides?: Readonly<Record<string, unknown>>;\n971\t    readonly skinnedShadows?: boolean;\n972\t    readonly morph?: \"gpu\" | \"cpu\";\n973\t    readonly skinnedPbr?: \"unified\" | \"fork\";\n974\t    readonly materialStrictness?: \"warn\" | \"strict\";\n975\t    /** What to do with a draw whose shader failed to compile/link: `skip` (default, plus a diagnostic), `magenta` (flat debug colour; default with `?diag=1`) or `throw` (strict). */\n976\t    readonly shaderFailures?: \"skip\" | \"magenta\" | \"throw\";\n977\t    readonly materialModel?: \"legacy\" | \"physical-r185\";\n978\t    readonly transmission?: \"auto\" | \""
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01AeQtcgyUBcJiSB54j2XGW7",
+    "content": "140:    setUniform?(name: string, value: AuraUniformValue): this;\n250:    readonly scene: AuraSceneSnapshot;\n386:export interface AuraCreateAppOptions {\n389:    readonly scene: AuraSceneBuilder | AuraSceneSnapshot;\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 30,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01HK2sFXiyoVodDUB4Y5JF4R",
+    "name": "read_file",
+    "input": {
+     "limit": 80,
+     "offset": 380,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PC74Vmx6A4DcUtDHxBvi92",
+    "name": "read_file",
+    "input": {
+     "limit": 40,
+     "offset": 110,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Y6za9jPtbKJxMi1YS6Me3w",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/rendering/dist/contracts",
+     "pattern": "AuraToneMappingOperatorLike ="
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 30,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01HK2sFXiyoVodDUB4Y5JF4R",
+    "content": "380\t    onRender?(cb: (f: {\n381\t        readonly alpha: number;\n382\t        readonly realDt: number;\n383\t        readonly simTime: number;\n384\t    }) => void): () => void;\n385\t}\n386\texport interface AuraCreateAppOptions {\n387\t    /** Native asynchronous presentation for the automatic loop; synchronous remains the default. */\n388\t    readonly frameMode?: \"sync\" | \"async\";\n389\t    readonly scene: AuraSceneBuilder | AuraSceneSnapshot;\n390\t    /**\n391\t     * Configuration for {@link AuraApp.physics}.\n392\t     *\n393\t     * `layers` has to be supplied here rather than per body, because a collision mask is only\n394\t     * meaningful relative to the complete set of layers: building the bitmask for \"bullet\"\n395\t     * requires knowing every layer that exists. Without this option a developer could call\n396\t     * `createCollisionLayers` and then have nowhere to put the result — which is exactly the\n397\t     * hole the clean-room top-down shooter hit, since \"bullets hit enemies but not each other\"\n398\t     * is the first thing any shooter needs.\n399\t     */\n400\t    readonly physics?: {\n401\t        readonly layers?: AuraCollisionLayers | undefined;\n402\t        /** World gravity. Defaults to `[0, -9.81, 0]`; top-down games usually want zero. */\n403\t        readonly gravity?: readonly [number, number, number] | undefined;\n404\t        /** Repeatability seed provenance (H1): recorded on the world, fail-loud unless a finite integer. */\n405\t        readonly seed?: number | undefined;\n406\t     "
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PC74Vmx6A4DcUtDHxBvi92",
+    "content": "110\t    setAnimationPose(pose: AnimationPose | undefined, metadata?: AuraRuntimeNodeAnimationPoseBindingMetadata): this;\n111\t    animationPose(): AnimationPose | undefined;\n112\t    setImportedAssetEvidence(evidence: AuraRuntimeNodeImportedAssetEvidence | undefined): this;\n113\t    importedAssetEvidence(): AuraRuntimeNodeImportedAssetEvidence | undefined;\n114\t    setMorphTarget(name: string, weight: number): this;\n115\t    setMorphTargets(weights: RuntimeNodeMorphTargetWeights): this;\n116\t    morphTargets(): RuntimeNodeMorphTargetWeights;\n117\t    /** First-class named morph-influence API: read a target's weight (omit `weight`), or set it (e.g. `node.morphInfluence(\"smile\", 0.8)`). */\n118\t    morphInfluence(name: string, weight?: number): this | number;\n119\t    bounds(): AuraRuntimeNodeBounds;\n120\t    attachEffect(effect: AuraRuntimeNodeEffectAttachment): this;\n121\t    effects(): readonly AuraRuntimeNodeEffectAttachment[];\n122\t    snapshot(): AuraRuntimeNodeSnapshot;\n123\t    /** SG-09 (L7): three's Object3D.renderOrder — draw-order override applied at collect time. Default 0. */\n124\t    renderOrder: number;\n125\t    /** SG-09 (L7): three's Object3D.frustumCulled. Default true. */\n126\t    frustumCulled: boolean;\n127\t    /** SG-09/SR-04 (L7): three's Object3D.layers — bitmask tested against the camera's mask. */\n128\t    readonly layers: AuraLayerMask;\n129\t    /** SG-09 (L7): three's Object3D.userData — free-form author metadata. */\n130\t    readonly userData: Record<string, unknown>;"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Y6za9jPtbKJxMi1YS6Me3w",
+    "content": "node_modules/@aura3d/rendering/dist/contracts/output.d.ts:7:export type AuraToneMappingOperatorLike = \"none\" | \"linear\" | \"reinhard\" | \"aces\" | \"agx\" | \"neutral\" | \"cineon\";\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 31,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm noting the runtime spec format with id and tags, then thinking through the sky dome design — an inverted sphere with a custom unlit gradient shader rendered double-sided, sharing its gradient logic with the water shader so reflections match, plus considering how the scene background and water extent tie into the horizon color.\n\nFor tone mapping, I'm weighing options: disabling tone mapping entirely to preserve authored colors versus using ACES with exposure control for sun glints on the water without clipping. I'm leaning toward turning tone mapping off since the colors need to read accurately rather than washed out, but I'm wary of side effects that might break other parts of the output pipeline.\n\nI'm now thinking through camera placement and sun direction — positioning the camera to look roughly toward the horizon so the sky and water split naturally across the frame, with the sun angled low and slightly off-center for a realistic glint.\n\nI'm placing the sun slightly left of center with a sparkle column marking its reflection on the water. For the water geometry, I'm considering a large grid extending far into the distance, weighing uniform spacing against a nonuniform approach that adds density near the camera to avoid aliasing far away.\n\nChecking spacing further out, waves at that distance still resolve adequately since they matter less. I'll settle on 200 segments (201² vertices, ~40k, safely under Uint16 limits), and plan to compute per-pixel normals analytically from the wave derivatives in the fragment shader rather than relying on vertex normals.\n\nFor the shading, I'll share a wave displacement function between vertex and fragment stages: the vertex shader sums directional sine waves to displace height and passes along the world position plus an analytically-derived normal, while the fragment shader layers additional fbm-based noise ripples on top for finer detail. I'm checking whether I should reuse an existing noise utility for the fbm calculation or write my own.\n\nDeciding to write my own small hash/value noise function rather than rely on an uncertain include, since correctness matters more than reuse here. I'm settling on wave parameters—five sine components with physically plausible dispersion (ω = √(gk)) for an ~8 unit wavelength, giving a total amplitude around 0.4 units so the waves stay visible from a camera at height 2.5, with waves traveling toward the viewer.\n\nWorking out the normal calculation from height derivatives, and planning to flatten normals with distance to reduce sparkle aliasing while fading in noise-based ripple detail. For the fragment shader, I'm computing the view vector and perturbing the interpolated normal with a gradient from 2D fbm noise scrolled over time.\n\nThen I'm figuring out Fresnel reflectance using a manual power approximation instead of a true pow function, checking that it gives reasonable grazing-angle brightening at both far and near viewing distances.\n\nFor the reflection vector, I'm clamping its vertical component above the horizon so it never samples below, then reusing the sky color function to get the reflected sky and sun, handling the sun disc and glow so a glint appears in the water reflection too.\n\nFor specular, I'm skipping the pow() call and instead approximating a tight highlight by repeatedly squaring the NdotH term nine times to get an exponent of 512, plus a broader secondary lobe with fewer squarings for a softer glow, both scaled by the sun's color and intensity.\n\nFor the body color, I want it to mix between deep and shallow hues based on wave height and viewing angle, then blend toward sky reflection using the Fresnel term, adding the specular highlight on top. Finally I'm fading the water color into the horizon sky color with distance-based fog so the water surface blends seamlessly into the sky at the edges of view.\n\nI realize the water's far edge might create a visible seam with the sky dome's horizon, so I'm recalculating camera depression angle and pixel gap to see if it's noticeable, and adjusting scene scale to compensate — increasing water plane size, dome radius, and camera far/near clipping planes for better depth precision and a cleaner horizon blend.\n\nChecking the grid spacing math using an exponential mapping function, I'm testing how vertex density varies from center to edge to ensure wave wavelengths stay large enough relative to local grid spacing near the camera. I'm bumping the grid resolution slightly to stay under the vertex index limit while improving near-camera detail, and now I'm working out how to build the x and z grid dimensions separately.\n\nChecking the spacing math confirms the step sizes grow appropriately with distance—roughly 1 unit near the camera and expanding to about 2.8 units at 100 units out, which keeps the near-field detail dense while coarsening the far field, consistent with the wavelength scale needed.\n\nRather than disabling waves by wavelength to prevent moiré at distance, I'm reaching for a simpler global damping factor on vertex displacement based on squared distance, which fades amplitude smoothly as distance grows while keeping the normal calculation consistent with that same fade.\n\nI'm checking that tessellation density in x is reasonable near the horizon using the power-law spacing function, and confirming the visible frustum width at close distances given the field of view, before thinking about whether the water mesh needs explicit culling bounds.\n\nI'll set bounds spanning the horizontal extent with a vertical margin for displacement, and confirm world positions just come from the model matrix applied directly to vertex positions. Since the shader only reads position data, I decide normals and UVs aren't strictly required, but I might include them anyway just in case some part of the pipeline expects them.\n\nI'll skip UVs but add flat normals, keep double-sided rendering as a safety net with CCW winding from above, and double-check the varying/output naming convention (`outColor`) by referencing how existing shaders in the codebase structure their fragment output.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QbJBsoqWG71ZPfs22VaG8T",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine",
+     "pattern": "outColor|fragColor"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017TzFFoNf1AXsCdsLiA2gFu",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine",
+     "pattern": "glsl: \\{"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 31,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QbJBsoqWG71ZPfs22VaG8T",
+    "content": "node_modules/@aura3d/engine/dist/engine/production-runtime/index.js:979:out vec4 outColor;\nnode_modules/@aura3d/engine/dist/engine/production-runtime/index.js:1006:  outColor = vec4(mapped, 1.0);\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/tsl/emit.js:311:    fe.line(\"outColor = vec4(tslRgb, tslAlpha);\");\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/tsl/emit.js:333:        \"out vec4 outColor;\",\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017TzFFoNf1AXsCdsLiA2gFu",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js:565:            glsl: { vertex: glslVertex, fragment: glslFragment },\nnode_modules/@aura3d/engine/dist/aura3d-cli/migrate-three/mappings.js:79:[Omitted long matching line]\nnode_modules/@aura3d/engine/dist/engine/agent-api/nodes/types.d.ts:2289:    readonly glsl: {\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 32,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01S85L4bgLQ7zyAxeRPkY9Uh",
+    "name": "read_file",
+    "input": {
+     "limit": 120,
+     "offset": 290,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/tsl/emit.js"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01LiV9RKbQzwFEBYHgGVNSr4",
+    "name": "read_file",
+    "input": {
+     "limit": 150,
+     "offset": 466,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/compiler/customMaterial.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 32,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01S85L4bgLQ7zyAxeRPkY9Uh",
+    "content": "290\t    }\n291\t    if (options.alphaTest !== undefined && (!Number.isFinite(options.alphaTest) || options.alphaTest < 0 || options.alphaTest > 1)) {\n292\t        tslError(\"invalid-tsl-graph\", \"alphaTest must be a number in 0..1\");\n293\t    }\n294\t    const color = need(options.colorNode, \"colorNode\", [\"vec3\", \"vec4\"]) ?? constNode(\"vec3\", [1, 1, 1]);\n295\t    const emissive = need(options.emissiveNode, \"emissiveNode\", [\"vec3\"]);\n296\t    const opacity = need(options.opacityNode, \"opacityNode\", [\"float\"]);\n297\t    const position = need(options.positionNode, \"positionNode\", [\"vec3\"]);\n298\t    const program = new Program();\n299\t    // Fragment first: it discovers which varyings the vertex stage must write.\n300\t    const fe = new StageEmitter(program, \"fragment\");\n301\t    const colorExpr = fe.expr(color);\n302\t    fe.line(`${color.type === \"vec4\" ? \"vec4\" : \"vec3\"} tslColor = ${colorExpr};`);\n303\t    fe.line(\"vec3 tslRgb = tslColor.rgb;\");\n304\t    fe.line(`float tslAlpha = ${color.type === \"vec4\" ? \"tslColor.a\" : \"1.0\"};`);\n305\t    if (emissive)\n306\t        fe.line(`tslRgb += ${fe.expr(emissive)};`);\n307\t    if (opacity)\n308\t        fe.line(`tslAlpha *= ${fe.expr(opacity)};`);\n309\t    if (options.alphaTest !== undefined && options.alphaTest > 0)\n310\t        fe.line(`if (tslAlpha < ${formatFloat(options.alphaTest)}) discard;`);\n311\t    fe.line(\"outColor = vec4(tslRgb, tslAlpha);\");\n312\t    const varyings = [...program.fragmentVaryings].sort();\n313\t    const ve = new StageEmitter(program,"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01LiV9RKbQzwFEBYHgGVNSr4",
+    "content": "466\t    const transparent = spec.transparent === true || (spec.blending !== undefined && spec.blending !== \"normal\");\n467\t    const blendMode = !transparent ? \"opaque\"\n468\t        : spec.blending === \"additive\" ? \"additive\"\n469\t            : spec.blending === \"multiply\" ? \"multiply\"\n470\t                : \"alpha\"; // \"normal\"/\"subtractive\"→alpha (documented limit: no subtractive blend mode)\n471\t    return {\n472\t        blend: transparent,\n473\t        blendMode,\n474\t        depthWrite: spec.depthWrite ?? !transparent,\n475\t        depthTest: spec.depthTest ?? true,\n476\t        cullMode: spec.side === \"double\" ? \"none\" : spec.side === \"back\" ? \"front\" : \"back\"\n477\t    };\n478\t}\n479\t/** Deterministic JSON with sorted object keys — feeds the stable cache key. */\n480\texport function stableSpecStringify(value) {\n481\t    if (Array.isArray(value) || ArrayBuffer.isView(value)) {\n482\t        return `[${Array.from(value).map(stableSpecStringify).join(\",\")}]`;\n483\t    }\n484\t    if (isRecord(value)) {\n485\t        return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableSpecStringify(value[key])}`).join(\",\")}}`;\n486\t    }\n487\t    return JSON.stringify(value) ?? \"null\";\n488\t}\n489\tconst normalizeHashableValue = (value) => {\n490\t    if (isTextureBinding(value))\n491\t        return { kind: \"texture-binding\", name: value.name };\n492\t    if (isTextureRef(value))\n493\t        return { kind: \"texture-ref\", id: value.id };\n494\t    if (value instanceof Texture)\n495\t        return"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 33,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I need to avoid using the tokens \"position\", \"normal\", or \"uv\" as variable names in my GLSL code, since those get auto-replaced by macros unless already declared.\n\nFor uniforms, I'll just use `waterTime` which maps to `u_waterTime`, keeping it simple with just one float uniform.\n\nSkipping time-based animation for the sky itself since it's static, though I could add subtle cloud drift later. For the sky dome, I'm positioning it at the camera location with a large radius well within the far clip plane, computing the view direction in the fragment shader from world position minus camera position, and disabling shadows on that geometry since it's purely a backdrop.\n\nNo scene lights exist, so the engine's default lighting shouldn't affect my custom shader, and post-processing should leave the authored colors untouched per the docs. I'm writing a GLSL function that converts authored sRGB sky colors to linear space and blends horizon and zenith tones based on the vertical component of the view direction.\n\nWriting sky shader code...\n\nWriting fbm noise function...\n\nI'm computing the ripple gradient using finite differences of layered fbm fields over time, then fading the effect with distance so distant ripples don't alias into sparkly noise.\n\nWriting wave summation function...\n\nI'm picking six wave directions spreading toward the camera with decreasing wavelengths and amplitudes for layered detail, checking that the resulting slopes stay bounded so the surface doesn't look too jagged, and making sure the shortest wavelength still has enough sampling resolution.\n\nBumping the minimum wavelength up slightly to avoid aliasing near the camera, and double-checking that camera height clears the wave crests so it never ends up submerged. Since there's no tone mapping, bright highlights like the sun glint just clamp naturally, so I'm considering a soft clip only if needed.\n\nFor the water body color, I'm converting deep and shallow sRGB tones to linear space, then blending them based on wave height and view angle, with crests getting a brightness boost from sunlight to simulate subsurface scattering. Finally I'm combining that body color with the Fresnel reflection term for the output pixel color.\n\nI'm adding specular highlights and a foam layer, triggering white foam where wave height exceeds a threshold and noise adds variation, keeping its contribution subtle. For the normal calculation, I'm deciding to recompute the wave gradient directly in the fragment shader rather than interpolating from the vertex stage, since that avoids artifacts and keeps the surface detail sharp at the cost of extra sine/cosine evaluations per pixel.\n\nI'm also working out how to prevent distant waves from aliasing into shimmer by attenuating each wave's contribution based on how its wavelength compares to the pixel's footprint at that distance, using the camera's field of view and screen resolution to estimate that footprint size.\n\nI'll apply the same fade logic to the vertex displacement too, so far water naturally flattens into a mirror-like plain reflecting the sky near the horizon. Larger wavelengths survive farther out—around d=120 before fading, fully gone by d=200—so sun glint will only appear in the nearer region while distant water stays smooth.\n\nFor the atmosphere, I'm adding exponential fog toward the horizon and making sure the reflected-sky lookup matches the dome's horizon color at grazing angles, so the transition stays seamless.\n\nTo avoid double-counting the sun's specular highlight, I'll separate the sky function into a disc-less variant for reflections and use the full version with the sun disc elsewhere.\n\nFor the glint, I'm layering a Blinn-Phong highlight: a tight spec lobe (power 512) for the sharp glint plus a broader lobe (power 32, scaled down) for a softer glow path across the water, computing the half-vector between light and view directions and squaring intensity through exponentiation. I soft-clip the narrow highlight's brightness with an exponential falloff so it stays within range while still reading as a bright white-yellow glint, gated by the surface normal facing the light.\n\nI'm defining the sun direction as a normalized constant vector, checking whether GLSL ES 3.00 allows normalize() in a const initializer, and precomputing the normalized values numerically as a safe fallback literal in case the shader compiler doesn't treat it as a constant expression. I'm also organizing a shared GLSL block that both shaders include via a colorspace decode chunk, making sure the include directive is positioned correctly since there's no #version line, and verifying that the sRGB-to-linear conversion function doesn't rely on pow() in a way that could cause issues.\n\nNow I'm writing the vertex shader, which transforms the vertex position into world space, computes distance to the camera, feeds that into a wave height/gradient function to displace the water surface vertically, and outputs the final world position and clip-space position. I'm weighing whether to use engine-provided matrix aliases or explicit uniforms like u_modelMatrix, u_viewMatrix, and u_cameraPosition, and I need to confirm whether u_cameraPosition is actually populated by the rendering engine for custom materials, since if it isn't, the whole displacement calculation breaks.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_012TBvzu2gf3RZBRYLR96WXj",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/rendering/dist",
+     "pattern": "\"u_cameraPosition\"|\"u_time\"|u_resolution\"|\"u_viewMatrix\""
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 33,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_012TBvzu2gf3RZBRYLR96WXj",
+    "content": "node_modules/@aura3d/rendering/dist/WebGPUDevice.js:2126:        data.set(uniformVec3(command.uniforms?.get(\"u_cameraPosition\")) ?? [0, 0, 1], 164);\nnode_modules/@aura3d/rendering/dist/animation/AnimationToonMaterial.js:265:                { name: \"u_cameraPosition\", kind: \"vec3\" },\nnode_modules/@aura3d/rendering/dist/vfx/DecalPass.js:88:            [\"u_cameraPosition\", [...(ctx.camera?.position ?? [0, 0, 0])]]\nnode_modules/@aura3d/rendering/dist/vfx/BeamPass.js:194:            [\"u_time\", ctx.timeSeconds ?? 0],\nnode_modules/@aura3d/rendering/dist/post/v2Stages.js:353:        g.uniform1f(g.getUniformLocation(prog, \"u_time\"), state.timeSeconds);\nnode_modules/@aura3d/rendering/dist/post/v2Stages.js:1117:        gl.uniform2f(gl.getUniformLocation(prog, \"u_resolution\"), w, h);\nnode_modules/@aura3d/rendering/dist/post/v2Stages.js:1142:            g.uniform2f(g.getUniformLocation(prog, \"u_resolution\"), w, h);\nnode_modules/@aura3d/rendering/dist/post/v2Stages.js:1163:            g.uniform2f(g.getUniformLocation(edgesProg, \"u_resolution\"), 1 / w, 1 / h);\nnode_modules/@aura3d/rendering/dist/post/v2Stages.js:1173:            g.uniform2f(g.getUniformLocation(weightsProg, \"u_resolution\"), 1 / w, 1 / h);\nnode_modules/@aura3d/rendering/dist/post/v2Stages.js:1182:            g.uniform2f(g.getUniformLocation(blendProg, \"u_resolution\"), 1 / w, 1 / h);\nnode_modules/@aura3d/rendering/dist/vfx/contributors.js:427:                    [\"u_cameraPosition\", [...(ctx.camera?.position ?? [0, 0, 0])]],\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 34,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I notice ForwardPass actually auto-sets u_time from timeSeconds, so I don't need my own uniform unless that option isn't being passed through correctly—I should check where timeSeconds originates to confirm it's not defaulting to zero.\n\n",
+    "signature": "CAQSjggKEggTEAEYAjgBQgh0aGlua2luZxIMfL2msLmyRKaHEXOXGgzo6Nm7Ehty7SaATLgiMC96A+8WKzQHjQ0Drj/36nXVJ26onlJbHYmwUGNnm+WH/OPrro6Dih4djunYX7LyHiqpB27UXxBLaHi5D7y1ulhBVmWXbtavkwp8vBDKCEJDPvFB2HZ4KOArlaOLnznjrm8ABwScfhwobUTpEkwsJ2qjHYz/xJZV9PZyPBCm8JZeN40LWFhcod3XhRe6NbmszddaaWJttDOv03qxM70JHouc6mm7TjeMPbHfuZK4VQzAOyhS+g/RnqKkp/a4eCBBX3DGp15/lBwNsyX9AJgV5Nn7iQvTos+slFxcWhIe/jgzcJ4ljV7w9vJnOjn0rG07Cgebm/1wMf+eHNx/taKkNDPtuTrSqeDmc5/2eMGa0QuO1MqZZdRaTnfCkN62W3SGqg6t0vNiuinXQ1QpG3z3THwtuaKmet1YscsIWGwpY3N6BeyibqVO9guLjj7WqixjsMM33eKr52xj0EAi6DG1Xfa7iJLLStn6fm7nZw7Wik8EBiyiA2zAueDZWC1jPLbbZZ640nF4tcttJgXz/w4mYsZPHLtpcNIqmhUrmPDqxoSIqiV+/wWRxH4k7yCYBXZ8MQh8Xe/8nuGoVWomqrHc+DUkMf9GHoFm4jShKN6YcBnmC6UX3UbmujLrHZ207bS3GxoV1ONU83QsbxHoos6jtpXaNWtc1rHbON++ewxbVkKM+YW5qTS7kEI0bfEyBw5wo3pMsKMI7lDpTBjrrguVH2K4ZXXXv7h9DzIeiuMPdY70aNH3642gRz79zpnjWQDJaW6F35GTRxNsJtzQsEOzcZ5C1q49dY2R1pmtf9wHFHP6LYL76BN++4KhS+kY/zCvtKdiKIQJYtvaxz10y7OnKpYxwgyw8+4m5mEPh7t2IXMJwipYItyOeVgInk8GDUgQisl6ycAjbtCqSdVYOQkjxbSn5IgRJhATA0l9pE4wgrDqZMOAzO9p6eh9yr1eC9jVzMI5d64kThG8fUTh0Ld9WmXfG/15+uy88NllFfWniVSRioZllXiq8nCdDc+dtuqzS5ySgX7nY6HAMl1ODrNlNrjDLesqPK3FRl6eUomUzsBs4oJMctqhoCYU/F/8PFLyukFrJxwAHR8HJPJY3oO7vU6xD2ZEoD7WAAXNnsTI1sQzK0C0r6wF2/iZcuHntCtnpKO6pcp1ZCEb15LSdEl1T4BvyuUE8UcVU1Oi1LmlLSdvToZRL9e6a8QzrhSt6Losx4sO3zA0tgJqhDlTEuYVsZM04iEIoHYTVjOUw5I6HgG3nmkgTNynRvDobZ9rmrKHZKbzDSRyjAyQVypq3UBAh6ewX4mfpLfQztEOjfUYAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01256qqkzr8oeKCVdSmGtvNy",
+    "name": "read_file",
+    "input": {
+     "limit": 80,
+     "offset": 1568,
+     "path": "node_modules/@aura3d/rendering/dist/ForwardPass.js"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01RCBVPW3ArJjNzsRvr6dYbN",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/rendering/dist",
+     "pattern": "timeSeconds:"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 34,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01256qqkzr8oeKCVdSmGtvNy",
+    "content": "1568\t            field,\n1569\t            color: value\n1570\t        });\n1571\t    }\n1572\t    return value;\n1573\t}\n1574\tfunction applyCameraUniforms(cameraPosition, item, shader, uniforms) {\n1575\t    if (!shader.reflection.uniforms.has(\"u_cameraPosition\"))\n1576\t        return;\n1577\t    const position = cameraPosition ?? [0, 0, 1];\n1578\t    if (position.length !== 3 || position.some((value) => !Number.isFinite(value))) {\n1579\t        throw new RenderDeviceError(\"Forward pass camera position must be a finite vec3\", \"FORWARD_CAMERA_CONTRACT\", {\n1580\t            label: item.label,\n1581\t            cameraPosition: [...position]\n1582\t        });\n1583\t    }\n1584\t    uniforms.set(\"u_cameraPosition\", [...position]);\n1585\t}\n1586\tfunction applyAlphaCutoffUniform(item, shader, uniforms) {\n1587\t    if (!shader.reflection.uniforms.has(\"u_alphaCutoff\") || uniforms.has(\"u_alphaCutoff\"))\n1588\t        return;\n1589\t    uniforms.set(\"u_alphaCutoff\", 0);\n1590\t}\n1591\t/**\n1592\t * Wrinkle-detail intensity (E1 face-rig demo): mirrors the morph-uniform pattern — only\n1593\t * shaders declaring `u_wrinkleStrength` are touched, and an absent item value uploads 0,\n1594\t * which every such shader treats as \"today's rendering exactly\".\n1595\t */\n1596\tfunction applyWrinkleUniform(item, shader, uniforms) {\n1597\t    if (!shader.reflection.uniforms.has(\"u_wrinkleStrength\") || uniforms.has(\"u_wrinkleStrength\"))\n1598\t        return;\n1599\t    const strength = item.wrinkleStrength ?? 0;\n1600\t    uniforms.set(\"u_wrinkle"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01RCBVPW3ArJjNzsRvr6dYbN",
+    "content": "node_modules/@aura3d/rendering/dist/renderer/FrameGraph.js:149:            timeSeconds: this.timeSeconds,\nnode_modules/@aura3d/rendering/dist/TerrainTiles.d.ts:123:export declare function scatterWindOffset(x: number, z: number, timeSeconds: number, windStrength: number, response?: number, amplitude?: number): ScatterWindOffset;\nnode_modules/@aura3d/rendering/dist/resources/UniformBlock.d.ts:85:    update(camera: FrameCamera, timeSeconds: number, exposure: number, flags: number): void;\nnode_modules/@aura3d/rendering/dist/contracts/frameGraph.d.ts:55:    readonly timeSeconds: number;\nnode_modules/@aura3d/rendering/dist/world/water/GerstnerWaves.d.ts:55:export declare function gerstnerEvaluate(packed: GerstnerWaveUniforms, x: number, z: number, timeSeconds: number): GerstnerEvaluation;\nnode_modules/@aura3d/rendering/dist/world/water/GerstnerWaves.d.ts:57:export declare function gerstnerHeightAt(packed: GerstnerWaveUniforms, x: number, z: number, timeSeconds: number): number;\nnode_modules/@aura3d/rendering/dist/world/water/UnderwaterState.d.ts:4:export declare function isUnderwaterPoint(point: readonly [number, number, number], heightAt: (x: number, z: number, t: number) => number, timeSeconds: number): boolean;\nnode_modules/@aura3d/rendering/dist/world/vegetation/WindField.d.ts:29:export declare function packWindUbo(spec: WindFieldSpec, timeSeconds: number): Float32Array;\nnode_modules/@aura3d/rendering/dist/world/vegetation/WindField.d.ts:38:export declare function updateWindFie"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 35,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm uncertain about the time source in production versus headless runs, so I'll grab time from onFrame's frame.time, falling back to performance.now() if that's unreliable for deterministic captures.\n\nTo stay safe against unbound uniforms, I'll rely on the default modelViewProjection matrix for positioning and model matrix for world space, but treat camera position as a fixed TS constant since the camera is static rather than trusting a possibly-missing uniform. For the sky dome, I'll place it exactly at the camera position and compute view direction as the normalized vector from world position to camera.\n\nI'm working out the transform math: since the water's model matrix is identity, I can use the model matrix for generic world position but displace the vertex height locally before applying modelViewProjection for gl_Position, keeping things consistent.\n\nNow I'm considering the sky dome's size and placement — a sphere of radius ~2000 centered on the camera with doubled-sided rendering to avoid backface culling, since the camera sits inside it and bounding-sphere frustum culling should treat it as always visible.\n\nI set the depth range to 0.3 near and 6000 far, leave tone mapping off, keep exposure at default, and leave antialiasing and dithering at their defaults. I also need to check how createAuraApp handles a selector like \"#app\" when it already points to an existing canvas element, versus creating a new one.\n\n",
+    "signature": "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"
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_017i9aqiQGaMRx1ovEy7m574",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.js",
+     "pattern": "HTMLCanvasElement|querySelector|createElement\\(\"canvas\"\\)|resize"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01CAnk7qeQpLfTYSb4zaAoU8",
+    "name": "list_dir",
+    "input": {
+     "path": "."
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 35,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_017i9aqiQGaMRx1ovEy7m574",
+    "content": "137:        }), options.resize ?? true, minimumBackingSize(coreDpr));\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01CAnk7qeQpLfTYSb4zaAoU8",
+    "content": ".agents/\nAGENTS.md\nTASK.md\ndocs/\nindex.html\nllms.txt\nnode_modules\npackage.json\npublic/\nsrc/\ntsconfig.json"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 36,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01NZFMqiTEuv3m5J3G4LNtTo",
+    "name": "read_file",
+    "input": {
+     "path": "index.html"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_011HsxfHP9Ur7A8uwzigFUU8",
+    "name": "list_dir",
+    "input": {
+     "path": "src"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QVr7XPDwhMSuQfXm6qoqvG",
+    "name": "read_file",
+    "input": {
+     "limit": 150,
+     "offset": 60,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 36,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01NZFMqiTEuv3m5J3G4LNtTo",
+    "content": "1\t<!doctype html>\n2\t<html lang=\"en\">\n3\t  <head>\n4\t    <meta charset=\"utf-8\" />\n5\t    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n6\t    <title>eval app</title>\n7\t    <style>\n8\t      html, body { margin: 0; background: #000; color: #fff; font: 13px/1.4 system-ui, sans-serif; }\n9\t      #app { display: block; width: 640px; height: 360px; }\n10\t    </style>\n11\t  </head>\n12\t  <body>\n13\t    <canvas id=\"app\" width=\"640\" height=\"360\"></canvas>\n14\t    <script type=\"module\" src=\"/src/main.ts\"></script>\n15\t  </body>\n16\t</html>\n17\t\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_011HsxfHP9Ur7A8uwzigFUU8",
+    "content": "(empty)"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QVr7XPDwhMSuQfXm6qoqvG",
+    "content": "60\t                    options.onAssetProgress(event); } }\n61\t            : {}),\n62\t        ...(options.onAssetError\n63\t            ? { onAssetError: (event) => { if (!disposed)\n64\t                    options.onAssetError(event); } }\n65\t            : {})\n66\t    });\n67\t    // endregion parity:L4\n68\t    // T0-12: mount-phase timing marks consumed by the bench harness's\n69\t    // payload.extra.mountTiming (see markTiming in ./platform).\n70\t    markTiming(\"a3d:mount:create-app-start\");\n71\t    let snapshot = normalizeSceneSnapshot(options.scene);\n72\t    let renderSnapshot = flattenSceneSnapshot(snapshot);\n73\t    const rendererSelection = normalizeCreateAppRendererOptions(options.renderer);\n74\t    // PR 0 seams (CONTRACTS.md §3.2): flag resolution, C-27 quality-tier resolve, C-38\n75\t    // app-extension mount and C-31 diagnostics sections are fixed call sites owned by PRD 15.\n76\t    // C-38 source chain (contracts/flags.ts §source order): `qualityRebuild.flags`\n77\t    // wins over URL `?a3d-qr=` — `resolveQrFlags` applies options first and\n78\t    // `setEntry` never overwrites an earlier key. URL flags apply unless the app\n79\t    // opts out (`allowUrlFlags:false`); without this the `a3d-qr` param was dead\n80\t    // for every app — lane extensions, actor sources and clip-drive all gated on\n81\t    // the resolved flags and silently ran flag-off under `?a3d-qr=animation`.\n82\t    const qrFlags = qrFlagsWithAnimationMixer(resolveQrFlags({\n83\t        options: options.qualityRebuild?.fla"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 37,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm checking how resolveCanvas handles the target and whether configureCanvas might resize it, so I should set resize to false and pixelRatio to 1 to avoid unwanted canvas resizing.\n\n",
+    "signature": "CAQS/wYKEggTEAEYAjgBQgh0aGlua2luZxIMzo2i5PklLna8DqZeGgymT4vPCcGlUpxcs7oiMCb7m2npa+mcr7GdfcYfPhpQ53qt5/bIDfPwy2TV8HRQIAPTd91r4xmIm7yy1wUJXCqaBtU8nvnzmkfGW5VsKmZxlkygcxUWpbP318D03L1QIZKFVA/qRWk+nmMyvX6OJmLOfd6xsdQTlC4DzbJ+BMAgxMPCHQyX7OS4fy/n7gTUEbJv7dBRdaTC8kjNLNB/fEF4G4XfMwkkBpGkTwNhYA5/rfQc6sCt8yhbLKz6hckmDjfRXuVEgeRTD0kmyqMjVKVLRZGTrycVM1/UVsYAFO8lqxT/gZ/JAOVu01pKsiX7wC0CCHRkQJAs+D5ufVBk66EClcZP1HAzrcijio0XPbCXCc7L9KgsoV2P4CdbI+BoS9pJSoN8U2cs6j5Boq+yed5CrRtDwq0Yv+qy9nDWQqAjp76Nukwq5k57wQrjZKHisZS4JtHGVDWgtSsxwSpfMK+bJpcEePk3iE4C5XAvNGcYe/huUeKwsrYMLjDwa80+v/ETYG7sIi93MqWP+x72qOEL/IXNIBQedqQn3Emg3l/5mSMODIbQeWzuPCYZ3uBvAnKZGGpdIiheSZEH/w4p9kWuqqrE132YxtCoAKmxLSWZbHbh+6H7fxedMUHg0xsg57CU1ywBO+U/5Dy6+fdy03fG97nggBepLbVOzJJfpIjPOhbzwF0jRSbREk8LxTodLNLZCVmqOGEsR1VK6l0kCv/lkXAVKV+AiGie/MJ7aHSpegBJbTL4LohPjOBoO8LNDHvgQiw9iQ1nRjs95+zQA8uxg1V3Wo41QKvq8D4kkwbzrV2o9EMC925ON23zzbphf1YosCTLbFuecN/bLIvrhXdE9Zx63WLLFaT89txBudid6Iv9Cr4a64WrQMOGDkYUR8alsFFXtU2sDD6fX6cnoz3wCboTMiyujPNtlRyztaH/Vn3RDIC6vUmJO+lHZkwn2w/09N7rJcnuZUXbXsGdnTvfB1L3nNGDKRYtbnynfKU/bR8ECQJwXHIrktcXzHVf0KkO9n9son9+DYuG+A6Mxy08PK1jWnPvK8PCVUgd1sMZ4BkhpQANYJAGuWYYKl3bgvH+Bzg18xOwUGSkv922WBxnmBI+UjXSmIXJ0sJLsjYttMyqrXU/xd9kWmzEGAE="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_0169PSoLevy5rTcxvyRaWPiW",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api",
+     "pattern": "function resolveCanvas|function configureCanvas"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 37,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_0169PSoLevy5rTcxvyRaWPiW",
+    "content": "node_modules/@aura3d/engine/dist/engine/agent-api/app/canvas.d.ts:2:export declare function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement | undefined;\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/canvas.d.ts:3:export declare function configureCanvas(canvas: HTMLCanvasElement, pixelRatio: number, resize: boolean, minimum?: {\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/canvas.js:4:export function resolveCanvas(target) {\nnode_modules/@aura3d/engine/dist/engine/agent-api/app/canvas.js:72:export function configureCanvas(canvas, pixelRatio, resize, minimum = { width: 320, height: 220 }) {\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 38,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01FAiUodYPhpsJyFGDxhV5dT",
+    "name": "read_file",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/canvas.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 38,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01FAiUodYPhpsJyFGDxhV5dT",
+    "content": "1\t// PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.\n2\timport { AuraRuntimeError } from \"./errors.js\";\n3\timport { round } from \"../GameRuntime.js\";\n4\texport function resolveCanvas(target) {\n5\t    if (!target) {\n6\t        return undefined;\n7\t    }\n8\t    if (typeof target === \"string\") {\n9\t        if (typeof document === \"undefined\") {\n10\t            throw new AuraRuntimeError(\"missing-canvas\", `Aura3D could not find canvas target \"${target}\" because document is unavailable. Suggested fix: run createAuraApp in a browser or pass an HTMLCanvasElement.`);\n11\t        }\n12\t        const element = document.querySelector(target);\n13\t        if (!element) {\n14\t            throw new AuraRuntimeError(\"missing-canvas\", `Aura3D could not find canvas target \"${target}\". Suggested fix: add <canvas id=\"${target.replace(/^#/, \"\")}\"></canvas> or pass an existing element.`);\n15\t        }\n16\t        if (element instanceof HTMLCanvasElement)\n17\t            return element;\n18\t        if (element instanceof HTMLElement)\n19\t            return appendCanvas(element);\n20\t        throw new AuraRuntimeError(\"missing-canvas\", `Aura3D target \"${target}\" is not an HTMLElement. Suggested fix: pass a canvas or container element.`);\n21\t    }\n22\t    return target instanceof HTMLCanvasElement ? target : appendCanvas(target);\n23\t}\n24\tfunction appendCanvas(target) {\n25\t    applyDefaultCanvasMountLayout(target);\n26\t    const canvas = document.createElement"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 39,
+  "content": [
+   {
+    "type": "thinking",
+    "thinking": "I'm setting resize to false and pixelRatio to 1 since the canvas already has width attributes. For signaling frame readiness, I need to figure out whether the first onFrame callback truly means the WebGL frame has been presented, or if I should wait for an app.ready call plus a couple animation frames to be safe.\n\n",
+    "signature": "CAQSpggKEggTEAEYAjgBQgh0aGlua2luZxIMl97N2PJCyNj5nytaGgxTephYBnUWWlTCb5EiMEAOurAMQLIkOeHYoBI2ui9OO2ikWTXSuti19fuXyQR4eRbRqqoMkzK7SzzEso1moirBB8XdqAj81Y7lOH/y1OW/Y8T6zllpgKfWh5IgzJKXmpFj2e/fMdX9t6hKvrPSpWEjl9WGKlhKmXrl1Kt36tmIpbSx/eAAqVfwr83NKlugYimYSjXcivWS+TRpeBQX0jFhQJWgxe29T4oGfllYDj9PD1V40wBH51rq5X+qTCkmTjbOFWU6+Z4PetBp2UcDvVeqWOgXMaasul1oI7ekrd2ZBZQqo+7uavTMmtBisFAAeNNMEMJW96LpU3rLZtHwvbkz721S1A431vtSq6edUkBGp30XeQSfv6CMPkq3ulL7ctmnFuNCYHZeMRu+ieVNg/C+75yw8sxBYKOKlELL2kczqziH6vUTjwqsxSB78UMEBQbLYSvgS3+vCZDjrNMmG6B4yQRyE2O2HYjlkeH8G2YvV6uYkwvEnipdY9oz/G4yhhmmEePAZ0zPN+z0Fm+9ZG2sCc639TxWezxqWsmfJbPsGeTT8/uM/sNJII3qOltNGZbRawH1hXAhgtoBmpIIWhmsHozkbK3ExAMCHwNIEy1TFB2owQmveIU2igJG51i6mhHbBVhfHynvXCz+BfS3IiZ9+hKVD63Uj6f3Ea5+fITasEdB3ySM39Ul19ek9W423ATxp/TyXqe5ORHtv6n+3zQHKEtL7iAh+QZqQu22WctoHY781KqDKYWZpRaT6sPLygY87B6y1PRmWbAMe/KLf49m4+eq12l1dWQPTKj8+RScmK/pWLsNahsRc/oWihe2npJpE2Z+3wKO9WqPfRqkiwn+sGwP2flbusoe0s245LtsIBbjhXLNyFs8OsYtCSUZ6QZreyTyVfnBmRN6QWlohvq94cPsyLTkLgwwAU9hP2Ivx3J7930zEVfRJIpR2CxwWRh8+ahydaVSttD3uq9hED2c2UTr2RMeJDs80lh9xqOMBwliK8+LHu0KIl76V/uDGPpOl0EbOCRsocS9pH3o58BQZahPcgcrnbXNzNuSbKBSaaEdiPtSRTvrYv4iABs510yxE7aGP5akTyrkCB47tLnC9yJzziterZe1143Gl2kylcTuuBS5c9eyx1rFeW7KNPdO8lo1+sf9wFaGWSuHR0fzN3/FeBJGHYNllis8yXKE7+0EplyONVqY5aFsEOU/nuD/aTbjdYceCJf655PzozAFnr41PZLMKA8pkcyRCzUN96XHFzJlp34AuoIf1Vt0aJ43MSkieqsX/jUsRiFuDdxG4XmCfJoI3Xu58nwLUQWFUlZKM72nvEXjYdXw3YGWc9yjiFDHh2Me5LxnSd6+LLpZVE0YAQ=="
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01QkLE94Kb5NgSHRrpZvg4aG",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts",
+     "pattern": "ready\\(|export interface AuraApp\\b|nodes:|presented|onFrame"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01Me5fLaU6k4SChc3btMD3Hy",
+    "name": "search",
+    "input": {
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.js",
+     "pattern": "ready\\(|ready:"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 39,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01QkLE94Kb5NgSHRrpZvg4aG",
+    "content": "248:export interface AuraApp {\n252:    readonly nodes: AuraRuntimeNodeRegistry;\n271:    onFrame(callback: AuraFrameCallback): () => void;\n289:     * await app.ready();\n295:     * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.\n297:    ready(): Promise<void>;\n"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01Me5fLaU6k4SChc3btMD3Hy",
+    "content": "172:     * Settles when the in-flight WebGL mount finishes, successfully or not. Backs `app.ready()`.\n174:     * Resolved rather than pending when no mount is in flight, so `await app.ready()` is safe to call at\n185:     * `createAuraApp` has no controller to attach to yet. Making them await `ready()` first would be the\n427:        // The rejection only carries meaning to an `app.ready()` awaiter; this\n479:                // overlay surfaces it on the canvas and `app.ready()` rejects with\n662:        async ready() {\n"
+   }
+  ]
+ },
+ {
+  "role": "assistant",
+  "turn": 40,
+  "content": [
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01UzyJbTNNWkaHksV94MbZYg",
+    "name": "read_file",
+    "input": {
+     "limit": 80,
+     "offset": 245,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/nodes/types/runtime.d.ts"
+    }
+   },
+   {
+    "type": "tool_use",
+    "id": "toolu_bdrk_01PNkbgxN9TXAcvGLvLRcMPG",
+    "name": "read_file",
+    "input": {
+     "limit": 60,
+     "offset": 600,
+     "path": "node_modules/@aura3d/engine/dist/engine/agent-api/app/createAuraApp.js"
+    }
+   }
+  ]
+ },
+ {
+  "role": "user",
+  "turn": 40,
+  "content": [
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01UzyJbTNNWkaHksV94MbZYg",
+    "content": "245\t    readonly fixedDt: number;\n246\t    readonly alpha: number;\n247\t}\n248\texport interface AuraApp {\n249\t    readonly canvas?: HTMLCanvasElement;\n250\t    readonly scene: AuraSceneSnapshot;\n251\t    readonly backend: AuraBackend;\n252\t    readonly nodes: AuraRuntimeNodeRegistry;\n253\t    /** SH-04 (L1-12): WebGPU-only compute (WGSL). Every call throws `compute-requires-webgpu` until a WebGPU device is bound with `app.compute.bind(...)`. */\n254\t    readonly compute: import(\"../compute.js\").AuraComputeSurface;\n255\t    readonly runtime: AuraRuntimeState;\n256\t    /**\n257\t     * The live physics simulation for this app.\n258\t     *\n259\t     * This is the seam that makes `@aura3d/engine` a game engine rather than a scene\n260\t     * declaration format. Before it existed, `.physics({ type: \"dynamic\" })` let a developer\n261\t     * watch a box fall and nothing else: no force, no collision callback, no raycast, no\n262\t     * joint. Every genre outside the four bundled kits had no path at all.\n263\t     *\n264\t     * Bodies declared on scene nodes are registered here under their node name, so\n265\t     * `app.physics.bodies.require(\"crate\").applyImpulse([4, 0, 0])` works with no extra setup.\n266\t     */\n267\t    readonly physics: AuraPhysicsRuntime;\n268\t    setScene(scene: AuraSceneBuilder | AuraSceneSnapshot): void;\n269\t    /** Apply native renderer quality between completed frames; rejects unsupported particle owners. */\n270\t    setPerformanceQuality(settings: AuraPerformanceQuality): void;\n2"
+   },
+   {
+    "type": "tool_result",
+    "tool_use_id": "toolu_bdrk_01PNkbgxN9TXAcvGLvLRcMPG",
+    "content": "600\t         * signal that a route intends to use physics.\n601\t         */\n602\t        get physics() {\n603\t            return appPhysics();\n604\t        },\n605\t        get runtime() {\n606\t            return {\n607\t                paused: runtimePaused,\n608\t                frame: runtimeFrame,\n609\t                time: runtimeTime,\n610\t                fixedDt: runtimeFixedDt,\n611\t                alpha: runtimeAlpha\n612\t            };\n613\t        },\n614\t        onFrame(callback) {\n615\t            frameCallbacks.add(callback);\n616\t            return () => {\n617\t                frameCallbacks.delete(callback);\n618\t            };\n619\t        },\n620\t        offFrame(callback) {\n621\t            frameCallbacks.delete(callback);\n622\t        },\n623\t        input(inputOptions) {\n624\t            const controller = createGameInput(inputOptions);\n625\t            ownedInputControllers.add(controller);\n626\t            return controller;\n627\t        },\n628\t        pause() {\n629\t            runtimePaused = true;\n630\t            // Stop the production requestAnimationFrame owner as well as simulation.\n631\t            // Holding the clock alone still submitted the same expensive frame forever.\n632\t            productionController?.pause?.();\n633\t            productionController?.resetTemporalHistory?.(\"pause\");\n634\t        },\n635\t        resetRuntimeClock() {\n636\t            /*\n637\t             * Rewind the frame counter and elapsed time to zero.\n638\t             *\n639\t             * Needed for re"
+   }
+  ]
+ }
+]

@@ -13,10 +13,10 @@ const okRemote = (probes: Record<string, unknown>) => ({ build: { ok: true }, re
 
 describe("agent-eval scoring", () => {
   it("scores task probes deterministically", () => {
-    const good = probeChecks(1, okRemote({ animated: true, orbitResponds: true }));
+    const good = probeChecks(1, okRemote({ animated: true, orbitResponds: false }));
     expect(good).toMatchObject({ passed: good.total });
-    const bad = probeChecks(1, okRemote({ animated: true, orbitResponds: false }));
-    expect(bad.items.orbitResponds).toBe(false);
+    expect(good.items).not.toHaveProperty("orbitResponds");
+    expect(probeChecks(1, okRemote({ animated: false })).items.rotates).toBe(false);
     expect(probeChecks(4, okRemote({ hasState: true })).items).toMatchObject({ hasState: true, pauseFreezes: false });
     const failedBuild = probeChecks(5, { build: { ok: false } });
     expect(failedBuild.items.builds).toBe(false);
@@ -40,11 +40,11 @@ describe("agent-eval scoring", () => {
     const m = computeRunMetrics({
       run,
       remoteDraft: { ...okRemote({}), build: { ok: false } },
-      remoteFinal: okRemote({ animated: true, orbitResponds: true }),
+      remoteFinal: okRemote({ animated: true }),
       sources: { "src/main.ts": "const a = 1;\n// c\nrun();\n", "index.html": "<html>" }
     });
     expect(m).toMatchObject({ firstTryTypecheck: false, firstTryBuild: false, firstTryRender: false, finalBuild: true, finalRender: true, editsToGreen: 1, srcLines: 2, docsFilesOpened: 2, probePassFraction: 1 });
-    const same = computeRunMetrics({ run: { ...run, draftIsFinal: true }, remoteDraft: null, remoteFinal: okRemote({ animated: true, orbitResponds: true }), sources: {} });
+    const same = computeRunMetrics({ run: { ...run, draftIsFinal: true }, remoteDraft: null, remoteFinal: okRemote({ animated: true }), sources: {} });
     expect(same.firstTryBuild).toBe(true);
   });
 
@@ -73,7 +73,7 @@ describe("agent-eval scoring", () => {
       editsToGreen: 0,
       turns: 8,
       srcLines: 30,
-      probeItems: arm === "aura" ? { orbitResponds: false } : {},
+      probeItems: arm === "aura" ? { rotates: false } : {},
       ...over
     });
     const text = renderReport({
@@ -83,7 +83,7 @@ describe("agent-eval scoring", () => {
     });
     expect(text).toContain("| first-try build (vite, stock) | 0/2 | 1/1 |");
     expect(text).toContain("10 (8-12, n=2)");
-    expect(text).toContain("orbitResponds x2");
+    expect(text).toContain("rotates x2");
     expect(text).toContain("bad: prism 500");
     expect(text).toContain("- a caveat");
     expect(text).toContain("not statistical significance");

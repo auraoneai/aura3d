@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // Cold-start authoring trial runner. One agent per (arm, task, run) in an isolated sandbox, LLM through Kiro Prism.
 //   node tools/agent-eval/run.mjs --arm aura|three|both --task N|1,2,3|all --runs K [--batch NAME] [--seed S]
-//        [--concurrency C] [--model ID] [--max-turns N] [--aura-tarballs DIR] [--dry-run]
+//        [--concurrency C] [--model ID] [--max-turns N] [--aura-tarballs DIR] [--docs-ref GITREF] [--only RUNID,RUNID] [--dry-run]
 // Build and render scoring happens afterwards on the remote runner (tools/agent-eval/score-remote.sh).
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { ensureBase } from "./lib/base.mjs";
 import { runAgent } from "./lib/loop.mjs";
 import { DEFAULT_MODEL, createPrismClient, loadKey } from "./lib/prism.mjs";
-import { ARMS, assertNoRepoSourceLeak, buildSandbox, docsCommit, writeSnapshot } from "./lib/sandbox.mjs";
+import { ARMS, assertNoRepoSourceLeak, buildSandbox, docsCommit, exportDocs } from "./lib/sandbox.mjs";
 import { createToolbox } from "./lib/tools.mjs";
 
 const REPO_ROOT = resolve(import.meta.dirname, "..", "..");
@@ -28,6 +28,8 @@ export function parseArgs(argv) {
     else if (a === "--model") args.model = next();
     else if (a === "--max-turns") args.maxTurns = Number(next());
     else if (a === "--aura-tarballs") args.auraTarballs = resolve(next());
+    else if (a === "--docs-ref") args.docsRef = next();
+    else if (a === "--only") args.only = next().split(",");
     else if (a === "--dry-run") args.dryRun = true;
     else throw new Error(`unknown argument ${a}`);
   }
@@ -84,7 +86,7 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
   const runDir = join(batchDir, "runs", item.runId);
   mkdirSync(runDir, { recursive: true });
   const base = bases[item.arm];
-  const sandbox = buildSandbox({ arm: item.arm, task: item.task, dir: sandboxDir, repoRoot: REPO_ROOT, baseDir: base.baseDir });
+  const sandbox = buildSandbox({ arm: item.arm, task: item.task, dir: sandboxDir, repoRoot: REPO_ROOT, baseDir: base.baseDir, docsRoot: args.docsRoot ?? REPO_ROOT });
   assertNoRepoSourceLeak({ dir: sandboxDir, arm: item.arm, repoRoot: REPO_ROOT, baseDir: base.baseDir });
   const record = {
     runId: item.runId,
@@ -96,7 +98,7 @@ export async function executeRun({ item, args, bases, client, batchDir }) {
     seed: item.seed,
     model: args.model,
     startedAt: new Date().toISOString(),
-    docsCommit: item.arm === "aura" ? docsCommit(REPO_ROOT) : null,
+    docsCommit: item.arm === "aura" ? (args.docsRef ?? docsCommit(REPO_ROOT)) : null,
     docs: sandbox.docs,
     base: { versions: base.versions, patch: base.patch }
   };
@@ -142,10 +144,12 @@ export async function main(argv) {
   const tasks = resolveTasks(args.task);
   const batchDir = resolve(REPO_ROOT, "evidence/agent-eval", args.batch);
   mkdirSync(batchDir, { recursive: true });
-  const plan = buildPlan({ arms, tasks, runs: args.runs, seed: args.seed, batch: args.batch });
+  const fullPlan = buildPlan({ arms, tasks, runs: args.runs, seed: args.seed, batch: args.batch });
+  const plan = args.only ? fullPlan.filter((p) => args.only.includes(p.runId)) : fullPlan;
+  if (args.docsRef) args.docsRoot = exportDocs(REPO_ROOT, args.docsRef, join(WORK_ROOT, args.batch, "docs"));
   const bases = Object.fromEntries(arms.map((arm) => [arm, ensureBase(arm, { tarballs: args.auraTarballs ?? null })]));
   writeFileSync(
-    join(batchDir, "plan.json"),
+    join(batchDir, args.only ? `plan-rerun-${Date.now()}.json` : "plan.json"),
     JSON.stringify({ args, plan, bases, note: "model sampling is not seedable through Prism; seeds fix plan order and run ids only" }, null, 2)
   );
   const client = args.dryRun ? null : createPrismClient({ key: loadKey() });
@@ -160,7 +164,7 @@ export async function main(argv) {
       return { runId: item.runId, invalid: true, invalidReason: String(error.message).slice(0, 300) };
     }
   });
-  writeFileSync(join(batchDir, "batch.json"), JSON.stringify({ batch: args.batch, wallMs: Date.now() - started, runs: records.length, invalid: records.filter((r) => r.invalid).length }, null, 2));
+  writeFileSync(join(batchDir, args.only ? `batch-rerun-${Date.now()}.json` : "batch.json"), JSON.stringify({ batch: args.batch, wallMs: Date.now() - started, runs: records.length, invalid: records.filter((r) => r.invalid).length }, null, 2));
   return { args, records, batchDir };
 }
 

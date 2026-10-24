@@ -1,0 +1,7 @@
+# baseline1 run notes (read with REPORT.md)
+
+- Docs under test: the repo's agent entry docs at commit 04b7726ef (set sha256 d90cca03...), library `@aura3d/engine` 4.1.2 plus the one-line stock-build fix (04b7726ef) applied to the installed dist; three 0.185.1. Model: claude-sonnet-5.5 through Kiro Prism. 3 runs per task per arm, tasks 1-5, 40-turn budget.
+- `first-attempt.log`: the first launch. 12 of the 30 runs aborted before their agent started (no model call): I committed the harness scaffold into the repo while the batch was running, and the in-memory leak check then flagged the scaffold files as repo source. That was a harness bug, not eval data. The 12 runs were re-run with identical run ids and plan (`--only`, `plan-rerun-*.json`, `batch-rerun-*.json`) after the check exempted its own scaffold. No run that reached a model was discarded or re-rolled.
+- Remote scoring was run three times on the same snapshots while the scorer was being fixed (stale image tag shared by two shards, `locator.screenshot` stalling on heavy scenes, an orbit probe that proved unreliable). Only the last pass is kept in `remote/`; task 1 was re-scored and merged. The orbit probe is no longer scored (see `tools/agent-eval/caveats.json`).
+- `baseline1-cap100` re-runs only the Aura3D arm with a 100-turn budget (same docs), to separate "cannot do the task" from "ran out of turns".
+- Full transcripts (untruncated tool results) are not committed; `runs/*/transcript.json` keeps assistant turns in full and tool results truncated to 1,500 characters.

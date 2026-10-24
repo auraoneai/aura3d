@@ -21,7 +21,7 @@ function treeHash(dir) {
  * Collect the scorable snapshots of a batch into `<stageRoot>/<batch>`: the final snapshot of every valid run, plus the
  * draft snapshot when it differs from the final one (a draft equal to the final is scored once and aliased).
  */
-export function stageBatch({ repoRoot, batch, stageRoot = join(repoRoot, "tools/agent-eval/_stage") }) {
+export function stageBatch({ repoRoot, batch, stageRoot = join(repoRoot, "tools/agent-eval/_stage"), tasks = null }) {
   const batchDir = resolve(repoRoot, "evidence/agent-eval", batch);
   const stage = join(stageRoot, batch);
   rmSync(stage, { recursive: true, force: true });
@@ -33,6 +33,7 @@ export function stageBatch({ repoRoot, batch, stageRoot = join(repoRoot, "tools/
     if (!existsSync(runJson)) continue;
     const run = JSON.parse(readFileSync(runJson, "utf8"));
     if (run.invalid || !existsSync(join(batchDir, "runs", name, "snapshots/final"))) continue;
+    if (tasks && !tasks.includes(run.task)) continue;
     const finalDir = join(batchDir, "runs", name, "snapshots/final");
     const draftDir = join(batchDir, "runs", name, "snapshots/draft");
     const sameDraft = run.draftIsFinal || treeHash(draftDir) === treeHash(finalDir);

@@ -49,6 +49,15 @@ export function docsCommit(repoRoot) {
   }
 }
 
+/** Export just the doc set at a git ref into a temp dir, so before/after docs runs can be pinned to commits. */
+export function exportDocs(repoRoot, ref, into) {
+  mkdirSync(into, { recursive: true });
+  const paths = DOC_SOURCES.map((d) => d.from);
+  const tar = execFileSync("git", ["archive", ref, "--", ...paths], { cwd: repoRoot, maxBuffer: 1 << 28 });
+  execFileSync("tar", ["-x", "-C", into], { input: tar });
+  return into;
+}
+
 export function hashFile(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
@@ -81,7 +90,7 @@ export function docSetFingerprint(dir) {
  * Build an isolated sandbox. `baseDir` holds the installed node_modules for the arm (npm install of the
  * published packages); it is symlinked read-only-by-convention, never copied.
  */
-export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir }) {
+export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir, docsRoot = repoRoot }) {
   if (!ARMS.includes(arm)) throw new Error(`unknown arm ${arm}`);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(join(dir, "src"), { recursive: true });
@@ -98,7 +107,7 @@ export function buildSandbox({ arm, task, dir, repoRoot, baseDir, tasksDir }) {
   }
   if (arm === "aura") {
     for (const doc of DOC_SOURCES) {
-      const source = join(repoRoot, doc.from);
+      const source = join(docsRoot, doc.from);
       if (!existsSync(source)) continue;
       mkdirSync(join(dir, doc.to, ".."), { recursive: true });
       cpSync(source, join(dir, doc.to), { recursive: true });
@@ -111,7 +120,7 @@ function repoSourceIndex(repoRoot) {
   const raw = execFileSync("git", ["ls-files", "-z", "--", ...FORBIDDEN_ROOTS], { cwd: repoRoot, encoding: "utf8", maxBuffer: 1 << 28 });
   const index = new Map();
   for (const path of raw.split("\0")) {
-    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path)) continue;
+    if (!path || SKILLS_DOCS.test(path) || /\.(md|txt)$/i.test(path) || path.startsWith("tools/agent-eval/scaffold/")) continue;
     const name = basename(path);
     if (!index.has(name)) index.set(name, []);
     index.get(name).push(path);

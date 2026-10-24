@@ -1,0 +1,150 @@
+{
+  "args": {
+    "arm": "both",
+    "task": "1,2,3,4,5",
+    "runs": 3,
+    "seed": 20261024,
+    "concurrency": 6,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "batch": "baseline1",
+    "docsRef": "04b7726ef",
+    "only": [
+      "baseline1-t2-aura-r3",
+      "baseline1-t2-three-r2",
+      "baseline1-t2-three-r3",
+      "baseline1-t3-aura-r1",
+      "baseline1-t3-aura-r2",
+      "baseline1-t3-three-r1",
+      "baseline1-t3-three-r2",
+      "baseline1-t3-three-r3",
+      "baseline1-t4-three-r3",
+      "baseline1-t5-aura-r3",
+      "baseline1-t5-three-r2",
+      "baseline1-t5-three-r3"
+    ],
+    "docsRoot": "/tmp/agent-eval-runs/baseline1/docs"
+  },
+  "plan": [
+    {
+      "task": 5,
+      "arm": "three",
+      "idx": 3,
+      "order": 18,
+      "runId": "baseline1-t5-three-r3",
+      "seed": 20261024018
+    },
+    {
+      "task": 2,
+      "arm": "three",
+      "idx": 2,
+      "order": 19,
+      "runId": "baseline1-t2-three-r2",
+      "seed": 20261024019
+    },
+    {
+      "task": 2,
+      "arm": "three",
+      "idx": 3,
+      "order": 20,
+      "runId": "baseline1-t2-three-r3",
+      "seed": 20261024020
+    },
+    {
+      "task": 3,
+      "arm": "three",
+      "idx": 2,
+      "order": 21,
+      "runId": "baseline1-t3-three-r2",
+      "seed": 20261024021
+    },
+    {
+      "task": 5,
+      "arm": "aura",
+      "idx": 3,
+      "order": 22,
+      "runId": "baseline1-t5-aura-r3",
+      "seed": 20261024022
+    },
+    {
+      "task": 3,
+      "arm": "aura",
+      "idx": 2,
+      "order": 23,
+      "runId": "baseline1-t3-aura-r2",
+      "seed": 20261024023
+    },
+    {
+      "task": 5,
+      "arm": "three",
+      "idx": 2,
+      "order": 24,
+      "runId": "baseline1-t5-three-r2",
+      "seed": 20261024024
+    },
+    {
+      "task": 4,
+      "arm": "three",
+      "idx": 3,
+      "order": 25,
+      "runId": "baseline1-t4-three-r3",
+      "seed": 20261024025
+    },
+    {
+      "task": 3,
+      "arm": "aura",
+      "idx": 1,
+      "order": 26,
+      "runId": "baseline1-t3-aura-r1",
+      "seed": 20261024026
+    },
+    {
+      "task": 3,
+      "arm": "three",
+      "idx": 3,
+      "order": 27,
+      "runId": "baseline1-t3-three-r3",
+      "seed": 20261024027
+    },
+    {
+      "task": 3,
+      "arm": "three",
+      "idx": 1,
+      "order": 28,
+      "runId": "baseline1-t3-three-r1",
+      "seed": 20261024028
+    },
+    {
+      "task": 2,
+      "arm": "aura",
+      "idx": 3,
+      "order": 29,
+      "runId": "baseline1-t2-aura-r3",
+      "seed": 20261024029
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/agent-eval-base/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "4.1.2",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/agent-eval-base/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

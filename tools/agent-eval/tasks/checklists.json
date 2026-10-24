@@ -3,7 +3,7 @@
     { "id": "pbr", "text": "The cube uses a PBR material with visible metalness/roughness configuration (not unlit/basic)." },
     { "id": "lighting", "text": "Key light plus fill or environment lighting is authored so the cube is readable." },
     { "id": "autorotate", "text": "The cube rotates continuously by itself." },
-    { "id": "orbit", "text": "Mouse-drag orbit control is wired to the camera and actually responds (see probes.orbitResponds)." },
+    { "id": "orbit", "text": "Mouse-drag orbit control is correctly wired to the camera and render loop (decide from the source; the probe orbitResponds is informational and unreliable with an auto-rotating cube)." },
     { "id": "framing", "text": "The camera frames the whole cube centred on a dark-grey background." }
   ],
   "2": [
