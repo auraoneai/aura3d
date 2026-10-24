@@ -13,6 +13,7 @@ import type { AuraCameraSpec, AuraSceneNode, AuraTransformSpec, AuraVec3 } from 
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
 import { STEREO_DEFAULT_EYE_SEPARATION, STEREO_DEFAULT_FOCUS } from "../stereoMath.js";
+import { createChaseRig, type ChaseOptions, type ChaseRig } from "./chaseCamera.js";
 
 export type AuraStereoLayout = "side-by-side" | "over-under";
 
@@ -122,6 +123,13 @@ export function isAuraCubeCameraNode(node: { readonly kind: string }): node is A
 }
 
 export const cameras = {
+  /**
+   * Gameplay chase camera rig (runtime controller, not a scene node): feed it the followed target each frame and apply
+   * the returned pose with `app.camera.setPose`. Offset mode places the eye behind and the look target ahead; framed mode
+   * (`wantEye`/`wantLook`) only smooths. See `docs/api/camera-rig.md`.
+   */
+  chase: (options: ChaseOptions = {}): ChaseRig => createChaseRig(options),
+
   /**
    * three's `new CubeCamera(near, far, renderTarget)` — cube render target via
    * `Renderer.renderProbeFace`; consume the capture through

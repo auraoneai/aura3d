@@ -5,7 +5,7 @@
  * particles and post (bloom, grade, vignette). Everything goes through the public `@aura3d/engine` surface; art is
  * original (procedural meshes, CC0 catalog model and textures).
  */
-import { camera, defineAuraAssets, effects, environments, geometry, instances, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cameras, defineAuraAssets, effects, environments, geometry, instances, lights, looks, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import type { Chapter } from "./chapter";
 import { at, frameAt, type V3 } from "./course";
 import { meatChunk } from "./creatures";
@@ -171,6 +171,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
   const rexAttacks = [...(ch.creatures.find((c) => c.type === "trex")?.bites ?? []).map((s) => ({ s, kind: "bite" as const })), ...(ch.creatures.find((c) => c.type === "trex")?.swipes ?? []).map((s) => ({ s, kind: "swipe" as const }))].sort((x, y) => x.s - y.s);
   const dives = ch.creatures.filter((c) => c.type === "pteranodon");
   const riverIds = ch.waters.map((_, i) => `river-${i}`);
+  const chase = cameras.chase();
   let eye: V3 | null = null, look: V3 | null = null;
   let animClip = "", animT = 0, runDust = 0, wispT = 0, clock = 0;
   let rexS = 0, rexInit = false;
@@ -212,7 +213,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
   return {
     stats,
     camera: camPos,
-    cutCamera() { eye = null; look = null; },
+    cutCamera() { eye = null; look = null; chase.reset(); },
     update(g, dt, aspect, events) {
       clock += dt;
       const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
@@ -470,12 +471,16 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
         if (g.chase) fov += 3;
         fov += g.danger * 3;
       }
-      const ek = eye && !cut ? 1 - Math.exp(-dt * (phase === "playing" ? 14 : 5)) : 1;
-      eye = eye ? lerp3(eye, wantEye, ek) : wantEye;
-      look = look ? lerp3(look, wantLook, ek) : wantLook;
       const shake = g.impact * 0.28;
-      const shook: V3 = [eye[0] + Math.sin(clock * 83) * shake, eye[1] + Math.sin(clock * 71 + 1) * shake, eye[2] + Math.sin(clock * 97 + 2) * shake];
-      cam.setPose({ position: [shook[0], shook[1], shook[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov }, { cut: cut || ek >= 1 });
+      const pose = chase.step({
+        wantEye, wantLook, fovTarget: fov, cut,
+        lag: { eye: phase === "playing" ? 14 : 5, look: phase === "playing" ? 14 : 5 },
+        shakeOffset: [Math.sin(clock * 83) * shake, Math.sin(clock * 71 + 1) * shake, Math.sin(clock * 97 + 2) * shake]
+      }, dt);
+      eye = [chase.pose.eye[0], chase.pose.eye[1], chase.pose.eye[2]];
+      look = [chase.pose.look[0], chase.pose.look[1], chase.pose.look[2]];
+      const shook: V3 = [pose.eye[0], pose.eye[1], pose.eye[2]];
+      cam.setPose({ position: [shook[0], shook[1], shook[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov: pose.fov }, { cut: pose.cut });
       camPos.eye = shook; camPos.target = look;
 
       sky.setPosition(shook[0], shook[1], shook[2]);

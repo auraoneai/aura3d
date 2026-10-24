@@ -7,7 +7,7 @@
  * rigged model (CC0, see assets/ATTRIBUTION.md) with independent skeletons and animation, differentiated by tint, scale
  * and attached weapons.
  */
-import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
+import { attachRootRenderSource, camera, cameras, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";
@@ -360,7 +360,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
   const aliveFlags = new Float32Array(pickups.length).fill(1);
   const pickupIndex = new Map(pickups.map((p, i) => [p.id, i]));
   let flamesDirty = false;
-  let camPos: [number, number, number] | null = null;
+  const chase = cameras.chase({ lag: { eye: 7 } });
   let lastDamage = -10, lostAt = -1, lastFormShift = -10, dustClock = 0, auraClock = 0;
   const entityById = new Map(options.entities.map((e) => [e.id, e]));
   const mm = actors.map(() => modelMatrix(0, -1000, 0, 0, 1));
@@ -658,13 +658,16 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       const widen = smooth(2220, 2410, s);
       const eyeF = groundFrame(s - 6.4 - widen * 3.4, state.x * 0.45, 3.35 + widen * 0.95 + state.y * 0.22);
       const lookF = groundFrame(s + 12 + widen * 6, state.x * 0.38, 1.6 + widen * 0.35 + state.y * 0.15);
-      const k = camPos ? 1 - Math.exp(-7 * dt) : 1;
-      camPos = camPos ? [camPos[0] + (eyeF.x - camPos[0]) * k, camPos[1] + (eyeF.y - camPos[1]) * k, camPos[2] + (eyeF.z - camPos[2]) * k] : [eyeF.x, eyeF.y, eyeF.z];
       const shake = 0.3 * Math.exp(-9 * Math.max(0, hitAge)) * (hitAge < 1 ? 1 : 0);
-      const eye: Vec3 = [camPos[0] + Math.sin(time * 71) * shake, camPos[1] + Math.cos(time * 83) * shake * 0.7, camPos[2] + Math.sin(time * 57) * shake * 0.4];
-      cameraController.setPose({ position: eye, target: [lookF.x, lookF.y, lookF.z], fov: 57 + (state.dash > 0 ? 5 : 0) }, { cut: false });
+      const pose = chase.step({
+        wantEye: [eyeF.x, eyeF.y, eyeF.z],
+        wantLook: [lookF.x, lookF.y, lookF.z],
+        fovTarget: 57 + (state.dash > 0 ? 5 : 0),
+        shakeOffset: [Math.sin(time * 71) * shake, Math.cos(time * 83) * shake * 0.7, Math.sin(time * 57) * shake * 0.4]
+      }, dt);
+      cameraController.setPose({ position: pose.eye, target: pose.look, fov: pose.fov }, { cut: false });
     },
-    resetCamera() { camPos = null; },
+    resetCamera() { chase.reset(); },
     probeBones(joint) {
       const names = actors[0]!.animation.skeletonJointNames();
       const name = joint && names.includes(joint) ? joint : names.includes("LeftForeArm") ? "LeftForeArm" : names[0]!;

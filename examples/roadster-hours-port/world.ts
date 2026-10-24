@@ -6,7 +6,7 @@
  * `batched.mesh`es and the box rigs as the fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
  */
 import {
-  batched, camera, effects, environments, geometry, instances, lights, material, primitives, scene, type AuraApp
+  batched, camera, cameras, effects, environments, geometry, instances, lights, material, primitives, scene, type AuraApp
 } from "@aura3d/engine";
 import { levelLayout, roadProfile, trafficPiece, pieceSpec, type Level } from "./course";
 import { CAR_GROUPS, CAR_FOR_PIECE, carGroup, carNativeSize, type CarGroup, type CarKey } from "./cars";
@@ -779,6 +779,7 @@ export function buildWorld(levelIndex: number): World {
     texturedNodes: meshyPools.size + (meshyPlayer ? 1 : 0) + texturedScenery,
     bind(app: AuraApp): WorldRuntime {
       const camCtl = app.camera;
+      const chase = cameras.chase();
       if (!camCtl) throw new Error("roadster-hours-port: the app exposes no camera controller");
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
@@ -865,9 +866,10 @@ export function buildWorld(levelIndex: number): World {
           const eyeL = run.l * 0.8 + offCentre;
           const eye = roadPoint(level, eyeS, eyeL, run.h + 3.1 + (run.grounded ? 0 : Math.min(2.5, run.h * 0.05)));
           const look2 = roadPoint(level, run.s + 12 + (run.v / 74) * 5, run.l * 0.9, run.h + 1.1);
-          void dt; void time;
-          sky.setPosition(eye[0], eye[1], eye[2]);
-          camCtl.setPose({ position: [eye[0], eye[1], eye[2]], target: [look2[0], look2[1], look2[2]], up: [0, 1, 0], fov: (aspect < 1 ? 70 : 58) + (run.v / 74) * 8 }, { cut: false });
+          void time;
+          const pose = chase.step({ wantEye: [eye[0], eye[1], eye[2]], wantLook: [look2[0], look2[1], look2[2]], fovTarget: (aspect < 1 ? 70 : 58) + (run.v / 74) * 8 }, dt);
+          sky.setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
+          camCtl.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
         }
       };
     }

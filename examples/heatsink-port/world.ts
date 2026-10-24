@@ -4,7 +4,7 @@
  * pickups, barrels, the player drone (primitives), exhaust points, chase camera, bloom and vignette. The original's
  * GLB/texture assets are re-created procedurally; see PORTING-NOTES.md.
  */
-import { camera, effects, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cameras, effects, geometry, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { CFG } from "./config";
 import { buildArches, buildDividers, buildProps, buildRails, buildRoad, buildShards, buildShoulders, groundQuad, hexLinear, padQuad, veilQuad, type MeshData } from "./meshes";
 import { pointsSpec, roadSpec, skySpec, solidSpec, streakSpec, terrainSpec, veilSpec, type Rgb } from "./materials";
@@ -163,6 +163,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
   const cam = app.camera;
   if (!cam) throw new Error("heatsink-port: the app exposes no camera controller");
   const cameraController: NonNullable<typeof cam> = cam;
+  const chase = cameras.chase();
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
   const node = (id: string) => {
     let h = handles.get(id);
@@ -232,8 +233,9 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
     const speed01 = Math.min(1, p.v / CFG.vehicle.maxSpeed);
     const fovBase = c.fovBase + (c.fovMax - c.fovBase) * speed01 * speed01 + (p.rjActive ? c.fovRamjet * 0.35 : 0);
     const fov = Math.min(c.fovMax, aspect < 0.85 ? fovBase + 8 : fovBase);
-    cameraController.setPose({ position: [eye[0], eye[1], eye[2]], target: [look[0], look[1], look[2]], up: [0, 1, 0], fov }, { cut: false });
-    node("sky").setPosition(eye[0], eye[1], eye[2]);
+    const pose = chase.step({ wantEye: eye, wantLook: look, fovTarget: fov }, dt);
+    cameraController.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
+    node("sky").setPosition(pose.eye[0], pose.eye[1], pose.eye[2]);
 
     /* speed streaks radiate from the vanishing point: world-fixed lines along the heading, respawned ahead once passed */
     {

@@ -449,6 +449,7 @@ export type {
   AuraXRSessionInit
 } from "./xr/index.js";
 export type { AuraCubeCameraNode, AuraCubeCameraOptions } from "./nodes/cameras.js";
+export type { ChaseOptions, ChaseRig, ChasePose, ChaseTarget, ChaseOffset, ChaseLag, ChaseFovKick, ChaseShake, ChaseVec3 } from "./nodes/chaseCamera.js";
 export { surfaces } from "./nodes/surfaces.js";
 export type { AuraMirrorOptions, AuraMirrorSurfaceNode } from "./nodes/surfaces.js";
 // threejs-parity AD-15 (P2): `lights.lensFlare` option/node types.

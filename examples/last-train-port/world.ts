@@ -7,7 +7,7 @@
  * bloom, colour grade and vignette; day/night re-aims the lights and moves the lighting runtime's environment intensity
  * and the output exposure. Everything the original fetched remotely is re-created or replaced with licensed assets.
  */
-import { camera, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, cameras, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import { MESHY_ASSETS, MESHY_ENABLED, PAX_SCALE, TRAM } from "./models";
 import { applyMat3, axisRotation, matrixToEulerZYX, multiplyMat3, tramRotation, type V3 } from "./orient";
 import { cloudSpec, pointsSpec, rainSpec, skySpec } from "./materials";
@@ -468,6 +468,7 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
   const maybeCamera = app.camera;
   if (!maybeCamera) throw new Error("last-train-port: the app exposes no camera controller");
   const cam: NonNullable<typeof maybeCamera> = maybeCamera;
+  const chase = cameras.chase();
   const handles = new Map<string, Handle>();
   const seenIds = new Set<string>();
   const node = (id: string): Handle => { seenIds.add(id); let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
@@ -568,7 +569,8 @@ function bindRuntime(app: AuraApp, data: SimData, scenes: { readonly day: Scene;
       : mix3(chaseEye, dockEye, kd);
     const target: V3 = options.orbit ? [here.x, here.y + 2.6, here.z] : mix3(chaseTarget, dockAim, kd);
     rig.eye = eye; rig.target = target;
-    cam.setPose({ position: eye, target, up: [0, 1, 0], fov: 56 - 4 * kd + Math.min(8, Math.abs(sim.speed) * 0.35) }, { cut: false });
+    const pose = chase.step({ wantEye: eye, wantLook: target, fovTarget: 56 - 4 * kd + Math.min(8, Math.abs(sim.speed) * 0.35) }, dt);
+    cam.setPose({ position: pose.eye, target: pose.look, up: [0, 1, 0], fov: pose.fov }, { cut: false });
 
     /* rain (Monsoon Exchange, index 4) or snow (Drowned Observatory, index 3) near those towns */
     const weatherNow = weatherOf(data, sim);

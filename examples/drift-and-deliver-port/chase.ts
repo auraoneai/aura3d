@@ -1,10 +1,11 @@
 /**
- * Drift & Deliver port: the chase camera, ported from the original's camera function (`Cr`) as pure math.
- * Follow heading is smoothed (`CAMERA_CHASE`), the eye trails the car by 5.9 m + 0.048 x speed (+1.2 m while
- * boosting), the look target leads by 5 m + 0.3 x speed, shake is a two-sine wobble scaled by the car's shake
- * plus a speed term, and the field of view opens up with speed and boost.
+ * Drift & Deliver port: the chase camera, ported from the original's camera function (`Cr`). The follow heading is
+ * smoothed, the eye trails the car by 5.9 m + 0.048 x speed (+1.2 m while boosting), the look target leads by
+ * 5 m + 0.3 x speed, shake is a two-sine wobble and the field of view opens up with speed and boost. The math lives in
+ * the library's `cameras.chase` rig; this file only holds the original's constants.
  */
-import { CONFIG, clamp } from "./sim";
+import { cameras } from "@aura3d/engine";
+import { CONFIG } from "./sim";
 
 export interface ChaseInput {
   x: number;
@@ -26,55 +27,41 @@ export interface ChaseState {
   time: number;
 }
 
-const wobble = (t: number, amp: number, phase: number): number => (0.62 * Math.sin(t * (6.1 + phase)) + 0.38 * Math.sin(t * (11.3 + 1.7 * phase))) * amp;
+const rig = cameras.chase({
+  offset: { back: 5.9, backPerSpeed: 0.048, backBoost: 1.2, up: 2.5, upPerSpeed: 0.013, minAboveGround: 1.9, lead: 5, leadPerSpeed: 0.3, lookUp: 1.25 },
+  lag: { heading: CONFIG.CAMERA_CHASE, headingMinFollow: 0.34, headingFullSpeed: 15, eye: 8, look: 10, fov: 4 },
+  fovKick: { base: 56, perSpeed: 0.28, maxSpeedKick: 12, boost: 7 },
+  shake: { perShake: 0.9, speedStart: 22, speedRange: 40, speedAmp: 0.075, boostAmp: 0.05, threshold: 2e-3, verticalScale: 0.7, verticalPhase: 1.3, mode: "accumulate" },
+  snapOffset: { back: 10.6, up: 4.3, lead: 5, lookUp: 1.25, fov: 56 }
+});
+rig.snap({});
 
-function angleLerp(a: number, b: number, k: number): number {
-  let d = b - a;
-  while (d > Math.PI) d -= 2 * Math.PI;
-  while (d < -Math.PI) d += 2 * Math.PI;
-  return a + d * k;
-}
+const target = (c: ChaseInput, groundAt?: (x: number, z: number) => number) => ({
+  position: [c.x, c.y, c.z] as const,
+  heading: c.heading,
+  speed: c.speed,
+  boosting: c.boosting,
+  shake: c.shake,
+  ...(groundAt ? { groundAt } : {})
+});
 
 /** The original's `Dr()`: the snap used after a teleport. */
 export function snapChase(c: ChaseInput): ChaseState {
-  const s = Math.sin(c.heading);
-  const k = Math.cos(c.heading);
-  return {
-    heading: c.heading,
-    eye: [c.x - 10.6 * s, c.y + 4.3, c.z - 10.6 * k],
-    look: [c.x + 5 * s, c.y + 1.25, c.z + 5 * k],
-    fov: 56,
-    time: 0
-  };
+  const p = rig.snap(target(c));
+  return { heading: p.heading, eye: [...p.eye], look: [...p.look], fov: p.fov, time: p.time };
 }
 
 export function stepChase(cam: ChaseState, c: ChaseInput, dt: number, groundAt: (x: number, z: number) => number = () => 0): void {
-  cam.time += dt;
-  const speed = Math.abs(c.speed);
-  const follow = 0.34 + 0.66 * clamp(speed / 15, 0, 1);
-  cam.heading = angleLerp(cam.heading, c.heading, 1 - Math.exp(-CONFIG.CAMERA_CHASE * follow * dt));
-  const sn = Math.sin(cam.heading);
-  const cs = Math.cos(cam.heading);
-  const back = 5.9 + 0.048 * speed + (c.boosting ? 1.2 : 0);
-  let ey = c.y + 2.5 + 0.013 * speed;
-  const tx = c.x - sn * back;
-  const tz = c.z - cs * back;
-  ey = Math.max(ey, groundAt(tx, tz) + 1.9);
-  const k = 1 - Math.exp(-8 * dt);
-  cam.eye[0] += (tx - cam.eye[0]) * k;
-  cam.eye[1] += (ey - cam.eye[1]) * k;
-  cam.eye[2] += (tz - cam.eye[2]) * k;
-  const speedShake = 0.075 * clamp((speed - 22) / 40, 0, 1) + (c.boosting ? 0.05 : 0);
-  if (c.shake > 2e-3 || speedShake > 0) {
-    const amp = 0.9 * c.shake + speedShake;
-    cam.eye[0] += wobble(cam.time, amp, 0);
-    cam.eye[1] += wobble(cam.time, 0.7 * amp, 1.3);
-  }
-  const lead = 5 + 0.3 * speed;
-  const lk = 1 - Math.exp(-10 * dt);
-  cam.look[0] += (c.x + sn * lead - cam.look[0]) * lk;
-  cam.look[1] += (c.y + 1.25 - cam.look[1]) * lk;
-  cam.look[2] += (c.z + cs * lead - cam.look[2]) * lk;
-  const fovTarget = 56 + clamp(0.28 * speed, 0, 12) + (c.boosting ? 7 : 0);
-  cam.fov += (fovTarget - cam.fov) * (1 - Math.exp(-4 * dt));
+  const p = rig.pose;
+  p.heading = cam.heading;
+  p.eye = [cam.eye[0], cam.eye[1], cam.eye[2]];
+  p.look = [cam.look[0], cam.look[1], cam.look[2]];
+  p.fov = cam.fov;
+  p.time = cam.time;
+  rig.step(target(c, groundAt), dt);
+  cam.heading = p.heading;
+  cam.eye[0] = p.eye[0]; cam.eye[1] = p.eye[1]; cam.eye[2] = p.eye[2];
+  cam.look[0] = p.look[0]; cam.look[1] = p.look[1]; cam.look[2] = p.look[2];
+  cam.fov = p.fov;
+  cam.time = p.time;
 }
