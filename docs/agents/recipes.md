@@ -2,7 +2,7 @@
 
 Start here when the task looks like one of these. Each recipe is a complete `src/main.ts` body that compiled against the engine types (`tsc`, strict) and uses only non-deprecated root exports. Copy it, change names and numbers, run `npm run build`. Do not read `node_modules/@aura3d/engine/dist` to discover the API first: that is the slowest path (in the cold-start trial, 8 of 15 runs spent all 40 turns reading `.d.ts` and `dist` files without writing a scene, while the game-loop runs, which had a complete sample to copy, finished in 11 to 17 turns).
 
-Page needs a `<div id="app">` (or a `<canvas id="app">`); `createAuraApp("#app", { scene })` mounts into it. Background, camera, lights and fog are ordinary nodes or scene options. Animate inside `app.onFrame((frame) => ...)` using `frame.dt`. Await `app.ready()` when you need the first frame.
+Page needs a `<div id="app">` (or a `<canvas id="app">`); `createAuraApp("#app", { scene })` mounts into it. Background, camera, lights and fog are ordinary nodes or scene options. Animate inside `app.onFrame((frame) => ...)` using `frame.dt`. Await `app.ready()` when you need the first frame. With a HUD or other elements beside the canvas, give the canvas a wrapper of definite size (`<div id="stage" style="width:640px;height:360px"><canvas id="app"></canvas></div>`), or pass `resize: false` and a `width`/`height` on the canvas; the app sizes itself to its parent, and an auto-height parent that also holds a HUD can make a canvas grow until it draws nothing on 4.1.3 and earlier (see troubleshooting, black frame checklist).
 
 Rules that every recipe follows:
 

@@ -1,6 +1,7 @@
 // PRD-15 Phase 3 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraLabelNode, AuraSceneSnapshot, AuraFrameInfo, AuraRuntimeNodeRegistry, AuraCreateAppOptions, WebGLRenderController } from "../nodes/types.js";
+import { createParentFit } from "./parentFit.js";
 import { rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
 import { AuraRuntimeError } from "./errors.js";
 import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
@@ -125,13 +126,15 @@ export async function startProductionRender(
     labelLayer?.dispose();
     renderer.dispose();
   };
+  const parentFit = createParentFit(canvas);
   const resizeRenderer = (): void => {
     if (disposed) return;
     if (pendingFrames > 0) { resourceOwner.requestResize(); return; }
     if (options.resize === false) return;
-    const parentRect = canvas.parentElement?.getBoundingClientRect();
-    const cssWidth = parentRect?.width || canvas.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 960) || 960;
-    const cssHeight = parentRect?.height || canvas.clientHeight || (typeof window !== "undefined" ? window.innerHeight : 540) || 540;
+    const { cssWidth, cssHeight } = parentFit.measure(
+      (typeof window !== "undefined" ? window.innerWidth : 960) || 960,
+      (typeof window !== "undefined" ? window.innerHeight : 540) || 540
+    );
     const pixelRatio = coreDpr ? resolvePixelRatio() : legacyPixelRatio;
     const width = Math.max(1, Math.round(Math.max(backingMinimum.width, cssWidth * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
     const height = Math.max(1, Math.round(Math.max(backingMinimum.height, cssHeight * pixelRatio) * (getRootPerformanceQuality(canvas)?.resolutionScale ?? 1)));
@@ -141,6 +144,8 @@ export async function startProductionRender(
     canvas.width = width;
     canvas.height = height;
     renderer.resize?.(width, height);
+    // A parent whose size follows the canvas (auto-height body with a HUD beside it) would grow the canvas on every resize.
+    if (parentFit.settle()) resizeRenderer();
   };
   const resourceOwner = new DeferredFrameResources(releaseResources, resizeRenderer);
   const resizeObserver = options.resize !== false && typeof ResizeObserver !== "undefined" && canvas.parentElement

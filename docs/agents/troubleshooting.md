@@ -93,6 +93,13 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
 - `?heal=0` disables it; an `a3d-qr` you set yourself is never rewritten. See `docs/api/safety-net.md`.
 - Misfire note: 4.1.1 reloaded healthy games on slow or non-preserved drawing buffers; 4.1.2 fixed it with a frame tap read right after the draw. If a healthy game still reloads, upgrade, then check `?diag=1` for the recorded reason.
 
+**Black frame checklist (blank canvas, but draws are being issued)** - run it in this order before touching lights or materials
+1. **Is the canvas growing?** In the console run `[canvas.width, canvas.height, canvas.style.height]` twice, a second apart. If the numbers rise, the canvas is chasing a parent whose height is set by its own content (an auto-height `<body>` or wrapper that also holds a HUD `<div>`); the backing store ends up past GPU limits and nothing draws. 4.1.4 and later detect this and keep the mounted size on that axis. On 4.1.3 and earlier: put the canvas in a wrapper with a definite size (`#stage { width: 640px; height: 360px }`), or pass `resize: false` to `createAuraApp` and give the canvas `width`/`height` attributes.
+2. **Is the first frame drawn yet?** Read the canvas only inside a `requestAnimationFrame` callback or after `app.ready()` plus two frames; a WebGL canvas without `preserveDrawingBuffer` reads as zeros anywhere else, and screenshots taken before the first draw are black.
+3. **Does `diagnostics()` list anything?** `shaderFailures`, `CUSTOM_SHADER_COMPILE_FAILED`, `ENV_FETCH_FAILED` (4.1.3 and earlier, for the default environment only; harmless, the neutral floor is used).
+4. **Toggle one thing at a time** with `?diag=1`: `?post=0`, `?shadow=0`, `?env=0`, `?aa=0`, `?quality=low`. The first toggle that brings the picture back names the culprit.
+5. **Is the camera looking at something?** Pass the camera with the `.camera(camera.perspective({ position, target, fov }))` builder, then log `app.nodes` names and positions; a game whose entities are all at the origin under a camera at the origin is also black.
+
 **Textured model drawn through `instances.mesh` or `batched.mesh` is white** - fixed in 4.1; upgrade and give the texture `colorSpace: "srgb"`.
 
 ## 5. Look, gameplay and scene problems

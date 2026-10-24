@@ -166,7 +166,7 @@ async function fetchBytes(url: string): Promise<Uint8Array> {
   // `text/html` + 200 — a poisoned payload must count as a fetch failure so
   // the neutral-floor fallback engages instead of crashing on parse.
   const isHtmlPayload = (res: Response) =>
-    (res.headers.get("content-type") ?? "").includes("text/html");
+    (res.headers?.get("content-type") ?? "").includes("text/html");
   let res = await fetch(url);
   if ((!res.ok || isHtmlPayload(res)) && !url.startsWith("/") && !/^https?:\/\//.test(url)) {
     const rootRes = await fetch(`/${url}`);
@@ -210,6 +210,11 @@ function afterFirstFrames(): Promise<void> {
 export function defaultProbeLoader(factory: EnvironmentProbeFactory | (() => EnvironmentProbeFactory)): EnvironmentProbeLoader {
   const resolveFactory = (): EnvironmentProbeFactory => (typeof factory === "function" ? factory() : factory);
   return async (key) => {
+    if (key.preset === "neutral") {
+      // Default environment: embedded, so a published-package app needs no /aura-environments fetch or copied file.
+      const { loadEmbeddedNeutralProbe } = await import("./neutralEmbeddedLoader.js");
+      return loadEmbeddedNeutralProbe();
+    }
     if (key.preset) {
       const manifestBytes = await fetchBytes(`/aura-environments/${key.preset}.manifest.json`);
       const manifest = JSON.parse(new TextDecoder().decode(manifestBytes)) as BakedEnvironmentManifest;
