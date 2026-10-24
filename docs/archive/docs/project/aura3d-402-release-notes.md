@@ -33,4 +33,4 @@ npx create-aura3d@4.0.2 my-scene --template product-viewer
 - Repository: https://github.com/auraoneai/aura3d
 - npm: https://www.npmjs.com/package/@aura3d/engine
 - Documentation: https://aura3d.auraone.ai/docs/agent-quickstart.html
-- Full 4.0 release notes: https://github.com/auraoneai/aura3d/blob/main/docs/project/aura3d-400-release-notes.md
+- Full 4.0 release notes: https://github.com/auraoneai/aura3d/blob/main/docs/archive/docs/project/aura3d-400-release-notes.md

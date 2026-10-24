@@ -62,7 +62,7 @@ open request lands.
 
 ### Deprecated `.` names kept at 4.0.0 (64)
 
-See `docs/project/aura3d-400-release-notes.md` for the full name list and
+See `docs/archive/docs/project/aura3d-400-release-notes.md` for the full name list and
 `evidence/prd15/phase8-removal-sweep.md` for per-name blocking owners.
 
 ### Renderer aliases kept at 4.0.0

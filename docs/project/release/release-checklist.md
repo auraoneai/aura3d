@@ -27,7 +27,7 @@ against `three@0.165.0` remain recorded but cannot close the current
 - [ ] `README.md`, `llms.txt`, route READMEs, package/template READMEs, and
   release docs describe the same public status.
 - [ ] The current release-candidate summary in
-  `docs/project/aura3d-400-release-notes.md` (and historical `docs/project/aura3d-301-release-notes.md`) matches the commands being run for
+  `docs/archive/docs/project/aura3d-400-release-notes.md` (and historical `docs/project/aura3d-301-release-notes.md`) matches the commands being run for
   this release.
 
 ## Package Gates

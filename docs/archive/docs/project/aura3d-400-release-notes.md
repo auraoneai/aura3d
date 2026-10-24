@@ -25,7 +25,7 @@ superiority, universal engine replacement, or unverified hardware claim is made.
   generated `src/aura-assets.ts` workflows.
 - **Lean surface consolidation:** `@aura3d/lean` and 19 deprecated subpath
   aliases have been consolidated into `@aura3d/engine`. See
-  [`docs/migration-4.0.md`](../migration-4.0.md) for the complete migration table.
+  [`docs/migration-4.0.md`](../../../migration-4.0.md) for the complete migration table.
 
 ### 2. All 19 Showcase Games Upgraded with Custom Meshy 3D PBR Assets and Gameplay Mechanics
 

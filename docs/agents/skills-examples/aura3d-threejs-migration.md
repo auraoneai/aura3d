@@ -1,5 +1,7 @@
 # Worked example: aura3d-threejs-migration
 
+> Historical record (2026-09-25). `@aura3d/three-compat` and the `three-compat-*` templates were retired in 4.0.0; the snippets below show what that run produced and are not current. For current guidance use [docs/migration/from-threejs.md](../../migration/from-threejs.md).
+
 Skill: `packages/aura3d-cli/skills/aura3d-threejs-migration/SKILL.md` (PRD D4).
 Run on 2026-09-25 in the Aura3D monorepo against the
 `three-compat-custom-threejs-migration` template. Lightweight commands only.

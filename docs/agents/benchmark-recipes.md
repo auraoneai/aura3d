@@ -84,11 +84,11 @@ grounded shadows. Do not fake collision counters with timers. Use the safe root
 Scene kit:
 
 ```text
-import { createAuraApp, particleFountain, ui } from "@aura3d/engine/scene-kits/particle-fountain";
+import { createAuraApp, sceneKits, ui } from "@aura3d/engine";
 
 ui.html("#app", `<label>emission rate <input id="rate" type="range" min="60" max="180" value="120" /></label>`);
 ui.slider("#rate", { min: 60, max: 180, value: 120, metric: "particle-emission-rate" });
-const kit = particleFountain({ emissionRate: Number(ui.range("#rate").value) });
+const kit = sceneKits.particleFountain({ emissionRate: Number(ui.range("#rate").value) });
 createAuraApp("#app", kit.toAppOptions());
 ```
 
@@ -256,10 +256,10 @@ asset URLs.
 
 ## Prompt 09 lean humanoid recipe
 
-Use the public lean humanoid-walk scene-kit subpath for the humanoid benchmark prompt. This keeps Prompt 09 asset-free and prevents the broad root engine bundle from carrying the old armored humanoid GLB path into production output.
+Use the root `sceneKits.humanoidWalk` kit for the humanoid benchmark prompt. This keeps Prompt 09 asset-free; the old lean scene-kit subpaths no longer exist, so import from `@aura3d/engine`.
 
 ```text
-import { character, createAuraApp, sceneKits } from "@aura3d/engine/scene-kits/humanoid-walk";
+import { character, createAuraApp, sceneKits } from "@aura3d/engine";
 
 const kit = sceneKits.humanoidWalk({ animationState: "benchmark-pose" });
 createAuraApp("#app", kit.toAppOptions());

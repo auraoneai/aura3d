@@ -34,7 +34,7 @@ the public release sequence.
 ## What this record covers
 
 - Claim labels and evidence paths in [`claim-guidelines.md`](./claim-guidelines.md)
-- Release tracks in [`release-tracks.md`](./release-tracks.md)
+- Release tracks in `release-tracks.md`
 - Showcase classification in [`showcase/apps-classification.md`](./showcase/apps-classification.md)
 - Production-runtime backend selection (not full renderer parity) in
   [`architecture/create-aura-app-production-bridge.md`](./architecture/create-aura-app-production-bridge.md)

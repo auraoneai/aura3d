@@ -42,7 +42,7 @@ Corrections to the earlier version of this record:
 | `.github/workflows/prd07-vfx.yml`, `quality-checkpoint.yml`, `quality-rebuild-capture.yml`, `external-parity-external-engine-baselines.yml` | 12 | #277 | no request filed | PENDING |
 | `.github/workflows/qr-prd08-camera.yml` | 08 | #277 | no request filed | PENDING |
 | `.github/QR_OWNERSHIP.json` | 15 | #277 | no request filed | PENDING |
-| `aura3d-verification-matrix.md` | 12 | #277 | no request filed | PENDING |
+| `docs/archive/aura3d-verification-matrix.md` | 12 | #277 | no request filed | PENDING |
 | `benchmarks/production-runtime/**` (4 files) | 12 | #277 | no request filed | PENDING |
 | `benchmarks/quality-rebuild/**` (51 files lane 12; 24 under `aura3d`/`three`/`scenes` resolve to lane 07) | 12 / 07 | #277 | no request filed | PENDING |
 | `tools/template-source-audit/index.ts` | 15 | #269, #276, #284 | moot on main: deleted by `250077b5` (#336); record lane-15 acknowledgement | PENDING |

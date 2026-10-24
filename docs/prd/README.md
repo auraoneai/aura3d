@@ -48,17 +48,17 @@ server-side; no raw `msy_...` key ever enters the repo, logs, or transcripts.
 
 | # | PRD | Working title | Modeled on | Genre kit / primary API |
 | --- | --- | --- | --- | --- |
-| 1 | [Iron Crown](iron-crown.md) | **Iron Crown** | Street Fighter II | `fighting-game` template, `FightingCharacterController`, `HitboxWorld` |
-| 2 | [Pip's Big Leap](pips-big-leap.md) | **Pip's Big Leap** | Super Mario Bros | `game.platformer`, `character-controller` template |
-| 3 | [Bunker Zero](bunker-zero.md) | **Bunker Zero** | Wolfenstein 3D | `mini-game` template, raycast-maze grid, sprite enemies |
-| 4 | [Slingshot Siege](slingshot-siege.md) | **Slingshot Siege** | Angry Birds | `physics.*` (rapier), destruction stacks |
-| 5 | [Dot Dash 3D](dot-dash-3d.md) | **Dot Dash 3D** | Pac-Man | `mini-game`, grid pathing AI |
-| 6 | [Cross Hop](cross-hop.md) | **Cross Hop** | Frogger / Crossy Road | `game.platformer` lane variant |
-| 7 | [Aura Hoops 3D](aura-hoops-3d.md) | **Aura Hoops 3D** | Basketball (NBA Jam / 2K streetball) | `character-controller` + custom sport sim |
-| 8 | [Aura Diamond 3D](aura-diamond-3d.md) | **Aura Diamond 3D** | Baseball (MLB / Home Run Derby) | character + projectile sim |
-| 9 | [Aura FC 3D](aura-fc-3d.md) | **Aura FC 3D** | Soccer (FIFA / Rocket League minus cars) | character + ball sim |
-| 10 | [Red Zone 3D](red-zone-3d.md) | **Red Zone 3D** | American football (Madden / Retro Bowl) | character + play-call sim |
-| 11 | [Aura Links 3D](aura-links-3d.md) | **Aura Links 3D** | Golf (PGA / Everybody's Golf) | ball-flight sim, terrain |
+| 1 | [Iron Crown](../archive/docs/prd/iron-crown.md) | **Iron Crown** | Street Fighter II | `fighting-game` template, `FightingCharacterController`, `HitboxWorld` |
+| 2 | [Pip's Big Leap](../archive/docs/prd/pips-big-leap.md) | **Pip's Big Leap** | Super Mario Bros | `game.platformer`, `character-controller` template |
+| 3 | [Bunker Zero](../archive/docs/prd/bunker-zero.md) | **Bunker Zero** | Wolfenstein 3D | `mini-game` template, raycast-maze grid, sprite enemies |
+| 4 | [Slingshot Siege](../archive/docs/prd/slingshot-siege.md) | **Slingshot Siege** | Angry Birds | `physics.*` (rapier), destruction stacks |
+| 5 | [Dot Dash 3D](../archive/docs/prd/dot-dash-3d.md) | **Dot Dash 3D** | Pac-Man | `mini-game`, grid pathing AI |
+| 6 | [Cross Hop](../archive/docs/prd/cross-hop.md) | **Cross Hop** | Frogger / Crossy Road | `game.platformer` lane variant |
+| 7 | [Aura Hoops 3D](../archive/docs/prd/aura-hoops-3d.md) | **Aura Hoops 3D** | Basketball (NBA Jam / 2K streetball) | `character-controller` + custom sport sim |
+| 8 | [Aura Diamond 3D](../archive/docs/prd/aura-diamond-3d.md) | **Aura Diamond 3D** | Baseball (MLB / Home Run Derby) | character + projectile sim |
+| 9 | [Aura FC 3D](../archive/docs/prd/aura-fc-3d.md) | **Aura FC 3D** | Soccer (FIFA / Rocket League minus cars) | character + ball sim |
+| 10 | [Red Zone 3D](../archive/docs/prd/red-zone-3d.md) | **Red Zone 3D** | American football (Madden / Retro Bowl) | character + play-call sim |
+| 11 | [Aura Links 3D](../archive/docs/prd/aura-links-3d.md) | **Aura Links 3D** | Golf (PGA / Everybody's Golf) | ball-flight sim, terrain |
 
 ## Recommended build order
 

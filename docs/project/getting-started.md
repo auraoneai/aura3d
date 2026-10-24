@@ -44,7 +44,7 @@ cd marketing
 npm run dev
 ```
 
-Marketing route embeds use `data-route`, `data-demo`, and `data-quality="marketing"` attributes. The loader only starts the hero eagerly, lazy-loads below-fold stages, and limits concurrent iframe startup so heavy GLB/HDR routes do not compete with every other embedded route. See [Marketing Site](marketing-site.md).
+Marketing route embeds use `data-route`, `data-demo`, and `data-quality="marketing"` attributes. The loader only starts the hero eagerly, lazy-loads below-fold stages, and limits concurrent iframe startup so heavy GLB/HDR routes do not compete with every other embedded route. See Marketing Site.
 
 ## Minimal Public SDK Example
 

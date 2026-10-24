@@ -19,13 +19,13 @@ the archive.
 - Current product state: [`status/current-state.md`](./status/current-state.md)
 - Known limits: [`status/known-limits.md`](./status/known-limits.md)
 - Public API: [`docs/api/public-api.md`](../api/public-api.md)
-- Release notes (4.0.0): [`aura3d-400-release-notes.md`](./aura3d-400-release-notes.md)
+- Release notes (4.0.0): [`aura3d-400-release-notes.md`](../archive/docs/project/aura3d-400-release-notes.md)
 - Migration to 4.0: [`docs/migration-4.0.md`](../migration-4.0.md)
 - Migration to 2.0 (archived): [`docs/migration/2.0.md`](../migration/2.0.md)
 
 ## Architecture
 
-- 2.0 platform boundary: [`docs/architecture/2.0-platform.md`](../architecture/2.0-platform.md)
+- 2.0 platform boundary: [`docs/archive/docs/architecture/2.0-platform.md`](../archive/docs/architecture/2.0-platform.md)
 - Package ownership: [`docs/architecture/package-ownership.md`](../architecture/package-ownership.md)
 - Exact generated subsystem ledger: [`docs/architecture/final-subsystem-ownership.md`](../architecture/final-subsystem-ownership.md)
 - Public API design: [`docs/architecture/public-api-design.md`](../architecture/public-api-design.md)
@@ -55,8 +55,8 @@ the archive.
 - Comparison status: [`threejs-superiority-status.md`](./threejs-superiority-status.md)
 - Claim boundary: [`parity/threejs/claim-boundary.md`](./parity/threejs/claim-boundary.md)
 - Current inventory: [`parity/threejs/inventory.md`](./parity/threejs/inventory.md)
-- Per-row matrix: [`parity/threejs/parity-matrix.md`](./parity/threejs/parity-matrix.md)
-- Scope decisions: [`parity/threejs/scope-decisions.md`](./parity/threejs/scope-decisions.md)
+- Per-row matrix: `parity/threejs/parity-matrix.md`
+- Scope decisions: `parity/threejs/scope-decisions.md`
 - Generated capability lineage: [`parity/threejs/capability-lineage.md`](./parity/threejs/capability-lineage.md)
 - Reproduction workflow: [`superiority-evidence-workflow.md`](./superiority-evidence-workflow.md)
 
@@ -67,7 +67,7 @@ reproduction tool consumes them. They are data, not current public claims.
 
 - Showcase classifications: [`showcase/apps-classification.md`](./showcase/apps-classification.md)
 - Quality gates: [`showcase/quality-gates.md`](./showcase/quality-gates.md)
-- Visual quality standard: [`showcase/visual-quality-standard.md`](./showcase/visual-quality-standard.md)
+- Visual quality standard: `showcase/visual-quality-standard.md`
 - Each package, template, app, example, fixture, or evidence bundle retains a
   colocated `README.md` only when users or tools need that entry point.
 
@@ -75,13 +75,13 @@ reproduction tool consumes them. They are data, not current public claims.
 
 - Release process: [`release-process.md`](./release-process.md)
 - Release checklist: [`release/release-checklist.md`](./release/release-checklist.md)
-- Release tracks: [`release-tracks.md`](./release-tracks.md)
+- Release tracks: `release-tracks.md`
 - Rollback: [`release/deployment-rollback.md`](./release/deployment-rollback.md)
 - Verification evidence: [`verification-evidence.md`](./verification-evidence.md)
 - Completion verification: [`completion-audit.md`](./completion-audit.md)
 - Production renderer path: [`architecture/create-aura-app-production-bridge.md`](./architecture/create-aura-app-production-bridge.md)
 - Requirements trace: [`requirements-trace.md`](./requirements-trace.md)
-- Website: [`marketing-site.md`](./marketing-site.md)
+- Website: `marketing-site.md`
 - Security: [`security-policy.md`](./security-policy.md)
 - Support: [`support-policy.md`](./support-policy.md)
 
