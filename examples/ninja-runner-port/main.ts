@@ -88,6 +88,7 @@ function showHud(on: boolean): void {
 function begin(): void {
   z = createState(config.seed);
   startRun(z);
+  loop.resetAccumulator();
   simSteps = 0;
   countdown = 0;
   pendingEvents = [];
