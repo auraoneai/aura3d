@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Aura3D self-heal lab</title>
+    <style>
+      html,body{margin:0;height:100%;background:#000;overflow:hidden}
+      canvas{width:320px;height:180px;display:block}
+      #boot{position:fixed;inset:0;background:#0a0a0a;color:#ddd;font:14px sans-serif;display:flex;align-items:center;justify-content:center}
+      #boot.done{display:none}
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <div id="boot" role="status">LOADING STADIUM &amp; 3D ATHLETES…</div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

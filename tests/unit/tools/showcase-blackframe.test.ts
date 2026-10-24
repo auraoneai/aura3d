@@ -42,12 +42,14 @@ describe("installBlackFrameGuard (simulated browser)", () => {
   let store: Record<string, string>;
   let black = true;
   let nowMs = 0;
+  let bootVisible = false;
 
   const setup = (search: string): void => {
     replace = vi.fn();
     store = {};
     black = true;
     nowMs = 0;
+    bootVisible = false;
     nextFrame = null;
     const probe = {
       width: 0,
@@ -64,7 +66,9 @@ describe("installBlackFrameGuard (simulated browser)", () => {
     vi.stubGlobal("document", {
       hidden: false,
       createElement: () => probe,
-      querySelectorAll: () => [world, { width: 160, height: 160 }]
+      readyState: "complete",
+      querySelectorAll: (selector: string) =>
+        selector === "canvas" ? [world, { width: 160, height: 160 }] : selector.includes("#boot") && bootVisible ? [{ hidden: false, classList: { contains: () => false } }] : []
     });
     const win: Record<string, unknown> = {
       requestAnimationFrame: (cb: (t: number) => void) => { nextFrame = () => cb(0); return 1; }
@@ -124,5 +128,32 @@ describe("installBlackFrameGuard (simulated browser)", () => {
     expect(win.__AURA3D_HEAL__?.rung).toBe(1);
     expect(String(replace.mock.calls[0]![0])).toContain("a3d-qr=game%2C-vfxFog%2C-post");
     expect(store["aura3d-heal:/apps/g/"]).toBe("2");
+  });
+
+  it("does not reload while the loading overlay is up (slow first frame on a CPU renderer), and does once it is gone", () => {
+    setup("");
+    bootVisible = true;
+    installBlackFrameGuard({ fast: true });
+    const win = (globalThis as unknown as { window: { requestAnimationFrame: (cb: (t: number) => void) => number; __AURA3D_HEAL__?: { observation?: () => { skipped: { notReady: number }; readyAtCall: number | null } } } }).window;
+    const loop = (): void => { win.requestAnimationFrame(loop); };
+    win.requestAnimationFrame(loop);
+    runFrames(400);
+    expect(replace).not.toHaveBeenCalled();
+    expect(win.__AURA3D_HEAL__?.observation?.().skipped.notReady).toBeGreaterThan(300);
+    expect(win.__AURA3D_HEAL__?.observation?.().readyAtCall).toBeNull();
+    bootVisible = false;
+    runFrames(60);
+    expect(replace).toHaveBeenCalledTimes(1);
+  });
+
+  it("never reloads a dark but valid scene", () => {
+    setup("");
+    black = false;
+    installBlackFrameGuard({ fast: true });
+    const win = (globalThis as unknown as { window: { requestAnimationFrame: (cb: (t: number) => void) => number } }).window;
+    const loop = (): void => { win.requestAnimationFrame(loop); };
+    win.requestAnimationFrame(loop);
+    runFrames(500);
+    expect(replace).not.toHaveBeenCalled();
   });
 });

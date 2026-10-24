@@ -1,8 +1,9 @@
-import { createBlackFrameWatch, DEFAULT_HEAL_LADDER, healRungName, healStage, type BlackFrameWatch, type BlackFrameWatchOptions, type HealRung } from "./blackFrame.js";
+import { createBlackFrameWatch, DEFAULT_HEAL_LADDER, healRungName, healStage, type BlackFrameWatch, type BlackFrameWatchOptions, type HealRung, type WatchObservation } from "./blackFrame.js";
 import { installDiagnosticsPanel, type DiagnosticsAppLike, type DiagnosticsPanelHandle } from "./diagnosticsPanel.js";
 import { resolveQualitySwitches, type QualitySwitches } from "./switches.js";
 
 export * from "./blackFrame.js";
+export * from "./guard.js";
 export * from "./diagnosticsPanel.js";
 export * from "./switches.js";
 
@@ -21,7 +22,7 @@ export interface SafetySettings {
   /** Show the diagnostics panel. Default: only when the URL has `?diag=1`. */
   readonly panel?: boolean | "query";
   readonly ladder?: readonly HealRung[];
-  readonly watch?: Pick<BlackFrameWatchOptions, "fastFrames" | "readProbe" | "storage" | "currentUrl" | "navigate" | "storageKey" | "log">;
+  readonly watch?: Pick<BlackFrameWatchOptions, "fastFrames" | "readProbe" | "storage" | "currentUrl" | "navigate" | "storageKey" | "log" | "isReady" | "getDrawCalls" | "now" | "isHidden" | "minBlackMs" | "blackFramesBudget" | "minFramesAfterReady" | "sampleEvery" | "samplesNeeded">;
 }
 
 export interface SafetyReport {
@@ -31,6 +32,8 @@ export interface SafetyReport {
   readonly escalated: boolean;
   readonly switches: QualitySwitches;
   readonly panel: boolean;
+  /** What the black-frame watch has seen (frames, probe stats, skips) and why a reload happened; undefined without a watch. */
+  readonly observed?: WatchObservation;
 }
 
 export interface SafetyNet {
@@ -72,7 +75,8 @@ export function installSafetyNet(options: SafetyNetOptions): SafetyNet {
     rung: watch?.rung ?? healRungName(stage, ladder),
     escalated: watch?.escalated ?? false,
     switches,
-    panel: showPanel
+    panel: showPanel,
+    ...(watch ? { observed: watch.observation() } : {})
   });
   let panel: DiagnosticsPanelHandle | undefined;
   if (showPanel && typeof document !== "undefined") {
@@ -82,7 +86,14 @@ export function installSafetyNet(options: SafetyNetOptions): SafetyNet {
       extraLines: () => {
         const r = report();
         const off = (["post", "shadow", "env", "sky", "aa"] as const).filter((key) => !switches[key]);
-        return [`safety: rung ${r.stage} (${r.rung})${r.escalated ? " reloading" : ""} off:[${off.join(",")}] quality:${switches.quality} tm:${switches.toneMapping} heal:${switches.heal ? "on" : "off"}`];
+        const lines = [`safety: rung ${r.stage} (${r.rung})${r.escalated ? " reloading" : ""} off:[${off.join(",")}] quality:${switches.quality} tm:${switches.toneMapping} heal:${switches.heal ? "on" : "off"}`];
+        const seen = r.observed ?? (globalThis as { __AURA3D_HEAL__?: { observation?: () => WatchObservation } }).__AURA3D_HEAL__?.observation?.();
+        if (seen) {
+          const s = seen.lastStats;
+          lines.push(`heal watch: frames ${seen.calls} ready@${seen.readyAtCall ?? "no"} samples ${seen.samples} black ${seen.blackSamples} lit ${s ? `${s.lit}/${s.samples} max ${s.max}` : "n/a"} frame ${Math.round(seen.medianFrameMs)}ms skipped notReady ${seen.skipped.notReady} noDraw ${seen.skipped.noDrawCalls}${seen.healthy ? " healthy" : ""}`);
+          if (seen.reason) lines.push(`heal reason: ${seen.reason}`);
+        }
+        return lines;
       }
     });
   }

@@ -4,6 +4,10 @@ Version: 4.1.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.1.1 (unreleased)
+
+- **Fix: the black-frame self-heal no longer fires on healthy pages.** Live verification of 4.1.0 showed it reloading Aura Slam while the loading overlay was still up and a slow CPU renderer had not drawn its first frame, and dark valid scenes could read as black. The watch now waits for readiness (loaded document, no visible loading overlay, no in-flight asset fetches, the app's own `isReady`), counts frames from that moment, samples a nearest-neighbour grid instead of a blurred 16x16 copy, calls a frame black only when almost every sample is the clear colour, and requires that to persist over a window that grows with the measured frame time. It steps down once per page load and records why (`?diag=1`, `SAFETY_COMPAT_MODE`). The showcase games and Drift & Deliver now share this one implementation from `@aura3d/debug`.
+
 ## 4.1.0 (2026-10-24)
 
 A large release: eight reusable kits extracted from the eleven Crayon game ports and the Aura Slam 3D conversion, plus the engine fixes those games exposed. Everything below is in the published `@aura3d/*` packages unless it is listed under Tooling and examples.
