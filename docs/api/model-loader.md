@@ -31,7 +31,7 @@ scene({
 | relative URL and `baseUrl` | joined; absolute paths left alone |
 | unknown id passed to `assets.node(...)` | `invalid-model-assets`, lists known ids |
 
-`assets.refs.<id>` are ordinary typed asset refs: use them with `model(...)`, `instances.model(...)` and `cloneSkinned(...)`. Repeated `model()` nodes of one asset share decoded textures (4.0.9).
+`assets.refs.<id>` are ordinary typed asset refs: use them with `model(...)`, `instances.model(...)` and `cloneSkinned(...)`. Repeated `model()` nodes of one asset share decoded textures (4.1.0).
 
 ## Procedural fallback is an option, not a URL hack
 

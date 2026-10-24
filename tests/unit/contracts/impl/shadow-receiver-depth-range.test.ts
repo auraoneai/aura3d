@@ -1,5 +1,5 @@
 /**
- * Directional shadow receivers beyond a cascade's depth range (4.0.9).
+ * Directional shadow receivers beyond a cascade's depth range (4.1.0).
  *
  * The forward path picks ONE cascade per render item (by the item's centre depth, forward/Lighting.ts
  * `selectForwardShadowMap`) and samples that cascade's map for every fragment of the item. A large receiver such as a
