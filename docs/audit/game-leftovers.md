@@ -31,6 +31,15 @@ Verified clean across all 26 games: no GLTFLoader or hand-rolled hash tables, no
 | F9 | Remaining fonts outside the licensed set or with system fallbacks: `Segoe UI`/`system-ui` after Avenir Next in dot-dash `styles.css:22`; `-apple-system, BlinkMacSystemFont` fallbacks in hoops, diamond, fc, links, teleoperator, iron-crown; `Arial Black` in fc `hud.ts`/`modes.ts`; `Trebuchet MS` in the Splat Rush port page; `ui-sans-serif, system-ui` in the Kid Goku port page; `system-ui` fallbacks in Pips, Wind | listed | S | Mechanical, but each needs a screenshot check; also audit weights (many use 600 to 800, the dense preset allows 400/500 plus one Semibold title) |
 | F10 | `apps/showcase-aura-diamond-3d`, `aura-hoops-3d`, `roadster-rush` and `teleoperator` use `(window as any)` for the evidence objects (typing leftover) | listed | S | Folds into F5 |
 
+## Group B migration (Silt & Signal, Ninja Runner, Last Train, Roadster Hours)
+
+Done: F2 (QA hook) and F3 (fixed-step loop) for these four ports; F4 (audio) deliberately not done.
+
+- **F2:** each port now installs its hook through `installQaHooks`; every existing member is kept as `extras` (specs and evidence scripts read them by name). The kit now preserves getters in `extras` (`get ready()`, `get state()` stay live), which the ports' specs rely on (`__AURA_SILT__.ready === true`). The first-error global goes through `reportError`.
+- **F3:** each live loop is `createFixedStepLoop` with the port's own step, clamp and catch-up cap. `tests/unit/port-kit-migration/fixed-step-equivalence.test.ts` compares steps per frame against the old accumulator on 20,000 seeded frames per configuration (whole-millisecond frames, so the doubles are identical): all equal. `stepFrames`, `replay` and the other manual paths still call the sim directly, so replay traces are untouched. Restart calls `loop.resetAccumulator()`.
+- **Small live-loop differences (not covered by replay):** the clock drains in non-play screens instead of freezing (steps are skipped there), so resuming never bursts; Ninja and Roadster run countdown, audio and render after the steps in a frame instead of before; Last Train no longer takes a 0.1 s burst on its first frame; Silt's `renderTime` starts at ready instead of at load.
+- **F4 not done, per port:** the audio files mix one-shot cues with continuous, per-frame driven voices (Silt pad, hum and wind; Ninja wind and music bus; Last Train wind, rumble, hiss, squeal, pad; Roadster engine pair, wind, music). `createCueBank` covers the one-shots only. Silt's chimes use a linear attack ramp (the bank is exponential); Ninja's and Roadster's noise hits start at a `Math.random()` buffer offset (the bank uses a fixed LCG buffer). Moving only the one-shots would split mute, unlock and master gain across two audio graphs. Needs a library driven-voice API (named loops with per-frame targets) plus an offline automation-recording comparison before any port moves; audible parity cannot be judged here.
+
 ## Notes
 
 - Other apps outside the 26 (`aurora-lander`, `bank-shot`, `blockfall-reactor`, `vault-breakers`, the `-v2` apps) also assign the beacon by hand; out of scope here.
