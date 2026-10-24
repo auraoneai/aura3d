@@ -1,6 +1,6 @@
 # Changelog
 
-Version: 4.1.2
+Version: 4.1.3
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
