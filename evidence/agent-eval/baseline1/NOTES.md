@@ -85,6 +85,49 @@ An author-written `precision highp float;` in a `material.custom` fragment disab
 ### Still open
 
 1. Task 5 (shader water) first-try checks: 1 of 2 probe items in most runs (not a black frame; the probe items are the harness's own heuristics).
-2. First-try typecheck 12 of 15 (down from 15 in i3; variance or doc wording, unexamined).
-3. The bundle growth from the embedded environment (see section 2).
+2. First-try typecheck 12 of 15 (down from 15 in i3; variance or doc wording, unexamined). **Update:** classified in evalfix3 below.
+3. The bundle growth from the embedded environment (see section 2). **Update:** reduced from +648 KB to +137 KB in evalfix3 below.
 4. The unrelated tests that fail on clean main (`prd03-s18c-custom-passes`, `prd03-t0-16-statecache-invalidate` x2, `prd12-variants`): the two LDR-tail tests may be a regression from the frame-cost commit (`a816facf6`); not investigated here.
+
+## evalfix3: smaller embedded environment, typecheck causes, the two LDR-tail tests (2026-10-24, batch evalfix3-r1)
+
+Tarballs built from the working tree (`tsc` + finalize + `npm pack`), docs at the commit under test, Aura3D arm, tasks 1 to 5, n=3, 40-turn budget, scored remotely on software WebGL2. Raw metrics: `evidence/agent-eval/evalfix3-r1/metrics.json`.
+
+| Aura3D arm, n=15 | baseline1 | i3 | evalfix2-r1 | evalfix3-r1 |
+|---|---|---|---|---|
+| First-try typecheck | 8 | 15 | 12 | 13 |
+| First-try build | 10 | 15 | 15 | 15 |
+| First-try renders non-black | 8 | n/a | n/a | 14 |
+| Final render non-black | 8 | 10 | 14 | 14 |
+| Turn-cap hits | 7 | 0 | 0 | 0 |
+| Median turns | 40 | 12 | 11 | 10 |
+| Median input tokens | 3.0M | 0.35M | n/a | 0.27M |
+
+three.js median remains 4 turns with 15 of 15 renders, so it is still faster to author with.
+
+The one final render scored blank (task 4 run 3) is a dark night arena that does render (coins and player visible in `remote/frames/evalfix3-r1-t4-aura-r3-final-0.jpg`, mean luma 3.1, std 9.3); the probe's blank threshold counts it as blank. No console or page errors.
+
+### 1. The embedded environment is 5x smaller
+
+The cube is Monte-Carlo baked (128 samples per texel, 1.7% mean relative difference between neighbouring texels), so lossless packing barely helps (498 KB gzip as is, 490 KB with a predictor filter, 329 KB with brotli, which `DecompressionStream` cannot decode). The embedded copy now keeps 5 significant mantissa bits on mip 0 and 4 on the blurred mips: 100 KB gzip, 141 KB of source. Stock cube app: 3,395 kB raw / 1,062 kB gzip (4.1.3: 3,258 / 963; the first embed: 3,914 raw). The stock build smoke still passes (hello-world and mini-game, Vite 7.3.2). Frames: Silt rings 0.074/255 mean absolute difference, Ninja Runner at the run-to-run noise floor; details and the tolerance in `evidence/neutral-embedded/README.md`. The chunk is fetched by every app that uses the default neutral environment (about 100 KB over the wire).
+
+### 2. First-try typecheck: causes (from the archived i2 runs and the evalfix3 runs)
+
+| Error | Task | Cause | Fix |
+|---|---|---|---|
+| `app.camera` possibly undefined | forest | optional app extension | recipes type-traps table |
+| `translate` not on `AuraNodeBuilder` | game loop | it is on the runtime handle | type-traps table; builders now accept `.position([x, y, z])` |
+| `'kind' does not exist in type ... AuraCustomGeometrySpec` | water (r2) | invented field; `geometry.define` adds it | type-traps table |
+| `Cannot invoke an object which is possibly 'undefined'` on `setUniform` | water (r3) | optional on the handle | type-traps table (`?.setUniform?.(...)`) |
+
+Both evalfix3 failures are the water task and both agents had opened `recipes.md`, which already showed the right pattern; the two traps are now explicit rows in the table. Not rerun after that doc change.
+
+### 3. The two LDR-tail tests: stale test doubles, not a regression
+
+`prd03-s18c-custom-passes` (1 case) and `prd03-t0-16-statecache-invalidate` (2 cases) call `runV2LdrTail`, which calls `host.lifecycle.bindOutput(null, w, h)` since 4.0.4 (SC-01/XR). Their fake host has no `lifecycle`. They fail identically on `a816facf6~1` (the commit before the frame-cost change), and `a816facf6` does not touch `v2Stages.ts`. The fake hosts now provide it.
+
+### Still open
+
+1. `prd12-variants` ("covers every game"): the overlay lists 8 games and `games.json` lists 18, a data drift in the quality-rebuild capture tool; not touched.
+2. The first-try typecheck for the water task after the doc change.
+3. Real-GPU frames for the quantized environment on glossy metals close to the brightest light patch.

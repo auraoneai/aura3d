@@ -185,6 +185,8 @@ await app.ready();
 | `TS18048: 'app.camera' is possibly 'undefined'` | `app.camera` is an optional app extension. | Move the camera with `app.camera?.setPose(...)`, or declare it in the scene (`camera.orbit(...)`, `camera.perspective(...)`) and use `interactions.orbit` for user control. |
 | `TS2339: Property 'translate' does not exist on type 'AuraNodeBuilder<...>'` | `translate` is on the live runtime handle (`app.nodes.require("name")`), not on the builders (`primitives.box(...)`). | On a builder use `.position(x, y, z)` or `.position([x, y, z])` (the array form needs 4.1.4 or later; on 4.1.3 and earlier pass three numbers). After mounting, move it with the handle's `translate` or `setPosition`. |
 | `position([x, y, z])` rejected on 4.1.3 and earlier | `.position`, `.rotate` and `.lookAt` took three numbers there while `.scale` took a number or an array. | Spread the array (`.position(...pos)`), or upgrade to 4.1.4 or later where both forms work. |
+| `TS2353: ... 'kind' does not exist in type 'Omit<AuraCustomGeometrySpec, ...>'` | `geometry.define` adds the `kind` itself. | Pass only `{ positions, normals, indices, bounds }` (see recipe 5), then mount the result with `geometry.custom(...)`. |
+| `TS2722: Cannot invoke an object which is possibly 'undefined'` on `.setUniform(...)` | `setUniform` exists only on nodes that carry a custom material, so the handle type marks it optional. | `app.nodes.get("water")?.setUniform?.("waveClock", t)` exactly as in recipe 5. |
 | `TS2322` on `material.custom({ glsl })` | `glsl` is an object (`{ fragment }`, optionally `vertex`), and uniforms are `{ type: "f32", value }` objects, not bare numbers. | Copy the water recipe above. |
 
 ## Where next
