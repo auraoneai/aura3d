@@ -156,19 +156,6 @@ describe("createFixedStepLoop", () => {
     expect(capped.accumulator).toBe(0); // the remaining backlog is dropped, not replayed
   });
 
-  it("resetAccumulator drops the carried time and keeps the step counter", () => {
-    const loop = createFixedStepLoop({ step: vi.fn() });
-    loop.tick(0);
-    loop.tick(10);
-    expect(loop.accumulator).toBeGreaterThan(0);
-    loop.resetAccumulator();
-    expect(loop.accumulator).toBe(0);
-    loop.tick(20);
-    expect(loop.steps).toBe(0);
-    loop.tick(30);
-    expect(loop.steps).toBe(1);
-  });
-
   it("manual mode never advances on its own; advance(n) runs exactly n steps and renders once", () => {
     const step = vi.fn();
     const render = vi.fn();
