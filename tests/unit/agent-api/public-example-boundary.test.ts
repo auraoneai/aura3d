@@ -70,7 +70,7 @@ function stripComments(source: string): string {
 // or inline in the route source). The same literal anywhere else — a loader
 // argument, a concatenated path, a `model("…")` payload — stays a violation.
 const RAW_ASSET_URL = /["'`](?:https?:\/\/|\/|\.{1,2}\/)[^"'`]*\.(?:glb|gltf)(?:[?#][^"'`]*)?["'`]/gi;
-const TYPED_ASSET_FIELD = /(?:url|colliderUrl|source|mobile)\s*:\s*$/;
+const TYPED_ASSET_FIELD = /(?:url|colliderUrl|source|mobile)\s*:\s*(?:new\s+URL\(\s*)?$/;
 
 describe("public example source boundary", () => {
   it("does not import renderer internals or raw model assets for public showcase/template visuals", () => {
