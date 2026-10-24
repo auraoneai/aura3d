@@ -93,7 +93,7 @@ Status: v2, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap regis
 | 47 | Third-party ecosystem (R3F, drei, tutorials, jobs) | Very large | Essentially none outside this repo | three.js better | n/a | doc claim only |
 | 48 | Core bundle size | Tree-shakable; a minimal app is small | Engine core critical path 3,924,895 B (1,141,998 gzip) against a 190,000 budget: fails; product-viewer and mini-game budgets also fail | three.js better | `BUNDLE_SIZES.md` | verified in code |
 | 49 | Source size for the same scene | Verbose imperative code | Shorter scene source in 4 of 5 scenes (non-blank lines: 24 vs 49, 49 vs 71, 45 vs 62, 61 vs 82); cube 18 vs 15 and water 87 vs 86 not shorter; extra build files needed in 4.1.2; one author, software-GL harness | Aura3D better (scene source only) | `evidence/vs-threejs/RESULTS.md` sections 1 to 3 | verified in code (counted; one-author caveat) |
-| 50 | API hygiene | Stable, slowly evolving | Root surface has 186 live exports and 66 `@deprecated` annotations | three.js better | `packages/engine/src/public/index.ts` | verified in code |
+| 50 | API hygiene | Stable, slowly evolving | Root surface has 240 live value exports and 42 deprecated value exports (47 `@deprecated` annotations including types; each names a replacement or says there is none) | three.js better | `packages/engine/src/public/index.ts` | verified in code |
 | 51 | Test baseline | Large upstream suite | About 106 to 116 failing unit tests in the baseline (docs/claim gates reading missing files, legacy WebGPU mocks, removed planners) | three.js better | full `tests/unit` run not finishing here in 560 s; baseline counts from earlier runs | doc claim only |
 | 52 | Real-GPU verification | Upstream CI plus massive field use | Software WebGL2 only; three real-device checks came from the owner's M4 Max | three.js better | evidence folders; parity doc | doc claim only |
 | 53 | Bugs found on real hardware during this program | n/a | NaN from `pow(negative)` on Apple GPUs, empty-instance throws, white instanced textures, silent shader failures, black-frame guard misfire (fixed in 4.1.2) | three.js better | changelog 4.0.8 to 4.1.2 | doc claim only |
@@ -156,7 +156,7 @@ Separated into genuinely unique and convenience wrappers over things three.js ca
 
 ## 5. Maturity and risk facts
 
-- Aura3D 4.1.2 is 24 public packages; the root `@aura3d/engine` surface has 186 live value exports and 66 deprecated annotations.
+- Aura3D 4.1.2 is 24 public packages; the root `@aura3d/engine` surface has 240 live value exports and 42 deprecated value exports (47 `@deprecated` annotations including types).
 - Release cadence in this program: 4.0.8, 4.1.0, 4.1.1, 4.1.2 within days. Each patch fixed a real defect found after publish (for example the 4.1.1 self-heal misfire from rAF reads on a non-preserved drawing buffer).
 - Documented weaknesses, all open at time of writing: bundle budgets failing, about 106 to 116 baseline unit test failures, software-GL-only verification, legacy post chain darkening, two of the games (HEATSINK port, Last Train) not completing automated checks under software GL.
 - Risk if adopting today: you carry the migration cost and the verification gap; you gain a typed API and agent tooling. Risk if staying on three.js: none of Aura3D's safety rails, more code per scene.
