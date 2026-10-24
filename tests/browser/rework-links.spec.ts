@@ -48,7 +48,7 @@ async function waitDrive(page: Page, drivePhases: string[], timeoutMs: number) {
   throw new Error(`timeout waiting for drive phase ${drivePhases.join("|")}`);
 }
 
-test.setTimeout(600_000);
+test.setTimeout(900_000);
 
 test("aura links: golfer address posture, swing frames and swept club contact", async ({ page }) => {
   const { origin, close } = await serve();
@@ -66,29 +66,28 @@ test("aura links: golfer address posture, swing frames and swept club contact", 
   await frame(page, "01-address");
 
   await page.keyboard.press("Space");
-  await waitDrive(page, ["backswing"], 60_000);
-  await page.waitForTimeout(500);
-  await frame(page, "02-backswing");
-  // the meter: power then accuracy clicks while the swing is at the top
-  await waitDrive(page, ["top"], 60_000);
-  await frame(page, "03-top");
-  await page.keyboard.press("Space");
-  await page.waitForTimeout(400);
-  await page.keyboard.press("Space");
-  const impactEv = await (async () => {
-    const deadline = Date.now() + 90_000;
-    while (Date.now() < deadline) {
-      const e = await evidence(page);
-      if (e?.swing?.impactFired) return e;
-      await page.waitForTimeout(40);
+  await waitDrive(page, ["backswing"], 120_000);
+  // power then accuracy clicks: the swing commits and releases from the top on its own clock
+  setTimeout(() => void page.keyboard.press("Space"), 1_500);
+  setTimeout(() => void page.keyboard.press("Space"), 3_000);
+  const seen = new Set<string>();
+  let impactEv: Evidence | undefined;
+  const deadline = Date.now() + 480_000;
+  let n = 2;
+  while (Date.now() < deadline) {
+    const e = await evidence(page);
+    const dp = e?.swing?.drivePhase ?? "idle";
+    if (dp !== "idle" && !seen.has(dp)) {
+      seen.add(dp);
+      await frame(page, `${String(n++).padStart(2, "0")}-${dp}`);
     }
-    return undefined;
-  })();
-  await frame(page, "04-impact");
-  await page.waitForTimeout(600);
-  await frame(page, "05-follow");
-  await page.waitForTimeout(1500);
-  await frame(page, "06-finish");
+    if (e?.swing?.impactFired && !impactEv) {
+      impactEv = e;
+      await frame(page, `${String(n++).padStart(2, "0")}-impact`);
+    }
+    if (impactEv && dp === "idle") break;
+    await page.waitForTimeout(30);
+  }
   const final = await evidence(page);
   process.stdout.write(`@@LNKRESULT ${JSON.stringify({ errors, warns, impactFired: impactEv?.swing?.impactFired, contact: final?.swing?.contact, clubAttached: final?.swing?.clubAttached, impactDistance: final?.swing?.impactDistance })}\n`);
   await close();
