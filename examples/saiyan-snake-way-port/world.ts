@@ -4,8 +4,7 @@
  * fallback) with its aura shell, ki sparks and speed streaks, pooled multi-part props for the road's entities, the
  * chase camera and the post stack. The simulation (`sim.ts`) never imports this file.
  */
-import { camera, cloneSkinned, effects, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
-import { attachRootRenderSource, type TypedGLBActor } from "@aura3d/engine/production-runtime";
+import { attachRootRenderSource, camera, cloneSkinned, effects, geometry, lights, material, model, primitives, scene, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { HERO_PARTS, apply, mul, poseHero, rx, ry, rz, type HeroColor, type HeroPartSpec, type M3, type V3 as LV3 } from "./hero";
 import {
   PALETTE, auraSpec, blobSpec, flatSpec, glowSpec, hexLinear, roadSpec, skySpec, solidSpec, type CustomSpec, type Rgb

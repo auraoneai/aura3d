@@ -1,4 +1,5 @@
 import {
+  attachRootRenderSource,
   camera,
   characters,
   cloneSkinned,
@@ -10,8 +11,7 @@ import {
   primitives,
   scene
 } from "@aura3d/engine";
-import { attachRootRenderSource } from "@aura3d/engine/production-runtime";
-import type { TypedGLBActor } from "@aura3d/engine/production-runtime";
+import type { TypedGLBActor } from "@aura3d/engine";
 
 /**
  * Lane L8 acceptance lab (three.js parity SA-01..06 / SM-03).

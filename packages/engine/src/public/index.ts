@@ -16,6 +16,9 @@ export type { AuraModelAssetEntry, AuraModelAssetRefs, AuraModelAssetSet, AuraMo
 // QA and replay kit (docs/api/qa-kit.md).
 export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
 export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
+// Skinned and typed GLB actors: attach them to the app render loop (docs/api/skinned-actors.md).
+export { attachRootRenderSource } from "../agent-api/index.js";
+export type { RootRenderSourceBridge, TypedGLBActor } from "../agent-api/index.js";
 // ── Deprecated union (kept at 4.0.0 per §6.6 step 3 — removes in 5.0.0; each names its destination) ──
 /** @deprecated No replacement — removes in 5.0.0. Kept at 4.0.0 once its blocking lane's request lands. */
 export { createScatterRandom, mergeStatic, mergeStaticByKey, scatterAlongPath, scatterInArea, scatterTransforms, splitScatterByDistance } from "../agent-api/index.js";

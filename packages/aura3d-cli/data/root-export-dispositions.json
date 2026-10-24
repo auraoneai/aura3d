@@ -13757,6 +13757,19 @@
       "owners": []
     },
     {
+      "name": "RootRenderSourceBridge",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Attach skinned or typed GLB actors to the app render loop without the deprecated production-runtime subpath (docs/api/skinned-actors.md)",
+      "consumers": [
+        "examples/saiyan-snake-way-port/world.ts",
+        "examples/ninja-runner-port/world.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "RouteHealthQualityGate",
       "kind": "type",
       "from": ".",
@@ -14751,6 +14764,19 @@
       "owners": []
     },
     {
+      "name": "TypedGLBActor",
+      "kind": "type",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Attach skinned or typed GLB actors to the app render loop without the deprecated production-runtime subpath (docs/api/skinned-actors.md)",
+      "consumers": [
+        "examples/saiyan-snake-way-port/world.ts",
+        "examples/ninja-runner-port/world.ts"
+      ],
+      "owners": []
+    },
+    {
       "name": "Vec3",
       "kind": "type",
       "from": ".",
@@ -15423,6 +15449,19 @@
       "disposition": "drop",
       "reason": "no in-repo consumers; evidence/report name \u2192 devtools (\u00a76.6)",
       "consumers": [],
+      "owners": []
+    },
+    {
+      "name": "attachRootRenderSource",
+      "kind": "value",
+      "from": ".",
+      "to": ".",
+      "disposition": "live",
+      "reason": "Attach skinned or typed GLB actors to the app render loop without the deprecated production-runtime subpath (docs/api/skinned-actors.md)",
+      "consumers": [
+        "examples/saiyan-snake-way-port/world.ts",
+        "examples/ninja-runner-port/world.ts"
+      ],
       "owners": []
     },
     {

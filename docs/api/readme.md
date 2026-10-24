@@ -44,6 +44,7 @@ Release overview: [`docs/whats-new-4.1.md`](../whats-new-4.1.md). Upgrading from
 | [`model-loader.md`](model-loader.md) | `defineModelAssets` and `modelsEnabledFromUrl`: hashed same-origin models with a procedural fallback, plus `scene(init)` and `setUniform` behaviour. | `@aura3d/engine` |
 | [`glsl-chunks.md`](glsl-chunks.md) | `#include` chunks for `material.custom`: math, noise, sky, fog, triplanar, toon and colour-space helpers. | `material.custom` |
 | [`scatter-merge.md`](scatter-merge.md) | Seeded scatter planning (`scatterAlongPath`, `scatterInArea`) and static-mesh baking (`mergeStatic`). Implemented in the agent-api barrel; see the note in `whats-new-4.1.md` about the published root export. | `@aura3d/engine` (intended) |
+| [`skinned-actors.md`](skinned-actors.md) | `attachRootRenderSource` and `TypedGLBActor`: draw `cloneSkinned` actors in the app render loop from the root export. | `@aura3d/engine` |
 | [`ball-flight.md`](ball-flight.md) | Exact event-time ball flight for racket sports. | `game.racketSports().ballFlight` |
 | [`racket-athlete-rig.md`](racket-athlete-rig.md) | Procedural racket-sport athlete: locomotion solver and limb posing. | `game.racketSports().athleteRig` |
 | [`cli-asset-tools.md`](cli-asset-tools.md) | `assets optimize`, `assets merge-clips`, isolated `assets import-meshy`, `meshy ledger`. | `@aura3d/cli` |

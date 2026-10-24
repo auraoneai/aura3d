@@ -7,8 +7,7 @@
  * rigged model (CC0, see assets/ATTRIBUTION.md) with independent skeletons and animation, differentiated by tint, scale
  * and attached weapons.
  */
-import { camera, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp } from "@aura3d/engine";
-import { attachRootRenderSource, type TypedGLBActor } from "@aura3d/engine/production-runtime";
+import { attachRootRenderSource, camera, cloneSkinned, effects, environments, geometry, instances, lights, material, primitives, scene, texture, type AuraApp, type TypedGLBActor } from "@aura3d/engine";
 import { groundFrame, laneOffset, smooth, COURSE_LENGTH } from "./course";
 import { auraSpec, ballSpec, fallsSpec, flameSpec, particleSpec, skySpec, solidSpec, sparksSpec, waterSpec } from "./materials";
 import { buildRouteGroups, buildSheet, buildTownFloor, buildWater } from "./meshes";

@@ -4,6 +4,10 @@ Version: 4.1.2
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.1.3 (unreleased)
+
+- **`attachRootRenderSource`, `RootRenderSourceBridge` and `TypedGLBActor` are exported from the `@aura3d/engine` root.** Skinned-actor games no longer need the deprecated `@aura3d/engine/production-runtime` subpath; Saiyan Snake Way, Ninja Runner and `parity-animation` are migrated (`docs/api/skinned-actors.md`).
+
 ## 4.1.2 (2026-10-24)
 
 A patch release for the black-frame guard misfiring on healthy games in the 4.1.1 production build. No API removals; one new export (`installFrameTap`).
