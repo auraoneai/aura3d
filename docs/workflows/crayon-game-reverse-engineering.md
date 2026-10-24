@@ -14,6 +14,7 @@ filenames or marketing copy.
 | --- | --- |
 | This file | How to capture a game, extract its logic, and build the Aura3D port |
 | [`threejs-parity-gaps.md`](./threejs-parity-gaps.md) | What Aura3D must add before a port can reach visual parity, with priorities and fixtures |
+| [`game-conversion-playbook.md`](./game-conversion-playbook.md) | The repeatable end-to-end loop (deterministic reference, typed contract, differential tests, render gates, art pass, real-device checks, deploy) distilled from the Crayon ports and Aura Slam 3D |
 
 A port starts only after the parity items marked `●` for that game exist with a
 passing fixture. §5 is the gate; §6 is the per-game plan.
