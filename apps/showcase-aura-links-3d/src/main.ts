@@ -2547,11 +2547,6 @@ function boot(): void {
       document.body.dataset.aura3dReady = "true";
       (auraApp as any).pause?.();
       for (let i = 0; i < n; i += 1) (auraApp as any).step?.(1 / 60);
-      // deterministic QA stepping for the rework spec: advance k fixed frames, then publish evidence
-      (window as any).__AURA_LINKS_STEP__ = (k: number) => {
-        for (let i = 0; i < k; i += 1) (auraApp as any).step?.(1 / 60);
-        publishEvidence();
-      };
       publishEvidence();
       console.log(`[links] still: stepped ${n} frames, framesRendered=${framesRendered}`);
     })();
