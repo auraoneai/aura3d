@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -10,7 +10,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * synchronous evaluate per scenario; scripted `KeyboardEvent`s on `document.body`; `window.advanceTime(1000 / 60)` per step
  * (one fixed step and one present, so the adapter controller runs once per step); snapshot, two-lane FNV digest, event log
  * and score timeline recorded as in the capture. The baseline was captured on Linux x64 Chromium, so the digest of every
- * scenario must be EXACT here (remote only: tools/remote-acr/run.sh with EXTRA_DIRS=evidence/aura-slam).
+ * scenario must be EXACT here (remote only: copy evidence/aura-slam/reference.json to tests/browser/aura-slam-replay-reference.json for the run, then tools/remote-acr/run.sh).
  * SLAMG1_SCENARIOS=id,id limits the run.
  */
 interface RefScenario {
@@ -21,7 +21,9 @@ interface RefScenario {
   events: unknown[];
   sampled: { columns: string[]; rows: Array<Array<number | string | null>> };
 }
-const REFERENCE = JSON.parse(readFileSync(path.resolve("evidence/aura-slam/reference.json"), "utf8")) as { tolerance: { sampledAbsTolerance: number }; scenarios: RefScenario[] };
+// The runner image copies tests/browser but not evidence/: stage a temporary copy next to the specs (never commit it).
+const REFERENCE_FILE = ["evidence/aura-slam/reference.json", "tests/browser/aura-slam-replay-reference.json"].map((f) => path.resolve(f)).find((f) => existsSync(f)) ?? path.resolve("evidence/aura-slam/reference.json");
+const REFERENCE = JSON.parse(readFileSync(REFERENCE_FILE, "utf8")) as { tolerance: { sampledAbsTolerance: number }; scenarios: RefScenario[] };
 const ONLY = (process.env.SLAMG1_SCENARIOS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
 const HARNESS = `
