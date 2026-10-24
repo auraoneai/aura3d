@@ -1,0 +1,7 @@
+{
+  "source": "swingMath.ts at 5ae6a4c1b (solveSwing, address key), measured with the same forward kinematics",
+  "thighTiltDeg": 17.2,
+  "ankleDriftFromStanceM": 0.231,
+  "trunkFlexDeg": 36.7,
+  "note": "The legs were children of Hips, so the hip hinge (0.30 rad) rotated them: thighs leaned 17 degrees and both ankles sat 0.23 m behind the bind stance, on top of 36.7 degrees of trunk flex. The body read as one slanted line."
+}

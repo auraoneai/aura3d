@@ -1,0 +1,13 @@
+ADDR    spine=27.9 side=1.3 thigh=17.5 knee=32.3 headOverBall=0.265 drift=0.0000 reachR=0.535 reachL=0.388 wrist=0.002 clubToBall=0.001
+TAKE    spine=27.9 side=2.5 thigh=18.6 knee=34.7 headOverBall=0.268 drift=0.0000 reachR=0.448 reachL=0.392 wrist=0.000 clubToBall=0.662
+TOP     spine=26.7 side=9.2 thigh=18.4 knee=35.3 headOverBall=0.310 drift=0.0000 reachR=0.373 reachL=0.521 wrist=0.000 clubToBall=2.218
+LAG     spine=28.7 side=3.7 thigh=18.6 knee=33.7 headOverBall=0.263 drift=0.0000 reachR=0.314 reachL=0.352 wrist=0.000 clubToBall=1.032
+IMPACT  spine=30.9 side=2.0 thigh=18.4 knee=31.4 headOverBall=0.233 drift=0.0000 reachR=0.541 reachL=0.338 wrist=0.000 clubToBall=0.000
+THRU    spine=25.1 side=8.2 thigh=16.5 knee=26.0 headOverBall=0.307 drift=0.0000 reachR=0.523 reachL=0.367 wrist=0.000 clubToBall=1.648
+FINISH  spine=21.1 side=13.7 thigh=16.3 knee=21.1 headOverBall=0.397 drift=0.0000 reachR=0.296 reachL=0.213 wrist=0.000 clubToBall=2.146
+{
+  maxR: 0.5407126524769251,
+  maxL: 0.5210357315779749,
+  maxW: 0.0015516302382735138,
+  maxDrift: 5.721958498152797e-17
+}
