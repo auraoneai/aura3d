@@ -21,8 +21,8 @@
   "haveAnim": 89,
   "groundSpeedMedian": 3.2,
   "phaseRateMedian": 1.382,
-  "plantedFootSlideMedian": 0.146,
+  "plantedFootSlideMedian": 0.153,
   "stanceSamples": 104,
-  "plantedFootSlideRatio": 0.046
+  "plantedFootSlideRatio": 0.048
  }
 }

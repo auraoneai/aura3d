@@ -3,10 +3,11 @@
  * Replaces the procedural cottages, trees, traveller, wisp and boat when the matching GLB is present.
  */
 import { instances, model, type AuraApp, type scene } from "@aura3d/engine";
+import { createLocomotion } from "@aura3d/engine/game";
 
 type Scene = ReturnType<typeof scene>;
 import { MODEL_ASSETS, hasModel } from "./model-assets";
-import { CLIP_SECONDS, STRIDE_SPEED, pickGait, type Gait } from "./locomotion";
+import { CLIP_SECONDS, HERO_GAITS, STRIDE_SPEED, type Gait } from "./locomotion";
 import type { ModelPlacement, Scenery } from "./scenery";
 
 export interface ModelSet { letter: boolean; bell: boolean; cottage: boolean; trees: boolean; hero: boolean; wisp: boolean; boat: boolean; stones: boolean; shrubs: boolean }
@@ -49,40 +50,33 @@ export function addAnimatedModels(builder: Scene, set: ModelSet, letterCount: nu
 }
 
 export interface HeroDrive { x: number; z: number; airborne: boolean; onBoat: boolean; time: number }
-export interface HeroAnimator { update(drive: HeroDrive): Gait; reset(x: number, z: number, time?: number): void; readonly gait: Gait; readonly groundSpeed: number }
+export interface HeroAnimator { update(drive: HeroDrive): Gait; reset(x: number, z: number, time?: number): void; readonly gait: Gait }
 /**
- * Drives the traveller's walk, run and idle clips from the distance travelled. The clip phase advances by
- * distance / planted-foot speed, so a foot on the ground moves exactly as fast as the ground whatever the frame rate or
- * how often `update` is called (the stepped QA path calls it twice per sim step). The phase is pinned each frame
- * (`loop: false` plus `captureTime`), and `play` only gets a crossfade on a gait change: re-issuing a fresh crossfade
- * on every frame restarts the blend, and a looped clip with a moving `captureTime` also runs on the engine's own clock.
+ * Drives the traveller's walk, run and idle clips with the library's `createLocomotion`, fed the real ground speed once
+ * per sim step (the stepped QA path calls `update` twice per step, so a zero time delta is skipped). The dominant gait's
+ * stride phase is pinned each frame (`loop: false` plus `captureTime`), so a planted foot moves at ground speed whatever
+ * the frame rate. `play` only gets a crossfade on a gait change: re-issuing a fresh crossfade on every frame restarts
+ * the blend, and a looped clip with a moving `captureTime` also runs on the engine's own clock.
  */
 export function createHeroAnimator(app: AuraApp): HeroAnimator {
   const hero = app.nodes.require("hero");
-  let gait: Gait = "Idle", phase = 0, issued: Gait | "" = "", lastX = 0, lastZ = 0, lastTime = 0, groundSpeed = 0, primed = false;
+  const loco = createLocomotion({ gaits: HERO_GAITS, minRate: 0.6, maxRate: 1.7 });
+  let gait: Gait = "Idle", issued: Gait | "" = "", lastX = 0, lastZ = 0, lastTime = 0, phaseSeconds = 0, primed = false;
   return {
     get gait() { return gait; },
-    get groundSpeed() { return groundSpeed; },
-    reset(x, z, time) { gait = "Idle"; phase = 0; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; groundSpeed = 0; primed = true; },
+    reset(x, z, time) { loco.reset(); gait = "Idle"; issued = ""; lastX = x; lastZ = z; if (time !== undefined) lastTime = time; phaseSeconds = 0; primed = true; },
     update({ x, z, airborne, onBoat, time }) {
       if (!primed) { lastX = x; lastZ = z; lastTime = time; primed = true; }
       const dt = time - lastTime;
-      const distance = onBoat ? 0 : Math.hypot(x - lastX, z - lastZ);
       if (dt > 0) {
-        groundSpeed += (distance / dt - groundSpeed) * (1 - Math.exp(-dt / 0.08));
+        const speed = airborne ? STRIDE_SPEED.Run : onBoat ? 0 : Math.hypot(x - lastX, z - lastZ) / dt;
+        const frame = loco.update(speed, dt);
+        gait = frame.dominant as Gait;
+        phaseSeconds = gait === "Idle" ? time % CLIP_SECONDS.Idle : frame.phase * CLIP_SECONDS[gait];
         lastTime = time;
+        lastX = x; lastZ = z;
       }
-      lastX = x; lastZ = z;
-      const next = onBoat ? "Idle" : pickGait(gait, groundSpeed, airborne);
-      if (next !== gait) {
-        const walkRun = gait !== "Idle" && next !== "Idle";
-        phase = walkRun ? (phase / CLIP_SECONDS[gait]) * CLIP_SECONDS[next] : 0;
-        gait = next;
-      }
-      if (gait === "Idle") phase = time % CLIP_SECONDS.Idle;
-      else if (airborne) phase = (phase + Math.max(0, dt)) % CLIP_SECONDS.Run;
-      else phase = (phase + distance / STRIDE_SPEED[gait]) % CLIP_SECONDS[gait];
-      hero.play(gait, { loop: false, captureTime: phase, crossFade: issued !== gait ? 0.15 : false });
+      hero.play(gait, { loop: false, captureTime: phaseSeconds, crossFade: issued !== gait ? 0.15 : false });
       issued = gait;
       return gait;
     }

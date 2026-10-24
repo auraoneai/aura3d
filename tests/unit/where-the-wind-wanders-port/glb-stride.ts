@@ -22,7 +22,9 @@ function slerp(a: number[], b: number[], t: number): number[] {
 export interface ClipStride { readonly duration: number; readonly stanceFootSpeed: number }
 
 /** Planted-foot speed per clip (model units per second at rate 1) by forward kinematics of a GLB's own skeleton. */
-export function glbStride(file: string): { clips: Record<string, ClipStride>; meshHeight: number } {
+export interface HeroRig { clips: Record<string, ClipStride>; meshHeight: number; /** Foot joint world positions (model units) of a clip at a time. */ footAt(clip: string, time: number): { left: [number, number, number]; right: [number, number, number]; toeLeft: [number, number, number]; toeRight: [number, number, number] } }
+
+export function glbStride(file: string): HeroRig {
   const b = readFileSync(file);
   const jl = b.readUInt32LE(12);
   const j = JSON.parse(b.subarray(20, 20 + jl).toString()) as Gltf;
@@ -49,6 +51,7 @@ export function glbStride(file: string): { clips: Record<string, ClipStride>; me
     return g as Mat[];
   };
   const feet = ["LeftFoot", "RightFoot"].map((nm) => j.nodes.findIndex((n) => n.name === nm));
+  const toes = ["LeftToeBase", "RightToeBase"].map((nm) => j.nodes.findIndex((n) => n.name === nm));
   const clips: Record<string, ClipStride> = {};
   for (const an of j.animations) {
     const duration = Math.max(...an.samplers.map((s) => cached(inputs, s.input, (i) => acc(i).o).at(-1)!));
@@ -65,5 +68,11 @@ export function glbStride(file: string): { clips: Record<string, ClipStride>; me
     clips[an.name] = { duration, stanceFootSpeed: speeds.length ? speeds[Math.floor(speeds.length / 2)]! : 0 };
   }
   const pa = j.accessors[j.meshes[0]!.primitives[0]!.attributes.POSITION]!;
-  return { clips, meshHeight: pa.max![1]! - pa.min![1]! };
+  const byName = new Map(j.animations.map((a) => [a.name, a]));
+  const footAt: HeroRig["footAt"] = (clip, time) => {
+    const g = sample(byName.get(clip)!, time);
+    const at = (f: number): [number, number, number] => [g[f]![12]!, g[f]![13]!, g[f]![14]!];
+    return { left: at(feet[0]!), right: at(feet[1]!), toeLeft: at(toes[0]!), toeRight: at(toes[1]!) };
+  };
+  return { clips, meshHeight: pa.max![1]! - pa.min![1]!, footAt };
 }

@@ -14,21 +14,26 @@ Result, derived from the recorded animation commands plus forward kinematics of 
 
 ## What changed
 
-- `locomotion.ts` (new, pure): planted-foot speed per clip from forward kinematics of the rig at the placed height (Walk 2.315 u/s, Run 5.586 u/s at rate 1), gait choice with hysteresis, playback rate and analytic foot slide.
-- `models.ts`: `createHeroAnimator` advances a pinned clip phase by distance travelled over planted-foot speed (`loop: false`, `captureTime`), so a planted foot moves at ground speed whatever the frame rate or how often `update` runs; `play` only crossfades on a gait change; idle follows the sim clock; Walk and Run keep their normalised phase on a switch.
-- `world.ts`: passes position and sim time; `reset`/`snap` re-prime the animator.
+- `locomotion.ts` (new): the hero's gait table for the library's `createLocomotion` (`@aura3d/engine/game`): planted-foot speed per clip from forward kinematics of the rig at the placed height (Walk 2.315 u/s, Run 5.586 u/s at rate 1) and each clip's cycle length.
+- `models.ts`: `createHeroAnimator` feeds `createLocomotion` the real ground speed once per sim step (a zero time delta is skipped, because the stepped QA path calls `update` twice per step), pins the dominant gait's stride phase each frame (`loop: false`, `captureTime`), and only crossfades on a gait change. Idle follows the sim clock; airborne holds the run clip.
+- `world.ts`: passes position and sim time; `reset` and `snap` re-prime the animator.
 - `main.ts`: QA extra `heroRig()` (animation command and render clock) for the motion spec.
+- Tests: `locomotion.test.ts` recomputes the gait table from `hero.glb`; `hero-animator.test.ts` covers phase-by-distance, once versus twice per step, crossfade only on change, idle and airborne, and runs the library `createFootSlideMeter` on the rig's toe positions at the commanded phase (a phase 2.8x too fast, like the old behaviour, fails it).
 
-## Measured (90 walking steps, 3.2 u/s)
+## Measured (90 walking steps, 3.2 u/s, remote software GL, derived from the recorded commands plus rig forward kinematics)
 
 | | before | after |
 |---|---|---|
 | clip phase rate | 3.8x | 1.382x (target 1.382x) |
-| planted-foot slide, median | 5.499 u/s | 0.146 u/s |
-| slide / ground speed | 1.718 | 0.046 |
+| planted-foot slide, median (ankle joint) | 5.499 u/s | 0.153 u/s |
+| slide / ground speed | 1.718 | 0.048 |
 | stance samples | 103 | 104 |
 
-Threshold from `docs/workflows/game-rework-prompt.md` section 2: planted-foot drift under 0.15 u/s. After: 0.146, a pass by a small margin; the remainder is the stance-sample threshold, not a rate error (the phase rate is exact).
+Unit-level, with the library meter on toe contact points over a 3 second walk: planted-toe drift is 0.2 to 0.35 u/s on average and 0.5 to 0.65 u/s at p95 (about 7% to 20% of ground speed) after the fix; the old phase rate gives several u/s.
+
+## Does it meet the 0.15 u/s drift limit in `docs/workflows/game-rework-prompt.md`?
+
+Median ankle drift: 0.153 u/s, at the limit. The meter's p95 does not meet 0.15: the authored Walk clip skates on its own (its stance foot speed varies through the stance and the ankle rolls heel to toe), and no playback rate removes that. The fix removed the self-inflicted 170%; the rest is the clip. Closing it needs stride warping (a non-linear clip phase that holds the planted foot's speed constant) or foot IK, tracked as a follow-up, not done here.
 
 Frames: `before-walk-strip.jpg` and `after-walk-strip.jpg` (every 6th sim step of one walk, hero crop upscaled 4x), `before-frame.jpg` and `after-frame.jpg` (full frames). Raw per-step rows: `before-rows.txt`, `after-rows.txt`. Analysis: `analyze-foot-slide.mjs <log> <hero.glb>`; spec: `tests/browser/where-the-wind-wanders-port-motion.spec.ts`.
 
