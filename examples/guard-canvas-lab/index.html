@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Aura3D guard canvas lab</title>
+    <style>
+      html,body{margin:0;height:100%;background:#000;overflow:hidden}
+      canvas{width:320px;height:180px;display:block}
+      #hud{position:fixed;left:8px;top:8px;color:#9cf;font:12px monospace}
+    </style>
+  </head>
+  <body>
+    <canvas id="world"></canvas>
+    <div id="hud">hud</div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
