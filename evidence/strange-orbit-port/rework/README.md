@@ -55,6 +55,18 @@ The reference replay (`evidence/crayon-capture/strange-orbit-reference.json`) an
 
 ## Not done here
 
-- The remote browser spec `tests/browser/strange-orbit-rework.spec.ts` result is in the commit message or the PR note when it finishes.
 - On-track riders cannot reach these pieces (the lane clamp and edge rules stop them first), so ground collisions are unchanged.
 - Rivals do not fly, so they are unaffected.
+
+## Remote browser run (software WebGL2, `tools/remote-acr/run.sh`, RUN_ID `rworb-2`)
+
+`tests/browser/strange-orbit-rework.spec.ts`: 1 passed (9.2 min), 0 console errors and 0 page errors. The real page boots with the library kit imports, flies the rider at 35 m/s straight at a gate pillar, the gate lintel, a boulder and the observatory, and each case shows exactly one impact and one penalised hit, the notice "Crashed into the <surface> · steer clear", no pass-through (closest approach 0.13 to 0.15 m outside the surface) and a rebound at 14 m/s. Frames at approach and after the rebound are in `frames/` (a first run, `rworb-1`, gave the same four results and then hit the spec's own timeout in an unnecessary reset; the spec was trimmed).
+
+| Surface | Impacts | Penalised hits | Impact step | Closest approach (m) | Rebound m/s |
+| --- | --- | --- | --- | --- | --- |
+| gate pillar | 1 | 1 | 12 | 0.130 | 14.29 |
+| gate lintel | 1 | 1 | 12 | 0.153 | 14.00 |
+| moon boulder | 1 | 1 | 12 | 0.153 | 14.00 |
+| observatory | 1 | 1 | 12 | 0.153 | 14.00 |
+
+Hit-stop, camera shake and the hit cue run from the same event; the frames are single captures, so the shake and the 30 to 80 ms freeze are not visible in them.

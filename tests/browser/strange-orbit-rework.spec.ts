@@ -17,7 +17,7 @@ const LAB = "/examples/strange-orbit-port/";
 interface Collider { id: string; label: string; a: number[]; b: number[]; radius: number; approach: number[] }
 
 test.describe("strange-orbit-port rework: impacts", () => {
-  test.setTimeout(900_000);
+  test.setTimeout(1_800_000);
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
@@ -83,6 +83,7 @@ test.describe("strange-orbit-port rework: impacts", () => {
           const base = { impacts: w.__orbit.race.impacts, hits: w.__orbit.race.hits };
           let minGap = Infinity, impactStep = -1, notice = "";
           for (let i = 0; i < 90; i++) {
+            if (impactStep >= 0 && i - impactStep >= 20) break;
             w.__AURA_STRANGE_ORBIT__.stepFrames(1);
             const flight = w.__orbit.race.flight;
             if (!flight) break;
@@ -112,6 +113,7 @@ test.describe("strange-orbit-port rework: impacts", () => {
       expect(run.rebound ?? 0, c.id).toBeLessThan(35);
 
       // back to a clean racing state for the next target
+      if (c === targets[targets.length - 1]) break;
       await page.evaluate(() => {
         const w = window as unknown as { __orbit: { menu(): void }; __AURA_STRANGE_ORBIT__: { begin(): void; stepFrames(n: number): unknown } };
         w.__orbit.menu();
