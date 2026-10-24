@@ -6,7 +6,7 @@
  * `night=1`, `manual=1` (the sim only advances through `__AURA_LAST_TRAIN__.stepFrames`; skips the title screen), `speed=N` (sim steps per frame),
  * `title=0` (skip the title screen).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { controllerInput, type ControllerParams } from "./replay";
 import {
   DT, actionDepart, actionDoors, actionNewService, actionTimeOfDay, createState, step, tipOf,
@@ -203,25 +203,23 @@ function render(): void {
   app.step(0);
 }
 
-let last = 0;
-let acc = 0;
-function tick(now: number): void {
-  requestAnimationFrame(tick);
-  if (!ready) return;
-  const dt = Math.min(0.1, (now - last) / 1000);
-  last = now;
-  if (titleMode) seconds += dt;
-  else if (!flag("manual")) {
-    acc += dt;
-    const perFrame = Math.max(1, Math.round(Number(params.get("speed") ?? 1)));
-    let n = 0;
-    while (acc >= DT && n < 6 * perFrame) { for (let i = 0; i < perFrame; i++) stepOnce(); acc -= DT; n++; }
-    seconds += dt;
+/** `speed=N` runs N sim steps per fixed step. The sim steps only in play and never in manual mode; frames always render. */
+const perFrame = Math.max(1, Math.round(Number(params.get("speed") ?? 1)));
+const loop = createFixedStepLoop({
+  stepSeconds: DT,
+  maxCatchUpSteps: 6 * perFrame,
+  isActive: () => ready,
+  step: () => {
+    if (titleMode || flag("manual")) return;
+    for (let i = 0; i < perFrame; i++) stepOnce();
+  },
+  render: (dt) => {
+    if (titleMode || !flag("manual")) seconds += dt;
+    render();
+    updateHud();
+    updateAudio(dt);
   }
-  render();
-  updateHud();
-  updateAudio(dt);
-}
+});
 
 $("start-btn").addEventListener("click", () => startPlay());
 addEventListener("pointerdown", () => { void sound.unlock(); if (titleMode) startPlay(); });
@@ -294,7 +292,12 @@ function diag(): { drawCalls: number; triangles: number; nodes: number; assets: 
   return { drawCalls: info?.render?.calls ?? 0, triangles: info?.render?.triangles ?? 0, nodes: runtime?.nodeCount ?? 0, assets: assetStatus(), errors };
 }
 
-window.__AURA_LAST_TRAIN__ = {
+const qa = installQaHooks("last-train", {
+  ready: () => ready,
+  state: summary,
+  app: () => app,
+  nodeCount: () => runtime?.nodeCount ?? 0,
+  extras: {
   state: summary,
   memory,
   assets: assetStatus,
@@ -325,7 +328,8 @@ window.__AURA_LAST_TRAIN__ = {
   finishStop: (renderEvery = 0) => finishStop(renderEvery),
   runCircuit: (renderEvery = 0) => runCircuit(renderEvery),
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SH-02", "SH-01", "SG-05", "R-23", "SR-02"] }) : null)
-};
+  }
+});
 
 /* ------------------------------------------------------------------ boot */
 
@@ -333,7 +337,7 @@ function reportError(error: unknown): void {
   const base = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
-  if (!window.__AURA_LAST_TRAIN_ERROR__) window.__AURA_LAST_TRAIN_ERROR__ = message;
+  qa.reportError(message);
   $("loading-status").textContent = `The line could not load: ${message.slice(0, 300)}`;
   $("loading").classList.remove("hidden");
   console.error(error);
@@ -371,5 +375,5 @@ async function boot(): Promise<void> {
 }
 
 addEventListener("resize", sizeCanvas);
-requestAnimationFrame(tick);
+loop.start();
 boot().catch(reportError);
