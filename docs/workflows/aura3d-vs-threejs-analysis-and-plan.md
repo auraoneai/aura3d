@@ -1,114 +1,175 @@
-# Aura3D vs three.js: analysis and execution plan
+# Making Aura3D the better choice: superiority thesis and execution plan
 
-Status: v1, 2026-10-24. Agent-handoff PRD (policy section 6). Inputs: `aura3d-vs-threejs-matrix.md` (54-row capability matrix), `evidence/vs-threejs/RESULTS.md` (measured, software GL), `aura3d-only-audit.md`, `threejs-parity-gaps.md`, `evidence/live-slam/`, `evidence/perf-frame-cost/`.
+Status: v2, 2026-10-24. Agent-handoff PRD (policy section 6). Replaces v1, which was a competitor scorecard. Inputs: `aura3d-vs-threejs-matrix.md`, `evidence/vs-threejs/RESULTS.md`, `aura3d-only-audit.md`, `threejs-parity-gaps.md`, `evidence/live-slam/`, `evidence/perf-frame-cost/`, `docs/aura-slam/ARCHITECTURE.md`.
 
-## 0. Bottom line
+Claims discipline (`docs/agents/claims-and-boundaries.md` applies): every number here is software WebGL2 (SwiftShader) or counted from source, never real-GPU. A target is a target until `evidence/` holds a run that meets it.
 
-- Aura3D is better as an authoring and agent workflow layer: less scene source, one import, typed nodes, asset provenance, QA/replay hooks, a self-healing safety net, agent docs and skills, a Meshy pipeline, and a codemod from three.js.
-- three.js is better as a runtime and ecosystem: bundle size, requests, time to first frame, frame cost on software GL, material and post-processing breadth, WebGPU, TSL breadth, maturity, field testing, and a stock `vite build` that works.
-- No claim in this document is real-GPU evidence. Every timing is software WebGL2 (SwiftShader). Three games were seen on the owner's M4 Max.
-- The plan below attacks the measurable losses first (build, bundle, frame cost, silent no-ops, missing environment files), then widens capability.
+## 0. The thesis
 
-## 1. Where each side wins (measured or counted)
+three.js is a rendering library: it draws what you tell it, and everything around drawing (assets, UI, input, audio, testing, deploy, art) is yours to assemble. Aura3D wins by being the shortest, safest path from an idea to a shipped, verified, good-looking browser 3D game or product scene, for a person or an AI agent.
 
-### 1.1 three.js wins
+**Positioning line (testable):** "Describe it, get a scene that renders, ships, and proves itself." Developers do not choose engines on triangle throughput; they choose on time to a working thing, how rarely it breaks, and how little they must glue together. That is where Aura3D already leads and where it can lead by a wide margin.
 
-| Area | Measured | Source |
-|---|---|---|
-| Bundle, one cube, JS only | 495.7 KB raw / 124.8 KB gzip vs 3,841 KB / 1,089 KB (7.7x / 8.7x) | RESULTS 4 |
-| Requests on load | 2 vs 26 (25 JS files) | RESULTS 5 |
-| Time to first frame (cube) | 95 ms vs 3,269 ms | RESULTS 6 |
-| Frame time, software GL | cube 0.9 ms vs 623 ms before 4.1.3 perf work; 50 ms after (`a816facf6`) | RESULTS 7, perf-frame-cost |
-| Draw calls / programs | equal or lower in most rows (game loop 19 vs 38) | RESULTS 8 |
-| Stock build | `vite build` works; Aura3D 4.1.2 needed a plugin, an extra package and a config file | RESULTS 12.1 |
-| First-try authoring success | 3 edits vs 7, 0 vs 2 silent wrong-API uses (one author, not independent) | RESULTS 13 |
-| Breadth | TSL about 638 names vs 62; 8 non-PBR material types; GTAO/SSR/SSGI; WebGPU; WebXR; many loaders | matrix 1.1, 1.2 |
-| Maturity | about 15.2M vs about 391 weekly downloads; 314 vs 42 versions | matrix 1.6 (snapshot) |
+We do not win by matching three.js on every axis. We win by (1) being clearly best at four things nobody else does, and (2) removing the few dealbreakers that stop a developer from ever getting to those four things.
 
-### 1.2 Aura3D wins
+## 1. The four pillars where Aura3D should be unmistakably better
 
-| Area | Measured or counted | Source |
-|---|---|---|
-| Scene source lines | viewer 24 vs 49, forest 49 vs 71, character 45 vs 62, game loop 61 vs 82 | RESULTS 1 |
-| Import modules, API symbols | 1 vs up to 8 modules; fewer symbols in every scene | RESULTS 3 |
-| Out-of-box features | bloom, shadows, instancing with colour, fixed-step loop, QA hooks, shader pass, cue bank, scatter and merge | RESULTS 11 |
-| Safety | provenance-gated asset bridge, black-frame self-heal, shader failures reported loudly | matrix rows 7, 30 |
-| Agent workflow | `llms.txt`, boundaries doc, 24 synced skills, `check-deploy`, evidence collection, catalog of 652 assets, Meshy ledger | matrix 1.4, 1.5 |
-| Migration | codemod: 245 rows (21 exact, 174 approximate, 47 none, 3 pending) | matrix row 42 |
-| Verified in production | 26 games on the 4.x lineage; Aura Slam native port with replay and render gates; live route check 119 draw calls, 0 console errors | evidence/live-slam |
+### Pillar A: Time to a shipped game (the whole pipeline, not just rendering)
 
-### 1.3 Ties and unknowns
+What exists today (verified in repo): `create-aura3d` templates (mini-game, racing, falling-blocks, fighting, character-controller), game kit (HUD, touch, juice, session), QA/replay hooks, fixed-step loop, seeded RNG, audio cue bank, scatter/merge, shader chunk library, typed asset bridge, `check-deploy`, 26 games on the 4.x lineage, Aura Slam as a complete native port.
 
-Shader water picture identical (JSD 0.0000); game-loop replay hashes identical; PBR, lights, primitives, instancing and helpers at parity. Real-GPU performance, WebGPU, mobile, compute and the game-kit HUD were not measured.
+The superiority claim to earn: from `npm create aura3d` to a deployed, playable, mobile-ready game with sound and HUD in under 30 minutes, with no glue code. three.js has no equivalent for HUD, touch, session, audio synth, replay, or deploy checks; every three.js game re-writes them (our own ports hand-rolled them nine times before we promoted them).
 
-## 2. Root causes behind the losses
+Measure: **time-to-first-playable (TTFP)** and **glue lines** (lines that are not scene, rules, or art). Baseline from the bench game-loop scene: 61 vs 82 scene lines, and the three.js side needed hand-written fixed timestep, hooks and HUD.
 
-1. **Build failure.** `@aura3d/assets` ships `threejs-compatibility/ThreeCompatAssetRegistry` which imports `node:fs`; Vite stubs it as `__vite-browser-external`, so `readFileSync` is not exported. A browser build must not reach that module.
-2. **Bundle size.** The engine root pulls the whole package graph (186 live exports, 66 deprecated); 25 JS files are fetched for one cube. `BUNDLE_SIZES.md` records the critical path at 3.9 MB against a 190 KB budget; the repo already fails its own budget.
-3. **Frame cost** (fixed in part, `a816facf6`): dead-branch tone-map shader (about 600 ms to about 31 ms equivalent), instance tessellation, per-instance allocation in bounds code. Open: three shadow cascades, 4x MSAA RGBA16F default, shadow draws at 64 instances per call.
-4. **Silent no-ops.** `primitives.plane({ params: { widthSegments } })` type-checks and is ignored; `interactions.orbit` takes only `{ target?: string }` and accepts anything behind a cast.
-5. **Missing runtime files.** `/aura-environments/neutral.manifest.json` 404s in apps built from published packages; the baked files live only in the repo `public/aura-environments`.
-6. **Legacy post chain.** `POSTPROCESS_V2_UNMIGRATED` warning and 25-40% darker frames when post is on (`packages/rendering/src/renderer/PostprocessExecution.ts`, `packages/rendering/src/Renderer.ts`).
-7. **Verification gap.** No real-GPU runner; about 106-116 baseline unit-test failures.
+### Pillar B: Agent-native authoring (AI writes it, and it works first time)
 
-## 3. Codebase grounding and autonomous decisions
+What exists: `llms.txt`, boundary and claims docs, 24 mirrored skills with a gate, typed declarative scene API, codemod from three.js, evidence and review loop, catalog of 652 assets, Meshy pipeline with caps and provenance.
 
-- Decision D1: keep the three.js-compatible renderer lineage. A ground-up renderer is out of scope; the wins above come from API, tooling and safety, not from a new renderer.
-- D2: fix losses in this order: build, silent no-ops and 404 (cheap, high agent-impact), bundle, frame cost, then capability breadth.
-- D3: do not add a WebGPU default in this plan. Track it as a separate decision after real-GPU evidence exists.
-- D4: every public claim stays labelled per `docs/agents/claims-and-boundaries.md`; software-GL numbers are never presented as GPU numbers.
-- D5: release as 4.1.3 for fixes only; promote to 4.2.0 only if public exports or defaults change (the WP-6 environment default and WP-5 diagnostics likely do not).
-- Invariants: `tests/unit/agent-api/public-example-boundary.test.ts` stays green (no raw GLB URLs or renderer-internal imports in public examples); draw-call budget 150 for Aura Slam; replay gates G1 and G3 stay green; tracked file count stays under 15,000 for Vercel.
+The superiority claim to earn: a coding agent working only from `llms.txt` and types produces a correct scene on the first try more often with Aura3D than with three.js. Today the only trial (RESULTS section 13) favoured three.js, mainly because of a build failure and two silent no-ops. Those are fixable, and fixing them turns this pillar into a measured win. This is the biggest differentiator for 2026 developers: most of them now build with agents.
 
-## 4. File-by-file breakdown
+Measure: **first-try success rate** and **edits-to-green** over a fixed scene suite, run by an independent agent with no repo context (WP-8).
+
+### Pillar C: Safe by construction (things that silently break in three.js fail loudly or self-heal here)
+
+What exists: black-frame self-heal with quality ladder and `?diag=1`, loud custom-shader failures, NaN-safe math chunks (found on real Apple hardware), provenance-gated production assets (same-origin, sha256, else nothing draws), diagnostics for ignored options (to be extended), draw-call and asset budgets in `check-deploy`.
+
+The superiority claim to earn: a shipped Aura3D game cannot go black, load an unvetted asset, or fail a shader in silence. In three.js those are the classic launch-day bugs. We found and fixed six of them on real devices during this program; that history is the proof, and it must be presented as a feature, not hidden.
+
+Measure: **silent-failure count** in a fault-injection suite (black frame, bad shader, missing asset, NaN uniform, empty instance array) that Aura3D catches and three.js does not (WP-6 builds the suite).
+
+### Pillar D: Verified quality (provable, repeatable, deterministic)
+
+What exists: deterministic replay (Aura Slam simulation bit-identical in differential tests, HEATSINK to 1e-6, identical replay hashes across libraries), render parity gates (G1 replay, G3 render within a draw-call budget), blind judge protocol, evidence folders, live-site verification per release.
+
+The superiority claim to earn: Aura3D games ship with machine-checkable evidence (replay hash, render gate, route health). No other web 3D stack ships a test and evidence story at all. For studios and for agents this removes the "does it still work?" fear on every change.
+
+Measure: games shipped with replay gate plus render gate plus `check-deploy` green (today: Aura Slam; target: all 15 index games).
+
+## 2. Dealbreakers to remove first (a developer who hits these never reaches the pillars)
+
+Each is measured, reproducible, and currently loses developers in the first hour. These come before any new feature.
+
+| # | Dealbreaker | Evidence | Fix | WP |
+|---|---|---|---|---|
+| D1 | Stock `vite build` of `@aura3d/engine@4.1.2` fails on `node:fs` in `ThreeCompatAssetRegistry`; shipped template fails the same way and its lockfile is out of sync | RESULTS 12.1, 12.2 | Browser-safe `exports`, no Node-only import on the browser path, regenerated lockfiles | WP-1 (in flight) |
+| D2 | Options that type-check and do nothing (`plane` segments, `orbit` options) | RESULTS 12.4, 12.5 | Implement or reject with a diagnostic naming the field; lint rule for ignored options | WP-2 |
+| D3 | 404 on `/aura-environments/neutral.manifest.json` in every app from published packages | RESULTS 12.3 | Self-contained neutral environment, no fetch | WP-2 |
+| D4 | 2.9 MB over 25 requests for a cube; 7.7x to 8.7x three.js | RESULTS 4, 5 | Lazy and subpath-only heavy subsystems; precise `sideEffects` | WP-3 |
+| D5 | Slow first frame and software-GL frame cost | RESULTS 6, 7; perf-frame-cost already cut the cube from 666 ms to 50 ms and forest 38 s to 6.4 s | Cascade selection, shadow batching, named MSAA/HDR profiles | WP-4 |
+| D6 | Legacy post chain: warning plus 25-40% darker frames | RESULTS 12.6; parity doc | Migrate to PostGraph | WP-5 |
+| D7 | No real-GPU proof | matrix row 52 | Hardware runner or owner checklist | WP-7 |
+
+Exit criterion for this layer: an independent agent can `npm create aura3d`, build, and deploy with zero workarounds, with no console errors, and the cube app loads under the stage-1 bundle target (section 5).
+
+## 3. Differentiators to build (the part that attracts developers)
+
+Ordered by developer pull per unit effort. All reuse existing code (promotion survey `/tmp/promote-candidates.md` and the 4.1.x kits).
+
+1. **One-command game from a prompt.** `aura3d new game "<prompt>"` selects a genre kit, scaffolds typed assets (catalog, then Meshy through Kiro Prism with a credit cap and provenance), wires HUD, touch, audio, replay and `check-deploy`, runs the look-dev loop and reports evidence. Builds on `create-aura3d`, `scene kits`, `meshy-cli`, `aura3d-evidence-review`. This is the demo that no other engine can match.
+2. **Live playground with agent mode.** Browser editor on aura3d.auraone.ai: edit scene source, hot reload, one-click share, "fix with agent" using `llms.txt` plus diagnostics. Lowers the first-hour cost to zero install.
+3. **Showcase as proof.** The 15 index games plus 11 ports become the front door: each page shows source size, bundle size, draw calls, evidence badge (replay and render gate status) and a "view source" link. Honest per-game disclosure text already exists; add metrics automatically from `evidence/`.
+4. **Fault-injection and safety page.** A public page that breaks a scene on purpose (black frame, bad shader, bad asset) and shows Aura3D reporting or healing it, with the same fault in raw three.js beside it. Turns Pillar C into a visible, shareable demo.
+5. **Art quality by default.** Genre look recipes, neutral and studio environments that need no fetch, Meshy-ready asset slots, and the look-dev loop as a single command. The visual quality program (quality rebuild autopsy) already found most of the render defects; the remaining step is making the default look good with zero tuning (exposure parity, post chain fixed).
+6. **Migration that sells itself.** `aura3d migrate three` already classifies 245 rows (21 exact, 174 approximate, 47 none, 3 pending). Raise exact coverage on the most common 40 three.js APIs, ship a side-by-side "your scene before and after" report with line and bundle deltas. Never claim drop-in.
+7. **Game kit as a first-class product.** Publish and document `@aura3d/engine/game` (HUD widgets, touch, juice, session, accessibility) with a gallery. Developers choose engines for the batteries; this is the largest battery set in web 3D.
+8. **Capability fill that removes objections.** `effects.toon`, Matcap and Lambert materials, camera rigs, more TSL names, `MeshSurfaceSampler` equivalent. Each closes a row in the matrix where three.js is currently better, and each is a one-package job.
+
+## 4. What stays honest
+
+- Do not claim faster, smaller, or drop-in. Today three.js wins runtime and size; the plan above closes the gap where it matters (first load, first frame, build) and does not pretend otherwise.
+- Claim what is measured: scene source size, import count, glue lines, first-try success once WP-8 runs, safety coverage once WP-6 runs, evidence coverage per game.
+- Label software-GL numbers as such everywhere; the real-GPU lane (WP-7) is a prerequisite for any performance headline.
+- three.js remains the right choice for: WebGPU-first work, huge existing three.js codebases, exotic loaders and post-processing, and anything needing the largest ecosystem. Saying so builds trust and is consistent with the claims boundary doc.
+
+## 5. Scorecard we will publish (targets and where they come from)
+
+| Metric | Today (measured) | Target | Pillar |
+|---|---|---|---|
+| Stock build with zero workarounds | fails | passes (3 Vite versions, npm and pnpm) | Dealbreaker D1 |
+| Cube app JS, total / requests | 3,841 KB / 26 | stage 1: at or under 1,500 KB / under 10; stage 2: at or under 800 KB | D4 |
+| Cube frame, software GL | 666 ms (before) → 50 ms (4.1.3) | within 2x of three.js 4x MSAA | D5 |
+| Forest 18k instances, software GL | 38 s → 6.4 s per frame | completes the bench plan within the time limit | D5 |
+| Time to first playable from `npm create aura3d` | not measured | under 30 minutes, no glue | A |
+| Glue lines for a complete game (HUD, input, audio, replay, deploy) | hand-rolled in ports | 0 beyond scene, rules, art | A |
+| First-try agent success on 5-scene suite | worse than three.js (one author, anecdote) | at or above three.js, independent run | B |
+| Edits to green, same suite | 7 vs 3 | at or under three.js | B |
+| Silent faults caught in injection suite | partial | 100% reported or healed | C |
+| Games with replay gate plus render gate plus `check-deploy` | 1 of 26 (Aura Slam) | all 15 index games | D |
+| Real-GPU evidence | owner screenshots for 3 games | recorded run per index game | D, D7 |
+| Matrix rows where three.js is better | 19 of 54 | under 12 after WP-6, tracked per release | all |
+
+## 6. Codebase grounding and autonomous decisions
+
+- D1: keep the three.js-compatible renderer lineage; superiority comes from the pipeline, safety, agent tooling and evidence, not a new renderer.
+- D2: sequence is dealbreakers (WP-1 to WP-5) first, then differentiators, because a failed first build erases every other advantage.
+- D3: no WebGPU default in this plan; revisit after real-GPU evidence exists.
+- D4: 4.1.3 carries fixes only (build, no-ops, perf, Aura Slam UI); 4.2.0 only if defaults or exports change (post chain migration, deprecated export moves).
+- D5: scorecard numbers are published only from runs stored under `evidence/`.
+- Invariants: `tests/unit/agent-api/public-example-boundary.test.ts` green; Aura Slam draw calls at most 150 and G1/G3 green; tracked files under 15,000; no `.github/workflows`; no local Docker or Playwright; never run `pnpm` in worktrees with symlinked `node_modules`.
+
+## 7. File-by-file breakdown
 
 | Path | Action | Change |
 |---|---|---|
-| `packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry.ts` | MODIFY | Remove top-level `node:fs` use from the browser-reachable path (dynamic import behind a Node-only entry) |
-| `packages/assets/package.json`, `packages/engine/package.json` | MODIFY | `exports` conditions (`browser`/`node`) and `sideEffects` so the registry is not bundled for browsers |
-| `packages/create-aura3d/templates/{mini-game,racing-starter,falling-blocks-starter}/package-lock.json` | MODIFY | Regenerate so `npm ci` matches `package.json` |
-| `packages/engine/src/agent-api/nodes/primitives.ts` | MODIFY | Honour `widthSegments`/`heightSegments` on `plane` (and box/sphere) or emit a diagnostic naming the ignored field |
-| `packages/engine/src/agent-api/nodes/interactions.ts` | MODIFY | Reject or warn on unknown `orbit` options; document `target` is a node name |
-| `packages/engine/src/devtools/environments/EnvironmentRegistry.ts` | MODIFY | Resolve `neutral` without a network fetch (inline the SH9 and a small specular) or ship the files in the package |
-| `packages/rendering/src/renderer/PostprocessExecution.ts`, `packages/rendering/src/Renderer.ts` | MODIFY | Migrate the legacy post chain onto PostGraph; remove `POSTPROCESS_V2_UNMIGRATED` and the darkening |
-| `packages/rendering/src/renderer/*` (shadow system) | MODIFY | Per-pixel cascade selection; raise shadow draw batch size; profile switch for MSAA |
-| `packages/engine/src/public/index.ts` | MODIFY | Retire or move the 66 deprecated exports behind subpaths (breaking: needs 4.2) |
-| `BUNDLE_SIZES.md`, `tools/bench-vs-threejs/**` | MODIFY | Re-run on the new build; add Aura3D-with-fix rows; add a real-GPU lane when available |
-| `docs/workflows/aura3d-vs-threejs-matrix.md`, `evidence/vs-threejs/RESULTS.md` | MODIFY | Refresh numbers; update rows 48, 49, 9, 12 after each WP lands |
-| `packages/engine/src/agent-api/nodes/effects*.ts` | CREATE/MODIFY | `effects.toon` pass (promotion candidate 11); Matcap and Lambert material builders |
-| `tests/unit/**` for each WP | CREATE | One focused test file per WP (names below) |
+| `packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry.ts` | MODIFY | Move `node:fs` use behind a Node-only entry |
+| `packages/assets/package.json`, `packages/engine/package.json` | MODIFY | `browser`/`node` export conditions; precise `sideEffects` |
+| `packages/create-aura3d/templates/{mini-game,racing-starter,falling-blocks-starter}/package-lock.json` | MODIFY | Regenerate to match manifests |
+| `packages/engine/src/agent-api/nodes/primitives.ts` | MODIFY | Honour segments on plane/box/sphere or emit a named diagnostic |
+| `packages/engine/src/agent-api/nodes/interactions.ts` | MODIFY | Validate `orbit` options |
+| `packages/engine/src/devtools/environments/EnvironmentRegistry.ts` | MODIFY | Self-contained `neutral` environment |
+| `packages/rendering/src/renderer/PostprocessExecution.ts`, `packages/rendering/src/Renderer.ts` | MODIFY | Migrate legacy post chain to PostGraph |
+| `packages/rendering/src/renderer/*` (shadows) | MODIFY | Per-pixel cascade selection, larger shadow batches, named MSAA/HDR profiles |
+| `packages/aura3d-cli/src/commands/new-game.ts` | CREATE | `aura3d new game "<prompt>"` pipeline (scaffold, assets, kit wiring, evidence) |
+| `packages/aura3d-cli/src/commands/migrate-three/**` | MODIFY | More exact mappings for the 40 most common APIs; before/after report |
+| `packages/engine/src/agent-api/nodes/effects.toon.ts`, `material.matcap.ts`, `material.lambert.ts`, `cameras.rigs.ts` | CREATE | Capability fill (matrix rows 12, 16) |
+| `packages/engine/src/public/index.ts` | MODIFY | Move deprecated exports behind subpaths (4.2) |
+| `packages/debug/src/fault-injection/**`, `tests/unit/fault-injection/**` | CREATE | Fault suite for Pillar C |
+| `apps/showcase-index/index.html` and generator under `tools/showcase-port-pages/` | MODIFY | Per-game metrics and evidence badges from `evidence/` |
+| `apps/showcase-safety/**` | CREATE | Public fault-injection demo page |
+| `apps/playground/**` | CREATE | Live editor with share link and agent-fix |
+| `tools/bench-vs-threejs/**`, `BUNDLE_SIZES.md` | MODIFY | Re-run on fixed build; add TTFP and first-try suites |
+| `evidence/scorecard/**`, `docs/workflows/aura3d-vs-threejs-matrix.md`, `evidence/vs-threejs/RESULTS.md` | MODIFY/CREATE | Generated scorecard; refresh rows each release |
 
-## 5. Parallelizable work packages
+## 8. Work packages (parallel, disjoint ownership)
 
-Each package has a disjoint owner path. Never run `pnpm`; run vitest by file; browsers only via `tools/remote-acr/run.sh`.
+- **WP-1 Stock build.** In flight (`fix-stock-build`). Browser-safe exports, template lockfiles. Test: remote `vite build` of cube app and `mini-game` from packed tarballs on Vite 7.3.2 and 7.3.7, npm and pnpm.
+- **WP-2 Silent no-ops and offline environment.** Plane segments, orbit validation, self-contained `neutral`. Tests: `tests/unit/agent-api/plane-segments.test.ts`, `orbit-options.test.ts`, `environment-neutral-offline.test.ts`. Add an "ignored option" diagnostic path used by all typed builders.
+- **WP-3 Bundle.** Per-module size report; lazy or subpath-only animation, audio, physics, devtools, legacy post and WebGPU; stage targets in section 5; gate in `BUNDLE_SIZES.md`.
+- **WP-4 Frame cost.** Cascade selection, shadow batching, named profiles; re-bench against a packed 4.1.3 tarball.
+- **WP-5 Post chain.** PostGraph migration; luma regression test; ships in 4.2.0.
+- **WP-6 Fault-injection suite and safety demo.** Five faults (black frame, bad shader, missing/unvetted asset, NaN uniform, empty instances); same fault in raw three.js for the comparison page; `apps/showcase-safety`.
+- **WP-7 Real-GPU lane.** Hardware runner under the serverless-first policy, or the owner's M4 Max checklist (Drift world, Silt rings, Last Train Enter/E/W, native Tennis); record under `evidence/real-gpu/`.
+- **WP-8 Independent authoring trial.** Fresh agent, no repo context, `llms.txt` plus types only, five scenes in both libraries; replaces RESULTS section 13; repeat after WP-1 and WP-2.
+- **WP-9 One-command game.** `aura3d new game`; TTFP measurement on three prompts; Meshy through Kiro Prism with cap and provenance.
+- **WP-10 Showcase and playground.** Metrics and evidence badges on the index; playground MVP with share links.
+- **WP-11 Capability fill.** `effects.toon`, Matcap, Lambert, camera rigs, TSL names, surface sampler; one package per row, each with docs, codemod row and test.
+- **WP-12 Evidence on every game.** Replay gate plus render gate plus `check-deploy` for all 15 index games, following the Aura Slam recipe (`docs/aura-slam/ARCHITECTURE.md`).
+- **WP-13 Test baseline.** Triage the 106 to 116 baseline unit failures (fix, delete removed features, or quarantine with a reason); goal is a green remote unit run.
+- **WP-14 Aura Slam follow-ups.** Portrait framing needs a camera change gated by G3; Phase 2 modes deferred; deploy `259acdd14` with the next release.
 
-- **WP-1 Stock build (in flight, `fix-stock-build`).** Steps: trace browser-reachable `node:fs` imports; split Node-only code; add `exports` conditions; remove the need for `@aura3d/assets/vite` and a stub plugin; fix template lockfiles. Test: `tests/unit/build/stock-vite-build.test.ts` plus a remote `vite build` of the cube app and the `mini-game` template from published tarballs. Edge cases: Vite 7.3.2 and 7.3.7, npm `ci`, pnpm.
-- **WP-2 Silent no-ops and 404.** Steps: implement or diagnose plane segments; validate orbit options; make `neutral` environment self-contained. Tests: `tests/unit/agent-api/plane-segments.test.ts`, `orbit-options.test.ts`, `environment-neutral-offline.test.ts`. Edge cases: segments of 0 or 1, huge segments (cap with diagnostic), offline apps.
-- **WP-3 Bundle size.** Steps: measure the import graph with a per-module size report; make heavy subsystems (animation, audio, physics, devtools, WebGPU path, legacy post) lazy or subpath-only; set `sideEffects` precisely. Target: cube app at or under 1.5 MB raw JS and under 10 requests in stage 1; at or under 800 KB raw in stage 2. Gate: `BUNDLE_SIZES.md` budgets pass or are re-baselined with a written reason.
-- **WP-4 Frame cost and defaults.** Steps: per-pixel cascade selection; shadow draw batching; document and expose the MSAA and HDR target policy as a named profile; re-run `tools/bench-vs-threejs` on the new build (bench builds against published, so publish 4.1.3 first or point it at a packed tarball). Target: forest scene completes within the 55-minute limit; cube within 2x of three.js 4x MSAA on software GL.
-- **WP-5 Legacy post chain.** Steps: migrate chain to PostGraph; update expected pixels for the 25-40% darkening; remove the warning. Tests: existing post specs plus a luma-delta regression test. Ship in 4.2.0 because default output changes.
-- **WP-6 Capability breadth.** Steps in order: `effects.toon`; Matcap and Lambert; camera rigs (promotion candidate 10); expand `tsl` names from the codemod `none`/`approximate` rows. Each lands with a typed node, docs under `docs/api/`, and a codemod row update.
-- **WP-7 Real-GPU verification.** Steps: obtain a hardware-GPU runner under the serverless-first policy (or have the owner run a short checklist on the M4 Max: Drift world, Silt rings, Last Train Enter/E/W, native Tennis); re-run the bench there; record under `evidence/real-gpu/`. Never label software-GL results as GPU.
-- **WP-8 Independent authoring trial.** Steps: a fresh agent with no repo context writes the five bench scenes in both libraries from `llms.txt` and the types only; count edits, silent no-ops and blocking failures; replace RESULTS section 13. Success: Aura3D edits at or under three.js edits.
-- **WP-9 Test baseline.** Steps: triage the 106-116 baseline failures into fix, delete (removed features), or quarantine with a reason; goal is a green unit suite in CI-equivalent remote run.
-- **WP-10 Aura Slam follow-ups.** Portrait framing needs a camera change gated by G3 (the 15 degree FOV is pinned); Phase 2 modes (tournament, tour, online) remain deferred; deploy `259acdd14` with the next release.
-
-## 6. Verification and acceptance checklist
+## 9. Verification and acceptance checklist
 
 - [ ] WP-1: a clean app importing only `@aura3d/engine` builds with `npx vite build` and no extra plugin; template `npm ci` succeeds.
-- [ ] WP-2: `vitest run tests/unit/agent-api/plane-segments.test.ts tests/unit/agent-api/orbit-options.test.ts tests/unit/agent-api/environment-neutral-offline.test.ts` passes; a built app logs no `ENV_FETCH_FAILED`.
-- [ ] WP-3: `node tools/bench-vs-threejs/...` bundle table shows the stage target; `BUNDLE_SIZES.md` gate passes or carries a written re-baseline.
-- [ ] WP-4: remote bench run shows forest completes; cube frame within the stated ratio; numbers recorded as software GL.
-- [ ] WP-5: no `POSTPROCESS_V2_UNMIGRATED` in any bench console log; luma regression test passes.
-- [ ] WP-6: new nodes typed, documented, and covered by the codemod table.
-- [ ] WP-7: `evidence/real-gpu/` exists with device, driver and frames, or the owner checklist is recorded as answered.
-- [ ] WP-8: new RESULTS section 13 written by an independent run.
-- [ ] Always: `vitest run tests/unit/agent-api/public-example-boundary.test.ts`; Aura Slam G1 and G3 gates; tracked file count under 15,000; `tools/release/publish-all.mjs --dry-run` clean before any publish; no `.github/workflows`; no local Docker or Playwright.
-- [ ] After each release: refresh the matrix rows and the RESULTS tables, and re-verify the live site from a clean-worktree deploy.
+- [ ] WP-2: the three new unit files pass; a built app logs no `ENV_FETCH_FAILED`; every typed builder reports ignored options.
+- [ ] WP-3: bench bundle table meets the stage target, or `BUNDLE_SIZES.md` carries a written re-baseline.
+- [ ] WP-4: remote bench shows forest completing and cube within the stated ratio, labelled software GL.
+- [ ] WP-5: no `POSTPROCESS_V2_UNMIGRATED` in any console log; luma regression test passes.
+- [ ] WP-6: fault suite green; comparison page published; each fault shows caught or healed in Aura3D.
+- [ ] WP-7: `evidence/real-gpu/` has device, driver and frames, or the owner checklist is recorded as answered.
+- [ ] WP-8: independent run recorded; first-try success and edits-to-green at or better than three.js, or the gap and its causes written down.
+- [ ] WP-9: three prompts produce deployable games with TTFP recorded and `check-deploy` green.
+- [ ] WP-10: every index game page shows generated metrics and badge; playground share link round-trips.
+- [ ] WP-11: each new node typed, documented, tested, and reflected in the matrix and codemod.
+- [ ] WP-12: all 15 index games pass replay, render and `check-deploy` gates.
+- [ ] Always: `vitest run tests/unit/agent-api/public-example-boundary.test.ts`; Aura Slam G1/G3; tracked files under 15,000; `tools/release/publish-all.mjs --dry-run` clean before any publish; refresh scorecard after each release; re-verify live from a clean-worktree deploy.
 
-## 7. What not to claim
+## 10. Appendix: honest competitor comparison (reference only)
 
-- Not "faster than three.js": every measured frame row favours three.js on software GL.
-- Not "smaller": the bundle is 7.7x to 8.7x larger today.
-- Not "drop-in": the codemod is 21 exact rows of 245.
-- Fair to claim: less scene source for most scenes, one import, built-in QA and safety tooling, agent documentation, and asset provenance, each with the numbers above and the software-GL caveat.
+Where three.js wins today (measured, software GL): bundle 7.7x to 8.7x smaller, 2 vs 26 requests, faster first frame in four of five scenes, lower frame cost, fewer draws and programs, stock build works, broader materials, post, TSL (about 638 vs 62 names), WebGPU, WebXR and loaders, far larger ecosystem (about 15.2M vs about 391 weekly downloads, snapshot).
+
+Where Aura3D wins today (measured or counted): fewer scene lines in four of five scenes, one import vs up to eight, fewer API symbols in every scene, bloom, shadow, instancing, fixed-step, QA hooks and shader pass in one call, asset provenance, self-heal, agent docs and skills, catalog, Meshy pipeline, codemod, shipped games with evidence.
+
+Ties: PBR, lights, primitives, instancing, helpers; water scene picture identical; replay hashes identical.
+
+Full detail: `aura3d-vs-threejs-matrix.md` and `evidence/vs-threejs/RESULTS.md`.
