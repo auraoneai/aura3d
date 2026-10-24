@@ -12,7 +12,7 @@ function loadUmd<T>(relative: string): T {
   return module.exports as T;
 }
 const original = loadUmd<{ pose: (player: unknown, state: unknown) => unknown }>(
-  "../../../apps/showcase-top-tennis/public/toptennis/player-pose.js"
+  "../../../tests/fixtures/aura-slam-original/toptennis/player-pose.js"
 );
 
 function rng(seed: number): () => number {

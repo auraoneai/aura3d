@@ -17,7 +17,7 @@ interface OriginalSwipe {
   create(o: { storage?: StorageLike | null }): { getPreference(): string; setPreference(s: unknown): unknown; subscribe(l: (e: unknown) => void): () => void };
   STORAGE_KEY: string;
 }
-const original = loadUmd("apps/showcase-top-tennis/public/toptennis/mobile-swipe.js") as OriginalSwipe;
+const original = loadUmd("tests/fixtures/aura-slam-original/toptennis/mobile-swipe.js") as OriginalSwipe;
 
 class FakeStorage implements StorageLike {
   readonly data = new Map<string, string>();

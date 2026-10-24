@@ -2,7 +2,7 @@ const fs = require('fs'); const S = require('./sets.cjs');
 const R = JSON.parse(fs.readFileSync(require('os').tmpdir() + '/slam-ai-gen-result.json', 'utf8'));
 const W = '' + process.cwd() + '/examples/aura-slam/sim';
 fs.mkdirSync(W, { recursive: true });
-const src = fs.readFileSync('' + process.cwd() + '/apps/showcase-top-tennis/public/toptennis/match-engine.js', 'utf8').split('\n');
+const src = fs.readFileSync('' + process.cwd() + '/tests/fixtures/aura-slam-original/toptennis/match-engine.js', 'utf8').split('\n');
 const grab = (a, b) => src.slice(a - 1, b).join('\n');
 // tables: lines 17-23 SERVE_CPU, 29 PRO_POSITION, 30-36 SERVE_RETURN, 57-62 CPU_STYLES
 const tables = `/* Tables transcribed verbatim from public/toptennis/match-engine.js (SERVE_CPU l.17, PRO_POSITION l.29, SERVE_RETURN l.30, CPU_STYLES l.57). */

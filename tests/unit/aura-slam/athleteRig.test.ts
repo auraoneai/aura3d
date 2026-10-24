@@ -116,7 +116,7 @@ describe("M-POSE rig: node build and wiring", () => {
 });
 
 describe("generated original rig", () => {
-  it("is up to date with apps/showcase-top-tennis/src/main.ts", () => {
+  it("is up to date with tests/fixtures/aura-slam-original/adapter/main.ts", () => {
     expect(extractOriginalRig(readFileSync(MAIN_PATH, "utf8"))).toBe(readFileSync(OUT_PATH, "utf8"));
   });
 });

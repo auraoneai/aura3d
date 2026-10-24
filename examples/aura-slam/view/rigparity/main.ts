@@ -1,6 +1,6 @@
 /**
  * Render-parity harness for the M-POSE rig. One athlete is posed twice per case: once by the REAL original adapter code
- * (the generated module extracted from apps/showcase-top-tennis/src/main.ts) and once by the native port; both frames are
+ * (the generated module extracted from tests/fixtures/aura-slam-original/adapter/main.ts) and once by the native port; both frames are
  * captured through the same app, camera and lights and compared pixel by pixel. Remote runs only.
  */
 import { camera, createAuraApp, effects, game, lights, material, primitives, scene, type AuraApp } from "@aura3d/engine";

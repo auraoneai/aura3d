@@ -11,7 +11,7 @@ import { originalControls, memoryStorage, playedEngine } from "./ui-original";
  * shapes: `render_game_to_text()` (JSON keys and their order, plus the single-line nested objects), `advanceTime(ms)`
  * (see ui-flow.test.ts for the step semantics) and `__TOP_TENNIS_CONTROL__` ({ getState, getEngine, startOffline, togglePause }).
  */
-const GAME = readFileSync(join(process.cwd(), "apps/showcase-top-tennis/public/toptennis/game.js"), "utf8");
+const GAME = readFileSync(join(process.cwd(), "tests/fixtures/aura-slam-original/toptennis/game.js"), "utf8");
 const lines = GAME.split("\n");
 const start = lines.findIndex((l) => l.includes("function renderGameToText()"));
 const bodyStart = lines.findIndex((l, i) => i > start && l.includes("return JSON.stringify({"));

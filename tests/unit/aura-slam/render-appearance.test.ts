@@ -4,7 +4,7 @@ import { APPEARANCE_GROUPS, APPEARANCE_PARTS, resolveAppearance, validateAppeara
 
 const original = ((): { resolve(v: unknown, side?: string): Record<string, string>; validate(v: unknown): unknown; defaults(side?: string): unknown; groups: Record<string, Array<{ id: string; label: string; color: string }>> } => {
   const module = { exports: {} as unknown };
-  new Function("module", "exports", readFileSync("apps/showcase-top-tennis/public/toptennis/player-appearance.js", "utf8"))(module, module.exports);
+  new Function("module", "exports", readFileSync("tests/fixtures/aura-slam-original/toptennis/player-appearance.js", "utf8"))(module, module.exports);
   return module.exports as never;
 })();
 

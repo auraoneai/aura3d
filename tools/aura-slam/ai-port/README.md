@@ -1,7 +1,7 @@
 # M-AI / swipe port generator
 
 `examples/aura-slam/sim/{ai,swipe,aiTables}.ts` are mechanical transcriptions of closure functions in
-`apps/showcase-top-tennis/public/toptennis/match-engine.js`. This folder holds the generator so the port is reproducible and auditable:
+`tests/fixtures/aura-slam-original/toptennis/match-engine.js`. This folder holds the generator so the port is reproducible and auditable:
 
 ```
 node tools/aura-slam/ai-port/gen.cjs        # parse the source with the TypeScript API, classify free identifiers, rewrite closure refs to env.<name>

@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 
-const SRC = "apps/showcase-top-tennis/public/toptennis/";
+const SRC = "tests/fixtures/aura-slam-original/toptennis/";
 const OUT = "examples/aura-slam/sim/";
 const UMD = /\}\)\(typeof window==='undefined'\?globalThis:window,function\(([^)]*)\)\{/;
 

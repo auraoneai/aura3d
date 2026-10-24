@@ -156,7 +156,7 @@ export function firstRowDivergence(rows: Map<number, Array<number | string | nul
   return null;
 }
 
-const GAME_DIR = join(process.cwd(), "apps/showcase-top-tennis/public/toptennis");
+const GAME_DIR = join(process.cwd(), "tests/fixtures/aura-slam-original/toptennis");
 function loadUmd(file: string, modules: Record<string, unknown> = {}): any {
   const module = { exports: {} as any };
   new Function("module", "require", "exports", readFileSync(join(GAME_DIR, file), "utf8"))(module, (name: string) => modules[name], module.exports);

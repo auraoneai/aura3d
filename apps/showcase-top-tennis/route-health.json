@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-10-15T23:55:00.000Z",
+  "generatedAt": "2026-10-24T00:00:00.000Z",
   "appId": "showcase-top-tennis",
   "route": "/apps/showcase-top-tennis/",
   "classification": "candidate",
@@ -29,5 +29,16 @@
       "quality": "production",
       "role": "setDressing"
     }
+  ],
+  "kind": "native-rebuild",
+  "sourceExample": "examples/aura-slam/",
+  "claimLabel": "Native rebuild (preview)",
+  "claimStatus": "bounded",
+  "evidence": "Native Aura Slam (examples/aura-slam) replaces the original game's scripts on this route. The shipped simulation equals the original match-engine.js over seeded matches in a real browser; remote production-build play-through on software WebGL2 (menu, Quick Match, serve/rally/point, pause/resume, results, 0 console errors, asset URLs 200). See evidence/aura-slam/ and docs/aura-slam/ARCHITECTURE.md.",
+  "limits": [
+    "Tournament, tour, online play and appearance select are shown as 'coming soon' (Phase 2).",
+    "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU.",
+    "Auto mode and whole-game render parity gates against the original were still being finished when this route was swapped: see docs/workflows/threejs-parity-gaps.md section 12.14 and the Aura Slam status table.",
+    "Draw calls about 260 (desktop) and 143 (mobile) against a 150 budget."
   ]
 }

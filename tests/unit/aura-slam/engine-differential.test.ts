@@ -12,7 +12,7 @@ import { strokes as strokesTs } from "../../../examples/aura-slam/sim/strokes";
 import { createMatchEngine, viewMatch } from "../../../examples/aura-slam/sim/create";
 import { DIFFICULTY_LEVELS, GRAVITY, MATCH_RULES } from "../../../examples/aura-slam/contract";
 
-const DIR = fileURLToPath(new URL("../../../apps/showcase-top-tennis/public/toptennis/", import.meta.url));
+const DIR = fileURLToPath(new URL("../../../tests/fixtures/aura-slam-original/toptennis/", import.meta.url));
 /** The originals are UMD scripts in an ES-module package: evaluate them as CommonJS data with an explicit require table. */
 function loadUmd(file: string, modules: Record<string, unknown> = {}): any {
   const source = readFileSync(DIR + file, "utf8");

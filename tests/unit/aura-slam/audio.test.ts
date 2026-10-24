@@ -8,7 +8,7 @@ import { createTennisAudio, impactShape, makeImpactFallback, type ImpactKind } f
  * Differential tests: tennis-audio.js (the original, evaluated as data against a recording fake AudioContext) and the
  * TypeScript port are driven with the same calls and the same random stream; every audible parameter must match.
  */
-const SOURCE = readFileSync(resolve(__dirname, "../../../apps/showcase-top-tennis/public/toptennis/tennis-audio.js"), "utf8");
+const SOURCE = readFileSync(resolve(__dirname, "../../../tests/fixtures/aura-slam-original/toptennis/tennis-audio.js"), "utf8");
 
 function lcg(seed = 12345) {
   let s = seed >>> 0;

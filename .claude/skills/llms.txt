@@ -45,7 +45,6 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura3D Damaged Helmet PBR Detail: Typed GLB Asset Viewer Example](https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/)
 - [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/)
 - [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/)
-- [Aura Slam 3D — Championship 3D Tennis (V2) on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis-v2/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer (V2) on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/)
 - [THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink/)
@@ -244,10 +243,3 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
-
-
-
-
-
-
-

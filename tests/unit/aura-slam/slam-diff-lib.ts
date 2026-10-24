@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import type { BallState } from "../../../examples/aura-slam/contract/sim";
 import { resolve } from "node:path";
 
-const SOURCE_DIR = resolve(process.cwd(), "apps/showcase-top-tennis/public/toptennis");
+const SOURCE_DIR = resolve(process.cwd(), "tests/fixtures/aura-slam-original/toptennis");
 
 /**
  * Load an original UMD module as DATA: the surrounding package may be ESM, so `require` would not give us

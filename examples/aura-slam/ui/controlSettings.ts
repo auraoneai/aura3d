@@ -115,7 +115,7 @@ export function createControlSettings(deps: ControlSettingsDeps): ControlSetting
       : padConnected ? "Choose an action, release all controller buttons and sticks, then press one button. Left stick and D-pad movement stay fixed. Escape cancels a capture."
       : "Connect a supported controller and press a controller button to enable changes. Left stick and D-pad movement stay fixed.";
     $("control-settings-reserved").textContent = device === "keyboard"
-      ? "Fixed controls: P / Escape pause or open options, F fullscreen, R rematch after a match, and ~ / ` Busted Mode. Tab and Enter keep menu navigation. Browser shortcuts and key combinations cannot be assigned."
+      ? "Fixed controls: P / Escape pause or open options, F fullscreen, and R rematch after a match. Tab and Enter keep menu navigation. Browser shortcuts and key combinations cannot be assigned."
       : "Fixed controls: left stick / D-pad movement, Menu / Options pause, and system / share buttons. Remap face buttons, shoulders, triggers, or stick clicks. Use the mouse or keyboard to navigate settings.";
     const rows = $("control-settings-bindings");
     rows.replaceChildren();
@@ -295,7 +295,7 @@ export function createControlSettings(deps: ControlSettingsDeps): ControlSetting
       if (event.repeat || device !== "keyboard") return;
       if (!capture.keyboardReady || heldKeyboard.size > 1) { capture.keyboardReady = false; status("Release all held keys, then press one key.", true); return; }
       if (event.ctrlKey || event.altKey || event.metaKey || event.isComposing || event.key === "`" || event.key === "~") {
-        status("Browser shortcuts, key combinations, and Busted Mode keys cannot be assigned.", true); return;
+        status("Browser shortcuts, key combinations, and the ~ / ` key cannot be assigned.", true); return;
       }
       assign(event.code); return;
     }

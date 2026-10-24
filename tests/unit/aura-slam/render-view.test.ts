@@ -6,7 +6,7 @@ import * as C from "../../../examples/aura-slam/view/constants";
 import { spectatorBounce, spectatorSeat } from "../../../examples/aura-slam/view/spectators";
 import { VENUE_PALETTES, isMoonVenue, venueKey } from "../../../examples/aura-slam/view/venues";
 
-const original = readFileSync("apps/showcase-top-tennis/src/main.ts", "utf8");
+const original = readFileSync("tests/fixtures/aura-slam-original/adapter/main.ts", "utf8");
 
 function originalPalettes(): Record<string, Record<string, string>> {
   const start = original.indexOf("const VENUE_PALETTES: Record<string, VenuePalette> = ") + "const VENUE_PALETTES: Record<string, VenuePalette> = ".length;

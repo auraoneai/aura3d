@@ -233,31 +233,6 @@ body:has(.game-shell[data-mode=playing]) #feedback-widget-button{display:none!im
 }
 .touch-hit,.touch-lob,.touch-power-serve{-webkit-tap-highlight-color:transparent}
 /* A native modal covers the court and page widgets, including in fullscreen. */
-#work-sheet { position:fixed; inset:0; margin:0; width:100vw; height:100dvh; max-width:none; max-height:none; border:0; padding:0; background:#fff; color:#26332e; font:13px Arial,sans-serif; text-align:left; }
-#work-sheet[open] { display:flex; flex-direction:column; }
-#work-sheet::backdrop { background:#fff; }
-.work-title { display:flex; align-items:center; gap:14px; padding:16px 24px; background:#217346; color:white; font-size:16px; }
-.work-title span { margin-left:24px; font-size:12px; opacity:.8; }
-.work-toolbar,.work-format { display:flex; gap:28px; padding:13px 24px; border-bottom:1px solid #d4dad6; background:#f5f6f5; white-space:nowrap; }
-.work-format { gap:24px; color:#58615b; }
-.work-formula { display:flex; align-items:center; gap:20px; padding:7px 12px; border-bottom:1px solid #cbd3ce; }
-.work-formula span:first-child { width:75px; padding:4px; border:1px solid #d4dad6; }
-.work-grid { flex:1; overflow:auto; background:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,#e2e6e3 27px,#e2e6e3 28px); }
-.work-grid table { border-collapse:collapse; table-layout:fixed; width:100%; min-width:1000px; font:13px Arial,sans-serif; }
-.work-grid th,.work-grid td { height:28px; padding:0 10px; border:1px solid #dce2de; white-space:nowrap; }
-.work-grid th { background:#f1f3f2; color:#66726b; font-weight:normal; text-align:center; }
-.work-grid th:first-child { width:42px; }
-.work-grid td { background:white; text-align:right; }
-.work-grid td:first-of-type,.work-grid td:nth-child(6) { text-align:left; }
-.work-grid .work-heading { height:48px; font-size:16px; font-weight:bold; text-align:left; }
-.work-grid .work-label { background:#e9f0ec; font-weight:bold; }
-.work-grid .work-selected { outline:2px solid #217346; outline-offset:-2px; background:#f1f8f3; }
-.work-grid td { padding:0; overflow:hidden; }
-.work-grid td input { display:block; width:100%; min-width:0; height:27px; margin:0; padding:0 10px; border:0; border-radius:0; outline:none; background:transparent; color:inherit; font:inherit; text-align:inherit; user-select:text; -webkit-user-select:text; }
-.work-grid .work-heading input { height:47px; }
-.work-formula span:last-child { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-.work-footer { display:flex; gap:32px; padding:14px 30px; border-top:1px solid #cbd3ce; background:#f5f6f5; color:#526159; }
-.work-footer strong { color:#217346; }
 
 
 /* One-press lob sits beside HIT within the mobile control strip. */

@@ -2,7 +2,7 @@ import { clamp } from "../ui/format";
 
 /**
  * The live page's adapter-side player controller, ported verbatim from `stepTopTennisPlayerControl` and
- * `installManualAndAutoplayControls` in apps/showcase-top-tennis/src/main.ts. It is not part of the simulation: the live
+ * `installManualAndAutoplayControls` in tests/fixtures/aura-slam-original/adapter/main.ts. It is not part of the simulation: the live
  * page runs it once per `render()` (after `update()`), with a constant `dt` of 1/60, and it mutates the engine state
  * directly. Baseline replays (evidence/aura-slam/reference.json) include its effects, so the native shell calls it from
  * `render()` exactly once per presented frame and keeps the same arithmetic, clamps and ordering.

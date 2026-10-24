@@ -15,7 +15,6 @@ import { createSwipeOverlay, type SwipeOverlay, type SwipePort } from "../ui/swi
 import { createTouchControls, type TouchControls } from "../ui/touch";
 import { SHOT_DEFAULTS, type CreateSlamEngine, type HudState, type ServeFeedback, type SlamEngine } from "../ui/types";
 import { themeFor } from "../ui/venues";
-import { createWorkMode } from "../ui/workMode";
 import { createAdapterController, type AdapterController } from "./controller";
 import { createController } from "./gamepad";
 import { playerFrame, type PlayerFrameContext } from "./inputFrame";
@@ -134,7 +133,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   };
 
   /* ---- audio ---- */
-  const initAudio = (): void => { if (soundEnabled && !workModeActive()) audio.unlock(); };
+  const initAudio = (): void => { if (soundEnabled) audio.unlock(); };
   function onSimEvent(event: SimEvent): void {
     if (event.type === "tone" || event.type === "hit" || event.type === "bounce" || event.type === "pointSound") audio.handle(event);
     if (event.type === "selection" && (event as { side?: string }).side === "player") selectShotUI((event as unknown as { shot: ShotPreset }).shot);
@@ -244,15 +243,6 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
     refreshLabels: () => controlSettingsRef.current?.refreshLabels()
   });
 
-  const workMode = createWorkMode({
-    canStart: () => getState().mode === "playing",
-    isPaused: () => getState().paused,
-    setPaused: (paused) => { (getState() as { paused: boolean }).paused = paused; },
-    clearInputs, setAudioEnabled: (enabled) => audio.setEnabled(enabled), soundEnabled: () => soundEnabled,
-    syncPauseMenu: () => pause.sync(getState().paused), focusCanvas: () => canvas.focus({ preventScroll: true })
-  });
-  const workModeActive = (): boolean => workMode.active;
-
   const controlSettings = createControlSettings({
     controls,
     mobile: swipeEnabled ? {
@@ -260,7 +250,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
       set: (style) => swipePort.setPreference(style)
     } : undefined,
     beforeOpen: () => {
-      if (workModeActive() || inputOverlayOpen()) return false;
+      if (inputOverlayOpen()) return false;
       if (getState().mode === "playing" && !getState().paused) togglePause(); else clearInputs();
       return true;
     },
@@ -270,7 +260,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   controlSettingsRef.current = controlSettings;
   const pad = createController({
     poller: deps.input.gamepad, onPad: (p) => controlSettings.pollController(p),
-    workModeActive, overlayOpen: inputOverlayOpen,
+    overlayOpen: inputOverlayOpen,
     playActive: () => getState().mode === "playing" && !getState().paused,
     touchPlayEnabled, swipeActive, togglePause, clearInputs, selectShot: toggleShot, intentionalLobEnabled,
     swing: (forcePower) => requestSwing(undefined, forcePower), initAudio,
@@ -377,7 +367,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   }
 
   function togglePause(): void {
-    if (workModeActive() || inputOverlayOpen()) return;
+    if (inputOverlayOpen()) return;
     initAudio();
     const s = getState() as { mode: string; paused: boolean };
     if (s.mode !== "playing") return;
@@ -424,13 +414,10 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
       if (touchPlayEnabled() && controls.actionForKey(event.code) && !["INPUT", "SELECT", "TEXTAREA", "BUTTON", "A", "SUMMARY"].includes(target?.tagName ?? "") && !target?.isContentEditable) event.preventDefault();
       return;
     }
-    const workKey = event.code === "Backquote" || event.key === "~" || event.key === "`";
-    if (workModeActive()) { if (workKey && !event.repeat) { event.preventDefault(); workMode.toggle(); } return; }
     // Native controls and external forms keep their own input semantics.
     if (target?.closest && target !== document.body && !target.closest(".game-shell")) return;
     if (menu.handleKey(event)) return;
     if (["INPUT", "SELECT", "TEXTAREA"].includes(target?.tagName ?? "") || target?.isContentEditable) return;
-    if (workKey && getState().mode === "playing") { event.preventDefault(); if (!event.repeat) workMode.toggle(); return; }
     if (event.code === "Space" && ["BUTTON", "A", "SUMMARY"].includes(target?.tagName ?? "")) return;
     const action = controls.actionForKey(event.code);
     if (action && touchPlayEnabled()) event.preventDefault();
