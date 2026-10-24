@@ -451,9 +451,9 @@ function injectPreamble(source: string, preamble: string, stage: "vertex" | "fra
   } else {
     head += "#version 300 es\n";
   }
-  if (stage === "fragment" && !/\bprecision\s+(lowp|mediump|highp)\s+float\s*;/.test(body)) {
-    head += "precision highp float;\n";
-  }
+  // Always declared: the prelude below uses `float` before the author's code, so an author-written `precision` line alone
+  // (placed after the prelude) left it without a default and the shader failed to compile. A later author declaration wins.
+  if (stage === "fragment") head += "precision highp float;\n";
   return `${head}${preamble}\n${body}`;
 }
 

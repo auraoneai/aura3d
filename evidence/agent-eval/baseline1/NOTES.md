@@ -47,3 +47,44 @@ Tasks 6 and 7 (single run each, i3b): the complete mobile arcade game (task 6, 3
 ### Spend
 
 49 model runs across i1, i2, i3, i2b, i3b: about 55.3 M cumulative input tokens (each turn re-reads the conversation) and 0.20 M output tokens, no judge calls. Remote: about 14 ACR scoring jobs (4 shards each for the three main batches, 2 for the small ones), no GPU, no standing infrastructure; all image tags deleted. Local: three `tsc` builds of the packages (about 21 s each) in throwaway worktrees.
+
+
+## evalfix2: the three open items, and a rerun (2026-10-24, batch evalfix2-r1)
+
+Tarballs of main at `2cf49ccf6` (all fixes below included), docs `origin/main`, Aura3D arm, tasks 1 to 5, n=3, 40-turn budget, scored remotely on software WebGL2.
+
+| Aura3D arm, n=15 | i3 (before) | evalfix2-r1 |
+|---|---|---|
+| First-try typecheck | 15 | 12 |
+| First-try build | 15 | 15 |
+| First-try non-black render | 10 | 14 |
+| Final non-black render | 10 | **14** (target 14: met) |
+| Turn-cap hits | 0 | 0 |
+| Median turns | 12 | 11 |
+| Forest writes a working file and is scored | 3 and 0 scored | 3 and **3 scored** |
+| Console errors across final snapshots | 1 per run (the 404) | 0 `aura-environments` 404s; 2 errors in one run (below) |
+
+The one run not counted: task 5 run 3 drew a flat near-white frame (mean 238.7, std 0.3) because its custom water shader failed with `CUSTOM_SHADER_COMPILE_FAILED: No precision specified for (float)`. The failure was loud, but the cause was an engine bug (below), fixed after this batch; that snapshot was not rescored. Typecheck dropped from 15 to 12 first-try; this is run-to-run variance, not tied to a change (turns and builds are unchanged).
+
+### 1. The game-loop black frames: root cause found and fixed (library)
+
+Bisected with six variants of the black run (r2 of i3) on the remote scorer. Only the variant with `resize: false` rendered. Cause: `createAuraApp` sizes the canvas to its parent's box. When the parent is an auto-height `<body>` or wrapper that also holds a HUD `<div>`, every resize grows the parent and so the canvas again, until the backing store passes GPU limits and the frame is black although draws are issued (frame mean 0, draws 133 to 243). Fix: `createParentFit` (`packages/engine/src/agent-api/app/parentFit.ts`) detects a write that moves the parent and keeps the mounted size on that axis; definite-size parents are followed as before. Direct proof: the exact black app, rescored against tarballs with the fix, went from mean 0 to mean 111 (std 61.9), 0 console errors. All three game-loop runs in evalfix2-r1 render. Tests: `tests/unit/parent-fit` (a content-driven parent no longer grows; a definite parent is still followed; an only-child wrapper is not frozen). Docs: black frame checklist in `docs/agents/troubleshooting.md`, sized-wrapper advice in `docs/agents/recipes.md`.
+
+### 2. The 404 on `/aura-environments/neutral.manifest.json`: fixed (library)
+
+The baked neutral environment is embedded in `@aura3d/rendering` (gzip + base64, lazily loaded chunk, 498 KB gzip, decoded with `DecompressionStream`). Bytes are identical to the baked files (sha256 checked). Frames are pixel-identical to the file-served look: with `/aura-environments/**` blocked, a published-style page made 0 environment requests and logged 0 problems; against clean main served from files, 0.00% of pixels differ (Ninja Runner run120 and Silt rings, 480x270, software GL). Zero `aura-environments` 404s in the 15 evalfix2 runs. Cost: the cube app's total JS grew from 3,266 KB to 3,914 KB raw (965 KB to 1,447 KB gzip) because the chunk is part of the build output; it loads asynchronously and the floor draws until it lands. This works against the bundle-size goal: follow-up is a smaller encoding (a lower-resolution level 0 changes mirror reflections, measured relative RMS 0.44 against the baked level 0, so it is not free) or a hashed asset file resolved by URL.
+
+### 3. Forest capture: fixed (harness)
+
+Task 2 is scored on a 320x180 canvas and a 2-frame plan (`HEAVY` in `tools/agent-eval/remote/score-all.mjs`). 3 of 3 forest snapshots completed (mean luma about 195).
+
+### New engine bug found by the rerun, fixed
+
+An author-written `precision highp float;` in a `material.custom` fragment disabled the engine's own default precision, and the engine prelude (`uniform float ...`) sits before the author's line, so the shader failed to compile with "No precision specified for (float)". The default is now always declared first (a later author declaration still governs their code). Test: `tests/unit/custom-shader-precision` (fails on the old code). Not re-run through the scorer.
+
+### Still open
+
+1. Task 5 (shader water) first-try checks: 1 of 2 probe items in most runs (not a black frame; the probe items are the harness's own heuristics).
+2. First-try typecheck 12 of 15 (down from 15 in i3; variance or doc wording, unexamined).
+3. The bundle growth from the embedded environment (see section 2).
+4. The unrelated tests that fail on clean main (`prd03-s18c-custom-passes`, `prd03-t0-16-statecache-invalidate` x2, `prd12-variants`): the two LDR-tail tests may be a regression from the frame-cost commit (`a816facf6`); not investigated here.
