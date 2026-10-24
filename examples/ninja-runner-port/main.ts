@@ -7,7 +7,7 @@
  * `autostart=1`, `autopilot=1` (the capture policy plays the run), `manual=1` (the sim only advances through
  * the hooks), `seed=N` (course seed, default 17), `quality=low`.
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_POLICY, policyActions, type PolicyParams } from "./autopilot";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy } from "./replay";
 import { GameAudio } from "./audio";
@@ -42,7 +42,6 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let actors: ActorAssets | undefined;
 let ready = false;
-let accumulator = 0;
 let renderTime = 0;
 let frames = 0;
 let simSteps = 0;
@@ -89,7 +88,6 @@ function showHud(on: boolean): void {
 function begin(): void {
   z = createState(config.seed);
   startRun(z);
-  accumulator = 0;
   simSteps = 0;
   countdown = 0;
   pendingEvents = [];
@@ -209,27 +207,24 @@ function render(dt: number): void {
   }
 }
 
-let lastTick = performance.now();
-function tick(now: number): void {
-  requestAnimationFrame(tick);
-  const dt = Math.min(0.1, Math.max(0.001, (now - lastTick) / 1000));
-  lastTick = now;
-  if (!ready) return;
-  renderTime += dt;
-  if (countdown > 0) {
-    countdown -= dt;
-    $("countdown").textContent = countdown <= 0.35 ? "GO" : String(Math.ceil((countdown - 0.35) / 0.62));
-    if (countdown <= 0) begin();
+/** The sim steps only while running; in other phases the loop still drains its clock so resuming never bursts. */
+const loop = createFixedStepLoop({
+  stepSeconds: SIM_STEP,
+  maxCatchUpSteps: 12,
+  isActive: () => ready,
+  step: () => { if (!config.manual && z.phase === "running") step(1); },
+  render: (dt) => {
+    renderTime += dt;
+    if (countdown > 0) {
+      countdown -= dt;
+      $("countdown").textContent = countdown <= 0.35 ? "GO" : String(Math.ceil((countdown - 0.35) / 0.62));
+      if (countdown <= 0) begin();
+    }
+    audio.update({ form: z.form, speed: z.speed, running: z.phase === "running" });
+    render(dt);
+    updateHud();
   }
-  audio.update({ form: z.form, speed: z.speed, running: z.phase === "running" });
-  if (!config.manual && z.phase === "running") {
-    accumulator += dt;
-    let guard = 0;
-    while (accumulator >= SIM_STEP && guard++ < 12) { step(1); accumulator -= SIM_STEP; }
-  }
-  render(dt);
-  updateHud();
-}
+});
 
 /* ------------------------------------------------------------------ input */
 
@@ -373,7 +368,12 @@ declare global {
     __AURA_NINJA_RUNNER_ERROR__?: string;
   }
 }
-window.__AURA_NINJA_RUNNER__ = api;
+const qa = installQaHooks("ninja-runner", {
+  ready: () => ready,
+  state: () => z,
+  app: () => app,
+  extras: api
+});
 window.__konoha = konoha;
 
 /* ------------------------------------------------------------------ boot */
@@ -411,11 +411,11 @@ function reportError(error: unknown): void {
   const code = (error as { code?: unknown })?.code;
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
-  if (!window.__AURA_NINJA_RUNNER_ERROR__) window.__AURA_NINJA_RUNNER_ERROR__ = message;
+  qa.reportError(message);
   $("loading-status").textContent = `The village could not load: ${message.slice(0, 300)}`;
   console.error(error);
 }
 
 addEventListener("resize", sizeCanvas);
-requestAnimationFrame(tick);
+loop.start();
 boot().catch(reportError);
