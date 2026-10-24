@@ -4,21 +4,21 @@
  * module (gate colours, power-ups, particles, camera shake, clouds, canvas textures), and the simulation in
  * `sim.ts` consumes this stream in exactly the same order.
  */
+import { createCountedRng, type QaCountedRng } from "@aura3d/engine";
+
 export class GameRng {
-  private a: number;
-  /** number of draws taken so far. */
-  count = 0;
+  private readonly stream: QaCountedRng;
 
   constructor(seed: number) {
-    this.a = seed >>> 0;
+    this.stream = createCountedRng(seed);
+  }
+
+  /** number of draws taken so far. */
+  get count(): number {
+    return this.stream.count;
   }
 
   next(): number {
-    this.count++;
-    this.a = (this.a + 0x6d2b79f5) >>> 0;
-    let t = this.a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    return this.stream.next();
   }
 }

@@ -1,12 +1,19 @@
 export class SeededRandom {
   private state: number;
+  private drawCount = 0;
 
   constructor(seed: number) {
     if (!Number.isInteger(seed)) throw new RangeError("Seed must be an integer.");
     this.state = seed >>> 0;
   }
 
+  /** Number of `nextUint32` draws taken from this stream (additive; does not affect the sequence). */
+  get draws(): number {
+    return this.drawCount;
+  }
+
   nextUint32(): number {
+    this.drawCount++;
     let x = this.state;
     x ^= x << 13;
     x ^= x >>> 17;
@@ -27,6 +34,7 @@ export class SeededRandom {
   clone(): SeededRandom {
     const random = new SeededRandom(0);
     random.state = this.state;
+    random.drawCount = this.drawCount;
     return random;
   }
 

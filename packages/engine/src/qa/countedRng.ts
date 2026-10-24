@@ -3,6 +3,8 @@ export interface QaCountedRng {
   readonly seed: number;
   /** Number of draws taken since the last `reset`. */
   readonly count: number;
+  /** Alias of `count`: draws taken since the last `reset`. */
+  readonly draws: number;
   /** Uniform float in [0, 1). */
   next(): number;
   /** Uniform float in [min, max). */
@@ -30,6 +32,9 @@ export function createCountedRng(seed = 1): QaCountedRng {
       return currentSeed;
     },
     get count() {
+      return count;
+    },
+    get draws() {
       return count;
     },
     next,

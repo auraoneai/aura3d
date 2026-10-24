@@ -5,6 +5,8 @@
  * one 60 m city tile (block centred, streets on the borders, so it repeats seamlessly); facades are 8 x 8 cell
  * tiles where one cell is a 3.2 m bay by a 3.1 m floor.
  */
+import { createCountedRng } from "@aura3d/engine";
+
 export type Ctx2D = Pick<
   CanvasRenderingContext2D,
   "fillRect" | "strokeRect" | "beginPath" | "moveTo" | "lineTo" | "closePath" | "fill" | "stroke" | "save" | "restore" | "translate" | "rotate" | "arc" | "ellipse" | "createLinearGradient" | "createRadialGradient" | "setLineDash"
@@ -20,14 +22,8 @@ export const FLOOR_M = 3.1;
 export const SHOP_H = 4.4;
 
 export function rng(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+  const rng = createCountedRng(seed);
+  return () => rng.next();
 }
 
 function shade(hex: string, k: number): string {

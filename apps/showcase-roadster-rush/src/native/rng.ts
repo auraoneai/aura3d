@@ -1,4 +1,5 @@
 /** Seedable mulberry32 generator. The simulation never touches `Math.random`, so a seed fully determines a run. */
+import { createCountedRng } from "@aura3d/engine";
 export interface Rng {
   readonly seed: number;
   next(): number;
@@ -9,14 +10,8 @@ export interface Rng {
 }
 
 export function createRng(seed = 42): Rng {
-  let state = seed >>> 0;
-  const next = (): number => {
-    state = (state + 1831565813) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+  const counted = createCountedRng(seed);
+  const next = (): number => counted.next();
   return {
     seed,
     next,

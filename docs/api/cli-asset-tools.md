@@ -36,3 +36,17 @@ aura3d meshy ledger status
 - A rate-limited (exit 6) or timed-out (exit 8) call settles as `unconfirmed` and keeps counting: the task usually finishes and is charged. Resume it with `meshy <resource> get <id>`, then `reconcile --rid <id> --status ok|failed`. Only a confirmed no-charge outcome (exit 3, 4 or 9, or a FAILED task) counts 0.
 - Every record needs a game tag; name raw downloads with that prefix so two games cannot reuse each other's `rocks.raw.glb`.
 - A lock directory next to the ledger serialises writers; a lock left by a dead process is taken over.
+
+## `aura3d evidence judge`
+
+Blind A/B **model** judge over two folders of matched frames (a vision model reached through Kiro Prism, not a human). Promoted from the per-game judge scripts in `tools/crayon-capture/`.
+
+```sh
+export PRISM_KEY_FILE=/path/to/prism-key.txt   # or PRISM_API_KEY; never printed or stored
+aura3d evidence judge --a ref-frames/ --b candidate-frames/ --trials 48 --seed 20261023 --out evidence/judge
+```
+
+- Frames match by file name (`.jpg`, `.jpeg`, `.png`). For each trial the reference is shown as image A or B in a seeded, balanced order.
+- Output `judge-results.json` holds the per-trial picks, the accuracy with a 95% Wilson interval, the exact binomial p-value against chance, the same-game rate, and (if `sharp` is installed) luma and colour JSD, palette distance and edge density per frame. More than 70% identification of the reference means the candidate is reported as distinguishable.
+- `--no-judge` computes the pixel metrics only (no network); `--subject "a browser 3D racing game"` tunes the prompt; `--model`, `--concurrency` and `PRISM_BASE_URL` are honoured.
+- Say "model judge" whenever you quote a result: it is not human perception evidence.
