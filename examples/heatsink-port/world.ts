@@ -130,8 +130,8 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   for (const t of strike.targets) {
     const heavy = t.kind === "heavy";
     const r = STRIKE.radius[t.kind];
-    b.add(primitives.sphere({ name: `target-${t.id}`, size: r * 1.3, material: material.custom(solidSpec(hexLinear(heavy ? "#7a1c1c" : "#c82828"), hexLinear("#ff5a3a"), 1.3)) }).runtime({ id: `target-${t.id}` }));
-    b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.45, 0.14, 0.14], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 1.8)) }).runtime({ id: `target-ring-${t.id}` }));
+    b.add(primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: material.custom(solidSpec(hexLinear(heavy ? "#7a1c1c" : "#c82828"), hexLinear("#ff5a3a"), 2.2)) }).runtime({ id: `target-${t.id}` }));
+    b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)) }).runtime({ id: `target-ring-${t.id}` }));
   }
 
   /* bolt tracers: a pooled strip of camera-facing quads, rebuilt every frame */
@@ -203,6 +203,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
   const fade = new Float32Array(points);
   const tint = new Float32Array(points * 3);
   const age = new Float32Array(points).fill(1);
+  const scale = new Float32Array(points).fill(1);
   const vel = new Float32Array(points * 3);
   let head = 0;
   let budget = 0;
@@ -223,6 +224,7 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
       vel[k * 3] = Math.cos(a) * Math.cos(e) * sp; vel[k * 3 + 1] = Math.sin(e) * sp; vel[k * 3 + 2] = Math.sin(a) * Math.cos(e) * sp;
       tint[k * 3] = r; tint[k * 3 + 1] = g; tint[k * 3 + 2] = bl;
       age[k] = 0;
+      scale[k] = 2.4;
     }
   }
 
@@ -401,13 +403,14 @@ function bindRuntime(app: AuraApp, track: Track, points: number): WorldRuntime {
         const t = p.abActive || p.burstT > 0 ? [1, 0.55, 0.15] : [0.25, 0.8, 1];
         tint[k * 3] = t[0]!; tint[k * 3 + 1] = t[1]!; tint[k * 3 + 2] = t[2]!;
         age[k] = 0;
+        scale[k] = 1;
       }
     }
     for (let k = 0; k < points; k++) {
       age[k]! += dt / 0.5;
       const alive = age[k]! < 1;
       pos[k * 3]! += vel[k * 3]! * dt; pos[k * 3 + 1]! += vel[k * 3 + 1]! * dt; pos[k * 3 + 2]! += vel[k * 3 + 2]! * dt;
-      size[k] = alive ? 7 * (1 - age[k]! * 0.5) : 0;
+      size[k] = alive ? 7 * scale[k]! * (1 - age[k]! * 0.5) : 0;
       fade[k] = alive ? (1 - age[k]!) * 0.8 : 0;
     }
     const ex = node("exhaust");
