@@ -4,7 +4,7 @@ import * as esbuild from "esbuild";
 
 /**
  * Real-game check of the draw-sampling black-frame guard (remote only: tools/remote-acr/run.sh, software WebGL2).
- * The deployed 4.1.1 bundles still contain the old guard, so the NEW guard is bundled here and injected before any page
+ * The deployed 4.1.2 bundles still contain the old guard, so the NEW guard is bundled here and injected before any page
  * script runs; it sets `__AURA3D_HEAL_INSTALLED__`, which makes the games' own (old) guard a no-op. Healthy games must not
  * navigate, and a variant that forces black output (colour writes masked on every draw) must reload exactly once.
  * Software WebGL2 draws these games at several seconds per frame, so the injected guard judges sooner than the production

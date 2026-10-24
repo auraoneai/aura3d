@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
- * Regression for the 4.1.1 misfire: the black-frame guard read a REAL WebGL canvas (no preserveDrawingBuffer) from tasks in
+ * Regression for the 4.1.2 misfire: the black-frame guard read a REAL WebGL canvas (no preserveDrawingBuffer) from tasks in
  * which nothing had been drawn and reloaded healthy games. Here the page has a real WebGL2 context, a HUD callback that never
  * draws and a game loop that does, in several draw patterns. Remote only (tools/remote-acr/run.sh); never local Playwright.
  */

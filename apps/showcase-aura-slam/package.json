@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-aura-slam",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "private": true,
   "type": "module",
   "description": "Native Aura3D build of Aura Slam 3D (examples/aura-slam): not routed live until the parity gates in docs/aura-slam/ARCHITECTURE.md pass.",
