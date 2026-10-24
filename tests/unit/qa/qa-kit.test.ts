@@ -323,4 +323,22 @@ describe("installQaHooks", () => {
     expect(target.__AURA_ERR__).toBeUndefined();
     expect(target.__AURA_ERR_ERROR__).toBeUndefined();
   });
+
+  it("keeps extras getters live instead of freezing them at install time", () => {
+    const target: Record<string, unknown> = {};
+    let ready = false;
+    const { hooks } = installQaHooks("live", {
+      target,
+      ready: () => false,
+      state: () => 1,
+      extras: {
+        get ready() {
+          return ready;
+        }
+      }
+    });
+    expect((hooks as unknown as { ready: boolean }).ready).toBe(false);
+    ready = true;
+    expect((target.__AURA_LIVE__ as { ready: boolean }).ready).toBe(true);
+  });
 });
