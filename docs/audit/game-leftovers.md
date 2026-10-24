@@ -16,6 +16,17 @@ Verified clean across all 26 games: no GLTFLoader or hand-rolled hash tables, no
 | 6 | Starter templates' HUD panels used Inter at weight 600 (not licensed, not loaded, and Semibold is for the page title only) | `templates/{mini-game,racing-starter,falling-blocks-starter,character-controller}/src/main.ts`, `index.html`, plus `public/fonts/graphik/` (Regular, Medium) | `500 13px Graphik`, `@font-face` in `index.html`, same pattern as `templates/game-slice` |
 | 7 | Same HUD text in the published templates | `packages/create-aura3d/templates/{mini-game,racing-starter,falling-blocks-starter,character-controller}` | Font name and weight changed to match; **font binaries not copied**: see follow-up F1 |
 
+## Port migration, group A (strange-orbit, splat-rush, saiyan-snake-way, where-the-wind-wanders)
+
+| Port | QA hook | Fixed step | Audio | Notes |
+|---|---|---|---|---|
+| Splat Rush | already `installQaHooks` | already `createFixedStepLoop` | already `createCueBank` | nothing left to migrate |
+| Strange Orbit | `installQaHooks` (all keys kept; `stepFrames` still returns the run status) | `createFixedStepLoop` (0.08 s clamp maps exactly) | not migrated | speed-driven hum, wind and boost beds updated every frame, a dynamics limiter, a decoded ambient file, and noise bursts up to 0.9 s that the 0.4 s shared buffer would cut short |
+| Serpentine Sky Run (saiyan-snake-way) | `installQaHooks` (`ready` stays a boolean getter; `reset` and `stepFrames` keep returning snapshots) | `createFixedStepLoop` (0.1 s clamp, no effective catch-up cap) | `createCueBank`; `sfx-kit.test.ts` replays the original synth and the kit against a fake context: identical automation for all 11 cue cases | parameter-level proof only, nobody listened; tones stop 10 ms later and noise loops the shared buffer instead of the old 1 s buffer; muting is smoothed instead of instant |
+| Where the Wind Wanders | `installQaHooks` for `ready`, `state`, `routeHealth`; `frame`, `pixels`, `stepFrames`, the live getters and the capture hooks stay as extras (they draw the canvas directly or return different shapes) | `createFixedStepLoop` at 16.7 ms | not migrated | every tone is stereo-panned, the beds are LFO-modulated noise through a compressor, the noise buffer and bird timers use `Math.random` |
+
+Kit additions that made this possible: `installQaHooks` preserves getter extras (they were frozen by an object spread), and `NoiseLayer` gained `attack` and `loop` (defaults keep the old behaviour). Live-loop caveat: the original loops and the kit loop agree to float rounding, but Wind accumulated milliseconds and the kit accumulates seconds, so a frame landing exactly on a step boundary can differ by one step; replays go through `advance`/manual stepping and are unaffected.
+
 ## Follow-ups (not fixed: behaviour-sensitive or needs a library addition)
 
 | # | Finding | Files | Size | Why not now |
