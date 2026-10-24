@@ -31,6 +31,23 @@ Use these labels in API docs and examples:
 - `docs/api/prompt-animation.md`: prompt-animation/AuraVoice contract artifacts, captions, visemes, render evidence.
 - `docs/api/editor-visual-scripting.md`: editor-runtime projects, timelines, visual graphs, deterministic side effects.
 
+## Topic pages added in 4.1
+
+Release overview: [`docs/whats-new-4.1.md`](../whats-new-4.1.md). Upgrading from 4.0: [`docs/migration/4.0-to-4.1.md`](../migration/4.0-to-4.1.md).
+
+| Page | Covers | Entry point |
+| --- | --- | --- |
+| [`game-kit.md`](game-kit.md) | Game shell: lifecycle, pause and results, HUD, touch, juice, game sound, sound-effect pack. The real `createGame` is the `./game` subpath. | `@aura3d/engine/game` |
+| [`qa-kit.md`](qa-kit.md) | `installQaHooks`, `createFixedStepLoop`, `readQaParams`, `createCountedRng` for deterministic QA and replay. | `@aura3d/engine` |
+| [`safety-net.md`](safety-net.md) | Opt-in quality URL switches, black-frame self-heal and the `?diag=1` GPU diagnostics panel. | `@aura3d/debug` |
+| [`audio-synth.md`](audio-synth.md) | Procedural cue bank, step sequencer, tone loop and recorded-take slices on the shared `AudioContextManager`. | `@aura3d/audio`, `@aura3d/engine/audio` |
+| [`model-loader.md`](model-loader.md) | `defineModelAssets` and `modelsEnabledFromUrl`: hashed same-origin models with a procedural fallback, plus `scene(init)` and `setUniform` behaviour. | `@aura3d/engine` |
+| [`glsl-chunks.md`](glsl-chunks.md) | `#include` chunks for `material.custom`: math, noise, sky, fog, triplanar, toon and colour-space helpers. | `material.custom` |
+| [`scatter-merge.md`](scatter-merge.md) | Seeded scatter planning (`scatterAlongPath`, `scatterInArea`) and static-mesh baking (`mergeStatic`). Implemented in the agent-api barrel; see the note in `whats-new-4.1.md` about the published root export. | `@aura3d/engine` (intended) |
+| [`ball-flight.md`](ball-flight.md) | Exact event-time ball flight for racket sports. | `game.racketSports().ballFlight` |
+| [`racket-athlete-rig.md`](racket-athlete-rig.md) | Procedural racket-sport athlete: locomotion solver and limb posing. | `game.racketSports().athleteRig` |
+| [`cli-asset-tools.md`](cli-asset-tools.md) | `assets optimize`, `assets merge-clips`, isolated `assets import-meshy`, `meshy ledger`. | `@aura3d/cli` |
+
 Canonical user commands:
 
 ```bash
