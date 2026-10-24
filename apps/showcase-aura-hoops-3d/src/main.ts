@@ -1199,6 +1199,8 @@ const keysHeld = new Set<string>();
 const keysPressed = new Set<string>();
 /* Foot-slide evidence (?diag=1): planted-foot world speed per athlete from the live bone sockets. */
 const footMeters = new Map<string, ReturnType<typeof createFootSlideMeter>>();
+/** The socket frame's height origin is the rig's, not the court's: the lowest foot height seen per athlete stands in for the floor. */
+const footFloor = new Map<string, number>();
 let footReports: Record<string, unknown> = {};
 function sampleFeet(a: AthleteState, root: AnyHandle): void {
   if (initialParams.get("diag") !== "1") return;
@@ -1214,7 +1216,10 @@ function sampleFeet(a: AthleteState, root: AnyHandle): void {
     const key = `${a.nodeId}:${bone}`;
     let meter = footMeters.get(key);
     if (!meter) { meter = createFootSlideMeter({ plantedHeight: 0.07, threshold: 0.15 }); footMeters.set(key, meter); }
-    meter.feed(game_.time, [a.x + lx * cy + lz * sy, 0.96 + a.y + ly, a.z - lx * sy + lz * cy], { bodySpeed: body });
+    const wy = ly + a.y;
+    const floor = Math.min(footFloor.get(a.nodeId) ?? wy, wy);
+    footFloor.set(a.nodeId, floor);
+    meter.feed(game_.time, [a.x + lx * cy + lz * sy, wy, a.z - lx * sy + lz * cy], { bodySpeed: body, groundHeight: floor });
   }
 }
 function footEvidence(): Record<string, unknown> {
