@@ -153,7 +153,7 @@ export function installQaHooks<S, I = Record<string, unknown>, X extends object 
     nodeCount: () => options.nodeCount?.() ?? 0
   };
 
-  const hooks = { ...standard, ...(options.extras ?? {}) } as unknown as QaHooks<S, I, X>;
+  const hooks = Object.defineProperties({ ...standard }, Object.getOwnPropertyDescriptors(options.extras ?? {})) as unknown as QaHooks<S, I, X>;
   target[globalName] = hooks;
 
   return {

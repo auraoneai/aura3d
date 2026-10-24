@@ -156,6 +156,19 @@ describe("createFixedStepLoop", () => {
     expect(capped.accumulator).toBe(0); // the remaining backlog is dropped, not replayed
   });
 
+  it("resetAccumulator drops the carried time and keeps the step counter", () => {
+    const loop = createFixedStepLoop({ step: vi.fn() });
+    loop.tick(0);
+    loop.tick(10);
+    expect(loop.accumulator).toBeGreaterThan(0);
+    loop.resetAccumulator();
+    expect(loop.accumulator).toBe(0);
+    loop.tick(20);
+    expect(loop.steps).toBe(0);
+    loop.tick(30);
+    expect(loop.steps).toBe(1);
+  });
+
   it("manual mode never advances on its own; advance(n) runs exactly n steps and renders once", () => {
     const step = vi.fn();
     const render = vi.fn();
@@ -256,6 +269,29 @@ describe("installQaHooks", () => {
     const target: Record<string, unknown> = {};
     const { hooks } = installQaHooks("clash", { target, ready: () => false, state: () => 1, extras: { state: () => 99 } });
     expect(hooks.state()).toBe(99);
+  });
+
+  it("keeps getter extras live and lets a getter replace a standard hook", () => {
+    const target: Record<string, unknown> = {};
+    let ready = false;
+    let frames = 0;
+    const { hooks } = installQaHooks("getters", {
+      target,
+      ready: () => ready,
+      state: () => 1,
+      extras: {
+        get ready() { return ready; },
+        get frames() { return frames; }
+      }
+    });
+    const api = hooks as unknown as { ready: boolean; frames: number };
+    expect(api.ready).toBe(false);
+    expect(api.frames).toBe(0);
+    ready = true;
+    frames = 7;
+    expect(api.ready).toBe(true);
+    expect(api.frames).toBe(7);
+    expect(hooks.state()).toBe(1);
   });
 
   it("throws a clear error for replay when the game did not provide one", () => {

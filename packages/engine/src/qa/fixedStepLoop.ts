@@ -37,6 +37,8 @@ export interface FixedStepLoop {
   tick(nowMs: number): number;
   /** Run exactly `count` steps now, ignoring the clock, then render once. Returns the step count. */
   advance(count: number, beforeStep?: (indexInBatch: number) => void): number;
+  /** Drop the carried time (a new run starts on a whole step); the step counter is kept. */
+  resetAccumulator(): void;
 }
 
 /**
@@ -101,6 +103,9 @@ export function createFixedStepLoop(options: FixedStepLoopOptions): FixedStepLoo
       }
       options.render?.(stepSeconds);
       return n;
+    },
+    resetAccumulator() {
+      accumulator = 0;
     },
     start() {
       if (running) return;
