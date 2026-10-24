@@ -38,10 +38,10 @@ for (const path of manifests) {
  for (const field of ['dependencies','devDependencies','peerDependencies','optionalDependencies']) for (const [name, constraint] of Object.entries(manifest[field]??{})) {
   if (!names.has(name) || constraint.startsWith('workspace:')) continue;
   // Preserve peer range semantics and optional-peer metadata. Rewrite only exact/current-major pins.
-  if (/^[~^]?[34]\.0\.\d+$/.test(constraint)) manifest[field][name]=constraint.replace(/[34]\.0\.\d+$/,version);
+  if (/^[~^]?\d+\.\d+\.\d+$/.test(constraint)) manifest[field][name]=constraint.replace(/\d+\.\d+\.\d+$/,version);
  }
  for(const [key,command] of Object.entries(manifest.scripts??{})) {
-  manifest.scripts[key]=command.replace(/(@aura3d\/[a-z0-9-]+)@[34]\.0\.\d+/g,(match,name)=>names.has(name)?`${name}@${version}`:match);
+  manifest.scripts[key]=command.replace(/(@aura3d\/[a-z0-9-]+)@\d+\.\d+\.\d+/g,(match,name)=>names.has(name)?`${name}@${version}`:match);
  }
  const updated=JSON.stringify(manifest,null,2)+'\n';
  if(updated!==original){changed.push(path); if(!check)writeFileSync(resolve(root,path),updated);}
