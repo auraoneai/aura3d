@@ -11,7 +11,7 @@
  */
 
 import {
-  createAuraApp, createGameAudio, game, looks, material
+  createAuraApp, createGameAudio, game, installQaHooks, looks, material
 } from "@aura3d/engine";
 import {
   createJuice, createOverlayDriver, createRumbleDriver, createTweenEngine,
@@ -146,6 +146,11 @@ function boot(): void {
   } as any);
 
   let hitStopUntil = 0;
+  // QA: freeze the sim at a chosen fraction of the next kick swing and look at the kicker (see installQaHooks below)
+  let qaFrozen = false;
+  let qaTargetFrac: number | null = null;
+  let qaKickerId: string | null = null;
+  let qaFocus = false;
   let userInteracted = false;
   const audio = createGameAudio({
     browserContext: false,
@@ -315,14 +320,21 @@ function boot(): void {
       cam.target = [b.x * 0.8, 0.9, -1 + clamp(b.z * 0.3, -4, 4)];
       cam.fov = 40;
     }
+    const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;
+    if (qaP) {
+      // kicking-side view: the right boot is on (-sin yaw, cos yaw); stand 4.2 m out on that side
+      cam.eye = [qaP.x - Math.sin(qaP.yaw) * 4.2, 1.35, qaP.z + Math.cos(qaP.yaw) * 4.2];
+      cam.target = [qaP.x, 0.95, qaP.z];
+      cam.fov = 36;
+    }
     (app as any).camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov });
   }
 
   /* -------------------------- kits -------------------------- */
   //
   // Team identity is FIXED per side (rig.ts TEAM_KITS): the GLB body carries a
-  // baked whole-mesh team colour and the shorts/socks kit blocks + turf rings
-  // are retinted per athlete here. Both teams are always strongly contrasted
+  // baked whole-mesh team colour; only the turf rings are retinted per athlete
+  // here. Both teams are always strongly contrasted
   // (hue + value) with distinct keeper kits, whatever the fixture names.
 
   function refreshKits(): void {
@@ -337,7 +349,7 @@ function boot(): void {
     }
   }
   modes.onKitsChanged = refreshKits;
-  refreshKits();   // kit blocks + rings carry team colours from the first frame
+  refreshKits();   // rings carry team colours from the first frame
 
   /* -------------------------- frame loop -------------------------- */
 
@@ -386,7 +398,7 @@ function boot(): void {
 
       input.update(dt);
       const now = performance.now() / 1000;
-      const frozen = hitStopUntil > now;
+      const frozen = hitStopUntil > now || qaFrozen;
 
       const keyMoveX = (heldKeys.has("KeyD") || heldKeys.has("ArrowRight") ? 1 : 0) - (heldKeys.has("KeyA") || heldKeys.has("ArrowLeft") ? 1 : 0);
       const keyMoveZ = (heldKeys.has("KeyS") || heldKeys.has("ArrowDown") ? 1 : 0) - (heldKeys.has("KeyW") || heldKeys.has("ArrowUp") ? 1 : 0);
@@ -415,6 +427,10 @@ function boot(): void {
       consumeEvents(events);
 
       const s = sim.state;
+      if (qaTargetFrac !== null && !qaFrozen) {
+        const kicker = (s.players as PlayerState[]).find((p) => p.kickT > 0.02 && p.kickDur > 0.05);
+        if (kicker && 1 - kicker.kickT / kicker.kickDur >= qaTargetFrac) { qaFrozen = true; qaTargetFrac = null; qaKickerId = kicker.id; }
+      }
       const ctx = appReady ? modes.frame(dt, inputFrame) : {};
 
       // venue retint when it changes
@@ -432,7 +448,7 @@ function boot(): void {
         const rig = rigs.get(p.id);
         if (!rig) continue;
         seen.add(p.id);
-        poseAthlete(rig, p, t, { ballX: s.ball.x, ballZ: s.ball.z, hasBall: s.ball.ownerId === p.id });
+        poseAthlete(rig, p, t);
       }
       for (const [id, rig] of rigs) {
         if (!seen.has(id)) {
@@ -600,7 +616,7 @@ function boot(): void {
             phase: s.phase
           }
         }) ?? null,
-        deterministic: { ik: "solveArmElbow", ballSim: "sim.ts", seed: "lcg:0xf0a7ba11" }
+        deterministic: { kickClips: "baked offline by tools/aura-fc/bake-kick.mjs; clip phase = swing progress from sim.ts", ballSim: "sim.ts", seed: "lcg:0xf0a7ba11" }
       };
       publishBeacon(evidence);
     };
@@ -609,6 +625,37 @@ function boot(): void {
 
   const frameFn = frame();
   app.onFrame((f) => frameFn(f));
+
+  installQaHooks("aura-fc-3d", {
+    ready: () => appReady,
+    app: () => app,
+    state: () => ({
+      phase: sim.state.phase,
+      clock: sim.state.clock,
+      score: [...sim.state.score],
+      kicks: sim.state.kicks,
+      frozen: qaFrozen,
+      kickerId: qaKickerId,
+      ball: { x: sim.state.ball.x, y: sim.state.ball.y, z: sim.state.ball.z, vx: sim.state.ball.vx, vy: sim.state.ball.vy, vz: sim.state.ball.vz, mode: sim.state.ball.mode, owner: sim.state.ball.ownerId },
+      players: (sim.state.players as PlayerState[]).map((p) => {
+        const rig = rigs.get(p.id);
+        return { id: p.id, x: p.x, z: p.z, yaw: p.yaw, speed: p.speed, kickT: p.kickT, kickDur: p.kickDur, kickPower: p.kickPower, stunT: p.stunT, slideT: p.slideT, pend: (p as unknown as { pendKick: unknown }).pendKick !== null, clip: rig?.activeClip, phase: rig?.activePhase };
+      })
+    }),
+    extras: {
+      /** Freeze the sim when the next kick swing reaches `frac` (0..1) of its length; optionally frame the kicker. */
+      freezeAtKick(frac: number, focus = true) { qaFrozen = false; qaTargetFrac = frac; qaKickerId = null; qaFocus = focus; },
+      /** Let the sim run again and return the camera to the broadcast framing. */
+      resume() { qaFrozen = false; qaTargetFrac = null; qaFocus = false; },
+      /** Freeze the sim now and frame the fastest-moving athlete (a run-cycle filmstrip). */
+      focusFastest() {
+        const fastest = (sim.state.players as PlayerState[]).reduce((a, b) => (b.speed > a.speed ? b : a));
+        qaKickerId = fastest.id; qaFocus = true; qaTargetFrac = null; qaFrozen = true;
+      },
+      /** Advance the (frozen) sim `n` fixed steps; the next rendered frame shows the result. */
+      step(n: number) { for (let i = 0; i < n; i++) consumeEvents(sim.step(1 / 60, inputFrame)); }
+    }
+  });
 
   /* -------------------------- toolbar -------------------------- */
 

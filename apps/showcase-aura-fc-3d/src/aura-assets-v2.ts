@@ -46,15 +46,15 @@ export const assets = defineAuraAssets({
   fcSoccerStrikerMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcSoccerStrikerClean.2e335ee3.glb",
-    hash: "sha256-2e335ee382a014f28004d6c12c15f0f18c0580d1e764cab0b770bb5a2deeef1c",
+    url: "/aura-assets/fcSoccerStrikerMeshyAthlete.1b318c94.glb",
+    hash: "sha256-1b318c94860cf6627741c9b2b094f4bc7db352aa38e550f2ce1ba2a5d3915988",
     bounds: [0.742, 1.891, 0.755]
   },
   fcGoalkeeperMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcGoalkeeperClean.4194514e.glb",
-    hash: "sha256-4194514e0bad612cb881c8b91ad0c824a7040a938ef600e9426af45d00c2eadc",
+    url: "/aura-assets/fcGoalkeeperMeshyAthlete.057b1a70.glb",
+    hash: "sha256-057b1a70faeffa45d39b6170cf500e21a5ed63083d6d33abb66935903b5097cd",
     bounds: [0.716, 1.899, 0.561]
   },
   fcSoccerGoalNetMeshy: {

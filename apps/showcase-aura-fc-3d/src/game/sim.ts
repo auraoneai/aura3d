@@ -46,6 +46,8 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const KICK_MIN_TAP = 0.24;        // compact tap swing duration (s)
 const KICK_RANGE_T = 0.14;        // + full-power backswing/follow-through
 const KICK_CONTACT_FRAC = 0.74;   // fraction of the swing when the boot meets the ball
+const KICK_PLANT_RATE = 34;       // 1/s: braking of the kicker during a swing
+const KICK_TURN_RATE = 30;        // 1/s: turn toward the kick direction during a swing
 const FOOT_AHEAD = 0.34;          // kicking-side foot, ahead of body centre (m)
 const FOOT_SIDE = 0.14;           // kicking-side foot, lateral offset to the right boot (m)
 const GRAVITY = 9.81;
@@ -854,6 +856,13 @@ export function createSim(): Sim {
     p.trapT = Math.max(0, p.trapT - dt);
     p.diveT = Math.max(0, p.diveT - dt);
 
+    // possession lost mid-swing (tackle, steal, keeper claim): the swing plays out as a whiff and must not fire
+    // later, when this player next gets the ball, along a stale direction. A stun cancels the swing outright.
+    if (p.pendKick && (state.ball.ownerId !== p.id || p.stunT > 0)) {
+      p.pendKick = null;
+      if (p.stunT > 0) p.kickT = 0;
+    }
+
     const stunned = p.stunT > 0;
     const sliding = p.slideT > 0;
     const celebrating = p.celebrateT > 0.2;
@@ -904,24 +913,32 @@ export function createSim(): Sim {
     // strike reads as a planted hit rather than a kick on the run
     const windup = p.pendKick !== null;
     const sprinting = c.sprint && p.stamina > 0.06;
-    const cap = (p.isKeeper ? GK_SPEED : sprinting ? SPRINT_SPEED : RUN_SPEED) * (windup ? 0.3 : 1);
+    const cap = p.isKeeper ? GK_SPEED : sprinting ? SPRINT_SPEED : RUN_SPEED;
     const mv = c.move;
     const ml = len2(mv[0], mv[1]);
     const dir: [number, number] = ml > 1 ? [mv[0] / ml, mv[1] / ml] : [mv[0], mv[1]];
     const skillBoost = p.skillT > 0 && p.skill === "stepover" ? 1.25 : 1;
     const accelRate = p.controlled && ml > 0.05 ? Math.max(ACCEL, 28) : ACCEL;
-    p.vx = lerp(p.vx, dir[0] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * accelRate));
-    p.vz = lerp(p.vz, dir[1] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * accelRate));
+    if (windup) {
+      // planted: the standing foot stays on the ground for the whole swing (the baked kick clips hold it still)
+      const k = Math.min(1, dt * KICK_PLANT_RATE);
+      p.vx = lerp(p.vx, 0, k);
+      p.vz = lerp(p.vz, 0, k);
+    } else {
+      p.vx = lerp(p.vx, dir[0] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * accelRate));
+      p.vz = lerp(p.vz, dir[1] * cap * Math.min(1, ml) * skillBoost, Math.min(1, dt * accelRate));
+    }
     p.x += p.vx * dt; p.z += p.vz * dt;
     p.x = clamp(p.x, -PITCH_HX - 0.6, PITCH_HX + 0.6);
     p.z = clamp(p.z, -PITCH_HZ - 0.4, PITCH_HZ + 0.4);
     p.speed = Math.hypot(p.vx, p.vz);
-    if (p.speed > 0.4) {
-      const want = Math.atan2(p.vz, p.vx);
+    if (windup || p.speed > 0.4) {
+      // a swing turns the kicker to face the kick so the boot drives the ball along its line
+      const want = windup ? Math.atan2(p.pendKick!.dir[1], p.pendKick!.dir[0]) : Math.atan2(p.vz, p.vx);
       let d = want - p.yaw;
       while (d > Math.PI) d -= Math.PI * 2;
       while (d < -Math.PI) d += Math.PI * 2;
-      p.yaw += d * Math.min(1, dt * 11);
+      p.yaw += d * Math.min(1, dt * (windup ? KICK_TURN_RATE : 11));
     }
     p.gait += p.speed * dt * 1.35;
 
@@ -957,7 +974,9 @@ export function createSim(): Sim {
     }
 
     // kicks (require the ball) — the command starts the swing; contact launches
-    if (mine && (b.mode === "dribble" || b.mode === "controlled") && !p.pendKick) {
+    // (only in live play: the ball launches in stepBallFlight, which does not run during a kickoff countdown, so a swing
+    // started there would finish on screen a second before the ball moved)
+    if (mine && (b.mode === "dribble" || b.mode === "controlled") && !p.pendKick && (state.phase === "live" || state.phase === "extratime")) {
       if (c.pass) {
         const aim: [number, number] = ml > 0.25 ? dir : [Math.cos(p.yaw), Math.sin(p.yaw)];
         const target = choosePassTarget(p, aim, c.pass === "driven");

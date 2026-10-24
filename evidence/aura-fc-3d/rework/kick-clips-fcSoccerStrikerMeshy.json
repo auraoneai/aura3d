@@ -1,0 +1,62 @@
+{
+  "input": "public/aura-assets/fcSoccerStrikerClean.2e335ee3.glb",
+  "output": "/tmp/rwfc/out/fcSoccerStrikerMeshy.clean.baked.glb",
+  "bytes": 2624896,
+  "sha256": "ac65ee1e626a3ba8f649c4abeb06f88e46071b4662ef45d0c07a64127f010c95",
+  "clips": {
+    "KickTap": {
+      "amp": 0.55,
+      "contactFrame": 27,
+      "contactTimeFrac": 0.75,
+      "ikMaxErrorM": 0.001765,
+      "clampedFrames": 1,
+      "contactTipToBallCenterM": 0.092,
+      "ballRadiusM": 0.179,
+      "contactTipSpeedModelUnitsPerSec": 4.144,
+      "peakTipSpeed": 4.144,
+      "contactSwingYawDeg": 6.14,
+      "contactSwingElevationDeg": 12.81,
+      "plantFootMaxDriftModelUnits": 0.007025,
+      "lowestAnkleY": 0.1499,
+      "kneeInteriorAtContactDeg": 94.5,
+      "backswingAnkleZ": -0.296,
+      "followThroughAnkleZ": 0.389
+    },
+    "KickPass": {
+      "amp": 0.8,
+      "contactFrame": 27,
+      "contactTimeFrac": 0.75,
+      "ikMaxErrorM": 0.001765,
+      "clampedFrames": 1,
+      "contactTipToBallCenterM": 0.0921,
+      "ballRadiusM": 0.179,
+      "contactTipSpeedModelUnitsPerSec": 4.097,
+      "peakTipSpeed": 4.097,
+      "contactSwingYawDeg": 6.21,
+      "contactSwingElevationDeg": 13.12,
+      "plantFootMaxDriftModelUnits": 0.007026,
+      "lowestAnkleY": 0.1499,
+      "kneeInteriorAtContactDeg": 94.7,
+      "backswingAnkleZ": -0.366,
+      "followThroughAnkleZ": 0.429
+    },
+    "KickShot": {
+      "amp": 1,
+      "contactFrame": 27,
+      "contactTimeFrac": 0.75,
+      "ikMaxErrorM": 0.001765,
+      "clampedFrames": 1,
+      "contactTipToBallCenterM": 0.0922,
+      "ballRadiusM": 0.179,
+      "contactTipSpeedModelUnitsPerSec": 4.059,
+      "peakTipSpeed": 4.456,
+      "contactSwingYawDeg": 6.28,
+      "contactSwingElevationDeg": 13.37,
+      "plantFootMaxDriftModelUnits": 0.007027,
+      "lowestAnkleY": 0.1499,
+      "kneeInteriorAtContactDeg": 94.9,
+      "backswingAnkleZ": -0.421,
+      "followThroughAnkleZ": 0.461
+    }
+  }
+}

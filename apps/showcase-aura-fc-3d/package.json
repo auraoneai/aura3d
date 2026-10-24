@@ -3,7 +3,7 @@
   "version": "4.1.2",
   "private": true,
   "type": "module",
-  "description": "Aura FC 3D — flagship 3D street-and-stadium soccer on Aura3D: 5v5 ball sim with possession FSM, 2-bone IK athletes, 6 pitches, Shootout Lab, Touch Lab, 32-team World Circuit, broadcast camera director, juice/VFX pipeline, and runtime evidence.",
+  "description": "Aura FC 3D — flagship 3D street-and-stadium soccer on Aura3D: 5v5 ball sim with possession FSM, skinned athletes with baked kick clips and distance-driven run cycles, 6 pitches, Shootout Lab, Touch Lab, 32-team World Circuit, broadcast camera director, juice/VFX pipeline, and runtime evidence.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",
