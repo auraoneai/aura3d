@@ -31,6 +31,7 @@
  * (target) side, trail (right) side toward -Z — a right-handed stance.
  */
 import { game, material, model, primitives } from "@aura3d/engine";
+import { attachToBone } from "@aura3d/engine/game";
 import { assets } from "../../../../src/aura-assets";
 import type { GolferFit, Vec3 } from "./types";
 import {
@@ -249,13 +250,18 @@ function calibrateClub(rig: GolferRig, root: RootFrame, groundDy: number): void 
     if (!handle) continue;
     // deterministic first placement (also the fallback when the flag is off)
     placeClubPart(handle, root, addr, part);
-    const dispose = (rig.hero as any)?.animation?.attach?.({
-      socket: "RightForearm",
-      target: part.id,
-      position: [...part.position] as [number, number, number],
-      rotation: [...part.rotation] as [number, number, number]
-    });
-    if (typeof dispose === "function") attachDisposers.push(dispose);
+    try {
+      const attachment = attachToBone((rig.hero as any).animation, {
+        bone: "RightForearm",
+        target: part.id,
+        position: [...part.position] as [number, number, number],
+        rotation: [...part.rotation] as [number, number, number]
+      });
+      attachDisposers.push(attachment.detach);
+    } catch (error) {
+      // the solved-pose placement above keeps the club glued; say why the bone attach is off
+      console.warn(`[aura-links] club bone attach unavailable, using the solved placement: ${(error as Error).message}`);
+    }
   }
   lastOffsets = offsets;
   calibGroundDy = groundDy;
