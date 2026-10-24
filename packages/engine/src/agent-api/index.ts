@@ -466,6 +466,9 @@ export {
   type AuraScatterSide
 } from "./nodes/scatter.js";
 export { mergeStatic, mergeStaticByKey, type AuraMergeStaticOptions, type AuraStaticPart } from "./nodes/mergeStatic.js";
+// QA and replay kit (docs/api/qa-kit.md): part of the published "." union.
+export { createCountedRng, createFixedStepLoop, fixedStepLoop, installQaHooks, qaErrorGlobalName, qaHookGlobalName, readQaParams } from "../qa/index.js";
+export type { FixedStepLoop, FixedStepLoopOptions, InstalledQaHooks, QaCountedRng, QaHookApp, QaHooks, QaHooksOptions, QaParamSchema, QaParamSpec, QaParamValues, QaPixels, QaStandardHooks } from "../qa/index.js";
 export { batched, batchedNodeHandler, registerBatchedDrawShader, batchedStateFor, batchedStateForNode, registerBatchedState, BatchedMeshState, AuraBatchedMeshHandle } from "./nodes/batched.js";
 export type { AuraBatchedGeometryInput, AuraBatchedMeshMode, AuraBatchedMeshOptions, AuraBatchedEmitReport } from "./nodes/batched.js";
 export { instancedMesh, AuraInstancedMeshHandle } from "./nodes/instancedMesh.js";
