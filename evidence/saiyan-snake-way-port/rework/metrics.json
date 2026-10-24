@@ -1,0 +1,87 @@
+{
+  "note": "software-free pure-maths measurement; speedCV is the coefficient of variation of per-frame speed (0 = perfectly even); accel is the RMS second difference in metres per frame squared; flips are run/idle clip switches per 10 s",
+  "before": {
+    "60Hz": {
+      "frames": 481,
+      "charSpeedCV": 0.08205,
+      "eyeSpeedCV": 0.08165,
+      "charAccelRms": 0.04424,
+      "eyeAccelRms": 0.0442,
+      "pelvisHeightAccelRms": 0.00986,
+      "runCyclePhaseRateCV": 0.0788,
+      "runIdleClipFlipsPer10s": 2.4948
+    },
+    "60Hz+-1.5ms jitter": {
+      "frames": 480,
+      "charSpeedCV": 0.25763,
+      "eyeSpeedCV": 0.25635,
+      "charAccelRms": 0.19943,
+      "eyeAccelRms": 0.19929,
+      "pelvisHeightAccelRms": 0.01187,
+      "runCyclePhaseRateCV": 0.24018,
+      "runIdleClipFlipsPer10s": 37.46858
+    },
+    "120Hz": {
+      "frames": 961,
+      "charSpeedCV": 1.00294,
+      "eyeSpeedCV": 0.9933,
+      "charAccelRms": 0.4799,
+      "eyeAccelRms": 0.47954,
+      "pelvisHeightAccelRms": 0.01547,
+      "runCyclePhaseRateCV": 0.87129,
+      "runIdleClipFlipsPer10s": 1196.2539
+    },
+    "144Hz": {
+      "frames": 1152,
+      "charSpeedCV": 1.18531,
+      "eyeSpeedCV": 1.17388,
+      "charAccelRms": 0.43875,
+      "eyeAccelRms": 0.43843,
+      "pelvisHeightAccelRms": 0.01429,
+      "runCyclePhaseRateCV": 1.03139,
+      "runIdleClipFlipsPer10s": 1200
+    }
+  },
+  "after": {
+    "60Hz": {
+      "frames": 481,
+      "charSpeedCV": 0.05424,
+      "eyeSpeedCV": 0.05403,
+      "charAccelRms": 0.00063,
+      "eyeAccelRms": 0.00063,
+      "pelvisHeightAccelRms": 0.00979,
+      "runCyclePhaseRateCV": 0.05451,
+      "runIdleClipFlipsPer10s": 0
+    },
+    "60Hz+-1.5ms jitter": {
+      "frames": 480,
+      "charSpeedCV": 0.05428,
+      "eyeSpeedCV": 0.05407,
+      "charAccelRms": 0.03494,
+      "eyeAccelRms": 0.03486,
+      "pelvisHeightAccelRms": 0.00991,
+      "runCyclePhaseRateCV": 0.05454,
+      "runIdleClipFlipsPer10s": 0
+    },
+    "120Hz": {
+      "frames": 961,
+      "charSpeedCV": 0.05439,
+      "eyeSpeedCV": 0.05418,
+      "charAccelRms": 0.00023,
+      "eyeAccelRms": 0.00043,
+      "pelvisHeightAccelRms": 0.0025,
+      "runCyclePhaseRateCV": 0.05456,
+      "runIdleClipFlipsPer10s": 0
+    },
+    "144Hz": {
+      "frames": 1152,
+      "charSpeedCV": 0.05431,
+      "eyeSpeedCV": 0.0541,
+      "charAccelRms": 0.00017,
+      "eyeAccelRms": 0.00037,
+      "pelvisHeightAccelRms": 0.00174,
+      "runCyclePhaseRateCV": 0.05446,
+      "runIdleClipFlipsPer10s": 0
+    }
+  }
+}
