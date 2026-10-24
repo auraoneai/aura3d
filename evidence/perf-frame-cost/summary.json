@@ -1,0 +1,92 @@
+[
+ {
+  "scene": "cube",
+  "before": {
+   "totalMs": 666,
+   "cpuMs": 5.1,
+   "tris": 13,
+   "draws": 2
+  },
+  "after": {
+   "totalMs": 50,
+   "cpuMs": 4.8,
+   "tris": 13,
+   "draws": 2
+  }
+ },
+ {
+  "scene": "forest-n250",
+  "before": {
+   "totalMs": 1750,
+   "cpuMs": 17.6,
+   "tris": 1024003,
+   "draws": 32
+  },
+  "after": {
+   "totalMs": 1107,
+   "cpuMs": 10.5,
+   "tris": 1024003,
+   "draws": 32
+  }
+ },
+ {
+  "scene": "forest-n1000",
+  "before": {
+   "totalMs": 4819,
+   "cpuMs": 36.5,
+   "tris": 4096003,
+   "draws": 95
+  },
+  "after": {
+   "totalMs": 1709,
+   "cpuMs": 12.6,
+   "tris": 1638403,
+   "draws": 95
+  }
+ },
+ {
+  "scene": "forest-n2500",
+  "before": {
+   "totalMs": 10234,
+   "cpuMs": 69.3,
+   "tris": 10240003,
+   "draws": 221
+  },
+  "after": {
+   "totalMs": 2894,
+   "cpuMs": 19.4,
+   "tris": 1792003,
+   "draws": 221
+  }
+ },
+ {
+  "scene": "forest-n5000",
+  "before": {
+   "totalMs": 19254,
+   "cpuMs": 122.2,
+   "tris": 20480003,
+   "draws": 431
+  },
+  "after": {
+   "totalMs": 5067,
+   "cpuMs": 24.8,
+   "tris": 3584003,
+   "draws": 431
+  }
+ },
+ {
+  "scene": "forest-n10000",
+  "before": {
+   "totalMs": 38387,
+   "cpuMs": 243.4,
+   "tris": 40960003,
+   "draws": 851
+  },
+  "after": {
+   "totalMs": 6432,
+   "cpuMs": 36.7,
+   "tris": 4608003,
+   "draws": 851
+  }
+ }
+]

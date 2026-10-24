@@ -1546,10 +1546,8 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteProgram(this.host.post.presentationProgram);
       this.host.post.presentationProgram = null;
     }
-    if (this.host.post.ldrPostprocessProgram) {
-      this.gl.deleteProgram(this.host.post.ldrPostprocessProgram);
-      this.host.post.ldrPostprocessProgram = null;
-    }
+    for (const ldrProgram of this.host.post.ldrPostprocessPrograms.values()) this.gl.deleteProgram(ldrProgram);
+    this.host.post.ldrPostprocessPrograms.clear();
     if (this.host.post.bloomBrightExtractProgram) {
       this.gl.deleteProgram(this.host.post.bloomBrightExtractProgram);
       this.host.post.bloomBrightExtractProgram = null;

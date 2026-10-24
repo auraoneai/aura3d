@@ -7,6 +7,7 @@
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
 
+import { instancedWorldBounds } from "../renderer/InstanceBounds";
 import { CascadedShadowMaps } from "../CascadedShadowMaps";
 import type { RenderItem } from "../contracts/renderItem";
 import type { Geometry } from "../Geometry";
@@ -125,6 +126,8 @@ function normalize(v: Vec3Tuple): Vec3Tuple { const l = Math.hypot(v[0], v[1], v
 function cross(a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
 function lerp3(a: Vec3Tuple, b: Vec3Tuple, t: number): Vec3Tuple { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
 
+const IDENTITY_MODEL: readonly number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
 /**
  * World AABB of a caster for the cascade fit. 02-S4: instanced casters cover
  * every instance (model × instance), and skinned casters use the posed
@@ -150,16 +153,21 @@ function itemWorldBounds(item: RenderItem): { min: Vec3Tuple; max: Vec3Tuple } |
     t[2]! * p[0]! + t[6]! * p[1]! + t[10]! * p[2]! + t[14]!
   ];
   const instances = item.instanceTransforms && item.instanceTransforms.length >= 16 ? item.instanceTransforms : null;
-  const instanceCount = instances ? Math.floor(instances.length / 16) : 1;
-  for (let k = 0; k < instanceCount; k += 1) {
-    for (const p of pts) {
-      // Instance matrices are model-local (gl_Position = VP · model · instance · p).
-      const local = instances ? apply(Array.prototype.slice.call(instances, k * 16, k * 16 + 16) as number[], p) : p;
-      const w: Vec3Tuple = m ? apply(m, local) : [local[0]!, local[1]!, local[2]!];
-      for (let i = 0; i < 3; i += 1) {
-        out.min[i] = Math.min(out.min[i]!, w[i]!);
-        out.max[i] = Math.max(out.max[i]!, w[i]!);
-      }
+  if (instances) {
+    // O(instances) per frame: allocation-free box accumulation (see InstanceBounds.ts); non-finite matrices skip the caster.
+    try {
+      const world = instancedWorldBounds(b, m ?? IDENTITY_MODEL, instances);
+      if (!world.min.every(Number.isFinite) || !world.max.every(Number.isFinite)) return null;
+      return { min: [world.min[0], world.min[1], world.min[2]], max: [world.max[0], world.max[1], world.max[2]] };
+    } catch {
+      return null;
+    }
+  }
+  for (const p of pts) {
+    const w: Vec3Tuple = m ? apply(m, p) : [p[0]!, p[1]!, p[2]!];
+    for (let i = 0; i < 3; i += 1) {
+      out.min[i] = Math.min(out.min[i]!, w[i]!);
+      out.max[i] = Math.max(out.max[i]!, w[i]!);
     }
   }
   if (!out.min.every(Number.isFinite) || !out.max.every(Number.isFinite)) return null;

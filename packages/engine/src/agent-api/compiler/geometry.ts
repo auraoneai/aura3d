@@ -217,6 +217,32 @@ export interface QrPrimitiveGeometryOptions {
   readonly primitiveSegments?: "half" | "full";
   /** Q-15-2 / #545: per-mount pool so identical primitives share one vertex + index upload. */
   readonly pool?: QrPrimitiveGeometryPool;
+  /** Scales the default segment counts of one node's primitive (see `instancedDefaultSegmentScale`); explicit `params` win. Default 1. */
+  readonly defaultSegmentScale?: number;
+}
+
+/** Triangles one instanced primitive node may submit per pass before its default tessellation is reduced. */
+export const INSTANCED_NODE_TRIANGLE_BUDGET = 262_144;
+/** Below this instance count a node keeps the single-object defaults whatever its triangle count. */
+const INSTANCED_FULL_DETAIL_MAX_INSTANCES = 64;
+const INSTANCED_MIN_SEGMENT_SCALE = 0.25;
+
+/**
+ * Default-tessellation scale for an instanced primitive node. A node that stamps hundreds of copies shows each copy at a
+ * handful of pixels, so the single-object defaults (sphere 64x32 = 3,968 triangles, cylinder 48, cone 32) multiply into
+ * millions of sub-pixel triangles per pass, and again per shadow cascade: a 10,000-instance forest drew 10.2 M triangles
+ * in the main pass alone. When `instanceCount x fullTrianglesPerInstance` exceeds `INSTANCED_NODE_TRIANGLE_BUDGET` the
+ * default segment counts halve (x0.5, then x0.25; never below x0.25, so a sphere keeps at least 16x8) until the budget
+ * fits or the floor is hit. Authored `params.*Segments` always win, and a node of up to 64 instances is never touched.
+ */
+export function instancedDefaultSegmentScale(instanceCount: number | undefined, fullTrianglesPerInstance: number): number {
+  if (instanceCount === undefined || instanceCount <= INSTANCED_FULL_DETAIL_MAX_INSTANCES || !(fullTrianglesPerInstance > 0)) return 1;
+  const demand = instanceCount * fullTrianglesPerInstance;
+  if (demand <= INSTANCED_NODE_TRIANGLE_BUDGET) return 1;
+  const raw = Math.sqrt(INSTANCED_NODE_TRIANGLE_BUDGET / demand);
+  let scale = 1;
+  while (scale > INSTANCED_MIN_SEGMENT_SCALE && scale > raw) scale /= 2;
+  return Math.max(INSTANCED_MIN_SEGMENT_SCALE, scale);
 }
 
 /**
@@ -284,10 +310,12 @@ export function qrPrimitiveGeometryKey(
   params?: AuraPrimitiveParams
 ): string {
   const segments = options.primitiveSegments ?? "full";
+  const scale = options.defaultSegmentScale ?? 1;
+  const segmentsKey = scale === 1 ? segments : `${segments}x${scale}`;
   const paramsKey = params === undefined ? "" : `|${stableParamsKey(params)}`;
   return primitive === "capsule"
-    ? `capsule|${segments}${paramsKey}|${size.map((v) => Math.abs(v)).join(",")}`
-    : `${primitive}|${segments}${paramsKey}`;
+    ? `capsule|${segmentsKey}${paramsKey}|${size.map((v) => Math.abs(v)).join(",")}`
+    : `${primitive}|${segmentsKey}${paramsKey}`;
 }
 
 /**
@@ -362,7 +390,7 @@ export function createQrPrimitiveMesh(
   const source = createPrimitiveGeometry(
     primitive,
     params as AuraParityPrimitiveParams | undefined,
-    { primitiveSegments: options.primitiveSegments ?? "full" },
+    { primitiveSegments: options.primitiveSegments ?? "full", defaultSegmentScale: options.defaultSegmentScale ?? 1 },
     fold ? dims : undefined
   );
   const vertexBuffer = source.vertexBuffer;

@@ -100,11 +100,18 @@ export function clearPrimitiveGeometryCache(): void {
 export function createPrimitiveGeometry(
   primitive: AuraPrimitiveKind,
   params: AuraParityPrimitiveParams | undefined,
-  tier: Pick<AuraQualityTierSettings, "primitiveSegments">,
+  tier: Pick<AuraQualityTierSettings, "primitiveSegments"> & {
+    /** Scales only the DEFAULT segment counts (explicit `params` are honoured as authored). Dense instanced nodes pass < 1. */
+    readonly defaultSegmentScale?: number;
+  },
   effectiveDimensions?: readonly [number, number, number]
 ): Geometry {
   const half = tier.primitiveSegments === "half";
-  const seg = (v: number | undefined, fb: number, min: number): number => (half ? halve(v, fb, min) : full(v, fb, min));
+  const defaultScale = tier.defaultSegmentScale ?? 1;
+  const seg = (v: number | undefined, fb: number, min: number): number => {
+    const requested = v ?? fb * defaultScale;
+    return half ? halve(requested, fb, min) : full(requested, fb, min);
+  };
 
   let key: string;
   let build: () => Geometry;

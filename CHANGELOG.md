@@ -6,6 +6,7 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 
 ## 4.1.3 (unreleased)
 
+- **Frame cost on software WebGL2: cube 666 -> 50 ms, 18,000-instance forest 38.4 s -> 6.4 s per frame.** Three engine causes found by profiling on the remote CPU runner: the legacy LDR postprocess uber-shader (one fullscreen draw ~600 ms, now compiled per feature variant, `LdrPostprocessShader.ts`); single-object tessellation on every instance of `instances.*` (a node whose instances x triangles exceed 262,144 now halves its default segments, never below 16x8 for a sphere; up to 64 instances and authored `params.*Segments` are untouched); and ~15 allocations per instance in the caster/cull bounds (`instancedWorldBounds`, 243 -> 37 ms JS at 18,000). Software WebGL2 only; open items and method in `evidence/perf-frame-cost/README.md`.
 - **`attachRootRenderSource`, `RootRenderSourceBridge` and `TypedGLBActor` are exported from the `@aura3d/engine` root.** Skinned-actor games no longer need the deprecated `@aura3d/engine/production-runtime` subpath; Saiyan Snake Way, Ninja Runner and `parity-animation` are migrated (`docs/api/skinned-actors.md`).
 
 ## 4.1.2 (2026-10-24)

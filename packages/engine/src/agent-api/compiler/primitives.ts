@@ -9,7 +9,8 @@ import { primitive } from "../nodes/primitives.js";
 import { createModelMatrix, primitiveSize, shouldNormalizeModelNode } from "../sceneMath.js";
 import { selectAuraRootLodLevel } from "../RootGeometry.js";
 import { evaluateDistancePrioritizedMipResidency, type TextureStreamingCandidate, type TextureStreamingResidency } from "@aura3d/assets/browser";
-import { PortableShaderMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
+import { createPrimitiveGeometry, PortableShaderMaterial, createDualProbeEnvironmentLightingResources, createProductionEnvironmentLightingResources, createProductionPbrHdrPipelineFromRadiance, type EnvironmentLightingOptions } from "@aura3d/rendering";
+import type { AuraParityPrimitiveParams } from "@aura3d/rendering";
 import { applyCustomUniformWrites, createCustomShaderMaterial, customUniformWritesFor, syncCustomTextureRefs } from "./customMaterial.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { AuraRuntimeError } from "./errors.js";
@@ -276,7 +277,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
 /**
@@ -468,8 +469,24 @@ export function qrPrimitiveMeshFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeome
 }
 
 /** Q-15-2: flag-on geometry + bounds, pooled per mount when `qr.pool` is set (#545). */
-export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
-  if (!qr?.core || node.geometry || node.primitive === "custom") return undefined;
+/** Dense instanced nodes shrink their default tessellation (see `instancedDefaultSegmentScale`); explicit segment params are unaffected. */
+function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions): QrPrimitiveGeometryOptions {
+  const count = node.instances?.length;
+  if (count === undefined || count <= 64 || node.primitive === "custom") return qr;
+  let fullTriangles = 0;
+  try {
+    const full = createPrimitiveGeometry(qrBuiltinPrimitive(node.primitive), node.params as AuraParityPrimitiveParams | undefined, { primitiveSegments: qr.primitiveSegments ?? "full" });
+    fullTriangles = (full.indexBuffer?.count ?? full.vertexBuffer.vertexCount) / 3;
+  } catch {
+    return qr;
+  }
+  const scale = instancedDefaultSegmentScale(count, fullTriangles);
+  return scale === 1 ? qr : { ...qr, defaultSegmentScale: scale };
+}
+
+export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
+  if (!mountQr?.core || node.geometry || node.primitive === "custom") return undefined;
+  const qr = withInstancedTessellation(node, mountQr);
   const size = primitiveSize(node);
   // L2: params carrying live curve/shape objects can't key a shared pool entry.
   if (!qr.pool || !qrPrimitiveParamsPoolable(node.params)) {

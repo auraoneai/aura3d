@@ -7,7 +7,8 @@ import type { MorphTargetDelta } from "../MorphTarget";
 import { RenderDeviceError } from "../RenderDevice";
 import { computeSkinnedMorphTargetWeightedBounds } from "../SkinningBounds";
 import type { RenderSource } from "../contracts/renderSource";
-import { Bounds3 as SceneBounds3, type Mat4, Scene, identityMat4, multiplyMat4 } from "@aura3d/scene";
+import { Bounds3 as SceneBounds3, type Mat4, Scene, identityMat4 } from "@aura3d/scene";
+import { instancedWorldBounds } from "./InstanceBounds";
 
 export function isIterable(value: unknown): value is Iterable<RenderItem> {
   return typeof (value as Iterable<RenderItem>)[Symbol.iterator] === "function";
@@ -46,12 +47,7 @@ export function renderableWorldBounds(
     return local.transform(modelMatrix);
   }
 
-  let bounds = new SceneBounds3();
-  for (let offset = 0; offset < instanceTransforms.length; offset += 16) {
-    const instanceMatrix = toMat4(instanceTransforms.slice(offset, offset + 16), "instanceTransforms");
-    bounds = bounds.union(local.transform(multiplyMat4(modelMatrix, instanceMatrix)));
-  }
-  return bounds;
+  return instancedWorldBounds(envelope, modelMatrix, instanceTransforms, { rejectPartial: true });
 }
 
 export function collectItemBounds(items: readonly RenderItem[], respectAutoFrameExclusion: boolean): SceneBounds3 | undefined {

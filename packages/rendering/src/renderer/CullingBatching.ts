@@ -8,6 +8,7 @@ import type { RenderCollectionDiagnostics } from "../Renderer";
 import { type StaticBatchInput, batchStaticRenderItems } from "../SceneOptimization";
 import type { RenderSource } from "../contracts/renderSource";
 import { toMat4 } from "./RenderShared";
+import { instancedWorldBounds } from "./InstanceBounds";
 import { skinnedItemLocalBounds } from "./SkinnedBounds";
 import { planBatches, type BatchPlan, type PlanBatchesOptions, type InstancedBatch } from "../batching/StaticMergePlanner";
 import { buildMultiDrawBatch, refreshMultiDrawBatch, synthesizeMultiDrawItems, type MultiDrawBatch } from "../batching/MultiDrawBatch";
@@ -16,7 +17,7 @@ import { MaterialInstance } from "../MaterialInstance";
 import { rendererQrFlags } from "./FrameGraph";
 import { Frustum } from "@aura3d/math";
 import { cull, packFrustumPlanes } from "../performance/FrustumCuller";
-import { Bounds3 as SceneBounds3, Camera, type Mat4, identityMat4, multiplyMat4, toMathMat4 } from "@aura3d/scene";
+import { Bounds3 as SceneBounds3, Camera, type Mat4, identityMat4, toMathMat4 } from "@aura3d/scene";
 
 export function explicitCullingFrustum(
   source: RenderSource,
@@ -143,12 +144,7 @@ function boundsFromLocal(
   if (!instanceTransforms || instanceTransforms.length < 16) {
     return local.transform(modelMatrix);
   }
-  let bounds = new SceneBounds3();
-  for (let offset = 0; offset + 16 <= instanceTransforms.length; offset += 16) {
-    const instanceMatrix = toMat4(instanceTransforms.slice(offset, offset + 16), "instanceTransforms");
-    bounds = bounds.union(local.transform(multiplyMat4(modelMatrix, instanceMatrix)));
-  }
-  return bounds;
+  return instancedWorldBounds(envelope, modelMatrix, instanceTransforms);
 }
 
 export function applyRendererOwnedStaticMeshConsolidation(source: RenderSource, items: readonly RenderItem[]): readonly RenderItem[] {
