@@ -21,7 +21,11 @@ viewer.
 
 1. Run `meshy --version` and require the repository pin `0.2.0`.
 2. Read `meshy --help`, `meshy resources`, and `meshy <resource> create --help`
-   for every resource you will call.
+   for every resource you will call. Flags live in the installed help
+   (`meshy text-to-3d create --pose-mode a-pose|t-pose`, `--texture-resolution 2k`,
+   `remesh create --target-polycount`, `rigging create --height-meters`,
+   `animate create --rig-task-id --action-id`). `-o <dir>` is global and
+   downloads artifacts.
 3. Run `npx @aura3d/cli@latest --help` and confirm `assets import-meshy` and
    its `--profile prop|environment|vehicle|humanoid` values.
 4. Confirm the catalog was tried first (`aura3d-assets`) and its rejection
@@ -39,11 +43,12 @@ Start from the closest existing mesh and pick the smallest operation:
 | Look is right, triangle count or topology fails the profile | `meshy remesh create --target-polycount N` |
 | Textured humanoid, static, needs a skeleton | `meshy rigging create --height-meters M` |
 | Rig succeeded, a named action is missing | `meshy animate create --rig-task-id <id> --action-id N` |
-| Nothing usable exists | `meshy make "<prompt>"` or `meshy make ./ref.png` |
+| Nothing usable exists | `meshy make "<text prompt>"` (text prompts only; see Safety) |
 | Only format or real-world size is wrong | `meshy convert` or `meshy resize` |
 
 Reject instead of generating when the subject is a named real product,
-brand, or person whose rights you cannot evidence; when rights evidence for
+brand, character or person, or a request to reproduce another game's or
+product's art from its screenshots or frames; when rights evidence for
 the output cannot be recorded; when the user has not approved a maximum; or
 when a catalog candidate already passes the rubric.
 
@@ -51,7 +56,13 @@ when a catalog candidate already passes the rubric.
 
 1. Plan: `meshy make "<prompt>" --dry-run` and show the steps and estimate.
    For single resources, read the create help and state the planned inputs.
-2. Get explicit approval for the maximum, then pass `--max-credits <approved>`.
+2. Get an approved maximum, then pass `--max-credits <approved>` and reserve
+   every paid call in the ledger first:
+   `rid=$(aura3d meshy ledger reserve --game <tag> --op preview --cap <per-game> --global-cap <total>)`,
+   then `aura3d meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>`.
+   Credits per operation: preview 20, refine 10 (`make` = 30), remesh 5,
+   rigging 5, animate 3, retexture 10. A rate-limited or timed-out call keeps
+   counting until `ledger reconcile`.
 3. Run, preferring `--async` when other work can proceed. Persist task IDs
    and provider resume hints in ignored local state. Resume a completed
    preview; never recreate paid work that succeeded.
@@ -91,8 +102,9 @@ when a catalog candidate already passes the rubric.
      --profile prop --role prop --thumbnail artifacts/meshy/arena-relic/thumbnail.png
    ```
 
-   Use `--into <game-assets> --prefix <game> --name <role>` for isolated import
-   (default in the monorepo; no shared root manifests are written). Merge each
+   In the Aura3D monorepo use `--into <game-assets> --prefix <game> --name <role>`
+   (isolated import, the default there; shared root manifests are never written,
+   so never run plain `import-meshy`, `validate` or `typegen` from the repo root). Merge each
    `animate` clip into one rig with `assets merge-clips`, and reserve every paid
    call with `meshy ledger`: see [asset-tooling](references/asset-tooling.md).
    Use `--file` when the run has several GLBs. Import defaults to
@@ -121,11 +133,17 @@ when a catalog candidate already passes the rubric.
 
 ## Safety
 
-- Keep credentials out of arguments, prompts, logs, commits, and output. Use
-  OAuth locally (`meshy auth login`) or runtime `MESHY_API_KEY` injection in
-  authorized CI. Never use `auth login --with-key` with a pasted key.
-- Send Meshy only intentional prompts and selected media, never repository
-  source or unrelated user data.
+- Keep credentials out of arguments, prompts, logs, commits, and output.
+  The key comes from the runtime environment only: `MESHY_API_KEY`, plus
+  `MESHY_BASE_URL_V1/V2` pointing at Kiro Prism for AuraOne agents. Never run
+  `meshy auth login`, `auth login --with-key`, or any login, refresh or
+  rotation script, never pass `--api-key`, and never call `api.meshy.ai`
+  directly in a run that is meant to go through Prism.
+- Text prompts only, written in your own words as a generic description.
+  Never image-to-3D from screenshots or frames of another game, product or
+  character, and never name a third-party character, brand or title.
+- Send Meshy only intentional prompts, never repository source or unrelated
+  user data.
 - Propagate Meshy exit codes (3 auth, 4 validation, 6 rate limit, 8 timeout,
   9 credits exhausted). Prism or agent-capacity failures are separate issues.
 
@@ -144,6 +162,7 @@ when a catalog candidate already passes the rubric.
 ## References
 
 - [Boundaries](../aura3d-core/references/boundaries.md)
+- [Asset workflow (canonical, end to end)](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md)
 - [Aura3D Meshy pipeline](https://github.com/auraoneai/aura3d/blob/main/docs/meshy-cli.md)
 - [Admission budgets source](https://github.com/auraoneai/aura3d/blob/main/packages/aura3d-cli/src/meshy/admission.ts)
 - [Meshy CLI](https://github.com/meshy-dev/meshy-cli)

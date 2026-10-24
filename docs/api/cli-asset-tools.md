@@ -2,7 +2,7 @@
 
 Capability label: CLI asset pipeline (local files only; nothing here calls Meshy or handles a credential).
 
-Four additions to `@aura3d/cli` came out of porting eleven games with generated 3D assets. Each replaces a script the games had copied by hand.
+Five additions to `@aura3d/cli` came out of porting eleven games with generated 3D assets. Each replaces a script the games had copied by hand. The step-by-step workflow that uses them (catalog, Meshy, optimise, isolated admission, rig and clips, production rules) is `docs/agents/asset-workflow.md`.
 
 | Command | What it does |
 | --- | --- |
@@ -10,6 +10,7 @@ Four additions to `@aura3d/cli` came out of porting eleven games with generated 
 | `aura3d assets merge-clips --base rig --out file.glb name=clip ...` | Merge Meshy `animate` clips into one rigged GLB by node name; rejects a foreign skeleton. |
 | `aura3d assets import-meshy <dir> --into <assets-dir> --prefix <game> --name <role>` | Isolated admission: a temporary project, then only the hashed GLB and evidence are copied into the game's folder. |
 | `aura3d meshy ledger status\|reserve\|settle\|reconcile\|list` | Credit ledger with per-game and global caps under a lock. |
+| `aura3d evidence judge --a dir --b dir` | Blind A/B model judge over matched frames (section below). |
 
 ## `assets optimize --file`
 

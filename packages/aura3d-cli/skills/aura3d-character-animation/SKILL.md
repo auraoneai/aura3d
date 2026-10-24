@@ -23,6 +23,11 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
    `assets validate-animation`, and `assets assemble-character` flags it prints.
 2. Read `src/aura-assets.ts` and `aura.assets.json`. The character must be a
    typed key with role `character`. No key: load `aura3d-assets` first.
+   Need a new humanoid? Generate it from a text prompt (a-pose or t-pose
+   preview, remesh to about 10,000 triangles, rig, animate, `assets
+   merge-clips`) as laid out in section 5 of the
+   [asset workflow](https://github.com/auraoneai/aura3d/blob/main/docs/agents/asset-workflow.md);
+   rigging adds walk and run, each extra `animate` task is one action.
 3. Inspect the rig and record the real names:
 
    ```bash
@@ -103,8 +108,9 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
    map; do not claim arbitrary-rig retargeting or full-body IK.
 8. Normal mode: `npm run build` locally. Browser proof (deterministic capture
    times inside the clip's keyframe range, stable camera, character-region
-   pixel delta, backend and fallback named) runs remotely via the template
-   `npm run test` or CI. Hand results to `aura3d-evidence-review`.
+   pixel delta, backend and fallback named) runs on a remote runner
+   (`tools/remote-acr/run.sh` in the monorepo, or the template's `npm run test`
+   on a remote worker), never local Playwright. Hand results to `aura3d-evidence-review`.
 
 ## Stop and report
 
