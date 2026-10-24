@@ -5,7 +5,7 @@
  * Query parameters (all optional): `level=0..2`, `autostart=1`, `autopilot=1`, `manual=1` (the sim only advances
  * through `__AURA_ROADSTER_HOURS__.stepSteps/replay`).
  */
-import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp } from "@aura3d/engine";
+import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
 import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound } from "./audio";
 import { LEVELS } from "./data";
@@ -47,7 +47,6 @@ let ready = false;
 let screen: "home" | "play" | "results" = "home";
 let paused = false;
 let autopilotOn = config.autopilot;
-let accumulator = 0;
 let frames = 0;
 let simSteps = 0;
 
@@ -93,7 +92,6 @@ function begin(): void {
   sound.reset();
   screen = "play";
   paused = false;
-  accumulator = 0;
   panels();
 }
 
@@ -178,21 +176,18 @@ function updateHud(): void {
 
 /* ------------------------------------------------------------------ frame loop */
 
-let lastTime = performance.now();
-function frame(now: number): void {
-  const dt = Math.min(0.05, Math.max(0, (now - lastTime) / 1000));
-  lastTime = now;
-  if (ready && !config.manual && screen === "play") {
-    accumulator += dt;
-    while (accumulator >= SIM_STEP) {
-      accumulator -= SIM_STEP;
-      stepOnce(autopilotOn && run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : keyboardInput());
-      if (screen !== "play") break;
-    }
-  }
-  render(dt, now / 1000);
-  requestAnimationFrame(frame);
-}
+/** Steps only on the play screen and never in manual mode; frames always render. The loop drains its clock otherwise. */
+const loop = createFixedStepLoop({
+  stepSeconds: SIM_STEP,
+  maxFrameSeconds: 0.05,
+  maxCatchUpSteps: 8,
+  isActive: () => ready,
+  step: () => {
+    if (config.manual || screen !== "play") return;
+    stepOnce(autopilotOn && run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : keyboardInput());
+  },
+  render: (dt) => render(dt, performance.now() / 1000)
+});
 
 function render(dt: number, time: number): void {
   if (!ready || !app || !runtime) return;
@@ -315,7 +310,12 @@ const hooks = {
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-01", "SG-02", "SH-02", "SG-03", "SG-05"] }) : null)
 };
 declare global { interface Window { __AURA_ROADSTER_HOURS__?: typeof hooks; __AURA_ROADSTER_HOURS_ERROR__?: string; skybreak?: { snapshot: typeof snapshot } } }
-window.__AURA_ROADSTER_HOURS__ = hooks;
+const qa = installQaHooks("roadster-hours", {
+  ready: () => ready,
+  state: () => run,
+  app: () => app,
+  extras: hooks
+});
 window.skybreak = { snapshot };
 
 /* ------------------------------------------------------------------ boot */
@@ -357,11 +357,11 @@ $("mute").addEventListener("click", toggleMute);
 $("next").addEventListener("click", () => { location.search = `?level=${Math.min(LEVELS.length - 1, levelIndex + 1)}&autostart=1`; });
 canvas.addEventListener("pointerdown", () => { void sound.unlock(); });
 addEventListener("resize", sizeCanvas);
-requestAnimationFrame(frame);
+loop.start();
 
 boot().catch((error: unknown) => {
   const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-  window.__AURA_ROADSTER_HOURS_ERROR__ ??= message;
+  qa.reportError(message);
   $("loading-status").textContent = `The route could not load: ${message.slice(0, 300)}`;
   console.error(error);
 });
