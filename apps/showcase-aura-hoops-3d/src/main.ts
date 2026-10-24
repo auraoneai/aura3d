@@ -42,12 +42,14 @@ import {
   createFxParticlePass,
   mountTouchControls,
   installGameBeacon,
-  createFootSlideMeter
+  createFootSlideMeter,
+  createHitStop
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 import { createFrameErrorBoundary } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
+import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
 import { BALL_R, DRIB_CYCLE_RUN, DRIB_CYCLE_STAND, DRIB_SHOULDER_FALLBACK, dribbleBallXZ, dribbleCycleY } from "./dribble";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
@@ -156,6 +158,19 @@ const BOARD_Z = -0.35;
 const BOARD_HALF_W = 0.9;
 const BOARD_Y0 = 2.82;
 const BOARD_Y1 = 3.9;
+const shotStats = { released: 0, made: 0, rimImpacts: 0, boardImpacts: 0, rimRolls: 0, swishes: 0, bankShots: 0 };
+const hoopWorld = createHoopWorld({ rim: RIM, boardFaceZ: BOARD_Z + 0.06, boardHalfW: BOARD_HALF_W, boardY0: BOARD_Y0, boardY1: BOARD_Y1 }, (impact) => {
+  if (impact.tag === "rim") {
+    shotStats.rimImpacts += 1;
+    ball.hitRim = true;
+    juiceFire("rim", { position: impact.point });
+    rimShake = Math.min(1, impact.speed / 6);
+  } else if (impact.tag === "board") {
+    shotStats.boardImpacts += 1;
+    ball.hitBoard = true;
+    juiceFire("bank", { position: impact.point });
+  }
+});
 const ARC_R = 6.75; // street "two" line
 const CHECK_SPOT: Vec3 = [0, 0, 8.6];
 const COURT_X = 7.6;
@@ -909,6 +924,8 @@ function armIK(
 // The GLB's Idle/Ready clips carry no arm keys, so stationary athletes hold the
 // A-pose bind with stiff straight arms. This full-body stance is the crouch
 // frame from Crouch_Idle_Loop; procedural arm IK is layered on top each frame.
+/** Idle hand target below the shoulder: 0.53 m of a 0.555 m arm hangs it nearly straight (0.46 bent the elbow about 15 cm and, flared out, bowed both arms). */
+const IDLE_HAND_DROP = 0.53;
 const stanceLegs = () => ({
   Hips: { position: { x: 0, y: 0.882, z: 0 } },
   Spine: { rotation: qX(0.105) },
@@ -1047,7 +1064,8 @@ let fxCtl: ReturnType<typeof game.effects> | null = null;
 let touchControls: any = null;
 let reducedMotion = false;
 let reducedFlash = false;
-let hitStopUntil = 0;
+// Real-time hit-stop: it must count down on the frame clock, not on game time (game time stands still while frozen).
+const hitStop = createHitStop(0);
 let jamFlashT = 0;
 
 const JUICE_EVENTS: Record<string, { fx?: { kind: any; count?: number; color?: string; speed?: number }; cue?: string; shake?: number; punch?: { fovDeg?: number; dolly?: number; ms?: number }; hitStop?: number; flash?: { color: string; peak: number; ms: number }; rumble?: { ms: number; strong?: number; weak?: number } }> = {
@@ -1140,7 +1158,7 @@ function setupSystems(): void {
     session: {
       reducedMotion,
       reducedFlash,
-      hitStop: (seconds: number) => { hitStopUntil = game_.time + seconds; },
+      hitStop: (seconds: number) => { hitStop.trigger(seconds * 1000); },
       slowMo: () => { /* sessionless route */ }
     } as any,
     fx,
@@ -1501,16 +1519,6 @@ function closeMeter(): void {
   if (shotMeter) shotMeter.classList.remove("show");
 }
 
-/** Solve a launch velocity that arcs from `from` to `target` with a readable apex. */
-function solveLaunch(from: Vec3, target: Vec3, arcBoost = 0.9): Vec3 {
-  const apex = Math.max(target[1] + 0.55, Math.max(from[1], target[1]) + arcBoost + dist2d(from[0], from[2], target[0], target[2]) * 0.16);
-  const vy = Math.sqrt(Math.max(0.1, -2 * GRAVITY * (apex - from[1])));
-  const tUp = vy / -GRAVITY;
-  const tDown = Math.sqrt(Math.max(0.01, (2 * (apex - target[1])) / -GRAVITY));
-  const t = Math.max(0.4, tUp + tDown);
-  return [(target[0] - from[0]) / t, vy, (target[2] - from[2]) / t];
-}
-
 function releaseShot(a: AthleteState, quality: number): void {
   // quality ∈ [0,1] timing accuracy → aim error mapping
   a.yaw = angTo(a.x, a.z, RIM[0], RIM[2]);
@@ -1519,21 +1527,16 @@ function releaseShot(a: AthleteState, quality: number): void {
   const isTwo = d > ARC_R;
   const perfect = quality > 0.985;
   const inGreen = quality > 0.9;
-  // make probability shaped by distance + contest + difficulty
+  // Aim error from the release read, distance, defender and skill; the rim and glass colliders decide make or miss.
   const def = nearestDefender(a);
   const defD = def ? dist2d(a.x, a.z, def.x, def.z) : 99;
   const contest = defD < 1.6 ? -0.28 : defD < 2.6 ? -0.1 : 0;
-  const distP = d < 3 ? 0.86 : d < 4.6 ? 0.78 : d < ARC_R ? 0.68 : 0.56;
-  const makeP = clamp(distP + contest + (a.controlled ? 0.06 : DIFFS[game_.diff].make) + quality * 0.3 - 0.28, 0.04, 0.99);
-  const made = perfect || (inGreen && rng() < makeP) || (!inGreen && rng() < makeP * 0.4);
+  const skill = a.controlled ? 0.06 : DIFFS[game_.diff].make;
+  const err = aimError(quality, d, contest, skill, rng);
+  const target: Vec3 = [RIM[0] + err.dx, RIM[1], RIM[2] + err.dz];
+  shotStats.released += 1;
 
-  const err = (1 - quality) * (d * 0.28) * (made ? 0.25 : 1);
-  const errA = rng() * Math.PI * 2;
-  const target: Vec3 = made
-    ? [RIM[0] + (rng() - 0.5) * 0.06, RIM[1], RIM[2] + (rng() - 0.5) * 0.06]
-    : [RIM[0] + Math.cos(errA) * (RIM_R + 0.04 + rng() * err), RIM[1] + (rng() - 0.5) * 0.3, RIM[2] + Math.sin(errA) * (RIM_R + 0.04 + rng() * err)];
-
-  const v = solveLaunch(from, target);
+  const v = solveLaunch(from, target, GRAVITY);
   Object.assign(ball, {
     state: "flight" as BallState, x: from[0], y: from[1], z: from[2],
     vx: v[0], vy: v[1], vz: v[2], holder: -1, flightT: 0,
@@ -1550,7 +1553,7 @@ function releaseShot(a: AthleteState, quality: number): void {
   pushEvent("shot", perfect ? "release — PERFECT" : inGreen ? "release — green" : `release — ${(quality * 100) | 0}%`, perfect || inGreen ? "success" : "info");
 
   // Contest: a jumping defender within range may swat on release
-  if (def && def.jumpT > 0 && defD < 1.9 && !made) {
+  if (def && def.jumpT > 0 && defD < 1.9 && !inGreen) {
     const blockP = (def.team === "away" ? 0.42 * DIFFS[game_.diff].contest : 0.5);
     if (rng() < blockP) {
       ball.vx = (ball.x - def.x) * 2.2 + (rng() - 0.5) * 3;
@@ -1637,10 +1640,7 @@ function stepBallSim(dt: number): void {
   if (ball.state === "flight" || ball.state === "loose" || ball.state === "pass") {
     const prev: Vec3 = [ball.x, ball.y, ball.z];
     ball.flightT += dt;
-    ball.vy += GRAVITY * dt;
-    ball.x += ball.vx * dt;
-    ball.y += ball.vy * dt;
-    ball.z += ball.vz * dt;
+    advanceShotBall(hoopWorld, ball, BALL_R, dt, GRAVITY);
     trailHist.push([ball.x, ball.y, ball.z]);
     if (trailHist.length > TRAIL_COUNT) trailHist.shift();
 
@@ -1664,37 +1664,14 @@ function stepBallSim(dt: number): void {
       }
     }
 
-    // Rim torus contact
-    const dr = dist2d(ball.x, ball.z, RIM[0], RIM[2]);
-    if (Math.abs(ball.y - RIM[1]) < 0.16 && dr > RIM_R - 0.09 && dr < RIM_R + 0.11 && !ball.scored) {
-      if (!ball.hitRim) { juiceFire("rim", { position: [ball.x, ball.y, ball.z] }); rimShake = 1; }
-      ball.hitRim = true;
-      // Reflect horizontally off the ring
-      const nx = (ball.x - RIM[0]) / (dr || 1);
-      const nz = (ball.z - RIM[2]) / (dr || 1);
-      const dot = ball.vx * nx + ball.vz * nz;
-      ball.vx = (ball.vx - 2 * dot * nx) * 0.55 + (rng() - 0.5) * 0.9;
-      ball.vz = (ball.vz - 2 * dot * nz) * 0.55 + (rng() - 0.5) * 0.9;
-      ball.vy = ball.vy * 0.6 + 0.7;
-      ball.x = RIM[0] + nx * (RIM_R + 0.12);
-      ball.z = RIM[2] + nz * (RIM_R + 0.12);
-    }
-
-    // Backboard plane contact (z approaching from +z)
-    if (prev[2] - BALL_R > BOARD_Z + 0.06 && ball.z - BALL_R <= BOARD_Z + 0.06 &&
-      Math.abs(ball.x - RIM[0]) < BOARD_HALF_W && ball.y > BOARD_Y0 && ball.y < BOARD_Y1) {
-      if (!ball.hitBoard) juiceFire("bank", { position: [ball.x, ball.y, ball.z] });
-      ball.hitBoard = true;
-      ball.z = BOARD_Z + 0.06 + BALL_R;
-      ball.vz = Math.abs(ball.vz) * 0.5;
-      ball.vx *= 0.82;
-      ball.vy *= 0.82;
-    }
-
-    // Score: crossed rim plane downward inside the cylinder
-    if (!ball.scored && prev[1] >= RIM[1] && ball.y < RIM[1] && ball.vy < 0 && dr < RIM_R - 0.05) {
+    // Rim and glass contacts are resolved by the swept impact step above (hoopWorld); here only the make is read off.
+    if (!ball.scored && crossedRimDownward(prev, [ball.x, ball.y, ball.z], RIM)) {
       ball.scored = true;
       const swish = !ball.hitRim && !ball.hitBoard;
+      shotStats.made += 1;
+      if (swish) shotStats.swishes += 1;
+      else if (ball.hitBoard && !ball.hitRim) shotStats.bankShots += 1;
+      else shotStats.rimRolls += 1;
       netPulse = 1;
       game_.jam = clamp(game_.jam + (swish ? 0.2 : 0.12), 0, 1);
       if (swish) { juiceFire("swish", { position: [RIM[0], RIM[1] - 0.2, RIM[2]] }); }
@@ -1909,7 +1886,7 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
     if (a.shooting) {
       a.meterT += dt / 0.72;
       if (a.meterT >= (0.7 + (rng() - 0.5) * 0.06)) {
-        releaseShot(a, 0.8 + rng() * 0.18);
+        releaseShot(a, 0.64 + rng() * 0.32);
       }
       return;
     }
@@ -2067,7 +2044,7 @@ function stepPlayerAutopilot(me: AthleteState, dt: number): void {
     me.vx = lerp(me.vx, 0, dt * 10);
     me.vz = lerp(me.vz, 0, dt * 10);
     if (game_.shotMeter.frames > 3 && game_.shotMeter.t >= game_.shotMeter.perfect - 0.015) {
-      releaseShot(me, 0.96);
+      releaseShot(me, game_.autopilot ? 0.58 + rng() * 0.4 : 0.96);
     }
     return;
   }
@@ -2293,7 +2270,7 @@ function stepPlayerControl(dt: number): void {
       }
     }
     if (game_.shotMeter.tapRelease && game_.shotMeter.t >= game_.shotMeter.perfect - 0.02) {
-      releaseShot(me, 0.94);
+      releaseShot(me, game_.autopilot ? 0.58 + rng() * 0.4 : 0.94);
     }
   }
 
@@ -2507,15 +2484,15 @@ function syncAthlete(a: AthleteState, dt: number): void {
         ? [shoulderR[0] - 0.06, shoulderR[1] - 0.46, shoulderR[2] + 0.20]
         : dribbleNow
           ? [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.27]
-          : [shoulderR[0] + 0.02, shoulderR[1] - 0.46, shoulderR[2] + 0.04];
+          : [shoulderR[0] - 0.03, shoulderR[1] - IDLE_HAND_DROP, shoulderR[2] + 0.03];
       const palmL: Vec3 = checkHold
         ? [shoulderL[0] - 0.04, shoulderL[1] - 0.42, shoulderL[2] + 0.10]
         : dribbleNow
           ? [shoulderL[0] - 0.04, shoulderL[1] - 0.34, shoulderL[2] + 0.16]
-          : [shoulderL[0] - 0.02, shoulderL[1] - 0.46, shoulderL[2] + 0.04];
+          : [shoulderL[0] + 0.03, shoulderL[1] - IDLE_HAND_DROP, shoulderL[2] + 0.03];
       // Dribbling elbow stays tucked into the ribs and drives down with the
       // pound; idle arms hang close so nobody reads as a stiff A-pose.
-      const flare = dribbleNow ? 0.22 : 0.18;
+      const flare = dribbleNow ? 0.22 : 0.06;
       const rightArm = armIK(chestRot, shoulderR, palmR, facts.upperLenR, facts.foreLenR, facts.upperDirR, facts.foreDirR,
         [-flare, -1, dribbleNow ? 0.06 : 0]);
       const leftArm = armIK(chestRot, shoulderL, palmL, facts.upperLenL, facts.foreLenL, facts.upperDirL, facts.foreDirL,
@@ -2725,6 +2702,7 @@ function publishEvidence(): void {
     ready: appReady && document.body.dataset.aura3dReady === "true",
     framesRendered,
     frameErrors: frameBoundary.stats(),
+    shotStats: { ...shotStats },
     footSlide: footEvidence(),
     autopilot: game_.autopilot,
     look: venue.look,
@@ -2773,8 +2751,8 @@ function publishEvidence(): void {
  *  Main loop                                                          *
  * ------------------------------------------------------------------ */
 function frame(dtRaw: number): void {
-  const now = game_.time;
-  const frozen = hitStopUntil > now;
+  const frozen = hitStop.active;
+  hitStop.update(dtRaw);
   const dt = frozen ? 0 : clamp(dtRaw, 1 / 240, 0.05);
   game_.time += dt;
   if (game_.phase === "live" || game_.phase === "shot") game_.matchT += dt;
@@ -2995,6 +2973,9 @@ auraApp.onFrame(({ dt }) => {
       syncHud();
       return;
     }
+    // `?simsteps=N` (diagnostics): N extra fixed 1/60 s sim steps per rendered frame, so a slow software-GL run covers real game time.
+    const extra = Math.max(0, Math.min(119, Number(initialParams.get("simsteps")) | 0));
+    for (let i = 0; i < extra; i += 1) frame(1 / 60);
     frame(dt);
   });
 });
