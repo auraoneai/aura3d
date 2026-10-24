@@ -287,7 +287,7 @@ function createHud(): HTMLElement {
     "top:16px",
     "z-index:5",
     "min-width:290px",
-    "font:600 13px/1.35 Inter, system-ui, sans-serif",
+    "font:500 13px/1.35 Graphik,sans-serif",
     "color:#f5fbff",
     "background:rgba(20,12,4,0.66)",
     "border:1px solid rgba(235,190,125,0.34)",
