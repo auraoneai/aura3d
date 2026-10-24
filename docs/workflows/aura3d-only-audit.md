@@ -1,6 +1,6 @@
 # Aura3D-only audit (2026-10-24)
 
-Scope: the 11 Crayon ports, the 15 index games, their v2 siblings and the 14 retired showcase apps. Excluded on purpose: `apps/showcase-top-tennis`, `apps/showcase-top-tennis-v2`, `examples/aura-slam`, `apps/showcase-aura-slam` (owned by the Aura Slam lane). Kept on purpose: the `aura3d migrate three` codemod and migration docs, `apps/showcase-kits` (look-dev, not a game), `apps/threejs-parity-lab`, `apps/asset-lookdev/src/three-adapter.ts`, parity tests, tool-only devDependencies.
+Scope: the 11 Crayon ports, the 15 index games, their v2 siblings and the 14 retired showcase apps. Excluded on purpose: `examples/aura-slam` (owned by the Aura Slam lane; `apps/showcase-top-tennis` is its thin live wrapper and the legacy v2 route is retired). Kept on purpose: the `aura3d migrate three` codemod and migration docs, `apps/showcase-kits` (look-dev, not a game), `apps/threejs-parity-lab`, `apps/asset-lookdev/src/three-adapter.ts`, parity tests, tool-only devDependencies.
 
 ## Method
 

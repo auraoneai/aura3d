@@ -66,7 +66,7 @@ async function open(page: Page, origin: string, query: string, errors: string[],
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => { if (m.type() === "error" && !/Failed to load resource|favicon/.test(m.text())) errors.push(m.text()); });
   page.on("response", (r) => { if (r.status() >= 400 && !/favicon/.test(r.url())) bad.push(`${r.status()} ${r.url()}`); });
-  await page.goto(`${origin}/apps/showcase-aura-slam/${query}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${origin}/apps/showcase-top-tennis/${query}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => document.body.dataset.auraSlamReady === "true", undefined, { timeout: 900_000, polling: 2000 });
 }
 
@@ -74,7 +74,7 @@ test.describe("aura-slam integration", () => {
   test.setTimeout(3_600_000);
 
   test("production build: menu, Quick Match, real keys, pause, assets, diagnostics, frames", async ({ browser }) => {
-    expect(existsSync(path.join(DIST, "apps/showcase-aura-slam/index.html")), "run node tools/aura-slam/build-wrapper.mjs first").toBe(true);
+    expect(existsSync(path.join(DIST, "apps/showcase-top-tennis/index.html")), "run node tools/aura-slam/build-wrapper.mjs first").toBe(true);
     const server = await serveDist();
     try {
       for (const viewport of [{ name: "1280", width: 1280, height: 720, mobile: false }, { name: "390", width: 390, height: 844, mobile: true }]) {
@@ -144,7 +144,7 @@ test.describe("aura-slam integration", () => {
   });
 
   test("the black-frame self-heal does not fire on a normally rendering page (no spurious reload)", async ({ page }) => {
-    expect(existsSync(path.join(DIST, "apps/showcase-aura-slam/index.html"))).toBe(true);
+    expect(existsSync(path.join(DIST, "apps/showcase-top-tennis/index.html"))).toBe(true);
     const server = await serveDist();
     try {
       await page.setViewportSize({ width: 1280, height: 720 });

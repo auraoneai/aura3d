@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Production build of apps/showcase-aura-slam (the native Aura Slam wrapper) without registering a live route.
+// Production build of apps/showcase-top-tennis (the live native Aura Slam route) as a standalone production build.
 //   node tools/aura-slam/build-wrapper.mjs [outDir]    default outDir: tests/browser/aura-slam-dist
 // Mirrors the alias set of marketing/scripts/build-showcase-routes.mjs, then copies the stadium models the page loads from /aura-assets/.
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -12,7 +12,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const outDir = path.resolve(process.argv[2] ?? path.join(repoRoot, "tests/browser/aura-slam-dist"));
 const enginePublicEntry = path.join(repoRoot, "packages/engine/src/public/index.ts");
 const gamePackageEntry = path.join(repoRoot, "packages/game/src/index.ts");
-const input = path.join(repoRoot, "apps/showcase-aura-slam/index.html");
+const input = path.join(repoRoot, "apps/showcase-top-tennis/index.html");
 const STADIUM_FILES = ["showcaseStadiumSeats.afb44897.glb", "rooftopScoreboardRigMeshy.866123b7.glb", "rooftopFloodlightTowerMeshy.1bfcdd0b.glb"];
 
 const tempDir = mkdtempSync(path.join(tmpdir(), "aura-slam-build-"));
@@ -32,7 +32,7 @@ export default {
     ],
     dedupe: ["@aura3d/engine"]
   },
-  build: { target: "es2022", outDir: ${JSON.stringify(outDir)}, emptyOutDir: true, sourcemap: false, chunkSizeWarningLimit: 3000, rollupOptions: { input: { "showcase-aura-slam": ${JSON.stringify(input)} } } },
+  build: { target: "es2022", outDir: ${JSON.stringify(outDir)}, emptyOutDir: true, sourcemap: false, chunkSizeWarningLimit: 3000, rollupOptions: { input: { "showcase-top-tennis": ${JSON.stringify(input)} } } },
   optimizeDeps: { exclude: ["@aura3d/engine"] }
 };
 `);
