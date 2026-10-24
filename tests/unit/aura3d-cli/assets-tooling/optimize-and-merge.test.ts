@@ -86,14 +86,14 @@ describe("assets optimize and merge-clips (real glTF documents)", () => {
     await io.write(join(dir, "foreign.glb"), makeRig(["ghost"], { name: "z", node: "ghost", length: 1 }));
     const out = join(dir, "merged.glb");
     const result = await mergeGlbClips({ base: join(dir, "base.glb"), output: out, clips: [parseClipSpec(`run=${join(dir, "run.glb")}`), parseClipSpec(`idle=${join(dir, "idle.glb")}`)], toolkit: toolkit! });
-    expect(result.animations.sort()).toEqual(["idle", "run"]);
+    expect([...result.animations].sort()).toEqual(["idle", "run"]);
     expect(result.clips.find((clip) => clip.name === "run")).toMatchObject({ channels: 1, sourceChannels: 1, missingNodes: 0 });
     expect(result.clips.find((clip) => clip.name === "idle")?.duration).toBeCloseTo(2, 5);
     const reread = await io.read(out);
-    expect(reread.getRoot().listAnimations().map((a) => a.getName()).sort()).toEqual(["idle", "run"]);
+    expect(reread.getRoot().listAnimations().map((a: { getName(): string }) => a.getName()).sort()).toEqual(["idle", "run"]);
     await expect(mergeGlbClips({ base: join(dir, "base.glb"), output: join(dir, "bad.glb"), clips: [parseClipSpec(`walk=${join(dir, "foreign.glb")}`)], toolkit: toolkit! })).rejects.toThrowError(/different skeleton/);
     const kept = await mergeGlbClips({ base: join(dir, "base.glb"), output: join(dir, "kept.glb"), clips: [parseClipSpec(`run=${join(dir, "run.glb")}`)], keepBaseAnimations: true, toolkit: toolkit! });
-    expect(kept.animations.sort()).toEqual(["rest", "run"]);
+    expect([...kept.animations].sort()).toEqual(["rest", "run"]);
   });
 
   test("clip specs validate their shape", () => {

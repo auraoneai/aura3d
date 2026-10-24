@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
-      <meta name="description" content="Train-driving loop with day and night, passengers, fares and tips; loop length and score match the original's recorded loop and memory stays flat over three loops. No garage or level select; buildings are simple painted boxes and people are capsules; a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
+      <meta name="description" content="Train-driving loop with day and night, passengers, fares and tips; loop length and score match the original's recorded loop and memory stays flat over three loops. No garage or level select; the tram, townhouses, landmarks and passengers are generated models (passengers stand rather than sit); a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
   <meta name="theme-color" content="#0b1020" />
   <meta property="og:title" content="Last Train to the Sea — Aura3D port of the mechanics" />
   <meta property="og:type" content="website" />
@@ -30,8 +30,8 @@
       #top h1 { margin: 0 0 2px; font-size: 16px; font-weight: 500; }
       #stats { top: 12px; right: 12px; text-align: right; }
       #stats .big { font-size: 24px; font-weight: 600; }
-      #status { bottom: 12px; left: 12px; right: 12px; display: flex; gap: 16px; justify-content: space-between; align-items: center; }
-      #riders { bottom: 64px; left: 12px; max-width: 360px; }
+      #status { bottom: 64px; left: 12px; right: 12px; display: flex; gap: 16px; justify-content: space-between; align-items: center; }
+      #riders { bottom: 116px; left: 12px; max-width: 360px; }
       #riders span { display: inline-block; margin: 0 8px 2px 0; }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0e1220; z-index: 5; }
       .hidden { display: none !important; }
@@ -43,8 +43,11 @@
       #title .keys, #results .grid { display: grid; grid-template-columns: auto auto; gap: 4px 18px; justify-content: center; text-align: left; font-size: 12px; color: var(--muted); }
       #results .grade { font-size: 64px; font-weight: 500; line-height: 1.1; }
       #results .grid { font-size: 14px; color: var(--ink); margin-bottom: 18px; }
-      #toast { position: fixed; top: 84px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 13px; transition: opacity 0.4s; pointer-events: none; }
+      #toast { position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 3; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 13px; transition: opacity 0.4s; pointer-events: none; }
       #toast.off { opacity: 0; }
+      #prompt { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 3; max-width: min(520px, calc(100vw - 560px)); min-width: 220px; text-align: center; padding: 8px 16px; border: 1px solid var(--warm); border-radius: 8px; background: var(--panel); font-size: 15px; font-weight: 500; pointer-events: none; }
+      #prompt .meta { display: block; margin-top: 2px; }
+      @media (max-width: 900px) { #prompt { top: 76px; max-width: calc(100vw - 24px); } #toast { top: 128px; } }
       .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: baseline; }
     </style>
   </head>
@@ -63,6 +66,7 @@
       <div id="message">Press <kbd>E</kbd> to open the doors.</div>
       <div class="meta"><kbd>W</kbd> go · <kbd>Space</kbd> brake · <kbd>A</kbd>/<kbd>D</kbd> balance · <kbd>E</kbd> doors · <kbd>N</kbd> day/night · <kbd>R</kbd> new service</div>
     </div>
+    <div id="prompt" role="status" aria-live="polite"></div>
     <div id="toast" class="off"></div>
     <div id="title" class="hidden">
       <div>
@@ -88,6 +92,6 @@
     </div>
     <div id="loading"><div id="loading-status">Lighting the first view…</div></div>
     <script type="module" src="./src/main.ts"></script>
-    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · No garage or level select; buildings are simple painted boxes and people are capsules; a blind model judge could still tell the port from the original.</aside>
+    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · No garage or level select; the tram, townhouses, landmarks and passengers are generated models (passengers stand rather than sit); a blind model judge could still tell the port from the original.</aside>
 </body>
 </html>

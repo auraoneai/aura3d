@@ -1173,3 +1173,23 @@ After the owner reported the live ports "look terrible", every port got a look-d
 **Engine fixes released in 4.0.8:** real view/projection matrices for `material.custom`; self-registering modules kept in production bundles; unused declared vertex attributes no longer skip the draw; `#include <colorspace_decode>` and corrected colour-output documentation. **Reported, not reproduced:** sun `shadow: true` rendering one large instanced/skinned scene fully shadowed (7 remote repro runs on a minimal scene were clean; Ninja Runner ships with sun shadows off).
 
 **Open:** Phase B; hardware-GPU run (blocked on Azure quota, owner action); real-headset WebXR; cube-camera/mirror passes give custom shaders the bare view-projection.
+
+### 12.7 Meshy art pass (2026-10-23, after §12.6)
+
+Each port replaced its stand-ins with text-prompt Meshy models (via Kiro Prism; owner-authorised credit budget; per-asset provenance under `examples/<game>-port/assets/provenance/` and `ATTRIBUTION.md`; models admitted in isolated projects, same-origin hashed URLs for the production bridge). Judge = `claude-sonnet-5.5`, a model, not a human; seed 20261023.
+
+| Game | Models added | Judge after Meshy (picks original) | Notes |
+| --- | --- | --- | --- |
+| Strange Orbit | 8 (bikes, riders, pylons, rocks, spires) | not run (only title-screen refs) | riders are rigid single meshes |
+| Splat Rush | 7 (islands, balloon, 4 pickups) | not re-run | gates/ball/road stay procedural |
+| Serpentine Sky Run | 8 (rigged hero, gate, hazards, island, lantern) | not re-run | hell run unported |
+| Drift & Deliver | 14 (hypercar, 4 traffic cars, street furniture, landmarks) | not re-run | pedestrians static; hypercar paint patchy |
+| HEATSINK | 9 (quad-rotor drone, pylons, pickups, scenery) | 35/48 (73%), design-same 40/48 | first result below 48/48; terrain ceiling bug fixed |
+| Ninja Runner | 4 rigged characters + 8 props | 48/48 | draw calls 133 -> 54; sun shadows still off (see the depth-clamp fix a952d9d27) |
+| Last Train | 12 (tram, passengers, townhouses, landmarks, props) | 48/48 | passengers stand; draw calls 111-187 |
+| Roadster Hours | 15 (roadster, 8 vehicles, lighthouse, houses, trees) | not re-run | textured `instances.custom` workaround (engine fix 2302b45c6 lets it return to batched meshes) |
+| Where the Wind Wanders | 10 (rigged traveller, cottages, 535+127 instanced trees, props) | 48/48 | about 1.2 M triangles |
+| Silt & Signal | 12 (rigged courier, hoverboard, landmarks, ring) | not re-run | rings/beacons rebuilt as solid emissive meshes |
+| Cloud Runner | 8 (rigged hero 12 clips, creatures, scenery) | 48/48 (pre-Meshy art pass) | draw calls 505 -> 187 |
+
+**Phase B remains unmet.** Engine bugs found along the way and fixed (4.0.9 unreleased): empty instance arrays throwing, per-node duplicate GLB textures, instanced/batched textures rendering white, directional shadow receiver depth, NaN-unsafe `pow`, unused custom attribute dropping the draw.

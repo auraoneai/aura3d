@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="/fonts/local.css" />
-      <meta name="description" content="Free-ride flying over a silt world; three recorded rides reproduce the original's simulation state to 1e-9. Chapter 0 has real colliders; later chapters are generated hills, with no NPCs or minimap; a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
+      <meta name="description" content="Free-ride flying over a silt world; three recorded rides reproduce the original's simulation state to 1e-9. Chapter 0 has real colliders; the rider, ring beacons and landmarks are generated models; later chapters are generated hills, with no NPCs or minimap; a blind model judge could still tell the port from the original. Independent Aura3D reconstruction; not affiliated with the original." />
   <meta name="theme-color" content="#0b1020" />
   <meta property="og:title" content="Silt &amp; Signal — Aura3D port of the mechanics" />
   <meta property="og:type" content="website" />
@@ -40,8 +40,8 @@
       .meter { height: 6px; border-radius: 3px; background: rgba(246, 240, 228, 0.16); overflow: hidden; margin: 4px 0; }
       .meter > i { display: block; height: 100%; width: 100%; background: var(--jade); }
       #keys { position: absolute; right: 12px; bottom: 12px; text-align: right; max-width: 420px; }
-      #compass-wrap { position: absolute; top: 12px; right: 12px; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; }
-      #compass { width: 0; height: 0; border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 26px solid var(--warm); transition: transform 60ms linear; }
+      #compass-wrap { position: absolute; top: 12px; right: 12px; width: 92px; height: 92px; background: rgba(8, 20, 28, 0.78); box-shadow: 0 0 0 3px #19e6ff, 0 0 18px 2px rgba(25, 230, 255, 0.55); display: grid; place-items: center; border-radius: 50%; }
+      #compass { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 44px solid #19e6ff; filter: drop-shadow(0 0 6px #19e6ff); transition: transform 60ms linear; }
       #toast { position: absolute; left: 50%; top: 18%; transform: translateX(-50%); font-size: 16px; font-weight: 500; opacity: 0; transition: opacity 240ms; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
       #toast.show { opacity: 1; }
       .screen { position: fixed; inset: 0; z-index: 4; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at center, rgba(14, 16, 22, 0.15), rgba(14, 16, 22, 0.78)); }
@@ -125,6 +125,6 @@
       </div>
     </section>
     <script type="module" src="./src/main.ts"></script>
-    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Chapter 0 has real colliders; later chapters are generated hills, with no NPCs or minimap; a blind model judge could still tell the port from the original.</aside>
+    <aside class="aura-port-note" role="note"><a href="/apps/showcase-index/#ports">Aura3D simulation port</a> · independent reconstruction of the mechanics · Chapter 0 has real colliders; the rider, ring beacons and landmarks are generated models; later chapters are generated hills, with no NPCs or minimap; a blind model judge could still tell the port from the original.</aside>
 </body>
 </html>
