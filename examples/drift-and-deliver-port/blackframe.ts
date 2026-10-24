@@ -13,7 +13,7 @@ import {
   isBlackFrame,
   type BlackFrameWatch,
   type BlackFrameWatchOptions
-} from "../../packages/debug/src/safety/index";
+} from "@aura3d/debug";
 
 const STORAGE_KEY = "drift-heal-stage";
 
