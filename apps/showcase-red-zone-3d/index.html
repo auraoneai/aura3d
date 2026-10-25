@@ -228,20 +228,18 @@
       #rz-playcard-sheet {
         position: absolute;
         left: 50%;
-        bottom: 52px;
+        bottom: 92px;
         transform: translateX(-50%);
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
         gap: 8px;
+        width: max-content;
         max-width: calc(100vw - 20px);
         pointer-events: auto;
       }
+      #rz-playcard-sheet .rz-cards-head { flex: 0 0 100%; display: flex; justify-content: center; }
       #rz-playcard-sheet .rz-cards-toggle {
-        flex: 0 0 100%;
-        justify-self: center;
-        margin: 0 auto;
-        width: max-content;
         height: 20px;
         padding: 0 10px;
         font: 500 11px/1 "Graphik Web", "Graphik", sans-serif;
@@ -404,12 +402,12 @@
       @media (max-width: 760px) {
         .aura3d-controls-hint { display: none; }
         #rz-event-ticker { bottom: 96px; max-width: 220px; }
-        #rz-big-call { font-size: 30px; }
+        #rz-big-call { font-size: 22px; letter-spacing: 0.08em; width: max-content; max-width: calc(100vw - 24px); text-align: center; white-space: normal; }
         #rz-scorebug { transform: scale(0.82); transform-origin: top left; }
         #rz-downdistance { transform: scale(0.82); transform-origin: top left; top: calc(var(--a3d-bar-space) + 48px); }
         #rz-lab-hud { top: calc(var(--a3d-bar-space) + 48px); }
-        #rz-playcard-sheet { bottom: 10px; gap: 6px; }
-        .rz-card { width: calc((100vw - 32px) / 3); max-width: 116px; padding: 6px 7px; }
+        #rz-playcard-sheet { bottom: 84px; gap: 6px; }
+        .rz-card { box-sizing: border-box; width: calc((100vw - 36px) / 3); max-width: 116px; padding: 6px 7px; }
         .rz-card svg { display: none; }
         .rz-card .rz-card-name { font-size: 12px; margin: 2px 0; }
         .rz-bracket { grid-template-columns: repeat(3, 1fr); }

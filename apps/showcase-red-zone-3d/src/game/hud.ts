@@ -132,7 +132,7 @@ export function renderPlayCards(hud: HudRefs, sheet: readonly PlayDef[], selecte
   const signature = `${sheet.map((d) => d.name).join("|")}#${selected}#${collapsed ? 1 : 0}`;
   if (hud.sheet.dataset.sig === signature && hud.sheet.childElementCount > 0) return;
   hud.sheet.dataset.sig = signature;
-  hud.sheet.innerHTML = `<button type="button" class="rz-cards-toggle" aria-expanded="${collapsed ? "false" : "true"}">${collapsed ? "PLAYS ▴" : "PLAYS ▾"}</button>` + sheet.map((def, i) => `
+  hud.sheet.innerHTML = `<div class="rz-cards-head"><button type="button" class="rz-cards-toggle" aria-expanded="${collapsed ? "false" : "true"}">${collapsed ? "PLAYS ▴" : "PLAYS ▾"}</button></div>` + sheet.map((def, i) => `
     <div class="rz-card ${i === selected ? "selected" : ""}" data-card="${i}" role="button" tabindex="0" aria-label="Play ${i + 1}: ${def.name}">
       <div class="rz-card-type ${def.type}">${def.type === "run" ? "■ RUN" : def.type === "short" ? "◆ SHORT PASS" : "▲ DEEP SHOT"}</div>
       <div class="rz-card-name">${def.name}</div>

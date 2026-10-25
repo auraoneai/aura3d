@@ -47,14 +47,14 @@ const css = `
   border-left: 1px solid rgba(255,255,255,.12); }
 .fc-bug .clock { font-family: "Monument Grotesk Mono", monospace; font-size: 15px; color: #d8ff3e; }
 .fc-bug .half { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
-.fc-tag { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 58px); left: 18px; padding: 3px 10px; font-size: 10.5px;
+.fc-tag { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 64px); left: 18px; padding: 3px 10px; font-size: 10.5px;
   letter-spacing: .16em; font-weight: 700; color: #0b1f1c; background: linear-gradient(135deg,#d8ff3e,#9be84e);
   border-radius: 6px; }
-.fc-poss { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 50px); left: 18px; width: 170px; height: 6px; border-radius: 3px;
+.fc-poss { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 56px); left: 18px; width: 170px; height: 6px; border-radius: 3px;
   background: rgba(255,255,255,.12); overflow: hidden; display: flex; }
 .fc-poss > i { display: block; height: 100%; transition: width .4s; }
 .fc-poss-l { font-size: 9px; letter-spacing: .12em; opacity: .6; margin-top: 2px; }
-.fc-poss-wrap { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 48px); left: 18px; }
+.fc-poss-wrap { position: absolute; top: calc(var(--a3d-bar-space, 44px) + 54px); left: 18px; }
 .fc-stamina { position: absolute; bottom: 84px; left: 50%; transform: translateX(-50%);
   width: 150px; height: 7px; border-radius: 4px; background: rgba(0,0,0,.5);
   border: 1px solid rgba(255,255,255,.18); overflow: hidden; }
