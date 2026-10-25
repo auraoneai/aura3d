@@ -101,7 +101,8 @@ if (CHECK) {
   const current = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";
   // The Vercel build excludes evidence/, so screenshot fields cannot be recomputed there: compare everything else.
   const withoutScreens = (text) => JSON.stringify(JSON.parse(text, (key, value) => (key === "screens" ? undefined : value)));
-  const evidencePresent = existsSync(join(repoRoot, "evidence"));
+  // An empty evidence/ directory can exist in the Vercel build, so test for a game evidence folder, not the top-level dir.
+  const evidencePresent = catalog.games.some((g) => existsSync(join(repoRoot, "evidence", g.evidenceFolder)));
   const same = evidencePresent ? current === next : current !== "" && withoutScreens(current) === withoutScreens(next);
   if (!same) {
     console.error("game-inventory.json is stale: run `node tools/site/gen-game-inventory.mjs`");
