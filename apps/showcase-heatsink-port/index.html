@@ -46,11 +46,12 @@
       #h-ab { background: var(--cyan); } #h-heat { background: var(--hot); } #h-shield { background: #6dffb0; } #h-gun { background: var(--lav); }
       #speedo { position: absolute; right: 12px; bottom: 12px; text-align: right; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; }
       #speedo .value { font-size: 28px; font-weight: 500; }
-      #count { position: fixed; inset: 0; display: grid; place-items: center; font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); pointer-events: none; }
+      #count { position: fixed; inset: 0; display: grid; place-items: start center; padding-top: max(15vh, 96px); font-size: 96px; font-weight: 500; text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6); pointer-events: none; }
       .hidden-pos { display: none; }
       #h-mult.hot { color: var(--hot); }
       #objective { position: absolute; top: 86px; left: 50%; transform: translateX(-50%); max-width: min(720px, 92vw); text-align: center; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8); font-size: 13px; color: var(--ink); }
       #objective:empty { display: none; }
+      body:has(#count:not(.hidden)) #objective { visibility: hidden; }
       #medal-line { font-size: 16px; font-weight: 500; }
       #notice { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #02040a; z-index: 5; }

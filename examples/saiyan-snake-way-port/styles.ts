@@ -24,9 +24,9 @@ export interface RunnerStyle {
 
 export const RUNNER_STYLES: readonly RunnerStyle[] = [
   {
-    id: "ember", name: "EMBER", tagline: "Orange suit, red surge. The classic look.",
-    gi: 0xc4551d, giDark: 0x8f3a12, skin: 0xf0c08a, hair: 0x1d1620, belt: 0x1f7a72, boot: 0x2c3470, sash: 0x2fc8b4,
-    auraCore: 0xfff5d0, auraLit: 0xffc4a0, aura: 0xff5a1a, tint: [0.62, 0.36, 0.16], wash: [1, 0.42, 0.1]
+    id: "tide", name: "TIDE", tagline: "Teal suit, cyan surge. Calm and quick.",
+    gi: 0x1f8a86, giDark: 0x14595a, skin: 0xf0c08a, hair: 0x1d1620, belt: 0xc9cfdb, boot: 0x1c2a3a, sash: 0x1a7471,
+    auraCore: 0xe6ffff, auraLit: 0x9be8f0, aura: 0x2bb8d8, tint: [0.2, 0.55, 0.55], wash: [0.1, 0.5, 0.55]
   },
   {
     id: "violet", name: "VIOLET", tagline: "Indigo suit, violet surge. Cool and sharp.",

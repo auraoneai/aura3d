@@ -357,12 +357,12 @@ export function buildWorld(options: WorldOptions = {}): World {
         const auraCentre = toWorld([(parts.pelvis as { p: LV3 }).p[0] + apply(root, [0, 1.05, 0])[0], (parts.pelvis as { p: LV3 }).p[1] + apply(root, [0, 1.05, 0])[1], (parts.pelvis as { p: LV3 }).p[2] + apply(root, [0, 1.05, 0])[2]]);
         const auraEuler = matrixEuler(worldRot(root));
         const growth = 1 + 0.14 * S.auraRung + (S.kaio === "power" ? 0.2 : 0);
-        for (const [id, scale, solidAmount] of [["aura-outer", growth, 0.8], ["aura-inner", growth * 0.92, 0.55]] as const) {
+        for (const [id, scale, solidAmount] of [["aura-outer", growth, 0.5], ["aura-inner", growth * 0.92, 0.3]] as const) {
           const h = node(id);
           h.setPosition(auraCentre[0], auraCentre[1], auraCentre[2]).setRotation(auraEuler[0], auraEuler[1], auraEuler[2]).setScale(scale).setVisible(surge > 4e-3);
           h.setUniform?.("auraTime", id === "aura-inner" ? 1.37 * time + 4 : time);
-          h.setUniform?.("auraIntensity", surge);
-          h.setUniform?.("auraSolid", S.nimbus > 0 ? 0.34 : solidAmount);
+          h.setUniform?.("auraIntensity", surge * 0.7);
+          h.setUniform?.("auraSolid", S.nimbus > 0 ? 0.24 : solidAmount);
         }
 
         /* contact shadow on the road under the runner */
@@ -502,7 +502,7 @@ export function buildWorld(options: WorldOptions = {}): World {
             h.setUniform?.("auraEdge", [...hexLinear(style.aura)]);
           }
           for (let i = 0; i < SPARKS; i++) node(`spark-${i}`).setUniform?.("flatColor", [...hexLinear(style.auraLit)]);
-          runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.3 });
+          runner?.actor.setTint({ baseColor: [style.tint[0], style.tint[1], style.tint[2], 1], emissiveColor: [style.wash[0], style.wash[1], style.wash[2]], emissiveStrength: 0.12 });
         },
         get nodeCount() { return handles.size; },
         get entityNodes() { return alive; }

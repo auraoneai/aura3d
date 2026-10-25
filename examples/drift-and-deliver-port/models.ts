@@ -19,7 +19,7 @@ const glb = (file: string, hash: string) => ({
 });
 
 export const MODEL_ASSETS = defineAuraAssets({
-  hypercar: glb("hypercar.glb", "a3104b3a3f9504afdcbe63324a7f6e5a9dc8e81ddaaa186ff00527b632b8d7bf"),
+  hypercar: glb("hypercar.glb", "85e3992562400d6fd21e44f14457e985642a835928f6c9736002ffd62343c1bd"),
   sedan: glb("sedan.glb", "fac209266bd3ed4195b3a809025a773017f64364be1a7641ffa0846945fed39b"),
   hatch: glb("hatch.glb", "4bda108ecb13d9890661e4f9a611904f7c32634d77f4e7baa364bcc880193c98"),
   van: glb("van.glb", "327356a17ddfb9d7c54eb84f8e57a062e451f6228594dad7914f47e80e2978c9"),

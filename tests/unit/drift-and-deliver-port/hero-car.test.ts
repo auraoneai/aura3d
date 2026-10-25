@@ -37,4 +37,24 @@ describe("gridlock courier hero car", () => {
     expect(classify(0.42, 0.04, 0.47, 0)).toBe("tyre");
     expect(classify(0.1, 0.05, 0.0, -0.9)).toBe("under");
   });
+  it("gives inward-facing fragments of the glass and lights the body colour, so the second shell cannot show as patches", () => {
+    expect(classify(0.2, 0.42, 0.1, -0.5, 0.0)).toBe("body");
+    expect(classify(0.3, 0.2, 0.9, 0, -0.6)).toBe("body");
+    expect(classify(0.3, 0.2, 0.9, 0, 0.6)).toBe("headlight");
+    expect(classify(0.3, 0.24, -0.9, 0, 0.6)).toBe("body");
+    expect(classify(0.3, 0.24, -0.9, 0, -0.6)).toBe("taillight");
+  });
+
+  it("shades the paint with a subtle vertical gradient and no baked textures", async () => {
+    const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(resolve(dir, "hypercar.glb"))));
+    const body = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives()).find((p) => p.getMaterial()?.getName() === "car-body")!;
+    const color = body.getAttribute("COLOR_0")!;
+    expect(color.getNormalized()).toBe(true);
+    const c = color.getArray()!;
+    let lo = 255, hi = 0;
+    for (let i = 0; i < c.length; i += 4) { lo = Math.min(lo, c[i]!); hi = Math.max(hi, c[i]!); }
+    expect(lo / 255).toBeGreaterThan(0.6);
+    expect(hi / 255).toBeGreaterThan(0.9);
+    expect(hi - lo).toBeGreaterThan(30);
+  });
 });

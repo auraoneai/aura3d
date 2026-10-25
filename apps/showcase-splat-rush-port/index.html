@@ -43,6 +43,8 @@
       .hint { font-size: 14px; font-weight: 800; color: #555; margin: 14px 0 0; }
       #splash-best { font-size: 22px; font-weight: 900; color: #333; margin: 0 0 14px; min-height: 26px; }
       @media (max-width: 520px) {
+        .overlay-card { width: calc(100vw - 28px); max-width: calc(100vw - 28px); padding-left: 16px; padding-right: 16px; border-width: 5px; box-shadow: 8px 8px 0 rgba(0,0,0,0.2); }
+        .overlay-card h1 { font-size: min(13vw, 64px) !important; }
         #hud-lives { flex: none; white-space: nowrap; }
         #hud-score { white-space: nowrap; font-size: clamp(18px, 5.2vw, 26px); }
         #hud-combo { top: 72px !important; }

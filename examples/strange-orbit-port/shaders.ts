@@ -80,11 +80,17 @@ in float vOriginal;
 out vec4 outColor;
 ${NOISE}
 ${LIGHTING}
+float paintNoise(vec2 p) { return fbm(p + vec2(fbm(p * 0.35) * 4.0, 0.0)); }
 void main() {
-  // Procedural stand-in for impasto.png: warm paint with brush streaks along the track.
-  vec2 q = vec2(vUv.x * 60.0, vUv.y * 12.0);
-  float streak = fbm(q + vec2(fbm(q * 0.35) * 4.0, 0.0));
-  float grain = vnoise(q * 6.0);
+  // Procedural stand-in for impasto.png: warm paint marks. World-space triplanar noise, so the marks keep the same size in
+  // every direction (UV-mapped streaks stretched along the whole length of the track).
+  vec3 N0 = normalize(vNormal);
+  vec3 bw = pow(abs(N0), vec3(4.0));
+  bw /= (bw.x + bw.y + bw.z + 1e-5);
+  vec3 wq = vWorld * 0.42;
+  vec2 q = wq.xz;
+  float streak = bw.x * paintNoise(wq.yz) + bw.y * paintNoise(wq.xz) + bw.z * paintNoise(wq.xy);
+  float grain = vnoise(wq.xz * 6.0 + vec2(wq.y * 3.1, 0.0));
   vec3 sampled = mix(vec3(0.50, 0.36, 0.30), vec3(0.93, 0.74, 0.58), streak) * (0.9 + 0.2 * grain);
   float lum = dot(sampled, vec3(0.2126, 0.7152, 0.0722));
   float warm = smoothstep(-0.005, 0.12, sampled.r - sampled.g);
@@ -99,13 +105,15 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   // Teal mineral veining that follows the brush streaks, as on the original's terracotta ring.
-  float vein = smoothstep(0.5, 0.68, fbm(vec2(vUv.x * 26.0, vUv.y * 7.0) + fbm(q * 0.22) * 3.0));
+  vec3 vq = vWorld * 0.16;
+  float veinNoise = bw.x * paintNoise(vq.yz * 1.6) + bw.y * paintNoise(vq.xz * 1.6) + bw.z * paintNoise(vq.xy * 1.6);
+  float vein = smoothstep(0.5, 0.68, veinNoise);
   albedo = mix(albedo, vec3(0.08, 0.36, 0.38), vein * 0.62);
   albedo *= vec3(0.80, 0.60, 0.52);
   float across = smoothstep(0.0, 0.07, vUv.y) * smoothstep(1.0, 0.93, vUv.y);
   albedo *= mix(0.5, 1.0, across);
   // Impasto relief: screen-space bump from the streak height so the key light rakes across the brush marks.
-  float h = fbm(q * 2.2);
+  float h = bw.x * fbm(wq.yz * 2.2) + bw.y * fbm(wq.xz * 2.2) + bw.z * fbm(wq.xy * 2.2);
   vec3 dpx = dFdx(vWorld), dpy = dFdy(vWorld);
   vec3 r1 = cross(dpy, N), r2 = cross(N, dpx);
   float det = dot(dpx, r1);

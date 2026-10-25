@@ -101,7 +101,9 @@
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, #7638b4, #dcc9f2 70%, #f2c6de); color: var(--ink); z-index: 5; }
       #loading .card { width: min(360px, 90vw); }
       #touch { position: fixed; right: 12px; bottom: 12px; display: none; gap: 8px; z-index: 2; }
-      #touch button { height: 44px; min-width: 64px; }
+      #touch button { height: 48px; min-width: 76px; padding: 0 14px; font-weight: 600; font-size: 14px; letter-spacing: 0.02em; }
+      #touch button.ghost { color: #ffffff; background: rgba(8, 14, 30, 0.82); border: 1.5px solid rgba(255, 255, 255, 0.7); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45); }
+      #touch button.ghost:active { background: rgba(255, 255, 255, 0.28); }
       @media (pointer: coarse) { #touch { display: flex; } }
       @media (max-width: 640px) { #banner { font-size: 28px; } #progress { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); left: 18px; transform: none; width: calc(100vw - 36px); } #progress { padding: 6px 10px; border-radius: 8px; background: rgba(34, 24, 70, 0.62); } #progress .rowp { color: var(--ink); } #progress .rowp .num { white-space: nowrap; } #side { width: 120px; } #side .big { font-size: 26px; } #player { width: 200px; } }
       .overlay:not(.hidden) ~ #touch { visibility: hidden; }
@@ -150,7 +152,7 @@
       </div>
     </section>
     <div id="count" class="hidden"></div>
-    <div id="touch"><button id="t-slide" type="button" class="ghost">Slide</button><button id="t-fly" type="button" class="ghost">Fly</button><button id="t-surge" type="button">Surge</button></div>
+    <div id="touch"><button id="t-slide" type="button" class="ghost">&#9660; Slide</button><button id="t-fly" type="button" class="ghost">&#9650; Fly</button><button id="t-surge" type="button">&#9670; Surge</button></div>
     <div id="hud">
       <div id="player" class="card-hud">
         <div id="badge"></div>

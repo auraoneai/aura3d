@@ -20,5 +20,10 @@ describe("saiyan-snake-way-port world", () => {
     expect(RUNNER_STYLES).toHaveLength(3);
     expect(new Set(RUNNER_STYLES.map((s) => s.gi)).size).toBe(3);
     for (const s of RUNNER_STYLES) expect(`${s.name} ${s.tagline}`).not.toMatch(/goku|saiyan|vegeta|piccolo|namek|kaio/i);
+    for (const s of RUNNER_STYLES) {
+      const r = (s.gi >> 16) & 255, g = (s.gi >> 8) & 255, b = s.gi & 255;
+      expect(r > 150 && g > 50 && g < 120 && b < 70, `${s.name} suit must not be the orange gi`).toBe(false);
+      expect(s.sash === 0x2fc8b4 && s.belt === 0x1f7a72, `${s.name} must not pair a teal sash with teal wristbands`).toBe(false);
+    }
   });
 });

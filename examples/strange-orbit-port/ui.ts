@@ -51,6 +51,9 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
   #speed { font-size: 34px !important; }
   #notice { font-size: 18px; max-width: 92vw; }
   .keys { display: none; }
+  #menu .panel { background: linear-gradient(180deg, rgba(7, 11, 18, 0.62), rgba(7, 11, 18, 0.5)); border-radius: 14px; padding: 14px; width: min(480px, calc(100vw - 24px)); backdrop-filter: blur(6px); }
+  .orbit-tag { left: max(14px, env(safe-area-inset-left)); right: auto; bottom: max(16px, env(safe-area-inset-bottom)); font-size: 20px; }
+  .orbit-brand { left: max(14px, env(safe-area-inset-left)); }
 }
 `;
 
