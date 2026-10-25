@@ -35,7 +35,7 @@ interface Api {
   batching(): { multiDrawMode?: string; multiDrawBatches?: number; instancedBatches?: number; outputDraws?: number } | null;
   diagnostics(): { drawCalls?: number; errors?: readonly unknown[] } | null;
   appInfo(): unknown;
-  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; instancedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] } | null;
+  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; texturedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] } | null;
   routeHealth(): { status: string; parityIds: readonly string[] } | null;
 }
 interface ReplayFixture {
@@ -147,18 +147,21 @@ test.describe("roadster-hours-port (Phase B)", () => {
     await api((a) => a.renderNow());
     const gl = await page.evaluate(() => ({ ...(window as unknown as { __glCounts: Record<string, number> }).__glCounts }));
     console.log("ROADSTER_HOURS_GL_FRAME", JSON.stringify(gl));
-    // Generated (Meshy) vehicles are textured instanced nodes (batched.mesh cannot bind a texture): one instanced draw per model.
-    // Only the vehicles without a generated model (a few box rigs) stay in batched meshes, so the multi-draw bounds apply when enough remain.
-    const batchedSlots = vehicles - probe!.instancedInstances;
-    if (probe!.instancedInstances > 0) expect(gl.dei, "each generated vehicle model is one instanced draw").toBeGreaterThanOrEqual(1);
+    // Every vehicle is a batched instance: generated (Meshy) models in one textured batched mesh per model, baked cars per material
+    // group, box rigs in their own meshes, so the multi-draw bounds apply to all of them.
+    const batchedSlots = vehicles;
     // Multi-draw packs several geometries into one call: a lone shared box geometry (the rigs) is drawn as one instanced call instead.
-    if (multiDrawExt && batchedSlots >= 24 && probe!.batchedGeometries > 3) {
+    // Multi-draw needs the engine's batching tier (A3D_QR_TIERS_BATCHING); without it the multi-geometry meshes fall back to one
+    // instanced draw per pooled geometry, so the vehicles cost at most one draw per geometry whatever the instance count.
+    const tierOn = ((batching as { multiDrawBatches?: number } | null)?.multiDrawBatches ?? 0) > 0;
+    if (!tierOn) expect(probe!.delta, "without the batching tier the vehicles cost at most one draw per pooled geometry per pass").toBeLessThanOrEqual(2 * probe!.geometries);
+    if (tierOn && multiDrawExt && batchedSlots >= 24 && probe!.batchedGeometries > 3) {
       expect(gl.md, "the batched vehicles go out as multi-draw calls").toBeGreaterThanOrEqual(1);
       // The batches are drawn by more than one render pass; the bound is relative to the pooled geometries, not the instance count.
       expect(gl.md, "a small bounded number of multi-draw calls per frame, independent of the instance count").toBeLessThanOrEqual(2 * probe!.geometries);
       // Members are the instances inside the view frustum this frame (parts of vehicles behind or beside the camera are culled).
       expect(gl.mdMembers, "the multi-draw calls carry the visible batched vehicle instances").toBeGreaterThanOrEqual(Math.floor(batchedSlots * 0.6));
-    } else if (!multiDrawExt) {
+    } else if (tierOn && !multiDrawExt) {
       expect(gl.md).toBe(0);
       expect(gl.de + gl.dei, "fallback draws at least one per instance").toBeGreaterThanOrEqual(Math.min(vehicles, batchedSlots + 1));
     }
