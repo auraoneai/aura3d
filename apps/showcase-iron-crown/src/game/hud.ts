@@ -93,6 +93,18 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
   const meterBoxP2 = meterP2.parentElement!;
   const nameP1 = el<HTMLDivElement>(doc, "fh-name-p1");
   const nameP2 = el<HTMLDivElement>(doc, "fh-name-p2");
+  // On phones the plates are too narrow for full names: show the first name, keep the full name as a tooltip.
+  let fullNames: [string, string] = ["", ""];
+  const narrow = typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia("(max-width: 640px)") : null;
+  const paintNames = (): void => {
+    const first = (n: string): string => n.trim().split(/\s+/)[0] ?? n;
+    const short = narrow?.matches ?? false;
+    nameP1.textContent = short ? first(fullNames[0]) : fullNames[0];
+    nameP2.textContent = short ? first(fullNames[1]) : fullNames[1];
+    nameP1.title = fullNames[0];
+    nameP2.title = fullNames[1];
+  };
+  narrow?.addEventListener?.("change", paintNames);
   const pipsP1 = el<HTMLDivElement>(doc, "fh-pips-p1");
   const pipsP2 = el<HTMLDivElement>(doc, "fh-pips-p2");
   const timer = el<HTMLDivElement>(doc, "fh-timer");
@@ -312,8 +324,8 @@ export function createHud(doc: Document, cb: HudCallbacks): Hud {
 
   return {
     setNames(p1, p2) {
-      nameP1.textContent = p1;
-      nameP2.textContent = p2;
+      fullNames = [p1, p2];
+      paintNames();
     },
     setBars(side, healthPct, meterPct) {
       const h = Math.max(0, Math.min(1, healthPct));

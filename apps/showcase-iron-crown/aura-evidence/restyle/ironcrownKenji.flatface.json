@@ -1,0 +1,9 @@
+{
+  "tool": "tools/iron-crown-restyle/flatface.mjs",
+  "input": "ironcrownKenji.a310f427.glb",
+  "inputSha256": "a310f427433975fdaa55427f995e75b9765c070302d4f248a863e31f8472d127",
+  "output": "ironcrownKenji.b210a2e7.glb",
+  "outputSha256": "b210a2e7ab4b5ac8feb1bb54f03b457bc6f96536179814f87ef9664924dee109",
+  "note": "flat stylised face (eyes, brows, nose, mouth) on the head skin triangles, flat hair colour on the head's hair triangles, skin texels of the atlas flattened; skeleton, clips and cloth unchanged",
+  "date": "2026-10-25"
+}

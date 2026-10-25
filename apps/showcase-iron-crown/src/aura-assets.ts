@@ -1378,14 +1378,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownKenji": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownKenji.a310f427.glb",
-    hash: "sha256-a310f427433975fdaa55427f995e75b9765c070302d4f248a863e31f8472d127",
+    url: "/aura-assets/ironcrownKenji.b210a2e7.glb",
+    hash: "sha256-b210a2e7ab4b5ac8feb1bb54f03b457bc6f96536179814f87ef9664924dee109",
     bounds: [
       0.012,
       0.018,
       0.008
     ],
-    sizeBytes: 6121176,
+    sizeBytes: 5882112,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -1890,7 +1890,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownKenji.a310f427.glb",
+        "sourcePath": "public/aura-assets/ironcrownKenji.b210a2e7.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -1905,8 +1905,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:34:31.036Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownKenji.a310f427.glb",
-      "outputPath": "public/aura-assets/ironcrownKenji.a310f427.glb",
+      "sourcePath": "public/aura-assets/ironcrownKenji.b210a2e7.glb",
+      "outputPath": "public/aura-assets/ironcrownKenji.b210a2e7.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -3221,14 +3221,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownVolt": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownVolt.00f3110a.glb",
-    hash: "sha256-00f3110a312cdc564c150ad3ac01b35181c6cda84d034509fc7608c20c010d31",
+    url: "/aura-assets/ironcrownVolt.78649874.glb",
+    hash: "sha256-7864987428078c168c2aa2eea334e63a5659e29b713b5d594baa67b98fe6b96e",
     bounds: [
       0.009,
       0.018,
       0.004
     ],
-    sizeBytes: 4089096,
+    sizeBytes: 5353556,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -3733,7 +3733,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownVolt.00f3110a.glb",
+        "sourcePath": "public/aura-assets/ironcrownVolt.78649874.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -3748,8 +3748,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:35:10.995Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownVolt.00f3110a.glb",
-      "outputPath": "public/aura-assets/ironcrownVolt.00f3110a.glb",
+      "sourcePath": "public/aura-assets/ironcrownVolt.78649874.glb",
+      "outputPath": "public/aura-assets/ironcrownVolt.78649874.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [

@@ -1,0 +1,9 @@
+{
+  "tool": "tools/iron-crown-restyle/flatface.mjs",
+  "input": "ironcrownVolt.00f3110a.glb",
+  "inputSha256": "00f3110a312cdc564c150ad3ac01b35181c6cda84d034509fc7608c20c010d31",
+  "output": "ironcrownVolt.78649874.glb",
+  "outputSha256": "7864987428078c168c2aa2eea334e63a5659e29b713b5d594baa67b98fe6b96e",
+  "note": "flat stylised face (eyes, brows, nose, mouth) on the head skin triangles, flat hair colour on the head's hair triangles, skin texels of the atlas flattened; skeleton, clips and cloth unchanged",
+  "date": "2026-10-25"
+}
