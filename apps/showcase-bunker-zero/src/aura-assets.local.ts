@@ -274,7 +274,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "texture_0_metallic_roughness"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/bunkerGunnerMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/bzGunnerMeshy.thumb.svg",
       "quality": "candidate",
       "role": "enemy"
     },
@@ -404,7 +404,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "texture_0_metallic_roughness"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/bunkerGuardMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/bzGuardMeshy.thumb.svg",
       "quality": "candidate",
       "role": "enemy"
     },
@@ -534,7 +534,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "texture_0_metallic_roughness"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/bunkerHoundMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/bzHoundMeshy.thumb.svg",
       "quality": "candidate",
       "role": "enemy"
     },
@@ -664,7 +664,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "texture_0_metallic_roughness"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/bunkerWardenMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/bzWardenMeshy.thumb.svg",
       "quality": "candidate",
       "role": "enemy"
     },
@@ -794,7 +794,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "texture_0_metallic_roughness"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/bunkerArmorMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/bzArmorMeshy.thumb.svg",
       "quality": "candidate",
       "role": "prop"
     },
@@ -924,7 +924,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "texture_0_metallic_roughness"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/bunkerCrateMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/bzCrateMeshy.thumb.svg",
       "quality": "candidate",
       "role": "prop"
     },
@@ -1054,7 +1054,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "texture_0_metallic_roughness"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/bunkerBarrelMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/bzBarrelMeshy.thumb.svg",
       "quality": "candidate",
       "role": "prop"
     },
