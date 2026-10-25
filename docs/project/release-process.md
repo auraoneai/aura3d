@@ -1,6 +1,6 @@
 # Release Process
 
-Version: 4.1.4
+Version: 4.1.3
 
 Current release: Aura3D 4.0.0.
 

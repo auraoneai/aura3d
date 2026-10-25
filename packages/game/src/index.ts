@@ -69,7 +69,6 @@ export { warmPrograms, type WarmableApp, type WarmProgramsOptions, type WarmProg
 export { installGameBeacon } from "./evidence/beacon";
 export { summarizeTextureUpgrade, texturedNodesReady } from "./evidence/textureStatus";
 export type { TexturedMaterialRow, TextureUpgradeSummary } from "./evidence/textureStatus";
-export { warmPrograms, type WarmableApp, type WarmProgramsOptions, type WarmProgramsResult } from "./session/warmPrograms";
 export {
   smoothDamp, createSmoothFollow3, lerpAngle, createRenderInterpolator, secondDifferenceRms, jitterReport,
   createLocomotion, proceduralLegSwing, createFootSlideMeter,
