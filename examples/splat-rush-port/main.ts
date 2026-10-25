@@ -11,6 +11,7 @@ import { Autopilot } from "./autopilot";
 import { SplatSound, diffSounds, type FrameState } from "./audio";
 import { ScreenFx, flashFor } from "./fx";
 import { COLORS, IDLE, PHASE_CODE, SplatRushSim, TRACE_COLUMNS, expandScript, parseScript, replay, type Input } from "./sim";
+import { createSplatPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 
 
@@ -35,6 +36,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 const canvas = $<HTMLCanvasElement>("world");
 
 let sim = new SplatRushSim(config.seed);
+const presenter = createSplatPresenter(() => sim);
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
@@ -154,10 +156,11 @@ function reactToFrame(perfect: boolean): void {
 
 /* ------------------------------------------------------------------ frame */
 
-function render(): void {
+/** `live` draws the ball and camera between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
+function render(live = false): void {
   if (!app || !runtime || renderFailed) return;
   try {
-    runtime.update(sim, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+    runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, canvas.clientWidth / Math.max(1, canvas.clientHeight));
     app.step(0);
   } catch (error) {
     renderFailed = true;
@@ -184,9 +187,10 @@ const loop = createFixedStepLoop({
     pending.start = pending.down = pending.up = false;
     pending.dx = 0;
     advance(input);
+    presenter.afterStep();
   },
   render() {
-    render();
+    render(!config.manual && sim.o.phase === "playing");
     updateHud();
   }
 });
@@ -249,6 +253,7 @@ addEventListener("pointerup", release);
 addEventListener("pointercancel", release);
 function restart(): void {
   sim.begin();
+  presenter.reset();
   popupShown = sim.popups.length;
   prevFrame = null;
 }
@@ -323,6 +328,7 @@ const qa = installQaHooks("splat-rush", {
   },
   reset(seed = config.seed) {
     sim = new SplatRushSim(seed);
+    presenter.reset();
     steps = 0;
     popupShown = 0;
     prevFrame = null;
@@ -346,6 +352,7 @@ const qa = installQaHooks("splat-rush", {
     /** Frame capture: reset, warm up like the capture harness, and store a recorded input script to play step by step. */
     loadScript(text: string, warmup = config.warmup) {
       sim = new SplatRushSim(config.seed);
+      presenter.reset();
       steps = 0;
       popupShown = 0;
       pilot = null;
