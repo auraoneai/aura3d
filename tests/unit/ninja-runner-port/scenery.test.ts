@@ -33,6 +33,20 @@ describe("ninja-runner-port shapes", () => {
     for (const s of [unitBox(), unitGable(), unitHip(), unitCylinder(), unitCone(), unitSphere(), unitRock(7), unitDisc()]) shapeOk(s);
   });
 
+  it("the small rock keeps its 64 facets and the valley cliff is a much finer, still well-formed mesh", () => {
+    const small = unitRock(7), cliff = unitRock(11, 28, 18, true);
+    expect(small.indices.length / 3).toBe(64);
+    expect(cliff.indices.length / 3).toBeGreaterThan(900);
+    shapeOk(cliff);
+  });
+
+  it("valley cliffs use the fine cliff layer and the small rock layer no longer carries them", () => {
+    const layers = buildScenery();
+    const cliffs = layers.find((l) => l.id === "cliffs");
+    expect(cliffs?.shape).toBe("cliff");
+    expect(cliffs?.placements.length ?? 0).toBeGreaterThan(5);
+  });
+
   it("trs is a column-major non-uniform scale, yaw about +Y and translation", () => {
     const m = trs(1, 2, 3, Math.PI / 2, 2, 3, 4);
     expect(m.length).toBe(16);

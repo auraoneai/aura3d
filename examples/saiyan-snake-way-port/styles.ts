@@ -24,7 +24,7 @@ export interface RunnerStyle {
 
 export const RUNNER_STYLES: readonly RunnerStyle[] = [
   {
-    id: "ember", name: "EMBER", tagline: "Orange suit, red surge. The original look.",
+    id: "ember", name: "EMBER", tagline: "Orange suit, red surge. The classic look.",
     gi: 0xc4551d, giDark: 0x8f3a12, skin: 0xf0c08a, hair: 0x1d1620, belt: 0x1f7a72, boot: 0x2c3470, sash: 0x2fc8b4,
     auraCore: 0xfff5d0, auraLit: 0xffc4a0, aura: 0xff5a1a, tint: [0.62, 0.36, 0.16], wash: [1, 0.42, 0.1]
   },

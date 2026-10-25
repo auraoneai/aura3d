@@ -17,7 +17,7 @@ export type ModelSink = Record<string, ModelPlacement[]>;
 /** Extra yaw that turns each model's authored front toward +z (calibrated from render frames). */
 export const MODEL_FRONT_YAW: Readonly<Record<string, number>> = { houseA: 0, houseB: 0, tower: 0, gate: 0, pine: 0, lantern: 0, oak: 0 };
 
-export type ShapeId = "box" | "gable" | "hip" | "cylinder" | "cone" | "sphere" | "rock";
+export type ShapeId = "box" | "gable" | "hip" | "cylinder" | "cone" | "sphere" | "rock" | "cliff";
 export interface Placement { readonly matrix: number[]; readonly color: string }
 export type SurfaceKey = "plaster" | "tiles" | "bark" | "leaf";
 export interface LayerSpec { readonly id: string; readonly shape: ShapeId; readonly roughness: number; readonly metalness: number; readonly emissive?: string; readonly castShadow: boolean; readonly map?: SurfaceKey; readonly repeat?: readonly [number, number] }
@@ -37,6 +37,7 @@ export const LAYERS: readonly LayerSpec[] = [
   { id: "tufts", shape: "cone", roughness: 0.92, metalness: 0, castShadow: false },
   { id: "crowns", shape: "sphere", roughness: 0.88, metalness: 0, castShadow: true, map: "leaf", repeat: [3, 2] },
   { id: "rocks", shape: "rock", roughness: 0.95, metalness: 0, castShadow: true },
+  { id: "cliffs", shape: "cliff", roughness: 0.97, metalness: 0, castShadow: false },
   { id: "hills", shape: "sphere", roughness: 1, metalness: 0, castShadow: false },
   { id: "lanterns", shape: "sphere", roughness: 0.5, metalness: 0, emissive: "#ff9a3c", castShadow: false }
 ];
@@ -68,7 +69,10 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
   /** Add one generated-model instance whose base sits at world (x, y, z); `height`/`width`/`depth` are the wanted world sizes. */
   const mput = (id: string, x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint?: string): void => {
     const m = MESHY_MANIFEST[id]!;
-    const sx = width / m.size[0], sy = height / m.size[1], sz = depth / m.size[2];
+    let sx = width / m.size[0], sy = height / m.size[1], sz = depth / m.size[2];
+    /* Meshy models keep their own proportions: a request that would stretch one axis more than ~1.6x against another (a 6 x 10 m footprint on a nearly square house) smears the texture and tears the facets, so the per-axis scale stays within +-28% of the uniform scale. */
+    const g = Math.cbrt(sx * sy * sz), lo = g * 0.78, hi = g * 1.28;
+    sx = Math.min(hi, Math.max(lo, sx)); sy = Math.min(hi, Math.max(lo, sy)); sz = Math.min(hi, Math.max(lo, sz));
     (models![id] ??= []).push({ position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [sx, sy, sz], ...(tint ? { tint } : {}) });
   };
   /** World position of a point given in a box's local frame (+x across the route away from the right-hand side, +z forward). */
@@ -367,7 +371,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
       const lat = side * (pathWidth(Math.min(d, COURSE_LENGTH)) / 2 + 12 + valley() * 55);
       const c = at(d, lat);
       const s = 8 + valley() * 20;
-      put("rocks", c.x, c.y - s * 0.35, c.z, valley() * 6, s * 1.2, s * 1.5, s, pick(valley, ["#8f9a96", "#7d9188", "#a1a18b"] as const));
+      put("cliffs", c.x, c.y - s * 0.35, c.z, valley() * 6, s * 1.2, s * 1.5, s, pick(valley, ["#8f9a96", "#7d9188", "#a1a18b"] as const));
     }
   }
 

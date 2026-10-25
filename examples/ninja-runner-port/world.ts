@@ -53,7 +53,7 @@ function defineShape(s: Shape) {
   return geometry.define({ positions: f32(s.positions), normals: f32(s.normals), uvs: f32(s.uvs), indices: Uint32Array.from(s.indices) });
 }
 const SHAPES: Record<ShapeId, () => Shape> = {
-  box: unitBox, gable: unitGable, hip: unitHip, cylinder: () => unitCylinder(10), cone: () => unitCone(9), sphere: () => unitSphere(12, 8), rock: () => unitRock(7)
+  box: unitBox, gable: unitGable, hip: unitHip, cylinder: () => unitCylinder(10), cone: () => unitCone(9), sphere: () => unitSphere(12, 8), rock: () => unitRock(7), cliff: () => unitRock(11, 28, 18, true)
 };
 type TextureHandle = ReturnType<typeof texture.canvas>;
 interface Surface { readonly albedo: TextureHandle; readonly normal?: TextureHandle }

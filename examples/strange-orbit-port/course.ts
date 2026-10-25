@@ -138,7 +138,7 @@ export const COURSES: readonly CourseDef[] = [
     id: "painted",
     name: "Painted Rings",
     tag: "The opening race",
-    description: "The original planet dive, crystal cave and complete gravity fold.",
+    description: "The planet dive, the crystal cave and the complete gravity fold.",
     color: "#e9ad87",
     tint: "#ffffff",
     laps: 7,

@@ -126,12 +126,15 @@ export function unitSphere(segments = 12, rings = 8): Shape {
 }
 
 /** Lumpy boulder: a deformed sphere (radius about 1) with a flattened underside and flat-shaded facets. */
-export function unitRock(seed = 7, segments = 8, rings = 5): Shape {
+export function unitRock(seed = 7, segments = 8, rings = 5, fine = false): Shape {
   const rand = seededRandom(seed);
   const noise = Array.from({ length: (rings + 1) * segments }, () => 0.72 + rand() * 0.5);
+  /* `fine` adds a second, smaller noise octave so a large rock (a valley cliff scaled to 8 to 28 units) breaks into many small facets instead of a few huge flat planes */
+  const detail = fine ? Array.from({ length: (rings + 1) * segments }, () => (rand() - 0.5) * 0.16) : null;
   const point = (r: number, i: number): V3 => {
     const phi = (r / rings) * Math.PI, a = ((i % segments) / segments) * Math.PI * 2;
-    const k = r === 0 || r === rings ? 1 : noise[r * segments + (i % segments)]!;
+    const base = r === 0 || r === rings ? 1 : noise[r * segments + (i % segments)]!;
+    const k = detail && r !== 0 && r !== rings ? base + detail[r * segments + (i % segments)]! : base;
     const y = Math.cos(phi) * k;
     return [Math.sin(phi) * Math.cos(a) * k * 1.15, y < -0.3 ? -0.3 - (-0.3 - y) * 0.1 : y, Math.sin(phi) * Math.sin(a) * k * 1.05];
   };

@@ -91,7 +91,9 @@
       #touch { position: fixed; right: 12px; bottom: 12px; display: none; gap: 8px; z-index: 2; }
       #touch button { height: 44px; min-width: 64px; }
       @media (pointer: coarse) { #touch { display: flex; } }
-      @media (max-width: 640px) { #banner { font-size: 28px; } #progress { width: 34vw; } #side { width: 120px; } #side .big { font-size: 26px; } #player { width: 200px; } }
+      @media (max-width: 640px) { #banner { font-size: 28px; } #progress { top: auto; bottom: calc(70px + env(safe-area-inset-bottom)); left: 18px; transform: none; width: calc(100vw - 36px); } #progress { padding: 6px 10px; border-radius: 8px; background: rgba(34, 24, 70, 0.62); } #progress .rowp { color: var(--ink); } #progress .rowp .num { white-space: nowrap; } #side { width: 120px; } #side .big { font-size: 26px; } #player { width: 200px; } }
+      .overlay:not(.hidden) ~ #touch { visibility: hidden; }
+      .card { max-height: 92vh; overflow: auto; }
     </style>
   </head>
   <body>
@@ -102,7 +104,7 @@
     <section id="title" class="overlay">
       <div class="card">
         <h1>SERPENTINE SKY RUN</h1>
-        <p class="tag">One million kilometres of road, coiled over a sea of cloud. Collect spark, build your surge, and reach the tail before the days run out. A port of a Crayon browser game on the Aura3D engine.</p>
+        <p class="tag">One million kilometres of road, coiled over a sea of cloud. Collect spark, build your surge, and reach the tail before the days run out.</p>
         <div class="meta">CHOOSE YOUR RUNNER <span>(<kbd>&larr;</kbd><kbd>&rarr;</kbd> to switch; looks only, the run is the same)</span></div>
         <div class="runners" id="runners"></div>
         <div class="keys">

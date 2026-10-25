@@ -38,6 +38,20 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
 .orbit-hint { font-size: 12px; color: var(--muted); margin: 0; }
 #menu .meta { font-size: 12px; margin: 0; }
 @media (max-height: 640px) { .orbit-brand { display: none; } #menu h1 { font-size: 60px; } #menu .tagline { font-size: 14px; } }
+#order, #banner { top: 104px; }
+@media (max-width: 720px) {
+  #hud .top { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 6px; }
+  #hud .top .block { min-width: 0; flex: 1 1 0; padding: 6px 8px; }
+  #hud .top .value { font-size: 18px; white-space: nowrap; }
+  #hud .meta { font-size: 11px; }
+  #order, #banner { top: 96px; }
+  #order { right: max(8px, env(safe-area-inset-right)); min-width: 128px; padding: 6px 8px; }
+  #banner { left: max(8px, env(safe-area-inset-left)); transform: none; max-width: calc(100% - 148px); font-size: 16px; }
+  #hud .bottom { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); gap: 8px; }
+  #speed { font-size: 34px !important; }
+  #notice { font-size: 18px; max-width: 92vw; }
+  .keys { display: none; }
+}
 `;
 
 const DIFFICULTIES: readonly { id: string; label: string; blurb: string }[] = [
@@ -57,7 +71,7 @@ export function installOrbitUi(params: URLSearchParams, difficulty: string): voi
   const brand = document.createElement("div");
   brand.className = "orbit-brand";
   brand.id = "orbit-brand";
-  brand.textContent = "Orbital Cycling Club";
+  brand.textContent = "Craterline Cup";
   const tag = document.createElement("div");
   tag.className = "orbit-tag";
   tag.id = "orbit-tag";
@@ -72,7 +86,7 @@ export function installOrbitUi(params: URLSearchParams, difficulty: string): voi
       kicker.className = "kicker";
       kicker.textContent = "One impossible world";
       panel.insertBefore(kicker, h1);
-      h1.innerHTML = "Strange<br>Orbit.";
+      h1.innerHTML = "Craterline<br>GP.";
       const lead = panel.querySelector("p.meta");
       if (lead) { lead.className = "tagline"; lead.textContent = "Ride the rings. Find your own way."; }
       const startRow = byId("start")?.parentElement ?? null;

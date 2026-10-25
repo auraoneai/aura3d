@@ -53,6 +53,15 @@ describe("scenery with generated models", () => {
     }
   });
 
+  it("never stretches a model more than about 1.65x on one axis against another (texture stretch)", () => {
+    let worst = 1;
+    for (const list of Object.values(sink)) for (const p of list) {
+      const lo = Math.min(...p.scale), hi = Math.max(...p.scale);
+      worst = Math.max(worst, hi / lo);
+    }
+    expect(worst).toBeLessThanOrEqual(1.28 / 0.78 + 1e-9);
+  });
+
   it("replaces the procedural wall, roof and trunk pieces the models stand in for", () => {
     const plain = buildScenery();
     const count = (ls: ReturnType<typeof buildScenery>, id: string): number => ls.find((l) => l.id === id)?.placements.length ?? 0;

@@ -82,7 +82,7 @@ ${NOISE}
 ${LIGHTING}
 void main() {
   // Procedural stand-in for impasto.png: warm paint with brush streaks along the track.
-  vec2 q = vec2(vUv.x * 90.0, vUv.y * 9.0);
+  vec2 q = vec2(vUv.x * 60.0, vUv.y * 12.0);
   float streak = fbm(q + vec2(fbm(q * 0.35) * 4.0, 0.0));
   float grain = vnoise(q * 6.0);
   vec3 sampled = mix(vec3(0.50, 0.36, 0.30), vec3(0.93, 0.74, 0.58), streak) * (0.9 + 0.2 * grain);
@@ -99,7 +99,7 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   // Teal mineral veining that follows the brush streaks, as on the original's terracotta ring.
-  float vein = smoothstep(0.5, 0.68, fbm(vec2(vUv.x * 38.0, vUv.y * 4.5) + fbm(q * 0.22) * 3.0));
+  float vein = smoothstep(0.5, 0.68, fbm(vec2(vUv.x * 26.0, vUv.y * 7.0) + fbm(q * 0.22) * 3.0));
   albedo = mix(albedo, vec3(0.08, 0.36, 0.38), vein * 0.62);
   albedo *= vec3(0.80, 0.60, 0.52);
   float across = smoothstep(0.0, 0.07, vUv.y) * smoothstep(1.0, 0.93, vUv.y);

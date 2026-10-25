@@ -42,6 +42,21 @@
       #medal-line { font-size: 16px; font-weight: 500; }
       #notice { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); font-size: 14px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7); }
       #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #02040a; z-index: 5; }
+      /* menu open: the race sits in its countdown behind the title card, so hide the HUD and the countdown until Start */
+      #menu:not(.hidden) ~ #hud, #menu:not(.hidden) ~ #count { visibility: hidden; }
+      .overlay .panel { max-height: 92vh; overflow: auto; }
+      @media (max-width: 900px) {
+        #hud .top { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 6px; flex-wrap: wrap; justify-content: flex-start; }
+        #hud .block { min-width: 0; flex: 1 1 calc(25% - 6px); padding: 4px 8px; }
+        #hud .value { font-size: 15px; }
+        #hud .block .meta { font-size: 11px; }
+        #objective { top: 110px; }
+        #hud .bottom { left: max(8px, env(safe-area-inset-left)); bottom: max(8px, env(safe-area-inset-bottom)); width: min(260px, 62vw); padding: 8px 10px; }
+        #speedo { right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); padding: 6px 10px; }
+        #speedo .value { font-size: 22px; }
+        #notice { bottom: 132px; max-width: 92vw; text-align: center; }
+        #count { font-size: 72px; }
+      }
     </style>
   </head>
   <body>
