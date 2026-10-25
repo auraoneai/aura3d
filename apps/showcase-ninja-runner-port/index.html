@@ -73,7 +73,7 @@
       .row { display: flex; gap: 8px; flex-wrap: wrap; }
       #mute { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); margin-left: calc(min(25vw, 300px) + 28px); padding: 6px 10px; font-size: 12px; }
       @media (max-width: 760px) {
-        #progress { width: 40vw; }
+        #progress { top: 168px; width: calc(100vw - 32px); }
         #stats { top: max(10px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); padding: 6px 10px; gap: 2px; }
         #stats strong { font-size: 17px; }
         #vitals { top: max(10px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); width: 150px; padding: 6px 8px; }
