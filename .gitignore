@@ -448,3 +448,6 @@ evidence/look-reference-frames/
 !evidence/roadster-hours-port/meshy-after/*.jpg
 !evidence/roadster-hours-port/meshy-compare/*.jpg
 !evidence/ninja-runner-port/rework/*.jpg
+
+# Screenshot retakes: per-game frames under evidence/<game>/screens/<date>/
+!evidence/*/screens/*/*.jpg

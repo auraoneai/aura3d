@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "dot-dash-3d": {
+      "390": {
+        "notes": [
+          "ready 6s",
+          "shot 01-title",
+          "play: clicked #dd-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "ready 6s",
+          "play2: clicked #dd-btn-play",
+          "shot 04-mid",
+          "modes:circuit: clicked #dd-btn-circuit",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-dot-dash-3d/",
+          "/apps/showcase-dot-dash-3d/?autoplay=1"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-dot-dash-3d/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 0
+      },
+      "1280": {
+        "notes": [
+          "ready 6s",
+          "shot 01-title",
+          "play: dom-clicked #dd-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "ready 6s",
+          "play2: dom-clicked #dd-btn-play",
+          "shot 04-mid",
+          "modes:circuit: dom-clicked #dd-btn-circuit",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-dot-dash-3d/",
+          "/apps/showcase-dot-dash-3d/?autoplay=1"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-dot-dash-3d/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 0
+      },
+      "card": {
+        "notes": [
+          "ready 6s",
+          "play: dom-clicked #dd-btn-play",
+          "shot 04-mid"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-dot-dash-3d/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-dot-dash-3d/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 0
+      }
+    }
+  },
+  "incomplete": []
+}

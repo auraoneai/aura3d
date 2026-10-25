@@ -1,0 +1,79 @@
+{
+  "meta": {
+    "pips-big-leap": {
+      "390": {
+        "notes": [
+          "ready 6s",
+          "shot 01-title",
+          "play: dom-clicked #aura-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "ready 6s",
+          "play2: dom-clicked #aura-btn-play",
+          "shot 04-mid",
+          "modes:atlas: dom-clicked #aura-btn-atlas",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-pips-big-leap/",
+          "/apps/showcase-pips-big-leap/?autoplay=1"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-pips-big-leap/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 8
+      },
+      "1280": {
+        "notes": [
+          "ready 6s",
+          "shot 01-title",
+          "play: dom-clicked #aura-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "ready 6s",
+          "play2: clicked #aura-btn-play",
+          "shot 04-mid",
+          "modes:atlas: dom-clicked #aura-btn-atlas",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-pips-big-leap/",
+          "/apps/showcase-pips-big-leap/?autoplay=1"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-pips-big-leap/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 8
+      },
+      "card": {
+        "notes": [
+          "ready 6s",
+          "play: dom-clicked #aura-btn-play",
+          "shot 04-mid"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-pips-big-leap/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-pips-big-leap/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 8
+      }
+    }
+  },
+  "incomplete": []
+}
