@@ -26,10 +26,14 @@ function serve(dist: string): Promise<{ origin: string; close(): Promise<void> }
   }));
 }
 
-const GAMES: Array<{ slug: string; query: string; glbs: string[]; required: boolean }> = [
-  { slug: "bean-brawl-race", query: "?autostart=1", glbs: ["yellowBean"], required: true },
-  { slug: "bank-shot", query: "?autostart=1", glbs: ["billiardsTrophyCabinetMeshy"], required: false }
+const ALL: Array<{ slug: string; query: string; glbs: string[]; required: boolean; ready: string }> = [
+  { slug: "bean-brawl-race", query: "?autostart=1", glbs: ["yellowBean"], required: true, ready: "__AURA3D_GAME__" },
+  { slug: "bank-shot", query: "?autostart=1", glbs: ["billiardsTrophyCabinetMeshy"], required: false, ready: "__BANK_SHOT_EVIDENCE__" },
+  // control: the same app built from unchanged main with the original (photographic) cabinet, to tell a regression from a staging limit
+  { slug: "bank-shot-ctl", query: "?autostart=1", glbs: ["billiardsTrophyCabinetMeshy"], required: false, ready: "__BANK_SHOT_EVIDENCE__" }
 ];
+const ONLY = (process.env.SOFTEN_GAMES ?? "").split(",").filter(Boolean);
+const GAMES = ALL.filter((g) => ONLY.length === 0 || ONLY.includes(g.slug));
 
 test.setTimeout(600_000);
 
@@ -43,7 +47,7 @@ for (const game of GAMES) {
     page.on("response", (r) => { if (r.url().endsWith(".glb")) glbRequests.push({ url: r.url().replace(origin, ""), status: r.status() }); });
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(`${origin}/${game.query}`, { waitUntil: "load", timeout: 120_000 });
-    await page.waitForFunction(() => (window as unknown as { __AURA3D_GAME__?: unknown }).__AURA3D_GAME__ !== undefined, undefined, { timeout: 300_000 }).catch(() => undefined);
+    await page.waitForFunction((key) => (window as unknown as Record<string, unknown>)[key] !== undefined, game.ready, { timeout: 300_000 }).catch(() => undefined);
     await page.waitForTimeout(15_000);
     for (const [i, wait] of [0, 12_000].entries()) {
       if (wait) await page.waitForTimeout(wait);
