@@ -529,6 +529,16 @@ export function buildWorld(levelIndex: number): World {
     tier("cap", 66.4, 6.6, 2.4, red());
   }
 
+  /* ---- the player's car goes in first: textured materials upgrade one at a time in scene order, so the hero is textured before props and traffic ---- */
+  const meshyPlayer = hasMeshy("roadster");
+  if (meshyPlayer) {
+    const data = meshyGeometry("roadster")!;
+    builder.add(geometry.custom(
+      geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }),
+      { name: "car-body", material: meshyMaterial("roadster", { roughness: 0.42, metallic: 0.18 }) }
+    ).runtime({ id: "car-body" }));
+  }
+
   /* ---- generated (Meshy) scenery: lighthouse, town houses, trees, boulders; each falls back to the procedural pieces above ---- */
   let texturedScenery = 0;
   const scatter = (key: string, name: string, items: readonly { p: Vec3; yaw: number; size: Vec3 }[], options: { roughness?: number; metallic?: number; doubleSided?: boolean; specular?: number } = {}): void => {
@@ -723,17 +733,11 @@ export function buildWorld(levelIndex: number): World {
   const slotTotal = [...lineupSlots, ...trafficSlots].reduce((n, s) => n + s.length, 0);
 
   /* ---- the Roadster: baked sports car in five material groups ---- */
-  const meshyPlayer = hasMeshy("roadster");
   const nativeSize = meshyPlayer ? meshySize("roadster") : carNativeSize("sportsCar");
   const playerIds: string[] = [];
   const playerHeight = nativeSize[1] * PLAYER_SCALE;
   const playerPaint = material.carPaint({ color: "#232932", roughness: 0.26, metallic: 0.7 });
   if (meshyPlayer) {
-    const data = meshyGeometry("roadster")!;
-    builder.add(geometry.custom(
-      geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }),
-      { name: "car-body", material: meshyMaterial("roadster", { roughness: 0.42, metallic: 0.18 }) }
-    ).runtime({ id: "car-body" }));
     playerIds.push("car-body");
   } else {
     for (const g of CAR_GROUPS) {

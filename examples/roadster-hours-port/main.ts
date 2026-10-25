@@ -6,6 +6,7 @@
  * through `__AURA_ROADSTER_HOURS__.stepSteps/replay`).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, type AuraApp, createFixedStepLoop, installQaHooks } from "@aura3d/engine";
+import { summarizeTextureUpgrade } from "@aura3d/engine/game";
 import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound } from "./audio";
 import { LEVELS } from "./data";
@@ -313,6 +314,8 @@ const hooks = {
   probeBatchedDraws: () => runtime?.probeBatchedDraws() ?? null,
   diagnostics: () => app?.diagnostics() ?? null,
   appInfo: () => app?.info ?? null,
+  /** Texture upgrade status per node: textures upload one material at a time after mount, so an early frame shows white models until these read `textured`. */
+  textures: () => summarizeTextureUpgrade(app?.diagnostics()),
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-01", "SG-02", "SH-02", "SG-03", "SG-05"] }) : null)
 };
 declare global { interface Window { __AURA_ROADSTER_HOURS__?: typeof hooks; __AURA_ROADSTER_HOURS_ERROR__?: string; skybreak?: { snapshot: typeof snapshot } } }
