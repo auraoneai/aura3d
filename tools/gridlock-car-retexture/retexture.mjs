@@ -53,6 +53,53 @@ for (const [cls, tris] of Object.entries(groups)) {
     .setMaterial(mat));
   counts[cls] = tris.length / 3;
 }
+// The baked mesh is thin overlapping plates with gaps between them, so the interior shows through the paint. A smaller solid core
+// (a loft of rings along the car, in body colour, dark glass colour under the cabin) sits behind the plates so gaps show paint.
+{
+  const SLICES = 40, Z0 = -0.93, Z1 = 0.93, dz = (Z1 - Z0) / (SLICES - 1);
+  const rings = [];
+  for (let i = 0; i < SLICES; i++) {
+    const zc = Z0 + i * dz;
+    let wmax = 0, ytop = 0;
+    for (let t = 0; t < idx.length; t += 3) {
+      const j = idx[t] * 3, z = pos[j + 2];
+      if (Math.abs(z - zc) > dz * 0.75) continue;
+      const x = Math.abs(pos[j]), y = pos[j + 1];
+      if (y < 0.13 && x > 0.3) continue; // wheels and tyres
+      if (x > wmax) wmax = x;
+      if (y > ytop) ytop = y;
+    }
+    rings.push({ z: zc, w: Math.max(0.12, wmax * 0.86), top: Math.max(0.2, ytop * 0.94), cabin: zc > -0.2 && zc < 0.42 });
+  }
+  const mk = (cabin) => ({ p: [], n: [], ind: [], col: [] });
+  const parts = { body: mk(), glass: mk() };
+  const ringPts = (r) => [[-r.w, 0.1], [-r.w, r.top * 0.62], [-r.w * 0.55, r.top], [r.w * 0.55, r.top], [r.w, r.top * 0.62], [r.w, 0.1]];
+  for (let i = 0; i < SLICES - 1; i++) {
+    const a = rings[i], b = rings[i + 1], part = parts[a.cabin && b.cabin ? "glass" : "body"];
+    const pa = ringPts(a), pb = ringPts(b);
+    for (let k = 0; k < pa.length; k++) {
+      const k2 = (k + 1) % pa.length;
+      const q = [[pa[k][0], pa[k][1], a.z], [pa[k2][0], pa[k2][1], a.z], [pb[k2][0], pb[k2][1], b.z], [pb[k][0], pb[k][1], b.z]];
+      const e1 = [q[1][0] - q[0][0], q[1][1] - q[0][1], q[1][2] - q[0][2]], e2 = [q[3][0] - q[0][0], q[3][1] - q[0][1], q[3][2] - q[0][2]];
+      let nx = e1[1] * e2[2] - e1[2] * e2[1], ny = e1[2] * e2[0] - e1[0] * e2[2], nz = e1[0] * e2[1] - e1[1] * e2[0];
+      const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+      const base = part.p.length / 3;
+      for (const v of q) { part.p.push(v[0], v[1], v[2]); part.n.push(nx, ny, nz); const sh = Math.round(paintShade(v[1]) * 255); part.col.push(sh, sh, sh, 255); }
+      part.ind.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    }
+  }
+  for (const [cls, part] of Object.entries(parts)) {
+    if (!part.ind.length) continue;
+    const mat = root.listMaterials().find((m) => m.getName() === `car-${cls}`);
+    mesh.addPrimitive(doc.createPrimitive()
+      .setAttribute("POSITION", doc.createAccessor().setType("VEC3").setArray(new Float32Array(part.p)).setBuffer(buffer))
+      .setAttribute("NORMAL", doc.createAccessor().setType("VEC3").setArray(new Float32Array(part.n)).setBuffer(buffer))
+      .setAttribute("COLOR_0", doc.createAccessor().setType("VEC4").setArray(new Uint8Array(part.col)).setNormalized(true).setBuffer(buffer))
+      .setIndices(doc.createAccessor().setType("SCALAR").setArray(new Uint16Array(part.ind)).setBuffer(buffer))
+      .setMaterial(mat));
+    counts[`core-${cls}`] = part.ind.length / 3;
+  }
+}
 for (const m of root.listMaterials()) if (!m.getName().startsWith("car-")) m.dispose();
 for (const t of root.listTextures()) t.dispose();
 await doc.transform(prune());

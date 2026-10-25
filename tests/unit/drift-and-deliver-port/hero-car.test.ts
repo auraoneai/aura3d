@@ -19,7 +19,8 @@ describe("gridlock courier hero car", () => {
     }
     const prims = root.listMeshes().flatMap((mesh) => mesh.listPrimitives());
     const tris = prims.reduce((s, p) => s + (p.getIndices()?.getCount() ?? 0) / 3, 0);
-    expect(tris).toBe(39182);
+    expect(tris, "the original 39,182 plate triangles plus the small core loft").toBeGreaterThanOrEqual(39182);
+    expect(tris).toBeLessThan(39182 + 600);
     let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
     for (const p of prims) {
       const a = p.getAttribute("POSITION")!.getArray()!;
