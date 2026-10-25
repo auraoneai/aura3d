@@ -165,7 +165,7 @@ input,textarea{font-family:inherit}
 .ol-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ol-item.sel .nm{color:var(--tx-hi);font-weight:600}
 .ol-item .meta{font-family:var(--mono);font-size:10px;color:var(--tx-faint)}
-/* Cast provenance badge (Phase E3): authored-fallback vs catalog-resolved vs user-uploaded. */
+/* Cast provenance badge (Phase E3): authored-fallback vs open-source-resolved vs meshy-generated vs user-uploaded. */
 .ol-item .src-badge{font-family:var(--mono);font-size:9px;line-height:1;padding:2px 5px;border-radius:5px;text-transform:uppercase;letter-spacing:.04em;flex:0 0 auto;border:1px solid transparent}
 .ol-item .src-badge.src-fallback{color:#ffb020;background:rgba(255,176,32,.12);border-color:rgba(255,176,32,.3)}
 .ol-item .src-badge.src-catalog{color:#4fc2ff;background:rgba(79,194,255,.12);border-color:rgba(79,194,255,.3)}

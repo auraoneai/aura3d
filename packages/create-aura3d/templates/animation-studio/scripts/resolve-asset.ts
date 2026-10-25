@@ -1,8 +1,10 @@
 /**
- * resolve-asset.ts — pull a real asset from the Aura3D hosted catalog (#3) into the
- * template's public dir, so a scene's cast/props are DYNAMIC (resolved from the prompt),
- * not the Moon Garden defaults. Reuses the hosted-catalog worker (Objaverse direct GLBs)
- * + the hardened loader (auto weight-normalization). Records provenance (CC-BY).
+ * resolve-asset.ts — pull a real asset from OPEN, licence-clear sources (resolved at build time
+ * through the Aura3D CLI search; see open-source-search.ts) into the template's public dir, so a
+ * scene's cast/props are DYNAMIC (resolved from the prompt), not the Moon Garden defaults. Uses
+ * the hardened loader (auto weight-normalization). Records the licence and author the provider
+ * reported. When nothing matches it says so and names the next steps (add a licensed GLB, or
+ * generate with Meshy via `--allow-meshy --budget N`); there is no network service to fall back to.
  *
  * Used by `animation-scene cast add` / `prop add`.
  */
@@ -14,11 +16,18 @@ import { fileURLToPath } from "node:url";
 import { parseGlbDocument } from "@aura3d/assets";
 import { ProbeSession } from "./asset-render-probe.js";
 import { probeEmbeddedMotion, type ClipMotionScore, type MotionProbeReport } from "./asset-motion-probe.js";
+import {
+  OpenSourceNoMatchError,
+  generateWithMeshy,
+  noMatchMessage,
+  searchOpenSources,
+  type CliRunner,
+  type OpenSourceResult
+} from "./open-source-search.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = resolve(__dirname, "..", "public", "aura-assets");
 const REPORT_DIR = resolve(__dirname, "..", "dist", "scene");
-const WORKER = "https://aura3d-asset-index-cron.newsroom.workers.dev/search";
 
 /**
  * Rig grade: how faithfully will the standard humanoid retarget onto this skeleton?
@@ -130,18 +139,11 @@ export interface CharacterResolverReport {
   readonly generatedAt: string;
 }
 
-interface CatalogResult { id: string; title: string; source: string; url: string; license?: string; attribution?: string }
+type CatalogResult = OpenSourceResult;
 
-async function searchCatalog(query: string): Promise<CatalogResult[]> {
-  // The hosted Aura3D asset index (Objaverse + Sketchfab + Poly Pizza + …). Pull a WIDE
-  // ranked list so the metadata + render-test gates downstream have many real candidates to
-  // sift — most catalog "robots" are static props, so we need depth to find a rigged one
-  // whose textures actually bind. Accept any direct .glb (not just objaverse).
-  const url = `${WORKER}?q=${encodeURIComponent(query)}&limit=60&commercial=true`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`catalog ${res.status}`);
-  const data = (await res.json()) as { results?: CatalogResult[] };
-  return (data.results ?? []).filter((r) => typeof r.url === "string" && /\.glb($|\?)/.test(r.url));
+/** Open, licence-clear candidates for a query (wide ranked list: the metadata and render gates downstream sift it). */
+function searchCatalog(query: string, role: "character" | "prop", runner?: CliRunner): CatalogResult[] {
+  return searchOpenSources(query, { role, ...(runner ? { runner } : {}) });
 }
 
 interface GlbInfo { skinned: boolean; textured: boolean; embeddedTextures: boolean; clips: string[]; bounds: [number, number, number]; tris: number; verts: number; jointCount: number; humanoid: boolean; boneHintHits: { arms: boolean; legs: boolean }; textureMaxDim: number; materialCount: number; validMaterials: number }
@@ -334,10 +336,13 @@ export async function resolveAsset(
   query: string,
   id: string,
   role: "character" | "prop",
-  opts: { requireDialogue?: boolean } = {}
+  opts: { requireDialogue?: boolean; runner?: CliRunner } = {}
 ): Promise<ResolvedAsset> {
   const requireDialogue = opts.requireDialogue ?? true; // animation-studio scenes are dialogue scenes
-  const candidates = await searchCatalog(query);
+  const candidates = searchCatalog(query, role, opts.runner);
+  if (candidates.length === 0) throw new OpenSourceNoMatchError(noMatchMessage(query, id, role));
+  // (The file keeps the legacy `.catalog.glb` suffix: existing episode documents and the cast
+  // manifest reference it by name.)
   const file = `${id}.catalog.glb`;
 
   function finalize(
@@ -362,9 +367,9 @@ export async function resolveAsset(
       humanoid: info.humanoid,
       skinned: info.skinned,
       textured: info.textured,
-      attribution: `${c.title} (${c.source}, ${c.license ?? "CC-BY-4.0"})${c.attribution ? ` by ${c.attribution}` : ""}`,
+      attribution: `${c.title} (${c.source}, ${c.license})${c.attribution ? ` by ${c.attribution}` : ""}`,
       sourceUrl: c.url,
-      license: c.license ?? "CC-BY-4.0",
+      license: c.license,
       meshGrade: mesh.grade,
       tris: info.tris,
       textureMaxDim: info.textureMaxDim,
@@ -426,7 +431,7 @@ export async function resolveAsset(
       if (!info || !passesCheapGate(info) || info.tris === 0) continue;
       return finalize(c, buf, info);
     }
-    throw new Error(`no suitable prop found for "${query}" (tried ${candidates.length} candidates)`);
+    throw new OpenSourceNoMatchError(`no suitable prop found for "${query}" (tried ${candidates.length} open-source candidates)\n${noMatchMessage(query, id, "prop")}`);
   }
 
   // ── CHARACTER: download + inspect every viable candidate, RANK by richness, then render-test. ──
@@ -498,7 +503,7 @@ export async function resolveAsset(
       const row: CharacterResolverRow = {
         source: c.source,
         title: c.title,
-        license: c.license ?? "CC-BY-4.0",
+        license: c.license,
         url: c.url,
         rigGrade,
         meshGrade: effMeshGrade,
@@ -529,20 +534,28 @@ export async function resolveAsset(
     if (probe) await probe.close();
   }
   writeResolverReport(null);
-  throw new Error(`no suitable character found for "${query}" (tried ${candidates.length} candidates, ${scored.length} rigged) — see resolver report`);
+  throw new OpenSourceNoMatchError(`no suitable character found for "${query}" (tried ${candidates.length} open-source candidates, ${scored.length} rigged) — see resolver report\n${noMatchMessage(query, id, "character")}`);
 }
 
 /**
  * USER-UPLOAD PATH (M1). Resolve a character from a LOCAL .glb the user dropped in — bypassing
- * the catalog entirely. The file is inspected, graded (rig + mesh), render-probed exactly like a
- * catalog candidate, copied into public/aura-assets under `<id>.catalog.glb`, and a resolver
+ * open-source search entirely. The file is inspected, graded (rig + mesh), render-probed exactly like an
+ * open-source candidate, copied into public/aura-assets under `<id>.catalog.glb`, and a resolver
  * report is written. Throws (with the grades in the message) if the GLB has no usable rig or
  * fails the render probe, so a broken upload is rejected honestly rather than silently shipped.
  */
+/** Where a locally supplied GLB really came from (user upload, or generated with Meshy). */
+export interface LocalProvenance {
+  readonly source: string;
+  readonly attribution: string;
+  readonly sourceUrl: string;
+  readonly license: string;
+}
+
 export async function resolveLocalGlb(
   filePath: string,
   id: string,
-  opts: { requireDialogue?: boolean; skipRenderProbe?: boolean } = {}
+  opts: { requireDialogue?: boolean; skipRenderProbe?: boolean; provenance?: LocalProvenance } = {}
 ): Promise<ResolvedAsset> {
   const requireDialogue = opts.requireDialogue ?? true;
   const abs = resolve(process.cwd(), filePath);
@@ -560,7 +573,7 @@ export async function resolveLocalGlb(
     console.error(`  note: ${filePath} has no mouth/face morph — lip-sync will be disabled for this character.`);
   }
 
-  // RENDER PROBE (same gate as the catalog path) unless explicitly skipped (offline/no-browser).
+  // RENDER PROBE (same gate as the open-source path) unless explicitly skipped (offline/no-browser).
   // The rendered detail grade is folded into the mesh grade (worse-of metadata + rendered).
   let renderPass = true;
   let renderReason = "render probe skipped";
@@ -583,14 +596,14 @@ export async function resolveLocalGlb(
   }
   const fidelity = combineFidelity(rigGrade, mesh);
 
-  // Accept: copy into the served public dir under the catalog name + write a resolver report.
+  // Accept: copy into the served public dir under the legacy `.catalog.glb` name + write a resolver report.
   const file = `${id}.catalog.glb`;
   mkdirSync(PUBLIC_DIR, { recursive: true });
   writeFileSync(resolve(PUBLIC_DIR, file), buf);
   const hash = `sha256-${createHash("sha256").update(buf).digest("hex")}`;
 
   const row: CharacterResolverRow = {
-    source: "user-upload", title: `${id} (uploaded ${filePath})`, license: "user-provided", url: abs,
+    source: opts.provenance?.source ?? "user-upload", title: `${id} (${opts.provenance ? opts.provenance.source : "uploaded"} ${filePath})`, license: opts.provenance?.license ?? "user-provided", url: abs,
     rigGrade, meshGrade: mesh, fidelity, tris: info.tris, textureMaxDim: info.textureMaxDim,
     clipCount: info.clips.length, usefulClips: motion.usefulClips, renderPass,
     motionPass: motion.motionPass, hasMouth: motion.hasMouth, accepted: true,
@@ -608,10 +621,64 @@ export async function resolveLocalGlb(
   return {
     id, url: `/aura-assets/${file}`, hash, bounds: info.bounds, clips: info.clips, clipCount: info.clips.length,
     humanoid: info.humanoid, skinned: info.skinned, textured: info.textured,
-    attribution: `User-uploaded GLB (${filePath})`, sourceUrl: abs, license: "user-provided",
+    attribution: opts.provenance?.attribution ?? `User-uploaded GLB (${filePath})`, sourceUrl: opts.provenance?.sourceUrl ?? abs, license: opts.provenance?.license ?? "user-provided",
     rigGrade, meshGrade: mesh, fidelity, tris: info.tris, textureMaxDim: info.textureMaxDim,
     clipScores: motion.clips, usefulClips: motion.usefulClips, hasViableActingPack: motion.hasViableActingPack, libraryFallback: motion.libraryFallback
   };
+}
+
+/**
+ * Admit a prop GLB you supply (or that Meshy generated): needs geometry and self-contained
+ * textures, is hashed and copied into public/aura-assets, and records the provenance you pass.
+ * Props have no rig, so there is no rig grade or render probe.
+ */
+export function resolveLocalProp(filePath: string, id: string, provenance: LocalProvenance): ResolvedAsset {
+  const abs = resolve(process.cwd(), filePath);
+  if (!existsSync(abs)) throw new Error(`prop file not found: ${abs}`);
+  const buf = readFileSync(abs);
+  const info = inspectGlb(buf);
+  if (!info) throw new Error(`not a binary glTF (.glb): ${filePath}`);
+  if (info.tris === 0) throw new Error(`prop GLB has no geometry (${filePath})`);
+  if (info.textured && !info.embeddedTextures) throw new Error(`prop GLB references external textures; embed them (${filePath})`);
+  const file = `${id}.catalog.glb`;
+  mkdirSync(PUBLIC_DIR, { recursive: true });
+  writeFileSync(resolve(PUBLIC_DIR, file), buf);
+  const hash = `sha256-${createHash("sha256").update(buf).digest("hex")}`;
+  const mesh = gradeMesh(info).grade;
+  return {
+    id, url: `/aura-assets/${file}`, hash, bounds: info.bounds, clips: info.clips, clipCount: info.clips.length,
+    humanoid: info.humanoid, skinned: info.skinned, textured: info.textured,
+    attribution: provenance.attribution, sourceUrl: provenance.sourceUrl, license: provenance.license,
+    meshGrade: mesh, tris: info.tris, textureMaxDim: info.textureMaxDim
+  };
+}
+
+/**
+ * Generate a character or prop with Meshy (opt-in, budgeted), then admit the generated GLB
+ * through the same grading as an upload. Only called when the user passed `--allow-meshy` with a
+ * budget. The provenance records that it was generated from a text prompt, never a licence we
+ * did not verify: confirm your Meshy plan's commercial terms before you ship it.
+ */
+export async function resolveMeshyAsset(
+  query: string,
+  id: string,
+  role: "character" | "prop",
+  budget: number,
+  opts: { runner?: CliRunner; skipRenderProbe?: boolean } = {}
+): Promise<ResolvedAsset> {
+  const needed = role === "character" ? 38 : 30;
+  if (!Number.isFinite(budget) || budget < needed) {
+    throw new Error(`--budget ${budget} is below the about ${needed}-credit Meshy estimate for a ${role}. Pass --budget ${needed} or more with --allow-meshy.`);
+  }
+  const generated = generateWithMeshy(query, id, role, budget, opts.runner);
+  const provenance: LocalProvenance = {
+    source: "meshy",
+    attribution: `Generated with Meshy from the text prompt "${generated.prompt}" (${generated.credits} credits)`,
+    sourceUrl: `meshy:text-to-3d`,
+    license: "meshy-generated (check your Meshy plan terms before shipping)"
+  };
+  if (role === "prop") return resolveLocalProp(generated.file, id, provenance);
+  return resolveLocalGlb(generated.file, id, { ...(opts.skipRenderProbe ? { skipRenderProbe: true } : {}), provenance });
 }
 
 /**

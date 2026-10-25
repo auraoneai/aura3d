@@ -82,7 +82,8 @@ interface RenderSummary {
 function provenanceFor(c: RuntimeCharacter): FidelityProvenance {
   if (c.source === "curated") return "curated";
   if (c.source === "user-uploaded" || /^file:/i.test(c.sourceUrl ?? "")) return "user-uploaded";
-  if (c.source === "catalog-resolved" || c.sourceUrl || c.attribution) return "catalog-resolved";
+  if (c.source === "meshy-generated") return "meshy-generated";
+  if (c.source === "open-source-resolved" || c.source === "catalog-resolved" || c.sourceUrl || c.attribution) return "open-source-resolved";
   return "authored-fallback";
 }
 

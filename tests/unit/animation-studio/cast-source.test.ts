@@ -11,7 +11,7 @@ import {
 } from "../../../apps/animation-studio-web/src/state/mapDocument";
 
 /**
- * Phase E3 — authored-fallback ≠ catalog-resolved ≠ user-uploaded.
+ * Phase E3 — authored-fallback ≠ open-source-resolved ≠ meshy-generated ≠ user-uploaded.
  *
  * The UI data model + Outliner labels must SEPARATE cast provenance so an authored/placeholder
  * fallback is never presented as catalog evidence. These tests:
@@ -50,9 +50,15 @@ describe("cast/set/animation provenance is honest + prompt-derived (E3)", () => 
     const uploaded: RuntimeCharacter = { id: "mine", source: "user-uploaded", attribution: "my-character.glb" };
 
     expect(castProvenance(authored).source).toBe("authored-fallback");
-    expect(castProvenance(catalog).source).toBe("catalog-resolved");
+    expect(castProvenance(catalog).source).toBe("open-source-resolved");
     expect(castProvenance(catalog).sourceLabel).toContain("Objaverse");
     expect(castProvenance(uploaded).source).toBe("user-uploaded");
+
+    // Documents written before the hosted index was retired say `catalog-resolved`: still read as open-source-resolved.
+    expect(castProvenance({ id: "old", source: "catalog-resolved", attribution: "Old Bot (CC-BY-4.0)" }).source).toBe("open-source-resolved");
+    expect(castProvenance({ id: "new", source: "open-source-resolved" }).source).toBe("open-source-resolved");
+    // A Meshy generation keeps its own label: it is not open-source evidence.
+    expect(castProvenance({ id: "gen", source: "meshy-generated", attribution: "Generated with Meshy" }).source).toBe("meshy-generated");
 
     // A file: source URL also reads as an upload even without an explicit source field.
     expect(castProvenance({ id: "x", sourceUrl: "file:///tmp/x.glb" }).source).toBe("user-uploaded");
@@ -61,7 +67,7 @@ describe("cast/set/animation provenance is honest + prompt-derived (E3)", () => 
   it("an authored fallback is NEVER labeled as catalog evidence", () => {
     const authored = castProvenance({ id: "placeholder" });
     expect(authored.source).toBe("authored-fallback");
-    expect(authored.source).not.toBe("catalog-resolved");
+    expect(authored.source).not.toBe("open-source-resolved");
     expect(authored.sourceLabel.toLowerCase()).toContain("fallback");
   });
 
@@ -80,10 +86,10 @@ describe("cast/set/animation provenance is honest + prompt-derived (E3)", () => 
       dialogue: { language: "en", lines: [] }
     });
     expect(ui.cast).toHaveLength(2);
-    expect(ui.cast[0]!.source).toBe("catalog-resolved");
+    expect(ui.cast[0]!.source).toBe("open-source-resolved");
     expect(ui.cast[1]!.source).toBe("authored-fallback");
     for (const c of ui.cast) {
-      expect(["authored-fallback", "catalog-resolved", "user-uploaded"]).toContain(c.source);
+      expect(["authored-fallback", "open-source-resolved", "meshy-generated", "user-uploaded"]).toContain(c.source);
       expect(c.sourceLabel.length).toBeGreaterThan(0);
     }
   });

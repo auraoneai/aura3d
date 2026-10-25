@@ -4,8 +4,8 @@
  * For each motion in the STANDARD performance vocabulary (idle / talk / gesture / point / nod /
  * walk / run / react) this:
  *
- *   1. searches the live hosted Aura3D asset index (the same hosted worker + direct-GLB filter as
- *      `resolve-asset.ts`) for a rigged, animated GLB carrying that motion
+ *   1. searches open, licence-clear sources through the Aura3D CLI (the same build-time search and
+ *      direct-GLB filter as `resolve-asset.ts`, see `open-source-search.ts`) for a rigged, animated GLB carrying that motion
  *      (`assets resolve "<motion> animation"` — the `--animated` intent),
  *   2. downloads + inspects it, requiring a humanoid skin and >=1 embedded clip,
  *   3. EXTRACTS the embedded clip's real keyframe tracks straight out of the GLB binary
@@ -18,8 +18,8 @@
  *   4. writes each extracted clip to `public/clip-library/<id>.json` + a `manifest.json` recording
  *      per-clip provenance (source title, url, license, attribution, original clip name, hash).
  *
- * HONESTY: this depends on the live catalog actually returning a suitable rigged+animated GLB for
- * a query. Most catalog hits for "<motion>" are static props or single-rig characters; many GLBs
+ * HONESTY: this depends on open sources actually returning a suitable rigged+animated GLB for
+ * a query. Most hits for "<motion>" are static props or single-rig characters; many GLBs
  * are external-texture or insane-scale. When a query yields nothing usable we DO NOT fabricate a
  * clip — we fall back to the procedural standard clip (`createStandardHumanoidClipDefinitions`)
  * and record `source: "procedural-fallback"` in the manifest, logging it loudly. The loader
@@ -32,6 +32,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseGlbDocument } from "@aura3d/assets";
+import { searchOpenSources, type OpenSourceResult } from "./open-source-search.js";
 import {
   AnimationClipRegistry,
   AnimationTrack,
@@ -47,15 +48,14 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR = resolve(__dirname, "..", "public", "clip-library");
-const WORKER = "https://aura3d-asset-index-cron.newsroom.workers.dev/search";
 
 /**
- * Per-motion catalog config:
- *  - `query`: catalog search string (`--animated` intent baked in).
+ * Per-motion search config:
+ *  - `query`: open-source search string (`--animated` intent baked in).
  *  - `clipKeywords`: tokens we look for in the EMBEDDED clip name to confirm the clip actually
  *    depicts this motion. A candidate whose clip name matches is strongly preferred; only if no
  *    candidate's clip name matches do we accept a name-agnostic best-animated clip (recorded as a
- *    weaker `nameMatch:false` in provenance — honest about the looseness of catalog semantics).
+ *    weaker `nameMatch:false` in provenance — honest about the looseness of search semantics).
  */
 interface MotionConfig {
   readonly query: string;
@@ -76,24 +76,14 @@ const MOTION_QUERIES: Readonly<Record<StandardClipId, MotionConfig>> = {
 };
 
 // ----------------------------------------------------------------------------------------------
-// Catalog search (mirrors resolve-asset.ts: wide ranked list of direct .glb, commercial-OK)
+// Open-source search (mirrors resolve-asset.ts: wide ranked list of direct, licence-clear .glb)
 // ----------------------------------------------------------------------------------------------
 
-interface CatalogResult {
-  id: string;
-  title: string;
-  source: string;
-  url: string;
-  license?: string;
-  attribution?: string;
-}
+type CatalogResult = OpenSourceResult;
 
-async function searchCatalog(query: string): Promise<CatalogResult[]> {
-  const url = `${WORKER}?q=${encodeURIComponent(query)}&limit=60&commercial=true&animated=true`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`catalog ${res.status}`);
-  const data = (await res.json()) as { results?: CatalogResult[] };
-  return (data.results ?? []).filter((r) => typeof r.url === "string" && /\.glb($|\?)/.test(r.url));
+/** Open, licence-clear animated GLB candidates for a motion query (no network service of ours). */
+function searchCatalog(query: string): CatalogResult[] {
+  return searchOpenSources(query, { animated: true, role: "motion" });
 }
 
 // ----------------------------------------------------------------------------------------------
@@ -649,10 +639,10 @@ function clipNameMatches(name: string, keywords: readonly string[]): boolean {
 async function resolveMotion(clipId: StandardClipId, config: MotionConfig): Promise<MotionResult> {
   let candidates: CatalogResult[];
   try {
-    candidates = await searchCatalog(config.query);
+    candidates = searchCatalog(config.query);
   } catch (err) {
-    console.error(`  [${clipId}] catalog search failed (${(err as Error).message}) -> procedural fallback`);
-    return proceduralFor(clipId, `catalog search failed: ${(err as Error).message}`);
+    console.error(`  [${clipId}] open-source search failed (${(err as Error).message}) -> procedural fallback`);
+    return proceduralFor(clipId, `open-source search failed: ${(err as Error).message}`);
   }
   console.error(`  [${clipId}] "${config.query}" -> ${candidates.length} GLB candidates`);
 
@@ -706,12 +696,12 @@ async function resolveMotion(clipId: StandardClipId, config: MotionConfig): Prom
   }
 
   if (fallback) {
-    console.error(`  [${clipId}] no name-matched clip; using best-animated catalog clip (nameMatch:false)`);
+    console.error(`  [${clipId}] no name-matched clip; using best-animated open-source clip (nameMatch:false)`);
     return buildResult(clipId, fallback);
   }
 
   console.error(`  [${clipId}] no usable rigged+animated GLB -> procedural fallback`);
-  return proceduralFor(clipId, "no catalog GLB yielded an extractable humanoid clip");
+  return proceduralFor(clipId, "no open-source GLB yielded an extractable humanoid clip");
 }
 
 function buildResult(clipId: StandardClipId, cand: Candidate): MotionResult {
@@ -732,7 +722,7 @@ function buildResult(clipId: StandardClipId, cand: Candidate): MotionResult {
       sourceClipName: best.sourceClipName,
       sourceTitle: c.title,
       sourceUrl: c.url,
-      license: c.license ?? "CC-BY-4.0",
+      license: c.license,
       attribution: c.attribution ?? c.source
     }
   };
@@ -748,7 +738,7 @@ function buildResult(clipId: StandardClipId, cand: Candidate): MotionResult {
       source: "catalog-extracted",
       sourceTitle: c.title,
       sourceUrl: c.url,
-      license: c.license ?? "CC-BY-4.0",
+      license: c.license,
       attribution: c.attribution ?? c.source,
       originalClipName: best.sourceClipName,
       mappedIntent: clipId,
@@ -835,7 +825,7 @@ async function build(): Promise<void> {
 
   console.error("");
   console.error(
-    `Done: ${extractedCount}/${results.length} clips extracted from the live catalog, ` +
+    `Done: ${extractedCount}/${results.length} clips extracted from open sources, ` +
       `${manifest.fallbackCount} procedural fallbacks. -> ${OUT_DIR}`
   );
 }

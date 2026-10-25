@@ -43,7 +43,7 @@ describe("M7 fidelity tiering — grading rules", () => {
     const r = gradeStudio({
       id: "robot",
       rigGrade: "A",
-      provenance: "catalog-resolved",
+      provenance: "open-source-resolved",
       motionSource: "procedural",
       shading: "cel",
       shadows: false
@@ -68,8 +68,8 @@ describe("M7 fidelity tiering — grading rules", () => {
   });
 
   it("grades C (previz): a sparse rig (grade C/D) even from the catalog", () => {
-    expect(gradeStudio({ id: "x", rigGrade: "C", provenance: "catalog-resolved" }).grade).toBe("C");
-    expect(gradeStudio({ id: "y", rigGrade: "D", provenance: "catalog-resolved" }).previz).toBe(true);
+    expect(gradeStudio({ id: "x", rigGrade: "C", provenance: "open-source-resolved" }).grade).toBe("C");
+    expect(gradeStudio({ id: "y", rigGrade: "D", provenance: "open-source-resolved" }).previz).toBe(true);
   });
 
   it("scene grade is the FLOOR of its cast (one previz character makes the scene previz)", () => {
@@ -95,8 +95,8 @@ describe("M7 fidelity tiering — grading rules", () => {
   it("studio and UI grading copies produce IDENTICAL verdicts", () => {
     const cases: StudioInput[] = [
       { id: "1", rigGrade: "A", provenance: "curated", motionSource: "mocap", shading: "cel", shadows: true },
-      { id: "2", rigGrade: "A", provenance: "catalog-resolved", motionSource: "procedural", shading: "pbr", shadows: false },
-      { id: "3", rigGrade: "C", provenance: "catalog-resolved" },
+      { id: "2", rigGrade: "A", provenance: "open-source-resolved", motionSource: "procedural", shading: "pbr", shadows: false },
+      { id: "3", rigGrade: "C", provenance: "open-source-resolved" },
       { id: "4", provenance: "authored-fallback" },
       { id: "5", rigGrade: "B", provenance: "user-uploaded", motionSource: "extracted", shading: "cel", shadows: true }
     ];
@@ -120,7 +120,7 @@ describe("M7 fidelity tiering — resolver/report tool surface", () => {
       id: "garage-scene",
       assets: {
         characters: [
-          { id: "rust", source: "catalog-resolved", attribution: "Rusty Bot (CC-BY)" },
+          { id: "rust", source: "open-source-resolved", attribution: "Rusty Bot (CC-BY)" },
           { id: "mara", source: "user-uploaded", sourceUrl: "file:///tmp/mara.glb" }
         ]
       }

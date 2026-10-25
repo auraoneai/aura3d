@@ -35,7 +35,8 @@ import { compileEpisodeDocument } from "../src/director/compile-episode-document
 import type { DirectorSceneInput } from "../src/director/director-heuristics.js";
 import { generateSceneFromPrompt } from "../src/director/prompt-scene.js";
 import { SET_TEMPLATES, getSetTemplate, pickSetForPrompt } from "../src/set-templates.js";
-import { resolveAsset, resolveLocalGlb, type ResolvedAsset } from "./resolve-asset.js";
+import { resolveAsset, resolveLocalGlb, resolveMeshyAsset, type ResolvedAsset } from "./resolve-asset.js";
+import { OpenSourceNoMatchError } from "./open-source-search.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(__dirname, "..", "..", "..", "..", "..");
@@ -48,6 +49,16 @@ const cmd = argv[0];
 function opt(name: string): string | undefined {
   const i = argv.indexOf(`--${name}`);
   return i >= 0 ? argv[i + 1] : undefined;
+}
+/** Meshy is opt-in: `--allow-meshy` needs an explicit `--budget N` (credits). Otherwise undefined. */
+function meshyOption(): { budget: number } | undefined {
+  if (!argv.includes("--allow-meshy")) return undefined;
+  const budget = Number(opt("budget"));
+  if (!Number.isFinite(budget) || budget <= 0) {
+    console.error("--allow-meshy needs a budget in credits, e.g. --allow-meshy --budget 40 (a character costs about 38, a prop about 30)");
+    process.exit(1);
+  }
+  return { budget };
 }
 function vec(s: string | undefined, fallbackY = 0): Vec3 | undefined {
   if (!s) return undefined;
@@ -197,26 +208,48 @@ function buildFromPrompt(prompt: string): EpisodeDocument {
 }
 
 /**
- * Resolve a character and register it under `id` (swap or add). Source is either the hosted
- * CATALOG (`--query`) or a USER-UPLOADED local GLB (`--file`); both are graded + render-probed by
- * the resolver, so an uploaded character goes through the same fidelity gate as a catalog one.
+ * Resolve a character and register it under `id` (swap or add). Source is open, licence-clear
+ * sources (`--query`, searched at build time), a USER-UPLOADED local GLB (`--file`), or, only
+ * when the user passes `--allow-meshy --budget N` and open sources found nothing, a Meshy
+ * generation. All are graded + render-probed by the resolver, so an uploaded or generated
+ * character goes through the same fidelity gate as an open-source one.
  */
+/** Open sources first; Meshy only when explicitly allowed with a budget and nothing matched. */
+async function resolveOrGenerate(
+  query: string,
+  id: string,
+  role: "character" | "prop",
+  meshy?: { budget: number }
+): Promise<{ asset: ResolvedAsset; source: "open-source-resolved" | "meshy-generated" }> {
+  try {
+    return { asset: await resolveAsset(query, id, role), source: "open-source-resolved" };
+  } catch (error) {
+    if (!(error instanceof OpenSourceNoMatchError) || !meshy) throw error;
+    console.error(`  open sources had nothing for "${query}": generating with Meshy (budget ${meshy.budget} credits)`);
+    return { asset: await resolveMeshyAsset(query, id, role, meshy.budget), source: "meshy-generated" };
+  }
+}
+
 async function castAdd(
   id: string,
   source: { query: string } | { file: string },
-  scaleOverride?: number
+  scaleOverride?: number,
+  meshy?: { budget: number }
 ): Promise<void> {
   const isUpload = "file" in source;
-  const a: ResolvedAsset = isUpload ? await resolveLocalGlb(source.file, id) : await resolveAsset(source.query, id, "character");
+  const resolved = isUpload ? undefined : await resolveOrGenerate(source.query, id, "character", meshy);
+  const a: ResolvedAsset = isUpload ? await resolveLocalGlb(source.file, id) : resolved!.asset;
+  const castSource: "user-uploaded" | "open-source-resolved" | "meshy-generated" = isUpload ? "user-uploaded" : resolved!.source;
   const current = loadDoc();
   const autoScale = a.bounds[1] > 0.1 && a.bounds[1] < 3 ? Math.min(4, Math.max(0.3, 1.6 / a.bounds[1])) : 1.6;
   const scale = scaleOverride ?? autoScale;
   // Persist the GLB's real clip list on the asset so the clip-existence guardrail can check
   // scheduled clips against it on every later edit (not just here).
-  // E3 provenance: a `cast add --query` member is CATALOG-RESOLVED (the UI labels it as such and
-  // never as authored-fallback). An uploaded GLB (`cast add --file`) is "user-uploaded".
+  // E3 provenance: a `cast add --query` member is OPEN-SOURCE-RESOLVED (or MESHY-GENERATED when you
+  // opted in), and the UI labels it as such, never as authored-fallback. An uploaded GLB
+  // (`cast add --file`) is "user-uploaded".
   const fidelity = a.fidelity ?? a.rigGrade;
-  const newChar = { id, url: a.url, scale, defaultClip: a.clips[0] ?? "idle", availableClips: a.clips, mouthMorphIndex: -1, source: (isUpload ? "user-uploaded" : "catalog-resolved") as "user-uploaded" | "catalog-resolved", attribution: a.attribution, license: a.license, sourceUrl: a.sourceUrl, hash: a.hash, ...(fidelity ? { fidelityGrade: fidelity } : {}) };
+  const newChar = { id, url: a.url, scale, defaultClip: a.clips[0] ?? "idle", availableClips: a.clips, mouthMorphIndex: -1, source: castSource, attribution: a.attribution, license: a.license, sourceUrl: a.sourceUrl, hash: a.hash, ...(fidelity ? { fidelityGrade: fidelity } : {}) };
   const characters = current.assets.characters.some((c) => c.id === id)
     ? current.assets.characters.map((c) => (c.id === id ? newChar : c))
     : [...current.assets.characters, newChar];
@@ -227,9 +260,9 @@ async function castAdd(
   console.log(`cast ${id} ← ${a.attribution} [fidelity ${fidelity ?? "?"}] (clips: ${a.clips.slice(0, 3).join(",")}, scale ${scale.toFixed(2)})`);
 }
 
-/** Resolve a prop from the catalog and register it under `id` (swap or add). */
-async function propAdd(id: string, query: string): Promise<void> {
-  const a = await resolveAsset(query, id, "prop");
+/** Resolve a prop from open sources (or Meshy, if allowed) and register it under `id` (swap or add). */
+async function propAdd(id: string, query: string, meshy?: { budget: number }): Promise<void> {
+  const { asset: a } = await resolveOrGenerate(query, id, "prop", meshy);
   const current = loadDoc();
   const newProp = { id, url: a.url, attribution: a.attribution, license: a.license, sourceUrl: a.sourceUrl, hash: a.hash };
   const props = current.assets.props.some((p) => p.id === id)
@@ -352,13 +385,13 @@ switch (cmd) {
   case "cast": {
     const file = opt("file");
     const query = opt("query");
-    // EITHER resolve from the catalog (`--query`) OR upload a local rigged GLB (`--file`).
+    // EITHER resolve from open sources (`--query`) OR upload a local rigged GLB (`--file`).
     if (argv[1] !== "add" || !opt("id") || (!query && !file)) {
-      console.error('usage: cast add --id <id> (--query "..." | --file <path.glb>) [--scale s]');
+      console.error('usage: cast add --id <id> (--query "..." | --file <path.glb>) [--scale s] [--allow-meshy --budget N]');
       process.exit(1);
     }
     const src = file ? { file } : { query: query! };
-    void castAdd(opt("id")!, src, opt("scale") ? Number(opt("scale")) : undefined).catch((e) => { console.error(e instanceof Error ? e.message : e); process.exitCode = 1; });
+    void castAdd(opt("id")!, src, opt("scale") ? Number(opt("scale")) : undefined, meshyOption()).catch((e) => { console.error(e instanceof Error ? e.message : e); process.exitCode = 1; });
     break;
   }
   case "scale": {
@@ -390,8 +423,8 @@ switch (cmd) {
     break;
   }
   case "prop": {
-    if (argv[1] !== "add" || !opt("id") || !opt("query")) { console.error('usage: prop add --id <id> --query "..."'); process.exit(1); }
-    void propAdd(opt("id")!, opt("query")!).catch((e) => { console.error(e instanceof Error ? e.message : e); process.exitCode = 1; });
+    if (argv[1] !== "add" || !opt("id") || !opt("query")) { console.error('usage: prop add --id <id> --query "..." [--allow-meshy --budget N]'); process.exit(1); }
+    void propAdd(opt("id")!, opt("query")!, meshyOption()).catch((e) => { console.error(e instanceof Error ? e.message : e); process.exitCode = 1; });
     break;
   }
   case "dialogue": {

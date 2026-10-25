@@ -46,7 +46,7 @@ export interface RuntimeDialogueLine {
 export interface RuntimeCharacter {
   id: string;
   role?: string;
-  /** Catalog/source URL when this cast member was resolved from the federated catalog. */
+  /** Source URL when this cast member was resolved from an open source. */
   sourceUrl?: string;
   /** Source title / attribution string the resolver persisted (catalog or upload). */
   attribution?: string;
@@ -54,9 +54,9 @@ export interface RuntimeCharacter {
   license?: string;
   /**
    * Explicit provenance class when the resolver/CLI recorded one. When absent it is INFERRED:
-   * a sourceUrl/attribution → catalog-resolved; otherwise authored-fallback.
+   * a sourceUrl/attribution → open-source-resolved; otherwise authored-fallback.
    */
-  source?: "authored-fallback" | "catalog-resolved" | "user-uploaded" | "curated";
+  source?: "authored-fallback" | "open-source-resolved" | "catalog-resolved" | "meshy-generated" | "user-uploaded" | "curated";
   /** M7 — rig grade (A/B/C/D) the resolver recorded, when available; drives the fidelity tier. */
   rigGrade?: "A" | "B" | "C" | "D";
   /** M7 — dominant motion source the render played (mocap/extracted/procedural…), when recorded. */
@@ -161,8 +161,8 @@ function cap(s: string): string {
 
 /**
  * Phase E3 — classify a cast member's PROVENANCE so the Outliner can label it honestly and never
- * sell an authored fallback as catalog evidence. Trust an explicit `source` the resolver recorded;
- * otherwise INFER: a catalog/source URL or attribution → catalog-resolved; a local-file upload
+ * sell an authored fallback as sourced evidence. Trust an explicit `source` the resolver recorded;
+ * otherwise INFER: a source URL or attribution → open-source-resolved; a local-file upload
  * marker → user-uploaded; nothing → authored-fallback (built-in/placeholder).
  */
 export function castProvenance(c: RuntimeCharacter): { source: CastSource; sourceLabel: string } {
@@ -171,11 +171,15 @@ export function castProvenance(c: RuntimeCharacter): { source: CastSource; sourc
   if (c.source === "user-uploaded" || /^file:/i.test(c.sourceUrl ?? "")) {
     return { source: "user-uploaded", sourceLabel: c.attribution ?? "user-uploaded GLB" };
   }
-  if (c.source === "curated") {
-    return { source: "catalog-resolved", sourceLabel: c.attribution ?? "curated cast" };
+  if (c.source === "meshy-generated") {
+    return { source: "meshy-generated", sourceLabel: c.attribution ?? "generated with Meshy" };
   }
-  if (c.source === "catalog-resolved" || c.sourceUrl || c.attribution) {
-    return { source: "catalog-resolved", sourceLabel: c.attribution ?? "catalog" };
+  if (c.source === "curated") {
+    return { source: "open-source-resolved", sourceLabel: c.attribution ?? "curated cast" };
+  }
+  // `catalog-resolved` is the legacy spelling in documents written before the hosted index was retired.
+  if (c.source === "open-source-resolved" || c.source === "catalog-resolved" || c.sourceUrl || c.attribution) {
+    return { source: "open-source-resolved", sourceLabel: c.attribution ?? "open source" };
   }
   return { source: "authored-fallback", sourceLabel: "authored fallback" };
 }
@@ -188,7 +192,8 @@ export function castProvenance(c: RuntimeCharacter): { source: CastSource; sourc
 export function fidelityProvenance(c: RuntimeCharacter): FidelityProvenance {
   if (c.source === "curated") return "curated";
   if (c.source === "user-uploaded" || /^file:/i.test(c.sourceUrl ?? "")) return "user-uploaded";
-  if (c.source === "catalog-resolved" || c.sourceUrl || c.attribution) return "catalog-resolved";
+  if (c.source === "meshy-generated") return "meshy-generated";
+  if (c.source === "open-source-resolved" || c.source === "catalog-resolved" || c.sourceUrl || c.attribution) return "open-source-resolved";
   return "authored-fallback";
 }
 

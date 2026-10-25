@@ -14,7 +14,7 @@ interface RowProps {
   accent?: string;
   glyph?: string;
   icon?: string;
-  /** Provenance badge (Phase E3): authored-fallback vs catalog-resolved vs user-uploaded. */
+  /** Provenance badge (Phase E3): authored-fallback vs open-source-resolved vs meshy-generated vs user-uploaded. */
   source?: CastSource;
   sourceLabel?: string;
   /** M7 — fidelity tier badge (A/B/C); C renders as "Previz". */
@@ -24,7 +24,8 @@ interface RowProps {
 /** Short, honest badge text + class per cast provenance class (E3). */
 const SOURCE_BADGE: Record<CastSource, { text: string; cls: string }> = {
   "authored-fallback": { text: "fallback", cls: "src-fallback" },
-  "catalog-resolved": { text: "catalog", cls: "src-catalog" },
+  "open-source-resolved": { text: "open source", cls: "src-catalog" },
+  "meshy-generated": { text: "generated", cls: "src-catalog" },
   "user-uploaded": { text: "uploaded", cls: "src-uploaded" }
 };
 

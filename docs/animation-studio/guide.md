@@ -130,8 +130,10 @@ Resolve a character and register it under `--id` (adds, or swaps an existing id)
 cast add --id <id> (--query "..." | --file <path.glb>) [--scale s]
 ```
 
-- `--query` — resolve from the hosted **catalog**; the member is recorded as
-  `catalog-resolved`.
+- `--query` — resolve from **open, licence-clear sources** through the build-time CLI search; the member
+  is recorded as `open-source-resolved` (older documents say `catalog-resolved`; both read the same).
+  If nothing matches, the command says so and names the next steps. `--allow-meshy --budget N` opts
+  into generating with Meshy (costs credits; recorded as `meshy-generated`).
 - `--file` — upload a local rigged **GLB**; recorded as `user-uploaded`.
 
 Either source goes through the same resolver (grade + render-probe). The GLB's real clip
@@ -141,11 +143,13 @@ exist. Scale auto-fits to ~1.6m height unless `--scale` overrides it. A `fidelit
 
 ### `prop add`
 
-Resolve a prop from the catalog and register it under `--id`.
+Resolve a prop from open, licence-clear sources and register it under `--id`.
 
 ```
-prop add --id <id> --query "..."
+prop add --id <id> --query "..." [--allow-meshy --budget N]
 ```
+
+If nothing matches, the command says so. Admit a licensed GLB with `aura3d assets add ./prop.glb --name <id>`, or pass `--allow-meshy --budget 30` to generate one (costs credits).
 
 ### `set`
 
@@ -276,8 +280,8 @@ interface EpisodeDocument {
   an optional `availableClips` list (the GLB's real clips, used by the clip-existence
   guardrail), an optional `mouthMorphIndex` (the morph that drives mouth-open, `-1` when
   the GLB has no face morph), a `source` provenance tag
-  (`catalog-resolved` / `user-uploaded` / `authored-default`), and an optional
-  `fidelityGrade` (A/B/C/D). All members also carry CC-BY provenance
+  (`open-source-resolved` / `meshy-generated` / `user-uploaded` / `authored-default`), and an optional
+  `fidelityGrade` (A/B/C/D). All members also carry provenance
   (`attribution` / `license` / `sourceUrl` / `hash`).
 - **`props`** (`PropAsset`): `id` and an *optional* `url`. A prompt-derived object with no
   catalog match is still recorded (so the prompt provably influenced the document) but its

@@ -22,7 +22,7 @@ export type Vec4 = readonly [number, number, number, number];
 // ---------------------------------------------------------------------------
 // Assets
 // ---------------------------------------------------------------------------
-/** Provenance for a catalog-resolved asset (CC-BY attribution + source + hash). */
+/** Provenance for an asset resolved from open sources (the licence and author the source reported, plus source URL and hash). */
 export interface AssetProvenance {
   readonly attribution?: string;
   readonly license?: string;
@@ -42,7 +42,7 @@ export interface CharacterAsset extends AssetProvenance {
   /** Morph-target index that drives mouth-open, or -1 when the GLB has no face morph. */
   readonly mouthMorphIndex?: number;
   /** How this cast member was sourced — drives honest provenance labelling in the UI. */
-  readonly source?: "catalog-resolved" | "user-uploaded" | "authored-default";
+  readonly source?: "open-source-resolved" | "meshy-generated" | "user-uploaded" | "authored-default" | "catalog-resolved";
   /** Combined fidelity grade (rig + mesh): A/B/C/D — surfaced so C output can be flagged previz. */
   readonly fidelityGrade?: "A" | "B" | "C" | "D";
 }

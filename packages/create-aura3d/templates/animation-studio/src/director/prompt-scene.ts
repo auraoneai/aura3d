@@ -25,7 +25,7 @@
  * EpisodeDocument the generic player renders directly.
  *
  * HONEST SCOPE: the cast GLB urls are procedural placeholders tagged with the prompt-derived
- * look; swapping in catalog-resolved rigs is `animation-scene cast add`'s job (network path).
+ * look; swapping in rigs resolved from open sources is `animation-scene cast add`'s job (build-time search).
  * This module proves the *generation* contract — prompt terms drive every part of the document
  * and it never silently reuses Moon Garden — not that an arbitrary prompt is "watchable".
  */
@@ -51,7 +51,7 @@ import { pickSetForPrompt, SET_TEMPLATES, type SetTemplate } from "../set-templa
  * The curated, render-ready A-grade humanoid cast (public/cast-library/*). A generated scene binds
  * each prompt-derived character to one of these real graded-A 21-joint GLBs (cycled), so the doc
  * renders immediately with a properly-rigged, mouth-morph-equipped character. `animation-scene cast
- * add --file/--query` overrides a slot with a user-uploaded or catalog-resolved rig.
+ * add --file/--query` overrides a slot with a user-uploaded or open-source-resolved rig.
  */
 // NEUTRAL names on purpose: the curated cast must NOT reuse the moon-garden fixture cast
 // (miko/luma) or a generic scene would re-introduce exactly the leakage D1 prohibits.
