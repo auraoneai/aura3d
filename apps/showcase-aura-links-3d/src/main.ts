@@ -86,6 +86,7 @@ import {
 } from "./game/sim";
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
 import { sweptClubContact, type ClubContact } from "./game/contact";
+import { commitStroke } from "./game/strokeCommit";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
@@ -1450,6 +1451,7 @@ function startSwing(): void {
  */
 function commitSwing(): void {
   const r = state.round!;
+  if (swingDrive.committed) return;
   const s = state.swing.state();
   const club = currentClub();
   pendingCommit = {
@@ -1459,9 +1461,7 @@ function commitSwing(): void {
     spin: s.spin ?? 0,
     aimYaw: aimYaw()
   };
-  r.strokes += 1;
-  if (club.putter) r.putts += 1;
-  swingDrive.committed = true;
+  commitStroke(r, swingDrive, !!club.putter);
   updateCardHud();
 }
 
@@ -2412,7 +2412,6 @@ function publishEvidence(): void {
       "linksGolferAthleteMeshy",
       "linksGolfCartMeshy",
       "linksPinFlagMeshy",
-      "rooftopBallRackCartMeshy",
       "siegeGolfBall",
       "propPineTree",
       "propRockA",
