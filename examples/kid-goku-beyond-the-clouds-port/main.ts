@@ -9,6 +9,7 @@
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
 import { MOUNT_PAOZU } from "./chapter";
 import { Game } from "./game";
+import { createGoPresenter, viewOf } from "./presentation";
 import { GameAudio } from "./audio";
 import { IDLE, SETTLE_FRAMES, createState, stepFrame, type StepInput } from "./sim";
 import { Ui } from "./ui";
@@ -29,6 +30,8 @@ function save(): void { try { localStorage.setItem(STORE_KEY, JSON.stringify(sav
 const saved = load();
 
 const game = new Game(CH, 0, saved.best);
+const presenter = createGoPresenter(() => game);
+let lastPhase = game.phase;
 const audio = new GameAudio();
 audio.enabled = saved.sound;
 let app: AuraApp | undefined;
@@ -88,7 +91,8 @@ function snapshot() {
 function render(dt = STEP): void {
   if (!app || !runtime) return;
   try {
-    runtime.update(game, dt, canvas.clientWidth / Math.max(1, canvas.clientHeight), pending);
+    const live = !manual && game.phase === "playing";
+    runtime.update(live ? viewOf(game, presenter.present(stepper, true)) : game, dt, canvas.clientWidth / Math.max(1, canvas.clientHeight), pending);
     app.step(0);
     frames++;
   } catch (error) {
@@ -111,6 +115,7 @@ const stepper = createFixedStepLoop({
   isActive: () => ready,
   step() {
     pending.push(...game.frame(STEP, currentInput()));
+    presenter.afterStep();
   }
 });
 
@@ -119,6 +124,7 @@ function loop(now: number): void {
   const dt = Math.min(0.1, Math.max(0, (now - last) / 1000));
   last = now;
   pending = [];
+  if (game.phase !== lastPhase) { lastPhase = game.phase; presenter.reset(); }
   stepper.tick(now);
   if (!manual && ready) {
     consume(pending);
@@ -134,9 +140,9 @@ const qa = installQaHooks("kid-goku", {
   app: () => app,
   routeHealth: () => (app ? createAuraRouteHealthSnapshot(app, { parityIds: ["SG-05"] }) : null),
   /** Fresh run at the start of the track (playing). */
-  reset() { game.start(CHAPTER_ZERO()); stepper.resetAccumulator(); },
+  reset() { game.start(CHAPTER_ZERO()); stepper.resetAccumulator(); presenter.reset(); },
   /** Fresh run plus the original's settle frames, so a recorded script starts from the same state. */
-  begin() { game.start(0); for (let i = 0; i < SETTLE_FRAMES; i++) stepFrame(game.state, IDLE, STEP, CH); stepper.resetAccumulator(); },
+  begin() { game.start(0); for (let i = 0; i < SETTLE_FRAMES; i++) stepFrame(game.state, IDLE, STEP, CH); stepper.resetAccumulator(); presenter.reset(); },
   extras: {
     /** A boolean property (the specs read `ready === true`), not the kit's `ready()` function. */
     get ready() { return ready; },
@@ -145,6 +151,7 @@ const qa = installQaHooks("kid-goku", {
     stepFrames(n: number, input: StepInput = IDLE): string[] {
       const events: string[] = [];
       for (let i = 0; i < n; i++) events.push(...stepFrame(game.state, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }, STEP, CH));
+      presenter.reset();
       return events;
     },
     /** Advance the whole game layer (encounters, falls, duels, finale) `n` frames; returns the events raised. */
@@ -152,6 +159,7 @@ const qa = installQaHooks("kid-goku", {
       const events: string[] = [];
       for (let i = 0; i < n; i++) events.push(...game.frame(STEP, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }));
       pending = events;
+      presenter.reset();
       return events;
     },
     /** Replay a recorded run-length input script from the current state; trace every `every` steps. */
@@ -165,6 +173,7 @@ const qa = installQaHooks("kid-goku", {
           if ((step - 1) % every === 0) trace.push(snapshot());
         }
       }
+      presenter.reset();
       return { steps: step, trace };
     },
     /** Teleport the run to distance `s` (look-dev and capture), with the progress a player would have there. */
@@ -178,11 +187,12 @@ const qa = installQaHooks("kid-goku", {
       for (const m of CH.meat) if (m.s < s) st.eaten.add(m.s);
       if (opts.nimbus) { st.nimbus.charge = 1; st.nimbus.active = true; st.nimbus.time = 7; st.jump = 3.2; }
       game.enc.rewind(s);
+      presenter.reset();
       runtime?.cutCamera();
       return snapshot();
     },
     /** Run the game layer for `n` frames (with the current phase) and render once: for deterministic captures. */
-    settle(n = 30, sim = false) { for (let i = 0; i < n; i++) { if (sim) game.frame(STEP, IDLE); render(STEP); } return snapshot(); },
+    settle(n = 30, sim = false) { for (let i = 0; i < n; i++) { if (sim) game.frame(STEP, IDLE); presenter.reset(); render(STEP); } return snapshot(); },
     render,
     raw: () => game.state,
     game: () => game,
