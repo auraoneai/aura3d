@@ -42,7 +42,6 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const MARKETING_DIR = resolve(SCRIPT_DIR, "..");
 const REPO_ROOT = resolve(MARKETING_DIR, "..");
 const OUT_STORE = resolve(REPO_ROOT, "store-assets/brand/social");
-const SITE_VERSION = JSON.parse(readFileSync(resolve(REPO_ROOT, "package.json"), "utf8")).version;
 const GAME_COUNT = JSON.parse(readFileSync(resolve(REPO_ROOT, "docs/workflows/game-inventory.json"), "utf8")).liveGameCount;
 const OUT_PUBLIC = resolve(MARKETING_DIR, "public/store-assets/brand/social");
 
@@ -271,12 +270,11 @@ h1 .accent { color: ${TEAL}; }
     <div class="brand">
       <span class="mark">${MARK_SVG}</span>
       <span class="word">Aura3D</span>
-      <span class="ver">v${SITE_VERSION}</span>
     </div>
 
     <div class="eyebrow">TypeScript 3D engine</div>
 
-    <h1>Ship a real 3D app<br>in <span class="accent">18 lines</span> of<br>TypeScript.</h1>
+    <h1>Ship a typed 3D scene<br>in <span class="accent">18 lines</span> of<br>TypeScript.</h1>
 
     <div class="install">
       <span class="cmd"><span class="dollar">$</span> npm i <span class="pkg">@aura3d/engine</span></span>
@@ -284,9 +282,9 @@ h1 .accent { color: ${TEAL}; }
     </div>
 
     <div class="meta">
-      <span class="dot"></span><span><b>MIT</b> licensed</span>
-      <span class="dot"></span><span><b>zero</b> dependencies</span>
-      <span class="dot"></span><span><b>WebGL2</b> + WebGPU</span>
+      <span class="dot"></span><span><b>Typed</b> assets</span>
+      <span class="dot"></span><span><b>check-deploy</b> gate</span>
+      <span class="dot"></span><span><b>WebGL2</b> runtime</span>
     </div>
 
     <div class="code"><span class="kw">import</span> { createAuraApp } <span class="kw">from</span> <span class="str">"@aura3d/engine"</span></div>
@@ -294,7 +292,7 @@ h1 .accent { color: ${TEAL}; }
 
   <div class="footer">
     <span class="url"><span class="dot"></span>aura3d.auraone.ai<span class="arrow">&#8599;</span></span>
-    <span class="footer-note">Aura3D ${SITE_VERSION} &middot; ${GAME_COUNT} playable games</span>
+    <span class="footer-note">${GAME_COUNT} playable games</span>
   </div>
 
   <div class="backplate"></div>

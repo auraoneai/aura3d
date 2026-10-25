@@ -61,6 +61,28 @@ function gameInventoryTokens() {
   };
 }
 
+function siteCountTokens() {
+  const readJson = (path: string) => JSON.parse(readFileSync(path, "utf8")) as { name?: string; private?: boolean };
+  let packageCount = 0;
+  for (const dir of readdirSync(resolve(repoRoot, "packages"))) {
+    const manifest = resolve(repoRoot, "packages", dir, "package.json");
+    if (existsSync(manifest) && !readJson(manifest).private) packageCount += 1;
+  }
+  const rootManifest = readJson(resolve(repoRoot, "package.json"));
+  if (rootManifest.name === "@aura3d/engine" && !rootManifest.private) packageCount += 1;
+  const templatesDir = resolve(repoRoot, "packages/create-aura3d/templates");
+  const templateCount = readdirSync(templatesDir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).length;
+  return {
+    name: "aura3d-site-count-tokens",
+    transformIndexHtml: {
+      order: "pre" as const,
+      handler(html: string) {
+        return html.replaceAll("{{PACKAGE_COUNT}}", String(packageCount)).replaceAll("{{TEMPLATE_COUNT}}", String(templateCount));
+      }
+    }
+  };
+}
+
 function serveRootAuraAssets() {
   const rootAuraAssetsDir = resolve(repoRoot, "public/aura-assets");
   const marketingAuraAssetsDir = resolve(marketingDir, "public/aura-assets");
@@ -298,6 +320,7 @@ export default defineConfig({
   publicDir: resolve(marketingDir, "public"),
   plugins: [
     gameInventoryTokens(),
+    siteCountTokens(),
     resolveRetargetWorker(),
     ...(rootConfig.plugins ?? []),
     serveRootAuraAssets(),
