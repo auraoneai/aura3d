@@ -1,0 +1,3 @@
+# Slingshot Siege: screenshots 2026-10-24 (not captured yet)
+
+Build `06cf4f7eb`. **No frames committed.** The first run's frames showed "Renderer unavailable": the capture image lacked `gullsiegeBridgeMeshy.40b2195a.glb` (HTTP 404), because the asset list was built from filenames and missed assets declared by key in `src/aura-assets.ts`. A rerun with the key-resolved set (144 files, 148 MB) is in progress; this README is replaced when frames land. The 1.4 GB `public/` issue does not apply: the app's own `public/` is 336 KB and the slim image carries only the listed assets. Runner: remote ACR, software WebGL2 (not GPU).

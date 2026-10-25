@@ -1,0 +1,3 @@
+# Aura Links 3D: screenshots 2026-10-24 (not captured yet)
+
+Build `06cf4f7eb`. **No frames committed.** Frames from the first four remote runs were discarded: the 3D canvas rendered black (HUD only). A console probe found the cause: the capture image had no copy of the Links GLBs (`linksPinFlagMeshy`, `linksGolferAthleteClean`, `siegeGolfBall`, `rooftopBallRackCartMeshy` returned HTTP 404), so the production renderer failed to mount (drawCalls 0). This is a staging problem in the capture, not a game regression. A rerun with the full asset set (key-resolved from `src/aura-assets.ts`) is in progress; this README is replaced when frames land. Runner: remote ACR, software WebGL2 (not GPU).
