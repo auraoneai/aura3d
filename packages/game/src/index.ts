@@ -65,6 +65,7 @@ export { createGameImpl, type Prd09Game } from "./createGame";
 export { GameSessionImpl } from "./session/GameSession";
 export { attachSessionLifecycle } from "./session/lifecycle";
 export { createAccessibility } from "./session/accessibility";
+export { warmPrograms, type WarmableApp, type WarmProgramsOptions, type WarmProgramsResult } from "./session/warmPrograms";
 export { installGameBeacon } from "./evidence/beacon";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";

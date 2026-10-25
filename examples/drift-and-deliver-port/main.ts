@@ -10,7 +10,7 @@
  * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, type AuraApp } from "@aura3d/engine";
-import { drawCanvasMinimap } from "@aura3d/engine/game";
+import { drawCanvasMinimap, warmPrograms } from "@aura3d/engine/game";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
 import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "./blackframe";
@@ -430,6 +430,8 @@ async function boot(): Promise<void> {
     scene: buildScene()
   });
   await app.ready();
+  // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city
+  await warmPrograms(app);
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
