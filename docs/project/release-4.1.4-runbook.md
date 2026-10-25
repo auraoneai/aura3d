@@ -6,6 +6,8 @@ Status: prepared on branch `release-4.1.4`, not published, not tagged, not deplo
 
 `origin/main` (4.1.3 plus the unreleased library fixes: embedded neutral environment, `createParentFit`, `onFrame` error boundary, `material.custom` precision fix, docs and eval fixes), merged with `origin/hotfix-brand` (brand and likeness asset cleanup, Teleoperator texture clean, Hoops freeze fix, billiards cabinet and bean fixes, Cumulus Dash 2x crop fix) and the `warmPrograms` library function with its Gridlock Courier use (first frame was partial in 4.1.3). Nothing from `game-rework` (4.2.0) is included. See the 4.1.4 section of `CHANGELOG.md`.
 
+The pre-release verification results are in `evidence/release-4.1.4/README.md` (gates, packed-tarball consumer smoke on Vite 7.3.2 and 7.3.7, and the remote checks of the affected games). The preview deployment of the branch is `https://aura3d-nqu2f7r7n-veerone.vercel.app` (behind Vercel SSO).
+
 ## 1. Preconditions
 
 - Owner approval for: publishing 24 packages to npm, the GitHub release and tag, the production deploy.
