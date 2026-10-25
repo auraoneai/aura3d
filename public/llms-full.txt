@@ -32,7 +32,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor.html): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence.html): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
 - [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.1.3 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
-- [Aura3D 4.1.3 vs. Raw Three.js — Open-Source TypeScript 3D Engine](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Stop assembling 14 fragile npm packages to render a 3D scene. Compare Aura3D 4.1.3 (@aura3d/engine@4.1.3) against raw Three.js across architecture, asset type safety, WebGPU compute, physics, and 18-line scene boot.
+- [Aura3D 4.1.3 vs. three.js: measured, with the caveats](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): An evidence-linked comparison of Aura3D and three.js 0.185.1: where Aura3D is better (scene source length, game kit, safety, agent workflow), where three.js is better (bundle size, speed, maturity), and when to choose which. Software-GL measurements, labelled.
 - [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase.html): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
 
 ### Showcase
@@ -243,6 +243,7 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
 
 
 

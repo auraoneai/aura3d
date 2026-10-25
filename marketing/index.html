@@ -297,48 +297,58 @@
   <div class="wrap">
     <div class="section-head section-head-row" data-reveal>
       <div>
-        <span class="home-eyebrow">Aura3D vs. Three.js</span>
-        <h2 class="home-h2" id="compare-title">Five decisions, <em>already made.</em></h2>
-        <p class="section-lede">The same scene, twice. Aura3D declares the parts; raw Three.js makes you own every wire.</p>
+        <span class="home-eyebrow">Aura3D vs. three.js</span>
+        <h2 class="home-h2" id="compare-title">Where each one wins, <em>measured.</em></h2>
+        <p class="section-lede">Aura3D is the shorter, safer path for games and agent-written scenes. three.js is the smaller, faster and more mature runtime. Every number below has a version and a caveat.</p>
       </div>
       <a class="home-btn home-btn-ghost" href="/docs/aura3d-vs-threejs.html">Full comparison</a>
     </div>
 
     <div class="cmp-wrap">
       <table class="cmp-table">
-        <caption class="visually-hidden">Aura3D 4.1.3 compared with raw Three.js across scene boot, asset pipeline, materials and lighting, physics, and pre-deploy verification.</caption>
+        <caption class="visually-hidden">Aura3D compared with three.js 0.185.1 across scene source length, game batteries, asset safety, coding-agent results, bundle size, speed, and maturity.</caption>
         <thead>
           <tr>
-            <th scope="col">Capability</th>
-            <th scope="col" class="cmp-aura-head">Aura3D <span class="cmp-header-tag">18 lines</span></th>
-            <th scope="col">Raw Three.js <span class="cmp-header-tag">three@0.185.x</span></th>
+            <th scope="col">Measure</th>
+            <th scope="col" class="cmp-aura-head">Aura3D</th>
+            <th scope="col">three.js <span class="cmp-header-tag">0.185.1</span></th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td class="cmp-capability">Scene boot</td>
-            <td data-label="Aura3D">18 lines. <code>createAuraApp()</code> owns the renderer, camera, resize, clock, context loss, and dispose.</td>
-            <td data-label="Raw Three.js">~120 lines of <code>WebGLRenderer</code>, camera, <code>ResizeObserver</code>, requestAnimationFrame, and recursive <code>dispose()</code>.</td>
+            <td class="cmp-capability">Scene source, PBR viewer<br /><span class="cmp-src">4&#46;1&#46;2 bench, one author</span></td>
+            <td data-label="Aura3D">24 non-blank lines, 1 import module. Shorter in 4 of 5 bench scenes (26% to 51%).</td>
+            <td data-label="three.js">49 non-blank lines, 8 import modules.</td>
           </tr>
           <tr>
-            <td class="cmp-capability">Asset pipeline</td>
-            <td data-label="Aura3D">Compile-time typed refs from <code>aura.assets.json</code>, with hashes, SPDX, and clip metadata.</td>
-            <td data-label="Raw Three.js">Untyped URLs and manual Draco / KTX2 WASM loader wiring.</td>
+            <td class="cmp-capability">Game batteries<br /><span class="cmp-src">counted from exports</span></td>
+            <td data-label="Aura3D">HUD, touch, audio cue bank, QA hooks and replay, safety net, motion kit, render interpolation for 120 and 144 Hz.</td>
+            <td data-label="three.js">None built in.</td>
           </tr>
           <tr>
-            <td class="cmp-capability">Materials &amp; lighting</td>
-            <td data-label="Aura3D">Physical PBR, procedural sky, IBL, and AgX / ACES tone mapping built in.</td>
-            <td data-label="Raw Three.js">Manual <code>PMREMGenerator</code>, <code>RGBELoader</code>, and tone-mapping setup.</td>
+            <td class="cmp-capability">Asset pipeline<br /><span class="cmp-src">counted</span></td>
+            <td data-label="Aura3D">Production assets need a sha256 and provenance, or nothing draws.</td>
+            <td data-label="three.js">Plain URLs.</td>
           </tr>
           <tr>
-            <td class="cmp-capability">Physics</td>
-            <td data-label="Aura3D">Deterministic fixed-step Rapier, CCD, joints, and character and vehicle controllers.</td>
-            <td data-label="Raw Three.js">Bring your own <code>rapier3d-compat</code>, WASM init, fixed-step loop, and vehicle math.</td>
+            <td class="cmp-capability">Coding agent from docs only<br /><span class="cmp-src">claude-sonnet-5.5, n=15, software GL</span></td>
+            <td data-label="Aura3D">14 of 15 renders non-black, 15 of 15 first-try builds, median 10 turns.</td>
+            <td data-label="three.js">15 of 15 renders, 15 of 15 builds, median 4 turns.</td>
           </tr>
           <tr>
-            <td class="cmp-capability">Pre-deploy verification</td>
-            <td data-label="Aura3D"><code>aura3d check-deploy</code> checks route health, assets, and zero console errors.</td>
-            <td data-label="Raw Three.js">Manual browser checks; no standard asset or console-error gate in CI.</td>
+            <td class="cmp-capability">JS bundle, one-cube app<br /><span class="cmp-src">4&#46;1&#46;2 bench</span></td>
+            <td data-label="Aura3D">3,841 KB raw, 1,089 KB gzip, 25 files (7.7x larger).</td>
+            <td data-label="three.js">495.7 KB raw, 124.8 KB gzip, 1 file.</td>
+          </tr>
+          <tr>
+            <td class="cmp-capability">First frame and cube frame time<br /><span class="cmp-src">software GL; frame time after the 4&#46;1&#46;3 fixes</span></td>
+            <td data-label="Aura3D">3,269 ms to first frame; about 50 ms per frame.</td>
+            <td data-label="three.js">95 ms to first frame; 0.9 ms per frame.</td>
+          </tr>
+          <tr>
+            <td class="cmp-capability">Breadth and maturity<br /><span class="cmp-src">npm, week of 2026-10-16 to 10-22</span></td>
+            <td data-label="Aura3D">WebGL2 by default; a toon pass, no non-PBR material family; 391 weekly downloads.</td>
+            <td data-label="three.js">WebGPU, WebXR, 8 non-PBR materials, many loaders; 15.2M weekly downloads.</td>
           </tr>
         </tbody>
       </table>
@@ -347,63 +357,103 @@
     <div class="code-compare">
       <div class="code-panel">
         <div class="code-panel-head">
-          <span class="code-file">raw-three.ts</span>
-          <span class="code-count">~120 lines</span>
+          <span class="code-file">three.js scene.ts</span>
+          <span class="code-count">49 lines</span>
         </div>
-        <pre class="code-body" tabindex="0" role="group" aria-label="Raw Three.js comparison code"><code><span class="c">// Renderer, camera, controls, environment, loaders, resize, loop, dispose.</span>
-<span class="k">import</span> * <span class="k">as</span> THREE <span class="k">from</span> <span class="s">'three'</span>;
-<span class="k">import</span> { OrbitControls } <span class="k">from</span> <span class="s">'three/addons/controls/OrbitControls.js'</span>;
-<span class="k">import</span> { GLTFLoader } <span class="k">from</span> <span class="s">'three/addons/loaders/GLTFLoader.js'</span>;
-<span class="k">import</span> { DRACOLoader } <span class="k">from</span> <span class="s">'three/addons/loaders/DRACOLoader.js'</span>;
-<span class="k">import</span> { KTX2Loader } <span class="k">from</span> <span class="s">'three/addons/loaders/KTX2Loader.js'</span>;
-<span class="k">import</span> { RGBELoader } <span class="k">from</span> <span class="s">'three/addons/loaders/RGBELoader.js'</span>;
+        <pre class="code-body" tabindex="0" role="group" aria-label="three.js PBR viewer source"><code>import * as THREE from &quot;three&quot;;
+import { GLTFLoader } from &quot;three/examples/jsm/loaders/GLTFLoader.js&quot;;
+import { RGBELoader } from &quot;three/examples/jsm/loaders/RGBELoader.js&quot;;
+import { OrbitControls } from &quot;three/examples/jsm/controls/OrbitControls.js&quot;;
+import { EffectComposer } from &quot;three/examples/jsm/postprocessing/EffectComposer.js&quot;;
+import { RenderPass } from &quot;three/examples/jsm/postprocessing/RenderPass.js&quot;;
+import { UnrealBloomPass } from &quot;three/examples/jsm/postprocessing/UnrealBloomPass.js&quot;;
+import { OutputPass } from &quot;three/examples/jsm/postprocessing/OutputPass.js&quot;;
+import type { SceneHandle } from &quot;../../shared/glue&quot;;
 
-<span class="k">const</span> scene = <span class="k">new</span> THREE.<span class="f">Scene</span>();
-<span class="k">const</span> camera = <span class="k">new</span> THREE.<span class="f">PerspectiveCamera</span>(<span class="n">45</span>, innerWidth / innerHeight, <span class="n">0.1</span>, <span class="n">100</span>);
-<span class="k">const</span> renderer = <span class="k">new</span> THREE.<span class="f">WebGLRenderer</span>({ antialias: <span class="n">true</span> });
-renderer.<span class="f">setPixelRatio</span>(Math.<span class="f">min</span>(devicePixelRatio, <span class="n">2</span>));
-renderer.<span class="f">setSize</span>(innerWidth, innerHeight);
-document.body.<span class="f">appendChild</span>(renderer.domElement);
+export async function start(canvas: HTMLCanvasElement): Promise&lt;SceneHandle&gt; {
+  const renderer = new THREE.WebGLRenderer({ canvas });
+  renderer.setPixelRatio(1);
+  renderer.setSize(640, 360, false);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-<span class="k">const</span> pmrem = <span class="k">new</span> THREE.<span class="f">PMREMGenerator</span>(renderer);
-<span class="k">new</span> <span class="f">RGBELoader</span>().<span class="f">load</span>(<span class="s">'/studio.hdr'</span>, (hdr) =&gt; {
-  scene.environment = pmrem.<span class="f">fromEquirectangular</span>(hdr).texture;
-});
-<span class="c">// + ~100 more lines for loaders, shadows, mixers, resize, rAF, and dispose().</span></code></pre>
-        <p class="code-panel-note">You own every loader, resize, and teardown path.</p>
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(&quot;#1a1d24&quot;);
+  const camera = new THREE.PerspectiveCamera(40, 640 / 360, 0.1, 100);
+  camera.position.set(4.5, 2.2, 5.5);
+
+  const hdr = await new RGBELoader().loadAsync(&quot;env.hdr&quot;);
+  scene.environment = new THREE.PMREMGenerator(renderer).fromEquirectangular(hdr).texture;
+  hdr.dispose();
+  scene.environmentIntensity = 0.7;
+
+  const sun = new THREE.DirectionalLight(&quot;#fff4e0&quot;, 1.1);
+  sun.position.set(5, 8, 4);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
+  scene.add(sun);
+
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: &quot;#2b2f38&quot;, roughness: 0.9 }));
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  const truck = (await new GLTFLoader().loadAsync(&quot;model.glb&quot;)).scene;
+  const box = new THREE.Box3().setFromObject(truck);
+  truck.scale.setScalar(2 / (box.max.y - box.min.y));
+  truck.position.y = -box.min.y * truck.scale.y;
+  truck.traverse((o) =&gt; { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  scene.add(truck);
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.target.set(0, 0.8, 0);
+
+  const composer = new EffectComposer(renderer);
+  composer.setSize(640, 360);
+  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(640, 360), 0.35, 0.6, 1));
+  composer.addPass(new OutputPass());
+
+  return { frame(dt) { controls.update(dt); composer.render(dt); } };
+}</code></pre>
       </div>
-
       <div class="code-panel code-panel-aura">
         <div class="code-panel-head">
-          <span class="code-file">scene.ts</span>
-          <span class="code-count">18 lines</span>
-          <button class="code-copy" type="button" data-copy-target="#aura-snippet" aria-label="Copy the Aura3D scene snippet">
-            <span data-copy-label>Copy</span>
-          </button>
+          <span class="code-file">aura3d scene.ts</span>
+          <span class="code-count">24 lines</span>
         </div>
-        <pre class="code-body" id="aura-snippet" tabindex="0" role="group" aria-label="Aura3D 18-line scene code"><code><span class="k">import</span> { createAuraApp, effects, environment, light, model, orbitCamera, post } <span class="k">from</span> <span class="s">'@aura3d/engine'</span>;
-<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">'./aura-assets'</span>;
-<span class="c">// The renderer, resize observer, and dispose loop are handled by the app.</span>
-<span class="k">const</span> app = <span class="k">await</span> <span class="f">createAuraApp</span>({
-  target: <span class="s">'#app'</span>,
-  scene: [
-    environment.<span class="f">studio</span>({ intensity: <span class="n">1.15</span>, sky: <span class="s">'procedural-dusk'</span> }),
-    <span class="f">orbitCamera</span>({ position: [<span class="n">2.8</span>, <span class="n">1.9</span>, <span class="n">3.6</span>], target: [<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>] }),
-    light.<span class="f">directional</span>({ position: [<span class="n">4</span>, <span class="n">7</span>, <span class="n">5</span>], intensity: <span class="n">3.2</span>, castShadow: <span class="n">true</span> }),
-    <span class="f">model</span>(assets.damagedHelmet, {
-      position: [<span class="n">0</span>, <span class="n">0.85</span>, <span class="n">0</span>],
-      castShadow: <span class="n">true</span>,
-      clip: <span class="s">'Idle'</span>,
-    }),
-    effects.<span class="f">contactShadows</span>({ opacity: <span class="n">0.45</span>, blur: <span class="n">1.6</span> }),
-    <span class="f">post</span>({ toneMapping: <span class="s">'agx'</span>, exposure: <span class="n">1.1</span>, bloom: { intensity: <span class="n">0.35</span> } }),
-  ],
-});</code></pre>
-        <p class="code-panel-note">Typed assets, lighting, shadows, and post are declared, not wired.</p>
+        <pre class="code-body" tabindex="0" role="group" aria-label="Aura3D PBR viewer source"><code>import { camera, createAuraApp, defineModelAssets, effects, environments, interactions, lights, material, model, primitives, scene } from &quot;@aura3d/engine&quot;;
+import type { SceneHandle } from &quot;../../shared/glue&quot;;
+import { SHA256 } from &quot;./assets.generated&quot;;
+
+export async function start(canvas: HTMLCanvasElement): Promise&lt;SceneHandle&gt; {
+  const assets = defineModelAssets({ truck: { url: &quot;/model.glb&quot;, sha256: SHA256.truck } }, { license: &quot;CC-BY 4.0, Cesium&quot; });
+  const app = createAuraApp(canvas, {
+    autoStart: false,
+    resize: false,
+    pixelRatio: 1,
+    renderer: { mode: &quot;production&quot;, qualityProfile: &quot;production&quot;, fallback: &quot;safe-basic&quot; },
+    output: { toneMapping: &quot;aces&quot; },
+    scene: scene()
+      .background(&quot;#1a1d24&quot;)
+      .camera(camera.orbit({ fov: 40, near: 0.1, far: 100, position: [4.5, 2.2, 5.5], target: [0, 0.8, 0] }))
+      .add(environments.hdri({ name: &quot;env&quot;, intensity: 1, background: false, texture: { type: &quot;texture&quot;, format: &quot;hdr&quot;, url: &quot;/env.hdr&quot; } as never }))
+      .add(lights.directional({ color: &quot;#fff4e0&quot;, intensity: 2.5, position: [5, 8, 4], shadow: true }))
+      .add(primitives.plane({ name: &quot;ground&quot;, size: [30, 1, 30], material: material.pbr({ color: &quot;#2b2f38&quot;, roughness: 0.9 }) }))
+      .add(model(assets.refs.truck, { name: &quot;truck&quot;, targetHeight: 2, castShadow: true }))
+      .add(effects.bloom({ intensity: 0.35, threshold: 0.85, radius: 0.6 }))
+      .add(interactions.orbit({ target: &quot;truck&quot; }))
+  });
+  await app.ready();
+  return { frame(dt) { app.step(dt); } };
+}</code></pre>
+        <p class="code-panel-note">The real bench sources: a lit GLB with an HDR environment, shadow, bloom and orbit. The Aura3D side also needs a generated assets file for the sha256 and has an <code>as never</code> cast we have not removed. One author wrote both, and knows three.js far better. Software GL, not a GPU.</p>
       </div>
     </div>
 
-    <a class="text-link" href="/docs/aura3d-vs-threejs.html">Read the full architectural comparison <span aria-hidden="true">→</span></a>
+    <a class="text-link" href="/docs/aura3d-vs-threejs.html">Read the full comparison, including where three.js wins <span aria-hidden="true">→</span></a>
   </div>
 </section>
 
