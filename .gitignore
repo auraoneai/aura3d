@@ -451,3 +451,11 @@ evidence/look-reference-frames/
 
 # Screenshot retakes: per-game frames under evidence/<game>/screens/<date>/
 !evidence/*/screens/*/*.jpg
+
+# screenshot evidence must be trackable
+!evidence/**/screens/**/*.jpg
+!evidence/**/screens/**/*.png
+!evidence/**/rework/**/*.jpg
+!evidence/**/rework/**/*.png
+!evidence/live-*/**/*.jpg
+!evidence/live-*/**/*.png
