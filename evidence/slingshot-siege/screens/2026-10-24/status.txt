@@ -1,0 +1,8 @@
+@@SHOTSA slingshot-siege 1280x720 title ready=true
+@@SHOTSA slingshot-siege 1280x720 play ready=true
+@@SHOTSA slingshot-siege 1280x720 done captured=1 signatures=1 late=true results=false errors=0
+@@SHOTSA slingshot-siege 390x844 title ready=true
+@@SHOTSA slingshot-siege 390x844 play ready=true
+@@SHOTSA slingshot-siege 390x844 done captured=3 signatures=3 late=true results=false errors=0
+@@SHOTSA slingshot-siege card 1x ok
+@@SHOTSA slingshot-siege card 2x ok
