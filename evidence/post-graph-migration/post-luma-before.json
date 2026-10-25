@@ -1,0 +1,686 @@
+[
+ {
+  "scene": "daylight",
+  "effects": "none",
+  "flags": "",
+  "meanLuma": 194.295,
+  "meanRgb": [
+   175.1,
+   202.51,
+   169.41
+  ],
+  "meanChroma": 73.625,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "bloom",
+  "flags": "",
+  "meanLuma": 194.477,
+  "meanRgb": [
+   175.39,
+   202.64,
+   169.87
+  ],
+  "meanChroma": 73.267,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "vignette",
+  "flags": "",
+  "meanLuma": 140.276,
+  "meanRgb": [
+   126.78,
+   146.17,
+   121.59
+  ],
+  "meanChroma": 53.278,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "both",
+  "flags": "",
+  "meanLuma": 140.417,
+  "meanRgb": [
+   127.01,
+   146.27,
+   121.95
+  ],
+  "meanChroma": 53,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "none",
+  "flags": "-post",
+  "meanLuma": 194.295,
+  "meanRgb": [
+   175.1,
+   202.51,
+   169.41
+  ],
+  "meanChroma": 73.625,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "bloom",
+  "flags": "-post",
+  "meanLuma": 194.35,
+  "meanRgb": [
+   175.16,
+   202.57,
+   169.46
+  ],
+  "meanChroma": 73.603,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "vignette",
+  "flags": "-post",
+  "meanLuma": 194.295,
+  "meanRgb": [
+   175.1,
+   202.51,
+   169.41
+  ],
+  "meanChroma": 73.625,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "both",
+  "flags": "-post",
+  "meanLuma": 194.35,
+  "meanRgb": [
+   175.16,
+   202.57,
+   169.46
+  ],
+  "meanChroma": 73.603,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "none",
+  "flags": "",
+  "meanLuma": 93.075,
+  "meanRgb": [
+   88.59,
+   92.47,
+   112.29
+  ],
+  "meanChroma": 35.686,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "bloom",
+  "flags": "",
+  "meanLuma": 93.629,
+  "meanRgb": [
+   89.17,
+   93.02,
+   112.73
+  ],
+  "meanChroma": 35.534,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "vignette",
+  "flags": "",
+  "meanLuma": 68.637,
+  "meanRgb": [
+   65.53,
+   68.2,
+   82.09
+  ],
+  "meanChroma": 26.064,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "both",
+  "flags": "",
+  "meanLuma": 69.063,
+  "meanRgb": [
+   65.98,
+   68.63,
+   82.43
+  ],
+  "meanChroma": 25.947,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "none",
+  "flags": "-post",
+  "meanLuma": 93.075,
+  "meanRgb": [
+   88.59,
+   92.47,
+   112.29
+  ],
+  "meanChroma": 35.686,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "bloom",
+  "flags": "-post",
+  "meanLuma": 93.246,
+  "meanRgb": [
+   88.69,
+   92.65,
+   112.58
+  ],
+  "meanChroma": 35.494,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "vignette",
+  "flags": "-post",
+  "meanLuma": 93.075,
+  "meanRgb": [
+   88.59,
+   92.47,
+   112.29
+  ],
+  "meanChroma": 35.686,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "both",
+  "flags": "-post",
+  "meanLuma": 93.246,
+  "meanRgb": [
+   88.69,
+   92.65,
+   112.58
+  ],
+  "meanChroma": 35.494,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "none",
+  "flags": "",
+  "meanLuma": 216.707,
+  "meanRgb": [
+   239.95,
+   213.59,
+   179.14
+  ],
+  "meanChroma": 60.946,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "bloom",
+  "flags": "",
+  "meanLuma": 217.103,
+  "meanRgb": [
+   240.53,
+   213.9,
+   179.85
+  ],
+  "meanChroma": 60.788,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "vignette",
+  "flags": "",
+  "meanLuma": 156.182,
+  "meanRgb": [
+   173.25,
+   153.83,
+   129.27
+  ],
+  "meanChroma": 44.094,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "both",
+  "flags": "",
+  "meanLuma": 156.479,
+  "meanRgb": [
+   173.67,
+   154.06,
+   129.79
+  ],
+  "meanChroma": 43.971,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping",
+    "depthRange",
+    "pipeline",
+    "v2"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "none",
+  "flags": "-post",
+  "meanLuma": 216.707,
+  "meanRgb": [
+   239.95,
+   213.59,
+   179.14
+  ],
+  "meanChroma": 60.946,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "bloom",
+  "flags": "-post",
+  "meanLuma": 221.212,
+  "meanRgb": [
+   242.24,
+   218.38,
+   187.36
+  ],
+  "meanChroma": 55.021,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "vignette",
+  "flags": "-post",
+  "meanLuma": 216.707,
+  "meanRgb": [
+   239.95,
+   213.59,
+   179.14
+  ],
+  "meanChroma": 60.946,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "both",
+  "flags": "-post",
+  "meanLuma": 221.212,
+  "meanRgb": [
+   242.24,
+   218.38,
+   187.36
+  ],
+  "meanChroma": 55.021,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-v2-unmigrated",
+   "message": "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [
+   "POSTPROCESS_V2_UNMIGRATED: legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it"
+  ],
+  "drawCalls": 3
+ }
+]
