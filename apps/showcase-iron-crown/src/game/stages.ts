@@ -423,6 +423,57 @@ const MONASTERY = makeStage(
   { accent: "#7dd7ff", exposureEv: 0.1, fogDensityScale: 0.75 }
 );
 
+
+/**
+ * Trophy cabinets at the arena wings, built from primitives: wood frame, shelves with gold cups, and flat crimson banners
+ * with gold borders on the back panel. They replace a scanned cabinet whose texture atlas held framed photographs of real
+ * people (see tests/unit/likeness-audit/iron-crown-stage-props.test.ts). Two cabinets share one instanced node per part,
+ * so the whole set is eight draws.
+ */
+type Part = { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] };
+function buildTrophyCabinets(): readonly AuraSceneNode[] {
+  const CABINET_X = [-4.3, 4.3] as const;
+  const CZ = -2.8, W = 2.6, H = 2.6, D = 0.95;
+  const frame: Part[] = [], back: Part[] = [], shelves: Part[] = [], gold: Part[] = [], cups: Part[] = [], banner: Part[] = [], border: Part[] = [];
+  const part = (position: [number, number, number], scale: [number, number, number]): Part => ({ position, rotation: [0, 0, 0], scale });
+  for (const cx of CABINET_X) {
+    back.push(part([cx, H / 2, CZ - D / 2 + 0.05], [W - 0.2, H - 0.3, 0.08]));
+    frame.push(
+      part([cx - W / 2 + 0.06, H / 2, CZ], [0.12, H, D]),
+      part([cx + W / 2 - 0.06, H / 2, CZ], [0.12, H, D]),
+      part([cx, H - 0.07, CZ], [W, 0.14, D]),
+      part([cx, 0.11, CZ], [W, 0.22, D])
+    );
+    gold.push(part([cx, H + 0.03, CZ], [W + 0.2, 0.08, D + 0.1]));
+    for (const y of [0.62, 1.12, 1.62, 2.12]) {
+      shelves.push(part([cx, y, CZ + 0.02], [W - 0.28, 0.05, D - 0.18]));
+      for (let i = 0; i < 5; i += 1) {
+        const x = cx - 0.95 + i * 0.475;
+        const h = 0.2 + ((i + Math.round(y * 10)) % 3) * 0.07;
+        cups.push(part([x, y + 0.025 + h / 2, CZ + 0.04], [0.15, h, 0.15]));
+        gold.push(part([x, y + 0.025 + h + 0.05, CZ + 0.04], [0.19, 0.1, 0.19]));
+      }
+    }
+    for (const bx of [-0.62, 0.62]) {
+      border.push(part([cx + bx, 1.37, CZ - D / 2 + 0.1], [0.56, 1.02, 0.02]));
+      banner.push(part([cx + bx, 1.37, CZ - D / 2 + 0.115], [0.5, 0.96, 0.02]));
+    }
+  }
+  const box = (name: string, mat: ReturnType<typeof material.pbr>, instances: Part[]) =>
+    primitives.box({ name, material: mat, instances, castShadow: false, receiveShadow: true }).toJSON();
+  const wood = material.pbr({ color: "#3b2115", roughness: 0.5, metallic: 0.05 });
+  const goldMat = material.pbr({ color: "#c79a3b", roughness: 0.3, metallic: 0.85 });
+  return [
+    box("cr-cabinet-frame", wood, frame),
+    box("cr-cabinet-back", material.pbr({ color: "#2a0f16", roughness: 0.8 }), back),
+    box("cr-cabinet-shelves", material.pbr({ color: "#5b3520", roughness: 0.55, metallic: 0.05 }), shelves),
+    box("cr-cabinet-trim", goldMat, gold),
+    primitives.cylinder({ name: "cr-cabinet-cups", material: goldMat, instances: cups, castShadow: false, receiveShadow: true }).toJSON(),
+    box("cr-cabinet-banner-border", goldMat, border),
+    box("cr-cabinet-banner", material.pbr({ color: "#7a1620", roughness: 0.85 }), banner)
+  ];
+}
+
 /* ------------------------------------------------------------------ */
 /* Crown Arena theatre dressing                                         */
 /* ------------------------------------------------------------------ */
@@ -554,8 +605,7 @@ const CROWN = makeStage(
     modelProp(rootAssets.auraClashCornerBrazierPylonMeshy, "cr-brazier-l", [-3.5, 0, -1.65], 2.2, 0.2),
     modelProp(rootAssets.auraClashCornerBrazierPylonMeshy, "cr-brazier-r", [3.5, 0, -1.65], 2.2, -0.2),
     // Trophy cabinets & speaker towers at the arena wings
-    modelProp(rootAssets.billiardsTrophyCabinetMeshy, "cr-cabinet-l", [-4.3, 0, -2.8], 2.6, 0.25),
-    modelProp(rootAssets.billiardsTrophyCabinetMeshy, "cr-cabinet-r", [4.3, 0, -2.8], 2.6, -0.25),
+    ...buildTrophyCabinets(),
     modelProp(rootAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-l", [-4.9, 0, -2.2], 2.5, 0.35),
     modelProp(rootAssets.auraClashStageSpeakerTowerMeshy, "cr-speaker-r", [4.9, 0, -2.2], 2.5, -0.35)
   ],
