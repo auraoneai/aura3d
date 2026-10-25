@@ -13,7 +13,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-10-24
+- Last updated: 2026-10-25
 
 ## Pages
 
@@ -49,7 +49,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Apex Overdrive — 3D Sky-Lane Highway Racer (V2) on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/)
 - [THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink/)
 - [THERMAL DRIFT — High-Velocity Combat Drone Racer (V2) · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink-v2/)
-- [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase (Aura3D 4.0.2)](https://aura3d.auraone.ai/apps/showcase-teleoperator/)
+- [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase](https://aura3d.auraone.ai/apps/showcase-teleoperator/)
 - [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase (V2, Aura3D 4.0.2)](https://aura3d.auraone.ai/apps/showcase-teleoperator-v2/)
 - [IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-iron-crown/)
 - [PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-pips-big-leap/)
@@ -60,7 +60,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-links-3d/): Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range &amp; Putting Labs, and a 32-player Pro Circuit.
 - [Bunker Zero — Retro Corridor FPS on Aura3D](https://aura3d.auraone.ai/apps/showcase-bunker-zero/): Bunker Zero: a six-floor retro corridor shooter in the Wolfenstein mold — grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D engine.
 - [Aura3D - Slingshot Siege](https://aura3d.auraone.ai/apps/showcase-slingshot-siege/): Aura3D Slingshot Siege prototype: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower.
-- [Dot Dash 3D — Neon Maze Chase · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/): Aura3D Dot Dash 3D showcase, a neon maze-chase arcade game: dash through six glowing circuits gobbling light-dots while four Specters hunt with distinct AI personalities.
+- [Glint Courier — circuit-board chase](https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/): Glint Courier: guide a courier drone across six circuit boards, collect data shards and dodge four patrol sentries with their own routines. A browser 3D game built on the Aura3D engine.
 - [Cross Hop — Aura3D Endless Lane Hopper](https://aura3d.auraone.ai/apps/showcase-cross-hop/): Aura3D Cross Hop showcase, an endless lane-hopping game: dodge cars, trams, trains, rivers and lava across 6 remixed themes, rescue critters, chase the high score.
 - [Craterline GP — Moon-Rim Bike Racing](https://aura3d.auraone.ai/apps/craterline-gp/): Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget.
 - [Chroma Roll — Colour-Gate Ball Runner](https://aura3d.auraone.ai/apps/chroma-roll/): Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over.
@@ -166,8 +166,8 @@ Assets — resolve real objects from the catalog first. Do not invent asset path
 URLs or ids — every model comes from a generated `assets.<key>`:
 
 - `npx @aura3d/cli@latest assets search "<object>"` (natural descriptive phrase;
-  the catalog is ~850k license-verified GLB/glTF aggregated from Objaverse,
-  Sketchfab, Poly Pizza, Poly Haven, OS3A, Khronos and CC0 packs).
+  it searches a hosted index of public GLB/glTF sources when that service is reachable;
+  results are candidates to check, not guaranteed matches).
 - `assets resolve "<object>" --name <name>` pulls the top auto-pullable match
   and types it as `assets.<name>` → `model(assets.<name>)`.
 - Add local files with `assets add ./assets/model.glb --name model`, then read
@@ -243,6 +243,7 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
 
 
 

@@ -27,7 +27,7 @@ export function createAuraIndexAdapter(
 
   return {
     id: "aura-index",
-    label: "Aura3D hosted catalog (~850k)",
+    label: "Aura3D hosted index",
     async search(query: ResolveQuery, ctx: AdapterContext) {
       const text = query.text.trim();
       if (!text) return [];

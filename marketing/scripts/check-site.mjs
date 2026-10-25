@@ -122,6 +122,31 @@ for (const [property, expectedWidth, expectedHeight] of [
   if (buffer.length >= 300 * 1024) failures.push(`${asset}: ${property} must stay under 300KB, found ${Math.round(buffer.length / 1024)}KB`);
 }
 
+// Numeric claims on the homepage must equal counted sources (docs/audit/site-claims.md).
+{
+  const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
+  const stat = (label) => {
+    const m = new RegExp(`<li class="trust-item"><strong>([^<]+)</strong><span>${label}[^<]*</span></li>`).exec(home);
+    return m ? m[1].trim() : null;
+  };
+  let publicPackages = 0;
+  for (const dir of readdirSync(resolve(repoRoot, "packages"))) {
+    const manifest = resolve(repoRoot, "packages", dir, "package.json");
+    if (existsSync(manifest) && !readJson(manifest).private) publicPackages += 1;
+  }
+  const rootManifest = readJson(resolve(repoRoot, "package.json"));
+  if (rootManifest.name === "@aura3d/engine" && !rootManifest.private) publicPackages += 1;
+  const packagesStat = stat("npm packages");
+  if (packagesStat !== String(publicPackages)) failures.push(`index.html: npm packages stat is ${packagesStat}, counted ${publicPackages}`);
+  const admitted = readJson(resolve(repoRoot, "aura.assets.json")).assets.length;
+  const assetsStat = stat("admitted assets");
+  if (assetsStat !== String(admitted)) failures.push(`index.html: admitted assets stat is ${assetsStat}, counted ${admitted} in aura.assets.json`);
+  const retracted = /\b(?:800K\+|800,000\+|850K|~850k)\b/i;
+  for (const file of [resolve(marketingDir, "index.html"), ...readdirSync(resolve(marketingDir, "docs")).filter((f) => f.endsWith(".html")).map((f) => resolve(marketingDir, "docs", f)), resolve(marketingDir, "public", "llms.txt"), resolve(marketingDir, "public", "llms-full.txt")]) {
+    if (existsSync(file) && retracted.test(readFileSync(file, "utf8"))) failures.push(`${file}: contains the retracted 800K/850K catalog-size claim`);
+  }
+}
+
 if (failures.length > 0) {
   console.error(`Site integrity check failed (${failures.length}):`);
   for (const failure of failures) console.error(`- ${failure}`);
