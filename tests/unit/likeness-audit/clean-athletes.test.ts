@@ -19,8 +19,9 @@ const CLEAN: Record<string, string[]> = {
   hoopsAthleteBig: ["hoopsAthleteBigClean"],
   hoopsAthleteGuard: ["hoopsAthleteGuardClean"]
 };
-// Hoops uses a flat palette strip (a 1x? PNG of a few bytes, one unnamed material) instead of four named flat materials.
-const PALETTE = new Set(["hoopsAthleteBig", "hoopsAthleteGuard"]);
+// Hoops, Diamond, Links and Red Zone use a flat palette strip (a tiny PNG, one material) with clean hems and a flat face
+// (tools/hoops-athlete-retexture/retexture-face.mjs); Aura FC keeps named flat materials so its team tint can target them.
+const PALETTE = new Set(["hoopsAthleteBig", "hoopsAthleteGuard", "diamondAthlete", "linksGolferAthleteMeshy", "rzQuarterbackMeshy", "rzDefenderLinemanMeshy"]);
 const stemMatches = (url: string, stems: string[]) => stems.some((stem) => url.includes(`/aura-assets/${stem}.`));
 const ORIGINALS = [
   "diamondAthlete.4e29f649", "fcSoccerStrikerMeshy.a675e393", "fcGoalkeeperMeshy.156eb05c", "linksGolferAthleteMeshy.a39990ad",
