@@ -12,3 +12,4 @@ Title, early (autoplay), state-change frames, mid, card 1x/2x at both viewports.
 - Repainted athletes (flat palette) have **ragged jersey and shorts hems** and flat, faceless heads; close-ups look plainer than before the repaint.
 - The camera sits close and players overlap; a prop (ball cart) is partly hidden behind the JAM bar at top left in the mid frame.
 - The menu title card (QUICK PLAY / LIVE) stays over the court during the early frames.
+- 390x844: the mode bar wraps to **three rows and covers the scoreboard**; the QUICK PLAY title wraps onto two lines over the court; players are cropped at the left edge.

@@ -13,3 +13,4 @@ Title, early, stance, three swings sampled at +250/+450/+700 ms, mid, card 1x/2x
 - A grey strike-zone overlay box sits over the batter and catcher and reads as a translucent slab; it hides the batter's lower body.
 - Athletes are flat repainted models: faceless, plain white kit; fielders' gloves are orange.
 - The PLAY BALL banner stays over the field through the swings.
+- 390x844: the mode bar wraps to three rows and **covers the scoreboard / count panel**; the PLAY BALL banner wraps and overlaps the HUD; the strike-zone box sits over the batter.

@@ -12,3 +12,4 @@ Title, early, eight state-change frames (CPU demo mode), mid, card 1x/2x at both
 - Players read as **small and crouched** at the broadcast camera and show skin-coloured patches on the shorts (kit tint covers only the kit material; the hip area was not restored, as the FC lane noted).
 - The referee figure far field is a grey, untextured statue-like model.
 - The kick strike itself is hard to see at this camera distance; the dedicated kick frames the FC lane captured predate the repaint.
+- 390x844: the venue tab row is **clipped at the right edge** (UYUNI cut off); the controls hint bar is truncated; only one player is in frame at kickoff.

@@ -12,3 +12,4 @@ Title, early, one state-change frame, mid, card 1x/2x at both viewports. Autopla
 - Play-call cards and the play-clock bar cover the lower third of the field in the early frame.
 - Players are small at the broadcast camera; the repaint left flat kit colours with no faces.
 - Stadium dome and stands render correctly; no black or missing-texture frames.
+- 390x844: the mode menu panel **covers the scoreboard and down-and-distance**; the three play-call cards are **clipped at both edges** (SPEED OUT truncated).
