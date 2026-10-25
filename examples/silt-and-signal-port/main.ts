@@ -31,6 +31,8 @@ const config = {
   norig: params.get("norig") === "1",
   /** `toon=0` turns the cel pass off (A/B against the plain PBR frame) */
   toon: params.get("toon") !== "0",
+  /** `camclear=0` turns the chase-camera clearance off (A/B for the camera-inside-scenery check) */
+  camClear: params.get("camclear") !== "0",
   /** linear output exposure; the original renders with no tone mapping at exposure 1; 0.65 here brings this PBR rig's mean luma near the original's frames (measured, see evidence README) */
   exposure: Number.isFinite(Number(params.get("exposure"))) && params.has("exposure") ? Number(params.get("exposure")) : 0.65
 };
@@ -223,7 +225,7 @@ function titlePose(): Pose {
 function render(dt: number): void {
   if (!app || !runtime) return;
   const live = mode === "play" && !config.manual && !drawLatest;
-  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight), drawLatest);
   const pose = overridePose ?? (mode === "title" ? titlePose() : null);
   if (pose) app.camera?.setPose(pose, { cut: true });
   app.step(0);
@@ -341,6 +343,8 @@ function installHooks(): void {
       setAutopilot(on: boolean) { autopilotOn = on; },
       row,
       render: () => { render(0); updateHud(); },
+      /** the last chase eye and whether it is inside scenery or under the terrain */
+      camera: () => runtime?.cameraEye() ?? null,
       /** a fixed camera pose for evidence frames; passing false returns to the chase camera */
       overview(on: boolean) {
         overridePose = on ? { position: [sim.state.x + 40, sim.state.y + 230, sim.state.z + 190], target: [sim.state.x, 0, sim.state.z - 160], up: [0, 1, 0], fov: 62 } : null;
@@ -399,7 +403,7 @@ async function boot(): Promise<void> {
     app.post?.addPostPass?.(effects.toon({ name: "silt-cel", bands: 5, bandMix: 0.75, outline: 0.75, size: [canvas.width, canvas.height] }));
     addEventListener("resize", () => app?.post?.setPassUniform?.("silt-cel", "u_texel", texel()));
   }
-  runtime = world.bind(app, { animate: !config.norig });
+  runtime = world.bind(app, { animate: !config.norig, clearCamera: config.camClear });
   ready = true;
   $("loading").classList.add("hidden");
   setMode(mode);

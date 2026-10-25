@@ -12,7 +12,7 @@ import {
 } from "@aura3d/engine";
 import { assets } from "./assets";
 import { CHAPTERS } from "./chapters-data";
-import { clearChaseEye, createChaseClearance } from "./camera";
+import { chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
 import { objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain, type Wall } from "./terrain";
@@ -98,7 +98,10 @@ export const MAX_RINGS = 8;
 export interface WorldStats { readonly walls: number; readonly trees: number; readonly rocks: number; readonly houses: number; readonly lamps: number; readonly stone: number; readonly brass: number; readonly terrainTriangles: number }
 
 export interface WorldRuntime {
-  update(sim: Sim, dt: number, time: number, aspect: number): void;
+  /** `cut` snaps the camera to the chase pose instead of easing (QA stepping, restarts and teleports). */
+  update(sim: Sim, dt: number, time: number, aspect: number, cut?: boolean): void;
+  /** The last chase eye handed to the camera, and whether it is inside scenery or under the terrain (null before the first update). */
+  readonly cameraEye: () => { readonly eye: readonly [number, number, number]; readonly blocked: boolean } | null;
   /** play a one-shot rider clip (ring pickup, objective complete) and return to the cruise loop */
   celebrate(): void;
   readonly nodeCount: number;
@@ -109,7 +112,7 @@ export interface World {
   readonly scene: Scene;
   readonly stats: WorldStats;
   readonly terrain: Terrain;
-  bind(app: AuraApp, options?: { readonly animate?: boolean }): WorldRuntime;
+  bind(app: AuraApp, options?: { readonly animate?: boolean; readonly clearCamera?: boolean }): WorldRuntime;
 }
 
 const FAR = [0, -400, 0] as const;
@@ -349,7 +352,7 @@ export function buildWorld(chapter: number): World {
     scene: builder,
     stats,
     terrain,
-    bind(app: AuraApp, options: { readonly animate?: boolean } = {}): WorldRuntime {
+    bind(app: AuraApp, options: { readonly animate?: boolean; readonly clearCamera?: boolean } = {}): WorldRuntime {
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => {
         let h = handles.get(id);
@@ -378,10 +381,12 @@ export function buildWorld(chapter: number): World {
 
       let lookX = 0, lookY = 0, lookZ = 0, init = false;
       const clearance = createChaseClearance();
+      const scenery = sceneryColumns(props);
+      let lastEye: { eye: readonly [number, number, number]; blocked: boolean } | null = null;
       let lastPoint = -1, lastObjective = -1;
       return {
         celebrate() { oneShot = 0.9; playClip("walk"); },
-        update(sim, dt, time, aspect) {
+        update(sim, dt, time, aspect, cut = false) {
           const { state, flight } = sim;
           const fx = -Math.sin(state.yaw), fz = -Math.cos(state.yaw);
           const pitch = Math.max(-0.35, Math.min(0.35, -flight.vertical * 0.012));
@@ -423,14 +428,16 @@ export function buildWorld(chapter: number): World {
             h.setPosition(p.x, p.y, p.z);
           }
           const tx = state.x + fx * 14, ty = state.y + 1.2, tz = state.z + fz * 14;
-          if (!init) { lookX = tx; lookY = ty; lookZ = tz; init = true; }
+          if (!init || cut) { lookX = tx; lookY = ty; lookZ = tz; init = true; clearance.reset(); }
           const k = 1 - Math.exp(-dt * 5);
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
           const kick = flight.boosting ? 6 : 0;
-          const eye = clearChaseEye(sim, clearance, dt);
-          cameraController.setPose({ position: eye, target: [lookX, lookY, lookZ], up: [0, 1, 0], fov: (aspect < 0.85 ? 78 : 62) + kick }, { cut: false });
+          const eye = options.clearCamera === false ? wantedChaseEye(sim) : clearChaseEye(sim, clearance, dt, scenery);
+          lastEye = { eye, blocked: chaseEyeBlocked(sim.world, scenery)(eye[0], eye[1], eye[2]) };
+          cameraController.setPose({ position: eye, target: [lookX, lookY, lookZ], up: [0, 1, 0], fov: (aspect < 0.85 ? 78 : 62) + kick }, { cut });
         },
         get nodeCount() { return handles.size; },
+        cameraEye: () => lastEye,
         riderAnimation: () => animation
       };
     }
