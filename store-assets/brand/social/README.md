@@ -111,3 +111,7 @@ directly above `og:image` in `index.html` and `marketing/index.html`:
    in-run for every canvas (licensed Graphik, not a fallback).
 4. Vision review of `og-1200x630.png`: background, mark colors `#38bdf8`/`#34d399`,
    both text lines exact, crisp, centered, no clipping — matches spec.
+
+## Re-render 2026-10-25 (site claims pass)
+
+`og-1200x630.png` and `twitter-1200x630.png` were re-rendered by `marketing/scripts/generate-og.mjs` on the remote runner (`tests/browser/sro-og.spec.ts`, decoded with `tools/shots/decode-png.mjs`): no version in the art, verifiable feature line, the native Aura Slam frame, and the live game count from `docs/workflows/game-inventory.json` (26). `twitter-1200x600.png` is a 15 px top and bottom crop of the same render. Re-run the spec whenever the game count changes.
