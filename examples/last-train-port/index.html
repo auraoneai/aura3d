@@ -37,6 +37,16 @@
       #prompt .meta { display: block; margin-top: 2px; }
       @media (max-width: 900px) { #prompt { top: 76px; max-width: calc(100vw - 24px); } #toast { top: 128px; } }
       .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; vertical-align: baseline; }
+      @media (max-width: 560px) {
+        #top { top: max(8px, env(safe-area-inset-top)); left: 8px; right: 8px; min-width: 0; }
+        #top .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #stats { top: calc(max(8px, env(safe-area-inset-top)) + 58px); left: 8px; right: 8px; text-align: left; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+        #stats .big { font-size: 20px; }
+        #prompt { top: calc(max(8px, env(safe-area-inset-top)) + 124px); }
+        #toast { top: calc(max(8px, env(safe-area-inset-top)) + 176px); }
+        #status { left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); flex-direction: column; align-items: flex-start; gap: 4px; }
+        #riders { bottom: 150px; left: 8px; max-width: calc(100vw - 16px); }
+      }
     </style>
   </head>
   <body>

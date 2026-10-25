@@ -1,6 +1,6 @@
 /**
- * DOM user interface for the Cloud Runner, created entirely from script (the live wrapper pages duplicate only the
- * canvas and a `#hud` node): title screen, HUD (hearts, distance, star orbs, cloud gauge, score, combo), danger
+ * DOM user interface for Cumulus Dash, created entirely from script (the live wrapper pages duplicate only the
+ * canvas and a `#hud` node): title screen, HUD (hearts, distance, sky pearls, cloud gauge, score, combo), danger
  * prompts, toasts, the rock-paper-scissors duel banner, pause, results, finale caption and touch controls.
  * Dense type scale, Regular/Medium weights, one Semibold title.
  */
@@ -109,7 +109,7 @@ export class Ui {
     const style = el("style"); style.textContent = CSS; this.root.appendChild(style);
     const loading = el("div", "scr on"); loading.appendChild(el("div", "loading", "Loading…")); this.q.loading = loading;
     const menu = el("div", "scr");
-    menu.innerHTML = `<div class="title"><h1><span>Beyond the</span>Cloud Runner</h1><p>Seven star orbs. One long run home along the ridge.</p></div>
+    menu.innerHTML = `<div class="title"><h1><span>Sky ridge run</span>Cumulus Dash</h1><p>Seven sky pearls. One long run home along the ridge.</p></div>
       <div class="menu"><button class="primary" data-a="play">Play  ▸</button><div class="row"><button class="ghost" data-a="sound">Sound on</button><button class="ghost" data-a="how">How to play</button></div><div class="best" data-q="best"></div></div>
       <div class="keys"><span><kbd>←</kbd><kbd>→</kbd>steer</span><span><kbd>Space</kbd>jump</span><span><kbd>E</kbd>staff</span><span><kbd>Q</kbd>sky cloud</span><span><kbd>↓</kbd>brake</span><span><kbd>P</kbd>pause</span></div>
       <div class="credit">Built with Aura3D</div>`;
@@ -144,7 +144,7 @@ export class Ui {
       if (a === "play") handlers.play(); else if (a === "retry") handlers.retry(); else if (a === "menu") handlers.menu();
       else if (a === "pause") handlers.pause(); else if (a === "resume") handlers.resume(); else if (a === "restart") handlers.restart();
       else if (a === "sound") { this.soundOn = handlers.toggleSound(); this.sound(); }
-      else if (a === "how") this.say("Run, jump gaps, plant the staff over gorges, bonk creatures, ride the sky cloud, find all seven star orbs.");
+      else if (a === "how") this.say("Run, jump gaps, plant the staff over gorges, bonk creatures, ride the sky cloud, find all seven sky pearls.");
     });
     for (const b of Array.from(this.root.querySelectorAll<HTMLElement>("[data-t]"))) {
       const key = b.dataset.t as "left" | "right" | "jump" | "pole" | "cloud";
@@ -190,7 +190,7 @@ export class Ui {
     const fin = ph === "finale";
     this.q.bt!.classList.toggle("on", fin); this.q.bb!.classList.toggle("on", fin);
     const ft = g.finale?.t ?? 0;
-    this.set("caption", fin ? (ft < 4 ? "…the long way home." : ft < FINALE_SECONDS - 1.5 ? "Fourth star orb: home at last." : "") : "", () => { const c = fin ? (ft < 4 ? "…the long way home." : ft < FINALE_SECONDS - 1.5 ? "Fourth star orb: home at last." : "") : ""; this.q.caption!.textContent = c; this.q.caption!.classList.toggle("on", !!c); });
+    this.set("caption", fin ? (ft < 4 ? "…the long way home." : ft < FINALE_SECONDS - 1.5 ? "Fourth sky pearl: home at last." : "") : "", () => { const c = fin ? (ft < 4 ? "…the long way home." : ft < FINALE_SECONDS - 1.5 ? "Fourth sky pearl: home at last." : "") : ""; this.q.caption!.textContent = c; this.q.caption!.classList.toggle("on", !!c); });
     if (ph === "result" && g.result) this.showResult(g);
     else this.last.result = "";
   }
@@ -204,7 +204,7 @@ export class Ui {
     this.q.rsub!.textContent = r.won ? "You made it home along the ridge." : "The ridge is long. Try again from the last checkpoint.";
     this.q.rorbs!.innerHTML = Array.from({ length: 7 }, (_, i) => `<span class="orb${r.stars.includes(i + 1) ? " got" : ""}">${i + 1}</span>`).join("");
     const mm = Math.floor(r.time / 60), ss = Math.floor(r.time % 60).toString().padStart(2, "0");
-    this.q.rstats!.innerHTML = [["Score", r.score.toLocaleString()], ["Time", `${mm}:${ss}`], ["Star orbs", `${r.balls}/7`], ["Spirit orbs", String(r.orbs)], ["Hits taken", String(r.hits)], ["Best combo", `${r.maxCombo}×`]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join("");
+    this.q.rstats!.innerHTML = [["Score", r.score.toLocaleString()], ["Time", `${mm}:${ss}`], ["Sky pearls", `${r.balls}/7`], ["Spirit orbs", String(r.orbs)], ["Hits taken", String(r.hits)], ["Best combo", `${r.maxCombo}×`]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join("");
     this.q.rbest!.innerHTML = r.best ? '<span class="badge">New best score</span>' : "";
     this.q.best!.textContent = g.best > 0 ? `Best score ${g.best.toLocaleString()}` : "";
   }

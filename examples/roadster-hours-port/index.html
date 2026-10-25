@@ -61,6 +61,13 @@
     .stats dt { color: var(--ink-2); }
     .stats dd { margin: 0; font-weight: 500; text-align: right; }
     #mute { position: fixed; right: 16px; bottom: 16px; z-index: 5; }
+    @media (max-width: 560px) {
+      #hud .tl { left: 12px; top: max(12px, env(safe-area-inset-top)); }
+      #hud .tr { right: 12px; top: max(12px, env(safe-area-inset-top)); }
+      #dash { width: calc(100vw - 24px); grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; bottom: max(14px, env(safe-area-inset-bottom)); }
+      #speed { font-size: 32px; }
+      #mute { right: 12px; bottom: auto; top: calc(max(12px, env(safe-area-inset-top)) + 64px); height: 28px; padding: 0 10px; }
+    }
     #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #0b0d12; text-align: center; }
     #loading b { font-weight: 500; font-size: 16px; }
   </style>

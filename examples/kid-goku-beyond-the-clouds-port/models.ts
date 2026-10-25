@@ -6,7 +6,7 @@ const LICENSE_MESHY = "Meshy generated asset (AuraOne account plan terms at gene
 export const MESHY = defineAuraAssets({
   boulder: { type: "model", format: "glb", url: new URL("./assets/meshy/boulder.glb", import.meta.url).pathname, hash: "sha256-dc434e5aa88e9ca983de25c430a2af94dfb650dcba693c9bbeba3a08a5705ab2", metadata: { license: LICENSE_MESHY } },
   cloud: { type: "model", format: "glb", url: new URL("./assets/meshy/cloud.glb", import.meta.url).pathname, hash: "sha256-8b4999c78bb9820959bf3057bf5c0d071c4808be643c47c7d8efdcd1c0dbd0a0", metadata: { license: LICENSE_MESHY } },
-  hero: { type: "model", format: "glb", url: new URL("./assets/meshy/hero.glb", import.meta.url).pathname, hash: "sha256-f8e15d72f8a0cd06d94877d63ea8f05cbe398326a619b8a0aba389e7d7632e5b", metadata: { license: LICENSE_MESHY } },
+  hero: { type: "model", format: "glb", url: new URL("./assets/meshy/hero.glb", import.meta.url).pathname, hash: "sha256-ce32604a5448bfad2d3305b77511179ae74619f8e85150f15558eeceda9ed70d", metadata: { license: LICENSE_MESHY } },
   mesa: { type: "model", format: "glb", url: new URL("./assets/meshy/mesa.glb", import.meta.url).pathname, hash: "sha256-f263c29886b61d62a10f039db46e00bcc8a831d862d9b57078596289ec55df93", metadata: { license: LICENSE_MESHY } },
   ptero: { type: "model", format: "glb", url: new URL("./assets/meshy/ptero.glb", import.meta.url).pathname, hash: "sha256-c32f9773f2a5d7decb22c95c3911ce0248ab41243c29ae6891126c6a8c68435b", metadata: { license: LICENSE_MESHY } },
   rex: { type: "model", format: "glb", url: new URL("./assets/meshy/rex.glb", import.meta.url).pathname, hash: "sha256-7ee8612cf712d520adfaf0bab45565ad57a8d5ac9d400a2445df17b1e0371ada", metadata: { license: LICENSE_MESHY } },

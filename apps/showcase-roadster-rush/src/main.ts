@@ -74,6 +74,10 @@ const VEHICLE_POOL_SPEC: Record<
   carrier: { count: 2, maxDim: 16.12, role: "primaryVehicle", asset: pickVehicleAsset("carrier", assets.roadsterRushCarrier) }
 };
 
+/** Measured from the baked Meshy GLBs at fit size: visual width over sim width. Only the two wildly wide models need a lateral squash; the rest stay within 1.3x. */
+const MODEL_WIDTH_OVER_SPEC: Partial<Record<VehicleType, number>> = { boxtruck: 1.72, carrier: 3.0 };
+const MODEL_WIDTH_FIT = 1.25;
+
 const VEHICLE_TYPES: readonly VehicleType[] = [
   "sedan",
   "hatch",
@@ -1387,7 +1391,7 @@ async function bootRoadsterRushAura3D(): Promise<void> {
       handle
         .setPosition(vx, ry(Math.max(0, hopY)), vz)
         .setRotation(-vpitch, vyaw + Math.PI, -vroll)
-        .setScale([1, 1, 1])
+        .setScale([Math.min(1, MODEL_WIDTH_FIT / ((meshyVehicles.enabled ? MODEL_WIDTH_OVER_SPEC[chosenType] : undefined) ?? 1)), 1, 1])
         .setVisible(true);
 
       // Sloped golden launch ramp on Carrier trucks

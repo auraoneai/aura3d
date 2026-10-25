@@ -104,7 +104,16 @@ function openScene(): void {
 function openDone(): void {
   $("done-lines").innerHTML = ENDING_COPY.map((line) => `<p>${line}</p>`).join("");
   const minutes = Math.floor(sim.state.elapsed / 60), seconds = Math.floor(sim.state.elapsed % 60);
-  $("done-stats").textContent = `Time in flight this chapter: ${minutes}:${String(seconds).padStart(2, "0")}`;
+  const impacts = sim.flight.impacts;
+  const rating = impacts === 0 ? "Glass-smooth" : impacts <= 3 ? "Steady hand" : "Rough landings";
+  const cell = (label: string, value: string | number, wide = false): string => `<div class="cell${wide ? " wide" : ""}"><span class="meta">${label}</span><b>${value}</b></div>`;
+  $("done-stats").innerHTML = [
+    cell("Time in flight", `${minutes}:${String(seconds).padStart(2, "0")}`),
+    cell("Lamps restored", sim.state.restored.length),
+    cell("Field notes", sim.state.fieldNotes.length),
+    cell("Impacts", impacts),
+    cell("Rating", rating, true)
+  ].join("");
   setMode("done");
 }
 
@@ -338,7 +347,7 @@ function installHooks(): void {
       },
       /** an arbitrary evidence camera pose (or null for the chase camera) */
       pose(next: Pose | null) { overridePose = next; },
-      setMode(next: Mode) { setMode(next); },
+      setMode(next: Mode) { if (next === "done") openDone(); else setMode(next); },
       mode: () => mode,
       info: () => ({ frames, nodeCount: runtime?.nodeCount ?? 0, diagnostics: app?.diagnostics() ?? null, routeHealth, world: world?.stats ?? null, rider: runtime?.riderAnimation() ?? null, audio: { muted: audio.muted, running: audio.running } })
     }

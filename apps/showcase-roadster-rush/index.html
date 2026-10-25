@@ -119,12 +119,21 @@
         white-space: nowrap;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
       }
+      canvas#game { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
       @media (max-width: 1100px) {
         .aura3d-top-bar {
-          top: auto;
-          bottom: 44px;
-          max-width: calc(100vw - 24px);
+          top: max(8px, env(safe-area-inset-top));
+          bottom: auto;
+          flex-wrap: nowrap;
+          justify-content: flex-start;
+          overflow-x: auto;
+          scrollbar-width: none;
+          box-sizing: border-box;
+          max-width: calc(100vw - 16px);
+          border-radius: 12px;
         }
+        .aura3d-top-bar::-webkit-scrollbar { display: none; }
+        .aura3d-top-bar > * { flex: none; }
       }
       @media (max-width: 760px) {
         .aura3d-controls-hint { display: none; }
@@ -133,7 +142,7 @@
   </head>
   <body>
     <div class="aura3d-top-bar" role="toolbar" aria-label="Aura3D Apex Overdrive Quick Switcher" data-ui="true">
-      <span class="aura-badge">AURA3D 4.0 · APEX OVERDRIVE</span>
+      <span class="aura-badge">APEX OVERDRIVE</span>
       <button type="button" id="aura-btn-freeway" class="active" title="Live Sunset Freeway Run (Interactive + Smart Autopilot)">Live Freeway</button>
       <button type="button" id="aura-btn-sky" title="Launch into Sky-Lane Dogfight at y=14m with Oncoming Interceptors">Sky Dogfight</button>
       <button type="button" id="aura-btn-ramp" title="Stage Heavy Carrier Ramp Launch & Roof-Runner Chain Ahead">Carrier Ramp</button>

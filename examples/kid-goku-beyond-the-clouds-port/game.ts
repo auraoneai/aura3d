@@ -245,7 +245,7 @@ export class Game {
         river: "Stored: the river is run on foot.", home: "Almost home: run the rest of the way!", charge: "Almost full: a few more orbs!"
       }[why] ?? "Stored for later.", 1600);
     } else if (e === "meat" || e === "dragonball") s.catchTimer = 0.4;
-    if (e === "dragonball") this.say(`Star orb ${s.balls[s.balls.length - 1]} found!`, 1800);
+    if (e === "dragonball") this.say(`Sky pearl ${s.balls[s.balls.length - 1]} found!`, 1800);
     if (e === "checkpoint") this.say("Checkpoint", 1400);
     if (e === "land" || e === "splash") this.impact = Math.max(this.impact, 0.06);
     if (e === "extend") this.impact = Math.max(this.impact, 0.08);

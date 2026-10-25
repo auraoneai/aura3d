@@ -51,6 +51,7 @@ const CSS = `
 .wwui #wwui-pause { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20, 40, 30, 0.3); }
 .wwui #wwui-epilogue { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); width: min(560px, 90vw); text-align: center; }
 .wwui #wwui-epilogue .big { font-size: 22px; font-weight: 500; margin: 0 0 4px; }
+@media (max-width: 560px) { .wwui #wwui-bar { top: max(8px, env(safe-area-inset-top)); right: 8px; } .wwui #wwui-journal { top: 52px; right: 8px; } .wwui #wwui-caption { top: 18%; } }
 .wwui #wwui-touch { position: absolute; inset: auto 0 14px 0; display: flex; justify-content: space-between; padding: 0 16px; }
 .wwui #wwui-pad { width: 128px; height: 128px; border-radius: 64px; background: rgba(255, 252, 240, 0.42); border: 1px solid rgba(43, 42, 36, 0.2); pointer-events: auto; touch-action: none; position: relative; }
 .wwui #wwui-pad i { position: absolute; left: 44px; top: 44px; width: 40px; height: 40px; border-radius: 20px; background: rgba(255, 252, 240, 0.92); border: 1px solid rgba(43, 42, 36, 0.25); }
@@ -83,7 +84,7 @@ export function createUi(): WindUi {
   root.innerHTML = `
     <div id="wwui-title">
       <div class="p card">
-        <h1>Where the Wind Wanders</h1>
+        <h1>The Bellkeeper's Walk</h1>
         <p class="sub">A slow walk through a painted valley. Find three letters, ring the bell.</p>
         <table>
           <tr><td>W A S D / arrows</td><td>walk</td></tr>

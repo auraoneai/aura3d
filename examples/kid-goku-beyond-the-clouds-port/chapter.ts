@@ -33,7 +33,7 @@ export interface Chapter {
 }
 
 export const MOUNT_PAOZU: Chapter = {
-  name: "Mount Paozu",
+  name: "Cumulus Ridge",
   kind: "journey",
   length: 1960,
   speed: 14.5,
