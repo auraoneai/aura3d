@@ -1,0 +1,10 @@
+{
+  "asset": "bzGunnerMeshy",
+  "derivedFrom": "root catalog bunkerGunnerMeshy (model.glb, Meshy-generated, rights record under the root aura-evidence)",
+  "tool": "tools/bunker-zero-lift/lift.mjs",
+  "change": "base-colour texture gamma-lifted to a mean brightness near 90 (it was near black); geometry, skeleton and clips unchanged",
+  "reason": "enemies and pickups read as flat tinted silhouettes because a multiply tint cannot brighten a near-black texture and an emissive flood hides its detail",
+  "date": "2026-10-24",
+  "output": "public/aura-assets/bzGunnerMeshy.f8ff70f5.glb",
+  "sha256": "f8ff70f584952d4d8433432a6d5614c51ee77cef66628b2609dfbb16f612a586"
+}

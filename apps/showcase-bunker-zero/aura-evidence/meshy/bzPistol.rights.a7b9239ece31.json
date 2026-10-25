@@ -1,0 +1,8 @@
+{
+  "schema": "aura3d.meshy-rights/1.0",
+  "rights": {
+    "licenseName": "Meshy generated asset (paid API, plan terms at generation time)",
+    "licenseUrl": "https://www.meshy.ai/terms",
+    "licenseRaw": "Generated 2026-10-25 through the AuraOne Meshy account via Kiro Prism from an original text prompt. Ownership and commercial-use terms are those of the account's Meshy plan at generation time. Not CC0; no exclusivity claimed."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "aura3d.meshy-metadata/1.0",
+  "metadata": {
+    "taskId": "01a14928-00f3-7369-a484-bc90e7f13c56",
+    "operation": "remesh",
+    "createdAt": "2026-10-17T09:18:40.926Z",
+    "finishedAt": "2026-10-17T09:20:53.385Z",
+    "consumedCredits": 5
+  }
+}

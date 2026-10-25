@@ -15,6 +15,7 @@ import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, type FloorDef } from "./maps"
 import {
   createSim, cellCenter, WEAPONS, type Sim, type SimInput, type WeaponId
 } from "./sim";
+import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
 installBlackFrameGuard();
@@ -51,7 +52,12 @@ const hash2 = (x: number, z: number) => {
 // Hostiles are cool-lit and faintly self-lit so their silhouettes separate
 // from the warm brown corridors at 1440x900.
 const HOSTILE_OVERRIDES = [
-  { color: "#cfe3f2", colorMode: "multiply" as const, roughness: 0.58, metallic: 0.18, emissive: "#2d6274", emissiveIntensity: 0.4 }
+  { color: "#f2f7fb", colorMode: "multiply" as const, roughness: 0.62, metallic: 0.1, emissive: "#2b5f73", emissiveIntensity: 0.08 }
+];
+
+// Pickups keep their baked textures: a multiply tint plus a faint emissive lift reads as "item" without flattening it.
+const pickupGlow = (color: string, emissive: string, emissiveIntensity: number, extra: { metallic?: number; roughness?: number } = {}) => [
+  { color, colorMode: "multiply" as const, emissive, emissiveIntensity, ...extra }
 ];
 
 // ---------------------------------------------------------------------------
@@ -192,7 +198,7 @@ function buildScene() {
           break;
         case "K":
           nodes.push(
-            model(assets.bunkerKeyMeshy, { name: `f${slot} key`, material: material.emissive({ color: "#ffd76a", emissive: "#ff9d2a", emissiveIntensity: 1.4, metalness: 0.8, roughness: 0.3 }) })
+            model(assets.bunkerKeyMeshy, { name: `f${slot} key`, materialOverrides: pickupGlow("#fff0b8", "#ff9d2a", 0.45, { metallic: 0.7, roughness: 0.35 }) })
               .position(wx, 1.1, wz).scale(0.18)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "key"] }))
           );
@@ -201,7 +207,7 @@ function buildScene() {
           nodes.push(
             model(assets.bunkerTreasureMeshy, {
               name: `f${slot} treasure ${kI}`,
-              material: material.emissive({ color: "#c9a227", emissive: "#ffd76a", emissiveIntensity: ch === "T" ? 2.6 : 1.6, metalness: 0.9, roughness: 0.25 })
+              materialOverrides: pickupGlow("#ffe9a0", "#ffd76a", ch === "T" ? 0.7 : 0.4, { metallic: 0.8, roughness: 0.3 })
             })
               .position(wx, 0.55, wz).scale(ch === "T" ? 0.38 : 0.28)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "treasure"] }))
@@ -217,42 +223,42 @@ function buildScene() {
           break;
         case "a":
           nodes.push(
-            model(assets.corridorFireAmmoCrateMeshy, { name: `f${slot} ammo`, material: material.emissive({ color: "#8a9a4a", emissive: "#5a6a2a", emissiveIntensity: 0.5 }) })
+            model(assets.corridorFireAmmoCrateMeshy, { name: `f${slot} ammo`, materialOverrides: pickupGlow("#d8e6a8", "#5a6a2a", 0.18) })
               .position(wx, 0.0, wz).scale(0.42)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "ammo"] }))
           );
           break;
         case "r":
           nodes.push(
-            model(assets.bunkerArmorMeshy, { name: `f${slot} armor`, material: material.emissive({ color: "#4a7a9a", emissive: "#3a8aaa", emissiveIntensity: 1.2 }) })
+            model(assets.bzArmorMeshy, { name: `f${slot} armor`, materialOverrides: pickupGlow("#b8dcf2", "#3a8aaa", 0.3) })
               .position(wx, 0.0, wz).scale(0.36)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "armor"] }))
           );
           break;
         case "w":
           nodes.push(
-            model(assets.corridorPulseRifleMeshy, { name: `f${slot} mgpickup`, material: material.emissive({ color: "#4a5a6a", emissive: "#7dfcff", emissiveIntensity: 1.0 }) })
+            model(assets.corridorPulseRifleMeshy, { name: `f${slot} mgpickup`, materialOverrides: pickupGlow("#e6f4f8", "#7dfcff", 0.25) })
               .position(wx, 0.55, wz).rotate(0, 0.7, 0).scale(0.48)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "weapon"] }))
           );
           break;
         case "W":
           nodes.push(
-            model(assets.corridorPulseRifleMeshy, { name: `f${slot} rocketpickup`, material: material.emissive({ color: "#6a4a3a", emissive: "#ff8a3a", emissiveIntensity: 1.2 }) })
-              .position(wx, 0.55, wz).rotate(0, -0.7, 0).scale(0.6)
+            model(assets.mechWeaponB, { name: `f${slot} rocketpickup`, targetHeight: 0.55, materialOverrides: pickupGlow("#ffe2cc", "#ff8a3a", 0.3) })
+              .position(wx, 0.55, wz).rotate(0, -0.7, 0)
               .runtime(game.runtimeNode(`f${slot}-pk-${x}-${z}`, { tags: ["pickup", "weapon"] }))
           );
           break;
         case "b":
           nodes.push(
-            model(assets.bunkerBarrelMeshy, { name: `f${slot} barrel ${x}-${z}`, material: material.emissive({ color: "#9a3420", emissive: "#c44a22", emissiveIntensity: 0.45, roughness: 0.5 }) })
+            model(assets.bzBarrelMeshy, { name: `f${slot} barrel ${x}-${z}`, materialOverrides: pickupGlow("#ffc4a8", "#c44a22", 0.14, { roughness: 0.55 }) })
               .position(wx, 0, wz).scale(0.88)
               .runtime(game.runtimeNode(`f${slot}-prop-${x}-${z}`, { tags: ["prop", "barrel"] }))
           );
           break;
         case "c":
           nodes.push(
-            model(assets.bunkerCrateMeshy, { name: `f${slot} crate ${x}-${z}` })
+            model(assets.bzCrateMeshy, { name: `f${slot} crate ${x}-${z}` })
               .position(wx, 0, wz).scale(0.72)
               .runtime(game.runtimeNode(`f${slot}-prop-${x}-${z}`, { tags: ["prop", "crate"] }))
           );
@@ -265,7 +271,7 @@ function buildScene() {
           break;
         case "g":
           nodes.push(
-            model(assets.bunkerGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
+            model(assets.bzGuardMeshy, { name: `f${slot} guard ${eI}`, targetHeight: 1.9, materialOverrides: HOSTILE_OVERRIDES })
               .position(wx, 0, wz)
               .animate({ clip: "Walk_Loop", loop: true, speed: 1.05 })
               .runtime(game.runtimeNode(`f${slot}-en-${x}-${z}`, { tags: ["enemy", "guard"] })),
@@ -277,7 +283,7 @@ function buildScene() {
           break;
         case "d":
           nodes.push(
-            model(assets.bunkerHoundMeshy, {
+            model(assets.bzHoundMeshy, {
               name: `f${slot} hound ${eI}`, targetHeight: 1.05, materialOverrides: HOSTILE_OVERRIDES
             })
               .position(wx, 0, wz)
@@ -291,7 +297,7 @@ function buildScene() {
           break;
         case "G":
           nodes.push(
-            model(assets.bunkerGunnerMeshy, {
+            model(assets.bzGunnerMeshy, {
               name: `f${slot} gunner ${eI}`, targetHeight: 2.0, materialOverrides: HOSTILE_OVERRIDES
             })
               .position(wx, 0, wz)
@@ -305,7 +311,7 @@ function buildScene() {
           break;
         case "B":
           nodes.push(
-            model(assets.bunkerWardenMeshy, {
+            model(assets.bzWardenMeshy, {
               name: `f${slot} boss ${eI}`, targetHeight: 3.1, materialOverrides: HOSTILE_OVERRIDES
             })
               .position(wx, 0, wz)
@@ -323,16 +329,16 @@ function buildScene() {
 
   // ---- player rig: 3D Meshy viewmodels + muzzle flash + pooled FX ---------
   nodes.push(
-    model(assets.mechWeaponA, { name: "vm knife", targetHeight: 0.34 })
+    model(assets[VIEWMODEL_ASSET.knife], { name: "vm knife", targetHeight: 0.34 })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-knife", { tags: ["viewmodel"] })),
-    model(assets.corridorPulseRifleMeshy, { name: "vm pistol" })
-      .position(0, 0, 0).scale(0.32)
+    model(assets[VIEWMODEL_ASSET.pistol], { name: "vm pistol" })
+      .position(0, 0, 0).scale(0.2)
       .runtime(game.runtimeNode("vm-pistol", { tags: ["viewmodel"] })),
-    model(assets.corridorPulseRifleMeshy, { name: "vm mg" })
+    model(assets[VIEWMODEL_ASSET.mg], { name: "vm mg" })
       .position(0, 0, 0).scale(0.45)
       .runtime(game.runtimeNode("vm-mg", { tags: ["viewmodel"] })),
-    model(assets.mechWeaponB, { name: "vm rocket", targetHeight: 0.48 })
+    model(assets[VIEWMODEL_ASSET.rocket], { name: "vm rocket", targetHeight: 0.48 })
       .position(0, 0, 0)
       .runtime(game.runtimeNode("vm-rocket", { tags: ["viewmodel"] })),
     model(assets.corridorMuzzleFlameBurstMeshy, {
@@ -707,7 +713,7 @@ function syncScenePose(inp: SimInput) {
   for (const [id, node] of Object.entries(vmNodes) as [WeaponId, typeof vmNodes.knife][]) {
     if (id === p.weapon && p.alive) {
       node.setPosition(vmx, vmy, vmz);
-      node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.5, -p.yaw + Math.PI / 2, id === "knife" ? 0.5 : 0);
+      node.setRotation((id === "knife" ? -0.6 : 0) - recoil * 1.5, -p.yaw + Math.PI / 2 + VIEWMODEL_YAW_OFFSET[id], id === "knife" ? 0.5 : 0);
       node.setVisible(true);
     } else node.setVisible(false);
   }
@@ -1026,7 +1032,7 @@ function renderHud() {
     elHp.classList.toggle("low", p.hp <= 30);
     elArmor.textContent = String(Math.ceil(p.armor));
     elAmmo.textContent = p.reloading > 0 ? "RELOADING" : ammoStr;
-    elWeapon.textContent = wpn.name;
+    elWeapon.textContent = weaponHudLabel(p.weapon);
     elScore.textContent = String(sim.state.score);
     elKills.textContent = `${sim.state.kills}/${sim.state.totalEnemies}`;
     elTime.textContent = mode === "killhouse" ? fmtTime(Math.max(0, sim.state.killhouseLeft)) : fmtTime(sim.state.time);
