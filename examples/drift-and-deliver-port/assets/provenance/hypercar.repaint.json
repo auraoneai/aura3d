@@ -1,9 +1,0 @@
-{
-  "asset": "hypercar.glb",
-  "derivedFrom": "hypercar.glb (Meshy text-to-3d, see hypercar.meta.json and hypercar.remesh.meta.json)",
-  "tool": "tools/gridlock-car-retexture/retexture.mjs",
-  "date": "2026-10-25",
-  "change": "geometry untouched; baked base-colour and metallic-roughness textures replaced by flat PBR materials split by region (body, glass, tyre, rim, headlight, taillight, underbody) because the baked glass and interior read as see-through. The baked mesh is a double shell, so glass and light regions only apply to outward-facing triangles (inner-shell fragments take the body colour), the underside is a dark body blue, and the paint carries a subtle vertical COLOR_0 gradient.",
-  "sha256": "85e3992562400d6fd21e44f14457e985642a835928f6c9736002ffd62343c1bd",
-  "credits": 0
-}

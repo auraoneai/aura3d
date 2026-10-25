@@ -1,0 +1,44 @@
+{
+ "resource": "text-to-3d",
+ "task": {
+  "id": "01a17466-f3b3-764c-b450-379f42fda5c2",
+  "type": "text-to-3d-refine",
+  "status": "SUCCEEDED",
+  "progress": 100,
+  "preceding_tasks": 0,
+  "created_at": 1792954266593,
+  "started_at": 1792954266599,
+  "finished_at": 1792954308270,
+  "expires_at": 0,
+  "task_error": null,
+  "model_urls": {
+   "glb": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a17466-f3b3-764c-b450-379f42fda5c2/output/model.glb"
+  },
+  "texture_urls": [
+   {
+    "base_color": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a17466-f3b3-764c-b450-379f42fda5c2/output/texture_0.png",
+    "metallic": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a17466-f3b3-764c-b450-379f42fda5c2/output/texture_0_metallic.png",
+    "normal": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a17466-f3b3-764c-b450-379f42fda5c2/output/texture_0_normal.png",
+    "roughness": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a17466-f3b3-764c-b450-379f42fda5c2/output/texture_0_roughness.png"
+   }
+  ],
+  "thumbnail_url": "https://assets.meshy.ai/d317601d-2a31-407d-aaa5-242e3daf05f6/tasks/01a17466-f3b3-764c-b450-379f42fda5c2/output/preview.png",
+  "prompt": "a low sleek compact hatchback car, long and low with a short roof, length about three times its height, wide stance, single solid closed-volume body with smooth continuous rounded surfaces, no thin plates, no separate panels, simple low-poly stylised game vehicle, matte flat teal paint, dark flat windows, four round black wheels with simple grey hubs, plain front and rear without any logo, badge, emblem or text, side view proportions of a sports hatchback, car sitting level on the ground",
+  "texture_prompt": "matte flat teal car paint, flat dark grey glass, black rubber tyres, simple grey wheel hubs, plain flat colours with no logos, no badges, no text, no decals, no dirt, no gradients",
+  "texture_image_url": "",
+  "mode": "refine",
+  "name": "",
+  "model_type": "standard",
+  "seed": 3892670472,
+  "consumed_credits": 10
+ },
+ "saved_files": [
+  "/tmp/carregen/refine2/model.glb",
+  "/tmp/carregen/refine2/thumbnail.png",
+  "/tmp/carregen/refine2/texture_0_base_color.png",
+  "/tmp/carregen/refine2/texture_0_metallic.png",
+  "/tmp/carregen/refine2/texture_0_normal.png",
+  "/tmp/carregen/refine2/texture_0_roughness.png"
+ ],
+ "downloaded_at": "2026-10-25T18:52:12.205Z"
+}

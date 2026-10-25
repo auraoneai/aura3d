@@ -1,60 +1,63 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { NodeIO } from "@gltf-transform/core";
 import { describe, expect, it } from "vitest";
-import { classify } from "../../../tools/gridlock-car-retexture/classify.mjs";
 
 const dir = resolve(__dirname, "../../../examples/drift-and-deliver-port/assets/models");
+const file = resolve(dir, "courier.glb");
+
+async function load() {
+  const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(file)));
+  return doc.getRoot();
+}
 
 describe("gridlock courier hero car", () => {
-  it("is opaque flat-material regions with no baked textures, over the original geometry", async () => {
-    const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(resolve(dir, "hypercar.glb"))));
-    const root = doc.getRoot();
-    expect(root.listTextures(), "baked glass and interior atlas is gone").toHaveLength(0);
-    const names = root.listMaterials().map((m) => m.getName()).sort();
-    expect(names).toEqual(["car-body", "car-glass", "car-headlight", "car-rim", "car-taillight", "car-tyre", "car-under"]);
+  it("is one closed solid shell, so no interior can show through the body", async () => {
+    const root = await load();
+    const edges = new Map<string, number>();
+    let tris = 0;
+    for (const prim of root.listMeshes().flatMap((m) => m.listPrimitives())) {
+      const pos = prim.getAttribute("POSITION")!;
+      const idx = prim.getIndices()!;
+      const v = [0, 0, 0];
+      const key = (i: number) => { pos.getElement(i, v); return v.map((c) => Math.round(c * 1e4)).join(","); };
+      for (let t = 0; t < idx.getCount(); t += 3) {
+        tris += 1;
+        const k = [0, 1, 2].map((o) => key(idx.getScalar(t + o)));
+        for (let e = 0; e < 3; e++) {
+          const a = k[e]!, b = k[(e + 1) % 3]!;
+          if (a === b) continue;
+          const id = a < b ? `${a}|${b}` : `${b}|${a}`;
+          edges.set(id, (edges.get(id) ?? 0) + 1);
+        }
+      }
+    }
+    const open = [...edges.values()].filter((c) => c === 1).length;
+    expect(open, "open edges").toBe(0);
+    expect(tris).toBeLessThanOrEqual(40_000);
+  });
+
+  it("is opaque and baked to the port's car convention (+z forward, 1.9 units long, lowest point at y = 0)", async () => {
+    const root = await load();
     for (const m of root.listMaterials()) {
       expect(m.getAlphaMode(), m.getName()).toBe("OPAQUE");
       expect(m.getBaseColorFactor()[3], m.getName()).toBe(1);
     }
-    const prims = root.listMeshes().flatMap((mesh) => mesh.listPrimitives());
-    const tris = prims.reduce((s, p) => s + (p.getIndices()?.getCount() ?? 0) / 3, 0);
-    expect(tris).toBe(39182);
-    let min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
-    for (const p of prims) {
+    const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+    for (const p of root.listMeshes().flatMap((mesh) => mesh.listPrimitives())) {
       const a = p.getAttribute("POSITION")!.getArray()!;
       for (let i = 0; i < a.length; i += 3) for (let k = 0; k < 3; k++) { min[k] = Math.min(min[k]!, a[i + k]!); max[k] = Math.max(max[k]!, a[i + k]!); }
     }
     expect(max[2]! - min[2]!).toBeCloseTo(1.9, 1);
-    expect(min[1]!).toBeGreaterThan(-0.01);
+    expect(max[2]! - min[2]!).toBeGreaterThan(max[0]! - min[0]!);
+    expect(min[1]!).toBeGreaterThan(-0.001);
   });
 
-  it("classifies the cabin top as glass, the roof strip and the nose as body, the wheel hub as rim", () => {
-    expect(classify(0.2, 0.42, 0.1, 0.4)).toBe("glass");
-    expect(classify(0.0, 0.48, 0.1, 0.9)).toBe("body");
-    expect(classify(0.0, 0.2, 0.6, 0.3)).toBe("body");
-    expect(classify(0.42, 0.12, 0.47, 0)).toBe("rim");
-    expect(classify(0.42, 0.04, 0.47, 0)).toBe("tyre");
-    expect(classify(0.1, 0.05, 0.0, -0.9)).toBe("under");
-  });
-  it("gives inward-facing fragments of the glass and lights the body colour, so the second shell cannot show as patches", () => {
-    expect(classify(0.2, 0.42, 0.1, -0.5, 0.0)).toBe("body");
-    expect(classify(0.3, 0.2, 0.9, 0, -0.6)).toBe("body");
-    expect(classify(0.3, 0.2, 0.9, 0, 0.6)).toBe("headlight");
-    expect(classify(0.3, 0.24, -0.9, 0, 0.6)).toBe("body");
-    expect(classify(0.3, 0.24, -0.9, 0, -0.6)).toBe("taillight");
-  });
-
-  it("shades the paint with a subtle vertical gradient and no baked textures", async () => {
-    const doc = await new NodeIO().readBinary(new Uint8Array(readFileSync(resolve(dir, "hypercar.glb"))));
-    const body = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives()).find((p) => p.getMaterial()?.getName() === "car-body")!;
-    const color = body.getAttribute("COLOR_0")!;
-    expect(color.getNormalized()).toBe(true);
-    const c = color.getArray()!;
-    let lo = 255, hi = 0;
-    for (let i = 0; i < c.length; i += 4) { lo = Math.min(lo, c[i]!); hi = Math.max(hi, c[i]!); }
-    expect(lo / 255).toBeGreaterThan(0.6);
-    expect(hi / 255).toBeGreaterThan(0.9);
-    expect(hi - lo).toBeGreaterThan(30);
+  it("matches the hash wired in models.ts, and the old see-through car is gone", () => {
+    const hash = createHash("sha256").update(readFileSync(file)).digest("hex");
+    const models = readFileSync(resolve(__dirname, "../../../examples/drift-and-deliver-port/models.ts"), "utf8");
+    expect(models).toContain(`glb("courier.glb", "${hash}")`);
+    expect(existsSync(resolve(dir, "hypercar.glb"))).toBe(false);
   });
 });

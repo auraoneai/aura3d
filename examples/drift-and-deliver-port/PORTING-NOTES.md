@@ -42,7 +42,7 @@ rights basis in `assets/ATTRIBUTION.md`; Meshy task records are in `assets/prove
 pathname URLs, which the production bridge requires) and `tests/unit/drift-and-deliver-port/models.test.ts` checks every hash, the size
 budget and the placement plan.
 
-- **Player**: a black hypercar (48k triangles), the only car that casts shadows. **Traffic**: sedan, hatchback, taxi-style van and box truck
+- **Player**: a teal compact courier hatchback (37.5k triangles, one closed solid shell, regenerated 2026-10-25), the only car that casts shadows. **Traffic**: sedan, hatchback, taxi-style van and box truck
   (6-9k triangles each; kinds cycle exactly as the old shells did: `i % 4`), 84 `model()` nodes moved each frame through runtime handles.
   The car GLBs are baked (vertex rotation + lift, `tools/crayon-capture/drift-and-deliver-bake-cars.mjs`) to face +z with the lowest point at
   y = 0, so a runtime `setPosition/setRotation` is all the sim state needs. Meshy bakes the wheels into the body, so wheels do not spin.

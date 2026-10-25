@@ -12,7 +12,7 @@ Every model comes from an original text prompt written for this port (no image-t
 
 | key | role | prompt (gist) | Meshy text-to-3D refine task | Meshy remesh task | triangles |
 | --- | --- | --- | --- | --- | --- |
-| hypercar | player car | sleek black hypercar, low and wide, sharp aerodynamic body, gold accent line, dark rims, no driver | 01a169cd-9ba4 | 01a16a0d-f870 | 39.2k | Repainted 2026-10-25 by `tools/gridlock-car-retexture/retexture.mjs` (flat region materials, geometry untouched; `provenance/hypercar.repaint.json`).
+| courier | player car | low compact hatchback, single solid closed-volume body, smooth rounded surfaces, matte flat teal paint, dark flat windows, four round wheels, no logo, badge, emblem or text (texture prompt: plain flat colours, no decals) | 01a17466-f3b3 (preview 01a17465-6271) | none (prep simplify to 30k vertices) | 37.5k | Generated 2026-10-25 to replace the earlier hypercar, whose thin overlapping plates read as see-through; closed mesh (0 open edges), baked by `tools/gridlock-courier-bake/bake.mjs` (+z forward, lowest point y = 0). 60 credits including one rejected preview and refine (microcar too tall for the chase camera). |
 | sedan | traffic | mid-size city sedan, rounded stylised proportions, deep blue | 01a169d1-7716 | 01a16a10-8c9d | 6.9k |
 | hatch | traffic | compact red hatchback, short rounded body | 01a169ce-a35e | 01a16a12-3631 | 7.1k |
 | van | traffic | boxy yellow city taxi-style minivan, black side stripe | 01a169d2-4957 | 01a16a13-e053 | 7.1k |
