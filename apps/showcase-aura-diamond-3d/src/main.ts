@@ -337,6 +337,8 @@ interface PoseSolve {
   readonly sweetActor: Vec3;
   readonly tipActor: Vec3;
   readonly palmActor: Vec3;
+  readonly chestActor: Vec3;
+  readonly shoulderActor: Vec3;
 }
 
 /**
@@ -391,6 +393,8 @@ function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR: Vec3, 
     tau,
     qFa,
     elbow: eR,
+    chestActor: chest,
+    shoulderActor: shRt,
     batDir,
     palmActor: palm,
     sweetActor: [palm[0] + batDir[0] * SWEET_SPOT, palm[1] + batDir[1] * SWEET_SPOT, palm[2] + batDir[2] * SWEET_SPOT],
@@ -3348,7 +3352,8 @@ function boot(): void {
     bones: {} as Record<string, Vec3 | null>,
     animState: null as string | null,
     knobWorld: null as Vec3 | null,
-    knobToHand: null as number | null
+    knobToHand: null as number | null,
+    solverJoints: null as Record<string, Vec3> | null
   };
   const swingEvidence = {
     phase: "stance" as "stance" | "load" | "stride" | "contact" | "follow-through" | "recover",
@@ -3672,6 +3677,8 @@ function boot(): void {
       batState.poseError = String((err as Error)?.message ?? err).slice(0, 200);
     }
 
+    const w = (v: Vec3): Vec3 => worldFromActor(v, batterPos, batterYaw).map((x) => Number(x.toFixed(3))) as Vec3;
+    batState.solverJoints = { Chest: w(pose.chestActor), RightUpperArm: w(pose.shoulderActor), RightForearm: w(pose.elbow), palm: w(pose.palmActor) };
     return {
       tipWorld: worldFromActor(pose.tipActor, batterPos, batterYaw),
       sweetWorld: worldFromActor(pose.sweetActor, batterPos, batterYaw),
@@ -4329,6 +4336,7 @@ function boot(): void {
         poseApplied: batState.poseApplied,
         poseError: batState.poseError,
         bones: batState.bones,
+        solverJoints: batState.solverJoints,
         animState: batState.animState,
         knobWorld: batState.knobWorld ? [...batState.knobWorld] : null,
         knobToHand: batState.knobToHand

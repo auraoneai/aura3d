@@ -30,7 +30,7 @@ const READ = `(() => {
   const raw = w.__AURA3D_GAME_EVIDENCE__ ?? w.__AURA3D_GAME__;
   const e = typeof raw === "function" ? raw() : raw;
   if (!e || !e.bat) return null;
-  return { k: e.bat.knobToHand, sock: e.bat.socketed, stage: e.bat.socketStage, t: e.swing ? e.swing.t : null, dur: e.swing ? e.swing.dur : null, ph: e.swing ? e.swing.phase : null, knob: e.bat.knobWorld, palm: e.swing ? e.swing.palmWorld : null };
+  return { k: e.bat.knobToHand, sock: e.bat.socketed, stage: e.bat.socketStage, t: e.swing ? e.swing.t : null, dur: e.swing ? e.swing.dur : null, ph: e.swing ? e.swing.phase : null, knob: e.bat.knobWorld, palm: e.swing ? e.swing.palmWorld : null, bones: e.bat.bones, sj: e.bat.solverJoints };
 })()`;
 
 test("diamond bat grip sequence", async ({ page }) => {
@@ -54,7 +54,7 @@ test("diamond bat grip sequence", async ({ page }) => {
   process.stdout.write(`@@GRIP ${JSON.stringify({ label: "stance", ...(stance as object) })}\n`);
 
   const targetsMs = [0, 120, 240, 360, 480, 700];
-  for (let swing = 0; swing < 3; swing += 1) {
+  for (let swing = 0; swing < 2; swing += 1) {
     await page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.triggerSwing?.(0.84));
     let next = 0;
     let lastT = -1;
