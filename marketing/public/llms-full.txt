@@ -243,19 +243,3 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

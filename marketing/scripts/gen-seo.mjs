@@ -268,6 +268,7 @@ const current = readFileSync(guideSource, "utf8");
 const guideBody = current.includes(GUIDE_MARKER)
   ? current.slice(current.indexOf(GUIDE_MARKER) + GUIDE_MARKER.length).replace(/^\n+/, "")
   : current; // first run: the whole existing file is the agent guide
+const guideBodyTrimmed = guideBody.replace(/\n+$/, "");
 
 const llmsFull = `# Aura3D (full agent guide)
 
@@ -307,7 +308,7 @@ ${appRoutes.map(link).join("\n")}
 - Domain: ${ORIGIN} is a placeholder — swap AURA3D_SITE_URL (or the generator's ORIGIN) at deploy time; every URL in robots.txt, sitemap.xml, and these files follows.
 
 ${GUIDE_MARKER}
-${guideBody}
+${guideBodyTrimmed}
 `;
 
 const gameInventory = JSON.parse(readFileSync(join(repoRoot, "docs", "workflows", "game-inventory.json"), "utf8"));
