@@ -7,6 +7,10 @@ Read `llms.txt`, `docs/agents/claims-and-boundaries.md`, and
 `docs/api/game-cheatsheet.md` and `docs/api/game-runtime.md` for names. A route
 with a scene, keyboard listener, or proof replay is not automatically a game.
 
+The pre-flight and acceptance list is [`new-game-checklist.md`](new-game-checklist.md); the
+mistakes behind it are in [`lessons-learned.md`](lessons-learned.md), and
+`node tools/game-checks/run.mjs <game-slug>` automates the static part.
+
 ## Build It From the Kits
 
 A public game starts from the library shell, not from hand-written glue:

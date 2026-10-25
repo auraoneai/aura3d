@@ -1,0 +1,104 @@
+# Lessons learned (4.1.x and 4.2.0 programs)
+
+Every entry is a mistake that really shipped or nearly shipped while 26 games were built, ported and reworked. Read the section for the thing you are building; run `node tools/game-checks/run.mjs <game-slug>` before you call a game done (check ids in backticks). Detail lives in the linked evidence. All numbers are software WebGL2 unless stated; nothing here is real-GPU evidence.
+
+Format: **ID title.** Symptom. Cause. Avoid / prevent (API or check). Evidence.
+
+## Rendering
+
+- **R1 Canvas hand-resized after ready.** Game fills 2/3 of the frame on Retina; resize does nothing. The port set `canvas.width/height` after `app.ready()`, so the renderer kept the old backing size. Let the engine size the canvas (`resize` option, `createParentFit`); never assign canvas size after ready. Check `canvas-resize`. `evidence/kid-goku-beyond-the-clouds-port/rework/render-fix/`.
+- **R2 `ready()` is not "first frame is whole".** First visible frame drew 47 of 113 calls; HDRI finished later and recompiled everything. Programs compile asynchronously and a pending draw is skipped. `await warmPrograms(app)` (waits for programs and the environment) before showing the game. `evidence/drift-and-deliver-port/rework/render-fix/`.
+- **R3 Parent grows with its canvas.** Canvas chased an auto-height `<body>` that also held the HUD and grew on every resize until GL drew nothing (black frame). `createParentFit` keeps the mounted size when a resize moves the parent; give the canvas a fixed-size container. `docs/agents/troubleshooting.md` (black-frame checklist).
+- **R4 Texture upgrade is slow, not broken.** White car and trees for 25 to 50 s per material on software GL. Textures upgrade one material at a time in scene order. Add the hero first; wait for the QA hook texture status before capturing; do not file it as a material bug. `evidence/roadster-hours-port/rework/render-fix/`.
+- **R5 Colour applied twice.** Platforms rendered near-black. Instance colour and material colour were both applied (squared). Apply once; check frames for dark props. `evidence/cross-hop/rework/content-fix/`.
+- **R6 Noisy mesh normals.** Blue-silver sheen on the golfer, blotchy robotaxi. Meshy normals are noisy; recompute smooth normals or lower specular. `tools/gridlock-car-retexture`, `evidence/teleoperator/rework/last-fix/`.
+- **R7 Model stretched on one axis.** Houses smeared up to 3x. Cap non-uniform scale (about 1.6x); regenerate if more is needed. `evidence/ninja-runner-port/rework/ui-fix/`, `docs/agents/art-direction.md`.
+- **R8 Shard-atlas textures.** Skin-toned fragments and noise on carts and athletes (many Meshy atlases are shard collages). Repaint by region (flat materials, hem band) or regenerate; do not ship the atlas. `tools/hoops-athlete-retexture`.
+- **R9 Failed model blanks the scene silently.** One missing GLB gave a black game. Log the failure (`RENDERER_MOUNT_FAILED`), keep a fallback, stage every GLB in captures. `docs/agents/troubleshooting.md`.
+- **R10 A throwing `onFrame` stopped drawing.** Frame loop died without a message. Use `createFrameErrorBoundary` (`@aura3d/debug`); the engine now reports once and continues.
+- **R11 Custom shader declared its own precision.** `precision highp float;` in a `material.custom` fragment failed to compile. The prelude declares it; do not repeat it.
+- **R12 Environment 404 in published apps.** `/aura-environments/neutral.manifest.json` was missing from packages. Fixed by embedding the neutral environment (4.2.0); never depend on files that live only in the repo `public/`.
+- **R13 Stock `vite build` failed.** `node:fs` reached the browser through `@aura3d/assets`. Import `@aura3d/assets/browser`; run `node tools/release/consumer-build-smoke.mjs` before release.
+
+## Motion and physics
+
+- **M1 Fixed-step sim drawn without interpolation.** Entity still on 50% of frames at 120 Hz (58% at 144 Hz), clips flip about 1,200 times per 10 s, reads as shake. Draw between the last two steps: `createFixedStepPresenter` / `createRenderInterpolator` / `loop.alpha`; prove with `runMotionGate` at 60, 120, 144 Hz. Check `fixed-step-presenter`. `docs/audit/motion-audit.md`, `docs/api/motion-presenter.md`.
+- **M2 Hit-stop or timers on frozen game time.** Match froze for good after the first basket (183 of 186 frames identical). A countdown ticking on game time never ends while game time is frozen. Use `createHitStop` (real frame delta). Check `hitstop-time`. `evidence/aura-hoops-3d/rework/`.
+- **M3 Pose bones as arrays.** Arms never moved, bat floated on the ground. The engine wants `{x,y,z,w}` / `{x,y,z}` objects; arrays are silently ignored. Convert at the call site; verify the pose actually applied from a frame. Check `pose-array`. `evidence/aura-diamond-3d/rework/`.
+- **M4 Held items not attached.** Bat, club, racket beside the athlete. Use `attachToBone` (case- and rig-insensitive names, throws `ATTACH_BONE_NOT_FOUND`); check knob-to-palm distance over the whole swing. `docs/api/motion-attach.md`.
+- **M5 Sliding feet.** Walkers slid, legs "scurried". Clip speed was fixed, not driven by ground speed. `createLocomotion` (stride-synced), `createFootSlideMeter` (fails sliding and legs that never step). `docs/api/motion-locomotion.md`, `motion-foot-slide.md`.
+- **M6 No consequence on contact.** Ran through gates, bridges, buildings, cars. Use the impact kit (`createImpactWorld`, hit-stop, shake, cue, particles, penalty); one event per contact; no pass-through at 4x speed. `docs/api/motion-impact.md`.
+- **M7 Double-framed skeleton.** Players looked ghosted while kicking: procedural kit boxes drove a swing beside barely-moving legs. `checkDoubleFrame` must be clean; one skinned body per athlete.
+- **M8 Counter incremented per frame.** Golf strokes climbed to 19 per swing because "committed" stayed true for the whole downswing. Count transitions, not states; unit-test with a long stepped swing.
+- **M9 Camera inside scenery.** Duneglide eye was inside geometry on 153 of 300 steps. `createCameraClearance`; test in QA stepping.
+- **M10 Integrator too coarse.** Exact-aim shots landed 10 cm low. Substep ballistics (1/240 s).
+- **M11 Unstable hit decisions.** Hole could hang if contact was missed. Keep a timed fallback behind swept contact (60 ms) so a miss never blocks the game.
+- **M12 Skinning stretch.** FC players stretched up to 120x. Smooth skin weights over the whole mesh and measure every primitive, not only the first.
+- **M13 Idle hands aimed below the shoulder.** Bowed arms. Check idle pose against arm length in frames.
+
+## Game design
+
+- **G1 Nothing to do.** HEATSINK: free flight, no targets, no score. Every game needs a stated objective on screen from second one, a score or progress, and a result. `docs/agents/game-example-standards.md`.
+- **G2 Cloned mechanics and identity.** Dot Dash looked like the arcade original (maze, pellets, four ghosts). Mechanics may be reproduced; names, characters, art, lore and layouts may not: new hero, enemies, pickups, maze language, text. `docs/workflows/crayon-game-reverse-engineering.md` section 4.
+- **G3 Rules text that the game does not implement.** "32-player World Tour" while tournament was "Coming soon"; "twin cannons" not in code. Only describe what the code does; label deferred modes.
+- **G4 Weapon label and model out of sync.** Bunker Zero showed a pistol label with the rifle model. One table decides the model in hand.
+- **G5 Dismissable overlays that never dismiss.** Title cards stayed over the court; modals covered the scoreboard. Dismiss on start; test the first frame after start.
+- **G6 Autopilot defaults.** Demo mode ran by default. Manual control is the default; autopilot is opt-in.
+
+## Assets and likeness
+
+- **A1 Photographic faces and real marks in textures.** Athletes carried face scans, "CRETIS 13", swoosh-style marks and crests; a cabinet texture held framed photographs of people. Repaint by region, flat faces; scan every served GLB. Check `likeness`, tests in `tests/unit/likeness-audit/`. `docs/audit/likeness-brand-audit.md`.
+- **A2 Real vehicle silhouettes and lettering.** Robotaxi, Corvette, Cybercab shapes with "WAYMO"/"JAGUAR". Painting lettering out leaves smears and a recognisable shape: replace with original generic models. `evidence/teleoperator/rework/vehicles/`.
+- **A3 Meshy invented emblems.** Winged badges and door marks on new cars. Render all four sides of every generated model; cover or regenerate; never name brands in prompts.
+- **A4 Trademark-derived names and lore.** "Mount Paozu", "star orbs", yellow creature cheeks, fighters in a famous gi. Search code, state and text for borrowed terms; restyle palette and silhouette. Check `likeness`.
+- **A5 Meshy credit caps.** Five games went 5% to 18% over the 420 guideline; the helper does not hard-stop per game, and rate-limited calls are undercounted. Check the ledger (`node /tmp/meshy/meshy.mjs ledger`), cap per game tag. Check `meshy-cap`.
+- **A6 Raw model URLs and missing provenance.** Production needs same-origin URL + sha256 + provenance; raw GLB URLs fail `public-example-boundary`. Check `asset-provenance`; `aura3d assets validate`.
+- **A7 Oversized assets.** Cross Hop shipped 70 MB of vehicle textures (3 x 2048 each). Budget per role (docs/agents/asset-workflow.md); downscale to 1024 where seen small.
+- **A8 "800K+ catalog".** A hosted index row count marketed as a feature while the Worker was missing (404) and 3 of 20 searches found a relevant first hit. Do not advertise unreachable services; state what a clean install can do. `docs/audit/asset-catalog-claim.md`.
+- **A9 Unlicensed or unshippable licences.** 8.8% of the index is non-commercial; CC-BY needs attribution; CC-BY-SA is not "redistributable". Record licence and attribution at admission.
+
+## Naming and copy
+
+- **N1 Old names and "port" wording in game UI.** Title cards still said "SPLAT RUSH", "STRANGE ORBIT", "a port of a Crayon game". Names live in `docs/workflows/game-names.md`; grep visible strings. Check `names`.
+- **N2 Stale version text and engine chip.** "AURA3D 4.0", "Aura3D 4.0.2", "LOADING AURA3D FLEET", an "AURA3D ENGINE" chip. Read versions from one source; one neutral "Built with Aura3D" link. Check `names`, `quickbar`.
+- **N3 Hand-typed counts.** "4 playable games", "Fifteen games", "26 games", "Four templates" (there are 20). Counts are generated (`docs/workflows/game-inventory.json`). Check `counts`.
+- **N4 Unverifiable claims.** "zero-dependency" (engine has 15 sibling deps), "~120 lines vs 18", "faster", "drop-in", "14 fragile packages". Every number needs a source and caveat. `docs/agents/claims-and-boundaries.md`.
+- **N5 Missing LICENSE.** Packages say MIT, the repo has no `LICENSE` and GitHub shows no licence. Add one before saying "open source".
+
+## UI and layout
+
+- **U1 Four-row mode bars on phones.** Covered scoreboards. Use `apps/showcase-port-shared/quickbar.css` (single row, scrolls sideways). Check `quickbar`.
+- **U2 Mobile HUD overlaps.** Fare card a third of the screen, countdown over Start, minimap over speedometer. Check 390x844 frames for every HUD change; collapsible sheets; safe-area insets.
+- **U3 Unlicensed fonts.** Inter, system stacks, Chakra Petch. Use the licensed set (`/Users/gurbakshchahal/fonts/README.md`); redistribution rights for Graphik in public templates are still undecided.
+
+## Build and deploy
+
+- **B1 Unanchored ignore patterns.** `.vercelignore` `evidence/` also excluded `packages/game/src/evidence/` and broke the build. Anchor with a leading slash. Check `vercelignore`.
+- **B2 `.gitignore` swallowing new things.** `*.jpg`/`*.png` hid screenshots; `site/` hid `tools/site`. After adding a directory or image, `git status` must show it. Check `screens-tracked`.
+- **B3 File-count limit.** Vercel stops at 15,000 files; the repo passed it. Deploy from a clean worktree with `/evidence/` ignored; report the tracked count.
+- **B4 Tests the build needs.** Ignoring `tests/` broke the build (`vite.config.ts` imports `tests/browser/installed-package-resolve`). Check what the build reads before ignoring.
+- **B5 Registry lag.** npm showed 2 of 24 packages for minutes after a successful publish. Poll from `/tmp`; do not re-publish.
+- **B6 Release steps `prepare-version` misses.** Marketing HTML, showcase index, `CONTRIBUTING.md`, doc stamps, app `package.json` versions, the CHANGELOG version line. Run `marketing/scripts/check-version.mjs`.
+- **B7 Skill mirrors stale.** `check:skills` fails when `llms.txt` changes. Sync with `tools/agent-skills/sync.ts` (via `tsx`, never pnpm in symlinked worktrees).
+
+## Verification
+
+- **V1 Capture stages missing app folders.** Black frames (Apex, Links, Slingshot). The slim runner context drops `public/aura-assets` and shared dirs; stage the game's app folder, `apps/showcase-port-shared` and model files; discard black captures.
+- **V2 Blind polling on software GL.** "Slow first frame" was the capture's own polling. Wait for the game's ready flag.
+- **V3 Hung remote runs.** Several agents waited hours. Cancel after about 20 to 25 minutes; record what failed.
+- **V4 Evidence images not committed.** Screenshots were gitignored and worktrees removed, so frames were lost. Commit with `git add -f`; check tracked. Check `screens-tracked`.
+- **V5 Frames judged by eye only.** Overlaps and stale text slipped through. Read every frame; keep numeric checks (foot slide, overlap area, still-frame fraction).
+- **V6 Unrun gates reported as passed.** G3 thresholds never applied (reference keyed by predicate, not venue). State exactly what ran; a skipped comparison is not a pass.
+- **V7 Software-GL is not GPU.** Real-GPU checks (feel, 120 Hz, Hoops crash) need the owner's hardware; list them in every report.
+
+## Agent process
+
+- **P1 Broad `pkill`.** Killed every agent's remote client. Kill only your own PIDs.
+- **P2 `git stash -u`, `git checkout`, force-removing worktrees.** Wiped edits or merge state mid-work. Commit early; never force-remove a worktree mid-rebase.
+- **P3 Deleting another agent's moved-aside files.** `/tmp/legacy-tennis-bundle` was removed by a different lane. Do not delete what you did not create.
+- **P4 pnpm in symlinked worktrees.** It tries to delete the shared `node_modules`. Call `node_modules/.bin/*` directly.
+- **P5 Unpushed "done".** Agents reported done with only local commits and hung remote runs. Push at each green step; say what is unverified.
+- **P6 Shared files without rebasing.** `CHANGELOG.md`, `apps/showcase-index/index.html`, manifests conflicted repeatedly. `git pull --rebase` before every push; keep both sides.
+- **P7 Duplicate exports after merges.** `warmPrograms` exported twice broke the build. Build (`tsc -p tsconfig.build.json`) after every merge.
+- **P8 Hand-rolled kits.** 10 of 11 ports re-implemented QA hooks, fixed-step loops, audio unlock. Use `installQaHooks`, `createFixedStepLoop`, `createCueBank`, `installGameBeacon`. Check `kits`.
+- **P9 Vendored engines.** A 1.1 MB `engine.js` and a 753 KB renderer bundle shipped in games. No `three` imports or vendored bundles. Check `no-three`.

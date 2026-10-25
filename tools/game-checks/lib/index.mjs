@@ -1,0 +1,415 @@
+// Static checks for shipped games. Pure Node, no dependencies. See docs/agents/lessons-learned.md for why each exists.
+import { execFileSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative, sep } from "node:path";
+
+const SOURCE_EXT = /\.(?:[cm]?[jt]sx?|html|css|json)$/;
+const SKIP_DIRS = new Set(["node_modules", "dist", ".vercel", "evidence", "tests", "scripts", "public", "assets", "dist-dev", ".candidate-assets", "art-candidates", "art-review"]);
+const MAX_FILE_BYTES = 400_000;
+
+export function loadTerms(root) {
+  return JSON.parse(readFileSync(join(root, "tools/game-checks/data/terms.json"), "utf8"));
+}
+
+export function loadInventory(root) {
+  return JSON.parse(readFileSync(join(root, "docs/workflows/game-inventory.json"), "utf8"));
+}
+
+function walk(dir, out, { skipPublic = true } = {}) {
+  if (!existsSync(dir)) return;
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    let st;
+    try { st = statSync(p); } catch { continue; }
+    if (st.isDirectory()) {
+      if (SKIP_DIRS.has(name) && !(name === "public" && !skipPublic)) continue;
+      walk(p, out, { skipPublic });
+    } else if (SOURCE_EXT.test(name) && st.size <= MAX_FILE_BYTES) {
+      out.push(p);
+    }
+  }
+}
+
+export function stripComments(text) {
+  return text
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/(^|[^:"'`\\])\/\/[^\n]*/g, (m, p1) => p1 + " ".repeat(m.length - p1.length));
+}
+
+/** Source files of a game: its app folder plus every examples/<x> folder the app references. */
+export function gameSources(root, game) {
+  const appDir = join(root, "apps", game.appFolder);
+  const dirs = [appDir];
+  const files = [];
+  walk(appDir, files);
+  const referenced = new Set();
+  for (const f of files) {
+    const text = readFileSync(f, "utf8");
+    for (const m of text.matchAll(/examples\/([A-Za-z0-9-]+)\//g)) referenced.add(m[1]);
+  }
+  for (const ex of referenced) {
+    const dir = join(root, "examples", ex);
+    if (existsSync(dir) && !dirs.includes(dir)) {
+      dirs.push(dir);
+      walk(dir, files);
+    }
+  }
+  const unique = [...new Set(files)].sort();
+  return {
+    appDir,
+    dirs,
+    files: unique.map((path) => {
+      const raw = readFileSync(path, "utf8");
+      return { path, rel: relative(root, path).split(sep).join("/"), raw, text: stripComments(raw), kind: path.split(".").pop() };
+    })
+  };
+}
+
+const notInPath = (term) => new RegExp(`(?<![\\w/.-])${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w/-])`);
+const isImportLine = (line) => /^\s*(import\s|export\s.*from\s|\}\s*from\s)/.test(line);
+
+function* visibleLines(src, { kinds = ["html", "ts", "tsx", "js", "mjs", "jsx", "mts", "cts"] } = {}) {
+  for (const f of src.files) {
+    if (!kinds.includes(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (!line.trim() || isImportLine(line)) continue;
+      yield { file: f, line, no: i + 1 };
+    }
+  }
+}
+
+function literals(line) {
+  const out = [];
+  for (const m of line.matchAll(/(["'`])((?:\\.|(?!\1).)*)\1/g)) out.push(m[2]);
+  return out;
+}
+const idLike = (str) => /^[\w./:@#-]+$/.test(str) && !/\s/.test(str);
+/** Text a player can read on this line: the whole line in HTML, string-literal contents in code. */
+function textsOf(file, line) {
+  return file.kind === "html" ? [line] : literals(line);
+}
+
+const finding = (check, severity, game, file, line, message) => ({ check, severity, game: game?.slug ?? "(global)", file: file ?? "", line: line ?? 0, message });
+
+// ---------- per-game checks ----------
+
+function checkNames({ game, src, terms }) {
+  const out = [];
+  const old = (terms.oldNames[game.slug] ?? []).map((n) => ({ n, re: notInPath(n) }));
+  const wording = terms.portWording.map((w) => ({ w, re: new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") }));
+  const stale = new RegExp(terms.staleVersion);
+  const chips = terms.engineChip.map((c) => ({ c, re: new RegExp(c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }));
+  for (const { file, line, no } of visibleLines(src)) {
+    const texts = textsOf(file, line);
+    if (texts.length === 0) continue;
+    const joined = texts.join("\n");
+    for (const { n, re } of old) if (re.test(joined)) out.push(finding("names", "error", game, file.rel, no, `old game name "${n}" in visible text`));
+    const prose = texts.filter((t) => !idLike(t)).join("\n");
+    for (const { w, re } of wording) if (re.test(prose)) out.push(finding("names", "error", game, file.rel, no, `"${w}" wording in visible text`));
+    if (stale.test(joined) && !/(sha256|integrity|@aura3d\/[\w-]+@)/.test(line)) {
+      const evidenceOnly = /\b(engineVersion|version)\s*:/.test(line) && !/<[a-z]/i.test(line);
+      out.push(finding("names", "warn", game, file.rel, no, evidenceOnly ? "stale engine version string in evidence code (hand-typed)" : "stale version text in visible text"));
+    }
+    for (const { c, re } of chips) if (re.test(line)) out.push(finding("names", "error", game, file.rel, no, `engine chip "${c}"`));
+  }
+  return dedupe(out);
+}
+
+function checkQuickbar({ game, src }) {
+  const markup = /(id|class)\s*=\s*["'][^"']*(quickbar|quick-bar|modebar|mode-bar|quick-switch)/i;
+  const shared = /quickbar\.css|aura3d-top-bar/;
+  const usesShared = src.files.some((f) => shared.test(f.raw));
+  const hit = src.files.find((f) => f.kind === "html" && markup.test(f.raw));
+  if (hit && !usesShared) {
+    const no = hit.raw.split("\n").findIndex((l) => markup.test(l)) + 1;
+    return [finding("quickbar", "warn", game, hit.rel, no, "own mode bar markup without apps/showcase-port-shared/quickbar.css (wraps to several rows on phones)")];
+  }
+  return [];
+}
+
+function checkCanvasResize({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!/^[cm]?[jt]sx?$/.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    const ready = lines.findIndex((l) => /\.ready\s*\(/.test(l));
+    if (ready < 0) continue;
+    for (let i = ready + 1; i < lines.length; i++) {
+      if (/\bcanvas\.(width|height)\s*=(?!=)|\.setSize\s*\(|canvas\.style\.(width|height)\s*=/.test(lines[i])) {
+        out.push(finding("canvas-resize", "warn", game, f.rel, i + 1, "canvas size assigned after app.ready(): the renderer keeps the old backing size (2x crop). Let the engine size the canvas."));
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+function checkFixedStepPresenter({ game, src }) {
+  const all = src.files.filter((f) => /^[cm]?[jt]sx?$/.test(f.kind));
+  const usesLoop = all.find((f) => /createFixedStepLoop\s*\(|\baccumulator\b\s*(\+=|-=)/.test(f.text));
+  if (!usesLoop) return [];
+  const has = all.some((f) => /createFixedStepPresenter|createRenderInterpolator|createRecordBlend|\bloop\.alpha\b|\.alpha\b\s*[;,)]/.test(f.text));
+  if (has) return [];
+  const no = usesLoop.text.split("\n").findIndex((l) => /createFixedStepLoop\s*\(|accumulator/.test(l)) + 1;
+  return [finding("fixed-step-presenter", "error", game, usesLoop.rel, no, "fixed-step simulation drawn without interpolation (stalls on 120/144 Hz displays). Use createFixedStepPresenter or createRenderInterpolator.")];
+}
+
+function checkHitstopTime({ game, src }) {
+  const out = [];
+  const hasKit = src.files.some((f) => /createHitStop/.test(f.text));
+  if (hasKit) return out;
+  for (const f of src.files) {
+    if (!/^[cm]?[jt]sx?$/.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (/(hit[-_]?stop|hitstop|freeze(?:Timer|Time|Left|Remaining)?)\w*\s*(?:-=|=\s*Math\.max\([^)]*-)\s*[^;]*\b(dt|delta|simDt|stepDt)\b/i.test(lines[i])) {
+        out.push(finding("hitstop-time", "warn", game, f.rel, i + 1, "hit-stop or freeze timer counts down on dt: if dt is game time and game time is frozen it never ends. Use createHitStop (real frame time)."));
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+function checkPoseArray({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!/^[cm]?[jt]sx?$/.test(f.kind)) continue;
+    if (!/\bbones\b/i.test(f.text) || !/(\.pose\s*\(|setPose|poseBones|applyPose)/.test(f.text)) continue;
+    if (/poseBonesForEngine|\{\s*x:\s*\w+\[0\]/.test(f.text)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      const near = lines.slice(Math.max(0, i - 5), i + 1).join("\n");
+      if (/\b(rotation|position)\s*:\s*\[/.test(lines[i]) && /bone/i.test(near)) {
+        out.push(finding("pose-array", "warn", game, f.rel, i + 1, "bone pose given as an array: the engine expects {x,y,z,w} / {x,y,z} objects and ignores arrays (arms never move)."));
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+function checkLikeness({ game, src, terms }) {
+  const out = [];
+  const brand = terms.brandTerms.map((t) => ({ t, re: notInPath(t) }));
+  for (const { file, line, no } of visibleLines(src)) {
+    const texts = textsOf(file, line).filter((t) => !/\/|\.(glb|gltf|ktx2|png|jpe?g|webp)\b/i.test(t) || file.kind === "html");
+    const joined = texts.join("\n");
+    if (!joined) continue;
+    for (const { t, re } of brand) if (re.test(joined)) out.push(finding("likeness", "error", game, file.rel, no, `real brand, product or lore term "${t}" in visible text`));
+  }
+  for (const f of src.files) {
+    if (!/aura-assets[\w.-]*\.ts$|aura\.assets\.json$/.test(f.rel)) continue;
+    const keys = f.raw.matchAll(/^\s*["']?([A-Za-z][\w]*)["']?\s*:\s*(?:\{|defineModel|model\()/gm);
+    for (const m of keys) for (const { t } of brand) if (new RegExp(t, "i").test(m[1]) && t.length > 3) out.push(finding("likeness", "warn", game, f.rel, 0, `asset key "${m[1]}" names a real brand or product ("${t}")`));
+  }
+  return dedupe(out);
+}
+
+function checkAssetProvenance({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (/aura-assets[\w.-]*\.ts$/.test(f.rel)) {
+      const urls = (f.text.match(/\burl\s*:\s*(?:new\s+URL\(\s*)?["'`][^"'`\n]*\.(?:glb|gltf|ktx2|webp|png|jpe?g|mp3|ogg|wav|hdr)/gi) ?? []).length;
+      const hashes = (f.text.match(/\bsha256\b/g) ?? []).length;
+      if (urls > hashes) out.push(finding("asset-provenance", "error", game, f.rel, 0, `${urls} asset urls but only ${hashes} sha256 fields (production assets need url + sha256 + provenance)`));
+    }
+    if (/^[cm]?[jt]sx?$/.test(f.kind) && !/aura-assets/.test(f.rel)) {
+      const lines = f.text.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        if (/["'`]https?:\/\/[^"'`]*\.(?:glb|gltf)\b/i.test(lines[i])) out.push(finding("asset-provenance", "error", game, f.rel, i + 1, "raw remote GLB URL (use typed assets with sha256)"));
+      }
+    }
+  }
+  return out;
+}
+
+function checkKits({ game, src }) {
+  const out = [];
+  const code = src.files.filter((f) => /^[cm]?[jt]sx?$/.test(f.kind));
+  const has = (re) => code.some((f) => re.test(f.text));
+  const first = (re) => { for (const f of code) { const i = f.text.split("\n").findIndex((l) => re.test(l)); if (i >= 0) return { f, no: i + 1 }; } return null; };
+  if (!has(/installGameBeacon/)) { const h = first(/window\.__AURA3D_GAME__\s*=(?!=)|\(window as any\)\.__AURA3D_GAME__/); if (h) out.push(finding("kits", "warn", game, h.f.rel, h.no, "game beacon assigned by hand (use installGameBeacon)")); }
+  if (!has(/installQaHooks/)) { const h = first(/window\.__AURA_[A-Z0-9_]+__\s*=(?!=)|\(window as any\)\.__AURA_[A-Z0-9_]+__/); if (h) out.push(finding("kits", "warn", game, h.f.rel, h.no, "QA hook assigned by hand (use installQaHooks)")); }
+  if (!has(/createCueBank|createGameSoundEngine|AudioContextManager/)) { const h = first(/new\s+(?:window\.)?(?:Audio|webkitAudio)Context\s*\(/); if (h) out.push(finding("kits", "warn", game, h.f.rel, h.no, "hand-rolled AudioContext (use createCueBank for one-shot cues)")); }
+  return out;
+}
+
+function checkRuntimeMasking({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!/^[cm]?[jt]sx?$/.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (/\binstallNeutralLabels\s*\(|MutationObserver[^\n]*(textContent|innerText)|\.replace\(\s*\/(?:Goku|Saiyan|Paozu)/.test(lines[i]) && !/^\s*export\s+function/.test(lines[i])) {
+        out.push(finding("runtime-masking", "error", game, f.rel, i + 1, "runtime text replacement hides borrowed terms instead of removing them from the source (rename in source, delete the masking layer)"));
+        break;
+      }
+    }
+  }
+  return out;
+}
+
+function checkNoThree({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!/^[cm]?[jt]sx?$/.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (/from\s+["']three(?:\/[^"']*)?["']|require\(["']three["']\)|\bGLTFLoader\b|\bTHREE\.[A-Z]/.test(lines[i])) out.push(finding("no-three", "error", game, f.rel, i + 1, "three.js import or loader in a game source"));
+    }
+  }
+  // vendored bundles, including under public/ (decoders and workers excluded)
+  const pub = [];
+  walk(join(src.appDir, "public"), pub, { skipPublic: false });
+  for (const p of pub) {
+    if (!/\.m?js$/.test(p) || /aura-decoders|draco|basis|meshopt|\.worker\./i.test(p)) continue;
+    let st; try { st = statSync(p); } catch { continue; }
+    if (st.size > 100_000) out.push(finding("no-three", "warn", game, relative(src.appDir, p), 0, `vendored JS bundle of ${Math.round(st.size / 1024)} KB under public/`));
+  }
+  return out;
+}
+
+function checkFonts({ game, src, terms }) {
+  const out = [];
+  const bad = terms.fonts.forbidden.map((n) => ({ n, re: new RegExp(`(?<![\\w-])${n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![\\w-])`) }));
+  for (const f of src.files) {
+    if (!/^(css|html|[cm]?[jt]sx?)$/.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (!/font(-family)?\s*:|fontFamily/.test(lines[i])) continue;
+      for (const { n, re } of bad) if (re.test(lines[i]) && n !== "system-ui") out.push(finding("fonts", "warn", game, f.rel, i + 1, `font "${n}" is not in the licensed set`));
+    }
+  }
+  return dedupe(out);
+}
+
+function checkScreensTracked({ game, root }) {
+  const dir = game.screens?.dir;
+  if (!dir) return [finding("screens-tracked", "error", game, "", 0, "inventory has no screens.dir for this game")];
+  const tracked = gitFiles(root).filter((p) => p.startsWith(`${dir}/`) && /\.(jpe?g|png|webp)$/i.test(p));
+  if (tracked.length === 0) return [finding("screens-tracked", "error", game, dir, 0, "no screenshots tracked in git for this game (gitignore or never committed)")];
+  const card = game.screens.card;
+  if (card && !tracked.some((p) => p.endsWith(`/${card}`))) return [finding("screens-tracked", "warn", game, dir, 0, `card image ${card} not tracked`)];
+  return [];
+}
+
+// ---------- global checks ----------
+
+let gitCache = new Map();
+export function gitFiles(root) {
+  if (gitCache.has(root)) return gitCache.get(root);
+  let list = [];
+  try { list = execFileSync("git", ["ls-files", "-z"], { cwd: root, maxBuffer: 256 * 1024 * 1024 }).toString().split("\0").filter(Boolean); } catch { /* not a git repo */ }
+  gitCache.set(root, list);
+  return list;
+}
+export function resetGitCache() { gitCache = new Map(); }
+
+function checkVercelignore({ root }) {
+  const p = join(root, ".vercelignore");
+  if (!existsSync(p)) return [];
+  const out = [];
+  const files = gitFiles(root);
+  const lines = readFileSync(p, "utf8").split("\n");
+  lines.forEach((raw, i) => {
+    const l = raw.trim();
+    const m = /^([A-Za-z0-9._-]+)\/$/.exec(l);
+    if (!m || l.startsWith("#") || l.startsWith("!")) return;
+    const seg = m[1];
+    if (["node_modules", "dist", ".git"].includes(seg)) return;
+    const nested = files.find((f) => f.includes(`/${seg}/`) && !f.startsWith(`${seg}/`) && /^(packages|apps|tools|examples|marketing|templates|workers)\//.test(f));
+    if (nested && /\/src\//.test(nested)) out.push(finding("vercelignore", "error", null, ".vercelignore", i + 1, `unanchored "${l}" also excludes ${nested} (anchor it: "/${l}")`));
+    else if (nested) out.push(finding("vercelignore", "warn", null, ".vercelignore", i + 1, `unanchored "${l}" also excludes ${nested} (not under src/; check it is not needed by the build)`));
+    else out.push(finding("vercelignore", "warn", null, ".vercelignore", i + 1, `unanchored "${l}" matches a "${seg}" directory at any depth (use "/${l}" if only the root one is meant)`));
+  });
+  return out;
+}
+
+function checkCounts({ root, inventory }) {
+  const out = [];
+  const live = inventory.liveGameCount;
+  const words = { four: 4, fifteen: 15, "twenty-six": 26, thirty: 30 };
+  for (const rel of ["README.md", "llms.txt", "llms-full.txt", "marketing/index.html", "apps/showcase-index/index.html", "marketing/public/llms.txt"]) {
+    const p = join(root, rel);
+    if (!existsSync(p)) continue;
+    const lines = readFileSync(p, "utf8").split("\n");
+    lines.forEach((line, i) => {
+      if (/\{\{|__\w+__|data-count|genre|eyebrow/.test(line)) return;
+      for (const m of line.matchAll(/\b(\d{1,3}|four|fifteen|twenty-six|thirty)\s+(?:playable\s+|live\s+|showcase\s+)?games\b/gi)) {
+        const n = words[m[1].toLowerCase()] ?? Number(m[1]);
+        if (n !== live && n >= 4 && !/index games|ports|per genre|of the|new|old/i.test(line)) out.push(finding("counts", "warn", null, rel, i + 1, `hand-typed game count "${m[0]}" differs from the inventory (${live})`));
+      }
+    });
+  }
+  return out;
+}
+
+function checkMeshyCap({ root, terms, env }) {
+  const cap = terms.meshyCapPerGame;
+  const ledger = env.MESHY_LEDGER ?? "/tmp/meshy/ledger.jsonl";
+  const helper = env.MESHY_HELPER ?? "/tmp/meshy/meshy.mjs";
+  let byGame;
+  try {
+    if (existsSync(helper)) byGame = JSON.parse(execFileSync("node", [helper, "ledger"], { cwd: root, timeout: 20_000 }).toString().trim().split("\n").pop()).byGame;
+  } catch { /* fall back */ }
+  if (!byGame && existsSync(ledger)) {
+    byGame = {};
+    for (const l of readFileSync(ledger, "utf8").split("\n")) { try { const r = JSON.parse(l); if (r.status && /fail|refus/i.test(r.status)) continue; const t = r.tag ?? r.game; if (t) byGame[t] = (byGame[t] ?? 0) + Number(r.credits ?? r.cost ?? 0); } catch { /* skip */ } }
+  }
+  if (!byGame) return [finding("meshy-cap", "info", null, ledger, 0, "no Meshy ledger found (nothing to check)")];
+  return Object.entries(byGame).filter(([, v]) => v > cap).map(([t, v]) => finding("meshy-cap", "warn", null, ledger, 0, `tag "${t}" spent ${v} credits, over the ${cap} per-game guideline (the helper does not hard-stop)`));
+}
+
+function dedupe(list) {
+  const seen = new Set();
+  return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+export const GAME_CHECKS = {
+  names: checkNames,
+  quickbar: checkQuickbar,
+  "canvas-resize": checkCanvasResize,
+  "fixed-step-presenter": checkFixedStepPresenter,
+  "hitstop-time": checkHitstopTime,
+  "pose-array": checkPoseArray,
+  likeness: checkLikeness,
+  "asset-provenance": checkAssetProvenance,
+  kits: checkKits,
+  "runtime-masking": checkRuntimeMasking,
+  "no-three": checkNoThree,
+  fonts: checkFonts,
+  "screens-tracked": checkScreensTracked
+};
+export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap };
+
+/**
+ * Run checks. options: { root, slugs?: string[] | "all", only?: string[], global?: boolean, env? }
+ * Returns { findings, games, errors, warnings }.
+ */
+export function runChecks({ root, slugs = "all", only, global = slugs === "all", env = process.env }) {
+  const inventory = loadInventory(root);
+  const terms = loadTerms(root);
+  const all = inventory.games.filter((g) => g.kind === "game" && g.status === "live");
+  const norm = (s) => s.toLowerCase();
+  const games = slugs === "all" ? all : all.filter((g) => slugs.some((s) => [g.slug, g.appFolder, g.title].map(norm).includes(norm(s))));
+  if (slugs !== "all" && games.length !== slugs.length) {
+    const missing = slugs.filter((s) => !games.some((g) => [g.slug, g.appFolder, g.title].map(norm).includes(norm(s))));
+    throw new Error(`unknown game(s): ${missing.join(", ")}`);
+  }
+  const enabled = (id) => !only || only.includes(id);
+  const findings = [];
+  for (const game of games) {
+    const src = gameSources(root, game);
+    for (const [id, fn] of Object.entries(GAME_CHECKS)) if (enabled(id)) findings.push(...fn({ game, src, terms, root, inventory }));
+  }
+  if (global) for (const [id, fn] of Object.entries(GLOBAL_CHECKS)) if (enabled(id)) findings.push(...fn({ root, terms, inventory, env }));
+  return {
+    findings,
+    games: games.map((g) => g.slug),
+    errors: findings.filter((f) => f.severity === "error").length,
+    warnings: findings.filter((f) => f.severity === "warn").length
+  };
+}

@@ -12,6 +12,8 @@ Hard rules (details in claims-and-boundaries): hero subjects are typed GLBs (`mo
 
 ## Tier 1: build one thing
 
+Building or reworking a game? Read [`new-game-checklist.md`](new-game-checklist.md) (one page, with the check command) and skim [`lessons-learned.md`](lessons-learned.md) (every mistake the 26 shipped games taught us, with the API or check that prevents it) before you start.
+
 | You are building | Read |
 | --- | --- |
 | A scene, viewer or prompt-to-scene route | [`prompt-to-3d-workflow.md`](prompt-to-3d-workflow.md), [`art-direction.md`](art-direction.md) |

@@ -1,0 +1,134 @@
+{
+  "note": "Data for tools/game-checks. oldNames: display names a game must no longer show (case-sensitive, matched outside paths and slugs). brandTerms: real brands, products, characters and lore terms that must not appear in visible text or asset keys.",
+  "oldNames": {
+    "strange-orbit-port": [
+      "Strange Orbit",
+      "Orbital Cycling Club"
+    ],
+    "splat-rush-port": [
+      "Splat Rush",
+      "SPLAT RUSH"
+    ],
+    "serpentine-sky-run-port": [
+      "Saiyan Snake Way",
+      "Saiyan"
+    ],
+    "drift-and-deliver-port": [
+      "Drift & Deliver",
+      "Drift and Deliver",
+      "Drift &amp; Deliver",
+      "DRIFT & DELIVER"
+    ],
+    "heatsink-port": [
+      "HEATSINK"
+    ],
+    "ninja-runner-port": [
+      "Ninja Runner"
+    ],
+    "last-train-port": [
+      "Last Train"
+    ],
+    "roadster-hours-port": [
+      "Roadster Hours"
+    ],
+    "where-the-wind-wanders-port": [
+      "Where the Wind Wanders"
+    ],
+    "silt-and-signal-port": [
+      "Silt & Signal",
+      "Silt and Signal",
+      "Silt &amp; Signal"
+    ],
+    "cloud-runner-port": [
+      "Cloud Runner",
+      "Kid Goku",
+      "Beyond the Cloud",
+      "Mount Paozu"
+    ],
+    "dot-dash-3d": [
+      "Dot Dash",
+      "original circuit"
+    ]
+  },
+  "portWording": [
+    "Aura3D port",
+    "a port of",
+    "port of the mechanics",
+    "ported from",
+    "Crayon",
+    "reconstruction of",
+    "independent reconstruction",
+    "original game",
+    "The original look",
+    "The original planet"
+  ],
+  "staleVersion": "(?:Aura3D|AURA3D)\\s*v?4\\.[0-3](?:\\.\\d+)?\\b|\\bv?4\\.0\\.\\d+\\b",
+  "engineChip": [
+    "AURA3D ENGINE",
+    "engine-chip",
+    "aura3d-engine-chip"
+  ],
+  "brandTerms": [
+    "Nike",
+    "swoosh",
+    "Adidas",
+    "Jaguar",
+    "I-PACE",
+    "Waymo",
+    "Corvette",
+    "Cybertruck",
+    "Cybercab",
+    "Tesla",
+    "Ferrari",
+    "Lamborghini",
+    "Porsche",
+    "Pirelli",
+    "Sketchfab",
+    "Lombardi",
+    "Pikachu",
+    "Pokemon",
+    "Pok\u00e9mon",
+    "Pac-Man",
+    "Pacman",
+    "Goku",
+    "Saiyan",
+    "Paozu",
+    "Kamehameha",
+    "Namek",
+    "Mario",
+    "Zelda",
+    "Sonic",
+    "Street Fighter",
+    "Mortal Kombat",
+    "Tekken",
+    "FIFA",
+    "NFL",
+    "NBA",
+    "MLB",
+    "PGA",
+    "Wimbledon",
+    "Naruto",
+    "Konoha",
+    "Kurama",
+    "Rasengan",
+    "Rasenshuriken",
+    "Dragon Ball",
+    "Kaio-ken",
+    "King Kai",
+    "Hidden Leaf"
+  ],
+  "meshyCapPerGame": 420,
+  "fonts": {
+    "forbidden": [
+      "Inter",
+      "Roboto",
+      "Geist",
+      "Chakra Petch",
+      "Segoe UI",
+      "system-ui",
+      "-apple-system",
+      "BlinkMacSystemFont",
+      "Arial Black"
+    ]
+  }
+}

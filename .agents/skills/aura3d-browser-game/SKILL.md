@@ -145,4 +145,5 @@ per round until every category reads 7+, 6 rounds, or 2 flat rounds.
 - [Game example standards](https://github.com/auraoneai/aura3d/blob/main/docs/agents/game-example-standards.md)
 - [Game runtime API](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-runtime.md)
 - [Genre looks in the frame](references/genre-looks.md)
+- [Mistakes already made (read first)](https://github.com/auraoneai/aura3d/blob/main/docs/agents/lessons-learned.md)
 - [Kits and hooks (4.1)](references/kits-and-hooks.md)

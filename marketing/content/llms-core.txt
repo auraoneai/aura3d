@@ -24,7 +24,7 @@ npm run build && npx @aura3d/cli@latest check-deploy --dist dist
 
 Other templates: `product-viewer` (default), `cinematic-scene`, `racing-starter`, `falling-blocks-starter`, `fighting-game`, `character-controller`, `arena-shooter`. List them with `npx create-aura3d@latest --help`. Known issue: a stock `vite build` of 4.1.2 fails on a Node-only import; use 4.1.3 or later.
 
-Read next, in this order: `docs/agents/README.md` (index), `docs/agents/agent-quickstart.md` (first scene, step by step), `docs/agents/recipes.md` (copy-and-adapt scenes: PBR cube with orbit, forest of instances, skinned character with crossfade, fixed-step game loop, custom shader on a grid), `docs/agents/claims-and-boundaries.md` (what you may claim). This path is meant to get a new agent to a rendering scene in minutes; the controlled cold-start trial that measures it is in `evidence/agent-eval/` (in progress).
+Read next, in this order: `docs/agents/README.md` (index), `docs/agents/agent-quickstart.md` (first scene, step by step), `docs/agents/recipes.md` (copy-and-adapt scenes: PBR cube with orbit, forest of instances, skinned character with crossfade, fixed-step game loop, custom shader on a grid), `docs/agents/claims-and-boundaries.md` (what you may claim). This path is meant to get a new agent to a rendering scene in minutes; the controlled cold-start trial that measures it is in `evidence/agent-eval/` (in progress). Building a game: read `docs/agents/new-game-checklist.md` and `docs/agents/lessons-learned.md` first, then run `node tools/game-checks/run.mjs <game-slug>`.
 
 Working inside the Aura3D monorepo itself: run browsers, Playwright and heavy builds on the remote runner (`tools/remote-acr/run.sh`), never local Docker or local Playwright.
 

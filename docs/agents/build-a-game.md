@@ -4,6 +4,8 @@ Version: 4.1.2 (kits: 4.1.0 and later). One page, one path: a complete, mobile-f
 
 Every snippet below is a file in `docs/agents/samples/coin-dash/`, type-checked against the repository source (`tsc -p docs/agents/samples/coin-dash/tsconfig.json`, strict, `@aura3d/engine`, `@aura3d/engine/game`, `@aura3d/debug`). It has not been run in a browser from this page: run the verification steps in section 8 before you claim anything about it.
 
+Before you start and before you ship, use [`new-game-checklist.md`](new-game-checklist.md); every mistake it guards against is catalogued in [`lessons-learned.md`](lessons-learned.md). Run `node tools/game-checks/run.mjs <game-slug>` for the static checks.
+
 ## 0. The path
 
 | Step | You write | The library gives you |
