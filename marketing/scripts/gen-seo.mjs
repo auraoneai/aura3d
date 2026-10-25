@@ -169,7 +169,13 @@ if (staleDocs.length > 0) fail(`manifest docs routes with no source file:\n  ${s
 if (CHECK) {
   const distDir = join(marketingDir, "dist");
   if (!existsSync(distDir)) fail("dist/ not found — run the full build before --check");
-  const distPathFor = (route) => {
+  const rewriteTo = new Map(
+    (JSON.parse(readFileSync(join(repoRoot, "vercel.json"), "utf8")).rewrites ?? [])
+      .filter((r) => !r.source.includes(":"))
+      .map((r) => [r.source.replace(/\/$/, "") + "/", r.destination]),
+  );
+  const distPathFor = (rawRoute) => {
+    const route = rewriteTo.get(rawRoute) ?? rawRoute;
     if (route === "/") return join(distDir, "index.html");
     if (route.startsWith("/docs/")) return join(distDir, route.slice(1));
     return join(distDir, route.slice(1), "index.html");
