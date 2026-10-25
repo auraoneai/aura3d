@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
+import { loadLegacyJson } from "../_support/legacy-names";
 import { describe, expect, it } from "vitest";
-import { MOUNT_PAOZU as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
+import { CUMULUS_RIDGE as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
 import { IDLE, SETTLE_FRAMES, createState, stepFrame, type StepInput } from "../../../examples/kid-goku-beyond-the-clouds-port/sim";
 
 /**
@@ -10,7 +11,7 @@ import { IDLE, SETTLE_FRAMES, createState, stepFrame, type StepInput } from "../
  */
 interface Snap {
   step: number; s: number; lane: number; jump: number; speed: number; hearts: number; score: number; combo: number;
-  balls: number[]; meat: number; falls: number; pole: number | null; finished: boolean; nimbus: { charge: number; active: boolean; call: number; time: number };
+  balls: number[]; meat: number; falls: number; pole: number | null; finished: boolean; glider: { charge: number; active: boolean; call: number; time: number };
 }
 interface Ref {
   runShape: { startSnapshot: Snap };
@@ -19,7 +20,7 @@ interface Ref {
   determinism: Record<string, { worst: Record<string, number>; mismatches: number }>;
   trace: Snap[];
 }
-const ref = JSON.parse(readFileSync("evidence/crayon-capture/kid-goku-beyond-the-clouds-reference.json", "utf8")) as Ref;
+const ref = loadLegacyJson<Ref>("cloud", readFileSync("evidence/crayon-capture/kid-goku-beyond-the-clouds-reference.json", "utf8"));
 const DT = 1 / 60;
 
 function replay(): { trace: (Snap & { step: number })[]; start: Snap } {
@@ -29,7 +30,7 @@ function replay(): { trace: (Snap & { step: number })[]; start: Snap } {
     step, s: Math.round(state.s * 10) / 10, lane: state.lane, jump: state.jump, speed: state.speed, hearts: state.hearts,
     score: Math.round(state.score), combo: state.combo, balls: [...state.balls], meat: state.meat, falls: state.falls,
     pole: state.pole?.start ?? null, finished: state.finished,
-    nimbus: { charge: state.nimbus.charge, active: state.nimbus.active, call: state.nimbus.call, time: state.nimbus.time }
+    glider: { charge: state.glider.charge, active: state.glider.active, call: state.glider.call, time: state.glider.time }
   });
   const start = snap(0);
   const trace: (Snap & { step: number })[] = [];
@@ -45,7 +46,7 @@ function replay(): { trace: (Snap & { step: number })[]; start: Snap } {
   return { trace, start };
 }
 
-describe("kid goku port replays the original's recorded run", () => {
+describe("Cumulus Dash port replays the original's recorded run", () => {
   const out = replay();
 
   it("starts from the original's start state after the settle frames", () => {
@@ -65,7 +66,7 @@ describe("kid goku port replays the original's recorded run", () => {
       worst.lane = Math.max(worst.lane, Math.abs(p.lane - r.lane));
       worst.jump = Math.max(worst.jump, Math.abs(p.jump - r.jump));
       worst.speed = Math.max(worst.speed, Math.abs(p.speed - r.speed));
-      worst.charge = Math.max(worst.charge, Math.abs(p.nimbus.charge - r.nimbus.charge));
+      worst.charge = Math.max(worst.charge, Math.abs(p.glider.charge - r.glider.charge));
       expect(p.hearts, `hearts @${r.step}`).toBe(r.hearts);
       expect(p.combo, `combo @${r.step}`).toBe(r.combo);
       expect(p.meat, `meat @${r.step}`).toBe(r.meat);
@@ -73,7 +74,7 @@ describe("kid goku port replays the original's recorded run", () => {
       expect(p.balls, `balls @${r.step}`).toEqual(r.balls);
       expect(p.pole, `pole @${r.step}`).toBe(r.pole);
       expect(p.finished, `finished @${r.step}`).toBe(r.finished);
-      expect(p.nimbus.active, `nimbus.active @${r.step}`).toBe(r.nimbus.active);
+      expect(p.glider.active, `glider.active @${r.step}`).toBe(r.glider.active);
       expect(Math.abs(p.score - r.score), `score @${r.step}`).toBeLessThanOrEqual(1);
     });
     console.log(`kid-goku replay worst deltas ${JSON.stringify(worst)} over ${ref.trace.length} points`);

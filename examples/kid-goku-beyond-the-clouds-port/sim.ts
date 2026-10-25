@@ -1,14 +1,14 @@
 /**
- * Pure simulation port of "Kid Goku: Beyond the Clouds" (`Sp` and its helpers in the original bundle).
+ * Pure simulation port of "Cumulus Dash" (`Sp` and its helpers in the original bundle).
  *
  * Scope: the run core: forward speed, lane steering, jump/gravity/landing, log dismount, Power Pole plant /
- * vault / launch, gap and water falls, Dragon Ball and meat pickups, checkpoints, finish, combo + score, and
- * the Flying Nimbus charge / call / ride / land state machine with its safe-run map. NOT ported: the
+ * vault / launch, gap and water falls, Sky Pearl and meat pickups, checkpoints, finish, combo + score, and
+ * the Flying Glider charge / call / ride / land state machine with its safe-run map. NOT ported: the
  * encounter system (pteranodon dives, boulders, rocks and logs as collisions, T-rex bites, Janken). The
  * original queries it through `state.liveAttack`; this port leaves that hook open (default: attacks live).
  * No randomness and no wall clock: only `dt` and the input drive it.
  */
-import { NIMBUS, type Chapter, type Creature, type DragonBall, type Meat, type Span } from "./chapter";
+import { GLIDER, type Chapter, type Creature, type SkyPearl, type Meat, type Span } from "./chapter";
 
 /** The original had stepped this many idle frames before its first recorded snapshot (verified against the reference speed). */
 export const SETTLE_FRAMES = 4;
@@ -16,7 +16,7 @@ export const CELL = 0.5;
 const UP = 1.45;
 const GRAVITY = 25;
 
-export interface NimbusState {
+export interface GliderState {
   charge: number; bank: number; ready: boolean; call: number; active: boolean; time: number; end: number | null;
   from: number; rescue: boolean; grace: number; rides: number; rescues: number; blocked: string | null;
   wait: string | null; nope: number; nopeWhy: string | null;
@@ -30,14 +30,14 @@ export interface SimState {
   checkpointIndex: number; trick: string; trickTimer: number; trickDuration: number; boostTimer: number;
   landingTimer: number; jumpBuffer: number; launchQueued: boolean; launchDist: number; aerialUsed: boolean;
   powerLaunches: number; airSteps: number; vaults: number; flow: number; perfects: number; balls: number[];
-  falling: number; nimbus: NimbusState; meat: number; eaten: Set<number>; janken: Janken | null; jankens: number;
+  falling: number; glider: GliderState; meat: number; eaten: Set<number>; janken: Janken | null; jankens: number;
   strikeLead: number; grabTimer?: number; stumbleTimer?: number; catchTimer?: number; jankenWindow?: boolean; chased?: boolean;
   crashed: Set<number>; collected: Set<number>;
   /** Encounter-system seam: return false when a creature attack is not live. Default: live. */
   liveAttack?: (creature: Creature, at: number) => boolean;
 }
-export interface StepInput { steer: number; jump: boolean; pole: boolean; nimbus: boolean; brake: boolean }
-export const IDLE: StepInput = { steer: 0, jump: false, pole: false, nimbus: false, brake: false };
+export interface StepInput { steer: number; jump: boolean; pole: boolean; glider: boolean; brake: boolean }
+export const IDLE: StepInput = { steer: 0, jump: false, pole: false, glider: false, brake: false };
 
 export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 export function smooth(a: number, b: number, v: number): number {
@@ -58,13 +58,13 @@ export function createState(chapter = 0): SimState {
     dead: false, hits: 0, falls: 0, polesUsed: 0, encounters: 0, checkpointIndex: 0, trick: "", trickTimer: 0, trickDuration: 1,
     boostTimer: 0, landingTimer: 0, jumpBuffer: 0, launchQueued: false, launchDist: 99, aerialUsed: false, powerLaunches: 0,
     airSteps: 0, vaults: 0, flow: 0, perfects: 0, balls: [], falling: 0,
-    nimbus: { charge: 0, bank: 0, ready: false, call: 0, active: false, time: 0, end: null, from: 0, rescue: false, grace: 0, rides: 0, rescues: 0, blocked: null, wait: null, nope: 0, nopeWhy: null },
+    glider: { charge: 0, bank: 0, ready: false, call: 0, active: false, time: 0, end: null, from: 0, rescue: false, grace: 0, rides: 0, rescues: 0, blocked: null, wait: null, nope: 0, nopeWhy: null },
     meat: 0, eaten: new Set(), janken: null, jankens: 0, strikeLead: 99,
     crashed: new Set(), collected: new Set()
   };
 }
 
-/* ------------------------------------------------------------ obstacle layout and nimbus map */
+/* ------------------------------------------------------------ obstacle layout and glider map */
 
 export interface Obstacle { s: number; lane: number; type: "rock" | "log" | "relief"; size: number; id: number }
 
@@ -100,15 +100,15 @@ export function layoutObstacles(ch: Chapter, index = 0): Obstacle[] {
   return out;
 }
 
-export interface NimbusMap {
+export interface GliderMap {
   n: number; fly: string[]; safe: Uint8Array; calm: Uint8Array; land: Uint8Array;
   next: Int32Array; last: Int32Array; ahead: Int32Array; runEnd: Int32Array;
   obs: { s: number; lane: number; top: number }[];
 }
-const mapCache = new WeakMap<Chapter, NimbusMap>();
+const mapCache = new WeakMap<Chapter, GliderMap>();
 
-/** Original `np`: per-half-unit maps that decide where the Nimbus may be called, ridden and left. */
-export function nimbusMap(ch: Chapter): NimbusMap {
+/** Original `np`: per-half-unit maps that decide where the Glider may be called, ridden and left. */
+export function gliderMap(ch: Chapter): GliderMap {
   const cached = mapCache.get(ch);
   if (cached) return cached;
   const n = Math.ceil((ch.length + 60) / CELL);
@@ -147,34 +147,34 @@ export function nimbusMap(ch: Chapter): NimbusMap {
     runEnd[e] = o;
   }
   for (let e = 0, v = -1; e < n; e++) { if (calm[e]) v = e; last[e] = v; }
-  const map: NimbusMap = { n, fly, safe, calm, land, next, last, ahead, runEnd, obs };
+  const map: GliderMap = { n, fly, safe, calm, land, next, last, ahead, runEnd, obs };
   mapCache.set(ch, map);
   return map;
 }
-const cellOf = (m: NimbusMap, s: number): number => clamp(Math.round(s / CELL), 0, m.n - 1);
+const cellOf = (m: GliderMap, s: number): number => clamp(Math.round(s / CELL), 0, m.n - 1);
 
-/** Original `ip`: why the Nimbus cannot be used here (a set-piece), or where the current calm run ends. */
-export function nimbusWhy(state: SimState, ch: Chapter): { why?: string; end?: number } {
-  const m = nimbusMap(ch), r = cellOf(m, state.s);
+/** Original `ip`: why the Glider cannot be used here (a set-piece), or where the current calm run ends. */
+export function gliderWhy(state: SimState, ch: Chapter): { why?: string; end?: number } {
+  const m = gliderMap(ch), r = cellOf(m, state.s);
   if (m.fly[r]) return { why: m.fly[r] };
   const i = m.next[r] as number, a = m.last[i - 1] as number;
-  return a < 0 || (a - r) * CELL < NIMBUS.minRide ? { why: i < m.n ? m.fly[i] : "home" } : { end: a * CELL };
+  return a < 0 || (a - r) * CELL < GLIDER.minRide ? { why: i < m.n ? m.fly[i] : "home" } : { end: a * CELL };
 }
 
-/** Original `dp`: the ride/ground height reference the Nimbus uses (obstacles and boulders lift it). */
+/** Original `dp`: the ride/ground height reference the Glider uses (obstacles and boulders lift it). */
 export function rideHeight(state: SimState, ch: Chapter): number {
   let lift = 0;
   for (const b of ch.boulders) {
     const t = state.s - b.s;
-    lift = Math.max(lift, NIMBUS.lift * smooth(-17, -12, t) * (1 - smooth(13, 17, t)));
+    lift = Math.max(lift, GLIDER.lift * smooth(-17, -12, t) * (1 - smooth(13, 17, t)));
   }
-  for (const o of nimbusMap(ch).obs) {
+  for (const o of gliderMap(ch).obs) {
     const t = state.s - o.s;
     if (t > -9 && t < 6 && Math.abs(o.lane - state.lane) < 2.8) {
-      lift = Math.max(lift, Math.max(0, o.top + 0.6 + UP - NIMBUS.height) * smooth(-9, -5, t) * (1 - smooth(3, 6, t)));
+      lift = Math.max(lift, Math.max(0, o.top + 0.6 + UP - GLIDER.height) * smooth(-9, -5, t) * (1 - smooth(3, 6, t)));
     }
   }
-  return NIMBUS.height + lift + Math.sin(state.time * 2.4) * 0.06;
+  return GLIDER.height + lift + Math.sin(state.time * 2.4) * 0.06;
 }
 
 /* ------------------------------------------------------------------------------ helpers */
@@ -210,15 +210,15 @@ export function award(state: SimState, points = 100): void {
   state.comboTimer = 7;
   state.score += Math.round(points * (1 + Math.min(3, state.combo * 0.12)));
 }
-const EVENT_GAIN: Record<string, string> = { dragonball: "ball", perfect: "perfect", "power-launch": "launch", "flow-land": "flow" };
-export function gainNimbus(state: SimState, kind: string, ch: Chapter, count = 1): void {
-  const n = state.nimbus, before = n.charge, why = nimbusWhy(state, ch).why;
+const EVENT_GAIN: Record<string, string> = { skypearl: "ball", perfect: "perfect", "power-launch": "launch", "flow-land": "flow" };
+export function gainGlider(state: SimState, kind: string, ch: Chapter, count = 1): void {
+  const n = state.glider, before = n.charge, why = gliderWhy(state, ch).why;
   if (n.active || n.call > 0) return;
-  const setPiece = !!why && (before < NIMBUS.hold || n.bank > 0);
-  let after = before + (NIMBUS.gain[kind] || 0) * count * (setPiece ? NIMBUS.setPiece : 1);
-  if (setPiece && after > NIMBUS.hold) {
-    n.bank = (n.bank || 0) + after - Math.max(before, NIMBUS.hold);
-    after = Math.max(before, NIMBUS.hold);
+  const setPiece = !!why && (before < GLIDER.hold || n.bank > 0);
+  let after = before + (GLIDER.gain[kind] || 0) * count * (setPiece ? GLIDER.setPiece : 1);
+  if (setPiece && after > GLIDER.hold) {
+    n.bank = (n.bank || 0) + after - Math.max(before, GLIDER.hold);
+    after = Math.max(before, GLIDER.hold);
   }
   n.charge = Math.min(1, after);
   if (n.charge >= 1 && before < 1) n.blocked = why || null;
@@ -227,40 +227,40 @@ function strike(state: SimState, ch: Chapter, ev: string[]): void {
   state.strikeTimer = 0.65; state.poleTimer = 0.48; state.strikeLead = nextThreat(state, ch);
   trick(state, "strike", 0.65); ev.push("strike");
 }
-const ballHit = (state: SimState, b: DragonBall): boolean =>
+const ballHit = (state: SimState, b: SkyPearl): boolean =>
   !state.balls.includes(b.star) && Math.abs(state.s - b.s) < 1.8 && Math.abs(state.lane - b.lane) < 1.8 && reachHeight(state, b.height, 1.6);
 const meatHit = (state: SimState, m: Meat): boolean =>
   !state.eaten.has(m.s) && Math.abs(state.s - m.s) < 1.8 && Math.abs(state.lane - m.lane) < 1.8 && reachHeight(state, m.height ?? 1.15, 1.7);
 const reachHeight = (state: SimState, h: number, tol: number): boolean =>
-  state.nimbus.active ? h < state.jump + 1.15 + tol : Math.abs(h - (state.jump + 1.15)) < tol;
+  state.glider.active ? h < state.jump + 1.15 + tol : Math.abs(h - (state.jump + 1.15)) < tol;
 
-function nimbusCall(state: SimState, ch: Chapter, ev: string[]): void {
-  const n = state.nimbus;
+function gliderCall(state: SimState, ch: Chapter, ev: string[]): void {
+  const n = state.glider;
   if (n.active || n.call > 0 || state.janken || (state.grabTimer ?? 0) > 0) return;
-  const why = nimbusWhy(state, ch);
+  const why = gliderWhy(state, ch);
   if (n.charge < 1 || why.why || state.pole) {
     n.nope++;
-    n.nopeWhy = n.charge >= NIMBUS.hold ? why.why || (state.pole ? "pole" : "charge") : "charge";
-    ev.push(n.charge >= NIMBUS.hold ? "nimbus-wait" : "nimbus-empty");
+    n.nopeWhy = n.charge >= GLIDER.hold ? why.why || (state.pole ? "pole" : "charge") : "charge";
+    ev.push(n.charge >= GLIDER.hold ? "glider-wait" : "glider-empty");
     return;
   }
-  Object.assign(n, { charge: 0, bank: 0, ready: false, call: NIMBUS.call, rescue: false, from: 0, end: why.end ?? null });
-  ev.push("nimbus-call");
+  Object.assign(n, { charge: 0, bank: 0, ready: false, call: GLIDER.call, rescue: false, from: 0, end: why.end ?? null });
+  ev.push("glider-call");
 }
-function nimbusMount(state: SimState, ch: Chapter, ev: string[]): void {
-  const n = state.nimbus;
-  Object.assign(n, { call: 0, active: true, time: n.rescue ? NIMBUS.rescueRide : NIMBUS.ride });
+function gliderMount(state: SimState, ch: Chapter, ev: string[]): void {
+  const n = state.glider;
+  Object.assign(n, { call: 0, active: true, time: n.rescue ? GLIDER.rescueRide : GLIDER.ride });
   n.rides++;
   state.jumpVelocity = Math.max(state.jumpVelocity, Math.sqrt(50 * Math.max(0.05, rideHeight(state, ch) + 0.3 - state.jump)));
   state.jumpBuffer = 0; state.aerialUsed = false; state.launchQueued = false;
-  ev.push("nimbus-mount");
+  ev.push("glider-mount");
 }
-function nimbusLand(state: SimState, ev: string[]): void {
-  const n = state.nimbus;
-  const keep = !n.rescue && n.time > 1 ? Math.min(0.6, (n.time / NIMBUS.ride) * 0.7) : 0;
-  Object.assign(n, { active: false, time: 0, end: null, rescue: false, from: 0, grace: NIMBUS.grace, charge: keep });
-  state.jumpVelocity = NIMBUS.hop; state.jump = Math.max(state.jump, 0.05);
-  ev.push("nimbus-end");
+function gliderLand(state: SimState, ev: string[]): void {
+  const n = state.glider;
+  const keep = !n.rescue && n.time > 1 ? Math.min(0.6, (n.time / GLIDER.ride) * 0.7) : 0;
+  Object.assign(n, { active: false, time: 0, end: null, rescue: false, from: 0, grace: GLIDER.grace, charge: keep });
+  state.jumpVelocity = GLIDER.hop; state.jump = Math.max(state.jump, 0.05);
+  ev.push("glider-end");
 }
 
 /* ------------------------------------------------------------------------------- the step */
@@ -269,7 +269,7 @@ function nimbusLand(state: SimState, ev: string[]): void {
 export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapter): string[] {
   if (state.finished || state.dead) return [];
   const ev: string[] = [];
-  const n = state.nimbus;
+  const n = state.glider;
   const dt = Math.min(dtIn, 0.04);
   state.time += dt;
   for (const k of ["staffRecall", "invincible", "strikeTimer", "poleTimer", "comboTimer", "trickTimer", "boostTimer", "landingTimer", "jumpBuffer"] as const) {
@@ -279,15 +279,15 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
   if (!state.comboTimer) state.combo = 0;
   const pole = spanAt(state.s, ch.poles);
   const water = spanAt(state.s, ch.waters);
-  if (input.nimbus) nimbusCall(state, ch, ev);
+  if (input.glider) gliderCall(state, ch, ev);
   if (n.call > 0) {
     n.call = Math.max(0, n.call - dt);
-    if (!n.call || (!n.rescue && state.jump < 0.2 && spanAt(state.s, ch.gaps))) nimbusMount(state, ch, ev);
+    if (!n.call || (!n.rescue && state.jump < 0.2 && spanAt(state.s, ch.gaps))) gliderMount(state, ch, ev);
   }
   const riding = n.active;
-  const inNimbus = riding || n.call > 0;
+  const inGlider = riding || n.call > 0;
   if (riding) n.time = Math.max(0, n.time - dt);
-  const target = ch.speed * (input.brake ? 0.7 : 1) * (1 + Math.min(state.combo, 12) * 0.012) * (riding ? NIMBUS.speed : state.boostTimer > 0 ? 1.18 : 1);
+  const target = ch.speed * (input.brake ? 0.7 : 1) * (1 + Math.min(state.combo, 12) * 0.012) * (riding ? GLIDER.speed : state.boostTimer > 0 ? 1.18 : 1);
   state.speed += (target - state.speed) * Math.min(1, dt * 2.7);
   state.laneVelocity += ((input.steer || 0) * 6.8 - state.laneVelocity) * Math.min(1, dt * 12);
   if (pole && state.pole?.start === pole.start) {
@@ -302,11 +302,11 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
   if (input.jump) state.jumpBuffer = 0.18;
   if (riding) {
     if (state.jumpBuffer > 0 && state.jump <= groundRef + 0.03 && state.jumpVelocity <= 0) {
-      const m = nimbusMap(ch);
+      const m = gliderMap(ch);
       if (state.s < (n.end ?? 0) - 25) {
-        state.jumpBuffer = 0; state.jumpVelocity = NIMBUS.cloudHop; ev.push("jump");
+        state.jumpBuffer = 0; state.jumpVelocity = GLIDER.cloudHop; ev.push("jump");
       } else if (!n.rescue && m.calm[cellOf(m, state.s)]) {
-        state.jumpBuffer = 0; nimbusLand(state, ev);
+        state.jumpBuffer = 0; gliderLand(state, ev);
       }
     }
   } else if (state.jumpBuffer > 0 && onPole && (pole as Span).end - state.s < 17) {
@@ -323,13 +323,13 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
   if (riding) {
     if (state.jump <= groundRef && state.jumpVelocity <= 0) {
       state.jump = groundRef; state.jumpVelocity = 0;
-      const m = nimbusMap(ch), c = cellOf(m, state.s);
+      const m = gliderMap(ch), c = cellOf(m, state.s);
       let leave = state.s >= (n.end ?? 0) - 0.5 || (n.time <= 0 && state.s >= n.from && !!m.calm[c]);
       if (!leave && m.calm[c] && !n.rescue && n.time > 0) {
         const reach = state.s + state.speed * n.time, edge = (m.runEnd[c] as number) * CELL;
         leave = state.s >= edge - 0.5 && reach > edge + 0.5 && reach - edge < state.speed * 1.5 && (m.ahead[cellOf(m, reach)] as number) * CELL - reach > reach - edge;
       }
-      if (leave) nimbusLand(state, ev);
+      if (leave) gliderLand(state, ev);
     }
   } else if (!(n.rescue && n.call > 0)) {
     state.jump = Math.max(0, state.jump);
@@ -346,7 +346,7 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
   }
   if (input.pole && state.poleTimer <= 0) {
     const ahead = poleAhead(state.s, ch), attacker = attackingCreature(state, ch);
-    if (inNimbus) {
+    if (inGlider) {
       if (attacker) strike(state, ch, ev);
     } else if (ahead && state.s < ahead.start + 8 && state.pole?.start !== ahead.start) {
       state.pole = ahead; state.poleTimer = 0.5; state.polesUsed++; trick(state, "plant", 0.35); award(state, 300); ev.push("extend");
@@ -374,7 +374,7 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
   if (ch.log && before <= ch.log && state.s > ch.log) {
     state.jump += 1.65; state.jumpVelocity = Math.max(7, state.jumpVelocity); ev.push("dismount");
   }
-  if (pole && state.pole?.start !== pole.start && !inNimbus) { ev.push("fall"); state.falls++; }
+  if (pole && state.pole?.start !== pole.start && !inGlider) { ev.push("fall"); state.falls++; }
   if (state.pole && before <= state.pole.end && state.s > state.pole.end) {
     const power = state.launchQueued;
     state.jumpVelocity = power ? 13.8 : 8.5;
@@ -387,8 +387,8 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
     if (power) state.powerLaunches++;
     trick(state, power ? "somersault" : "launch", power ? 0.9 : 0.55);
   }
-  if (spanAt(state.s, ch.gaps) && state.jump < 0.2 && !inNimbus) { ev.push("fall"); state.falls++; }
-  for (const b of ch.balls) if (ballHit(state, b)) { state.balls.push(b.star); award(state, 700); ev.push("dragonball"); }
+  if (spanAt(state.s, ch.gaps) && state.jump < 0.2 && !inGlider) { ev.push("fall"); state.falls++; }
+  for (const b of ch.balls) if (ballHit(state, b)) { state.balls.push(b.star); award(state, 700); ev.push("skypearl"); }
   for (const m of ch.meat) {
     if (meatHit(state, m)) {
       state.eaten.add(m.s); state.meat++;
@@ -405,12 +405,12 @@ export function step(state: SimState, input: StepInput, dtIn: number, ch: Chapte
     if (ch.home && !state.balls.includes(ch.home.star)) state.balls.push(ch.home.star);
     state.finished = true; ev.push("finish");
   }
-  for (const e of ev) if (EVENT_GAIN[e]) gainNimbus(state, EVENT_GAIN[e] as string, ch);
-  if (n.bank > 0 && !inNimbus && !nimbusWhy(state, ch).why) { n.charge = Math.min(1, n.charge + n.bank); n.bank = 0; }
-  const why = inNimbus ? null : nimbusWhy(state, ch).why || null;
+  for (const e of ev) if (EVENT_GAIN[e]) gainGlider(state, EVENT_GAIN[e] as string, ch);
+  if (n.bank > 0 && !inGlider && !gliderWhy(state, ch).why) { n.charge = Math.min(1, n.charge + n.bank); n.bank = 0; }
+  const why = inGlider ? null : gliderWhy(state, ch).why || null;
   n.blocked = n.charge >= 1 ? why : null;
-  n.wait = n.charge >= NIMBUS.hold || n.bank > 0 ? why : null;
-  if (n.charge >= 1 && !n.ready && !inNimbus && !n.blocked) { n.ready = true; ev.push("nimbus-ready"); }
+  n.wait = n.charge >= GLIDER.hold || n.bank > 0 ? why : null;
+  if (n.charge >= 1 && !n.ready && !inGlider && !n.blocked) { n.ready = true; ev.push("glider-ready"); }
   return ev;
 }
 
@@ -427,11 +427,11 @@ export function layoutOrbs(ch: Chapter): Orb[] {
   }
   return out;
 }
-/** Original `HE`: bank an orb (score, Nimbus charge, every fifth a combo award). */
+/** Original `HE`: bank an orb (score, Glider charge, every fifth a combo award). */
 export function collectOrb(state: SimState, orb: Orb, ch: Chapter): void {
   state.collected.add(orb.id); state.orbs++;
   state.score += 25 + Math.min(state.combo, 10) * 3;
-  gainNimbus(state, "orb", ch);
+  gainGlider(state, "orb", ch);
   if (state.orbs % 5 === 0) award(state, 50);
 }
 export interface WorldLayout { obstacles: Obstacle[]; orbs: Orb[] }
@@ -443,9 +443,9 @@ export function worldLayout(ch: Chapter): WorldLayout {
 }
 
 const PROTECTED_KINDS = new Set(["obstacle", "boulder", "bite", "swipe"]);
-/** Original `mp`: is this hit shrugged off (janken, nimbus call/ride, post-nimbus grace)? */
+/** Original `mp`: is this hit shrugged off (janken, glider call/ride, post-glider grace)? */
 function shrugsOff(state: SimState, kind: string): boolean {
-  const n = state.nimbus;
+  const n = state.glider;
   return state.janken || n.call > 0 ? true : n.active ? kind !== "grab" && kind !== "bite" : PROTECTED_KINDS.has(kind) && n.grace > 0;
 }
 /** Original `Dp`: take a hit (or a forced respawn). Returns whether damage landed. */
@@ -455,7 +455,7 @@ export function damage(state: SimState, force = false, kind = "hit"): boolean {
   state.launchQueued = false; state.aerialUsed = false; state.trickTimer = 0;
   if (force) {
     state.s = state.checkpoint; state.lane = 0; state.speed = 0; state.jump = 0; state.jumpVelocity = 0; state.pole = null; state.poleTimer = 0; state.staffRecall = 0;
-    Object.assign(state.nimbus, { call: 0, active: false, rescue: false, time: 0, end: null, grace: 0 });
+    Object.assign(state.glider, { call: 0, active: false, rescue: false, time: 0, end: null, grace: 0 });
     state.janken = null;
   }
   if (state.hearts <= 0) state.dead = true;
@@ -463,7 +463,7 @@ export function damage(state: SimState, force = false, kind = "hit"): boolean {
 }
 
 /**
- * Original `VE`: obstacle crash / clean-pass and orb pickup, run after `Sp` each frame. Not ported: the orb magnet while on the Nimbus
+ * Original `VE`: obstacle crash / clean-pass and orb pickup, run after `Sp` each frame. Not ported: the orb magnet while on the Glider
  * (`UE`/`GE`), creature and boulder encounters (`FT.update` and its `PE` events).
  */
 export function worldPass(state: SimState, ch: Chapter, world: WorldLayout = worldLayout(ch)): string[] {
@@ -476,10 +476,10 @@ export function worldPass(state: SimState, ch: Chapter, world: WorldLayout = wor
       if (damage(state, false, "obstacle")) { state.stumbleTimer = 0.55; ev.push("hit"); }
     } else if (state.s >= o.s && !state.crashed.has(o.id)) {
       state.crashed.add(o.id);
-      if (!state.nimbus.active) { award(state, 100); ev.push("obstacle-pass"); }
+      if (!state.glider.active) { award(state, 100); ev.push("obstacle-pass"); }
     }
   }
-  if (!(state.nimbus.active || state.nimbus.call > 0)) {
+  if (!(state.glider.active || state.glider.call > 0)) {
     for (const orb of world.orbs) {
       if (state.collected.has(orb.id)) continue;
       if (Math.abs(orb.s - state.s) > 1.5 || Math.abs(state.lane - orb.lane) > 1.6 || state.jump > 1.9) continue;
@@ -502,25 +502,25 @@ export function stepFrame(state: SimState, input: StepInput, dt: number, ch: Cha
 
 /* ------------------------------------------------------------- encounter-layer helpers (additive) */
 
-/** Original `sp`: a charged Nimbus catches a fall (rescue call). Returns whether it was called. */
+/** Original `sp`: a charged Glider catches a fall (rescue call). Returns whether it was called. */
 export function rescue(state: SimState, ch: Chapter): boolean {
-  const n = state.nimbus;
+  const n = state.glider;
   if (n.charge < 1 || n.active || n.call > 0) return false;
-  const m = nimbusMap(ch);
+  const m = gliderMap(ch);
   let i = cellOf(m, state.s + 4);
   while (i < m.n - 1 && !m.land[i]) i++;
   const a = m.fly[i] ? -1 : (m.last[(m.next[i] as number) - 1] as number);
-  Object.assign(n, { charge: 0, bank: 0, ready: false, call: NIMBUS.rescueCall, rescue: true, from: i * CELL, end: Math.max(i, a) * CELL });
+  Object.assign(n, { charge: 0, bank: 0, ready: false, call: GLIDER.rescueCall, rescue: true, from: i * CELL, end: Math.max(i, a) * CELL });
   n.rescues++;
   state.falls = Math.max(0, state.falls - 1);
   return true;
 }
 
-/** Original `fp`: a bite knocks the rider off the Nimbus when it lands over a safe stretch. Returns whether it did. */
+/** Original `fp`: a bite knocks the rider off the Glider when it lands over a safe stretch. Returns whether it did. */
 export function knockOff(state: SimState, ch: Chapter): boolean {
-  const n = state.nimbus, m = nimbusMap(ch);
+  const n = state.glider, m = gliderMap(ch);
   if (!n.active || state.jump > rideHeight(state, ch) + 1.1 || !m.safe[cellOf(m, state.s)]) return false;
-  Object.assign(n, { active: false, time: 0, end: null, rescue: false, from: 0, grace: NIMBUS.grace, charge: 0 });
+  Object.assign(n, { active: false, time: 0, end: null, rescue: false, from: 0, grace: GLIDER.grace, charge: 0 });
   state.jumpVelocity = 3; state.aerialUsed = false; state.combo = 0; state.comboTimer = 0;
   return true;
 }

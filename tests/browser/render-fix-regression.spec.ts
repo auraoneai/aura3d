@@ -62,8 +62,8 @@ test.describe("render fixes", () => {
       const ctx = await browser.newContext({ viewport: { width: 720, height: 450 }, deviceScaleFactor: dsf });
       const page = await ctx.newPage();
       await page.goto(`${server.origin}/examples/kid-goku-beyond-the-clouds-port/?manual=1&quality=low`, { waitUntil: "domcontentloaded" });
-      expect(await waitHook(page, "__AURA_KID_GOKU__")).toBe(true);
-      await page.evaluate(() => { const a = (window as unknown as Record<string, any>).__AURA_KID_GOKU__; a.begin(); a.settle(20, true); a.play(120, { steer: 0, jump: false, pole: false, nimbus: false, brake: false }); a.settle(2, false); });
+      expect(await waitHook(page, "__AURA_CUMULUS_DASH__")).toBe(true);
+      await page.evaluate(() => { const a = (window as unknown as Record<string, any>).__AURA_CUMULUS_DASH__; a.begin(); a.settle(20, true); a.play(120, { steer: 0, jump: false, pole: false, glider: false, brake: false }); a.settle(2, false); });
       await raf(page, 4);
       const expectedRatio = Math.min(dsf, 1.5);
       const info = await canvasInfo(page);
@@ -86,7 +86,7 @@ test.describe("render fixes", () => {
       expect(resized.rect[0]).toBe(960);
       expect(resized.rect[1]).toBe(540);
       expect(resized.width).toBeGreaterThanOrEqual(Math.floor(960 * expectedRatio) - 2);
-      await page.evaluate(() => { const a = (window as unknown as Record<string, any>).__AURA_KID_GOKU__; a.settle(2, false); });
+      await page.evaluate(() => { const a = (window as unknown as Record<string, any>).__AURA_CUMULUS_DASH__; a.settle(2, false); });
       await raf(page, 4);
       const shot2 = await page.screenshot({ type: "png" });
       emit("cumulus", `dsf${dsf}-resized`, await page.screenshot({ type: "jpeg", quality: 88 }));

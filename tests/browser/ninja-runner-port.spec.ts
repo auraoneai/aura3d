@@ -8,7 +8,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  *
  * Remote-only (tools/remote-acr/run.sh); never run under local Playwright. Drives `examples/ninja-runner-port`
  * through `window.__AURA_NINJA_RUNNER__` and checks the Phase C exit: the port plays through movement, jump,
- * combat, shadow clones, form changes (Sage, Kurama), a win, a restart and a loss, with real pixels on every
+ * combat, shadow clones, form changes (Sage, Beast), a win, a restart and a loss, with real pixels on every
  * frame, thirteen independent skinned actors (four `cloneSkinned` calls, one per generated character model, textures shared within a model) and the original's
  * recorded 106 s run reproduced step-exactly inside the live page.
  * Compact JPEG frames go to the log as `NINJA_RUNNER_FRAME <name> <base64>` because ACR runs cannot return files.
@@ -19,12 +19,12 @@ const LAB = "/examples/ninja-runner-port/";
 const FIXTURE = "tests/browser/data/ninja-runner-reference-replay.json";
 
 interface RunSummary {
-  outcome: string; steps: number; lostBy: string | null; distance: number; time: number; kills: number; score: number; health: number; chakra: number;
+  outcome: string; steps: number; lostBy: string | null; distance: number; time: number; kills: number; score: number; health: number; spirit: number;
   bestCombo: number; form: string; vaults: number; damageTaken: number; cloneStrikes: number; eventCounts: Record<string, number>;
   events: { step: number; type: string; [k: string]: unknown }[]; trace: Record<string, number | string | boolean>[];
 }
 interface Fixture { step: number; courseDigest: { entities: number; fnv1a: string }; script: string; tolerance: { numeric: number; eventSteps: number }; reference: RunSummary; idle: RunSummary }
-interface State { phase: string; s: number; x: number; y: number; lane: number; health: number; chakra: number; kills: number; score: number; form: string; clones: number; attack: number; slide: number; vy: number; falling: boolean; time: number }
+interface State { phase: string; s: number; x: number; y: number; lane: number; health: number; spirit: number; kills: number; score: number; form: string; clones: number; attack: number; slide: number; vy: number; falling: boolean; time: number }
 interface Api {
   ready(): boolean;
   begin(): void;
@@ -123,7 +123,7 @@ test.describe("ninja-runner-port (Phase C)", () => {
     await api((o) => { o.stepFrames(120); return 0; });
     expect((await state()).y).toBe(0);
 
-    // ---- combat, clones, Rasenshuriken: the capture policy plays; frames at the moments that matter ----
+    // ---- combat, clones, Spiralstar: the capture policy plays; frames at the moments that matter ----
     await api((o) => { o.reset(); o.setAutopilot(true); return 0; });
     let sawClones = false, sawAttack = false;
     const stats = { visibleMax: 0, clonesFrame: 0 };
@@ -131,11 +131,11 @@ test.describe("ninja-runner-port (Phase C)", () => {
       const stops = [sawAttack ? "" : "attack", sawClones ? "" : "clones"].filter(Boolean);
       const got = await page.evaluate(`window.__AURA_NINJA_RUNNER__.advanceTo(2640, ${JSON.stringify(stops)})`) as { stop: string | null; phase: string };
       if (got.phase !== "running") break;
-      if (got.stop === "attack") { sawAttack = true; await frame("rasengan"); }
+      if (got.stop === "attack") { sawAttack = true; await frame("spiralorb"); }
       if (got.stop === "clones") { sawClones = true; stats.clonesFrame = guard; await frame("clones"); stats.visibleMax = (await api((o) => o.stats())).visibleActors; }
     }
     if (sawAttack && sawClones) { const here = (await state()).s; await page.evaluate(`window.__AURA_NINJA_RUNNER__.advanceTo(${here + 90}, [])`); }
-    expect(sawAttack, "the Rasengan fired during the autopilot run").toBe(true);
+    expect(sawAttack, "the Spiralorb fired during the autopilot run").toBe(true);
     expect(sawClones, "shadow clones were cast").toBe(true);
     expect(stats.visibleMax).toBeGreaterThanOrEqual(4);
     const fighting = await state();
@@ -150,16 +150,16 @@ test.describe("ninja-runner-port (Phase C)", () => {
     expect(probe.distinct).toBeGreaterThanOrEqual(11);
     expect(shared.refs).toBeGreaterThanOrEqual(12);
 
-    // ---- forms: Sage at 600 m, Kurama at 1,620 m (the policy switches); a frame in each ----
+    // ---- forms: Sage at 600 m, Beast at 1,620 m (the policy switches); a frame in each ----
     await api((o) => { o.advanceUntil("sage", 20000); return 0; });
     const inSage = await state();
     expect(inSage.form, "reached Sage Mode").toBe("sage");
     await frame("sage");
-    await api((o) => { o.advanceUntil("kurama", 30000); return 0; });
-    const inKurama = await state();
-    expect(inKurama.form, "reached Kurama Mode").toBe("kurama");
+    await api((o) => { o.advanceUntil("beast", 30000); return 0; });
+    const inBeast = await state();
+    expect(inBeast.form, "reached Beast Mode").toBe("beast");
     await api((o) => { o.stepFrames(30); return 0; });
-    await frame("kurama");
+    await frame("beast");
 
     // ---- a win: the autopilot runs the whole course ----
     await api((o) => { o.advanceUntil("never", 40000); return 0; });
@@ -190,7 +190,7 @@ test.describe("ninja-runner-port (Phase C)", () => {
     const key = (e: object): string => JSON.stringify(e, Object.keys(e).sort());
     let maxDelta = 0;
     for (let i = 0; i < Math.min(replayed.trace.length, ref.trace.length); i++) {
-      for (const k of ["time", "s", "x", "y", "vy", "speed", "chakra", "attack", "dash", "slide", "invulnerable", "clones"]) {
+      for (const k of ["time", "s", "x", "y", "vy", "speed", "spirit", "attack", "dash", "slide", "invulnerable", "clones"]) {
         maxDelta = Math.max(maxDelta, Math.abs((replayed.trace[i]![k] as number) - (ref.trace[i]![k] as number)));
       }
     }
@@ -218,7 +218,7 @@ test.describe("ninja-runner-port (Phase C)", () => {
 
     writeFileSync(resolve(`${REPORT_ROOT}/ninja-runner-port.json`), `${JSON.stringify({
       schema: "a3d-ninja-runner-port-report/1",
-      claimBoundary: "Proves the Aura3D port boots on WebGL2, renders its world and thirteen independent skinned actors, plays movement/combat/clones/Sage/Kurama/win/restart/loss, and that its fixed-step simulation reproduces the original's recorded 106 s run event-for-event. It does not claim pixel parity: the characters and the village kit are generated models (Meshy text-to-3D, own prompts) and the ground, sky, water and effects are procedural.",
+      claimBoundary: "Proves the Aura3D port boots on WebGL2, renders its world and thirteen independent skinned actors, plays movement/combat/clones/Sage/Beast/win/restart/loss, and that its fixed-step simulation reproduces the original's recorded 106 s run event-for-event. It does not claim pixel parity: the characters and the village kit are generated models (Meshy text-to-3D, own prompts) and the ground, sky, water and effects are procedural.",
       replay: { steps: replayed.steps, kills: replayed.kills, score: replayed.score, eventsEqual, maxDelta },
       actors: { distinct: probe.distinct, shared },
       finish: { s: end.s, kills: end.kills, score: end.score }

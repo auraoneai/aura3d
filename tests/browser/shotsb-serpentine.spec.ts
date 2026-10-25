@@ -1,7 +1,7 @@
 import { shotsb } from "./shotsb-lib";
 
 shotsb({
-  slug: "serpentine-sky-run", folder: "saiyan-snake-way-port", hook: "__AURA_SAIYAN_SNAKE_WAY__",
+  slug: "serpentine-sky-run", folder: "saiyan-snake-way-port", hook: "__AURA_SERPENTINE_SKY_RUN__",
   titleQuery: "", manualQuery: "?manual=1", card: "jump",
   states: [
     { name: "early", drive: `api.start(); api.stepFrames(45);` },

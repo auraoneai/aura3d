@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { loadLegacyJson } from "../_support/legacy-names";
 import { describe, expect, it } from "vitest";
 import { STEP, createRun, expandScript, snapshot, stepRun, type InputSegment } from "../../../examples/saiyan-snake-way-port/sim";
 
@@ -15,7 +16,7 @@ interface Reference {
   events: { frame: number; what: string; to?: unknown }[];
   repeatability: { allIdentical: boolean; replaySessions: number; tolerance: { simFields: number } };
 }
-const reference = JSON.parse(readFileSync(new URL("../../../evidence/crayon-capture/saiyan-snake-way-reference.json", import.meta.url), "utf8")) as Reference;
+const reference = loadLegacyJson<Reference>("saiyan", readFileSync(new URL("../../../evidence/crayon-capture/saiyan-snake-way-reference.json", import.meta.url), "utf8"));
 const TOLERANCE = reference.repeatability.tolerance.simFields;
 
 function replay(): { frames: Map<number, Record<string, unknown>>; steps: number; state: ReturnType<typeof createRun> } {
@@ -35,7 +36,7 @@ function replay(): { frames: Map<number, Record<string, unknown>>; steps: number
   return { frames, steps, state };
 }
 
-describe("Saiyan Snake Way: replay of the original's recorded run", () => {
+describe("Serpentine Sky Run: replay of the original's recorded run", () => {
   const out = replay();
 
   it("the reference run is a full outbound run that the original replayed identically in fresh sessions", () => {
@@ -69,9 +70,9 @@ describe("Saiyan Snake Way: replay of the original's recorded run", () => {
     expect(compared).toBeGreaterThan(8000);
   });
 
-  it("reproduces the stage sequence and the Kaio-ken rung changes", () => {
+  it("reproduces the stage sequence and the Surge rung changes", () => {
     const stages = reference.events.filter((e) => e.what === "stage").map((e) => e.to);
-    expect(stages).toEqual(["CHECK-IN", "THE LONG ROAD", "TRAFFIC", "PRINCESS SNAKE'S PALACE", "THE COILS", "THE BROKEN SPINE", "THE DROWSE", "THE END OF THE ROAD"]);
+    expect(stages).toEqual(["CHECK-IN", "THE LONG ROAD", "TRAFFIC", "THE SERPENT HALL", "THE COILS", "THE BROKEN SPINE", "THE DROWSE", "THE END OF THE ROAD"]);
     expect(reference.events.filter((e) => e.what === "rung").length).toBeGreaterThan(10);
   });
 

@@ -1,8 +1,8 @@
 /**
  * GLSL for the port's `material.custom` surfaces. The original's seven raw `ShaderMaterial`s (sky dome,
- * river, valley veil, Rasengan ball, Rasengan sparks, leaf chakra flames, particles) are ported
+ * river, valley veil, Spiralorb ball, Spiralorb sparks, leaf spirit flames, particles) are ported
  * here (GLSL 300 es, `outColor`); its patched `MeshStandardMaterial`s (wind-swept grass, carved cliffs,
- * ink-washed Kurama) become two self-contained lit shaders (`GROUND`, `SOLID`) that evaluate the
+ * ink-washed Beast) become two self-contained lit shaders (`GROUND`, `SOLID`) that evaluate the
  * original's hemisphere + sun lights and distance fog inline. Uniform names avoid `time`/`opacity`
  * collisions with the engine prelude (`u_time`).
  */
@@ -167,7 +167,7 @@ void main() {
   outColor = vec4(c, edge * (0.88 + 0.1 * veins));
 }`;
 
-/** Original Rasengan ball: banded swirl + rim, additive. */
+/** Original Spiralorb ball: banded swirl + rim, additive. */
 export const BALL_VERTEX = /* glsl */ `
 out vec3 vP;
 out vec3 vN;
@@ -206,7 +206,7 @@ void main() {
   outColor = vec4(auraColor * (0.7 + 0.6 * flame), clamp(k * rim * 1.5 + k * 0.08, 0.0, 1.0));
 }`;
 
-/** Original Rasengan sparks: points orbiting the hand, seeded by `seed`. */
+/** Original Spiralorb sparks: points orbiting the hand, seeded by `seed`. */
 export const SPARKS_VERTEX = /* glsl */ `
 attribute vec3 seed;
 out float vAlpha;
@@ -228,7 +228,7 @@ void main() {
   outColor = vec4(0.3, 0.8, 1.0, max(0.0, 1.0 - d) * vAlpha);
 }`;
 
-/** Original leaf chakra flames: textured billboards fading with distance to the runner. */
+/** Original leaf spirit flames: textured billboards fading with distance to the runner. */
 export const FLAME_VERTEX = /* glsl */ `
 attribute float aAlive;
 attribute float aDistance;

@@ -54,8 +54,8 @@ test.describe("hotfix: Cumulus Dash device scale", () => {
       const ctx = await browser.newContext({ viewport: { width: c.width, height: c.height }, deviceScaleFactor: c.dsf });
       const page = await ctx.newPage();
       await page.goto(`${server.origin}/examples/kid-goku-beyond-the-clouds-port/?manual=1&quality=low`, { waitUntil: "domcontentloaded" });
-      await page.waitForFunction(() => (window as unknown as Record<string, { ready?: boolean }>).__AURA_KID_GOKU__?.ready === true, undefined, { timeout: 1_500_000, polling: 1000 });
-      await page.evaluate(() => { const a = (window as unknown as Record<string, any>).__AURA_KID_GOKU__; a.begin(); a.settle(20, true); });
+      await page.waitForFunction(() => (window as unknown as Record<string, { ready?: boolean }>).__AURA_CUMULUS_DASH__?.ready === true, undefined, { timeout: 1_500_000, polling: 1000 });
+      await page.evaluate(() => { const a = (window as unknown as Record<string, any>).__AURA_CUMULUS_DASH__; a.begin(); a.settle(20, true); });
       await raf(page, 4);
       const expectedRatio = Math.min(c.dsf, 1.5);
       const info = await canvasInfo(page);

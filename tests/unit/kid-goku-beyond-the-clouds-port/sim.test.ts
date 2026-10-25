@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { MOUNT_PAOZU as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
+import { CUMULUS_RIDGE as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
 import {
-  IDLE, createState, layoutObstacles, layoutOrbs, nimbusMap, nimbusWhy, step, stepFrame, type SimState, type StepInput
+  IDLE, createState, layoutObstacles, layoutOrbs, gliderMap, gliderWhy, step, stepFrame, type SimState, type StepInput
 } from "../../../examples/kid-goku-beyond-the-clouds-port/sim";
 
 const DT = 1 / 60;
@@ -13,7 +13,7 @@ const run = (state: SimState, frames: number, input: (i: number, s: SimState) =>
 };
 const jumpAt = (s0: number) => { let done = false; return (_: number, st: SimState) => (!done && st.s >= s0 ? ((done = true), { jump: true }) : {}); };
 
-describe("kid goku port: run core", () => {
+describe("Cumulus Dash port: run core", () => {
   it("accelerates toward the chapter speed with the original's 2.7/s response", () => {
     const s = createState();
     run(s, 60);
@@ -61,7 +61,7 @@ describe("kid goku port: run core", () => {
     expect(ev).toContain("dismount");
   });
 
-  it("running through the 150-160 gap without jumping falls; jumping at s>=147 clears it and takes Dragon Ball 1", () => {
+  it("running through the 150-160 gap without jumping falls; jumping at s>=147 clears it and takes Sky Pearl 1", () => {
     const fall = createState();
     run(fall, 700);
     expect(fall.falls).toBeGreaterThan(0);
@@ -69,7 +69,7 @@ describe("kid goku port: run core", () => {
     const ev = run(ok, 760, jumpAt(147));
     expect(ok.falls).toBe(0);
     expect(ok.balls).toContain(1);
-    expect(ev).toContain("dragonball");
+    expect(ev).toContain("skypearl");
     expect(ok.score).toBeGreaterThan(700);
   });
 
@@ -105,7 +105,7 @@ describe("kid goku port: run core", () => {
   });
 });
 
-describe("kid goku port: layout and nimbus map", () => {
+describe("Cumulus Dash port: layout and glider map", () => {
   it("the seeded obstacle layout equals the original's own (read from window.__LAB__.world.obstacles)", () => {
     const original = JSON.parse(readFileSync("tests/fixtures/crayon/kid-goku-beyond-the-clouds/obstacles.json", "utf8")) as { obstacles: { s: number; lane: number; type: string; size: number; id: number }[] };
     const mine = layoutObstacles(CH);
@@ -131,8 +131,8 @@ describe("kid goku port: layout and nimbus map", () => {
     }
   });
 
-  it("the nimbus map flags set-pieces (log start, pole spans, home) and finds calm runs", () => {
-    const m = nimbusMap(CH);
+  it("the glider map flags set-pieces (log start, pole spans, home) and finds calm runs", () => {
+    const m = gliderMap(CH);
     expect(m.fly[0]).toBe("log");
     expect(m.fly[Math.round(470 / 0.5)]).toBe("pole");
     expect(m.fly[Math.round((CH.length - 10) / 0.5)]).toBe("home");
@@ -141,47 +141,47 @@ describe("kid goku port: layout and nimbus map", () => {
   });
 });
 
-describe("kid goku port: flying nimbus", () => {
+describe("Cumulus Dash port: flying glider", () => {
   const calmS = (() => {
-    const m = nimbusMap(CH);
+    const m = gliderMap(CH);
     for (let c = 0; c < m.n; c++) {
       const s = c * 0.5;
       const probe = createState(); probe.s = s;
-      const w = nimbusWhy(probe, CH);
+      const w = gliderWhy(probe, CH);
       if (!w.why && w.end !== undefined && w.end - s > 60) return s;
     }
     throw new Error("no calm run");
   })();
 
-  it("an empty charge cannot call the nimbus; a full one calls, mounts after 0.26s, rides faster and lands", () => {
+  it("an empty charge cannot call the glider; a full one calls, mounts after 0.26s, rides faster and lands", () => {
     const s = createState();
     s.s = calmS; s.speed = CH.speed; s.invincible = 0;
-    let ev = step(s, { ...IDLE, nimbus: true }, DT, CH);
-    expect(ev).toContain("nimbus-empty");
-    s.nimbus.charge = 1;
-    ev = step(s, { ...IDLE, nimbus: true }, DT, CH);
-    expect(ev).toContain("nimbus-call");
-    expect(s.nimbus.call).toBeGreaterThan(0);
+    let ev = step(s, { ...IDLE, glider: true }, DT, CH);
+    expect(ev).toContain("glider-empty");
+    s.glider.charge = 1;
+    ev = step(s, { ...IDLE, glider: true }, DT, CH);
+    expect(ev).toContain("glider-call");
+    expect(s.glider.call).toBeGreaterThan(0);
     const events: string[] = [];
     for (let i = 0; i < 40; i++) events.push(...step(s, IDLE, DT, CH));
-    expect(events).toContain("nimbus-mount");
-    expect(s.nimbus.active).toBe(true);
+    expect(events).toContain("glider-mount");
+    expect(s.glider.active).toBe(true);
     const mountedSpeed = s.speed;
     for (let i = 0; i < 120; i++) step(s, IDLE, DT, CH);
     expect(s.speed).toBeGreaterThan(mountedSpeed);
-    for (let i = 0; i < 600 && s.nimbus.active; i++) events.push(...step(s, IDLE, DT, CH));
-    expect(events).toContain("nimbus-end");
-    expect(s.nimbus.active).toBe(false);
+    for (let i = 0; i < 600 && s.glider.active; i++) events.push(...step(s, IDLE, DT, CH));
+    expect(events).toContain("glider-end");
+    expect(s.glider.active).toBe(false);
   });
 
-  it("collecting a Dragon Ball charges the nimbus (0.15, x0.45 inside a set-piece)", () => {
+  it("collecting a Sky Pearl charges the glider (0.15, x0.45 inside a set-piece)", () => {
     const s = createState();
     const jump = jumpAt(147);
     let delta = -1;
     for (let i = 0; i < 800 && delta < 0; i++) {
-      const before = s.nimbus.charge;
+      const before = s.glider.charge;
       const ev = stepFrame(s, { ...IDLE, ...jump(i, s) }, DT, CH);
-      if (ev.includes("dragonball")) delta = s.nimbus.charge - before;
+      if (ev.includes("skypearl")) delta = s.glider.charge - before;
     }
     expect(s.balls).toContain(1);
     expect(delta).toBeGreaterThan(0.15 * 0.45 - 1e-9);
@@ -189,7 +189,7 @@ describe("kid goku port: flying nimbus", () => {
   });
 });
 
-describe("kid goku port: pickups and damage", () => {
+describe("Cumulus Dash port: pickups and damage", () => {
   it("orbs sit every 7.5 units from s=35, skip gaps, and weave with sin(0.035 s) * 2.4", () => {
     const orbs = layoutOrbs(CH);
     expect(orbs[0]).toMatchObject({ s: 35, id: 0 });
@@ -208,7 +208,7 @@ describe("kid goku port: pickups and damage", () => {
     expect(around.crashed.size).toBeGreaterThan(0);
   });
 
-  it("damage is ignored while invincible or while riding the nimbus (except bites and grabs)", () => {
+  it("damage is ignored while invincible or while riding the glider (except bites and grabs)", () => {
     const s = createState();
     s.invincible = 1;
     // obstacles are shrugged off during invincibility

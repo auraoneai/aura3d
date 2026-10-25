@@ -151,7 +151,7 @@ export class GameAudio {
       if (state.form !== "base" || i % 3 === 0) {
         const step = melodyStep(i);
         this.tone(midiToHz(SCALE[step]!), beat * 0.9, "triangle", 0.16, undefined, Math.max(0, t), bus);
-        if (state.form === "kurama") this.tone(midiToHz(SCALE[step]!) * 2, beat * 0.6, "sine", 0.07, undefined, Math.max(0, t), bus);
+        if (state.form === "beast") this.tone(midiToHz(SCALE[step]!) * 2, beat * 0.6, "sine", 0.07, undefined, Math.max(0, t), bus);
       }
       this.nextBeat += beat / 2;
     }

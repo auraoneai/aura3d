@@ -60,7 +60,7 @@ test.describe("ninja-runner rework: obstacle impacts", () => {
       const setup = (await page.evaluate(`((o, sc) => {
         const z = o.state;
         const b = z.entities.find((e) => e.type === sc.kind && e.alive && e.s > 200);
-        z.entities.forEach((e) => { if (e !== b && e.type !== "chakra") e.alive = false; });
+        z.entities.forEach((e) => { if (e !== b && e.type !== "spirit") e.alive = false; });
         b.lane = 0; z.x = 0; z.s = b.s - 9; z.time = sc.time; z.y = 0; z.vy = 0;
         Object.assign(z, sc.patch);
         return { at: b.s, s0: z.s, health0: z.health };

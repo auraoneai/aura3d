@@ -78,7 +78,7 @@ export function biomeAt(i: number): string {
 
 /** District caption. Original `Ua`. */
 export function districtAt(i: number): string {
-  return i < 160 ? "Hidden Leaf Village" : i < 470 ? "The Backstreets" : i < 1120 ? "Above the Village" : i < 1510 ? "The Naka Crossing" : i < 2260 ? "Forest of Death" : "Valley of the End";
+  return i < 160 ? "Lantern Village" : i < 470 ? "The Backstreets" : i < 1120 ? "Rooftop Run" : i < 1510 ? "River Crossing" : i < 2260 ? "Whispering Forest" : "Valley Gate";
 }
 
 /** Path width. Original `kt`. */

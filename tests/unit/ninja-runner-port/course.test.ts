@@ -3,7 +3,7 @@ import {
   COURSE_LENGTH, GAPS, biomeAt, districtAt, gapAhead, gapAt, groundFrame, groundHeight, laneOffset, nearGap, pathWidth, routeFrame, smooth
 } from "../../../examples/ninja-runner-port/course";
 import { MeshBuilder, buildRoute, buildRouteGroups, buildSheet, buildTownFloor, buildWater, surfaceY, type MeshData } from "../../../examples/ninja-runner-port/meshes";
-import { chakraPickups, drawFlame, modelMatrix } from "../../../examples/ninja-runner-port/world";
+import { spiritPickups, drawFlame, modelMatrix } from "../../../examples/ninja-runner-port/world";
 import { createState } from "../../../examples/ninja-runner-port/sim";
 
 const valid = (m: MeshData): void => {
@@ -41,8 +41,8 @@ describe("ninja-runner-port course", () => {
     expect(biomeAt(1300)).toBe("bridge");
     expect(biomeAt(1800)).toBe("forest");
     expect(biomeAt(2500)).toBe("water");
-    expect(districtAt(10)).toBe("Hidden Leaf Village");
-    expect(districtAt(2400)).toBe("Valley of the End");
+    expect(districtAt(10)).toBe("Lantern Village");
+    expect(districtAt(2400)).toBe("Valley Gate");
     expect(pathWidth(0)).toBeCloseTo(8.6, 6);
     expect(laneOffset(0)).toBeCloseTo(2.322, 6);
     expect(laneOffset(300)).toBeLessThan(laneOffset(0));
@@ -133,9 +133,9 @@ describe("ninja-runner-port world helpers", () => {
     expect(m[8]).toBeCloseTo(2, 12);
   });
 
-  it("chakra pickups cover every chakra entity with a position above the ground", () => {
+  it("spirit pickups cover every spirit entity with a position above the ground", () => {
     const z = createState();
-    const pickups = chakraPickups(z.entities);
+    const pickups = spiritPickups(z.entities);
     expect(pickups.length).toBe(262);
     expect(new Set(pickups.map((p) => p.id)).size).toBe(262);
     const p = pickups[0]!;

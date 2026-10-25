@@ -22,11 +22,11 @@ const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 export const POOLS: Readonly<Record<string, number>> = { orb: 150, soul: 40, barrier: ENTITY_MODELS.barrier!.pool, arch: ENTITY_MODELS.arch!.pool, oni: ENTITY_MODELS.oni!.pool, sweeper: ENTITY_MODELS.sweeper!.pool, power: 10, feast: ENTITY_MODELS.feast!.pool };
 
 const POWER_STYLE: Readonly<Record<string, { core: Rgb; shell: Rgb }>> = {
-  kaio: { core: hexLinear(PALETTE.auraCore), shell: hexLinear(PALETTE.aura) },
-  senzu: { core: hexLinear(0xd8ffe8), shell: hexLinear(PALETTE.jade) },
+  surge: { core: hexLinear(PALETTE.auraCore), shell: hexLinear(PALETTE.aura) },
+  vitalseed: { core: hexLinear(0xd8ffe8), shell: hexLinear(PALETTE.jade) },
   stamp: { core: hexLinear(0xfff0b0), shell: hexLinear(PALETTE.gold) },
   pole: { core: hexLinear(0xffd2c0), shell: hexLinear(PALETTE.lacquer) },
-  nimbus: { core: hexLinear(PALETTE.kiCore), shell: hexLinear(PALETTE.ki) },
+  puff: { core: hexLinear(PALETTE.kiCore), shell: hexLinear(PALETTE.ki) },
   weights: { core: hexLinear(0xcfc4e8), shell: hexLinear(PALETTE.lacquerDark) }
 };
 
@@ -302,7 +302,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           airVy = 24 - 32 * tf;
         }
         const tumbleM: M3 | null = falling ? rx(-tf * 5) : null;
-        const flying = S.nimbus > 0 || falling;
+        const flying = S.puff > 0 || falling;
         const lean = Math.max(-0.35, Math.min(0.35, S.laneVel * 0.02));
         if (prevS === null) prevS = S.s;
         const ds = S.s - prevS;
@@ -356,13 +356,13 @@ export function buildWorld(options: WorldOptions = {}): World {
         const root = (parts.pelvis as { p: LV3; m: M3 }).m;
         const auraCentre = toWorld([(parts.pelvis as { p: LV3 }).p[0] + apply(root, [0, 1.05, 0])[0], (parts.pelvis as { p: LV3 }).p[1] + apply(root, [0, 1.05, 0])[1], (parts.pelvis as { p: LV3 }).p[2] + apply(root, [0, 1.05, 0])[2]]);
         const auraEuler = matrixEuler(worldRot(root));
-        const growth = 1 + 0.14 * S.auraRung + (S.kaio === "power" ? 0.2 : 0);
+        const growth = 1 + 0.14 * S.auraRung + (S.surge === "power" ? 0.2 : 0);
         for (const [id, scale, solidAmount] of [["aura-outer", growth, 0.5], ["aura-inner", growth * 0.92, 0.3]] as const) {
           const h = node(id);
           h.setPosition(auraCentre[0], auraCentre[1], auraCentre[2]).setRotation(auraEuler[0], auraEuler[1], auraEuler[2]).setScale(scale).setVisible(surge > 4e-3);
           h.setUniform?.("auraTime", id === "aura-inner" ? 1.37 * time + 4 : time);
           h.setUniform?.("auraIntensity", surge * 0.7);
-          h.setUniform?.("auraSolid", S.nimbus > 0 ? 0.24 : solidAmount);
+          h.setUniform?.("auraSolid", S.puff > 0 ? 0.24 : solidAmount);
         }
 
         /* contact shadow on the road under the runner */
@@ -448,7 +448,7 @@ export function buildWorld(options: WorldOptions = {}): World {
           const EB = frameBasis(f);
           const pulse = ent.type === "orb" ? 1 + 0.08 * Math.sin(time * 6 + ent.spin) : 1;
           const tumble = ent.punt ? eulerMatrix([ent.punt.t * 9, ent.punt.t * 5, 0]) : null;
-          const style = ent.type === "power" ? POWER_STYLE[ent.kind ?? "kaio"] : undefined;
+          const style = ent.type === "power" ? POWER_STYLE[ent.kind ?? "surge"] : undefined;
           parts3.forEach((part, j) => {
             const handle = node(`ent-${ent.type}-${idx}-${j}`);
             let local: M3 = part.rot ? eulerMatrix(part.rot) : eulerMatrix([0, 0, 0]);

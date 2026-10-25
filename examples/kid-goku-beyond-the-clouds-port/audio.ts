@@ -18,7 +18,7 @@ const blip = (layers: readonly ToneLayer[]): CueSpec => ({ layers });
  */
 export const TONE_CUES = {
   jump: blip([tl(300, 0.16, "triangle", 0.16, 0, 640)]),
-  dragonball: blip(run([523, 659, 784, 1047, 1319], 0.45, "triangle", 0.16, 0.07)),
+  skypearl: blip(run([523, 659, 784, 1047, 1319], 0.45, "triangle", 0.16, 0.07)),
   checkpoint: blip(run([660, 880, 1100], 0.4, "sine", 0.12, 0.09)),
   perfect: blip(run([784, 988, 1175, 1568], 0.5, "triangle", 0.15, 0.06)),
   jan: blip([tl(330, 0.14, "square", 0.1)]),
@@ -27,9 +27,9 @@ export const TONE_CUES = {
   dodge: blip([tl(660, 0.12, "triangle", 0.1, 0, 990)]),
   "fall-start": blip([tl(900, 0.9, "sine", 0.18, 0, 160)]),
   respawn: blip([tl(300, 0.3, "triangle", 0.12, 0, 600)]),
-  "nimbus-ready": blip(run([880, 1175], 0.3, "sine", 0.1, 0.1)),
-  "nimbus-end": blip([tl(900, 0.3, "sine", 0.1, 0, 400)]),
-  "nimbus-empty": blip([tl(200, 0.12, "square", 0.08)]),
+  "glider-ready": blip(run([880, 1175], 0.3, "sine", 0.1, 0.1)),
+  "glider-end": blip([tl(900, 0.3, "sine", 0.1, 0, 400)]),
+  "glider-empty": blip([tl(200, 0.12, "square", 0.08)]),
   finish: blip(run([523, 659, 784, 1047, 1319, 1568], 0.9, "triangle", 0.14, 0.14)),
   dead: blip(run([392, 330, 262, 196], 0.5, "triangle", 0.16, 0.16)),
   screech: blip([tl(1500, 0.5, "sawtooth", 0.1, 0, 3100), tl(1100, 0.5, "square", 0.05, 0.02, 2400)]),
@@ -39,9 +39,9 @@ export type ToneCue = keyof typeof TONE_CUES;
 
 /** Event name -> the cue that plays it. */
 export const TONE_EVENTS: Readonly<Record<string, ToneCue>> = {
-  jump: "jump", orb: "orb", dragonball: "dragonball", checkpoint: "checkpoint", perfect: "perfect", jan: "jan", ken: "ken",
+  jump: "jump", orb: "orb", skypearl: "skypearl", checkpoint: "checkpoint", perfect: "perfect", jan: "jan", ken: "ken",
   guu: "rps", paa: "rps", choki: "rps", dodge: "dodge", "close-call": "dodge", "fall-start": "fall-start", respawn: "respawn",
-  "nimbus-ready": "nimbus-ready", "nimbus-end": "nimbus-end", "nimbus-empty": "nimbus-empty", "nimbus-wait": "nimbus-empty",
+  "glider-ready": "glider-ready", "glider-end": "glider-end", "glider-empty": "glider-empty", "glider-wait": "glider-empty",
   finish: "finish", dead: "dead", screech: "screech"
 };
 
@@ -127,8 +127,8 @@ export class GameAudio {
       case "hit": case "boulder-hit": case "trex-bite": case "trex-swipe": case "ptera-grab": this.tone(110, 0.3, "sawtooth", 0.25, 0, 45); this.noise(0.3, 0.35, 900, 120); break;
       case "rumble": this.noise(1.2, 0.4, 160, 60); this.tone(48, 1.2, "sine", 0.3, 0, 38); break;
       case "boulder": this.noise(0.6, 0.3, 200, 80); break;
-      case "nimbus-call": case "nimbus-mount": this.tone(400, 0.5, "sine", 0.14, 0, 1200); this.noise(0.5, 0.12, 2000, 6000, "bandpass"); break;
-      case "nimbus-knocked": this.tone(500, 0.4, "sawtooth", 0.18, 0, 120); this.noise(0.3, 0.3, 1500, 200); break;
+      case "glider-call": case "glider-mount": this.tone(400, 0.5, "sine", 0.14, 0, 1200); this.noise(0.5, 0.12, 2000, 6000, "bandpass"); break;
+      case "glider-knocked": this.tone(500, 0.4, "sawtooth", 0.18, 0, 120); this.noise(0.3, 0.3, 1500, 200); break;
       case "ui": this.tone(660, 0.08, "triangle", 0.1); break;
       default: break;
     }

@@ -218,7 +218,7 @@ void main() {
   outColor = vec4(fogMix(col, dist), 1.0);
 }`;
 
-/** Kaio-ken aura shell: the original's stacked blade tiers (ported verbatim), shaded with `auraTime` / `auraIntensity` / ... */
+/** Surge aura shell: the original's stacked blade tiers (ported verbatim), shaded with `auraTime` / `auraIntensity` / ... */
 export const AURA_VERTEX = /* glsl */ `
 out vec2 vUv;
 out vec3 vNV;

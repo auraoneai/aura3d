@@ -9,10 +9,10 @@
 import type { Chapter } from "./chapter";
 import { Encounters, type EncounterEvent, type EncounterResult, type Prompt } from "./encounters";
 import {
-  JANKEN, award, collectOrb, createState, damage, gainNimbus, jankenAllowed, knockOff, rescue, rideHeight, startJanken, step, tickJanken,
+  JANKEN, award, collectOrb, createState, damage, gainGlider, jankenAllowed, knockOff, rescue, rideHeight, startJanken, step, tickJanken,
   worldLayout, worldPass, type Orb, type SimState, type StepInput
 } from "./sim";
-import { NIMBUS } from "./chapter";
+import { GLIDER } from "./chapter";
 
 export type Phase = "menu" | "playing" | "paused" | "falling" | "finale" | "result";
 export interface RunResult { won: boolean; score: number; time: number; hits: number; falls: number; balls: number; orbs: number; meat: number; maxCombo: number; stars: readonly number[]; best: boolean }
@@ -50,7 +50,7 @@ export class Game {
   best = 0;
   private clockToast = 0;
   private strikeHint = false;
-  private nimbusHint = false;
+  private gliderHint = false;
   readonly orbs: readonly Orb[];
 
   constructor(readonly chapter: Chapter, start = 0, bestScore = 0) {
@@ -153,7 +153,7 @@ export class Game {
     const j = tickJanken(s, dt);
     out.push(...j.events);
     for (const e of j.events) if (e === "janken-hit") this.jankenHit(out);
-    const slow = Math.max(this.lastSlow, s.nimbus.call > 0 ? 0.72 : 0);
+    const slow = Math.max(this.lastSlow, s.glider.call > 0 ? 0.72 : 0);
     this.timeScale += (1 - slow - this.timeScale) * Math.min(1, dt * 10);
     const t = this.hold > 0 ? 1e-4 : dt * Math.min(this.timeScale, j.scale);
     this.hold = Math.max(0, this.hold - dt);
@@ -164,7 +164,7 @@ export class Game {
     this.prompt = enc.prompt;
     this.danger = enc.danger;
     this.chase = enc.chase;
-    if ((s.nimbus.active || s.nimbus.call > 0) && !this.enc.dives.some((d) => !d.passed && !d.hit && d.target !== null)) { this.prompt = null; this.danger = 0; this.lastSlow = 0; }
+    if ((s.glider.active || s.glider.call > 0) && !this.enc.dives.some((d) => !d.passed && !d.hit && d.target !== null)) { this.prompt = null; this.danger = 0; this.lastSlow = 0; }
     const threat = this.enc.threat;
     const toThreat = threat ? threat.s - s.s : 99;
     s.jankenWindow = !!threat && threat.kind !== "swipe" && toThreat <= JANKEN.late && toThreat > -1.5 && !s.janken && jankenAllowed(s, ch);
@@ -179,7 +179,7 @@ export class Game {
           out.push(e);
         }
         this.magnetStep(t, out);
-        if (!this.nimbusHint && s.nimbus.charge >= 1 && !s.nimbus.active && s.nimbus.call <= 0 && !this.prompt) { this.nimbusHint = true; this.say("The sky cloud is ready: press Q!", 2600); }
+        if (!this.gliderHint && s.glider.charge >= 1 && !s.glider.active && s.glider.call <= 0 && !this.prompt) { this.gliderHint = true; this.say("The sky cloud is ready: press Q!", 2600); }
       }
     }
     s.score += s.speed * t * 0.6;
@@ -212,12 +212,12 @@ export class Game {
   }
 
   private magnetStep(t: number, out: string[]): void {
-    const s = this.state, riding = s.nimbus.active || s.nimbus.call > 0;
+    const s = this.state, riding = s.glider.active || s.glider.call > 0;
     if (riding) {
       for (const orb of this.orbs) {
         if (s.collected.has(orb.id) || this.magnet.has(orb.id)) continue;
         const d = orb.s - s.s;
-        if (d > -1.5 && d < 6 && Math.abs(s.lane - orb.lane) < NIMBUS.magnet) this.magnet.set(orb.id, 0);
+        if (d > -1.5 && d < 6 && Math.abs(s.lane - orb.lane) < GLIDER.magnet) this.magnet.set(orb.id, 0);
       }
     }
     for (const [id, p] of this.magnet) {
@@ -237,25 +237,25 @@ export class Game {
     else if (e === "finish") {
       if (this.chapter.home) { this.phase = "finale"; this.finale = { t: 0 }; this.prompt = null; }
       else out.push(...this.end(true));
-    } else if (e === "nimbus-empty") this.say("Not yet: spirit orbs fill the cloud gauge!", 2000);
-    else if (e === "nimbus-wait") {
-      const why = s.nimbus.nopeWhy ?? "charge";
+    } else if (e === "glider-empty") this.say("Not yet: spirit orbs fill the cloud gauge!", 2000);
+    else if (e === "glider-wait") {
+      const why = s.glider.nopeWhy ?? "charge";
       this.say({
         log: "Ride the log first: the cloud is stored.", pole: "Stored for after the staff crossing.", wall: "Stored for after the cliff run.",
         river: "Stored: the river is run on foot.", home: "Almost home: run the rest of the way!", charge: "Almost full: a few more orbs!"
       }[why] ?? "Stored for later.", 1600);
-    } else if (e === "meat" || e === "dragonball") s.catchTimer = 0.4;
-    if (e === "dragonball") this.say(`Sky pearl ${s.balls[s.balls.length - 1]} found!`, 1800);
+    } else if (e === "meat" || e === "skypearl") s.catchTimer = 0.4;
+    if (e === "skypearl") this.say(`Sky pearl ${s.balls[s.balls.length - 1]} found!`, 1800);
     if (e === "checkpoint") this.say("Checkpoint", 1400);
     if (e === "land" || e === "splash") this.impact = Math.max(this.impact, 0.06);
     if (e === "extend") this.impact = Math.max(this.impact, 0.08);
     if (e === "power-launch") this.hold = 0.05;
-    if (e === "nimbus-mount") this.impact = Math.max(this.impact, 0.35);
+    if (e === "glider-mount") this.impact = Math.max(this.impact, 0.35);
   }
 
   private strikeResult(ev: EncounterEvent, kind: "ptera" | "trex", out: string[]): void {
     const s = this.state, ch = this.chapter;
-    gainNimbus(s, "strike", ch);
+    gainGlider(s, "strike", ch);
     const creature = ev.creature ?? (kind === "trex" ? this.enc.trex?.creature : undefined);
     if (creature && !s.janken && s.strikeLead <= JANKEN.late && jankenAllowed(s, ch)) {
       out.push(...startJanken(s, creature, kind));
@@ -288,22 +288,22 @@ export class Game {
       case "rumble": this.impact = Math.max(this.impact, 0.25); break;
       case "boulder-hit": this.hurt("boulder", "Jump the boulders or steer clear!"); break;
       case "close-call":
-        if (s.nimbus.active) break;
+        if (s.glider.active) break;
         award(s, ev.points ?? 100);
-        gainNimbus(s, (ev.points ?? 0) > 200 ? "dodge" : "close", ch);
+        gainGlider(s, (ev.points ?? 0) > 200 ? "dodge" : "close", ch);
         break;
       case "ptera-struck": this.strikeResult(ev, "ptera", out); break;
       case "ptera-grab": s.grabTimer = 0.9; this.hurt("grab", "Strike it when its shadow covers you, or steer away!"); break;
       case "dodge": {
         const kind = ev.kind ?? this.attackKindAt(s.s);
-        if (s.nimbus.active && kind === "swipe") break;
+        if (s.glider.active && kind === "swipe") break;
         award(s, ev.points ?? 200);
-        gainNimbus(s, "dodge", ch);
+        gainGlider(s, "dodge", ch);
         break;
       }
       case "trex-struck": this.strikeResult(ev, "trex", out); break;
       case "trex-bite":
-        if (s.nimbus.active) this.bitOffCloud(out);
+        if (s.glider.active) this.bitOffCloud(out);
         else this.hurt("bite", "Get right when the ground turns red!");
         break;
       case "trex-swipe": this.hurt("swipe", "Jump the tail swipe!"); break;
@@ -321,7 +321,7 @@ export class Game {
   private bitOffCloud(out: string[]): void {
     const s = this.state;
     if (s.jump > rideHeight(s, this.chapter) + 1.1) { award(s, 300); out.push("dodge"); return; }
-    if (knockOff(s, this.chapter)) { this.impact = Math.max(this.impact, 0.7); this.flash = { color: "#ffd6c8", k: 0.3 }; out.push("nimbus-knocked"); }
+    if (knockOff(s, this.chapter)) { this.impact = Math.max(this.impact, 0.7); this.flash = { color: "#ffd6c8", k: 0.3 }; out.push("glider-knocked"); }
     else this.hurt("bite", "Steer right when the ground turns red!");
   }
 
@@ -329,12 +329,12 @@ export class Game {
     const f = this.falling, s = this.state, ch = this.chapter;
     if (!f) { this.phase = "playing"; return; }
     f.t += dt; f.v -= 30 * dt; f.y += f.v * dt;
-    if (s.nimbus.charge >= 1 && f.t < FALL_RESCUE_WINDOW) this.prompt = { tag: "SKY CLOUD!", title: "CALL THE CLOUD!", help: "Q · CALL IT NOW" };
+    if (s.glider.charge >= 1 && f.t < FALL_RESCUE_WINDOW) this.prompt = { tag: "SKY CLOUD!", title: "CALL THE CLOUD!", help: "Q · CALL IT NOW" };
     else this.prompt = null;
-    if (input.nimbus && f.t < FALL_RESCUE_WINDOW && rescue(s, ch)) {
+    if (input.glider && f.t < FALL_RESCUE_WINDOW && rescue(s, ch)) {
       s.s += f.t * 8.5; s.jump = f.y; s.jumpVelocity = Math.min(0, f.v) * 0.3; s.speed = Math.max(s.speed, ch.speed * 0.85);
       this.falling = null; this.phase = "playing"; this.timeScale = 0.5; this.prompt = null;
-      out.push("nimbus-call");
+      out.push("glider-call");
     } else if (f.t > FALL_RESPAWN_AT) {
       this.falling = null; this.phase = "playing"; this.prompt = null;
       if (damage(s, true)) { this.enc.rewind(s.s); this.impact = 0.4; this.flash = { color: "#ffffff", k: 0.3 }; }

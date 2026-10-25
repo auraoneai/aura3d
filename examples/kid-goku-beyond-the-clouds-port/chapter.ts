@@ -1,6 +1,6 @@
 /**
- * Chapter data for "Kid Goku: Beyond the Clouds", transcribed by hand from the captured original
- * (tests/fixtures/crayon/kid-goku-beyond-the-clouds/game.js, chapter 0 "Mount Paozu"). Numbers are the
+ * Chapter data for "Cumulus Dash", transcribed by hand from the captured original
+ * (tests/fixtures/crayon/kid-goku-beyond-the-clouds/game.js, chapter 0 "Cumulus Ridge"). Numbers are the
  * original's tuning; names, art and text belong to the original and are not reused beyond labels.
  */
 export interface Span { readonly start: number; readonly end: number; readonly bridge?: boolean }
@@ -11,7 +11,7 @@ export interface Creature {
   readonly bites?: readonly number[];
   readonly swipes?: readonly number[];
 }
-export interface DragonBall { readonly star: number; readonly s: number; readonly lane: number; readonly height: number }
+export interface SkyPearl { readonly star: number; readonly s: number; readonly lane: number; readonly height: number }
 export interface Meat { readonly s: number; readonly lane: number; readonly height?: number }
 export interface Chapter {
   readonly name: string;
@@ -27,12 +27,12 @@ export interface Chapter {
   readonly creatures: readonly Creature[];
   readonly boulders: readonly { readonly s: number }[];
   readonly rocks: readonly { readonly s: number; readonly lane: number }[];
-  readonly balls: readonly DragonBall[];
+  readonly balls: readonly SkyPearl[];
   readonly meat: readonly Meat[];
   readonly home: { readonly s: number; readonly star: number };
 }
 
-export const MOUNT_PAOZU: Chapter = {
+export const CUMULUS_RIDGE: Chapter = {
   name: "Cumulus Ridge",
   kind: "journey",
   length: 1960,
@@ -63,8 +63,8 @@ export const MOUNT_PAOZU: Chapter = {
   home: { s: 1992, star: 4 }
 };
 
-/** Original `Qf` constants (nimbus tuning). */
-export const NIMBUS = {
+/** Original `Qf` constants (glider tuning). */
+export const GLIDER = {
   call: 0.26, rescueCall: 0.16, ride: 7, rescueRide: 2.4, speed: 1.5, height: 3.2, lift: 1.5, cloudHop: 10.5, hop: 6.5,
   grace: 1.6, magnet: 4.2, minRide: 25,
   gain: { orb: 0.01, ball: 0.15, dodge: 0.06, close: 0.04, perfect: 0.12, launch: 0.03, flow: 0.05, strike: 0.1 } as Record<string, number>,

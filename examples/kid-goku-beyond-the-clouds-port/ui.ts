@@ -175,8 +175,8 @@ export class Ui {
     for (const t of Array.from(this.root.querySelectorAll<HTMLElement>(".prog .tick"))) t.classList.toggle("hit", s.s >= Number(t.dataset.c));
     this.set("orbs", s.balls.join(","), () => { Array.from(this.q.orbs!.children).forEach((c, i) => c.classList.toggle("got", s.balls.includes(i + 1))); });
     this.set("combo", s.combo, () => { this.q.combo!.textContent = s.combo >= 3 ? `${s.combo}× combo` : ""; this.q.combo!.classList.toggle("on", s.combo >= 3); });
-    const charge = Math.round(s.nimbus.charge * 100);
-    this.set("gauge", charge + (s.nimbus.active ? 1000 : 0), () => { this.q.gfill!.style.width = `${s.nimbus.active ? Math.max(0, (s.nimbus.time / 7) * 100) : charge}%`; this.q.gauge!.classList.toggle("ready", s.nimbus.charge >= 1 && !s.nimbus.active); });
+    const charge = Math.round(s.glider.charge * 100);
+    this.set("gauge", charge + (s.glider.active ? 1000 : 0), () => { this.q.gfill!.style.width = `${s.glider.active ? Math.max(0, (s.glider.time / 7) * 100) : charge}%`; this.q.gauge!.classList.toggle("ready", s.glider.charge >= 1 && !s.glider.active); });
     const p = g.prompt ?? g.hint;
     this.set("prompt", p ? p.tag + p.title : "", () => { this.q.prompt!.classList.toggle("on", !!p); if (p) { this.q.tag!.textContent = p.tag; this.q.ttl!.textContent = p.title; this.q.help!.textContent = p.help; } });
     const toast = g.toast?.text ?? "";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { runMotionGate } from "../../../packages/game/src/motion/index";
-import { MOUNT_PAOZU } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
+import { CUMULUS_RIDGE } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
 import { Game } from "../../../examples/kid-goku-beyond-the-clouds-port/game";
 import { IDLE, createState, stepFrame } from "../../../examples/kid-goku-beyond-the-clouds-port/sim";
 import { SNAP_DISTANCE, blendShown, createGoPresenter, shownOf, viewOf } from "../../../examples/kid-goku-beyond-the-clouds-port/presentation";
@@ -8,7 +8,7 @@ import { SNAP_DISTANCE, blendShown, createGoPresenter, shownOf, viewOf } from ".
 const STEP = 1 / 60;
 const shown = (s: number, lane = 0) => ({ s, lane, laneVelocity: 0, jump: 0, speed: 14, falling: null });
 
-describe("kid goku presentation", () => {
+describe("Cumulus Dash presentation", () => {
   it("blends position and snaps a respawn or retry", () => {
     expect(blendShown(shown(0), shown(0.4), 0.5).s).toBeCloseTo(0.2, 12);
     expect(blendShown(shown(100), shown(10), 0.25).s).toBe(10);
@@ -23,7 +23,7 @@ describe("kid goku presentation", () => {
   });
 
   it("viewOf shows the presented pose through the real game's other fields and never changes the game", () => {
-    const game = new Game(MOUNT_PAOZU, 0, 0);
+    const game = new Game(CUMULUS_RIDGE, 0, 0);
     game.start(0);
     const before = game.state.s;
     const view = viewOf(game, { ...shownOf(game), s: 55, jump: 1.5 });
@@ -38,14 +38,14 @@ describe("kid goku presentation", () => {
     const state = createState(0);
     const holder = { state, falling: null } as unknown as Game;
     const presenter = createGoPresenter(() => holder);
-    state.speed = MOUNT_PAOZU.speed;
+    state.speed = CUMULUS_RIDGE.speed;
     return runMotionGate({
       displayHz: hz,
       jitterSeconds,
       seconds: 8,
       warmupSeconds: 2,
       step: () => {
-        stepFrame(state, { ...IDLE, steer: Math.sin(state.s * 0.05) }, STEP, MOUNT_PAOZU);
+        stepFrame(state, { ...IDLE, steer: Math.sin(state.s * 0.05) }, STEP, CUMULUS_RIDGE);
       },
       afterStep: () => presenter.afterStep(),
       drawn: (alpha) => {

@@ -1,5 +1,5 @@
 /**
- * "Cloud Runner" (Aura3D port of "Kid Goku: Beyond the Clouds"): boot, fixed-step loop, keyboard / touch input, persistence
+ * "Cloud Runner" (Aura3D port of "Cumulus Dash"): boot, fixed-step loop, keyboard / touch input, persistence
  * and capture hooks. The simulation is `sim.ts` (pure, replayed against the original's recorded run), the encounter layer is
  * `encounters.ts`, the phase machine is `game.ts`, `world.ts` renders it, `ui.ts` / `audio.ts` are the interface.
  *
@@ -7,7 +7,7 @@
  * even in manual mode), `autostart=1` (skip the title), `chapterStart=<s>` (start the run at distance s).
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, texture, type AuraApp } from "@aura3d/engine";
-import { MOUNT_PAOZU } from "./chapter";
+import { CUMULUS_RIDGE } from "./chapter";
 import { Game } from "./game";
 import { createGoPresenter, viewOf } from "./presentation";
 import { GameAudio } from "./audio";
@@ -16,7 +16,7 @@ import { Ui } from "./ui";
 import { buildWorld, type WorldRuntime } from "./world";
 
 const STEP = 1 / 60;
-const CH = MOUNT_PAOZU;
+const CH = CUMULUS_RIDGE;
 const STORE_KEY = "cloud-runner.v1";
 const params = new URLSearchParams(location.search);
 const manual = params.get("manual") === "1";
@@ -41,7 +41,7 @@ let ready = false;
 let frames = 0;
 const errors: string[] = [];
 const held = new Set<string>();
-let oneShot = { jump: false, pole: false, nimbus: false };
+let oneShot = { jump: false, pole: false, glider: false };
 let last = 0;
 let pending: string[] = [];
 
@@ -54,8 +54,8 @@ function applyStartMode(): void {
 
 function currentInput(): StepInput {
   const steer = (held.has("ArrowRight") || held.has("KeyD") ? 1 : 0) - (held.has("ArrowLeft") || held.has("KeyA") ? 1 : 0);
-  const input: StepInput = { steer, jump: oneShot.jump, pole: oneShot.pole, nimbus: oneShot.nimbus, brake: held.has("ArrowDown") || held.has("KeyS") };
-  oneShot = { jump: false, pole: false, nimbus: false };
+  const input: StepInput = { steer, jump: oneShot.jump, pole: oneShot.pole, glider: oneShot.glider, brake: held.has("ArrowDown") || held.has("KeyS") };
+  oneShot = { jump: false, pole: false, glider: false };
   return input;
 }
 
@@ -71,7 +71,7 @@ addEventListener("keydown", (e) => {
   if (ph === "paused") { if (e.code === "Enter" || e.code === "Space") game.resume(); return; }
   if (e.code === "Space" || e.code === "ArrowUp") oneShot.jump = true;
   if (e.code === "KeyE" || e.code === "KeyX") oneShot.pole = true;
-  if (e.code === "KeyQ" || e.code === "ShiftLeft" || e.code === "ShiftRight") oneShot.nimbus = true;
+  if (e.code === "KeyQ" || e.code === "ShiftLeft" || e.code === "ShiftRight") oneShot.glider = true;
 });
 addEventListener("keyup", (e) => held.delete(e.code));
 addEventListener("blur", () => { held.clear(); game.pause(); });
@@ -79,12 +79,12 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) game.
 
 /** Same fields as the original's `__CLOUD_RUNNER__.snapshot()` where they overlap. */
 function snapshot() {
-  const st = game.state, n = st.nimbus;
+  const st = game.state, n = st.glider;
   return {
     phase: game.phase === "result" ? "result" : st.dead ? "dead" : game.phase, chapter: st.chapter, name: CH.name,
     s: Math.round(st.s * 10) / 10, lane: st.lane, jump: st.jump, speed: st.speed, hearts: st.hearts,
     score: Math.round(st.score), combo: st.combo, balls: [...st.balls], meat: st.meat, fallen: st.falls,
-    pole: st.pole?.start ?? null, finished: st.finished, nimbus: { charge: n.charge, active: n.active, call: n.call, time: n.time }
+    pole: st.pole?.start ?? null, finished: st.finished, glider: { charge: n.charge, active: n.active, call: n.call, time: n.time }
   };
 }
 
@@ -150,14 +150,14 @@ const qa = installQaHooks("kid-goku", {
     /** Advance the pure sim `n` frames (no encounter layer, no rendering) with a fixed input; returns the events raised. */
     stepFrames(n: number, input: StepInput = IDLE): string[] {
       const events: string[] = [];
-      for (let i = 0; i < n; i++) events.push(...stepFrame(game.state, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }, STEP, CH));
+      for (let i = 0; i < n; i++) events.push(...stepFrame(game.state, i === 0 ? input : { ...input, jump: false, pole: false, glider: false }, STEP, CH));
       presenter.reset();
       return events;
     },
     /** Advance the whole game layer (encounters, falls, duels, finale) `n` frames; returns the events raised. */
     play(n: number, input: StepInput = IDLE): string[] {
       const events: string[] = [];
-      for (let i = 0; i < n; i++) events.push(...game.frame(STEP, i === 0 ? input : { ...input, jump: false, pole: false, nimbus: false }));
+      for (let i = 0; i < n; i++) events.push(...game.frame(STEP, i === 0 ? input : { ...input, jump: false, pole: false, glider: false }));
       pending = events;
       presenter.reset();
       return events;
@@ -177,7 +177,7 @@ const qa = installQaHooks("kid-goku", {
       return { steps: step, trace };
     },
     /** Teleport the run to distance `s` (look-dev and capture), with the progress a player would have there. */
-    place(s: number, opts: { lane?: number; nimbus?: boolean; phase?: "playing" | "menu" } = {}) {
+    place(s: number, opts: { lane?: number; glider?: boolean; phase?: "playing" | "menu" } = {}) {
       if (opts.phase === "menu") { game.menu(); runtime?.cutCamera(); return snapshot(); }
       game.start(0);
       const st = game.state;
@@ -185,7 +185,7 @@ const qa = installQaHooks("kid-goku", {
       for (const b of CH.balls) if (b.s < s - 2) st.balls.push(b.star);
       for (const o of game.orbs) if (o.s < s) st.collected.add(o.id);
       for (const m of CH.meat) if (m.s < s) st.eaten.add(m.s);
-      if (opts.nimbus) { st.nimbus.charge = 1; st.nimbus.active = true; st.nimbus.time = 7; st.jump = 3.2; }
+      if (opts.glider) { st.glider.charge = 1; st.glider.active = true; st.glider.time = 7; st.jump = 3.2; }
       game.enc.rewind(s);
       presenter.reset();
       runtime?.cutCamera();
@@ -255,7 +255,7 @@ async function boot(): Promise<void> {
       audio.unlock();
       if (key === "left") { if (down) held.add("ArrowLeft"); else held.delete("ArrowLeft"); }
       else if (key === "right") { if (down) held.add("ArrowRight"); else held.delete("ArrowRight"); }
-      else if (down) { if (game.phase === "paused") game.resume(); else if (key === "jump") oneShot.jump = true; else if (key === "pole") oneShot.pole = true; else oneShot.nimbus = true; }
+      else if (down) { if (game.phase === "paused") game.resume(); else if (key === "jump") oneShot.jump = true; else if (key === "pole") oneShot.pole = true; else oneShot.glider = true; }
     }
   }, saved.sound, saved.best);
   const rockMap = await texture.load(new URL("./assets/textures/rock-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });

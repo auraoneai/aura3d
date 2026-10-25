@@ -15,8 +15,8 @@ import { createCar, stepCar, type Keys } from "../../examples/drift-and-deliver-
 import { createState as createWind, stepFrame as stepWind, VIRTUAL_STEP_MS } from "../../examples/where-the-wind-wanders-port/sim";
 import { createState as createNinja, startRun, stepSim as stepNinja, SIM_STEP as NINJA_STEP } from "../../examples/ninja-runner-port/sim";
 import { createSim as createSilt, stepSim as stepSilt, STEP as SILT_STEP, IDLE as SILT_IDLE } from "../../examples/silt-and-signal-port/sim";
-import { createState as createGoku, step as stepGoku, IDLE as GOKU_IDLE } from "../../examples/kid-goku-beyond-the-clouds-port/sim";
-import { MOUNT_PAOZU } from "../../examples/kid-goku-beyond-the-clouds-port/chapter";
+import { createState as createCumulus, step as stepCumulus, IDLE as CUMULUS_IDLE } from "../../examples/kid-goku-beyond-the-clouds-port/sim";
+import { CUMULUS_RIDGE } from "../../examples/kid-goku-beyond-the-clouds-port/chapter";
 
 type V = [number, number, number];
 interface Adapter { name: string; step: number; make(): { step(): void; pos(): V } }
@@ -41,7 +41,7 @@ const ADAPTERS: Adapter[] = [
   },
   {
     name: "kid-goku-beyond-the-clouds", step: 1 / 60,
-    make() { const s = createGoku(0); return { step() { stepGoku(s, GOKU_IDLE, 1 / 60, MOUNT_PAOZU); }, pos: () => [s.lane, s.jump, s.s] }; }
+    make() { const s = createCumulus(0); return { step() { stepCumulus(s, CUMULUS_IDLE, 1 / 60, CUMULUS_RIDGE); }, pos: () => [s.lane, s.jump, s.s] }; }
   }
 ];
 

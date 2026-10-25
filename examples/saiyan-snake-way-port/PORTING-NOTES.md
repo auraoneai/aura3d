@@ -1,6 +1,6 @@
 # Serpentine Sky Run on Aura3D: porting notes
 
-Aura3D port of the Crayon game "Saiyan through the Snake way!" (PRD Phase C / R-25 capture work), shown publicly as
+Aura3D port of the Crayon game "Serpentine Sky Run" (PRD Phase C / R-25 capture work), shown publicly as
 "Serpentine Sky Run". All on-screen wording goes through `text.ts`; the simulation keeps the original's identifiers and strings
 so its replay tests still compare against the recorded reference.
 Source: the captured game module in `tests/fixtures/crayon/saiyan-snake-way/` (see its
@@ -17,9 +17,8 @@ page's importmap, so the module is one 513,393-byte file of game code with minif
 | `hero.ts` | The procedural runner: a primitive figure posed from run, jump, slide, flight and dive states. It is the fallback when the rigged model cannot load, and its pose also anchors the aura, sparks and bursts. Pure maths, unit tested. |
 | `assets/runner.glb`, `models.ts` | The rigged runner and the Meshy props (see the Meshy art pass section below and `assets/ATTRIBUTION.md`), driven through `cloneSkinned` / `TypedGLBActor`. |
 | `styles.ts` | Three runner looks for the select card (colours only; the run is identical). |
-| `text.ts` | Display wording: swaps the franchise terms the simulation emits for generic ones (`displayText`), with a forbidden-term list the unit test checks against every string the sim can emit. |
 | `sfx.ts` | Synthesised one-shot sound effects (Web Audio, no asset files, no continuous bed). |
-| `main.ts`, `index.html` | Boot, fixed-step loop, input (keyboard and touch), HUD, title with runner select, countdown, pause, results, best score, capture hooks (`window.__AURA_SAIYAN_SNAKE_WAY__`). |
+| `main.ts`, `index.html` | Boot, fixed-step loop, input (keyboard and touch), HUD, title with runner select, countdown, pause, results, best score, capture hooks (`window.__AURA_SERPENTINE_SKY_RUN__`). |
 
 Run it: open `/examples/saiyan-snake-way-port/` on the example dev server. Query parameters:
 `autostart=1` (skip the title and countdown), `manual=1` (the sim only advances through `stepFrames` / `runSegments`).
@@ -36,7 +35,7 @@ position) and its simulation never reads a clock, so identical inputs reproduce 
 The reference (`evidence/crayon-capture/saiyan-snake-way-reference.json`, recorded by
 `tools/crayon-capture/saiyan-snake-way.ts` on serverless ACR) is a full outbound run driven by a
 closed-loop autopilot against the real game at a fixed 1/60 s step: 5,433 steps (90.55 s), all eight
-stages, 36 Kaio-ken rung changes, one hit, 47 key taps. Two further fresh browser sessions replayed
+stages, 36 Surge rung changes, one hit, 47 key taps. Two further fresh browser sessions replayed
 the recorded script and matched the policy run bit for bit (8,967 fields each, 0 mismatches), so
 the original is repeatable to 0. The port replays the same script and matches every recorded
 snapshot field (183 snapshots, 46 fields each, including the live entity count) within 1e-6; the
@@ -49,8 +48,8 @@ otherwise stubs `window.__TEST` to a no-op), freezes `requestAnimationFrame`, an
 
 ## Scope
 
-Ported: the outbound leg of the "full" route as Son Goku, from the check-in line to the end of the
-road: lane changes, jump, slide, Kaio-ken (power-up, rungs, ki, strain, lockout), flight (Nimbus
+Ported: the outbound leg of the "full" route as the runner, from the check-in line to the end of the
+road: lane changes, jump, slide, Surge (power-up, rungs, ki, strain, lockout), flight (Puff
 and the E key), the eight stages with their gaps, roll sections, wind and drowse, every road
 entity (ki orbs, souls, barriers, ribs, oni, sweepers, power-ups, feast), days and score.
 

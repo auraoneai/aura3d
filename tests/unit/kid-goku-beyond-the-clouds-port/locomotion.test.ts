@@ -24,7 +24,7 @@ const gaitFor = (_clip: "run", speed: number): { rate: number; gain: number; foo
 };
 const angleOf = (q: readonly number[]): number => 2 * Math.acos(Math.min(1, Math.abs(q[3]!)));
 
-describe("kid goku locomotion", () => {
+describe("Cumulus Dash locomotion", () => {
   it("has a full sampled cycle for every leg bone and both clips", () => {
     for (const clip of ["run", "walk"] as const) {
       expect(LEG_CLIPS[clip].duration).toBeGreaterThan(0.5);

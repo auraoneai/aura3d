@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 /**
  * Art frames for the Ninja Runner port: one autopilot run per spec file, a frame at each requested biome and at the moments that
- * matter (Rasengan, gale star, clones, Sage, Kurama, finish, loss), plus draw-call diagnostics. Remote-only (tools/remote-acr/run.sh);
+ * matter (Spiralorb, gale star, clones, Sage, Beast, finish, loss), plus draw-call diagnostics. Remote-only (tools/remote-acr/run.sh);
  * frames go to the log as `NINJA_RUNNER_ART_FRAME <name> <base64>` and are unpacked by tools/crayon-capture/ninja-runner-art-frames.ts.
  * The specs are split so several runs can render in parallel (a software-GL frame of this scene takes minutes).
  */
@@ -22,7 +22,7 @@ export interface ArtPlan {
   readonly intro?: boolean;
   readonly biomes: readonly string[];
   readonly moments?: readonly ("attack" | "shuriken" | "clones")[];
-  readonly forms?: readonly ("sage" | "kurama")[];
+  readonly forms?: readonly ("sage" | "beast")[];
   readonly end?: boolean;
 }
 
@@ -92,7 +92,7 @@ export function defineArt(plan: ArtPlan): void {
             if (!wantForms.size) pending.delete("form");
             continue;
           }
-          if (got.stop) { pending.delete(got.stop); await frame(got.stop === "attack" ? "rasengan" : got.stop); continue; }
+          if (got.stop) { pending.delete(got.stop); await frame(got.stop === "attack" ? "spiralorb" : got.stop); continue; }
           break;
         }
         await frame(name);
@@ -106,7 +106,7 @@ export function defineArt(plan: ArtPlan): void {
         if (got.stop === "form") {
           if (wantForms.has(got.form)) { await advance(1e9, [], 90); await frame(`form-${got.form}`); wantForms.delete(got.form); }
           if (!wantForms.size) pending.delete("form");
-        } else if (got.stop) { pending.delete(got.stop); await frame(got.stop === "attack" ? "rasengan" : got.stop); } else break;
+        } else if (got.stop) { pending.delete(got.stop); await frame(got.stop === "attack" ? "spiralorb" : got.stop); } else break;
       }
       if (plan.end) {
         await api((o) => { o.advanceUntil("never", 40000); return 0; });

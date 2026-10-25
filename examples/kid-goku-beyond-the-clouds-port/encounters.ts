@@ -156,7 +156,7 @@ export class Encounters {
           events.push({ type: "ptera-struck", creature: dive.creature, style: "bonk" });
         } else if (d >= 0) {
           dive.passed = true;
-          const ceiling = state.nimbus.active ? 3.2 + 1.2 : 2.2;
+          const ceiling = state.glider.active ? 3.2 + 1.2 : 2.2;
           if (Math.abs(state.lane - dive.target) < 1.9 && state.jump < ceiling) events.push({ type: "ptera-grab", creature: dive.creature });
           else events.push({ type: "dodge", creature: dive.creature, kind: "grab" });
         }

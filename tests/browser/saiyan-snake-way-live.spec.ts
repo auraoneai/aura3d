@@ -32,15 +32,15 @@ test.describe("saiyan-snake-way live loop", () => {
     await page.goto(`${server.origin}${LAB}?autostart=1`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const w = window as unknown as { __AURA_SAIYAN_SNAKE_WAY__?: { ready: boolean }; __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string };
-        return w.__AURA_SAIYAN_SNAKE_WAY__?.ready === true || Boolean(w.__AURA_SAIYAN_SNAKE_WAY_ERROR__);
+        const w = window as unknown as { __AURA_SERPENTINE_SKY_RUN__?: { ready: boolean }; __AURA_SERPENTINE_SKY_RUN_ERROR__?: string };
+        return w.__AURA_SERPENTINE_SKY_RUN__?.ready === true || Boolean(w.__AURA_SERPENTINE_SKY_RUN_ERROR__);
       },
       undefined,
       { timeout: 540_000 }
     );
-    expect(await page.evaluate(() => (window as unknown as { __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string }).__AURA_SAIYAN_SNAKE_WAY_ERROR__ ?? null), JSON.stringify(errors.slice(0, 8))).toBeNull();
+    expect(await page.evaluate(() => (window as unknown as { __AURA_SERPENTINE_SKY_RUN_ERROR__?: string }).__AURA_SERPENTINE_SKY_RUN_ERROR__ ?? null), JSON.stringify(errors.slice(0, 8))).toBeNull();
 
-    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SAIYAN_SNAKE_WAY__)`) as Promise<T>;
+    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SERPENTINE_SKY_RUN__)`) as Promise<T>;
     const before = await api((o) => o.state().s);
     await page.waitForTimeout(6000);
     const after = await api((o) => o.state().s);

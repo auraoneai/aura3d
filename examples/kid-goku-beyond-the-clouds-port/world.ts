@@ -218,14 +218,14 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       else if (e === "perfect") { fx.burst(chest, up, "#ffffff", 26, 1.7); fx.ring(p, up, "#ffffff", 2); }
       else if (e === "strike") fx.burst([p[0] + f.forward[0] * 2, p[1] + 1.2, p[2] + f.forward[2] * 2], up, "#fff0b0", 12, 1.1);
       else if (e === "strike-hit" || e === "duel-won") { fx.burst(chest, up, "#ffe27a", e === "duel-won" ? 40 : 22, e === "duel-won" ? 2.2 : 1.6); fx.ring(p, up, "#ffffff", e === "duel-won" ? 2.6 : 1.8); }
-      else if (e === "dragonball") { fx.burst(chest, up, "#ffb347", 28, 1.7); fx.ring(p, up, "#ffd27a", 1.5); }
+      else if (e === "skypearl") { fx.burst(chest, up, "#ffb347", 28, 1.7); fx.ring(p, up, "#ffd27a", 1.5); }
       else if (e === "meat") fx.burst(chest, up, "#ffb98a", 18, 1.2);
       else if (e === "orb") fx.burst(chest, up, "#fff0b8", 3, 0.5);
       else if (e === "checkpoint") fx.ring(p, up, "#ffe9a0", 1.6);
-      else if (e === "nimbus-ready") fx.ring(p, up, "#fff0a8", 1.3);
-      else if (e === "nimbus-call" || e === "nimbus-mount") { fx.burst(p, up, "#fff3c0", 22, 1.4); fx.ring(p, up, "#ffe6a0", 1.3); }
-      else if (e === "nimbus-end") fx.burst(p, up, "#fff3c0", 14, 1);
-      else if (e === "nimbus-knocked") fx.burst(chest, up, "#ffd9c8", 26, 1.6);
+      else if (e === "glider-ready") fx.ring(p, up, "#fff0a8", 1.3);
+      else if (e === "glider-call" || e === "glider-mount") { fx.burst(p, up, "#fff3c0", 22, 1.4); fx.ring(p, up, "#ffe6a0", 1.3); }
+      else if (e === "glider-end") fx.burst(p, up, "#fff3c0", 14, 1);
+      else if (e === "glider-knocked") fx.burst(chest, up, "#ffd9c8", 26, 1.6);
       else if (e === "hit" || e === "boulder-hit" || e === "trex-bite" || e === "trex-swipe" || e === "ptera-grab") { fx.burst(chest, up, "#ffd0b0", 16, 1.5); fx.dust(p, up, 8, "#cdb78e", 1.1); }
       else if (e === "respawn") fx.ring(p, up, "#ffffff", 1.6);
     }
@@ -239,7 +239,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
     update(g, dt, aspect, events) {
       clock += dt;
       const s = g.state, f = frameAt(s.s, s.lane), phase = g.phase;
-      const n = s.nimbus, riding = n.active || n.call > 0;
+      const n = s.glider, riding = n.active || n.call > 0;
       emitEvents(g, events);
 
       /* ---- hero pose ---- */

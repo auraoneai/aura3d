@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MOUNT_PAOZU as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
+import { CUMULUS_RIDGE as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
 import { buildClouds, buildMesas, buildObstacles } from "../../../examples/kid-goku-beyond-the-clouds-port/props";
 import { buildGround, buildScatter, buildValleyForest, groundHeight, isVoid, openMode, profile } from "../../../examples/kid-goku-beyond-the-clouds-port/terrain";
 

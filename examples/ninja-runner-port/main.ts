@@ -71,7 +71,7 @@ const maxCooldown: Record<string, number> = { dash: 1 };
 function say(title: string, small: string, seconds: number): void { notice = { title, small, until: renderTime + seconds }; }
 
 const SFX_FOR_EVENT: Readonly<Record<string, Parameters<GameAudio["play"]>[0]>> = {
-  jump: "jump", land: "land", dash: "dash", rasengan: "orb", rasenshuriken: "gale", clones: "clones", damage: "hurt", armorBreak: "crate",
+  jump: "jump", land: "land", dash: "dash", spiralorb: "orb", spiralstar: "gale", clones: "clones", damage: "hurt", armorBreak: "crate",
   windImpact: "galeHit", cloneStrike: "orbHit", deflect: "orbHit", interrupt: "orbHit", unlock: "unlock", form: "form", won: "win", lost: "lose", dropWarning: "warn"
 };
 
@@ -142,7 +142,7 @@ function setPaused(on: boolean): void {
 }
 
 function act(action: Action): boolean {
-  if (z.phase === "intro" && (action === "rasengan" || action === "jump")) { begin(); return true; }
+  if (z.phase === "intro" && (action === "spiralorb" || action === "jump")) { begin(); return true; }
   const ok = applyAction(z, action);
   handle(drainEvents(z));
   return ok;
@@ -159,11 +159,11 @@ function step(n: number, scripted?: readonly Action[]): void {
 
 /* ------------------------------------------------------------------ HUD */
 
-const ABILITY_COST: Record<string, number> = { clones: TUNING.cloneCost, rasengan: TUNING.attackCost, dash: TUNING.dashCost, rasenshuriken: TUNING.shurikenCost };
+const ABILITY_COST: Record<string, number> = { clones: TUNING.cloneCost, spiralorb: TUNING.attackCost, dash: TUNING.dashCost, spiralstar: TUNING.shurikenCost };
 
 function abilityCooldown(action: string): number {
-  const left = action === "clones" ? z.cloneCooldown : action === "rasengan" ? z.attackCooldown : action === "dash" ? z.dashCooldown : z.shurikenCooldown;
-  const full = action === "clones" ? TUNING.cloneCooldown : action === "rasengan" ? TUNING.attackCooldown : action === "rasenshuriken" ? TUNING.shurikenCooldown : (maxCooldown[action] = Math.max(maxCooldown[action] ?? 1, left));
+  const left = action === "clones" ? z.cloneCooldown : action === "spiralorb" ? z.attackCooldown : action === "dash" ? z.dashCooldown : z.shurikenCooldown;
+  const full = action === "clones" ? TUNING.cloneCooldown : action === "spiralorb" ? TUNING.attackCooldown : action === "spiralstar" ? TUNING.shurikenCooldown : (maxCooldown[action] = Math.max(maxCooldown[action] ?? 1, left));
   return Math.max(0, Math.min(1, left / full));
 }
 
@@ -172,8 +172,8 @@ function updateHud(): void {
   $("kills").textContent = String(z.kills).padStart(2, "0");
   $("score").textContent = String(z.score);
   $("combo").textContent = z.combo > 1 ? `${z.combo}x combo` : "";
-  $("chakra").textContent = `${Math.round(z.chakra)} / ${TUNING.maxChakra}`;
-  $("chakra-bar").style.width = `${(z.chakra / TUNING.maxChakra) * 100}%`;
+  $("spirit").textContent = `${Math.round(z.spirit)} / ${TUNING.maxSpirit}`;
+  $("spirit-bar").style.width = `${(z.spirit / TUNING.maxSpirit) * 100}%`;
   $("hearts").textContent = "♥".repeat(Math.max(0, z.health)) + "♡".repeat(Math.max(0, TUNING.health - z.health));
   $("progress-fill").style.width = `${Math.min(100, (z.s / TUNING.length) * 100)}%`;
   const district = districtLabel(z.s);
@@ -193,8 +193,8 @@ function updateHud(): void {
   document.querySelectorAll<HTMLButtonElement>("#abilities button").forEach((b) => {
     const action = b.dataset.action as string;
     b.style.setProperty("--cd", abilityCooldown(action).toFixed(3));
-    b.classList.toggle("poor", z.chakra < (ABILITY_COST[action] ?? 0));
-    b.classList.toggle("live", (action === "clones" && z.clones > 0) || (action === "rasengan" && z.attack > 0) || (action === "dash" && z.dash > 0) || (action === "rasenshuriken" && z.shurikenCast > 0));
+    b.classList.toggle("poor", z.spirit < (ABILITY_COST[action] ?? 0));
+    b.classList.toggle("live", (action === "clones" && z.clones > 0) || (action === "spiralorb" && z.attack > 0) || (action === "dash" && z.dash > 0) || (action === "spiralstar" && z.shurikenCast > 0));
   });
   const live = notice && notice.until > renderTime ? notice : null;
   $("announce-title").textContent = live?.title ?? "";
@@ -251,7 +251,7 @@ const loop = createFixedStepLoop({
 
 /* ------------------------------------------------------------------ input */
 
-const KEYS: Record<string, Action> = { KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right", Space: "cycleForm", ArrowUp: "jump", KeyW: "jump", KeyS: "slide", ArrowDown: "slide", ShiftLeft: "dash", ShiftRight: "dash", Digit1: "clones", Digit2: "rasengan", Digit3: "rasenshuriken" };
+const KEYS: Record<string, Action> = { KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right", Space: "cycleForm", ArrowUp: "jump", KeyW: "jump", KeyS: "slide", ArrowDown: "slide", ShiftLeft: "dash", ShiftRight: "dash", Digit1: "clones", Digit2: "spiralorb", Digit3: "spiralstar" };
 addEventListener("keydown", (e) => {
   if (!ready || e.repeat) return;
   audio.unlock();
@@ -262,13 +262,13 @@ addEventListener("keydown", (e) => {
   if (a) { e.preventDefault(); act(a); }
 });
 let swipe: { x: number; y: number } | null = null;
-canvas.addEventListener("pointerdown", (e) => { audio.unlock(); if (e.pointerType === "mouse") act("rasengan"); else swipe = { x: e.clientX, y: e.clientY }; });
+canvas.addEventListener("pointerdown", (e) => { audio.unlock(); if (e.pointerType === "mouse") act("spiralorb"); else swipe = { x: e.clientX, y: e.clientY }; });
 canvas.addEventListener("pointerup", (e) => {
   if (!swipe) return;
   const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
   swipe = null;
   if (Math.max(Math.abs(dx), Math.abs(dy)) > 24) act(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy < 0 ? "jump" : "slide");
-  else act("rasengan");
+  else act("spiralorb");
 });
 document.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((b) => b.addEventListener("click", () => act(b.dataset.action as Action)));
 document.querySelectorAll<HTMLButtonElement>("[data-form]").forEach((b) => b.addEventListener("click", () => act(b.dataset.form as Action)));
@@ -364,8 +364,8 @@ function summary(r: ReturnType<typeof replayScript>) {
   return rest;
 }
 
-/** QA-compatible subset of the original's `window.__konoha` (`ready`, `state`, `start`, `restart`, `action`, `simulate`, `snapshot`). */
-const konoha = {
+/** QA-compatible subset of the original's `window.__lanternhold` (`ready`, `state`, `start`, `restart`, `action`, `simulate`, `snapshot`). */
+const lanternhold = {
   get ready() { return ready; },
   get state() { return z; },
   start: begin,
@@ -391,7 +391,7 @@ const konoha = {
 declare global {
   interface Window {
     __AURA_NINJA_RUNNER__?: typeof api;
-    __konoha?: typeof konoha;
+    __lanternhold?: typeof lanternhold;
     __AURA_NINJA_RUNNER_ERROR__?: string;
   }
 }
@@ -401,7 +401,7 @@ const qa = installQaHooks("ninja-runner", {
   app: () => app,
   extras: api
 });
-window.__konoha = konoha;
+window.__lanternhold = lanternhold;
 
 /* ------------------------------------------------------------------ boot */
 

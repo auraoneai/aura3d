@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { currentToLegacyWord, loadLegacyJson } from "../_support/legacy-names";
 import { DEFAULT_POLICY, QA_ONLY_POLICY, policyActions } from "../../../examples/ninja-runner-port/autopilot";
 import { laneOffset } from "../../../examples/ninja-runner-port/course";
 import { courseDigest, decodeActionScript, replayScript, runIdle, runPolicy, runRecorded, type RecordedEvent } from "../../../examples/ninja-runner-port/replay";
@@ -12,15 +13,17 @@ interface Reference {
   step: number;
   setup: { courseDigest: { entities: number; byType: Record<string, number>; fnv1a: string } };
   script: string;
-  reference: { steps: number; outcome: string; distance: number; time: number; kills: number; score: number; health: number; chakra: number; bestCombo: number; form: string; vaults: number; cloneStrikes: number; eventCounts: Record<string, number>; events: RecordedEvent[]; trace: Record<string, number | string | boolean>[] };
+  reference: { steps: number; outcome: string; distance: number; time: number; kills: number; score: number; health: number; spirit: number; bestCombo: number; form: string; vaults: number; cloneStrikes: number; eventCounts: Record<string, number>; events: RecordedEvent[]; trace: Record<string, number | string | boolean>[] };
   idle: { steps: number; outcome: string; lostBy: string; distance: number; time: number; kills: number; score: number; damageTaken: number; events: RecordedEvent[] };
   qaAutopilotCheck: { steps: number; qa: Record<string, number | string> };
   tolerance: { numeric: number; eventSteps: number };
 }
 
-const ref = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../../evidence/crayon-capture/ninja-runner-reference.json"), "utf8")) as Reference;
+const ref = loadLegacyJson<Reference>("ninja", fs.readFileSync(path.resolve(__dirname, "../../../evidence/crayon-capture/ninja-runner-reference.json"), "utf8"));
+/** The capture hashed the original type names; hash with them to compare the digest exactly. */
+const capturedTypeName = (type: string): string => currentToLegacyWord("ninja", type);
 const key = (e: object): string => JSON.stringify(e, Object.keys(e).sort());
-const NUMERIC = ["time", "s", "x", "y", "vy", "speed", "chakra", "attack", "dash", "slide", "invulnerable", "clones"] as const;
+const NUMERIC = ["time", "s", "x", "y", "vy", "speed", "spirit", "attack", "dash", "slide", "invulnerable", "clones"] as const;
 
 describe("ninja-runner port: reference parity (replay of the original's recorded input)", () => {
   const entries = decodeActionScript(ref.script);
@@ -30,7 +33,7 @@ describe("ninja-runner port: reference parity (replay of the original's recorded
     const d = courseDigest(createState());
     expect(d.entities).toBe(ref.setup.courseDigest.entities);
     expect(d.byType).toEqual(ref.setup.courseDigest.byType);
-    expect(d.fnv1a).toBe(ref.setup.courseDigest.fnv1a);
+    expect(courseDigest(createState(), capturedTypeName).fnv1a).toBe(ref.setup.courseDigest.fnv1a);
   });
 
   it("wins at the same step with the same totals", () => {
@@ -42,7 +45,7 @@ describe("ninja-runner port: reference parity (replay of the original's recorded
     expect(run.kills).toBe(ref.reference.kills);
     expect(run.score).toBe(ref.reference.score);
     expect(run.health).toBe(ref.reference.health);
-    expect(run.chakra).toBe(ref.reference.chakra);
+    expect(run.spirit).toBe(ref.reference.spirit);
     expect(run.bestCombo).toBe(ref.reference.bestCombo);
     expect(run.form).toBe(ref.reference.form);
     expect(run.vaults).toBe(ref.reference.vaults);
@@ -80,8 +83,8 @@ describe("ninja-runner port: reference parity (replay of the original's recorded
     expect(at60).toBeDefined();
     expect(at60.kills).toBeGreaterThan(20);
     const early = run.events.filter((e) => e.step <= 60 * 120).map((e) => e.type);
-    for (const t of ["start", "jump", "rasengan", "kill", "clones", "dash", "rasenshuriken", "pickup"]) expect(early).toContain(t);
-    expect(run.events.filter((e) => e.type === "form").map((e) => e.form)).toEqual(["sage", "kurama"]);
+    for (const t of ["start", "jump", "spiralorb", "kill", "clones", "dash", "spiralstar", "pickup"]) expect(early).toContain(t);
+    expect(run.events.filter((e) => e.type === "form").map((e) => e.form)).toEqual(["sage", "beast"]);
   });
 
   it("re-derives the recorded script live: the capture policy applied to the port IS the reference run", () => {
@@ -111,7 +114,7 @@ describe("ninja-runner port: fail state, restart and the game's own autopilot", 
     expect(idle.events.map(key)).toEqual(ref.idle.events.map(key));
   });
 
-  it("restart is a fresh state: back at s = 0, full health and chakra, own `start` event, no shared mutable state", () => {
+  it("restart is a fresh state: back at s = 0, full health and spirit, own `start` event, no shared mutable state", () => {
     const first = runIdle(20000).state;
     expect(first.phase).toBe("lost");
     const next = createState();
@@ -119,7 +122,7 @@ describe("ninja-runner port: fail state, restart and the game's own autopilot", 
     expect(next.phase).toBe("running");
     expect(next.s).toBe(0);
     expect(next.health).toBe(TUNING.health);
-    expect(next.chakra).toBe(TUNING.maxChakra);
+    expect(next.spirit).toBe(TUNING.maxSpirit);
     expect(drainEvents(next)).toEqual([{ type: "start" }]);
     expect(next.entities).not.toBe(first.entities);
     expect(next.entities.every((e) => e.alive)).toBe(true);
@@ -129,7 +132,7 @@ describe("ninja-runner port: fail state, restart and the game's own autopilot", 
     const qa = runPolicy(QA_ONLY_POLICY, ref.qaAutopilotCheck.steps).state;
     const want = ref.qaAutopilotCheck.qa;
     const round = (x: number): number => Math.round(x * 1e6) / 1e6 + 0; // `+ 0` folds -0 into 0 (JSON drops the sign)
-    expect({ s: round(qa.s), x: round(qa.x), lane: qa.lane, y: round(qa.y), health: qa.health, chakra: round(qa.chakra), kills: qa.kills, score: qa.score, combo: qa.combo, time: round(qa.time), phase: qa.phase, attacksFired: qa.attacksFired, deflections: qa.deflections, vaults: qa.vaults, damageTaken: qa.damageTaken }).toEqual(want);
+    expect({ s: round(qa.s), x: round(qa.x), lane: qa.lane, y: round(qa.y), health: qa.health, spirit: round(qa.spirit), kills: qa.kills, score: qa.score, combo: qa.combo, time: round(qa.time), phase: qa.phase, attacksFired: qa.attacksFired, deflections: qa.deflections, vaults: qa.vaults, damageTaken: qa.damageTaken }).toEqual(want);
   });
 });
 
@@ -151,30 +154,30 @@ describe("ninja-runner port: rules (independent of the reference)", () => {
     expect(applyAction(g, "jump")).toBe(false);
   });
 
-  it("abilities cost chakra, honour cooldowns and refuse when too expensive", () => {
+  it("abilities cost spirit, honour cooldowns and refuse when too expensive", () => {
     const z = fresh();
     expect(applyAction(z, "clones")).toBe(true);
-    expect(z.chakra).toBe(TUNING.maxChakra - TUNING.cloneCost);
+    expect(z.spirit).toBe(TUNING.maxSpirit - TUNING.cloneCost);
     expect(applyAction(z, "clones")).toBe(false);
-    expect(applyAction(z, "rasengan")).toBe(true);
-    expect(applyAction(z, "rasengan")).toBe(false);
-    z.chakra = 5;
+    expect(applyAction(z, "spiralorb")).toBe(true);
+    expect(applyAction(z, "spiralorb")).toBe(false);
+    z.spirit = 5;
     expect(applyAction(z, "dash")).toBe(false);
   });
 
-  it("forms unlock at 600 m and 1,620 m; cycleForm walks base -> sage -> kurama and refuses before unlock", () => {
+  it("forms unlock at 600 m and 1,620 m; cycleForm walks base -> sage -> beast and refuses before unlock", () => {
     const z = fresh();
     expect(applyAction(z, "cycleForm")).toBe(false);
     z.s = FORM_UNLOCK.sage;
     expect(applyAction(z, "cycleForm")).toBe(true);
     expect(z.form).toBe("sage");
     expect(applyAction(z, "cycleForm")).toBe(false);
-    z.s = FORM_UNLOCK.kurama;
+    z.s = FORM_UNLOCK.beast;
     expect(applyAction(z, "cycleForm")).toBe(true);
-    expect(z.form).toBe("kurama");
+    expect(z.form).toBe("beast");
   });
 
-  it("a hit costs health and chakra and grants protection; health 0 loses", () => {
+  it("a hit costs health and spirit and grants protection; health 0 loses", () => {
     const z = fresh();
     const enemy = z.entities.find((e) => e.type === "barrier")!;
     z.s = enemy.s - 0.5;
@@ -199,8 +202,8 @@ describe("ninja-runner port: rules (independent of the reference)", () => {
     const a = seededRandom(17);
     const b = seededRandom(17);
     expect([a(), a(), a()]).toEqual([b(), b(), b()]);
-    expect(courseDigest({ entities: generateEntities(17) } as never).fnv1a).toBe(ref.setup.courseDigest.fnv1a);
-    expect(courseDigest({ entities: generateEntities(18) } as never).fnv1a).not.toBe(ref.setup.courseDigest.fnv1a);
+    expect(courseDigest({ entities: generateEntities(17) } as never, capturedTypeName).fnv1a).toBe(ref.setup.courseDigest.fnv1a);
+    expect(courseDigest({ entities: generateEntities(18) } as never, capturedTypeName).fnv1a).not.toBe(ref.setup.courseDigest.fnv1a);
   });
 
   it("dt is clamped to 0.05 s, a paused/ended run does not advance, and snapshot() mirrors the state", () => {

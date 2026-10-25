@@ -11,7 +11,7 @@ framecmp([
     { name: "auto120", drive: `api.begin(); api.setAutopilot(true); api.stepFrames(120);` },
     { name: "auto480", drive: `api.stepFrames(360);` }
   ] },
-  { slug: "saiyan-snake-way", hook: "__AURA_SAIYAN_SNAKE_WAY__", query: "?manual=1&autostart=1", steps: [
+  { slug: "saiyan-snake-way", hook: "__AURA_SERPENTINE_SKY_RUN__", query: "?manual=1&autostart=1", steps: [
     { name: "start30", drive: `api.start(); api.stepFrames(30);` },
     { name: "run330", drive: `api.stepFrames(300);` }
   ] },

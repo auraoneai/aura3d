@@ -38,7 +38,7 @@ export const SALT: Cfg = {
 };
 
 export const CLOUD: Cfg = {
-  id: "cloud", slug: "kid-goku-beyond-the-clouds", base: "/examples/kid-goku-beyond-the-clouds-port/", hook: "__AURA_KID_GOKU__", desktop: D(640, 360), mobile: D(390, 844),
+  id: "cloud", slug: "kid-goku-beyond-the-clouds", base: "/examples/kid-goku-beyond-the-clouds-port/", hook: "__AURA_CUMULUS_DASH__", desktop: D(640, 360), mobile: D(390, 844),
   titleQuery: "?quality=low", playQuery: "?manual=1&quality=low", pump: "api.settle(1, false);", settle: true, cardUpTo: "key-run",
   steps: [
     { name: "gameplay-early", mobile: true, drive: "api.begin(); api.settle(20, true);" },

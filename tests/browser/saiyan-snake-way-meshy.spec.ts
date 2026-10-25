@@ -29,8 +29,8 @@ test("meshy hazards render close up in the production renderer", async ({ page }
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
     await page.setViewportSize({ width: 960, height: 540 });
     await page.goto(`${server.origin}/examples/saiyan-snake-way-port/?manual=1&autostart=1`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => (window as unknown as { __AURA_SAIYAN_SNAKE_WAY__?: { ready: boolean } }).__AURA_SAIYAN_SNAKE_WAY__?.ready === true, undefined, { timeout: 900_000 });
-    const api = <T>(fn: string): Promise<T> => page.evaluate(`(${fn})(window.__AURA_SAIYAN_SNAKE_WAY__)`) as Promise<T>;
+    await page.waitForFunction(() => (window as unknown as { __AURA_SERPENTINE_SKY_RUN__?: { ready: boolean } }).__AURA_SERPENTINE_SKY_RUN__?.ready === true, undefined, { timeout: 900_000 });
+    const api = <T>(fn: string): Promise<T> => page.evaluate(`(${fn})(window.__AURA_SERPENTINE_SKY_RUN__)`) as Promise<T>;
     for (const [name, steps] of STEPS) {
       await api(`(o) => o.runSegments(${JSON.stringify(fixture.segments)}, ${steps})`);
       const data = await api<string>(`(o) => o.frame(960, 540, 0.82)`);

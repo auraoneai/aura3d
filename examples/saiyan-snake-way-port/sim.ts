@@ -1,5 +1,5 @@
 /**
- * Saiyan through the Snake way! on Aura3D: the outbound-run simulation (PRD §7.2 Phase C, R-25).
+ * Serpentine Sky Run on Aura3D: the outbound-run simulation (PRD §7.2 Phase C, R-25).
  *
  * Pure and deterministic: no engine imports, no clock, no randomness. A port of the original's
  * `qB(dt)` run branch (`ca`, `Na`, `aa`, `Po`, `Sa` plus the helpers they call) over the same
@@ -7,10 +7,10 @@
  * `tests/fixtures/crayon/saiyan-snake-way/` (untrusted data, read as text only). Names follow
  * the original's state fields so a recorded reference compares field-for-field.
  *
- * Scope: the outbound leg of the "full" route as Son Goku, `phase === "run"` from the check-in
+ * Scope: the outbound leg of the "full" route as the runner, `phase === "run"` from the check-in
  * line to the end of the road. When the run leaves `run` (a fall off the road, running out of
  * days, the jump at the end of the road) `stepRun` stops simulating and leaves the phase set,
- * exactly where the original hands over to its hell / leap / King Kai phases (not ported).
+ * exactly where the original hands over to its hell / leap / Sky King phases (not ported).
  */
 
 // ---- constants (names from the original's top-level `const`s) ---------------------------------
@@ -94,12 +94,12 @@ export interface Stage {
 
 export const STAGES: readonly Stage[] = [
   { from: 0, name: "CHECK-IN", sub: "stamped and pointed at the door", curve: 0.0105, pitch: 3e-3, gap: 0, orb: 0.55, obst: 0, spirit: 0.1, sweeper: 0, girth: 1 },
-  { from: 260, name: "THE LONG ROAD", sub: "one million kilometres, no railings", curve: 0.015, pitch: 36e-4, gap: 0.14, orb: 0.8, obst: 0.3, spirit: 0.34, sweeper: 0, oni: 0.22, girth: 1, bank: 0.55, turnRate: 0.55, powers: ["kaio", "senzu", "stamp"] },
-  { from: 1600, name: "TRAFFIC", sub: "the dead, and the cart that sweeps them up", curve: 0.0168, pitch: 43e-4, gap: 0.22, orb: 0.85, obst: 0.45, spirit: 0.55, sweeper: 0.42, oni: 0.55, girth: 1, bank: 0.7, turnRate: 1, powers: ["kaio", "pole", "stamp", "nimbus"] },
-  { from: 2680, name: "PRINCESS SNAKE'S PALACE", sub: "everything here is free and nothing here is", curve: 44e-4, pitch: 16e-4, gap: 0, orb: 0.3, obst: 0.2, spirit: 0.1, sweeper: 0, girth: 1, hospitality: true, slow: 0.86, powers: ["senzu"] },
-  { from: 3110, name: "THE COILS", sub: "her body doubles back on itself here", curve: 0.018, pitch: 45e-4, gap: 0.18, orb: 1, obst: 0.4, spirit: 0.2, sweeper: 0, oni: 0.5, girth: 1, nofly: true, bank: 1.15, turnRate: 1.5, powers: ["kaio", "kaio", "senzu"] },
-  { from: 3670, name: "THE BROKEN SPINE", sub: "the road is a body and bodies twist", curve: 0.019, pitch: 52e-4, gap: 0.42, orb: 0.95, obst: 0.55, spirit: 0.45, sweeper: 0.22, oni: 0.42, girth: 0.72, corkscrew: true, wind: true, strainMul: 2, bank: 0.85, turnRate: 0.55, powers: ["kaio", "pole", "nimbus", "stamp", "weights"] },
-  { from: 4850, name: "THE DROWSE", sub: "he fell asleep, and that is how he fell", curve: 9e-3, pitch: 28e-4, gap: 0.24, orb: 0.45, obst: 0.2, spirit: 0.65, sweeper: 0.18, oni: 0.48, girth: 0.85, bank: 0.35, turnRate: 0.3, drowse: true, powers: ["kaio", "senzu"] },
+  { from: 260, name: "THE LONG ROAD", sub: "one million kilometres, no railings", curve: 0.015, pitch: 36e-4, gap: 0.14, orb: 0.8, obst: 0.3, spirit: 0.34, sweeper: 0, oni: 0.22, girth: 1, bank: 0.55, turnRate: 0.55, powers: ["surge", "vitalseed", "stamp"] },
+  { from: 1600, name: "TRAFFIC", sub: "the dead, and the cart that sweeps them up", curve: 0.0168, pitch: 43e-4, gap: 0.22, orb: 0.85, obst: 0.45, spirit: 0.55, sweeper: 0.42, oni: 0.55, girth: 1, bank: 0.7, turnRate: 1, powers: ["surge", "pole", "stamp", "puff"] },
+  { from: 2680, name: "THE SERPENT HALL", sub: "everything here is free and nothing here is", curve: 44e-4, pitch: 16e-4, gap: 0, orb: 0.3, obst: 0.2, spirit: 0.1, sweeper: 0, girth: 1, hospitality: true, slow: 0.86, powers: ["vitalseed"] },
+  { from: 3110, name: "THE COILS", sub: "her body doubles back on itself here", curve: 0.018, pitch: 45e-4, gap: 0.18, orb: 1, obst: 0.4, spirit: 0.2, sweeper: 0, oni: 0.5, girth: 1, nofly: true, bank: 1.15, turnRate: 1.5, powers: ["surge", "surge", "vitalseed"] },
+  { from: 3670, name: "THE BROKEN SPINE", sub: "the road is a body and bodies twist", curve: 0.019, pitch: 52e-4, gap: 0.42, orb: 0.95, obst: 0.55, spirit: 0.45, sweeper: 0.22, oni: 0.42, girth: 0.72, corkscrew: true, wind: true, strainMul: 2, bank: 0.85, turnRate: 0.55, powers: ["surge", "pole", "puff", "stamp", "weights"] },
+  { from: 4850, name: "THE DROWSE", sub: "he fell asleep, and that is how he fell", curve: 9e-3, pitch: 28e-4, gap: 0.24, orb: 0.45, obst: 0.2, spirit: 0.65, sweeper: 0.18, oni: 0.48, girth: 0.85, bank: 0.35, turnRate: 0.3, drowse: true, powers: ["surge", "vitalseed"] },
   { from: 5410, name: "THE END OF THE ROAD", sub: "the tail stops in open air", curve: 26e-4, pitch: 18e-4, gap: 0, orb: 1.2, obst: 0, spirit: 0.1, sweeper: 0, girth: 0.6 }
 ];
 
@@ -201,7 +201,7 @@ export interface Entity {
   sweepDir: number;
   rel: number;
   spin: number;
-  saiba: boolean;
+  brute: boolean;
   punt?: { t: number; x: number; y: number; vy: number; dir: number; spin: number };
 }
 
@@ -225,7 +225,7 @@ export interface RunState {
   auraRung: number;
   auraLatch: boolean;
   auraVis: number;
-  kaio: "off" | "power" | "on";
+  surge: "off" | "power" | "on";
   mo: number;
   powerT: number;
   strain: number;
@@ -237,9 +237,9 @@ export interface RunState {
   kiBanked: number;
   stumble: number;
   invuln: number;
-  senzu: number;
+  vitalseed: number;
   poleCharges: number;
-  nimbus: number;
+  puff: number;
   flyX: number;
   flyY: number;
   flyGrace: number;
@@ -292,8 +292,8 @@ export interface RunState {
 export function createRun(): RunState {
   return {
     phase: "run", leg: "out", s: START_S, sPrev: undefined, lane: 0, laneTarget: 0, laneX: 0, laneVel: 0, y: 0, vy: 0, grounded: true, sliding: 0,
-    speed: BASE_SPEED, speedMul: 1, aura: false, auraHeld: 0, auraRung: 0, auraLatch: false, auraVis: 0, kaio: "off", mo: 0.15, powerT: 0, strain: 0,
-    lockout: 0, ki: 0.35, kiMax: 1, days: START_DAYS, score: 0, kiBanked: 0, stumble: 0, invuln: 0, senzu: 0, poleCharges: 0, nimbus: 0, flyX: 0,
+    speed: BASE_SPEED, speedMul: 1, aura: false, auraHeld: 0, auraRung: 0, auraLatch: false, auraVis: 0, surge: "off", mo: 0.15, powerT: 0, strain: 0,
+    lockout: 0, ki: 0.35, kiMax: 1, days: START_DAYS, score: 0, kiBanked: 0, stumble: 0, invuln: 0, vitalseed: 0, poleCharges: 0, puff: 0, flyX: 0,
     flyY: 0, flyGrace: 0, flySide: 1, kiWarn: 0, weightsOff: false, checkpointS: 0, flyFree: false, canFly: false, atEnd: false, endT: 0, wind: 0,
     drowse: 0, stage: null, stageIndex: -1, dive: false, diveHold: 0, time: 0, dashT: 0, dashDir: 0, saibaToast: false, drainToast: false,
     kiPulse: 0, kiFlash: 0, kiCalloutT: 0, kiChain: 0, kiChainT: 0, milestoneIndex: 0, milestoneT: 0, milestoneText: "", banner: "", bannerSub: "",
@@ -339,18 +339,18 @@ function gameOver(S: RunState, why: string): void {
   }
 }
 
-/** The original's `ra`: take a hit (a Senzu bean saves it, otherwise stumble and lose days). */
+/** The original's `ra`: take a hit (a Vitalseed bean saves it, otherwise stumble and lose days). */
 function damage(S: RunState, days: number, why: string): void {
   if (S.invuln > 0) return;
-  if (S.senzu > 0) {
-    S.senzu--;
+  if (S.vitalseed > 0) {
+    S.vitalseed--;
     S.invuln = 1.2;
-    toast(S, "SENZU BEAN  —  saved");
+    toast(S, "VITAL SEED  —  saved");
   } else {
     S.stumble = 0.75;
     S.invuln = 1;
     S.mo = 0.12;
-    S.kaio = "off";
+    S.surge = "off";
     S.aura = false;
     S.auraHeld = 0;
     S.shake = Math.min(1, S.shake + 0.7);
@@ -358,7 +358,7 @@ function damage(S: RunState, days: number, why: string): void {
   }
 }
 
-/** The original's `va`: fall off the road (a Power Pole hooks the edge once). The fall phase itself is not ported. */
+/** The original's `va`: fall off the road (a Grapple Staff hooks the edge once). The fall phase itself is not ported. */
 function fallOffRoad(S: RunState, why?: string): void {
   if (S.phase !== "run") return;
   if (S.poleCharges > 0) {
@@ -366,7 +366,7 @@ function fallOffRoad(S: RunState, why?: string): void {
     S.laneTarget = 0;
     S.laneX = damp(S.laneX, 0, 30, 0.2);
     S.invuln = 1;
-    toast(S, "POWER POLE  —  hooked the edge");
+    toast(S, "GRAPPLE STAFF  —  hooked the edge");
   } else {
     S.flyFree = false;
     S.phase = "fall";
@@ -388,7 +388,7 @@ function fallThroughCloud(S: RunState, why?: string): void {
   S.fallFrom = S.s;
   S.fallWhy = why ?? "THROUGH THE CLOUD";
   S.dive = true;
-  S.nimbus = 0;
+  S.puff = 0;
   S.flyFree = false;
   S.canFly = false;
   S.vy = -18;
@@ -403,9 +403,9 @@ function leap(S: RunState): void {
   S.aura = false;
   S.auraHeld = 0;
   S.auraLatch = false;
-  S.kaio = "off";
+  S.surge = "off";
   S.auraRung = 0;
-  S.nimbus = 0;
+  S.puff = 0;
   banner(S, "THE END OF THE ROAD", "and a jump at the end of it");
 }
 
@@ -420,13 +420,13 @@ function endOfRoad(S: RunState): void {
   S.stumble = 0;
   S.wind = 0;
   S.endT = 0;
-  S.nimbus = 0;
+  S.puff = 0;
   S.flyFree = false;
   S.canFly = false;
   S.auraLatch = false;
   S.aura = false;
   S.auraHeld = 0;
-  S.kaio = "off";
+  S.surge = "off";
   S.auraRung = 0;
   S.powerT = 0;
   S.laneTarget = 0;
@@ -480,37 +480,37 @@ function pickup(S: RunState, e: Entity): void {
       S.score += 60;
       spendDays(S, 2.4, "HOSPITALITY");
       break;
-    case "kaio":
+    case "surge":
       S.ki = S.kiMax;
       S.strain = Math.max(0, S.strain - 0.45);
-      toast(S, "KI RESTORED");
+      toast(S, "SPARK RESTORED");
       break;
-    case "senzu":
-      S.senzu = Math.min(2, S.senzu + 1);
-      toast(S, "SENZU BEAN");
+    case "vitalseed":
+      S.vitalseed = Math.min(2, S.vitalseed + 1);
+      toast(S, "VITAL SEED");
       break;
-    case "nimbus":
-      if (S.nimbus <= 0) {
+    case "puff":
+      if (S.puff <= 0) {
         S.flyX = S.laneX;
         S.flyY = Math.max(S.y, 4.6);
       }
-      S.nimbus = Math.max(S.nimbus, 6);
-      S.invuln = Math.max(S.invuln, S.nimbus + 0.3);
+      S.puff = Math.max(S.puff, 6);
+      S.invuln = Math.max(S.invuln, S.puff + 0.3);
       toast(S, "FLIGHT AURA  —  multiplier reset");
       S.auraHeld = 0;
       break;
     case "pole":
       S.poleCharges = Math.min(2, S.poleCharges + 1);
-      toast(S, "POWER POLE");
+      toast(S, "GRAPPLE STAFF");
       break;
     case "stamp":
       S.checkpointS = e.s;
-      toast(S, "YEMMA'S STAMP  —  checkpoint");
+      toast(S, "WAYPOINT STAMP  —  checkpoint");
       break;
     case "weights":
       if (!S.weightsOff) {
         S.weightsOff = true;
-        toast(S, "WEIGHTS OFF  —  +15% speed, no bonus ki");
+        toast(S, "WEIGHTS OFF  —  +15% speed, no bonus spark");
       }
   }
 }
@@ -518,13 +518,13 @@ function pickup(S: RunState, e: Entity): void {
 // ---- spawning (`Po` / `Wo`) -----------------------------------------------------------
 
 function spawn(S: RunState, type: string, s: number, lane: number, kind?: string): Entity {
-  const e: Entity = { type, s, lane, kind, dead: false, t: 0, drift: 0, swerve: false, sweepDir: 0, rel: 0, spin: hash(s) * TWO_PI, saiba: false };
+  const e: Entity = { type, s, lane, kind, dead: false, t: 0, drift: 0, swerve: false, sweepDir: 0, rel: 0, spin: hash(s) * TWO_PI, brute: false };
   if (type === "power" || type === "feast") e.kind = type === "feast" ? "feast" : kind;
   S.ents.push(e);
   return e;
 }
 
-/** Goku's hazard pair (`bs.hazards`). */
+/** the runner's hazard pair (`bs.hazards`). */
 const HAZARDS: readonly [string, string] = ["barrier", "arch"];
 
 function spawnAhead(S: RunState, at: number): void {
@@ -595,8 +595,8 @@ const moves = (e: Entity): boolean => e.type === "sweeper" || e.type === "soul" 
 const effectiveS = (e: Entity): number => (moves(e) ? e.s + e.rel : e.s);
 
 function updateEntities(S: RunState, dt: number): void {
-  const powered = S.auraRung > 0 || S.nimbus > 0;
-  const ghost = S.nimbus > 0 && (Math.abs(S.laneX) > ROAD_HALF_WIDTH / 2 + 0.6 || S.y > 5.2 || S.y < -0.6);
+  const powered = S.auraRung > 0 || S.puff > 0;
+  const ghost = S.puff > 0 && (Math.abs(S.laneX) > ROAD_HALF_WIDTH / 2 + 0.6 || S.y > 5.2 || S.y < -0.6);
   const ents = S.ents;
   for (let idx = ents.length - 1; idx >= 0; idx--) {
     const e = ents[idx] as Entity;
@@ -694,7 +694,7 @@ function updateEntities(S: RunState, dt: number): void {
       }
     } else if (e.type === "oni") {
       if (S.y < 2.6) {
-        if (e.saiba && !e.punt && (S.dashT || 0) > 0) {
+        if (e.brute && !e.punt && (S.dashT || 0) > 0) {
           e.hit = true;
           e.punt = { t: 0, x: 0, y: 0, vy: 7.5, dir: S.dashDir || (S.laneX < laneX ? 1 : -1), spin: 4 + 4 * hash(e.s) };
           S.score += 170 * multiplier(S);
@@ -707,7 +707,7 @@ function updateEntities(S: RunState, dt: number): void {
           S.score += 130 * multiplier(S);
         } else {
           e.hit = true;
-          damage(S, 6, e.saiba ? "RAN INTO A SAIBAMAN" : e.kind === "herd" ? "BARGED THROUGH THE QUEUE" : "WALKED INTO THE ROAD CREW");
+          damage(S, 6, e.brute ? "RAN INTO A BRUTE" : e.kind === "herd" ? "BARGED THROUGH THE QUEUE" : "WALKED INTO THE ROAD CREW");
         }
       }
     } else if (e.type === "sweeper" && S.y < 2.4) {
@@ -721,7 +721,7 @@ function updateEntities(S: RunState, dt: number): void {
   }
 }
 
-// ---- Kaio-ken, ki and strain (`ca`) ---------------------------------------------------
+// ---- Surge, ki and strain (`ca`) ---------------------------------------------------
 
 function updateAura(S: RunState, dt: number, keys: { taps: ReadonlySet<string> }): void {
   if (keys.taps.has("ShiftLeft") || keys.taps.has("ShiftRight")) S.auraLatch = !S.auraLatch;
@@ -730,27 +730,27 @@ function updateAura(S: RunState, dt: number, keys: { taps: ReadonlySet<string> }
   const back = S.leg === "back";
   S.powerT = Math.max(0, S.powerT - dt);
   const inRun = S.phase === "run";
-  if (latched && S.kaio === "off" && (S.ki > 0.25 || back) && inRun && S.grounded) {
-    S.kaio = "power";
+  if (latched && S.surge === "off" && (S.ki > 0.25 || back) && inRun && S.grounded) {
+    S.surge = "power";
     S.powerT = (1.07 - POWER_RAMP) / POWER_RATE;
     S.shake = Math.min(1, S.shake + 0.5);
-    toast(S, "KAIO-KEN");
+    toast(S, "SURGE");
   }
-  if (S.kaio === "power" && S.powerT <= 0) {
-    S.kaio = "on";
+  if (S.surge === "power" && S.powerT <= 0) {
+    S.surge = "on";
     S.mo = 1;
     S.canFly = true;
     toast(S, "FLIGHT UNLOCKED  —  E");
   }
-  if (!latched || S.lockout > 0 || (S.ki <= 0 && !back)) S.kaio = "off";
-  if (latched && (S.ki > 0.02 || back) && inRun && S.kaio === "on") {
+  if (!latched || S.lockout > 0 || (S.ki <= 0 && !back)) S.surge = "off";
+  if (latched && (S.ki > 0.02 || back) && inRun && S.surge === "on") {
     if (!S.aura) S.aura = true;
     S.auraHeld += dt;
     S.ki = Math.max(0, S.ki - 0.115 * dt * (back ? 0.15 : 1));
     if (S.ki <= 0) {
       S.aura = false;
       S.auraHeld = 0;
-      toast(S, "OUT OF KI");
+      toast(S, "OUT OF SPARK");
     }
   } else {
     S.aura = false;
@@ -759,7 +759,7 @@ function updateAura(S: RunState, dt: number, keys: { taps: ReadonlySet<string> }
   if (S.ki >= 0.98 * S.kiMax) S.canFly = true;
   let rung = 0;
   if (S.aura) for (let k = 1; k < RUNGS.length; k++) if (S.auraHeld >= ((RUNGS[k] as AuraRung).at as number)) rung = k;
-  if (rung !== S.auraRung && rung > 0 && rung > S.auraRung) toast(S, `KAIO-KEN ×${(RUNGS[rung] as AuraRung).mult}`);
+  if (rung !== S.auraRung && rung > 0 && rung > S.auraRung) toast(S, `SURGE ×${(RUNGS[rung] as AuraRung).mult}`);
   S.auraRung = rung;
   const peach = S.peach ? 0.5 : 1;
   const strainScale = peach * ((stageAt(back ? ROAD_LENGTH - S.s : S.s).strainMul || 1) * (back ? 0.13 : 1));
@@ -770,10 +770,10 @@ function updateAura(S: RunState, dt: number, keys: { taps: ReadonlySet<string> }
     damage(S, 4, "STRAIN");
   }
   S.lockout = Math.max(0, S.lockout - dt);
-  const flying = S.nimbus > 0;
-  const lowFlyOnBack = back && S.kaio === "off" && S.phase === "run";
-  const visible = S.kaio === "power" || S.kaio === "on" || flying || lowFlyOnBack ? 1 : 0;
-  S.auraVis = damp(S.auraVis === undefined ? 0 : S.auraVis, visible, S.kaio === "power" ? 9 : 5, dt);
+  const flying = S.puff > 0;
+  const lowFlyOnBack = back && S.surge === "off" && S.phase === "run";
+  const visible = S.surge === "power" || S.surge === "on" || flying || lowFlyOnBack ? 1 : 0;
+  S.auraVis = damp(S.auraVis === undefined ? 0 : S.auraVis, visible, S.surge === "power" ? 9 : 5, dt);
 }
 
 // ---- movement (`Na`) -------------------------------------------------------------------
@@ -790,7 +790,7 @@ function movePlayer(S: RunState, dt: number, taps: ReadonlySet<string>, held: Re
     if (taps.has("Space") || taps.has("ArrowUp") || taps.has("KeyW")) jump(S);
     return;
   }
-  const flying = S.nimbus > 0;
+  const flying = S.puff > 0;
   if (!flying) {
     if (taps.has("ArrowLeft") || taps.has("KeyA")) laneChange(S, -1);
     if (taps.has("ArrowRight") || taps.has("KeyD")) laneChange(S, 1);
@@ -801,15 +801,15 @@ function movePlayer(S: RunState, dt: number, taps: ReadonlySet<string>, held: Re
   const stage = stageAt(back ? ROAD_LENGTH - S.s : S.s);
   const nearEnd = S.leg === "out" && S.s > ROAD_LENGTH - END_NOFLY_ZONE;
   const noFly = !!stage.nofly || nearEnd;
-  if (noFly && S.nimbus > LAND_TIME) {
+  if (noFly && S.puff > LAND_TIME) {
     S.flyFree = false;
-    S.nimbus = LAND_TIME;
+    S.puff = LAND_TIME;
     toast(S, nearEnd ? "THE ROAD ENDS AHEAD" : "TOO TIGHT TO FLY");
   }
   if (taps.has("KeyE") && noFly) toast(S, nearEnd ? "THE ROAD ENDS AHEAD" : "TOO TIGHT TO FLY");
   if (back) S.canFly = true;
-  if (taps.has("KeyE") && !noFly && S.canFly && S.nimbus <= 0 && S.phase === "run" && S.ki > 0.28) {
-    S.nimbus = FLY_TIME;
+  if (taps.has("KeyE") && !noFly && S.canFly && S.puff <= 0 && S.phase === "run" && S.ki > 0.28) {
+    S.puff = FLY_TIME;
     S.flyFree = back;
     S.invuln = FLY_TIME + 0.3;
     S.canFly = back;
@@ -818,25 +818,25 @@ function movePlayer(S: RunState, dt: number, taps: ReadonlySet<string>, held: Re
     S.flyY = Math.max(S.y, 4.6);
     S.flySide = 1;
     toast(S, back ? "FLIGHT  —  E TO LAND" : "FLIGHT");
-  } else if (taps.has("KeyE") && S.nimbus > LAND_TIME) {
+  } else if (taps.has("KeyE") && S.puff > LAND_TIME) {
     S.flyFree = false;
-    S.nimbus = LAND_TIME;
+    S.puff = LAND_TIME;
   }
   const along = back ? ROAD_LENGTH - S.s : S.s;
   const here = stageAt(along);
   const fraction = roadFraction(along);
-  S.mo = S.kaio === "on" ? 1 : damp(S.mo, 1, 0.17, dt);
+  S.mo = S.surge === "on" ? 1 : damp(S.mo, 1, 0.17, dt);
   const rungSpeed = (RUNGS[S.auraRung] as AuraRung).mult;
   let target = back
     ? BASE_SPEED * 1.5 * rungSpeed * (here.slow || 1)
     : BASE_SPEED * (0.62 + 0.38 * S.mo) * (1 + 0.52 * fraction) * rungSpeed * (here.slow || 1);
   if (S.weightsOff) target *= 1.15;
   if (S.leg === "out" && ROAD_LENGTH - S.s < END_SLOW_ZONE) target = Math.max(0.34 * BASE_SPEED, target * smooth(clamp((ROAD_LENGTH - S.s) / END_SLOW_ZONE, 0, 1)));
-  if (S.nimbus > 0) target *= Math.abs(S.laneX) > ROAD_HALF_WIDTH ? 0.88 : 1.1;
+  if (S.puff > 0) target *= Math.abs(S.laneX) > ROAD_HALF_WIDTH ? 0.88 : 1.1;
   if (S.stumble > 0) target *= 0.34;
-  if (S.kaio === "power") target = 0;
+  if (S.surge === "power") target = 0;
   S.sPrev = S.s;
-  S.speed = damp(S.speed, target * (S.speedMul as number), S.kaio === "power" ? 9 : 3.4, dt);
+  S.speed = damp(S.speed, target * (S.speedMul as number), S.surge === "power" ? 9 : 3.4, dt);
   S.speedMul = damp(S.speedMul, 1, 2.2, dt);
   S.s += S.speed * dt;
   if (S.leg === "out" && S.s >= ROAD_LENGTH - 1.2) {
@@ -858,13 +858,13 @@ function movePlayer(S: RunState, dt: number, taps: ReadonlySet<string>, held: Re
   if (flying) {
     const climb = (held.has("Space") || held.has("ArrowUp") || held.has("KeyW") ? 1 : 0) - (held.has("ArrowDown") || held.has("KeyS") ? 1 : 0);
     S.flyY = clamp(S.flyY + climb * FLY_CLIMB * dt, FLY_Y_MIN, FLY_Y_MAX);
-    if (S.nimbus < LAND_TIME) {
+    if (S.puff < LAND_TIME) {
       if (Math.abs(S.flyX) <= FLY_CATCH_X) {
-        const k = 1 - S.nimbus / LAND_TIME;
+        const k = 1 - S.puff / LAND_TIME;
         S.laneTarget = clamp(Math.round(S.flyX / LANE_WIDTH), -1, 1);
         S.flyX = damp(S.flyX, S.laneTarget * LANE_WIDTH, 2.5 + 11 * k, dt);
         S.flyY = damp(S.flyY, 0.8, 2.5 + 11 * k, dt);
-      } else if (S.nimbus <= 0.1) {
+      } else if (S.puff <= 0.1) {
         fallThroughCloud(S, "NOTHING UNDER YOU");
         return;
       }
@@ -887,13 +887,13 @@ function movePlayer(S: RunState, dt: number, taps: ReadonlySet<string>, held: Re
     }
     const off = clamp((Math.abs(S.laneX) - ROAD_HALF_WIDTH / 2) / FLY_X_LIMIT, 0, 1);
     S.ki = Math.max(0, S.ki - dt * (KI_DRAIN_FLY + off * KI_DRAIN_FLY_OFF_ROAD) * (back ? 0.16 : 1));
-    if (S.ki < 0.26 && S.kiWarn <= 0 && S.nimbus > LAND_TIME) {
+    if (S.ki < 0.26 && S.kiWarn <= 0 && S.puff > LAND_TIME) {
       S.kiWarn = 3;
-      toast(S, "KI RUNNING LOW  —  GET BACK TO THE ROAD");
+      toast(S, "SPARK RUNNING LOW  —  GET BACK TO THE ROAD");
     }
-    if (S.ki <= 0 && S.nimbus > LAND_TIME) {
+    if (S.ki <= 0 && S.puff > LAND_TIME) {
       S.flyFree = false;
-      S.nimbus = LAND_TIME;
+      S.puff = LAND_TIME;
       toast(S, "RESERVE EMPTY");
     }
     if (S.flyFree) S.invuln = Math.max(S.invuln, 0.4);
@@ -913,17 +913,17 @@ function movePlayer(S: RunState, dt: number, taps: ReadonlySet<string>, held: Re
   S.sliding = Math.max(0, S.sliding - dt);
   S.stumble = Math.max(0, S.stumble - dt);
   S.invuln = Math.max(0, S.invuln - dt);
-  S.nimbus = Math.max(0, S.nimbus - (S.flyFree ? 0 : dt));
-  if (S.nimbus <= 0) S.flyFree = false;
+  S.puff = Math.max(0, S.puff - (S.flyFree ? 0 : dt));
+  if (S.puff <= 0) S.flyFree = false;
   S.flyGrace = Math.max(0, S.flyGrace - dt);
   S.kiWarn = Math.max(0, S.kiWarn - dt);
   const onGap = roadGapAt(S.s);
-  if (S.nimbus <= 0 && S.flyGrace > 0) {
+  if (S.puff <= 0 && S.flyGrace > 0) {
     S.laneX = damp(S.laneX, S.laneTarget * LANE_WIDTH, 10, dt);
     S.y = damp(S.y, 0.4, 10, dt);
   }
-  if (S.grounded && onGap && S.nimbus <= 0 && S.flyGrace <= 0) fallOffRoad(S, "THE PLATES WERE GONE");
-  if (Math.abs(S.laneX) > ROAD_HALF_WIDTH / 2 + 0.9 && S.nimbus <= 0 && S.flyGrace <= 0) fallOffRoad(S, "OVER THE EDGE");
+  if (S.grounded && onGap && S.puff <= 0 && S.flyGrace <= 0) fallOffRoad(S, "THE PLATES WERE GONE");
+  if (Math.abs(S.laneX) > ROAD_HALF_WIDTH / 2 + 0.9 && S.puff <= 0 && S.flyGrace <= 0) fallOffRoad(S, "OVER THE EDGE");
   spendDays(S, DAYS_PER_SECOND * (here.hospitality ? 2 : 1) * dt);
   S.score += S.speed * dt * multiplier(S) * 0.55;
   S.wind = damp(S.wind, here.wind ? 1 : 0, 1.6, dt);
@@ -971,7 +971,7 @@ export function stepRun(S: RunState, input: RunInput, dt: number): void {
     updateEntities(S, dt);
     if (S.atEnd && S.bannerT <= 0) {
       S.banner = "PRESS SPACE TO JUMP";
-      S.bannerSub = "King Kai's world is down there";
+      S.bannerSub = "the world below is waiting";
       S.bannerT = 0.35;
     }
   }
@@ -1019,9 +1019,9 @@ export function runScript(inputs: readonly RunInput[], dt: number = STEP): { sta
 /** Per-frame snapshot of the fields the reference records (same names, same order as the capture tool). */
 export const SNAPSHOT_FIELDS = [
   "phase", "leg", "s", "lane", "laneTarget", "laneX", "laneVel", "y", "vy", "grounded", "sliding", "speed", "speedMul",
-  "aura", "auraHeld", "auraRung", "auraLatch", "kaio", "mo", "powerT", "strain", "lockout", "ki", "kiMax", "days", "score",
-  "stumble", "invuln", "nimbus", "flyFree", "canFly", "atEnd", "endT", "time", "drowse", "wind", "stageIndex", "kiChain",
-  "jumpBuf", "dashT", "peach", "senzu", "poleCharges", "checkpointS", "milestoneIndex", "ended"
+  "aura", "auraHeld", "auraRung", "auraLatch", "surge", "mo", "powerT", "strain", "lockout", "ki", "kiMax", "days", "score",
+  "stumble", "invuln", "puff", "flyFree", "canFly", "atEnd", "endT", "time", "drowse", "wind", "stageIndex", "kiChain",
+  "jumpBuf", "dashT", "peach", "vitalseed", "poleCharges", "checkpointS", "milestoneIndex", "ended"
 ] as const;
 
 export function snapshot(S: RunState, frame: number): Record<string, unknown> {

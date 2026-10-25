@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 /**
  * saiyan-snake-way-port art capture (remote only: tools/remote-acr/run.sh, never local Playwright).
  *
- * Drives the port through `window.__AURA_SAIYAN_SNAKE_WAY__` at the same game states the original's recorded
+ * Drives the port through `window.__AURA_SERPENTINE_SKY_RUN__` at the same game states the original's recorded
  * run reaches (replay prefixes of tests/browser/data/saiyan-snake-way-reference-replay.json) plus presentation
  * states a replay never visits (jump, slide, flight, fall, leap), and prints each frame as chunked
  * `@@SSW_ART <tag> <name> <i> <n> <base64>` log lines with a `@@SSW_METRIC` line of structural metrics.
@@ -55,13 +55,13 @@ test.describe("saiyan-snake-way art capture", () => {
     const boot = async (query: string): Promise<void> => {
       await page.goto(`${server.origin}${LAB}?${query}`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => {
-        const w = window as unknown as { __AURA_SAIYAN_SNAKE_WAY__?: { ready: boolean }; __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string };
-        return w.__AURA_SAIYAN_SNAKE_WAY__?.ready === true || Boolean(w.__AURA_SAIYAN_SNAKE_WAY_ERROR__);
+        const w = window as unknown as { __AURA_SERPENTINE_SKY_RUN__?: { ready: boolean }; __AURA_SERPENTINE_SKY_RUN_ERROR__?: string };
+        return w.__AURA_SERPENTINE_SKY_RUN__?.ready === true || Boolean(w.__AURA_SERPENTINE_SKY_RUN_ERROR__);
       }, undefined, { timeout: 900_000 });
-      const bootError = await page.evaluate(() => (window as unknown as { __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string }).__AURA_SAIYAN_SNAKE_WAY_ERROR__ ?? null);
+      const bootError = await page.evaluate(() => (window as unknown as { __AURA_SERPENTINE_SKY_RUN_ERROR__?: string }).__AURA_SERPENTINE_SKY_RUN_ERROR__ ?? null);
       expect(bootError, JSON.stringify(errors.slice(0, 8))).toBeNull();
     };
-    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SAIYAN_SNAKE_WAY__)`) as Promise<T>;
+    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SERPENTINE_SKY_RUN__)`) as Promise<T>;
     const emit = (name: string, base64: string): void => {
       const size = 4000;
       const n = Math.ceil(base64.length / size);
@@ -71,7 +71,7 @@ test.describe("saiyan-snake-way art capture", () => {
       const data = await api((o) => o.frame(960, 540, 0.8));
       emit(name, data.split(",")[1] as string);
       const metric = await page.evaluate(async () => {
-        const o = (window as unknown as { __AURA_SAIYAN_SNAKE_WAY__: Api }).__AURA_SAIYAN_SNAKE_WAY__;
+        const o = (window as unknown as { __AURA_SERPENTINE_SKY_RUN__: Api }).__AURA_SERPENTINE_SKY_RUN__;
         const { width, height, data } = await o.pixels();
         const luma = (i: number): number => 0.2126 * (data[i] as number) + 0.7152 * (data[i + 1] as number) + 0.0722 * (data[i + 2] as number);
         let sum = 0, sumSq = 0, edges = 0;
@@ -126,9 +126,9 @@ test.describe("saiyan-snake-way art capture", () => {
       await replay(900);
       await api((o) => { o.setState!({ grounded: false, vy: 9, y: 3.2 }); return 0; }); await world("w-jump");
       await api((o) => { o.setState!({ grounded: true, vy: 0, y: 0, sliding: 0.5 }); return 0; }); await world("w-slide");
-      await api((o) => { o.setState!({ sliding: 0, nimbus: 6, y: 9, grounded: false, speed: 70 }); return 0; }); await world("w-flight");
+      await api((o) => { o.setState!({ sliding: 0, puff: 6, y: 9, grounded: false, speed: 70 }); return 0; }); await world("w-flight");
       await replay(2600);
-      await api((o) => { o.setState!({ auraRung: 4, auraVis: 1, kaio: "on", speed: 90 }); return 0; }); await world("w-surge-fast");
+      await api((o) => { o.setState!({ auraRung: 4, auraVis: 1, surge: "on", speed: 90 }); return 0; }); await world("w-surge-fast");
       await api((o) => { o.setState!({ phase: "fall", fallWhy: "OFF THE ROAD" }); o.outro!(1.1); return 0; }); await world("w-fall");
       await replay(fixture.totalSteps);
       await api((o) => { o.setState!({ phase: "leap", atEnd: false }); o.outro!(1.0); return 0; }); await world("w-leap");

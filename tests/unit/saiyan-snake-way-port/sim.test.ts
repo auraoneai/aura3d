@@ -7,7 +7,7 @@ import {
 const idle = (n: number): RunInput[] => Array.from({ length: n }, () => ({}));
 const tap = (key: string): RunInput => ({ taps: [key] });
 
-describe("Saiyan Snake Way sim: start state", () => {
+describe("Serpentine Sky Run sim: start state", () => {
   it("starts where the original's `kd()` puts the run (matches its `__TEST.status()` at frame 0)", () => {
     const S = createRun();
     expect(S.phase).toBe("run");
@@ -29,7 +29,7 @@ describe("Saiyan Snake Way sim: start state", () => {
   });
 });
 
-describe("Saiyan Snake Way sim: determinism and rules", () => {
+describe("Serpentine Sky Run sim: determinism and rules", () => {
   it("identical inputs give identical state (no randomness, no clock)", () => {
     const inputs = [...idle(200), tap("Space"), ...idle(60), tap("KeyD"), ...idle(120)];
     const a = runScript(inputs).state, b = runScript(inputs).state;
@@ -59,13 +59,13 @@ describe("Saiyan Snake Way sim: determinism and rules", () => {
     expect(S.laneTarget).toBe(-1);
   });
 
-  it("Kaio-ken needs ki and the ground: Shift charges a power-up that becomes `on` and raises the rung", () => {
+  it("Surge needs ki and the ground: Shift charges a power-up that becomes `on` and raises the rung", () => {
     const S = createRun();
     S.ki = 1;
     stepRun(S, tap("ShiftLeft"), STEP);
-    expect(S.kaio).toBe("power");
+    expect(S.surge).toBe("power");
     for (let i = 0; i < 90; i++) stepRun(S, {}, STEP);
-    expect(S.kaio).toBe("on");
+    expect(S.surge).toBe("on");
     expect(S.canFly).toBe(true);
     expect(S.auraRung).toBeGreaterThanOrEqual(1);
     expect(S.strain).toBeGreaterThan(0);
@@ -92,9 +92,9 @@ describe("Saiyan Snake Way sim: determinism and rules", () => {
   });
 });
 
-describe("Saiyan Snake Way sim: road and spawns", () => {
+describe("Serpentine Sky Run sim: road and spawns", () => {
   it("has the original's eight stages in order, and `stageAt` picks the last one started", () => {
-    expect(STAGES.map((s) => s.name)).toEqual(["CHECK-IN", "THE LONG ROAD", "TRAFFIC", "PRINCESS SNAKE'S PALACE", "THE COILS", "THE BROKEN SPINE", "THE DROWSE", "THE END OF THE ROAD"]);
+    expect(STAGES.map((s) => s.name)).toEqual(["CHECK-IN", "THE LONG ROAD", "TRAFFIC", "THE SERPENT HALL", "THE COILS", "THE BROKEN SPINE", "THE DROWSE", "THE END OF THE ROAD"]);
     expect(stageAt(-10).name).toBe("CHECK-IN");
     expect(stageAt(259.9).name).toBe("CHECK-IN");
     expect(stageAt(260).name).toBe("THE LONG ROAD");

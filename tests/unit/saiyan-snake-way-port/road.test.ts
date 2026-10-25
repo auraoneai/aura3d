@@ -5,7 +5,7 @@ import { ROAD_BEHIND, ROAD_LENGTH, ROAD_TAIL, SAMPLE_SPACING, roadGapAt, sampleG
 const dot = (a: readonly number[], b: readonly number[]): number => a[0]! * b[0]! + a[1]! * b[1]! + a[2]! * b[2]!;
 const len = (a: readonly number[]): number => Math.sqrt(dot(a, a));
 
-describe("Saiyan Snake Way road", () => {
+describe("Serpentine Sky Run road", () => {
   const samples = buildRoadSamples();
 
   it("samples every 3 m from 150 m behind the start to the road's tail", () => {

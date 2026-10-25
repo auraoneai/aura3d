@@ -8,12 +8,12 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * (docs/workflows/threejs-parity-gaps.md).
  *
  * Remote-only (tools/remote-acr/run.sh); never run under local Playwright. Drives
- * `examples/saiyan-snake-way-port` through `window.__AURA_SAIYAN_SNAKE_WAY__`:
+ * `examples/saiyan-snake-way-port` through `window.__AURA_SERPENTINE_SKY_RUN__`:
  *   - the lab boots on WebGL2 with no engine error and no parity-not-implemented error,
- *   - the road, sky and Goku draw real pixels where they must be,
+ *   - the road, sky and the runner draw real pixels where they must be,
  *   - the in-page replay of the ORIGINAL game's recorded outbound run (47 key taps, 5,433 fixed 1/60 s
  *     steps) ends at the recorded state, so the same simulation runs in the browser as in the unit test,
- *   - entity nodes are in use mid-run and the Kaio-ken aura shell is lit when the aura is on.
+ *   - entity nodes are in use mid-run and the Surge aura shell is lit when the aura is on.
  * Compact JPEG frames are written to the log as `SSW_FRAME <name> <base64>` because ACR runs cannot return files.
  */
 
@@ -31,8 +31,8 @@ interface Stats { readonly width: number; readonly height: number; readonly whol
 interface Api {
   ready: boolean;
   start(): Record<string, unknown>;
-  state(): Record<string, unknown> & { s: number; phase: string; days: number; atEnd: boolean; auraRung: number; kaio: string };
-  raw(): { s: number; auraVis: number; ents: unknown[]; nimbus: number };
+  state(): Record<string, unknown> & { s: number; phase: string; days: number; atEnd: boolean; auraRung: number; surge: string };
+  raw(): { s: number; auraVis: number; ents: unknown[]; puff: number };
   stepFrames(n: number, input?: { taps?: string[]; held?: string[] }): Record<string, unknown> & { s: number };
   runSegments(segments: Segment[], maxSteps?: number): { steps: number; final: Record<string, unknown> & Checkpoint };
   frame(w?: number, h?: number, q?: number): Promise<string>;
@@ -57,7 +57,7 @@ test.describe("saiyan-snake-way-port", () => {
     await server.close();
   });
 
-  test("boots on WebGL2, draws road, sky and Goku, and replays the original's recorded run", async ({ page }) => {
+  test("boots on WebGL2, draws road, sky and the runner, and replays the original's recorded run", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => {
@@ -67,24 +67,24 @@ test.describe("saiyan-snake-way-port", () => {
     await page.goto(`${server.origin}${LAB}?manual=1&autostart=1`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const w = window as unknown as { __AURA_SAIYAN_SNAKE_WAY__?: { ready: boolean }; __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string };
-        return w.__AURA_SAIYAN_SNAKE_WAY__?.ready === true || Boolean(w.__AURA_SAIYAN_SNAKE_WAY_ERROR__);
+        const w = window as unknown as { __AURA_SERPENTINE_SKY_RUN__?: { ready: boolean }; __AURA_SERPENTINE_SKY_RUN_ERROR__?: string };
+        return w.__AURA_SERPENTINE_SKY_RUN__?.ready === true || Boolean(w.__AURA_SERPENTINE_SKY_RUN_ERROR__);
       },
       undefined,
       { timeout: 540_000 }
     );
-    const bootError = await page.evaluate(() => (window as unknown as { __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string }).__AURA_SAIYAN_SNAKE_WAY_ERROR__ ?? null);
+    const bootError = await page.evaluate(() => (window as unknown as { __AURA_SERPENTINE_SKY_RUN_ERROR__?: string }).__AURA_SERPENTINE_SKY_RUN_ERROR__ ?? null);
     if (bootError) console.log("SSW_BOOT_ERROR", bootError, JSON.stringify(errors.slice(0, 8)));
     expect(bootError, JSON.stringify(errors.slice(0, 8))).toBeNull();
 
-    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SAIYAN_SNAKE_WAY__)`) as Promise<T>;
+    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SERPENTINE_SKY_RUN__)`) as Promise<T>;
     const frame = async (name: string): Promise<void> => {
       const data = await api((o) => o.frame(480, 270, 0.7));
       console.log(`SSW_FRAME ${name} ${data.split(",")[1]}`);
     };
     const stats = (): Promise<Stats> =>
       page.evaluate(async () => {
-        const o = (window as unknown as { __AURA_SAIYAN_SNAKE_WAY__: Api }).__AURA_SAIYAN_SNAKE_WAY__;
+        const o = (window as unknown as { __AURA_SERPENTINE_SKY_RUN__: Api }).__AURA_SERPENTINE_SKY_RUN__;
         const { width, height, data } = await o.pixels();
         const region = (x0: number, y0: number, x1: number, y1: number): Region => {
           let n = 0, nonBg = 0, sum = 0, sumSq = 0, warm = 0, blue = 0;
@@ -107,7 +107,7 @@ test.describe("saiyan-snake-way-port", () => {
         return { width, height, whole: region(0, 0, 1, 1), lowerCenter: region(0.3, 0.6, 0.7, 0.95), top: region(0, 0, 1, 0.3), center: region(0.4, 0.35, 0.6, 0.75) };
       });
 
-    // ---- start of the run: check-in strip, Goku on the road, sky behind ----
+    // ---- start of the run: check-in strip, the runner on the road, sky behind ----
     await api((o) => { o.start(); o.stepFrames(30); return 0; });
     const startStats = await stats();
     console.log("SSW_STATS start", JSON.stringify(startStats));
@@ -115,7 +115,7 @@ test.describe("saiyan-snake-way-port", () => {
     expect(startStats.whole.colors, "the frame has many distinct colours").toBeGreaterThan(40);
     expect(startStats.whole.lumaStd, "the frame is not flat").toBeGreaterThan(8);
     expect(startStats.top.nonBackground + startStats.lowerCenter.nonBackground, "sky and road both draw").toBeGreaterThan(0.1);
-    expect(startStats.center.warm, "Goku's orange gi sits in the middle of the frame").toBeGreaterThan(0.004);
+    expect(startStats.center.warm, "the runner's orange gi sits in the middle of the frame").toBeGreaterThan(0.004);
 
     // ---- replay prefixes of the ORIGINAL's recorded input: frames at moments the reference marks ----
     const at = async (name: string, frames: number): Promise<Checkpoint> => {
@@ -125,12 +125,12 @@ test.describe("saiyan-snake-way-port", () => {
       return out.final;
     };
     const kaioMoment = fixture.checkpoints.reduce((best, c) => (c.auraRung > best.auraRung ? c : best), fixture.checkpoints[0]!);
-    const f1 = await at("kaio-ken", kaioMoment.frame);
+    const f1 = await at("surge", kaioMoment.frame);
     const kaioStats = await stats();
-    console.log("SSW_STATS kaio-ken", JSON.stringify(kaioStats), "rung", f1.auraRung);
-    const kaioState = await api((o) => ({ raw: o.raw().auraVis, rung: o.state().auraRung, kaio: o.state().kaio }));
-    expect(kaioState.raw, "the aura shell is lit while Kaio-ken is on").toBeGreaterThan(0.05);
-    expect(kaioStats.center.warm, "the aura adds warm pixels around Goku").toBeGreaterThan(startStats.center.warm);
+    console.log("SSW_STATS surge", JSON.stringify(kaioStats), "rung", f1.auraRung);
+    const kaioState = await api((o) => ({ raw: o.raw().auraVis, rung: o.state().auraRung, surge: o.state().surge }));
+    expect(kaioState.raw, "the aura shell is lit while Surge is on").toBeGreaterThan(0.05);
+    expect(kaioStats.center.warm, "the aura adds warm pixels around the runner").toBeGreaterThan(startStats.center.warm);
 
     await at("traffic", 1800);
     const trafficStats = await stats();

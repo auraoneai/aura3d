@@ -9,7 +9,7 @@ describe("ninja-runner-port copy", () => {
     const text = [
       ...Object.values(FORM_LABEL), ...Object.values(ABILITY_LABEL), ...CONTROLS.flat(),
       ...[0, 200, 800, 1300, 1800, 2400].map(districtLabel),
-      ...["unlock", "form", "rasenshuriken", "dropWarning"].flatMap((t) => { const a = announcement(t, "sage"); return a ? [a.title, a.small] : []; }),
+      ...["unlock", "form", "spiralstar", "dropWarning"].flatMap((t) => { const a = announcement(t, "sage"); return a ? [a.title, a.small] : []; }),
       ...[true, false].flatMap((w) => Object.values(resultCopy(w, w))),
       readFileSync("examples/ninja-runner-port/index.html", "utf8").replace(/data-(form|action)="[^"]*"/g, "")
     ].join("\n");
@@ -17,7 +17,7 @@ describe("ninja-runner-port copy", () => {
   });
 
   it("announces the events that need it and nothing else", () => {
-    expect(announcement("unlock", "kurama")?.small).toBe(FORM_LABEL.kurama);
+    expect(announcement("unlock", "beast")?.small).toBe(FORM_LABEL.beast);
     expect(announcement("jump")).toBeNull();
     expect(resultCopy(false, true).copy).toMatch(/jump/i);
   });

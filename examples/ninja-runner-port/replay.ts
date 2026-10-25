@@ -9,9 +9,9 @@ import { SIM_STEP, applyAction, createState, drainEvents, startRun, stepSim, typ
 
 export interface ScriptEntry { readonly step: number; readonly actions: readonly Action[] }
 
-export const ACTIONS: readonly Action[] = ["left", "right", "jump", "slide", "rasengan", "dash", "clones", "rasenshuriken", "cycleForm"];
+export const ACTIONS: readonly Action[] = ["left", "right", "jump", "slide", "spiralorb", "dash", "clones", "spiralstar", "cycleForm"];
 
-/** `120:jump+rasengan;240:left` — the format the capture writes. */
+/** `120:jump+spiralorb;240:left` — the format the capture writes. */
 export function decodeActionScript(text: string): ScriptEntry[] {
   if (text.trim() === "") return [];
   return text.split(";").map((chunk) => {
@@ -35,7 +35,7 @@ const round = (x: number, d: number): number => {
 };
 
 export interface TracePoint {
-  step: number; time: number; s: number; x: number; lane: number; y: number; vy: number; speed: number; health: number; chakra: number;
+  step: number; time: number; s: number; x: number; lane: number; y: number; vy: number; speed: number; health: number; spirit: number;
   kills: number; score: number; combo: number; form: string; phase: string; attack: number; dash: number; slide: number;
   invulnerable: number; clones: number; cloneStrikes: number; shurikens: number; deflections: number; damageTaken: number;
   falling: boolean; vaults: number; projectiles: number; aliveEnemies: number;
@@ -43,10 +43,10 @@ export interface TracePoint {
 
 export function tracePoint(z: SimState, step: number): TracePoint {
   let alive = 0;
-  for (const e of z.entities) if (e.alive && e.type !== "chakra") alive++;
+  for (const e of z.entities) if (e.alive && e.type !== "spirit") alive++;
   return {
     step, time: round(z.time, 6), s: round(z.s, 6), x: round(z.x, 6), lane: z.lane, y: round(z.y, 6), vy: round(z.vy, 6), speed: round(z.speed, 6),
-    health: z.health, chakra: round(z.chakra, 6), kills: z.kills, score: z.score, combo: z.combo, form: z.form, phase: z.phase,
+    health: z.health, spirit: round(z.spirit, 6), kills: z.kills, score: z.score, combo: z.combo, form: z.form, phase: z.phase,
     attack: round(z.attack, 6), dash: round(z.dash, 6), slide: round(z.slide, 6), invulnerable: round(z.invulnerable, 6), clones: round(z.clones, 6),
     cloneStrikes: z.cloneStrikes, shurikens: z.shurikens.length, deflections: z.deflections, damageTaken: z.damageTaken, falling: !!z.falling,
     vaults: z.vaults, projectiles: z.projectiles.length, aliveEnemies: alive
@@ -65,7 +65,7 @@ export interface RunRecord {
   kills: number;
   score: number;
   health: number;
-  chakra: number;
+  spirit: number;
   bestCombo: number;
   form: string;
   vaults: number;
@@ -108,7 +108,7 @@ export function runRecorded(decide: Decide, maxSteps: number, seed?: number): Ru
   return {
     outcome: z.phase === "won" ? "won" : z.phase === "lost" ? "lost" : "timeout", steps: n, endPhase: z.phase,
     lostBy: z.phase === "lost" ? (z.falling ? "gap" : "health") : null, distance: round(z.s, 6), time: round(z.time, 6), kills: z.kills, score: z.score,
-    health: z.health, chakra: round(z.chakra, 6), bestCombo: z.bestCombo, form: z.form, vaults: z.vaults, deflections: z.deflections,
+    health: z.health, spirit: round(z.spirit, 6), bestCombo: z.bestCombo, form: z.form, vaults: z.vaults, deflections: z.deflections,
     interrupts: z.interrupts, damageTaken: z.damageTaken, attacksFired: z.attacksFired, cloneStrikes: z.cloneStrikes, eventCounts, events, trace, script, state: z
   };
 }
@@ -127,13 +127,17 @@ export function runIdle(maxSteps: number, seed?: number): RunRecord {
   return runRecorded(() => [], maxSteps, seed);
 }
 
-/** FNV-1a over the course population, identical to the capture's `courseDigest`. */
-export function courseDigest(z: SimState): { entities: number; byType: Record<string, number>; fnv1a: string } {
+/**
+ * FNV-1a over the course population, in the capture's `courseDigest` row format. `typeName` lets a test
+ * hash with the type names recorded in a capture, so the digest can be compared with it exactly.
+ */
+export function courseDigest(z: SimState, typeName: (type: string) => string = (type) => type): { entities: number; byType: Record<string, number>; fnv1a: string } {
   const byType: Record<string, number> = {};
   const rows: string[] = [];
   for (const e of z.entities) {
-    byType[e.type] = (byType[e.type] ?? 0) + 1;
-    rows.push(`${e.id},${e.s.toFixed(6)},${e.lane},${e.type},${e.hp}`);
+    const type = typeName(e.type);
+    byType[type] = (byType[type] ?? 0) + 1;
+    rows.push(`${e.id},${e.s.toFixed(6)},${e.lane},${type},${e.hp}`);
   }
   const text = rows.join("|");
   let h = 0x811c9dc5;

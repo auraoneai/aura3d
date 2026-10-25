@@ -4,7 +4,7 @@
  * `text.ts` maps the simulation's strings to this port's generic on-screen wording.
  *
  * Query parameters (all optional): `autostart=1` (skip the title and countdown), `manual=1` (the sim
- * only advances through `__AURA_SAIYAN_SNAKE_WAY__.stepFrames`), `autopilot=1` (replay `?script=` or nothing).
+ * only advances through `__AURA_SERPENTINE_SKY_RUN__.stepFrames`), `autopilot=1` (replay `?script=` or nothing).
  * Keys: A/D or arrows change lane, Space/W jump, S/down slide, Shift toggles surge, E flies (hold
  * W/S/A/D to steer), P/Esc pauses, M mutes, R/Enter restarts from the results screen.
  */
@@ -16,13 +16,12 @@ import {
 import { blendSamples, sampleOf, type PresentSample } from "./presentation";
 import { createSfx } from "./sfx";
 import { RUNNER_STYLES, hexCss } from "./styles";
-import { displayText } from "./text";
 import { buildWorld, loadRunner, type WorldRuntime } from "./world";
 
 declare global {
   interface Window {
-    __AURA_SAIYAN_SNAKE_WAY__?: unknown;
-    __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string;
+    __AURA_SERPENTINE_SKY_RUN__?: unknown;
+    __AURA_SERPENTINE_SKY_RUN_ERROR__?: string;
   }
 }
 
@@ -186,7 +185,7 @@ function showResults(): void {
   setText("results-title", reached ? "YOU REACHED THE TAIL" : state.phase === "fall" ? "YOU FELL" : "RUN OVER");
   setText("results-sub", reached
     ? "One million kilometres of road behind you, and a jump at the end of it."
-    : displayText(state.phase === "fall" ? state.fallWhy || "OFF THE ROAD" : state.ended || "TOO LATE") + (isBest ? "  ·  new best score" : ""));
+    : (state.phase === "fall" ? state.fallWhy || "OFF THE ROAD" : state.ended || "TOO LATE") + (isBest ? "  ·  new best score" : ""));
   setText("r-km", fmt(distanceKm()));
   setText("r-score", fmt(score));
   setText("r-best", fmt(best));
@@ -206,9 +205,9 @@ function updateHud(): void {
   $("surge-chip").classList.toggle("hot", state.auraRung > 0);
   ($("ki-bar") as HTMLElement).style.width = `${Math.round(Math.max(0, Math.min(1, state.ki / state.kiMax)) * 100)}%`;
   ($("strain-bar") as HTMLElement).style.width = `${Math.round(state.strain * 100)}%`;
-  setText("banner", state.bannerT > 0 ? displayText(state.banner) : "");
-  setText("sub", state.bannerT > 0 ? displayText(state.bannerSub) : "");
-  setText("toast", state.toastT > 0 ? displayText(state.toast) : "");
+  setText("banner", state.bannerT > 0 ? state.banner : "");
+  setText("sub", state.bannerT > 0 ? state.bannerSub : "");
+  setText("toast", state.toastT > 0 ? state.toast : "");
   setText("phase", phaseLabel());
   setHidden("title", started);
   setHidden("hud", !started || resultsShown);
@@ -223,17 +222,17 @@ function updateHud(): void {
 
 /* ------------------------------------------------------------------ sound cues */
 
-let prev = { grounded: true, vy: 0, stumble: 0, rung: 0, nimbus: 0, pulse: 0, phase: "run" };
+let prev = { grounded: true, vy: 0, stumble: 0, rung: 0, puff: 0, pulse: 0, phase: "run" };
 function cues(): void {
-  if (!started || counting > 0) { prev = { grounded: state.grounded, vy: state.vy, stumble: state.stumble, rung: state.auraRung, nimbus: state.nimbus, pulse: state.kiPulse, phase: state.phase }; return; }
+  if (!started || counting > 0) { prev = { grounded: state.grounded, vy: state.vy, stumble: state.stumble, rung: state.auraRung, puff: state.puff, pulse: state.kiPulse, phase: state.phase }; return; }
   if (state.kiPulse > prev.pulse + 0.3) sfx.pickup(state.kiChain);
   if (prev.grounded && !state.grounded && state.vy > 0 && state.phase === "run") sfx.jump();
   if (!prev.grounded && state.grounded && state.phase === "run") sfx.land();
   if (state.stumble > prev.stumble + 0.3) sfx.hit();
   if (state.auraRung > prev.rung) sfx.surge(state.auraRung);
-  if (state.nimbus > 0 && prev.nimbus <= 0) sfx.whoosh();
+  if (state.puff > 0 && prev.puff <= 0) sfx.whoosh();
   if (state.phase !== prev.phase) { if (state.phase === "fall") sfx.fall(); else if (state.phase === "leap") sfx.whoosh(); else if (state.phase === "over") sfx.hit(); }
-  prev = { grounded: state.grounded, vy: state.vy, stumble: state.stumble, rung: state.auraRung, nimbus: state.nimbus, pulse: state.kiPulse, phase: state.phase };
+  prev = { grounded: state.grounded, vy: state.vy, stumble: state.stumble, rung: state.auraRung, puff: state.puff, pulse: state.kiPulse, phase: state.phase };
 }
 
 /* ------------------------------------------------------------------ loop */
@@ -314,7 +313,7 @@ function reportError(error: unknown): void {
   const code = (error as { code?: unknown })?.code;
   const details = (error as { details?: unknown })?.details;
   const message = `${base}${typeof code === "string" ? ` [${code}]` : ""}${details ? ` ${JSON.stringify(details).slice(0, 6000)}` : ""}`;
-  if (!window.__AURA_SAIYAN_SNAKE_WAY_ERROR__) window.__AURA_SAIYAN_SNAKE_WAY_ERROR__ = message;
+  if (!window.__AURA_SERPENTINE_SKY_RUN_ERROR__) window.__AURA_SERPENTINE_SKY_RUN_ERROR__ = message;
   $("loading-status").textContent = `The road could not load: ${message.slice(0, 300)}`;
   $("loading").classList.remove("hidden");
   console.error(error);

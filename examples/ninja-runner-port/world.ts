@@ -2,7 +2,7 @@
  * Ninja Runner world on the public `@aura3d/engine` surface. The ground is lit PBR (one mesh per biome and surface),
  * the village, rooftops, crossing, forest and valley are instanced PBR scenery (`scenery.ts`), lit by the outdoor-day
  * look (HDRI, shadowed key light) plus a hemisphere fill, exponential fog, bloom, contact shadows and a vignette. The
- * sky, river, falls, chakra flames, Rasengan orb, wind shuriken, auras and particles keep their ported `material.custom`
+ * sky, river, falls, spirit flames, Spiralorb orb, wind shuriken, auras and particles keep their ported `material.custom`
  * shaders. Every character comes from one `cloneSkinned` call: the hero, three shadow clones and eight enemies share one
  * rigged model (CC0, see assets/ATTRIBUTION.md) with independent skeletons and animation, differentiated by tint, scale
  * and attached weapons.
@@ -26,7 +26,7 @@ export const ACTOR_COUNT = 13;
 const HERO = 0;
 const CLONE_SLOTS = [1, 2, 3] as const;
 const ENEMY_SLOTS = [4, 5, 6, 7, 8, 9, 10, 11] as const;
-/** The sage model stands in for the hero in the Sage and Kurama forms (slot 12); heavy enemies use the brute slots. */
+/** The sage model stands in for the hero in the Sage and Beast forms (slot 12); heavy enemies use the brute slots. */
 const SAGE = 12;
 const BRUTE_SLOTS = [10, 11] as const;
 const SOLDIER_SLOTS = [4, 5, 6, 7, 8, 9] as const;
@@ -131,10 +131,10 @@ export function drawFlame(ctx: CanvasRenderingContext2D): void {
   ctx.beginPath(); ctx.moveTo(49, 82); ctx.bezierCurveTo(34, 57, 73, 48, 78, 66); ctx.bezierCurveTo(82, 83, 59, 89, 56, 75); ctx.bezierCurveTo(53, 64, 68, 60, 68, 72); ctx.moveTo(48, 79); ctx.lineTo(40, 92); ctx.lineTo(58, 87); ctx.stroke();
 }
 
-export interface ChakraPickup { readonly id: number; readonly s: number; readonly position: readonly [number, number, number] }
+export interface SpiritPickup { readonly id: number; readonly s: number; readonly position: readonly [number, number, number] }
 
-export function chakraPickups(entities: readonly Entity[]): ChakraPickup[] {
-  return entities.filter((e) => e.type === "chakra").map((e) => {
+export function spiritPickups(entities: readonly Entity[]): SpiritPickup[] {
+  return entities.filter((e) => e.type === "spirit").map((e) => {
     const p = groundFrame(e.s, e.lane * laneOffset(e.s), 1.12);
     return { id: e.id, s: e.s, position: [p.x, p.y, p.z] as const };
   });
@@ -144,7 +144,7 @@ interface Tint { readonly base: readonly [number, number, number, number]; reado
 const FORM_TINT: Record<string, Tint> = {
   base: { base: [1, 1, 1, 1], emissive: [0.03, 0.02, 0], strength: 0.1 },
   sage: { base: [1, 1, 1, 1], emissive: [1, 0.5, 0.12], strength: 0.16 },
-  kurama: { base: [1, 0.86, 0.5, 1], emissive: [1, 0.62, 0.1], strength: 0.4 }
+  beast: { base: [1, 0.86, 0.5, 1], emissive: [1, 0.62, 0.1], strength: 0.4 }
 };
 const ENEMY_TINT: Record<EnemyKind, readonly [number, number, number, number]> = {
   scout: [1, 0.8, 0.72, 1], swordsman: [0.8, 0.86, 1, 1], caster: [0.92, 0.8, 1, 1], heavy: [1, 1, 1, 1]
@@ -300,20 +300,20 @@ export function buildWorld(options: WorldOptions): World {
   for (let i = 0; i < STRAP_POOL; i++) builder.add(primitives.box({ name: `strap-${i}`, size: [1, 1, 1], material: strap, castShadow: false }).runtime({ id: `strap-${i}` }));
   for (let i = 0; i < BEAM_PIECE_POOL; i++) builder.add(primitives.box({ name: `beampiece-${i}`, size: [1, 1, 1], material: material.custom(solidSpec(beam, { glow: 0.7, glowColor: glowOrange })) }).runtime({ id: `beampiece-${i}` }));
 
-  const pickups = chakraPickups(options.entities);
+  const pickups = spiritPickups(options.entities);
   builder.add(geometry.custom(geometry.dynamic({
     positions: f32(pickups.flatMap((p) => [...p.position])),
     topology: "points",
     attributes: { aAlive: { itemSize: 1, data: f32(pickups.map(() => 1)) }, aDistance: { itemSize: 1, data: f32(pickups.map((p) => p.s)) } }
-  }), { name: "chakra-flames", material: material.custom(flameSpec(flameMap)) }).runtime({ id: "chakra-flames" }));
+  }), { name: "spirit-flames", material: material.custom(flameSpec(flameMap)) }).runtime({ id: "spirit-flames" }));
 
-  builder.add(primitives.sphere({ name: "rasengan", size: 0.21, material: material.custom(ballSpec()) }).runtime({ id: "rasengan" }));
+  builder.add(primitives.sphere({ name: "spiralorb", size: 0.21, material: material.custom(ballSpec()) }).runtime({ id: "spiralorb" }));
   const sparkSeeds = Array.from({ length: 90 * 3 }, (_, i) => (((i + 1) * (i % 3 === 0 ? 0.618034 : i % 3 === 1 ? 0.754878 : 0.56984)) % 1));
   builder.add(geometry.custom(geometry.dynamic({
     positions: f32(new Array(90 * 3).fill(0)),
     topology: "points",
     attributes: { seed: { itemSize: 3, data: f32(sparkSeeds) } }
-  }), { name: "rasengan-sparks", material: material.custom(sparksSpec()) }).runtime({ id: "rasengan-sparks" }));
+  }), { name: "spiralorb-sparks", material: material.custom(sparksSpec()) }).runtime({ id: "spiralorb-sparks" }));
   for (let i = 0; i < SHURIKEN_POOL; i++) builder.add(primitives.sphere({ name: `shuriken-${i}`, size: 1, material: material.custom(ballSpec()) }).runtime({ id: `shuriken-${i}` }));
   builder.add(primitives.sphere({ name: "aura", size: 1, material: material.custom(auraSpec()) }).runtime({ id: "aura" }));
 
@@ -344,7 +344,7 @@ interface SceneNodeLike { transform: { worldMatrix: ArrayLike<number> } }
 
 const normalize = (v: Vec3): Vec3 => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
 
-function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly ChakraPickup[]): WorldRuntime {
+function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly SpiritPickup[]): WorldRuntime {
   const cameraController = app.camera;
   if (!cameraController) throw new Error("ninja-runner-port: the app exposes no camera controller");
   const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
@@ -452,7 +452,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       node("sky").setPosition(sky.x, 0, sky.z);
       node("river").setUniform?.("waterTime", time);
       node("valley-falls").setUniform?.("fallsTime", time);
-      const flames = node("chakra-flames");
+      const flames = node("spirit-flames");
       flames.setUniform?.("flameTime", time);
       flames.setUniform?.("runnerS", s);
 
@@ -474,11 +474,11 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
         else if (ev.type === "windImpact" || ev.type === "cloneStrike") { const p = at(ev.s as number, ev.lane as number, 1.1); emit(p[0], p[1], p[2], 24, [0.6, 0.95, 1], 6.5, 0.3, 0.65, 0); }
         else if (ev.type === "break") { addPieces(spawnPieces("barrier", "smash", Math.round((ev.s as number) * 10), ev.s as number, ev.lane as number)); const p = at(ev.s as number, ev.lane as number, 0.8); emit(p[0], p[1], p[2], 26, [0.85, 0.6, 0.35], 5, 0.32, 0.7, 5); }
         else if (ev.type === "dash") { const p = groundFrame(s, state.x, 1); emit(p.x, p.y, p.z, 24, [0.5, 0.9, 1], 4, 0.26, 0.55, 0); }
-        else if (ev.type === "rasengan") { const p = groundFrame(s + 0.8, state.x, 1.2); emit(p.x, p.y, p.z, 12, [0.4, 0.8, 1], 3, 0.2, 0.4, 0); }
+        else if (ev.type === "spiralorb") { const p = groundFrame(s + 0.8, state.x, 1.2); emit(p.x, p.y, p.z, 12, [0.4, 0.8, 1], 3, 0.2, 0.4, 0); }
         else if (ev.type === "form" || ev.type === "unlock") {
           lastFormShift = time;
           const p = groundFrame(s, state.x, 0.9);
-          emit(p.x, p.y, p.z, 46, ev.form === "kurama" ? [1, 0.7, 0.18] : [1, 0.62, 0.22], 7, 0.34, 0.9, -1.5);
+          emit(p.x, p.y, p.z, 46, ev.form === "beast" ? [1, 0.7, 0.18] : [1, 0.62, 0.22], 7, 0.34, 0.9, -1.5);
         } else if (ev.type === "enemyAttack") { const p = at(ev.s as number, ev.lane as number, 1.2); emit(p[0], p[1], p[2], 8, [1, 0.5, 0.3], 3, 0.2, 0.35, 0); }
       }
       if (flamesDirty) { flames.updateAttribute?.("aAlive", { array: aliveFlags, offset: 0 }); flamesDirty = false; }
@@ -497,7 +497,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       else if (!grounded) anim = { clip: CLIPS.jump, rate: 0.9 };
       else if (state.slide > 0) anim = { clip: CLIPS.slide, rate: 1 };
       else anim = { clip: CLIPS.run, rate: (state.dash > 0 ? 1.7 : 1) * (1.15 + (state.speed - 18) * 0.05) };
-      const heroScale = state.form === "kurama" ? 1.12 : 1;
+      const heroScale = state.form === "beast" ? 1.12 : 1;
       const flash = state.invulnerable > 0 && Math.floor(state.time * 14) % 2 === 0;
       const heroTint = flash ? FLASH_TINT : FORM_TINT[state.form]!;
       const heroSlot = state.form === "base" ? HERO : SAGE;
@@ -600,11 +600,11 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       }
       for (const kind of ["plank", "strap", "beam"] as const) for (let i = slot[kind]; i < POOL_CAP[kind]; i++) node(`${poolName[kind]}-${i}`).setVisible(false);
 
-      /* Rasengan orb in the hero's hand + sparks, wind shuriken */
-      const ball = node("rasengan");
+      /* Spiralorb orb in the hero's hand + sparks, wind shuriken */
+      const ball = node("spiralorb");
       const casting = state.attack > 0 || state.shurikenCast > 0;
       ball.setVisible(casting);
-      const sparks = node("rasengan-sparks");
+      const sparks = node("spiralorb-sparks");
       sparks.setVisible(casting);
       if (casting) {
         refresh(activeHero);
@@ -642,7 +642,7 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Chak
       if (auraOn) {
         const c = groundFrame(s, state.x, state.y + 0.95 * heroScale);
         const pulse = 1 + Math.sin(time * 6) * 0.05;
-        const kur = state.form === "kurama";
+        const kur = state.form === "beast";
         aura.setPosition(c.x, c.y, c.z);
         aura.setScale([(kur ? 1.0 : 0.78) * pulse, (kur ? 1.35 : 1.15) * pulse, (kur ? 1.0 : 0.78) * pulse]);
         aura.setUniform?.("auraTime", time);

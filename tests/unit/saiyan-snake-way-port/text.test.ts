@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { FORBIDDEN_DISPLAY_TERMS, displayText } from "../../../examples/saiyan-snake-way-port/text";
 import { STAGES } from "../../../examples/saiyan-snake-way-port/sim";
+
+/** Terms borrowed from the game this one was inspired by: none may appear in any string the game can show. */
+const FORBIDDEN: readonly RegExp[] = [
+  /kaio/i, /saiyan/i, /goku/i, /senzu/i, /yemma/i, /king kai/i, /princess snake/i, /nimbus/i, /power pole/i, /saibaman/i,
+  /kamehameha/i, /dragon ?ball/i, /vegeta/i, /piccolo/i, /namek/i
+];
 
 /** Every string literal the simulation can put on screen: toast/banner arguments, stage names and subtitles, end reasons. */
 function emittedStrings(): string[] {
@@ -18,15 +23,15 @@ describe("player-facing text", () => {
   const strings = emittedStrings();
   it("finds the simulation's strings", () => {
     expect(strings.length).toBeGreaterThan(30);
-    expect(strings.some((s) => /KAIO-KEN/.test(s))).toBe(true);
+    expect(strings.some((s) => /SURGE/.test(s))).toBe(true);
   });
-  it("never shows a franchise term after mapping", () => {
-    for (const s of strings) for (const term of FORBIDDEN_DISPLAY_TERMS) expect(displayText(s), `"${s}" -> "${displayText(s)}"`).not.toMatch(term);
+  it("shows no term borrowed from another game, straight from the source", () => {
+    for (const s of strings) for (const term of FORBIDDEN) expect(s, `"${s}"`).not.toMatch(term);
   });
-  it("maps the known terms to generic wording and leaves other text alone", () => {
-    expect(displayText("KAIO-KEN ×4")).toBe("SURGE ×4");
-    expect(displayText("SENZU BEAN  —  saved")).toBe("VITAL SEED  —  saved");
-    expect(displayText("KI RESTORED")).toBe("SPARK RESTORED");
-    expect(displayText("THE LONG ROAD")).toBe("THE LONG ROAD");
+  it("keeps the source and the page free of those terms too", () => {
+    for (const file of ["sim.ts", "main.ts", "world.ts", "shaders.ts", "index.html"]) {
+      const text = readFileSync(new URL(`../../../examples/saiyan-snake-way-port/${file}`, import.meta.url), "utf8").replace(/saiyan-snake-way/g, "");
+      for (const term of FORBIDDEN) expect(text, `${file} matches ${term}`).not.toMatch(term);
+    }
   });
 });

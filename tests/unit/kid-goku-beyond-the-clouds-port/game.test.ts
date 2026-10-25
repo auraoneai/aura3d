@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MOUNT_PAOZU as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
+import { CUMULUS_RIDGE as CH } from "../../../examples/kid-goku-beyond-the-clouds-port/chapter";
 import { Encounters } from "../../../examples/kid-goku-beyond-the-clouds-port/encounters";
 import { FINALE_SECONDS, Game } from "../../../examples/kid-goku-beyond-the-clouds-port/game";
 import { IDLE, createState, stepFrame, type StepInput } from "../../../examples/kid-goku-beyond-the-clouds-port/sim";
@@ -115,16 +115,16 @@ describe("cloud runner: game phases", () => {
 
   it("a charged sky cloud rescues a fall instead of costing a heart", () => {
     const g = fresh(120);
-    g.state.nimbus.charge = 1;
+    g.state.glider.charge = 1;
     let called = false;
     const ev: string[] = [];
     for (let i = 0; i < 200; i++) {
-      const nimbus = !called && g.phase === "falling";
-      if (nimbus) called = true;
-      ev.push(...g.frame(DT, { ...IDLE, nimbus }));
+      const glider = !called && g.phase === "falling";
+      if (glider) called = true;
+      ev.push(...g.frame(DT, { ...IDLE, glider }));
     }
     expect(ev).toContain("fall-start");
-    expect(ev).toContain("nimbus-call");
+    expect(ev).toContain("glider-call");
     expect(ev).not.toContain("respawn");
     expect(g.state.hearts).toBe(3);
   });

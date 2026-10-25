@@ -14,27 +14,27 @@ export const DEFAULT_SEED = 17;
 export const TUNING = Object.freeze({
   length: COURSE_LENGTH, laneWidth: 2.35, baseSpeed: 18, maxSpeed: 25, gravity: 25, jumpVelocity: 10.4,
   attackDuration: 0.78, attackCooldown: 0.25, attackCost: 14, attackReach: 4.6, dashCost: 38, dashDuration: 1.2,
-  health: 5, hitChakraCost: 35, stumbleDuration: 1.1, maxChakra: 300, chakraRegen: 12, hitProtection: 6,
+  health: 5, hitSpiritCost: 35, stumbleDuration: 1.1, maxSpirit: 300, spiritRegen: 12, hitProtection: 6,
   cloneCost: 60, cloneDuration: 6, cloneCooldown: 10, shurikenCost: 75, shurikenCooldown: 4, shurikenWindup: 0.55
 });
 
-export type Form = "base" | "sage" | "kurama";
+export type Form = "base" | "sage" | "beast";
 export type Phase = "intro" | "running" | "paused" | "won" | "lost";
 export type EnemyKind = "scout" | "swordsman" | "caster" | "heavy";
-export type EntityKind = EnemyKind | "barrier" | "beam" | "chakra";
-export type Action = "left" | "right" | "jump" | "slide" | "rasengan" | "dash" | "clones" | "rasenshuriken" | "cycleForm" | Form;
+export type EntityKind = EnemyKind | "barrier" | "beam" | "spirit";
+export type Action = "left" | "right" | "jump" | "slide" | "spiralorb" | "dash" | "clones" | "spiralstar" | "cycleForm" | Form;
 
 /** Distance at which each form unlocks. */
-export const FORM_UNLOCK: Readonly<Record<Form, number>> = Object.freeze({ base: 0, sage: 600, kurama: 1620 });
+export const FORM_UNLOCK: Readonly<Record<Form, number>> = Object.freeze({ base: 0, sage: 600, beast: 1620 });
 export const formUnlocked = (state: { s: number }, form: Form): boolean => state.s >= FORM_UNLOCK[form];
 
 export interface EnemySpec { name: string; attack: string; range: number; windup: number; speed: number; height: number; hint: string }
 
 export const ENEMIES: Readonly<Record<EnemyKind, EnemySpec>> = Object.freeze({
-  scout: { name: "Fox scout", attack: "kunai", range: 32, windup: 0.8, speed: 22, height: 1.2, hint: "Kunai · dodge, slide or deflect" },
-  swordsman: { name: "Hawk swordsman", attack: "slash", range: 22, windup: 0.68, speed: 16, height: 1.2, hint: "Sword rush · dodge or Rasengan" },
+  scout: { name: "Fox scout", attack: "dart", range: 32, windup: 0.8, speed: 22, height: 1.2, hint: "Dart · dodge, slide or deflect" },
+  swordsman: { name: "Hawk swordsman", attack: "slash", range: 22, windup: 0.68, speed: 16, height: 1.2, hint: "Sword rush · dodge or Spiralorb" },
   caster: { name: "Owl caster", attack: "fire", range: 36, windup: 0.88, speed: 19, height: 1.5, hint: "Fire style · slide or deflect" },
-  heavy: { name: "Boar guardian", attack: "wave", range: 33, windup: 0.86, speed: 17, height: 0.32, hint: "Chakra shockwave · jump or dodge" }
+  heavy: { name: "Boar guardian", attack: "wave", range: 33, windup: 0.86, speed: 17, height: 0.32, hint: "Spirit shockwave · jump or dodge" }
 });
 
 export const isEnemy = (e: { type: string }): boolean => Object.prototype.hasOwnProperty.call(ENEMIES, e.type);
@@ -61,12 +61,12 @@ export interface SimEvent { type: string; [key: string]: unknown }
 
 export interface SimState {
   phase: Phase; time: number; s: number; x: number; lane: number; y: number; vy: number; speed: number; health: number;
-  chakra: number; attack: number; attackCooldown: number; attackSerial: number; attackStartedAt: number; lastStrikeAt: number;
+  spirit: number; attack: number; attackCooldown: number; attackSerial: number; attackStartedAt: number; lastStrikeAt: number;
   shurikenStartedAt: number; shurikenCast: number; dash: number; dashCooldown: number; slide: number; invulnerable: number;
   combo: number; bestCombo: number; comboTimer: number; kills: number; score: number; damageTaken: number; attacksFired: number;
   deflections: number; interrupts: number; projectileSerial: number; projectiles: Projectile[]; entities: Entity[];
   events: SimEvent[]; lastStep: number; form: Form; clones: number; cloneCooldown: number; clonePulse: number;
-  cloneStrikes: number; shurikenCooldown: number; shurikens: Shuriken[]; jutsuSerial: number; vaults: number;
+  cloneStrikes: number; shurikenCooldown: number; shurikens: Shuriken[]; techniqueSerial: number; vaults: number;
   lastVault: number; falling: boolean; stumble: number; announcedUnlocks: string[];
   /** Reworked contact rules (see `RAM`): off reproduces the original bit for bit. */
   ram: boolean; stumbleDrag: number;
@@ -84,7 +84,7 @@ export function difficultyAt(s: number): { progress: number; spacing: number; ru
   return { progress: e, spacing: 32 - 12 * e, runSpeed: 3.2 + 4 * e, pairChance: 0.1 + 0.8 * e, armorChance: 0.42 * e };
 }
 
-/** Course population: enemies, obstacles and chakra pickups, deterministic in `seed`. Original `sS`. */
+/** Course population: enemies, obstacles and spirit pickups, deterministic in `seed`. Original `sS`. */
 export function generateEntities(seed: number = DEFAULT_SEED): Entity[] {
   const rand = seededRandom(seed);
   const list: Entity[] = [];
@@ -101,7 +101,7 @@ export function generateEntities(seed: number = DEFAULT_SEED): Entity[] {
     return entity;
   };
   const pickups = (s: number, lane: number): void => {
-    for (const back of [18, 14, 10]) add(s - back, lane, "chakra").value = 8;
+    for (const back of [18, 14, 10]) add(s - back, lane, "spirit").value = 8;
   };
   for (let l = 58, c = 0; l < TUNING.length - 210; c++) {
     const h = difficultyAt(l);
@@ -112,7 +112,7 @@ export function generateEntities(seed: number = DEFAULT_SEED): Entity[] {
       if (c === 0) f.opening = true;
       if (c > 3 && isEnemy(f) && rand() < h.pairChance) add(l, d === 1 ? -1 : d + 1, c % 2 ? "scout" : "swordsman");
       pickups(l, d);
-      if (c % 3 === 0) add(l + 12, -d, "chakra");
+      if (c % 3 === 0) add(l + 12, -d, "spirit");
     }
     l += h.spacing;
   }
@@ -160,12 +160,12 @@ export interface CreateStateOptions { ram?: boolean }
 /** A fresh run, in the intro phase. Original `uf`. */
 export function createState(seed: number = DEFAULT_SEED, options: CreateStateOptions = {}): SimState {
   return {
-    phase: "intro", time: 0, s: 0, x: 0, lane: 0, y: 0, vy: 0, speed: TUNING.baseSpeed, health: TUNING.health, chakra: TUNING.maxChakra,
+    phase: "intro", time: 0, s: 0, x: 0, lane: 0, y: 0, vy: 0, speed: TUNING.baseSpeed, health: TUNING.health, spirit: TUNING.maxSpirit,
     attack: 0, attackCooldown: 0, attackSerial: 0, attackStartedAt: -100, lastStrikeAt: -100, shurikenStartedAt: -100, shurikenCast: 0,
     dash: 0, dashCooldown: 0, slide: 0, invulnerable: 0, combo: 0, bestCombo: 0, comboTimer: 0, kills: 0, score: 0, damageTaken: 0,
     attacksFired: 0, deflections: 0, interrupts: 0, projectileSerial: 0, projectiles: [], entities: generateEntities(seed), events: [],
     lastStep: 0, form: "base", clones: 0, cloneCooldown: 0, clonePulse: 0, cloneStrikes: 0, shurikenCooldown: 0, shurikens: [],
-    jutsuSerial: 0, vaults: 0, lastVault: -1, falling: false, stumble: 0, announcedUnlocks: ["base"],
+    techniqueSerial: 0, vaults: 0, lastVault: -1, falling: false, stumble: 0, announcedUnlocks: ["base"],
     ram: options.ram === true, stumbleDrag: 0.32
   };
 }
@@ -183,30 +183,30 @@ export function applyAction(state: SimState, action: Action): boolean {
   if (state.phase !== "running" || state.falling) return false;
   let e: Action = action;
   if (e === "cycleForm") {
-    const unlocked = (["sage", "kurama"] as const).filter((n) => formUnlocked(state, n));
+    const unlocked = (["sage", "beast"] as const).filter((n) => formUnlocked(state, n));
     if (!unlocked.length) return false;
-    e = unlocked[(unlocked.indexOf(state.form as "sage" | "kurama") + 1) % unlocked.length]!;
+    e = unlocked[(unlocked.indexOf(state.form as "sage" | "beast") + 1) % unlocked.length]!;
   }
-  if (e === "base" || e === "sage" || e === "kurama") {
+  if (e === "base" || e === "sage" || e === "beast") {
     if (state.form === e || !formUnlocked(state, e)) return false;
     state.form = e;
     state.events.push({ type: "form", form: e });
     return true;
   }
-  if (e === "clones" && state.cloneCooldown <= 0 && state.chakra >= TUNING.cloneCost) {
-    state.chakra -= TUNING.cloneCost;
+  if (e === "clones" && state.cloneCooldown <= 0 && state.spirit >= TUNING.cloneCost) {
+    state.spirit -= TUNING.cloneCost;
     state.clones = TUNING.cloneDuration;
     state.cloneCooldown = TUNING.cloneCooldown;
     state.clonePulse = 0;
     state.events.push({ type: "clones" });
     return true;
   }
-  if (e === "rasenshuriken" && state.shurikenCooldown <= 0 && state.attack <= 0 && state.chakra >= TUNING.shurikenCost) {
-    state.chakra -= TUNING.shurikenCost;
+  if (e === "spiralstar" && state.shurikenCooldown <= 0 && state.attack <= 0 && state.spirit >= TUNING.shurikenCost) {
+    state.spirit -= TUNING.shurikenCost;
     state.shurikenCooldown = TUNING.shurikenCooldown;
     state.shurikenCast = TUNING.shurikenWindup;
     state.shurikenStartedAt = state.time;
-    state.events.push({ type: "rasenshuriken" });
+    state.events.push({ type: "spiralstar" });
     return true;
   }
   if (e === "left") { state.lane = clamp(state.lane - 1, -1, 1); return true; }
@@ -222,19 +222,19 @@ export function applyAction(state: SimState, action: Action): boolean {
     if (state.y > 0) state.vy = Math.min(state.vy, -18);
     return true;
   }
-  if (e === "rasengan" && state.attack <= 0 && state.shurikenCast <= 0 && state.attackCooldown <= 0 && state.chakra >= TUNING.attackCost) {
+  if (e === "spiralorb" && state.attack <= 0 && state.shurikenCast <= 0 && state.attackCooldown <= 0 && state.spirit >= TUNING.attackCost) {
     state.slide = 0;
     state.attack = TUNING.attackDuration;
     state.attackSerial++;
     state.attackStartedAt = state.time;
-    state.chakra -= TUNING.attackCost;
-    state.events.push({ type: "rasengan" });
+    state.spirit -= TUNING.attackCost;
+    state.events.push({ type: "spiralorb" });
     return true;
   }
-  if (e === "dash" && state.dash <= 0 && state.dashCooldown <= 0 && state.chakra >= TUNING.dashCost) {
+  if (e === "dash" && state.dash <= 0 && state.dashCooldown <= 0 && state.spirit >= TUNING.dashCost) {
     state.dash = TUNING.dashDuration;
     state.dashCooldown = 2.2;
-    state.chakra -= TUNING.dashCost;
+    state.spirit -= TUNING.dashCost;
     state.attackSerial++;
     state.slide = 0;
     state.events.push({ type: "dash" });
@@ -248,10 +248,10 @@ function damage(i: SimState, source: { id: number }, kind = "contact"): void {
   if (i.invulnerable > 0 || i.dash > 0) return;
   i.health--;
   i.damageTaken++;
-  i.chakra = Math.max(0, i.chakra - TUNING.hitChakraCost);
+  i.spirit = Math.max(0, i.spirit - TUNING.hitSpiritCost);
   i.stumble = TUNING.stumbleDuration;
   i.stumbleDrag = 0.32;
-  i.invulnerable = TUNING.hitProtection + (i.form === "kurama" ? 2 : 0);
+  i.invulnerable = TUNING.hitProtection + (i.form === "beast" ? 2 : 0);
   i.combo = 0;
   i.comboTimer = 0;
   i.events.push({ type: "damage", entity: source.id, source: kind });
@@ -293,7 +293,7 @@ function strike(i: SimState, e: Entity, serial: number = i.attackSerial, power =
     i.bestCombo = Math.max(i.bestCombo, i.combo);
     i.comboTimer = 4.1;
     i.score += Math.round((e.type === "heavy" ? 250 : e.type === "swordsman" || e.type === "caster" ? 150 : 100) * (1 + Math.min(i.combo - 1, 9) * 0.2));
-    i.chakra = clamp(i.chakra + 10, 0, TUNING.maxChakra);
+    i.spirit = clamp(i.spirit + 10, 0, TUNING.maxSpirit);
     i.events.push({ type: "kill", entity: e.id, lane: e.lane, s: e.s, heavy: e.type === "heavy", combo: i.combo });
   } else {
     e.s += 12;
@@ -389,7 +389,7 @@ function updateProjectiles(i: SimState, prevS: number, t: number): void {
       p.alive = false;
       i.deflections++;
       i.score += 30;
-      i.chakra = clamp(i.chakra + 5, 0, TUNING.maxChakra);
+      i.spirit = clamp(i.spirit + 5, 0, TUNING.maxSpirit);
       i.events.push({ type: "deflect", entity: p.id, lane: p.lane, s: p.s, attack: p.type });
     } else if (r >= -0.55 && a <= 0.55) {
       const avoided = p.type === "wave" ? i.y > 0.63 : p.type === "fire" ? i.slide > 0 || i.y > 1.65 : i.slide > 0 || i.y > 1.27;
@@ -402,12 +402,12 @@ function updateProjectiles(i: SimState, prevS: number, t: number): void {
   i.projectiles.length = n;
 }
 
-/** Clone strikes and Rasenshuriken. Original `lS`. */
-function updateJutsu(i: SimState, t: number): void {
+/** Clone strikes and Spiralstar. Original `lS`. */
+function updateTechnique(i: SimState, t: number): void {
   if (i.shurikenCast > 0) {
     i.shurikenCast = Math.max(0, i.shurikenCast - t);
     if (i.shurikenCast === 0) {
-      i.shurikens.push({ id: ++i.jutsuSerial, s: i.s + 1, x: i.x, age: 0, hits: [] });
+      i.shurikens.push({ id: ++i.techniqueSerial, s: i.s + 1, x: i.x, age: 0, hits: [] });
       i.events.push({ type: "shurikenRelease" });
     }
   }
@@ -415,7 +415,7 @@ function updateJutsu(i: SimState, t: number): void {
     i.clonePulse = 0.7;
     const targets = i.entities.filter((s) => s.alive && isEnemy(s) && s.s - i.s > 0 && s.s - i.s < 15).slice(0, 4);
     for (const target of targets) {
-      strike(i, target, -1e5 - ++i.jutsuSerial);
+      strike(i, target, -1e5 - ++i.techniqueSerial);
       i.cloneStrikes++;
       i.events.push({ type: "cloneStrike", s: target.s, lane: target.lane });
     }
@@ -457,14 +457,14 @@ export function stepSim(i: SimState, dtRaw: number): void {
     if (i.attack === 0) i.attackCooldown = TUNING.attackCooldown;
   }
   i.dash = Math.max(0, i.dash - e);
-  i.chakra = clamp(i.chakra + (i.form === "kurama" ? -4 : i.stumble > 0 ? 0 : i.form === "sage" ? 16 : TUNING.chakraRegen) * e, 0, TUNING.maxChakra);
-  if (i.form === "kurama" && i.chakra <= 0) {
+  i.spirit = clamp(i.spirit + (i.form === "beast" ? -4 : i.stumble > 0 ? 0 : i.form === "sage" ? 16 : TUNING.spiritRegen) * e, 0, TUNING.maxSpirit);
+  if (i.form === "beast" && i.spirit <= 0) {
     i.form = "base";
     i.events.push({ type: "form", form: "base" });
   }
-  i.speed = Math.min(TUNING.maxSpeed, TUNING.baseSpeed + i.time * 0.11) * (i.dash > 0 ? 1.65 : i.form === "kurama" ? 1.12 : 1) * (1 - (i.stumbleDrag * i.stumble) / TUNING.stumbleDuration);
+  i.speed = Math.min(TUNING.maxSpeed, TUNING.baseSpeed + i.time * 0.11) * (i.dash > 0 ? 1.65 : i.form === "beast" ? 1.12 : 1) * (1 - (i.stumbleDrag * i.stumble) / TUNING.stumbleDuration);
   i.s += i.speed * e;
-  for (const form of ["sage", "kurama"] as const) {
+  for (const form of ["sage", "beast"] as const) {
     if (formUnlocked(i, form) && !i.announcedUnlocks.includes(form)) {
       i.announcedUnlocks.push(form);
       i.events.push({ type: "unlock", form });
@@ -499,7 +499,7 @@ export function stepSim(i: SimState, dtRaw: number): void {
     }
     return;
   }
-  updateJutsu(i, e);
+  updateTechnique(i, e);
   for (const r of i.entities) {
     if (!r.alive) continue;
     if (r.approach && isEnemy(r)) approach(i, r, e);
@@ -507,10 +507,10 @@ export function stepSim(i: SimState, dtRaw: number): void {
     const a = r.s - i.s;
     const o = Math.abs(i.x - r.lane * laneOffset(r.s));
     if (a > 48 || a < -5) continue;
-    if (r.type === "chakra") {
+    if (r.type === "spirit") {
       if (o < 0.85 && Math.abs(a) < 1.4 && i.y < 2.8) {
         r.alive = false;
-        i.chakra = clamp(i.chakra + (r.value || 15), 0, TUNING.maxChakra);
+        i.spirit = clamp(i.spirit + (r.value || 15), 0, TUNING.maxSpirit);
         i.score += 15;
         i.events.push({ type: "pickup", entity: r.id, value: r.value || 15 });
       }
@@ -553,11 +553,11 @@ export function drainEvents(state: SimState): SimEvent[] {
   return events;
 }
 
-/** The QA autopilot the original ships (`__konoha.simulate(t, true)` -> `JS()`), as an action list. */
+/** The QA autopilot the original ships (`__lanternhold.simulate(t, true)` -> `JS()`), as an action list. */
 export function qaAutopilotActions(z: SimState): Action[] {
   const actions: Action[] = [];
   if (gapAhead(z.s, z.speed * 0.24) && z.y === 0) actions.push("jump");
-  const next = z.entities.filter((t) => t.alive && t.type !== "chakra" && t.s > z.s - 1).sort((a, b) => a.s - b.s)[0];
+  const next = z.entities.filter((t) => t.alive && t.type !== "spirit" && t.s > z.s - 1).sort((a, b) => a.s - b.s)[0];
   if (!next) return actions;
   const e = next.s - z.s;
   if (e < 26 && e > 5) {
@@ -567,7 +567,7 @@ export function qaAutopilotActions(z: SimState): Action[] {
   if (e < 12) {
     if (next.type === "beam") actions.push("slide");
     else if (next.type === "barrier") actions.push("jump");
-    else if (e < 10) actions.push("rasengan");
+    else if (e < 10) actions.push("spiralorb");
   }
   return actions;
 }
@@ -575,12 +575,12 @@ export function qaAutopilotActions(z: SimState): Action[] {
 export function snapshot(i: SimState): Record<string, unknown> {
   return {
     phase: i.phase, form: i.form, clones: i.clones, cloneStrikes: i.cloneStrikes, shurikens: i.shurikens.length, vaults: i.vaults,
-    falling: i.falling, stumble: i.stumble, time: i.time, distance: i.s, lane: i.lane, x: i.x, y: i.y, health: i.health, chakra: i.chakra,
-    maxChakra: TUNING.maxChakra, invulnerable: i.invulnerable, kills: i.kills, combo: i.combo, bestCombo: i.bestCombo, attack: i.attack,
+    falling: i.falling, stumble: i.stumble, time: i.time, distance: i.s, lane: i.lane, x: i.x, y: i.y, health: i.health, spirit: i.spirit,
+    maxSpirit: TUNING.maxSpirit, invulnerable: i.invulnerable, kills: i.kills, combo: i.combo, bestCombo: i.bestCombo, attack: i.attack,
     dash: i.dash, slide: i.slide, score: i.score, damageTaken: i.damageTaken, attacksFired: i.attacksFired, deflections: i.deflections,
     interrupts: i.interrupts,
     projectiles: i.projectiles.map((p) => ({ id: p.id, type: p.type, distance: p.s - i.s, lane: p.lane, x: p.x })),
-    remaining: i.entities.filter((e) => e.alive && e.type !== "chakra").map((e) => ({ id: e.id, type: e.type, distance: e.s - i.s, lane: e.lane, hp: e.hp, attack: e.intent?.stage ?? null })).filter((e) => e.distance >= -3 && e.distance < 60)
+    remaining: i.entities.filter((e) => e.alive && e.type !== "spirit").map((e) => ({ id: e.id, type: e.type, distance: e.s - i.s, lane: e.lane, hp: e.hp, attack: e.intent?.stage ?? null })).filter((e) => e.distance >= -3 && e.distance < 60)
   };
 }
 

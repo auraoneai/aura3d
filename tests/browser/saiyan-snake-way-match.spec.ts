@@ -43,13 +43,13 @@ test.describe("saiyan-snake-way matched capture", () => {
     const boot = async (query: string): Promise<void> => {
       await page.goto(`${server.origin}${LAB}?${query}`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => {
-        const w = window as unknown as { __AURA_SAIYAN_SNAKE_WAY__?: { ready: boolean }; __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string };
-        return w.__AURA_SAIYAN_SNAKE_WAY__?.ready === true || Boolean(w.__AURA_SAIYAN_SNAKE_WAY_ERROR__);
+        const w = window as unknown as { __AURA_SERPENTINE_SKY_RUN__?: { ready: boolean }; __AURA_SERPENTINE_SKY_RUN_ERROR__?: string };
+        return w.__AURA_SERPENTINE_SKY_RUN__?.ready === true || Boolean(w.__AURA_SERPENTINE_SKY_RUN_ERROR__);
       }, undefined, { timeout: 900_000 });
-      const bootError = await page.evaluate(() => (window as unknown as { __AURA_SAIYAN_SNAKE_WAY_ERROR__?: string }).__AURA_SAIYAN_SNAKE_WAY_ERROR__ ?? null);
+      const bootError = await page.evaluate(() => (window as unknown as { __AURA_SERPENTINE_SKY_RUN_ERROR__?: string }).__AURA_SERPENTINE_SKY_RUN_ERROR__ ?? null);
       expect(bootError, JSON.stringify(errors.slice(0, 8))).toBeNull();
     };
-    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SAIYAN_SNAKE_WAY__)`) as Promise<T>;
+    const api = <T>(fn: (o: Api) => T | Promise<T>): Promise<T> => page.evaluate(`(${fn.toString()})(window.__AURA_SERPENTINE_SKY_RUN__)`) as Promise<T>;
     const emit = (name: string, base64: string): void => {
       const size = 4000;
       const n = Math.ceil(base64.length / size);
@@ -75,9 +75,9 @@ test.describe("saiyan-snake-way matched capture", () => {
       await api((o) => { o.start(); o.setState!({ invuln: 1e6 }); o.stepFrames(400); return 0; });
       await api((o) => { o.setState!({ grounded: false, vy: 9, y: 3.2 }); return 0; }); await shot("x-jump");
       await api((o) => { o.setState!({ grounded: true, vy: 0, y: 0, sliding: 0.5 }); return 0; }); await shot("x-slide");
-      await api((o) => { o.setState!({ sliding: 0, nimbus: 6, y: 9, grounded: false, speed: 70 }); return 0; }); await shot("x-flight");
-      await api((o) => { o.setState!({ nimbus: 0, y: 0, grounded: true, auraRung: 4, auraVis: 1, kaio: "on", speed: 90 }); return 0; }); await shot("x-surge");
-      await api((o) => { o.setState!({ auraRung: 0, auraVis: 0, kaio: "off", speed: 32, phase: "fall", fallWhy: "OFF THE ROAD" }); o.outro!(1.1); return 0; }); await shot("x-fall");
+      await api((o) => { o.setState!({ sliding: 0, puff: 6, y: 9, grounded: false, speed: 70 }); return 0; }); await shot("x-flight");
+      await api((o) => { o.setState!({ puff: 0, y: 0, grounded: true, auraRung: 4, auraVis: 1, surge: "on", speed: 90 }); return 0; }); await shot("x-surge");
+      await api((o) => { o.setState!({ auraRung: 0, auraVis: 0, surge: "off", speed: 32, phase: "fall", fallWhy: "OFF THE ROAD" }); o.outro!(1.1); return 0; }); await shot("x-fall");
       await api((o) => { o.setState!({ phase: "over", ended: "TOO LATE", score: 48210 }); o.outro!(3); return 0; });
       await page.waitForTimeout(600); await shot("x-results");
       await boot("manual=1"); await shot("x-title");

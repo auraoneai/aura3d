@@ -292,7 +292,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     }
   }
 
-  /* ---- the Naka crossing (1240-1390): planks, rails, pylons ---- */
+  /* ---- the river crossing (1240-1390): planks, rails, pylons ---- */
   const bridge = seededRandom(1240);
   for (let d = 1240; d < 1390; d += 1.15) {
     const c = at(d, 0);
