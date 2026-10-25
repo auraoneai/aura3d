@@ -28,6 +28,7 @@ import {
   type RaceEvent,
   type RaceState
 } from "./race";
+import { createOrbitPresenter, viewOf } from "./presentation";
 import { staticColliders } from "./obstacles";
 import { setActiveCourse } from "./track";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -59,6 +60,7 @@ const canvas = $<HTMLCanvasElement>("world");
 /* ------------------------------------------------------------------ state */
 
 let race: RaceState = newRace();
+const presenter = createOrbitPresenter(() => race);
 let view: "chase" | "wide" = "chase";
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
@@ -139,6 +141,7 @@ addEventListener("blur", () => { down.clear(); steerSmooth = 0; if (race.phase =
 function begin(): void {
   sound.unlock();
   race = newRace();
+  presenter.reset();
   checkpointOrder = [];
   runtime?.resetCamera();
   startCountdown(race);
@@ -180,6 +183,7 @@ const loop = createFixedStepLoop({
   isActive: () => ready && !hitStop.active,
   step() {
     simulate(1);
+    presenter.afterStep();
   }
 });
 
@@ -239,10 +243,11 @@ function updateHud(dt: number): void {
 
 let renderFailed = false;
 
-function render(dt: number): void {
+/** `live` draws the poses between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
+function render(dt: number, live = false): void {
   if (!app || !runtime || renderFailed) return;
   try {
-    runtime.update(race, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight), shake.update(dt));
+    runtime.update(live ? viewOf(race, presenter.present(loop, true)) : race, dt, renderTime, view, canvas.clientWidth / Math.max(1, canvas.clientHeight), shake.update(dt));
     app.step(0);
     frames++;
   } catch (error) {
@@ -265,7 +270,7 @@ function tick(now: number): void {
   sound.update({ speed: race.speed, boosting: Boolean(race.boosting), drafting: Boolean(race.drafting), flight: Boolean(race.flight), racing: race.phase === "racing" }, dt);
   hudTimer += dt;
   if (hudTimer >= 0.05 || lastPhase !== race.phase) { updateHud(hudTimer); hudTimer = 0; }
-  render(["paused", "finished", "lost"].includes(race.phase) ? 0 : dt);
+  render(["paused", "finished", "lost"].includes(race.phase) ? 0 : dt, !config.manual && race.phase === "racing");
 }
 
 /* ------------------------------------------------------------------ hooks */
@@ -329,7 +334,7 @@ const orbit = {
   get state() { return snapshot(); },
   get race() { return race; },
   begin,
-  menu() { race = newRace(); checkpointOrder = []; runtime?.resetCamera(); lastPhase = ""; },
+  menu() { race = newRace(); presenter.reset(); checkpointOrder = []; runtime?.resetCamera(); lastPhase = ""; },
   set(patch: Partial<RaceState>) { Object.assign(race, patch); },
   pose(s: number, lane = 0) {
     race.s = s; race.lane = lane; race.lateral = 0; race.heading = 0; race.steerRate = 0;
@@ -339,6 +344,7 @@ const orbit = {
   /** Advance `seconds` of simulated time in 1/60 s steps with a fixed input (or the driver). */
   advance(seconds: number, input?: Input) {
     simulate(Math.round(seconds / STEP), input);
+    presenter.reset();
     updateHud(0);
     render(0);
   }
@@ -350,6 +356,7 @@ const orbit = {
  */
 function replayScript(text: string) {
   race = newRace();
+  presenter.reset();
   checkpointOrder = [];
   runtime?.resetCamera();
   startCountdown(race);
@@ -402,6 +409,7 @@ installQaHooks("strange-orbit", {
     /** Run `n` fixed 1/60 s steps (input optional), then render once. */
     stepFrames(n: number, input?: Input) {
       simulate(Math.max(0, n | 0), input);
+      presenter.reset();
       updateHud(0);
       render(0);
       return runStatus();
@@ -412,6 +420,7 @@ installQaHooks("strange-orbit", {
       while (done < maxFrames && race.phase !== "finished" && race.phase !== "lost") {
         const n = Math.min(chunk, maxFrames - done);
         simulate(n);
+      presenter.reset();
         done += n;
       }
       updateHud(0);
