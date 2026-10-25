@@ -1,0 +1,3 @@
+before-first-load-1280-no-road.jpg {'yellow': 0.0, 'white': 0.0, 'road_std': 14.2, 'car_blue': 0.388, 'car_bright': 0.421, 'car_std': 29.4, 'car_mean': 94.0}
+after-warm-1280-road.jpg {'yellow': 0.0044, 'white': 0.0, 'road_std': 27.0, 'car_blue': 0.382, 'car_bright': 0.426, 'car_std': 28.8, 'car_mean': 93.9}
+after-1440-road.jpg {'yellow': 0.0043, 'white': 0.0, 'road_std': 27.4, 'car_blue': 0.378, 'car_bright': 0.396, 'car_std': 28.6, 'car_mean': 92.0}

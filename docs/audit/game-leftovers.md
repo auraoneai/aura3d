@@ -66,3 +66,10 @@ Done: F2 (QA hook) and F3 (fixed-step loop) for these four ports; F4 (audio) del
 | kid-goku-beyond-the-clouds | migrated, with the port's own `ready` getter, `stepFrames` (returns events), `replay` (segments), `frame` (base64), `pixels`, `capture`, `place`, `settle`, `stats` and `errors` kept as extras; `reset`, `begin`, `routeHealth`, `info`, `diagnostics` and the new `state` come from the kit | migrated | partial: 17 oscillator-only events (jump, orb, dragonball, checkpoint, perfect, jan, ken, rock-paper-scissors, dodge, fall-start, respawn, nimbus-ready/end/empty, finish, dead, screech) are on the bank, compared with the old code in `tests/unit/kid-goku-beyond-the-clouds-port/audio-cues.test.ts`. The noise-bearing events stay (the bank's one-shot noise has no 10 ms attack and a different buffer), as does `ui` (it fires in the same tick as the unlock, and the bank drops cues until its context is running) |
 
 Audio equivalence is parameter-level only: frequencies, glides, envelopes, delays, gains and (Drift thud) the noise samples. Nobody listened to it. `createFixedStepLoop` gained `resetAccumulator()` for the restart paths.
+
+## Gridlock Courier render (2026-10-24)
+
+- Fixed: the first frame drew 47 of 113 calls because programs compile asynchronously and a draw whose program is pending is skipped (`warmPrograms`, `evidence/drift-and-deliver-port/rework/render-fix/`). Other games render straight after `app.ready()` and share the exposure: adopt `warmPrograms(app)` per game.
+- Open: after a long jump the road still flips in and out of consecutive frames on a loaded software-GL runner; cause not found (see the evidence README for the next step).
+- Open: the hypercar still reads as translucent; texture smoothing and paint overrides had no measurable effect; needs a regenerated model or an engine check of model material overrides.
+

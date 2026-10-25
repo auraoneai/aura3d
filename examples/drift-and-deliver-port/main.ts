@@ -10,7 +10,7 @@
  * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, type AuraApp } from "@aura3d/engine";
-import { createRenderInterpolator, drawCanvasMinimap } from "@aura3d/engine/game";
+import { createRenderInterpolator, drawCanvasMinimap, warmPrograms } from "@aura3d/engine/game";
 import { blendPresented, type Presented } from "./presentation";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
@@ -51,6 +51,8 @@ const config = {
   aa: params.get("aa") !== "0",
   tm: params.get("tm") ?? "neutral",
   heal: params.get("heal") !== "0",
+  /** `warm=0` skips the program warm-up so the first frames can miss draws (diagnostics for the first-frame regression spec) */
+  warm: params.get("warm") !== "0",
   healFrames: Number(params.get("healframes")) || undefined,
   sky: params.get("sky") !== "0",
   exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
@@ -132,6 +134,7 @@ function buildScene() {
 
 let app: AuraApp | undefined;
 let ready = false;
+let warmResult: Awaited<ReturnType<typeof warmPrograms>> | null = null;
 let renderTime = 0;
 let frames = 0;
 let blackWatch: BlackFrameWatch | undefined;
@@ -376,7 +379,7 @@ qa.__sim = (steps: number, input: Partial<Keys> | undefined, dt?: number) => {
 
 function status() {
   syncQa();
-  return { phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready };
+  return { phase: game.phase, state: stateVector(car), score: game.score, collected: game.collected, total: pickups.length, combo: car.combo, boost: car.boost, speedKmh: kmh(), frames, ready, warm: warmResult };
 }
 
 const hooks = installQaHooks("drift-and-deliver", {
@@ -404,6 +407,10 @@ const hooks = installQaHooks("drift-and-deliver", {
     render(0);
   },
   extras: {
+    /** resolves once the programs the current view needs are compiled (call after a teleport before capturing a frame) */
+    settle() {
+      return (app ? warmPrograms(app) : Promise.resolve()).then(() => status());
+    },
     applyInput(input: Partial<Keys>) {
       Object.assign(keys, NO_KEYS, input);
     },
@@ -428,6 +435,7 @@ function sizeCanvas(): void {
   canvas.height = Math.max(2, Math.round(canvas.clientHeight * dpr));
 }
 
+
 async function boot(): Promise<void> {
   sizeCanvas();
   app = createAuraApp(canvas, {
@@ -439,6 +447,8 @@ async function boot(): Promise<void> {
     scene: buildScene()
   });
   await app.ready();
+  // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city
+  if (config.warm) warmResult = await warmPrograms(app);
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");

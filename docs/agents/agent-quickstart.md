@@ -54,7 +54,7 @@ const app = createAuraApp("#app", {
     .add(interactions.orbit({ target: "robot" })),
   ...looks.appOptions("product-studio")
 });
-await app.ready(); // the WebGL mount (and GLB load) has settled
+await app.ready(); // the WebGL mount (and GLB load) has settled; shader programs may still be compiling (games: await warmPrograms(app))
 ```
 
 Use `targetHeight` for upright humanoids, `targetMaxDimension` for vehicles and wide props.

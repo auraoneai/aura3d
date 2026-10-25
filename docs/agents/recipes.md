@@ -33,7 +33,7 @@ app.onFrame((frame) => {
   angle += frame.dt * 0.8; // animate in onFrame, scaled by frame.dt
   app.nodes.require("cube").setRotation(angle * 0.45, angle, 0);
 });
-await app.ready(); // renderer mounted, first frame drawn
+await app.ready(); // renderer mounted; programs may still be compiling, so the first frames can miss draws (games: await warmPrograms(app) from @aura3d/engine/game)
 ```
 
 ## 2. A forest of thousands of instances (fog, shadows, per-instance colour)
