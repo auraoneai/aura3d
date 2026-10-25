@@ -130,7 +130,7 @@ export function makeDefaultResolver(
 export async function runSearch(options: SearchOptions): Promise<SearchReport> {
   const env = options.env ?? process.env;
   const limit = options.limit ?? 10;
-  const adapters = buildSearchAdapters(env);
+  const adapters = buildSearchAdapters(env, process.cwd(), options.query);
   const resolver = options.makeResolver
     ? options.makeResolver(adapters)
     : makeDefaultResolver(adapters, limit);

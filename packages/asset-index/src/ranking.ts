@@ -55,6 +55,11 @@ export function scoreAsset(asset: AuraCanonicalAsset, text: string): number {
   const covered = terms.filter(
     (t) => title.includes(t) || tagSet.has(t) || description.includes(t),
   ).length;
+  // Popularity and screened-hero signals only order assets that match the
+  // query: with no matched term (and no semantic match from the hosted index) an
+  // asset scores 0 and is dropped, so a popular unrelated model never shows up
+  // for "sword" or "campfire".
+  if (covered === 0 && !(typeof asset.semanticScore === "number" && asset.semanticScore > 0)) return 0;
   const catalogSignals =
     scoreSignal(asset.semanticScore, 20) +
     scoreSignal(asset.workerScore, 12) +

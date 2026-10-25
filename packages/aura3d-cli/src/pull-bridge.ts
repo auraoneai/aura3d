@@ -214,7 +214,7 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
     );
   }
 
-  const adapters = buildSearchAdapters(env);
+  const adapters = buildSearchAdapters(env, process.cwd(), options.query);
   const resolver = options.makeResolver
     ? options.makeResolver(adapters)
     : makeDefaultResolver(adapters, 10);

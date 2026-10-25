@@ -27,6 +27,15 @@ npx @aura3d/cli@latest assets search "animated humanoid fighting character" --pr
 
 Narrow with `--license cc0|cc-by`, `--max-tris N`, `--animated`; pick a non-top hit with `--index N` or `--candidate-id ID` and repeat the same `--profile`. Only auto-pullable candidates may be pulled: marketplace deep-links and "manual license check required" rows are for the user to download, then admit with `assets add`. If search prints a catalog fetch warning, report it verbatim and mark asset-dependent work `blocked`.
 
+### What search can and cannot give you (measured 2026-10-25, see `docs/audit/asset-catalog-claim.md`)
+
+- `assets search` federates several sources: your project library (`aura.library.json`), a built-in starter pack, open sources (Khronos samples, Poly Haven, jsDelivr CC0 mirror of Kenney and Quaternius packs, OS3A) and a hosted index. The hosted index is a Cloudflare Worker over a database of about 855,000 records, about 93% of them from Objaverse. **When that worker is down the CLI prints `warning: aura-index: asset-index fetch failed 404`; from 4.2.0 it still searches the open sources, and in 4.1.3 it falls back to the starter pack only**; read the warnings.
+- The index is wide, not curated. Of the records, about 1% are CC0, about 88% are CC-BY (**attribution required** in the shipped game), about 9% are non-commercial (never use), and some CC-BY-SA records carry share-alike duties. About 28% of the redistributable records have more than 100,000 triangles. A search hit is a candidate, not an asset you can ship.
+- **Always screen before admitting**: `assets inspect <file>` and the budgets in section 4 (hero or vehicle at most 40k triangles, prop at most 6k, textures at most 2048 px, total at most 10 MB per game). In a 40-hit sample, 42% passed the web budget.
+- Some index rows (Sketchfab-sourced) are not downloadable without a token; if a pull returns 401, take the next candidate or generate.
+- `assets search "<noun>"` returns meshes only; add the word `texture`, `material`, `hdri` or `environment` to search surface maps.
+- If nothing passes: generate with Meshy (section 4), or build the object from kit prefabs and primitives only when it is ground, a ring, a beam or a collider.
+
 ## 3. Admit a file you already have
 
 ```bash
