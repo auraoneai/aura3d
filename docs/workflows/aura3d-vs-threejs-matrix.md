@@ -64,7 +64,7 @@ Status: v3, 2026-10-25 (4.2.0 candidate on `game-rework`; rows say which version
 | 28 | glTF/GLB loading | `GLTFLoader` (+ Draco, KTX2, Meshopt) | Typed `model(assets.x)`; raw string URLs rejected by boundary test | Aura3D better (safety) | `tests/unit/agent-api/public-example-boundary.test.ts` | verified in code |
 | 29 | Other formats (FBX, OBJ, USD, 3DS, Collada, etc.) | Many loaders in addons | Excluded by design (parity doc section 4) | three.js better | `three/examples/jsm/loaders`; parity doc exclusions | doc claim only |
 | 30 | Asset provenance and integrity | None | Production bridge needs same-origin URL + sha256 + provenance, else draws nothing | Aura3D only | production bridge rules; `assets validate` | verified in code |
-| 31 | Asset catalog | None (bring your own) | An asset catalog searchable through the CLI (`aura3d assets search`); entry count not re-counted for this version of the matrix (an earlier figure of 652 is unverified) | Aura3D only | `aura3d assets search` | doc claim only |
+| 31 | Getting assets for a need | None (bring your own files or write geometry) | No catalog. `aura3d assets resolve "<need>"` picks, at build time, an admitted project asset, a licence-clear open-source file (Poly Haven, ambientCG, Khronos samples, a CC0 mirror), Meshy generation (opt-in, budgeted) or a primitives recipe | Aura3D only | `packages/aura3d-cli/src/resolve-ladder.ts`, `tests/unit/aura3d-cli/resolve-ladder.test.ts`; 10 real needs: 7 open-source, 2 recipes, 1 none (`docs/audit/asset-catalog-claim.md`) | verified in code |
 | 32 | AI asset generation pipeline | None | Meshy through Kiro Prism with ledger caps, isolated admission and attribution records | Aura3D only | `meshy-cli` skill; `/tmp/meshy` ledger (not in repo) | doc claim only |
 | 33 | Skeletal animation | `AnimationMixer`, clips, `SkeletonUtils` | `AnimationController`, `cloneSkinned`, clip events, morph/viseme state | tie | skill `aura3d-character-animation` | doc claim only |
 | 34 | Positional/spatial audio | `Audio`, `PositionalAudio`, `AudioListener` | `@aura3d/audio` mixer, `AudioContextManager`, game sound engine | tie | `packages/audio` | doc claim only |
@@ -153,7 +153,7 @@ Separated into genuinely unique and convenience wrappers over things three.js ca
 - Deterministic game QA hooks and fixed-step replay used by 11 ports.
 - Meshy admission pipeline with ledger caps and attribution records.
 - three.js to Aura3D codemod with an honest exact/approximate/none classification.
-- Searchable 652-entry asset catalog.
+- `aura3d assets resolve`: build-time asset ladder (project, open CC0 sources, Meshy, primitives recipe).
 
 ### 4.2 Convenience wrappers (three.js can do it, with more code)
 

@@ -15,7 +15,7 @@ Counts below are reproduced by `marketing/scripts/check-site.mjs`, which now fai
 | Declared license | `MIT` in all 24 package.json files | package.json `license` |
 | `LICENSE` file in the repo | none; GitHub reports `license: null` on a public repo | `gh repo view` |
 | Third-party runtime dependencies | engine 6; assets 3; physics-rapier 4; navigation-recast 1; cli 2 | package.json `dependencies` |
-| Hosted asset index | database holds 855,001 records (row count only) but the Worker is gone from the account (`wrangler`: code 10007) and the endpoint returns 404 / error 1042: unreachable today | `docs/audit/asset-catalog-claim.md` |
+| Hosted asset index | retired on 2026-10-25 (code removed; D1 and R2 deleted). Never mention it. Before retirement: 855,001 records (row count only), Worker gone from the account (`wrangler`: code 10007), endpoint 404 / error 1042: unreachable today | `docs/audit/asset-catalog-claim.md` |
 
 ## Claims
 
@@ -54,4 +54,4 @@ Counts below are reproduced by `marketing/scripts/check-site.mjs`, which now fai
 ## Follow-ups for the owner
 
 1. Add a `LICENSE` file (the repo is public with none; every package declares MIT). Until then the copy says "declared in package.json".
-2. The hosted asset index is offline (Worker missing from the account). Redeploying `workers/asset-index-cron` exposes a public endpoint, so it needs the owner. Do not advertise hosted search until it works and the three index defects in `docs/audit/asset-catalog-claim.md` are fixed.
+2. The hosted asset index is retired (2026-10-25): code removed, D1 database and R2 bucket deleted. `aura3d assets resolve` replaces it. Do not advertise hosted search until it works and the three index defects in `docs/audit/asset-catalog-claim.md` are fixed.

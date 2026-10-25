@@ -17,7 +17,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "description": "Federated GLB/glTF asset catalog search, ranking, profiles, adapters, and verified auto-pull candidate resolution for Aura3D.",
+  "description": "Search, ranking, profiles and adapters over open, licence-clear 3D model, texture and HDRI sources, with verified auto-pull candidate resolution for Aura3D.",
   "keywords": [
     "aura3d",
     "3d",
@@ -28,11 +28,9 @@
     "glb",
     "asset-search",
     "asset-index",
-    "asset-catalog",
     "typed-assets",
     "asset-provenance",
     "3d-assets",
-    "objaverse",
     "polyhaven",
     "khronos"
   ],

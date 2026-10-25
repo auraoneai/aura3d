@@ -339,6 +339,9 @@ export async function runResolveLadder(options: LadderOptions): Promise<LadderRe
     return { ...base, ok: false, chosen: "none", reason: `nothing in the project or open sources, Meshy not run, and no procedural recipe for a ${role}`, costCredits: 0 };
   }
   const procedural = proceduralRecipe(need, name);
+  if (pickRecipeOrUndefined(need) === undefined) {
+    messages.push(`No recipe for a ${noun ?? "need like this"}: the box below is a placeholder. For the real thing run with --allow meshy --budget ${estimate || 30}, or admit a licensed file with \`aura3d assets add\`.`);
+  }
   messages.push(`Build it in code (${procedural.recipe} recipe): paste the snippet and add \`${name}\` to your scene.`);
   return { ...base, ok: true, chosen: "procedural", reason: "no admitted, open-source or generated asset; build from primitives", costCredits: 0, procedural };
 }
