@@ -16,9 +16,33 @@ function hasEnv(name: string, env: NodeJS.ProcessEnv): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+const NON_MESH_FORMATS = new Set(["texture-set", "hdr", "image"]);
+const NON_MESH_QUERY = /\b(textures?|materials?|pbr|tiles?|tiling|tileable|hdri?|hdr|environment|skybox|sky|ground|floor|wall|surface|fabric|bricks?|concrete|asphalt|wood grain)\b/i;
+
+/** True when the query is for a surface, texture or environment rather than a mesh. */
+export function queryWantsNonMesh(query: string | undefined): boolean {
+  return query !== undefined && NON_MESH_QUERY.test(query);
+}
+
+export function meshOnlyAdapter(adapter: SourceAdapter): SourceAdapter {
+  return {
+    ...adapter,
+    async search(query, ctx) {
+      const results = await adapter.search(query, ctx);
+      return results.filter((asset) => !NON_MESH_FORMATS.has(asset.format));
+    },
+  };
+}
+
+/**
+ * `query` narrows the sources for a model search: texture sets, HDRIs and images
+ * (ambientCG, Poly Haven maps) only appear when the query asks for a surface,
+ * texture or environment, so "sword" never returns "Bricks 105".
+ */
 export function buildSearchAdapters(
   env: NodeJS.ProcessEnv = process.env,
   projectDir: string = process.cwd(),
+  query?: string,
 ): SourceAdapter[] {
   const starterPack = optionalFactory("createAnimationStarterPackAdapter");
   const starterAdapters = starterPack ? [starterPack()] : [];
@@ -32,12 +56,19 @@ export function buildSearchAdapters(
     : [];
 
   const auraIndex = optionalFactory("createAuraIndexAdapter");
-  if (auraIndex) return [...libraryAdapters, ...starterAdapters, auraIndex()];
+  const adapters: SourceAdapter[] = [...libraryAdapters, ...starterAdapters];
+  if (auraIndex) adapters.push(auraIndex());
 
-  const adapters: SourceAdapter[] = [...libraryAdapters, ...starterAdapters, ...defaultAdapters()];
+  // The open, zero-auth sources always run beside the hosted index: when the
+  // index is unreachable (a federated source that throws only adds a warning)
+  // search must still reach Khronos samples, Poly Haven, ambientCG and the
+  // jsDelivr CC0 mirror instead of returning only the built-in starter pack.
+  for (const fallback of defaultAdapters()) {
+    if (!adapters.some((a) => a.id === fallback.id)) adapters.push(fallback);
+  }
 
   const polyHaven = optionalFactory("createPolyHavenAdapter");
-  if (polyHaven && !adapters.some((a) => a.id === "polyhaven")) {
+  if (polyHaven && !adapters.some((a) => a.id === "poly-haven")) {
     adapters.push(polyHaven());
   }
   if (!adapters.some((a) => a.id === "ambientcg")) {
@@ -54,7 +85,7 @@ export function buildSearchAdapters(
     if (polyPizza) adapters.push(polyPizza());
   }
 
-  return adapters;
+  return query !== undefined && !queryWantsNonMesh(query) ? adapters.map(meshOnlyAdapter) : adapters;
 }
 
 export function buildDeepLinkAdapter(): SourceAdapter | undefined {

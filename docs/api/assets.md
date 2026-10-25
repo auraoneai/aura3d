@@ -1,7 +1,7 @@
 # Aura3D typed asset readiness
 
-> **Catalog reality (read first).** The federated index is large, but "large" is not
-> "high quality." For props and set pieces the catalog is reliable. For *acting characters*
+> **Catalog reality (read first).** The hosted index is large (about 855,000 records), but "large" is not
+> "high quality," and it is not a vetted catalog: it is a license-tagged search index over public sources. For props and set pieces the catalog is reliable. For *acting characters*
 > it is not: most catalog "characters" are static props, T-pose meshes with no skeleton,
 > non-humanoid sculpts, or rigs whose only embedded clip is a 2 cm idle sway or a jaw-only
 > lip-flap. **Arbitrary prompt characters are NOT guaranteed to be production-quality.** The
@@ -12,9 +12,13 @@
 
 Aura3D projects should register every GLB, glTF, texture, environment, and audio file before code references it. There are two paths, both producing the same typed manifest:
 
-**Resolve from the federated index** (when a prompt names a real object) — the CLI runs live search
-against a hosted index of public GLB/glTF sources, when that service is reachable (primary adapter
-`createAuraIndexAdapter` from `@aura3d/asset-index`; results are candidates to check):
+**Resolve from the federated sources** (when a prompt names a real object) — the CLI searches your project
+library, a built-in starter pack, open sources (Khronos samples, Poly Haven, a jsDelivr CC0 mirror, OS3A) and a hosted
+index (a Cloudflare Worker over about 855,000 records, about 93% from Objaverse; primary adapter
+`createAuraIndexAdapter` from `@aura3d/asset-index`). The index is wide, not curated: about 1% CC0, about 88% CC-BY
+(attribution required), about 9% non-commercial, and many records above web budgets. Treat every hit as a candidate
+and screen it with `assets inspect` and `assets validate` before use. When the hosted worker is unreachable the CLI
+warns and, from 4.2.0, continues with the open sources.
 
 ```bash
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"
