@@ -1,4 +1,4 @@
-// Dot Dash 3D — core simulation: grid-snapped movement with buffered turns,
+// Glint Courier — core simulation: grid-snapped movement with buffered turns,
 // four Specter personalities (BFS retargeting at junctions), chase/scatter
 // wave timer, Power Orb fright + chain scoring + eyes return, fruit, lives,
 // dash, and maze progression. Pure logic — no engine imports except types.
@@ -9,7 +9,7 @@ import {
   sameDir, stepTile, tileWalkable, FRUIT_SCORE,
   type Dir, type ParsedMaze, type Tile
 } from "./grid.js";
-import { MAZE_ORDER, MAZES, mazeSpec, type MazeId } from "./mazes.js";
+import { MAZE_ORDER, MAZES, FRUIT_LABEL, mazeSpec, type MazeId } from "./mazes.js";
 import { loadProfile, saveProfile, type Profile } from "./save.js";
 
 // ---------------------------------------------------------------- tuning ---
@@ -36,22 +36,22 @@ export type GhostId = "blitz" | "sly" | "flick" | "dim";
 export const GHOST_ORDER: readonly GhostId[] = ["blitz", "sly", "flick", "dim"];
 
 export const GHOST_LABEL: Record<GhostId, string> = {
-  blitz: "BLITZ",
-  sly: "SLY",
-  flick: "FLICK",
-  dim: "DIM"
+  blitz: "HUNTER",
+  sly: "AMBUSHER",
+  flick: "DRIFTER",
+  dim: "SKITTISH"
 };
 export const GHOST_TINT: Record<GhostId, string> = {
-  blitz: "#ff2a4b",
-  sly: "#ff881f",
-  flick: "#ff66cc",
-  dim: "#1fe0ff"
+  blitz: "#ff6a3c",
+  sly: "#b78bff",
+  flick: "#46ffb0",
+  dim: "#ffe066"
 };
 export const GHOST_BLURB: Record<GhostId, string> = {
-  blitz: "Hunts your tile directly.",
+  blitz: "Locks onto your tile and follows your path.",
   sly: "Ambushes 4 tiles ahead of you.",
-  flick: "Mirrors Blitz across your position.",
-  dim: "Chases until close, then retreats to his corner."
+  flick: "Mirrors Hunter through your position.",
+  dim: "Closes in, then breaks away to its corner."
 };
 
 /** Scatter corner per specter. */
@@ -220,7 +220,7 @@ export function startRun(kind: RunKind, mazeId: MazeId): void {
   st.camera = st.profile.cameraDefault;
   st.profile.mazesPlayed += 1;
   saveProfile(st.profile);
-  pushMsg(kind === "school" ? `Ghost School — ${MAZES[mazeId].title}` : `${MAZES[mazeId].title} — GO!`);
+  pushMsg(kind === "school" ? `Sentry Lab — ${MAZES[mazeId].title}` : `${MAZES[mazeId].title} — GO!`);
 }
 
 function resetBoard(): void {
@@ -846,7 +846,7 @@ function eatThings(): void {
         if (g.state === "active") g.dir = reverseDir(g.dir); // classic reversal
         g.frightFlash = false;
       }
-      pushMsg("POWER ORB — specters vulnerable!");
+      pushMsg("SURGE — sentries overloaded!");
     }
     // fruit pickup
     if (st.fruitActive && cx === m.fruitTile.x && cy === m.fruitTile.y) {
@@ -855,7 +855,7 @@ function eatThings(): void {
       const pts = FRUIT_SCORE[kind];
       st.score += pts;
       st.events.fruit = { kind, points: pts };
-      pushMsg(`${kind.toUpperCase()} +${pts}`);
+      pushMsg(`${FRUIT_LABEL[kind]} +${pts}`);
     }
   }
 }
@@ -871,7 +871,7 @@ function updateFruit(dt: number): void {
     st.fruitT = FRUIT_LIFE;
     st.fruitStage++;
     st.events.fruitSpawn = true;
-    pushMsg(`${st.maze.def.fruit.toUpperCase()} appears below the house!`);
+    pushMsg(`${FRUIT_LABEL[st.maze.def.fruit]} cache unlocked below the hub!`);
   }
 }
 
@@ -904,7 +904,7 @@ function checkCollisions(): void {
       g.eaten++;
       g.frightFlash = false;
       st.events.ghostEat = { ghost: g.id, points: pts };
-      pushMsg(`${GHOST_LABEL[g.id]} eaten +${pts}${st.chain > 1 ? ` x${st.chain}` : ""}`);
+      pushMsg(`${GHOST_LABEL[g.id]} disabled +${pts}${st.chain > 1 ? ` x${st.chain}` : ""}`);
     } else if (!st.school) {
       loseLife();
       return;
@@ -919,7 +919,7 @@ function loseLife(): void {
   st.events.death = true;
   st.fright = 0;
   st.chain = 0;
-  pushMsg(st.lives > 0 ? `Caught! ${st.lives} ${st.lives === 1 ? "life" : "lives"} left` : "Caught! Game over");
+  pushMsg(st.lives > 0 ? `Intercepted! ${st.lives} ${st.lives === 1 ? "life" : "lives"} left` : "Intercepted! Game over");
 }
 
 function gameOver(): void {
@@ -954,7 +954,7 @@ function advanceMaze(): void {
   resetBoard();
   st.mode = "ready";
   st.readyT = READY_TIME;
-  pushMsg(`${MAZES[nextId].title} — READY!`);
+  pushMsg(`${MAZES[nextId].title} — LINK UP!`);
 }
 
 // -------------------------------------------------------------- evidence ---

@@ -1,7 +1,7 @@
-// Dot Dash 3D — the six maze circuits (19x21 ASCII grids) + per-maze look.
+// Glint Courier — the six maze boards (19x21 ASCII grids) + per-maze look.
 // Legend lives in grid.ts. Every maze carries a center ghost house (G ring
-// with D door), a player spawn (P), a fruit tile (F), 4 power orbs (o), and a
-// distinct neon palette (the "Tron garden" direction: near-black + emissive).
+// with D door), a player spawn (P), a cache tile (F), 4 surge cells (o), and a
+// distinct neon palette (dark board + emissive trace lines).
 
 import type { FruitKind, MazeDef } from "./grid.js";
 
@@ -11,37 +11,37 @@ export type MazeId = (typeof MAZE_ORDER)[number];
 export const MAZES: Record<MazeId, MazeDef> = {
   classic: {
     id: "classic",
-    title: "Classic Grid",
-    subtitle: "Maze 1 — the original circuit",
-    desc: "The arcade legend: side tunnels, open mid-field, four orbs.",
+    title: "Relay Grid",
+    subtitle: "Maze 1 — warm-up board",
+    desc: "A copper relay board: long runs, offset bays, side tunnels and four surge cells.",
     wrapX: true,
     wrapY: false,
     look: "neon-arcade",
-    palette: { wall: "#102444", edge: "#22d3ee", floor: "#16264c", dot: "#ffd147", accent: "#22d3ee" },
-    background: "#121f3d",
+    palette: { wall: "#5c4630", edge: "#ffb23e", floor: "#24443a", dot: "#5ff3ff", accent: "#ffb23e" },
+    background: "#0e1a17",
     fog: null,
     fruit: "cherry",
     theme: "grid",
     rows: [
       "###################",
-      "#........#........#",
-      "#o##.###.#.###.##o#",
-      "#.................#",
-      "#.##.#.#####.#.##.#",
-      "#....#...#...#....#",
-      "####.###.#.###.####",
-      "   #.#       #.#   ",
-      "####.# ##D## #.####",
-      "  .    #GGG#    .  ",
-      "####.# ##### #.####",
-      "   #.#   F   #.#   ",
-      "####.###.#.###.####",
-      "#.................#",
-      "#.##.###.#.###.##.#",
-      "#o.#.....P.....#.o#",
-      "##.#.#.#####.#.#.##",
-      "#....#...#...#....#",
-      "#.######.#.######.#",
+      "#o....#.....#....o#",
+      "#.####.#.#.#.####.#",
+      "#......#...#......#",
+      "###.##.#.#.#.##.###",
+      "#...#.........#...#",
+      "#.#.#.###.###.#.#.#",
+      "#.....       .....#",
+      "#.###. ##D## .###.#",
+      "  .... #GGG# ....  ",
+      "#.###. ##### .###.#",
+      "#.....   F   .....#",
+      "#.#.#.###.###.#.#.#",
+      "#...#.........#...#",
+      "###.##.#.#.#.##.###",
+      "#o.....#.P.#.....o#",
+      "#.####.#.#.#.####.#",
+      "#......#...#......#",
+      "#.####.#####.####.#",
       "#.................#",
       "###################"
     ]
@@ -49,9 +49,9 @@ export const MAZES: Record<MazeId, MazeDef> = {
 
   spiral: {
     id: "spiral",
-    title: "Spiral Circuit",
+    title: "Coil Loop",
     subtitle: "Maze 2 — wind to the core",
-    desc: "Concentric neon rings funnel the hunt inward.",
+    desc: "Concentric coils funnel the patrol inward.",
     wrapX: false,
     wrapY: false,
     look: "neon-arcade",
@@ -87,9 +87,9 @@ export const MAZES: Record<MazeId, MazeDef> = {
 
   twin: {
     id: "twin",
-    title: "Twin-Tower Loop",
+    title: "Twin Pylons",
     subtitle: "Maze 3 — orbit the pair",
-    desc: "Two reactor towers; the hunt orbits each in turn.",
+    desc: "Two relay pylons; the patrol orbits each in turn.",
     wrapX: true,
     wrapY: false,
     look: "neon-arcade",
@@ -125,9 +125,9 @@ export const MAZES: Record<MazeId, MazeDef> = {
 
   garden: {
     id: "garden",
-    title: "Garden Overgrown",
-    subtitle: "Maze 4 — hedge walls of light",
-    desc: "An overgrown circuit; light-dots bloom between hedges.",
+    title: "Overgrowth",
+    subtitle: "Maze 4 — vines on the board",
+    desc: "A board reclaimed by glowing vines; shards bloom between the hedges.",
     wrapX: true,
     wrapY: false,
     look: "neon-arcade",
@@ -138,24 +138,24 @@ export const MAZES: Record<MazeId, MazeDef> = {
     theme: "garden",
     rows: [
       "###################",
+      "#o.#...........#.o#",
+      "#.##.####.####.##.#",
       "#....#.......#....#",
-      "#o##.#.#####.#.##o#",
-      "#............#....#",
-      "###.###.#.#.###.###",
-      "#......#...#......#",
-      "#.####.#.#.#.####.#",
-      "#.#    .# ###    .#",
-      "#.#.## ##D## ##.#.#",
-      "  . .  #GGG#  . .  ",
-      "#.#.## ##### ##.#.#",
-      "#.#....#.F#....#..#",
-      "#.####.#.#.####.#.#",
-      "#......#.#......#.#",
-      "#.####.#.#.####.#.#",
-      "#o...#...#...#....#",
-      "###.##.#####.##.###",
-      "#....#...P...#....#",
+      "####.#.##.##.#.####",
+      "#.................#",
       "#.##.###.#.###.##.#",
+      "#..#.         .#..#",
+      "#.##.. ##D## ..##.#",
+      "  .#.. #GGG# ..#.  ",
+      "#.##.. ##### ..##.#",
+      "#..#.    F    .#..#",
+      "#.##.###.#.###.##.#",
+      "#.................#",
+      "####.#.##.##.#.####",
+      "#o...#...P...#...o#",
+      "#.##.####.####.##.#",
+      "#....#.......#....#",
+      "#.####.##.##.####.#",
       "#.................#",
       "###################"
     ]
@@ -163,9 +163,9 @@ export const MAZES: Record<MazeId, MazeDef> = {
 
   foundry: {
     id: "foundry",
-    title: "Night Foundry",
+    title: "Smelter Rows",
     subtitle: "Maze 5 — the furnace floor",
-    desc: "Industrial lattice over molten light.",
+    desc: "Long horizontal ingots over molten light; the rows are the whole game.",
     wrapX: false,
     wrapY: false,
     look: "neon-arcade",
@@ -176,24 +176,24 @@ export const MAZES: Record<MazeId, MazeDef> = {
     theme: "foundry",
     rows: [
       "###################",
-      "#........#........#",
-      "#o##.###.#.###.##o#",
       "#.................#",
-      "#.##.#.#####.#.##.#",
-      "#....#...#...#....#",
-      "#.####.#.#.####.#.#",
-      "   #.#       #.#   ",
-      "####.# ##D## #.####",
-      "##.    #GGG#    .##",
-      "####.# ##### #.####",
-      "   #.#   F   #.#   ",
-      "#.####.#####.####.#",
-      "#........#........#",
-      "#.##.###.#.###.##.#",
-      "#o.#.....P.....#.o#",
-      "##.#.#.#####.#.#.##",
-      "#....#...#...#....#",
-      "#.######.#.######.#",
+      "#o######.#.######o#",
+      "#.................#",
+      "#.#####.#.#.#####.#",
+      "#.#.....#.#.....#.#",
+      "#...###.....###...#",
+      "##..#.       .#..##",
+      "##.#.. ##D## ..#.##",
+      "  .#.. #GGG# ..#.  ",
+      "##.#.. ##### ..#.##",
+      "##..#.   F   .#..##",
+      "#...###.....###...#",
+      "#.#.....#.#.....#.#",
+      "#.#####.#.#.#####.#",
+      "#o.......P.......o#",
+      "#.######...######.#",
+      "#.................#",
+      "#.#.###.#.#.###.#.#",
       "#.................#",
       "###################"
     ]
@@ -202,7 +202,7 @@ export const MAZES: Record<MazeId, MazeDef> = {
   zerocore: {
     id: "zerocore",
     title: "Zero-Core",
-    subtitle: "Maze 6 — the sphere illusion",
+    subtitle: "Maze 6 — no edges",
     desc: "Every edge wraps — the reactor ring has no walls to hide behind.",
     wrapX: true,
     wrapY: true,
@@ -246,10 +246,10 @@ export const nextMazeId = (id: MazeId): MazeId | null => {
 
 /** Fruit icon labels for HUD/circuit map. */
 export const FRUIT_LABEL: Record<FruitKind, string> = {
-  cherry: "CHERRY",
-  strawberry: "STRAWBERRY",
-  orange: "ORANGE",
-  apple: "APPLE",
-  melon: "MELON",
-  star: "STAR"
+  cherry: "RUBY",
+  strawberry: "ROSE QUARTZ",
+  orange: "AMBER",
+  apple: "EMERALD",
+  melon: "AQUA",
+  star: "PRISM"
 };

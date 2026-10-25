@@ -3,7 +3,7 @@
   "route": "/apps/showcase-dot-dash-3d/",
   "classification": "showcase",
   "publicShowcase": true,
-  "generatedAt": "2026-10-17T07:33:13.794Z",
+  "generatedAt": "2026-10-25T10:29:22.405Z",
   "ok": true,
   "checks": [
     {
@@ -20,63 +20,6 @@
     },
     {
       "name": "module script present",
-      "ok": true
-    },
-    {
-      "name": "aura-assets dir",
-      "ok": true
-    },
-    {
-      "name": "manifest assets",
-      "ok": true,
-      "detail": "11 assets"
-    },
-    {
-      "name": "asset byte",
-      "ok": true
-    },
-    {
-      "name": "asset specterBlitz",
-      "ok": true
-    },
-    {
-      "name": "asset specterSly",
-      "ok": true
-    },
-    {
-      "name": "asset specterFlick",
-      "ok": true
-    },
-    {
-      "name": "asset specterDim",
-      "ok": true
-    },
-    {
-      "name": "asset fruitCherry",
-      "ok": true
-    },
-    {
-      "name": "asset fruitStrawberry",
-      "ok": true
-    },
-    {
-      "name": "asset fruitOrange",
-      "ok": true
-    },
-    {
-      "name": "asset fruitApple",
-      "ok": true
-    },
-    {
-      "name": "asset fruitMelon",
-      "ok": true
-    },
-    {
-      "name": "asset fruitStar",
-      "ok": true
-    },
-    {
-      "name": "typegen exists",
       "ok": true
     },
     {

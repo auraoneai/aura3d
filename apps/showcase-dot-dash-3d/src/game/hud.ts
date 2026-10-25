@@ -1,4 +1,4 @@
-// Dot Dash 3D — DOM shell wiring for the static index.html chrome:
+// Glint Courier — DOM shell wiring for the static index.html chrome:
 // title overlay, top bar, pause menu, circuit map, player studio,
 // clear/gameover cards, and the in-run HUD.
 
@@ -125,7 +125,7 @@ function closeOverlays(): void {
 function buildStudioSwatches(): void {
   const orbHost = $("dd-orb-swatches");
   const trailHost = $("dd-trail-swatches");
-  orbHost.innerHTML = ORB_SWATCHES.map(c => `<button type="button" class="dd-swatch" data-orb="${c}" style="background:${c}" aria-label="orb ${c}"></button>`).join("");
+  orbHost.innerHTML = ORB_SWATCHES.map(c => `<button type="button" class="dd-swatch" data-orb="${c}" style="background:${c}" aria-label="core ${c}"></button>`).join("");
   trailHost.innerHTML = TRAIL_SWATCHES.map(c => `<button type="button" class="dd-swatch" data-trail="${c}" style="background:${c}" aria-label="trail ${c}"></button>`).join("");
   for (const b of Array.from(orbHost.querySelectorAll<HTMLButtonElement>("[data-orb]"))) {
     b.addEventListener("click", () => { st.profile.orbColor = b.dataset.orb!; saveProfile(st.profile); refreshSwatches(); });
@@ -174,7 +174,7 @@ export function tickUI(): void {
 
   // mode tag + school legend + wave
   $("dd-mode-tag").textContent =
-    st.runKind === "school" ? "GHOST SCHOOL" : st.runKind === "circuit" ? "CIRCUIT MAP" : "QUICK PLAY";
+    st.runKind === "school" ? "SENTRY LAB" : st.runKind === "circuit" ? "BOARD MAP" : "QUICK PLAY";
   $("dd-school-legend").hidden = !(st.school && inRun);
   if (st.school) {
     const rows = document.querySelectorAll("#dd-school-legend .dd-school-row");
@@ -203,8 +203,8 @@ export function tickUI(): void {
 
   // objective line
   $("dd-objective").textContent = st.school
-    ? "Watch each specter's target tile — colored squares mark their prey."
-    : `Maze ${MAZE_ORDER.indexOf(st.mazeId) + 1}/6 — ${st.maze.def.subtitle}`;
+    ? "Watch each sentry's target tile — colored squares mark where it is heading."
+    : `Board ${MAZE_ORDER.indexOf(st.mazeId) + 1}/6 — ${st.maze.def.subtitle}`;
 
   // banner
   const banner = $("dd-banner");
@@ -212,11 +212,11 @@ export function tickUI(): void {
   const small = $("dd-banner-small");
   if (st.mode === "ready") {
     banner.classList.add("show");
-    big.textContent = "READY!";
+    big.textContent = "LINK UP";
     small.textContent = st.maze.def.title;
   } else if (st.mode === "dying") {
     banner.classList.add("show");
-    big.textContent = "CAUGHT!";
+    big.textContent = "INTERCEPTED";
     small.textContent = st.lives > 0 ? `${st.lives} ${st.lives === 1 ? "life" : "lives"} left` : "";
   } else banner.classList.remove("show");
 
@@ -236,18 +236,18 @@ export function tickUI(): void {
 function showClearCard(): void {
   const next = MAZE_ORDER[MAZE_ORDER.indexOf(st.mazeId) + 1];
   $("dd-clear-title").textContent = `${st.maze.def.title.toUpperCase()} CLEARED`;
-  $("dd-clear-sub").textContent = next && st.runKind === "quick" ? `Next: ${MAZES[next].title}` : "The circuit is dark.";
+  $("dd-clear-sub").textContent = next && st.runKind === "quick" ? `Next: ${MAZES[next].title}` : "The board is clear.";
   $("dd-clear-stats").innerHTML =
     `<div class="dd-stat">SCORE <b>${st.score}</b></div>` +
     `<div class="dd-stat">LIVES LEFT <b>${st.lives}</b></div>` +
-    `<div class="dd-stat">MAZE BEST <b>${st.profile.mazeBest[st.mazeId] ?? st.score}</b></div>`;
+    `<div class="dd-stat">BOARD BEST <b>${st.profile.mazeBest[st.mazeId] ?? st.score}</b></div>`;
   ($("dd-next-maze") as HTMLButtonElement).hidden = !(next && st.runKind === "quick");
   $("dd-clear").hidden = false;
   setTimeout(() => { $("dd-clear").hidden = true; }, 2100);
 }
 
 function showGameoverCard(): void {
-  $("dd-gameover-sub").textContent = st.school ? "School's out." : "The Specters drank your light.";
+  $("dd-gameover-sub").textContent = st.school ? "Lab session over." : "The sentries cut your link.";
   $("dd-gameover-stats").innerHTML =
     `<div class="dd-stat">SCORE <b>${st.score}</b></div>` +
     `<div class="dd-stat">BEST <b>${st.profile.best}</b></div>` +

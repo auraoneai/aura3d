@@ -18,6 +18,14 @@ Status: 2026-10-24. Every playable game on the showcase index carries its own na
 
 The other index games already have their own names (Aura Slam 3D, Apex Overdrive, Thermal Drift, Grid Dispatch and so on) and were not renamed in this pass; their titles still carry an "Aura3D Showcase" suffix.
 
+## Index game renamed: Dot Dash 3D is now Glint Courier
+
+| Old | New | App folder | Pitch |
+|---|---|---|---|
+| Dot Dash 3D | Glint Courier | `apps/showcase-dot-dash-3d` (slug unchanged) | Guide a courier drone across six circuit boards, collect data shards, trigger surge cells to overload four patrol sentries (hunter, ambusher, drifter, skittish) and cash in cache gems. |
+
+Identity changes (art and wording only; the buffered grid movement and patrol routines are generic mechanics): new hero (faceted drone core with a spinning ring), four sentries with distinct silhouettes (cone, cube, ring, saucer), datachip pickups, surge cells, gem bonuses, new board layouts (Relay Grid, Smelter Rows and Overgrowth redrawn; Coil Loop, Twin Pylons and Zero-Core renamed), a graphite board with amber and cyan traces, and new mode, score and HUD wording. Not trademark clearance.
+
 ## Name check
 
 Each name was screened through Kiro Prism's web search (`evidence/game-names/web-check.txt`): an exact-name query, then a query restricted to Steam, itch.io, the App Store, Google Play and CrazyGames. No exact-name game, app or brand turned up for any of the eleven. The search backend returns noisy, low-signal results for unusual phrases, so this is a screen and not trademark clearance; run a USPTO, EUIPO or TMview search before registering any name.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D Dot Dash 3D showcase, a neon maze-chase arcade game: grid-snapped buffered movement, four Specter AI personalities, Power Orb hunts, six maze circuits, and typed Meshy assets.",
+  "description": "Glint Courier: guide a courier drone across six circuit boards, collect data shards and dodge four patrol sentries with their own routines. Grid-snapped buffered movement, surge cells, cache gems, procedural 3D.",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5181 --strictPort",
     "typecheck": "tsc -p tsconfig.json --noEmit",

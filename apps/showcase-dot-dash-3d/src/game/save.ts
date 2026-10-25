@@ -1,11 +1,11 @@
-// Dot Dash 3D — localStorage profile: best score, per-maze bests, settings.
+// Glint Courier — localStorage profile: best score, per-board bests, settings.
 
 export interface Profile {
   best: number;
   mazeBest: Record<string, number>;
   cleared: string[];            // maze ids ever cleared
   dashEnabled: boolean;
-  orbColor: string;             // power orb tint (Player Studio)
+  orbColor: string;             // surge tint (Courier Studio)
   trailColor: string;           // player trail tint (Player Studio)
   cameraDefault: "follow" | "overhead";
   mazesPlayed: number;
@@ -17,8 +17,8 @@ const DEF: Profile = {
   mazeBest: {},
   cleared: [],
   dashEnabled: true,
-  orbColor: "#ff3df0",
-  trailColor: "#ffcb1f",
+  orbColor: "#5ff3ff",
+  trailColor: "#ffb23e",
   cameraDefault: "overhead",
   mazesPlayed: 0
 };

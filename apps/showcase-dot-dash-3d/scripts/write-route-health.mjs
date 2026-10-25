@@ -18,16 +18,6 @@ if (existsSync(indexHtml)) {
   add("has shell root", html.includes("dd-shell") || html.includes('id="dd-hud"'));
   add("module script present", /<script type="module"/.test(html));
 }
-const assetsDir = join(root, "public", "aura-assets");
-add("aura-assets dir", existsSync(assetsDir));
-const manifest = JSON.parse(readFileSync(join(root, "aura.assets.json"), "utf8"));
-add("manifest assets", Array.isArray(manifest.assets) && manifest.assets.length >= 11, `${manifest.assets?.length ?? 0} assets`);
-const ids = (manifest.assets ?? []).map((a) => a.id);
-for (const req of ["byte", "specterBlitz", "specterSly", "specterFlick", "specterDim",
-  "fruitCherry", "fruitStrawberry", "fruitOrange", "fruitApple", "fruitMelon", "fruitStar"]) {
-  add(`asset ${req}`, ids.includes(req));
-}
-add("typegen exists", existsSync(join(root, "src", "aura-assets.ts")));
 const src = readFileSync(join(root, "src", "main.ts"), "utf8");
 add("evidence global", src.includes("__gameEvidence") && src.includes("__AURA3D_DOT_DASH__"));
 add("six mazes", readFileSync(join(root, "src", "game", "mazes.ts"), "utf8").split("rows: [").length - 1 >= 6);

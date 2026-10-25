@@ -1,10 +1,11 @@
-/** Dot Dash 3D — neon maze-chase showcase (PRD: docs/prd/dot-dash-3d.md). */
+/** Glint Courier — circuit-board chase (PRD: docs/prd/dot-dash-3d.md). */
 import { game } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { buildScene, bindApp, syncVisuals, wx, wz } from "./game/world";
 import { st, frame, startRun, evidenceExtra, GHOST_LABEL } from "./game/sim";
 import { mountUI, tickUI, isPaused } from "./game/hud";
-import type { MazeId } from "./game/mazes";
+import { FRUIT_LABEL, type MazeId } from "./game/mazes";
+import type { FruitKind } from "./game/grid";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
@@ -157,7 +158,7 @@ const input = {
   pressed: (a: string) => (rawInput ? rawInput.pressed(a) : false) || hasCode(keysPressed, a)
 };
 
-const eventLog = game.eventLog({ label: "dot dash events", maxEvents: 40 });
+const eventLog = game.eventLog({ label: "glint courier events", maxEvents: 40 });
 mountUI();
 
 // ambient hum loop — start on first user gesture (audio unlock)
@@ -217,7 +218,7 @@ app.onFrame(({ dt }) => {
       g.sound?.cue("ghost"); g.juice?.fire("ghost");
       eventLog.push({ type: "ghost-eat", label: `${GHOST_LABEL[ev.ghostEat.ghost]} +${ev.ghostEat.points}` });
     }
-    if (ev.fruit) { g.sound?.cue("fruit"); g.juice?.fire("fruit"); eventLog.push({ type: "fruit", label: `${ev.fruit.kind} +${ev.fruit.points}` }); }
+    if (ev.fruit) { g.sound?.cue("fruit"); g.juice?.fire("fruit"); eventLog.push({ type: "fruit", label: `${FRUIT_LABEL[ev.fruit.kind as FruitKind]} +${ev.fruit.points}` }); }
     if (ev.fruitSpawn) g.sound?.cue("fruitSpawn");
     if (ev.dash) { g.sound?.cue("dash"); g.juice?.fire("dash"); }
     if (ev.ready) g.sound?.cue("ready");

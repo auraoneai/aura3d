@@ -1,15 +1,15 @@
-/* Dot Dash 3D — neon "Tron garden" shell chrome. */
+/* Glint Courier — graphite board shell chrome (amber + cyan accents). */
 
 :root {
-  --dd-bg: #05060f;
-  --dd-ink: #dfe7ff;
-  --dd-dim: #8f9bc7;
-  --dd-cyan: #45e8ff;
-  --dd-pink: #ff9ad5;
-  --dd-gold: #ffd95e;
+  --dd-bg: #0b1210;
+  --dd-ink: #f1ece2;
+  --dd-dim: #a39a88;
+  --dd-cyan: #5ff3ff;
+  --dd-pink: #ffb23e;
+  --dd-gold: #ffb23e;
   --dd-red: #ff4040;
-  --dd-panel: rgba(9, 12, 30, 0.92);
-  --dd-edge: rgba(69, 232, 255, 0.28);
+  --dd-panel: rgba(12, 20, 17, 0.92);
+  --dd-edge: rgba(255, 178, 62, 0.3);
 }
 
 * { box-sizing: border-box; }
@@ -31,7 +31,7 @@ html, body {
   --a3d-accent-2: var(--dd-pink);
   --a3d-gold: var(--dd-gold);
   --a3d-edge: var(--dd-edge);
-  --a3d-bg: linear-gradient(180deg, rgba(5, 6, 15, 0.96), rgba(5, 6, 15, 0.8));
+  --a3d-bg: linear-gradient(180deg, rgba(11, 18, 16, 0.96), rgba(11, 18, 16, 0.8));
   --a3d-ink: var(--dd-ink);
   --a3d-dim: var(--dd-dim);
 }
@@ -45,7 +45,7 @@ html, body {
   font-size: 10px;
   letter-spacing: 0.12em;
   color: var(--dd-dim);
-  background: rgba(5, 6, 15, 0.7);
+  background: rgba(11, 18, 16, 0.7);
   border: 1px solid var(--dd-edge);
   border-radius: 6px;
   padding: 4px 10px;
@@ -95,7 +95,7 @@ html, body {
   font-weight: 800;
   letter-spacing: 0.18em;
   color: var(--dd-pink);
-  text-shadow: 0 1px 8px rgba(5, 6, 15, 0.9);
+  text-shadow: 0 1px 8px rgba(11, 18, 16, 0.9);
 }
 
 .dd-row { display: flex; gap: 8px; align-items: stretch; }
@@ -104,7 +104,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(180deg, rgba(9, 14, 34, 0.94), rgba(9, 12, 30, 0.82));
+  background: linear-gradient(180deg, rgba(14, 22, 19, 0.94), rgba(12, 20, 17, 0.82));
   border: 1px solid var(--dd-edge);
   border-radius: 8px;
   padding: 6px 11px;
@@ -136,7 +136,7 @@ html, body {
   line-height: 1.35;
   color: #b9c5ea;
   max-width: 340px;
-  text-shadow: 0 1px 8px rgba(5, 6, 15, 0.95);
+  text-shadow: 0 1px 8px rgba(11, 18, 16, 0.95);
 }
 
 .dd-school-legend {
@@ -257,7 +257,7 @@ html, body {
   margin-bottom: 18px;
 }
 .dd-maze-card {
-  background: rgba(20, 26, 52, 0.7);
+  background: rgba(26, 36, 31, 0.72);
   border: 1px solid var(--dd-edge);
   border-radius: 10px;
   padding: 12px;
