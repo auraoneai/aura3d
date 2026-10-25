@@ -20,6 +20,7 @@ import { createController } from "./gamepad";
 import { playerFrame, type PlayerFrameContext } from "./inputFrame";
 import { applyCharacterIds, matchResetOptions } from "./matchSetup";
 import { createMatchLoop, type MatchLoop } from "./loop";
+import { createMatchPresenter, viewOf } from "./presentation";
 import { installSlamQa } from "./qa";
 import { renderGameToText } from "./qaText";
 
@@ -141,9 +142,10 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   }
 
   /* ---- loop ---- */
+  const presenter = createMatchPresenter(() => getState() as never);
   const loop = createMatchLoop({
-    step: (dt) => update(dt),
-    render: (frameSeconds) => render(frameSeconds),
+    step: (dt) => { update(dt); presenter.afterStep(); },
+    render: (frameSeconds) => render(frameSeconds, !loop.manual && getState().mode === "playing" && !getState().paused),
     beforeFrame: () => { if (!loop.manual) pad.poll(); },
     isActive: () => true,
     manual: false,
@@ -320,11 +322,12 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
   };
 
   /* ---- render ---- */
-  function render(frameSeconds: number = FIXED_DT): void {
+  /** `live` draws the ball and both athletes between the last two steps (smooth on 120 and 144 Hz displays); manual and QA frames draw the exact latest step. */
+  function render(frameSeconds: number = FIXED_DT, live = false): void {
     const s = getState();
     autopilot.step(s as never, FIXED_DT);
     const feedback = serveFeedback();
-    renderer.render(s, frameSeconds, feedback);
+    renderer.render(live ? (viewOf(s as never, presenter.present(loop.loop, true)) as never) : s, frameSeconds, feedback);
     if (!canvas.dataset.ready) canvas.dataset.ready = "true";
     shell.dataset.mode = s.mode;
     hud.render(s);
@@ -343,6 +346,7 @@ export async function bootAuraSlam(deps: AuraSlamDeps): Promise<AuraSlamHandle> 
       allowSwipe: swipeEnabled && mobileTouchAvailable(), controlStyle: swipeEnabled ? swipePort.getPreference() ?? "classic" : "classic"
     }));
     applyCharacterIds(getState() as never, options.practice);
+    presenter.reset();
     swipeOverlay?.setBoundaryKey(""); syncSwipeBoundary();
     const s = getState() as { paused: boolean; venue: string; player: { selectedShot?: ShotPreset } };
     s.paused = false;
