@@ -142,6 +142,12 @@ for (const [property, expectedWidth, expectedHeight] of [
   const admitted = readJson(resolve(repoRoot, "aura.assets.json")).assets.length;
   const assetsStat = stat("admitted assets");
   if (assetsStat !== String(admitted)) failures.push(`index.html: admitted assets stat is ${assetsStat}, counted ${admitted} in aura.assets.json`);
+  // Counts that change with the repo must be build-time tokens, never typed by hand.
+  if (!home.includes("{{TEMPLATE_COUNT}} templates")) failures.push("index.html: the templates count must be the {{TEMPLATE_COUNT}} token");
+  const typedTemplates = /\b(?:One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|\d+) templates\b/.exec(home);
+  if (typedTemplates) failures.push(`index.html: hand-typed template count "${typedTemplates[0]}" (use {{TEMPLATE_COUNT}})`);
+  const typedApps = /\b\d+ (?:apps|examples)\b/.exec(home);
+  if (typedApps) failures.push(`index.html: hand-typed app/example count "${typedApps[0]}" has no counted source`);
   const retracted = /\b(?:800K\+|800,000\+|850K|~850k)\b/i;
   for (const file of [resolve(marketingDir, "index.html"), ...readdirSync(resolve(marketingDir, "docs")).filter((f) => f.endsWith(".html")).map((f) => resolve(marketingDir, "docs", f)), resolve(marketingDir, "public", "llms.txt"), resolve(marketingDir, "public", "llms-full.txt")]) {
     if (existsSync(file) && retracted.test(readFileSync(file, "utf8"))) failures.push(`${file}: contains the retracted 800K/850K catalog-size claim`);
