@@ -12,6 +12,7 @@ import { CFG } from "./config";
 import { HudModel, formatTime } from "./hud";
 import { STRIKE } from "./operation";
 import { FRAME, Race } from "./race";
+import { createHeatsinkPresenter, viewOf } from "./presentation";
 import { Track } from "./track";
 import { IDLE, type Input } from "./vehicle";
 import { buildWorld, type WorldRuntime } from "./world";
@@ -29,6 +30,7 @@ const canvas = $<HTMLCanvasElement>("world");
 const audio = config.manual ? null : createHeatsinkAudio();
 const track = new Track();
 let race = new Race(track);
+const presenter = createHeatsinkPresenter(() => race);
 const hudModel = { current: new HudModel() };
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
@@ -72,6 +74,7 @@ addEventListener("pointerup", () => { pointerFire = false; });
 
 function begin(): void {
   race = new Race(track);
+  presenter.reset();
   hudModel.current = new HudModel();
   runtime?.resetCamera();
   audio?.reset();
@@ -107,12 +110,13 @@ function updateHud(v: NonNullable<typeof lastHud>): void {
   }
 }
 
-function render(dt: number): void {
+/** `live` draws the drone and bolts between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
+function render(dt: number, live = false): void {
   if (!app || !runtime) return;
   const v = lastHud ?? hudModel.current.update(0, race);
   audio?.update(race);
   updateHud(v);
-  runtime.update(race, v, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  runtime.update(live ? viewOf(race, presenter.present(loop, true)) : race, v, dt, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
   app.step(0);
   frames++;
 }
@@ -125,6 +129,7 @@ const loop = createFixedStepLoop({
   isActive: () => ready && started && !paused,
   step() {
     simulate(1, manualInput ?? undefined);
+    presenter.afterStep();
   }
 });
 
@@ -133,7 +138,7 @@ function tick(now: number): void {
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   loop.tick(now);
-  if (ready && !config.manual) { renderTime += dt; render(dt); }
+  if (ready && !config.manual) { renderTime += dt; render(dt, started && !paused && race.state === "race"); }
   requestAnimationFrame(tick);
 }
 
@@ -182,6 +187,7 @@ const hooks = installQaHooks("heatsink", {
   /** replay a recorded run-length input script step-exactly on a fresh race and return the final state */
   replay(text: string) {
     race = new Race(track);
+    presenter.reset();
     hudModel.current = new HudModel();
     runtime?.resetCamera();
     let n = 0;
@@ -195,6 +201,7 @@ const hooks = installQaHooks("heatsink", {
     /** begin a stepwise replay of a recorded script on a fresh race (see `replayTo`) */
     replayStart(text: string) {
       race = new Race(track);
+      presenter.reset();
       hudModel.current = new HudModel();
       runtime?.resetCamera();
       session = { inputs: expandSegments(parseInputScript(text)), step: 0 };
