@@ -300,6 +300,7 @@ function stepFrames(n: number, input: Input = IDLE): void {
   drawLatest = true;
   render(STEP);
   drawLatest = false;
+  updateHud();
 }
 
 function replay(segments: readonly { steps: number; input: Input }[]): Row[] {
@@ -309,6 +310,7 @@ function replay(segments: readonly { steps: number; input: Input }[]): Row[] {
   drawLatest = true;
   render(STEP);
   drawLatest = false;
+  updateHud();
   return trace;
 }
 
@@ -329,7 +331,7 @@ function installHooks(): void {
       applyInput(input: Input | null) { heldInput = input; },
       setAutopilot(on: boolean) { autopilotOn = on; },
       row,
-      render: () => render(0),
+      render: () => { render(0); updateHud(); },
       /** a fixed camera pose for evidence frames; passing false returns to the chase camera */
       overview(on: boolean) {
         overridePose = on ? { position: [sim.state.x + 40, sim.state.y + 230, sim.state.z + 190], target: [sim.state.x, 0, sim.state.z - 160], up: [0, 1, 0], fov: 62 } : null;

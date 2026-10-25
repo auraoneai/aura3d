@@ -12,6 +12,7 @@ import {
 } from "@aura3d/engine";
 import { assets } from "./assets";
 import { CHAPTERS } from "./chapters-data";
+import { clearChaseEye, createChaseClearance } from "./camera";
 import { objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
 import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain, type Wall } from "./terrain";
@@ -376,6 +377,7 @@ export function buildWorld(chapter: number): World {
       };
 
       let lookX = 0, lookY = 0, lookZ = 0, init = false;
+      const clearance = createChaseClearance();
       let lastPoint = -1, lastObjective = -1;
       return {
         celebrate() { oneShot = 0.9; playClip("walk"); },
@@ -420,14 +422,13 @@ export function buildWorld(chapter: number): World {
             if (!p || state.scene || state.completed || i <= state.point) { h.setPosition(...FAR); continue; }
             h.setPosition(p.x, p.y, p.z);
           }
-          const back = 13 + Math.min(8, Math.abs(flight.speed) * 0.08);
-          const ex = state.x - fx * back, ey = state.y + 5.2 + Math.abs(flight.vertical) * 0.05, ez = state.z - fz * back;
           const tx = state.x + fx * 14, ty = state.y + 1.2, tz = state.z + fz * 14;
           if (!init) { lookX = tx; lookY = ty; lookZ = tz; init = true; }
           const k = 1 - Math.exp(-dt * 5);
           lookX += (tx - lookX) * k; lookY += (ty - lookY) * k; lookZ += (tz - lookZ) * k;
           const kick = flight.boosting ? 6 : 0;
-          cameraController.setPose({ position: [ex, ey, ez], target: [lookX, lookY, lookZ], up: [0, 1, 0], fov: (aspect < 0.85 ? 78 : 62) + kick }, { cut: false });
+          const eye = clearChaseEye(sim, clearance, dt);
+          cameraController.setPose({ position: eye, target: [lookX, lookY, lookZ], up: [0, 1, 0], fov: (aspect < 0.85 ? 78 : 62) + kick }, { cut: false });
         },
         get nodeCount() { return handles.size; },
         riderAnimation: () => animation
