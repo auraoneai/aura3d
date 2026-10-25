@@ -41,22 +41,22 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopWaymoHero: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
-    hash: "sha256-6d2a9bfb61613fd1e5a0fd64aa3b8222d237bc58b7486f009d014c61066ee45a",
+    url: "/aura-assets/teleopWaymoClean.26413873.glb",
+    hash: "sha256-2641387397d184ece3d6b5175c3a0936afc4fced971c798f0e973a961af78bf1",
     bounds: [2.2, 2.521, 4.5678]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopWaymoTraffic.f476abe7.glb",
-    hash: "sha256-f476abe7f85470beff321bef6c521e425a549c13e1a10cfdd3c41e1f339b4559",
+    url: "/aura-assets/teleopWaymoClean.26413873.glb",
+    hash: "sha256-2641387397d184ece3d6b5175c3a0936afc4fced971c798f0e973a961af78bf1",
     bounds: [2.2, 2.521, 4.5678]
   },
   teleopCybercab: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopCybercab.08358a58.glb",
-    hash: "sha256-08358a58dd8d530ccc7b4249db3a9d2e11ccf8ecfac1c9d9d7afea452a1de291",
+    url: "/aura-assets/teleopCybercabClean.30e5baa3.glb",
+    hash: "sha256-30e5baa30a842b7a7acdf9739e88e26ed1c84ff505f27052546b706b4ee1e0cf",
     bounds: [1.7532, 1.7973, 4.4179]
   },
   teleopCybertruck: {
@@ -69,8 +69,8 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopCorvette: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopCorvette.e7009c34.glb",
-    hash: "sha256-e7009c3418b2d0c3163bd1af8737f3986bab9c372aea90ce81dab8fb37197598",
+    url: "/aura-assets/teleopCorvetteClean.859a329f.glb",
+    hash: "sha256-859a329f640baf5fd993d1c0dba5e1efe1a78c4f2c9e44127707c40c34e545ee",
     bounds: [2.0458, 1.5639, 4.6749]
   },
   teleopMissions: {

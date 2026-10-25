@@ -26,6 +26,7 @@ import { text3D } from "../nodes/text3d.js";
 import { timeline } from "../nodes/timeline.js";
 import { worldLabelsFromSnapshot, createSceneLabelLayer, createSceneLabelOcclusionTest } from "../compiler/labels.js";
 import { round } from "../GameRuntime.js";
+import { authoredBackingResize } from "./canvas.js";
 
 export async function startProductionRender(
   canvas: HTMLCanvasElement,
@@ -119,6 +120,8 @@ export async function startProductionRender(
   let pendingFrames = 0;
   let frameTail: Promise<void> = Promise.resolve();
   const baseBackingSize = getRootPerformanceBaseSize(canvas);
+  let syncedWidth = canvas.width;
+  let syncedHeight = canvas.height;
   let resourcesReleased = false;
   const releaseResources = (): void => {
     if (resourcesReleased) return;
@@ -144,6 +147,7 @@ export async function startProductionRender(
     canvas.width = width;
     canvas.height = height;
     renderer.resize?.(width, height);
+    syncedWidth = width; syncedHeight = height;
     // A parent whose size follows the canvas (auto-height body with a HUD beside it) would grow the canvas on every resize.
     if (parentFit.settle()) resizeRenderer();
   };
@@ -176,6 +180,13 @@ export async function startProductionRender(
      * time passing on its own.
      */
     const renderTime = resolveRootRenderTime(time, explicit, isPaused, pausedRenderTime);
+    if (submittedDrawCalls === undefined) {
+      const authored = authoredBackingResize(options.resize !== false, canvas, { width: syncedWidth, height: syncedHeight });
+      if (authored) {
+        renderer.resize?.(authored.width, authored.height);
+        syncedWidth = authored.width; syncedHeight = authored.height;
+      }
+    }
     let drawCalls: number;
     try {
       drawCalls = submittedDrawCalls ?? renderer.render(renderTime);
@@ -310,6 +321,7 @@ export async function startProductionRender(
         const height = Math.max(1, Math.round(baseBackingSize.height * settings.resolutionScale));
         canvas.width = width; canvas.height = height;
         renderer.resize?.(width, height);
+        syncedWidth = width; syncedHeight = height;
       }
       renderer.resetTemporalHistory?.("performance-quality");
     },
