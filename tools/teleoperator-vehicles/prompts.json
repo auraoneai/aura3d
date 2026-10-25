@@ -1,0 +1,13 @@
+{
+  "suffix": "stylised realistic game vehicle, PBR materials, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, clean studio condition, shown at three-quarter angle on flat ground",
+  "vehicles": {
+    "robotaxi": "a driverless ride-hail electric car, rounded pod-like five-door hatchback body in pearl white with a teal stripe along the lower sides, an original small roof-mounted sensor dome and two small side sensor pods, glass roof",
+    "hatch": "a compact three-door city hatchback car, short wheelbase, tall rounded roof, bright orange paint with a dark roof, friendly proportions",
+    "sedan": "a mid-size four-door family sedan, clean modern lines, metallic silver-grey paint, tinted windows",
+    "coupe": "a low wide two-door sports coupe with a long hood and short tail, sharp but original styling, glossy yellow paint with black roof and a small rear wing",
+    "van": "a boxy delivery van with a tall cargo body, sliding side door, plain white paint with a blue lower band, roof rack",
+    "pickup": "a rugged four-door pickup truck with an open cargo bed, rounded fenders, matte dark green paint, chunky tires",
+    "boxtruck": "a medium box truck with a tall rectangular cargo box on a cab chassis, plain pale grey paint with a red lower stripe, roll-up rear door, dual rear wheels",
+    "roadster": "a sleek low open-top electric roadster, two seats, wide stance, aerodynamic fenders, metallic electric-blue paint, slim light bars front and rear"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "info": {
+    "robotaxi": {
+      "name": "teleopVehRobotaxi.7874ad34.glb",
+      "sha": "7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+      "bytes": 1768844,
+      "tris": 25838,
+      "size": [
+        0.9293,
+        0.9414,
+        1.9037
+      ],
+      "min": [
+        -0.4647,
+        0,
+        -0.9518
+      ],
+      "max": [
+        0.4647,
+        0.9414,
+        0.9518
+      ],
+      "materials": 8,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/robotaxi/covered.glb"
+    },
+    "hatch": {
+      "name": "teleopVehHatch.67925e22.glb",
+      "sha": "67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
+      "bytes": 1477612,
+      "tris": 22658,
+      "size": [
+        1.0178,
+        1.0578,
+        1.9025
+      ],
+      "min": [
+        -0.5089,
+        0,
+        -0.9512
+      ],
+      "max": [
+        0.5089,
+        1.0578,
+        0.9512
+      ],
+      "materials": 3,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/hatch/covered.glb"
+    },
+    "pickup": {
+      "name": "teleopVehPickup.75a710f9.glb",
+      "sha": "75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
+      "bytes": 1953404,
+      "tris": 37996,
+      "size": [
+        0.8166,
+        0.7167,
+        1.9027
+      ],
+      "min": [
+        -0.4083,
+        0,
+        -0.9514
+      ],
+      "max": [
+        0.4083,
+        0.7167,
+        0.9514
+      ],
+      "materials": 1,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/pickup/oriented.glb"
+    },
+    "coupe": {
+      "name": "teleopVehCoupe.7f3a1b6a.glb",
+      "sha": "7f3a1b6ab764b97e22d51060d175532d4b4d6646295d07372283c96548f6e87d",
+      "bytes": 1546796,
+      "tris": 21966,
+      "size": [
+        0.8532,
+        0.5828,
+        1.9025
+      ],
+      "min": [
+        -0.4266,
+        0,
+        -0.9512
+      ],
+      "max": [
+        0.4266,
+        0.5828,
+        0.9512
+      ],
+      "materials": 1,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/coupe/oriented.glb"
+    },
+    "roadster": {
+      "name": "teleopVehRoadster.35a1e8b7.glb",
+      "sha": "35a1e8b73a975c9d6d8f4b4b4ae5bcf59feae133dec059d128cfb1b0f60255f1",
+      "bytes": 2034976,
+      "tris": 14470,
+      "size": [
+        0.8736,
+        0.5225,
+        1.9019
+      ],
+      "min": [
+        -0.4368,
+        0,
+        -0.9509
+      ],
+      "max": [
+        0.4368,
+        0.5225,
+        0.9509
+      ],
+      "materials": 1,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/roadster/oriented.glb"
+    },
+    "sedan": {
+      "name": "teleopVehSedan.7bc528fc.glb",
+      "sha": "7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
+      "bytes": 2084388,
+      "tris": 13906,
+      "size": [
+        0.8674,
+        0.6622,
+        1.9013
+      ],
+      "min": [
+        -0.4337,
+        0,
+        -0.9506
+      ],
+      "max": [
+        0.4337,
+        0.6622,
+        0.9506
+      ],
+      "materials": 3,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/sedan/covered.glb"
+    },
+    "van": {
+      "name": "teleopVehVan.44a544bc.glb",
+      "sha": "44a544bcde7b475580bbc7b3ff7a8047e9cb7cbf3dea04d34f9f50ed12084216",
+      "bytes": 1573776,
+      "tris": 22172,
+      "size": [
+        0.9098,
+        1.0016,
+        1.9027
+      ],
+      "min": [
+        -0.4549,
+        0,
+        -0.9513
+      ],
+      "max": [
+        0.4549,
+        1.0016,
+        0.9513
+      ],
+      "materials": 5,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/van/covered.glb"
+    },
+    "boxtruck": {
+      "name": "teleopVehBoxTruck.8cf91d05.glb",
+      "sha": "8cf91d0505f83b8caf170b60d5590987cf11a094005702df0ce7f3ce509c114b",
+      "bytes": 2080112,
+      "tris": 13873,
+      "size": [
+        0.6786,
+        0.8458,
+        1.9016
+      ],
+      "min": [
+        -0.3393,
+        0,
+        -0.9508
+      ],
+      "max": [
+        0.3393,
+        0.8458,
+        0.9508
+      ],
+      "materials": 1,
+      "textures": 3,
+      "nodes": 1,
+      "meshes": 1,
+      "file": "/tmp/meshy/teleop/boxtruck/oriented.glb"
+    }
+  },
+  "localEdits": [
+    "apps/showcase-teleoperator/src/main.ts:teleopWaymoHero",
+    "apps/showcase-teleoperator/src/main.ts:teleopWaymoTraffic",
+    "apps/showcase-teleoperator/src/main.ts:teleopCybercab",
+    "apps/showcase-teleoperator/src/main.ts:teleopCybertruck",
+    "apps/showcase-teleoperator/src/main.ts:teleopCorvette",
+    "apps/showcase-teleoperator/src/main.ts:teleopMissions",
+    "apps/showcase-teleoperator/src/main.ts:teleopSedan",
+    "apps/showcase-teleoperator/src/main.ts:teleopTaxi",
+    "apps/showcase-teleoperator/src/main.ts:teleopSuv",
+    "apps/showcase-teleoperator/src/main.ts:teleopVan",
+    "apps/showcase-teleoperator/src/main.ts:teleopPickup",
+    "apps/showcase-teleoperator/src/main.ts:teleopBus",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopWaymoHero",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopWaymoTraffic",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopCybercab",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopCybertruck",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopCorvette",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopMissions",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopSedan",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopTaxi",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopSuv",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopVan",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopPickup",
+    "apps/showcase-teleoperator-v2/src/main.ts:teleopBus"
+  ]
+}
