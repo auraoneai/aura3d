@@ -45,6 +45,19 @@ What was tested and what it showed:
 
 Still unknown: why the first frames sometimes show flat ground. Next step if it recurs on a real GPU: log the per-frame item list in the failing frame (the forward pass skips items whose program is pending; no draw list is exposed).
 
+### Environment wait: verified on the live port (1280x720, long run `grid2-env2`)
+
+Spec `tests/browser/gridenv.spec.ts`, six consecutive frames right after `ready()` resolves:
+
+| build | HDRI at each sample | draw calls | `programs.reused` |
+| --- | --- | --- | --- |
+| default (`warmPrograms` waits for the HDRI) | `ready` x6, `iblPixelBacked` true | 131 x6 | 1998, 3890, 4320, ... (steady growth) |
+| `?warmenv=0` (old behaviour) | `pending` at the first sample, `ready` from the second | 131 x6 | 1016, then 2908, 3338, ... |
+
+In the old path the HDRI lands after the game reports ready and every material moves to its image-based-lighting program in the next frames (the counter jumps by about 1,900 in one frame). With the wait, that recompile has already happened when the first frame is shown. Draw calls stayed at 131 in both, so the road-less frames are not explained by this either: the earlier flat frames are still unexplained.
+Frames: `env-wait-after-ready-5.jpg` (default, sixth frame: road, centre line and arrow present, luma spread 18.4) and `env-nowait-after-ready-0.jpg` (old path, first frame).
+The first run of this spec (`grid2-env2`) failed only its road assertion: the detector threshold was 20 and this straight street reads 18. With the threshold at 17 (flat ground reads 14) the rerun (`grid2-env3`, 26.9 min) passes both tests: the default build has the HDRI ready, 131 draw calls on all six frames and the road in the first and last frame; the `?warmenv=0` evidence test reproduces `pending` then `ready` with the program counter jumping 1016 to 2908.
+
 ### Translucent car: it was the baked texture, now repainted
 
 - The GLB's single material is opaque (no alpha mode, no extensions, double-sided). The see-through look comes from the Meshy atlas: glass, interior and reflections baked into shard-shaped islands, on a closed shell that also carries inward-facing triangles.
