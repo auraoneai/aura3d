@@ -108,6 +108,8 @@ export class RoadsterGame {
   private storage: Pick<Storage, "getItem" | "setItem"> | null;
   private drawCalls: () => number;
   private acc = 0;
+  /** Called after every fixed simulation step the wall-clock driver runs (presentation interpolation pushes its snapshot here). */
+  afterStep: (() => void) | null = null;
   private lastNow = 0;
   private frame: InputFrame = emptyInput();
   private emptyInput: InputFrame = emptyInput();
@@ -563,6 +565,11 @@ export class RoadsterGame {
     });
   }
 
+  /** Progress through the current fixed step, 0..1: the blend factor for render interpolation. */
+  get alpha(): number {
+    return Math.max(0, Math.min(1, this.acc / FIXED_DT));
+  }
+
   /** Drive the fixed-step accumulator from a wall clock (ms). */
   frameTick(nowMs: number): void {
     const dt = this.lastNow ? Math.min(0.1, (nowMs - this.lastNow) / 1000) : FIXED_DT;
@@ -575,6 +582,7 @@ export class RoadsterGame {
       let steps = 0;
       while (this.acc >= FIXED_DT && steps < 6) {
         this.simStep(FIXED_DT);
+        this.afterStep?.();
         this.acc -= FIXED_DT;
         steps++;
       }

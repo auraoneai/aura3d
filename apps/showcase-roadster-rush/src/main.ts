@@ -22,6 +22,7 @@ import { groundSpec } from "./art/ground";
 import { meshyVehicles } from "./meshy-vehicles";
 import { SKY_DOME_SIZE, skyLook, skySpec } from "./art/sky";
 import { installGameBeacon } from "@aura3d/engine/game";
+import { createRoadsterPresenter, viewOf } from "./native/presentation";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -1046,11 +1047,11 @@ async function bootRoadsterRushAura3D(): Promise<void> {
     }
   }
 
-  function syncRoadsterWorld(g: any, _threeScene?: any, _threeCamera?: any): void {
-    if (!g || !g.player) return;
+  function syncRoadsterWorld(real: any, g: any = real): void {
+    if (!real || !real.player) return;
     framesRendered += 1;
 
-    runSmartFreewayAutopilot(g);
+    runSmartFreewayAutopilot(real);
 
     const p = g.player;
     const px = Number(p.position?.x ?? 0);
@@ -1743,9 +1744,13 @@ async function bootRoadsterRushAura3D(): Promise<void> {
   });
 
   // Register Aura3D 60 FPS dynamic render loop callback after assets & simulation are ready
+  const presenter = createRoadsterPresenter(() => nativeGame);
+  nativeGame.afterStep = () => presenter.afterStep();
   auraApp.onFrame(() => {
     nativeGame.frameTick(performance.now());
-    syncRoadsterWorld(nativeGame);
+    // draw the poses between the last two simulation steps (smooth on 120 and 144 Hz displays); manual and paused runs draw the exact latest step
+    const live = !nativeGame.manual && !nativeGame.paused && !nativeGame.simPaused;
+    syncRoadsterWorld(nativeGame, live ? viewOf(nativeGame, presenter.present(nativeGame, true)) : nativeGame);
   });
 
   // Ensure initial live playing state and first synchronous world sync
