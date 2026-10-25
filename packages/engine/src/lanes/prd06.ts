@@ -56,6 +56,7 @@ import { registerDiagnosticsSection } from "../contracts/diagnostics.js";
 import { DIAGNOSTIC_ONLY_FIELDS, registerOptionCoverage } from "../contracts/compiler.js";
 import type { TypedGLBActor } from "../production-runtime/TypedGLBActor.js";
 import type { SceneNode } from "@aura3d/scene";
+import { createActorBoneMatrixLookup } from "../agent-api/app/actorBoneMatrixLookup.js";
 import {
   collectPrd06AnimationDiagnostics,
   createPrd06ActorAnimationApi,
@@ -109,21 +110,6 @@ registerNodeHandleExtension({
   create: (handle, app) => createPrd06ActorAnimationApi(handle, app)
 });
 
-/**
- * T0.18 — the bone→world-matrix lookup behind `handle.animation.socket(bone)`:
- * snapshot the actor's scene nodes by name once, then read the live
- * `transform.worldMatrix` on each call (it re-writes every applied frame).
- */
-function createActorBoneMatrixLookup(actor: TypedGLBActor): (bone: string) => Float32Array | null {
-  const nodesByName = new Map<string, SceneNode>();
-  actor.pipeline.resources.scene.traverse((node) => {
-    if (node.name && !nodesByName.has(node.name)) nodesByName.set(node.name, node);
-  });
-  return (bone: string) => {
-    const node = nodesByName.get(bone);
-    return node ? Float32Array.from(node.transform.worldMatrix) : null;
-  };
-}
 
 /**
  * The bind-pose variant of the bone lookup: the same nodes frozen once at
