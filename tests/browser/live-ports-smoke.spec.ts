@@ -31,6 +31,13 @@ const START_SELECTOR: Record<string, string> = {
   "cloud-runner": "button[data-a='play']",
   "where-the-wind-wanders": "#wwui-begin"
 };
+// 4.2.0 canonical slugs from docs/workflows/game-inventory.json (the old showcase-<slug>-port paths now 308 to these).
+const CANONICAL_PATH: Record<string, string> = {
+  "strange-orbit": "craterline-gp", "splat-rush": "chroma-roll", "serpentine-sky-run": "serpentine-sky-run",
+  "drift-and-deliver": "gridlock-courier", "heatsink": "ion-circuit", "ninja-runner": "shadowstep-gauntlet",
+  "last-train": "lamplight-line", "roadster-hours": "saltwind-highway", "where-the-wind-wanders": "the-bellkeepers-walk",
+  "silt-and-signal": "duneglide", "cloud-runner": "cumulus-dash"
+};
 const DEFAULT_START = "#start, button#play, [data-action='start'], button.primary";
 const BOOT_WAIT_MS = Number(process.env.LIVE_BOOT_WAIT_MS ?? 9000);
 
@@ -198,7 +205,7 @@ for (const slug of SLUGS) {
     page.on("response", (r) => { if (r.status() >= 400) badResponses.push(`${r.status()} ${r.url().slice(0, 160)}`); });
 
     if (SMALL_VIEWPORT[slug]) await page.setViewportSize(SMALL_VIEWPORT[slug]!);
-    const url = `${BASE}/apps/showcase-${slug}-port/`;
+    const url = `${BASE}/apps/${CANONICAL_PATH[slug] ?? `showcase-${slug}-port`}/`;
     const response = await page.goto(url, { waitUntil: "load", timeout: 90_000 });
     const status = response?.status() ?? 0;
 

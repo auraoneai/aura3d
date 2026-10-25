@@ -1,0 +1,2803 @@
+{
+ "index": [
+  {
+   "app": "showcase-iron-crown",
+   "url": "https://aura3d.auraone.ai/apps/showcase-iron-crown/",
+   "finalUrl": "/apps/showcase-iron-crown/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "game",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_SOUND__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_SHOWCASE_IRON_CROWN__",
+    "__AURA3D_GAME_RUNTIME__",
+    "__AURA3D_GAME_DEBUG__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "notes": [
+    "clicked \"Player Studio\""
+   ],
+   "shotOk": true,
+   "nonBlack": 0.867,
+   "colors": 2557,
+   "meanLuma": 49.7,
+   "changedFraction": 0.9711,
+   "drawCalls": 79,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-bunker-zero",
+   "url": "https://aura3d.auraone.ai/apps/showcase-bunker-zero/",
+   "finalUrl": "/apps/showcase-bunker-zero/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_SOUND__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "notes": [
+    "clicked \"Quick Play\""
+   ],
+   "shotOk": true,
+   "nonBlack": 0.961,
+   "colors": 969,
+   "meanLuma": 69,
+   "changedFraction": 0.4377,
+   "drawCalls": null,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-cross-hop",
+   "url": "https://aura3d.auraone.ai/apps/showcase-cross-hop/",
+   "finalUrl": "/apps/showcase-cross-hop/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_SOUND__",
+    "__AURA3D_GAME_EVIDENCE__"
+   ],
+   "notes": [
+    "clicked \"Quick Play\""
+   ],
+   "shotOk": true,
+   "nonBlack": 0.995,
+   "colors": 3950,
+   "meanLuma": 107.7,
+   "changedFraction": 0.4794,
+   "drawCalls": 100,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-top-tennis",
+   "url": "https://aura3d.auraone.ai/apps/showcase-top-tennis/",
+   "finalUrl": "/apps/showcase-top-tennis/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "game",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA_SAFETY__",
+    "__AURA_AURA_SLAM__"
+   ],
+   "notes": [
+    "clicked \"Quick Match\""
+   ],
+   "shotOk": true,
+   "nonBlack": 0.924,
+   "colors": 614,
+   "meanLuma": 51.4,
+   "changedFraction": 0.0552,
+   "drawCalls": 119,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-slingshot-siege",
+   "url": "https://aura3d.auraone.ai/apps/showcase-slingshot-siege/",
+   "finalUrl": "/apps/showcase-slingshot-siege/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 360,
+     "h": 270
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_ROUTE__"
+   ],
+   "notes": [
+    "clicked \"Player Studio\""
+   ],
+   "shotOk": true,
+   "nonBlack": 0.977,
+   "colors": 2312,
+   "meanLuma": 107.3,
+   "changedFraction": 0.0872,
+   "drawCalls": 298,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-roadster-rush",
+   "url": "https://aura3d.auraone.ai/apps/showcase-roadster-rush/",
+   "finalUrl": "/apps/showcase-roadster-rush/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "game",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_SHOWCASE_ROADSTER_RUSH__"
+   ],
+   "notes": [],
+   "shotOk": true,
+   "nonBlack": 0.995,
+   "colors": 1704,
+   "meanLuma": 84.2,
+   "changedFraction": 0.409,
+   "drawCalls": 721,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-heatsink",
+   "url": "https://aura3d.auraone.ai/apps/showcase-heatsink/",
+   "finalUrl": "/apps/showcase-heatsink/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    },
+    {
+     "id": "minimap",
+     "w": 136,
+     "h": 136
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA3D_SHOWCASE_HEATSINK__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__"
+   ],
+   "notes": [],
+   "shotOk": true,
+   "nonBlack": 1,
+   "colors": 1932,
+   "meanLuma": 88,
+   "changedFraction": 0.4707,
+   "drawCalls": 1281,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-teleoperator",
+   "url": "https://aura3d.auraone.ai/apps/showcase-teleoperator/",
+   "finalUrl": "/apps/showcase-teleoperator/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "c",
+     "w": 800,
+     "h": 600
+    },
+    {
+     "id": "miniC",
+     "w": 400,
+     "h": 400
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_SHOWCASE_TELEOPERATOR__"
+   ],
+   "notes": [],
+   "shotOk": true,
+   "nonBlack": 1,
+   "colors": 2487,
+   "meanLuma": 96.6,
+   "changedFraction": 0.2623,
+   "drawCalls": 460,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-pips-big-leap",
+   "url": "https://aura3d.auraone.ai/apps/showcase-pips-big-leap/",
+   "finalUrl": "/apps/showcase-pips-big-leap/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_SOUND__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA3D_SHOWCASE_PIPS_BIG_LEAP__"
+   ],
+   "notes": [
+    "clicked \"Quick Play\""
+   ],
+   "shotOk": true,
+   "nonBlack": 1,
+   "colors": 4019,
+   "meanLuma": 152.5,
+   "changedFraction": 0.9256,
+   "drawCalls": 497,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-aura-hoops-3d",
+   "url": "https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/",
+   "finalUrl": "/apps/showcase-aura-hoops-3d/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__"
+   ],
+   "notes": [
+    "clicked \"QUICK PLAY\""
+   ],
+   "shotOk": true,
+   "nonBlack": 1,
+   "colors": 1395,
+   "meanLuma": 99.7,
+   "changedFraction": 0.7769,
+   "drawCalls": 95,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-aura-diamond-3d",
+   "url": "https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/",
+   "finalUrl": "/apps/showcase-aura-diamond-3d/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__"
+   ],
+   "notes": [
+    "clicked \"Quick Play\""
+   ],
+   "shotOk": true,
+   "nonBlack": 1,
+   "colors": 1531,
+   "meanLuma": 79.4,
+   "changedFraction": 0.2212,
+   "drawCalls": 488,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-aura-fc-3d",
+   "url": "https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/",
+   "finalUrl": "/apps/showcase-aura-fc-3d/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA_AURA_FC_3D__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__auraEvidence",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "notes": [
+    "clicked \"Quick Play\""
+   ],
+   "shotOk": true,
+   "nonBlack": 1,
+   "colors": 1905,
+   "meanLuma": 105.4,
+   "changedFraction": 0.779,
+   "drawCalls": 357,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-red-zone-3d",
+   "url": "https://aura3d.auraone.ai/apps/showcase-red-zone-3d/",
+   "finalUrl": "/apps/showcase-red-zone-3d/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "game",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__auraEvidence",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "notes": [
+    "clicked \"Quick Play\""
+   ],
+   "shotOk": true,
+   "nonBlack": 1,
+   "colors": 1956,
+   "meanLuma": 110.2,
+   "changedFraction": 0.3871,
+   "drawCalls": 328,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-aura-links-3d",
+   "url": "https://aura3d.auraone.ai/apps/showcase-aura-links-3d/",
+   "finalUrl": "/apps/showcase-aura-links-3d/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_SHOWCASE_AURA_LINKS_3D__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "notes": [
+    "clicked \"QUICK PLAY\""
+   ],
+   "shotOk": true,
+   "nonBlack": 0.998,
+   "colors": 895,
+   "meanLuma": 131.6,
+   "changedFraction": 0.4515,
+   "drawCalls": 74,
+   "errors": [],
+   "bad": []
+  },
+  {
+   "app": "showcase-dot-dash-3d",
+   "url": "https://aura3d.auraone.ai/apps/showcase-dot-dash-3d/",
+   "finalUrl": "/apps/showcase-dot-dash-3d/",
+   "compat": [],
+   "status": 200,
+   "canvases": [
+    {
+     "id": "",
+     "w": 800,
+     "h": 600
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_HEAL_INSTALLED__",
+    "__AURA3D_HEAL__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_GAME__",
+    "__AURA3D_GAME_SOUND__",
+    "__AURA3D_GAME_EVIDENCE__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA3D_DOT_DASH__"
+   ],
+   "notes": [
+    "clicked \"Quick Play\""
+   ],
+   "shotOk": true,
+   "nonBlack": 0.89,
+   "colors": 1275,
+   "meanLuma": 28.2,
+   "changedFraction": 0.0321,
+   "drawCalls": 67,
+   "errors": [],
+   "bad": []
+  }
+ ],
+ "ports": [
+  {
+   "slug": "heatsink",
+   "url": "https://aura3d.auraone.ai/apps/ion-circuit/",
+   "finalUrl": "/apps/ion-circuit/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-heatsink-port-D-zRvIca.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 240,
+     "height": 180,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_HEATSINK__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start \"Start\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.25583626479053406,
+   "fpsPlay": 0.25283171521035525,
+   "hung": [],
+   "beforeStart": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9618287037037037,
+    "distinctColors": 213,
+    "lumaStdDev": 45.971300804592474
+   },
+   "afterStart": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9773611111111111,
+    "distinctColors": 212,
+    "lumaStdDev": 45.885052920523385
+   },
+   "afterPlay": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9547222222222222,
+    "distinctColors": 213,
+    "lumaStdDev": 46.03332398722155
+   },
+   "canvasOnly": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9999074074074074,
+    "distinctColors": 852,
+    "lumaStdDev": 41.47529755709081
+   },
+   "drawCalls": 38,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_HEATSINK__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [],
+    "numericFields": 34,
+    "hudChanged": false,
+    "hudBefore": "ION CIRCUIT|Objective: destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and fini",
+    "hudAfter": "ION CIRCUIT|Objective: destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and fini",
+    "startDiff": {
+     "changedFraction": 0.000046296296296296294,
+     "meanAbsLuma": 0.24072530864199743
+    },
+    "playDiff": {
+     "changedFraction": 0.00011574074074074075,
+     "meanAbsLuma": 0.39391203703709354
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "last-train",
+   "url": "https://aura3d.auraone.ai/apps/lamplight-line/",
+   "finalUrl": "/apps/lamplight-line/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-last-train-port-NxCcuI2d.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 240,
+     "height": 180,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_LAST_TRAIN__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start-btn \"Start · press Enter\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.2785592913451633,
+   "fpsPlay": 0.22756753066472535,
+   "hung": [],
+   "beforeStart": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 1,
+    "distinctColors": 279,
+    "lumaStdDev": 62.859988622215205
+   },
+   "afterStart": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 1,
+    "distinctColors": 421,
+    "lumaStdDev": 44.282536990429136
+   },
+   "afterPlay": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 1,
+    "distinctColors": 423,
+    "lumaStdDev": 44.275310873818434
+   },
+   "canvasOnly": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 1,
+    "distinctColors": 1114,
+    "lumaStdDev": 29.834620880673427
+   },
+   "drawCalls": 177,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_LAST_TRAIN__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [
+     "state.played:0.20->1.30"
+    ],
+    "numericFields": 13,
+    "hudChanged": true,
+    "hudBefore": "Mango Tide|Folded Gardens|day|0|km/h|0|0|0|0|Press E to open the doors.|W|Space|A|D|E|N|R|Lamplight Line|Six cloud-top t",
+    "hudAfter": "Mango Tide|Folded Gardens|day|0|km/h|0|0|0|0|Press E to open the doors.|W|Space|A|D|E|N|R|Passengers board while the doo",
+    "startDiff": {
+     "changedFraction": 0.5775231481481482,
+     "meanAbsLuma": 28.64489969135675
+    },
+    "playDiff": {
+     "changedFraction": 0.008912037037037038,
+     "meanAbsLuma": 0.3242206790123394
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "strange-orbit",
+   "url": "https://aura3d.auraone.ai/apps/craterline-gp/",
+   "finalUrl": "/apps/craterline-gp/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-strange-orbit-port-PtR8xpDC.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 800,
+     "height": 600,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_STRANGE_ORBIT__",
+    "__orbit",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start \"Let's ride\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.7908889591901334,
+   "fpsPlay": 0.6097932800780557,
+   "hung": [],
+   "beforeStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 1250,
+    "lumaStdDev": 44.11215493721476
+   },
+   "afterStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 1890,
+    "lumaStdDev": 45.69237080621148
+   },
+   "afterPlay": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 1884,
+    "lumaStdDev": 45.6039918779854
+   },
+   "canvasOnly": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 1809,
+    "lumaStdDev": 38.98279452662328
+   },
+   "drawCalls": 27,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_STRANGE_ORBIT__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [],
+    "numericFields": 43,
+    "hudChanged": true,
+    "hudBefore": "One impossible world|Ride the rings. Find your own way.|Bike|Skate|Sol|Bike|Explorer|Racer|Expert|Precise lines, 3 rescu",
+    "hudAfter": "Position|6 / 6|The painted rings|Lap 1 / 7|Race time|0:00.00|Best lap -|1|Orion|LEAD|2|Nova|+5m|3|Atlas|+10m|4|Io|+15m|5",
+    "startDiff": {
+     "changedFraction": 0.7849541666666666,
+     "meanAbsLuma": 34.83758402777898
+    },
+    "playDiff": {
+     "changedFraction": 0.00786875,
+     "meanAbsLuma": 0.7713152777776752
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "splat-rush",
+   "url": "https://aura3d.auraone.ai/apps/chroma-roll/",
+   "finalUrl": "/apps/chroma-roll/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-splat-rush-port-CyIK6ml5.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 800,
+     "height": 600,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_SPLAT_RUSH__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #btn-start \"PLAY NOW\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 1.2152144853566598,
+   "fpsPlay": 1.3050287106316074,
+   "hung": [],
+   "beforeStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 801,
+    "lumaStdDev": 54.1285427716485
+   },
+   "afterStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 3716,
+    "lumaStdDev": 49.57280850266457
+   },
+   "afterPlay": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 3746,
+    "lumaStdDev": 49.75127434650917
+   },
+   "canvasOnly": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 3342,
+    "lumaStdDev": 44.211815947271255
+   },
+   "drawCalls": 88,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_SPLAT_RUSH__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [
+     "state.score:4.81->30.87",
+     "state.distance:4.81->30.87",
+     "state.speed:16.08->16.49",
+     "state.laneOffset:0.00->0.00",
+     "state.frameCount:18.00->114.00",
+     "state.segmentCounter:205.00->231.00",
+     "state.lastSegmentZ:-180.19->-180.13",
+     "state.lastGateZ:-110.19->-84.13",
+     "state.introT:0.20->-0.00",
+     "state.steps:108.00->204.00"
+    ],
+    "numericFields": 43,
+    "hudChanged": true,
+    "hudBefore": "SCORE: 0|PLAY NOW|Mouse or touch: drag · Keyboard: Space to start, ← → or A / D to steer, M to mute|Built with Aura3D",
+    "hudAfter": "SCORE: 30|Built with Aura3D",
+    "startDiff": {
+     "changedFraction": 0.9194458333333333,
+     "meanAbsLuma": 42.964084027821436
+    },
+    "playDiff": {
+     "changedFraction": 0.33475625,
+     "meanAbsLuma": 19.89308888887864
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "serpentine-sky-run",
+   "url": "https://aura3d.auraone.ai/apps/serpentine-sky-run/",
+   "finalUrl": "/apps/serpentine-sky-run/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-serpentine-sky-run-port-WfmOUXGR.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 800,
+     "height": 600,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_SAIYAN_SNAKE_WAY__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start \"Start the run\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.7564868749527396,
+   "fpsPlay": 0.7647598654022773,
+   "hung": [],
+   "beforeStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 816,
+    "lumaStdDev": 31.342529747177423
+   },
+   "afterStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 2195,
+    "lumaStdDev": 50.14644028193188
+   },
+   "afterPlay": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 2267,
+    "lumaStdDev": 50.14332079947289
+   },
+   "canvasOnly": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 1,
+    "distinctColors": 1917,
+    "lumaStdDev": 32.91498015123371
+   },
+   "drawCalls": 19,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_SAIYAN_SNAKE_WAY__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [],
+    "numericFields": 37,
+    "hudChanged": true,
+    "hudBefore": "SERPENTINE SKY RUN|One million kilometres of road, coiled over a sea of cloud. Collect spark, build your surge, and reac",
+    "hudAfter": "RUNNER|35|0|SURGE|×1|OUTBOUND — KM COVERED|0|DAYS LEFT|365|DAYS|RUN ACTIVE|RUN SCORE|0|Built with Aura3D",
+    "startDiff": {
+     "changedFraction": 0.9630416666666667,
+     "meanAbsLuma": 97.91872708335414
+    },
+    "playDiff": {
+     "changedFraction": 0.01872708333333333,
+     "meanAbsLuma": 0.909361111111028
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "drift-and-deliver",
+   "url": "https://aura3d.auraone.ai/apps/gridlock-courier/",
+   "finalUrl": "/apps/gridlock-courier/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-drift-and-deliver-port-CRbSg3Go.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 360,
+     "height": 270,
+     "hasWebgl": true
+    },
+    {
+     "id": "minimap",
+     "width": 240,
+     "height": 240,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_DRIFT_AND_DELIVER__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start \"Start\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.38192720467479063,
+   "fpsPlay": 0.3864211604227395,
+   "hung": [],
+   "beforeStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 340,
+    "lumaStdDev": 42.908446151637015
+   },
+   "afterStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 340,
+    "lumaStdDev": 42.882525410338374
+   },
+   "afterPlay": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 339,
+    "lumaStdDev": 42.88224781046747
+   },
+   "canvasOnly": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1425,
+    "lumaStdDev": 32.81080550397613
+   },
+   "drawCalls": 107,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_DRIFT_AND_DELIVER__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [
+     "state.frames:15.00->26.00"
+    ],
+    "numericFields": 20,
+    "hudChanged": false,
+    "hudBefore": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Sound on (M)|AN OPEN-CITY DRIVING GAME|Gridlock Courier|A getaway city of 225 blocks, ",
+    "hudAfter": "NITRO|0|KM/H|0|x0  STREAK|0 / 174|Sound on (M)|AN OPEN-CITY DRIVING GAME|Gridlock Courier|A getaway city of 225 blocks, ",
+    "startDiff": {
+     "changedFraction": 0.018518518518518517,
+     "meanAbsLuma": 0.9739643347049894
+    },
+    "playDiff": {
+     "changedFraction": 0.0000102880658436214,
+     "meanAbsLuma": 0.05649176954732529
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "ninja-runner",
+   "url": "https://aura3d.auraone.ai/apps/shadowstep-gauntlet/",
+   "finalUrl": "/apps/shadowstep-gauntlet/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-ninja-runner-port-QbJ0ADRm.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 360,
+     "height": 270,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_NINJA_RUNNER__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start \"Run the Village →\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.2922054204105486,
+   "fpsPlay": 0.2909725758347276,
+   "hung": [],
+   "beforeStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 346,
+    "lumaStdDev": 53.72403217924311
+   },
+   "afterStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1352,
+    "lumaStdDev": 44.36581770869572
+   },
+   "afterPlay": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1387,
+    "lumaStdDev": 43.368427398055275
+   },
+   "canvasOnly": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1602,
+    "lumaStdDev": 25.791101248873698
+   },
+   "drawCalls": 43,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_NINJA_RUNNER__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [],
+    "numericFields": 194,
+    "hudChanged": true,
+    "hudBefore": "SHADOWSTEP GAUNTLET|Ready.|Run the Village →|A / D|change lane|W|jump|S|slide|1|echo clones|2|spiral orb|3|gale star|Shi",
+    "hudAfter": "Built with Aura3D",
+    "startDiff": {
+     "changedFraction": 0.9696810699588477,
+     "meanAbsLuma": 70.55777777778253
+    },
+    "playDiff": {
+     "changedFraction": 0.08047325102880658,
+     "meanAbsLuma": 4.502640603566297
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "roadster-hours",
+   "url": "https://aura3d.auraone.ai/apps/saltwind-highway/",
+   "finalUrl": "/apps/saltwind-highway/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-roadster-hours-port-m8o0mJdH.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 800,
+     "height": 600,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_ROADSTER_HOURS__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start \"Drive\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.44988303041208344,
+   "fpsPlay": 0.4225560414949949,
+   "hung": [],
+   "beforeStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9999729166666667,
+    "distinctColors": 890,
+    "lumaStdDev": 47.30237623293402
+   },
+   "afterStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9993354166666667,
+    "distinctColors": 1669,
+    "lumaStdDev": 45.01558260747459
+   },
+   "afterPlay": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9993416666666667,
+    "distinctColors": 1728,
+    "lumaStdDev": 44.871810646823754
+   },
+   "canvasOnly": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9993375,
+    "distinctColors": 1697,
+    "lumaStdDev": 43.27011906711464
+   },
+   "drawCalls": 71,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_ROADSTER_HOURS__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [
+     "state.countdown:2.65->2.10"
+    ],
+    "numericFields": 61,
+    "hudChanged": true,
+    "hudBefore": "Saltwind Highway|Sunbreak Coast|A road above the sea|Thread the coastal highway, cut through the skyline, and bring the ",
+    "hudAfter": "0:00.00|Relay 1 / 5|THE FIRST LEAP|0|3|Thrust|0|km/h|Heat|Built with Aura3D",
+    "startDiff": {
+     "changedFraction": 0.6010333333333333,
+     "meanAbsLuma": 34.96151250000655
+    },
+    "playDiff": {
+     "changedFraction": 0.12355625,
+     "meanAbsLuma": 2.5697909722206114
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "where-the-wind-wanders",
+   "url": "https://aura3d.auraone.ai/apps/the-bellkeepers-walk/",
+   "finalUrl": "/apps/the-bellkeepers-walk/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-where-the-wind-wanders-port-CqjQFfRr.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 800,
+     "height": 600,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_WIND__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #wwui-begin \"Begin the walk (Enter)\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.48511897542872934,
+   "fpsPlay": 0.45657930782577905,
+   "hung": [],
+   "beforeStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9992354166666667,
+    "distinctColors": 5074,
+    "lumaStdDev": 53.831685778178674
+   },
+   "afterStart": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9990979166666667,
+    "distinctColors": 6720,
+    "lumaStdDev": 43.99636781274082
+   },
+   "afterPlay": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9991083333333334,
+    "distinctColors": 6582,
+    "lumaStdDev": 42.46331281178679
+   },
+   "canvasOnly": {
+    "width": 800,
+    "height": 600,
+    "nonBlackFraction": 0.9991,
+    "distinctColors": 6448,
+    "lumaStdDev": 35.81940269847573
+   },
+   "drawCalls": 16,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_WIND__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [
+     "state.step:5.00->71.00",
+     "state.pos.x:-12.00->-11.68",
+     "state.pos.z:4.00->4.02",
+     "state.stride:0.00->0.15"
+    ],
+    "numericFields": 6,
+    "hudChanged": true,
+    "hudBefore": "0 / 3 discovered|WASD or arrows to walk · Space to hop · E to interact|Built with Aura3D|The Bellkeeper's Walk|A slow wa",
+    "hudAfter": "0 / 3 discovered|WASD or arrows to walk · Space to hop · E to interact|Built with Aura3D|Take your time. The wind will t",
+    "startDiff": {
+     "changedFraction": 0.6731604166666667,
+     "meanAbsLuma": 38.32923124999978
+    },
+    "playDiff": {
+     "changedFraction": 0.5819583333333334,
+     "meanAbsLuma": 25.112949305556914
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "silt-and-signal",
+   "url": "https://aura3d.auraone.ai/apps/duneglide/",
+   "finalUrl": "/apps/duneglide/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-silt-and-signal-port-D1YHUSII.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 360,
+     "height": 270,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__",
+    "__AURA_SILT__"
+   ],
+   "started": true,
+   "startNote": "clicked #start-button \"Begin the journey\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.502121463181932,
+   "fpsPlay": 0.5036895257762878,
+   "hung": [],
+   "beforeStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 447,
+    "lumaStdDev": 45.292829540981074
+   },
+   "afterStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1411,
+    "lumaStdDev": 68.1841236985223
+   },
+   "afterPlay": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1345,
+    "lumaStdDev": 52.9676325634577
+   },
+   "canvasOnly": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 0.9974382716049383,
+    "distinctColors": 1122,
+    "lumaStdDev": 43.032242597089656
+   },
+   "drawCalls": 156,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_SILT__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [
+     "state.state.yaw:0.00->-0.05",
+     "state.state.elapsed:0.10->1.20",
+     "state.flight.turn:0.00->0.09",
+     "state.flight.bank:0.00->-0.03",
+     "state.time:0.10->1.20",
+     "state.steps:6.00->72.00"
+    ],
+    "numericFields": 21,
+    "hudChanged": true,
+    "hudBefore": "A hover-board flight through seven valleys|Duneglide|One small village, one long road, one favour to repay.|Begin the jo",
+    "hudAfter": "Lantern Road|Fly to the gatehouse on the far road|40 m|1/4 · ring 1/8|Speed|0|Altitude|4|Mode|Cruise|W/S throttle · A/D ",
+    "startDiff": {
+     "changedFraction": 0.7615843621399176,
+     "meanAbsLuma": 55.53783950616965
+    },
+    "playDiff": {
+     "changedFraction": 0.5794135802469136,
+     "meanAbsLuma": 28.541430041155152
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "cloud-runner",
+   "url": "https://aura3d.auraone.ai/apps/cumulus-dash/",
+   "finalUrl": "/apps/cumulus-dash/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-cloud-runner-port-BnQU5ecV.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 360,
+     "height": 270,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_KID_GOKU__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked # \"Play  ▸\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.9850760971285935,
+   "fpsPlay": 0.2965159377316531,
+   "hung": [],
+   "beforeStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1346,
+    "lumaStdDev": 57.24531753260198
+   },
+   "afterStart": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1817,
+    "lumaStdDev": 53.31838458117143
+   },
+   "afterPlay": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1936,
+    "lumaStdDev": 54.58973329774083
+   },
+   "canvasOnly": {
+    "width": 360,
+    "height": 270,
+    "nonBlackFraction": 1,
+    "distinctColors": 1685,
+    "lumaStdDev": 35.34508939556657
+   },
+   "drawCalls": 187,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_KID_GOKU__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [
+     "state.s:0.20->12.50",
+     "state.lane:0.00->0.67",
+     "state.speed:3.50->13.97",
+     "state.score:0.00->7.00"
+    ],
+    "numericFields": 13,
+    "hudChanged": true,
+    "hudBefore": "Built with Aura3D|Sky ridge run|Seven sky pearls. One long run home along the ridge.|Play  ▸|Sound on|How to play|←|→|Sp",
+    "hudAfter": "Built with Aura3D|❚❚|1|2|3|4|5|6|7|⌂|7|THE RUN BEGINS|RIDE THE ROLLING LOG|← → OR A D TO STEER|Sky cloud|Q",
+    "startDiff": {
+     "changedFraction": 0.764022633744856,
+     "meanAbsLuma": 35.13308984910978
+    },
+    "playDiff": {
+     "changedFraction": 0.3247633744855967,
+     "meanAbsLuma": 13.112548010971812
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  },
+  {
+   "slug": "heatsink",
+   "url": "https://aura3d.auraone.ai/apps/ion-circuit/",
+   "finalUrl": "/apps/ion-circuit/",
+   "compat": [],
+   "status": 200,
+   "scripts": [
+    "/assets/showcase-heatsink-port-BHMIOkCP.js"
+   ],
+   "canvases": [
+    {
+     "id": "world",
+     "width": 240,
+     "height": 180,
+     "hasWebgl": true
+    }
+   ],
+   "hooks": [
+    "__aura3dInFlightByteFetches",
+    "__AURA_HEATSINK__",
+    "__AURA3D_LIVE_APPS__",
+    "__AURA3D_ROUTE_READY__"
+   ],
+   "started": true,
+   "startNote": "clicked #start \"Start\"",
+   "errorsAfterStart": 0,
+   "fpsBoot": 0.2549622018535737,
+   "fpsPlay": 0.21414193327337144,
+   "hung": [],
+   "beforeStart": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9544212962962964,
+    "distinctColors": 212,
+    "lumaStdDev": 46.0584272352821
+   },
+   "afterStart": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9726157407407408,
+    "distinctColors": 212,
+    "lumaStdDev": 45.901822702000786
+   },
+   "afterPlay": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9640740740740741,
+    "distinctColors": 212,
+    "lumaStdDev": 45.95208112797218
+   },
+   "canvasOnly": {
+    "width": 240,
+    "height": 180,
+    "nonBlackFraction": 0.9673379629629629,
+    "distinctColors": 870,
+    "lumaStdDev": 42.340293885715674
+   },
+   "drawCalls": 38,
+   "bridgeWarnings": [],
+   "progress": {
+    "hook": "__AURA_HEATSINK__",
+    "accessorErrors": [],
+    "accessor": "state",
+    "stateChanged": [],
+    "numericFields": 34,
+    "hudChanged": false,
+    "hudBefore": "ION CIRCUIT|Objective: destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and fini",
+    "hudAfter": "ION CIRCUIT|Objective: destroy sentry drones and shoot barrels for points, chain kills to raise the multiplier, and fini",
+    "startDiff": {
+     "changedFraction": 0.00018518518518518518,
+     "meanAbsLuma": 0.40130401234571383
+    },
+    "playDiff": {
+     "changedFraction": 0,
+     "meanAbsLuma": 0.17462962962960674
+    }
+   },
+   "consoleErrors": [],
+   "pageErrors": [],
+   "failedRequests": [],
+   "badResponses": []
+  }
+ ],
+ "slam": {
+  "httpStatus": 200,
+  "title": "Aura Slam 3D — Championship 3D Tennis on Aura3D",
+  "scripts": [
+   "/assets/showcase-top-tennis-CArejgMR.js"
+  ],
+  "initialState": {
+   "mode": "playing",
+   "paused": false,
+   "difficulty": "beginner",
+   "venue": "hard",
+   "time": 0.19999999999999998,
+   "rallyTime": 0,
+   "rallyHits": 0,
+   "stats": {
+    "pointsWon": 0,
+    "pointsLost": 0,
+    "longestRally": 0,
+    "fastestShot": 0,
+    "serve": {
+     "attempts": 0,
+     "firstAttempts": 0,
+     "firstIn": 0,
+     "secondAttempts": 0,
+     "secondIn": 0,
+     "faults": 0,
+     "doubleFaults": 0,
+     "lets": 0,
+     "aces": 0,
+     "unreturned": 0,
+     "returnsMade": 0,
+     "returnErrors": 0,
+     "weakReturns": 0,
+     "pointsPlayed": 0,
+     "pointsWon": 0,
+     "speedTotal": 0,
+     "speedCount": 0,
+     "fastest": 0,
+     "powerAttempts": 0,
+     "powerIn": 0,
+     "firstSpeedTotal": 0,
+     "firstSpeedCount": 0,
+     "secondSpeedTotal": 0,
+     "secondSpeedCount": 0
+    }
+   },
+   "serveAttempt": {
+    "id": 1,
+    "server": "player",
+    "number": 1,
+    "aim": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "lockedAim": null,
+    "expected": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "actual": null,
+    "tossAt": null,
+    "swingAt": null,
+    "contactAt": null,
+    "power": false,
+    "quality": null,
+    "launchSpeedKph": 0,
+    "legal": false,
+    "receiverTouched": false,
+    "result": null,
+    "errorSeed": 104729,
+    "counted": false,
+    "recorded": false
+   },
+   "lastServe": null,
+   "serveHistory": [],
+   "serveSequence": 1,
+   "tiebreak": false,
+   "tiebreakFirstServer": "player",
+   "matchWon": false,
+   "phase": "serve",
+   "pointDelay": 0,
+   "serveDelay": 0,
+   "serveNumber": 1,
+   "serveCourt": "deuce",
+   "server": "player",
+   "pointWinner": null,
+   "lastCall": "",
+   "outFeedback": null,
+   "lastShotType": "none",
+   "lastStroke": "none",
+   "lastShotSpeed": 0,
+   "lastTiming": "",
+   "lastShotPower": false,
+   "energy": 100,
+   "energyRecoveryDelay": 0,
+   "powerDeniedUntil": 0,
+   "message": "YOUR SERVE",
+   "messageTimer": 1.0000000000000007,
+   "screenShake": 0,
+   "score": {
+    "playerPoints": 0,
+    "aiPoints": 0,
+    "playerGames": 0,
+    "aiGames": 0
+   },
+   "player": {
+    "side": "player",
+    "id": "p1",
+    "end": 1,
+    "controller": "human",
+    "appearance": {
+     "skin": "medium",
+     "shirt": "sky",
+     "pants": "navy",
+     "shoes": "ivory",
+     "racket": "graphite"
+    },
+    "energy": 100,
+    "energyRecoveryDelay": 0,
+    "powerDeniedUntil": 0,
+    "selectedShot": "neutral",
+    "stats": {
+     "pointsWon": 0,
+     "pointsLost": 0,
+     "longestRally": 0,
+     "fastestShot": 0,
+     "serve": {
+      "attempts": 0,
+      "firstAttempts": 0,
+      "firstIn": 0,
+      "secondAttempts": 0,
+      "secondIn": 0,
+      "faults": 0,
+      "doubleFaults": 0,
+      "lets": 0,
+      "aces": 0,
+      "unreturned": 0,
+      "returnsMade": 0,
+      "returnErrors": 0,
+      "weakReturns": 0,
+      "pointsPlayed": 0,
+      "pointsWon": 0,
+      "speedTotal": 0,
+      "speedCount": 0,
+      "fastest": 0,
+      "powerAttempts": 0,
+      "powerIn": 0,
+      "firstSpeedTotal": 0,
+      "firstSpeedCount": 0,
+      "secondSpeedTotal": 0,
+      "secondSpeedCount": 0
+     }
+    },
+    "x": 0.38,
+    "y": 1.035,
+    "color": "#d9ff4f",
+    "vx": 0,
+    "vy": 0,
+    "swing": 0,
+    "swingAge": 0,
+    "serveMotion": 0,
+    "swingCooldown": 0,
+    "strokeConnected": false,
+    "contactFlash": 0,
+    "queuedShot": "neutral",
+    "queuedAim": 0,
+    "queuedPower": false,
+    "aimRemaining": 0,
+    "swingPressAt": null,
+    "stroke": "forehand",
+    "racketSide": 1,
+    "strokeContactAge": 0.17,
+    "strokeContactZ": 0.5,
+    "stride": 0,
+    "moveBlend": 0,
+    "facing": 1,
+    "lean": 0,
+    "splitStep": 0,
+    "recovery": 0,
+    "reactionTimer": 0,
+    "trackingTimer": 0,
+    "readTarget": {
+     "x": 0,
+     "y": 0.77
+    },
+    "readErrorX": 0,
+    "readErrorY": 0,
+    "targetX": 0.38,
+    "targetY": 1.035,
+    "rosterId": "alcatraz",
+    "characterId": "alcatraz"
+   },
+   "ai": {
+    "side": "ai",
+    "id": "p2",
+    "end": -1,
+    "controller": "computer",
+    "appearance": {
+     "skin": "light",
+     "shirt": "clay",
+     "pants": "ivory",
+     "shoes": "ivory",
+     "racket": "graphite"
+    },
+    "energy": 100,
+    "energyRecoveryDelay": 0,
+    "powerDeniedUntil": 0,
+    "selectedShot": "neutral",
+    "stats": {
+     "pointsWon": 0,
+     "pointsLost": 0,
+     "longestRally": 0,
+     "fastestShot": 0,
+     "serve": {
+      "attempts": 0,
+      "firstAttempts": 0,
+      "firstIn": 0,
+      "secondAttempts": 0,
+      "secondIn": 0,
+      "faults": 0,
+      "doubleFaults": 0,
+      "lets": 0,
+      "aces": 0,
+      "unreturned": 0,
+      "returnsMade": 0,
+      "returnErrors": 0,
+      "weakReturns": 0,
+      "pointsPlayed": 0,
+      "pointsWon": 0,
+      "speedTotal": 0,
+      "speedCount": 0,
+      "fastest": 0,
+      "powerAttempts": 0,
+      "powerIn": 0,
+      "firstSpeedTotal": 0,
+      "firstSpeedCount": 0,
+      "secondSpeedTotal": 0,
+      "secondSpeedCount": 0
+     }
+    },
+    "x": -0.56,
+    "y": -0.86,
+    "color": "#ff796c",
+    "vx": 0,
+    "vy": 0,
+    "swing": 0,
+    "swingAge": 0,
+    "serveMotion": 0,
+    "swingCooldown": 0,
+    "strokeConnected": false,
+    "contactFlash": 0,
+    "queuedShot": "neutral",
+    "queuedAim": 0,
+    "queuedPower": false,
+    "aimRemaining": 0,
+    "swingPressAt": null,
+    "stroke": "forehand",
+    "racketSide": 1,
+    "strokeContactAge": 0.17,
+    "strokeContactZ": 0.5,
+    "stride": 3.141592653589793,
+    "moveBlend": 0,
+    "facing": -1,
+    "lean": 0,
+    "splitStep": 0,
+    "recovery": 0,
+    "reactionTimer": 0,
+    "trackingTimer": 0,
+    "readTarget": {
+     "x": 0,
+     "y": -0.77
+    },
+    "readErrorX": 0,
+    "readErrorY": 0,
+    "targetX": -0.56,
+    "targetY": -0.86,
+    "rosterId": "zinner",
+    "lobRepeats": 0,
+    "tactics": {
+     "pattern": "pressure",
+     "net": false,
+     "shots": 0,
+     "last": null,
+     "repeats": 0
+    },
+    "characterId": "zinner"
+   },
+   "ball": {
+    "x": 0.41500000000000004,
+    "y": 0.9949999999999999,
+    "z": 0.32564642473395033,
+    "vx": 0,
+    "vy": 0,
+    "vz": 0,
+    "active": false,
+    "dead": false,
+    "settling": false,
+    "rolling": false,
+    "lastHit": null,
+    "bounceCount": 0,
+    "crossedNet": false,
+    "targetX": null,
+    "targetY": null,
+    "isServe": false,
+    "defensiveLob": false,
+    "highDeepLob": false,
+    "netTouched": false,
+    "speedKph": 0,
+    "trail": []
+   },
+   "retiringBall": null,
+   "particles": [],
+   "marks": [],
+   "firstServer": "player",
+   "tick": 12,
+   "winner": null
+  },
+  "panelBoot": "Aura3D safety net (?diag=1)\ngpu: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)\nmaxTex 8192 units 32 samples 4 fragUniforms 4096 varyings 31\ncolor_buffer_float:y texture_float_linear:y multi_draw:y disjoint_timer_query_webgl2:n navigator.gpu:y dpr 1\nengine: backend=webgl2 drawCalls=119 fps=60 warn:Scene has no interactions. Suggested fix: add interactions.orbit() for product/v\ncanvas: game 1280x800 (css 1280x800)\nsafety: rung 0 (full) off:[] quality:default tm:default heal:on\nheal watch: frames 17 ready@4 samples 0 black 0 lit n/a frame 4543ms skipped notReady 3 noDraw 0\nno errors captured",
+  "drawCallsBoot": 119,
+  "afterServeKey": {
+   "mode": "playing",
+   "paused": false,
+   "difficulty": "beginner",
+   "venue": "hard",
+   "time": 0.24999999999999997,
+   "rallyTime": 0,
+   "rallyHits": 0,
+   "stats": {
+    "pointsWon": 0,
+    "pointsLost": 0,
+    "longestRally": 0,
+    "fastestShot": 0,
+    "serve": {
+     "attempts": 0,
+     "firstAttempts": 0,
+     "firstIn": 0,
+     "secondAttempts": 0,
+     "secondIn": 0,
+     "faults": 0,
+     "doubleFaults": 0,
+     "lets": 0,
+     "aces": 0,
+     "unreturned": 0,
+     "returnsMade": 0,
+     "returnErrors": 0,
+     "weakReturns": 0,
+     "pointsPlayed": 0,
+     "pointsWon": 0,
+     "speedTotal": 0,
+     "speedCount": 0,
+     "fastest": 0,
+     "powerAttempts": 0,
+     "powerIn": 0,
+     "firstSpeedTotal": 0,
+     "firstSpeedCount": 0,
+     "secondSpeedTotal": 0,
+     "secondSpeedCount": 0
+    }
+   },
+   "serveAttempt": {
+    "id": 1,
+    "server": "player",
+    "number": 1,
+    "aim": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "lockedAim": null,
+    "expected": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "actual": null,
+    "tossAt": 0.16766666666666666,
+    "swingAt": null,
+    "contactAt": null,
+    "power": false,
+    "quality": null,
+    "launchSpeedKph": 0,
+    "legal": false,
+    "receiverTouched": false,
+    "result": null,
+    "errorSeed": 104729,
+    "counted": false,
+    "recorded": false
+   },
+   "lastServe": null,
+   "serveHistory": [],
+   "serveSequence": 1,
+   "tiebreak": false,
+   "tiebreakFirstServer": "player",
+   "matchWon": false,
+   "phase": "serveToss",
+   "pointDelay": 0,
+   "serveDelay": 0,
+   "serveNumber": 1,
+   "serveCourt": "deuce",
+   "server": "player",
+   "pointWinner": null,
+   "lastCall": "",
+   "outFeedback": null,
+   "lastShotType": "none",
+   "lastStroke": "none",
+   "lastShotSpeed": 0,
+   "lastTiming": "",
+   "lastShotPower": false,
+   "energy": 100,
+   "energyRecoveryDelay": 0,
+   "powerDeniedUntil": 0,
+   "message": "TOSS · PRESS AS BALL RISES INTO CIRCLE",
+   "messageTimer": 1.2000000000000004,
+   "screenShake": 0,
+   "score": {
+    "playerPoints": 0,
+    "aiPoints": 0,
+    "playerGames": 0,
+    "aiGames": 0
+   },
+   "player": {
+    "side": "player",
+    "id": "p1",
+    "end": 1,
+    "controller": "human",
+    "appearance": {
+     "skin": "medium",
+     "shirt": "sky",
+     "pants": "navy",
+     "shoes": "ivory",
+     "racket": "graphite"
+    },
+    "energy": 100,
+    "energyRecoveryDelay": 0,
+    "powerDeniedUntil": 0,
+    "selectedShot": "neutral",
+    "stats": {
+     "pointsWon": 0,
+     "pointsLost": 0,
+     "longestRally": 0,
+     "fastestShot": 0,
+     "serve": {
+      "attempts": 0,
+      "firstAttempts": 0,
+      "firstIn": 0,
+      "secondAttempts": 0,
+      "secondIn": 0,
+      "faults": 0,
+      "doubleFaults": 0,
+      "lets": 0,
+      "aces": 0,
+      "unreturned": 0,
+      "returnsMade": 0,
+      "returnErrors": 0,
+      "weakReturns": 0,
+      "pointsPlayed": 0,
+      "pointsWon": 0,
+      "speedTotal": 0,
+      "speedCount": 0,
+      "fastest": 0,
+      "powerAttempts": 0,
+      "powerIn": 0,
+      "firstSpeedTotal": 0,
+      "firstSpeedCount": 0,
+      "secondSpeedTotal": 0,
+      "secondSpeedCount": 0
+     }
+    },
+    "x": 0.38,
+    "y": 1.035,
+    "color": "#d9ff4f",
+    "vx": 0,
+    "vy": 0,
+    "swing": 0,
+    "swingAge": 0,
+    "serveMotion": 0,
+    "swingCooldown": 0,
+    "strokeConnected": false,
+    "contactFlash": 0,
+    "queuedShot": "neutral",
+    "queuedAim": 0,
+    "queuedPower": false,
+    "aimRemaining": 0,
+    "swingPressAt": null,
+    "stroke": "forehand",
+    "racketSide": 1,
+    "strokeContactAge": 0.17,
+    "strokeContactZ": 0.5,
+    "stride": 0,
+    "moveBlend": 0,
+    "facing": 1,
+    "lean": 0,
+    "splitStep": 0,
+    "recovery": 0,
+    "reactionTimer": 0,
+    "trackingTimer": 0,
+    "readTarget": {
+     "x": 0,
+     "y": 0.77
+    },
+    "readErrorX": 0,
+    "readErrorY": 0,
+    "targetX": 0.38,
+    "targetY": 1.035,
+    "rosterId": "alcatraz",
+    "characterId": "alcatraz"
+   },
+   "ai": {
+    "side": "ai",
+    "id": "p2",
+    "end": -1,
+    "controller": "computer",
+    "appearance": {
+     "skin": "light",
+     "shirt": "clay",
+     "pants": "ivory",
+     "shoes": "ivory",
+     "racket": "graphite"
+    },
+    "energy": 100,
+    "energyRecoveryDelay": 0,
+    "powerDeniedUntil": 0,
+    "selectedShot": "neutral",
+    "stats": {
+     "pointsWon": 0,
+     "pointsLost": 0,
+     "longestRally": 0,
+     "fastestShot": 0,
+     "serve": {
+      "attempts": 0,
+      "firstAttempts": 0,
+      "firstIn": 0,
+      "secondAttempts": 0,
+      "secondIn": 0,
+      "faults": 0,
+      "doubleFaults": 0,
+      "lets": 0,
+      "aces": 0,
+      "unreturned": 0,
+      "returnsMade": 0,
+      "returnErrors": 0,
+      "weakReturns": 0,
+      "pointsPlayed": 0,
+      "pointsWon": 0,
+      "speedTotal": 0,
+      "speedCount": 0,
+      "fastest": 0,
+      "powerAttempts": 0,
+      "powerIn": 0,
+      "firstSpeedTotal": 0,
+      "firstSpeedCount": 0,
+      "secondSpeedTotal": 0,
+      "secondSpeedCount": 0
+     }
+    },
+    "x": -0.56,
+    "y": -0.86,
+    "color": "#ff796c",
+    "vx": 0,
+    "vy": 0,
+    "swing": 0,
+    "swingAge": 0,
+    "serveMotion": 0,
+    "swingCooldown": 0,
+    "strokeConnected": false,
+    "contactFlash": 0,
+    "queuedShot": "neutral",
+    "queuedAim": 0,
+    "queuedPower": false,
+    "aimRemaining": 0,
+    "swingPressAt": null,
+    "stroke": "forehand",
+    "racketSide": 1,
+    "strokeContactAge": 0.17,
+    "strokeContactZ": 0.5,
+    "stride": 3.141592653589793,
+    "moveBlend": 0,
+    "facing": -1,
+    "lean": 0,
+    "splitStep": 0,
+    "recovery": 0,
+    "reactionTimer": 0,
+    "trackingTimer": 0,
+    "readTarget": {
+     "x": 0,
+     "y": -0.77
+    },
+    "readErrorX": 0,
+    "readErrorY": 0,
+    "targetX": -0.56,
+    "targetY": -0.86,
+    "rosterId": "zinner",
+    "lobRepeats": 0,
+    "tactics": {
+     "pattern": "pressure",
+     "net": false,
+     "shots": 0,
+     "last": null,
+     "repeats": 0
+    },
+    "characterId": "zinner"
+   },
+   "ball": {
+    "x": 0.41500000000000004,
+    "y": 0.9949999999999999,
+    "z": 0.5187933984075945,
+    "vx": 0,
+    "vy": 0,
+    "vz": 2.2289894350022967,
+    "active": false,
+    "dead": false,
+    "settling": false,
+    "rolling": false,
+    "lastHit": null,
+    "bounceCount": 0,
+    "crossedNet": false,
+    "targetX": null,
+    "targetY": null,
+    "isServe": false,
+    "defensiveLob": false,
+    "highDeepLob": false,
+    "netTouched": false,
+    "speedKph": 0,
+    "trail": []
+   },
+   "retiringBall": null,
+   "particles": [],
+   "marks": [],
+   "firstServer": "player",
+   "tick": 15,
+   "winner": null
+  },
+  "afterKeys": {
+   "mode": "playing",
+   "paused": false,
+   "difficulty": "beginner",
+   "venue": "hard",
+   "time": 1.0500000000000012,
+   "rallyTime": 0.16000000000000072,
+   "rallyHits": 1,
+   "stats": {
+    "pointsWon": 0,
+    "pointsLost": 0,
+    "longestRally": 0,
+    "fastestShot": 136,
+    "serve": {
+     "attempts": 1,
+     "firstAttempts": 1,
+     "firstIn": 0,
+     "secondAttempts": 0,
+     "secondIn": 0,
+     "faults": 0,
+     "doubleFaults": 0,
+     "lets": 0,
+     "aces": 0,
+     "unreturned": 0,
+     "returnsMade": 0,
+     "returnErrors": 0,
+     "weakReturns": 0,
+     "pointsPlayed": 0,
+     "pointsWon": 0,
+     "speedTotal": 0,
+     "speedCount": 0,
+     "fastest": 0,
+     "powerAttempts": 1,
+     "powerIn": 0,
+     "firstSpeedTotal": 0,
+     "firstSpeedCount": 0,
+     "secondSpeedTotal": 0,
+     "secondSpeedCount": 0
+    }
+   },
+   "serveAttempt": {
+    "id": 1,
+    "server": "player",
+    "number": 1,
+    "aim": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "lockedAim": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "expected": {
+     "x": -0.41,
+     "y": -0.5020698359276399
+    },
+    "actual": null,
+    "tossAt": 0.16766666666666666,
+    "swingAt": 0.6500000000000004,
+    "contactAt": 0.8900000000000003,
+    "power": true,
+    "quality": 0.41859734964321815,
+    "launchSpeedKph": 136,
+    "legal": false,
+    "receiverTouched": false,
+    "result": null,
+    "errorSeed": 104729,
+    "counted": true,
+    "recorded": false,
+    "netRisk": false,
+    "paceLimited": true,
+    "timing": "LATE",
+    "timingErrorMetres": 1.1867984180230262
+   },
+   "lastServe": {
+    "id": 1,
+    "server": "player",
+    "number": 1,
+    "aim": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "lockedAim": {
+     "x": -0.41,
+     "y": -0.46
+    },
+    "expected": {
+     "x": -0.41,
+     "y": -0.5020698359276399
+    },
+    "actual": null,
+    "tossAt": 0.16766666666666666,
+    "swingAt": 0.6500000000000004,
+    "contactAt": 0.8900000000000003,
+    "power": true,
+    "quality": 0.41859734964321815,
+    "launchSpeedKph": 136,
+    "legal": false,
+    "receiverTouched": false,
+    "result": null,
+    "errorSeed": 104729,
+    "counted": true,
+    "recorded": false,
+    "netRisk": false,
+    "paceLimited": true,
+    "timing": "LATE",
+    "timingErrorMetres": 1.1867984180230262
+   },
+   "serveHistory": [],
+   "serveSequence": 1,
+   "tiebreak": false,
+   "tiebreakFirstServer": "player",
+   "matchWon": false,
+   "phase": "rally",
+   "pointDelay": 0,
+   "serveDelay": 0,
+   "serveNumber": 1,
+   "serveCourt": "deuce",
+   "server": "player",
+   "pointWinner": null,
+   "lastCall": "",
+   "outFeedback": null,
+   "lastShotType": "serve",
+   "lastStroke": "serve",
+   "lastShotSpeed": 136,
+   "lastTiming": "LATE",
+   "lastShotPower": true,
+   "energy": 100,
+   "energyRecoveryDelay": 0,
+   "powerDeniedUntil": 0,
+   "message": "POWER · LATE SERVE · 136 KM/H",
+   "messageTimer": 0.7399999999999988,
+   "screenShake": 0,
+   "score": {
+    "playerPoints": 0,
+    "aiPoints": 0,
+    "playerGames": 0,
+    "aiGames": 0
+   },
+   "player": {
+    "side": "player",
+    "id": "p1",
+    "end": 1,
+    "controller": "human",
+    "appearance": {
+     "skin": "medium",
+     "shirt": "sky",
+     "pants": "navy",
+     "shoes": "ivory",
+     "racket": "graphite"
+    },
+    "energy": 100,
+    "energyRecoveryDelay": 0,
+    "powerDeniedUntil": 0,
+    "selectedShot": "neutral",
+    "stats": {
+     "pointsWon": 0,
+     "pointsLost": 0,
+     "longestRally": 0,
+     "fastestShot": 136,
+     "serve": {
+      "attempts": 1,
+      "firstAttempts": 1,
+      "firstIn": 0,
+      "secondAttempts": 0,
+      "secondIn": 0,
+      "faults": 0,
+      "doubleFaults": 0,
+      "lets": 0,
+      "aces": 0,
+      "unreturned": 0,
+      "returnsMade": 0,
+      "returnErrors": 0,
+      "weakReturns": 0,
+      "pointsPlayed": 0,
+      "pointsWon": 0,
+      "speedTotal": 0,
+      "speedCount": 0,
+      "fastest": 0,
+      "powerAttempts": 1,
+      "powerIn": 0,
+      "firstSpeedTotal": 0,
+      "firstSpeedCount": 0,
+      "secondSpeedTotal": 0,
+      "secondSpeedCount": 0
+     }
+    },
+    "x": 0.38,
+    "y": 1.035,
+    "color": "#d9ff4f",
+    "vx": 0,
+    "vy": 0,
+    "swing": 0.17999999999999933,
+    "swingAge": 0.4000000000000007,
+    "serveMotion": 0.2599999999999993,
+    "swingCooldown": 0.2199999999999993,
+    "strokeConnected": true,
+    "contactFlash": 0,
+    "queuedShot": "neutral",
+    "queuedAim": 0,
+    "queuedPower": false,
+    "aimRemaining": 0,
+    "swingPressAt": null,
+    "stroke": "serve",
+    "racketSide": 1,
+    "strokeContactAge": 0.24,
+    "strokeContactZ": 1.0224766322155867,
+    "stride": 0.7666666666666666,
+    "moveBlend": 0.010355856899200587,
+    "facing": 1,
+    "lean": 0,
+    "splitStep": 0,
+    "recovery": 0,
+    "reactionTimer": 0,
+    "trackingTimer": 0,
+    "readTarget": {
+     "x": 0,
+     "y": 0.77
+    },
+    "readErrorX": 0,
+    "readErrorY": 0,
+    "targetX": 0.38,
+    "targetY": 1.035,
+    "rosterId": "alcatraz",
+    "characterId": "alcatraz"
+   },
+   "ai": {
+    "side": "ai",
+    "id": "p2",
+    "end": -1,
+    "controller": "computer",
+    "appearance": {
+     "skin": "light",
+     "shirt": "clay",
+     "pants": "ivory",
+     "shoes": "ivory",
+     "racket": "graphite"
+    },
+    "energy": 100,
+    "energyRecoveryDelay": 0,
+    "powerDeniedUntil": 0,
+    "selectedShot": "neutral",
+    "stats": {
+     "pointsWon": 0,
+     "pointsLost": 0,
+     "longestRally": 0,
+     "fastestShot": 0,
+     "serve": {
+      "attempts": 0,
+      "firstAttempts": 0,
+      "firstIn": 0,
+      "secondAttempts": 0,
+      "secondIn": 0,
+      "faults": 0,
+      "doubleFaults": 0,
+      "lets": 0,
+      "aces": 0,
+      "unreturned": 0,
+      "returnsMade": 0,
+      "returnErrors": 0,
+      "weakReturns": 0,
+      "pointsPlayed": 0,
+      "pointsWon": 0,
+      "speedTotal": 0,
+      "speedCount": 0,
+      "fastest": 0,
+      "powerAttempts": 0,
+      "powerIn": 0,
+      "firstSpeedTotal": 0,
+      "firstSpeedCount": 0,
+      "secondSpeedTotal": 0,
+      "secondSpeedCount": 0
+     }
+    },
+    "x": -0.562550863094852,
+    "y": -0.8537551754310624,
+    "color": "#ff796c",
+    "vx": -0.07292910684529544,
+    "vy": 0.1785393654160834,
+    "swing": 0,
+    "swingAge": 0,
+    "serveMotion": 0,
+    "swingCooldown": 0,
+    "strokeConnected": false,
+    "contactFlash": 0,
+    "queuedShot": "neutral",
+    "queuedAim": 0,
+    "queuedPower": false,
+    "aimRemaining": 0,
+    "swingPressAt": null,
+    "stroke": "forehand",
+    "racketSide": 1,
+    "strokeContactAge": 0.17,
+    "strokeContactZ": 0.5,
+    "stride": 3.30455870807361,
+    "moveBlend": 0.06676594634924886,
+    "facing": -1,
+    "lean": -0.0032991354554853204,
+    "splitStep": 0,
+    "recovery": 0,
+    "reactionTimer": 0,
+    "trackingTimer": 0.1,
+    "readTarget": {
+     "x": -0.6569497161414078,
+     "y": -0.6226552477342869
+    },
+    "readErrorX": 0,
+    "readErrorY": 0,
+    "targetX": -0.6569497161414078,
+    "targetY": -0.6226552477342869,
+    "rosterId": "zinner",
+    "lobRepeats": 0,
+    "tactics": {
+     "pattern": "pressure",
+     "net": false,
+     "shots": 0,
+     "last": null,
+     "repeats": 0
+    },
+    "characterId": "zinner",
+    "serveRead": {
+     "at": 0.8900000000000003,
+     "nextAt": 1.1000000000000014,
+     "previous": {
+      "x": 0.18242846523498124,
+      "y": 0.6606402646353403,
+      "z": 0.8812374149121731,
+      "bounceCount": 0,
+      "time": 1.0000000000000013
+     },
+     "observed": {
+      "x": 0.23606036174035872,
+      "y": 0.661193240517733,
+      "z": 0.8812374149121731,
+      "vx": -2.176474913481912,
+      "vy": -3.1290397461361636,
+      "vz": -1.531833950263203,
+      "bounceCount": 0,
+      "active": true,
+      "crossedNet": false,
+      "isServe": true,
+      "shotType": "serve",
+      "lastHit": "player",
+      "serveOriginX": 0.38
+     },
+     "observedAt": 1.0000000000000013,
+     "errorX": 0.05363189650537749,
+     "errorY": 0.0005529758823926995,
+     "speedError": 0.034525793596665605,
+     "intercept": {
+      "x": -0.6569497161414078,
+      "y": -0.6226552477342869
+     },
+     "planAt": 1.0000000000000013
+    }
+   },
+   "ball": {
+    "x": 0.07747288096079696,
+    "y": 0.5097493939257499,
+    "z": 0.7990129659061327,
+    "vx": -2.0943922264411206,
+    "vy": -3.0110324175750445,
+    "vz": -1.7571440099784077,
+    "active": true,
+    "dead": false,
+    "settling": false,
+    "rolling": false,
+    "lastHit": "player",
+    "bounceCount": 0,
+    "crossedNet": false,
+    "targetX": -0.5771947575331497,
+    "targetY": -0.4314427368300842,
+    "isServe": true,
+    "defensiveLob": false,
+    "highDeepLob": false,
+    "netTouched": false,
+    "speedKph": 136,
+    "trail": [
+     {
+      "x": 0.3937618619241604,
+      "y": 0.9644666923282309,
+      "z": 1.0118898039669733,
+      "life": 0.07000000000000003
+     },
+     {
+      "x": 0.3584074138104074,
+      "y": 0.9136388731489766,
+      "z": 0.9932437121761066,
+      "life": 0.0866666666666667
+     },
+     {
+      "x": 0.32310595761495037,
+      "y": 0.8628872385457745,
+      "z": 0.9733458978312667,
+      "life": 0.10333333333333336
+     },
+     {
+      "x": 0.28785741390949793,
+      "y": 0.8122116743274255,
+      "z": 0.9521963609324533,
+      "life": 0.12000000000000002
+     },
+     {
+      "x": 0.25266170338481186,
+      "y": 0.7616120664738885,
+      "z": 0.9297951014796666,
+      "life": 0.1366666666666667
+     },
+     {
+      "x": 0.21751874685052863,
+      "y": 0.7110883011360245,
+      "z": 0.9061421194729066,
+      "life": 0.15333333333333335
+     },
+     {
+      "x": 0.18242846523498124,
+      "y": 0.6606402646353403,
+      "z": 0.8812374149121731,
+      "life": 0.17
+     },
+     {
+      "x": 0.14739077958502123,
+      "y": 0.6102678434637325,
+      "z": 0.8550809877974663,
+      "life": 0.18666666666666668
+     },
+     {
+      "x": 0.11240561106584111,
+      "y": 0.5599709242832321,
+      "z": 0.8276728381287862,
+      "life": 0.20333333333333334
+     },
+     {
+      "x": 0.07747288096079696,
+      "y": 0.5097493939257499,
+      "z": 0.7990129659061327,
+      "life": 0.22
+     }
+    ],
+    "shotType": "serve",
+    "stroke": "serve",
+    "powered": true,
+    "serveOriginX": 0.38,
+    "serveAttemptId": 1
+   },
+   "retiringBall": null,
+   "particles": [
+    {
+     "x": 0.4105402422735624,
+     "y": 0.9869057171927412,
+     "z": 1.1046531186404678,
+     "vx": -0.02787348579023501,
+     "vy": -0.05058926754536515,
+     "vz": 0.35497804015550194,
+     "life": 0.12464343853542165,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    },
+    {
+     "x": 0.4231696660615999,
+     "y": 0.9913511073147329,
+     "z": 1.1076398689891134,
+     "vx": 0.0510604128849991,
+     "vy": -0.022805579282919552,
+     "vz": 0.37364522983453774,
+     "life": 0.2557222787792846,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    },
+    {
+     "x": 0.406327547089255,
+     "y": 1.001684272232218,
+     "z": 1.1305321645114377,
+     "vx": -0.05420283069215657,
+     "vy": 0.0417767014513629,
+     "vz": 0.5167220768490645,
+     "life": 0.21023871718709347,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    },
+    {
+     "x": 0.4443526467341293,
+     "y": 0.9879043567093898,
+     "z": 1.1552902400852105,
+     "vx": 0.18345404208830587,
+     "vy": -0.04434777056630992,
+     "vz": 0.6714600491851436,
+     "life": 0.35130180748077616,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    },
+    {
+     "x": 0.4476609124399257,
+     "y": 1.0190158018733775,
+     "z": 1.124954273613671,
+     "vx": 0.204130702749535,
+     "vy": 0.1500987617086139,
+     "vz": 0.48186025873802485,
+     "life": 0.3386642940470477,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    },
+    {
+     "x": 0.4207603743055369,
+     "y": 1.021722564723576,
+     "z": 1.1522344333375947,
+     "vx": 0.036002339409606066,
+     "vy": 0.16701602952234681,
+     "vz": 0.6523612570125444,
+     "life": 0.13895208168601747,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    },
+    {
+     "x": 0.4561518922506366,
+     "y": 0.9997130335227116,
+     "z": 1.1538253816264985,
+     "vx": 0.2571993265664787,
+     "vy": 0.029456459516950417,
+     "vz": 0.6623046838181929,
+     "life": 0.15013143747579238,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    },
+    {
+     "x": 0.41634827159054133,
+     "y": 1.0286697300232475,
+     "z": 1.0798198183595877,
+     "vx": 0.00842669744088198,
+     "vy": 0.21043581264530076,
+     "vz": 0.19976991340000522,
+     "life": 0.3266462188539292,
+     "maxLife": 0.54,
+     "color": "#d9ff4f"
+    }
+   ],
+   "marks": [],
+   "firstServer": "player",
+   "tick": 63,
+   "winner": null
+  },
+  "pausedState": true,
+  "pauseText": "TAKE A BREATH PAUSED RESUME MATCH P Settings · ControlsNew match / players / court",
+  "menuText": "AURASLAM New York · Hard court YOUR NEXT COURT Choose your tennis match Play the computer in a single game or the smash lab. Tournaments and online play are coming soon. 01 / QUICK PLAY SINGLE GAME First to 3 games, win by 2. Tiebreak at 3–3. 02 / NINE-EVENT TOUR TOURNAMENT Coming soon. Tournaments arrive in the next phase. 03 / PLAY ONLINE MULTIPLAYER Coming soon. Online play arrives in the next phase. Home Settings How to play",
+  "panelEnd": "Aura3D safety net (?diag=1)\ngpu: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)\nmaxTex 8192 units 32 samples 4 fragUniforms 4096 varyings 31\ncolor_buffer_float:y texture_float_linear:y multi_draw:y disjoint_timer_query_webgl2:n navigator.gpu:y dpr 1\nengine: backend=webgl2 drawCalls=119 fps=60 warn:Scene has no interactions. Suggested fix: add interactions.orbit() for product/v\ncanvas: game 1280x800 (css 1280x800)\nsafety: rung 0 (full) off:[] quality:default tm:default heal:on\nheal watch: frames 114 ready@4 samples 5 black 0 lit 1452/1536 max 160 frame 4458ms skipped notReady 3 noDraw 0 healthy\nno errors captured",
+  "drawCallsEnd": 119,
+  "mobileTouch": {
+   "controls": {
+    "hidden": false,
+    "w": 390,
+    "h": 844,
+    "text": "LOBPOWER HITHIT"
+   },
+   "hit": {
+    "hidden": false,
+    "w": 105,
+    "h": 105,
+    "text": "HIT"
+   },
+   "lob": {
+    "hidden": false,
+    "w": 56,
+    "h": 56,
+    "text": "LOB"
+   },
+   "joystick": {
+    "hidden": false,
+    "w": 133,
+    "h": 133,
+    "text": ""
+   },
+   "scrollW": 390,
+   "innerW": 390
+  },
+  "guardLines": [],
+  "assetCount": 6,
+  "assetsNon200": [],
+  "badResponses": [],
+  "errors": [],
+  "checks": {
+   "http200": true,
+   "ready": true,
+   "noBusted": true,
+   "noLegacyScripts": true,
+   "drawCallsBoot": true,
+   "diagClean": true,
+   "serveAdvanced": true,
+   "paused": true,
+   "pauseNoBusted": true,
+   "resumed": true,
+   "menuVisible": true,
+   "singleEnabled": true,
+   "tournamentDisabled": true,
+   "onlineDisabled": true,
+   "comingSoon": true,
+   "menuNoBusted": true,
+   "drawCallsEnd": true,
+   "diagCleanEnd": true,
+   "mobileHit": true,
+   "mobileLob": true,
+   "mobileNoHScroll": true,
+   "guardDidNotFire": true,
+   "assetsAll200": true,
+   "noBadResponses": true,
+   "noConsoleErrors": true
+  }
+ },
+ "runs": {
+  "idx1": "3 passed",
+  "idx2": "2 passed",
+  "idx3": "10 passed",
+  "port1": "1 failed",
+  "port2": "1 passed",
+  "port3": "9 passed",
+  "port1b": "1 failed",
+  "slam": "1 passed"
+ }
+}
