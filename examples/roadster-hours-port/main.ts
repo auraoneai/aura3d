@@ -10,6 +10,7 @@ import { DEFAULT_PARAMS, autopilot } from "./autopilot";
 import { RoadsterSound } from "./audio";
 import { LEVELS } from "./data";
 import { SIM_STEP, createRun, defaultCareer, stepRun, type Career, type Run, type RunInput } from "./sim";
+import { createRoadsterPresenter, viewOf } from "./presentation";
 import { loadMeshy } from "./meshy";
 import { buildWorld, type WorldRuntime } from "./world";
 
@@ -41,6 +42,7 @@ let lastInput: RunInput | undefined;
 const career: Career = defaultCareer();
 career.unlocked = LEVELS.length - 1;
 let run: Run = createRun(levelIndex, career);
+const presenter = createRoadsterPresenter(() => run);
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
@@ -88,6 +90,7 @@ function keyboardInput(): RunInput {
 function begin(): void {
   void sound.unlock();
   run = createRun(levelIndex, career);
+  presenter.reset();
   runtime?.reset(run);
   sound.reset();
   screen = "play";
@@ -186,13 +189,15 @@ const loop = createFixedStepLoop({
   step: () => {
     if (config.manual || screen !== "play") return;
     stepOnce(autopilotOn && run.phase === "running" ? autopilot(run, DEFAULT_PARAMS) : keyboardInput());
+    presenter.afterStep();
   },
-  render: (dt) => render(dt, performance.now() / 1000)
+  render: (dt) => render(dt, performance.now() / 1000, !config.manual && screen === "play" && run.phase === "running")
 });
 
-function render(dt: number, time: number): void {
+/** `live` draws the car and traffic between the last two steps (smooth on 144 Hz displays); everything else draws the exact latest step. */
+function render(dt: number, time: number, live = false): void {
   if (!ready || !app || !runtime) return;
-  runtime.update(run, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  runtime.update(live ? viewOf(run, presenter.present(loop, true)) : run, dt, time, canvas.clientWidth / Math.max(1, canvas.clientHeight));
   app.step(0);
   updateHud();
   if (screen === "play") {
