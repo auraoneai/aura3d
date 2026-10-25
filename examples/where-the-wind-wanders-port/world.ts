@@ -394,7 +394,7 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
       if (!cam) throw new Error("where-the-wind-wanders-port: the app exposes no camera controller");
       const look = { x: START.x + 2, y: 2.2, z: START.z - 3.5 };
       let lastFound = -1;
-      let yaw = 0, gait = 0, walkAmt = 0, lastX = START.x, lastZ = START.z, lastStep = -1;
+      let yaw = 0, gait = 0, walkAmt = 0, lastX = START.x, lastZ = START.z, lastStep = -1, lastStepTime = -1;
       let epilogue: number | null = null;
       const wisp = { x: START.x - 1.1, y: 2.4, z: START.z + 0.6 };
       const allUniformNodes = ["foliage", "sea", "sky", "props", "motes", "stream"];
@@ -406,7 +406,7 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
         snap(state) { heroAnim?.reset(state.pos.x, state.pos.z); look.x = state.pos.x + 2; look.y = terrainHeight(state.pos.x, state.pos.z) + 1.8; look.z = state.pos.z - 3.5; epilogue = null; },
         reset() {
           look.x = START.x + 2; look.y = 2.2; look.z = START.z - 3.5;
-          lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; heroAnim?.reset(START.x, START.z, 0); gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
+          lastFound = -1; lastX = START.x; lastZ = START.z; lastStep = -1; lastStepTime = -1; heroAnim?.reset(START.x, START.z, 0); gait = 0; walkAmt = 0; yaw = 0; epilogue = null; wisp.x = START.x - 1.1; wisp.y = 2.4; wisp.z = START.z + 0.6;
         },
         update(state, dt, time, aspect) {
           const { x, z } = state.pos;
@@ -415,9 +415,11 @@ export function buildWorld(options: { density?: number; models?: boolean } = {})
           // gait follows distance travelled; the contact shadow stays on the ground
           const moved = Math.hypot(x - lastX, z - lastZ);
           if (state.step !== lastStep) {
-            const speed = dt > 0 ? moved / dt : 0;
-            walkAmt += ((speed > 0.4 ? 1 : 0) - walkAmt) * Math.min(1, dt * 10);
-            lastX = x; lastZ = z; lastStep = state.step;
+            // the time since the previous step change, not the frame time: a frame may be shorter than a step on a 120 Hz display
+            const sinceStep = lastStepTime < 0 ? dt : time - lastStepTime;
+            const speed = sinceStep > 0 ? moved / sinceStep : 0;
+            walkAmt += ((speed > 0.4 ? 1 : 0) - walkAmt) * Math.min(1, sinceStep * 10);
+            lastX = x; lastZ = z; lastStep = state.step; lastStepTime = time;
           }
 
           gait = state.stride * Math.PI * 2;

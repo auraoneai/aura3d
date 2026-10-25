@@ -8,6 +8,7 @@
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, installQaHooks, type AuraApp } from "@aura3d/engine";
 import { CAMERA_FOLLOW, CAMERA_OFFSET, LETTERS, VIRTUAL_STEP_MS, createState, expandScript, stepFrame, type Action, type FrameInput, type ScriptSegment, type WindState } from "./sim";
+import { createWindPresenter, viewOf } from "./presentation";
 import { buildWorld, type WorldRuntime } from "./world";
 import { createAudio } from "./audio";
 import { STORY, createUi } from "./ui";
@@ -28,6 +29,7 @@ let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let ready = false;
 let renderTime = 0;
+const presenter = createWindPresenter(() => state);
 let frames = 0;
 const held = new Set<string>();
 let pendingAct: Action = null;
@@ -115,9 +117,9 @@ function leaveEpilogue(): void {
   ui.showEpilogue(false);
 }
 
-function advance(frame: FrameInput, dtMs = VIRTUAL_STEP_MS): void {
+function advance(frame: FrameInput, dtMs = VIRTUAL_STEP_MS, tickTime = true): void {
   stepFrame(state, frame, dtMs);
-  renderTime += dtMs / 1000;
+  if (tickTime) renderTime += dtMs / 1000;
   const cell = Math.floor(state.stride * 2);
   if (state.moved && state.hop.phase === "idle" && cell !== lastStrideCell) audio.footstep();
   lastStrideCell = cell;
@@ -131,9 +133,10 @@ function advance(frame: FrameInput, dtMs = VIRTUAL_STEP_MS): void {
   if (manual && runtime) runtime.update(state, dtMs / 1000, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
 }
 
-function render(dtMs: number): void {
+/** `live` draws the pose between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
+function render(dtMs: number, live = false): void {
   if (!app || !runtime) return;
-  runtime.update(state, dtMs / 1000, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
+  runtime.update(live ? viewOf(state, presenter.present(loop, true)) : state, dtMs / 1000, renderTime, canvas.clientWidth / Math.max(1, canvas.clientHeight));
   app.step(0);
   frames++;
 }
@@ -145,7 +148,8 @@ const loop = createFixedStepLoop({
   minFrameSeconds: 0,
   isActive: () => ready && started && !paused,
   step() {
-    advance({ keys: epilogueClock === null ? heldKeys() : "", act: epilogueClock === null ? pendingAct : null });
+    advance({ keys: epilogueClock === null ? heldKeys() : "", act: epilogueClock === null ? pendingAct : null }, VIRTUAL_STEP_MS, false);
+    presenter.afterStep();
     pendingAct = null;
   }
 });
@@ -196,8 +200,9 @@ function tick(now: number): void {
     epilogueClock += dtMs / 1000;
     runtime?.setEpilogue(epilogueClock);
   }
+  renderTime += dtMs / 1000;
   audio.update(state.pos, renderTime);
-  render(VIRTUAL_STEP_MS);
+  render(dtMs, true);
 }
 
 function sizeCanvas(): void {
@@ -244,7 +249,7 @@ installQaHooks("wind", {
       return { xs, zs, found: [...state.found], complete: state.complete };
     },
     reset(): void {
-      state = createState(); renderTime = 0; epilogueClock = null; completeClock = 0; lastStrideCell = 0; lastHopPhase = "idle";
+      state = createState(); presenter.reset(); renderTime = 0; epilogueClock = null; completeClock = 0; lastStrideCell = 0; lastHopPhase = "idle";
       ui.clearLetters(); ui.showEpilogue(false); runtime?.reset(); updateHud(); render(VIRTUAL_STEP_MS);
     },
     /** Capture hook: place the traveller somewhere and settle the follow camera on it (resets the run). */
@@ -253,6 +258,7 @@ installQaHooks("wind", {
       state.pos = { x, z };
       state.cam = { bx: x + CAMERA_FOLLOW.x, bz: z + CAMERA_FOLLOW.z, vx: x + CAMERA_FOLLOW.x + CAMERA_OFFSET.x, vz: z + CAMERA_FOLLOW.z + CAMERA_OFFSET.z };
       runtime?.snap(state);
+      presenter.reset();
       render(VIRTUAL_STEP_MS);
     },
     /** Capture hook: show the voyage epilogue at `seconds` (null returns to the follow camera). */
