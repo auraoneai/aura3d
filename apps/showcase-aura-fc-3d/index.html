@@ -43,39 +43,22 @@
       #app { position: absolute; inset: 0; width: 100%; height: 100%; }
       #app canvas { display: block; width: 100% !important; height: 100% !important; }
 
-      /* ---- top toolbar ---- */
-      .topbar {
-        position: fixed; top: 0; left: 0; right: 0; z-index: 40;
-        display: flex; align-items: center; gap: 14px;
-        padding: 8px 14px;
-        background: linear-gradient(180deg, rgba(5, 12, 10, 0.92), rgba(5, 12, 10, 0.55) 78%, transparent);
-        border-bottom: 1px solid var(--rule);
+      /* The bar itself comes from apps/showcase-port-shared/quickbar.css; FC sets accents and the title. */
+      :root {
+        --a3d-accent: var(--accent);
+        --a3d-accent-ink: #0b1f1c;
+        --a3d-accent-2: var(--cyan);
+        --a3d-accent-2-ink: #04161a;
+        --a3d-gold: var(--accent);
+        --a3d-edge: var(--rule);
+        --a3d-bg: rgba(5, 12, 10, 0.92);
       }
-      .topbar .brand {
-        font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em;
-        color: var(--muted); white-space: nowrap;
+      .aura3d-top-bar .title {
+        font-family: var(--font-display); font-weight: 800; font-size: 14px;
+        letter-spacing: 0.12em; white-space: nowrap; margin-right: 6px;
       }
-      .topbar .title {
-        font-family: var(--font-display); font-weight: 800; font-size: 15px;
-        letter-spacing: 0.12em; white-space: nowrap;
-      }
-      .topbar .title em { font-style: normal; color: var(--accent); }
-      .topbar nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
-      .topbar button {
-        appearance: none; cursor: pointer;
-        font: 600 11.5px var(--font-sans); letter-spacing: 0.05em;
-        color: var(--ink); background: rgba(255, 255, 255, 0.06);
-        border: 1px solid var(--rule); border-radius: 8px; padding: 6px 11px;
-        transition: border-color 0.15s, background 0.15s;
-      }
-      .topbar button:hover { border-color: var(--accent); }
-      .topbar button.primary { background: linear-gradient(135deg, #d8ff3e, #9be84e); color: #0b1f1c; border-color: #d8ff3e; }
-      .venue-row { display: flex; gap: 4px; }
-      .venue-row button {
-        font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.08em;
-        color: var(--muted); padding: 5px 8px;
-      }
-      .venue-row button.active { color: #0b1f1c; background: var(--accent); border-color: var(--accent); }
+      .aura3d-top-bar .title em { font-style: normal; color: var(--accent); }
+      .aura3d-top-bar button.venue { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; }
 
       .hint {
         position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
@@ -89,32 +72,24 @@
         background: #0a0d0b; color: var(--ink); font-family: var(--font-mono); font-size: 13px;
       }
       #render-error[hidden] { display: none; }
-      @media (max-width: 980px) {
-        .venue-row { display: none; }
-        .topbar .brand { display: none; }
-      }
-      @media (prefers-reduced-motion: reduce) { .topbar button { transition: none; } }
     </style>
   </head>
   <body>
-    <header class="topbar">
-      <span class="brand">AURA3D ENGINE</span>
+    <nav class="aura3d-top-bar" aria-label="Aura FC 3D quick switcher">
       <span class="title">AURA <em>FC 3D</em></span>
-      <nav class="venue-row" aria-label="Venue quick switch">
-        <button data-fc-venue="favela">FAVELA</button>
-        <button data-fc-venue="munich" class="active">MUNICH</button>
-        <button data-fc-venue="lagos">LAGOS</button>
-        <button data-fc-venue="kyoto">KYOTO</button>
-        <button data-fc-venue="uyuni">UYUNI</button>
-        <button data-fc-venue="glacier">GLACIER</button>
-      </nav>
-      <nav>
-        <button id="fc-btn-menu" title="Modes & tour hub">Modes & Tour</button>
-        <button id="fc-btn-lab" title="Shootout lab">Skill Lab</button>
-        <button id="fc-btn-demo" title="Watch CPU vs CPU">Demo</button>
-        <button id="fc-btn-play" class="primary" title="Two 90s halves vs the CPU">Quick Play</button>
-      </nav>
-    </header>
+      <button data-fc-venue="favela" class="venue">FAVELA</button>
+      <button data-fc-venue="munich" class="venue active">MUNICH</button>
+      <button data-fc-venue="lagos" class="venue">LAGOS</button>
+      <button data-fc-venue="kyoto" class="venue">KYOTO</button>
+      <button data-fc-venue="uyuni" class="venue">UYUNI</button>
+      <button data-fc-venue="glacier" class="venue">GLACIER</button>
+      <span class="aura-sep"></span>
+      <button id="fc-btn-menu" title="Modes & tour hub">Modes & Tour</button>
+      <button id="fc-btn-lab" title="Shootout lab">Skill Lab</button>
+      <button id="fc-btn-demo" title="Watch CPU vs CPU">Demo</button>
+      <button id="fc-btn-play" class="active" title="Two 90s halves vs the CPU">Quick Play</button>
+      <a class="a3d-credit" href="https://aura3d.auraone.ai/" target="_blank" rel="noopener">Built with Aura3D</a>
+    </nav>
 
     <main id="game-stage" class="game-shell">
       <div id="app"></div>

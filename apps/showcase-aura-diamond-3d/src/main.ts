@@ -47,6 +47,7 @@ import {
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import { batContact, boundedBlend } from "./contact";
+import "../../showcase-port-shared/quickbar.css";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;

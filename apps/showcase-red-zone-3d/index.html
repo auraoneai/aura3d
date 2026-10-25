@@ -33,59 +33,15 @@
         font-family: "Whitney", "Graphik", sans-serif;
         overscroll-behavior: none;
       }
-      .aura3d-top-bar {
-        position: fixed;
-        top: 12px;
-        right: 14px;
-        z-index: 60;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        border-radius: 14px;
-        background: linear-gradient(180deg, rgba(10, 28, 18, 0.92), rgba(6, 16, 11, 0.92));
-        border: 1px solid rgba(255, 178, 36, 0.32);
-        backdrop-filter: blur(12px) saturate(1.2);
-        font-family: "Whitney", sans-serif;
-        font-size: 12px;
-        color: #f4f1e4;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255,255,255,0.06);
-        max-width: 74vw;
-        justify-content: flex-end;
-      }
-      .aura3d-top-bar .aura-badge {
-        font-family: "DIN Pro", sans-serif;
-        font-weight: 700;
-        letter-spacing: 0.09em;
-        color: #1c1302;
-        padding: 3px 9px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #ffb224, #ffd76a);
-        font-size: 11px;
-        text-transform: uppercase;
-        box-shadow: 0 2px 10px rgba(255,178,36,0.35);
-      }
-      .aura3d-top-bar button {
-        appearance: none;
-        border: 1px solid rgba(244, 241, 228, 0.22);
-        background: rgba(255, 255, 255, 0.07);
-        color: #f4f1e4;
-        font-family: "Whitney", sans-serif;
-        font-size: 12px;
-        font-weight: 500;
-        height: 26px;
-        padding: 0 11px;
-        border-radius: 9px;
-        cursor: pointer;
-        transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
-      }
-      .aura3d-top-bar button:hover { transform: translateY(-1px); }
-      .aura3d-top-bar button.active {
-        background: linear-gradient(135deg, #ffb224, #ffcf5e);
-        border-color: #ffb224;
-        color: #1c1302;
-        font-weight: 600;
+      /* The bar itself comes from apps/showcase-port-shared/quickbar.css; Red Zone only sets accents. */
+      :root {
+        --a3d-accent: #ffb224;
+        --a3d-accent-ink: #1c1302;
+        --a3d-accent-2: #7dfcff;
+        --a3d-accent-2-ink: #04161a;
+        --a3d-gold: #ffd76a;
+        --a3d-edge: rgba(255, 178, 36, 0.32);
+        --a3d-bg: rgba(7, 20, 13, 0.92);
       }
       .aura3d-controls-hint {
         position: fixed;
@@ -189,7 +145,7 @@
       #rz-hud.hidden { display: none; }
       #rz-scorebug {
         position: absolute;
-        top: 14px;
+        top: calc(var(--a3d-bar-space) + 4px);
         left: 18px;
         display: flex;
         align-items: stretch;
@@ -234,7 +190,7 @@
       }
       #rz-downdistance {
         position: absolute;
-        top: 66px;
+        top: calc(var(--a3d-bar-space) + 56px);
         left: 18px;
         display: flex;
         align-items: center;
@@ -272,15 +228,35 @@
       #rz-playcard-sheet {
         position: absolute;
         left: 50%;
-        bottom: 96px;
+        bottom: 52px;
         transform: translateX(-50%);
         display: flex;
-        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        max-width: calc(100vw - 20px);
         pointer-events: auto;
       }
+      #rz-playcard-sheet .rz-cards-toggle {
+        flex: 0 0 100%;
+        justify-self: center;
+        margin: 0 auto;
+        width: max-content;
+        height: 20px;
+        padding: 0 10px;
+        font: 500 11px/1 "Graphik Web", "Graphik", sans-serif;
+        letter-spacing: 0.04em;
+        color: #e8e4d0;
+        background: rgba(6, 16, 11, 0.82);
+        border: 1px solid rgba(244,241,228,0.22);
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      #rz-playcard-sheet[data-collapsed="1"] .rz-card:not(.selected) { display: none; }
+      #rz-playcard-sheet[data-collapsed="1"] .rz-card svg { display: none; }
       #rz-playcard-sheet.hidden { display: none; }
       .rz-card {
-        width: 148px;
+        width: 132px;
         border-radius: 12px;
         border: 1px solid rgba(244,241,228,0.25);
         background: linear-gradient(180deg, rgba(9,24,16,0.94), rgba(5,14,9,0.94));
@@ -296,12 +272,12 @@
       .rz-card .rz-card-type.short { color: #7dfcff; }
       .rz-card .rz-card-type.deep { color: #ff7ab8; }
       .rz-card .rz-card-name { font-family: "DIN Pro", sans-serif; font-weight: 800; font-size: 14px; letter-spacing: 0.05em; margin: 2px 0 4px; text-transform: uppercase; }
-      .rz-card svg { width: 100%; height: 64px; background: rgba(20,72,40,0.5); border-radius: 6px; display: block; }
+      .rz-card svg { width: 100%; height: 40px; background: rgba(20,72,40,0.5); border-radius: 6px; display: block; }
       .rz-card .rz-card-key { margin-top: 5px; text-align: center; font-family: "Monument Grotesk Mono", monospace; font-size: 10px; color: #cfd6c8; }
       .rz-card .rz-card-key b { color: var(--rz-accent); }
       #rz-lab-hud {
         position: absolute;
-        top: 66px;
+        top: calc(var(--a3d-bar-space) + 56px);
         left: 18px;
         padding: 8px 14px;
         border-radius: 8px;
@@ -430,9 +406,12 @@
         #rz-event-ticker { bottom: 96px; max-width: 220px; }
         #rz-big-call { font-size: 30px; }
         #rz-scorebug { transform: scale(0.82); transform-origin: top left; }
-        #rz-downdistance { transform: scale(0.82); transform-origin: top left; top: 58px; }
-        .rz-card { width: 108px; }
-        .rz-card svg { height: 44px; }
+        #rz-downdistance { transform: scale(0.82); transform-origin: top left; top: calc(var(--a3d-bar-space) + 48px); }
+        #rz-lab-hud { top: calc(var(--a3d-bar-space) + 48px); }
+        #rz-playcard-sheet { bottom: 10px; gap: 6px; }
+        .rz-card { width: calc((100vw - 32px) / 3); max-width: 116px; padding: 6px 7px; }
+        .rz-card svg { display: none; }
+        .rz-card .rz-card-name { font-size: 12px; margin: 2px 0; }
         .rz-bracket { grid-template-columns: repeat(3, 1fr); }
       }
       @media (prefers-reduced-motion: reduce) {
@@ -448,12 +427,14 @@
       <button type="button" id="aura-btn-tacklelab" title="Tackle Lab — open-field pursuit drills">Tackle Lab</button>
       <button type="button" id="aura-btn-menu" title="Open Modes, Gridiron Series bracket &amp; Player Studio">Modes &amp; Tour</button>
       <button type="button" id="aura-btn-auto" title="Toggle AI Autopilot / Demo mode">Auto</button>
-      <button type="button" data-aura-venue="friday" class="active">Friday Night</button>
-      <button type="button" data-aura-venue="rustbelt">Rust Belt</button>
-      <button type="button" data-aura-venue="desert">Desert Dome</button>
-      <button type="button" data-aura-venue="bayfront">Bayfront</button>
-      <button type="button" data-aura-venue="neon">Neon Metro</button>
-      <button type="button" data-aura-venue="altitude">Altitude</button>
+      <span class="aura-sep"></span>
+      <button type="button" data-aura-venue="friday" class="venue active">Friday Night</button>
+      <button type="button" data-aura-venue="rustbelt" class="venue">Rust Belt</button>
+      <button type="button" data-aura-venue="desert" class="venue">Desert Dome</button>
+      <button type="button" data-aura-venue="bayfront" class="venue">Bayfront</button>
+      <button type="button" data-aura-venue="neon" class="venue">Neon Metro</button>
+      <button type="button" data-aura-venue="altitude" class="venue">Altitude</button>
+      <a class="a3d-credit" href="https://aura3d.auraone.ai/" target="_blank" rel="noopener">Built with Aura3D</a>
     </div>
     <div class="aura3d-controls-hint" id="aura-controls-hint">
       PRE-SNAP 1/2/3 PICK PLAY · AUDIBLE Q · WASD MOVE · THROW SPACE (HOLD=POWER) · JUKE J · TRUCK K · DIVE L · TACKLE SPACE · HIT-STICK SHIFT+SPACE · BALL-HAWK E · PAUSE P

@@ -45,6 +45,7 @@ import {
   sfxUrl,
   installGameBeacon
 } from "@aura3d/engine/game";
+import "../../showcase-port-shared/quickbar.css";
 import { assets } from "../../../src/aura-assets";
 import type {
   BallEvent,

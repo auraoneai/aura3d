@@ -46,6 +46,7 @@ import {
   createHitStop
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
+import "../../showcase-port-shared/quickbar.css";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 import { createFrameErrorBoundary } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
@@ -1282,11 +1283,13 @@ function showBanner(text: string, dur = 1.5): void {
   if (bannerEl) { bannerEl.textContent = text; bannerEl.classList.add("show"); }
   game_.bannerT = dur;
 }
+let msgUntil = 0;
 function showMsg(big: string, sub: string, dur = 2.1): void {
   if (msgText) msgText.textContent = big;
   if (msgSub) msgSub.textContent = sub;
   if (msgBox) msgBox.classList.add("show");
   game_.msgT = dur;
+  msgUntil = performance.now() / 1000 + dur + 0.5;
 }
 function showPrompt(text: string, dur = 0.2): void {
   if (promptEl) { promptEl.textContent = text; promptEl.classList.add("show"); }
@@ -2760,7 +2763,7 @@ function frame(dtRaw: number): void {
 
   // Timers
   if (game_.bannerT > 0) { game_.bannerT -= dt; if (game_.bannerT <= 0) bannerEl?.classList.remove("show"); }
-  if (game_.msgT > 0) { game_.msgT -= dt; if (game_.msgT <= 0) msgBox?.classList.remove("show"); }
+  if (game_.msgT > 0) { game_.msgT -= dt; if (game_.msgT <= 0 || performance.now() / 1000 >= msgUntil) { game_.msgT = 0; msgBox?.classList.remove("show"); } }
   if (game_.promptT > 0) { game_.promptT -= dt; if (game_.promptT <= 0) promptEl?.classList.remove("show"); }
   if (jamFlashT > 0) { jamFlashT = Math.max(0, jamFlashT - dt * 2.4); if (jamFlash) jamFlash.style.opacity = jamFlashT.toFixed(2); }
   if (netPulse > 0) netPulse -= dt * 3;

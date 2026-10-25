@@ -18,6 +18,7 @@ import {
   createFxParticlePass, mountTouchControls,
   installGameBeacon
 } from "@aura3d/engine/game";
+import "../../showcase-port-shared/quickbar.css";
 import { assets } from "./aura-assets-v2";
 import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R } from "./game/sim";
 import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID } from "./game/scene";
@@ -669,7 +670,8 @@ function boot(): void {
     playBtn?.addEventListener("click", () => {
       autopilot = false;
       sim.setAutopilot(false);
-      demoBtn?.classList.remove("primary");
+      demoBtn?.classList.remove("active");
+      playBtn?.classList.add("active");
       modes.startQuick();
     });
     labBtn?.addEventListener("click", () => {
@@ -681,7 +683,8 @@ function boot(): void {
     demoBtn?.addEventListener("click", () => {
       autopilot = true;
       sim.setAutopilot(true);
-      demoBtn.classList.add("primary");
+      demoBtn.classList.add("active");
+      playBtn?.classList.remove("active");
       modes.startDemo();
     });
     for (const btn of venueBtns) {

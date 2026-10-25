@@ -128,13 +128,27 @@ function cardDiagram(def: PlayDef): string {
 export function renderPlayCards(hud: HudRefs, sheet: readonly PlayDef[], selected: number, visible: boolean) {
   if (!visible) { hud.sheet.classList.add("hidden"); return; }
   hud.sheet.classList.remove("hidden");
-  hud.sheet.innerHTML = sheet.map((def, i) => `
+  const collapsed = hud.sheet.dataset.collapsed === "1";
+  const signature = `${sheet.map((d) => d.name).join("|")}#${selected}#${collapsed ? 1 : 0}`;
+  if (hud.sheet.dataset.sig === signature && hud.sheet.childElementCount > 0) return;
+  hud.sheet.dataset.sig = signature;
+  hud.sheet.innerHTML = `<button type="button" class="rz-cards-toggle" aria-expanded="${collapsed ? "false" : "true"}">${collapsed ? "PLAYS ▴" : "PLAYS ▾"}</button>` + sheet.map((def, i) => `
     <div class="rz-card ${i === selected ? "selected" : ""}" data-card="${i}" role="button" tabindex="0" aria-label="Play ${i + 1}: ${def.name}">
       <div class="rz-card-type ${def.type}">${def.type === "run" ? "■ RUN" : def.type === "short" ? "◆ SHORT PASS" : "▲ DEEP SHOT"}</div>
       <div class="rz-card-name">${def.name}</div>
       ${cardDiagram(def)}
       <div class="rz-card-key">press <b>${i + 1}</b></div>
     </div>`).join("");
+  const toggle = hud.sheet.querySelector<HTMLButtonElement>(".rz-cards-toggle");
+  if (toggle) {
+    toggle.onclick = () => {
+      const next = hud.sheet.dataset.collapsed === "1" ? "0" : "1";
+      hud.sheet.dataset.collapsed = next;
+      hud.sheet.dataset.sig = "";
+      toggle.textContent = next === "1" ? "PLAYS ▴" : "PLAYS ▾";
+      toggle.setAttribute("aria-expanded", next === "1" ? "false" : "true");
+    };
+  }
   for (const el of hud.sheet.querySelectorAll<HTMLElement>(".rz-card")) {
     el.onclick = () => el.dispatchEvent(new CustomEvent("rz-pick-card", { detail: Number(el.dataset.card), bubbles: true }));
     el.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") el.click(); };

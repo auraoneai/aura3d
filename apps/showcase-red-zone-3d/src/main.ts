@@ -38,6 +38,7 @@ import { createDirector } from "./game/director";
 import { createHud, renderPlayCards, showHud, updateHud, updateVenueBanner, banner, bigCall, ticker } from "./game/hud";
 import { publishEvidence } from "./game/evidence";
 import * as series from "./game/series";
+import "../../showcase-port-shared/quickbar.css";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
 installBlackFrameGuard();

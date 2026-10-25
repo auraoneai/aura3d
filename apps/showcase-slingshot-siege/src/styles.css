@@ -356,7 +356,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 }
 @media (max-width: 640px) {
   .mode-tab { padding: 5px 9px; font-size: 11px; }
-  .controls-hint { gap: 12px; font-size: 10.5px; }
+  .controls-hint { gap: 16px; font-size: 10.5px; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; white-space: nowrap; scrollbar-width: none; padding: 4px 10px; }
+  .controls-hint::-webkit-scrollbar { display: none; }
+  .controls-hint > span { flex: 0 0 auto; }
   .score-card .value { font-size: 17px; }
 }
 
@@ -375,7 +377,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   background: linear-gradient(180deg, rgba(20,44,72,0.94), rgba(16,36,60,0.9));
   border-bottom: 3px solid #0e2238; box-shadow: 0 3px 0 rgba(0,0,0,0.18);
 }
-.ss-brand { font-size: 17px; font-weight: 700; color: var(--ss-cream); letter-spacing: 0.02em; text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+.ss-topbar { overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: none; }
+.ss-topbar::-webkit-scrollbar { display: none; }
+.ss-topbar > * { flex: 0 0 auto; }
+.ss-tab { white-space: nowrap; }
+.ss-brand { white-space: nowrap; font-size: 17px; font-weight: 700; color: var(--ss-cream); letter-spacing: 0.02em; text-shadow: 0 2px 0 rgba(0,0,0,0.35); }
 .ss-brand-mark { color: var(--ss-gold); margin-right: 4px; }
 .ss-tabs { display: flex; gap: 6px; margin-left: 8px; }
 .ss-tab {
@@ -425,7 +431,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 .ss-gull-pip.down { opacity: 0.4; transform: scale(0.78) rotate(18deg); color: var(--ss-gold); font-weight: 700; }
 
 .ss-ammo-dock {
-  position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+  position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%);
   display: flex; align-items: flex-end; gap: 9px;
 }
 .ss-ammo-chip {
@@ -449,7 +455,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 .ss-ammo-chip.current { outline: 3px solid var(--ss-gold); outline-offset: 1px; transform: translateY(-7px) scale(1.06); }
 
 .ss-ability {
-  position: absolute; right: 14px; bottom: 12px; min-width: 118px;
+  position: absolute; right: 14px; bottom: 46px; min-width: 118px;
   background: var(--ss-panel); border: 2.5px solid #0e2238; border-radius: 13px;
   color: var(--ss-cream); padding: 8px 14px; cursor: pointer;
   display: flex; flex-direction: column; align-items: center; gap: 1px;
@@ -474,7 +480,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
 .ss-utility-btn:hover { background: #24456b; }
 
 .ss-shot-meter {
-  position: absolute; left: 16px; bottom: 12px; width: 120px; height: 14px;
+  position: absolute; left: 16px; bottom: 46px; width: 120px; height: 14px;
   border: 2px solid #0e2238; border-radius: 999px; background: var(--ss-panel);
   opacity: 0; transition: opacity 120ms ease; overflow: hidden;
 }
@@ -603,11 +609,15 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: linear-gradi
   .ss-brand { font-size: 14px; }
   .ss-tab { padding: 5px 9px; font-size: 11px; }
   .ss-score-card { top: 52px; }
-  .ss-level-tag { top: auto; bottom: 76px; font-size: 11px; }
+  .ss-level-tag { top: auto; bottom: 122px; font-size: 11px; }
   .ss-gull-pips { top: 52px; }
   .ss-map-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
   .ss-map-grid { grid-template-columns: 1fr; }
   .ss-ability { min-width: 96px; }
+  .ss-brand { font-size: 13px; }
+  .ss-brand-mark { display: none; }
+  .ss-tabs { margin-left: 2px; gap: 4px; }
+  .ss-topbar { gap: 8px; padding: 6px 10px; }
 }

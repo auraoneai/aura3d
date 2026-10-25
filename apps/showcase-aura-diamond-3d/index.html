@@ -86,73 +86,14 @@
       }
       #render-error[hidden] { display: none !important; }
 
-      /* ============ Aura3D top bar (quick switcher) ============ */
-      .aura3d-top-bar {
-        position: fixed;
-        top: 12px;
-        right: 14px;
-        z-index: 60;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 6px;
-        max-width: min(78vw, 760px);
-        padding: 6px 10px;
-        border-radius: 14px;
-        background: linear-gradient(180deg, rgba(20, 24, 44, 0.92), rgba(10, 12, 24, 0.92));
-        border: 1px solid rgba(255, 176, 58, 0.34);
-        backdrop-filter: blur(12px) saturate(1.2);
-        font-size: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-      }
-
-      .aura3d-top-bar .aura-badge {
-        font-family: var(--font-display);
-        font-weight: 700;
-        letter-spacing: 0.09em;
-        color: #221503;
-        padding: 3px 9px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, var(--amber), #ffcf6e);
-        font-size: 11px;
-        text-transform: uppercase;
-        box-shadow: 0 2px 10px rgba(255, 176, 58, 0.35);
-      }
-
-      .aura3d-top-bar .bar-sep {
-        width: 1px;
-        height: 18px;
-        background: var(--rule);
-        margin: 0 2px;
-      }
-
-      .aura3d-top-bar button {
-        appearance: none;
-        border: 1px solid rgba(242, 238, 227, 0.22);
-        background: rgba(255, 255, 255, 0.07);
-        color: var(--ink);
-        font-family: var(--font-sans);
-        font-size: 11.5px;
-        font-weight: 500;
-        height: 26px;
-        padding: 0 10px;
-        border-radius: 9px;
-        cursor: pointer;
-        transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
-        white-space: nowrap;
-      }
-
-      .aura3d-top-bar button:hover {
-        transform: translateY(-1px);
-        border-color: rgba(255, 176, 58, 0.55);
-      }
-
-      .aura3d-top-bar button.active {
-        background: linear-gradient(135deg, var(--amber), #ffcf6e);
-        border-color: var(--amber);
-        color: #221503;
-        font-weight: 700;
+      /* The bar itself comes from apps/showcase-port-shared/quickbar.css; Diamond only sets accents. */
+      :root {
+        --a3d-accent: var(--amber);
+        --a3d-accent-ink: #221503;
+        --a3d-accent-2: #ffcf6e;
+        --a3d-accent-2-ink: #221503;
+        --a3d-gold: var(--amber);
+        --a3d-edge: rgba(255, 176, 58, 0.34);
       }
 
       .aura3d-controls-hint {
@@ -191,7 +132,7 @@
 
       .hud-top-left {
         position: absolute;
-        top: 14px;
+        top: calc(var(--a3d-bar-space) + 6px);
         left: 16px;
         display: flex;
         flex-direction: column;
@@ -448,8 +389,8 @@
         transform: translateX(-50%);
         width: 110px;
         height: 132px;
-        border: 1.5px solid rgba(242, 238, 227, 0.4);
-        background: rgba(10, 12, 24, 0.55);
+        border: 1px solid rgba(242, 238, 227, 0.28);
+        background: transparent;
         opacity: 0;
         transition: opacity 0.2s;
       }
@@ -1043,8 +984,18 @@
         .aura3d-controls-hint {
           display: none;
         }
-        .aura3d-top-bar {
-          max-width: calc(100vw - 20px);
+        .hud-center-msg {
+          top: calc(var(--a3d-bar-space) + 190px);
+          width: max-content;
+          max-width: calc(100vw - 24px);
+        }
+        .hud-center-msg .big {
+          font-size: 26px;
+          white-space: nowrap;
+        }
+        .hud-center-msg .small {
+          font-size: 10px;
+          letter-spacing: 0.14em;
         }
         .hud-top-left {
           transform: scale(0.85);
@@ -1063,13 +1014,14 @@
       <button type="button" id="tb-derby" title="10-out home run derby">Derby Lab</button>
       <button type="button" id="tb-menu" title="Modes, World Classic &amp; Player Studio">Modes &amp; Tour</button>
       <button type="button" id="tb-auto" title="Toggle CPU Autopilot">Auto</button>
-      <span class="bar-sep"></span>
-      <button type="button" data-park="sandlot">Harbor</button>
-      <button type="button" data-park="skyline">Midtown</button>
-      <button type="button" data-park="canyon">Canyon</button>
-      <button type="button" data-park="ivy">Ivy</button>
-      <button type="button" data-park="dome">Dome</button>
-      <button type="button" data-park="lunar">Lunar</button>
+      <span class="aura-sep"></span>
+      <button type="button" class="venue" data-park="sandlot">Harbor</button>
+      <button type="button" class="venue" data-park="skyline">Midtown</button>
+      <button type="button" class="venue" data-park="canyon">Canyon</button>
+      <button type="button" class="venue" data-park="ivy">Ivy</button>
+      <button type="button" class="venue" data-park="dome">Dome</button>
+      <button type="button" class="venue" data-park="lunar">Lunar</button>
+      <a class="a3d-credit" href="https://aura3d.auraone.ai/" target="_blank" rel="noopener">Built with Aura3D</a>
     </nav>
 
     <div class="aura3d-controls-hint" id="controls-hint">
