@@ -14,7 +14,7 @@ import { renderStateForGLTFMaterial } from "@aura3d/assets";
  * Reads the real committed GLB rather than a fixture, because the whole question is what *this*
  * asset declares.
  */
-const GLB = "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb";
+const GLB = "public/aura-assets/showcaseTsukubaCircuitClean.a845b09b.glb";
 
 interface GltfMaterial {
   readonly name?: string;
@@ -86,9 +86,9 @@ describe("Tsukuba circuit arch opacity", () => {
     const masked = materials.filter((material) => material.alphaMode === "MASK");
     expect(masked.length).toBeGreaterThan(0);
     for (const material of masked) {
-      // All of them omit alphaCutoff in the asset; the loader's 0.5 default is what makes
+      // The cleaned asset writes the cutoff explicitly; either way the effective 0.5 is what makes
       // alpha-testing actually discard texels.
-      expect(material.alphaCutoff).toBeUndefined();
+      expect(material.alphaCutoff ?? 0.5).toBe(0.5);
       expect(asLoadedMaterial(material).alphaCutoff).toBe(0.5);
     }
   });

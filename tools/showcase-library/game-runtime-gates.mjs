@@ -168,7 +168,7 @@ function opaqueAssetGate(against, options = {}) {
   const testPath = "tests/unit/rendering/tsukuba-arch-opacity.test.ts";
   const hasTest = Boolean(readSource(testPath, against));
   if (!hasTest) blockers.push("opaque-asset-invariant-untested");
-  const glb = options.glb ?? "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb";
+  const glb = options.glb ?? "public/aura-assets/showcaseTsukubaCircuitClean.a845b09b.glb";
   const absolute = resolve(ROOT, glb);
   let blendMaterials = null;
   let translucentFactors = null;
