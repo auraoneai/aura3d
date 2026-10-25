@@ -1,0 +1,26 @@
+# The Bellkeeper's Walk: final screenshots (after the UI and render fixes)
+
+- **Build:** `origin/game-rework` at `0d965903c` (examples dev server, QA hooks). Capture: `tests/browser/finc-lib.ts` + `finc-games.ts` (`WIND`), decoder `tools/shots/decode-finc.mjs`; numbers in `metrics.jsonl`.
+- **Runner:** serverless ACR Chromium, **software WebGL2 (SwiftShader), not a GPU**. These frames are not real-GPU evidence.
+- **Method:** the route is the examples page (no quick bar or credit link), driven through `window.__AURA_WIND__`. The texture status table has 19 rows, 0 textured and 0 pending (scalar materials), so there was nothing to wait for. Every frame was opened and looked at.
+- **Checks:** the title card reads "The Bellkeeper's Walk"; no old name, "port" or lore term in any visible text; 0 console errors, 0 bad responses; the canvas fills the viewport at every size.
+
+## States
+
+| File | State |
+|---|---|
+| `title.1280x720`, `title.390x844` | title card with controls and "Begin the walk" |
+| `gameplay-early.*` | 60 steps in, standing near the start |
+| `key-walk.*` | 120 steps walking right (`D`) |
+| `mid-walk.1280x720` | 300 steps walking right |
+| `results.1280x720` | the epilogue panel "Stillwater Isle", **forced** with `epilogue(6)`, not reached by play (HUD still reads 0 / 3 discovered) |
+| `card.2x.1440x900`, `card.1x` | 720x450 card frame from `key-walk`; the 1x image is the 2x frame downscaled in the page |
+
+Mobile (390x844) has title, `gameplay-early` and `key-walk`.
+
+## Problems still visible
+
+1. **Low-medium (likeness review):** the pink translucent cat-like floating companion at the left of every frame resembles a well-known creature. It needs your eyes.
+2. **Low:** the long cloak hides the knees, and a still frame cannot show the stride. `key-walk` and `mid-walk` show the boots mid-stride; foot slide was measured separately by the earlier lane, not here.
+3. **Low:** in `results` the hero is not in frame and the panel sits over the grass; the counter still reads 0 / 3.
+4. **Low:** grass near the camera shows dithered, speckled edges at the bottom of the frame.

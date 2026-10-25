@@ -1,0 +1,46 @@
+{"kind":"SCSTAT","tag":"1280x720","name":"gameplay-early","full":{"meanLuma":165.7,"darkFraction":0.0008,"whiteFraction":0.0266},"center":{"meanLuma":176.5,"darkFraction":0,"whiteFraction":0.0258}}
+{"kind":"SCTEXT","tag":"1280x720","name":"gameplay-early","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"gameplay-early","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTAT","tag":"1280x720","name":"key-walk","full":{"meanLuma":167.4,"darkFraction":0.0006,"whiteFraction":0.0193},"center":{"meanLuma":174.3,"darkFraction":0,"whiteFraction":0.0184}}
+{"kind":"SCTEXT","tag":"1280x720","name":"key-walk","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"key-walk","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTAT","tag":"1280x720","name":"mid-walk","full":{"meanLuma":162,"darkFraction":0,"whiteFraction":0.019},"center":{"meanLuma":173.9,"darkFraction":0,"whiteFraction":0.0029}}
+{"kind":"SCTEXT","tag":"1280x720","name":"mid-walk","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"mid-walk","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTAT","tag":"1280x720","name":"results","full":{"meanLuma":167.1,"darkFraction":0.0001,"whiteFraction":0.0167},"center":{"meanLuma":193.9,"darkFraction":0,"whiteFraction":0.0037}}
+{"kind":"SCTEXT","tag":"1280x720","name":"results","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on Stillwater Isle A small boat has been waiting at the jetty all along. Past the haze there is an island, quiet as a held breath. Stillwater Isle. Another morning, another set of letters. Keep wandering the valley"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"results","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTATE","tag":"1280x720","state":"results","snapshot":"{\"step\":543,\"pos\":{\"x\":10.298749602863973,\"z\":6.542558885358243},\"facing\":\"right\",\"stride\":10.20218181818182,\"found\":[],\"complete\":false,\"hop\":{\"phase\":\"idle\",\"elapsed\":0,\"height\":0}}"}
+{"kind":"SCERRORS","tag":"1280x720","errors":[]}
+{"kind":"SCTEXT","tag":"390x844","name":"gameplay-early","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"390x844","name":"gameplay-early","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
+{"kind":"SCSTATE","tag":"390x844","state":"gameplay-early","snapshot":"{\"step\":123,\"pos\":{\"x\":-12,\"z\":4},\"facing\":\"front\",\"stride\":0,\"found\":[],\"complete\":false,\"hop\":{\"phase\":\"idle\",\"elapsed\":0,\"height\":0}}"}
+{"kind":"SCSTAT","tag":"390x844","name":"key-walk","full":{"meanLuma":182.3,"darkFraction":0,"whiteFraction":0.0973},"center":{"meanLuma":172.2,"darkFraction":0,"whiteFraction":0.0381}}
+{"kind":"SCTEXT","tag":"390x844","name":"key-walk","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"390x844","name":"key-walk","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
+{"kind":"SCERRORS","tag":"390x844","errors":[]}
+{"kind":"SCSTAT","tag":"1440x900","name":"card.2x","full":{"meanLuma":169.2,"darkFraction":0,"whiteFraction":0.035},"center":{"meanLuma":169.4,"darkFraction":0,"whiteFraction":0.0193}}
+{"kind":"SCTEXT","tag":"1440x900","name":"card.2x","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCSTAT","tag":"1280x720","name":"gameplay-early","full":{"meanLuma":165.7,"darkFraction":0.0008,"whiteFraction":0.0266},"center":{"meanLuma":176.5,"darkFraction":0,"whiteFraction":0.0258}}
+{"kind":"SCTEXT","tag":"1280x720","name":"gameplay-early","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"gameplay-early","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTAT","tag":"1280x720","name":"key-walk","full":{"meanLuma":167.4,"darkFraction":0.0006,"whiteFraction":0.0193},"center":{"meanLuma":174.3,"darkFraction":0,"whiteFraction":0.0184}}
+{"kind":"SCTEXT","tag":"1280x720","name":"key-walk","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"key-walk","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTAT","tag":"1280x720","name":"mid-walk","full":{"meanLuma":162,"darkFraction":0,"whiteFraction":0.019},"center":{"meanLuma":173.9,"darkFraction":0,"whiteFraction":0.0029}}
+{"kind":"SCTEXT","tag":"1280x720","name":"mid-walk","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"mid-walk","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTAT","tag":"1280x720","name":"results","full":{"meanLuma":167.1,"darkFraction":0.0001,"whiteFraction":0.0167},"center":{"meanLuma":193.9,"darkFraction":0,"whiteFraction":0.0037}}
+{"kind":"SCTEXT","tag":"1280x720","name":"results","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on Stillwater Isle A small boat has been waiting at the jetty all along. Past the haze there is an island, quiet as a held breath. Stillwater Isle. Another morning, another set of letters. Keep wandering the valley"}
+{"kind":"SCCANVAS","tag":"1280x720","name":"results","inner":[1280,720],"dpr":1,"canvases":[{"w":1280,"h":720,"cw":1280,"ch":720}]}
+{"kind":"SCSTATE","tag":"1280x720","state":"results","snapshot":"{\"step\":543,\"pos\":{\"x\":10.298749602863973,\"z\":6.542558885358243},\"facing\":\"right\",\"stride\":10.20218181818182,\"found\":[],\"complete\":false,\"hop\":{\"phase\":\"idle\",\"elapsed\":0,\"height\":0}}"}
+{"kind":"SCERRORS","tag":"1280x720","errors":[]}
+{"kind":"SCTEXT","tag":"390x844","name":"gameplay-early","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"390x844","name":"gameplay-early","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
+{"kind":"SCSTATE","tag":"390x844","state":"gameplay-early","snapshot":"{\"step\":123,\"pos\":{\"x\":-12,\"z\":4},\"facing\":\"front\",\"stride\":0,\"found\":[],\"complete\":false,\"hop\":{\"phase\":\"idle\",\"elapsed\":0,\"height\":0}}"}
+{"kind":"SCSTAT","tag":"390x844","name":"key-walk","full":{"meanLuma":182.3,"darkFraction":0,"whiteFraction":0.0973},"center":{"meanLuma":172.2,"darkFraction":0,"whiteFraction":0.0381}}
+{"kind":"SCTEXT","tag":"390x844","name":"key-walk","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
+{"kind":"SCCANVAS","tag":"390x844","name":"key-walk","inner":[390,844],"dpr":1,"canvases":[{"w":390,"h":844,"cw":390,"ch":844}]}
+{"kind":"SCERRORS","tag":"390x844","errors":[]}
+{"kind":"SCSTAT","tag":"1440x900","name":"card.2x","full":{"meanLuma":169.2,"darkFraction":0,"whiteFraction":0.035},"center":{"meanLuma":169.4,"darkFraction":0,"whiteFraction":0.0193}}
+{"kind":"SCTEXT","tag":"1440x900","name":"card.2x","oldNames":null,"text":"0 / 3 discovered WASD or arrows to walk · Space to hop · E to interact Journal Sound on"}
