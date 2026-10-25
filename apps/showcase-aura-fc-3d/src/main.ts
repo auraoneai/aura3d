@@ -317,9 +317,9 @@ function boot(): void {
       // ball so dribbles, tackles and shots read at gameplay scale. The eye
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
-      cam.eye = [cam.followX, 11.5, 23.5 + clamp(b.z * 0.55, -6, 6)];
+      cam.eye = [cam.followX, 9.5, 20 + clamp(b.z * 0.55, -5.5, 5.5)];
       cam.target = [b.x * 0.8, 0.9, -1 + clamp(b.z * 0.3, -4, 4)];
-      cam.fov = 40;
+      cam.fov = 38;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;
     if (qaP) {
@@ -602,7 +602,7 @@ function boot(): void {
         meshyAssets: [
           "fcMatchBallMeshy", "fcSoccerStrikerMeshy", "fcGoalkeeperMeshy", "fcSoccerGoalNetMeshy",
           "fcFloodlightPylonMeshy", "fcScoreboardGantryMeshy",
-          "fcGlacierDomeMeshy", "fcHeroTrophyMeshy", "gallerySecurityGuardMeshy",
+          "fcGlacierDomeMeshy", "fcHeroTrophyMeshy",
           "diamondDugout", "diamondStadium", "hoopsBallCart"
         ],
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],

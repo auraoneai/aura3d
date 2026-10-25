@@ -108,7 +108,10 @@ export function athleteNodes(id: string): RigNode[] {
       targetHeight: isKeeper ? 2.32 : isPower ? 2.26 : 2.22,
       animation: { clip: "Ready", loop: true, speed: 1 },
       materialOverrides: [
-        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0.04 }
+        { target: /-kit$/, color: kit.shirt, colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0.04 },
+        { target: /-shorts$/, color: kit.shorts, colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0 },
+        { target: /-socks$/, color: kit.socks, colorMode: "replace", replaceTextures: true, roughness: 0.75, metallic: 0 },
+        { target: /-skin$/, color: skinFor(id), colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0 }
       ]
     } as any)
       .position(0, 0, 0)
