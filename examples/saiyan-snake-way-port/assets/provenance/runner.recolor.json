@@ -1,0 +1,8 @@
+{
+  "asset": "runner.glb",
+  "tool": "tools/runner-recolor/recolor.mjs",
+  "date": "2026-10-25",
+  "change": "base-colour atlas recoloured: saturated orange outfit pixels to deep teal and dark blue trim pixels to silver; skin and hair untouched; geometry, rig and clips untouched",
+  "sha256": "5e8a08af3b60c2a36aed4b0d3197c2d1846cf7cfc26a1322d366232cc035b9f4",
+  "credits": 0
+}

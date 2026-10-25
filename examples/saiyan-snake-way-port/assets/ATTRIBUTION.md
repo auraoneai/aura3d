@@ -13,7 +13,7 @@ time (recorded per asset in `provenance/<name>.rights.json`; Meshy task ids in `
 
 | File | Role | Size | Triangles (verts) | Prompt (gist) |
 | --- | --- | --- | --- | --- |
-| `runner.glb` | Rigged hero (replaces the catalog `runner-rig.glb`) | 4.6 MB | 20,472 verts, 24 joints | young martial-arts hero, spiky dark hair, orange outfit, blue sash and wristbands |
+| `runner.glb` | Rigged hero, outfit atlas recoloured to teal and silver (see provenance/runner.recolor.json) (replaces the catalog `runner-rig.glb`) | 4.6 MB | 20,472 verts, 24 joints | young martial-arts hero, spiky dark hair, orange outfit, blue sash and wristbands |
 | `gate.glb` | Check-in arch (`arch` entities) | 1.4 MB | 23,408 verts | horned stone gateway arch, carved ring emblem |
 | `barrier.glb` | Barrier hazard | 1.2 MB | 22,740 verts | low stone barrier with glowing jade crystal posts |
 | `ogre.glb` | Oni hazard | 1.3 MB | 21,457 verts | stylised horned ogre guardian with a club |
