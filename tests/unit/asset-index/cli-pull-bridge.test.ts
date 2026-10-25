@@ -6,7 +6,6 @@ import { deflateRawSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import {
   FederatedResolver,
-  createAuraIndexAdapter,
   evaluateAnimationAssetProfile,
   normalizeLicense,
   type AuraCanonicalAsset,
@@ -84,9 +83,6 @@ const WORKER_RESPONSE = {
   ],
 } as const;
 
-function workerFetch(): FetchJson {
-  return async (_url: string) => WORKER_RESPONSE;
-}
 
 /**
  * These tests pin the license-safety contract of the CLI pull bridge without a
@@ -887,48 +883,6 @@ describe("runSearch", () => {
   });
 });
 
-describe("hosted catalog surfacing (#24/#18)", () => {
-  it("buildSearchAdapters wires the hosted aura-index adapter", () => {
-    const adapters = buildSearchAdapters({});
-    expect(adapters.some((adapter) => adapter.id === "aura-index")).toBe(true);
-  });
-
-  it("default (no --license) search surfaces the worker's CC-BY characters", async () => {
-    const adapter = createAuraIndexAdapter();
-    const report = await runSearch({
-      query: "cute robot mascot character",
-      makeResolver: () => new FederatedResolver({ adapters: [adapter], fetchJson: workerFetch(), limit: 10 }) as never,
-    });
-    expect(report.candidates.length).toBeGreaterThanOrEqual(2);
-    expect(report.candidates.every((c) => c.license === "CC-BY-4.0")).toBe(true);
-    expect(report.candidates.some((c) => c.id === "objaverse:07a6bdfcfde44565a259be970000d2a3")).toBe(true);
-  });
-
-  it("--license cc0 deliberately excludes the worker's CC-BY catalog hits", async () => {
-    const adapter = createAuraIndexAdapter();
-    const report = await runSearch({
-      query: "cute robot mascot character",
-      constraints: { license: ["CC0"] },
-      makeResolver: () => new FederatedResolver({ adapters: [adapter], fetchJson: workerFetch(), limit: 10 }) as never,
-    });
-    expect(report.candidates).toHaveLength(0);
-  });
-
-  it("animation-character search keeps catalog CC-BY characters via pre-download leniency (#20/#23)", async () => {
-    const adapter = createAuraIndexAdapter();
-    const report = await runSearch({
-      query: "cute robot mascot character",
-      constraints: { profile: "animation-character" },
-      makeResolver: () => new FederatedResolver({ adapters: [adapter], fetchJson: workerFetch(), limit: 10 }) as never,
-    });
-    // "robot" is a character term; rig/animation metadata is absent but deferred,
-    // so the catalog hit stays suitable instead of being hard-rejected.
-    const hit = report.candidates.find((c) => c.id === "objaverse:07a6bdfcfde44565a259be970000d2a3");
-    expect(hit?.profile?.suitable).toBe(true);
-    expect(hit?.profile?.validationHooks).toContain("animation-clips");
-    expect(hit?.profile?.validationHooks).toContain("humanoid-rig");
-  });
-});
 
 describe("animation profile pre-download leniency (#20/#23)", () => {
   const catalogRobot = (): AuraCanonicalAsset =>
@@ -1096,67 +1050,6 @@ describe("download flow: ZIP unpack + provenance (#21/#19/#26)", () => {
   });
 });
 
-describe("aura-index adapter (#24)", () => {
-  it("normalizes worker results into auto-pullable CC-BY canonical assets", async () => {
-    const adapter = createAuraIndexAdapter();
-    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
-    expect(records).toHaveLength(2);
-    expect(records[0]).toMatchObject({
-      source: "objaverse",
-      access: "direct-download",
-      format: "glb",
-      attribution: "Paleo Modelist",
-    });
-    expect(records[0]?.license.spdx).toBe("CC-BY-4.0");
-  });
-
-  it("preserves semantic, worker, and quality scores through canonical assets", async () => {
-    const adapter = createAuraIndexAdapter();
-    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
-    expect(records[0]).toMatchObject({
-      semanticScore: 0.84,
-      workerScore: 0.73,
-      qualityScore: 0.68,
-    });
-  });
-
-  it("preserves license/source/author/download metadata from the hosted catalog", async () => {
-    const adapter = createAuraIndexAdapter();
-    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
-    expect(records[0]).toMatchObject({
-      downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/07a6bdfcfde44565a259be970000d2a3.glb",
-      sourcePage: "https://objaverse.allenai.org/object/07a6bdfcfde44565a259be970000d2a3",
-      licenseName: "CC-BY-4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
-      author: "Paleo Modelist",
-      sourceFamily: "objaverse",
-    });
-  });
-
-  it("preserves inspection and role metadata from the hosted catalog", async () => {
-    const adapter = createAuraIndexAdapter();
-    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
-    expect(records[0]).toMatchObject({
-      bounds: { size: [0.8, 1.6, 0.6] },
-      triangleCount: 12000,
-      meshCount: 4,
-      materialCount: 3,
-      textureCount: 2,
-      animationClipCount: 2,
-      skinCount: 1,
-      intendedRole: "character",
-      roleSuitability: "Readable mascot character candidate with source metadata.",
-    });
-  });
-
-  it("returns [] for an empty query without fetching", async () => {
-    let fetched = false;
-    const adapter = createAuraIndexAdapter();
-    const records = await adapter.search({ text: "  " }, { fetchJson: async () => { fetched = true; return {}; } });
-    expect(records).toEqual([]);
-    expect(fetched).toBe(false);
-  });
-});
 
 /** Build a tiny ZIP (deflate or stored) the dependency-free reader can parse. */
 function makeZip(files: readonly { name: string; data: Buffer }[]): Buffer {

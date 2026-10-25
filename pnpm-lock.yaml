@@ -497,18 +497,6 @@ importers:
         specifier: workspace:*
         version: link:../scene
 
-  workers/asset-index-cron:
-    dependencies:
-      '@aura3d/asset-index':
-        specifier: workspace:*
-        version: link:../../packages/asset-index
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20240605.0
-        version: 4.20260602.1
-      wrangler:
-        specifier: ^3.60.0
-        version: 3.114.17(@cloudflare/workers-types@4.20260602.1)
 
 packages:
 

@@ -116,28 +116,20 @@ describe("package/dist root gate parity", () => {
     expectExportedFunction(assetIndex, "normalizeLicense");
     expectExportedFunction(assetIndex, "scoreAsset");
     expectExportedFunction(assetIndex, "matchesConstraints");
-    const adapter = searchableAdapter(
-      exportedFunction(assetIndex, "createAuraIndexAdapter")({ searchUrl: "https://example.test/search", limit: 1 })
-    );
-    const assets = await adapter.search({ text: "robot" }, { fetchJson: async () => hostedCatalogFixture() });
-    const firstAsset = assets[0];
-    if (!firstAsset) throw new Error("Expected hosted catalog fixture to return one asset.");
-
-    expect(firstAsset).toMatchObject({
-      id: "objaverse:robot",
-      sourcePage: "https://objaverse.example/robot",
-      downloadUrl: "https://cdn.example/robot.glb",
-      semanticScore: 0.91,
-      workerScore: 0.82,
-      qualityScore: 0.77,
-      materialCount: 2,
-      textureCount: 1,
-      animationClipCount: 1,
-      skinCount: 1,
-      intendedRole: "character",
-    });
-    expect(exportedFunction(assetIndex, "scoreAsset")(firstAsset, "robot character")).toBeGreaterThan(0);
-    expect(exportedFunction(assetIndex, "matchesConstraints")(firstAsset, { license: ["CC-BY"] })).toBe(true);
+    // The hosted catalog adapter is retired; search runs over open, licence-clear sources only.
+    expect(assetIndex["createAuraIndexAdapter"]).toBeUndefined();
+    expect(assetIndex["IndexStore"]).toBeUndefined();
+    const sample = {
+      id: "poly-haven:street_lamp_01",
+      source: "poly-haven",
+      title: "Street Lamp 01",
+      tags: ["street", "lamp"],
+      format: "glb",
+      license: { spdx: "CC0-1.0", redistributable: true, commercialUse: true, attributionRequired: false },
+      downloadUrl: "https://cdn.example/street_lamp_01.glb",
+    };
+    expect(exportedFunction(assetIndex, "scoreAsset")(sample, "street lamp")).toBeGreaterThan(0);
+    expect(exportedFunction(assetIndex, "matchesConstraints")(sample, { license: ["CC0"] })).toBe(true);
 
     const engine = importEnginePackageViaNode(repoRoot);
     expect(engine["createAuraApp"]).toBe("function");
@@ -220,53 +212,6 @@ function exportedFunction(module: Record<string, unknown>, name: string): (...ar
 
 function isUnknownFunction(value: unknown): value is (...args: readonly unknown[]) => unknown {
   return typeof value === "function";
-}
-
-interface SearchableAdapter {
-  search(
-    query: Readonly<Record<string, unknown>>,
-    options: { readonly fetchJson: () => Promise<Record<string, unknown>> }
-  ): Promise<readonly Record<string, unknown>[]>;
-}
-
-function searchableAdapter(value: unknown): SearchableAdapter {
-  if (!isSearchableAdapter(value)) {
-    throw new Error("Expected asset-index adapter with search method.");
-  }
-  return value;
-}
-
-function isSearchableAdapter(value: unknown): value is SearchableAdapter {
-  return typeof value === "object" && value !== null && "search" in value && typeof value.search === "function";
-}
-
-function hostedCatalogFixture(): Record<string, unknown> {
-  return {
-    results: [{
-      id: "objaverse:robot",
-      title: "Robot Character",
-      source: "objaverse",
-      url: "https://cdn.example/robot.glb",
-      downloadUrl: "https://cdn.example/robot.glb",
-      sourcePage: "https://objaverse.example/robot",
-      license: "CC-BY-4.0",
-      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
-      author: "Fixture Author",
-      score: 0.91,
-      workerScore: 0.82,
-      qualityScore: 0.77,
-      bounds: { size: [1, 2, 1] },
-      triangleCount: 12000,
-      meshCount: 3,
-      materialCount: 2,
-      textureCount: 1,
-      animationClipCount: 1,
-      skinCount: 1,
-      morphTargetCount: 0,
-      intendedRole: "character",
-      roleSuitability: "Readable robot character with complete provenance.",
-    }],
-  };
 }
 
 function runCli(...args: readonly string[]): string {

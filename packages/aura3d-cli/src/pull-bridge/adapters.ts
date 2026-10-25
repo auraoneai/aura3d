@@ -55,14 +55,10 @@ export function buildSearchAdapters(
     ? [createAuraLibraryAdapter({ manifest: library })]
     : [];
 
-  const auraIndex = optionalFactory("createAuraIndexAdapter");
   const adapters: SourceAdapter[] = [...libraryAdapters, ...starterAdapters];
-  if (auraIndex) adapters.push(auraIndex());
 
-  // The open, zero-auth sources always run beside the hosted index: when the
-  // index is unreachable (a federated source that throws only adds a warning)
-  // search must still reach Khronos samples, Poly Haven, ambientCG and the
-  // jsDelivr CC0 mirror instead of returning only the built-in starter pack.
+  // Open, zero-auth, licence-clear sources: Khronos samples, Poly Haven,
+  // ambientCG and the jsDelivr CC0 mirror. There is no hosted catalog.
   for (const fallback of defaultAdapters()) {
     if (!adapters.some((a) => a.id === fallback.id)) adapters.push(fallback);
   }

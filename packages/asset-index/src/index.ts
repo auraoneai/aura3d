@@ -1,7 +1,7 @@
 /**
  * @aura3d/asset-index
  *
- * Live federated search over the free GLB/glTF universe. Source adapters
+ * Federated search over open, licence-clear model, texture and HDRI sources. Source adapters
  * normalize each library's native catalog into one {@link AuraCanonicalAsset}
  * shape; the {@link FederatedResolver} fans a natural-language query across them,
  * constraint-filters, ranks, and returns auto-pullable candidates.
@@ -78,13 +78,7 @@ export type { SketchfabAdapterOptions } from "./adapters/sketchfab.js";
 export { createMarketplaceDeepLinkAdapter } from "./adapters/marketplace.js";
 export { createJsDelivrMirrorAdapter } from "./adapters/jsdelivr-mirror.js";
 export type { JsDelivrMirrorOptions } from "./adapters/jsdelivr-mirror.js";
-export { createAuraIndexAdapter } from "./adapters/aura-index.js";
-export type { AuraIndexAdapterOptions } from "./adapters/aura-index.js";
 
-export { IndexStore, INDEX_STORE_SCHEMA } from "./IndexStore.js";
-export type { IndexStoreFile } from "./IndexStore.js";
-export { refreshIndex } from "./refresh.js";
-export type { RefreshResult, RefreshOptions, WritableAssetIndex } from "./refresh.js";
 
 export {
   LocalHashEmbedding,

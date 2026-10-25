@@ -21,18 +21,18 @@ function asset(partial: Partial<AuraCanonicalAsset> & { id: string; title: strin
   } as unknown as AuraCanonicalAsset;
 }
 
-describe("search resilience when the hosted index is unreachable", () => {
-  it("runs the open zero-auth sources beside the hosted index, once each", () => {
+describe("search resilience over open sources", () => {
+  it("runs only the open zero-auth sources, once each, and no hosted catalog", () => {
     const ids = buildSearchAdapters({}, process.cwd(), "chair").map((a) => a.id);
-    expect(ids).toContain("aura-index");
+    expect(ids).not.toContain("aura-index");
     for (const open of ["animation-starter-pack", "khronos", "os3a", "poly-haven", "ambientcg", "jsdelivr-mirror"]) {
       expect(ids.filter((id) => id === open)).toHaveLength(1);
     }
   });
 
-  it("keeps resolving from the other sources when the hosted index throws", async () => {
+  it("keeps resolving from the other sources when one source throws", async () => {
     const down: SourceAdapter = {
-      id: "aura-index",
+      id: "os3a",
       label: "down",
       async search() {
         throw new Error("asset-index fetch failed 404");
@@ -47,7 +47,7 @@ describe("search resilience when the hosted index is unreachable", () => {
     };
     const result = await new FederatedResolver({ adapters: [down, up] }).resolve({ text: "street lamp" });
     expect(result.candidates.map((c) => c.asset.id)).toEqual(["poly-haven:street_lamp_01"]);
-    expect(result.warnings.join("\n")).toContain("aura-index: asset-index fetch failed 404");
+    expect(result.warnings.join("\n")).toContain("os3a: asset-index fetch failed 404");
   });
 });
 
