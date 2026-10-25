@@ -58,8 +58,8 @@ Reject a candidate when: license, source or author is missing or temp-path only;
 Rules that never bend:
 - **Text prompts only, in your own words**, describing a generic object. Never image-to-3D from screenshots or frames of another game or product, never name a third-party character, brand or title in a prompt.
 - Credentials: `MESHY_API_KEY` (and for AuraOne agents `MESHY_BASE_URL_V1/V2` pointing at Kiro Prism) come from the runtime environment. Never print, log, commit or paste a key. Never run `meshy auth login`, `auth login --with-key`, or any rotation script, and never call `api.meshy.ai` directly from agent runs that are meant to go through Prism.
-- Get an approved credit maximum before spending. No approved maximum: stop after the dry run and show the plan. Never split a job to stay under a cap.
-- Every paid call is reserved in the ledger (below). The CLI hard-stops: a tag past its cap (default 420) or the global cap is refused, with the credits left and the flag that raises the cap. Raise a cap only with the owner's approval for that amount.
+- Meshy spend is uncapped by owner decision on 2026-10-25; credits are tracked for visibility and any cap is opt-in. Run the dry run first so the plan and its cost are visible, and never split a job to dodge a limit someone did set. A user who wants a limit sets one (`--cap`, `--global-cap`, `config`); once set it hard-stops with the credits left and the flag that raises or removes it.
+- Every paid call is reserved in the ledger (below) so spend stays visible. The only automatic stop without a cap is Prism/Meshy refusing for a zero balance (exit 9).
 
 ### Costs (credits; the ledger uses these as estimates, `--est` overrides)
 
@@ -77,8 +77,8 @@ Rules that never bend:
 
 ```bash
 meshy make "a sleek low-poly hover scooter, matte teal paint, worn rubber grips, game prop" --dry-run
-aura3d meshy ledger reserve --dry-run --game <slug> --op preview,refine,rigging   # cost and credits left; writes nothing
-rid=$(aura3d meshy ledger reserve --game <slug> --op preview)                      # --cap N overrides the 420 default for this call
+aura3d meshy ledger reserve --dry-run --game <slug> --op preview,refine,rigging   # cost of the chain; writes nothing
+rid=$(aura3d meshy ledger reserve --game <slug> --op preview)                      # no cap unless you set one (--cap N for this call)
 meshy text-to-3d create --mode preview --prompt "<prompt>" --async     # look at the preview before paying for refine
 aura3d meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>
 meshy text-to-3d create --mode refine --preview-task-id <id> --texture-resolution 2k --async

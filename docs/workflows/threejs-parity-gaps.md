@@ -1214,6 +1214,8 @@ Each port replaced its stand-ins with text-prompt Meshy models. Meshy was reache
 
 **Credits.** The shared ledger (`/tmp/meshy/ledger.jsonl`, helper `/tmp/meshy/meshy.mjs`) showed **4,185 credits spent in total** at the time of writing, including the 30-credit pipeline proof and the in-progress Apex pass. It **undercounts** rate-limited calls (some finished tasks were first logged as failed) and overcounts a few stuck reservations; the `aura3d meshy ledger` command added in 4.1.0 (§12.10) fixes that bookkeeping. The helper's own pool query reported 5,800 credits remaining on the 21 of 29 keys it could reach, while the owner's Prism dashboard showed 14,871 remaining before the Meshy runs; that gap is **unreconciled**. Reconcile the ledger against the Prism dashboard before treating either number as final.
 
+*Update 2026-10-25:* the ledger was reconciled against Prism (4,530 ledger vs 4,855 Prism, `docs/audit/meshy-reconciliation.md`) and Meshy spend is uncapped by owner decision on 2026-10-25; credits are tracked for visibility.
+
 **Phase B remains unmet.** The model judge still separates the ports from their originals in every re-run (HEATSINK 35/48 is the closest). Meshy models fixed the most visible stand-in problems (boxes, capsules, primitive vehicles) but not lighting, painterly texture, character quality or scene density. Engine bugs the Meshy pass exposed (empty instance arrays throwing, per-node duplicate GLB textures, instanced/batched textures white, directional shadow receiver depth, NaN-unsafe `pow`) are in §12.9.
 
 ### 12.8 Real-device findings (owner screenshots, 2026-10-23)

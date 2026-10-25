@@ -72,22 +72,27 @@ describe("game-checks meshy-cap reads the CLI ledger", () => {
       { rid: "config-1", kind: "config", status: "ok", game_cap: 9999 },
       { rid: "reconcile-1", game: "unattributed", op: "adjustment", est: 5000, actual: 5000, status: "ok" }
     ]);
-    expect(checkLedger(ledger)).toEqual([]);
+    const f = checkLedger(ledger) as Array<{ severity: string; message: string }>;
+    expect(f).toHaveLength(1);
+    expect(f[0].message).toContain("demo 250");
+    expect(f[0].message).toContain("250 attributed");
   });
 
-  it("warns above the guideline, is informational within an acknowledged ceiling and warns again above it", () => {
+  it("never warns: it lists the credits per tag as information, however high", () => {
     const ledger = rows([
       { rid: "a", game: "demo", op: "preview", est: 430, status: "ok" },
-      { rid: "b", game: "drift", op: "preview", est: 480, status: "ok" },
+      { rid: "b", game: "drift", op: "preview", est: 5000, status: "ok" },
       { rid: "c", game: "ninja", op: "preview", est: 600, status: "ok" }
     ]);
     const f = checkLedger(ledger) as Array<{ severity: string; message: string }>;
-    expect(f.map((x) => `${x.severity}:${/tag "([^"]+)"/.exec(x.message)![1]}`).sort()).toEqual(["info:drift", "warn:demo", "warn:ninja"]);
-    expect(f.find((x) => x.message.includes('"demo"'))!.message).toMatch(/aura3d meshy ledger/);
+    expect(f).toHaveLength(1);
+    expect(f[0].severity).toBe("info");
+    expect(f[0].message).toMatch(/uncapped by owner decision/);
+    expect(f[0].message).toContain("drift 5000, ninja 600, demo 430");
+    expect(f[0].message).toContain("6030 attributed");
   });
 
-  it("honours AURA3D_MESHY_GAME_CAP and reports no ledger as info", () => {
-    expect(checkLedger(rows([{ rid: "a", game: "demo", est: 430, status: "ok" }]), { AURA3D_MESHY_GAME_CAP: "500" })).toEqual([]);
+  it("an empty or missing ledger is informational too", () => {
     const f = runChecks({ root: fixture({}), slugs: ["demo-port"], only: ["meshy-cap"], global: true, env: { AURA3D_MESHY_LEDGER: "/nonexistent" } }).findings;
     expect(f).toHaveLength(1);
     expect(f[0].severity).toBe("info");

@@ -62,10 +62,11 @@ npx @aura3d/cli@latest meshy ledger settle --rid "$rid" --exit-code 0 --task-id 
 npx @aura3d/cli@latest meshy ledger status
 ```
 
-The ledger (`--ledger path` or `AURA3D_MESHY_LEDGER`, default `~/.aura3d/meshy-ledger.jsonl`) hard-stops at a
-per-game cap (default 420; `--cap N`, `--game-cap N` or `AURA3D_MESHY_GAME_CAP`) and one global cap
-(`--global-cap N`, `AURA3D_MESHY_GLOBAL_CAP` or `ledger config`, default 1000) under a lock, so concurrent agents
-cannot overspend. A refusal exits 3 and prints the credits left and the flag that raises the cap. `--game` is
+The ledger (`--ledger path` or `AURA3D_MESHY_LEDGER`, default `~/.aura3d/meshy-ledger.jsonl`) tracks credits under a
+lock so concurrent agents share one total. Spend is uncapped by owner decision on 2026-10-25 (credits are tracked for
+visibility); a per-game cap (`--cap N`, `--game-cap N`, `AURA3D_MESHY_GAME_CAP`) and a global cap (`--global-cap N`,
+`AURA3D_MESHY_GLOBAL_CAP`, or `ledger config`) are opt-in, and `config --global-cap off --game-cap off` removes them.
+A cap that is set is a hard stop: exit 3 with the credits left and the flag that raises it. `--game` is
 required and must be a lowercase tag. Estimates: preview 20, refine 10, remesh 5, rigging 5, animate 3, retexture 10.
 `reserve --dry-run --op preview,refine,rigging` prices a chain without writing.
 

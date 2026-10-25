@@ -132,7 +132,7 @@ lighting you evaluate materials and silhouettes against.
 - Search returns no auto-pullable candidate, or every candidate fails the
   reject list: stop, list the query, profile, and rejection reasons, and offer
   two options: a user-supplied licensed file, or Meshy generation from a text
-  prompt (load `meshy-cli`, dry run and an approved credit maximum first; never
+  prompt (load `meshy-cli`, dry run first, then reserve credits in the ledger; never
   from screenshots or frames of another game or product). Do not model the subject from primitives.
 - Search prints a source fetch warning (for example an HTTP 404): report it
   verbatim, label asset-dependent work `blocked`, and never treat fallback

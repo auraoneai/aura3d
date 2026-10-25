@@ -5,7 +5,6 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   checkMeshyBudget,
   classifyMeshyOutcome,
-  DEFAULT_MESHY_GAME_CAP,
   fetchPrismPool,
   meshyLedgerCommand,
   parsePrismPool,
@@ -28,20 +27,32 @@ function tmp(): string {
 function ledger(globalCap = 1000): { ledgerPath: string; globalCap: number } {
   return { ledgerPath: join(tmp(), "ledger.jsonl"), globalCap };
 }
+const home2 = (): { ledgerPath: string } => ({ ledgerPath: join(tmp(), "ledger.jsonl") });
 const pool = (remaining: Record<string, number>) => ({ keys: Object.entries(remaining).map(([id, value]) => ({ id, state: "ok", remaining: value })) });
 afterEach(() => {
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
   vi.unstubAllEnvs();
 });
 
-describe("meshy ledger hard stops", () => {
-  test("the per-game cap defaults to 420 and refuses with the remaining credits and the flag that raises it", () => {
-    const options = ledger(5000);
-    expect(DEFAULT_MESHY_GAME_CAP).toBe(420);
+describe("meshy ledger is uncapped unless a cap is opted into (owner decision 2026-10-25)", () => {
+  const home = (): { ledgerPath: string } => ({ ledgerPath: join(tmp(), "ledger.jsonl") });
+
+  test("no cap by default: a tag far past 420 and a total far past 10,000 are never refused", () => {
+    vi.stubEnv("AURA3D_MESHY_GAME_CAP", "");
+    vi.stubEnv("AURA3D_MESHY_GLOBAL_CAP", "");
+    const options = home();
+    for (let i = 0; i < 60; i += 1) reserveMeshyCredits({ game: "ninja", op: "preview" }, options);
+    reserveMeshyCredits({ game: "ninja", op: "preview", est: 20000 }, options);
+    expect(summarizeMeshyLedger(options)).toMatchObject({ spent: 21200, globalCap: null, gameCap: null, left: null, overCap: {} });
+    const check = checkMeshyBudget({ game: "ninja", ops: ["preview", "refine"] }, options);
+    expect(check).toMatchObject({ allowed: true, cost: 30, gameCap: null, gameLeft: null, globalCap: null, globalLeft: null });
+    expect(check.refusal).toBeUndefined();
+  });
+
+  test("an opted-in per-game cap hard-stops with the credits left and the flag that raises or removes it", () => {
+    const options = { ...ledger(5000), gameCap: 420 };
     for (let i = 0; i < 14; i += 1) reserveMeshyCredits({ game: "ninja", op: "preview" }, options);
-    expect(summarizeMeshyLedger(options).byGame.ninja).toBe(280);
     for (let i = 0; i < 7; i += 1) reserveMeshyCredits({ game: "ninja", op: "refine" }, options);
-    expect(summarizeMeshyLedger(options).byGame.ninja).toBe(350);
     for (let i = 0; i < 3; i += 1) reserveMeshyCredits({ game: "ninja", op: "remesh" }, options);
     for (let i = 0; i < 12; i += 1) reserveMeshyCredits({ game: "ninja", op: "animate" }, options);
     expect(summarizeMeshyLedger(options).byGame.ninja).toBe(401);
@@ -53,25 +64,26 @@ describe("meshy ledger hard stops", () => {
       error = caught as MeshyLedgerError;
     }
     expect(error?.code).toBe("CAP_GAME");
-    expect(error?.message).toMatch(/REFUSED: ninja cap 420 would be exceeded \(spent 401, need 20, 19 left under the cap\)/);
+    expect(error?.message).toMatch(/REFUSED: ninja cap 420 would be exceeded \(a cap you set; spent 401, need 20, 19 left under the cap\)/);
     expect(error?.message).toMatch(/--cap 421/);
     expect(error?.message).toMatch(/AURA3D_MESHY_GAME_CAP=421/);
+    expect(error?.message).toMatch(/config --game-cap off/);
     expect(readMeshyLedger(options).length).toBe(before);
   });
 
-  test("an explicit --cap or AURA3D_MESHY_GAME_CAP raises the cap on purpose", () => {
-    const options = { ...ledger(5000), gameCap: 40 };
+  test("a per-call --cap and AURA3D_MESHY_GAME_CAP are opt-in limits too", () => {
+    const options = home();
     reserveMeshyCredits({ game: "silt", op: "preview" }, options);
     reserveMeshyCredits({ game: "silt", op: "preview" }, options);
-    expect(() => reserveMeshyCredits({ game: "silt", op: "preview" }, options)).toThrowError(/silt cap 40/);
+    expect(() => reserveMeshyCredits({ game: "silt", op: "preview", cap: 40 }, options)).toThrowError(/silt cap 40/);
     expect(reserveMeshyCredits({ game: "silt", op: "preview", cap: 60 }, options)).toMatch(/^\d+-/);
-    vi.stubEnv("AURA3D_MESHY_GAME_CAP", "100");
-    expect(reserveMeshyCredits({ game: "wind", op: "preview" }, { ledgerPath: options.ledgerPath, globalCap: 5000 })).toMatch(/^\d+-/);
-    expect(checkMeshyBudget({ game: "wind", ops: ["preview"] }, { ledgerPath: options.ledgerPath, globalCap: 5000 }).gameCap).toBe(100);
+    vi.stubEnv("AURA3D_MESHY_GAME_CAP", "70");
+    expect(checkMeshyBudget({ game: "wind", ops: ["preview"] }, options).gameCap).toBe(70);
+    expect(() => reserveMeshyCredits({ game: "silt", op: "preview" }, options)).toThrowError(/silt cap 70/);
   });
 
-  test("a tag already over its cap (legacy spend) is refused with 0 left, never silently allowed", () => {
-    const options = ledger(5000);
+  test("a tag already over an opted-in cap shows 0 left and is refused", () => {
+    const options = { ...ledger(5000), gameCap: 420 };
     const rid = reserveMeshyCredits({ game: "drift", op: "preview", cap: 1000 }, options);
     settleMeshyCredits(rid, { status: "ok", actual: 500 }, options);
     const check = checkMeshyBudget({ game: "drift", ops: ["animate"] }, options);
@@ -80,10 +92,10 @@ describe("meshy ledger hard stops", () => {
     expect(summarizeMeshyLedger(options).overCap).toEqual({ drift: 500 });
   });
 
-  test("the global cap hard-stops and names the way to raise it", () => {
+  test("an opted-in global cap hard-stops and names the way to raise or remove it", () => {
     const options = ledger(25);
     reserveMeshyCredits({ game: "wind", op: "preview" }, options);
-    expect(() => reserveMeshyCredits({ game: "silt", op: "refine" }, options)).toThrowError(/global cap 25 would be exceeded \(spent 20, need 10, 5 left\).*--global-cap/);
+    expect(() => reserveMeshyCredits({ game: "silt", op: "refine" }, options)).toThrowError(/global cap 25 would be exceeded \(a cap you set; spent 20, need 10, 5 left\).*--global-cap.*config --global-cap off/);
   });
 
   test("ledger-internal tags cannot be reserved", () => {
@@ -92,15 +104,25 @@ describe("meshy ledger hard stops", () => {
 });
 
 describe("meshy ledger dry run", () => {
-  test("shows the cost of a chain and the remaining credits without writing", async () => {
+  test("prices a chain without writing; uncapped it is always allowed", async () => {
+    const options = home2();
+    const out: string[] = [];
+    const err: string[] = [];
+    const io = { cwd: "/", stdout: (line: string) => out.push(line), stderr: (line: string) => err.push(line) };
+    const base = ["--ledger", options.ledgerPath];
+    expect(await meshyLedgerCommand(["reserve", "--dry-run", "--game", "serpentine", "--op", "preview,refine,rigging", ...base], io)).toBe(0);
+    expect(JSON.parse(out.pop()!)).toMatchObject({ dryRun: true, allowed: true, cost: 35, gameLeft: null, globalLeft: null, ops: ["preview", "refine", "rigging"] });
+    expect(readMeshyLedger(options)).toEqual([]);
+  });
+
+  test("with a cap you set it shows the credits left and exits 3 when refused, still writing nothing", async () => {
     const options = ledger(1000);
     const out: string[] = [];
     const err: string[] = [];
     const io = { cwd: "/", stdout: (line: string) => out.push(line), stderr: (line: string) => err.push(line) };
     const base = ["--ledger", options.ledgerPath, "--global-cap", "1000"];
     expect(await meshyLedgerCommand(["reserve", "--dry-run", "--game", "serpentine", "--op", "preview,refine,rigging", ...base], io)).toBe(0);
-    expect(JSON.parse(out.pop()!)).toMatchObject({ dryRun: true, allowed: true, cost: 35, gameLeft: 420, globalLeft: 1000, ops: ["preview", "refine", "rigging"] });
-    expect(readMeshyLedger(options)).toEqual([]);
+    expect(JSON.parse(out.pop()!)).toMatchObject({ allowed: true, cost: 35, gameLeft: null, globalLeft: 1000 });
     expect(await meshyLedgerCommand(["reserve", "--dry-run", "--game", "serpentine", "--op", "preview,refine", "--cap", "20", ...base], io)).toBe(3);
     expect(JSON.parse(out.pop()!)).toMatchObject({ allowed: false, cost: 30 });
     expect(err.pop()).toMatch(/REFUSED: serpentine cap 20/);
@@ -188,6 +210,14 @@ describe("meshy ledger reconcile against Prism (mocked, no network, no spend)", 
     expect(() => reserveMeshyCredits({ game: "drift", op: "preview", cap: 1000 }, { ...options, globalCap: 110 })).toThrowError(/global cap 110/);
   });
 
+  test("reconcile on an uncapped ledger reports no cap and no credits-left figure", () => {
+    vi.stubEnv("AURA3D_MESHY_GLOBAL_CAP", "");
+    const options = { ledgerPath: join(tmp(), "ledger.jsonl") };
+    recordMeshyBaseline(parsePrismPool(pool({ a: 1000 })), options);
+    reserveMeshyCredits({ game: "drift", op: "preview" }, options);
+    expect(reconcileWithPrism(parsePrismPool(pool({ a: 970 })), options)).toMatchObject({ delta: 10, globalCap: null, leftUnderCap: null });
+  });
+
   test("a total-only legacy baseline compares the pool without the keys that joined later", () => {
     const options = ledger(10000);
     recordMeshyBaseline({ totalRemaining: 2000, excludeKeys: ["new1", "new2"] }, options);
@@ -205,15 +235,17 @@ describe("meshy ledger reconcile against Prism (mocked, no network, no spend)", 
     expect(summarizeMeshyLedger(options).spent).toBe(30);
   });
 
-  test("config persists the caps in the ledger; flag and env override them; config records never count as spend", async () => {
+  test("config opts in to caps, persists them in the ledger, and off removes them; flag and env override; config never counts as spend", async () => {
+    vi.stubEnv("AURA3D_MESHY_GAME_CAP", "");
+    vi.stubEnv("AURA3D_MESHY_GLOBAL_CAP", "");
     const options = { ledgerPath: join(tmp(), "ledger.jsonl") };
-    expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: 1000, gameCap: 420 });
-    setMeshyCaps({ globalCap: 10000, gameCap: 500, note: "owner authorised 10,000 on 2026-10-23" }, options);
+    expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: null, gameCap: null });
+    setMeshyCaps({ globalCap: 10000, gameCap: 500, note: "opt-in" }, options);
     expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: 10000, gameCap: 500, spent: 0 });
     expect(summarizeMeshyLedger({ ...options, globalCap: 50 })).toMatchObject({ globalCap: 50, gameCap: 500 });
     vi.stubEnv("AURA3D_MESHY_GAME_CAP", "100");
     expect(summarizeMeshyLedger(options)).toMatchObject({ gameCap: 100, globalCap: 10000 });
-    vi.unstubAllEnvs();
+    vi.stubEnv("AURA3D_MESHY_GAME_CAP", "");
     expect(() => setMeshyCaps({}, options)).toThrowError(/config needs/);
     expect(() => setMeshyCaps({ globalCap: -1 }, options)).toThrowError(/positive/);
     const out: string[] = [];
@@ -221,6 +253,9 @@ describe("meshy ledger reconcile against Prism (mocked, no network, no spend)", 
     expect(await meshyLedgerCommand(["config", "--global-cap", "7000", "--ledger", options.ledgerPath], io)).toBe(0);
     expect(JSON.parse(out.pop()!)).toEqual({ globalCap: 7000 });
     expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: 7000, gameCap: 500 });
+    expect(await meshyLedgerCommand(["config", "--global-cap", "off", "--game-cap", "off", "--ledger", options.ledgerPath], io)).toBe(0);
+    expect(JSON.parse(out.pop()!)).toEqual({ globalCap: null, gameCap: null });
+    expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: null, gameCap: null, left: null });
     expect(reserveMeshyCredits({ game: "wind", op: "preview" }, options)).toMatch(/^\d+-/);
     expect(summarizeMeshyLedger(options).spent).toBe(20);
   });

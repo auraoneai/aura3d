@@ -364,21 +364,17 @@ function readLedgerByTag(file) {
   return byTag;
 }
 
-function checkMeshyCap({ terms, env }) {
+// Information only: Meshy spend is uncapped by owner decision (2026-10-25), so this never warns. It lists the credits per tag
+// from the ledger `aura3d meshy ledger` writes so the numbers stay visible (AURA3D_MESHY_LEDGER, else ~/.aura3d/meshy-ledger.jsonl).
+function checkMeshyCap({ env }) {
   const explicit = env.AURA3D_MESHY_LEDGER ?? env.MESHY_LEDGER;
   const home = env.HOME ?? process.env.HOME ?? "";
   const ledger = explicit ?? join(home, ".aura3d", "meshy-ledger.jsonl");
-  const cap = Number(env.AURA3D_MESHY_GAME_CAP) > 0 ? Number(env.AURA3D_MESHY_GAME_CAP) : terms.meshyCapPerGame;
-  const acknowledged = terms.meshyCapAcknowledged ?? {};
-  if (!existsSync(ledger)) return [finding("meshy-cap", "info", null, ledger, 0, "no Meshy ledger found (nothing to check); paid Meshy calls must go through `aura3d meshy ledger reserve`")];
-  const out = [];
-  for (const [tag, spent] of Object.entries(readLedgerByTag(ledger))) {
-    if (spent <= cap) continue;
-    const ceiling = acknowledged[tag];
-    if (ceiling !== undefined && spent <= ceiling) out.push(finding("meshy-cap", "info", null, ledger, 0, `tag "${tag}" spent ${spent} credits, over the ${cap} guideline but within the ${ceiling} recorded in docs/audit/meshy-reconciliation.md (spent before the CLI hard-stop existed)`));
-    else out.push(finding("meshy-cap", "warn", null, ledger, 0, `tag "${tag}" spent ${spent} credits, over the ${ceiling ?? cap} per-game ${ceiling === undefined ? "guideline" : "acknowledged ceiling"}; reserve through \`aura3d meshy ledger\` (it hard-stops) and raise the cap explicitly with --cap if the owner approved more`));
-  }
-  return out;
+  if (!existsSync(ledger)) return [finding("meshy-cap", "info", null, ledger, 0, "no Meshy ledger found; route paid Meshy calls through `aura3d meshy ledger reserve` to keep credits visible (spend is uncapped)")];
+  const byTag = readLedgerByTag(ledger);
+  const list = Object.entries(byTag).sort((a, b) => b[1] - a[1]).map(([tag, spent]) => `${tag} ${spent}`).join(", ");
+  const total = Object.values(byTag).reduce((sum, v) => sum + v, 0);
+  return [finding("meshy-cap", "info", null, ledger, 0, `Meshy credits per tag, tracked for visibility (spend is uncapped by owner decision 2026-10-25): ${list || "none"}; ${total} attributed in total`)];
 }
 
 function dedupe(list) {

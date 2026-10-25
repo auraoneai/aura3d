@@ -56,12 +56,12 @@ when an open-source candidate already passes the rubric.
 
 1. Plan: `meshy make "<prompt>" --dry-run` and show the steps and estimate.
    For single resources, read the create help and state the planned inputs.
-2. Get an approved maximum, then pass `--max-credits <approved>` and reserve
-   every paid call in the ledger first (it hard-stops at the per-game cap, default 420, and the global cap):
-   `aura3d meshy ledger reserve --dry-run --game <tag> --op preview,refine` to see the cost,
-   `rid=$(aura3d meshy ledger reserve --game <tag> --op preview)`,
-   then `aura3d meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>`.
-   A refusal prints the credits left and the flag that raises the cap: raise it only with the owner's approval.
+2. Spend is uncapped by owner decision on 2026-10-25 (credits tracked for visibility, no default cap). If the
+   user states a limit, pass `--max-credits <limit>` and `aura3d meshy ledger config --global-cap <N>`. Reserve
+   every paid call first: `aura3d meshy ledger reserve --dry-run --game <tag> --op preview,refine` (cost),
+   `rid=$(aura3d meshy ledger reserve --game <tag> --op preview)`, then
+   `aura3d meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>`. A cap that was set hard-stops and
+   prints the credits left and the flag that raises or removes it.
    Credits per operation: preview 20, refine 10 (`make` = 30), remesh 5,
    rigging 5, animate 3, retexture 10. A rate-limited or timed-out call keeps
    counting until `ledger reconcile --rid <id>`; compare the whole ledger with the Prism pool using `ledger reconcile`.
@@ -133,9 +133,9 @@ when an open-source candidate already passes the rubric.
 
 ## Stop and report
 
-- No approved maximum: stop after the dry run and present the plan.
-- Exit code 9 or a plan above the approved maximum: stop; do not split the
-  job to stay under the cap.
+- Always show the dry-run plan and its cost before paying.
+- Exit code 9 (credits exhausted) or a plan above a limit the user set: stop; do
+  not split the job to stay under that limit.
 - Admission reports blockers for the chosen profile: keep the file as a
   rejected local candidate, report the failing checks, and label the route
   `prototype` or `blocked`.

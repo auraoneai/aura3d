@@ -2,9 +2,10 @@
  * `aura3d meshy ledger` — a local credit ledger for paid Meshy generation.
  *
  * Bookkeeping only: this module never talks to Meshy. A wrapper that calls Meshy (for example through Kiro Prism)
- * reserves credits here BEFORE a paid call and settles the record after. Per-game caps (default 420) and one global
- * cap are HARD stops enforced under a lock, so many agents or shells can share one ledger; a refusal always prints the
- * remaining credits and the explicit flag or env var that raises the cap. `reconcile` (no --rid) is the only place a
+ * reserves credits here BEFORE a paid call and settles the record after. Spend is UNCAPPED by default (owner decision,
+ * 2026-10-25): credits are tracked for visibility and the only automatic stop is the real Prism balance reaching 0.
+ * A per-game cap and a global cap are opt-in (`config`, `--cap`, `--game-cap`, `--global-cap`, env); once set they are
+ * HARD stops enforced under a lock, and a refusal prints the remaining credits and the flag that raises the cap. `reconcile` (no --rid) is the only place a
  * credential is read, and only to GET the Prism pool balance (`AURA3D_PRISM_KEY` or `AURA3D_PRISM_KEY_FILE`; never printed).
  *
  * Lessons baked in:
@@ -27,8 +28,9 @@ export interface MeshyLedgerRecord {
   readonly rid: string;
   /** `baseline` records snapshot the Prism pool for `reconcile`; `config` records persist the caps. Neither counts as spend. */
   readonly kind?: "baseline" | "config";
-  readonly global_cap?: number;
-  readonly game_cap?: number;
+  /** On a `config` record: the cap, or `null` to clear a stored cap. */
+  readonly global_cap?: number | null;
+  readonly game_cap?: number | null;
   readonly status: MeshyLedgerStatus;
   readonly game?: string;
   readonly op?: string;
@@ -47,9 +49,9 @@ export interface MeshyLedgerRecord {
 export interface MeshyLedgerOptions {
   /** Defaults to $AURA3D_MESHY_LEDGER, then ~/.aura3d/meshy-ledger.jsonl. */
   readonly ledgerPath?: string;
-  /** Total credits the whole ledger may spend. Defaults to $AURA3D_MESHY_GLOBAL_CAP, then 1000. */
+  /** Opt-in total the whole ledger may spend. Unset: $AURA3D_MESHY_GLOBAL_CAP, then a cap stored by `config`, else no cap. */
   readonly globalCap?: number;
-  /** Per-game cap used when a call passes none. Defaults to $AURA3D_MESHY_GAME_CAP, then 420. */
+  /** Opt-in per-game cap used when a call passes none. Unset: $AURA3D_MESHY_GAME_CAP, then stored by `config`, else no cap. */
   readonly gameCap?: number;
   readonly lockTimeoutMs?: number;
   readonly now?: () => Date;
@@ -72,8 +74,6 @@ export const MESHY_CREDIT_ESTIMATES: Readonly<Record<string, number>> = {
   retexture: 10
 };
 
-export const DEFAULT_MESHY_GLOBAL_CAP = 1000;
-export const DEFAULT_MESHY_GAME_CAP = 420;
 /** Tags the ledger writes itself; nobody may reserve under them. */
 const RESERVED_TAGS = new Set(["unattributed", "baseline"]);
 const GAME_TAG = /^[a-z][a-z0-9-]{1,39}$/;
@@ -90,9 +90,9 @@ export function defaultLedgerPath(): string {
   return process.env.AURA3D_MESHY_LEDGER ?? resolve(homedir(), ".aura3d", "meshy-ledger.jsonl");
 }
 
-/** Caps persisted in the ledger by `config` (flag > env > stored > default). */
-function storedConfig(ledgerPath: string): { readonly globalCap?: number; readonly gameCap?: number } | undefined {
-  if (!existsSync(ledgerPath)) return undefined;
+/** Caps persisted in the ledger by `config` (flag > env > stored > no cap). A `null` clears a stored cap. */
+function storedConfig(ledgerPath: string): { readonly globalCap?: number; readonly gameCap?: number } {
+  if (!existsSync(ledgerPath)) return {};
   let globalCap: number | undefined;
   let gameCap: number | undefined;
   for (const line of readFileSync(ledgerPath, "utf8").split("\n")) {
@@ -100,8 +100,8 @@ function storedConfig(ledgerPath: string): { readonly globalCap?: number; readon
     try {
       const record = JSON.parse(line) as MeshyLedgerRecord;
       if (record.kind !== "config") continue;
-      if (record.global_cap !== undefined) globalCap = record.global_cap;
-      if (record.game_cap !== undefined) gameCap = record.game_cap;
+      if (record.global_cap !== undefined) globalCap = record.global_cap ?? undefined;
+      if (record.game_cap !== undefined) gameCap = record.game_cap ?? undefined;
     } catch {
       // torn line: ignore
     }
@@ -109,27 +109,39 @@ function storedConfig(ledgerPath: string): { readonly globalCap?: number; readon
   return { ...(globalCap !== undefined ? { globalCap } : {}), ...(gameCap !== undefined ? { gameCap } : {}) };
 }
 
-/** Persist the caps in the ledger so every shell and agent sees the same, deliberately raised, limits. */
-export function setMeshyCaps(caps: { readonly globalCap?: number; readonly gameCap?: number; readonly note?: string }, options: MeshyLedgerOptions = {}): MeshyLedgerRecord {
+/** `"off"` clears a stored cap; a positive number sets it; `undefined` leaves it alone. */
+export type CapSetting = number | "off" | undefined;
+
+/** Persist (or clear) opt-in caps in the ledger so every shell and agent sees the same limits. */
+export function setMeshyCaps(caps: { readonly globalCap?: CapSetting; readonly gameCap?: CapSetting; readonly note?: string }, options: MeshyLedgerOptions = {}): MeshyLedgerRecord {
   const resolved = resolveOptions({ ...options, globalCap: 1, gameCap: 1 });
-  for (const value of [caps.globalCap, caps.gameCap]) if (value !== undefined && (!Number.isFinite(value) || value <= 0)) throw new MeshyLedgerError("BAD_RECORD", "Caps must be positive numbers.");
-  if (caps.globalCap === undefined && caps.gameCap === undefined) throw new MeshyLedgerError("BAD_RECORD", "config needs --global-cap and/or --game-cap.");
+  for (const value of [caps.globalCap, caps.gameCap]) if (typeof value === "number" && (!Number.isFinite(value) || value <= 0)) throw new MeshyLedgerError("BAD_RECORD", "Caps must be positive numbers, or \"off\".");
+  if (caps.globalCap === undefined && caps.gameCap === undefined) throw new MeshyLedgerError("BAD_RECORD", "config needs --global-cap and/or --game-cap (a number, or off to remove the cap).");
+  const stored = (value: CapSetting): number | null | undefined => (value === "off" ? null : value);
   return withLock(resolved, () => {
-    const record: MeshyLedgerRecord = { ts: resolved.now().toISOString(), rid: `config-${resolved.now().getTime()}`, kind: "config", status: "ok", ...(caps.globalCap !== undefined ? { global_cap: caps.globalCap } : {}), ...(caps.gameCap !== undefined ? { game_cap: caps.gameCap } : {}), ...(caps.note ? { note: caps.note } : {}) };
+    const record: MeshyLedgerRecord = { ts: resolved.now().toISOString(), rid: `config-${resolved.now().getTime()}`, kind: "config", status: "ok", ...(caps.globalCap !== undefined ? { global_cap: stored(caps.globalCap) } : {}), ...(caps.gameCap !== undefined ? { game_cap: stored(caps.gameCap) } : {}), ...(caps.note ? { note: caps.note } : {}) };
     appendFileSync(resolved.ledgerPath, JSON.stringify(record) + "\n");
     return record;
   });
 }
 
-function resolveOptions(options: MeshyLedgerOptions): Required<Omit<MeshyLedgerOptions, "now">> & { readonly now: () => Date } {
+interface ResolvedOptions {
+  readonly ledgerPath: string;
+  readonly globalCap: number | undefined;
+  readonly gameCap: number | undefined;
+  readonly lockTimeoutMs: number;
+  readonly now: () => Date;
+}
+
+function resolveOptions(options: MeshyLedgerOptions): ResolvedOptions {
   const envCap = Number(process.env.AURA3D_MESHY_GLOBAL_CAP);
   const envGameCap = Number(process.env.AURA3D_MESHY_GAME_CAP);
   const ledgerPath = resolve(options.ledgerPath ?? defaultLedgerPath());
-  const stored = options.globalCap !== undefined && options.gameCap !== undefined ? undefined : storedConfig(ledgerPath);
+  const stored = options.globalCap !== undefined && options.gameCap !== undefined ? {} : storedConfig(ledgerPath);
   return {
     ledgerPath,
-    globalCap: options.globalCap ?? (Number.isFinite(envCap) && envCap > 0 ? envCap : stored?.globalCap ?? DEFAULT_MESHY_GLOBAL_CAP),
-    gameCap: options.gameCap ?? (Number.isFinite(envGameCap) && envGameCap > 0 ? envGameCap : stored?.gameCap ?? DEFAULT_MESHY_GAME_CAP),
+    globalCap: options.globalCap ?? (Number.isFinite(envCap) && envCap > 0 ? envCap : stored.globalCap),
+    gameCap: options.gameCap ?? (Number.isFinite(envGameCap) && envGameCap > 0 ? envGameCap : stored.gameCap),
     lockTimeoutMs: options.lockTimeoutMs ?? 30_000,
     now: options.now ?? (() => new Date())
   };
@@ -165,7 +177,7 @@ function pidAlive(pid: number): boolean {
   }
 }
 
-function withLock<T>(resolved: ReturnType<typeof resolveOptions>, fn: () => T): T {
+function withLock<T>(resolved: ResolvedOptions, fn: () => T): T {
   mkdirSync(dirname(resolved.ledgerPath), { recursive: true });
   const lock = `${resolved.ledgerPath}.lock.d`;
   const started = Date.now();
@@ -235,7 +247,7 @@ export interface ReserveInput {
   readonly op: string;
   /** Defaults to the published estimate for `op`. */
   readonly est?: number;
-  /** Per-game cap for this call; defaults to the ledger's game cap (420). The call is refused when spend plus `est` would exceed it. */
+  /** Optional per-game cap for this call; defaults to the ledger's game cap, if one is set. With no cap the call is never refused for spend. */
   readonly cap?: number;
 }
 
@@ -245,11 +257,13 @@ export interface MeshyBudgetCheck {
   readonly ops: readonly string[];
   readonly cost: number;
   readonly gameSpent: number;
-  readonly gameCap: number;
-  readonly gameLeft: number;
+  /** `null`: no per-game cap is in force (the default). */
+  readonly gameCap: number | null;
+  readonly gameLeft: number | null;
   readonly globalSpent: number;
-  readonly globalCap: number;
-  readonly globalLeft: number;
+  /** `null`: no global cap is in force (the default). */
+  readonly globalCap: number | null;
+  readonly globalLeft: number | null;
   readonly refusal?: { readonly code: "CAP_GLOBAL" | "CAP_GAME"; readonly message: string };
 }
 
@@ -266,17 +280,18 @@ export function checkMeshyBudget(input: { readonly game: string; readonly ops: r
   if (RESERVED_TAGS.has(game)) throw new MeshyLedgerError("BAD_GAME_TAG", `"${game}" is a ledger-internal tag; use your game or project slug.`);
   if (input.ops.length === 0) throw new MeshyLedgerError("BAD_RECORD", "At least one op is required.");
   const cap = input.cap ?? resolved.gameCap;
-  if (!Number.isFinite(cap) || cap <= 0) throw new MeshyLedgerError("BAD_RECORD", "A positive per-game cap is required.");
+  if (cap !== undefined && (!Number.isFinite(cap) || cap <= 0)) throw new MeshyLedgerError("BAD_RECORD", "A per-game cap must be a positive number.");
   const cost = input.ops.reduce((sum, op) => sum + estimateFor(op, input.ops.length === 1 ? input.est : undefined), 0);
   const totals = meshyLedgerTotals(readMeshyLedger(resolved));
   const gameSpent = totals.byGame[game] ?? 0;
-  const base = { game, ops: input.ops, cost, gameSpent, gameCap: cap, gameLeft: Math.max(0, cap - gameSpent), globalSpent: totals.spent, globalCap: resolved.globalCap, globalLeft: Math.max(0, resolved.globalCap - totals.spent) };
-  if (totals.spent + cost > resolved.globalCap) {
-    return { ...base, allowed: false, refusal: { code: "CAP_GLOBAL", message: `REFUSED: global cap ${resolved.globalCap} would be exceeded (spent ${totals.spent}, need ${cost}, ${base.globalLeft} left). Raise it deliberately with --global-cap <N> or AURA3D_MESHY_GLOBAL_CAP=<N> (needs the owner's authorisation for that total).` } };
+  const globalCap = resolved.globalCap;
+  const base = { game, ops: input.ops, cost, gameSpent, gameCap: cap ?? null, gameLeft: cap === undefined ? null : Math.max(0, cap - gameSpent), globalSpent: totals.spent, globalCap: globalCap ?? null, globalLeft: globalCap === undefined ? null : Math.max(0, globalCap - totals.spent) };
+  if (globalCap !== undefined && totals.spent + cost > globalCap) {
+    return { ...base, allowed: false, refusal: { code: "CAP_GLOBAL", message: `REFUSED: global cap ${globalCap} would be exceeded (a cap you set; spent ${totals.spent}, need ${cost}, ${base.globalLeft} left). Raise it with --global-cap <N> or AURA3D_MESHY_GLOBAL_CAP=<N>, or remove it with \`aura3d meshy ledger config --global-cap off\`.` } };
   }
-  if (gameSpent + cost > cap) {
+  if (cap !== undefined && gameSpent + cost > cap) {
     const needed = gameSpent + cost;
-    return { ...base, allowed: false, refusal: { code: "CAP_GAME", message: `REFUSED: ${game} cap ${cap} would be exceeded (spent ${gameSpent}, need ${cost}, ${base.gameLeft} left under the cap). Raise it deliberately with --cap ${needed} (this call) or AURA3D_MESHY_GAME_CAP=${needed} (all tags); the global pool has ${base.globalLeft} left.` } };
+    return { ...base, allowed: false, refusal: { code: "CAP_GAME", message: `REFUSED: ${game} cap ${cap} would be exceeded (a cap you set; spent ${gameSpent}, need ${cost}, ${base.gameLeft} left under the cap). Raise it with --cap ${needed} (this call) or AURA3D_MESHY_GAME_CAP=${needed} (all tags), or remove it with \`aura3d meshy ledger config --game-cap off\`.` } };
   }
   return { ...base, allowed: true };
 }
@@ -361,11 +376,26 @@ export function classifyMeshyOutcome(outcome: MeshyCallOutcome): SettleInput {
   return { status: "unconfirmed", note: `exit ${outcome.exitCode}: no task id seen (rate limit or timeout); verify before treating as failed` };
 }
 
-export function summarizeMeshyLedger(options: MeshyLedgerOptions = {}): { readonly globalCap: number; readonly gameCap: number; readonly spent: number; readonly left: number; readonly unconfirmed: number; readonly unconfirmedRids: readonly string[]; readonly byGame: Readonly<Record<string, number>>; readonly overCap: Readonly<Record<string, number>> } {
+export interface MeshyLedgerSummary {
+  /** `null`: uncapped (the default). */
+  readonly globalCap: number | null;
+  readonly gameCap: number | null;
+  readonly spent: number;
+  /** Credits left under the global cap; `null` when there is none. */
+  readonly left: number | null;
+  readonly unconfirmed: number;
+  readonly unconfirmedRids: readonly string[];
+  readonly byGame: Readonly<Record<string, number>>;
+  /** Tags above the per-game cap; always empty when no per-game cap is set. */
+  readonly overCap: Readonly<Record<string, number>>;
+}
+
+export function summarizeMeshyLedger(options: MeshyLedgerOptions = {}): MeshyLedgerSummary {
   const resolved = resolveOptions(options);
   const totals = meshyLedgerTotals(readMeshyLedger(resolved));
-  const overCap = Object.fromEntries(Object.entries(totals.byGame).filter(([game, spent]) => game !== "unattributed" && spent > resolved.gameCap));
-  return { globalCap: resolved.globalCap, gameCap: resolved.gameCap, spent: totals.spent, left: resolved.globalCap - totals.spent, unconfirmed: totals.unconfirmed, unconfirmedRids: totals.unconfirmedRids, byGame: totals.byGame, overCap };
+  const gameCap = resolved.gameCap;
+  const overCap = gameCap === undefined ? {} : Object.fromEntries(Object.entries(totals.byGame).filter(([game, spent]) => game !== "unattributed" && spent > gameCap));
+  return { globalCap: resolved.globalCap ?? null, gameCap: gameCap ?? null, spent: totals.spent, left: resolved.globalCap === undefined ? null : resolved.globalCap - totals.spent, unconfirmed: totals.unconfirmed, unconfirmedRids: totals.unconfirmedRids, byGame: totals.byGame, overCap };
 }
 
 export interface PrismPoolSnapshot {
@@ -441,8 +471,9 @@ export interface MeshyReconciliation {
   /** prismSpent minus ledgerSpent: positive means Prism charged more than the ledger counted. */
   readonly delta: number;
   readonly poolRemaining: number;
-  readonly globalCap: number;
-  readonly leftUnderCap: number;
+  /** `null`: no global cap in force. */
+  readonly globalCap: number | null;
+  readonly leftUnderCap: number | null;
   readonly baselineAt: string;
   readonly keysAddedSinceBaseline: readonly string[];
   readonly keysToppedUp: readonly string[];
@@ -481,7 +512,7 @@ export function reconcileWithPrism(pool: PrismPoolSnapshot, options: MeshyLedger
     const totals = meshyLedgerTotals(readMeshyLedger(resolved));
     const since = totals.spent - (baseline.ledger_spent ?? 0);
     const adjustments = totals.byGame.unattributed ?? 0;
-    return { ledgerSpent: since, ledgerAttributed: since - adjustments, ledgerAdjustments: adjustments, prismSpent, delta: prismSpent - since, poolRemaining: pool.remaining, globalCap: resolved.globalCap, leftUnderCap: resolved.globalCap - totals.spent - Math.max(0, prismSpent - since), baselineAt: baseline.ts, keysAddedSinceBaseline: added, keysToppedUp: toppedUp, unconfirmedRids: totals.unconfirmedRids };
+    return { ledgerSpent: since, ledgerAttributed: since - adjustments, ledgerAdjustments: adjustments, prismSpent, delta: prismSpent - since, poolRemaining: pool.remaining, globalCap: resolved.globalCap ?? null, leftUnderCap: resolved.globalCap === undefined ? null : resolved.globalCap - totals.spent - Math.max(0, prismSpent - since), baselineAt: baseline.ts, keysAddedSinceBaseline: added, keysToppedUp: toppedUp, unconfirmedRids: totals.unconfirmedRids };
   };
   const result = compute();
   if (!options.apply || result.delta === 0) return result;
@@ -506,9 +537,10 @@ function flag(argv: readonly string[], name: string): string | undefined {
 
 const LEDGER_USAGE =
   "aura3d meshy ledger status|reserve|settle|reconcile|baseline|config|list [--ledger path] [--global-cap N] [--game-cap N]\n" +
-  "  config    --global-cap N and/or --game-cap N [--note text]   (persist the caps in the ledger; flag > $AURA3D_MESHY_GLOBAL_CAP/_GAME_CAP > stored > 1000/420)\n" +
-  "  reserve   --game <tag> --op preview|refine|remesh|rigging|animate|retexture [--est N] [--cap N]   (prints the reservation id; --cap defaults to 420 or $AURA3D_MESHY_GAME_CAP)\n" +
-  "  reserve   --dry-run --game <tag> --op preview,refine,rigging [--cap N]                            (cost and remaining credits; writes nothing; exit 3 if it would be refused)\n" +
+  "  Spend is uncapped by default (owner decision 2026-10-25): credits are tracked for visibility; caps below are opt-in. Prism/Meshy refusing for a zero balance (exit 9) is the only automatic stop.\n" +
+  "  config    --global-cap N|off and/or --game-cap N|off [--note text]   (opt in to a cap, or remove one; flag > $AURA3D_MESHY_GLOBAL_CAP/_GAME_CAP > stored > no cap)\n" +
+  "  reserve   --game <tag> --op preview|refine|remesh|rigging|animate|retexture [--est N] [--cap N]   (prints the reservation id; --cap is an opt-in limit for this call)\n" +
+  "  reserve   --dry-run --game <tag> --op preview,refine,rigging [--cap N]                            (cost of the chain; writes nothing; exit 3 only if a cap you set would refuse it)\n" +
   "  settle    --rid <id> --status ok|failed|unconfirmed [--task-id T] [--actual N] [--note text]\n" +
   "  settle    --rid <id> --exit-code N [--task-id T] [--task-status SUCCEEDED|FAILED|...] [--error-text \"meshy api 429 on /text-to-3d/<id>...\"]   (classified: a rate-limited poll stays unconfirmed)\n" +
   "  reconcile --rid <id> --status ok|failed [--task-id T] [--actual N]                                  (resolve one unconfirmed reservation)\n" +
@@ -531,10 +563,11 @@ export async function meshyLedgerCommand(argv: readonly string[], io: CliIo): Pr
   const sub = argv[0];
   const capFlag = flag(argv, "--global-cap");
   const gameCapFlag = flag(argv, "--game-cap");
+  const numeric = (value: string | undefined): number | undefined => (value !== undefined && value !== "off" ? Number(value) : undefined);
   const options: MeshyLedgerOptions = {
     ...(flag(argv, "--ledger") ? { ledgerPath: resolve(io.cwd, flag(argv, "--ledger")!) } : {}),
-    ...(capFlag ? { globalCap: Number(capFlag) } : {}),
-    ...(gameCapFlag ? { gameCap: Number(gameCapFlag) } : {})
+    ...(numeric(capFlag) !== undefined ? { globalCap: numeric(capFlag)! } : {}),
+    ...(numeric(gameCapFlag) !== undefined ? { gameCap: numeric(gameCapFlag)! } : {})
   };
   try {
     if (sub === "status" || sub === undefined) {
@@ -561,8 +594,9 @@ export async function meshyLedgerCommand(argv: readonly string[], io: CliIo): Pr
       return 0;
     }
     if (sub === "config") {
-      const record = setMeshyCaps({ ...(capFlag ? { globalCap: Number(capFlag) } : {}), ...(gameCapFlag ? { gameCap: Number(gameCapFlag) } : {}), ...(flag(argv, "--note") ? { note: flag(argv, "--note")! } : {}) }, flag(argv, "--ledger") ? { ledgerPath: resolve(io.cwd, flag(argv, "--ledger")!) } : {});
-      io.stdout(JSON.stringify({ globalCap: record.global_cap, gameCap: record.game_cap }));
+      const setting = (value: string | undefined): CapSetting => (value === undefined ? undefined : value === "off" ? "off" : Number(value));
+      const record = setMeshyCaps({ globalCap: setting(capFlag), gameCap: setting(gameCapFlag), ...(flag(argv, "--note") ? { note: flag(argv, "--note")! } : {}) }, flag(argv, "--ledger") ? { ledgerPath: resolve(io.cwd, flag(argv, "--ledger")!) } : {});
+      io.stdout(JSON.stringify({ ...(record.global_cap !== undefined ? { globalCap: record.global_cap } : {}), ...(record.game_cap !== undefined ? { gameCap: record.game_cap } : {}) }));
       return 0;
     }
     if (sub === "baseline") {
