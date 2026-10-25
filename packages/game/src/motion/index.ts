@@ -17,3 +17,5 @@ export { createFixedStepPresenter, createRecordBlend } from "./presenter";
 export type { AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions } from "./presenter";
 export { runMotionGate } from "./motionGate";
 export type { MotionGateOptions, MotionGateReport } from "./motionGate";
+export { clearCameraEye, createCameraClearance } from "./cameraClear";
+export type { CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance } from "./cameraClear";

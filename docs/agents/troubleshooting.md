@@ -197,3 +197,17 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
   nodes at the same position. In fighting and sports games, enforce a minimum
   horizontal pushbox separation (`>= 1.4m`) every frame and spawn fighters at
   `|x| >= 1.8m`.
+- A model renders pure white in a screenshot but the game looks right when played: textured materials upgrade one at a time after
+  mount, so an early frame (or any frame on a software-rendered runner, where each new shader takes tens of seconds) shows plain white
+  models. Check `app.diagnostics().renderer.runtime.texturedMaterials[].status` (`pending` means not yet uploaded) with
+  `summarizeTextureUpgrade` from `@aura3d/engine/game` and capture only once the nodes you care about read `textured`
+  (`docs/api/motion-camera-clear.md`). A model that stays white after its status is `textured` has a real defect: check the texture
+  URL, its sha256 and the asset's UV set.
+- The 3D view fills only part of the screen on a high-density display, or does not follow a window resize: with `resize: false` the
+  engine does not manage the canvas, and a backing size you assign after mount used to leave the renderer drawing at the mount size
+  (the picture filled a corner of the larger buffer). The engine now forwards a changed backing size to the renderer, but prefer letting
+  the engine size the canvas (omit `resize: false`, pass `pixelRatio: Math.min(devicePixelRatio, 1.5)`), which also follows window and
+  parent resizes.
+- The chase camera sits inside a wall or tree, or looks through a building: pass the eye your rig wants through `createCameraClearance`
+  with a `blocked(x, y, z)` predicate for solid space (`docs/api/motion-camera-clear.md`).
+

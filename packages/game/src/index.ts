@@ -66,13 +66,16 @@ export { GameSessionImpl } from "./session/GameSession";
 export { attachSessionLifecycle } from "./session/lifecycle";
 export { createAccessibility } from "./session/accessibility";
 export { installGameBeacon } from "./evidence/beacon";
+export { summarizeTextureUpgrade, texturedNodesReady } from "./evidence/textureStatus";
+export type { TexturedMaterialRow, TextureUpgradeSummary } from "./evidence/textureStatus";
 export {
   smoothDamp, createSmoothFollow3, lerpAngle, createRenderInterpolator, secondDifferenceRms, jitterReport,
   createLocomotion, proceduralLegSwing, createFootSlideMeter,
   createImpactWorld, createHitStop, createCameraShake, createImpactFeedback,
   attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance,
   checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend,
-  createFixedStepPresenter, createRecordBlend, runMotionGate
+  createFixedStepPresenter, createRecordBlend, runMotionGate,
+  clearCameraEye, createCameraClearance
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
@@ -82,7 +85,8 @@ export type {
   HitStop, CameraShake, ParticleBurst, ImpactFeedbackOptions, ImpactFeedbackResult,
   BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment,
   DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport,
-  AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport
+  AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport,
+  CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance
 } from "./motion/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";
