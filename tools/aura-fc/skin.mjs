@@ -30,9 +30,9 @@ const matFrom = (p, q) => { const x = qrot(q, [1, 0, 0]), y = qrot(q, [0, 1, 0])
 const mul = (a, b) => { const o = new Array(16).fill(0); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; };
 const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
-export function loadSkinnedMesh(glb) {
+export function loadSkinnedMesh(glb, primIndex = 0) {
   const { json } = glb;
-  const prim = json.meshes[0].primitives[0];
+  const prim = json.meshes[0].primitives[primIndex];
   const pos = readRows(glb, prim.attributes.POSITION).rows;
   const joints = readRows(glb, prim.attributes.JOINTS_0).rows;
   const wd = readRows(glb, prim.attributes.WEIGHTS_0);
