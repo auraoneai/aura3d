@@ -171,7 +171,7 @@ if (CHECK) {
   if (!existsSync(distDir)) fail("dist/ not found — run the full build before --check");
   const rewriteTo = new Map(
     (JSON.parse(readFileSync(join(repoRoot, "vercel.json"), "utf8")).rewrites ?? [])
-      .filter((r) => !r.source.includes(":"))
+      .filter((r) => !r.source.includes(":") && !r.source.endsWith("/"))
       .map((r) => [r.source.replace(/\/$/, "") + "/", r.destination]),
   );
   const distPathFor = (rawRoute) => {

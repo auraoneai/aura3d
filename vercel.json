@@ -4,12 +4,20 @@
   "outputDirectory": "marketing/dist",
   "rewrites": [
     {
+      "source": "/apps/craterline-gp/",
+      "destination": "/apps/showcase-strange-orbit-port/index.html"
+    },
+    {
       "source": "/apps/craterline-gp",
       "destination": "/apps/showcase-strange-orbit-port/"
     },
     {
       "source": "/apps/craterline-gp/:path*",
       "destination": "/apps/showcase-strange-orbit-port/:path*"
+    },
+    {
+      "source": "/apps/chroma-roll/",
+      "destination": "/apps/showcase-splat-rush-port/index.html"
     },
     {
       "source": "/apps/chroma-roll",
@@ -20,12 +28,20 @@
       "destination": "/apps/showcase-splat-rush-port/:path*"
     },
     {
+      "source": "/apps/serpentine-sky-run/",
+      "destination": "/apps/showcase-serpentine-sky-run-port/index.html"
+    },
+    {
       "source": "/apps/serpentine-sky-run",
       "destination": "/apps/showcase-serpentine-sky-run-port/"
     },
     {
       "source": "/apps/serpentine-sky-run/:path*",
       "destination": "/apps/showcase-serpentine-sky-run-port/:path*"
+    },
+    {
+      "source": "/apps/gridlock-courier/",
+      "destination": "/apps/showcase-drift-and-deliver-port/index.html"
     },
     {
       "source": "/apps/gridlock-courier",
@@ -36,12 +52,20 @@
       "destination": "/apps/showcase-drift-and-deliver-port/:path*"
     },
     {
+      "source": "/apps/ion-circuit/",
+      "destination": "/apps/showcase-heatsink-port/index.html"
+    },
+    {
       "source": "/apps/ion-circuit",
       "destination": "/apps/showcase-heatsink-port/"
     },
     {
       "source": "/apps/ion-circuit/:path*",
       "destination": "/apps/showcase-heatsink-port/:path*"
+    },
+    {
+      "source": "/apps/shadowstep-gauntlet/",
+      "destination": "/apps/showcase-ninja-runner-port/index.html"
     },
     {
       "source": "/apps/shadowstep-gauntlet",
@@ -52,12 +76,20 @@
       "destination": "/apps/showcase-ninja-runner-port/:path*"
     },
     {
+      "source": "/apps/lamplight-line/",
+      "destination": "/apps/showcase-last-train-port/index.html"
+    },
+    {
       "source": "/apps/lamplight-line",
       "destination": "/apps/showcase-last-train-port/"
     },
     {
       "source": "/apps/lamplight-line/:path*",
       "destination": "/apps/showcase-last-train-port/:path*"
+    },
+    {
+      "source": "/apps/saltwind-highway/",
+      "destination": "/apps/showcase-roadster-hours-port/index.html"
     },
     {
       "source": "/apps/saltwind-highway",
@@ -68,6 +100,10 @@
       "destination": "/apps/showcase-roadster-hours-port/:path*"
     },
     {
+      "source": "/apps/the-bellkeepers-walk/",
+      "destination": "/apps/showcase-where-the-wind-wanders-port/index.html"
+    },
+    {
       "source": "/apps/the-bellkeepers-walk",
       "destination": "/apps/showcase-where-the-wind-wanders-port/"
     },
@@ -76,12 +112,20 @@
       "destination": "/apps/showcase-where-the-wind-wanders-port/:path*"
     },
     {
+      "source": "/apps/duneglide/",
+      "destination": "/apps/showcase-silt-and-signal-port/index.html"
+    },
+    {
       "source": "/apps/duneglide",
       "destination": "/apps/showcase-silt-and-signal-port/"
     },
     {
       "source": "/apps/duneglide/:path*",
       "destination": "/apps/showcase-silt-and-signal-port/:path*"
+    },
+    {
+      "source": "/apps/cumulus-dash/",
+      "destination": "/apps/showcase-cloud-runner-port/index.html"
     },
     {
       "source": "/apps/cumulus-dash",
@@ -106,6 +150,10 @@
     {
       "source": "/playable/:path*",
       "destination": "/apps/aura-clash-showcase/playable/:path*"
+    },
+    {
+      "source": "/apps/aura-clash/",
+      "destination": "/apps/aura-clash-showcase/index.html"
     },
     {
       "source": "/apps/aura-clash",
