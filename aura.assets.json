@@ -7718,10 +7718,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
-      "url": "/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
-      "hash": "sha256-db74320a949ffed9cea770231c4ab0caada694ccc3f2a9b32734dd282cb54a21",
-      "sizeBytes": 858428,
+      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.f0e4f16a.glb",
+      "url": "/aura-assets/billiardsTrophyCabinetMeshy.f0e4f16a.glb",
+      "hash": "sha256-f0e4f16a1c06937f1bae3cb2fe9391ea682781d73d0b2da53e5381dc0fecb700",
+      "sizeBytes": 716284,
       "bounds": [
         1.8989,
         1.8996,
@@ -7879,8 +7879,8 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ],
-      "path": "public/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
-      "sha256": "db74320a949ffed9cea770231c4ab0caada694ccc3f2a9b32734dd282cb54a21"
+      "path": "public/aura-assets/billiardsTrophyCabinetMeshy.f0e4f16a.glb",
+      "sha256": "f0e4f16a1c06937f1bae3cb2fe9391ea682781d73d0b2da53e5381dc0fecb700"
     },
     {
       "id": "blockfallEnergyCapacitorBankMeshy",

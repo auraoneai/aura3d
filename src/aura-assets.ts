@@ -7546,14 +7546,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "billiardsTrophyCabinetMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
-    hash: "sha256-db74320a949ffed9cea770231c4ab0caada694ccc3f2a9b32734dd282cb54a21",
+    url: "/aura-assets/billiardsTrophyCabinetMeshy.f0e4f16a.glb",
+    hash: "sha256-f0e4f16a1c06937f1bae3cb2fe9391ea682781d73d0b2da53e5381dc0fecb700",
     bounds: [
       1.8989,
       1.8996,
       1.2712
     ],
-    sizeBytes: 858428,
+    sizeBytes: 716284,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -7618,7 +7618,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-14T20:41:04.404Z"
       },
       "sourcePath": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
+      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.f0e4f16a.glb",
       "license": "Meshy paid private generation terms",
       "boundsMetadata": {
         "min": [
