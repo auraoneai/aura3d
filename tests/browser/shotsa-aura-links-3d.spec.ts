@@ -29,6 +29,13 @@ test("shotsa aura-links-3d", async ({ page }) => {
       await snap("accuracy");
       await p.keyboard.press("Space");
       for (let i = 0; i < 6; i += 1) { await p.waitForTimeout(700); await snap(`swing-${i}`); }
+      for (const waitMs of [0, 3_000, 8_000]) {
+        await p.waitForTimeout(waitMs);
+        const st = await p.evaluate((g) => { const o = (window as unknown as Record<string, any>)[g] ?? {}; const pick: Record<string, unknown> = {}; for (const k of Object.keys(o)) { const v = o[k]; if (typeof v === "number" || typeof v === "string" || typeof v === "boolean") pick[k] = v; } return pick; }, G);
+        process.stdout.write(`@@FINA links-state after-swing+${waitMs}ms ${JSON.stringify(st).slice(0, 600)}\n`);
+      }
+      const hudStrokes = await p.evaluate(() => document.getElementById("h-strokes")?.textContent ?? "?");
+      process.stdout.write(`@@FINA links-hud-strokes ${hudStrokes}\n`);
     }
   });
 });

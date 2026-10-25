@@ -19,6 +19,8 @@ export interface ShotsCfg {
   readonly drive?: (page: Page, snap: (label: string) => Promise<void>) => Promise<void>;
   readonly endPattern?: RegExp;
   readonly playBudgetMs?: number;
+  readonly onlyViewports?: readonly string[];
+  readonly skipCards?: boolean;
 }
 
 const FRAME_CHUNK = 30_000;
@@ -79,7 +81,7 @@ export async function runShots(page: Page, server: ExampleDevServer, cfg: ShotsC
     { id: "1280x720", w: 1280, h: 720, mobile: false },
     { id: "390x844", w: 390, h: 844, mobile: true }
   ];
-  for (const vp of viewports) {
+  for (const vp of viewports.filter((v) => !cfg.onlyViewports || cfg.onlyViewports.includes(v.id))) {
     await page.setViewportSize({ width: vp.w, height: vp.h });
     const shot = async (name: string) => { await emit(cfg.slug, vp.id, name, await page.screenshot({ type: "jpeg", quality: 88 })); };
     // Title / menu state.
@@ -119,7 +121,7 @@ export async function runShots(page: Page, server: ExampleDevServer, cfg: ShotsC
   }
 
   // Card images: 16:10, 1x (720x450) and 2x (same CSS size, device scale 2) from the play state.
-  for (const scale of [1, 2]) {
+  for (const scale of cfg.skipCards ? [] : [1, 2]) {
     const ctx = await page.context().browser()!.newContext({ viewport: { width: 720, height: 450 }, deviceScaleFactor: scale });
     const p2 = await ctx.newPage();
     try {
