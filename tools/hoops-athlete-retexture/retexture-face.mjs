@@ -19,7 +19,7 @@ import sharp from "sharp";
 const [, , inFile, outDir, name, configArg] = process.argv;
 if (!inFile || !outDir || !name) { console.error("usage: retexture-face.mjs <in.glb> <out-dir> <name> [config]"); process.exit(2); }
 const CONFIG = configArg ? JSON.parse(configArg.trim().startsWith("{") ? configArg : readFileSync(configArg, "utf8")) : {};
-const PAL = { hair: [30, 24, 20], skin: [168, 108, 78], jersey: [236, 236, 230], shorts: [52, 58, 74], sock: [232, 232, 226], shoe: [40, 42, 48], ink: [34, 26, 24], white: [244, 242, 236], ...(CONFIG.palette ?? {}) };
+const PAL = { hair: [30, 24, 20], skin: [168, 108, 78], jersey: [236, 236, 230], shorts: [52, 58, 74], sock: [232, 232, 226], shoe: [40, 42, 48], ink: [34, 26, 24], white: [226, 220, 208], ...(CONFIG.palette ?? {}) };
 let LEGS = CONFIG.legs ?? "shorts";
 let SLEEVES = CONFIG.sleeves ?? "short";
 const HAIR_LINE = CONFIG.hairLine ?? 0.68;
@@ -94,9 +94,9 @@ function cellOf(v) {
     if (FACE && front) {
       const u = Math.abs(P[v][0] - hcx) / hw;
       // round eyes: white sclera ellipse with a pupil dot toward the nose, a thin brow and a small mouth
-      const ex = (u - 0.42) / 0.19, ey = (fh - 0.535) / 0.062;
+      const ex = (u - 0.42) / 0.15, ey = (fh - 0.535) / 0.05;
       if (ex * ex + ey * ey < 1) {
-        const px = (u - 0.36) / 0.085, py = (fh - 0.535) / 0.034;
+        const px = (u - 0.38) / 0.085, py = (fh - 0.535) / 0.032;
         return px * px + py * py < 1 ? 10 : 8;
       }
       if (fh > 0.615 && fh < 0.645 && u > 0.24 && u < 0.62) return 7; // brow
