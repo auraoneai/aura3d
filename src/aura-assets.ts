@@ -7546,14 +7546,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "billiardsTrophyCabinetMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
-    hash: "sha256-db74320a949ffed9cea770231c4ab0caada694ccc3f2a9b32734dd282cb54a21",
+    url: "/aura-assets/billiardsTrophyCabinetMeshy.f0e4f16a.glb",
+    hash: "sha256-f0e4f16a1c06937f1bae3cb2fe9391ea682781d73d0b2da53e5381dc0fecb700",
     bounds: [
       1.8989,
       1.8996,
       1.2712
     ],
-    sizeBytes: 858428,
+    sizeBytes: 716284,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -7618,7 +7618,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-14T20:41:04.404Z"
       },
       "sourcePath": "artifacts/meshy/turboHeroRaceCarMeshy/model.glb",
-      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.db74320a.glb",
+      "outputPath": "public/aura-assets/billiardsTrophyCabinetMeshy.f0e4f16a.glb",
       "license": "Meshy paid private generation terms",
       "boundsMetadata": {
         "min": [
@@ -52302,14 +52302,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopAthleteDefender": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopAthleteDefender.c0947539.glb",
-    hash: "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+    url: "/aura-assets/rooftopAthleteDefender.212afd35.glb",
+    hash: "sha256-212afd35b6c096c7e163a7f20cf4eff83f15047719cca946b86892550e26552c",
     bounds: [
       0.998,
       1.95,
       0.606
     ],
-    sizeBytes: 1935316,
+    sizeBytes: 410440,
     metadata: {
       "materials": [
         "Body_Mid_5",
@@ -52392,7 +52392,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteDefender.glb",
-      "outputPath": "public/aura-assets/rooftopAthleteDefender.c0947539.glb",
+      "outputPath": "public/aura-assets/rooftopAthleteDefender.212afd35.glb",
       "license": "CC-BY-4.0",
       "author": "3DDomino",
       "boundsMetadata": {
@@ -52490,14 +52490,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+        "assetHash": "sha256-212afd35b6c096c7e163a7f20cf4eff83f15047719cca946b86892550e26552c",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
         "checkedAt": "2026-09-01T19:22:38.203Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteDefender.png",
           "sha256": "sha256-e16ff91c0df7e40c49506b211738c5b05b0e0c7827db99809e18e6480f606482",
-          "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+          "assetHash": "sha256-212afd35b6c096c7e163a7f20cf4eff83f15047719cca946b86892550e26552c",
           "checkedAt": "2026-09-01T19:22:38.203Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender"
         },
@@ -52530,7 +52530,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteDefender",
         "sha256": "sha256-e16ff91c0df7e40c49506b211738c5b05b0e0c7827db99809e18e6480f606482",
-        "assetHash": "sha256-c09475391c023994d708458668c60f667a08159d60d540238bd9398f86d640b8",
+        "assetHash": "sha256-212afd35b6c096c7e163a7f20cf4eff83f15047719cca946b86892550e26552c",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451198,
@@ -52548,14 +52548,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopAthleteShooter": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopAthleteShooter.49b62313.glb",
-    hash: "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+    url: "/aura-assets/rooftopAthleteShooter.f764b03c.glb",
+    hash: "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
     bounds: [
       0.486,
       1.95,
       0.592
     ],
-    sizeBytes: 983868,
+    sizeBytes: 410876,
     metadata: {
       "materials": [
         "Body_Mid_5",
@@ -52638,7 +52638,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopAthleteShooter.glb",
-      "outputPath": "public/aura-assets/rooftopAthleteShooter.49b62313.glb",
+      "outputPath": "public/aura-assets/rooftopAthleteShooter.f764b03c.glb",
       "license": "CC-BY-4.0",
       "author": "3DDomino",
       "boundsMetadata": {
@@ -52736,14 +52736,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
         "checkedAt": "2026-09-01T19:22:32.722Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/rooftopAthleteShooter.png",
           "sha256": "sha256-b3875c60fffbf8e875f19cf0cd1f572e7ee9d1ee698c268884e9186fe0da8696",
-          "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+          "assetHash": "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
           "checkedAt": "2026-09-01T19:22:32.722Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter"
         },
@@ -52776,7 +52776,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopAthleteShooter",
         "sha256": "sha256-b3875c60fffbf8e875f19cf0cd1f572e7ee9d1ee698c268884e9186fe0da8696",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
@@ -54767,14 +54767,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopDefender": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopDefender.6c43f9e1.glb",
-    hash: "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
+    url: "/aura-assets/rooftopDefender.f12297ed.glb",
+    hash: "sha256-f12297eda635a3fcca689b5aefc1a211b10c1d70962bbead71c81d7d1d72e02c",
     bounds: [
       1.808,
       1.863,
       0.399
     ],
-    sizeBytes: 9925052,
+    sizeBytes: 7124460,
     metadata: {
       "materials": [
         "Std_Tongue",
@@ -55884,7 +55884,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopDefender.glb",
-      "outputPath": "public/aura-assets/rooftopDefender.6c43f9e1.glb",
+      "outputPath": "public/aura-assets/rooftopDefender.f12297ed.glb",
       "license": "CC-BY-4.0",
       "author": "RiverofCreative (Sketchfab Man Player); Aura3D derivative authoring",
       "boundsMetadata": {
@@ -56338,7 +56338,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopDefender",
         "sha256": "sha256-df5364d4c9a70f28e997825615f383df9659f125a0313d48b07290df1203a7b6",
-        "assetHash": "sha256-6c43f9e1c341b0aaa0dee159fa70cac33828aad4c9b57b9c78f9ef84bc5e0e6b",
+        "assetHash": "sha256-f12297eda635a3fcca689b5aefc1a211b10c1d70962bbead71c81d7d1d72e02c",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
@@ -57008,14 +57008,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopLayupScorer": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopLayupScorer.03a093f2.glb",
-    hash: "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
+    url: "/aura-assets/rooftopLayupScorer.01634b94.glb",
+    hash: "sha256-01634b94f8a51ba3f769dc38d70c63c743ac886ada0a2aad311afc79862e5559",
     bounds: [
       1.808,
       1.863,
       0.399
     ],
-    sizeBytes: 9925052,
+    sizeBytes: 7124456,
     metadata: {
       "materials": [
         "Std_Tongue",
@@ -58127,7 +58127,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T00:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/assets/models/rooftopLayupScorer.glb",
-      "outputPath": "public/aura-assets/rooftopLayupScorer.03a093f2.glb",
+      "outputPath": "public/aura-assets/rooftopLayupScorer.01634b94.glb",
       "license": "CC-BY-4.0",
       "author": "RiverofCreative (Sketchfab Man Player); Aura3D derivative authoring",
       "boundsMetadata": {
@@ -58581,7 +58581,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopLayupScorer",
         "sha256": "sha256-d4008346e385545c7367fda00421a8a3ea7fd2bca6ab42b5b2ff2b25b3107b2c",
-        "assetHash": "sha256-03a093f24ef11e534a39278710db5a56111eaf2bb093264683cd1c44a6d0ed4a",
+        "assetHash": "sha256-01634b94f8a51ba3f769dc38d70c63c743ac886ada0a2aad311afc79862e5559",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451199,
@@ -58885,14 +58885,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "rooftopShooter": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopShooter.49b62313.glb",
-    hash: "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+    url: "/aura-assets/rooftopShooter.f764b03c.glb",
+    hash: "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
     bounds: [
       0.486,
       1.95,
       0.592
     ],
-    sizeBytes: 983868,
+    sizeBytes: 410876,
     metadata: {
       "materials": [
         "Body_Mid_5",
@@ -58975,7 +58975,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-08-31T23:00:00.000Z"
       },
       "sourcePath": "apps/showcase-rooftop-buckets/.candidate-assets/acquisition-2026-08-31/objaverse-9a1be0ed25f94e9998adee1df3a2d218/basketball-shooter-ball-free.glb",
-      "outputPath": "public/aura-assets/rooftopShooter.49b62313.glb",
+      "outputPath": "public/aura-assets/rooftopShooter.f764b03c.glb",
       "license": "CC-BY-4.0",
       "author": "3DDomino",
       "boundsMetadata": {
@@ -59073,14 +59073,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "forwardAxis": "+Z",
         "upAxis": "+Y",
         "view": "hash-bound-readable-prop-view",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
         "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
         "checkedAt": "2026-09-01T00:59:41.179Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/rooftopShooter.png",
           "sha256": "sha256-9079a88e723e4f7feeb66a51c1a8bbf53f19e29aa47714d2c4d1e7be1486a459",
-          "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+          "assetHash": "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
           "checkedAt": "2026-09-01T00:59:41.179Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter"
         },
@@ -59113,7 +59113,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=rooftopShooter",
         "sha256": "sha256-9079a88e723e4f7feeb66a51c1a8bbf53f19e29aa47714d2c4d1e7be1486a459",
-        "assetHash": "sha256-49b62313b4a7647165c5013706a3233135a4ad91e30416ec169c89f98c476fb3",
+        "assetHash": "sha256-f764b03cea073cb9c7d381c10ab97d5b5064cef2cb4a4db25a77b541dcf584be",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,

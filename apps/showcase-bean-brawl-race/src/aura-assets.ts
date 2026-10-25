@@ -2371,14 +2371,14 @@ export const assets = defineAuraAssets({
   "yellowBean": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/yellowBean.ee109f19.glb",
-    hash: "sha256-ee109f19804611ef84d1ca1c6fdbf253ae01a96fd1c3ebb10c0843040d8522aa",
+    url: "/aura-assets/yellowBean.c594a8de.glb",
+    hash: "sha256-c594a8de48c8f2cf3a3bdee6f3ca7906bf55495f84439558449b14e71bb6cbb8",
     bounds: [
       1.228,
       1.2,
       0.635
     ],
-    sizeBytes: 1969276,
+    sizeBytes: 1991652,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -2742,7 +2742,7 @@ export const assets = defineAuraAssets({
         "checkedAt": "2026-10-16T01:27:17.021Z"
       },
       "sourcePath": "artifacts/meshy/bean-yellow/model.glb",
-      "outputPath": "public/aura-assets/yellowBean.ee109f19.glb",
+      "outputPath": "public/aura-assets/yellowBean.c594a8de.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [

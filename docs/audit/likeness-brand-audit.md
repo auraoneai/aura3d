@@ -51,3 +51,23 @@ Recommended follow-ups, in order: (1) replace the Teleoperator vehicles with gen
 ## Live on `main` today (for a hotfix decision)
 
 Games that currently ship a model with marks or a real-looking face: Hoops (fixed on `game-rework` only), Diamond, Links, FC, Red Zone, Teleoperator, plus the rooftop face-scan files served as static assets. In FC the body material is replaced by a flat colour at runtime, so the marks are probably not visible in play, but the files still carry them.
+
+## Systematic texture pass over every served GLB (2026-10-24)
+
+Method: `tools/likeness-audit/dump-textures.mjs` over `public/aura-assets` and every `apps/*/public` (609 GLBs, 474 base-colour textures, 16 contact sheets), every sheet read by eye; suspicious textures extracted at full size. Checked against `git ls-tree origin/main` so only tracked, deployed files count as live. Limits: a contact sheet cannot show small marks on shard atlases; only base-colour textures were dumped; GLBs under `examples/*/assets` (109) were not part of this pass; this is an engineering review, not legal advice.
+
+| File (stem) | Where it is live | Finding | Action |
+|---|---|---|---|
+| `billiardsTrophyCabinetMeshy` | Bank Shot (live), Iron Crown on main | Atlas holds small framed photographs of people | Base-colour softened (`soften-basecolor.mjs`, 40x40 grid); Iron Crown no longer uses it on `game-rework` |
+| `rooftopAthleteDefender`, `rooftopAthleteShooter`, `rooftopDefender` (x2), `rooftopLayupScorer`, `rooftopShooter` | Served from `/aura-assets/`, used by no app (tests and probes only) | Photographic face scans (upside-down faces, numbered jerseys) | 6 textured files softened; `rooftopLayupScorer.6201dc87` and `rooftopShooter.fd853001` have no base-colour texture and were left |
+| `yellowBean` | Bean Brawl Race (live) | Pikachu-like face: black glossy eyes, red-orange cheeks, smile on a yellow body, plus a red leg patch | Cheeks and patch painted out (`cover-regions.mjs`); body, eyes and smile unchanged |
+| `fighterRomanSignal`, `fighterIronLedger`, `fighterRepublicDuelist`, `fighterDealbreaker`, `fighterDragonProtocol`, `fighterKremlinShadow`, `fighterLotusStorm` | `apps/world-war-x-showcase` only: untracked in git and 404 on the live site | A photograph of a real politician in front of flags, an engraved portrait of a real person with caption, photographic skin textures, a colour-chart sheet | None in the repo (not tracked). Keep that directory out of git; delete it locally if it is not needed |
+| `auraClashPlayerRig`, `auraClashRivalRig`, `clashFighterMaraMeshy`, `clashFighterRookMeshy` | Aura Clash showcase (live) | Detailed face skin textures and a close-up eye on a pink ground; unclear if photo-derived or generated | Needs a human look at full size before a decision; not changed |
+| `showcaseCcByFormulaOpponent`, formula-car textures | Live | Pirelli "P ZERO" tyre texture and sponsor lettering | Covered on `hotfix-brand`; not part of this change |
+| `showcaseTsukubaCircuit`, `turboTsukubaVisualTrack` | Live | Real circuit logo on signage and buildings | Covered on `hotfix-brand` |
+| `teleopWaymoHero`, `teleopWaymoTraffic`, other `teleop*` vehicle atlases | Teleoperator (live) | Real vehicle photographs and brand marks | Replaced on `game-rework` by generic Meshy vehicles; textures cleaned on `hotfix-brand` |
+| `courierTrafficHatch`, `courierTrafficSedan`, `courierVan` | Courier game (live) | Real-vehicle parts atlases (lights, grilles); marks not readable at sheet scale | Unreviewed at full size |
+| `rzLombardiCupMeshy` | Red Zone (live) | Texture is generic, but the asset name uses a trademarked trophy name | Rename the asset key in a later change |
+| `showcaseStylizedMaleRunner` | Live | Generic stylised face | No action |
+
+Tooling added: `soften-basecolor.mjs` (downsample then smooth upscale of the base-colour atlas: layout survives, small detail cannot), `cover-regions.mjs` (flat ellipses in the body colour over named regions), `apply-softened.mjs` (writes the hash-named file, repoints manifest blocks, removes the original). Tests: `tests/unit/likeness-audit/soft-cabinet.test.ts` and `photo-textures.test.ts` judge texture content (a high-frequency detail bound separates photographs, about 17, from softened textures, about 3) and manifest hashes, not file names.
