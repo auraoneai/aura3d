@@ -103,3 +103,20 @@ export function configureCanvas(
   canvas.width = keepAuthoredSize ? canvas.width : width;
   canvas.height = keepAuthoredSize ? canvas.height : height;
 }
+
+/**
+ * With `resize: false` the author owns the canvas backing size and may change it after the app mounts (a hand-sized
+ * device-pixel-ratio cap, a window resize listener). The renderer's viewport and offscreen targets are sized from the
+ * backing store at mount, so a later change must be forwarded or the picture fills only part of the new buffer.
+ * Returns the size to forward to `renderer.resize`, or null when nothing changed or the engine owns sizing.
+ */
+export function authoredBackingResize(
+  resize: boolean,
+  canvas: { readonly width: number; readonly height: number },
+  synced: { readonly width: number; readonly height: number }
+): { readonly width: number; readonly height: number } | null {
+  if (resize) return null;
+  if (canvas.width < 1 || canvas.height < 1) return null;
+  if (canvas.width === synced.width && canvas.height === synced.height) return null;
+  return { width: canvas.width, height: canvas.height };
+}
