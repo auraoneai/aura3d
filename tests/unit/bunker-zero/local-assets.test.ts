@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -21,6 +22,11 @@ describe("bunker zero local assets", () => {
       expect(entry.url).toBe(`/aura-assets/${path.basename(entry.outputPath)}`);
       expect(entry.provenance?.license).toBeTruthy();
       for (const evidence of entry.provenance?.evidence ?? []) expect(existsSync(path.join(APP, evidence)), evidence).toBe(true);
+      // `*.png` and `*.jpg` are gitignored: a file that exists on disk but is untracked is missing on every fresh clone.
+      for (const rel of [entry.outputPath, ...(entry.provenance?.evidence ?? [])]) {
+        const tracked = execFileSync("git", ["ls-files", "--", path.join("apps/showcase-bunker-zero", rel)], { encoding: "utf8" }).trim();
+        expect(tracked, `${rel} must be tracked in git`).not.toBe("");
+      }
     });
   }
 
