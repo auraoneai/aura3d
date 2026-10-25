@@ -3489,7 +3489,10 @@ function boot(): void {
     const half = 0.51;
     const knob: Vec3 = [c[0] - dir[0] * half, c[1] - dir[1] * half, c[2] - dir[2] * half];
     batState.knobWorld = round(knob);
-    const palm = swingEvidence.palmPrev;
+    // The bat transform read here was written by the previous render, which drew
+    // the previous frame's solved pose; `palmWorld` still holds that frame's palm
+    // (it is refreshed below this call), so both sides come from the same frame.
+    const palm = swingEvidence.palmWorld;
     batState.knobToHand = Number(Math.hypot(knob[0] - palm[0], knob[1] - palm[1], knob[2] - palm[2]).toFixed(3));
   }
 
