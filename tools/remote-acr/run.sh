@@ -108,7 +108,10 @@ rsync -a --exclude '*/node_modules' \
         --exclude 'create-aura3d/templates' \
         --exclude 'create-aura3d/hdri' \
         packages "$CTX/"
-rsync -a --exclude '*/node_modules' workers "$CTX/"
+# workers/ may be absent (the hosted-index worker was retired); the Dockerfile
+# still COPYs the directory, so stage an empty one when there is nothing to copy.
+mkdir -p "$CTX/workers" && touch "$CTX/workers/.keep"
+if [ -d workers ]; then rsync -a --exclude '*/node_modules' workers "$CTX/"; fi
 mkdir -p "$CTX/tests"
 rsync -a tests/browser tests/support tests/fixtures "$CTX/tests/"
 # Browser labs fetch fixture GLBs from the repo-root `fixtures/` tree
