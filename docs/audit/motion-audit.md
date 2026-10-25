@@ -102,3 +102,37 @@ Total for the remaining ports: about 8 to 10 days of one agent, or a day with pa
 - **Naming finding for the names lane:** the Apex Overdrive menu chip reads "AURA3D 4.0 · APEX OVERDRIVE" and Iron Crown's reads "Iron Crown · Aura3D Showcase".
 - **Not run:** Last Train and HEATSINK (never finish under software GL), a real-GPU run, a per-game foot-slide measurement (the foot-slide tool belongs to `rework-library`; the only legged games in this lane, Iron Crown and Pips, play authored clips and show no sliding in the strips), and a runtime-level measurement for the engine-loop games (Iron Crown, Slingshot Siege).
 - **Raw numbers:** `evidence/motion-audit/refresh-audit.json`.
+
+## 7. Rollout of render interpolation (lane `rework-interp`)
+
+Library (additive, `docs/api/motion-presenter.md`): `createFixedStepLoop().alpha`, `createFixedStepPresenter`, `createRecordBlend` and `runMotionGate`, all in `@aura3d/engine/game` (the loop's own defaults are unchanged). Every migrated game keeps its presentation in its own `presentation.ts` and draws the interpolated pose only in live play: manual and QA runs, `stepFrames`, `replay` and the render-parity gates draw the exact latest step, so replay hashes and G1/G3 are unaffected. Each game has a unit test that drives the game's real simulation through `runMotionGate`.
+
+Measured with the real simulations (software, no display): share of frames where the drawn entities are unchanged, and the coefficient of variation of the per-frame displacement, drawing the latest step (before) against the presented pose (after).
+
+| Game | 120 Hz still frames, before / after | 144 Hz still frames, before / after | 120 Hz displacement CV, before / after |
+|---|---|---|---|
+| Silt & Signal (Duneglide) | 50.2% / 0% | 58.4% / 0% | 1.03 / 0.16 |
+| Kid Goku (Cumulus Dash) | 50.0% / 0% | 58.4% / 0% | 1.02 / 0.16 |
+| Where the Wind Wanders (The Bellkeeper's Walk) | 50.0% / 0% | 58.4% / 0% | 1.00 / 0.001 |
+| Ninja Runner (Shadowstep Gauntlet), sim at 120 Hz | 0.3% / 0% | 16.7% / 0% | 0.17 / 0.15 |
+| Strange Orbit (Craterline GP) | 50.2% / 0% | 58.4% / 0% | 1.03 / 0.15 |
+| Splat Rush (Chroma Roll) | 50.2% / 0% | 58.4% / 0% | 1.01 / 0.08 |
+| Last Train (Lamplight Line) | 50.2% / 0% | 58.4% / 0% | 1.00 / 0.01 |
+| Roadster Hours (Saltwind Highway), sim at 120 Hz | 0.3% / 0% | 16.7% / 0% | 0.10 / 0.07 |
+| HEATSINK port (Ion Circuit) | 50.2% / 0% | 58.4% / 0% | 1.00 / 0.04 |
+| Apex Overdrive | 50.0% / 0% | 58.4% / 0% | 1.00 / 0.01 |
+| Aura Slam | 49.7% / 0% | 58.4% / 0% | 0.99 / 0 |
+
+The CV after matches the CV of the native 60 Hz step in each test (it is the game's own motion, such as autopilot steering), which is the check the tests assert. At 60 Hz with 1.5 ms frame jitter no game has more than 5% still frames.
+
+How each game presents:
+- Entities that exist in both steps interpolate; scrolling worlds that recycle their entities (Splat Rush's road, Apex Overdrive's traffic) are matched by id or stepped back by the unelapsed part of the last move, because matching by index tears the road whenever a segment is recycled.
+- Large jumps (a restart, a respawn, a recycled slot, a new leg) snap instead of smearing. Timers that restart (Aura Slam's swing age) take the new value.
+- Where the walker's world runtime used the frame time for easing and animation (Where the Wind Wanders), the render clock now advances per displayed frame and the walk-speed estimate uses the time since the last step change, so a 120 Hz frame no longer eases twice per step.
+
+Not changed, with reasons:
+- **Iron Crown:** not affected. It steps with the frame's own `dt` (`simDt = dt * slowmo`), not a fixed accumulator.
+- **Cross Hop, Pips Big Leap, Teleoperator:** variable `dt`, not affected.
+- **Slingshot Siege:** engine-level. The engine's physics bridge can interpolate rigid bodies (`ScenePhysicsBridge.pullDynamic(world, alpha)` uses the bodies' previous and current transforms), but `AuraPhysicsWorldController.step` always passes `alpha = 1`, and the engine's `runtimeAlpha` in `onFrame` is `(dt % fixedDt) / fixedDt` of the frame time, not an accumulator progress. Fixing it means threading the frame loop's accumulator alpha through the physics controller; left for a library change with its own tests.
+- **Aura Diamond, Hoops, FC, Links, Red Zone, the retired `-v2` apps and the index HEATSINK app:** not audited for this; their rework lanes own them.
+- **Not verified on real hardware:** all of this is simulation-level and software WebGL2. The owner's 120 Hz display is the test that matters.
