@@ -6,6 +6,8 @@ import {
   games,
   lights,
   looks,
+  material,
+  primitives,
   scene,
   type AuraRuntimeNodeHandle,
   type AuraVec3,
@@ -194,32 +196,37 @@ function studioPaletteFor(fighter: FighterId): FighterPalette | undefined {
 
 function buildArena(cfg: BoutConfig) {
   const s = cfg.stage;
+  // The fighting kit ships debug-style markers (camera safe-zone posts, a centre aura beam, start-lane slabs).
+  // They read as stray geometry in a finished arena, so drop them and mark the spawn points with proper rings.
+  const KIT_MARKER_NODES = new Set(["left camera safe boundary marker", "right camera safe boundary marker", "center aura combat lane"]);
+  const spawnRing = (id: string, x: number, color: string) => [
+    primitives
+      .cylinder({ name: `${id}-outer`, material: material.emissive({ color, emissive: color, emissiveIntensity: 0.55, roughness: 0.4 }), castShadow: false, receiveShadow: false })
+      .position(x, 0.012, 0.02)
+      .scale([1.15, 0.012, 1.15])
+      .toJSON(),
+    primitives
+      .cylinder({ name: `${id}-inner`, material: material.pbr({ color: "#15121a", roughness: 0.7 }), castShadow: false, receiveShadow: true })
+      .position(x, 0.016, 0.02)
+      .scale([0.96, 0.012, 0.96])
+      .toJSON()
+  ];
   const floorStageNodes = s.stage.nodes
     .filter((n: any) => {
       const py = n?.transform?.position?.[1] ?? n?.position?.[1] ?? 0;
-      return py <= 0.35;
+      return py <= 0.35 && !KIT_MARKER_NODES.has(n?.name);
     })
-    .map((n: any) => {
+    .flatMap((n: any) => {
       if (n?.name === "fighting foreground floor plane") {
-        return {
+        return [{
           ...n,
           position: [0, -0.055, 0] as [number, number, number],
           scale: [44, 1, 32] as [number, number, number]
-        };
+        }];
       }
-      if (n?.name === "player start lane glow") {
-        return {
-          ...n,
-          position: [PLAYER_START[0], 0.018, 0.02] as [number, number, number]
-        };
-      }
-      if (n?.name === "opponent start lane glow") {
-        return {
-          ...n,
-          position: [RIVAL_START[0], 0.018, 0.02] as [number, number, number]
-        };
-      }
-      return n;
+      if (n?.name === "player start lane glow") return spawnRing("player-spawn", PLAYER_START[0], s.palette.lane);
+      if (n?.name === "opponent start lane glow") return spawnRing("rival-spawn", RIVAL_START[0], s.palette.warning);
+      return [n];
     });
   return scene()
     .add(looks.preset(s.lookId, s.lookOverrides ?? {}))

@@ -333,8 +333,8 @@ const NEO_TOKYO = makeStage(
 /* ------------------------------------------------------------------ */
 const BANGKOK = makeStage(
   "bangkok-dock",
-  "Bangkok Dock Market",
-  "Khlong pier · golden hour",
+  "Lantern Dock Market",
+  "Stilt pier · golden hour",
   "golden-hour",
   "training-grid",
   { floor: "#241a12", lane: "#ffab4d", aura: "#ffe08a", warning: "#ff6b4a", skyline: "#3a2418", fog: "#1c1008" },
@@ -381,8 +381,8 @@ const COLOSSEUM = makeStage(
 /* ------------------------------------------------------------------ */
 const AIRBASE = makeStage(
   "desert-airbase",
-  "Desert Airbase",
-  "Nevada range · dusk ops",
+  "Dustline Airstrip",
+  "Salt flat range · dusk ops",
   "overcast",
   "industrial-arena",
   { floor: "#2b2620", lane: "#ffb03c", aura: "#ffe08a", warning: "#ff5c3c", skyline: "#54402a", fog: "#241a10" },
@@ -404,7 +404,7 @@ const AIRBASE = makeStage(
 /* ------------------------------------------------------------------ */
 const MONASTERY = makeStage(
   "himalayan-monastery",
-  "Himalayan Monastery",
+  "Cloudstep Monastery",
   "High pass · thin air",
   "alpine-snow",
   "training-grid",

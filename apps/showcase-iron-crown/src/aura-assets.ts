@@ -1378,14 +1378,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownKenji": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownKenji.882e0192.glb",
-    hash: "sha256-882e01924033f0a0769918a5aaacaedd8fba215424e2b3c7c69db59c13936cdc",
+    url: "/aura-assets/ironcrownKenji.a310f427.glb",
+    hash: "sha256-a310f427433975fdaa55427f995e75b9765c070302d4f248a863e31f8472d127",
     bounds: [
       0.012,
       0.018,
       0.008
     ],
-    sizeBytes: 6429524,
+    sizeBytes: 6121176,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -1890,7 +1890,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownKenji.882e0192.glb",
+        "sourcePath": "public/aura-assets/ironcrownKenji.a310f427.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -1900,12 +1900,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "aura-evidence/meshy/ironcrownKenji.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownKenji.metadata.ad60daad72c2.json",
-          "public/aura-assets/ironcrownKenji.meshy-candidate.5df2e356.png"
+          "public/aura-assets/ironcrownKenji.meshy-candidate.5df2e356.png",
+          "aura-evidence/restyle/ironcrownKenji.restyle.json"
         ],
         "checkedAt": "2026-10-17T09:34:31.036Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownKenji.882e0192.glb",
-      "outputPath": "public/aura-assets/ironcrownKenji.882e0192.glb",
+      "sourcePath": "public/aura-assets/ironcrownKenji.a310f427.glb",
+      "outputPath": "public/aura-assets/ironcrownKenji.a310f427.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -3220,14 +3221,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownVolt": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownVolt.994bcf63.glb",
-    hash: "sha256-994bcf63e6386ec4f5a3c0dbcb132409668666c3b6dc104afdfaf3e1f445a547",
+    url: "/aura-assets/ironcrownVolt.00f3110a.glb",
+    hash: "sha256-00f3110a312cdc564c150ad3ac01b35181c6cda84d034509fc7608c20c010d31",
     bounds: [
       0.009,
       0.018,
       0.004
     ],
-    sizeBytes: 5588804,
+    sizeBytes: 4089096,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -3732,7 +3733,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownVolt.994bcf63.glb",
+        "sourcePath": "public/aura-assets/ironcrownVolt.00f3110a.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -3742,12 +3743,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "aura-evidence/meshy/ironcrownVolt.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownVolt.metadata.293efdbc1f68.json",
-          "public/aura-assets/ironcrownVolt.meshy-candidate.d97a012a.png"
+          "public/aura-assets/ironcrownVolt.meshy-candidate.d97a012a.png",
+          "aura-evidence/restyle/ironcrownVolt.restyle.json"
         ],
         "checkedAt": "2026-10-17T09:35:10.995Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownVolt.994bcf63.glb",
-      "outputPath": "public/aura-assets/ironcrownVolt.994bcf63.glb",
+      "sourcePath": "public/aura-assets/ironcrownVolt.00f3110a.glb",
+      "outputPath": "public/aura-assets/ironcrownVolt.00f3110a.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [

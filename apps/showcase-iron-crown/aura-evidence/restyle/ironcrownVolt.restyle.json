@@ -1,0 +1,10 @@
+{
+  "asset": "ironcrownVolt",
+  "derivedFrom": "public/aura-assets/ironcrownVolt.994bcf63.glb (Meshy-generated, see the rights record)",
+  "tool": "tools/iron-crown-restyle/recolor.mjs",
+  "preset": "volt",
+  "change": "navy suit to burgundy, blue panels to amber, cyan marks to orange",
+  "date": "2026-10-24",
+  "reason": "restyle so the fighter is clearly original and not reminiscent of a known fighting-game character; geometry, skeleton and clips unchanged",
+  "output": "public/aura-assets/ironcrownVolt.00f3110a.glb"
+}

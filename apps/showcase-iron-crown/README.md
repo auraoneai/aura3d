@@ -66,7 +66,7 @@ so a single shared clip map resolves every logical state:
 
 | Fighter | Asset | Archetype | Special |
 | --- | --- | --- | --- |
-| KENJI ARASHI | `assets.ironcrownKenji` | Balanced shoto | Raijin Straight |
+| KENJI ARASHI | `assets.ironcrownKenji` | Balanced all-rounder | Raijin Straight |
 | MARA VOLT | `assets.ironcrownVolt` | Rushdown boxer | Volt Combination |
 | BOULDER KANE | `assets.ironcrownBoulder` | Heavy grappler | Colossus Drop |
 | SERAPH LIN | `assets.ironcrownSeraph` | Zoning staff | Avalanche Lance |
@@ -78,9 +78,9 @@ The Crown Arena throne mounts the bespoke `assets.ironcrownCrown` prop
 
 ### Venues
 
-Neo-Tokyo rooftop (`night-city`), Bangkok dock market (`golden-hour`),
-Roman colosseum ruins (`outdoor-day`), Nevada desert airbase (`overcast`),
-Himalayan monastery (`alpine-snow`), Crown Arena (`arena-fight`). Each venue
+Neo-Tokyo rooftop (`night-city`), Lantern dock market (`golden-hour`),
+Roman colosseum ruins (`outdoor-day`), salt-flat airstrip (`overcast`),
+Cloudstep monastery (`alpine-snow`), Crown Arena (`arena-fight`). Each venue
 is a re-paletted `games.fighting.stagePreset` fight lane plus bespoke
 dressing parked behind the fight plane so silhouettes stay readable, all
 validated through `games.fighting.validateStage`.

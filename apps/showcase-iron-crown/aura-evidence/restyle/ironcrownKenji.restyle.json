@@ -1,0 +1,10 @@
+{
+  "asset": "ironcrownKenji",
+  "derivedFrom": "public/aura-assets/ironcrownKenji.882e0192.glb (Meshy-generated, see the rights record)",
+  "tool": "tools/iron-crown-restyle/recolor.mjs",
+  "preset": "kenji",
+  "change": "white gi to deep teal, red headband and trim to dark hair",
+  "date": "2026-10-24",
+  "reason": "restyle so the fighter is clearly original and not reminiscent of a known fighting-game character; geometry, skeleton and clips unchanged",
+  "output": "public/aura-assets/ironcrownKenji.a310f427.glb"
+}
