@@ -11,7 +11,7 @@ Aura3D game runtime APIs let an app keep one Aura app mounted while mutating typ
 
 Current boundary: the public root API includes generic helpers, `game.collisionWorld(...)`, source-level `game.platformer(...)`, `game.racing(...)`, `game.fallingBlocks(...)`, and a focused fighting kit. These are deterministic gameplay APIs, not automatic production game routes. A named platformer, racing, fighting, or falling-block route may be called public-ready only while its current browser input, route-health, visual-QA, manual-review, asset, and deploy gates all pass; historical evidence does not override a failing current gate.
 
-Create one Aura app per route. Do not recreate the app every frame, hand-wire a renderer, import from `three`, or load models by string id. Resolve real models from the **federated asset index** — a hosted catalog of 800,000+ GLB/glTF assets the CLI searches (`assets search`/`resolve`, primary adapter `createAuraIndexAdapter`) — or `assets add` a file you have; either way import typed `assets` from `./aura-assets` and pass them to `model(assets.name)`. See `docs/agents/asset-workflow.md`.
+Create one Aura app per route. Do not recreate the app every frame, hand-wire a renderer, import from `three`, or load models by string id. Resolve real models from the **hosted asset index** the CLI searches when it is reachable (`assets search`/`resolve`, primary adapter `createAuraIndexAdapter`) — or `assets add` a file you have; either way import typed `assets` from `./aura-assets` and pass them to `model(assets.name)`. See `docs/agents/asset-workflow.md`.
 
 ## Import
 

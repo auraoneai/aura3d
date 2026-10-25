@@ -304,8 +304,10 @@ ${GUIDE_MARKER}
 ${guideBody}
 `;
 
+const gameInventory = JSON.parse(readFileSync(join(repoRoot, "docs", "workflows", "game-inventory.json"), "utf8"));
 const llms = readFileSync(join(marketingDir, "content", "llms-core.txt"), "utf8")
   .replaceAll("{{VERSION}}", version)
+  .replaceAll("{{GAME_COUNT}}", String(gameInventory.liveGameCount))
   .replaceAll("{{ORIGIN}}", ORIGIN)
   .replaceAll("{{LASTMOD}}", LASTMOD_MAX.slice(0, 10));
 

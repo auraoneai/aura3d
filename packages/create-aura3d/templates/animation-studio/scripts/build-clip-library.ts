@@ -4,7 +4,7 @@
  * For each motion in the STANDARD performance vocabulary (idle / talk / gesture / point / nod /
  * walk / run / react) this:
  *
- *   1. searches the live ~850k Aura3D catalog (the same hosted worker + direct-GLB filter as
+ *   1. searches the live hosted Aura3D asset index (the same hosted worker + direct-GLB filter as
  *      `resolve-asset.ts`) for a rigged, animated GLB carrying that motion
  *      (`assets resolve "<motion> animation"` — the `--animated` intent),
  *   2. downloads + inspects it, requiring a humanoid skin and >=1 embedded clip,

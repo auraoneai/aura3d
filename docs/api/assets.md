@@ -13,8 +13,8 @@
 Aura3D projects should register every GLB, glTF, texture, environment, and audio file before code references it. There are two paths, both producing the same typed manifest:
 
 **Resolve from the federated index** (when a prompt names a real object) — the CLI runs live search
-against a hosted, federated index of **800,000+ GLB/glTF assets** (a ~850K catalog aggregating the
-free GLB/glTF universe; primary adapter `createAuraIndexAdapter` from `@aura3d/asset-index`):
+against a hosted index of public GLB/glTF sources, when that service is reachable (primary adapter
+`createAuraIndexAdapter` from `@aura3d/asset-index`; results are candidates to check):
 
 ```bash
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"

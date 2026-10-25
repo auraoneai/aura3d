@@ -32,7 +32,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor.html): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence.html): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
 - [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.1.3 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
-- [Aura3D 4.1.3 vs. Raw Three.js — Open-Source TypeScript 3D Engine](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Stop assembling 14 fragile npm packages to render a 3D scene. Compare Aura3D 4.1.3 (@aura3d/engine@4.1.3) against raw Three.js across architecture, asset type safety, WebGPU compute, physics, and 18-line scene boot.
+- [Aura3D 4.1.3 vs. three.js: measured, with the caveats](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): An evidence-linked comparison of Aura3D and three.js 0.185.1: where Aura3D is better (scene source length, game kit, safety, agent workflow), where three.js is better (bundle size, speed, maturity), and when to choose which. Software-GL measurements, labelled.
 - [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase.html): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
 
 ### Showcase
@@ -43,7 +43,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 
 - [Aura3D Concept Car Cinema: Typed GLB Product Configurator Example](https://aura3d.auraone.ai/apps/wow-concept-car-cinema/)
 - [Aura3D Damaged Helmet PBR Detail: Typed GLB Asset Viewer Example](https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/)
-- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/)
+- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/): 26 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.
 - [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer (V2) on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/)
@@ -166,8 +166,8 @@ Assets — resolve real objects from the catalog first. Do not invent asset path
 URLs or ids — every model comes from a generated `assets.<key>`:
 
 - `npx @aura3d/cli@latest assets search "<object>"` (natural descriptive phrase;
-  the catalog is ~850k license-verified GLB/glTF aggregated from Objaverse,
-  Sketchfab, Poly Pizza, Poly Haven, OS3A, Khronos and CC0 packs).
+  it searches a hosted index of public GLB/glTF sources when that service is reachable;
+  results are candidates to check, not guaranteed matches).
 - `assets resolve "<object>" --name <name>` pulls the top auto-pullable match
   and types it as `assets.<name>` → `model(assets.<name>)`.
 - Add local files with `assets add ./assets/model.glb --name model`, then read
@@ -243,6 +243,8 @@ label the result `prototype`.
 | Scene Kit | API | Status |
 | --- | --- | --- |
 | Material lab | `sceneKits.materialLab()` | root-proven (partial advanced coat extensions) |
+
+
 
 
 

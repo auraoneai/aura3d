@@ -784,6 +784,15 @@
   font-weight: 500;
   color: var(--ink);
 }
+.home .cmp-table .cmp-src {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+.home .code-compare .code-body { max-height: 560px; overflow-y: auto; }
 
 /* ── Code panels ────────────────────────────────────────────── */
 .home .code-compare {

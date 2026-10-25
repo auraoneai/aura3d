@@ -459,3 +459,7 @@ evidence/look-reference-frames/
 !evidence/**/rework/**/*.png
 !evidence/live-*/**/*.jpg
 !evidence/live-*/**/*.png
+
+# tools/site and tests/unit/site are source (the site/ rule above targets build output)
+!tools/site/
+!tests/unit/site/

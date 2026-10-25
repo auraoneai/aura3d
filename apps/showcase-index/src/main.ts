@@ -334,24 +334,6 @@ const apps = [
   }
 ] as const;
 
-const GAME_APP_IDS = new Set([
-  "showcase-top-tennis",
-  "showcase-roadster-rush",
-  "showcase-heatsink",
-  "showcase-teleoperator",
-  "showcase-iron-crown",
-  "showcase-pips-big-leap",
-  "showcase-aura-hoops-3d",
-  "showcase-aura-diamond-3d",
-  "showcase-aura-fc-3d",
-  "showcase-red-zone-3d",
-  "showcase-aura-links-3d",
-  "showcase-bunker-zero",
-  "showcase-slingshot-siege",
-  "showcase-dot-dash-3d",
-  "showcase-cross-hop"
-]);
-
 const publicApps = apps.filter((entry) => entry.publicShowcase);
 const routes = publicApps.map((entry) => entry.route);
 
@@ -371,6 +353,7 @@ document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, in
   const image = document.createElement("img");
   const primarySrc = `/previews/showcase-index/${canonicalPreviewSlug}.webp`;
   image.src = primarySrc;
+  image.srcset = `${primarySrc} 1x, /previews/showcase-index/${canonicalPreviewSlug}@2x.webp 2x`;
   image.alt = `${title} live preview`;
   image.width = 720;
   image.height = 450;
@@ -398,7 +381,7 @@ document.querySelectorAll<HTMLAnchorElement>(".showcase-card").forEach((card, in
 window.__AURA3D_SHOWCASE_INDEX__ = {
   status: "ready",
   appCount: publicApps.length,
-  gameCount: apps.filter((entry) => GAME_APP_IDS.has(entry.id)).length,
+  gameCount: document.querySelectorAll(".showcase-card.is-game").length,
   routes,
   remediation: {
     schema: "aura3d-showcase-route-health-index/1.0",

@@ -113,11 +113,12 @@ test.describe("built marketing preview", () => {
 
   test("publishes the application-first Aura3D comparison sheet", async ({ page }) => {
     await page.goto(`${server.origin}/docs/aura3d-vs-threejs.html`, { waitUntil: "networkidle" });
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Stop assembling renderer parts");
-    await expect(page.getByText("15 / 15", { exact: true })).toBeVisible();
-    await expect(page.getByText("36", { exact: true })).toBeVisible();
-    await expect(page.getByText("The Aura3D path")).toBeVisible();
-    await expect(page.locator("body")).toContainText("Three.js 0.185.1");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("measured, with the caveats");
+    await expect(page.getByText("14 / 15", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Aura3D is better at" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "three.js is better at" })).toBeVisible();
+    await expect(page.getByText("What this does not prove")).toBeVisible();
+    await expect(page.locator("body")).toContainText("three.js 0.185.1");
   });
 
   test("serves every reviewed poster, public card, and machine-complete game route from production output", async ({ request }) => {

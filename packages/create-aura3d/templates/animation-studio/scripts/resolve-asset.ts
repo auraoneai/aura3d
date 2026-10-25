@@ -133,7 +133,7 @@ export interface CharacterResolverReport {
 interface CatalogResult { id: string; title: string; source: string; url: string; license?: string; attribution?: string }
 
 async function searchCatalog(query: string): Promise<CatalogResult[]> {
-  // The hosted ~850k Aura3D catalog (Objaverse + Sketchfab + Poly Pizza + …). Pull a WIDE
+  // The hosted Aura3D asset index (Objaverse + Sketchfab + Poly Pizza + …). Pull a WIDE
   // ranked list so the metadata + render-test gates downstream have many real candidates to
   // sift — most catalog "robots" are static props, so we need depth to find a rigged one
   // whose textures actually bind. Accept any direct .glb (not just objaverse).

@@ -1,10 +1,10 @@
-# Aura3D 4.1.2 vs three.js 0.185.1: feature and ecosystem matrix
+# Aura3D 4.2.0 candidate vs three.js 0.185.1: feature and ecosystem matrix
 
-Status: v2, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap register, per-game results), `game-conversion-playbook.md`, `evidence/vs-threejs/RESULTS.md` (measured size and performance, software GL) and `aura3d-vs-threejs-analysis-and-plan.md`. Rows quote measured figures only where they cite RESULTS.
+Status: v3, 2026-10-25 (4.2.0 candidate on `game-rework`; rows say which version a number comes from). Companion documents: `threejs-parity-gaps.md` (gap register, per-game results), `game-conversion-playbook.md`, `evidence/vs-threejs/RESULTS.md` (measured size and performance, software GL) and `aura3d-vs-threejs-analysis-and-plan.md`. Rows quote measured figures only where they cite RESULTS.
 
 ## 0. How to read this
 
-- three.js version is the one installed in `node_modules/three` (0.185.1). Aura3D version is the published 4.1.2 lineage in this repo.
+- three.js version is the one installed in `node_modules/three` (0.185.1). Aura3D version is the 4.2.0 candidate (`game-rework`) in this repo; bench timings are Aura3D 4.1.2 and say so.
 - **Confidence** has three levels:
   - `verified in code`: I read the source in `node_modules/three` or in this repo and the member/behaviour exists as stated.
   - `doc claim only`: stated in a repo document or evidence README; I did not re-run it.
@@ -17,7 +17,7 @@ Status: v2, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap regis
 
 ### 1.1 Rendering core
 
-| # | Capability | three.js 0.185.1 | Aura3D 4.1.2 | Verdict | Evidence | Confidence |
+| # | Capability | three.js 0.185.1 | Aura3D (4.2.0 candidate unless a row says otherwise) | Verdict | Evidence | Confidence |
 |---|---|---|---|---|---|---|
 | 1 | WebGL2 renderer | `WebGLRenderer`, mature, widest hardware coverage | WebGL2 pinned by default | tie | `three/src/renderers/WebGLRenderer.js`; engine backend default in `createAuraApp` | verified in code |
 | 2 | WebGPU renderer | First-class `WebGPURenderer` + node materials, `three/src/renderers/webgpu` | Not the default; legacy WebGPU path has failing mocks in the baseline test run | three.js better | `three/src/renderers/webgpu`; parity doc backend notes | verified in code (three), doc claim only (Aura3D status) |
@@ -32,21 +32,21 @@ Status: v2, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap regis
 
 ### 1.2 Materials, lights, cameras
 
-| # | Capability | three.js 0.185.1 | Aura3D 4.1.2 | Verdict | Evidence | Confidence |
+| # | Capability | three.js 0.185.1 | Aura3D (4.2.0 candidate unless a row says otherwise) | Verdict | Evidence | Confidence |
 |---|---|---|---|---|---|---|
 | 11 | PBR (Standard/Physical) | `MeshStandardMaterial`, `MeshPhysicalMaterial` | `material.*` typed builders | tie | `agent-api/nodes/material.ts` | verified in code |
-| 12 | Toon, Matcap, Lambert, Phong, Normal, Depth, Distance, Shadow materials | All built in | Codemod rows are `none` (no mapped equivalent) | three.js better | `migrate-three/mappings.ts` (47 `none` rows) | verified in code |
+| 12 | Toon, Matcap, Lambert, Phong, Normal, Depth, Distance, Shadow materials | All built in | No toon, Matcap, Lambert, Phong, Normal, Depth or Distance material builders; a screen-space `effects.toon` pass (bands, outline) exists since 4.1.3; codemod rows for these are `none` | three.js better | `agent-api/nodes/effects.toon.ts`; `migrate-three/mappings.ts` (47 `none` rows) | verified in code |
 | 13 | Custom GLSL materials | `ShaderMaterial`, `RawShaderMaterial` | `customMaterial` with `#include` chunk registry (safe pow, colorspace decode, noise, hash, sky gradient) | Aura3D better | `agent-api/compiler/customMaterial.ts`; chunk library | verified in code |
 | 14 | Node/TSL materials | Full TSL, about 638 exported names | `tsl` subset, 62 supported names | three.js better | `agent-api/nodes/tsl/index.ts` (`TSL_SUPPORTED_NAMES` has 62 entries) | verified in code |
 | 15 | Lights | Ambient, Hemisphere, Directional, Point, Spot, RectArea, LightProbe | Typed `lights` node plus helpers `directionalLight/spotLight/pointLight` | tie | `agent-api/nodes/lights.ts`, `helpers.ts` | verified in code |
-| 16 | Cameras | Perspective, Orthographic, Array, Cube, Stereo | Typed `cameras` node; chase/orbit rigs only as game-level code (promotion candidate #10) | three.js better | `agent-api/nodes/cameras.ts` | verified in code |
+| 16 | Cameras | Perspective, Orthographic, Array, Cube, Stereo | `cameras.chase` (offset and framed modes), `cameras.cube`, `cameras.array`, `cameras.stereo` and `camera.orbit` | tie | `agent-api/nodes/cameras.ts`, `chaseCamera.ts`; `docs/api/camera-rig.md` | verified in code |
 | 17 | Environment maps / IBL | `PMREMGenerator`, `RGBELoader`, `EXRLoader` | `environments.*` presets and typed HDRI asset admission | tie | skill `aura3d-materials-environments` | doc claim only |
 | 18 | Sky, weather, water presets | Addon `Sky`, `Water`, `Water2`, `Reflector`, `Refractor` (assemble yourself) | `sky.dayNight`, `weather`, `water` one-call typed nodes | Aura3D better (convenience) | `agent-api/nodes/{sky,weather,water}.ts`; `three/examples/jsm/objects` | verified in code |
 | 19 | Lens flare, marching cubes, shadow mesh, grounded skybox | Addons present | No equivalent found in typed API | three only | `three/examples/jsm/objects` | verified in code |
 
 ### 1.3 Geometry, instancing, compute
 
-| # | Capability | three.js 0.185.1 | Aura3D 4.1.2 | Verdict | Evidence | Confidence |
+| # | Capability | three.js 0.185.1 | Aura3D (4.2.0 candidate unless a row says otherwise) | Verdict | Evidence | Confidence |
 |---|---|---|---|---|---|---|
 | 20 | Primitive set | Box, Sphere, Plane, Cylinder, Capsule, Torus, TorusKnot, Cone, Circle, Ring, Tube, Lathe, Extrude, Shape, Polyhedron family, Edges, Wireframe | `primitives`: box sphere plane cylinder capsule torus cone circle ring tube lathe extrude shape torusKnot polyhedron roundedBox | tie | `agent-api/nodes/primitives.ts` | verified in code |
 | 21 | Instancing | `InstancedMesh` | `instances.mesh` | tie | `agent-api/nodes/instances.ts` | verified in code |
@@ -59,12 +59,12 @@ Status: v2, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap regis
 
 ### 1.4 Assets, animation, audio
 
-| # | Capability | three.js 0.185.1 | Aura3D 4.1.2 | Verdict | Evidence | Confidence |
+| # | Capability | three.js 0.185.1 | Aura3D (4.2.0 candidate unless a row says otherwise) | Verdict | Evidence | Confidence |
 |---|---|---|---|---|---|---|
 | 28 | glTF/GLB loading | `GLTFLoader` (+ Draco, KTX2, Meshopt) | Typed `model(assets.x)`; raw string URLs rejected by boundary test | Aura3D better (safety) | `tests/unit/agent-api/public-example-boundary.test.ts` | verified in code |
 | 29 | Other formats (FBX, OBJ, USD, 3DS, Collada, etc.) | Many loaders in addons | Excluded by design (parity doc section 4) | three.js better | `three/examples/jsm/loaders`; parity doc exclusions | doc claim only |
 | 30 | Asset provenance and integrity | None | Production bridge needs same-origin URL + sha256 + provenance, else draws nothing | Aura3D only | production bridge rules; `assets validate` | verified in code |
-| 31 | Asset catalog | None (bring your own) | 652 manifest entries searchable through the CLI | Aura3D only | catalog manifest; `aura3d assets search` | doc claim only |
+| 31 | Asset catalog | None (bring your own) | An asset catalog searchable through the CLI (`aura3d assets search`); entry count not re-counted for this version of the matrix (an earlier figure of 652 is unverified) | Aura3D only | `aura3d assets search` | doc claim only |
 | 32 | AI asset generation pipeline | None | Meshy through Kiro Prism with ledger caps, isolated admission and attribution records | Aura3D only | `meshy-cli` skill; `/tmp/meshy` ledger (not in repo) | doc claim only |
 | 33 | Skeletal animation | `AnimationMixer`, clips, `SkeletonUtils` | `AnimationController`, `cloneSkinned`, clip events, morph/viseme state | tie | skill `aura3d-character-animation` | doc claim only |
 | 34 | Positional/spatial audio | `Audio`, `PositionalAudio`, `AudioListener` | `@aura3d/audio` mixer, `AudioContextManager`, game sound engine | tie | `packages/audio` | doc claim only |
@@ -72,32 +72,43 @@ Status: v2, 2026-10-24. Companion documents: `threejs-parity-gaps.md` (gap regis
 
 ### 1.5 Developer experience and agent workflow
 
-| # | Capability | three.js 0.185.1 | Aura3D 4.1.2 | Verdict | Evidence | Confidence |
+| # | Capability | three.js 0.185.1 | Aura3D (4.2.0 candidate unless a row says otherwise) | Verdict | Evidence | Confidence |
 |---|---|---|---|---|---|---|
 | 36 | Typed scene API | Imperative object graph | Declarative `scene({...})` with typed nodes; one `createAuraApp` entry | Aura3D better | `packages/engine/src/agent-api/nodes/*` | verified in code |
 | 37 | TypeScript types | Separate `@types/three` package (DefinitelyTyped) | Types ship with packages | Aura3D better (minor) | `node_modules/@types/three` present; public engine `.d.ts` | verified in code |
-| 38 | Agent-readable docs | None official | `llms.txt`, `docs/agents/*`, claims-and-boundaries, 24-package skill set synced to `.cursor/.claude/.agents` | Aura3D only | `AGENTS.md`; `pnpm check:skills` gate | verified in code |
+| 38 | Agent-readable docs | None official | `llms.txt` (a one-screen fast path), `llms-full.txt`, `docs/agents/*` with compiled recipes, claims-and-boundaries, 14 skills synced to `.cursor/.claude/.agents` | Aura3D only | `AGENTS.md`; `check:skills` gate; `docs/agents/recipes.md` | verified in code |
 | 39 | Project scaffolding | `create-vite` templates in the community | `create-aura3d` with game templates (mini-game, racing, falling-blocks, fighting, character-controller) | Aura3D better | `packages/create-aura3d/templates` | verified in code |
 | 40 | Deploy/route health checks | None | `check-deploy`, route-health, evidence collection (`collectAuraSceneEvidence`) | Aura3D only | CLI; `aura3d-evidence-review` skill | doc claim only |
-| 41 | Game test hooks and deterministic replay | None | `installQaHooks`, `createFixedStepLoop`, seeded replay | Aura3D only | promoted QA kit; replay tests in 11 ports | verified in code |
+| 41 | Game test hooks, deterministic replay and a game beacon | None | `installQaHooks`, `createFixedStepLoop`, seeded replay with `createCountedRng` (draw counter), `installGameBeacon().publishEvidence` | Aura3D only | promoted QA kit; replay tests across the ports; `docs/api/game-cheatsheet.md` | verified in code |
 | 42 | Migration tooling | N/A | `aura3d migrate three` codemod: 245 rows (21 exact, 174 approximate, 47 none, 3 pending) | Aura3D only | `migrate-three/mappings.ts` | verified in code |
-| 43 | Game kit (HUD, touch, juice, session) | None | `packages/game` kit; `@aura3d/engine/game` ships; default game lane was the real gap | Aura3D better (convenience) | WP-1 finding; promote survey | doc claim only |
+| 43 | Game kit (HUD, touch, juice, session) | None | `@aura3d/engine/game`: HUD widgets (including compass and canvas minimap), touch controls, juice, session, accessibility, audio cue bank, safety net, QA hooks; a worked sample in `docs/agents/build-a-game.md` | Aura3D better (convenience) | `docs/api/game-kit.md`; `docs/api/game-cheatsheet.md` | verified in code |
 | 44 | Examples and learning material | Huge official examples and manual | Fewer, agent-oriented docs | three.js better | `three/examples`; repo docs | verified in code |
 
 ### 1.6 Ecosystem, maturity, risk
 
-| # | Capability | three.js 0.185.1 | Aura3D 4.1.2 | Verdict | Evidence | Confidence |
+| # | Capability | three.js 0.185.1 | Aura3D (4.2.0 candidate unless a row says otherwise) | Verdict | Evidence | Confidence |
 |---|---|---|---|---|---|---|
-| 45 | Adoption | About 15.2M weekly npm downloads | About 391 weekly | three.js better | npm stats at time of survey | doc claim only |
-| 46 | Release history | 314 published versions | 42 published versions | three.js better | `npm view` at time of survey | doc claim only |
+| 45 | Adoption | 15,202,672 weekly npm downloads | 391 weekly (`@aura3d/engine`) | three.js better | npm downloads API, week 2026-10-16 to 2026-10-22 | verified (snapshot) |
+| 46 | Release history | 314 published versions | 43 published versions (`@aura3d/engine`) | three.js better | `npm view`, 2026-10-25 | verified (snapshot) |
 | 47 | Third-party ecosystem (R3F, drei, tutorials, jobs) | Very large | Essentially none outside this repo | three.js better | n/a | doc claim only |
-| 48 | Core bundle size | Tree-shakable; a minimal app is small | Engine core critical path 3,924,895 B (1,141,998 gzip) against a 190,000 budget: fails; product-viewer and mini-game budgets also fail | three.js better | `BUNDLE_SIZES.md` | verified in code |
+| 48 | Core bundle size | Tree-shakable; a minimal app is small (one-cube app 495.7 KB raw, 124.8 KB gzip, 1 file in the 4.1.2 bench) | Stock hello-world 3,262 kB raw / 964 kB gzip at 4.1.3, 3,395 kB / 1,062 kB with the embedded neutral environment (4.2.0 candidate); 4.1.2 bench: 3,841 KB raw / 1,089 KB gzip in 25 files; the engine core fails its own published budget | three.js better | `evidence/stock-build/`, `evidence/neutral-embedded/`, `evidence/vs-threejs/RESULTS.md` section 4, `BUNDLE_SIZES.md` | verified (measured; methods differ between rows, see the labels) |
 | 49 | Source size for the same scene | Verbose imperative code | Shorter scene source in 4 of 5 scenes (non-blank lines: 24 vs 49, 49 vs 71, 45 vs 62, 61 vs 82); cube 18 vs 15 and water 87 vs 86 not shorter; extra build files needed in 4.1.2; one author, software-GL harness | Aura3D better (scene source only) | `evidence/vs-threejs/RESULTS.md` sections 1 to 3 | verified in code (counted; one-author caveat) |
 | 50 | API hygiene | Stable, slowly evolving | Root surface has 240 live value exports and 42 deprecated value exports (47 `@deprecated` annotations including types; each names a replacement or says there is none) | three.js better | `packages/engine/src/public/index.ts` | verified in code |
-| 51 | Test baseline | Large upstream suite | About 106 to 116 failing unit tests in the baseline (docs/claim gates reading missing files, legacy WebGPU mocks, removed planners) | three.js better | full `tests/unit` run not finishing here in 560 s; baseline counts from earlier runs | doc claim only |
+| 51 | Test baseline | Large upstream suite | 2,080 unit tests pass across 212 of 215 test files on the 4.2.0 candidate; 6 failures in 3 files (among them three `aura3d-cli` asset-screening and two `game-runtime` contract tests) also fail on clean `main` | three.js better | integration run on `game-rework` (`06cf4f7eb`) | verified (run) |
 | 52 | Real-GPU verification | Upstream CI plus massive field use | Software WebGL2 only; three real-device checks came from the owner's M4 Max | three.js better | evidence folders; parity doc | doc claim only |
 | 53 | Bugs found on real hardware during this program | n/a | NaN from `pow(negative)` on Apple GPUs, empty-instance throws, white instanced textures, silent shader failures, black-frame guard misfire (fixed in 4.1.2) | three.js better | changelog 4.0.8 to 4.1.2 | doc claim only |
 | 54 | Provenance/legal posture for assets and claims | Not applicable | Claim labels, boundary doc, text-only Meshy prompts | Aura3D better | `docs/agents/claims-and-boundaries.md` | doc claim only |
+
+### 1.7 Added or measured since the 4.1.2 matrix
+
+| # | Capability | three.js 0.185.1 | Aura3D | Verdict | Evidence | Confidence |
+|---|---|---|---|---|---|---|
+| 55 | Gameplay motion kit (bone attach, stride-synced locomotion, foot-slide meter, impact response with hit-stop and shake, pose smoothing, double-frame detector) | None built in (`AnimationMixer` and manual attachment) | `attachToBone`, `createLocomotion`, `createFootSlideMeter`, `createImpactWorld`, `createHitStop`, `createCameraShake`, `smoothDamp`, `checkDoubleFrame` from `@aura3d/engine/game` | Aura3D better (convenience) | `docs/api/motion-*.md`; used by the rework of the shipped games | verified in code (new in 4.2.0; checked on software GL) |
+| 56 | High-refresh render interpolation | None (apps write their own) | `createRenderInterpolator`, `createFixedStepPresenter`, `runMotionGate`: a 60 Hz sim no longer stands still on every second frame at 120 Hz (50% before, 0% after; 58% before at 144 Hz) | Aura3D only | `docs/api/motion-presenter.md`; `docs/audit/motion-audit.md` | verified (simulated 60/120/144 Hz; a real 120 Hz display was not tested) |
+| 57 | Safe first frame and frame errors | None | `warmPrograms(app)` waits for shader programs and the environment; `createFrameErrorBoundary` reports a throwing frame and keeps drawing | Aura3D only | `docs/api/game-kit.md`; `@aura3d/debug` | verified in code (new in 4.2.0) |
+| 58 | Blind A/B judge for look comparisons | None | `aura3d evidence judge` (a model judge through Kiro Prism, not a human) | Aura3D only | `docs/api/cli-asset-tools.md` | verified in code |
+| 59 | Agent authoring speed (cold start) | Median 4 turns; 15 of 15 first-try builds; 15 of 15 final renders non-black | Median 10 turns (40 at baseline); 15 of 15 first-try builds; 14 of 15 final renders non-black; 13 of 15 first-try typechecks | three.js better | `evidence/agent-eval/baseline1/NOTES.md` | verified (claude-sonnet-5.5, n=15, 40-turn budget, software GL; three.js has far more training data) |
+| 60 | Frame cost on software GL | Cube 0.9 ms | Cube 623 ms at 4.1.2, about 50 ms after the 4.1.3 fixes; forest (18,000 instances) 38 s to 6.4 s per frame | three.js better | `evidence/perf-frame-cost/` | verified (software GL only) |
 
 ## 2. Row counts by verdict
 
@@ -105,10 +116,10 @@ Counts are computed from the table above by the verdict column (see section 8 fo
 
 | Verdict | Rows |
 |---|---|
-| Aura3D better | 10 |
-| three.js better | 19 |
-| tie | 14 |
-| Aura3D only | 9 |
+| Aura3D better | 11 |
+| three.js better | 20 |
+| tie | 15 |
+| Aura3D only | 12 |
 | three only | 1 |
 | unknown (verdict withheld) | 1 |
 
@@ -156,18 +167,19 @@ Separated into genuinely unique and convenience wrappers over things three.js ca
 
 ## 5. Maturity and risk facts
 
-- Aura3D 4.1.2 is 24 public packages; the root `@aura3d/engine` surface has 240 live value exports and 42 deprecated value exports (47 `@deprecated` annotations including types).
-- Release cadence in this program: 4.0.8, 4.1.0, 4.1.1, 4.1.2 within days. Each patch fixed a real defect found after publish (for example the 4.1.1 self-heal misfire from rAF reads on a non-preserved drawing buffer).
-- Documented weaknesses, all open at time of writing: bundle budgets failing, about 106 to 116 baseline unit test failures, software-GL-only verification, legacy post chain darkening, two of the games (HEATSINK port, Last Train) not completing automated checks under software GL.
+- Aura3D is 24 public packages (4.1.3) with the 4.2.0 candidate adding no new package; the root `@aura3d/engine` surface has 240 live value exports and 42 deprecated value exports (47 `@deprecated` annotations including types).
+- Release cadence in this program: 4.0.8, 4.1.0, 4.1.1, 4.1.2, 4.1.3 within days (4.2.0 is the next release). Each patch fixed a real defect found after publish (for example the 4.1.1 self-heal misfire from rAF reads on a non-preserved drawing buffer).
+- Documented weaknesses, all open at time of writing: bundle budgets failing (a stock hello-world is 7x to 8x larger than three.js), 6 unit-test failures in 3 files that also fail on clean `main`, software-GL-only verification, legacy post chain darkening, two of the games (HEATSINK port, Last Train) not completing automated checks under software GL.
 - Risk if adopting today: you carry the migration cost and the verification gap; you gain a typed API and agent tooling. Risk if staying on three.js: none of Aura3D's safety rails, more code per scene.
 
-## 6. What the 26 games and the Aura Slam conversion prove, and do not
+## 6. What the shipped games and the Aura Slam conversion prove, and do not
 
 **Proves (as far as the evidence in the repo goes):**
-- Aura3D can express a wide range of browser games: 15 index games upgraded to the 4.x lineage and 11 Crayon ports, with Meshy art and no host engine pins.
+- Aura3D can express a wide range of browser games: the 15 index games and 11 renamed Crayon-style games (the live count is generated from `docs/workflows/game-inventory.json`), on the 4.x lineage with Meshy art and no host engine pins. Each has an evidence folder and screenshots under `evidence/<game>/screens/`.
 - A real, complex game (Aura Slam) can be reproduced on Aura3D modules with a simulation bit-identical in differential tests against the original scripts and pose output pixel-identical (`evidence/aura-slam/`).
 - Deterministic replay of simulation state to within tolerance (for example the HEATSINK port at 1e-6).
-- Live-site smoke runs for the 4.1.x deployments (`evidence/live-410`, `live-411`, `live-412`).
+- Live-site smoke runs for the 4.1.x deployments (`evidence/live-410`, `live-411`, `live-412`, `live-413`), all on software GL.
+- A cold-start agent trial (`evidence/agent-eval/`): 15 of 15 first-try builds and 14 of 15 non-black final renders for Aura3D from docs only, against 15 of 15 and 15 of 15 for three.js; median 10 turns against 4.
 
 **Does not prove:**
 - Render parity on real GPUs. Parity metrics (luma/RGB JSD, edge density, mean luma delta) were collected on SwiftShader.
@@ -178,7 +190,7 @@ Separated into genuinely unique and convenience wrappers over things three.js ca
 
 ## 7. Caveats
 
-- The npm download and version counts are a snapshot from the survey; refresh before quoting externally.
+- The npm download and version counts are a snapshot (downloads for 2026-10-16 to 2026-10-22, versions on 2026-10-25); refresh before quoting externally.
 - Rows marked `doc claim only` or `unknown` should not be used in public claims until checked. The repo's `claims-and-boundaries.md` applies.
 - This document compares capabilities, not tutorials, community, or hiring pool. Those favour three.js and are not scored.
 

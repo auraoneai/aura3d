@@ -2,6 +2,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 
 const marketingDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(marketingDir, "..");
@@ -120,6 +121,38 @@ for (const [property, expectedWidth, expectedHeight] of [
     failures.push(`${asset}: ${property} must be ${expectedWidth}x${expectedHeight}, found ${dimensions ? `${dimensions.width}x${dimensions.height}` : "non-PNG"}`);
   }
   if (buffer.length >= 300 * 1024) failures.push(`${asset}: ${property} must stay under 300KB, found ${Math.round(buffer.length / 1024)}KB`);
+}
+
+// Numeric claims on the homepage must equal counted sources (docs/audit/site-claims.md).
+{
+  const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
+  const stat = (label) => {
+    const m = new RegExp(`<li class="trust-item"><strong>([^<]+)</strong><span>${label}[^<]*</span></li>`).exec(home);
+    return m ? m[1].trim() : null;
+  };
+  let publicPackages = 0;
+  for (const dir of readdirSync(resolve(repoRoot, "packages"))) {
+    const manifest = resolve(repoRoot, "packages", dir, "package.json");
+    if (existsSync(manifest) && !readJson(manifest).private) publicPackages += 1;
+  }
+  const rootManifest = readJson(resolve(repoRoot, "package.json"));
+  if (rootManifest.name === "@aura3d/engine" && !rootManifest.private) publicPackages += 1;
+  const packagesStat = stat("npm packages");
+  if (packagesStat !== String(publicPackages)) failures.push(`index.html: npm packages stat is ${packagesStat}, counted ${publicPackages}`);
+  const admitted = readJson(resolve(repoRoot, "aura.assets.json")).assets.length;
+  const assetsStat = stat("admitted assets");
+  if (assetsStat !== String(admitted)) failures.push(`index.html: admitted assets stat is ${assetsStat}, counted ${admitted} in aura.assets.json`);
+  const retracted = /\b(?:800K\+|800,000\+|850K|~850k)\b/i;
+  for (const file of [resolve(marketingDir, "index.html"), ...readdirSync(resolve(marketingDir, "docs")).filter((f) => f.endsWith(".html")).map((f) => resolve(marketingDir, "docs", f)), resolve(marketingDir, "public", "llms.txt"), resolve(marketingDir, "public", "llms-full.txt")]) {
+    if (existsSync(file) && retracted.test(readFileSync(file, "utf8"))) failures.push(`${file}: contains the retracted 800K/850K catalog-size claim`);
+  }
+}
+
+// Game-count truth: the inventory, the generated index page and every stated count must agree.
+for (const script of ["gen-game-inventory.mjs --check", "gen-showcase-index.mjs --check", "check-game-count.mjs"]) {
+  const [file, ...args] = script.split(" ");
+  const result = spawnSync(process.execPath, [resolve(repoRoot, "tools", "site", file), ...args], { encoding: "utf8" });
+  if (result.status !== 0) failures.push(`${file}: ${(result.stderr || result.stdout).trim()}`);
 }
 
 if (failures.length > 0) {
