@@ -1,0 +1,77 @@
+{
+  "date": "2026-10-24",
+  "tool": "tools/asset-optimize/texture-downscale.mjs (gltf-transform): dedup, weld, prune, textures 2048->1024 (colour/ORM jpeg q86, normal png), no mesh simplification",
+  "reason": "first lit frame took 74-154 s under software GL; ~50 MB of GPU texture memory per vehicle model",
+  "assets": [
+    {
+      "id": "trafficBoxtruck",
+      "from": "trafficBoxtruck.dc0de02c.glb",
+      "to": "trafficBoxtruck.9c1d690d.glb",
+      "beforeBytes": 5523352,
+      "afterBytes": 958704
+    },
+    {
+      "id": "trafficHatch",
+      "from": "trafficHatch.b95d3c37.glb",
+      "to": "trafficHatch.07e1f8e1.glb",
+      "beforeBytes": 5625816,
+      "afterBytes": 712416
+    },
+    {
+      "id": "trafficPickup",
+      "from": "trafficPickup.f22a5570.glb",
+      "to": "trafficPickup.26430aa6.glb",
+      "beforeBytes": 7741364,
+      "afterBytes": 1064912
+    },
+    {
+      "id": "trafficSedan",
+      "from": "trafficSedan.d8cefcdb.glb",
+      "to": "trafficSedan.5c9c3aaf.glb",
+      "beforeBytes": 5796788,
+      "afterBytes": 817776
+    },
+    {
+      "id": "trafficSkyCar",
+      "from": "trafficSkyCar.b72c9ae4.glb",
+      "to": "trafficSkyCar.d56a7d76.glb",
+      "beforeBytes": 5539504,
+      "afterBytes": 742040
+    },
+    {
+      "id": "trafficSuv",
+      "from": "trafficSuv.6f68520b.glb",
+      "to": "trafficSuv.0013779f.glb",
+      "beforeBytes": 7339224,
+      "afterBytes": 1058204
+    },
+    {
+      "id": "trafficTaxi",
+      "from": "trafficTaxi.0857a745.glb",
+      "to": "trafficTaxi.22c9d43b.glb",
+      "beforeBytes": 6314316,
+      "afterBytes": 890564
+    },
+    {
+      "id": "trafficVan",
+      "from": "trafficVan.bc4448a2.glb",
+      "to": "trafficVan.bfd54772.glb",
+      "beforeBytes": 6023864,
+      "afterBytes": 909940
+    },
+    {
+      "id": "trainCar",
+      "from": "trainCar.8fad9ed3.glb",
+      "to": "trainCar.dfc89f87.glb",
+      "beforeBytes": 6091144,
+      "afterBytes": 941748
+    },
+    {
+      "id": "tramCar",
+      "from": "tramCar.782991b8.glb",
+      "to": "tramCar.071322a7.glb",
+      "beforeBytes": 7943676,
+      "afterBytes": 1092244
+    }
+  ]
+}

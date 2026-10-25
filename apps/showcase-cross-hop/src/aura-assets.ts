@@ -4389,14 +4389,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficBoxtruck": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficBoxtruck.dc0de02c.glb",
-    hash: "sha256-dc0de02c8c86360d795f55e0a57440948bca01b24e92dfee7feb7415b465189d",
+    url: "/aura-assets/trafficBoxtruck.9c1d690d.glb",
+    hash: "sha256-9c1d690d8719d1708b576c988b2d7922a249f606860ffb0355393dd7fc1359ee",
     bounds: [
       0.957,
       0.511,
       0.388
     ],
-    sizeBytes: 5523352,
+    sizeBytes: 958704,
     metadata: {
       "materials": [
         "material-0"
@@ -4446,7 +4446,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficBoxtruck.dc0de02c.glb",
+        "sourcePath": "public/aura-assets/trafficBoxtruck.9c1d690d.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -4460,8 +4460,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:14:07.091Z"
       },
-      "sourcePath": "public/aura-assets/trafficBoxtruck.dc0de02c.glb",
-      "outputPath": "public/aura-assets/trafficBoxtruck.dc0de02c.glb",
+      "sourcePath": "public/aura-assets/trafficBoxtruck.9c1d690d.glb",
+      "outputPath": "public/aura-assets/trafficBoxtruck.9c1d690d.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -4526,14 +4526,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficHatch": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficHatch.b95d3c37.glb",
-    hash: "sha256-b95d3c3742f57b24a9d20970cde88e0f27f2267df5be39d4f06c5fbaf9e8426d",
+    url: "/aura-assets/trafficHatch.07e1f8e1.glb",
+    hash: "sha256-07e1f8e16e2ff52b04e90466f33127371881382773506d3306fbfae324b353e6",
     bounds: [
       0.952,
       0.576,
       0.492
     ],
-    sizeBytes: 5625816,
+    sizeBytes: 712416,
     metadata: {
       "materials": [
         "material-0"
@@ -4583,7 +4583,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficHatch.b95d3c37.glb",
+        "sourcePath": "public/aura-assets/trafficHatch.07e1f8e1.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -4597,8 +4597,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:14:49.721Z"
       },
-      "sourcePath": "public/aura-assets/trafficHatch.b95d3c37.glb",
-      "outputPath": "public/aura-assets/trafficHatch.b95d3c37.glb",
+      "sourcePath": "public/aura-assets/trafficHatch.07e1f8e1.glb",
+      "outputPath": "public/aura-assets/trafficHatch.07e1f8e1.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -4663,14 +4663,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficPickup": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficPickup.f22a5570.glb",
-    hash: "sha256-f22a557032d692c3accc45fa6c6aa626c80b4bec4e78e5bb6460d669ade8e524",
+    url: "/aura-assets/trafficPickup.26430aa6.glb",
+    hash: "sha256-26430aa616afe5d18996e24f925de358767621de41a6f9a7ddf98e81589f4c49",
     bounds: [
       0.956,
       0.426,
       0.469
     ],
-    sizeBytes: 7741364,
+    sizeBytes: 1064912,
     metadata: {
       "materials": [
         "material-0"
@@ -4720,7 +4720,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficPickup.f22a5570.glb",
+        "sourcePath": "public/aura-assets/trafficPickup.26430aa6.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -4734,8 +4734,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:14:08.092Z"
       },
-      "sourcePath": "public/aura-assets/trafficPickup.f22a5570.glb",
-      "outputPath": "public/aura-assets/trafficPickup.f22a5570.glb",
+      "sourcePath": "public/aura-assets/trafficPickup.26430aa6.glb",
+      "outputPath": "public/aura-assets/trafficPickup.26430aa6.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -4800,14 +4800,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficSedan": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficSedan.d8cefcdb.glb",
-    hash: "sha256-d8cefcdbbecb88c32762c2bb8f02927fa38d4805021c7292839eccc6ac31665c",
+    url: "/aura-assets/trafficSedan.5c9c3aaf.glb",
+    hash: "sha256-5c9c3aafdbd03532987a314dd7972a4783a0b7232cad25f508db8ed6f02baae8",
     bounds: [
       0.953,
       0.38,
       0.442
     ],
-    sizeBytes: 5796788,
+    sizeBytes: 817776,
     metadata: {
       "materials": [
         "material-0"
@@ -4857,7 +4857,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficSedan.d8cefcdb.glb",
+        "sourcePath": "public/aura-assets/trafficSedan.5c9c3aaf.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -4871,8 +4871,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:15:33.563Z"
       },
-      "sourcePath": "public/aura-assets/trafficSedan.d8cefcdb.glb",
-      "outputPath": "public/aura-assets/trafficSedan.d8cefcdb.glb",
+      "sourcePath": "public/aura-assets/trafficSedan.5c9c3aaf.glb",
+      "outputPath": "public/aura-assets/trafficSedan.5c9c3aaf.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -4937,14 +4937,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficSkyCar": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficSkyCar.b72c9ae4.glb",
-    hash: "sha256-b72c9ae4d5d8c506ff34297d165e494684c30106fc6b13df4e8fc5564a56d145",
+    url: "/aura-assets/trafficSkyCar.d56a7d76.glb",
+    hash: "sha256-d56a7d768f052a24517f44768bee53f554d656063fab828fb2c89d06adcc7c57",
     bounds: [
       0.954,
       0.362,
       0.472
     ],
-    sizeBytes: 5539504,
+    sizeBytes: 742040,
     metadata: {
       "materials": [
         "material-0"
@@ -4994,7 +4994,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficSkyCar.b72c9ae4.glb",
+        "sourcePath": "public/aura-assets/trafficSkyCar.d56a7d76.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -5008,8 +5008,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:15:36.408Z"
       },
-      "sourcePath": "public/aura-assets/trafficSkyCar.b72c9ae4.glb",
-      "outputPath": "public/aura-assets/trafficSkyCar.b72c9ae4.glb",
+      "sourcePath": "public/aura-assets/trafficSkyCar.d56a7d76.glb",
+      "outputPath": "public/aura-assets/trafficSkyCar.d56a7d76.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -5074,14 +5074,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficSuv": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficSuv.6f68520b.glb",
-    hash: "sha256-6f68520b8a083669d86cae80bb7c087e12229745c303013e172c308264cbd68c",
+    url: "/aura-assets/trafficSuv.0013779f.glb",
+    hash: "sha256-0013779f706a1ee4a3d6fa0fc26f9cf71b408cd8eb1947c12eb61b7a3b7c9cda",
     bounds: [
       0.958,
       0.522,
       0.451
     ],
-    sizeBytes: 7339224,
+    sizeBytes: 1058204,
     metadata: {
       "materials": [
         "material-0"
@@ -5131,7 +5131,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficSuv.6f68520b.glb",
+        "sourcePath": "public/aura-assets/trafficSuv.0013779f.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -5145,8 +5145,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:16:23.165Z"
       },
-      "sourcePath": "public/aura-assets/trafficSuv.6f68520b.glb",
-      "outputPath": "public/aura-assets/trafficSuv.6f68520b.glb",
+      "sourcePath": "public/aura-assets/trafficSuv.0013779f.glb",
+      "outputPath": "public/aura-assets/trafficSuv.0013779f.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -5211,14 +5211,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficTaxi": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficTaxi.0857a745.glb",
-    hash: "sha256-0857a745ab2b460a069866d5b5678a0bc013b32bbddc3f14ccf64af992788cdd",
+    url: "/aura-assets/trafficTaxi.22c9d43b.glb",
+    hash: "sha256-22c9d43b49962d9462ed17c3dba80f8ec55274131fe5d3836b931ee0bfedd1ce",
     bounds: [
       0.953,
       0.646,
       0.553
     ],
-    sizeBytes: 6314316,
+    sizeBytes: 890564,
     metadata: {
       "materials": [
         "material-0"
@@ -5268,7 +5268,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficTaxi.0857a745.glb",
+        "sourcePath": "public/aura-assets/trafficTaxi.22c9d43b.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -5282,8 +5282,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:17:03.188Z"
       },
-      "sourcePath": "public/aura-assets/trafficTaxi.0857a745.glb",
-      "outputPath": "public/aura-assets/trafficTaxi.0857a745.glb",
+      "sourcePath": "public/aura-assets/trafficTaxi.22c9d43b.glb",
+      "outputPath": "public/aura-assets/trafficTaxi.22c9d43b.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -5348,14 +5348,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trafficVan": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trafficVan.bc4448a2.glb",
-    hash: "sha256-bc4448a2a5d47c8a5b4019fb373292a268b104bd8a5a7c0423d9a639d1e104c8",
+    url: "/aura-assets/trafficVan.bfd54772.glb",
+    hash: "sha256-bfd547720bfa9173c124ecdc4fc96380811edcf642e4d865c097190a50182bb2",
     bounds: [
       0.958,
       0.547,
       0.541
     ],
-    sizeBytes: 6023864,
+    sizeBytes: 909940,
     metadata: {
       "materials": [
         "material-0"
@@ -5405,7 +5405,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trafficVan.bc4448a2.glb",
+        "sourcePath": "public/aura-assets/trafficVan.bfd54772.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -5419,8 +5419,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:17:06.070Z"
       },
-      "sourcePath": "public/aura-assets/trafficVan.bc4448a2.glb",
-      "outputPath": "public/aura-assets/trafficVan.bc4448a2.glb",
+      "sourcePath": "public/aura-assets/trafficVan.bfd54772.glb",
+      "outputPath": "public/aura-assets/trafficVan.bfd54772.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -5485,14 +5485,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "trainCar": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/trainCar.8fad9ed3.glb",
-    hash: "sha256-8fad9ed311a88ad29eff15a9bcfb1b990a22f5069c5e7d0979beefa36c864a1f",
+    url: "/aura-assets/trainCar.dfc89f87.glb",
+    hash: "sha256-dfc89f87df869f4469eb2abad5c6511a1804901842b13955847e9ca3a8421aca",
     bounds: [
       0.949,
       0.482,
       0.353
     ],
-    sizeBytes: 6091144,
+    sizeBytes: 941748,
     metadata: {
       "materials": [
         "material-0"
@@ -5542,7 +5542,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/trainCar.8fad9ed3.glb",
+        "sourcePath": "public/aura-assets/trainCar.dfc89f87.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -5556,8 +5556,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:18:38.184Z"
       },
-      "sourcePath": "public/aura-assets/trainCar.8fad9ed3.glb",
-      "outputPath": "public/aura-assets/trainCar.8fad9ed3.glb",
+      "sourcePath": "public/aura-assets/trainCar.dfc89f87.glb",
+      "outputPath": "public/aura-assets/trainCar.dfc89f87.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -5622,14 +5622,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "tramCar": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/tramCar.782991b8.glb",
-    hash: "sha256-782991b89d32907f5caef10c9a91cb34334884c7749804796c8bf5486ef62363",
+    url: "/aura-assets/tramCar.071322a7.glb",
+    hash: "sha256-071322a72c0f9320fe474495d1b8ec4579dec59c0bf4888d87bf3b76ad586d29",
     bounds: [
       0.958,
       0.622,
       0.347
     ],
-    sizeBytes: 7943676,
+    sizeBytes: 1092244,
     metadata: {
       "materials": [
         "material-0"
@@ -5679,7 +5679,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/tramCar.782991b8.glb",
+        "sourcePath": "public/aura-assets/tramCar.071322a7.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -5693,8 +5693,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:18:00.498Z"
       },
-      "sourcePath": "public/aura-assets/tramCar.782991b8.glb",
-      "outputPath": "public/aura-assets/tramCar.782991b8.glb",
+      "sourcePath": "public/aura-assets/tramCar.071322a7.glb",
+      "outputPath": "public/aura-assets/tramCar.071322a7.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
