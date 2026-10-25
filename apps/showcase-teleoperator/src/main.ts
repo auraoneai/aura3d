@@ -50,15 +50,15 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopWaymoHero: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
-    hash: "sha256-7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
+    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
     bounds: [0.9293, 0.9414, 1.9037]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
-    hash: "sha256-7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
+    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
     bounds: [0.9293, 0.9414, 1.9037]
   },
   teleopCybercab: {
@@ -1603,6 +1603,52 @@ async function bootGridDispatchAura3D(): Promise<void> {
     }
   ];
 
+  // Keeps a projected nameplate clear of the fare card, the earnings cluster and the location pill:
+  // when its box would overlap one, it moves below that panel and a leader line points back at the car.
+  const NAMEPLATE_AVOID_IDS = ["taxiCard", "taxiTrip", "taxiPen", "topRightCluster", "where"];
+  let placedNameplates: Array<{ l: number; r: number; t: number; b: number }> = [];
+  function placeNameplate(el: HTMLElement, ax: number, ay: number, vw: number, vh: number): { x: number; y: number; leader: number } {
+    const w = el.offsetWidth || 120;
+    const h = el.offsetHeight || 40;
+    const margin = 6;
+    const x = Math.min(Math.max(ax, w / 2 + margin), vw - w / 2 - margin);
+    let y = Math.min(Math.max(ay, h + margin), vh - margin);
+    let leader = 0;
+    for (let pass = 0; pass < 3; pass++) {
+      let moved = false;
+      for (const id of NAMEPLATE_AVOID_IDS) {
+        const panel = document.getElementById(id);
+        if (!panel) continue;
+        const cs = getComputedStyle(panel);
+        if (cs.display === "none" || cs.visibility === "hidden" || Number(cs.opacity) < 0.05) continue;
+        const r = panel.getBoundingClientRect();
+        if (r.width < 4 || r.height < 4) continue;
+        const left = x - w / 2, right = x + w / 2, top = y - h, bottom = y;
+        if (right > r.left - 4 && left < r.right + 4 && bottom > r.top - 4 && top < r.bottom + 4) {
+          const below = r.bottom + 8 + h;
+          const above = r.top - 8;
+          const useAbove = above - h >= margin && Math.abs(above - y) <= Math.abs(below - y);
+          const ny = useAbove ? above : Math.min(below, vh - margin);
+          leader += Math.abs(ny - y);
+          y = ny;
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+    // stack below any nameplate already placed this frame that this one would cover
+    for (let pass = 0; pass < 6; pass++) {
+      const hit = placedNameplates.find((q) => x + w / 2 > q.l - 3 && x - w / 2 < q.r + 3 && y > q.t - 3 && y - h < q.b + 3);
+      if (!hit) break;
+      const ny = Math.min(hit.b + 4 + h, vh - margin);
+      if (ny === y) break;
+      leader += Math.abs(ny - y);
+      y = ny;
+    }
+    placedNameplates.push({ l: x - w / 2, r: x + w / 2, t: y - h, b: y });
+    return { x, y, leader: Math.min(leader, 160) };
+  }
+
   // Create Floating Peer Nameplate DOM Elements (#mpTags > .mpTag)
   const mpTagsContainer = document.getElementById("mpTags");
   const peerTagEls: HTMLElement[] = peers.map((peer, idx) => {
@@ -1790,6 +1836,17 @@ async function bootGridDispatchAura3D(): Promise<void> {
     totalEl.innerHTML = `<b>$${totalEarningsUsd.toLocaleString("en-US")}</b><small>${completedRides} rides · ★ ${ratingAvg.toFixed(2)} · Teleop Room #SF-401</small>`;
   }
 
+  let fareSheetCollapsed = false;
+  for (const id of ["taxiCard", "taxiTrip"]) {
+    document.getElementById(id)?.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).closest(".tx-head .tg")) {
+        fareSheetCollapsed = !fareSheetCollapsed;
+        document.getElementById("taxiCard")?.classList.toggle("min", fareSheetCollapsed);
+        document.getElementById("taxiTrip")?.classList.toggle("min", fareSheetCollapsed);
+      }
+    });
+  }
+
   function renderApexFareCards(distToBeacon: number): void {
     const fare = WAYMO_FARES[fareIndex % WAYMO_FARES.length]!;
     const cardEl = document.getElementById("taxiCard");
@@ -1802,6 +1859,8 @@ async function bootGridDispatchAura3D(): Promise<void> {
 
     cardEl?.classList.toggle("on", isOfferOrBoard);
     tripEl?.classList.toggle("on", isRideOrAlight);
+    cardEl?.classList.toggle("min", fareSheetCollapsed);
+    tripEl?.classList.toggle("min", fareSheetCollapsed);
     tripEl?.classList.toggle("arc", rideStyle === "street");
     sumEl?.classList.toggle("on", rideState === "summary");
 
@@ -2696,6 +2755,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
     const vw = window.innerWidth || 1280;
     const vh = window.innerHeight || 800;
 
+    placedNameplates = [];
     for (let i = 0; i < peers.length; i++) {
       const peer = peers[i]!;
       const handle = peerCarHandles[i]!;
@@ -2735,7 +2795,14 @@ async function bootGridDispatchAura3D(): Promise<void> {
       if (tagEl) {
         if (proj.visible) {
           tagEl.style.display = "flex";
-          tagEl.style.transform = `translate3d(${proj.x.toFixed(1)}px, ${proj.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+          const place = placeNameplate(tagEl, proj.x, proj.y, vw, vh);
+          tagEl.style.transform = `translate3d(${place.x.toFixed(1)}px, ${place.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+          if (place.leader > 2) {
+            tagEl.dataset.leader = place.y > proj.y ? "up" : "down";
+            tagEl.style.setProperty("--leader-h", `${place.leader.toFixed(0)}px`);
+          } else {
+            delete tagEl.dataset.leader;
+          }
           const distEl = document.getElementById(`mp-dist-${i}`);
           if (distEl) distEl.textContent = `${peer.distanceMeters} m`;
         } else {

@@ -716,6 +716,19 @@
         font-variant-numeric: tabular-nums;
       }
 
+      .mpTag[data-leader]::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 100%;
+        width: 1px;
+        height: var(--leader-h, 0px);
+        background: currentColor;
+        opacity: 0.55;
+      }
+      .mpTag[data-leader="down"]::before { bottom: auto; top: 100%; }
+      .mpTag[data-leader]::after { display: none; }
+
       .mpTag::after {
         content: "";
         position: absolute;
@@ -1250,9 +1263,19 @@
         #where { left: 8px; right: 8px; top: calc(8px + env(safe-area-inset-top, 0px)); min-width: 0; padding: 6px 10px; }
         #where .coords, #where #wX { display: none; }
         #topRightCluster { left: 8px; right: 8px; top: calc(62px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
-        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(112px + env(safe-area-inset-top, 0px)); transform: translateY(-8px); padding: 8px 10px; max-height: 30vh; overflow: hidden; }
+        /* Fare card and active trip: a compact bottom sheet (about 18% of the height), tap the title to collapse it to one line. */
+        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: auto; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); transform: translateY(8px); padding: 6px 10px; max-height: 18vh; overflow: hidden; }
         #taxiCard.on, #taxiTrip.on { transform: none; }
-        #taxiPen { top: calc(214px + env(safe-area-inset-top, 0px)); }
+        #taxiCard.min, #taxiTrip.min { max-height: 34px; }
+        .tx .tx-head { margin-bottom: 4px; }
+        .tx .tx-head .tg { cursor: pointer; }
+        .tx .tx-head .tg::after { content: " \25BE"; }
+        .tx.min .tx-head .tg::after { content: " \25B4"; }
+        .tx .who small, .tx .leg small, .tx .dst small, .tx .row small, .tx .cf small { display: none; }
+        .tx .who { gap: 8px; }
+        .tx .leg, .tx .dst { padding: 2px 0; }
+        #taxiPen { top: calc(112px + env(safe-area-inset-top, 0px)); }
+        #taxiHint { top: calc(150px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; max-width: none; text-align: center; }
         #taxiTotal { flex: 1 1 auto; min-width: 0; text-align: left; padding: 6px 10px; }
         #taxiTotal small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #menu { flex: 0 0 auto; gap: 4px; }
@@ -1260,7 +1283,6 @@
         #mpCountLabel { display: none; }
         #mini { display: none; }
         #hud { right: 6px; bottom: 6px; transform: scale(0.7); transform-origin: bottom right; }
-        #taxiHint { left: 8px; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: calc(100vw - 176px); }
         #teleopDock { left: 8px; right: auto; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 16px); padding: 4px 6px; gap: 4px; }
         #dockToggle { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; }
         #teleopDock[data-collapsed="true"] .dock-row { display: none; }

@@ -32,15 +32,15 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopWaymoHero: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
-    hash: "sha256-7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
+    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
     bounds: [0.9293, 0.9414, 1.9037]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
-    hash: "sha256-7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
+    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
     bounds: [0.9293, 0.9414, 1.9037]
   },
   teleopCybercab: {

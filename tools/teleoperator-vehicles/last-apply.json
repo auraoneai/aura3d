@@ -1,10 +1,10 @@
 {
   "info": {
     "robotaxi": {
-      "name": "teleopVehRobotaxi.7874ad34.glb",
-      "sha": "7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
-      "bytes": 1768844,
-      "tris": 25838,
+      "name": "teleopVehRobotaxi.e8b4f052.glb",
+      "sha": "e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
+      "bytes": 1054364,
+      "tris": 33495,
       "size": [
         0.9293,
         0.9414,
@@ -20,11 +20,11 @@
         0.9414,
         0.9518
       ],
-      "materials": 8,
-      "textures": 3,
+      "materials": 9,
+      "textures": 0,
       "nodes": 1,
       "meshes": 1,
-      "file": "/tmp/meshy/teleop/robotaxi/covered.glb"
+      "file": "/tmp/rt-src3/robotaxi/oriented.glb"
     },
     "hatch": {
       "name": "teleopVehHatch.67925e22.glb",
