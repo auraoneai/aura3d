@@ -139,12 +139,9 @@ export function buildGolferNodes(fit: GolferFit): any[] {
     } as any)
       .animate({ clip: "Idle_Loop", loop: true, speed: 0.9 })
       .runtime(rt("caddy-body")),
-    model(assets.rooftopBallRackCartMeshy, {
-      name: "golfer-bag",
-      targetHeight: 0.96,
-      role: "setDressing",
-      scaleMode: "fit"
-    }).runtime(rt("golfer-bag")),
+    primitives
+      .cylinder({ name: "golfer-bag", size: [0.3, 0.9, 0.3], material: material.pbr({ color: "#1f5f46", roughness: 0.8 }) })
+      .runtime(rt("golfer-bag")),
     model(assets.linksGolfCartMeshy, {
       name: "golfer-cart",
       targetHeight: 1.65,
@@ -421,7 +418,7 @@ export function poseGolfer(
   const bagW = W([3.6, 0, 2.7]);
   const bagGroundY = heightFn ? heightFn(bagW[0], bagW[2]) : at[1];
   rig.bag
-    ?.setPosition(bagW[0], bagGroundY + 0.58, bagW[2])
+    ?.setPosition(bagW[0], bagGroundY + 0.46, bagW[2])
     .setRotation(0.12, faceYaw - 0.5, 0)
     .setVisible(true);
 
