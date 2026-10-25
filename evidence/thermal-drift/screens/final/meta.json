@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "heatsink": {
+      "390": {
+        "notes": [
+          "ready 41s",
+          "shot 01-title",
+          "shot 02-early",
+          "shot 03-action",
+          "shot 04-mid",
+          "modes:volt: dom-clicked [data-drone=\"volt\"]",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-heatsink/"
+        ],
+        "beacon": {
+          "route": "showcase-heatsink",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 1
+      },
+      "1280": {
+        "notes": [
+          "ready 83s",
+          "shot 01-title",
+          "shot 02-early",
+          "shot 03-action",
+          "shot 04-mid",
+          "modes:volt: dom-clicked [data-drone=\"volt\"]",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-heatsink/"
+        ],
+        "beacon": {
+          "route": "showcase-heatsink",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 1
+      },
+      "card": {
+        "notes": [
+          "ready 99s",
+          "shot 04-mid"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-heatsink/"
+        ],
+        "beacon": {
+          "route": "showcase-heatsink",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 1
+      }
+    }
+  },
+  "incomplete": []
+}

@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "top-tennis": {
+      "390": {
+        "notes": [
+          "ready 22s",
+          "shot 01-title",
+          "play: clicked #aura-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "auto: clicked #aura-btn-auto",
+          "shot 04-mid",
+          "modes:menu: clicked #aura-btn-menu",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-top-tennis/"
+        ],
+        "beacon": {
+          "rung": 0
+        },
+        "proxied": 3
+      },
+      "1280": {
+        "notes": [
+          "ready 39s",
+          "shot 01-title",
+          "play: dom-clicked #aura-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "auto: dom-clicked #aura-btn-auto",
+          "shot 04-mid",
+          "modes:menu: dom-clicked #aura-btn-menu",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-top-tennis/"
+        ],
+        "beacon": {
+          "rung": 0
+        },
+        "proxied": 3
+      },
+      "card": {
+        "notes": [
+          "ready 51s",
+          "play: dom-clicked #aura-btn-play",
+          "auto: dom-clicked #aura-btn-auto",
+          "shot 04-mid"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-top-tennis/"
+        ],
+        "beacon": {
+          "rung": 0
+        },
+        "proxied": 3
+      }
+    }
+  },
+  "incomplete": []
+}

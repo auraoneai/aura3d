@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "iron-crown": {
+      "390": {
+        "notes": [
+          "ready 44s",
+          "shot 01-title",
+          "shot 02-early",
+          "shot 03-action",
+          "auto: dom-clicked #ic-autopilot",
+          "shot 04-mid",
+          "modes:versus: dom-clicked [data-mode=\"versus\"]",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-iron-crown/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-iron-crown/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 18
+      },
+      "1280": {
+        "notes": [
+          "ready 4s",
+          "shot 01-title",
+          "shot 02-early",
+          "shot 03-action",
+          "auto: dom-clicked #ic-autopilot",
+          "shot 04-mid",
+          "modes:versus: dom-clicked [data-mode=\"versus\"]",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-iron-crown/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-iron-crown/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 18
+      },
+      "card": {
+        "notes": [
+          "ready 4s",
+          "auto: dom-clicked #ic-autopilot",
+          "shot 04-mid"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-iron-crown/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-iron-crown/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 18
+      }
+    }
+  },
+  "incomplete": []
+}

@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "bunker-zero": {
+      "390": {
+        "notes": [
+          "ready 41s",
+          "shot 01-title",
+          "play: dom-clicked #bz-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "shot 04-mid",
+          "modes:menu: dom-clicked #bz-btn-menu",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-bunker-zero/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-bunker-zero/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 33
+      },
+      "1280": {
+        "notes": [
+          "ready 4s",
+          "shot 01-title",
+          "play: clicked #bz-btn-play",
+          "shot 02-early",
+          "shot 03-action",
+          "shot 04-mid",
+          "modes:menu: dom-clicked #bz-btn-menu",
+          "shot 05-modes",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-bunker-zero/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-bunker-zero/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 33
+      },
+      "card": {
+        "notes": [
+          "ready 4s",
+          "play: clicked #bz-btn-play",
+          "shot 04-mid"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-bunker-zero/"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-bunker-zero/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 33
+      }
+    }
+  },
+  "incomplete": []
+}

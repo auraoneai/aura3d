@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "cross-hop": {
+      "390": {
+        "notes": [
+          "ready 76s",
+          "shot 01-title",
+          "shot 02-early",
+          "shot 03-action",
+          "ready 75s",
+          "shot 04-mid",
+          "results: not reached"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-cross-hop/?autostart=1",
+          "/apps/showcase-cross-hop/?autostart=1&autoplay=1"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-cross-hop/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 12
+      },
+      "1280": {
+        "notes": [
+          "ready 137s",
+          "shot 01-title",
+          "shot 02-early",
+          "shot 03-action",
+          "ready 147s",
+          "shot 04-mid",
+          "shot 06-results"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-cross-hop/?autostart=1",
+          "/apps/showcase-cross-hop/?autostart=1&autoplay=1"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-cross-hop/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 12
+      },
+      "card": {
+        "notes": [
+          "ready 179s",
+          "shot 04-mid"
+        ],
+        "errors": [],
+        "bad": [],
+        "navs": [
+          "/apps/showcase-cross-hop/?autostart=1"
+        ],
+        "beacon": {
+          "route": "/apps/showcase-cross-hop/",
+          "state": "playing",
+          "rung": 0
+        },
+        "proxied": 12
+      }
+    }
+  },
+  "incomplete": []
+}
