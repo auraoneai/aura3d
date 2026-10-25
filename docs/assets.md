@@ -4,12 +4,12 @@ Typed GLB/glTF asset workflow for Aura3D coding agents.
 
 Read `llms.txt` and `docs/agents/claims-and-boundaries.md` before writing route code or asset claims. Asset safety is a release blocker, not a style preference.
 
-## Catalog-first rule
+## Resolve-first rule
 
-If a prompt names a real object, do not approximate it with primitives and do not invent a GLB URL. Search the Aura3D federated index first:
+If a prompt names a real object, do not invent a GLB URL. Let `assets resolve` decide: it uses an asset already in the project, then an open, licence-clear source, then Meshy (with `--allow meshy` and a budget), and otherwise prints a primitives recipe for simple props. There is no hosted catalog.
 
 ```bash
-npx @aura3d/cli@latest assets search "battle-worn knight helmet"
+npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet --dry-run
 npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
 ```
 

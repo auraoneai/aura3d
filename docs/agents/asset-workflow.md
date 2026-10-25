@@ -4,37 +4,39 @@ The one page for getting a 3D model, character or texture into an Aura3D scene a
 
 `aura3d <cmd>` below means `npx @aura3d/cli@latest <cmd>` (or the installed `aura3d` binary). Pass the Meshy key only through the environment, never as `--api-key`.
 
-## 1. Pick the path (stop at the first that works)
-
-| Situation | Path |
-| --- | --- |
-| The user gave you a GLB/glTF | Section 3 (`assets add`) |
-| The prompt names a real object | Section 2 (catalog search first) |
-| Catalog has no clean candidate, or you need a bespoke or stylised model | Section 4 (Meshy from a text prompt) |
-| Mesh is right, look is wrong | Section 6 (retexture) |
-| Humanoid must move | Section 5 (rig and clips) |
-
-Never model a named real-world subject (character, vehicle, weapon, creature, landmark) from `primitives.box|sphere|cylinder`. Primitives are for ground, lines, rings, beams and invisible colliders.
-
-## 2. Catalog search
+## 1. Resolve a need (one command decides)
 
 ```bash
-npx @aura3d/cli@latest assets search "battle-worn knight helmet" --json
-npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
-# fighters and acted humanoids:
-npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json
+aura3d assets resolve "street lamp" --role prop --dry-run        # show the decision, change nothing
+aura3d assets resolve "street lamp" --role prop                  # admit it as assets.streetLamp
+aura3d assets resolve "battle-worn knight" --role character --allow meshy --budget 40
+aura3d assets resolve "garden fence"                            # no asset found: prints a primitives recipe
 ```
 
-Narrow with `--license cc0|cc-by`, `--max-tris N`, `--animated`; pick a non-top hit with `--index N` or `--candidate-id ID` and repeat the same `--profile`. Only auto-pullable candidates may be pulled: marketplace deep-links and "manual license check required" rows are for the user to download, then admit with `assets add`. If search prints a catalog fetch warning, report it verbatim and mark asset-dependent work `blocked`.
+`resolve` works at build time and tries four rungs in order, stopping at the first that fits:
 
-### What search can and cannot give you (measured 2026-10-25, see `docs/audit/asset-catalog-claim.md`)
+| Rung | What it does | Cost |
+| --- | --- | --- |
+| 1 Project | An asset already admitted in `aura.assets.json` whose id or source mentions the need's main noun. Use it as `model(assets.<id>)`. | free |
+| 2 Open sources | A directly downloadable, licence-clear match from the curated library, the starter pack, Khronos samples, Poly Haven, ambientCG and the jsDelivr CC0 mirror. The title must contain the main noun ("wooden bridge" never resolves to a carved elephant); models must fit the role triangle budget; the report shows triangles and size. Admission records sha256, provenance and licence, then typegen. | free |
+| 3 Meshy | Only with `--allow meshy` and a `--budget` that covers the estimate (prop or hero 30 credits, character 38). Runs the generator named by `AURA3D_MESHY_CMD` (your credentialed path, for example Kiro Prism with ledger caps; the CLI never handles keys); otherwise prints the commands. Then `assets import-meshy`. | 30 to 38 credits |
+| 4 Procedural | Prints a paste-ready snippet built from `primitives` and `group` for common props (crate, barrel, table, chair, tree, rock, fence, lamp, building, car placeholder). | free |
 
-- `assets search` federates several sources: your project library (`aura.library.json`), a built-in starter pack, open sources (Khronos samples, Poly Haven, jsDelivr CC0 mirror of Kenney and Quaternius packs, OS3A) and a hosted index. The hosted index is a Cloudflare Worker over a database of about 855,000 records, about 93% of them from Objaverse. **When that worker is down the CLI prints `warning: aura-index: asset-index fetch failed 404`; from 4.2.0 it still searches the open sources, and in 4.1.3 it falls back to the starter pack only**; read the warnings.
-- The index is wide, not curated. Of the records, about 1% are CC0, about 88% are CC-BY (**attribution required** in the shipped game), about 9% are non-commercial (never use), and some CC-BY-SA records carry share-alike duties. About 28% of the redistributable records have more than 100,000 triangles. A search hit is a candidate, not an asset you can ship.
-- **Always screen before admitting**: `assets inspect <file>` and the budgets in section 4 (hero or vehicle at most 40k triangles, prop at most 6k, textures at most 2048 px, total at most 10 MB per game). In a 40-hit sample, 42% passed the web budget.
-- Some index rows (Sketchfab-sourced) are not downloadable without a token; if a pull returns 401, take the next candidate or generate.
-- `assets search "<noun>"` returns meshes only; add the word `texture`, `material`, `hdri` or `environment` to search surface maps.
-- If nothing passes: generate with Meshy (section 4), or build the object from kit prefabs and primitives only when it is ground, a ring, a beam or a collider.
+Read the decision report: the chosen rung, why, what was skipped and the credits spent. `--role hero|prop|background|character|texture|hdri` sets the budget and the kind of file; `--json` prints the report.
+
+There is no hosted catalog. Aura3D, like three.js, does not find assets at runtime: production scenes load only admitted files (`model(assets.x)`, sha256 checked). `resolve` is the build-time helper that three.js does not have.
+
+Procedural recipes are for simple props, set dressing and placeholders. A named, recognisable subject (a character, a specific vehicle, a creature, a landmark) needs a real model: rung 2 or Meshy.
+
+## 2. Manual search (when you want to choose yourself)
+
+```bash
+aura3d assets search "battle-worn knight helmet" --json
+aura3d assets resolve "battle-worn knight helmet" --name helmet --candidate-id <id-from-search>
+aura3d assets search "animated humanoid fighting character" --profile fighting-character --json
+```
+
+Search covers the same open sources as rung 2. Narrow with `--license cc0|cc-by`, `--max-tris N`, `--animated`; pick a specific hit with `--index N` or `--candidate-id ID`. Only auto-pullable rows may be pulled; marketplace deep-links are for the user to download, then admit with `assets add`. Add `texture`, `material`, `hdri` or `environment` to search surface maps instead of meshes. CC-BY assets need an attribution record in the shipped game; never use non-commercial (NC) licences.
 
 ## 3. Admit a file you already have
 
