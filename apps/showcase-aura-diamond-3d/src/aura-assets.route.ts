@@ -51,10 +51,10 @@ export const assets: AuraAssetMap<AuraGeneratedRouteAssetDefinitions> = defineAu
   "diamondAthlete": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/diamondAthleteClean.83d49dee.glb",
-    hash: "sha256-83d49deea657377642a07530e8e33df400232a52a162340357c22d643d368eee",
+    url: "/aura-assets/diamondAthleteClean.b4dde6a0.glb",
+    hash: "sha256-b4dde6a02ad13af56102742dc83153e59d136ec4a668a26d5c604e2c330494ea",
     bounds: [0.938, 1.903, 0.364],
-    sizeBytes: 1666124,
+    sizeBytes: 2180780,
   },
   "diamondBall": {
     type: "model",

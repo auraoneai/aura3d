@@ -83,7 +83,7 @@ describe("repainted athlete models", () => {
       const prims = json.meshes[0].primitives as Array<{ attributes: Record<string, number>; material: number }>;
       if (!palette) {
         expect(prims.length).toBeGreaterThanOrEqual(4);
-        expect(prims.length).toBeLessThanOrEqual(5);
+        expect(prims.length).toBeLessThanOrEqual(6); // kit, shorts, socks, skin, dark and the flat white of the eyes
       }
       for (const p of prims) { expect(p.attributes.JOINTS_0).toBeTypeOf("number"); expect(p.attributes.COLOR_0).toBeUndefined(); }
       expect(json.skins[0].joints).toHaveLength(15);

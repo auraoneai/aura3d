@@ -1161,6 +1161,9 @@ function updateCamera(dt: number): void {
   // offset in so the golfer/ball stay framed instead of sliding off-screen
   const aspect = (window.innerWidth || 16) / (window.innerHeight || 9);
   const side = clamp(aspect / 1.6, 0.3, 1);
+  // 0 on landscape and square windows, 1 on a phone held upright: the horizontal fov is only ~20 degrees there, so the
+  // camera comes nearly onto the shot line, steps back and opens the fov until the golfer beside the ball and the club fit.
+  const portrait = clamp((1.15 - aspect) / 0.6, 0, 1);
 
   // Keep the golfer AND the ball framed through the strike: for the first
   // moments after impact the swing-cam still holds (the viewer sees the
@@ -1204,26 +1207,28 @@ function updateCamera(dt: number): void {
     // Low 3/4 view that keeps the full stance, club and swing arc in frame —
     // and through the strike the ball leaving the tee.
     const tx2 = bx + Math.sin(yaw) * 2.8, tz2 = bz + Math.cos(yaw) * 2.8;
-    const ex = bx - Math.sin(yaw) * 4.4 - Math.cos(yaw) * 2.5 * side;
-    const ez = bz - Math.cos(yaw) * 4.4 + Math.sin(yaw) * 2.5 * side;
+    const addrBack = 4.4 + 1.9 * portrait, addrSide = 2.5 * side * (1 - 0.9 * portrait);
+    const ex = bx - Math.sin(yaw) * addrBack - Math.cos(yaw) * addrSide;
+    const ez = bz - Math.cos(yaw) * addrBack + Math.sin(yaw) * addrSide;
     cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + 2.3, ez], 1 - Math.pow(0.001, dt));
     cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) + 1.0, tz2], 1 - Math.pow(0.001, dt));
-    cam.fov = lerp(cam.fov, 42, 1 - Math.pow(0.02, dt));
+    cam.fov = lerp(cam.fov, 42 + 16 * portrait, 1 - Math.pow(0.02, dt));
   } else {
     cam.mode = "aim";
     const yaw = t.lineYaw + r.aimOffset;
     const bx = r.ballPos[0], bz = r.ballPos[2];
     // Over-the-shoulder aim cam — W/S dollies between behind-golfer and overview,
     // low enough that the 1.84 m golfer and club never fall below the frame.
-    const back = 5.4 * cam.zoom;
+    const back = 5.4 * cam.zoom + 1.9 * portrait;
     const h = 1.2 * cam.zoom + 1.0;
-    const ex = bx - Math.sin(yaw) * back - Math.cos(yaw) * 2.7 * side;
-    const ez = bz - Math.cos(yaw) * back + Math.sin(yaw) * 2.7 * side;
+    const aimSide = 2.7 * side * (1 - 0.9 * portrait);
+    const ex = bx - Math.sin(yaw) * back - Math.cos(yaw) * aimSide;
+    const ez = bz - Math.cos(yaw) * back + Math.sin(yaw) * aimSide;
     const lookAhead = 34 * cam.zoom;
     const tx2 = bx + Math.sin(yaw) * lookAhead, tz2 = bz + Math.cos(yaw) * lookAhead;
     cam.eye = lerp3(cam.eye, [ex, t.height(ex, ez) + h, ez], 1 - Math.pow(0.002, dt));
     cam.target = lerp3(cam.target, [tx2, t.height(tx2, tz2) + 0.9, tz2], 1 - Math.pow(0.002, dt));
-    cam.fov = lerp(cam.fov, cam.zoom > 1.5 ? 46 : 42, 0.08);
+    cam.fov = lerp(cam.fov, (cam.zoom > 1.5 ? 46 : 42) + 16 * portrait, 0.08);
   }
   camApply();
 }
