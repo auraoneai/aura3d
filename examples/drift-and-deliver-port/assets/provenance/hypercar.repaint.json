@@ -1,0 +1,9 @@
+{
+  "asset": "hypercar.glb",
+  "derivedFrom": "hypercar.glb (Meshy text-to-3d, see hypercar.meta.json and hypercar.remesh.meta.json)",
+  "tool": "tools/gridlock-car-retexture/retexture.mjs",
+  "date": "2026-10-25",
+  "change": "geometry untouched; baked base-colour and metallic-roughness textures replaced by flat PBR materials split by region (body, glass, tyre, rim, headlight, taillight, underbody) because the baked glass and interior read as see-through",
+  "sha256": "a3104b3a3f9504afdcbe63324a7f6e5a9dc8e81ddaaa186ff00527b632b8d7bf",
+  "credits": 0
+}

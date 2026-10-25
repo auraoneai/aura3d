@@ -259,10 +259,27 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
 /* ------------------------------------------------------------------ small geometry */
 
 
+/**
+ * The terrain around the road square. It is a frame with a hole where the road lies, never a full plane under it: a
+ * plane 3 cm below the road competes with the road in the depth buffer on a coarse depth buffer (one depth step at 30 m
+ * on a 16-bit buffer is about 3 cm), and a tie goes to the later-drawn layer. Hardening only: the road flip seen in
+ * the first frames was reproduced with and without this change (see the render-fix README).
+ */
+export function outerGroundRects(): readonly (readonly [number, number, number, number])[] {
+  const h = 1600;
+  const r = GROUND_HALF;
+  // [x0, z0, x1, z1]
+  return [
+    [-h, r, h, h], // north strip
+    [-h, -h, h, -r], // south strip
+    [-h, -r, -r, r], // west strip
+    [r, -r, h, r] // east strip
+  ];
+}
+
 function outerGround(): MeshData {
   const m = createMesh();
-  const h = 1600;
-  quad(m, [-h, -0.03, h], [2 * h, 0, 0], [0, 0, -2 * h], [1, 1, 1], [0, 0], [1, 1]);
+  for (const [x0, z0, x1, z1] of outerGroundRects()) quad(m, [x0, -0.03, z1], [x1 - x0, 0, 0], [0, 0, -(z1 - z0)], [1, 1, 1], [0, 0], [1, 1]);
   return m;
 }
 

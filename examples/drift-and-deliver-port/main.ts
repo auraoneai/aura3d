@@ -431,7 +431,7 @@ async function boot(): Promise<void> {
   });
   await app.ready();
   // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city
-  await warmPrograms(app);
+  await warmPrograms(app, { waitForEnvironment: true, environmentTimeoutMs: 30_000 });
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");

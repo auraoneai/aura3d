@@ -19,7 +19,7 @@ const glb = (file: string, hash: string) => ({
 });
 
 export const MODEL_ASSETS = defineAuraAssets({
-  hypercar: glb("hypercar.glb", "db093a30692e3c231be828079d23a3083b9b737a73f7f2578d93168d11307669"),
+  hypercar: glb("hypercar.glb", "a3104b3a3f9504afdcbe63324a7f6e5a9dc8e81ddaaa186ff00527b632b8d7bf"),
   sedan: glb("sedan.glb", "fac209266bd3ed4195b3a809025a773017f64364be1a7641ffa0846945fed39b"),
   hatch: glb("hatch.glb", "4bda108ecb13d9890661e4f9a611904f7c32634d77f4e7baa364bcc880193c98"),
   van: glb("van.glb", "327356a17ddfb9d7c54eb84f8e57a062e451f6228594dad7914f47e80e2978c9"),
@@ -48,9 +48,7 @@ export const TRAFFIC_MODEL: Record<CarKind, Exclude<CarKey, "hypercar">> = { sed
 
 /** A runtime-addressable car model: the app moves it with `nodes.require(id).setPosition/setRotation`. */
 export function carModel(id: string, key: CarKey, castShadow: boolean) {
-  // the black paint reflects the warm sky HDRI as bright patches at full environment strength
-  const paint = key === "hypercar" ? { materialOverrides: [{ envMapIntensity: 0.55 }] } : {};
-  return model(MODEL_ASSETS[key], { name: id, scale: CAR_LENGTH[key] / GLB_LENGTH, castShadow, receiveShadow: false, ...paint }).runtime({ id });
+  return model(MODEL_ASSETS[key], { name: id, scale: CAR_LENGTH[key] / GLB_LENGTH, castShadow, receiveShadow: false }).runtime({ id });
 }
 
 /** Distance from each prop GLB's origin down to its lowest point (GLB units, longest side 1.9). */
