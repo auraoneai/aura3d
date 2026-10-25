@@ -30,10 +30,10 @@ export const assets = defineAuraAssets({
     hash: "sha256-b7a28a1681ca08193ae54ba9dc1554ca52630d01ccbbe4efc1c0ab06e5b8fdeb",
     bounds: [1.9, 1.265, 1.25]
   },
-  rzLombardiCupMeshy: {
+  rzChampionCupMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rzLombardiCupMeshy.35a24607.glb",
+    url: "/aura-assets/rzChampionCupMeshy.35a24607.glb",
     hash: "sha256-35a2460780fa005ead8e51dee961b5eb1497e64fcd99c726b30b8ebc85eb535e",
     bounds: [1.331, 1.901, 0.752]
   },

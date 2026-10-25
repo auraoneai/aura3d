@@ -652,7 +652,7 @@ type AuraGeneratedAssetDefinitions = {
   readonly "rzAltitudeDomeMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rzFloodlightPylonMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rzFootballMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "rzLombardiCupMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
+  readonly "rzChampionCupMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "rzScoreboardGantryMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
 };
 
@@ -153395,10 +153395,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       }
     },
   },
-  "rzLombardiCupMeshy": {
+  "rzChampionCupMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rzLombardiCupMeshy.35a24607.glb",
+    url: "/aura-assets/rzChampionCupMeshy.35a24607.glb",
     hash: "sha256-efff2739b21ce99676a9f56d63ac622b613c23d8e50fe4e64d301153ae0091ff",
     bounds: [
       1.331,
@@ -153461,12 +153461,12 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "aura-evidence/meshy/rzLombardiCupMeshy.rights.7fcc7bfad170.json",
           "aura-evidence/meshy/rzLombardiCupMeshy.metadata.425e9304e732.json",
-          "public/aura-assets/rzLombardiCupMeshy.meshy-candidate.e6fbce17.png"
+          "public/aura-assets/rzChampionCupMeshy.meshy-candidate.e6fbce17.png"
         ],
         "checkedAt": "2026-10-17T09:14:02.392Z"
       },
       "sourcePath": "artifacts/meshy/rz-lombardi-cup/model.glb",
-      "outputPath": "public/aura-assets/rzLombardiCupMeshy.35a24607.glb",
+      "outputPath": "public/aura-assets/rzChampionCupMeshy.35a24607.glb",
       "boundsMetadata": {
         "min": [
           -0.666,
@@ -153514,11 +153514,11 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "image-0"
       ],
       "dependencies": [],
-      "thumbnailUrl": "/aura-assets/rzLombardiCupMeshy.thumb.svg",
+      "thumbnailUrl": "/aura-assets/rzChampionCupMeshy.thumb.svg",
       "quality": "candidate",
       "role": "prop",
       "renderedProbe": {
-        "url": "/aura-assets/rzLombardiCupMeshy.meshy-candidate.e6fbce17.png",
+        "url": "/aura-assets/rzChampionCupMeshy.meshy-candidate.e6fbce17.png",
         "kind": "manual-inspection",
         "sha256": "sha256-e6fbce17aaeec8a5196ccc8716dc332b1976a98a3d0928199a38629bcb067fb0",
         "checkedAt": "2026-10-17T10:04:43.664Z"

@@ -918,7 +918,7 @@ let lastPhaseHud = "";
 const MESHY_ASSETS_LIST = [
   "rzFootballMeshy", "rzQuarterbackMeshy", "rzDefenderLinemanMeshy", "rzFieldGoalPostMeshy",
   "rzFloodlightPylonMeshy", "rzScoreboardGantryMeshy",
-  "rzLombardiCupMeshy", "rzAltitudeDomeMeshy", "gallerySecurityGuardMeshy",
+  "rzChampionCupMeshy", "rzAltitudeDomeMeshy", "gallerySecurityGuardMeshy",
   "diamondDugout", "diamondStadium", "hoopsBallCart"
 ];
 

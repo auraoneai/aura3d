@@ -5,7 +5,7 @@
   inset: 0;
   pointer-events: none;
   z-index: 50;
-  font-family: var(--font-ui, "Whitney", -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-ui, "Whitney", sans-serif);
   --fh-gold: #ffd76a;
   --fh-red: #ff4f46;
   --fh-blue: #57c8ff;

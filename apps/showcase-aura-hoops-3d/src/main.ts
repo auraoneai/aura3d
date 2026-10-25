@@ -2701,7 +2701,6 @@ function publishEvidence(): void {
   const evidence = {
     route: "showcase-aura-hoops-3d",
     engine: "@aura3d/engine",
-    engineVersion: "4.0.2",
     ready: appReady && document.body.dataset.aura3dReady === "true",
     framesRendered,
     frameErrors: frameBoundary.stats(),

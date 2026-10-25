@@ -58,7 +58,7 @@ const panelCss = `
   background: linear-gradient(180deg, rgba(10,22,30,.96), rgba(6,12,17,.96));
   border: 1px solid rgba(216,255,62,.32); padding: 26px 30px;
   box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06); }
-.fc-card h1 { margin: 0; font-family: "DIN Pro","Arial Black",sans-serif; font-size: 38px;
+.fc-card h1 { margin: 0; font-family: "DIN Pro",sans-serif; font-size: 38px;
   letter-spacing: .1em; }
 .fc-card h1 .fc3d { color: #d8ff3e; }
 .fc-card h2 { margin: 0 0 14px; font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: #7dfcff; }

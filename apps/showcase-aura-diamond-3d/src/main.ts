@@ -4285,7 +4285,6 @@ function boot(): void {
     const evidence = {
       route: "showcase-aura-diamond-3d",
       engine: "@aura3d/engine",
-      engineVersion: "4.0.2",
       ready: appReady && framesRendered > 2,
       framesRendered,
       autopilot: G.autopilot,

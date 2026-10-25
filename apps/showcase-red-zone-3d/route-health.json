@@ -50,7 +50,7 @@
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.rzLombardiCupMeshy",
+      "typedRef": "assets.rzChampionCupMeshy",
       "quality": "candidate",
       "role": "setDressing"
     },
@@ -75,7 +75,7 @@
       "role": "setDressing"
     }
   ],
-  "assetHonesty": "Game football, 9 skill/quarterback athletes (rzQuarterbackMeshy), 5 linemen/linebacker athletes (rzDefenderLinemanMeshy), both endzone field goal posts (rzFieldGoalPostMeshy), line-of-scrimmage referee, floodlight pylons, scoreboard gantry, Lombardi cup, altitude dome, sideline benches, stadium arch, and equipment cart are 3D Meshy GLBs.",
+  "assetHonesty": "Game football, 9 skill/quarterback athletes (rzQuarterbackMeshy), 5 linemen/linebacker athletes (rzDefenderLinemanMeshy), both endzone field goal posts (rzFieldGoalPostMeshy), line-of-scrimmage referee, floodlight pylons, scoreboard gantry, Champion cup, altitude dome, sideline benches, stadium arch, and equipment cart are 3D Meshy GLBs.",
   "qualityGate": {
     "status": "reviewed",
     "note": "Remote headless capture (i-087c92ec3af45d0d1, 2026-10-17): route-ready=ready, evidence ready=true, framesRendered=67, mode=quickplay/live; screenshots show live 7v7 3D gameplay with 3D Meshy quarterbacks, linemen, field goal posts, play-selection cards, scorebug, and lined-up formations."

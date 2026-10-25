@@ -2888,7 +2888,6 @@ async function bootGridDispatchAura3D(): Promise<void> {
     const evidence = {
       route: "showcase-teleoperator",
       engine: "@aura3d/engine",
-      version: "4.0.2",
       ready: true,
       framesRendered,
       vehicle: activeCarId,

@@ -2353,7 +2353,6 @@ function publishEvidence(): void {
   const evidence = {
     route: "showcase-aura-links-3d",
     engine: "@aura3d/engine",
-    engineVersion: "4.0.2",
     ready: true,
     framesRendered,
     mode: state.mode,

@@ -338,7 +338,7 @@ export function buildStadiumNodes(venue: Stadium, lite = false): any[] {
         .rotate(0, -Math.PI / 2, 0),
       model(assets.hoopsBallCart, { name: "sideline-ball-cart", targetHeight: 1.15 })
         .position(W + 3.0, 0, 42),
-      model(assets.rzLombardiCupMeshy, { name: "cup-pedestal", targetHeight: 2.1 })
+      model(assets.rzChampionCupMeshy, { name: "cup-pedestal", targetHeight: 2.1 })
         .position(-W - 3.2, 0, 30).rotate(0, Math.PI / 2.6, 0)
         .runtime(game.runtimeNode("cup-pedestal")),
       model(assets.rzFootballMeshy, { name: "ball-rack", targetHeight: 0.52 })

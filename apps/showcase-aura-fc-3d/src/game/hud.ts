@@ -76,7 +76,7 @@ const css = `
 .fc-tick-warn { border-left-color: #ff3b30; color: #ffb3ac; }
 .fc-tick-success { border-left-color: #d8ff3e; color: #e8f5c0; }
 .fc-banner { position: absolute; top: 34%; left: 50%; transform: translate(-50%,-50%) scale(.9);
-  font-family: "DIN Pro", "Arial Black", sans-serif; font-weight: 800; font-size: 54px;
+  font-family: "DIN Pro", sans-serif; font-weight: 800; font-size: 54px;
   letter-spacing: .12em; text-transform: uppercase; color: #f3f0dc; text-align: center;
   text-shadow: 0 4px 30px rgba(0,0,0,.7), 0 0 60px rgba(216,255,62,.3);
   opacity: 0; transition: opacity .2s, transform .3s cubic-bezier(.2,.9,.3,1.4); pointer-events: none; }

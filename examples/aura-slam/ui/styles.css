@@ -95,7 +95,7 @@ body :is(.wordmark, .brand, .menu-wordmark, .footer-brand, .scoreboard-brand, .a
 
 /* ---- styles.css ---- */
 
-:root{color-scheme:dark;font-family: Graphik,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#74865d;--ink:#f2f2e8;--muted:#b9c3b0;--accent:#d8dfbc}
+:root{color-scheme:dark;font-family: "Graphik",sans-serif;background:#74865d;--ink:#f2f2e8;--muted:#b9c3b0;--accent:#d8dfbc}
 *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden}body{overscroll-behavior:none;user-select:none;-webkit-user-select:none}button{font:inherit;cursor:pointer}button:focus-visible{outline:2px solid #f4f0ce;outline-offset:4px}
 /* Screen headings receive focus for navigation announcements, without a control outline. */
 :is(h1,h2,h3,h4,h5,h6)[tabindex="-1"]:focus{outline:none}
