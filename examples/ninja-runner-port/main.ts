@@ -18,6 +18,7 @@ import {
   DEFAULT_SEED, SIM_STEP, TUNING, applyAction, createState, drainEvents, qaAutopilotActions, snapshot, startRun, stepSim,
   type Action, type SimEvent, type SimState
 } from "./sim";
+import { createNinjaPresenter, viewOf } from "./presentation";
 import { ACTOR_COUNT, buildWorld, loadActors, type ActorAssets, type WorldRuntime } from "./world";
 
 const params = new URLSearchParams(location.search);
@@ -42,6 +43,7 @@ const canvas = $<HTMLCanvasElement>("world");
 /* ------------------------------------------------------------------ state */
 
 let z: SimState = createState(config.seed, { ram: config.ram });
+const presenter = createNinjaPresenter(() => z);
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
 let actors: ActorAssets | undefined;
@@ -100,6 +102,7 @@ function showHud(on: boolean): void {
 
 function begin(): void {
   z = createState(config.seed, { ram: config.ram });
+  presenter.reset();
   startRun(z);
   loop.resetAccumulator();
   simSteps = 0;
@@ -121,6 +124,7 @@ function startWithCountdown(): void {
   audio.unlock();
   audio.play("click");
   z = createState(config.seed, { ram: config.ram });
+  presenter.reset();
   runtime?.resetCamera();
   $("overlay").classList.add("hidden");
   $("result").classList.add("hidden");
@@ -207,10 +211,11 @@ function updateHud(): void {
 
 /* ------------------------------------------------------------------ frame */
 
-function render(dt: number): void {
+/** `live` draws the poses between the last two steps (smooth on 144 Hz displays); everything else draws the exact latest step. */
+function render(dt: number, live = false): void {
   if (!app || !runtime || renderFailed) return;
   try {
-    runtime.update(z, dt, renderTime, pendingEvents);
+    runtime.update(live ? viewOf(z, presenter.present(loop, true)) : z, dt, renderTime, pendingEvents);
     pendingEvents = [];
     app.step(0);
     frames++;
@@ -226,7 +231,10 @@ const loop = createFixedStepLoop({
   stepSeconds: SIM_STEP,
   maxCatchUpSteps: 12,
   isActive: () => ready,
-  step: () => { if (!config.manual && z.phase === "running" && hitStop.timeScale() === 1) step(1); },
+  step: () => {
+    if (!config.manual && z.phase === "running" && hitStop.timeScale() === 1) step(1);
+    presenter.afterStep();
+  },
   render: (dt) => {
     renderTime += dt;
     hitStop.update(dt);
@@ -236,7 +244,7 @@ const loop = createFixedStepLoop({
       if (countdown <= 0) begin();
     }
     audio.update({ form: z.form, speed: z.speed, running: z.phase === "running" });
-    render(dt);
+    render(dt, !config.manual && z.phase === "running");
     updateHud();
   }
 });
@@ -284,11 +292,12 @@ const api = {
   reset() { begin(); return snapshot(z); },
   applyInput: (action: Action) => act(action),
   /** Run `n` fixed 1/120 s steps (optionally applying `actions` before each step), then render once. */
-  stepFrames(n: number, actions?: readonly Action[]) { step(Math.max(0, n | 0), actions); updateHud(); runtime?.resetCamera(); render(0); return snapshot(z); },
+  stepFrames(n: number, actions?: readonly Action[]) { step(Math.max(0, n | 0), actions); presenter.reset(); updateHud(); runtime?.resetCamera(); render(0); return snapshot(z); },
   /** Step the live sim without rendering until `form` is active, the run ends, or `maxSteps` pass; renders once at the end. */
   advanceUntil(form: string | null, maxSteps: number) {
     let n = 0;
     while (n < maxSteps && z.phase === "running" && (form === null || z.form !== form)) { step(1); n++; }
+    presenter.reset();
     updateHud();
     runtime?.resetCamera();
     render(0);
@@ -372,6 +381,7 @@ const konoha = {
       simSteps++;
       handle(drainEvents(z));
     }
+    presenter.reset();
     updateHud();
     render(1 / 60);
     return snapshot(z);
