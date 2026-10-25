@@ -43,7 +43,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 
 - [Aura3D Concept Car Cinema: Typed GLB Product Configurator Example](https://aura3d.auraone.ai/apps/wow-concept-car-cinema/)
 - [Aura3D Damaged Helmet PBR Detail: Typed GLB Asset Viewer Example](https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/)
-- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/)
+- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/): 26 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.
 - [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer (V2) on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/)

@@ -1,0 +1,272 @@
+{
+ "schema": "aura3d-site-games-catalog/1",
+ "genres": {
+  "racing": "Racing and driving",
+  "sports": "Sports",
+  "action": "Action and combat",
+  "platformer": "Platformers and runners",
+  "arcade": "Arcade and exploration"
+ },
+ "games": [
+  {
+   "appFolder": "showcase-top-tennis",
+   "previewSlug": "top-tennis",
+   "url": "/apps/showcase-top-tennis/",
+   "title": "Aura Slam 3D",
+   "genre": "sports",
+   "verification": "playable",
+   "evidenceFolder": "aura-slam",
+   "text": "Championship 3D tennis on a native Aura3D simulation, with 2-bone IK athletes, 6 courts (NY, London, Paris, Dubai, Beach, Moon), Quick Match and Smash Lab. Tournament and online play are coming soon."
+  },
+  {
+   "appFolder": "showcase-roadster-rush",
+   "previewSlug": "roadster-rush",
+   "url": "/apps/showcase-roadster-rush/",
+   "title": "Apex Overdrive",
+   "genre": "racing",
+   "verification": "playable",
+   "evidenceFolder": "apex-overdrive",
+   "text": "High-speed sunset freeway &amp; sky-lane combat racer — fly the Apex Interceptor over gridlocked traffic with cold-gas thrusters, barrel rolls, carrier ramps, and sky-lane dogfights."
+  },
+  {
+   "appFolder": "showcase-heatsink",
+   "previewSlug": "heatsink",
+   "url": "/apps/showcase-heatsink/",
+   "title": "Thermal Drift",
+   "genre": "racing",
+   "verification": "playable",
+   "evidenceFolder": "thermal-drift",
+   "text": "Cyberpunk anti-gravity combat drone racing through a rain-soaked megacity with 7 playable drones, twin laser cannons, thermal overdrive management, and 3 circuits."
+  },
+  {
+   "appFolder": "showcase-teleoperator",
+   "previewSlug": "teleoperator",
+   "url": "/apps/showcase-teleoperator/",
+   "title": "Grid Dispatch",
+   "genre": "racing",
+   "verification": "playable",
+   "evidenceFolder": "teleoperator",
+   "text": "San Francisco autonomous fleet &amp; street teleoperation — pilot an Apex Lidar Cruiser, Cyber Coupe, Titan EV Truck, or Vortex GT with L5 self-driving fares, vector minimap, and multiplayer peer tags."
+  },
+  {
+   "appFolder": "showcase-iron-crown",
+   "previewSlug": "iron-crown",
+   "url": "/apps/showcase-iron-crown/",
+   "title": "Iron Crown",
+   "genre": "action",
+   "verification": "playable",
+   "evidenceFolder": "iron-crown",
+   "text": "2.5D arena fighter — six fighters battle across six stages with guards, dashes, metered specials, and throws. Best-of-3 rounds, Crown Ladder bracket, Combo Lab trainer, and Player Studio palettes."
+  },
+  {
+   "appFolder": "showcase-pips-big-leap",
+   "previewSlug": "pips-big-leap",
+   "url": "/apps/showcase-pips-big-leap/",
+   "title": "Pip's Big Leap",
+   "genre": "platformer",
+   "verification": "playable",
+   "evidenceFolder": "pips-big-leap",
+   "text": "3D mascot platformer — guide Pip through six worlds gathering sun-seeds with double-jumps, dives, glide cape, and ground-pounds. Jump Academy gauntlet, per-world time trials, and a Brambleback boss."
+  },
+  {
+   "appFolder": "showcase-aura-hoops-3d",
+   "previewSlug": "aura-hoops-3d",
+   "url": "/apps/showcase-aura-hoops-3d/",
+   "title": "Aura Hoops 3D",
+   "genre": "sports",
+   "verification": "playable",
+   "evidenceFolder": "aura-hoops-3d",
+   "text": "3v3 streetball — ankle-breaker jukes, alley-oops off the glass, and a press-hold-release shot meter across six courts from Rucker asphalt to the Orbit dome. Dunk Lab, Handles Lab, 8 squads, and a 32-team Street Tour."
+  },
+  {
+   "appFolder": "showcase-aura-diamond-3d",
+   "previewSlug": "aura-diamond-3d",
+   "url": "/apps/showcase-aura-diamond-3d/",
+   "title": "Aura Diamond 3D",
+   "genre": "sports",
+   "verification": "playable",
+   "evidenceFolder": "aura-diamond-3d",
+   "text": "Three-inning baseball — PCI × timing at-bats, four pitch types, and launch-angle moonshots across six ballparks from Harbor Sandlot to Lunar Park's 1/6-gravity fences. Derby Lab, Bullpen Lab, 8 clubs, and a 32-team World Classic."
+  },
+  {
+   "appFolder": "showcase-aura-fc-3d",
+   "previewSlug": "aura-fc-3d",
+   "url": "/apps/showcase-aura-fc-3d/",
+   "title": "Aura FC 3D",
+   "genre": "sports",
+   "verification": "playable",
+   "evidenceFolder": "aura-fc-3d",
+   "text": "5v5 street-and-stadium soccer — driven passes, curling finishers, and skill-move flicks across six pitches from the Favela Cage to the aurora-lit Glacier Arena. Shootout Lab, Touch Lab, 8 clubs, and a 32-team World Circuit."
+  },
+  {
+   "appFolder": "showcase-red-zone-3d",
+   "previewSlug": "red-zone-3d",
+   "url": "/apps/showcase-red-zone-3d/",
+   "title": "Red Zone 3D",
+   "genre": "sports",
+   "verification": "playable",
+   "evidenceFolder": "red-zone-3d",
+   "text": "7v7 arcade football — call the play, read the route, and hit-stick on defense across six stadiums from Friday Night Lights to the thin-air Altitude Bowl. Route Lab, Tackle Lab, 8 clubs, and a 32-team Gridiron Series."
+  },
+  {
+   "appFolder": "showcase-aura-links-3d",
+   "previewSlug": "aura-links-3d",
+   "url": "/apps/showcase-aura-links-3d/",
+   "title": "Aura Links 3D",
+   "genre": "sports",
+   "verification": "playable",
+   "evidenceFolder": "aura-links-3d",
+   "text": "Three-click championship golf — ball-flight sim with wind, spin, and shot-shaping across six 3D courses from St. Auroras Links to Lunar Mare. Range Lab, Putting Lab, Skins Match, and 32-player Pro Circuit."
+  },
+  {
+   "appFolder": "showcase-bunker-zero",
+   "previewSlug": "bunker-zero",
+   "url": "/apps/showcase-bunker-zero/",
+   "title": "Bunker Zero",
+   "genre": "action",
+   "verification": "playable",
+   "evidenceFolder": "showcase-bunker-zero",
+   "text": "Retro corridor FPS — fight through six floors from the Stone Gatehouse to the Zero silo with knife, pistol, machine gun, and rockets; guards, patrol dogs, heavy gunners, and the Iron Warden; keys, treasures, push-wall secrets, and par medals."
+  },
+  {
+   "appFolder": "showcase-slingshot-siege",
+   "previewSlug": "slingshot-siege",
+   "url": "/apps/showcase-slingshot-siege/",
+   "title": "Slingshot Siege",
+   "genre": "action",
+   "verification": "playable",
+   "evidenceFolder": "slingshot-siege",
+   "text": "Saturday-morning physics destruction — drag the pouch back, lob five ammo types across 30 levels in six chapters, and topple raiders inside wood, stone, and glass towers. Trajectory Range, Siege Map, and Player Studio."
+  },
+  {
+   "appFolder": "showcase-dot-dash-3d",
+   "previewSlug": "dot-dash-3d",
+   "url": "/apps/showcase-dot-dash-3d/",
+   "title": "Glint Courier",
+   "genre": "arcade",
+   "verification": "playable",
+   "evidenceFolder": "dot-dash-3d",
+   "text": "Courier-drone maze chase: guide the drone across six circuit boards, collect data shards, trigger surge cells to overload four patrol sentries (Hunter, Ambusher, Drifter, Skittish), and grab gem bonuses. Dash boost, Sentry Lab and Board Map trainer modes."
+  },
+  {
+   "appFolder": "showcase-cross-hop",
+   "previewSlug": "cross-hop",
+   "url": "/apps/showcase-cross-hop/",
+   "title": "Cross Hop",
+   "genre": "platformer",
+   "verification": "playable",
+   "evidenceFolder": "cross-hop",
+   "text": "Endless lane hopper — four-direction hops across traffic roads, tram lines, log rivers, telegraphed rails, and lava stones across six remixed themes. Twelve unlockable critters, idle-hawk pressure, Timing School, World Tour, and Player Studio."
+  },
+  {
+   "appFolder": "showcase-strange-orbit-port",
+   "previewSlug": "strange-orbit-port",
+   "url": "/apps/craterline-gp/",
+   "title": "Craterline GP",
+   "genre": "racing",
+   "verification": "replay-verified",
+   "evidenceFolder": "strange-orbit-port",
+   "text": "Moon-rim bike racing: a seven-lap cup race against five rivals with route splits, checkpoints and a rescue budget. Simulation parity verified against a recorded seven-lap run; lit sci-fi look with audio and a difficulty selector; bikes, riders and rim props are generated models (riders are single rigid meshes); no career or garage."
+  },
+  {
+   "appFolder": "showcase-splat-rush-port",
+   "previewSlug": "splat-rush-port",
+   "url": "/apps/chroma-roll/",
+   "title": "Chroma Roll",
+   "genre": "platformer",
+   "verification": "replay-verified",
+   "evidenceFolder": "splat-rush-port",
+   "text": "Colour-gate ball runner with power-ups, colour switching and a splatter game-over; every simulation field matches a recorded reference run. Audio, effects and keyboard play added; backdrop islands and pickups are generated models; platform SDKs are not included."
+  },
+  {
+   "appFolder": "showcase-serpentine-sky-run-port",
+   "previewSlug": "serpentine-sky-run-port",
+   "url": "/apps/serpentine-sky-run/",
+   "title": "Serpentine Sky Run",
+   "genre": "platformer",
+   "verification": "replay-verified",
+   "evidenceFolder": "saiyan-snake-way-port",
+   "text": "Endless runner on a serpentine sky road: eight stages with boost rungs, roll sections and traffic hazards; the outbound run matches a recorded reference. Outbound run only (no hell run or road home); title, pause, results and audio included; the runner, gate and hazards are generated models."
+  },
+  {
+   "appFolder": "showcase-drift-and-deliver-port",
+   "previewSlug": "drift-and-deliver-port",
+   "url": "/apps/gridlock-courier/",
+   "title": "Gridlock Courier",
+   "genre": "racing",
+   "verification": "replay-verified",
+   "evidenceFolder": "drift-and-deliver-port",
+   "text": "Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera; all four recorded scenarios reproduce exactly. Headlight beam renders; the player car, traffic and street furniture are generated models (pedestrians are static); collision response untested."
+  },
+  {
+   "appFolder": "showcase-heatsink-port",
+   "previewSlug": "heatsink-port",
+   "url": "/apps/ion-circuit/",
+   "title": "Ion Circuit",
+   "genre": "racing",
+   "verification": "replay-verified",
+   "evidenceFolder": "heatsink-port",
+   "text": "Anti-gravity time trial on the Vesper course with boost pads, pickups, barrels and heat management; the state replay matches the recorded reference within 1e-6. the drone, pylons and scenery are generated models and the art is still visibly different from the reference (a blind model judge picked the reference in 35 of 48 trials and rated 40 of 48 pairs as the same game design); Time Trial only, no AI or audio."
+  },
+  {
+   "appFolder": "showcase-ninja-runner-port",
+   "previewSlug": "ninja-runner-port",
+   "url": "/apps/shadowstep-gauntlet/",
+   "title": "Shadowstep Gauntlet",
+   "genre": "action",
+   "verification": "replay-verified",
+   "evidenceFolder": "ninja-runner-port",
+   "text": "Lane-running combat with twelve skinned clones, form changes and a full course win; the recorded 106-second run replays event for event. four generated rigged characters plus building and prop models; enemies share two bodies; sun shadows are off."
+  },
+  {
+   "appFolder": "showcase-last-train-port",
+   "previewSlug": "last-train-port",
+   "url": "/apps/lamplight-line/",
+   "title": "Lamplight Line",
+   "genre": "racing",
+   "verification": "replay-verified",
+   "evidenceFolder": "last-train-port",
+   "text": "Train-driving loop with day and night, passengers, fares and tips; loop length and score match a recorded loop and memory stays flat over three loops. No garage or level select; the tram, townhouses, landmarks and passengers are generated models (passengers stand rather than sit)."
+  },
+  {
+   "appFolder": "showcase-roadster-hours-port",
+   "previewSlug": "roadster-hours-port",
+   "url": "/apps/saltwind-highway/",
+   "title": "Saltwind Highway",
+   "genre": "racing",
+   "verification": "replay-verified",
+   "evidenceFolder": "roadster-hours-port",
+   "text": "Coastal drive with 92 vehicles in one batched mesh; the recorded 48-second run replays exactly. Coastal look with sky, ocean and a lit road; vehicles and scenery are generated models and there are no shadows."
+  },
+  {
+   "appFolder": "showcase-where-the-wind-wanders-port",
+   "previewSlug": "where-the-wind-wanders-port",
+   "url": "/apps/the-bellkeepers-walk/",
+   "title": "The Bellkeeper's Walk",
+   "genre": "arcade",
+   "verification": "replay-verified",
+   "evidenceFolder": "where-the-wind-wanders-port",
+   "text": "Meadow walk collecting three letters and ringing a bell; the walking trajectory matches the recorded reference within 1e-9 over 2,098 steps. Includes the boat epilogue, journal and audio; the traveller, cottages and trees are generated models."
+  },
+  {
+   "appFolder": "showcase-silt-and-signal-port",
+   "previewSlug": "silt-and-signal-port",
+   "url": "/apps/duneglide/",
+   "title": "Duneglide",
+   "genre": "arcade",
+   "verification": "replay-verified",
+   "evidenceFolder": "silt-and-signal-port",
+   "text": "Free-ride flying over a silt world; three recorded rides reproduce the recorded simulation state to 1e-9. Chapter 0 has real colliders; the rider, ring beacons and landmarks are generated models; later chapters are generated hills, with no NPCs or minimap."
+  },
+  {
+   "appFolder": "showcase-cloud-runner-port",
+   "previewSlug": "cloud-runner-port",
+   "url": "/apps/cumulus-dash/",
+   "title": "Cumulus Dash",
+   "genre": "platformer",
+   "verification": "replay-verified",
+   "evidenceFolder": "kid-goku-beyond-the-clouds-port",
+   "text": "Obstacle runner on a cloud: the first chapter's run model matches a recorded reference run to 1e-12. Includes creatures, boulders, the duel and finale, with audio; the hero, creatures and scenery are generated models."
+  }
+ ]
+}

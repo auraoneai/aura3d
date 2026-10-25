@@ -2,6 +2,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 
 const marketingDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(marketingDir, "..");
@@ -145,6 +146,13 @@ for (const [property, expectedWidth, expectedHeight] of [
   for (const file of [resolve(marketingDir, "index.html"), ...readdirSync(resolve(marketingDir, "docs")).filter((f) => f.endsWith(".html")).map((f) => resolve(marketingDir, "docs", f)), resolve(marketingDir, "public", "llms.txt"), resolve(marketingDir, "public", "llms-full.txt")]) {
     if (existsSync(file) && retracted.test(readFileSync(file, "utf8"))) failures.push(`${file}: contains the retracted 800K/850K catalog-size claim`);
   }
+}
+
+// Game-count truth: the inventory, the generated index page and every stated count must agree.
+for (const script of ["gen-game-inventory.mjs --check", "gen-showcase-index.mjs --check", "check-game-count.mjs"]) {
+  const [file, ...args] = script.split(" ");
+  const result = spawnSync(process.execPath, [resolve(repoRoot, "tools", "site", file), ...args], { encoding: "utf8" });
+  if (result.status !== 0) failures.push(`${file}: ${(result.stderr || result.stdout).trim()}`);
 }
 
 if (failures.length > 0) {

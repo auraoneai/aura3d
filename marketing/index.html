@@ -156,7 +156,7 @@
     <ul class="trust-list">
       <li class="trust-item"><strong>24</strong><span>npm packages</span></li>
       <li class="trust-item"><strong>652</strong><span>admitted assets in the repo manifest</span></li>
-      <li class="trust-item"><strong>4</strong><span>playable games</span></li>
+      <li class="trust-item"><strong>{{GAME_COUNT}}</strong><span>playable games</span></li>
       <li class="trust-item"><strong>MIT</strong><span>declared in every package</span></li>
     </ul>
   </div>
@@ -167,8 +167,8 @@
   <div class="wrap">
     <div class="section-head" data-reveal>
       <span class="home-eyebrow">Playable proof</span>
-      <h2 class="home-h2" id="games-title">Fifteen games. Four live on this page.<br /><em>The full slate is one click away.</em></h2>
-      <p class="section-lede">Every game is a real Aura3D route, not a video loop. Four boot live in place; nothing loads until you press Play. The other eleven are linked in the complete 4.1.3 slate.</p>
+      <h2 class="home-h2" id="games-title">{{GAME_COUNT}} games. {{GAME_FEATURED_COUNT_WORD_CAP}} play live on this page.<br /><em>The full slate is one click away.</em></h2>
+      <p class="section-lede">Every game is a real Aura3D route, not a video loop. {{GAME_FEATURED_COUNT_WORD_CAP}} boot live in place; nothing loads until you press Play. The other {{GAME_OTHERS_COUNT}} are linked in the complete 4.1.3 slate.</p>
     </div>
 
     <div class="games-grid">
@@ -286,8 +286,8 @@
     </div>
 
     <div class="games-more" data-reveal>
-      <p class="games-more-list"><span>Also playable in 4.1.3:</span> Iron Crown, Pip's Big Leap, Aura Hoops 3D, Aura Diamond 3D, Aura FC 3D, Red Zone 3D, Aura Links 3D, Bunker Zero, Slingshot Siege, Dot Dash 3D, and Cross Hop.</p>
-      <a class="home-btn home-btn-ghost" href="/apps/showcase-index/">See all 15 games</a>
+      <p class="games-more-list"><span>Also playable in 4.1.3:</span> {{GAME_OTHERS_LIST}}.</p>
+      <a class="home-btn home-btn-ghost" href="/apps/showcase-index/">See all {{GAME_COUNT}} games</a>
     </div>
   </div>
 </section>
@@ -686,7 +686,7 @@ export async function start(canvas: HTMLCanvasElement): Promise&lt;SceneHandle&g
         <p class="whatsnew-live">Aura3D 4.1.3 is live — 24 coordinated packages at 4.1.3, with 50 apps, games, and focused examples.</p>
       </div>
       <ul>
-        <li>The full 15-game slate is restored on de-interleaved 16-bit Meshy assets, with boot-gated readiness.</li>
+        <li>The full game slate is restored on de-interleaved 16-bit Meshy assets, with boot-gated readiness.</li>
         <li>Rigged GLBs pass skeletal acceptance checks; arm and torso skinning tears are fixed.</li>
         <li>Device-killing scene remounts are gone, and focused buttons no longer consume game keys.</li>
       </ul>

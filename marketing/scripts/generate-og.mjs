@@ -42,6 +42,8 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const MARKETING_DIR = resolve(SCRIPT_DIR, "..");
 const REPO_ROOT = resolve(MARKETING_DIR, "..");
 const OUT_STORE = resolve(REPO_ROOT, "store-assets/brand/social");
+const SITE_VERSION = JSON.parse(readFileSync(resolve(REPO_ROOT, "package.json"), "utf8")).version;
+const GAME_COUNT = JSON.parse(readFileSync(resolve(REPO_ROOT, "docs/workflows/game-inventory.json"), "utf8")).liveGameCount;
 const OUT_PUBLIC = resolve(MARKETING_DIR, "public/store-assets/brand/social");
 
 const BG = "#fbfbf8";
@@ -269,7 +271,7 @@ h1 .accent { color: ${TEAL}; }
     <div class="brand">
       <span class="mark">${MARK_SVG}</span>
       <span class="word">Aura3D</span>
-      <span class="ver">v4.0.1</span>
+      <span class="ver">v${SITE_VERSION}</span>
     </div>
 
     <div class="eyebrow">TypeScript 3D engine</div>
@@ -292,7 +294,7 @@ h1 .accent { color: ${TEAL}; }
 
   <div class="footer">
     <span class="url"><span class="dot"></span>aura3d.auraone.ai<span class="arrow">&#8599;</span></span>
-    <span class="footer-note">Aura3D 4.0.1 &middot; 4 playable games</span>
+    <span class="footer-note">Aura3D ${SITE_VERSION} &middot; ${GAME_COUNT} playable games</span>
   </div>
 
   <div class="backplate"></div>
