@@ -14,6 +14,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { flattenSceneSnapshot, normalizeSceneSnapshot } from "../sceneMath.js";
 import { configureCanvas, resolveCanvas } from "./canvas.js";
+import { mountFailureConsoleMessage } from "./mountFailure.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { AuraRuntimeError } from "./errors.js";
@@ -497,7 +498,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
           productionMountPending = false;
           productionMountFailed = true;
           diagnosticsState.backend = "webgl2";
-          diagnosticsState.errors.push(productionRenderErrorMessage(error));
+          const mountMessage = productionRenderErrorMessage(error);
+          diagnosticsState.errors.push(mountMessage);
           overlay?.update();
           markRouteError(snapshot, diagnosticsState);
           // T4.2 (PRD-15): under strict the mount failure is fatal — the
@@ -508,6 +510,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
             attachErrorOverlay(canvas, error);
             failMount(error);
           } else {
+            if (typeof console !== "undefined") console.error(mountFailureConsoleMessage(mountMessage));
             settleMount();
           }
         });

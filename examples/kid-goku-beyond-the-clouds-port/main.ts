@@ -263,22 +263,14 @@ async function boot(): Promise<void> {
   const grassMap = await texture.load(new URL("./assets/textures/grass-color.jpg", import.meta.url).pathname, { colorSpace: "srgb" });
   grassMap.wrapS = "repeat"; grassMap.wrapT = "repeat";
   const world = buildWorld(CH, rockMap, grassMap);
-  const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   app = createAuraApp(canvas, {
     autoStart: false,
-    resize: false,
-    pixelRatio: 1,
+    pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     output: { toneMapping: "aces", dither: false },
     scene: world.scene
   });
   await app.ready();
-  const resize = (): void => {
-    const w = Math.max(1, Math.floor(canvas.clientWidth * dpr)), h = Math.max(1, Math.floor(canvas.clientHeight * dpr));
-    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
-  };
-  resize();
-  addEventListener("resize", resize);
   runtime = world.bind(app);
   applyStartMode();
   last = performance.now();
