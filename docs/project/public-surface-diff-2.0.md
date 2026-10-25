@@ -4,8 +4,8 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12880**
-- Classified removals: **2120**; unclassified removals: **0**
+- Baseline symbols: **13007**; current symbols: **12871**
+- Classified removals: **2129**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
 - Public schema identifiers: **25** baseline; **33** current
@@ -26,6 +26,15 @@ Generated from `v1.5.2` and the current source tree. This audit covers every non
 | `@aura3d/animation` | type-symbol | `SecondaryAnimationFixture` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/animation` | type-symbol | `SecondaryAnimationFixtureOptions` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/animation` | type-symbol | `SpringBoneSample` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
+| `@aura3d/asset-index` | runtime-symbol | `createAuraIndexAdapter` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | runtime-symbol | `INDEX_STORE_SCHEMA` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | runtime-symbol | `IndexStore` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | runtime-symbol | `refreshIndex` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | type-symbol | `AuraIndexAdapterOptions` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | type-symbol | `IndexStoreFile` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | type-symbol | `RefreshOptions` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | type-symbol | `RefreshResult` | documented-major-removal-or-migration |
+| `@aura3d/asset-index` | type-symbol | `WritableAssetIndex` | documented-major-removal-or-migration |
 | `@aura3d/assets` | runtime-symbol | `createAssetBundleCacheEvidence` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/assets` | runtime-symbol | `createGLTFSceneAnalysisEvidence` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |
 | `@aura3d/assets` | type-symbol | `AssetBundleCacheEvictionPolicy` | documented-2.0-descriptor-evidence-or-duplicate-wrapper-purge |

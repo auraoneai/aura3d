@@ -29,7 +29,9 @@ const migrationText = [
   readFileSync("docs/migration/ecs-scripting-compatibility.md", "utf8"),
   // 4.0.0 removal record (PRD-15 T8.1): 22 removed subpaths, the lean package,
   // the AdvancedRenderer alias, and the CCR-15-1 mode types.
-  readFileSync("docs/migration-4.0.md", "utf8")
+  readFileSync("docs/migration-4.0.md", "utf8"),
+  // 4.2.0: the hosted asset index and its adapter/store/refresh exports were retired.
+  readFileSync("docs/migration/4.2.0.md", "utf8")
 ].join("\n");
 
 // PRD-15 §6.6 disposition ledger — the documented keep-set/drop/deprecated
