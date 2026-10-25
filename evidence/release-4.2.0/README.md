@@ -33,9 +33,9 @@ Three build failures were found and fixed on the way to a green preview:
 
 Last preview: all 26 inventory URLs return 200; old `showcase-*-port` slugs return a 308 to the new slug; the homepage says "26 games" / "26 playable games"; the homepage, comparison page, examples index, `llms.txt` and `llms-full.txt` contain no "800K", "855K", "15 games", "4 playable" or hosted catalog/index wording. `gen-seo` was also made idempotent (it appended a blank line to `llms-full.txt` on every run).
 
-## Open blocker: Diamond bat grip
+## Diamond bat grip: mostly fixed, one residual
 
-Not fixed. `evidence/aura-diamond-3d/rework/polish/grip-strip-stance-to-140ms.jpg` still shows the bat leaving the hands from about 120 ms into the swing (see the "Not fixed" paragraph in `evidence/aura-hoops-3d/rework/polish/README.md`: the bat attaches to `RightForearm` before the procedural arm override). The `diamond-verify` agent ended without pushing a fix or a number. A remote rerun of `tests/browser/grip-diamond.spec.ts` (run `pre420-grip`) timed out after 10 minutes waiting for `window.__AURA3D_GAME_DIAMOND__`, a hook installed inside a per-frame callback, so the spec cannot measure `knobToHand` yet. It needs its own lane: fix the attach order (or drive the bat from the solved palm), and make the spec wait on `__AURA3D_GAME_EVIDENCE__` at a small viewport.
+Engine fix `9e1e3442a` (attachments read the final pose) plus `9d3dc50a1` (knob and palm compared in the same frame) are on `game-rework`. The remote measurement (`evidence/aura-diamond-3d/rework/grip/`, run `gripv-1`, pushed in `61c6ead56`) shows the knob within 5 cm of the palm through stance, load, stride and most of the swing, where the earlier build lost the bat about 120 ms in. Two residuals remain: a one-sample 16.6 cm spike just after contact (the palm moves about 0.4 m between samples there, so part of it may be sampling lag), and a steady 14.6 cm knob-to-palm offset once the follow-through finishes (mainly along z), which is a real geometric mismatch. The "Not fixed" paragraph in `evidence/aura-hoops-3d/rework/polish/README.md` and `grip-strip-stance-to-140ms.jpg` predate the fix and are stale. My own rerun of the grip spec (`pre420-grip`) timed out after 10 minutes waiting for `window.__AURA3D_GAME_DIAMOND__` on a loaded runner, so it adds no number; use `gripv-1`.
 
 ## animation-studio
 
