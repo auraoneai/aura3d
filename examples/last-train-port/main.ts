@@ -12,6 +12,7 @@ import {
   DT, actionDepart, actionDoors, actionNewService, actionTimeOfDay, createState, step, tipOf,
   type SimData, type SimState, type StepInput
 } from "./sim";
+import { createTramPresenter, viewOf } from "./presentation";
 import { TrainSound, diffCues, type AudioState } from "./audio";
 import { TEMPERAMENT_COLORS, buildWorld, weatherOf, type WorldRuntime } from "./world";
 
@@ -33,6 +34,7 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string): T => {
 const canvas = $<HTMLCanvasElement>("world");
 
 let sim: SimState = createState();
+const presenter = createTramPresenter(() => sim);
 if (flag("night")) actionTimeOfDay(sim, "night");
 let app: AuraApp | undefined;
 let runtime: WorldRuntime | undefined;
@@ -197,9 +199,10 @@ function startPlay(): void {
   $("title").classList.add("hidden");
 }
 
-function render(): void {
+/** `live` draws the tram between the last two steps (smooth on 120 and 144 Hz displays); everything else draws the exact latest step. */
+function render(live = false): void {
   if (!app || !runtime) return;
-  runtime.update(sim, seconds, { orbit: titleMode });
+  runtime.update(live ? viewOf(sim, presenter.present(loop, true)) : sim, seconds, { orbit: titleMode });
   app.step(0);
 }
 
@@ -212,10 +215,11 @@ const loop = createFixedStepLoop({
   step: () => {
     if (titleMode || flag("manual")) return;
     for (let i = 0; i < perFrame; i++) stepOnce();
+    presenter.afterStep();
   },
   render: (dt) => {
     if (titleMode || !flag("manual")) seconds += dt;
-    render();
+    render(!titleMode && !flag("manual"));
     updateHud();
     updateAudio(dt);
   }
@@ -235,7 +239,7 @@ addEventListener("keydown", (e) => {
     else if (sim.phase !== "ready" && sim.phase !== "enroute") toast(`${phasePrompt[sim.phase]?.[0] ?? sim.phase}: wait for Ready, then hold W`, 2400);
   }
   if (e.code === "KeyN") actionTimeOfDay(sim, sim.timeOfDay === "night" ? "day" : "night");
-  if (e.code === "KeyR") { actionNewService(sim); $("results").classList.add("hidden"); }
+  if (e.code === "KeyR") { actionNewService(sim); presenter.reset(); $("results").classList.add("hidden"); }
   if (e.code === "KeyP") autopilot = !autopilot;
 });
 addEventListener("keyup", (e) => keys.delete(e.code));
@@ -320,7 +324,7 @@ const qa = installQaHooks("last-train", {
   setAutopilot: (on: boolean) => { autopilot = on; },
   /** Switching swaps the whole lighting rig (a scene swap), so this renders once and waits for the renderer to settle. */
   setTimeOfDay: async (v: "day" | "night") => { actionTimeOfDay(sim, v); render(); await app?.ready(); render(); },
-  newService: () => { actionNewService(sim); },
+  newService: () => { actionNewService(sim); presenter.reset(); },
   applyInput: (input: StepInput) => stepOnce(input),
   advance: (n: number, input?: StepInput) => { for (let i = 0; i < n; i++) stepOnce(input); return summary(); },
   stepFrames: (n: number, input?: StepInput) => { for (let i = 0; i < n; i++) stepOnce(input); render(); updateHud(); return summary(); },
