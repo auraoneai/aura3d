@@ -43,6 +43,7 @@ export function mountUI(host: HTMLElement): void {
   host.appendChild(root);
   root.addEventListener("click", onClick);
   document.addEventListener("keydown", onKey);
+  document.querySelector(".aura3d-top-bar")?.addEventListener("click", onBarClick);
 }
 
 function onKey(e: KeyboardEvent): void {
@@ -51,6 +52,17 @@ function onKey(e: KeyboardEvent): void {
   if (e.key === "Enter" && st.mode === "title" && panel === null) startRun("quick", null);
 }
 function saveClose(): void { endToTitle(); }
+
+function onBarClick(e: Event): void {
+  const btn = (e.target as HTMLElement).closest("button") as HTMLButtonElement | null;
+  if (!btn) return;
+  panel = null;
+  if (btn.id === "ch-bar-quick") startRun("quick", null);
+  else if (btn.dataset.chTheme) {
+    const i = parseInt(btn.dataset.chTheme, 10);
+    startRun("tour", null, (i + 1) * 97777 + 13, i);
+  }
+}
 
 function onClick(e: MouseEvent): void {
   const el = e.target as HTMLElement;
@@ -139,6 +151,10 @@ export function tickUI(): void {
     (root.querySelector("#ch-coins") as HTMLElement).textContent = `◈ ${st.coins + st.profile.coins}`;
     (root.querySelector("#ch-best") as HTMLElement).textContent = `BEST ${st.profile.best}`;
     (root.querySelector("#ch-theme") as HTMLElement).textContent = THEMES[st.themeIdx].label.toUpperCase();
+    document.querySelectorAll<HTMLButtonElement>(".aura3d-top-bar button[data-ch-theme]").forEach(b => {
+      b.classList.toggle("active", st.mode !== "title" && st.runKind === "tour" && parseInt(b.dataset.chTheme ?? "-1", 10) === st.themeIdx);
+    });
+    document.getElementById("ch-bar-quick")?.classList.toggle("active", st.mode !== "title" && st.runKind === "quick");
     (root.querySelector("#ch-ticker") as HTMLElement).textContent = st.events.slice(-1)[0] ?? "";
     (root.querySelector("#ch-msg") as HTMLElement).textContent = st.messageT > 0 ? st.message : "";
   }

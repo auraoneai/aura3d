@@ -3,6 +3,7 @@ import { game } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { buildScene, probeScene, bindApp, frame, syncVisuals, st, startRun, evidenceExtra } from "./game/core";
 import { mountUI, tickUI } from "./game/ui";
+import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 
