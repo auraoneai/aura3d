@@ -14,6 +14,7 @@
     <meta name="twitter:title" content="PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase" />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/fonts/local.css" />
     <style>
       html, body, #app, canvas { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
       #app, .game-shell { position: fixed; inset: 0; width: 100vw; height: 100vh; }
@@ -21,7 +22,6 @@
   </head>
   <body>
     <div class="aura3d-top-bar" role="toolbar" aria-label="Aura3D Pip's Big Leap Quick Switcher">
-      <span class="aura-badge">AURA3D ENGINE</span>
       <button type="button" id="aura-btn-play" class="active" title="Drop into World 1 — Whispering Forest">Quick Play</button>
       <button type="button" id="aura-btn-academy" title="Jump Academy — skill gauntlet for every move">Jump Academy</button>
       <button type="button" id="aura-btn-atlas" title="Vale Atlas — world map with seed counts">Vale Atlas</button>
@@ -36,6 +36,7 @@
       <button type="button" data-aura-venue="w6" class="venue" title="World 6 — Starfall Garden">Starfall</button>
       <span class="aura-sep" aria-hidden="true"></span>
       <button type="button" id="aura-btn-auto" aria-pressed="false" title="AI Autopilot demo (yields on first key press)">Auto</button>
+      <a class="a3d-credit" href="/" title="Built with Aura3D">Built with Aura3D</a>
     </div>
 
     <div class="aura3d-controls-hint" id="aura-controls-hint">

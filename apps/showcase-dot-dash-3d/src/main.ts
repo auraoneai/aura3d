@@ -5,6 +5,7 @@ import { buildScene, bindApp, syncVisuals, wx, wz } from "./game/world";
 import { st, frame, startRun, evidenceExtra, GHOST_LABEL } from "./game/sim";
 import { mountUI, tickUI, isPaused } from "./game/hud";
 import type { MazeId } from "./game/mazes";
+import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
 

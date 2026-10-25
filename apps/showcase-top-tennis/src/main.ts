@@ -1,4 +1,5 @@
 /** Aura Slam 3D, native build. Mounts examples/aura-slam/ without duplicating its code. */
+import "../../showcase-port-shared/quickbar.css";
 import "../../../examples/aura-slam/main";
 
 /** Asset ids the production route build must ship (it scans route sources for these ids). */

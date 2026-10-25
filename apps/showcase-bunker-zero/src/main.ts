@@ -5,6 +5,7 @@
  * push-wall secrets, key→elevator progression, Kill House skill mode,
  * deterministic ?demo=1 playback, JSON evidence on window.__gameEvidence.
  */
+import "../../showcase-port-shared/quickbar.css";
 import {
   camera, effects, game, gameFeel, lights, looks, material, model,
   primitives, scene, type AuraNodeBuilder, type AuraSceneNode
@@ -1116,7 +1117,7 @@ $("bz-tour-stats").innerHTML = [
   `<div class="bz-kv"><span>WEAPONS</span><span>knife · pistol · MG · rockets</span></div>`,
   `<div class="bz-kv"><span>ENEMIES</span><span>guard · hound · gunner · IRON WARDEN</span></div>`,
   `<div class="bz-kv"><span>SECRETS</span><span>2 push-walls per floor</span></div>`,
-  `<div class="bz-kv"><span>ENGINE</span><span>Aura3D 4.0.2 · night-city look</span></div>`
+  `<div class="bz-kv"><span>ENGINE</span><span>Aura3D · night-city look</span></div>`
 ].join("");
 
 // ---------------------------------------------------------------------------

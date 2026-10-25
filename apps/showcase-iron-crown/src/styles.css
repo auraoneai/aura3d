@@ -15,7 +15,7 @@
 /* ---------- top plates ---------- */
 .fh-top {
   position: absolute;
-  top: 52px;
+  top: calc(var(--a3d-bar-space) + 2px);
   left: 0;
   right: 0;
   display: grid;

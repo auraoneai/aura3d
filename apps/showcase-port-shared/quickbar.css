@@ -1,0 +1,105 @@
+/* Shared quick-switcher bar: one single-row strip that scrolls sideways instead of wrapping.
+   Games set --a3d-* accents on :root and offset their HUD with var(--a3d-bar-space). */
+
+:where(:root) {
+  --a3d-bar-h: 32px;
+  --a3d-bar-space: calc(var(--a3d-bar-h) + env(safe-area-inset-top, 0px) + 8px);
+  --quick-bar-space: var(--a3d-bar-space);
+  --a3d-accent: #45e8ff;
+  --a3d-accent-ink: #06121a;
+  --a3d-accent-2: #ff9ad5;
+  --a3d-accent-2-ink: #1a0612;
+  --a3d-gold: #ffd95e;
+  --a3d-edge: rgba(255, 255, 255, 0.18);
+  --a3d-bg: rgba(8, 12, 22, 0.9);
+  --a3d-ink: #e8ecf4;
+  --a3d-dim: #9aa6bd;
+}
+
+.aura3d-top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  box-sizing: border-box;
+  height: calc(var(--a3d-bar-h) + env(safe-area-inset-top, 0px));
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  padding: env(safe-area-inset-top, 0px) max(10px, env(safe-area-inset-right, 0px)) 0 max(10px, env(safe-area-inset-left, 0px));
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  background: var(--a3d-bg);
+  border-bottom: 1px solid var(--a3d-edge);
+  backdrop-filter: blur(8px);
+  font: 500 12px/1 "Graphik Web", "Graphik", sans-serif;
+  color: var(--a3d-ink);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.aura3d-top-bar::-webkit-scrollbar { display: none; }
+.aura3d-top-bar > * { flex: 0 0 auto; }
+.aura3d-top-bar .aura-badge { display: none; }
+
+.aura3d-top-bar button {
+  box-sizing: border-box;
+  height: 24px;
+  padding: 0 10px;
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--a3d-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.aura3d-top-bar button:hover { color: var(--a3d-ink); border-color: var(--a3d-edge); }
+.aura3d-top-bar button:focus-visible { outline: 2px solid var(--a3d-accent); outline-offset: 1px; }
+.aura3d-top-bar button.active,
+.aura3d-top-bar button[aria-pressed="true"] { color: var(--a3d-accent-ink); background: var(--a3d-accent); }
+.aura3d-top-bar button.venue { padding: 0 8px; }
+.aura3d-top-bar button.venue.active { color: var(--a3d-accent-2-ink); background: var(--a3d-accent-2); }
+.aura3d-top-bar button.toggle { border-color: var(--a3d-edge); }
+.aura3d-top-bar button.toggle.on { color: var(--a3d-gold); border-color: var(--a3d-gold); }
+
+.aura3d-top-bar .aura-sep { width: 1px; height: 16px; margin: 0 2px; background: var(--a3d-edge); }
+
+.aura3d-top-bar .a3d-credit {
+  margin-left: auto;
+  padding-left: 8px;
+  color: var(--a3d-dim);
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.aura3d-top-bar .a3d-credit:hover { color: var(--a3d-ink); text-decoration: underline; }
+
+/* Opt-in (data-layout="pill"): on wide screens the bar is a centred pill that stays clear of side HUDs
+   (set --a3d-bar-gutter to the width of the widest side HUD); on narrow screens it is the full-width strip. */
+@media (min-width: 1100px) {
+  .aura3d-top-bar[data-layout="pill"] {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: 50%;
+    right: auto;
+    width: max-content;
+    max-width: calc(100vw - 2 * var(--a3d-bar-gutter, 20px));
+    transform: translateX(-50%);
+    height: calc(var(--a3d-bar-h) + 8px);
+    padding: 0 10px;
+    border: 1px solid var(--a3d-edge);
+    border-radius: 999px;
+  }
+  .aura3d-top-bar[data-layout="pill"] button { border-radius: 999px; }
+}
+
+@media (max-width: 760px) {
+  .aura3d-top-bar { gap: 4px; }
+  .aura3d-top-bar .a3d-credit { display: none; }
+}

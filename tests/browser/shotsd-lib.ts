@@ -69,7 +69,7 @@ const PROFILES = [
   { name: "card", width: 1440, height: 900, dsf: 1, mobile: false, states: ["04-mid"] }
 ];
 
-function emit(slug: string, profile: string, state: string, buf: Buffer): void {
+export function emit(slug: string, profile: string, state: string, buf: Buffer): void {
   const b64 = buf.toString("base64");
   const chunk = 60_000;
   const n = Math.ceil(b64.length / chunk);

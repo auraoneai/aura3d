@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-    <title>Grid Dispatch — San Francisco Robotaxi &amp; Autonomous Fleet Showcase (Aura3D 4.0.2)</title>
+    <title>Grid Dispatch — San Francisco Robotaxi &amp; Autonomous Fleet Showcase</title>
     <!-- SEO pass — 2026-10-20: canonical + OG/Twitter wired to the brand renders. https://aura3d.auraone.ai is the placeholder base — swap at deploy. -->
     <link rel="canonical" href="https://aura3d.auraone.ai/apps/showcase-teleoperator/" />
-    <meta property="og:title" content="Grid Dispatch — San Francisco Robotaxi &amp; Autonomous Fleet Showcase (Aura3D 4.0.2)" />
+    <meta property="og:title" content="Grid Dispatch — San Francisco Robotaxi &amp; Autonomous Fleet Showcase" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://aura3d.auraone.ai/apps/showcase-teleoperator/" />
     <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Grid Dispatch — San Francisco Robotaxi &amp; Autonomous Fleet Showcase (Aura3D 4.0.2)" />
+    <meta name="twitter:title" content="Grid Dispatch — San Francisco Robotaxi &amp; Autonomous Fleet Showcase" />
     <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x600.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style>
@@ -1244,6 +1244,31 @@
           max-width: calc(100vw - 240px);
         }
       }
+      #dockToggle { display: none; }
+      /* Phones (390x844): top cards stack instead of overlapping, the dial shrinks, the dock collapses into one chip. */
+      @media (max-width: 760px) {
+        #where { left: 8px; right: 8px; top: calc(8px + env(safe-area-inset-top, 0px)); min-width: 0; padding: 6px 10px; }
+        #where .coords, #where #wX { display: none; }
+        #topRightCluster { left: 8px; right: 8px; top: calc(62px + env(safe-area-inset-top, 0px)); flex-direction: row; align-items: center; justify-content: space-between; gap: 6px; }
+        #taxiCard, #taxiTrip { left: 8px; right: 8px; width: auto; top: calc(112px + env(safe-area-inset-top, 0px)); transform: translateY(-8px); padding: 8px 10px; max-height: 30vh; overflow: hidden; }
+        #taxiCard.on, #taxiTrip.on { transform: none; }
+        #taxiPen { top: calc(214px + env(safe-area-inset-top, 0px)); }
+        #taxiTotal { flex: 1 1 auto; min-width: 0; text-align: left; padding: 6px 10px; }
+        #taxiTotal small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #menu { flex: 0 0 auto; gap: 4px; }
+        #menu button { padding: 0 9px; white-space: nowrap; }
+        #mpCountLabel { display: none; }
+        #mini { display: none; }
+        #hud { right: 6px; bottom: 6px; transform: scale(0.7); transform-origin: bottom right; }
+        #taxiHint { left: 8px; bottom: calc(52px + env(safe-area-inset-bottom, 0px)); transform: none; max-width: calc(100vw - 176px); }
+        #teleopDock { left: 8px; right: auto; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); max-width: calc(100vw - 16px); padding: 4px 6px; gap: 4px; }
+        #dockToggle { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; }
+        #teleopDock[data-collapsed="true"] .dock-row { display: none; }
+        #teleopDock[data-collapsed="false"] { right: 8px; bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
+        #teleopDock .dock-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+        #teleopDock .dock-row > * { flex: 0 0 auto; }
+        #teleopDock .dock-row::-webkit-scrollbar { display: none; }
+      }
       #boot.boot {
         position: fixed;
         inset: 0;
@@ -1269,7 +1294,7 @@
   <body class="teleop waymo play mpOn mpRoom">
     <div id="boot" class="boot">
       <div style="font-size:18px;font-weight:700;color:#3fd6c6;">GRID DISPATCH · SAN FRANCISCO</div>
-      <div style="font-size:11px;opacity:0.78;">LOADING AURA3D FLEET &amp; TELEOP CORRIDOR...</div>
+      <div style="font-size:11px;opacity:0.78;">LOADING FLEET &amp; TELEOP CORRIDOR...</div>
     </div>
     <div id="view">
       <canvas id="c" width="1280" height="800" aria-label="Grid Dispatch San Francisco 3D street view"></canvas>
@@ -1344,7 +1369,8 @@
     </div>
 
     <!-- Bottom-Left Interactive Fleet, Autopilot, Camera & Weather Switcher -->
-    <div id="teleopDock" role="toolbar" aria-label="Grid Dispatch Fleet, Autopilot, Camera, and Weather Controls">
+    <div id="teleopDock" data-collapsed="true" role="toolbar" aria-label="Grid Dispatch Fleet, Autopilot, Camera, and Weather Controls">
+      <button type="button" id="dockToggle" aria-expanded="false" aria-controls="teleopDock" title="Fleet, camera and sky">Fleet · Cam · Sky</button>
       <div class="dock-row">
         <span class="dock-label">Fleet</span>
         <button type="button" data-car="waymo" class="active">Apex Lidar Cruiser</button>
@@ -1412,6 +1438,18 @@
       <div id="gmode">MANUAL · PILOT OVERRIDE</div>
     </div>
 
+    <script>
+      (function () {
+        var dock = document.getElementById("teleopDock");
+        var toggle = document.getElementById("dockToggle");
+        if (!dock || !toggle) return;
+        toggle.addEventListener("click", function () {
+          var open = dock.getAttribute("data-collapsed") === "true";
+          dock.setAttribute("data-collapsed", open ? "false" : "true");
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      })();
+    </script>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

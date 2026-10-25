@@ -44,22 +44,32 @@
         padding: 0;
         overflow: hidden;
       }
-      .ic-topbar {
+      /* The bar itself comes from apps/showcase-port-shared/quickbar.css; Iron Crown only sets accents. */
+      :root {
+        --a3d-accent: var(--ic-gold);
+        --a3d-accent-ink: var(--ic-ink);
+        --a3d-edge: rgba(255, 215, 106, 0.28);
+        --a3d-bg: rgba(8, 10, 16, 0.92);
+        --a3d-dim: #c7cde2;
+      }
+      .ic-modes { display: contents; }
+      .aura3d-top-bar .ic-modes > button { flex: 0 0 auto; }
+      .ic-setup {
         position: fixed;
-        top: 8px;
-        left: 14px;
-        right: 14px;
-        z-index: 55;
-        display: grid;
-        gap: 5px;
-        padding: 7px 12px 6px;
+        top: var(--a3d-bar-space);
+        left: max(8px, env(safe-area-inset-left, 0px));
+        right: max(8px, env(safe-area-inset-right, 0px));
+        z-index: 56;
+        display: none;
+        gap: 8px;
+        padding: 8px 10px;
         border-radius: 10px;
-        background: rgba(8, 10, 16, 0.82);
+        background: rgba(8, 10, 16, 0.94);
         border: 1px solid rgba(255, 215, 106, 0.22);
         backdrop-filter: blur(8px);
       }
+      .ic-setup[data-open="true"] { display: grid; }
       .ic-row { display: flex; align-items: center; gap: 8px 12px; min-width: 0; flex-wrap: wrap; }
-      .ic-row-primary { justify-content: space-between; }
       .ic-row-select {
         justify-content: space-between;
         padding-top: 5px;
@@ -72,37 +82,6 @@
         letter-spacing: 0.22em;
         color: #8f97af;
         text-transform: uppercase;
-      }
-      .ic-badge {
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        font-size: 12px;
-        color: var(--ic-ink);
-        background: linear-gradient(135deg, var(--ic-gold), #e8a13c);
-        padding: 4px 10px;
-        border-radius: 999px;
-        white-space: nowrap;
-        box-shadow: 0 0 14px rgba(255, 215, 106, 0.22);
-      }
-      .ic-modes { display: flex; flex-wrap: wrap; gap: 4px; }
-      .ic-modes button {
-        font-family: inherit;
-        font-weight: 500;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        background: rgba(255, 255, 255, 0.07);
-        color: #e8ebf4;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-size: 12px;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background 140ms, border-color 140ms;
-      }
-      .ic-modes button:hover { background: rgba(255, 215, 106, 0.16); border-color: var(--ic-gold); }
-      .ic-modes button[aria-pressed="true"] {
-        background: linear-gradient(135deg, rgba(255, 215, 106, 0.28), rgba(255, 79, 70, 0.18));
-        border-color: var(--ic-gold);
-        color: #fff;
       }
       .ic-venues { display: flex; flex-wrap: wrap; gap: 4px; }
       .ic-venues button, .ic-fighters button {
@@ -160,7 +139,6 @@
       }
       #render-error.on { display: grid; }
       @media (max-width: 720px) {
-        .ic-topbar { top: 6px; left: 8px; right: 8px; padding: 4px 8px; gap: 4px; }
         .ic-row { gap: 5px 8px; }
         .ic-group-label { display: none; }
         .ic-row-select { padding-top: 4px; }
@@ -168,10 +146,8 @@
     </style>
   </head>
   <body>
-    <div class="ic-topbar">
-      <div class="ic-row ic-row-primary">
-        <span class="ic-badge">Iron Crown · Aura3D Showcase</span>
-        <nav class="ic-modes" id="ic-modes" aria-label="Game modes">
+    <div class="aura3d-top-bar" role="toolbar" aria-label="Iron Crown shell">
+      <nav class="ic-modes" id="ic-modes" aria-label="Game modes">
           <button type="button" data-mode="quick" aria-pressed="true">Quick Bout</button>
           <button type="button" data-mode="lab" aria-pressed="false">Combo Lab</button>
           <button type="button" data-mode="ladder" aria-pressed="false">Crown Ladder</button>
@@ -179,7 +155,10 @@
           <button type="button" data-mode="studio" aria-pressed="false">Player Studio</button>
           <button type="button" id="ic-autopilot" aria-pressed="false" title="AI autopilot demo (yields on first key press)">Auto</button>
         </nav>
-      </div>
+      <button type="button" id="ic-setup-toggle" aria-expanded="false" aria-controls="ic-setup" title="Pick a fighter and a venue">Fighter &amp; Venue</button>
+      <a class="a3d-credit" href="/" title="Built with Aura3D">Built with Aura3D</a>
+    </div>
+    <div class="ic-setup" id="ic-setup" data-open="false">
       <div class="ic-row ic-row-select">
         <div class="ic-picker">
           <span class="ic-group-label">Fighter</span>
@@ -205,6 +184,16 @@
         </div>
       </div>
     </div>
+    <script>
+      (function () {
+        var toggle = document.getElementById("ic-setup-toggle");
+        var panel = document.getElementById("ic-setup");
+        function set(open) { panel.setAttribute("data-open", open ? "true" : "false"); toggle.setAttribute("aria-expanded", open ? "true" : "false"); }
+        toggle.addEventListener("click", function () { set(panel.getAttribute("data-open") !== "true"); });
+        panel.addEventListener("click", function (e) { if (e.target && e.target.closest && e.target.closest("button")) setTimeout(function () { set(false); }, 0); });
+        document.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+      })();
+    </script>
 
     <main>
       <div id="app" aria-label="Iron Crown fighting game viewport">

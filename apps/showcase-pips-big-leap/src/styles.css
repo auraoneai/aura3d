@@ -54,53 +54,18 @@ html, body {
 }
 
 /* ------------------------------------------------------------- top bar */
-
-.aura3d-top-bar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  background: linear-gradient(180deg, rgba(26, 20, 10, 0.88), rgba(26, 20, 10, 0.55) 78%, transparent);
-  pointer-events: auto;
+/* The bar itself comes from apps/showcase-port-shared/quickbar.css; this game only sets accents. */
+:root {
+  --a3d-accent: var(--pbl-sun);
+  --a3d-accent-ink: var(--pbl-ink);
+  --a3d-accent-2: var(--pbl-leaf);
+  --a3d-accent-2-ink: var(--pbl-ink);
+  --a3d-gold: var(--pbl-sun);
+  --a3d-edge: var(--pbl-edge);
+  --a3d-bg: linear-gradient(180deg, rgba(26, 20, 10, 0.94), rgba(26, 20, 10, 0.8));
+  --a3d-ink: var(--pbl-cream);
+  --a3d-dim: rgba(255, 246, 224, 0.72);
 }
-
-.aura3d-top-bar .aura-badge {
-  font-size: 12px;
-  letter-spacing: 0;
-  color: var(--pbl-sun);
-  border: 1px solid var(--pbl-edge);
-  border-radius: 6px;
-  padding: 4px 7px;
-  margin-right: 6px;
-  white-space: nowrap;
-}
-
-.aura3d-top-bar .aura-sep {
-  width: 1px; height: 18px;
-  background: var(--pbl-edge);
-  margin: 0 6px;
-}
-
-.aura3d-top-bar button {
-  appearance: none;
-  border: 1px solid rgba(255, 246, 224, 0.25);
-  background: rgba(255, 246, 224, 0.08);
-  color: var(--pbl-cream);
-  font: 500 12px/1 Graphik, sans-serif;
-  letter-spacing: 0;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s;
-}
-
-.aura3d-top-bar button:hover { background: rgba(255, 217, 94, 0.2); transform: translateY(-1px); }
-.aura3d-top-bar button.active { background: var(--pbl-sun); color: var(--pbl-ink); border-color: var(--pbl-sun); }
-.aura3d-top-bar button.venue { font-size: 12px; padding: 5px 8px; opacity: 0.9; }
-.aura3d-top-bar button.venue.active { opacity: 1; }
 
 .aura3d-controls-hint {
   position: fixed;
@@ -124,7 +89,7 @@ html, body {
 
 .pbl-tl {
   position: absolute;
-  top: 46px; left: 14px;
+  top: calc(var(--a3d-bar-space) + 4px); left: 14px;
   display: flex; flex-direction: column; gap: 6px;
 }
 
@@ -172,7 +137,7 @@ html, body {
 
 .pbl-boss-wrap {
   position: absolute;
-  top: 46px; left: 50%;
+  top: calc(var(--a3d-bar-space) + 4px); left: 50%;
   transform: translateX(-50%);
   width: min(420px, 60vw);
   text-align: center;
@@ -361,7 +326,5 @@ html, body {
 .pbl-swatch.active { border-color: var(--pbl-sun); box-shadow: 0 0 0 2px rgba(255, 217, 94, 0.4); }
 
 @media (max-width: 720px) {
-  .aura3d-top-bar { flex-wrap: wrap; gap: 4px; padding: 6px 8px; }
   .aura3d-controls-hint { display: none; }
-  .pbl-tl { top: 82px; }
 }

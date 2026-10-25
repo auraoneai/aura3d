@@ -1,3 +1,4 @@
+import "../../showcase-port-shared/quickbar.css";
 import {
   camera,
   effects,

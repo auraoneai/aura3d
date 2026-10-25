@@ -16,6 +16,7 @@ import {
 } from "@aura3d/engine";
 import { createGame, sfxUrl } from "@aura3d/engine/game";
 import { createLocomotionKit } from "@aura3d/animation";
+import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
 import { assets, BOSS_CLIPS, PIP_CLIPS } from "./aura-assets.js";
 import { buildWorld, nodeName, tickPlatforms, type BuiltWorld } from "./game/world.js";

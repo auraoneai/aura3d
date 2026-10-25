@@ -2,7 +2,7 @@ import path from "node:path";
 import { test } from "@playwright/test";
 import { serve, shootGame, type GameShot } from "./shotsd-lib";
 
-const CFG: GameShot = {"slug":"teleoperator","waitGoneText":"LOADING AURA3D","route":"/apps/showcase-teleoperator/","modes":[{"name":"fare","click":"#bNextFare"}],"keys":[["KeyW"],["KeyW","KeyD"],["KeyW","KeyA"]],"holdMs":2500,"resultsWaitMs":10000};
+const CFG: GameShot = {"slug":"teleoperator","waitGoneText":"LOADING FLEET","route":"/apps/showcase-teleoperator/","modes":[{"name":"fare","click":"#bNextFare"}],"keys":[["KeyW"],["KeyW","KeyD"],["KeyW","KeyA"]],"holdMs":2500,"resultsWaitMs":10000};
 
 test.setTimeout(3_000_000);
 

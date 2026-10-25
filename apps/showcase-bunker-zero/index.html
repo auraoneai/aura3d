@@ -33,34 +33,15 @@
       #app { position: fixed; inset: 0; }
       #app canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
 
-      .aura3d-top-bar {
-        position: fixed; top: 12px; right: 14px; z-index: 60;
-        display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-        padding: 6px 10px; border-radius: 14px;
-        background: linear-gradient(180deg, rgba(16, 20, 26, 0.94), rgba(8, 10, 14, 0.94));
-        border: 1px solid rgba(255, 182, 72, 0.3);
-        backdrop-filter: blur(12px) saturate(1.15);
-        font-size: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-      }
-      .aura3d-top-bar .aura-badge {
-        font-family: "DIN Pro", sans-serif; font-weight: 700; letter-spacing: 0.09em;
-        color: #140d02; padding: 3px 9px; border-radius: 8px;
-        background: linear-gradient(135deg, #ffb648, #e08b2a);
-        font-size: 11px; text-transform: uppercase;
-        box-shadow: 0 2px 10px rgba(255,182,72,0.3);
-      }
-      .aura3d-top-bar button {
-        appearance: none; border: 1px solid rgba(243, 236, 217, 0.2);
-        background: rgba(255,255,255,0.06); color: var(--bz-bone);
-        font-family: "Whitney", sans-serif; font-size: 12px; font-weight: 500;
-        height: 26px; padding: 0 10px; border-radius: 9px; cursor: pointer;
-        transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s;
-      }
-      .aura3d-top-bar button:hover { transform: translateY(-1px); }
-      .aura3d-top-bar button.active {
-        background: linear-gradient(135deg, #ffb648, #e08b2a);
-        border-color: #ffb648; color: #140d02; font-weight: 600;
+      /* The bar itself comes from apps/showcase-port-shared/quickbar.css; this game only sets accents. */
+      :root {
+        --a3d-accent: var(--bz-amber);
+        --a3d-accent-ink: #140d02;
+        --a3d-gold: var(--bz-amber);
+        --a3d-edge: rgba(255, 182, 72, 0.3);
+        --a3d-bg: linear-gradient(180deg, rgba(16, 20, 26, 0.96), rgba(8, 10, 14, 0.9));
+        --a3d-ink: var(--bz-bone);
+        --a3d-dim: rgba(243, 236, 217, 0.72);
       }
       .aura3d-top-bar button.floor-btn { font-family: "Monument Grotesk Mono", monospace; min-width: 30px; padding: 0 6px; }
 
@@ -102,7 +83,7 @@
       .bz-stat .bz-value.amber { color: var(--bz-amber); }
 
       #bz-floor-tag {
-        position: absolute; top: 14px; left: 16px; z-index: 30;
+        position: absolute; top: calc(var(--a3d-bar-space) + 4px); left: 16px; z-index: 30;
         font-family: "DIN Pro", sans-serif; font-weight: 700; font-size: 13px;
         letter-spacing: 0.14em; text-transform: uppercase; color: var(--bz-amber);
         background: rgba(8,10,14,0.72); border: 1px solid rgba(255,182,72,0.3);
@@ -195,7 +176,6 @@
   </head>
   <body>
     <div class="aura3d-top-bar" role="toolbar" aria-label="Aura3D Bunker Zero quick switcher">
-      <span class="aura-badge">AURA3D ENGINE</span>
       <button type="button" id="bz-btn-play" class="active" title="Drop into the descent from floor one">Quick Play</button>
       <button type="button" id="bz-btn-killhouse" title="Timed target gallery">Kill House</button>
       <button type="button" id="bz-btn-menu" title="Descent map, player studio and tour">Modes &amp; Tour</button>
@@ -205,6 +185,7 @@
       <button type="button" class="floor-btn" data-aura-floor="3">F4</button>
       <button type="button" class="floor-btn" data-aura-floor="4">F5</button>
       <button type="button" class="floor-btn" data-aura-floor="5">F6</button>
+      <a class="a3d-credit" href="/" title="Built with Aura3D">Built with Aura3D</a>
     </div>
 
     <div class="aura3d-controls-hint" id="bz-controls-hint">
