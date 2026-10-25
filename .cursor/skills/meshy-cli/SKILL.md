@@ -28,7 +28,7 @@ viewer.
    downloads artifacts.
 3. Run `npx @aura3d/cli@latest --help` and confirm `assets import-meshy` and
    its `--profile prop|environment|vehicle|humanoid` values.
-4. Confirm the catalog was tried first (`aura3d-assets`) and its rejection
+4. Confirm `assets resolve` was tried first (`aura3d-assets`) and its skip
    reasons were reported. For the full upstream agent skill, review and pin a
    revision of [meshy-3d-agent](https://github.com/meshy-dev/meshy-3d-agent)
    before installing; do not copy its text here.
@@ -50,7 +50,7 @@ Reject instead of generating when the subject is a named real product,
 brand, character or person, or a request to reproduce another game's or
 product's art from its screenshots or frames; when rights evidence for
 the output cannot be recorded; when the user has not approved a maximum; or
-when a catalog candidate already passes the rubric.
+when an open-source candidate already passes the rubric.
 
 ## Procedure
 

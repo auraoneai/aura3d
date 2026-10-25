@@ -34,11 +34,13 @@ camera loop; no memorized or guessed model URLs (they are hallucinated
 provenance); no `createAuraApp()` call per frame; no CSS, DOM, or canvas
 overlay standing in for 3D effects, labels on models, or renderer output.
 
-## Catalog-first rule
+## Resolve-first rule
 
-A prompt that names a real object resolves through the asset catalog before
-any model code: `npx @aura3d/cli@latest assets search "<descriptive phrase>"`,
-then `assets resolve "<phrase>" --name <key>` for an auto-pullable candidate.
+A prompt that names a real object goes through `npx @aura3d/cli@latest assets
+resolve "<descriptive phrase>" --name <key>` before any model code. It uses an
+admitted project asset, then an open licence-clear source, then Meshy (only with
+`--allow meshy` and a budget), and otherwise prints a primitives recipe for
+simple props. There is no hosted catalog.
 Auto-pullable means verified, redistributable (CC0 or CC-BY), and
 direct-download. Marketplace and deep-link results are user-handled: the user
 downloads and licenses them, then admits the file with `assets add`.
@@ -61,7 +63,8 @@ id, a URL, a copied GLB, or a draft artifact path.
 
 ## Paid generation controls (Meshy)
 
-- Catalog first. Generation is a fallback after a reported catalog rejection.
+- Resolve first. Generation is a fallback after `assets resolve` reports no
+  project or open-source match.
 - Run `meshy make ... --dry-run` and show the plan before any paid call.
 - Get explicit user approval for the displayed maximum, then pass
   `--max-credits <approved>` on the paid command. Prices are never assumed.

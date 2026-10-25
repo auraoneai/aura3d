@@ -5,8 +5,8 @@ description: Finds, admits, inspects, validates, and types GLB/glTF, texture, en
 
 # Aura3D assets
 
-The CLI is the only path from a file or catalog hit to a typed `assets.<key>`.
-Shared rules (catalog-first, typed assets, paid generation) are in
+The CLI is the only path from a file or search hit to a typed `assets.<key>`.
+Shared rules (resolve-first, typed assets, paid generation) are in
 [boundaries](../aura3d-core/references/boundaries.md). The canonical end-to-end
 page (catalog, Meshy, optimise, isolated admission, rig and clips, production
 rules, budgets) is
@@ -44,9 +44,12 @@ lighting you evaluate materials and silhouettes against.
 
    Use `--type texture|environment|audio|navigation` for non-model files, and
    `--public-path /cdn/aura-assets/` when assets are served from a CDN.
-2. Prompt names a real object: search with a descriptive phrase.
+2. Prompt names a real object: let `assets resolve` decide (project asset,
+   open licence-clear source, Meshy only with `--allow meshy --budget N`, else a
+   primitives recipe), or search to choose yourself. There is no hosted catalog.
 
    ```bash
+   npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --dry-run
    npx @aura3d/cli@latest assets search "battle-worn knight helmet" --json
    npx @aura3d/cli@latest assets search "animated humanoid fighting character" \
      --profile fighting-character --json
@@ -131,7 +134,7 @@ lighting you evaluate materials and silhouettes against.
   two options: a user-supplied licensed file, or Meshy generation from a text
   prompt (load `meshy-cli`, dry run and an approved credit maximum first; never
   from screenshots or frames of another game or product). Do not model the subject from primitives.
-- Search prints a catalog fetch warning (for example an HTTP 404): report it
+- Search prints a source fetch warning (for example an HTTP 404): report it
   verbatim, label asset-dependent work `blocked`, and never treat fallback
   deep-links as auto-pullable.
 - `assets validate --release` fails on provenance: keep the route `prototype`

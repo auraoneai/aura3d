@@ -9,7 +9,7 @@ Aura3D is a TypeScript engine API, an asset CLI, templates, diagnostics, and a
 deploy checker. You are not writing three.js; `createAuraApp(...)` owns the
 renderer, scene graph, camera, and frame loop. Every scene gets a look — a
 preset that owns environment light, key shadow, fog, background and grade.
-Shared rules (claim labels, forbidden patterns, catalog-first, typed assets,
+Shared rules (claim labels, forbidden patterns, resolve-first, typed assets,
 paid generation, benchmark mode) live once in
 [references/boundaries.md](references/boundaries.md).
 
@@ -69,8 +69,8 @@ without a look ships flat shading, void background and floating props.
    There is no root `output` or `world` namespace: tone mapping and grade come
    from the look (`looks.appOptions`), environment from `environments.*`.
 
-4. If the prompt names a real object, resolve it through the catalog before
-   writing model code (load `aura3d-assets`).
+4. If the prompt names a real object, run `assets resolve` before writing
+   model code (load `aura3d-assets`).
 5. Load the next skill from the routing table below. Load more than one when
    the task spans them.
 6. Never assemble characters, athletes, enemies, vehicles, aircraft, trees, or
@@ -112,7 +112,7 @@ without a look ships flat shading, void background and floating props.
 | Flipbook VFX sheets, HUD icons, UI sprites | `aura3d-game-art` |
 | Restyling a finished mesh without touching geometry | `aura3d-retexture` |
 | Frame time, bundle size, KTX2, LOD, instancing | `aura3d-performance` |
-| No clean catalog candidate, Meshy generation or import | `meshy-cli` |
+| No clean open-source candidate, Meshy generation or import | `meshy-cli` |
 
 A listed skill that is not installed in this project is a gap to report, not
 permission to improvise its procedure.
