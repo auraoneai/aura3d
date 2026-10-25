@@ -3353,7 +3353,9 @@ function boot(): void {
     animState: null as string | null,
     knobWorld: null as Vec3 | null,
     knobToHand: null as number | null,
-    solverJoints: null as Record<string, Vec3> | null
+    solverJoints: null as Record<string, Vec3> | null,
+    solverActor: null as Record<string, Vec3> | null,
+    sockFit: null as { s: number; n: Vec3 } | null
   };
   const swingEvidence = {
     phase: "stance" as "stance" | "load" | "stride" | "contact" | "follow-through" | "recover",
@@ -3473,10 +3475,11 @@ function boot(): void {
     if (!actor?.socket || !bat) return;
     const round = (v: readonly number[]): Vec3 => [Number(v[0]!.toFixed(3)), Number(v[1]!.toFixed(3)), Number(v[2]!.toFixed(3))];
     const bones: Record<string, Vec3 | null> = {};
-    for (const name of ["Chest", "RightUpperArm", "RightForearm", "LeftForearm"]) {
+    for (const name of ["Chest", "RightUpperArm", "RightForearm", "RightHand", "LeftForearm", "LeftHand"]) {
       try {
         const sock = actor.socket(name);
-        bones[name] = sock.valid ? round(boneWorldPosition({ socket: actor.socket }, name)) : null;
+        // Call through `actor` so `socket` keeps its `this` (a detached method read zeros).
+        bones[name] = sock.valid ? round(boneWorldPosition(actor as never, name)) : null;
       } catch {
         bones[name] = null;
       }
@@ -3551,6 +3554,7 @@ function boot(): void {
     resolved: true,
     holdT: 0,
     recover: 0,
+    hold: null as number | null,
     contact: null as ContactConfig | null,
     power: 0.84,
     isPlayer: true,
@@ -3678,6 +3682,8 @@ function boot(): void {
     }
 
     const w = (v: Vec3): Vec3 => worldFromActor(v, batterPos, batterYaw).map((x) => Number(x.toFixed(3))) as Vec3;
+    batState.solverActor = { Chest: pose.chestActor, RightUpperArm: pose.shoulderActor, RightForearm: pose.elbow, palm: pose.palmActor };
+    batState.sockFit = { s: batSocket.s, n: batSocket.n };
     batState.solverJoints = { Chest: w(pose.chestActor), RightUpperArm: w(pose.shoulderActor), RightForearm: w(pose.elbow), palm: w(pose.palmActor) };
     return {
       tipWorld: worldFromActor(pose.tipActor, batterPos, batterYaw),
@@ -3693,7 +3699,11 @@ function boot(): void {
     G.fielderThrowTimer = Math.max(0, G.fielderThrowTimer - dt);
 
     // Advance the swing timeline; resolve contact exactly when the bat meets the ball.
-    if (swingDrive.active) {
+    if (swingDrive.active && swingDrive.hold !== null) {
+      // QA hold (`holdSwingAt`): freeze the swing clock so a frame can be measured and captured at an exact t.
+      swingDrive.t = clamp(swingDrive.hold, 0, 1);
+      swingDrive.resolved = true;
+    } else if (swingDrive.active) {
       const prevT = swingDrive.t;
       swingDrive.t = clamp(swingDrive.t + dt * (swingDrive.t < SWING_CONTACT_T ? swingDrive.ratePre : swingDrive.ratePost), 0, 1);
       if (prevT < SWING_CONTACT_T && swingDrive.t >= SWING_CONTACT_T && !swingDrive.resolved) {
@@ -4337,6 +4347,8 @@ function boot(): void {
         poseError: batState.poseError,
         bones: batState.bones,
         solverJoints: batState.solverJoints,
+        solverActor: batState.solverActor,
+        sockFit: batState.sockFit,
         animState: batState.animState,
         knobWorld: batState.knobWorld ? [...batState.knobWorld] : null,
         knobToHand: batState.knobToHand
@@ -4380,6 +4392,7 @@ function boot(): void {
       start: (m: ModeId) => startMode(m),
       setPark,
       triggerSwing,
+      holdSwingAt: (t: number | null) => { if (t === null) { swingDrive.hold = null; return; } triggerSwing(0.84); swingDrive.hold = t; },
       state: () => ({ mode: G.mode, phase: G.phase, park: G.park, inning: G.inning, half: G.half, score: { ...G.score }, outs: G.outs, bases: [...G.bases] })
     };
   });

@@ -30,14 +30,14 @@ const READ = `(() => {
   const raw = w.__AURA3D_GAME_EVIDENCE__ ?? w.__AURA3D_GAME__;
   const e = typeof raw === "function" ? raw() : raw;
   if (!e || !e.bat) return null;
-  return { k: e.bat.knobToHand, sock: e.bat.socketed, stage: e.bat.socketStage, t: e.swing ? e.swing.t : null, dur: e.swing ? e.swing.dur : null, ph: e.swing ? e.swing.phase : null, knob: e.bat.knobWorld, palm: e.swing ? e.swing.palmWorld : null, bones: e.bat.bones, sj: e.bat.solverJoints };
+  return { k: e.bat.knobToHand, sock: e.bat.socketed, stage: e.bat.socketStage, t: e.swing ? e.swing.t : null, dur: e.swing ? e.swing.dur : null, ph: e.swing ? e.swing.phase : null, knob: e.bat.knobWorld, palm: e.swing ? e.swing.palmWorld : null, bones: e.bat.bones, sj: e.bat.solverJoints, sa: e.bat.solverActor, fit: e.bat.sockFit };
 })()`;
 
 test("diamond bat grip sequence", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message.slice(0, 200)));
   page.on("console", (m) => { if (m.type() === "error" && !/404|favicon|fonts\//.test(m.text())) errors.push(m.text().slice(0, 200)); });
-  await page.setViewportSize({ width: 960, height: 540 });
+  await page.setViewportSize({ width: 640, height: 360 });
   await page.goto(`${server.origin}/apps/showcase-aura-diamond-3d/index.html?mode=quick`, { waitUntil: "load", timeout: 300_000 });
   await page.waitForFunction(() => Boolean((window as unknown as Record<string, unknown>).__AURA3D_GAME_DIAMOND__), undefined, { timeout: 600_000 });
   // Wait for the bat socket calibration to finish.
@@ -53,30 +53,24 @@ test("diamond bat grip sequence", async ({ page }) => {
   const stance = await page.evaluate(READ);
   process.stdout.write(`@@GRIP ${JSON.stringify({ label: "stance", ...(stance as object) })}\n`);
 
-  const targetsMs = [0, 120, 240, 360, 480, 700];
-  for (let swing = 0; swing < 2; swing += 1) {
-    await page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.triggerSwing?.(0.84));
-    let next = 0;
-    let lastT = -1;
-    const start = Date.now();
-    let seenActive = false;
-    while (Date.now() - start < 240_000) {
-      const s = (await page.evaluate(READ)) as { t: number | null; dur: number | null; ph: string | null; k: number | null } | null;
-      if (s && s.t !== null && s.t !== lastT) {
-        lastT = s.t;
-        process.stdout.write(`@@GRIP ${JSON.stringify({ swing, ...s })}\n`);
-        if (s.ph && s.ph !== "stance") seenActive = true;
-        const ms = (s.t ?? 0) * (s.dur ?? 0) * 1000;
-        while (swing === 0 && next < targetsMs.length && ms >= targetsMs[next]!) {
-          emit(`01-swing-${String(targetsMs[next]).padStart(3, "0")}ms`, await page.screenshot({ type: "jpeg", quality: 85 }));
-          next += 1;
-        }
-      }
-      if (seenActive && s && s.ph === "stance") break;
-      await page.waitForTimeout(40);
+  // Deterministic: freeze the swing clock at exact t via the QA hold, wait for a stable reading, then measure and capture.
+  const targets = [0.42, 0.476, 0.7, 1.0];
+  for (const target of targets) {
+    await page.evaluate((t) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.holdSwingAt?.(t), target);
+    let prev = "";
+    let stable = 0;
+    const t1 = Date.now();
+    let s: Record<string, unknown> | null = null;
+    while (Date.now() - t1 < 150_000 && stable < 2) {
+      s = (await page.evaluate(READ)) as Record<string, unknown> | null;
+      const key = s ? JSON.stringify([s.t, s.k, s.knob, s.palm]) : "";
+      if (s && Math.abs(Number(s.t) - target) < 0.02 && key === prev) stable += 1; else stable = 0;
+      prev = key;
+      await page.waitForTimeout(700);
     }
-    if (swing === 0 && next < targetsMs.length) emit(`01-swing-end`, await page.screenshot({ type: "jpeg", quality: 85 }));
-    await page.waitForTimeout(4_000);
+    process.stdout.write(`@@GRIP ${JSON.stringify({ hold: target, stable, ...(s ?? {}) })}\n`);
+    emit(`02-hold-${String(Math.round(target * 1000)).padStart(4, "0")}`, await page.screenshot({ type: "jpeg", quality: 90 }));
   }
+  await page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.holdSwingAt?.(null));
   process.stdout.write(`@@GRIP ${JSON.stringify({ done: true, errors })}\n`);
 });
