@@ -30,6 +30,7 @@ import {
 import { assetsAddHelp, mainHelp } from "./cli-help.js";
 import { writeRouteTypedAssets } from "./asset-route-typegen.js";
 import { runResolve, runSearch } from "./pull-bridge.js";
+import { LADDER_ROLES, printLadderReport, runResolveLadder, type LadderRole } from "./resolve-ladder.js";
 import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
 import "./commands/registry.js";
 import { importMeshyIsolated, importMeshyIsolatedUsage, isAuraMonorepoRoot } from "./commands/assets/importMeshy.js";
@@ -277,27 +278,55 @@ async function main(): Promise<void> {
     } else if (action === "resolve") {
       const query = args[2];
       const name = readOption("--name");
-      if (!query || query.startsWith("--") || !name) throw new Error(`Usage: aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--index N] [--candidate-id ID]`);
-      // `--index` / `--candidate-id` select which ranked candidate to pull. Without them `resolve`
-      // always pulls the top match, so an automated screening loop could not try the 2nd/3rd/Nth
-      // result that `assets search` reported.
       const rawIndex = readOption("--index");
-      const candidateIndex = rawIndex === undefined ? undefined : Number(rawIndex);
-      if (candidateIndex !== undefined && !Number.isInteger(candidateIndex)) {
-        throw new Error(`Aura3D resolve failed: --index must be an integer (got "${rawIndex}").`);
+      const candidateIdOption = readOption("--candidate-id");
+      if (rawIndex !== undefined || candidateIdOption !== undefined) {
+        // Direct pull of a known open-source candidate (from `assets search --json`).
+        if (!query || query.startsWith("--") || !name) throw new Error(`Usage: aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--index N] [--candidate-id ID]`);
+        const candidateIndex = rawIndex === undefined ? undefined : Number(rawIndex);
+        if (candidateIndex !== undefined && !Number.isInteger(candidateIndex)) {
+          throw new Error(`Aura3D resolve failed: --index must be an integer (got "${rawIndex}").`);
+        }
+        const report = await runResolve({
+          query,
+          name,
+          constraints: readResolveConstraints(),
+          ...(candidateIndex === undefined ? {} : { candidateIndex }),
+          ...(candidateIdOption === undefined ? {} : { candidateId: candidateIdOption }),
+        });
+        if (hasFlag("--json")) {
+          console.log(JSON.stringify(report, null, 2));
+        } else {
+          for (const message of report.messages) console.log(message);
+          for (const warning of report.warnings) console.error(`warning: ${warning}`);
+        }
+        if (!report.ok) process.exitCode = 1;
+        return;
       }
-      const report = await runResolve({
-        query,
-        name,
+      // The build-time ladder: project asset, open source, Meshy (opt-in), procedural recipe.
+      if (!query || query.startsWith("--")) throw new Error('Usage: aura3d assets resolve "<need>" [--name <id>] [--role hero|prop|background|character|texture|hdri] [--budget credits] [--allow meshy] [--dry-run] [--json]');
+      const roleOption = readOption("--role");
+      if (roleOption !== undefined && !(LADDER_ROLES as readonly string[]).includes(roleOption)) {
+        throw new Error(`Aura3D resolve failed: --role must be one of ${LADDER_ROLES.join(", ")} (got "${roleOption}").`);
+      }
+      const budgetOption = readOption("--budget");
+      const budget = budgetOption === undefined ? undefined : Number(budgetOption);
+      if (budget !== undefined && (!Number.isFinite(budget) || budget < 0)) {
+        throw new Error(`Aura3D resolve failed: --budget must be a non-negative number of credits (got "${budgetOption}").`);
+      }
+      const report = await runResolveLadder({
+        need: query,
+        ...(name === undefined ? {} : { name }),
+        ...(roleOption === undefined ? {} : { role: roleOption as LadderRole }),
+        ...(budget === undefined ? {} : { budget }),
+        allowMeshy: readOption("--allow") === "meshy",
+        dryRun: hasFlag("--dry-run"),
         constraints: readResolveConstraints(),
-        ...(candidateIndex === undefined ? {} : { candidateIndex }),
-        ...(readOption("--candidate-id") === undefined ? {} : { candidateId: readOption("--candidate-id")! }),
       });
       if (hasFlag("--json")) {
         console.log(JSON.stringify(report, null, 2));
       } else {
-        for (const message of report.messages) console.log(message);
-        for (const warning of report.warnings) console.error(`warning: ${warning}`);
+        printLadderReport(report);
       }
       if (!report.ok) process.exitCode = 1;
     } else {

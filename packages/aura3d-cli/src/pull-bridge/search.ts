@@ -43,6 +43,11 @@ export interface SearchCandidateLine {
   readonly downloadUrl?: string;
   /** Attribution author, needed to satisfy an attribution-bearing licence policy. */
   readonly author?: string;
+  readonly format?: AuraCanonicalAsset["format"];
+  /** Triangle count when the source exposes it. */
+  readonly triangles?: number;
+  /** File size in bytes when the source exposes it. */
+  readonly sizeBytes?: number;
   readonly profile?: {
     readonly name: Exclude<CliAssetSearchProfile, "general">;
     readonly suitable: boolean;
@@ -77,6 +82,9 @@ export function toLine(candidate: ResolveCandidate, profile: CliAssetSearchProfi
     sourcePage?: string;
     downloadUrl?: string;
     author?: string;
+    format?: AuraCanonicalAsset["format"];
+    triangles?: number;
+    sizeBytes?: number;
     profile?: SearchCandidateLine["profile"];
   } = {
     id: asset.id,
@@ -87,6 +95,10 @@ export function toLine(candidate: ResolveCandidate, profile: CliAssetSearchProfi
     access: asset.access,
   };
   if (asset.sourcePage) line.sourcePage = asset.sourcePage;
+  line.format = asset.format;
+  const triangles = asset.triangles ?? asset.triangleCount;
+  if (typeof triangles === "number") line.triangles = triangles;
+  if (typeof asset.fileSizeBytes === "number") line.sizeBytes = asset.fileSizeBytes;
   /*
    * Surface the fetchable URL.
    *
