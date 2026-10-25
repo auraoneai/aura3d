@@ -147,6 +147,11 @@ export function startDistServer(dist: string): Promise<ExampleDevServer> {
     let file = path.join(root, decodeURIComponent((req.url ?? "/").split("?")[0]!));
     if (!file.startsWith(root)) { res.statusCode = 403; res.end(); return; }
     if (existsSync(file) && statSync(file).isDirectory()) file = path.join(file, "index.html");
+    if (!existsSync(file)) {
+      // Fall back to the repo public tree (catalog assets staged by PUBLIC_ASSETS, HDRIs, fonts).
+      const publicFile = path.join(path.resolve("public"), decodeURIComponent((req.url ?? "/").split("?")[0]!));
+      if (publicFile.startsWith(path.resolve("public")) && existsSync(publicFile) && statSync(publicFile).isFile()) file = publicFile;
+    }
     if (!existsSync(file)) { res.statusCode = 404; res.end("not found"); return; }
     res.setHeader("content-type", MIME[path.extname(file)] ?? "application/octet-stream");
     res.end(readFileSync(file));
