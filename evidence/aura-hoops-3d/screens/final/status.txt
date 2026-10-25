@@ -1,0 +1,13 @@
+@@SHOTSA aura-hoops-3d 1280x720 title ready=true
+@@SHOTSA aura-hoops-3d 1280x720 play ready=true
+@@SHOTSA aura-hoops-3d 1280x720 done captured=7 signatures=7 late=true results=false errors=0
+@@SHOTSA aura-hoops-3d 390x844 title ready=true
+@@SHOTSA aura-hoops-3d 390x844 play ready=true
+@@SHOTSA aura-hoops-3d 390x844 done captured=7 signatures=7 late=true results=false errors=0
+@@SHOTSA aura-hoops-3d card 1x ok
+@@SHOTSA aura-hoops-3d card 2x ok
+@@SHOTSA aura-hoops-3d 390x844 title ready=true
+@@SHOTSA aura-hoops-3d 390x844 play ready=true
+@@SHOTSA aura-hoops-3d 390x844 done captured=3 signatures=3 late=true results=false errors=0
+@@SHOTSA aura-hoops-3d card 1x ok
+@@SHOTSA aura-hoops-3d card 2x ok

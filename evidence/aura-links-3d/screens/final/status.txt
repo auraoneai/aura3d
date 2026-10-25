@@ -1,0 +1,25 @@
+@@SHOTSA aura-links-3d 1280x720 title ready=true
+@@SHOTSA aura-links-3d 1280x720 play ready=true
+@@FINA links-state after-swing+0ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":69,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fligh
+@@FINA links-state after-swing+3000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":70,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
+@@FINA links-state after-swing+8000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":71,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
+@@FINA links-hud-strokes 1
+@@SHOTSA aura-links-3d 1280x720 done captured=10 signatures=1 late=false results=false errors=0
+@@SHOTSA aura-links-3d 390x844 title ready=true
+@@SHOTSA aura-links-3d 390x844 play ready=true
+@@FINA links-state after-swing+0ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":68,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fligh
+@@FINA links-state after-swing+3000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":69,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
+@@FINA links-state after-swing+8000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":71,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
+@@FINA links-hud-strokes 1
+@@SHOTSA aura-links-3d 390x844 done captured=10 signatures=1 late=false results=false errors=0
+@@SHOTSA aura-links-3d card 1x ok
+@@SHOTSA aura-links-3d card 2x ok
+@@SHOTSA aura-links-3d 390x844 title ready=true
+@@SHOTSA aura-links-3d 390x844 play ready=true
+@@FINA links-state after-swing+0ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":69,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fligh
+@@FINA links-state after-swing+3000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":70,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
+@@FINA links-state after-swing+8000ms {"route":"showcase-aura-links-3d","engine":"@aura3d/engine","engineVersion":"4.0.2","ready":true,"framesRendered":72,"mode":"quick","phase":"flight","cameraMode":"flight","course":"stAuroras","hole":1,"par":4,"strokes":1,"putts":0,"lie":"tee","club":"driver","aimYaw":0.0407936828678654,"windSpeed":5.509567142699279,"windYaw":2.2810624838252145,"ballStatus":"fl
+@@FINA links-hud-strokes 1
+@@SHOTSA aura-links-3d 390x844 done captured=10 signatures=1 late=false results=false errors=0
+@@SHOTSA aura-links-3d card 1x ok
+@@SHOTSA aura-links-3d card 2x ok

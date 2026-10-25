@@ -1,0 +1,8 @@
+@@SHOTSA aura-fc-3d 1280x720 title ready=true
+@@SHOTSA aura-fc-3d 1280x720 play ready=true
+@@SHOTSA aura-fc-3d 1280x720 done captured=7 signatures=7 late=true results=false errors=0
+@@SHOTSA aura-fc-3d 390x844 title ready=true
+@@SHOTSA aura-fc-3d 390x844 play ready=true
+@@SHOTSA aura-fc-3d 390x844 done captured=10 signatures=10 late=true results=false errors=0
+@@SHOTSA aura-fc-3d card 1x ok
+@@SHOTSA aura-fc-3d card 2x ok
