@@ -30,8 +30,30 @@ Three 1440x900 loads in one run gave bit-identical statistics (the road drawn ea
 - `car-before-crop.jpg`, `car-smoothed-texture-crop.jpg`: the hypercar before and after smoothing its textures (no visible change; see below).
 - `metrics.txt`: `python3` measurements of those frames (road: lane dashes and luma spread over the lower road region; car: body core).
 
-## Still open (not fixed here)
+## Follow-up (grid2): road flip and translucent car
 
-1. **The road still flips between consecutive frames after a long jump.** In runs 7 and 9, a PNG screenshot taken after `settle()` read as flat ground (dashes 0, spread 14.1) while the JPEG screenshot taken a moment later of the same page showed the road (0.0044, 27.0); in run 6 the first screenshot (1280x720) had no road and the 1440x900 one did. `settle()` waits for a stable draw-call count and does not remove it, so a program-variant wait is not the whole story. Next step: log the draw-call sequence and which items are drawn in the failing frame (a per-frame item list from the forward pass), and test whether the road quad is culled (zero-thickness 1 km bounding box) or its program variant alternates by frame. The spec records `@@FGLOOK-unsettled`, `@@FGLOOK` and `@@FGLOOK-again` per size.
-2. **The hypercar still reads as translucent.** Its closed 39k-triangle mesh (0.4% open edges; an earlier "67% open" reading was a bug in my reader, which ignored the interleaved buffer stride) is not holey. Meshy's colour and metal/roughness maps are shard-shaped islands (the raw refine output has the same atlas). Smoothing both maps, and a paint override (envMapIntensity, roughness, metallic), left the car body core at mean luma 92 to 94 with 40% bright pixels in every run, so the bright canopy and body come from sky reflection and lighting, not from those maps; the override parameters do not appear to reach this material. Reverted. Needs either a regenerated model or an engine-side check of why model material overrides do not change this material.
-3. **Every other game that renders straight after `ready()` has the same first-frame exposure.** Use `warmPrograms(app)` (docs: `docs/agents/build-a-game.md`).
+All runs: remote ACR, SwiftShader (software WebGL2) on a heavily shared runner, so one screenshot can take minutes. Nothing here is real-GPU evidence.
+
+### Road flip: root cause NOT established
+
+What was tested and what it showed:
+
+- **Not canvas size alone, not the texture upgrade.** The first diagnostic (1280x720, long jump, `settle()`): the `road-tiles` node read `textured` with 0 pending in every sample, yet one sample had no road (luma spread 14.1) and the next, 228 s later, had it (27.0).
+- **Not the old coplanar terrain, as far as it could be reproduced.** With the terrain still a full plane 3 cm under the road (`?ground=full`) and with the new ring-shaped terrain, the 1280x720 post-jump state drew the road in every sampled frame (spread 28.0, 28.7, 29.3). So the depth-fight idea is not demonstrated; the ring terrain (`outerGroundRects`) stays as hardening because a plane under the road is a latent depth tie, not because it was shown to cause the flip.
+- **A late environment event does change the scene.** The 640x360 engine-diagnostics run shows `renderer.environment.hdriStatus` going `pending -> ready` and `iblPixelBacked false -> true` between two samples, with `programs.reused` jumping from about 1,500 to 3,000, i.e. every material moving to its image-based-lighting program, which compiles asynchronously (a draw whose program is pending is skipped). `warmPrograms` now waits for a pending HDRI (bounded) and settles again. In that run the road stayed present across the transition, so this is a robustness fix for a measured late recompile, not a proven fix for the flip.
+- **Detector caveat.** The road detector first required yellow lane dashes; an intersection view has none, so it reported "no road" for frames that clearly show one. It now uses the luma spread of the lower street strip only (flat ground 14, a plain straight street 19, an intersection or long street 27 to 39), threshold 17.
+
+Still unknown: why the first frames sometimes show flat ground. Next step if it recurs on a real GPU: log the per-frame item list in the failing frame (the forward pass skips items whose program is pending; no draw list is exposed).
+
+### Translucent car: it was the baked texture, now repainted
+
+- The GLB's single material is opaque (no alpha mode, no extensions, double-sided). The see-through look comes from the Meshy atlas: glass, interior and reflections baked into shard-shaped islands, on a closed shell that also carries inward-facing triangles.
+- The model's `envMapIntensity` override cannot fix it: the override writes the legacy ambient uniform (`u_environmentIntensity`), not the image-based reflection term, and a `roughness` or `metallic` override multiplies the metallic-roughness texture (glTF semantics) instead of replacing it. The override is removed.
+- A regenerated Meshy model was not possible: the `drift` ledger tag is at 440 credits, over its 420 cap.
+- Fix with no credits: `tools/gridlock-car-retexture/` splits the same mesh by region into flat PBR materials (body, glass, tyre, rim, headlight, taillight, underbody) and drops the baked textures. Geometry, scale and origin are unchanged (39,182 triangles, 1.9 x 0.96 x 0.5), size 2.46 MB to 1.73 MB, deterministic output, `provenance/hypercar.repaint.json`.
+- Frames: `car-after-repaint-1280.jpg` / `car-after-repaint-crop.jpg` (first repaint) and `car-final-1280.jpg`, `car-final-1440.jpg`, `car-final-crop.jpg` (final model). Car region mean luma 144 at both sizes, against 92 to 94 with 40% bright pixels before. The body reads as a solid painted car with a dark canopy and two taillights; the colour is a flat blue, the facets come from the original mesh's normals.
+- Open: the silhouette is still a Meshy supercar. A different model needs Meshy credits (the `drift` tag is over its cap; a higher cap is the owner's call).
+
+### Other games
+
+`warmPrograms(app)` is the first-frame fix for every game that renders straight after `ready()`; it now also waits for the environment HDRI.

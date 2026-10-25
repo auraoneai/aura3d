@@ -10,13 +10,16 @@
  *  3. `precompile()` again settles any record that differed from the prediction.
  *  4. Frames are stepped until the draw-call count is the same on `stableFrames` frames in a row, because which
  *     variants an item needs depends on its state relative to the camera and only shows once it is drawn.
+ *  5. A requested environment HDRI that is still loading is waited for (bounded), and steps 3 and 4 run again:
+ *     when the HDRI lands, every material switches to its image-based-lighting program variant at once, which
+ *     recompiles the whole scene and drops frames after the game believed it was settled.
  *
  * Call it again after a large jump (a teleport) before capturing a frame.
  */
 export interface WarmableApp {
   precompile?(): Promise<unknown>;
   step(dt?: number): unknown;
-  diagnostics?(): { readonly drawCalls?: number };
+  diagnostics?(): { readonly drawCalls?: number; readonly renderer?: { readonly environment?: { readonly hdriStatus?: string } } };
 }
 
 export interface WarmProgramsOptions {
@@ -26,6 +29,10 @@ export interface WarmProgramsOptions {
   readonly stableFrames?: number;
   /** Upper bound on the extra frames stepped while waiting for the draw-call count to settle. Default 12. */
   readonly maxFrames?: number;
+  /** Wait for a requested environment HDRI (`renderer.environment.hdriStatus === "pending"`) before settling. Default true. Needs `app.diagnostics`. */
+  readonly waitForEnvironment?: boolean;
+  /** Upper bound on that wait, in milliseconds. Default 20000. */
+  readonly environmentTimeoutMs?: number;
 }
 
 export interface WarmProgramsResult {
@@ -36,6 +43,10 @@ export interface WarmProgramsResult {
   readonly settleFrames: number;
   /** True when the draw-call count was stable on `stableFrames` frames in a row (always true without diagnostics). */
   readonly settled: boolean;
+  /** Frames stepped while waiting for the environment HDRI (0 when none was pending). */
+  readonly environmentFrames: number;
+  /** False only when an HDRI was still pending when the wait timed out. */
+  readonly environmentReady: boolean;
   readonly durationMs: number;
 }
 
@@ -58,14 +69,14 @@ export async function warmPrograms(app: WarmableApp, options: WarmProgramsOption
   }
   let settleFrames = 0;
   let settled = true;
-  if (typeof app.diagnostics === "function") {
+  const settleCounts = async (): Promise<void> => {
     settled = false;
     let last = Number.NaN;
     let run = 0;
-    while (settleFrames < maxFrames) {
+    for (let pass = 0; pass < maxFrames; pass++) {
       app.step(0);
       settleFrames += 1;
-      const calls = app.diagnostics().drawCalls;
+      const calls = app.diagnostics!().drawCalls;
       if (typeof calls === "number" && calls === last) run += 1;
       else {
         run = 1;
@@ -77,6 +88,24 @@ export async function warmPrograms(app: WarmableApp, options: WarmProgramsOption
       }
       if (typeof app.precompile === "function") await app.precompile();
     }
+  };
+  if (typeof app.diagnostics === "function") await settleCounts();
+  let environmentFrames = 0;
+  let environmentReady = true;
+  const hdriPending = (): boolean => app.diagnostics?.().renderer?.environment?.hdriStatus === "pending";
+  if (options.waitForEnvironment !== false && typeof app.diagnostics === "function" && hdriPending()) {
+    const deadline = now() + Math.max(0, options.environmentTimeoutMs ?? 20_000);
+    while (hdriPending() && now() < deadline) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 40));
+      app.step(0);
+      environmentFrames += 1;
+    }
+    environmentReady = !hdriPending();
+    if (typeof app.precompile === "function") {
+      await app.precompile();
+      passes += 1;
+    }
+    await settleCounts();
   }
-  return { passes, frames, settleFrames, settled, durationMs: now() - startedAt };
+  return { passes, frames, settleFrames, settled, environmentFrames, environmentReady, durationMs: now() - startedAt };
 }

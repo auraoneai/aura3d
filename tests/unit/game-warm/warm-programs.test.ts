@@ -86,4 +86,59 @@ describe("warmPrograms", () => {
   it("propagates a precompile failure", async () => {
     await expect(warmPrograms({ async precompile() { throw new Error("compile failed"); }, step() {} })).rejects.toThrow("compile failed");
   });
+
+  describe("environment HDRI", () => {
+    /** An app whose HDRI turns ready after `readyAfterSteps` stepped frames; drawCalls rises when it lands (the IBL variants). */
+    function withHdri(readyAfterSteps: number | null) {
+      let steps = 0;
+      const log: string[] = [];
+      const app: WarmableApp = {
+        async precompile() { log.push("precompile"); await Promise.resolve(); },
+        step() { steps += 1; log.push("step"); },
+        diagnostics() {
+          const ready = readyAfterSteps !== null && steps >= readyAfterSteps;
+          return { drawCalls: ready ? 140 : 113, renderer: { environment: { hdriStatus: readyAfterSteps === null ? "pending" : ready ? "ready" : "pending" } } };
+        }
+      };
+      return { app, log, steps: () => steps };
+    }
+
+    it("waits for a pending HDRI, then precompiles and settles again on the final programs", async () => {
+      const { app, log } = withHdri(12);
+      const result = await warmPrograms(app, { stableFrames: 2, environmentTimeoutMs: 5000 });
+      expect(result.environmentReady).toBe(true);
+      expect(result.environmentFrames).toBeGreaterThan(0);
+      expect(result.settled).toBe(true);
+      expect(log.filter((l) => l === "precompile").length).toBeGreaterThanOrEqual(3);
+    });
+
+    it("gives the second settle pass its own frame budget", async () => {
+      // the first pass never settles (changing counts) and uses all of maxFrames; the pass after the HDRI still runs
+      let steps = 0;
+      const app: WarmableApp = {
+        async precompile() { await Promise.resolve(); },
+        step() { steps += 1; },
+        diagnostics() { return { drawCalls: steps < 30 ? steps : 200, renderer: { environment: { hdriStatus: steps >= 8 ? "ready" : "pending" } } }; }
+      };
+      const result = await warmPrograms(app, { stableFrames: 3, maxFrames: 6, environmentTimeoutMs: 2000 });
+      expect(result.environmentReady).toBe(true);
+      expect(result.settleFrames).toBeGreaterThan(6);
+    });
+
+    it("gives up after the timeout and says so", async () => {
+      const { app } = withHdri(null);
+      const result = await warmPrograms(app, { stableFrames: 2, environmentTimeoutMs: 120 });
+      expect(result.environmentReady).toBe(false);
+    });
+
+    it("does not wait when waitForEnvironment is false, or when no HDRI was requested", async () => {
+      const a = withHdri(null);
+      const off = await warmPrograms(a.app, { stableFrames: 2, waitForEnvironment: false });
+      expect(off.environmentFrames).toBe(0);
+      const none = scripted([113]);
+      const r = await warmPrograms(none.app, { stableFrames: 2 });
+      expect(r.environmentFrames).toBe(0);
+      expect(r.environmentReady).toBe(true);
+    });
+  });
 });

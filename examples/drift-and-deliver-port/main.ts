@@ -10,7 +10,7 @@
  * `__AURA_DRIFT_AND_DELIVER__.stepFrames`; no overlay), `autostart=1`, `quality=high|low`.
  */
 import { createAuraApp, createAuraRouteHealthSnapshot, createFixedStepLoop, geometry, installQaHooks, material, primitives, type AuraApp } from "@aura3d/engine";
-import { createRenderInterpolator, drawCanvasMinimap, warmPrograms } from "@aura3d/engine/game";
+import { createRenderInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, warmPrograms } from "@aura3d/engine/game";
 import { blendPresented, type Presented } from "./presentation";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
@@ -53,6 +53,10 @@ const config = {
   heal: params.get("heal") !== "0",
   /** `warm=0` skips the program warm-up so the first frames can miss draws (diagnostics for the first-frame regression spec) */
   warm: params.get("warm") !== "0",
+  /** `warmenv=0` skips waiting for the environment HDRI in the warm-up (diagnostics for the first-frames regression spec) */
+  warmEnv: params.get("warmenv") !== "0",
+  /** how long the warm-up waits for the environment HDRI; the regression spec raises it for a slow software-GL runner */
+  warmEnvMs: Math.max(0, Number(params.get("warmenvms")) || 30_000),
   healFrames: Number(params.get("healframes")) || undefined,
   sky: params.get("sky") !== "0",
   exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
@@ -409,8 +413,12 @@ const hooks = installQaHooks("drift-and-deliver", {
   extras: {
     /** resolves once the programs the current view needs are compiled (call after a teleport before capturing a frame) */
     settle() {
-      return (app ? warmPrograms(app) : Promise.resolve()).then(() => status());
+      return (app ? warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs }) : Promise.resolve()).then(() => status());
     },
+    /** per-node texture upgrade status: textures upload one material at a time after mount, so an early frame shows untextured ground */
+    textures: () => summarizeTextureUpgrade(app?.diagnostics()),
+    /** the engine's diagnostics snapshot as plain JSON (evidence and specs) */
+    diag: () => JSON.parse(JSON.stringify(app?.diagnostics() ?? null, (_k, v) => (typeof v === "function" ? undefined : v))) as unknown,
     applyInput(input: Partial<Keys>) {
       Object.assign(keys, NO_KEYS, input);
     },
@@ -448,7 +456,7 @@ async function boot(): Promise<void> {
   });
   await app.ready();
   // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city
-  if (config.warm) warmResult = await warmPrograms(app);
+  if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs });
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
