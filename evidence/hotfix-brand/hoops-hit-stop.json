@@ -1,0 +1,37 @@
+{
+  "old": {
+    "variant": "old",
+    "runMs": 600000,
+    "frames": 203,
+    "frozenFrames": 129,
+    "maxFrozenRun": 129,
+    "firstScoreFrameIndex": 73,
+    "framesAfterFirstScore": 130,
+    "frozenAfterFirstScore": 129,
+    "finalTotalScore": 1,
+    "phases": [
+      "live",
+      "shot",
+      "score"
+    ],
+    "errors": []
+  },
+  "new": {
+    "variant": "new",
+    "runMs": 600000,
+    "frames": 192,
+    "frozenFrames": 15,
+    "maxFrozenRun": 14,
+    "firstScoreFrameIndex": 73,
+    "framesAfterFirstScore": 119,
+    "frozenAfterFirstScore": 15,
+    "finalTotalScore": 1,
+    "phases": [
+      "live",
+      "shot",
+      "score",
+      "check"
+    ],
+    "errors": []
+  }
+}

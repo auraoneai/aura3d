@@ -65,6 +65,7 @@ export { createGameImpl, type Prd09Game } from "./createGame";
 export { GameSessionImpl } from "./session/GameSession";
 export { attachSessionLifecycle } from "./session/lifecycle";
 export { createAccessibility } from "./session/accessibility";
+export { warmPrograms, type WarmableApp, type WarmProgramsOptions, type WarmProgramsResult } from "./session/warmPrograms";
 export { installGameBeacon } from "./evidence/beacon";
 export { summarizeTextureUpgrade, texturedNodesReady } from "./evidence/textureStatus";
 export type { TexturedMaterialRow, TextureUpgradeSummary } from "./evidence/textureStatus";

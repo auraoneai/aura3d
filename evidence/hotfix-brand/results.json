@@ -1,0 +1,103 @@
+[
+  {
+    "slug": "aura-hoops-3d",
+    "meanLuma": 65.9,
+    "glbRequests": 24,
+    "glbNon200": [],
+    "cleanedRequested": [
+      "200 /aura-assets/hoopsAthleteGuardClean.178e3649.glb",
+      "200 /aura-assets/hoopsAthleteBigClean.bfc264d0.glb",
+      "200 /aura-assets/hoopsAthleteBigClean.bfc264d0.glb",
+      "200 /aura-assets/hoopsAthleteGuardClean.178e3649.glb"
+    ],
+    "requestedRemoved": [],
+    "errors": [],
+    "httpErrors": [
+      "http404 /hdri/kloppenheim_06_puresky_1k.hdr",
+      "http404 /hdri/kloppenheim_06_puresky_1k.hdr"
+    ]
+  },
+  {
+    "slug": "aura-diamond-3d",
+    "meanLuma": 81.4,
+    "glbRequests": 28,
+    "glbNon200": [],
+    "cleanedRequested": [
+      "200 /aura-assets/diamondAthleteClean.ef3c43ea.glb",
+      "200 /aura-assets/diamondAthleteClean.ef3c43ea.glb"
+    ],
+    "requestedRemoved": [],
+    "errors": [],
+    "httpErrors": [
+      "http404 /hdri/kloppenheim_06_puresky_1k.hdr",
+      "http404 /hdri/kloppenheim_06_puresky_1k.hdr"
+    ]
+  },
+  {
+    "slug": "aura-links-3d",
+    "meanLuma": 112.9,
+    "glbRequests": 16,
+    "glbNon200": [],
+    "cleanedRequested": [
+      "200 /aura-assets/linksGolferAthleteClean.5a04c740.glb",
+      "200 /aura-assets/linksGolferAthleteClean.5a04c740.glb"
+    ],
+    "requestedRemoved": [],
+    "errors": [],
+    "httpErrors": [
+      "http404 /hdri/autumn_field_puresky_1k.hdr",
+      "http404 /hdri/autumn_field_puresky_1k.hdr"
+    ]
+  },
+  {
+    "slug": "aura-fc-3d",
+    "meanLuma": 130.6,
+    "glbRequests": 24,
+    "glbNon200": [],
+    "cleanedRequested": [
+      "200 /aura-assets/fcGoalkeeperClean.4194514e.glb",
+      "200 /aura-assets/fcSoccerStrikerClean.2e335ee3.glb",
+      "200 /aura-assets/fcGoalkeeperClean.4194514e.glb",
+      "200 /aura-assets/fcSoccerStrikerClean.2e335ee3.glb"
+    ],
+    "requestedRemoved": [],
+    "errors": [],
+    "httpErrors": [
+      "http404 /hdri/studio_small_08_1k.hdr",
+      "http404 /hdri/studio_small_08_1k.hdr"
+    ]
+  },
+  {
+    "slug": "red-zone-3d",
+    "meanLuma": 63.8,
+    "glbRequests": 20,
+    "glbNon200": [],
+    "cleanedRequested": [
+      "200 /aura-assets/rzQuarterbackClean.2397b4cd.glb",
+      "200 /aura-assets/rzQuarterbackClean.2397b4cd.glb"
+    ],
+    "requestedRemoved": [],
+    "errors": [],
+    "httpErrors": []
+  },
+  {
+    "slug": "teleoperator",
+    "meanLuma": 69.4,
+    "glbRequests": 32,
+    "glbNon200": [],
+    "cleanedRequested": [
+      "200 /aura-assets/teleopWaymoClean.26413873.glb",
+      "200 /aura-assets/teleopCybercabClean.30e5baa3.glb",
+      "200 /aura-assets/teleopCorvetteClean.859a329f.glb",
+      "200 /aura-assets/teleopWaymoClean.26413873.glb",
+      "200 /aura-assets/teleopCybercabClean.30e5baa3.glb",
+      "200 /aura-assets/teleopCorvetteClean.859a329f.glb"
+    ],
+    "requestedRemoved": [],
+    "errors": [],
+    "httpErrors": [
+      "http404 /hdri/autumn_field_puresky_1k.hdr",
+      "http404 /hdri/autumn_field_puresky_1k.hdr"
+    ]
+  }
+]

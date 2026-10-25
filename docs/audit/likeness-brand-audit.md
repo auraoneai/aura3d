@@ -28,6 +28,28 @@ Cost: the repainted models are flat colour with ragged region edges (the Hoops l
 
 ## Not fixed (needs an owner decision)
 
+## Fixed in the `hotfix-brand` branch (textures cleaned, geometry unchanged)
+
+Tool: `tools/likeness-audit/clean-textures.mjs <recipe>` (waymo, corvette, cybercab, formula, tsukuba, turbo-tsukuba, rooftop), manifests updated with `apply-clean-assets.mjs` and `apply-clean-json.mjs`, locked by `tests/unit/likeness-audit/brand-clean-assets.test.ts`. Original files are deleted from `public/aura-assets/`.
+
+| Asset | Was | Now |
+|---|---|---|
+| `teleopWaymoHero`, `teleopWaymoTraffic` | "WAYMO" side and tailgate lettering, "JAGUAR" lettering, leaper and "I-PACE" on the tailgate, front "JAGUAR", a roof-pod mark | all eight marks painted out of the albedo atlas with the surrounding body colour (`teleopWaymoClean`, one file for both keys). The roof sensor-pod and body shape are unchanged: that is a design likeness a texture edit cannot remove |
+| `teleopCorvette` | crossed-flags badge, "Corvette" text (scrambled UV atlas, marks not locatable) | whole body atlas blurred and median-filtered so no mark stays legible (`teleopCorvetteClean`); the body shape is still a recognisable model |
+| `teleopCybercab` | atlas marks | same blur and median treatment (`teleopCybercabClean`); the body is still a close replica of a real product shape, needs new art |
+| `showcaseCcByFormulaOpponent` | livery full of decals ("SKETCHFAB", "SDC PERFORMANCE", "Blender", "Dubai", "GP-2021", numbers) and Pirelli sidewall lettering | livery flattened to its base blue (black panel kept), tyre sidewall lettering and ring painted black (`showcaseCcByFormulaOpponentClean`). CC-BY attribution for the model stays in the attribution files |
+| `showcaseTsukubaCircuit`, `turboTsukubaVisualTrack` | "TSUKUBA CIRCUIT" logo in six textures, and a "DUNLOP" arch (a real brand the first pass missed) | logo pixels inpainted from their surroundings, the arch texture smeared past legibility (`...Clean`); one banner texture is patchy now |
+| `rooftopAthleteDefender`, `rooftopAthleteShooter`, `rooftopShooter`, `rooftopDefender`, `rooftopLayupScorer` | photographic face-scan atlases, still served under `/aura-assets/` | base-colour textures smeared (faces unrecognisable); unreferenced duplicate files (`rooftopDefender.c0947539`, `rooftopLayupScorer.6201dc87`, `rooftopShooter.fd853001`) deleted |
+| `rooftopDefenderMeshy`, `rooftopShooterMeshyV1` | "23" jersey and swoosh-style marks | same smear; both are unused by game code |
+
+Verified: `rooftopDefenderV2` and `rooftopShooterV2` have no textures (flat material colours) and were left as they are. `showcaseDetailedRaceCircuit` shows no real mark in its textures (sci-fi hangar atlases) and `showcaseCc0FormulaRaceCar` is a colour palette, so neither changed.
+
+Still open after this branch: `teleopCybertruck` (a replica of a real vehicle shape, atlas not reviewed), the other Teleoperator vehicles (atlas only, unreviewed), `courierVan`/`courierTrafficHatch`, and any asset whose problem is the model shape itself. Those need new generic art, not texture edits.
+
+## Not fixed (needs an owner decision)
+
+Rows for assets listed under "Fixed in the `hotfix-brand` branch" above are fixed on that branch only; this table describes `main` before the hotfix.
+
 | Asset | Used by | What is visible | Verdict |
 |---|---|---|---|
 | `teleopWaymoHero`, `teleopWaymoTraffic` | Teleoperator (`apps/showcase-teleoperator`, `-v2`) | a Jaguar I-PACE with "JAGUAR" tailgate lettering and grille badge, "WAYMO" side lettering, roof sensor pod | HIGH |

@@ -74,8 +74,8 @@ export const assets = defineAuraAssets({
   rooftopDefenderMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/rooftopDefenderMeshy.c53681c7.glb",
-    hash: "sha256-783ec8135ef8aaf1e9d6b2351b37f0573a859b99612370a8fb072660121e6ce6",
+    url: "/aura-assets/rooftopDefenderMeshyClean.1e9df651.glb",
+    hash: "sha256-1e9df6514b4a34f62b7f6f0eead31724252bd7d02a495e752e61668ed9473c55",
     bounds: [0.831, 1.886, 0.646]
   },
   gallerySecurityGuardMeshy: {
