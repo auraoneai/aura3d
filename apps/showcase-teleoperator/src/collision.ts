@@ -29,16 +29,16 @@ const CULL_DX = 4.5;
 
 // Footprints of the ten traffic vehicles in `trafficSpecs` order: [length, width] in metres.
 export const TRAFFIC_FOOTPRINTS: ReadonlyArray<readonly [number, number]> = [
-  [4.75, 1.9],
-  [4.6, 1.9],
-  [4.75, 1.9],
-  [4.75, 2.0],
-  [4.75, 2.0],
-  [4.6, 1.9],
-  [5.05, 2.05],
-  [5.25, 2.05],
-  [5.25, 2.05],
-  [11.8, 2.6]
+  [4.75, 2.17],
+  [4.6, 2.1],
+  [4.75, 2.17],
+  [3.9, 2.09],
+  [3.9, 2.09],
+  [4.6, 2.1],
+  [4.7, 2.25],
+  [5.25, 2.25],
+  [5.25, 2.25],
+  [7.6, 2.71]
 ];
 
 const trafficVelocityZ = (car: TrafficBody): number => (car.direction === 1 ? -car.speed : car.speed);

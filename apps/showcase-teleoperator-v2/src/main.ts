@@ -32,44 +32,44 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopWaymoHero: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
-    hash: "sha256-6d2a9bfb61613fd1e5a0fd64aa3b8222d237bc58b7486f009d014c61066ee45a",
-    bounds: [2.2, 2.521, 4.5678]
+    url: "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
+    hash: "sha256-7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+    bounds: [0.9293, 0.9414, 1.9037]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopWaymoTraffic.f476abe7.glb",
-    hash: "sha256-f476abe7f85470beff321bef6c521e425a549c13e1a10cfdd3c41e1f339b4559",
-    bounds: [2.2, 2.521, 4.5678]
+    url: "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
+    hash: "sha256-7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+    bounds: [0.9293, 0.9414, 1.9037]
   },
   teleopCybercab: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopCybercab.08358a58.glb",
-    hash: "sha256-08358a58dd8d530ccc7b4249db3a9d2e11ccf8ecfac1c9d9d7afea452a1de291",
-    bounds: [1.7532, 1.7973, 4.4179]
+    url: "/aura-assets/teleopVehHatch.67925e22.glb",
+    hash: "sha256-67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
+    bounds: [1.0178, 1.0578, 1.9025]
   },
   teleopCybertruck: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopCybertruck.6aa8f5c4.glb",
-    hash: "sha256-6aa8f5c420b6362c41b6376fb8d7107e1af536450cff75580b094d201906ec7b",
-    bounds: [2.34, 2.3452, 5.693]
+    url: "/aura-assets/teleopVehPickup.75a710f9.glb",
+    hash: "sha256-75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
+    bounds: [0.8166, 0.7167, 1.9027]
   },
   teleopCorvette: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopCorvette.e7009c34.glb",
-    hash: "sha256-e7009c3418b2d0c3163bd1af8737f3986bab9c372aea90ce81dab8fb37197598",
-    bounds: [2.0458, 1.5639, 4.6749]
+    url: "/aura-assets/teleopVehCoupe.7f3a1b6a.glb",
+    hash: "sha256-7f3a1b6ab764b97e22d51060d175532d4b4d6646295d07372283c96548f6e87d",
+    bounds: [0.8532, 0.5828, 1.9025]
   },
   teleopMissions: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopMissions.6996bfa9.glb",
-    hash: "sha256-6996bfa9c290d2c4a4790c9334a48dc8c1798128fb14a8a4bfc9e2800a60be6a",
-    bounds: [1.9976, 1.5315, 4.5]
+    url: "/aura-assets/teleopVehRoadster.35a1e8b7.glb",
+    hash: "sha256-35a1e8b73a975c9d6d8f4b4b4ae5bcf59feae133dec059d128cfb1b0f60255f1",
+    bounds: [0.8736, 0.5225, 1.9019]
   },
   teleopCablecar: {
     type: "model",
@@ -81,44 +81,44 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopSedan: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopSedan.glb",
-    hash: "sha256-teleopSedan",
-    bounds: [2.2076, 1.5586, 4.8408]
+    url: "/aura-assets/teleopVehSedan.7bc528fc.glb",
+    hash: "sha256-7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
+    bounds: [0.8674, 0.6622, 1.9013]
   },
   teleopSuv: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopSuv.glb",
-    hash: "sha256-teleopSuv",
-    bounds: [2.1864, 1.7948, 4.7481]
+    url: "/aura-assets/teleopVehHatch.67925e22.glb",
+    hash: "sha256-67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
+    bounds: [1.0178, 1.0578, 1.9025]
   },
   teleopTaxi: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopTaxi.glb",
-    hash: "sha256-teleopTaxi",
-    bounds: [2.1061, 1.5885, 4.5967]
+    url: "/aura-assets/teleopVehSedan.7bc528fc.glb",
+    hash: "sha256-7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
+    bounds: [0.8674, 0.6622, 1.9013]
   },
   teleopVan: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVan.glb",
-    hash: "sha256-teleopVan",
-    bounds: [2.3593, 2.3621, 5.0734]
+    url: "/aura-assets/teleopVehVan.44a544bc.glb",
+    hash: "sha256-44a544bcde7b475580bbc7b3ff7a8047e9cb7cbf3dea04d34f9f50ed12084216",
+    bounds: [0.9098, 1.0016, 1.9027]
   },
   teleopPickup: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopPickup.glb",
-    hash: "sha256-teleopPickup",
-    bounds: [2.3697, 1.8376, 5.2906]
+    url: "/aura-assets/teleopVehPickup.75a710f9.glb",
+    hash: "sha256-75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
+    bounds: [0.8166, 0.7167, 1.9027]
   },
   teleopBus: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopBus.glb",
-    hash: "sha256-teleopBus",
-    bounds: [3.8159, 5.6352, 11.9659]
+    url: "/aura-assets/teleopVehBoxTruck.8cf91d05.glb",
+    hash: "sha256-8cf91d0505f83b8caf170b60d5590987cf11a094005702df0ce7f3ce509c114b",
+    bounds: [0.6786, 0.8458, 1.9016]
   },
   heatsinkTowerL: {
     type: "model",
@@ -225,7 +225,7 @@ const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
     id: "cybercab",
     name: "Cyber Coupe",
     maker: "Aura Autonomous",
-    maxDim: 4.42,
+    maxDim: 4.0,
     rideY: 0,
     maxSpeedMps: 40,
     accel: 20,
@@ -1204,7 +1204,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
       name: "peer-car-1",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 4.42
+      targetMaxDimension: 4.0
     })
       .position(7.4, 0, -32)
       .runtime(game.runtimeNode("peer-car-1")),
@@ -1237,18 +1237,18 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
       .runtime(game.runtimeNode("peer-car-4"))
   ]);
 
-  // 10. 10 AI City Traffic Vehicles (2 Sedan, 2 Taxi, 2 SUV, 1 Van, 2 Pickup, 1 Transit Bus)
+  // 10. 10 AI City Traffic Vehicles (2 sedan, 2 taxi, 2 compact hatch, 1 delivery van, 2 pickup, 1 box truck)
   const trafficSpecs = [
     { id: "traffic-0", asset: assets.teleopSedan, maxDim: 4.75 },
     { id: "traffic-1", asset: assets.teleopTaxi, maxDim: 4.6 },
     { id: "traffic-2", asset: assets.teleopSedan, maxDim: 4.75 },
-    { id: "traffic-3", asset: assets.teleopSuv, maxDim: 4.75 },
-    { id: "traffic-4", asset: assets.teleopSuv, maxDim: 4.75 },
+    { id: "traffic-3", asset: assets.teleopSuv, maxDim: 3.9 },
+    { id: "traffic-4", asset: assets.teleopSuv, maxDim: 3.9 },
     { id: "traffic-5", asset: assets.teleopTaxi, maxDim: 4.6 },
-    { id: "traffic-6", asset: assets.teleopVan, maxDim: 5.05 },
+    { id: "traffic-6", asset: assets.teleopVan, maxDim: 4.7 },
     { id: "traffic-7", asset: assets.teleopPickup, maxDim: 5.25 },
     { id: "traffic-8", asset: assets.teleopPickup, maxDim: 5.25 },
-    { id: "traffic-9", asset: assets.teleopBus, maxDim: 11.8 }
+    { id: "traffic-9", asset: assets.teleopBus, maxDim: 7.6 }
   ];
 
   for (const spec of trafficSpecs) {
@@ -2679,7 +2679,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
       const tvx = rx(tc.laneX);
       const tvy = ry(0);
       const tvz = rz(tc.z);
-      const tyaw = tc.direction === 1 ? Math.PI : 0;
+      const tyaw = tc.direction === 1 ? 0 : Math.PI;
 
       th.setPosition(tvx, tvy, tvz)
         .setRotation(0, tyaw, 0)

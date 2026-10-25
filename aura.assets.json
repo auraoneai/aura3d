@@ -143131,16 +143131,37 @@
       "name": "teleopBus",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopBus.glb",
-      "source": "public/aura-assets/teleopBus.glb",
-      "sha256": "d88cf92faed20719be84a28eb7a6d338a8ab811d93d2a0eb554b7eb5a25eca31",
-      "byteLength": 423176,
-      "sizeBytes": 423176,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehBoxTruck.8cf91d05.glb",
+      "source": "public/aura-assets/teleopVehBoxTruck.8cf91d05.glb",
+      "sha256": "8cf91d0505f83b8caf170b60d5590987cf11a094005702df0ce7f3ce509c114b",
+      "byteLength": 2080112,
+      "sizeBytes": 2080112,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
       "animations": [],
-      "type": "model"
+      "type": "model",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 1,
+      "textureCount": 3,
+      "bounds": [
+        0.6786,
+        0.8458,
+        1.9016
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.3393,
+          0,
+          -0.9508
+        ],
+        "max": [
+          0.3393,
+          0.8458,
+          0.9508
+        ]
+      }
     },
     {
       "id": "teleopCablecar",
@@ -143186,37 +143207,37 @@
       "name": "teleopCorvette",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopCorvette.e7009c34.glb",
-      "source": "public/aura-assets/teleopCorvette.e7009c34.glb",
-      "sha256": "e7009c3418b2d0c3163bd1af8737f3986bab9c372aea90ce81dab8fb37197598",
-      "byteLength": 7637636,
-      "sizeBytes": 7637636,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehCoupe.7f3a1b6a.glb",
+      "source": "public/aura-assets/teleopVehCoupe.7f3a1b6a.glb",
+      "sha256": "7f3a1b6ab764b97e22d51060d175532d4b4d6646295d07372283c96548f6e87d",
+      "byteLength": 1546796,
+      "sizeBytes": 1546796,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
-      "nodeCount": 15,
-      "meshCount": 15,
-      "materialCount": 2,
-      "textureCount": 2,
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 1,
+      "textureCount": 3,
       "animationClips": [],
       "morphTargets": [],
       "bounds": [
-        2.0458,
-        1.5638,
-        4.6749
+        0.8532,
+        0.5828,
+        1.9025
       ],
       "animations": [],
       "type": "model",
       "boundsMetadata": {
         "min": [
-          -1.0229,
-          -0.334,
-          -2.3911
+          -0.4266,
+          0,
+          -0.9512
         ],
         "max": [
-          1.0229,
-          1.2298,
-          2.2838
+          0.4266,
+          0.5828,
+          0.9512
         ]
       }
     },
@@ -143225,37 +143246,37 @@
       "name": "teleopCybercab",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopCybercab.08358a58.glb",
-      "source": "public/aura-assets/teleopCybercab.08358a58.glb",
-      "sha256": "08358a58dd8d530ccc7b4249db3a9d2e11ccf8ecfac1c9d9d7afea452a1de291",
-      "byteLength": 5234180,
-      "sizeBytes": 5234180,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehHatch.67925e22.glb",
+      "source": "public/aura-assets/teleopVehHatch.67925e22.glb",
+      "sha256": "67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
+      "byteLength": 1477612,
+      "sizeBytes": 1477612,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
-      "nodeCount": 9,
-      "meshCount": 9,
-      "materialCount": 2,
-      "textureCount": 2,
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 3,
       "animationClips": [],
       "morphTargets": [],
       "bounds": [
-        1.7532,
-        1.7856,
-        4.4179
+        1.0178,
+        1.0578,
+        1.9025
       ],
       "animations": [],
       "type": "model",
       "boundsMetadata": {
         "min": [
-          -0.8765,
-          -0.3857,
-          -2.1881
+          -0.5089,
+          0,
+          -0.9512
         ],
         "max": [
-          0.8767,
-          1.3999,
-          2.2298
+          0.5089,
+          1.0578,
+          0.9512
         ]
       }
     },
@@ -143264,37 +143285,37 @@
       "name": "teleopCybertruck",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopCybertruck.6aa8f5c4.glb",
-      "source": "public/aura-assets/teleopCybertruck.6aa8f5c4.glb",
-      "sha256": "6aa8f5c420b6362c41b6376fb8d7107e1af536450cff75580b094d201906ec7b",
-      "byteLength": 410736,
-      "sizeBytes": 410736,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehPickup.75a710f9.glb",
+      "source": "public/aura-assets/teleopVehPickup.75a710f9.glb",
+      "sha256": "75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
+      "byteLength": 1953404,
+      "sizeBytes": 1953404,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
-      "nodeCount": 10,
-      "meshCount": 10,
-      "materialCount": 0,
-      "textureCount": 0,
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 1,
+      "textureCount": 3,
       "animationClips": [],
       "morphTargets": [],
       "bounds": [
-        2.34,
-        2.231,
-        5.693
+        0.8166,
+        0.7167,
+        1.9027
       ],
       "animations": [],
       "type": "model",
       "boundsMetadata": {
         "min": [
-          -1.17,
-          -0.44,
-          -2.798
+          -0.4083,
+          0,
+          -0.9514
         ],
         "max": [
-          1.17,
-          1.791,
-          2.895
+          0.4083,
+          0.7167,
+          0.9514
         ]
       }
     },
@@ -143303,37 +143324,37 @@
       "name": "teleopMissions",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopMissions.6996bfa9.glb",
-      "source": "public/aura-assets/teleopMissions.6996bfa9.glb",
-      "sha256": "6996bfa9c290d2c4a4790c9334a48dc8c1798128fb14a8a4bfc9e2800a60be6a",
-      "byteLength": 7207332,
-      "sizeBytes": 7207332,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehRoadster.35a1e8b7.glb",
+      "source": "public/aura-assets/teleopVehRoadster.35a1e8b7.glb",
+      "sha256": "35a1e8b73a975c9d6d8f4b4b4ae5bcf59feae133dec059d128cfb1b0f60255f1",
+      "byteLength": 2034976,
+      "sizeBytes": 2034976,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
-      "nodeCount": 14,
-      "meshCount": 14,
-      "materialCount": 2,
-      "textureCount": 2,
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 1,
+      "textureCount": 3,
       "animationClips": [],
       "morphTargets": [],
       "bounds": [
-        1.9976,
-        1.5315,
-        4.5
+        0.8736,
+        0.5225,
+        1.9019
       ],
       "animations": [],
       "type": "model",
       "boundsMetadata": {
         "min": [
-          -0.9988,
-          -0.3315,
-          -2.3737
+          -0.4368,
+          0,
+          -0.9509
         ],
         "max": [
-          0.9988,
-          1.2,
-          2.1263
+          0.4368,
+          0.5225,
+          0.9509
         ]
       }
     },
@@ -143342,117 +143363,222 @@
       "name": "teleopPickup",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopPickup.glb",
-      "source": "public/aura-assets/teleopPickup.glb",
-      "sha256": "c6821a92aee3107e40d63c8b59fd196933ba5c4dcf12e2f29ada9c87befa066d",
-      "byteLength": 790920,
-      "sizeBytes": 790920,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehPickup.75a710f9.glb",
+      "source": "public/aura-assets/teleopVehPickup.75a710f9.glb",
+      "sha256": "75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
+      "byteLength": 1953404,
+      "sizeBytes": 1953404,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
       "animations": [],
-      "type": "model"
+      "type": "model",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 1,
+      "textureCount": 3,
+      "bounds": [
+        0.8166,
+        0.7167,
+        1.9027
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.4083,
+          0,
+          -0.9514
+        ],
+        "max": [
+          0.4083,
+          0.7167,
+          0.9514
+        ]
+      }
     },
     {
       "id": "teleopSedan",
       "name": "teleopSedan",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopSedan.glb",
-      "source": "public/aura-assets/teleopSedan.glb",
-      "sha256": "e6a0699754cc7e4060e19ade2ffade31ecd9bd705d42b55db10a83f2fa1c6184",
-      "byteLength": 571880,
-      "sizeBytes": 571880,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehSedan.7bc528fc.glb",
+      "source": "public/aura-assets/teleopVehSedan.7bc528fc.glb",
+      "sha256": "7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
+      "byteLength": 2084388,
+      "sizeBytes": 2084388,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
       "animations": [],
-      "type": "model"
+      "type": "model",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 3,
+      "bounds": [
+        0.8674,
+        0.6622,
+        1.9013
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.4337,
+          0,
+          -0.9506
+        ],
+        "max": [
+          0.4337,
+          0.6622,
+          0.9506
+        ]
+      }
     },
     {
       "id": "teleopSuv",
       "name": "teleopSuv",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopSuv.glb",
-      "source": "public/aura-assets/teleopSuv.glb",
-      "sha256": "9cda6112545ee857a99aafb702f8b7156abefcb6ea79b654f3035ea090008f95",
-      "byteLength": 344792,
-      "sizeBytes": 344792,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehHatch.67925e22.glb",
+      "source": "public/aura-assets/teleopVehHatch.67925e22.glb",
+      "sha256": "67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
+      "byteLength": 1477612,
+      "sizeBytes": 1477612,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
       "animations": [],
-      "type": "model"
+      "type": "model",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 3,
+      "bounds": [
+        1.0178,
+        1.0578,
+        1.9025
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.5089,
+          0,
+          -0.9512
+        ],
+        "max": [
+          0.5089,
+          1.0578,
+          0.9512
+        ]
+      }
     },
     {
       "id": "teleopTaxi",
       "name": "teleopTaxi",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopTaxi.glb",
-      "source": "public/aura-assets/teleopTaxi.glb",
-      "sha256": "8d45a7d6e1cb7168190c62ca2b63a7a230a3d26100f5997b80cf60eb006f8221",
-      "byteLength": 616024,
-      "sizeBytes": 616024,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehSedan.7bc528fc.glb",
+      "source": "public/aura-assets/teleopVehSedan.7bc528fc.glb",
+      "sha256": "7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
+      "byteLength": 2084388,
+      "sizeBytes": 2084388,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
       "animations": [],
-      "type": "model"
+      "type": "model",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 3,
+      "textureCount": 3,
+      "bounds": [
+        0.8674,
+        0.6622,
+        1.9013
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.4337,
+          0,
+          -0.9506
+        ],
+        "max": [
+          0.4337,
+          0.6622,
+          0.9506
+        ]
+      }
     },
     {
       "id": "teleopVan",
       "name": "teleopVan",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopVan.glb",
-      "source": "public/aura-assets/teleopVan.glb",
-      "sha256": "82c5b150a1b2c574240876e93d01142194705e8c561a51b2410ab30c1d010cc2",
-      "byteLength": 243832,
-      "sizeBytes": 243832,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehVan.44a544bc.glb",
+      "source": "public/aura-assets/teleopVehVan.44a544bc.glb",
+      "sha256": "44a544bcde7b475580bbc7b3ff7a8047e9cb7cbf3dea04d34f9f50ed12084216",
+      "byteLength": 1573776,
+      "sizeBytes": 1573776,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
       "animations": [],
-      "type": "model"
+      "type": "model",
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 5,
+      "textureCount": 3,
+      "bounds": [
+        0.9098,
+        1.0016,
+        1.9027
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.4549,
+          0,
+          -0.9513
+        ],
+        "max": [
+          0.4549,
+          1.0016,
+          0.9513
+        ]
+      }
     },
     {
       "id": "teleopWaymoHero",
       "name": "teleopWaymoHero",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
-      "source": "public/aura-assets/teleopWaymoHero.6d2a9bfb.glb",
-      "sha256": "6d2a9bfb61613fd1e5a0fd64aa3b8222d237bc58b7486f009d014c61066ee45a",
-      "byteLength": 5207840,
-      "sizeBytes": 5207840,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
+      "source": "public/aura-assets/teleopVehRobotaxi.7874ad34.glb",
+      "sha256": "7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+      "byteLength": 1768844,
+      "sizeBytes": 1768844,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
-      "nodeCount": 8,
-      "meshCount": 8,
-      "materialCount": 0,
-      "textureCount": 0,
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 8,
+      "textureCount": 3,
       "animationClips": [],
       "morphTargets": [],
       "bounds": [
-        2.2,
-        2.4922,
-        4.5678
+        0.9293,
+        0.9414,
+        1.9037
       ],
       "animations": [],
       "type": "model",
       "boundsMetadata": {
         "min": [
-          -1.1,
-          -0.352,
-          -2.3615
+          -0.4647,
+          0,
+          -0.9518
         ],
         "max": [
-          1.1,
-          2.1402,
-          2.2063
+          0.4647,
+          0.9414,
+          0.9518
         ]
       }
     },
@@ -143461,37 +143587,37 @@
       "name": "teleopWaymoTraffic",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopWaymoTraffic.f476abe7.glb",
-      "source": "public/aura-assets/teleopWaymoTraffic.f476abe7.glb",
-      "sha256": "f476abe7f85470beff321bef6c521e425a549c13e1a10cfdd3c41e1f339b4559",
-      "byteLength": 618524,
-      "sizeBytes": 618524,
-      "license": "CC-BY-4.0",
+      "url": "/aura-assets/teleopVehRobotaxi.7874ad34.glb",
+      "source": "public/aura-assets/teleopVehRobotaxi.7874ad34.glb",
+      "sha256": "7874ad34b871697a73b91287c4a77eb5f5caba891ac72c67a0138ce557716b6d",
+      "byteLength": 1768844,
+      "sizeBytes": 1768844,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24",
       "quality": "approved",
       "category": "vehicle",
-      "nodeCount": 2,
-      "meshCount": 2,
-      "materialCount": 0,
-      "textureCount": 0,
+      "nodeCount": 1,
+      "meshCount": 1,
+      "materialCount": 8,
+      "textureCount": 3,
       "animationClips": [],
       "morphTargets": [],
       "bounds": [
-        2.2016,
-        2.1402,
-        4.6207
+        0.9293,
+        0.9414,
+        1.9037
       ],
       "animations": [],
       "type": "model",
       "boundsMetadata": {
         "min": [
-          -1.1,
+          -0.4647,
           0,
-          -2.2589
+          -0.9518
         ],
         "max": [
-          1.1016,
-          2.1402,
-          2.3618
+          0.4647,
+          0.9414,
+          0.9518
         ]
       }
     },
