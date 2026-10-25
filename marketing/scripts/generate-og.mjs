@@ -274,7 +274,7 @@ h1 .accent { color: ${TEAL}; }
 
     <div class="eyebrow">TypeScript 3D engine</div>
 
-    <h1>Ship a typed 3D scene<br>in <span class="accent">18 lines</span> of<br>TypeScript.</h1>
+    <h1>Ship a 3D scene<br>in <span class="accent">18 lines</span> of<br>TypeScript.</h1>
 
     <div class="install">
       <span class="cmd"><span class="dollar">$</span> npm i <span class="pkg">@aura3d/engine</span></span>

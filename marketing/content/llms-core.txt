@@ -88,7 +88,7 @@ Porting existing three.js code: `aura3d migrate three` and the `aura3d-threejs-m
 
 Never invent asset paths, URLs or ids. Every model comes from a generated `assets.<key>`.
 
-- `npx @aura3d/cli@latest assets search "<object>"` searches the license-verified catalog.
+- `npx @aura3d/cli@latest assets search "<object>"` searches licence-tagged open public sources and a starter pack; results are candidates to check, and there is no Aura3D-run search service to rely on.
 - `assets resolve "<object>" --name <name>` pulls the top match and types it as `assets.<name>`.
 - `assets add ./assets/model.glb --name model` adds a local file; then read the generated `src/aura-assets.ts`.
 - No catalog match: generate with Meshy (`meshy-cli` skill), optimize (`assets optimize --file in.glb --out out.glb --role <role>`), then admit (`assets import-meshy`).

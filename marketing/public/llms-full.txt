@@ -166,7 +166,7 @@ Assets — resolve real objects from the catalog first. Do not invent asset path
 URLs or ids — every model comes from a generated `assets.<key>`:
 
 - `npx @aura3d/cli@latest assets search "<object>"` (natural descriptive phrase;
-  it searches a hosted index of public GLB/glTF sources when that service is reachable;
+  it searches licence-tagged open public sources and a starter pack (there is no Aura3D-run search service to rely on);
   results are candidates to check, not guaranteed matches).
 - `assets resolve "<object>" --name <name>` pulls the top auto-pullable match
   and types it as `assets.<name>` → `model(assets.<name>)`.
