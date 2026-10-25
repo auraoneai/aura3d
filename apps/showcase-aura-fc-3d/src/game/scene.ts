@@ -306,10 +306,16 @@ function stadiumNodes(v: VenueSpec): any[] {
     model(assets.diamondStadium, { name: "fc-stadium-bowl", targetHeight: 8.5 })
       .position(0, -2.6, -(PITCH_HZ + 40))
       .scale([1.3, 1, 1.1]),
-    model(assets.gallerySecurityGuardMeshy, {
+    model(assets.fcSoccerStrikerMeshy, {
       name: "fc-referee",
       targetHeight: 1.84,
-      animation: { clip: "Walk", loop: true, speed: 1.0 }
+      animation: { clip: "Walk", loop: true, speed: 1.0 },
+      materialOverrides: [
+        { target: /-kit$/, color: "#e6d02e", colorMode: "replace", replaceTextures: true, roughness: 0.65, metallic: 0 },
+        { target: /-shorts$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.7, metallic: 0 },
+        { target: /-socks$/, color: "#15171c", colorMode: "replace", replaceTextures: true, roughness: 0.75, metallic: 0 },
+        { target: /-skin$/, color: "#b98462", colorMode: "replace", replaceTextures: true, roughness: 0.62, metallic: 0 }
+      ]
     } as any)
       .position(0, 0, -(PITCH_HZ + 1.1))
       .runtime(gameRuntime("fc-referee")),
