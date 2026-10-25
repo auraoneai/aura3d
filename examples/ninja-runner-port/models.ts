@@ -4,7 +4,7 @@
  * are cloned with `cloneSkinned`; props are instanced with `instances.model`. Asset URLs are same-origin pathnames with
  * a sha256 so the production bridge admits them.
  */
-import { defineAuraAssets } from "@aura3d/engine";
+import { defineModelAssets } from "@aura3d/engine";
 import { MESHY_MANIFEST, type PropId } from "./assets/meshy/manifest";
 
 export type CharacterId = "hero" | "soldier" | "brute" | "sage";
@@ -21,9 +21,9 @@ export const SLOT_MODEL: readonly CharacterId[] = ["hero", "hero", "hero", "hero
 
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23";
 const url = (id: PropId): string => new URL(`./assets/meshy/${id}.glb`, import.meta.url).pathname;
-const entry = (id: PropId) => ({ type: "model" as const, format: "glb" as const, url: url(id), hash: `sha256-${MESHY_MANIFEST[id].sha256}`, metadata: { license: LICENSE } });
+const entry = (id: PropId) => ({ url: url(id), sha256: MESHY_MANIFEST[id].sha256 });
 
-export const PROP_ASSETS = defineAuraAssets({
+export const PROP_ASSETS = defineModelAssets({
   houseA: entry("houseA"),
   houseB: entry("houseB"),
   tower: entry("tower"),
@@ -31,4 +31,4 @@ export const PROP_ASSETS = defineAuraAssets({
   pine: entry("pine"),
   lantern: entry("lantern"),
   oak: entry("oak")
-});
+}, { license: LICENSE, queryParam: null }).refs;

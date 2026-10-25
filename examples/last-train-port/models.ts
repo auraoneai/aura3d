@@ -4,16 +4,12 @@
  * `assets/provenance/*`. Same-origin pathnames with sha256 hashes: the production bridge refuses http(s) model URLs.
  * `?procedural=1` falls back to the code-built stand-ins.
  */
-import { defineAuraAssets, model } from "@aura3d/engine";
+import { defineModelAssets, model } from "@aura3d/engine";
 
 const LICENSE = "Meshy generated asset (AuraOne Meshy account plan terms at generation time), original text prompt, 2026-10-23";
-const entry = (file: string, hash: string) => ({
-  type: "model" as const, format: "glb" as const,
-  url: new URL(`./assets/meshy/${file}`, import.meta.url).pathname, hash: `sha256-${hash}`,
-  metadata: { license: LICENSE }
-});
+const entry = (file: string, sha256: string) => ({ url: new URL(`./assets/meshy/${file}`, import.meta.url).pathname, sha256 });
 
-export const MESHY_ASSETS = defineAuraAssets({
+export const MESHY_ASSETS = defineModelAssets({
   tram: entry("tram.glb", "2cefe4cce2813834b59308772a8c25552159fdf97a34c549672e08fc10aaeb98"),
   paxEasy: entry("pax-easy.glb", "0f7823eab8da42e469d38938c3a74632b6702ba5699279869181e3303bc21622"),
   paxSightseer: entry("pax-sightseer.glb", "bb95e0e101912044b4b0db869579a207659a04357e98d492284e005f428a77bb"),
@@ -26,7 +22,7 @@ export const MESHY_ASSETS = defineAuraAssets({
   lighthouse: entry("lighthouse.glb", "d950164609a9857961db4e5bb1862066d502b7b43417c44e65d91d80039982ae"),
   crates: entry("crates.glb", "e037dd6cb054c0f67e03521f6e992ac920852b11467a1c7801706af5d3c3dc46"),
   lamp: entry("lamp.glb", "66bb1e5bc3780484e52f5836034afe53fdcd08872720984c78672ac9abe77204")
-});
+}, { license: LICENSE, queryParam: null }).refs;
 
 export const MESHY_ENABLED = !(typeof location !== "undefined" && /[?&]procedural=1\b/.test(location.search));
 

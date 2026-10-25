@@ -2,7 +2,7 @@
  * Presentation-only audio for the port: a catalog space-ambient loop plus synthesized engine hum, wind and event
  * cues, driven from race events and speed. It never touches the simulation. Press M to mute.
  */
-import { AudioContextManager } from "@aura3d/engine/audio";
+import { AudioContextManager, createCueBank, type CueSpec, type ToneLayer } from "@aura3d/engine/audio";
 
 export interface AudioFrame {
   readonly speed: number;
@@ -18,6 +18,37 @@ export interface OrbitAudio {
   update(frame: AudioFrame, dt: number): void;
   cue(type: string, mult?: number): void;
 }
+
+/** Cues start 5 ms after they are triggered (the original scheduled them at `currentTime + 0.005`). */
+const START = 0.005;
+const tl = (freq: number, delay: number, dur: number, type: OscillatorType, gain: number, slideTo?: number): ToneLayer => ({ freq, delay: START + delay, dur, type, gain, attack: 0.012, ...(slideTo !== undefined ? { slideTo } : {}) });
+
+/**
+ * The cues that are pure oscillator tones play on the shared cue bank. The four with a noise burst (`land`, `launch`,
+ * `hit`, `lost`) stay in `cue()`: their noise comes from a per-hit seeded buffer, which the bank's shared buffer does not reproduce.
+ */
+export const TONE_CUES = {
+  dust: { layers: ({ level }) => {
+    const base = 740 * Math.pow(1.0595, Math.min(12, Math.max(0, Math.round(Math.log2(Math.max(1, level)) * 3))));
+    return [tl(base, 0, 0.22, "sine", 0.1), tl(base * 1.5, 0.05, 0.3, "sine", 0.07)];
+  } },
+  gate: { layers: [tl(523, 0, 0.25, "triangle", 0.1), tl(784, 0.09, 0.35, "triangle", 0.1)] },
+  tick: { layers: [tl(440, 0, 0.16, "square", 0.05)] },
+  go: { layers: [tl(880, 0, 0.45, "square", 0.07), tl(1320, 0.02, 0.5, "triangle", 0.06)] },
+  jump: { layers: [tl(300, 0, 0.16, "sine", 0.1, 520)] },
+  stunt: { layers: [tl(988, 0, 0.12, "triangle", 0.08), tl(1318, 0.08, 0.2, "triangle", 0.08)] },
+  sling: { layers: [tl(220, 0, 0.55, "sine", 0.1, 880)] },
+  route: { layers: [tl(660, 0, 0.18, "triangle", 0.07)] },
+  resonance: { layers: [tl(587, 0, 0.5, "sine", 0.08), tl(880, 0, 0.6, "sine", 0.06)] },
+  finish: { layers: [523, 659, 784, 1047].map((f, i) => tl(f, i * 0.11, 0.5, "triangle", 0.1)) }
+} satisfies Record<string, CueSpec>;
+export type ToneCue = keyof typeof TONE_CUES;
+
+/** Cue name -> the bank cue that plays it. */
+export const TONE_EVENTS: Readonly<Record<string, ToneCue>> = {
+  dust: "dust", gate: "gate", countdown: "tick", tick: "tick", go: "go", jump: "jump", stunt: "stunt", sling: "sling", gravity: "sling",
+  route: "route", resonance: "resonance", lap: "finish", finish: "finish"
+};
 
 const AMBIENT_URL = new URL("./assets/space-ambient.wav", import.meta.url).href;
 
@@ -37,6 +68,7 @@ export function createOrbitAudio(): OrbitAudio {
     return { unlock() {}, toggleMute: () => true, update() {}, cue() {} };
   }
   const manager = new AudioContextManager();
+  const bank = createCueBank({ cues: TONE_CUES, manager, masterGain: 0.7, sfxGain: 1, muteKey: false });
   let ctx: AudioContext | undefined;
   let master: GainNode | undefined;
   let built = false;
@@ -155,10 +187,13 @@ export function createOrbitAudio(): OrbitAudio {
   return {
     unlock() {
       build();
+      bank.setMuted(muted);
+      void bank.unlock();
       void manager.unlock().catch(() => undefined);
     },
     toggleMute() {
       muted = !muted;
+      bank.setMuted(muted);
       if (master) master.gain.value = muted ? 0 : 0.7;
       return muted;
     },
@@ -178,29 +213,14 @@ export function createOrbitAudio(): OrbitAudio {
     },
     cue(type, mult = 1) {
       if (!ctx || !master || ctx.state !== "running") return;
+      const toneCue = TONE_EVENTS[type];
+      if (toneCue) { bank.play(toneCue, { level: mult }); return; }
       const t = ctx.currentTime + 0.005;
       switch (type) {
-        case "dust": {
-          const base = 740 * Math.pow(1.0595, Math.min(12, Math.max(0, Math.round(Math.log2(Math.max(1, mult)) * 3))));
-          tone(base, t, 0.22, "sine", 0.1);
-          tone(base * 1.5, t + 0.05, 0.3, "sine", 0.07);
-          break;
-        }
-        case "gate": tone(523, t, 0.25, "triangle", 0.1); tone(784, t + 0.09, 0.35, "triangle", 0.1); break;
-        case "countdown": case "tick": tone(440, t, 0.16, "square", 0.05); break;
-        case "go": tone(880, t, 0.45, "square", 0.07); tone(1320, t + 0.02, 0.5, "triangle", 0.06); break;
-        case "jump": tone(300, t, 0.16, "sine", 0.1, 520); break;
         case "land": tone(110, t, 0.22, "sine", 0.18, 45); burst(t, 0.18, 900, 120, 0.12); break;
         case "launch": tone(180, t, 0.5, "sawtooth", 0.06, 680); burst(t, 0.5, 400, 3500, 0.07); break;
-        case "stunt": tone(988, t, 0.12, "triangle", 0.08); tone(1318, t + 0.08, 0.2, "triangle", 0.08); break;
         case "hit": burst(t, 0.28, 2500, 90, 0.3); tone(70, t, 0.3, "sine", 0.2, 38); break;
         case "lost": tone(330, t, 0.9, "sawtooth", 0.07, 70); burst(t, 0.9, 1800, 60, 0.18); break;
-        case "sling": case "gravity": tone(220, t, 0.55, "sine", 0.1, 880); break;
-        case "route": tone(660, t, 0.18, "triangle", 0.07); break;
-        case "resonance": tone(587, t, 0.5, "sine", 0.08); tone(880, t, 0.6, "sine", 0.06); break;
-        case "lap": case "finish":
-          [523, 659, 784, 1047].forEach((f, i) => tone(f, t + i * 0.11, 0.5, "triangle", 0.1));
-          break;
         default: break;
       }
     }

@@ -5,7 +5,7 @@
  * sampled or loaded, and `Math.random` is never touched (the simulation's random stream is untouched), so noise uses an LCG.
  * Cues derive from state changes the renderer observes (`diffCues`), never from the simulation.
  */
-import { AudioContextManager } from "@aura3d/engine/audio";
+import { AudioContextManager, createCueBank, type CueSpec, type ToneLayer } from "@aura3d/engine/audio";
 
 export type Cue = "doors" | "depart" | "arrive" | "fare" | "tip" | "lost" | "complete";
 
@@ -35,6 +35,19 @@ export function diffCues(prev: AudioState | null, next: AudioState): Cue[] {
   return out;
 }
 
+const tone = (freq: number, dur: number, gain: number, delay = 0, type: OscillatorType = "sine", slideTo?: number): ToneLayer => ({ freq, dur, gain, delay, type, attack: 0.012, ...(slideTo ? { slideTo } : {}) });
+
+/** The per-event cues are pure oscillator tones, so they play on the shared cue bank; the clack stays here (its noise burst starts at a random offset into a filtered buffer). */
+export const CUES = {
+  doors: { layers: [tone(880, 0.5, 0.12), tone(1175, 0.7, 0.1, 0.18)] },
+  depart: { layers: [tone(523, 0.22, 0.1), tone(523, 0.22, 0.1, 0.3), tone(392, 0.5, 0.08, 0.6, "triangle")] },
+  arrive: { layers: [tone(659, 0.4, 0.1), tone(523, 0.4, 0.1, 0.22), tone(784, 0.8, 0.09, 0.45)] },
+  fare: { layers: [tone(1568, 0.16, 0.09, 0, "triangle"), tone(2093, 0.3, 0.07, 0.07, "triangle")] },
+  tip: { layers: [1047, 1319, 1568, 2093].map((f, i) => tone(f, 0.22, 0.06, i * 0.06, "triangle")) },
+  lost: { layers: [tone(330, 0.5, 0.12, 0, "sawtooth", 196)] },
+  complete: { layers: [523, 659, 784, 1047, 1319].map((f, i) => tone(f, 0.7, 0.09, i * 0.12)) }
+} satisfies Record<Cue, CueSpec>;
+
 const JOINT_SPACING = 14;
 const PAD_CHORDS = [[0, 4, 7, 11], [-3, 0, 4, 7], [-7, -3, 0, 4], [-5, -1, 2, 7]];
 const PAD_ROOT = 130.81;
@@ -42,6 +55,7 @@ const semis = (n: number): number => PAD_ROOT * Math.pow(2, n / 12);
 
 export class TrainSound {
   private readonly manager = new AudioContextManager();
+  private readonly bank = createCueBank({ cues: CUES, manager: this.manager, masterGain: 0.85, sfxGain: 1, muteKey: false });
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private wind: GainNode | null = null;
@@ -66,6 +80,8 @@ export class TrainSound {
       const ctx = this.manager.context as unknown as AudioContext;
       this.ctx = ctx;
       if (ctx.state === "suspended") await ctx.resume();
+      this.bank.setMuted(this.muted);
+      void this.bank.unlock();
       this.master = ctx.createGain();
       this.master.gain.value = this.muted ? 0 : 0.85;
       this.master.connect(ctx.destination);
@@ -112,6 +128,7 @@ export class TrainSound {
 
   setMuted(muted: boolean): void {
     this.muted = muted;
+    this.bank.setMuted(muted);
     if (this.master && this.ctx) this.master.gain.setTargetAtTime(muted ? 0 : 0.85, this.ctx.currentTime, 0.05);
   }
 
@@ -152,32 +169,8 @@ export class TrainSound {
     src.start(at, this.rand() * 1.8, 0.08);
   }
 
-  private tone(freq: number, dur: number, gain: number, delay = 0, type: OscillatorType = "sine", slideTo?: number): void {
-    const ctx = this.ctx;
-    if (!ctx || !this.master) return;
-    const at = ctx.currentTime + delay;
-    const o = ctx.createOscillator();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, at);
-    if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, at + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, at);
-    g.gain.exponentialRampToValueAtTime(gain, at + 0.012);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-    o.connect(g); g.connect(this.master);
-    o.start(at); o.stop(at + dur + 0.05);
-  }
-
   cue(cue: Cue): void {
     if (!this.ctx) return;
-    switch (cue) {
-      case "doors": this.tone(880, 0.5, 0.12); this.tone(1175, 0.7, 0.1, 0.18); break;
-      case "depart": this.tone(523, 0.22, 0.1); this.tone(523, 0.22, 0.1, 0.3); this.tone(392, 0.5, 0.08, 0.6, "triangle"); break;
-      case "arrive": this.tone(659, 0.4, 0.1); this.tone(523, 0.4, 0.1, 0.22); this.tone(784, 0.8, 0.09, 0.45); break;
-      case "fare": this.tone(1568, 0.16, 0.09, 0, "triangle"); this.tone(2093, 0.3, 0.07, 0.07, "triangle"); break;
-      case "tip": [1047, 1319, 1568, 2093].forEach((f, i) => this.tone(f, 0.22, 0.06, i * 0.06, "triangle")); break;
-      case "lost": this.tone(330, 0.5, 0.12, 0, "sawtooth", 196); break;
-      case "complete": [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, 0.7, 0.09, i * 0.12)); break;
-    }
+    this.bank.play(cue);
   }
 }

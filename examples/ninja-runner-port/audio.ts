@@ -3,7 +3,7 @@
  * small pentatonic score whose layers follow the active form and the run speed. The context is created lazily on the
  * first user gesture; with no `AudioContext` (tests, old browsers) every call is a no-op.
  */
-import { AudioContextManager } from "@aura3d/engine/audio";
+import { AudioContextManager, createCueBank, type CueSpec, type ToneLayer } from "@aura3d/engine/audio";
 
 export type Sfx =
   | "jump" | "land" | "slide" | "dash" | "orb" | "orbHit" | "gale" | "galeHit" | "clones" | "pickup" | "hurt" | "kill" | "heavyKill" | "crate" | "ramBump" | "ramCrash" | "crateSmash"
@@ -21,10 +21,28 @@ export function melodyStep(index: number): number {
   return walk % SCALE.length;
 }
 
+const tl = (freq: number, dur: number, type: OscillatorType, gain: number, delay = 0, slideTo?: number): ToneLayer => ({ freq, dur, type, gain, delay, attack: 0.012, ...(slideTo !== undefined ? { slideTo } : {}) });
+
+/**
+ * The sound effects that are pure oscillator tones play on the shared cue bank. The ones with a filtered-noise burst stay
+ * in `GameAudio.play` (their burst starts at a random offset into the shared buffer), and so does `click`: it fires in the
+ * same tick as the first unlock, and the bank drops cues until its context reports `running`.
+ */
+export const TONE_CUES = {
+  pickup: { layers: ({ level }) => [tl(midiToHz(SCALE[4 + level]!), 0.22, "sine", 0.22), tl(midiToHz(SCALE[4 + level]!) * 2, 0.16, "triangle", 0.07)] },
+  unlock: { layers: [0, 2, 4, 7].map((s, i) => tl(midiToHz(SCALE[4 + s % 8]!), 0.4, "triangle", 0.22, i * 0.1)) },
+  win: { layers: [0, 2, 4, 5, 7, 9].map((s, i) => tl(midiToHz(SCALE[3 + s % 9]!), 0.55, "triangle", 0.24, i * 0.14)) },
+  lose: { layers: [tl(220, 1.1, "triangle", 0.3, 0, 55), tl(165, 1.2, "sine", 0.28, 0.15, 40)] },
+  warn: { layers: [tl(880, 0.1, "square", 0.1), tl(660, 0.12, "square", 0.1, 0.12)] }
+} satisfies Record<string, CueSpec>;
+type ToneCue = keyof typeof TONE_CUES;
+const isToneCue = (name: Sfx): name is ToneCue & Sfx => name in TONE_CUES;
+
 export interface MusicState { readonly form: string; readonly speed: number; readonly running: boolean }
 
 export class GameAudio {
   private readonly manager = new AudioContextManager();
+  private readonly bank = createCueBank({ cues: TONE_CUES, manager: this.manager, masterGain: 0.55, sfxGain: 0.9, muteKey: false });
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private sfxBus: GainNode | null = null;
@@ -50,6 +68,8 @@ export class GameAudio {
   private build(): void {
     const ctx = this.manager.context as unknown as AudioContext;
     this.ctx = ctx;
+    this.bank.setMuted(this.muted);
+    void this.bank.unlock();
     this.master = ctx.createGain();
     this.master.gain.value = this.muted ? 0 : 0.55;
     this.master.connect(ctx.destination);
@@ -71,6 +91,7 @@ export class GameAudio {
 
   setMuted(muted: boolean): void {
     this.muted = muted;
+    this.bank.setMuted(muted);
     if (this.master && this.ctx) this.master.gain.setTargetAtTime(muted ? 0 : 0.55, this.ctx.currentTime, 0.03);
   }
   toggleMute(): boolean { this.setMuted(!this.muted); return this.muted; }
@@ -97,6 +118,14 @@ export class GameAudio {
 
   play(name: Sfx, now = 0): void {
     if (!this.ctx || this.muted) return;
+    if (isToneCue(name)) {
+      if (name === "pickup") {
+        this.pickupRun = now - this.lastPickup < 0.9 ? Math.min(this.pickupRun + 1, 7) : 0;
+        this.lastPickup = now;
+        this.bank.play("pickup", { level: this.pickupRun });
+      } else this.bank.play(name);
+      return;
+    }
     switch (name) {
       case "jump": this.tone(260, 0.2, "triangle", 0.28, 620); this.burst(0.16, 0.12, 900, 2400); break;
       case "land": this.tone(110, 0.14, "sine", 0.4, 55); this.burst(0.12, 0.2, 700, 160, 0.7, "lowpass"); break;
@@ -107,12 +136,6 @@ export class GameAudio {
       case "gale": this.burst(0.7, 0.3, 300, 4200, 0.7); this.tone(140, 0.7, "sawtooth", 0.16, 700); this.tone(280, 0.7, "sine", 0.18, 1400); break;
       case "galeHit": this.tone(90, 0.5, "sawtooth", 0.28, 40); this.burst(0.55, 0.5, 4200, 260, 0.6); break;
       case "clones": for (let i = 0; i < 3; i++) this.tone(midiToHz(SCALE[2 + i * 2]!), 0.28, "triangle", 0.18, undefined, i * 0.07); this.burst(0.3, 0.16, 2400, 900, 1.1); break;
-      case "pickup": {
-        this.pickupRun = now - this.lastPickup < 0.9 ? Math.min(this.pickupRun + 1, 7) : 0;
-        this.lastPickup = now;
-        this.tone(midiToHz(SCALE[4 + this.pickupRun]!), 0.22, "sine", 0.22); this.tone(midiToHz(SCALE[4 + this.pickupRun]!) * 2, 0.16, "triangle", 0.07);
-        break;
-      }
       case "hurt": this.tone(190, 0.35, "sawtooth", 0.3, 70); this.burst(0.28, 0.4, 1500, 200, 0.8); break;
       case "kill": this.tone(150, 0.22, "square", 0.2, 70); this.burst(0.2, 0.4, 2600, 500, 0.9); break;
       case "heavyKill": this.tone(80, 0.5, "sine", 0.5, 38); this.burst(0.45, 0.5, 1800, 120, 0.7); this.tone(220, 0.18, "square", 0.14, 90); break;
@@ -120,11 +143,7 @@ export class GameAudio {
       case "ramBump": this.tone(95, 0.22, "sine", 0.5, 45); this.burst(0.18, 0.5, 1200, 200, 0.6, "lowpass"); this.tone(180, 0.1, "square", 0.18, 90); break;
       case "ramCrash": this.tone(70, 0.45, "sine", 0.6, 32); this.burst(0.5, 0.6, 2200, 140, 0.7); this.tone(150, 0.25, "sawtooth", 0.22, 50); this.burst(0.22, 0.35, 3600, 500, 0.8); break;
       case "crateSmash": this.burst(0.45, 0.55, 3200, 300, 0.7); this.tone(130, 0.2, "square", 0.22, 55); this.tone(520, 0.08, "triangle", 0.1, 220); break;
-      case "unlock": [0, 2, 4, 7].forEach((s, i) => this.tone(midiToHz(SCALE[4 + s % 8]!), 0.4, "triangle", 0.22, undefined, i * 0.1)); break;
       case "form": this.tone(200, 0.7, "sawtooth", 0.14, 800); this.tone(400, 0.7, "sine", 0.2, 1600); this.burst(0.6, 0.18, 500, 5000, 1); break;
-      case "win": [0, 2, 4, 5, 7, 9].forEach((s, i) => this.tone(midiToHz(SCALE[3 + s % 9]!), 0.55, "triangle", 0.24, undefined, i * 0.14)); break;
-      case "lose": this.tone(220, 1.1, "triangle", 0.3, 55); this.tone(165, 1.2, "sine", 0.28, 40, 0.15); break;
-      case "warn": this.tone(880, 0.1, "square", 0.1); this.tone(660, 0.12, "square", 0.1, undefined, 0.12); break;
       case "step": this.burst(0.05, 0.07, 500, 220, 0.8, "lowpass"); break;
       case "click": this.tone(520, 0.07, "triangle", 0.18); break;
     }
@@ -158,7 +177,7 @@ export class GameAudio {
   }
 
   dispose(): void {
-    void this.ctx?.close();
+    this.bank.dispose();
     this.ctx = null; this.master = null; this.sfxBus = null; this.musicBus = null; this.windGain = null; this.noise = null;
   }
 }

@@ -5,7 +5,7 @@
  * each carries the sha256 of its file (checked in tests/unit/silt-and-signal-port/terrain.test.ts), which is what lets
  * the production bridge treat it as a manifest asset instead of a raw URL.
  */
-import { defineAuraAssets } from "@aura3d/engine";
+import { defineAuraAssets, defineModelAssets } from "@aura3d/engine";
 
 const HASHES = {
   "models/courier.glb": "sha256-6ff58fb9e3b9b715a8e9c1234619308ed58f4a5ec29e47166a05e5d412447edd",
@@ -85,8 +85,14 @@ const url = (key: string): string => {
   return hit;
 };
 export const ASSET_HASHES: Readonly<Record<string, string>> = HASHES;
-const model = (file: string, bounds: readonly [number, number, number], extra: Record<string, unknown> = {}) =>
-  ({ type: "model", format: "glb", url: url(`models/${file}.glb`), hash: ASSET_HASHES[`models/${file}.glb`]!, bounds, metadata: { license: "CC0-1.0", ...extra } }) as const;
+const model = (file: string, bounds: readonly [number, number, number], extra: { animations?: readonly string[]; animationClips?: readonly string[]; license?: string } = {}) => ({
+  url: url(`models/${file}.glb`),
+  sha256: ASSET_HASHES[`models/${file}.glb`]!,
+  bounds,
+  ...(extra.animations ? { animations: extra.animations } : {}),
+  ...(extra.animationClips ? { metadata: { animationClips: extra.animationClips } } : {}),
+  ...(extra.license ? { license: extra.license } : {})
+});
 const tex = (name: string, channel: "Color" | "NormalGL" | "Roughness") =>
   ({ type: "texture", format: "jpg", url: url(`textures/${name}_${channel}.jpg`), hash: ASSET_HASHES[`textures/${name}_${channel}.jpg`]!, metadata: { license: "CC0-1.0 (ambientCG)" } }) as const;
 
@@ -109,7 +115,7 @@ export const COURIER_CLIPS = [
   { name: "run", duration: 0.67, loop: true }
 ] as const;
 
-export const assets = defineAuraAssets({
+const MODELS = defineModelAssets({
   courier: model("courier", [0.01, 0.018, 0.006], { animations: COURIER_CLIPS.map((c) => c.name), animationClips: COURIER_CLIPS.map((c) => c.name), license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
   hoverboard: model("hoverboard", [1.903, 0.365, 1.125], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
   canyonrocks: model("canyonrocks", [1.9, 0.911, 1.667], { license: "Meshy generated asset (AuraOne account plan terms at generation time)" }),
@@ -127,7 +133,11 @@ export const assets = defineAuraAssets({
   house: model("house", [1.64, 0.88, 0.968]),
   lamp: model("lamp", [0.425, 0.6, 0.425]),
   board: model("board", [0.3, 0.137, 0.7]),
-  hero: model("hero", [1.6, 2.7, 0.8], { animations: HERO_CLIPS.map((c) => c.name), animationClips: HERO_CLIPS.map((c) => c.name) }),
+  hero: model("hero", [1.6, 2.7, 0.8], { animations: HERO_CLIPS.map((c) => c.name), animationClips: HERO_CLIPS.map((c) => c.name) })
+}, { license: "CC0-1.0", queryParam: null }).refs;
+
+export const assets = defineAuraAssets({
+  ...MODELS,
   grassColor: tex("grass", "Color"),
   grassNormal: tex("grass", "NormalGL"),
   grassRough: tex("grass", "Roughness"),

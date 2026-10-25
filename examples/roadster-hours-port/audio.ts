@@ -5,7 +5,7 @@
  * one short effect per game event. Events are derived from state changes the renderer observes (`diffRunEvents`), never
  * from the simulation.
  */
-import { AudioContextManager } from "@aura3d/engine/audio";
+import { AudioContextManager, createCueBank, type CueSpec, type NoiseLayer, type ToneLayer } from "@aura3d/engine/audio";
 
 export interface AudioFrame {
   phase: string;
@@ -52,11 +52,28 @@ const CHORD = [[0, 7, 12, 15], [0, 7, 12, 16], [0, 7, 12, 16], [0, 7, 12, 14]];
 const ARP_STEPS = [0, 2, 3, 2, 4, 3, 2, 0];
 const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24];
 
-interface ToneSpec { freq: number; type?: OscillatorType; dur?: number; gain?: number; slideTo?: number; delay?: number }
-interface NoiseSpec { dur?: number; gain?: number; freq?: number; q?: number; type?: BiquadFilterType; slideTo?: number }
+const tone = (freq: number, type: OscillatorType, dur: number, gain: number, delay = 0, slideTo?: number): ToneLayer => ({ freq, type, dur, gain, delay, ...(slideTo !== undefined ? { slideTo } : {}) });
+const hit = (dur: number, gain: number, freq: number, q: number, slideTo: number): NoiseLayer => ({ kind: "noise", dur, gain, freq, q, slideTo });
+
+/** One short effect per game event, on the shared cue bank (the kit's tone and noise defaults are the ones this file used to hand-roll). */
+export const CUES = {
+  beep: { layers: [tone(440, "square", 0.16, 0.1)] },
+  go: { layers: [tone(880, "square", 0.34, 0.12), tone(1320, "triangle", 0.4, 0.08, 0.02)] },
+  gate: { layers: [tone(660, "triangle", 0.16, 0.13), tone(990, "sine", 0.28, 0.12, 0.07)] },
+  cell: { layers: [tone(1040, "sine", 0.14, 0.11, 0, 1560)] },
+  crash: { layers: [tone(160, "sawtooth", 0.4, 0.18, 0, 48), hit(0.42, 0.22, 700, 0.6, 90)] },
+  landing: { layers: [tone(90, "sine", 0.2, 0.2, 0, 40), hit(0.16, 0.08, 500, 0.8, 140)] },
+  nearmiss: { layers: [hit(0.3, 0.09, 1200, 1.4, 3200)] },
+  combo: { layers: [tone(note(PENTA[5]!), "triangle", 0.16, 0.12), tone(note(PENTA[7]!), "triangle", 0.2, 0.12, 0.08)] },
+  clear: { layers: [tone(note(PENTA[4]!), "sine", 0.12, 0.1, 0, note(PENTA[6]!))] },
+  boost: { layers: [hit(0.6, 0.12, 400, 0.7, 3600), tone(220, "sawtooth", 0.5, 0.07, 0, 880)] },
+  finish: { layers: [0, 4, 7, 12].map((st, i) => tone(note(12 + st), "triangle", 0.5, 0.12, i * 0.12)) }
+} satisfies Record<GameSound, CueSpec>;
+const NOISE_SEED = 0x1badf00d;
 
 export class RoadsterSound {
   private readonly manager = new AudioContextManager();
+  private readonly bank = createCueBank({ cues: CUES, manager: this.manager, masterGain: 0.85, sfxGain: 0.9, noiseSeed: NOISE_SEED, muteKey: false });
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private music: GainNode | null = null;
@@ -67,7 +84,7 @@ export class RoadsterSound {
   private timer: ReturnType<typeof setInterval> | null = null;
   private step = 0;
   private nextAt = 0;
-  private lcg = 0x1badf00d;
+  private lcg = NOISE_SEED;
   private prev: AudioFrame | null = null;
   muted = false;
 
@@ -89,6 +106,8 @@ export class RoadsterSound {
         this.buildEngine();
       }
       await this.manager.unlock();
+      this.bank.setMuted(this.muted);
+      await this.bank.unlock();
       this.startMusic();
     } catch {
       this.ctx = null;
@@ -97,6 +116,7 @@ export class RoadsterSound {
 
   setMuted(muted: boolean): void {
     this.muted = muted;
+    this.bank.setMuted(muted);
     if (this.master && this.ctx) this.master.gain.setTargetAtTime(muted ? 0 : 0.85, this.ctx.currentTime, 0.05);
   }
 
@@ -174,55 +194,15 @@ export class RoadsterSound {
   }
 
   play(sound: GameSound): void {
-    if (!this.ctx || !this.sfx || this.muted || this.ctx.state !== "running") return;
-    switch (sound) {
-      case "beep":
-        this.tone({ freq: 440, type: "square", dur: 0.16, gain: 0.1 });
-        break;
-      case "go":
-        this.tone({ freq: 880, type: "square", dur: 0.34, gain: 0.12 });
-        this.tone({ freq: 1320, type: "triangle", dur: 0.4, gain: 0.08, delay: 0.02 });
-        break;
-      case "gate":
-        this.tone({ freq: 660, type: "triangle", dur: 0.16, gain: 0.13 });
-        this.tone({ freq: 990, type: "sine", dur: 0.28, gain: 0.12, delay: 0.07 });
-        break;
-      case "cell":
-        this.tone({ freq: 1040, type: "sine", dur: 0.14, gain: 0.11, slideTo: 1560 });
-        break;
-      case "crash":
-        this.tone({ freq: 160, type: "sawtooth", dur: 0.4, gain: 0.18, slideTo: 48 });
-        this.noiseHit({ dur: 0.42, gain: 0.22, freq: 700, q: 0.6, slideTo: 90 });
-        break;
-      case "landing":
-        this.tone({ freq: 90, type: "sine", dur: 0.2, gain: 0.2, slideTo: 40 });
-        this.noiseHit({ dur: 0.16, gain: 0.08, freq: 500, q: 0.8, slideTo: 140 });
-        break;
-      case "nearmiss":
-        this.noiseHit({ dur: 0.3, gain: 0.09, freq: 1200, q: 1.4, slideTo: 3200 });
-        break;
-      case "combo":
-        this.tone({ freq: note(PENTA[5]!), type: "triangle", dur: 0.16, gain: 0.12 });
-        this.tone({ freq: note(PENTA[7]!), type: "triangle", dur: 0.2, gain: 0.12, delay: 0.08 });
-        break;
-      case "clear":
-        this.tone({ freq: note(PENTA[4]!), type: "sine", dur: 0.12, gain: 0.1, slideTo: note(PENTA[6]!) });
-        break;
-      case "boost":
-        this.noiseHit({ dur: 0.6, gain: 0.12, freq: 400, q: 0.7, slideTo: 3600 });
-        this.tone({ freq: 220, type: "sawtooth", dur: 0.5, gain: 0.07, slideTo: 880 });
-        break;
-      case "finish":
-        [0, 4, 7, 12].forEach((s, i) => this.tone({ freq: note(12 + s), type: "triangle", dur: 0.5, gain: 0.12, delay: i * 0.12 }));
-        break;
-    }
+    if (!this.ctx || !this.sfx || this.muted) return;
+    this.bank.play(sound);
   }
 
   dispose(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     try { this.engine?.oscA.stop(); this.engine?.oscB.stop(); } catch { /* already stopped */ }
-    void this.manager.dispose();
+    this.bank.dispose();
     this.ctx = null;
   }
 
@@ -267,25 +247,6 @@ export class RoadsterSound {
     osc.stop(at + dur + 0.05);
   }
 
-  private tone(spec: ToneSpec): void {
-    const ctx = this.ctx;
-    if (!ctx || !this.sfx) return;
-    const { freq, type = "sine", dur = 0.15, gain = 0.2, slideTo, delay = 0 } = spec;
-    const at = ctx.currentTime + delay;
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, at);
-    if (slideTo) osc.frequency.exponentialRampToValueAtTime(Math.max(20, slideTo), at + dur);
-    g.gain.setValueAtTime(0.0001, at);
-    g.gain.exponentialRampToValueAtTime(gain, at + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-    osc.connect(g);
-    g.connect(this.sfx);
-    osc.start(at);
-    osc.stop(at + dur + 0.03);
-  }
-
   private noiseBuffer(): AudioBuffer {
     const ctx = this.ctx!;
     if (!this.noise) {
@@ -299,27 +260,5 @@ export class RoadsterSound {
       this.noise = buffer;
     }
     return this.noise;
-  }
-
-  private noiseHit(spec: NoiseSpec): void {
-    const ctx = this.ctx;
-    if (!ctx || !this.sfx) return;
-    const { dur = 0.2, gain = 0.15, freq = 1200, q = 1, type = "bandpass", slideTo } = spec;
-    const at = ctx.currentTime;
-    const src = ctx.createBufferSource();
-    src.buffer = this.noiseBuffer();
-    const filter = ctx.createBiquadFilter();
-    filter.type = type;
-    filter.frequency.setValueAtTime(freq, at);
-    filter.Q.value = q;
-    if (slideTo) filter.frequency.exponentialRampToValueAtTime(Math.max(40, slideTo), at + dur);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(gain, at);
-    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
-    src.connect(filter);
-    filter.connect(g);
-    g.connect(this.sfx);
-    src.start(at);
-    src.stop(at + dur + 0.02);
   }
 }

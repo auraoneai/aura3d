@@ -50,7 +50,7 @@ import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/s
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
 import "./styles.css";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
 

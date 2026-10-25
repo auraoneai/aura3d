@@ -23,7 +23,7 @@ import {
   gullPartId, millHubNodeId, millPoleNodeId, crateNodeId, barrelNodeId, plankNodeId, projectileNodeId,
   puffMaterial, puffNodeId, PROP_IDS, POOL, SLING_IDS
 } from "./game/stage";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
 
 installBlackFrameGuard();

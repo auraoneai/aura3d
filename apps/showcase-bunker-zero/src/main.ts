@@ -17,7 +17,7 @@ import {
   createSim, cellCenter, WEAPONS, type Sim, type SimInput, type WeaponId
 } from "./sim";
 import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
 

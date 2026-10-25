@@ -39,7 +39,7 @@ import { createHud, renderPlayCards, showHud, updateHud, updateVenueBanner, bann
 import { publishEvidence } from "./game/evidence";
 import * as series from "./game/series";
 import "../../showcase-port-shared/quickbar.css";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
 

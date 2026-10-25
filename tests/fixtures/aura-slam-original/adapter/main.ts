@@ -12,7 +12,7 @@ import {
   type AuraSceneNode
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
 
