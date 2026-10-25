@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 4.1.3
+Version: 4.2.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.2.0 (unreleased)
+## 4.2.0 (2026-10-25)
 
 - **Animation Studio no longer calls the retired asset-index worker.** `animation-scene cast add --query` and `prop add --query`, and `build-clip-library`, now resolve from open licence-clear sources at build time through `aura3d assets search` (new `scripts/open-source-search.ts`; the template depends on `@aura3d/cli`). Accepted files keep the licence and author the provider reported (no more hard-coded `CC-BY-4.0`), the sha256, rig grading and weight-normalising loader. When nothing matches, the command says so and names the next steps: `--file ./rigged.glb` / `aura3d assets add`, or Meshy with `--allow-meshy --budget N` (opt-in, never a silent fallback to a network endpoint). Cast provenance is now `open-source-resolved` or `meshy-generated`; documents that say `catalog-resolved` still read the same.
 - **Athletes and Links polish:** round eyes with a pupil instead of dark bars, one clean waist line and 6 mm hems, smooth normals and matte cloth on the Hoops, Diamond, Links, FC and Red Zone athletes (fit to each shipped model); the Links camera frames the golfer on phones; matte golf cart. Known issue: Diamond bat leaves the hands mid-swing (attach reads the forearm before the procedural arm pose).

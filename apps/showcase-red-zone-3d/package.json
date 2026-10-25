@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-red-zone-3d",
-  "version": "4.1.3",
+  "version": "4.2.0",
   "private": true,
   "type": "module",
   "description": "Red Zone 3D — prime-time 3D American football on Aura3D: 7v7 arcade play-calling, 2-bone IK athletes, 6 stadiums, Route Lab, Tackle Lab, 32-team Gridiron Series, broadcast camera director, juice/VFX pipeline, and runtime evidence.",
