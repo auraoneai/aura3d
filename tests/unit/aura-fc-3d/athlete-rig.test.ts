@@ -33,7 +33,9 @@ describe("athlete rig is one skinned body, no second pose", () => {
 
   it("no procedural limb, sock, shorts or torso nodes remain in the rig source", async () => {
     const { readFileSync } = await import("node:fs");
-    const src = readFileSync("apps/showcase-aura-fc-3d/src/game/rig.ts", "utf8");
+    // Material-override targets (`target: /-shorts$/`) tint the GLB's own materials per team; they are not nodes.
+    const src = readFileSync("apps/showcase-aura-fc-3d/src/game/rig.ts", "utf8")
+      .split("\n").filter((line) => !/^\s*\{?\s*target:\s*\//.test(line)).join("\n");
     expect(src).not.toMatch(/-sock-|-shorts|-torso|-uarm|-thigh|-shin|-shoe|solveArm|runTargets|kickTargets/);
   });
 });

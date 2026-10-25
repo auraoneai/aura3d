@@ -6,20 +6,11 @@ import { describe, expect, it } from "vitest";
 const ROOT = path.resolve(__dirname, "../../..");
 const read = (rel: string) => readFileSync(path.join(ROOT, rel), "utf8");
 
-// Vehicles, circuits and rooftop athletes with real marks or photographic faces in their textures, replaced by cleaned files.
+// Circuits, the formula car and two Meshy rooftop models whose textures carried real marks, replaced by cleaned files. Teleoperator vehicles (replaced by original generic models) and the rooftop and sports athletes (flat or softened faces) are covered by teleop-vehicles, teleop-robotaxi-flat, photo-textures and clean-athletes.
 const CLEAN: Record<string, string> = {
-  teleopWaymoHero: "teleopWaymoClean",
-  teleopWaymoTraffic: "teleopWaymoClean",
-  teleopCorvette: "teleopCorvetteClean",
-  teleopCybercab: "teleopCybercabClean",
   showcaseCcByFormulaOpponent: "showcaseCcByFormulaOpponentClean",
   showcaseTsukubaCircuit: "showcaseTsukubaCircuitClean",
   turboTsukubaVisualTrack: "turboTsukubaVisualTrackClean",
-  rooftopAthleteDefender: "rooftopAthleteDefenderClean",
-  rooftopAthleteShooter: "rooftopAthleteShooterClean",
-  rooftopShooter: "rooftopAthleteShooterClean",
-  rooftopDefender: "rooftopDefenderClean",
-  rooftopLayupScorer: "rooftopLayupScorerClean",
   rooftopDefenderMeshy: "rooftopDefenderMeshyClean",
   rooftopShooterMeshyV1: "rooftopShooterMeshyV1Clean"
 };
