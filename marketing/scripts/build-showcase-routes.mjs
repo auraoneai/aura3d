@@ -58,7 +58,6 @@ const showcaseRoutes = [
   "showcase-aura-hoops-3d",
   "showcase-aura-diamond-3d",
   "showcase-aura-fc-3d",
-  "showcase-red-zone-3d",
   "showcase-aura-links-3d",
   "showcase-roadster-rush-v2",
   "showcase-heatsink-v2",

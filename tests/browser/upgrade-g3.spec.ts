@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
- * Group-3 showcase upgrade check (iron-crown, pips-big-leap, red-zone-3d, roadster-rush(-v2), slingshot-siege,
+ * Group-3 showcase upgrade check (iron-crown, pips-big-leap, roadster-rush(-v2), slingshot-siege,
  * teleoperator(-v2)). Mode comes from tests/browser/upgrade-g3-mode.txt (remote runs cannot forward env):
  *   "live" (default) -> https://aura3d.auraone.ai (production build), "dev" -> the repo example dev server (does NOT resolve the vite-only aliases such as @aura3d/engine/game; use "live").
  * Reports console errors/warnings (incl. deprecation notices), failed requests, canvas pixels (HUD hidden),
@@ -12,7 +12,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const MODE_FILE = "tests/browser/upgrade-g3-mode.txt";
 const MODE = (existsSync(MODE_FILE) ? readFileSync(MODE_FILE, "utf8").trim() : "live").split(/\s+/)[0] || "live";
 const APPS_FILE = "tests/browser/upgrade-g3-apps.txt";
-const ALL_APPS = ["iron-crown", "pips-big-leap", "red-zone-3d", "roadster-rush", "roadster-rush-v2", "slingshot-siege", "teleoperator", "teleoperator-v2"];
+const ALL_APPS = ["iron-crown", "pips-big-leap", "roadster-rush", "roadster-rush-v2", "slingshot-siege", "teleoperator", "teleoperator-v2"];
 const APPS = (existsSync(APPS_FILE) ? readFileSync(APPS_FILE, "utf8").split(/\s+/).filter(Boolean) : ALL_APPS);
 const BOOT_WAIT_MS = 9000;
 

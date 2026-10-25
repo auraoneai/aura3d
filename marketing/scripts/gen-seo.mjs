@@ -115,7 +115,6 @@ const MANIFEST = {
   "/apps/showcase-aura-hoops-3d/": { source: "apps/showcase-aura-hoops-3d/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-aura-diamond-3d/": { source: "apps/showcase-aura-diamond-3d/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-aura-fc-3d/": { source: "apps/showcase-aura-fc-3d/index.html", freq: "weekly", priority: "0.70" },
-  "/apps/showcase-red-zone-3d/": { source: "apps/showcase-red-zone-3d/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-aura-links-3d/": { source: "apps/showcase-aura-links-3d/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-bunker-zero/": { source: "apps/showcase-bunker-zero/index.html", freq: "weekly", priority: "0.70" },
   "/apps/showcase-slingshot-siege/": { source: "apps/showcase-slingshot-siege/index.html", freq: "weekly", priority: "0.70" },

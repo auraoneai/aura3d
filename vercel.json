@@ -189,6 +189,9 @@
     }
   ],
   "redirects": [
+    { "source": "/apps/showcase-red-zone-3d", "destination": "/", "permanent": true },
+    { "source": "/apps/showcase-red-zone-3d/", "destination": "/", "permanent": true },
+    { "source": "/apps/showcase-red-zone-3d/:path*", "destination": "/", "permanent": true },
     {
       "source": "/apps/showcase-strange-orbit-port",
       "destination": "/apps/craterline-gp/",

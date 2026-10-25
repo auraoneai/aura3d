@@ -44,6 +44,7 @@ Format: **ID title.** Symptom. Cause. Avoid / prevent (API or check). Evidence.
 - **G4 Weapon label and model out of sync.** Bunker Zero showed a pistol label with the rifle model. One table decides the model in hand.
 - **G5 Dismissable overlays that never dismiss.** Title cards stayed over the court; modals covered the scoreboard. Dismiss on start; test the first frame after start.
 - **G6 Autopilot defaults.** Demo mode ran by default. Manual control is the default; autopilot is opt-in.
+- **G7 A game with no real playable loop is removed, not kept.** Red Zone 3D shipped as a "playable game" card without a loop a player could finish; the owner deleted it (4.3.0). Before listing a game, play one full round (`node tools/game-checks/run.mjs <slug>` plus the objective and win/lose probes); if there is no end state, do not list it.
 
 ## Assets and likeness
 

@@ -146,17 +146,6 @@ const apps = [
     notes: "5v5 street-and-stadium soccer — driven passes, curling finishers, and skill moves across six pitches from the Favela Cage to the Glacier Arena. Shootout Lab, Touch Lab, 8 clubs, 32-team World Circuit."
   },
   {
-    id: "showcase-red-zone-3d",
-    route: "/apps/showcase-red-zone-3d/",
-    routeHealth: "/apps/showcase-red-zone-3d/route-health.json",
-    classification: "candidate",
-    publicShowcase: true,
-    primaryAssetStatus: "typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "7v7 arcade football — play-calling, QB reads, and hit-stick defense across six stadiums from Friday Night Lights to the Altitude Bowl. Route Lab, Tackle Lab, 8 clubs, 32-team Gridiron Series."
-  },
-  {
     id: "showcase-aura-links-3d",
     route: "/apps/showcase-aura-links-3d/",
     routeHealth: "/apps/showcase-aura-links-3d/route-health.json",

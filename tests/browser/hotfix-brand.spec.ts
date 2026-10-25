@@ -32,7 +32,6 @@ const GAMES: Array<{ slug: string; expectGlb: RegExp }> = [
   { slug: "aura-diamond-3d", expectGlb: /diamondAthleteClean\./ },
   { slug: "aura-links-3d", expectGlb: /linksGolferAthleteClean\./ },
   { slug: "aura-fc-3d", expectGlb: /fc(SoccerStriker|Goalkeeper)Clean\./ },
-  { slug: "red-zone-3d", expectGlb: /rz(Quarterback|DefenderLineman)Clean\./ },
   { slug: "teleoperator", expectGlb: /teleop(Waymo|Corvette|Cybercab)Clean\./ }
 ];
 const OUT = process.env.HOTFIX_OUT ?? "tests/reports/hotfix";

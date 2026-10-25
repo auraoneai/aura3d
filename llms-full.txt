@@ -43,7 +43,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 
 - [Aura3D Concept Car Cinema: Typed GLB Product Configurator Example](https://aura3d.auraone.ai/apps/wow-concept-car-cinema/)
 - [Aura3D Damaged Helmet PBR Detail: Typed GLB Asset Viewer Example](https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/)
-- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/): 26 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.
+- [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/): 25 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.
 - [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer (V2) on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/)
@@ -56,7 +56,6 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/): Aura Hoops 3D: NBA-Jam-pace 3v3 streetball on the Aura3D engine — check-ball, shot meter, Jam Meter dunk packages, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour.
 - [Aura Diamond 3D — Baseball at Golden Hour · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-diamond-3d/): Aura Diamond 3D: broadcast-grade 3D baseball — real at-bats with PCI hitting, 4 pitch arsenals, 6 ballparks from Harbor Sandlot to Lunar Park, a 10-out Derby Lab, Bullpen Lab pitch-recognition drills, and a 32-team World Classic.
 - [Aura FC 3D — Street &amp; Stadium Football · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-fc-3d/): Aura FC 3D: five-a-side broadcast football on the Aura3D engine — six venues from a favela cage to a glacier dome, Shootout &amp; Touch Labs, a 32-team World Circuit, and a Player Studio.
-- [Red Zone 3D — Prime-Time Football on Aura3D](https://aura3d.auraone.ai/apps/showcase-red-zone-3d/): Red Zone 3D: broadcast-grade 3D American football — 7v7 arcade play-calling, six stadiums, Route Lab, Tackle Lab, and a 32-team Gridiron Series, rendered by the Aura3D engine.
 - [Aura Links 3D — Postcard Golf Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-links-3d/): Aura Links 3D: three-click arcade golf on the Aura3D engine — six storybook courses from Scottish dunes to a lunar crater, Range &amp; Putting Labs, and a 32-player Pro Circuit.
 - [Bunker Zero — Retro Corridor FPS on Aura3D](https://aura3d.auraone.ai/apps/showcase-bunker-zero/): Bunker Zero: a six-floor retro corridor shooter in the Wolfenstein mold — grid mazes, push-wall secrets, three enemy archetypes and the Iron Warden, rendered by the Aura3D engine.
 - [Aura3D - Slingshot Siege](https://aura3d.auraone.ai/apps/showcase-slingshot-siege/): Aura3D Slingshot Siege prototype: a Saturday-morning-cartoon physics destruction sandbox. Pull the pouch, lob five ammo types, squash every gull, topple every tower.

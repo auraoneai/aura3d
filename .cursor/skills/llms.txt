@@ -136,6 +136,6 @@ Release integrity rules:
 
 - Full agent guide, genre recipes, guardrails and the page and example map: https://aura3d.auraone.ai/llms-full.txt
 - Docs: https://aura3d.auraone.ai/docs/api.html, https://aura3d.auraone.ai/docs/agent-quickstart.html, https://aura3d.auraone.ai/docs/claims.html
-- Showcase (26 playable games): https://aura3d.auraone.ai/apps/showcase-index/
+- Showcase (25 playable games): https://aura3d.auraone.ai/apps/showcase-index/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml; crawl policy: https://aura3d.auraone.ai/robots.txt
 - Last updated: 2026-10-25

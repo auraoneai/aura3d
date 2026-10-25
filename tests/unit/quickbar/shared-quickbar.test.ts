@@ -15,7 +15,6 @@ const barGames: Array<{ slug: string; main: string }> = [
   { slug: "aura-diamond-3d", main: "apps/showcase-aura-diamond-3d/src/main.ts" },
   { slug: "aura-hoops-3d", main: "apps/showcase-aura-hoops-3d/src/main.ts" },
   { slug: "aura-links-3d", main: "apps/showcase-aura-links-3d/src/main.ts" },
-  { slug: "red-zone-3d", main: "apps/showcase-red-zone-3d/src/main.ts" },
   { slug: "aura-fc-3d", main: "apps/showcase-aura-fc-3d/src/main.ts" }
 ];
 
@@ -38,7 +37,7 @@ describe("shared quick-switcher bar", () => {
   });
 
   it("keeps the engine chip and stale versions out of the other game pages", () => {
-    for (const slug of ["aura-diamond-3d", "aura-links-3d", "aura-hoops-3d", "red-zone-3d", "teleoperator", "bunker-zero"]) {
+    for (const slug of ["aura-diamond-3d", "aura-links-3d", "aura-hoops-3d", "teleoperator", "bunker-zero"]) {
       const html = read(`apps/showcase-${slug}/index.html`);
       expect(html, `${slug} engine chip`).not.toContain("AURA3D ENGINE");
       expect(html, `${slug} stale version`).not.toMatch(/Aura3D 4\.0\.[0-9]/);
@@ -48,7 +47,7 @@ describe("shared quick-switcher bar", () => {
   });
 
   it("keeps the sports games' HUDs below the bar and removes their own bar chrome", () => {
-    for (const slug of ["aura-diamond-3d", "aura-hoops-3d", "aura-links-3d", "red-zone-3d"]) {
+    for (const slug of ["aura-diamond-3d", "aura-hoops-3d", "aura-links-3d"]) {
       const html = read(`apps/showcase-${slug}/index.html`);
       expect(html, `${slug} HUD offset`).toContain("var(--a3d-bar-space)");
       expect(html, `${slug} credit link`).toContain("Built with Aura3D");
@@ -62,13 +61,6 @@ describe("shared quick-switcher bar", () => {
     const html = read("apps/showcase-aura-diamond-3d/index.html");
     const zone = html.slice(html.indexOf(".hud-zone {"), html.indexOf("}", html.indexOf(".hud-zone {")));
     expect(zone).toMatch(/background:\s*transparent/);
-  });
-
-  it("Red Zone rebuilds the play cards only when they change and can collapse them", () => {
-    const hud = read("apps/showcase-red-zone-3d/src/game/hud.ts");
-    expect(hud).toContain("dataset.sig");
-    expect(hud).toContain("rz-cards-toggle");
-    expect(read("apps/showcase-red-zone-3d/index.html")).toContain('data-collapsed="1"');
   });
 
   it("Slingshot's tray stays above the hint footer and its bar never wraps", () => {

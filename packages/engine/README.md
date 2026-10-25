@@ -50,7 +50,7 @@ Kit documentation: [`docs/api/game-kit.md`](https://github.com/auraoneai/aura3d/
 
 ## Built with it
 
-The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) has 26 playable games across racing, sports, action, platformers and arcade, including Aura Slam 3D (tennis, with a deterministic replay gate), Apex Overdrive (racing), Glint Courier (maze chase) and Craterline GP (bike racing). Each page states its limits; the games are independent work, not affiliated with any other game or studio. Games are checked on software WebGL2 in remote runs; real-GPU confirmation is partial and tracked in [`evidence/`](https://github.com/auraoneai/aura3d/blob/main/evidence/).
+The [showcase index](https://aura3d.auraone.ai/apps/showcase-index/) has 25 playable games across racing, sports, action, platformers and arcade, including Aura Slam 3D (tennis, with a deterministic replay gate), Apex Overdrive (racing), Glint Courier (maze chase) and Craterline GP (bike racing). Each page states its limits; the games are independent work, not affiliated with any other game or studio. Games are checked on software WebGL2 in remote runs; real-GPU confirmation is partial and tracked in [`evidence/`](https://github.com/auraoneai/aura3d/blob/main/evidence/).
 
 ## Compared with three.js
 

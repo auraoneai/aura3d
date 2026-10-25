@@ -9,7 +9,7 @@ import { test, type Page } from "@playwright/test";
 const BASE = (process.env.LIVE_BASE ?? "https://aura3d.auraone.ai").replace(/\/$/, "");
 const SLUGS = [
   "top-tennis", "roadster-rush", "heatsink", "teleoperator", "iron-crown", "pips-big-leap", "aura-hoops-3d", "aura-diamond-3d",
-  "aura-fc-3d", "red-zone-3d", "aura-links-3d", "bunker-zero", "slingshot-siege", "dot-dash-3d", "cross-hop"
+  "aura-fc-3d", "aura-links-3d", "bunker-zero", "slingshot-siege", "dot-dash-3d", "cross-hop"
 ];
 const UNPINNED = "game,post,compiler,vfxFog";
 const BOOT_MS = Number(process.env.PINFIX_BOOT_MS ?? 14000);

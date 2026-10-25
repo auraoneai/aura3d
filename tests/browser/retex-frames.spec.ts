@@ -28,7 +28,6 @@ function serve(dist: string): Promise<{ origin: string; close(): Promise<void> }
 
 const GAMES: Array<{ slug: string; query: string; glbs: string[] }> = [
   { slug: "aura-fc-3d", query: "?autostart=1", glbs: ["fcSoccerStrikerClean", "fcGoalkeeperClean"] },
-  { slug: "red-zone-3d", query: "?autostart=1", glbs: ["rzQuarterbackClean"] },
   { slug: "aura-diamond-3d", query: "?autostart=1", glbs: ["diamondAthleteClean"] },
   { slug: "aura-links-3d", query: "?autostart=1", glbs: ["linksGolferAthleteClean"] }
 ];

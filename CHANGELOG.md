@@ -4,6 +4,10 @@ Version: 4.2.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.3.0 (unreleased)
+
+- **Red Zone 3D is removed (25 live games).** The football game had no real playable loop, so it is deleted rather than kept: the app, its route and card previews, its eight Meshy model entries (`rzQuarterbackMeshy`, `rzDefenderLinemanMeshy` and the stadium props) in `aura.assets.json` and `src/aura-assets.ts`, their files in `public/aura-assets` and `aura-evidence/meshy`, and its browser specs. `/apps/showcase-red-zone-3d/` now redirects (308) to the homepage. The generated inventory, showcase index, sitemap and `llms*.txt` read 25 games.
+
 ## 4.2.0 (2026-10-25)
 
 - **Animation Studio no longer calls the retired asset-index worker.** `animation-scene cast add --query` and `prop add --query`, and `build-clip-library`, now resolve from open licence-clear sources at build time through `aura3d assets search` (new `scripts/open-source-search.ts`; the template depends on `@aura3d/cli`). Accepted files keep the licence and author the provider reported (no more hard-coded `CC-BY-4.0`), the sha256, rig grading and weight-normalising loader. When nothing matches, the command says so and names the next steps: `--file ./rigged.glb` / `aura3d assets add`, or Meshy with `--allow-meshy --budget N` (opt-in, never a silent fallback to a network endpoint). Cast provenance is now `open-source-resolved` or `meshy-generated`; documents that say `catalog-resolved` still read the same.

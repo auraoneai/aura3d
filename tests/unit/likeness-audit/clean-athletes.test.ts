@@ -14,23 +14,20 @@ const CLEAN: Record<string, string[]> = {
   fcSoccerStrikerMeshy: ["fcSoccerStrikerClean", "fcSoccerStrikerMeshyAthlete"],
   fcGoalkeeperMeshy: ["fcGoalkeeperClean", "fcGoalkeeperMeshyAthlete"],
   linksGolferAthleteMeshy: ["linksGolferAthleteClean"],
-  rzQuarterbackMeshy: ["rzQuarterbackClean"],
-  rzDefenderLinemanMeshy: ["rzDefenderLinemanClean"],
   hoopsAthleteBig: ["hoopsAthleteBigClean"],
   hoopsAthleteGuard: ["hoopsAthleteGuardClean"]
 };
-// Hoops, Diamond, Links and Red Zone use a flat palette strip (a tiny PNG, one material) with clean hems and a flat face
+// Hoops, Diamond, Links use a flat palette strip (a tiny PNG, one material) with clean hems and a flat face
 // (tools/hoops-athlete-retexture/retexture-face.mjs); Aura FC keeps named flat materials so its team tint can target them.
-const PALETTE = new Set(["hoopsAthleteBig", "hoopsAthleteGuard", "diamondAthlete", "linksGolferAthleteMeshy", "rzQuarterbackMeshy", "rzDefenderLinemanMeshy"]);
+const PALETTE = new Set(["hoopsAthleteBig", "hoopsAthleteGuard", "diamondAthlete", "linksGolferAthleteMeshy"]);
 const stemMatches = (url: string, stems: string[]) => stems.some((stem) => url.includes(`/aura-assets/${stem}.`));
 const ORIGINALS = [
   "diamondAthlete.4e29f649", "fcSoccerStrikerMeshy.a675e393", "fcGoalkeeperMeshy.156eb05c", "linksGolferAthleteMeshy.a39990ad",
-  "rzQuarterbackMeshy.9368c81f", "rzDefenderLinemanMeshy.38e261b9", "hoopsAthleteBig.a11d61c5", "hoopsAthleteGuard.fbef844e"
+  "hoopsAthleteBig.a11d61c5", "hoopsAthleteGuard.fbef844e"
 ];
 const ASSET_FILES = [
   "src/aura-assets.ts",
   "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts",
-  "apps/showcase-red-zone-3d/src/aura-assets-v2.ts",
   "apps/showcase-aura-diamond-3d/src/aura-assets.route.ts",
   "apps/showcase-aura-hoops-3d/src/aura-assets.route.ts"
 ];

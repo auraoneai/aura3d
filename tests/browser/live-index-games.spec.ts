@@ -6,7 +6,7 @@ import { expect, test, type Page } from "@playwright/test";
  * no console/page errors and no failed requests. Results are printed as SHOWCASE_JSON lines (remote runs cannot egress files).
  */
 const BASE = (process.env.LIVE_BASE ?? "https://aura3d.auraone.ai").replace(/\/$/, "");
-const APPS = ["showcase-top-tennis","showcase-roadster-rush","showcase-heatsink","showcase-teleoperator","showcase-iron-crown","showcase-pips-big-leap","showcase-aura-hoops-3d","showcase-aura-diamond-3d","showcase-aura-fc-3d","showcase-red-zone-3d","showcase-aura-links-3d","showcase-bunker-zero","showcase-slingshot-siege","showcase-dot-dash-3d","showcase-cross-hop"];
+const APPS = ["showcase-top-tennis","showcase-roadster-rush","showcase-heatsink","showcase-teleoperator","showcase-iron-crown","showcase-pips-big-leap","showcase-aura-hoops-3d","showcase-aura-diamond-3d","showcase-aura-fc-3d","showcase-aura-links-3d","showcase-bunker-zero","showcase-slingshot-siege","showcase-dot-dash-3d","showcase-cross-hop"];
 const BOOT_WAIT_MS = Number(process.env.LIVE_BOOT_WAIT_MS ?? 9000);
 // Heavy scenes render at well under 1 fps on the CPU rasteriser; a smaller viewport keeps the smoke measurable.
 const SMALL_VIEWPORT: Record<string, { width: number; height: number }> = { "showcase-slingshot-siege": { width: 360, height: 270 } };
