@@ -10,7 +10,7 @@ const appWith = (postSkipped: unknown) => ({ [PRD01_RENDERER]: { postSkipped } }
 describe("T0-07 output.postSkipped", () => {
   it("emits the renderer's postSkipped record (no output surface needed)", () => {
     const record = {
-      code: "post-v2-unmigrated",
+      code: "post-legacy-route",
       message: "legacy postprocess chain skipped under A3D_QR_CORE_OUTPUT; encode handled by OutputPass",
       effects: ["bloom", "ssao"]
     };

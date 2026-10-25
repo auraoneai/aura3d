@@ -45,7 +45,7 @@ function tryV2(
     .tryExecutePostGraphV2(postprocess, LDR_TARGET, passes);
 }
 
-describe("T0-07 POSTPROCESS_V2_UNMIGRATED reporting (lane-03 half)", () => {
+describe("T0-07 POSTPROCESS_LEGACY_ROUTE reporting (lane-03 half)", () => {
   beforeEach(() => {
     resetPostSkipped();
     setRendererQrFlags(CORE_OUTPUT_FLAGS);
@@ -57,20 +57,20 @@ describe("T0-07 POSTPROCESS_V2_UNMIGRATED reporting (lane-03 half)", () => {
 
   it("records no-v2-plan when the authored chain lacks a v2 pipeline", () => {
     expect(tryV2(makePipeline(), { toneMapping: "krajuice" } as RendererPostProcessOptions)).toBe(false);
-    expect(postSkippedReasons()).toContain("POSTPROCESS_V2_UNMIGRATED:no-v2-plan");
+    expect(postSkippedReasons()).toContain("POSTPROCESS_LEGACY_ROUTE:no-v2-plan");
   });
 
   it("records cpu-deterministic as the decline reason", () => {
     const plan = { v2: true, pipeline: {}, execution: "cpu-deterministic" } as RendererPostProcessOptions;
     expect(tryV2(makePipeline(), plan)).toBe(false);
-    expect(postSkippedReasons()).toContain("POSTPROCESS_V2_UNMIGRATED:cpu-deterministic");
+    expect(postSkippedReasons()).toContain("POSTPROCESS_LEGACY_ROUTE:cpu-deterministic");
   });
 
   it("names unfusable passes when the fused LDR set cannot take the chain", () => {
     const plan = { v2: true, pipeline: {} } as RendererPostProcessOptions;
     const passes = [{ name: "film-grain", options: {} }] as unknown as readonly RendererPostProcessPassPlan[];
     expect(tryV2(makePipeline(), plan, passes)).toBe(false);
-    expect(postSkippedReasons()).toContain("POSTPROCESS_V2_UNMIGRATED:film-grain");
+    expect(postSkippedReasons()).toContain("POSTPROCESS_LEGACY_ROUTE:film-grain");
   });
 
   it("records nothing when A3D_QR_CORE_OUTPUT is off", () => {

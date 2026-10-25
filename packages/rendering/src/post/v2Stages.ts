@@ -56,6 +56,7 @@ import { GODRAYS_GLSL } from "./shaders/godrays.glsl.js";
 import { CA_PASS_GLSL } from "./shaders/composite.glsl.js";
 import { DISPLAY_GRADE_GLSL } from "./shaders/displayGrade.glsl.js";
 import { FINALIZE_FXAA_FUSED_GLSL, FINALIZE_GLSL } from "./shaders/finalize.glsl.js";
+import { vignetteColorRgb } from "./vignetteColor.js";
 import { VELOCITY_DILATE_GLSL } from "./shaders/velocityDilate.glsl.js";
 import { TAA_RESOLVE_GLSL, TAA_UPSCALE_GLSL } from "./shaders/taa.glsl.js";
 import { DOF_COMPOSITE_GLSL, DOF_GATHER_GLSL, DOF_NEAR_TILE_GLSL, DOF_PREFILTER_GLSL } from "./shaders/dof.glsl.js";
@@ -64,6 +65,8 @@ import { EXPOSURE_ADAPT_GLSL, EXPOSURE_LUMA_LOG_GLSL, EXPOSURE_MUL_GLSL, EXPOSUR
 import { SMAA_BLEND_GLSL, SMAA_EDGES_GLSL, SMAA_WEIGHTS_GLSL } from "./shaders/smaa.glsl.js";
 import { FXAA_185_FRAGMENT_GLSL } from "./shaders/fxaa.glsl.js";
 import { POST_INSERT_ANCHORS, type AutoExposureOptionsV2, type DofOptions, type GtaoOptions, type GodRayOptions, type MotionBlurOptions, type TaaOptions } from "./PostGraph";
+
+export { vignetteColorRgb };
 
 /** Identity for the folded camera-velocity reprojection (S1-C). */
 const IDENTITY_MAT4_F32 = new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
@@ -1164,23 +1167,6 @@ export const AO_FALLBACK_STRENGTH_MAX = 0.1;
 export function aoFallbackStrength(authored: number | undefined): number {
   const v = authored ?? AO_FALLBACK_STRENGTH_MAX;
   return Math.min(Math.max(Number.isFinite(v) ? v : 0, 0), AO_FALLBACK_STRENGTH_MAX);
-}
-
-/**
- * Vignette colour as a finite RGB triple. The engine post bridge emits
- * `{ r, g, b }` (rgbField) while older callers pass `[r, g, b]`; indexing the
- * object form gave `undefined` → NaN uniforms, and `mix(1, NaN, t)` turned the
- * whole frame black whenever a scene authored `effects.vignette()`.
- */
-export function vignetteColorRgb(color: unknown): [number, number, number] {
-  let rgb: [unknown, unknown, unknown] = [0, 0, 0];
-  if (Array.isArray(color)) rgb = [color[0], color[1], color[2]];
-  else if (color && typeof color === "object" && "r" in color) {
-    const c = color as { r?: unknown; g?: unknown; b?: unknown };
-    rgb = [c.r, c.g, c.b];
-  }
-  const finite = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
-  return [finite(rgb[0]), finite(rgb[1]), finite(rgb[2])];
 }
 
 /** True when S10b/S11/S12 need a real LDR tail after the fused present. */

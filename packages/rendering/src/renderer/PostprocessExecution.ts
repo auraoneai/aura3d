@@ -121,7 +121,10 @@ export function collectPostprocess(source: RenderSource | Iterable<RenderItem> |
 }
 
 function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPostProcessPassPlan[]): boolean {
-  const sourceIsHdr = isHdrRenderTarget(source);
+  return canFusePasses(isHdrRenderTarget(source), passes);
+}
+
+function canFusePasses(sourceIsHdr: boolean, passes: readonly RendererPostProcessPassPlan[]): boolean {
   return passes.length > 0
     && (!sourceIsHdr || passes[0]?.name === "tone-mapping" || (passes[0]?.name === "bloom" && passes[1]?.name === "tone-mapping"))
     && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa" || pass.name === "outline" || pass.name === "fxaa")
@@ -136,12 +139,32 @@ const FUSABLE_LDR_PASS_NAMES: ReadonlySet<string> = new Set([
   "ssao", "ssr", "taa", "outline", "fxaa"
 ]);
 
-/** Pass names `canFuseLdrPostprocess` cannot route — used only to label the
- * recorded `POSTPROCESS_V2_UNMIGRATED` skip reason under core-output (T0-07).
+/** Pass names `canFuseLdrPostprocess` cannot route (labels the legacy-route reason).
  * "order" = all names fusable but ordering/prefix rules unmet. */
 function unfusedPassNames(passes: readonly RendererPostProcessPassPlan[]): string {
   const unfused = passes.map((pass) => pass.name).filter((name) => !FUSABLE_LDR_PASS_NAMES.has(name));
   return unfused.length ? unfused.join(",") : "order";
+}
+
+/**
+ * Why the PostGraph v2 seam cannot run this postprocess, or `null` when it can.
+ * Both the Renderer (before it builds the frame) and `tryExecutePostGraphV2` ask,
+ * so the frame route and the execution agree. A non-null reason means the
+ * explicit legacy chain (compat.post "3.0", `-post`, WebGPU, cpu-deterministic)
+ * encodes the frame itself.
+ */
+export function postV2SeamDeclineReason(
+  deviceKind: string,
+  postprocess: RendererPostProcessOptions,
+  passes: readonly RendererPostProcessPassPlan[],
+  sourceIsHdr: boolean
+): string | null {
+  if (postprocess.v2 !== true) return "no-v2-plan";
+  if (deviceKind !== "webgl2") return "backend";
+  if (!postprocess.pipeline || typeof postprocess.pipeline !== "object") return "no-pipeline";
+  if (postprocess.execution === "cpu-deterministic") return "cpu-deterministic";
+  if (passes.length > 0 && !canFusePasses(sourceIsHdr, passes)) return unfusedPassNames(passes);
+  return null;
 }
 
 function ldrFusionPassRank(name: RendererPostProcessPassName): number {
@@ -240,6 +263,12 @@ export function createPostprocessDiagnostics(
 export class RendererPostprocessPipeline {
   constructor(readonly host: RendererHost) {}
 
+  /** Pre-render twin of the `tryExecutePostGraphV2` decline check (same shared predicate); `null` = the v2 seam runs this chain. */
+  v2SeamDeclineFor(postprocess: RendererPostProcessOptions): string | null {
+    const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.host.device, postprocess);
+    return postV2SeamDeclineReason(this.host.device.kind, postprocess, createRendererPostprocessPasses(postprocess), format !== "rgba8");
+  }
+
   /**
    * Intermediate chain target. Flag-off: a fresh device target owned by the
    * frame (`ownedTargets`, disposed by the Renderer). Under `A3D_QR_TIERS`
@@ -304,39 +333,16 @@ export class RendererPostprocessPipeline {
     outputTarget?: RenderTarget,
     v2Modules?: typeof import("../post/v2Entry")
   ): boolean {
-    // T0-07 (lane-03 half): under `A3D_QR_CORE_OUTPUT` lane 01's Renderer
-    // stops dropping the configured chain; the reasons the v2 seam still
-    // declines are recorded so `diagnostics().output.postSkipped` reports
-    // the residue instead of silently falling back to the legacy encode.
-    const coreOutput = qrCoreOutputOn(rendererQrFlags());
-    if (postprocess.v2 !== true || this.host.device.kind !== "webgl2") {
-      const reason = postprocess.v2 !== true ? "no-v2-plan" : "backend";
-      if (coreOutput) recordPostSkipped(`POSTPROCESS_V2_UNMIGRATED:${reason}`);
-      lastPostGraphV2Outcome = `legacy-chain:${reason}`;
+    // Declines are reported through the §6.9 skip registry so
+    // `diagnostics().output.postSkipped` names the frames that took the explicit
+    // legacy chain (compat.post "3.0", `-post`, WebGPU, cpu-deterministic).
+    const declined = postV2SeamDeclineReason(this.host.device.kind, postprocess, passes, isHdrRenderTarget(current));
+    if (declined !== null) {
+      if (qrCoreOutputOn(rendererQrFlags())) recordPostSkipped(`POSTPROCESS_LEGACY_ROUTE:${declined}`);
+      lastPostGraphV2Outcome = `legacy-chain:${declined}`;
       return false;
     }
-    const pipeline = postprocess.pipeline;
-    if (!pipeline || typeof pipeline !== "object") {
-      if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:no-pipeline");
-      lastPostGraphV2Outcome = "legacy-chain:no-pipeline";
-      return false;
-    }
-    // Transitional seam: the v2 path delegates to the native fused present,
-    // which only covers the fused pass names. Scenes authoring anything
-    // outside that set (film-grain, chromatic-aberration, volumetric-light,
-    // contact-shadow) — or requesting cpu-deterministic — keep the legacy
-    // route so nothing authored is silently dropped. An empty pass list is
-    // fine: pipeline-only effects (vignette/film-grain/CA) emit no plan pass.
-    if (postprocess.execution === "cpu-deterministic") {
-      if (coreOutput) recordPostSkipped("POSTPROCESS_V2_UNMIGRATED:cpu-deterministic");
-      lastPostGraphV2Outcome = "legacy-chain:cpu-deterministic";
-      return false;
-    }
-    if (passes.length > 0 && !canFuseLdrPostprocess(current, passes)) {
-      if (coreOutput) recordPostSkipped(`POSTPROCESS_V2_UNMIGRATED:${unfusedPassNames(passes)}`);
-      lastPostGraphV2Outcome = `legacy-chain:${unfusedPassNames(passes)}`;
-      return false;
-    }
+    const pipeline = postprocess.pipeline as PostPipelineOptions;
     warmPostV2Modules();
     v2Modules = v2Modules ?? postV2Modules;
     // Without the deferred module bag the seam runs the fused present only:
@@ -352,7 +358,7 @@ export class RendererPostprocessPipeline {
       (postprocess.taa as { temporal?: TemporalGpuBindings } | undefined)?.temporal ??
       (postprocess.motionBlur as { temporal?: TemporalGpuBindings } | undefined)?.temporal;
     executePostGraphWebGL2(webgl2DeviceHost(this.host.device), current, {
-      pipeline: pipeline as PostPipelineOptions,
+      pipeline,
       passes: descriptors,
       ...(v2Modules ? { v2: v2Modules } : {}),
       ...(postprocess.cameraFrame ? { cameraFrame: postprocess.cameraFrame } : {}),
