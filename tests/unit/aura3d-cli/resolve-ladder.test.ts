@@ -102,6 +102,32 @@ describe("rung 2: open sources", () => {
     expect(report.skipped.find((skip) => skip.rung === "open-source")?.reason).toContain("does not mention \"bridge\"");
   });
 
+  it("rejects a title that only mentions the noun (Bridge Pillar is a pillar; a truck from a car kit is a truck)", async () => {
+    const bridge = await runResolveLadder({
+      need: "wooden bridge",
+      dryRun: true,
+      readManifest: () => manifest(),
+      searchFn: searchReturning([line({ id: "kenney:city-kit-roads:bridge-pillar", title: "Bridge Pillar" })]),
+    });
+    expect(bridge.chosen).toBe("procedural");
+    expect(bridge.skipped.find((skip) => skip.rung === "open-source")?.reason).toContain("is a pillar, not a bridge");
+    const car = await runResolveLadder({
+      need: "sports car",
+      role: "hero",
+      dryRun: true,
+      readManifest: () => manifest(),
+      searchFn: searchReturning([line({ id: "kenney:car-kit:garbage-truck", title: "Garbage Truck" }), line({ id: "kenney:car-kit:sedan-sports", title: "Sports Car" })]),
+    });
+    expect(car.candidate?.title).toBe("Sports Car");
+  });
+
+  it("accepts size and variant words after the noun, and a qualifier in parentheses", async () => {
+    const tree = await runResolveLadder({ need: "oak tree", dryRun: true, readManifest: () => manifest(), searchFn: searchReturning([line({ id: "k:tree-large", title: "Tree Large" })]) });
+    expect(tree.chosen).toBe("open-source");
+    const sky = await runResolveLadder({ need: "sunset sky", role: "hdri", dryRun: true, readManifest: () => manifest(), searchFn: searchReturning([line({ id: "poly-haven:belfast_sunset_puresky", title: "Belfast Sunset (Pure Sky)", format: "hdr" })]) });
+    expect(sky.chosen).toBe("open-source");
+  });
+
   it("picks the first matching licence-clear candidate and admits it", async () => {
     const calls: { candidateId?: string; name?: string }[] = [];
     const report = await runResolveLadder({
@@ -224,6 +250,18 @@ describe("rung 4: procedural recipes", () => {
     expect(report.procedural?.recipe).toBe("fence");
     expect(report.procedural?.snippet).toContain("export const gardenFence = group(\"gardenFence\"");
     expect(existsSync("/definitely/not/created")).toBe(false);
+  });
+
+  it("returns none for a character with no match instead of a box", async () => {
+    const report = await runResolveLadder({ need: "knight", role: "character", readManifest: () => manifest(), searchFn: noSearch });
+    expect(report.ok).toBe(false);
+    expect(report.chosen).toBe("none");
+    expect(report.messages.join("\n")).toContain("--allow meshy");
+  });
+
+  it("marks an unmatched prop recipe as a placeholder", () => {
+    expect(proceduralRecipe("mysterious artifact", "artifact").snippet).toContain("PLACEHOLDER");
+    expect(proceduralRecipe("garden fence", "fence").snippet).not.toContain("PLACEHOLDER");
   });
 
   it("refuses an invalid --name", async () => {

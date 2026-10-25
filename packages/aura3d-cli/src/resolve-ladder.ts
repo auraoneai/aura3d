@@ -20,7 +20,7 @@ import { runSearch, type SearchCandidateLine, type SearchReport } from "./pull-b
 import type { CliAssetSearchProfile, CliResolveConstraints } from "./pull-bridge/types.js";
 
 export type LadderRole = "hero" | "prop" | "background" | "character" | "texture" | "hdri";
-export type LadderRung = "project" | "open-source" | "meshy" | "procedural";
+export type LadderRung = "project" | "open-source" | "meshy" | "procedural" | "none";
 
 export const LADDER_ROLES: readonly LadderRole[] = ["hero", "prop", "background", "character", "texture", "hdri"];
 
@@ -106,6 +106,9 @@ const STOP_WORDS = new Set([
   "a", "an", "the", "of", "for", "with", "and", "or", "in", "on", "to", "my", "some",
   "low", "poly", "lowpoly", "high", "detailed", "simple", "stylised", "stylized", "realistic",
   "small", "large", "big", "tiny", "old", "new", "model", "asset", "glb", "gltf", "3d", "game", "pbr",
+  "tall", "short", "wide", "narrow", "round", "square", "corner", "straight", "end", "double", "single", "half",
+  "top", "bottom", "left", "right", "broken", "damaged", "dark", "variant", "alt", "lod", "pure", "pack", "kit",
+  "huge", "giant", "mini", "medium", "big", "little",
 ]);
 
 /** Singular form good enough for matching English asset nouns. */
@@ -138,6 +141,19 @@ export function headNoun(need: string): string | undefined {
 export function mentionsNoun(text: string, noun: string): boolean {
   const words = new Set(tokens(text).map(singular));
   return words.has(noun) || tokens(text).some((word) => word.startsWith(noun) && word.length <= noun.length + 3);
+}
+
+/**
+ * True when a candidate's own title is the needed thing, not merely mentions it: the title's head
+ * noun must be the need's noun. "Bridge Pillar" is a pillar, not a bridge; "Garbage Truck" from a
+ * "car-kit" pack is a truck, not a car. Precision over recall: a miss falls through to the next rung.
+ */
+export function titleIsNoun(title: string, noun: string): boolean {
+  const head = headNoun(title.replace(/\([^)]*\)/g, " "));
+  if (head === noun) return true;
+  // "Belfast Sunset (Pure Sky)": the parenthesised qualifier names the kind.
+  const qualifier = /\(([^)]*)\)/.exec(title)?.[1];
+  return qualifier !== undefined && headNoun(qualifier) === noun;
 }
 
 function camelName(need: string): string {
@@ -249,13 +265,17 @@ export async function runResolveLadder(options: LadderOptions): Promise<LadderRe
   const rejected: string[] = [];
   const candidate = search?.candidates.find((line) => {
     if (!line.autoPullable) return false;
-    if (noun !== undefined && !mentionsNoun(`${line.title} ${line.id}`, noun)) {
+    if (noun !== undefined && !mentionsNoun(line.title, noun)) {
       rejected.push(`${line.title}: does not mention "${noun}"`);
       return false;
     }
     const misfit = fitsRole(line, role);
     if (misfit) {
       rejected.push(`${line.title}: ${misfit}`);
+      return false;
+    }
+    if (noun !== undefined && !titleIsNoun(line.title, noun)) {
+      rejected.push(`${line.title}: is a ${headNoun(line.title.replace(/\([^)]*\)/g, " ")) ?? "different thing"}, not a ${noun}`);
       return false;
     }
     return true;
@@ -310,7 +330,14 @@ export async function runResolveLadder(options: LadderOptions): Promise<LadderRe
     messages.push(`Meshy plan (not run): ${commands.join("  then  ")}`);
   }
 
-  // Rung 4: procedural recipe, always available.
+  // Rung 4: procedural recipe for props; characters, textures and HDRIs have none.
+  if (role === "character" || role === "texture" || role === "hdri") {
+    skipped.push({ rung: "procedural", reason: `no procedural recipe for a ${role}` });
+    messages.push(role === "character"
+      ? "No character found. Generate one with --allow meshy --budget 40, or admit a licensed file with `aura3d assets add`."
+      : `No ${role} found. Admit a licensed file with \`aura3d assets add --type ${role === "hdri" ? "environment" : "texture"}\`.`);
+    return { ...base, ok: false, chosen: "none", reason: `nothing in the project or open sources, Meshy not run, and no procedural recipe for a ${role}`, costCredits: 0 };
+  }
   const procedural = proceduralRecipe(need, name);
   messages.push(`Build it in code (${procedural.recipe} recipe): paste the snippet and add \`${name}\` to your scene.`);
   return { ...base, ok: true, chosen: "procedural", reason: "no admitted, open-source or generated asset; build from primitives", costCredits: 0, procedural };
@@ -392,6 +419,11 @@ const RECIPE_ALIASES: Readonly<Record<string, string>> = {
 
 /** The best recipe for a need: the head noun, then any other word, then aliases; a crate as the fallback. */
 export function pickRecipe(need: string): string {
+  return pickRecipeOrUndefined(need) ?? "crate";
+}
+
+/** The recipe for a need, or undefined when no keyword or alias matches (the crate is then a placeholder). */
+export function pickRecipeOrUndefined(need: string): string | undefined {
   const words = tokens(need).map(singular);
   const ordered = [headNoun(need), ...words.reverse()].filter((word): word is string => word !== undefined);
   for (const word of ordered) {
@@ -399,7 +431,7 @@ export function pickRecipe(need: string): string {
     const alias = RECIPE_ALIASES[word];
     if (alias) return alias;
   }
-  return "crate";
+  return undefined;
 }
 
 function partCode(part: RecipePart, index: number, name: string): string {
@@ -414,12 +446,14 @@ function partCode(part: RecipePart, index: number, name: string): string {
 }
 
 export function proceduralRecipe(need: string, name: string): { readonly recipe: string; readonly snippet: string } {
-  const recipe = pickRecipe(need);
+  const matched = pickRecipeOrUndefined(need);
+  const recipe = matched ?? "crate";
   const parts = PROCEDURAL_RECIPES[recipe]!;
+  const note = matched === undefined ? " PLACEHOLDER: no recipe matches this need; replace it with a real model before shipping." : " Tune sizes and colours.";
   const lines = [
     `import { group, material, primitives } from "@aura3d/engine";`,
     ``,
-    `// ${need}: built from primitives (${recipe} recipe), metres, standing on y = 0. Tune sizes and colours.`,
+    `// ${need.replace(/[\r\n*/]/g, " ")}: built from primitives (${recipe} recipe), metres, standing on y = 0.${note}`,
     `export const ${name} = group("${name}", [`,
     ...parts.map((part, index) => partCode(part, index, name)),
     `]);`,
