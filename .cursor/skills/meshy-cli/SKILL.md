@@ -57,12 +57,14 @@ when an open-source candidate already passes the rubric.
 1. Plan: `meshy make "<prompt>" --dry-run` and show the steps and estimate.
    For single resources, read the create help and state the planned inputs.
 2. Get an approved maximum, then pass `--max-credits <approved>` and reserve
-   every paid call in the ledger first:
-   `rid=$(aura3d meshy ledger reserve --game <tag> --op preview --cap <per-game> --global-cap <total>)`,
+   every paid call in the ledger first (it hard-stops at the per-game cap, default 420, and the global cap):
+   `aura3d meshy ledger reserve --dry-run --game <tag> --op preview,refine` to see the cost,
+   `rid=$(aura3d meshy ledger reserve --game <tag> --op preview)`,
    then `aura3d meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>`.
+   A refusal prints the credits left and the flag that raises the cap: raise it only with the owner's approval.
    Credits per operation: preview 20, refine 10 (`make` = 30), remesh 5,
    rigging 5, animate 3, retexture 10. A rate-limited or timed-out call keeps
-   counting until `ledger reconcile`.
+   counting until `ledger reconcile --rid <id>`; compare the whole ledger with the Prism pool using `ledger reconcile`.
 3. Run, preferring `--async` when other work can proceed. Persist task IDs
    and provider resume hints in ignored local state. Resume a completed
    preview; never recreate paid work that succeeded.

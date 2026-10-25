@@ -13,6 +13,7 @@ import {
   reconcileWithPrism,
   recordMeshyBaseline,
   reserveMeshyCredits,
+  setMeshyCaps,
   settleMeshyCredits,
   summarizeMeshyLedger,
   MeshyLedgerError
@@ -185,6 +186,43 @@ describe("meshy ledger reconcile against Prism (mocked, no network, no spend)", 
     expect(reconcileWithPrism(now, { ...options, apply: true })).toMatchObject({ delta: 0 });
     expect(summarizeMeshyLedger(options).spent).toBe(100);
     expect(() => reserveMeshyCredits({ game: "drift", op: "preview", cap: 1000 }, { ...options, globalCap: 110 })).toThrowError(/global cap 110/);
+  });
+
+  test("a total-only legacy baseline compares the pool without the keys that joined later", () => {
+    const options = ledger(10000);
+    recordMeshyBaseline({ totalRemaining: 2000, excludeKeys: ["new1", "new2"] }, options);
+    reserveMeshyCredits({ game: "drift", op: "preview" }, options);
+    const now = parsePrismPool(pool({ a: 900, b: 1000, new1: 310, new2: 1000 }));
+    expect(reconcileWithPrism(now, options)).toMatchObject({ ledgerSpent: 20, prismSpent: 100, delta: 80, keysAddedSinceBaseline: ["new1", "new2"] });
+  });
+
+  test("a later baseline only compares the spend after it", () => {
+    const options = ledger(10000);
+    reserveMeshyCredits({ game: "drift", op: "preview" }, options);
+    recordMeshyBaseline(parsePrismPool(pool({ a: 500 })), options);
+    reserveMeshyCredits({ game: "drift", op: "refine" }, options);
+    expect(reconcileWithPrism(parsePrismPool(pool({ a: 490 })), options)).toMatchObject({ ledgerSpent: 10, prismSpent: 10, delta: 0 });
+    expect(summarizeMeshyLedger(options).spent).toBe(30);
+  });
+
+  test("config persists the caps in the ledger; flag and env override them; config records never count as spend", async () => {
+    const options = { ledgerPath: join(tmp(), "ledger.jsonl") };
+    expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: 1000, gameCap: 420 });
+    setMeshyCaps({ globalCap: 10000, gameCap: 500, note: "owner authorised 10,000 on 2026-10-23" }, options);
+    expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: 10000, gameCap: 500, spent: 0 });
+    expect(summarizeMeshyLedger({ ...options, globalCap: 50 })).toMatchObject({ globalCap: 50, gameCap: 500 });
+    vi.stubEnv("AURA3D_MESHY_GAME_CAP", "100");
+    expect(summarizeMeshyLedger(options)).toMatchObject({ gameCap: 100, globalCap: 10000 });
+    vi.unstubAllEnvs();
+    expect(() => setMeshyCaps({}, options)).toThrowError(/config needs/);
+    expect(() => setMeshyCaps({ globalCap: -1 }, options)).toThrowError(/positive/);
+    const out: string[] = [];
+    const io = { cwd: "/", stdout: (line: string) => out.push(line), stderr: () => undefined };
+    expect(await meshyLedgerCommand(["config", "--global-cap", "7000", "--ledger", options.ledgerPath], io)).toBe(0);
+    expect(JSON.parse(out.pop()!)).toEqual({ globalCap: 7000 });
+    expect(summarizeMeshyLedger(options)).toMatchObject({ globalCap: 7000, gameCap: 500 });
+    expect(reserveMeshyCredits({ game: "wind", op: "preview" }, options)).toMatch(/^\d+-/);
+    expect(summarizeMeshyLedger(options).spent).toBe(20);
   });
 
   test("reconcile without a baseline says how to record one; baseline excludes listed keys", () => {

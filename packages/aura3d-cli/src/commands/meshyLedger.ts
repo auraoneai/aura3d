@@ -25,8 +25,10 @@ export type MeshyLedgerStatus = "reserved" | "ok" | "failed" | "unconfirmed";
 export interface MeshyLedgerRecord {
   readonly ts: string;
   readonly rid: string;
-  /** `baseline` records snapshot the Prism pool for `reconcile`; they never count as spend. */
-  readonly kind?: "baseline";
+  /** `baseline` records snapshot the Prism pool for `reconcile`; `config` records persist the caps. Neither counts as spend. */
+  readonly kind?: "baseline" | "config";
+  readonly global_cap?: number;
+  readonly game_cap?: number;
   readonly status: MeshyLedgerStatus;
   readonly game?: string;
   readonly op?: string;
@@ -36,6 +38,10 @@ export interface MeshyLedgerRecord {
   readonly note?: string;
   readonly pool_remaining?: number;
   readonly pool_keys?: Readonly<Record<string, number>>;
+  /** Key ids left out of a total-only baseline (keys that joined the pool after it). */
+  readonly pool_excluded?: readonly string[];
+  /** Counted ledger spend when the baseline was taken; reconcile compares only the spend after it. */
+  readonly ledger_spent?: number;
 }
 
 export interface MeshyLedgerOptions {
@@ -84,13 +90,46 @@ export function defaultLedgerPath(): string {
   return process.env.AURA3D_MESHY_LEDGER ?? resolve(homedir(), ".aura3d", "meshy-ledger.jsonl");
 }
 
+/** Caps persisted in the ledger by `config` (flag > env > stored > default). */
+function storedConfig(ledgerPath: string): { readonly globalCap?: number; readonly gameCap?: number } | undefined {
+  if (!existsSync(ledgerPath)) return undefined;
+  let globalCap: number | undefined;
+  let gameCap: number | undefined;
+  for (const line of readFileSync(ledgerPath, "utf8").split("\n")) {
+    if (!line.includes('"config"')) continue;
+    try {
+      const record = JSON.parse(line) as MeshyLedgerRecord;
+      if (record.kind !== "config") continue;
+      if (record.global_cap !== undefined) globalCap = record.global_cap;
+      if (record.game_cap !== undefined) gameCap = record.game_cap;
+    } catch {
+      // torn line: ignore
+    }
+  }
+  return { ...(globalCap !== undefined ? { globalCap } : {}), ...(gameCap !== undefined ? { gameCap } : {}) };
+}
+
+/** Persist the caps in the ledger so every shell and agent sees the same, deliberately raised, limits. */
+export function setMeshyCaps(caps: { readonly globalCap?: number; readonly gameCap?: number; readonly note?: string }, options: MeshyLedgerOptions = {}): MeshyLedgerRecord {
+  const resolved = resolveOptions({ ...options, globalCap: 1, gameCap: 1 });
+  for (const value of [caps.globalCap, caps.gameCap]) if (value !== undefined && (!Number.isFinite(value) || value <= 0)) throw new MeshyLedgerError("BAD_RECORD", "Caps must be positive numbers.");
+  if (caps.globalCap === undefined && caps.gameCap === undefined) throw new MeshyLedgerError("BAD_RECORD", "config needs --global-cap and/or --game-cap.");
+  return withLock(resolved, () => {
+    const record: MeshyLedgerRecord = { ts: resolved.now().toISOString(), rid: `config-${resolved.now().getTime()}`, kind: "config", status: "ok", ...(caps.globalCap !== undefined ? { global_cap: caps.globalCap } : {}), ...(caps.gameCap !== undefined ? { game_cap: caps.gameCap } : {}), ...(caps.note ? { note: caps.note } : {}) };
+    appendFileSync(resolved.ledgerPath, JSON.stringify(record) + "\n");
+    return record;
+  });
+}
+
 function resolveOptions(options: MeshyLedgerOptions): Required<Omit<MeshyLedgerOptions, "now">> & { readonly now: () => Date } {
   const envCap = Number(process.env.AURA3D_MESHY_GLOBAL_CAP);
   const envGameCap = Number(process.env.AURA3D_MESHY_GAME_CAP);
+  const ledgerPath = resolve(options.ledgerPath ?? defaultLedgerPath());
+  const stored = options.globalCap !== undefined && options.gameCap !== undefined ? undefined : storedConfig(ledgerPath);
   return {
-    ledgerPath: resolve(options.ledgerPath ?? defaultLedgerPath()),
-    globalCap: options.globalCap ?? (Number.isFinite(envCap) && envCap > 0 ? envCap : DEFAULT_MESHY_GLOBAL_CAP),
-    gameCap: options.gameCap ?? (Number.isFinite(envGameCap) && envGameCap > 0 ? envGameCap : DEFAULT_MESHY_GAME_CAP),
+    ledgerPath,
+    globalCap: options.globalCap ?? (Number.isFinite(envCap) && envCap > 0 ? envCap : stored?.globalCap ?? DEFAULT_MESHY_GLOBAL_CAP),
+    gameCap: options.gameCap ?? (Number.isFinite(envGameCap) && envGameCap > 0 ? envGameCap : stored?.gameCap ?? DEFAULT_MESHY_GAME_CAP),
     lockTimeoutMs: options.lockTimeoutMs ?? 30_000,
     now: options.now ?? (() => new Date())
   };
@@ -174,7 +213,7 @@ export function readMeshyLedger(options: MeshyLedgerOptions = {}): readonly Mesh
 /** Latest record per reservation id wins (fields merge). failed counts 0; reserved/unconfirmed/ok count actual ?? est. */
 export function meshyLedgerTotals(records: readonly MeshyLedgerRecord[]): MeshyLedgerTotals {
   const byRid = new Map<string, MeshyLedgerRecord>();
-  for (const record of records) if (record.kind !== "baseline") byRid.set(record.rid, { ...(byRid.get(record.rid) ?? {}), ...record });
+  for (const record of records) if (!record.kind) byRid.set(record.rid, { ...(byRid.get(record.rid) ?? {}), ...record });
   let spent = 0;
   let unconfirmed = 0;
   const byGame: Record<string, number> = {};
@@ -372,17 +411,29 @@ function lastBaseline(records: readonly MeshyLedgerRecord[]): MeshyLedgerRecord 
   return [...records].reverse().find((record) => record.kind === "baseline");
 }
 
-/** Record the Prism pool as the zero point for `reconcile`. Keys added to the pool after this are ignored by the delta. */
-export function recordMeshyBaseline(pool: PrismPoolSnapshot, options: MeshyLedgerOptions & { readonly note?: string; readonly excludeKeys?: readonly string[] } = {}): MeshyLedgerRecord {
+/**
+ * Record the Prism pool as the zero point for `reconcile`. Keys added to the pool later are ignored by the delta.
+ * Pass `pool` for a per-key snapshot (detects top-ups) or `{ totalRemaining, excludeKeys }` when only the pool total was
+ * written down (a legacy baseline: the keys listed joined the pool after it and are left out of the comparison).
+ */
+export function recordMeshyBaseline(pool: PrismPoolSnapshot | { readonly totalRemaining: number; readonly excludeKeys: readonly string[] }, options: MeshyLedgerOptions & { readonly note?: string; readonly excludeKeys?: readonly string[] } = {}): MeshyLedgerRecord {
   const resolved = resolveOptions(options);
-  const exclude = new Set(options.excludeKeys ?? []);
-  const keys = Object.fromEntries(Object.entries(pool.keys).filter(([id]) => !exclude.has(id)));
-  const record: MeshyLedgerRecord = { ts: resolved.now().toISOString(), rid: `baseline-${resolved.now().getTime()}`, kind: "baseline", status: "ok", pool_remaining: Object.values(keys).reduce((sum, value) => sum + value, 0), pool_keys: keys, ...(options.note ? { note: options.note } : {}) };
-  withLock(resolved, () => appendFileSync(resolved.ledgerPath, JSON.stringify(record) + "\n"));
-  return record;
+  const detail = "keys" in pool
+    ? (() => {
+        const exclude = new Set(options.excludeKeys ?? []);
+        const keys = Object.fromEntries(Object.entries(pool.keys).filter(([id]) => !exclude.has(id)));
+        return { pool_remaining: Object.values(keys).reduce((sum, value) => sum + value, 0), pool_keys: keys };
+      })()
+    : { pool_remaining: pool.totalRemaining, pool_excluded: pool.excludeKeys };
+  return withLock(resolved, () => {
+    const record: MeshyLedgerRecord = { ts: resolved.now().toISOString(), rid: `baseline-${resolved.now().getTime()}`, kind: "baseline", status: "ok", ...detail, ledger_spent: meshyLedgerTotals(readMeshyLedger(resolved)).spent, ...(options.note ? { note: options.note } : {}) };
+    appendFileSync(resolved.ledgerPath, JSON.stringify(record) + "\n");
+    return record;
+  });
 }
 
 export interface MeshyReconciliation {
+  /** Counted ledger spend since the baseline. */
   readonly ledgerSpent: number;
   readonly ledgerAttributed: number;
   readonly ledgerAdjustments: number;
@@ -408,20 +459,29 @@ export interface MeshyReconciliation {
 export function reconcileWithPrism(pool: PrismPoolSnapshot, options: MeshyLedgerOptions & { readonly apply?: boolean } = {}): MeshyReconciliation {
   const resolved = resolveOptions(options);
   const baseline = lastBaseline(readMeshyLedger(resolved));
-  if (!baseline?.pool_keys) throw new MeshyLedgerError("BAD_POOL", "No baseline in this ledger. Record one first: aura3d meshy ledger baseline (reads the Prism pool) or baseline --pool-json <file>.");
+  if (baseline?.pool_remaining === undefined) throw new MeshyLedgerError("BAD_POOL", "No baseline in this ledger. Record one first: aura3d meshy ledger baseline (reads the Prism pool) or baseline --pool-json <file>.");
   let prismSpent = 0;
   const toppedUp: string[] = [];
-  for (const [id, was] of Object.entries(baseline.pool_keys)) {
-    const now = pool.keys[id];
-    if (now === undefined) continue;
-    if (now > was) toppedUp.push(id);
-    else prismSpent += was - now;
+  let added: string[];
+  if (baseline.pool_keys) {
+    for (const [id, was] of Object.entries(baseline.pool_keys)) {
+      const now = pool.keys[id];
+      if (now === undefined) continue;
+      if (now > was) toppedUp.push(id);
+      else prismSpent += was - now;
+    }
+    added = Object.keys(pool.keys).filter((id) => !(id in baseline.pool_keys!));
+  } else {
+    const excluded = new Set(baseline.pool_excluded ?? []);
+    const current = Object.entries(pool.keys).filter(([id]) => !excluded.has(id)).reduce((sum, [, value]) => sum + value, 0);
+    prismSpent = Math.max(0, baseline.pool_remaining - current);
+    added = [...excluded].filter((id) => id in pool.keys);
   }
-  const added = Object.keys(pool.keys).filter((id) => !(id in baseline.pool_keys!));
   const compute = (): MeshyReconciliation => {
     const totals = meshyLedgerTotals(readMeshyLedger(resolved));
+    const since = totals.spent - (baseline.ledger_spent ?? 0);
     const adjustments = totals.byGame.unattributed ?? 0;
-    return { ledgerSpent: totals.spent, ledgerAttributed: totals.spent - adjustments, ledgerAdjustments: adjustments, prismSpent, delta: prismSpent - totals.spent, poolRemaining: pool.remaining, globalCap: resolved.globalCap, leftUnderCap: resolved.globalCap - Math.max(totals.spent, prismSpent), baselineAt: baseline.ts, keysAddedSinceBaseline: added, keysToppedUp: toppedUp, unconfirmedRids: totals.unconfirmedRids };
+    return { ledgerSpent: since, ledgerAttributed: since - adjustments, ledgerAdjustments: adjustments, prismSpent, delta: prismSpent - since, poolRemaining: pool.remaining, globalCap: resolved.globalCap, leftUnderCap: resolved.globalCap - totals.spent - Math.max(0, prismSpent - since), baselineAt: baseline.ts, keysAddedSinceBaseline: added, keysToppedUp: toppedUp, unconfirmedRids: totals.unconfirmedRids };
   };
   const result = compute();
   if (!options.apply || result.delta === 0) return result;
@@ -445,7 +505,8 @@ function flag(argv: readonly string[], name: string): string | undefined {
 }
 
 const LEDGER_USAGE =
-  "aura3d meshy ledger status|reserve|settle|reconcile|baseline|list [--ledger path] [--global-cap N] [--game-cap N]\n" +
+  "aura3d meshy ledger status|reserve|settle|reconcile|baseline|config|list [--ledger path] [--global-cap N] [--game-cap N]\n" +
+  "  config    --global-cap N and/or --game-cap N [--note text]   (persist the caps in the ledger; flag > $AURA3D_MESHY_GLOBAL_CAP/_GAME_CAP > stored > 1000/420)\n" +
   "  reserve   --game <tag> --op preview|refine|remesh|rigging|animate|retexture [--est N] [--cap N]   (prints the reservation id; --cap defaults to 420 or $AURA3D_MESHY_GAME_CAP)\n" +
   "  reserve   --dry-run --game <tag> --op preview,refine,rigging [--cap N]                            (cost and remaining credits; writes nothing; exit 3 if it would be refused)\n" +
   "  settle    --rid <id> --status ok|failed|unconfirmed [--task-id T] [--actual N] [--note text]\n" +
@@ -453,6 +514,7 @@ const LEDGER_USAGE =
   "  reconcile --rid <id> --status ok|failed [--task-id T] [--actual N]                                  (resolve one unconfirmed reservation)\n" +
   "  reconcile [--apply] [--pool-json file]                                                              (ledger vs the Prism pool since the baseline; --apply books the delta as an unattributed adjustment)\n" +
   "  baseline  [--pool-json file] [--exclude-keys id,id] [--note text]                                   (snapshot the Prism pool as the reconcile zero point)\n" +
+  "  baseline  --pool-remaining N --exclude-keys id,id                                                   (legacy: only the pool total was written down; the listed keys joined after it)\n" +
   "  list      [--game <tag>]\n" +
   "  Prism read (reconcile/baseline without --pool-json): $AURA3D_PRISM_KEY or $AURA3D_PRISM_KEY_FILE, $AURA3D_PRISM_URL (default https://prism.auraone.ai). The key is only sent as a header and never printed.";
 
@@ -498,11 +560,19 @@ export async function meshyLedgerCommand(argv: readonly string[], io: CliIo): Pr
       io.stdout(reserveMeshyCredits({ game, op, ...(cap !== undefined ? { cap } : {}), ...(est ? { est: Number(est) } : {}) }, options));
       return 0;
     }
+    if (sub === "config") {
+      const record = setMeshyCaps({ ...(capFlag ? { globalCap: Number(capFlag) } : {}), ...(gameCapFlag ? { gameCap: Number(gameCapFlag) } : {}), ...(flag(argv, "--note") ? { note: flag(argv, "--note")! } : {}) }, flag(argv, "--ledger") ? { ledgerPath: resolve(io.cwd, flag(argv, "--ledger")!) } : {});
+      io.stdout(JSON.stringify({ globalCap: record.global_cap, gameCap: record.game_cap }));
+      return 0;
+    }
     if (sub === "baseline") {
-      const pool = await readPool(argv, io);
-      const exclude = flag(argv, "--exclude-keys")?.split(",").filter(Boolean);
-      const record = recordMeshyBaseline(pool, { ...options, ...(exclude ? { excludeKeys: exclude } : {}), ...(flag(argv, "--note") ? { note: flag(argv, "--note")! } : {}) });
-      io.stdout(JSON.stringify({ baselineAt: record.ts, poolRemaining: record.pool_remaining, keys: Object.keys(record.pool_keys ?? {}).length }));
+      const exclude = flag(argv, "--exclude-keys")?.split(",").filter(Boolean) ?? [];
+      const note = flag(argv, "--note") ? { note: flag(argv, "--note")! } : {};
+      const total = flag(argv, "--pool-remaining");
+      const record = total !== undefined
+        ? recordMeshyBaseline({ totalRemaining: Number(total), excludeKeys: exclude }, { ...options, ...note })
+        : recordMeshyBaseline(await readPool(argv, io), { ...options, excludeKeys: exclude, ...note });
+      io.stdout(JSON.stringify({ baselineAt: record.ts, poolRemaining: record.pool_remaining, keys: Object.keys(record.pool_keys ?? {}).length, ledgerSpent: record.ledger_spent }));
       return 0;
     }
     if (sub === "reconcile" && flag(argv, "--rid") === undefined) {
@@ -538,7 +608,7 @@ export async function meshyLedgerCommand(argv: readonly string[], io: CliIo): Pr
     if (sub === "list") {
       const game = flag(argv, "--game");
       const merged = new Map<string, MeshyLedgerRecord>();
-      for (const record of readMeshyLedger(options)) if (record.kind !== "baseline") merged.set(record.rid, { ...(merged.get(record.rid) ?? {}), ...record });
+      for (const record of readMeshyLedger(options)) if (!record.kind) merged.set(record.rid, { ...(merged.get(record.rid) ?? {}), ...record });
       for (const record of merged.values()) if (!game || record.game === game) io.stdout(JSON.stringify(record));
       return 0;
     }

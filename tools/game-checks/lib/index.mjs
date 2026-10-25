@@ -347,20 +347,38 @@ function checkCounts({ root, inventory }) {
   return out;
 }
 
-function checkMeshyCap({ root, terms, env }) {
-  const cap = terms.meshyCapPerGame;
-  const ledger = env.MESHY_LEDGER ?? "/tmp/meshy/ledger.jsonl";
-  const helper = env.MESHY_HELPER ?? "/tmp/meshy/meshy.mjs";
-  let byGame;
-  try {
-    if (existsSync(helper)) byGame = JSON.parse(execFileSync("node", [helper, "ledger"], { cwd: root, timeout: 20_000 }).toString().trim().split("\n").pop()).byGame;
-  } catch { /* fall back */ }
-  if (!byGame && existsSync(ledger)) {
-    byGame = {};
-    for (const l of readFileSync(ledger, "utf8").split("\n")) { try { const r = JSON.parse(l); if (r.status && /fail|refus/i.test(r.status)) continue; const t = r.tag ?? r.game; if (t) byGame[t] = (byGame[t] ?? 0) + Number(r.credits ?? r.cost ?? 0); } catch { /* skip */ } }
+// Reads the same ledger `aura3d meshy ledger` writes (AURA3D_MESHY_LEDGER, else ~/.aura3d/meshy-ledger.jsonl), merged per
+// reservation id exactly like the CLI: latest record wins, failed counts 0, otherwise actual ?? est. Baseline/config records never count.
+function readLedgerByTag(file) {
+  const byRid = new Map();
+  for (const line of readFileSync(file, "utf8").split("\n")) {
+    if (!line.trim()) continue;
+    try { const r = JSON.parse(line); if (!r.kind && r.rid) byRid.set(r.rid, { ...(byRid.get(r.rid) ?? {}), ...r }); } catch { /* skip a torn line */ }
   }
-  if (!byGame) return [finding("meshy-cap", "info", null, ledger, 0, "no Meshy ledger found (nothing to check)")];
-  return Object.entries(byGame).filter(([, v]) => v > cap).map(([t, v]) => finding("meshy-cap", "warn", null, ledger, 0, `tag "${t}" spent ${v} credits, over the ${cap} per-game guideline (the helper does not hard-stop)`));
+  const byTag = {};
+  for (const r of byRid.values()) {
+    const tag = r.game ?? r.tag;
+    if (!tag || tag === "unattributed") continue;
+    byTag[tag] = (byTag[tag] ?? 0) + (r.status === "failed" ? 0 : Number(r.actual ?? r.est ?? 0));
+  }
+  return byTag;
+}
+
+function checkMeshyCap({ terms, env }) {
+  const explicit = env.AURA3D_MESHY_LEDGER ?? env.MESHY_LEDGER;
+  const home = env.HOME ?? process.env.HOME ?? "";
+  const ledger = explicit ?? join(home, ".aura3d", "meshy-ledger.jsonl");
+  const cap = Number(env.AURA3D_MESHY_GAME_CAP) > 0 ? Number(env.AURA3D_MESHY_GAME_CAP) : terms.meshyCapPerGame;
+  const acknowledged = terms.meshyCapAcknowledged ?? {};
+  if (!existsSync(ledger)) return [finding("meshy-cap", "info", null, ledger, 0, "no Meshy ledger found (nothing to check); paid Meshy calls must go through `aura3d meshy ledger reserve`")];
+  const out = [];
+  for (const [tag, spent] of Object.entries(readLedgerByTag(ledger))) {
+    if (spent <= cap) continue;
+    const ceiling = acknowledged[tag];
+    if (ceiling !== undefined && spent <= ceiling) out.push(finding("meshy-cap", "info", null, ledger, 0, `tag "${tag}" spent ${spent} credits, over the ${cap} guideline but within the ${ceiling} recorded in docs/audit/meshy-reconciliation.md (spent before the CLI hard-stop existed)`));
+    else out.push(finding("meshy-cap", "warn", null, ledger, 0, `tag "${tag}" spent ${spent} credits, over the ${ceiling ?? cap} per-game ${ceiling === undefined ? "guideline" : "acknowledged ceiling"}; reserve through \`aura3d meshy ledger\` (it hard-stops) and raise the cap explicitly with --cap if the owner approved more`));
+  }
+  return out;
 }
 
 function dedupe(list) {

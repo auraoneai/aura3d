@@ -132,6 +132,7 @@
     "Valley of the End"
   ],
   "meshyCapPerGame": 420,
+  "meshyCapAcknowledged": { "drift": 500, "ninja": 496, "silt": 453, "cloud-runner": 446, "roadster": 445 },
   "fonts": {
     "forbidden": [
       "Inter",

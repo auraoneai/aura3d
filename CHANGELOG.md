@@ -4,6 +4,10 @@ Version: 4.2.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.3.0 (unreleased)
+
+- **`aura3d meshy ledger` is now a hard stop and reconciles against Kiro Prism.** A tag past its cap (default 420, `--cap`, `--game-cap`, `AURA3D_MESHY_GAME_CAP`) or the global cap is refused with the credits left and the flag that raises it; `reserve --dry-run --op preview,refine,rigging` prices a chain without writing; `settle --exit-code 6 --error-text` counts a 429 on a poll (task exists) and not a 429 on a create; `baseline` and `reconcile` compare the ledger with the Prism pool (`--apply` books the delta); `config` stores the caps in the ledger. The ledger lives at `~/.aura3d/meshy-ledger.jsonl`, not `/tmp`. The reconciliation (ledger 4,530 vs Prism 4,855, +325) is in `docs/audit/meshy-reconciliation.md`; the game-checks `meshy-cap` check reads this ledger.
+
 ## 4.2.0 (2026-10-25)
 
 - **Animation Studio no longer calls the retired asset-index worker.** `animation-scene cast add --query` and `prop add --query`, and `build-clip-library`, now resolve from open licence-clear sources at build time through `aura3d assets search` (new `scripts/open-source-search.ts`; the template depends on `@aura3d/cli`). Accepted files keep the licence and author the provider reported (no more hard-coded `CC-BY-4.0`), the sha256, rig grading and weight-normalising loader. When nothing matches, the command says so and names the next steps: `--file ./rigged.glb` / `aura3d assets add`, or Meshy with `--allow-meshy --budget N` (opt-in, never a silent fallback to a network endpoint). Cast provenance is now `open-source-resolved` or `meshy-generated`; documents that say `catalog-resolved` still read the same.
