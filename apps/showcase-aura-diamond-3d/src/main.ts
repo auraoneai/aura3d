@@ -3590,13 +3590,13 @@ function boot(): void {
     } else if (G.phase === "windup" && G.pitch) {
       ballWorld = [RELEASE_PT[0], RELEASE_PT[1] - Math.sin(clamp(G.phaseT / 0.62, 0, 1) * Math.PI) * 0.3, RELEASE_PT[2]];
     } else if ((G.phase === "batted" || G.phase === "runners") && G.batted) {
-      ballWorld = [G.batted.pos[0], Math.max(0.05, G.batted.pos[1]), G.batted.pos[2]];
+      ballWorld = [G.batted.pos[0], Math.max(0.075, G.batted.pos[1]), G.batted.pos[2]];
     } else if (G.phase === "between" || G.phase === "pitchSelect" || G.phase === "pitchMeter") {
       ballWorld = [0.3, MOUND_TOP + 1.1, MOUND_Z + 0.4]; // in the pitcher's glove
     }
     if (qaBall) ballWorld = qaBall;
     G.lastBallPos = ballWorld;
-    H.ball?.setPosition(ballWorld[0], ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
+    H.ball?.setPosition(ballWorld[0], ballWorld[1] > -30 ? ballWorld[1] - 0.075 : ballWorld[1], ballWorld[2]).setVisible(ballWorld[1] > -30);
     const shScale = clamp(1.15 - ballWorld[1] * 0.02, 0.4, 1.1);
     H.ballShadow?.setPosition(ballWorld[0], 0.04, ballWorld[2]).setScale([shScale, 1, shScale]).setVisible(ballWorld[1] > -30 && ballWorld[1] < 60);
 

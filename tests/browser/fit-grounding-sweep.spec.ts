@@ -18,6 +18,12 @@ const ALL = [
   "showcase-aura-hoops-3d"
 ];
 const GAMES = SWEEP_GAMES.length ? SWEEP_GAMES : ALL;
+// Ports that wrap an example resolve their GLBs through import.meta.url, which the bundled app entry breaks; load the example page itself.
+const EXAMPLE_PAGE: Record<string, string> = {
+  "showcase-ninja-runner-port": "/examples/ninja-runner-port/index.html",
+  "showcase-last-train-port": "/examples/last-train-port/index.html",
+  "showcase-cloud-runner-port": "/examples/kid-goku-beyond-the-clouds-port/index.html"
+};
 
 let server: ExampleDevServer;
 test.setTimeout(3_300_000);
@@ -26,10 +32,10 @@ test.afterAll(async () => { await server?.close(); });
 
 for (const folder of GAMES) {
   test(`sweep ${folder}`, async ({ page }) => {
-    await page.setViewportSize({ width: 480, height: 300 });
+    await page.setViewportSize({ width: 1100, height: 620 });
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(String(e.message).slice(0, 160)));
-    await page.goto(`${server.origin}/apps/${folder}/index.html?diag=1&autostart=1`, { waitUntil: "load", timeout: 240_000 }).catch((e) => errors.push(`goto ${String(e).slice(0, 120)}`));
+    await page.goto(`${server.origin}${EXAMPLE_PAGE[folder] ?? `/apps/${folder}/index.html`}?diag=1&autostart=1`, { waitUntil: "load", timeout: 240_000 }).catch((e) => errors.push(`goto ${String(e).slice(0, 120)}`));
     let n = 0;
     for (let i = 0; i < 90 && n === 0; i += 1) {
       await page.waitForTimeout(2000);
@@ -56,7 +62,7 @@ for (const folder of GAMES) {
     }).catch(() => []);
     console.log(`FITSWEEP ${folder} n=${n} nodes=${nodes.length} errors=${JSON.stringify(errors.slice(0, 3))}`);
     console.log(`FITSWEEP_NODES ${folder} ${JSON.stringify(nodes)}`);
-    const buf = await page.screenshot({ type: "jpeg", quality: 70 }).catch(() => undefined);
+    const buf = await page.screenshot({ type: "jpeg", quality: 80 }).catch(() => undefined);
     if (buf) console.log(`FITSWEEP_FRAME ${folder} ${buf.toString("base64")}`);
   });
 }

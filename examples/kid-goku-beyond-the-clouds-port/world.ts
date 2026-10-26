@@ -389,9 +389,15 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
         if (vis) {
           const fr = frameAt(bd.s, lane), bounce = Math.abs(Math.sin((lane + 16) * Math.PI / 4.4)) * 0.55 * (1 - smooth(10, 16, lane + 16));
           const gh = groundHeight(ch, bd.s, lane);
-          nd.setPosition(fr.point[0] + fr.up[0] * (bounce + 1.9 + gh), fr.point[1] + fr.up[1] * (bounce + 1.9 + gh), fr.point[2] + fr.up[2] * (bounce + 1.9 + gh));
+          // Fitted model: its origin is the lowest point and the roll pivots there, so place the node at (centre - rotated radius) to roll about the centre.
+          const roll = -(lane + 16) / 2.0;
+          nd.setPosition(
+            fr.point[0] + fr.up[0] * (bounce + 1.9 + gh) + Math.sin(roll) * 1.9,
+            fr.point[1] + fr.up[1] * (bounce + 1.9 + gh) - Math.cos(roll) * 1.9,
+            fr.point[2] + fr.up[2] * (bounce + 1.9 + gh)
+          );
           nd.setScale(1.9);
-          nd.setRotation(0, yawOf(fr.forward), -(lane + 16) / 2.0);
+          nd.setRotation(0, yawOf(fr.forward), roll);
           if (d > -50 && Math.random() < 0.0) fx.dust(at(bd.s, lane, 0.2), fr.up, 1);
         }
         const zc = at(bd.s, 0, 0.1), zf = frameAt(bd.s);
