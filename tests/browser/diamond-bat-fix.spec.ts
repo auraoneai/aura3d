@@ -31,8 +31,12 @@ const VIEWS: Record<string, { eye: number[]; target: number[]; fov: number }> = 
   front: { eye: [-0.7, 1.9, -3.6], target: [-0.85, 1.35, 0.3], fov: 34 },
   hands: { eye: [-2.0, 1.9, 2.4], target: [-0.95, 1.55, 0.4], fov: 22 }
 };
-const PROBE_ONLY = [0.05, 0.2, 0.3, 0.34, 0.38, 0.42, 0.45, 0.5, 0.52, 0.6, 0.65, 0.75, 0.8, 0.9, 0.95];
-const TIMES = [null, 0.12, 0.26, 0.4, 0.476, 0.55, 0.7, 0.87, 1.0];
+const VIEW_TIMES: Record<string, Array<number | null>> = {
+  owner: [null, 0.12, 0.26, 0.4, 0.476, 0.55, 0.7, 0.87, 1.0],
+  hands: [null, 0.26, 0.476, 0.7, 0.87],
+  side: [null, 0.476],
+  front: [null, 0.476]
+};
 
 function loadMesh(): HandMesh {
   const route = readFileSync("apps/showcase-aura-diamond-3d/src/aura-assets.route.ts", "utf8");
@@ -77,27 +81,9 @@ test("diamond batter grip across the swing", async ({ page }) => {
   await page.addStyleTag({ content: "#hud,#menu,#event-ticker,#controls-hint,#render-error{display:none!important} body > *:not(#app){display:none!important}" });
   await page.waitForTimeout(3_000);
 
-  // Probe-only sweep (no frames) to see where the engine bat and the solved hands disagree.
-  await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), VIEWS.owner);
-  for (const t of PROBE_ONLY) {
-    await page.evaluate((tt) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.holdSwingAt?.(tt), t);
-    let prev = "";
-    let stable = 0;
-    let s: Record<string, unknown> | null = null;
-    const t1 = Date.now();
-    while (Date.now() - t1 < 120_000 && stable < 2) {
-      s = await probe();
-      const key = s ? JSON.stringify([s.t, s.rightPalm, s.leftPalm, s.knob]) : "";
-      if (s && Math.abs(Number(s.t) - t) < 0.02 && key === prev) stable += 1; else stable = 0;
-      prev = key;
-      await page.waitForTimeout(400);
-    }
-    process.stdout.write(`@@PROBE ${JSON.stringify({ view: "sweep", hold: t, stable, ...(s ?? {}), ...(await drawn(s)) })}\n`);
-  }
-
   for (const [viewName, view] of Object.entries(VIEWS)) {
     await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), view);
-    for (const t of TIMES) {
+    for (const t of VIEW_TIMES[viewName] ?? []) {
       await page.evaluate((tt) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.holdSwingAt?.(tt), t);
       if (t === null) await page.waitForTimeout(2_500);
       let prev = "";
@@ -132,7 +118,7 @@ test("diamond batter grip across the swing", async ({ page }) => {
   await page.waitForTimeout(2_000);
 
   // Contact: freeze at the contact key with the ball drawn at the predicted contact point, so the sweet spot and the ball can be compared by eye.
-  for (const viewName of ["side", "front", "hands"]) {
+  for (const viewName of ["side"]) {
     await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), VIEWS[viewName]);
     await page.evaluate(() => {
       const hook = (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__;
@@ -144,19 +130,6 @@ test("diamond batter grip across the swing", async ({ page }) => {
     const predicted = await page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.predictedContact?.());
     process.stdout.write(`@@PROBE ${JSON.stringify({ view: viewName, hold: 0.5, ball: predicted, ...(s ?? {}) })}\n`);
     emit(`${viewName}-contact-ball`, await page.screenshot({ type: "jpeg", quality: 88 }));
-  }
-  // Markers: draw the ball at the solved right palm, then the left palm, in stance, to see where the probe's hands are against the rendered hands.
-  await page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.holdSwingAt?.(null));
-  await page.waitForTimeout(8_000);
-  for (const viewName of ["side", "front", "hands"]) {
-    await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), VIEWS[viewName]);
-    for (const hand of ["rightPalm", "leftPalm"]) {
-      const s = await probe();
-      await page.evaluate((p) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setQaBall?.(p), (s as Record<string, number[]>)[hand]);
-      await page.waitForTimeout(2_500);
-      process.stdout.write(`@@PROBE ${JSON.stringify({ view: viewName, marker: hand, at: (s as Record<string, number[]>)[hand] })}\n`);
-      emit(`${viewName}-marker-${hand}`, await page.screenshot({ type: "jpeg", quality: 88 }));
-    }
   }
   await page.evaluate(() => {
     const hook = (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__;

@@ -147,7 +147,7 @@ import {
   KNOB_HALF,
   FIT_GROUND_N,
   GLOVE_ATTACH_POS,
-  qToEulerXYZ,
+  qToEulerZYX,
   solveBatterPose,
   type ContactConfig,
   buildContactConfig
@@ -3197,7 +3197,7 @@ function boot(): void {
       batState.animState = "unavailable";
     }
     const r = bat.rotation as unknown as Vec3;
-    const q = qMul(qAxis([1, 0, 0], r[0]), qMul(qAxis([0, 1, 0], r[1]), qAxis([0, 0, 1], r[2])));
+    const q = qMul(qAxis([0, 0, 1], r[2]), qMul(qAxis([0, 1, 0], r[1]), qAxis([1, 0, 0], r[0])));
     const dir = qRot(q, [1, 0, 0]);
     const c = bat.position as unknown as Vec3;
     const half = 0.51;
@@ -3231,7 +3231,7 @@ function boot(): void {
     const pl = palmOf("LeftForearm", RIG.palmL);
     const feet = ["LeftFoot", "RightFoot", "LeftToes", "Hips", "Head"].map((b) => [b, palmOf(b, [0, 0, 0])] as const);
     const r = bat.rotation as unknown as Vec3;
-    const q = qMul(qAxis([1, 0, 0], r[0]), qMul(qAxis([0, 1, 0], r[1]), qAxis([0, 0, 1], r[2])));
+    const q = qMul(qAxis([0, 0, 1], r[2]), qMul(qAxis([0, 1, 0], r[1]), qAxis([1, 0, 0], r[0])));
     const dir = qRot(q, [1, 0, 0]);
     const c = bat.position as unknown as Vec3;
     const knob: Vec3 = [c[0] - dir[0] * 0.51, c[1] - dir[1] * 0.51, c[2] - dir[2] * 0.51];
@@ -3366,7 +3366,7 @@ function boot(): void {
     // Bat from the same solve: knob at the right palm, centre half a bat along the bat axis, rotated like the hand-held bat.
     if (batSocket.stage === "attached" && H.bat) {
       const centre = worldFromActor([pose.palmActor[0] + pose.batDir[0] * KNOB_HALF, pose.palmActor[1] + pose.batDir[1] * KNOB_HALF, pose.palmActor[2] + pose.batDir[2] * KNOB_HALF], batterPos, batterYaw);
-      const e = qToEulerXYZ(qMul(qAxis([0, 1, 0], batterYaw), qMul(pose.qFa, BAT_ATTACH_ROT)));
+      const e = qToEulerZYX(qMul(qAxis([0, 1, 0], batterYaw), qMul(pose.qFa, BAT_ATTACH_ROT)));
       H.bat.setPosition(centre[0], centre[1], centre[2]).setRotation(e[0], e[1], e[2]);
     }
 

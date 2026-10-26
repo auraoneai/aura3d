@@ -22,9 +22,9 @@ export const RIG = {
   /** Shoulder offsets from the Chest bone (bind local translations). */
   shoulderR: [-0.2, 0.1465, 0] as Vec3,
   shoulderL: [0.2, 0.1465, 0] as Vec3,
-  /** Grip point in FOREARM bone space: the centroid of the hand's vertices (distance from the elbow above 0.34 m) in diamondAthleteClean.glb. */
-  palmR: [-0.182, -0.335, 0.092] as Vec3,
-  palmL: [0.182, -0.335, 0.092] as Vec3,
+  /** Grip point in FOREARM bone space: where the hand's skinned vertices (distance from the elbow above 0.34 m in bind) actually centre in pose (CPU skin of the solved poses, mean over stance, swing and follow-through); it sits about 5 cm nearer the elbow than the bind-pose centroid because the hand weights blend with neighbouring joints. */
+  palmR: [-0.158, -0.296, 0.06] as Vec3,
+  palmL: [0.158, -0.296, 0.06] as Vec3,
   /** Bind bone directions (shoulder→elbow, elbow→palm), unit length. */
   bindDirUA: [0, 0, 1] as Vec3,
   bindDirFA: [0, 0, 1] as Vec3,
@@ -32,7 +32,7 @@ export const RIG = {
   bindDirUAL: [0, 0, 1] as Vec3,
   bindDirFAL: [0, 0, 1] as Vec3,
   upperArm: 0.2555,
-  foreHand: Math.hypot(0.182, 0.335, 0.092),
+  foreHand: Math.hypot(0.158, 0.296, 0.06),
   /** Hips bind-local translation under Root (stride shifts add onto this). */
   hipsBind: [0, 0.93706, 0] as Vec3
 };
@@ -42,9 +42,9 @@ export const RIG = {
     return [v[0] / l, v[1] / l, v[2] / l];
   };
   RIG.bindDirUA = n([-0.05, -0.25, 0.01]);
-  RIG.bindDirFA = n([-0.182, -0.335, 0.092]);
+  RIG.bindDirFA = n([-0.158, -0.296, 0.06]);
   RIG.bindDirUAL = n([0.05, -0.25, 0.01]);
-  RIG.bindDirFAL = n([0.182, -0.335, 0.092]);
+  RIG.bindDirFAL = n([0.158, -0.296, 0.06]);
 })();
 
 /** Node fit scale for the 1.88 m athletes (raw GLB height 1.903 m). */
@@ -122,6 +122,20 @@ export const qToEulerXYZ = (q: Quat): Vec3 => {
   const m23 = 2 * (y * z - x * w);
   const m33 = 1 - 2 * (x * x + y * y);
   return [Math.atan2(-m23, m33), pitch, Math.atan2(-m12, m11)];
+};
+/** Quat → Euler radians for the engine's default node rotation order "ZYX" (matrix Rz·Ry·Rx), which `setRotation(x, y, z)` on a route node uses. */
+export const qToEulerZYX = (q: Quat): Vec3 => {
+  const [x, y, z, w] = qNorm(q);
+  const m11 = 1 - 2 * (y * y + z * z);
+  const m21 = 2 * (x * y + z * w);
+  const m31 = 2 * (x * z - y * w);
+  const m32 = 2 * (y * z + x * w);
+  const m33 = 1 - 2 * (x * x + y * y);
+  const m12 = 2 * (x * y - z * w);
+  const m22 = 1 - 2 * (x * x + z * z);
+  const ry = Math.asin(clamp(-m31, -1, 1));
+  if (Math.abs(m31) < 0.9999999) return [Math.atan2(m32, m33), ry, Math.atan2(m21, m11)];
+  return [0, ry, Math.atan2(-m12, m22)];
 };
 export const unit3 = (v: Vec3): Vec3 => {
   const l = Math.hypot(v[0], v[1], v[2]) || 1;
