@@ -97,7 +97,7 @@ const tube = { P: [] as number[], N: [] as number[], J: [] as number[], W: [] as
   const NSEG = 28; const rings: { y: number; rx: number; rz: number }[] = smoothBands.map((b) => ({ y: b.y, rx: b.rx, rz: b.rz }));
   // close the top into the neck over the last rings
   const top = rings[rings.length - 1]!;
-  for (const [dy, rxN, rzN] of [[0.02, 0.1, 0.085], [0.04, 0.075, 0.065]] as [number, number, number][]) rings.push({ y: top.y + dy, rx: Math.min(top.rx, rxN), rz: Math.min(top.rz, rzN) });
+  for (const [dy, f, rzN] of [[0.012, 0.93, 0.1], [0.026, 0.78, 0.09], [0.04, 0.55, 0.08], [0.052, 0.4, 0.07], [0.062, 0.36, 0.062]] as [number, number, number][]) rings.push({ y: top.y + dy, rx: Math.min(top.rx, Math.max(0.075, top.rx * f)), rz: Math.min(top.rz, rzN) });
   rings.forEach((r) => {
     const wH = 1 - sm(0.95, 1.2, r.y), wC = sm(1.2, 1.4, r.y), wS = 1 - wH - wC;
     for (let k = 0; k < NSEG; k += 1) {
@@ -167,7 +167,7 @@ const palmWorld = (side: "Left" | "Right"): number[] | null => {
   return [w[0]!, w[1]! + lift, w[2]!];
 };
 const palms = palmArg ? { Left: palmWorld("Left"), Right: palmWorld("Right") } : null;
-const arms = rebuildArms(legs.glb, { capSleeves: true, palms, capRadius: Number(opt("--cap-radius", "0.075")) });
+const arms = rebuildArms(legs.glb, { taperRoot: true, capSleeves: true, palms, capRadius: Number(opt("--cap-radius", "0")) });
 const clips = (orig.json.animations ?? []).map((a: { name?: string }) => a.name as string);
 const cut = args.includes("--no-cut") ? { glb: arms.glb, report: [] } : cutBridges(arms.glb, { limit: 1.6, clips, samples: 10, keepMaterials: null });
 const rebuilt = join(work, "rebuilt.glb");

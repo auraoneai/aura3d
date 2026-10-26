@@ -18,7 +18,7 @@ const unit = (a) => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / 
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function rebuildArms(glb, { capRadius = 0.1, palms = null, longSleeves = false, capSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
+export function rebuildArms(glb, { taperRoot = false, capRadius = 0.1, palms = null, longSleeves = false, capSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
   const rest = forward(glb, localPose(glb, null, 0));
   const skinJoints = glb.json.skins[0].joints;
   const jointIndex = new Map(skinJoints.map((j, i) => [rest.names[j], i]));
@@ -92,10 +92,10 @@ export function rebuildArms(glb, { capRadius = 0.1, palms = null, longSleeves = 
       const w = wset(weightsAt(t * L));
       for (let k = 0; k < N; k++) { const a = (k / N) * Math.PI * 2; const p = add(c, add(mul(u, Math.cos(a) * r * flat), mul(v, Math.sin(a) * r))); verts.push({ p, w }); }
     }
-    // winding: u x v == d, counter-clockwise seen from +d gives outward normals for (a, b, c) with c on the next ring
+    // winding: u x v == d, so radial x tangent == d and (a, b, c) with c on the next ring has an outward normal (the old (a, c, b) order was inside out)
     for (let i = 0; i < n; i++) for (let k = 0; k < N; k++) {
       const a = base + i * N + k, b = base + i * N + ((k + 1) % N), c = base + (i + 1) * N + k, e = base + (i + 1) * N + ((k + 1) % N);
-      tris.push([a, c, b], [b, c, e]);
+      tris.push([a, b, c], [b, e, c]);
     }
     const cap = (ring, at, flip) => {
       const ci = verts.length; verts.push({ p: at, w: wset(weightsAt(ring === 0 ? 0 : L)) });
@@ -142,6 +142,8 @@ export function rebuildArms(glb, { capRadius = 0.1, palms = null, longSleeves = 
     const A = sub(S, mul(dir, 0.06));
     const wf = weightsArm(side, S, dir, upperLen);
     const sOff = (s) => s - 0.06; // distances in the tube are measured from A
+    // the root of each arm tube sits inside the torso and tapers to a point so no open rim shows above the shoulder
+    const taper = (s) => (taperRoot ? 0.2 + 0.8 * smooth(0, 0.075, s) : 1);
     // skin: upper arm and forearm (from inside the torso to the wrist). With `palms` the forearm follows the shoulder -> elbow -> palm path
     // of the rigs whose games solve the hand onto a calibrated palm point in forearm bone space (the palm is not on the bone axis).
     const palm = palms?.[side] ?? null;
@@ -149,14 +151,14 @@ export function rebuildArms(glb, { capRadius = 0.1, palms = null, longSleeves = 
     if (palm) {
       const f = unit(sub(palm, E));
       Wd = sub(palm, mul(f, 0.05)); hdir = f;
-      addAxisTube("skin", A, E, (s) => skinR(sOff(s), upperLen), (s) => wf(sOff(s)), { flat: 1 });
+      addAxisTube("skin", A, E, (s) => skinR(sOff(s), upperLen) * taper(s), (s) => wf(sOff(s)), { flat: 1 });
       addAxisTube("skin", E, Wd, (s) => skinR(upperLen + s * (upperLen / len(sub(Wd, E))), upperLen), (s) => wf(upperLen + s), { flat: 1 });
-    } else addAxisTube("skin", A, W, (s) => skinR(sOff(s), upperLen), (s) => wf(sOff(s)), { flat: 1 });
+    } else addAxisTube("skin", A, W, (s) => skinR(sOff(s), upperLen) * taper(s), (s) => wf(sOff(s)), { flat: 1 });
     // sleeves: kit
     const sleeveEnd = longSleeves ? W : add(S, mul(dir, upperLen * 0.45));
-    addAxisTube("kit", A, sleeveEnd, (s) => (longSleeves ? skinR(sOff(s), upperLen) + 0.016 : 0.066 - 0.012 * (sOff(s) / (upperLen * 0.45))), (s) => wf(sOff(s)), { flat: 1, capEnd: capSleeves });
+    addAxisTube("kit", A, sleeveEnd, (s) => (longSleeves ? skinR(sOff(s), upperLen) + 0.016 : 0.066 - 0.012 * (sOff(s) / (upperLen * 0.45))) * taper(s), (s) => wf(sOff(s)), { flat: 1, capEnd: capSleeves });
     // shoulder cap: closes the armhole left in the torso when the arm swings (kit, follows the chest)
-    addSphere("kit", add(add(S, mul(dir, -0.01)), [0, 0.005, -0.025]), capRadius, shoulderWeights(S), [0.72, 0.85, 0.78]);
+    if (capRadius > 0) addSphere("kit", add(add(S, mul(dir, -0.01)), [0, 0.005, -0.025]), capRadius, shoulderWeights(S), [0.72, 0.85, 0.78]);
     // hand: mitten (skin for the outfield kit, kit-coloured glove for the keeper) with a thumb
     const H = add(Wd, mul(hdir, 0.1));
     const wHand = () => [[JI(`${side}Forearm`), 1]];
