@@ -140,7 +140,9 @@ function boot(): void {
   };
   const fx = createFxParticlePass({
     burst: (kind: string, position: any, o: any) => {
-      try { fxCtl?.spawn(FX_KIND[kind] ?? "hit-spark", position, { radius: Math.max(0.2, (o?.count ?? 10) / 24), color: o?.color, intensity: 1 }); } catch { /* best effort */ }
+      // dust is kicked up from the turf at the contact point: keep it on the ground and faint
+      const pos = kind === "dust" || kind === "splash" ? [position?.[0] ?? 0, 0.08, position?.[2] ?? 0] : position;
+      try { fxCtl?.spawn(FX_KIND[kind] ?? "hit-spark", pos, { radius: Math.max(0.2, (o?.count ?? 10) / 24), color: o?.color, intensity: kind === "dust" || kind === "splash" ? 0.6 : 1 }); } catch { /* best effort */ }
     },
     trail: () => {},
     liveCount: () => 0
@@ -175,17 +177,23 @@ function boot(): void {
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });
 
+  // Camera feel: trauma-based shake kept small and brief. Rotation never exceeds ~0.5 degrees, translation a couple of
+  // centimetres, trauma decays in well under half a second and stacked events cannot sum past MAX_TRAUMA. Only real
+  // events shake (a goal, a tackle, off the woodwork); passes and shots punch the FOV at most, never shake.
+  const MAX_TRAUMA = 0.7;
+  const shakeOff = params.get("shake") === "0" || reducedMotion;
+  (app as any)?.camera?.shake?.configure?.({ maxAngleDeg: 0.5, maxOffset: 0.02, frequency: 14, decayPerSecond: 2.8, maxTrauma: MAX_TRAUMA });
   const JUICE_EVENTS: Record<string, any> = {
-    kick:    { fx: { kind: "spark", count: 12, color: "#d8ff3e", speed: 3.6 }, cue: "kick", rumble: { ms: 22, weak: 0.3 }, punch: { fovDeg: 0.5, ms: 90 } },
-    shot:    { fx: { kind: "streak", count: 14, color: "#ffd76a", speed: 5.2 }, cue: "kick", rumble: { ms: 30, weak: 0.45 }, punch: { fovDeg: 1.2, ms: 130 } },
-    goal:    { fx: { kind: "ring", count: 26, color: "#d8ff3e", speed: 6.0 }, cue: "goal", hitStop: 0.09, shake: 0.55, punch: { fovDeg: 3.6, dolly: -0.5, ms: 320 }, flash: { color: "#d8ff3e", peak: 0.24, ms: 220 }, rumble: { ms: 90, strong: 0.7, weak: 0.9 } },
-    save:    { fx: { kind: "burst", count: 16, color: "#7dfcff", speed: 4.4 }, cue: "save", punch: { fovDeg: 1.6, ms: 180 }, flash: { color: "#7dfcff", peak: 0.14, ms: 130 } },
-    post:    { cue: "post", shake: 0.3, flash: { color: "#ffb3ac", peak: 0.12, ms: 110 } },
-    tackle:  { fx: { kind: "dust", count: 10, color: "#cfc8a8", speed: 2.6 }, hitStop: 0.05, shake: 0.3, rumble: { ms: 50, strong: 0.5 } },
-    skill:   { fx: { kind: "spark", count: 8, color: "#7dfcff", speed: 3.0 }, punch: { fovDeg: 0.8, ms: 110 } },
-    wall:    { fx: { kind: "dust", count: 6, color: "#ff9a3d", speed: 2.0 } },
+    kick:    { fx: { kind: "spark", count: 6, color: "#d8ff3e", speed: 3.0 }, cue: "kick", rumble: { ms: 22, weak: 0.3 } },
+    shot:    { fx: { kind: "streak", count: 8, color: "#ffd76a", speed: 5.2 }, cue: "kick", rumble: { ms: 30, weak: 0.45 }, punch: { fovDeg: 0.6, ms: 120 } },
+    goal:    { fx: { kind: "ring", count: 16, color: "#d8ff3e", speed: 4.0 }, cue: "goal", hitStop: 0.09, shake: shakeOff ? 0 : 0.6, punch: { fovDeg: 2.0, dolly: -0.3, ms: 320 }, flash: { color: "#d8ff3e", peak: 0.2, ms: 220 }, rumble: { ms: 90, strong: 0.7, weak: 0.9 } },
+    save:    { fx: { kind: "burst", count: 10, color: "#7dfcff", speed: 3.6 }, cue: "save", punch: { fovDeg: 1.0, ms: 180 }, flash: { color: "#7dfcff", peak: 0.12, ms: 130 } },
+    post:    { cue: "post", shake: shakeOff ? 0 : 0.25, flash: { color: "#ffb3ac", peak: 0.1, ms: 110 } },
+    tackle:  { fx: { kind: "dust", count: 6, color: "#cfc8a8", speed: 1.6 }, hitStop: 0.05, shake: shakeOff ? 0 : 0.35, rumble: { ms: 50, strong: 0.5 } },
+    skill:   { fx: { kind: "spark", count: 5, color: "#7dfcff", speed: 2.4 }, punch: { fovDeg: 0.5, ms: 110 } },
+    wall:    { fx: { kind: "dust", count: 4, color: "#ff9a3d", speed: 1.4 } },
     whistle: { cue: "whistle" },
-    fulltime:{ cue: "fulltime", shake: 0.4, punch: { fovDeg: 2.4, ms: 300 }, flash: { color: "#ffd76a", peak: 0.2, ms: 240 } }
+    fulltime:{ cue: "fulltime", punch: { fovDeg: 1.6, ms: 300 }, flash: { color: "#ffd76a", peak: 0.18, ms: 240 } }
   };
 
   const baseRumble = createRumbleDriver();

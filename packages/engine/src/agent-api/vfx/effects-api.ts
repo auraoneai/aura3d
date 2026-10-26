@@ -157,11 +157,11 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
   const spawnEmitter = (
     kind: string,
     position: AuraVec3,
-    options: { count?: number; speed?: number; scale?: number; color?: AuraColor; seed?: number; intensity?: number; continuous?: boolean }
+    options: { count?: number; speed?: number; scale?: number; color?: AuraColor; seed?: number; intensity?: number; continuous?: boolean; camera?: boolean }
   ): AuraEffectInstanceHandle => {
     const id = `fx-${nextInstanceId++}`;
     const preset = BURST_PRESETS[kind] ?? BURST_PRESETS.spark;
-    applyPresetLayers(kind);
+    if (options.camera !== false) applyPresetLayers(kind);
     const color = toVec3(options.color, preset.color);
     // P2-T7 §6.2.12 light layer — tier-capped transient pool flash.
     if (preset.light) {
@@ -192,6 +192,9 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       particleCount: options.continuous ? Math.max(64, options.count ?? 64) : Math.max(1, options.count ?? 24),
       ...(options.continuous ? {} : { burst: Math.max(1, options.count ?? 24) }),
       materialMode: preset.additive ? "additive-glow" : "soft-alpha",
+      // a one-shot burst lives and sizes like its preset (spark 0.25-0.6 s, dust 0.8-1.6 s); without these the
+      // emitter fell back to the generic 1.2-2.4 s lifetime, so every burst hung around twice as long as designed
+      ...(options.continuous ? {} : { lifetime: preset.life, size: preset.size }),
       speed: options.speed ?? preset.speed[1],
       gravity: preset.gravity,
       emissionRate: options.continuous ? (options.count ?? 24) * 2 : 0,

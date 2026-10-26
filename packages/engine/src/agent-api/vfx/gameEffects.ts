@@ -57,6 +57,7 @@ const GAME_TO_VFX: Record<GameEffectKind, { preset: string; color?: [number, num
 interface BoundEffectsApp {
   effects?: {
     spawn(effect: string, at: readonly number[], options?: Record<string, unknown>): { stop(o?: { immediate?: boolean }): void };
+    burst?(kind: string, at: readonly number[], options?: Record<string, unknown>): { stop(o?: { immediate?: boolean }): void };
     liveCount: number;
     clear(): void;
   };
@@ -75,16 +76,27 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
   // snapshot()/update() semantics don't change for consumers (GameFeel ports).
   let boundApp: BoundEffectsApp | null = options.app ? (options.app as BoundEffectsApp) : null;
   let boundOff: (() => void) | null = null;
+  // Game effects are one-shot: `app.effects.spawn` is a CONTINUOUS emitter (rate = count·2 per second, never stopped
+  // unless its handle is), so forwarding to it left a fountain running at every hit, kick and goal for the rest of the
+  // match. Use the one-shot `burst`; if only `spawn` exists, stop the emitter when the effect's duration is over.
+  const boundHandles: Array<{ handle: { stop(o?: { immediate?: boolean }): void }; ttl: number }> = [];
   const boundSpawn = (kind: GameEffectKind, position: GameVec3, effectOptions: GameEffectOptions): void => {
     const fx = boundApp?.effects;
     if (!fx) return;
     const map = GAME_TO_VFX[kind];
-    fx.spawn(map.preset, position, {
+    const forwarded = {
       color: effectOptions.color ?? map.color,
       intensity: (effectOptions.intensity ?? 1) * (map.intensityScale ?? 1),
       count: Math.max(4, Math.round((effectOptions.radius ?? defaultEffectRadius(kind)) * 32)),
-      seed: spawned
-    });
+      seed: spawned,
+      // game feel (juice) owns the camera: the preset's own shake on top of it doubled every impact
+      camera: false
+    };
+    if (typeof fx.burst === "function") {
+      fx.burst(map.preset, position, forwarded);
+      return;
+    }
+    boundHandles.push({ handle: fx.spawn(map.preset, position, forwarded), ttl: effectOptions.duration ?? defaultEffectDuration(kind) });
   };
   const snapshot = (): GameEffectsSnapshot => ({
     kind: "aura-game-effects",
@@ -143,6 +155,11 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
     superFlash: (position, effectOptions) => spawn("super-flash", position, effectOptions),
     update(dt) {
       const seconds = Math.max(0, dt);
+      for (let i = boundHandles.length - 1; i >= 0; i--) {
+        const entry = boundHandles[i]!;
+        entry.ttl -= seconds;
+        if (entry.ttl <= 0) { entry.handle.stop(); boundHandles.splice(i, 1); }
+      }
       effects = effects
         .map((effect) => ({
           ...effect,
@@ -159,6 +176,7 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
     },
     clear() {
       effects = [];
+      boundHandles.length = 0;
       boundApp?.effects?.clear();
     }
   };

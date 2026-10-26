@@ -172,6 +172,7 @@ export function createTraumaLayer(): AuraTraumaLayer {
   let maxRollDeg = 2.5;
   let frequency = 18;
   let decayPerSecond = 1.6;
+  let maxTrauma = 1;
   let noises = [
     createNoise1D(1001),
     createNoise1D(2002),
@@ -185,13 +186,15 @@ export function createTraumaLayer(): AuraTraumaLayer {
   return {
     id: "trauma",
     add(amount) {
-      trauma = Math.min(1, Math.max(0, trauma + amount));
+      trauma = Math.min(maxTrauma, Math.max(0, trauma + amount));
     },
     configure(o: {
       maxAngleDeg?: number;
       maxOffset?: number;
       frequency?: number;
       decayPerSecond?: number;
+      /** ceiling for accumulated trauma (default 1): stacked events cannot sum past it */
+      maxTrauma?: number;
       // CCR-08-3 additive fields (shipped from this lane module).
       maxYawDeg?: number;
       maxPitchDeg?: number;
@@ -209,6 +212,7 @@ export function createTraumaLayer(): AuraTraumaLayer {
       if (o.maxRollDeg !== undefined) maxRollDeg = o.maxRollDeg;
       if (o.frequency !== undefined) frequency = o.frequency;
       if (o.decayPerSecond !== undefined) decayPerSecond = o.decayPerSecond;
+      if (o.maxTrauma !== undefined) { maxTrauma = Math.min(1, Math.max(0, o.maxTrauma)); trauma = Math.min(trauma, maxTrauma); }
       if (o.seed !== undefined) {
         const s = o.seed;
         noises = [0, 1, 2, 3, 4, 5].map((i) => createNoise1D(s + i * 1009));
