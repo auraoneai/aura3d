@@ -14,21 +14,31 @@ if (!inPath || !outPath) throw new Error("usage: shade.ts in.glb out.png [clip] 
 const glb = readGlbFile(inPath);
 const h = buildHierarchy(glb);
 const skin = loadSkins(glb, h)[0]!;
-const prim = skin.primitives[0]!;
-const json = glb.json.meshes![prim.meshIndex]!.primitives[prim.primitiveIndex]!;
-const uv = readAccessor(glb, json.attributes.TEXCOORD_0 as number).rows;
-const img = glb.json.images![0]!;
-const bv = glb.json.bufferViews[img.bufferView!]!;
-const bytes = glb.bin.subarray(bv.byteOffset ?? 0, (bv.byteOffset ?? 0) + bv.byteLength);
-const { data, info } = await sharp(bytes).raw().toBuffer({ resolveWithObject: true });
+const img = glb.json.images?.[0];
+let data: Buffer = Buffer.alloc(0), info = { width: 1, height: 1, channels: 3 };
+if (img?.bufferView !== undefined) {
+  const bv = glb.json.bufferViews[img.bufferView]!;
+  const bytes = glb.bin.subarray(bv.byteOffset ?? 0, (bv.byteOffset ?? 0) + bv.byteLength);
+  const r = await sharp(bytes).raw().toBuffer({ resolveWithObject: true }); data = r.data; info = r.info as typeof info;
+}
 const colorAt = (u: number, v: number): [number, number, number] => {
   const x = Math.min(info.width - 1, Math.floor(u * info.width)), y = Math.min(info.height - 1, Math.floor(v * info.height));
   const i = (y * info.width + x) * info.channels;
   return [data[i]!, data[i + 1]!, data[i + 2]!];
 };
+const posAll: number[][][] = [], uvAll: number[][][] = [], facMat: ([number, number, number] | null)[] = [];
+for (const pr of skin.primitives) {
+  const pj = glb.json.meshes![pr.meshIndex]!.primitives[pr.primitiveIndex]!;
+  uvAll.push(pj.attributes.TEXCOORD_0 !== undefined ? readAccessor(glb, pj.attributes.TEXCOORD_0).rows : []);
+  const f = glb.json.materials?.[pj.material ?? -1]?.pbrMetallicRoughness?.baseColorFactor;
+  facMat.push(pj.attributes.TEXCOORD_0 === undefined && f ? [Math.round(f[0]! ** (1 / 2.2) * 255), Math.round(f[1]! ** (1 / 2.2) * 255), Math.round(f[2]! ** (1 / 2.2) * 255)] : null);
+}
+void posAll;
 const anim = (glb.json.animations ?? []).find((a: { name?: string }) => a.name === clipArg) ?? null;
 const pose = forward(localPose(glb, anim, anim ? clipDuration(glb, anim) * Number(tArg) : 0, h), h);
-const pos = skinnedPositions(skin, prim, pose);
+const posByPrim = skin.primitives.map((pr) => skinnedPositions(skin, pr, pose));
+const prim0 = skin.primitives[0]!;
+const pos = posByPrim.flat();
 const yaw = (Number(yawArg) * Math.PI) / 180, pitch = (Number(pitchArg) * Math.PI) / 180;
 // camera: looks at the model from front-left and above; model forward is +Z
 const rot = (p: number[]): [number, number, number] => {
@@ -38,7 +48,7 @@ const rot = (p: number[]): [number, number, number] => {
 };
 const R = pos.map((p) => rot(p));
 let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-const keep = (i: number): boolean => focus === "full" || (focus === "arms" ? pos[i]![1] > prim.pos.reduce((m, p) => Math.min(m, p[1]), 1e9) + 1.05 && pos[i]![1] < prim.pos.reduce((m, p) => Math.max(m, p[1]), -1e9) - 0.2 : pos[i]![1] > 0.35 - 0.95);
+const keep = (i: number): boolean => focus === "full" || (focus === "arms" ? pos[i]![1] > prim0.pos.reduce((m, p) => Math.min(m, p[1]), 1e9) + 1.05 && pos[i]![1] < prim0.pos.reduce((m, p) => Math.max(m, p[1]), -1e9) - 0.2 : pos[i]![1] > 0.35 - 0.95);
 for (let i = 0; i < R.length; i += 1) { if (!keep(i)) continue; minX = Math.min(minX, R[i]![0]); maxX = Math.max(maxX, R[i]![0]); minY = Math.min(minY, R[i]![1]); maxY = Math.max(maxY, R[i]![1]); }
 const W = Number(pxArg), H = Number(pxArg);
 const scale = Math.min(W / (maxX - minX), H / (maxY - minY)) * 0.9;
@@ -47,8 +57,10 @@ const sx = (p: number[]): number => W / 2 + (p[0]! - cx) * scale, sy = (p: numbe
 const rgb = Buffer.alloc(W * H * 3, 34);
 const zbuf = new Float32Array(W * H).fill(-1e9);
 const light = [0.3, 0.7, 0.65]; const ll = Math.hypot(...light); const L = light.map((x) => x / ll);
-for (let t = 0; t < prim.indices.length; t += 3) {
-  const ids = [prim.indices[t]!, prim.indices[t + 1]!, prim.indices[t + 2]!];
+const offsets: number[] = []; { let o = 0; for (const pr of skin.primitives) { offsets.push(o); o += pr.pos.length; } }
+const tris: { ids: number[]; pi: number }[] = [];
+skin.primitives.forEach((pr, pi) => { for (let t = 0; t < pr.indices.length; t += 3) tris.push({ ids: [pr.indices[t]! + offsets[pi]!, pr.indices[t + 1]! + offsets[pi]!, pr.indices[t + 2]! + offsets[pi]!], pi }); });
+for (const { ids, pi } of tris) {
   if (!ids.some(keep)) continue;
   const P = ids.map((i) => pos[i]!), Q = ids.map((i) => R[i]!);
   const u = [P[1]![0]! - P[0]![0]!, P[1]![1]! - P[0]![1]!, P[1]![2]! - P[0]![2]!], w = [P[2]![0]! - P[0]![0]!, P[2]![1]! - P[0]![1]!, P[2]![2]! - P[0]![2]!];
@@ -57,7 +69,8 @@ for (let t = 0; t < prim.indices.length; t += 3) {
   const qn = rot(n);
   const lam = Math.abs(n[0]! * L[0]! + n[1]! * L[1]! + n[2]! * L[2]!);
   const back = qn[2]! < 0;
-  const col = colorAt((uv[ids[0]!]![0]! + uv[ids[1]!]![0]! + uv[ids[2]!]![0]!) / 3, (uv[ids[0]!]![1]! + uv[ids[1]!]![1]! + uv[ids[2]!]![1]!) / 3);
+  const uvs = uvAll[pi]!; const l0 = ids[0]! - offsets[pi]!, l1 = ids[1]! - offsets[pi]!, l2 = ids[2]! - offsets[pi]!;
+  const col = facMat[pi] ?? colorAt((uvs[l0]![0]! + uvs[l1]![0]! + uvs[l2]![0]!) / 3, (uvs[l0]![1]! + uvs[l1]![1]! + uvs[l2]![1]!) / 3);
   const shade = back ? 0.25 : 0.35 + 0.65 * lam;
   const x0 = Math.max(0, Math.floor(Math.min(...Q.map(sx)))), x1 = Math.min(W - 1, Math.ceil(Math.max(...Q.map(sx))));
   const y0 = Math.max(0, Math.floor(Math.min(...Q.map(sy)))), y1 = Math.min(H - 1, Math.ceil(Math.max(...Q.map(sy))));

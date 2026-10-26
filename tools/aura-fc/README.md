@@ -40,3 +40,5 @@ Offline tools for the Aura FC 3D athlete rigs (`fcSoccerStrikerMeshy`, `fcGoalke
   `node tools/aura-fc/gait-limits.mjs <glb> Walk_Loop,Run,Sprint_Loop`. `tests/unit/aura-fc-3d/gait-limits.test.ts` holds the ranges.
 - `swap-asset.mjs` — copies a repaired GLB into `public/aura-assets/<stem>.<sha8>.glb`, deletes the old file and rewrites the url, hash and size in
   `src/aura-assets.ts`, `aura.assets.json` and any app manifest passed after the two paths. Update `bounds` by hand when the footprint changes.
+
+- `rebuild-arms.mjs` flags added in 4.3.2: `--taper` (arm roots taper into the torso), `--cap-sleeves` (closed sleeve hems), `--cap-radius 0` (no shoulder sphere), `--torso-tube` (replaces the ragged shell with a clean torso tube measured from it, closed below the chin). The arm and sleeve tubes were wound inside out before 4.3.2 (dark arms and sleeves in the game): fixed.
