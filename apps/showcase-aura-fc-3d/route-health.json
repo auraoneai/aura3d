@@ -35,11 +35,6 @@
       "role": "setDressing"
     },
     {
-      "typedRef": "assets.gallerySecurityGuardMeshy",
-      "quality": "candidate",
-      "role": "supportingCharacter"
-    },
-    {
       "typedRef": "assets.fcFloodlightPylonMeshy",
       "quality": "candidate",
       "role": "setDressing"

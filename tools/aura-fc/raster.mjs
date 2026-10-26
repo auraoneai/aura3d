@@ -23,7 +23,7 @@ export function rasterise(glb, clip, t01, view = "side", px = 700, opts = {}) {
   const W = px, H = px, img = Buffer.alloc(W * H * 3, 38), depth = new Float32Array(W * H).fill(-1e9);
   // model forward is +Z; the side view looks down -X (screen right = +Z), the front view looks down -Z (screen right = -X)
   const pr = view === "front" ? (p) => [-p[0], p[1], -p[2]] : (p) => [p[2], p[1], p[0]];
-  const scale = (px * 0.45) / 1.0, ox = px * 0.5, oy = px * 0.88;
+  const scale = (px * Number(process.env.RSCALE ?? 0.45)) / 1.0, ox = px * 0.5, oy = px * Number(process.env.RBASE ?? 0.88);
   glb.json.meshes[0].primitives.forEach((p, pi) => {
     if (p.attributes.JOINTS_0 === undefined) return;
     const mesh = loadSkinnedMesh(glb, pi);

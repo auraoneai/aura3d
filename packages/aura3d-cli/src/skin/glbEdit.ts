@@ -14,7 +14,7 @@ export class GlbEditor {
   }
 
   /** Appends a typed array as a new buffer view + accessor and returns the accessor index. */
-  addAccessor(values: ArrayLike<number>, componentType: 5123 | 5125 | 5126, type: "SCALAR" | "VEC2" | "VEC3" | "VEC4", target: 34962 | 34963, bounds = false): number {
+  addAccessor(values: ArrayLike<number>, componentType: 5123 | 5125 | 5126, type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4", target: 34962 | 34963 | undefined, bounds = false): number {
     const comps = NCOMP[type] ?? 1;
     const count = Math.floor(values.length / comps);
     const size = SIZE[componentType] ?? 4;
@@ -29,7 +29,7 @@ export class GlbEditor {
       else buf.writeUInt32LE(v, i * 4);
     }
     this.bin = Buffer.concat([this.bin, buf]);
-    this.json.bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: buf.length, target });
+    this.json.bufferViews.push({ buffer: 0, byteOffset: offset, byteLength: buf.length, ...(target ? { target } : {}) });
     const accessor: GltfJson["accessors"][number] = { bufferView: this.json.bufferViews.length - 1, componentType, count, type };
     if (bounds && comps === 3) {
       const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];

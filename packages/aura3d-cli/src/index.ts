@@ -106,6 +106,8 @@ export { repairSkin } from "./skin/repair.js";
 export type { RepairSkinOptions, RepairSkinReport } from "./skin/repair.js";
 export { rebuildLimbs, RebuildLimbsUnsupported } from "./skin/rebuildLimbs.js";
 export type { RebuildLimbsOptions, RebuildLimbsReport } from "./skin/rebuildLimbs.js";
+export { refitSkeleton, RefitUnsupported } from "./skin/refitSkeleton.js";
+export type { RefitSkeletonOptions, RefitSkeletonReport } from "./skin/refitSkeleton.js";
 export { checkProjectSkins, checkAssetSkin, readSkinAllowlist, SKIN_ALLOW_FILE } from "./skin/command.js";
 export { parseGlb, readGlbFile, writeGlbFile } from "./skin/gltf.js";
 export type { AnimationAssetValidationOptions, AnimationAssetValidationReport } from "./animation-asset-validator.js";

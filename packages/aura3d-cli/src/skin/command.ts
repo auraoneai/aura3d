@@ -6,6 +6,7 @@ import { analyzeSkin, DEFAULT_SKIN_THRESHOLDS, SKIN_BIND_MISMATCH, SKIN_FLAP, SK
 import { readGlbFile, writeGlbFile } from "./gltf.js";
 import { repairSkin, type RepairSkinOptions } from "./repair.js";
 import { rebuildLimbs, RebuildLimbsUnsupported, type RebuildLimbsOptions } from "./rebuildLimbs.js";
+import { refitSkeleton, RefitUnsupported } from "./refitSkeleton.js";
 
 export const SKIN_ALLOW_FILE = "aura.skin-allow.json";
 export const ALL_SKIN_CODES: readonly SkinCode[] = [SKIN_STRETCH, SKIN_FLAP, SKIN_WEIGHT_SUM, SKIN_WEIGHT_DISTANT, SKIN_BIND_MISMATCH, SKIN_JOINT_RANGE, SKIN_NO_SKIN];
@@ -140,6 +141,10 @@ export function formatProjectSkinReport(report: SkinProjectReport): string {
 
 export interface RepairSkinCliOptions extends RepairSkinOptions {
   readonly rebuildLimbs?: boolean;
+  /** Moves the skeleton onto the mesh and re-targets the clips (see refitSkeleton). */
+  readonly refitSkeleton?: boolean;
+  /** Keep only these animation clips (the ones the game plays); the rest are dropped from the file. */
+  readonly keepClips?: readonly string[];
   readonly materialMap?: RebuildLimbsOptions["materials"];
   readonly out?: string;
 }
@@ -168,6 +173,24 @@ export function runRepairSkin(projectDir: string, target: string, options: Repai
   let glb = readGlbFile(file);
   const messages: string[] = [];
   let rebuild: unknown;
+  if (options.keepClips && options.keepClips.length > 0) {
+    const keep = new Set(options.keepClips);
+    const all = glb.json.animations ?? [];
+    const missing = options.keepClips.filter((c) => !all.some((a) => a.name === c));
+    if (missing.length > 0) return { ok: false, out: "", messages: [`--keep-clips: ${missing.join(", ")} not found in ${basename(file)} (clips: ${all.map((a) => a.name).join(", ")}).`], report: null };
+    glb = { json: { ...glb.json, animations: all.filter((a) => keep.has(a.name ?? "")) }, bin: glb.bin };
+    messages.push(`kept ${options.keepClips.length} of ${all.length} clips (${options.keepClips.join(", ")})`);
+  }
+  if (options.refitSkeleton) {
+    try {
+      const refit = refitSkeleton(glb);
+      glb = refit.glb;
+      messages.push(`refitted the skeleton to the mesh (${refit.report.moved.length} joints moved${refit.report.fallback.length ? `, ${refit.report.fallback.join("/")} followed their parent` : ""}) and re-targeted ${refit.report.clips} clip(s)`);
+    } catch (error) {
+      if (error instanceof RefitUnsupported) return { ok: false, out: "", messages: [error.message], report: null };
+      throw error;
+    }
+  }
   if (options.rebuildLimbs) {
     try {
       const rebuilt = rebuildLimbs(glb, { materials: options.materialMap });
@@ -196,6 +219,6 @@ export const SKIN_HELP = `aura3d assets validate --skin [file.glb] [--asset id[,
   Poses every rigged GLB through the clips it ships and fails on stretched triangles (${SKIN_STRETCH}), thin long flaps (${SKIN_FLAP}), bad weights (${SKIN_WEIGHT_SUM}), distant influences (${SKIN_WEIGHT_DISTANT}), a mesh not in its skeleton's pose (${SKIN_BIND_MISMATCH}, warning unless --strict) and impossible joint ranges (${SKIN_JOINT_RANGE}).
   Known defects that ship are listed with a reason in ${SKIN_ALLOW_FILE}.
 aura3d assets repair-skin <file.glb|assetId> [--out file.glb] [--normalize] [--max-influences 4] [--prune-distant] [--smooth-bridges] [--cut-stretch 2] [--rebuild-limbs [--material-map skin=skin,shorts=short,socks=sock,boots=dark]] [--json]
-  Every step is opt-in. --rebuild-limbs rebuilds the legs of a recognised humanoid in the pose its skeleton assumes (generalised from the Aura FC fix).`;
+  Every step is opt-in. --rebuild-limbs rebuilds the legs of a recognised humanoid in the pose its skeleton assumes (generalised from the Aura FC fix). --refit-skeleton moves the joints to where the mesh actually bends and re-targets the clips (for a textured mesh you cannot rebuild); --keep-clips drops the clips the game does not play; --smooth-rounds/--smooth-rings/--smooth-threshold tune --smooth-bridges.`;
 
 export { DEFAULT_SKIN_THRESHOLDS };
