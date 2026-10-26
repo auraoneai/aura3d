@@ -154,6 +154,8 @@ export interface AuraParticleEmitterOptions {
   readonly stretch?: { readonly mode: "velocity" | "none"; readonly factor?: number };
   readonly softDistance?: number;
   readonly nearFade?: number;
+  /** Largest on-screen particle diameter as a fraction of the viewport height (absent: uncapped). */
+  readonly maxScreen?: number;
   /** auto: by count and tier. */
   readonly simulation?: "auto" | "cpu" | "gpu";
   readonly space?: "world" | "local";

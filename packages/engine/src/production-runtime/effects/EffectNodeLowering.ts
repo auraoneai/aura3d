@@ -50,6 +50,8 @@ export interface EffectNodeLike {
   readonly direction?: AuraVec3;
   readonly softDistance?: number;
   readonly nearFade?: number;
+  /** Largest on-screen particle diameter as a fraction of the viewport height (0 or absent: uncapped). */
+  readonly maxScreen?: number;
   /** P6-T4: mark the batch eligible for the optional half-res particle path. */
   readonly lowRes?: boolean;
   /** One-shot spawn count at t=0 (effects.burst). */
@@ -150,6 +152,7 @@ export interface LoweredBatchSpec {
   readonly softDepth: boolean;
   readonly softDistance?: number;
   readonly nearFade?: number;
+  readonly maxScreen?: number;
   readonly stretch: boolean;
   readonly frameBlend: boolean;
   readonly atlasKey: string;
@@ -279,6 +282,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           softDepth: node.softDistance !== undefined ? true : materialMode !== "spark",
           ...(node.softDistance !== undefined ? { softDistance: node.softDistance } : {}),
           ...(node.nearFade !== undefined ? { nearFade: node.nearFade } : {}),
+          ...(node.maxScreen !== undefined && node.maxScreen > 0 ? { maxScreen: node.maxScreen } : {}),
           stretch: materialMode === "spark",
           frameBlend: false,
           atlasKey: "soft-dot",
@@ -288,7 +292,7 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           // §6.2.2 material key — identical blend/atlas/flags merge into one
           // instanced draw in ProductionEffectSystem.feed.
           // Trailing bit: lowRes batches never merge with full-res ones.
-          key: `eff.${blend}.soft-dot.${materialMode !== "spark"}.${materialMode === "spark"}.${node.lowRes === true ? 1 : 0}`, 
+          key: `eff.${blend}.soft-dot.${materialMode !== "spark"}.${materialMode === "spark"}.${node.lowRes === true ? 1 : 0}${node.maxScreen !== undefined && node.maxScreen > 0 ? `.m${node.maxScreen}` : ""}`, 
           nodeId,
           origin: position,
           capacity: count,

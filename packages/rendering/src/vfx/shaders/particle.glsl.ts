@@ -40,6 +40,8 @@ uniform mat4 u_view;
 uniform mat4 u_viewProjection;
 uniform vec4 u_atlasRect;
 uniform vec2 u_grid;
+// Largest on-screen particle diameter as a fraction of the viewport height; 0 leaves the size uncapped.
+uniform float u_maxScreen;
 
 out vec2 v_uv0;
 out vec2 v_uv1;
@@ -72,6 +74,13 @@ void main() {
   float s = sin(rot);
   vec2 k = vec2(c * a_corner.x - s * a_corner.y, s * a_corner.x + c * a_corner.y);
   vec2 off = right2 * (k.x * size * 0.5) + up2 * (k.y * size * 0.5 * stretch);
+  if (u_maxScreen > 0.0) {
+    // Half the cap in NDC (the viewport height spans 2): a soft glow disc can never grow past u_maxScreen of the screen.
+    vec4 clipC = u_viewProjection * vec4(P, 1.0);
+    vec4 clipE = u_viewProjection * vec4(P + camUp * (size * 0.5 * stretch), 1.0);
+    float halfNdc = abs(clipE.y / max(clipE.w, 1e-4) - clipC.y / max(clipC.w, 1e-4));
+    if (halfNdc > u_maxScreen) off *= u_maxScreen / halfNdc;
+  }
   vec3 world = P + camRight * off.x + camUp * off.y;
   gl_Position = u_viewProjection * vec4(world, 1.0);
   // Perspective clip w = view-space distance along -Z.

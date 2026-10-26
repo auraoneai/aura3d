@@ -879,6 +879,7 @@ export class ProductionEffectSystem {
         softDepth: group.first.lowered.batch.softDepth,
         ...(group.first.lowered.batch.softDistance !== undefined ? { softDistance: group.first.lowered.batch.softDistance } : {}),
         ...(group.first.lowered.batch.nearFade !== undefined ? { nearFade: group.first.lowered.batch.nearFade } : {}),
+        ...(group.first.lowered.batch.maxScreen !== undefined ? { maxScreen: group.first.lowered.batch.maxScreen } : {}),
         stretch: group.first.lowered.batch.stretch,
         frameBlend: group.first.lowered.batch.frameBlend,
         ...(group.first.lowered.batch.lowRes === true ? { lowRes: true } : {})
@@ -920,6 +921,7 @@ export class ProductionEffectSystem {
         softDepth: b.softDepth,
         ...(b.softDistance !== undefined ? { softDistance: b.softDistance } : {}),
         ...(b.nearFade !== undefined ? { nearFade: b.nearFade } : {}),
+        ...(b.maxScreen !== undefined ? { maxScreen: b.maxScreen } : {}),
         stretch: b.stretch,
         frameBlend: b.frameBlend,
         ...(b.lowRes === true ? { lowRes: true } : {})
