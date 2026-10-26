@@ -427,10 +427,11 @@ const STUDIO = {
 const initialParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
 /** ?diag=1&qaDt=0.0167 fixes the simulation step so a slow software-GL run still integrates at a real-device rate (measurement only). */
 const QA_DT = initialParams.get("diag") === "1" ? Number(initialParams.get("qaDt")) || 0 : 0;
-/** ?diag=1&qaLean=1.2 scales the running-dribble waist bend and &qaLead=2 the palm look-ahead (measurement only). */
+/** ?diag=1&qaCam=front is a close front-left view for filmstrips; ?diag=1&qaLean=1.2 scales the running-dribble waist bend and &qaLead=2 the palm look-ahead (measurement only). */
 const QA_LEAN = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLean")) || 1 : 1;
 const QA_SERVE = initialParams.get("diag") === "1" && initialParams.get("qaServe") === "away";
 const QA_STAND = initialParams.get("diag") === "1" && initialParams.get("qaStand") === "1";
+const QA_CAM_FRONT = initialParams.get("diag") === "1" && initialParams.get("qaCam") === "front";
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
 
 const game_ = {
@@ -2711,11 +2712,14 @@ function updateCamera(dt: number): void {
     } else {
       const hx = holder?.x ?? ball.x;
       const hz = Math.max(holder?.z ?? ball.z, ball.z);
-      want = {
-        eye: [hx + 5.6, 3.0, hz + 4.2],
-        target: [hx - 0.2, 1.1, hz - 0.9],
-        fov: 38 + cam.punch
-      };
+      want = QA_CAM_FRONT
+        // measurement: a close front-left elevated view of the handler (hand over ball)
+        ? { eye: [(holder?.x ?? ball.x) - 2.0, 1.9, (holder?.z ?? ball.z) - 2.6], target: [holder?.x ?? ball.x, 0.8, (holder?.z ?? ball.z) - 0.1], fov: 42 }
+        : {
+          eye: [hx + 5.6, 3.0, hz + 4.2],
+          target: [hx - 0.2, 1.1, hz - 0.9],
+          fov: 38 + cam.punch
+        };
     }
   }
   const k = 1 - Math.pow(0.02, dt);
