@@ -432,6 +432,10 @@ const QA_LEAN = initialParams.get("diag") === "1" ? Number(initialParams.get("qa
 const QA_SERVE = initialParams.get("diag") === "1" && initialParams.get("qaServe") === "away";
 const QA_STAND = initialParams.get("diag") === "1" && initialParams.get("qaStand") === "1";
 const QA_CAM_FRONT = initialParams.get("diag") === "1" && initialParams.get("qaCam") === "front";
+/** ?diag=1&qaStep=1: the sim advances only when a probe calls `window.__qaStep(n)` (n fixed steps), so a filmstrip can capture consecutive frames. */
+const QA_STEP = initialParams.get("diag") === "1" && initialParams.get("qaStep") === "1";
+let qaStepsLeft = 0;
+if (QA_STEP && typeof window !== "undefined") (window as unknown as { __qaStep: (n?: number) => void }).__qaStep = (n = 1) => { qaStepsLeft += n; };
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
 
 const game_ = {
@@ -627,7 +631,7 @@ function buildAthlete(id: string, _team: TeamId): any[] {
   const athleteAsset = /[124]$/.test(id) ? assets.hoopsAthleteBig : assets.hoopsAthleteGuard;
   return [
     model(athleteAsset, { name: id, targetHeight: 1.92, scaleMode: "fit", castShadow: true, receiveShadow: true })
-      .position(0, 0.96, 6)
+      .position(0, 0, 6)
       .animate({ clip: "Crouch_Idle_Loop", loop: true, speed: 1.0 })
       .runtime(game.runtimeNode(id)),
     ...buildAthleteAccessories(id, _team)
@@ -2478,8 +2482,9 @@ function syncAthlete(a: AthleteState, dt: number): void {
   const speed = Math.hypot(a.vx, a.vz);
   const bob = 0;
 
-  // Ground the 1.92m Meshy athlete model (centered at origin, H*0.5 = 0.96) so sneakers sit at y=0
-  r.root.setPosition(a.x, 0.96 + a.y + bob, a.z).setRotation(0, a.yaw, 0);
+  // `scaleMode: "fit"` grounds the model's lowest point on the node position, so the node sits at floor height (+ jump height):
+  // adding half the body height here lifted every athlete 0.96 m off the floor, away from its ring, shadow and the ball.
+  r.root.setPosition(a.x, a.y + bob, a.z).setRotation(0, a.yaw, 0);
   sampleFeet(a, r.root);
 
   // Clip selection with hysteresis when nothing explicit is playing
@@ -2776,7 +2781,7 @@ function syncHud(): void {
   if (smLabel) smLabel.textContent = sm.active ? (sm.t < sm.g0 ? "CHARGING…" : sm.t <= sm.g1 ? "RELEASE NOW" : "LATE — STILL LIVE") : "RELEASE IN THE GREEN";
 }
 
-/** Where a bone-relative point of an athlete really is in the world (sockets are root-local; the root sits at 0.96 + y). */
+/** Where a bone-relative point of an athlete really is in the world (sockets are in the model's native space, whose origin is 0.96 m above the grounded feet). */
 function athleteLocalToWorld(a: AthleteState, p: Vec3): Vec3 {
   const cy = Math.cos(a.yaw), sn = Math.sin(a.yaw);
   return [a.x + cy * p[0] + sn * p[2], 0.96 + a.y + p[1], a.z - sn * p[0] + cy * p[2]];
@@ -2793,7 +2798,15 @@ function handProbe(): Record<string, unknown> | null {
     const hips = anim.socket("Hips") as BoneSocketView;
     const rec: Record<string, unknown> = { sim: [Number(a.x.toFixed(2)), Number(a.z.toFixed(2))], hasBall: a.hasBall, yaw: Number(a.yaw.toFixed(2)) };
     if (fore?.valid) rec.palm = athleteLocalToWorld(a, mat4Point(fore.worldMatrix(), PALM_OFFSET_R)).map((v) => Number(v.toFixed(3)));
+    const foreL = anim.socket("LeftForearm") as BoneSocketView;
+    if (foreL?.valid) rec.palmL = athleteLocalToWorld(a, mat4Point(foreL.worldMatrix(), PALM_OFFSET_L)).map((v) => Number(v.toFixed(3)));
+    const elbow = fore?.valid ? athleteLocalToWorld(a, mat4Translation(fore.worldMatrix())) : undefined;
+    if (elbow) rec.elbow = elbow.map((v) => Number(v.toFixed(3)));
     if (hips?.valid) rec.hips = athleteLocalToWorld(a, mat4Translation(hips.worldMatrix())).map((v) => Number(v.toFixed(3)));
+    const bnd = (rigs[i]?.root as any)?.bounds;
+    if (bnd?.min && bnd?.max) rec.bounds = { min: [bnd.min[0], bnd.min[1], bnd.min[2]].map((v: number) => Number(v.toFixed(3))), max: [bnd.max[0], bnd.max[1], bnd.max[2]].map((v: number) => Number(v.toFixed(3))) };
+    const footL = anim.socket("LeftFoot") as BoneSocketView;
+    if (footL?.valid) rec.footL = athleteLocalToWorld(a, mat4Translation(footL.worldMatrix())).map((v) => Number(v.toFixed(3)));
     const upper = anim.socket("RightUpperArm") as BoneSocketView;
     if (upper?.valid) rec.shoulder = athleteLocalToWorld(a, mat4Translation(upper.worldMatrix())).map((v) => Number(v.toFixed(3)));
     out[a.nodeId] = rec;
@@ -2831,6 +2844,11 @@ function publishEvidence(): void {
     holderSpeed: holder ? Number(Math.hypot(holder.vx, holder.vz).toFixed(2)) : 0,
     dribbleCycle: dribbleEvidence,
     handProbe: handProbe(),
+    camera: initialParams.get("diag") === "1" ? { eye: cam.eye, target: cam.target, fov: Number(cam.fov.toFixed(3)) } : null,
+    drawn: initialParams.get("diag") === "1" ? (() => {
+      const b = (ballNode as any)?.bounds;
+      return { ballCenter: b?.min && b?.max ? [0, 1, 2].map((k) => Number(((b.min[k] + b.max[k]) / 2).toFixed(3))) : null };
+    })() : null,
     athleteClips: athletes.map((a) => ({
       id: a.nodeId,
       clip: a.clip,
@@ -3025,13 +3043,21 @@ function frame(dtRaw: number): void {
 
   // Ball visuals
   if (ballNode) {
-    ballNode.setPosition(ball.x, Math.max(BALL_R, ball.y), ball.z);
+    let rx = 0, ry = 0, rz = 0;
     if (ball.state === "flight" || ball.state === "loose" || ball.state === "pass") {
-      ballNode.setRotation(ball.flightT * 6, 0, ball.flightT * 4);
+      rx = ball.flightT * 6; rz = ball.flightT * 4;
     } else {
       const h = holderAthlete();
-      ballNode.setRotation(game_.time * 5.2, h?.yaw ?? 0, 0);
+      rx = game_.time * 5.2; ry = h?.yaw ?? 0;
     }
+    ballNode.setRotation(rx, ry, rz);
+    // The fitted ball model is grounded on its lowest point and rotates about that point: place the node so the ball CENTRE
+    // is at (ball.x, ball.y, ball.z) whatever the spin (centre = node + R * (0, radius, 0), R = Rz Ry Rx as the engine builds it).
+    const cxr = Math.cos(rx), sxr = Math.sin(rx), cyr = Math.cos(ry), syr = Math.sin(ry), czr = Math.cos(rz), szr = Math.sin(rz);
+    const ux = syr * sxr, uy = cxr, uz = cyr * sxr;
+    const off: Vec3 = [(czr * ux - szr * uy) * BALL_R, (szr * ux + czr * uy) * BALL_R, uz * BALL_R];
+    const cy = Math.max(BALL_R, ball.y);
+    ballNode.setPosition(ball.x - off[0], cy - off[1], ball.z - off[2]);
   }
   ballShadow?.setPosition(ball.x, 0.014, ball.z).setScale([clamp(1.1 - ball.y * 0.12, 0.3, 1.05), 1, clamp(1.1 - ball.y * 0.12, 0.3, 1.05)]).setVisible(true);
   for (let i = 0; i < TRAIL_COUNT; i++) {
@@ -3083,6 +3109,10 @@ auraApp.onFrame(({ dt }) => {
       return;
     }
     // `?simsteps=N` (diagnostics): N extra fixed 1/60 s sim steps per rendered frame, so a slow software-GL run covers real game time.
+    if (QA_STEP) {
+      if (qaStepsLeft <= 0) return;
+      qaStepsLeft -= 1;
+    }
     const extra = Math.max(0, Math.min(119, Number(initialParams.get("simsteps")) | 0));
     for (let i = 0; i < extra; i += 1) frame(1 / 60);
     frame(dt);
