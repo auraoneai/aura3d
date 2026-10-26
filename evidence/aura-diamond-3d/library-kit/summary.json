@@ -1,0 +1,20 @@
+{
+  "runId": "libgrip-5",
+  "finishedUtc": "2026-10-26T06:20:49.301Z",
+  "azure": {
+    "subscription": "9b7da706-63ce-4740-8c03-3b77cbe1b7d0",
+    "acr": "picassostagingacr",
+    "image": "aura3d-playwright:run-libgrip-5",
+    "loginServer": "picassostagingacr.azurecr.io"
+  },
+  "specs": [
+    "tests/browser/diamond-bat-fix.spec.ts"
+  ],
+  "reporter": "line",
+  "acrRunExitCode": 0,
+  "playwrightExit": 0,
+  "logs": {
+    "build": "acr-build.log",
+    "run": "acr-run.log"
+  }
+}
