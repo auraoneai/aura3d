@@ -32,15 +32,15 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopWaymoHero: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
     bounds: [0.8921, 1.4132, 1.9017]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
     bounds: [0.8921, 1.4132, 1.9017]
   },
   teleopCybercab: {
@@ -119,6 +119,34 @@ const teleopAdmittedAssets = defineAuraAssets({
     url: "/aura-assets/teleopVehBoxTruck.de4b81d4.glb",
     hash: "sha256-de4b81d45d5203751d7872ebde6c437ef1348d71495d8fe77442100f0422d920",
     bounds: [0.9023, 1.0833, 1.9004]
+  },
+  teleopBldg_victorian: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_victorian.39183fbd.glb",
+    hash: "sha256-39183fbdb70ed181352c097a0fbdf6ceaa3bceb21481f22b48e57b3509513aa0",
+    bounds: [0.912, 1.737, 1.918]
+  },
+  teleopBldg_midrise: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_midrise.900faa17.glb",
+    hash: "sha256-900faa17b4ef1e68ade58153dd5276b66d9adf1cdb34e52b2ea4c5a19e4dec12",
+    bounds: [1.85, 1.893, 1.641]
+  },
+  teleopBldg_glasstower: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_glasstower.6338509c.glb",
+    hash: "sha256-6338509cd5bdf322c977c3c3999cc4f7dd7da1f9821beac6c8dbcc44f87d448a",
+    bounds: [0.844, 1.902, 0.87]
+  },
+  teleopBldg_artdeco: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_artdeco.9b8dc08f.glb",
+    hash: "sha256-9b8dc08f5391bb79295dff5807225448e84876aa9c515439429b951218495771",
+    bounds: [0.952, 1.902, 0.951]
   },
   heatsinkTowerL: {
     type: "model",
@@ -204,6 +232,8 @@ interface FleetSpec {
   hasRoofLidar: boolean;
   hasThrusters: boolean;
   modeLabel: string;
+  /** world offsets for the Roof LiDAR and Bumper cameras when the default (sized for a 4.6 m crossover) would put the camera inside the body */
+  cams?: { roof: { y: number; z: number }; bumper: { y: number; z: number } };
 }
 
 const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
@@ -219,7 +249,8 @@ const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
     accent: "#3fd6c6",
     hasRoofLidar: false,
     hasThrusters: false,
-    modeLabel: "AUTO · APEX L5 AUTOPILOT"
+    modeLabel: "AUTO · APEX L5 AUTOPILOT",
+    cams: { roof: { y: 0.25, z: 8.4 }, bumper: { y: 2.6, z: 9.6 } }
   },
   cybercab: {
     id: "cybercab",
@@ -439,7 +470,23 @@ const INTERSECTION_COUNT = 3;
 const INTERSECTION_STRIDE_Z = 92;
 const BUILDING_PAIRS = 8;
 const BUILDING_STRIDE_Z = 34;
-const LAMP_PAIRS = 6;
+
+// Street-front building models (facade on +Z in the file). Left blocks are yawed +90 degrees and right blocks -90 degrees so
+// the facade faces the road; "depth" runs along the file's z axis (away from the road) and "frontage" along its x axis.
+const BUILDING_SPECS = [
+  { key: "teleopBldg_victorian", x: 0.912, y: 1.737, z: 1.918 },
+  { key: "teleopBldg_glasstower", x: 0.844, y: 1.902, z: 0.87 },
+  { key: "teleopBldg_midrise", x: 1.85, y: 1.893, z: 1.641 },
+  { key: "teleopBldg_artdeco", x: 0.952, y: 1.902, z: 0.951 }
+] as const;
+const BUILDING_ROAD_EDGE_X = 19.5;
+const BUILDING_MAX_DEPTH = 24;
+const BUILDING_MAX_FRONTAGE = 30;
+
+function buildingLayout(spec: (typeof BUILDING_SPECS)[number], targetHeight: number): { scale: number; maxDim: number; centerX: number; height: number } {
+  const scale = Math.min(targetHeight / spec.y, BUILDING_MAX_DEPTH / spec.z, BUILDING_MAX_FRONTAGE / spec.x);
+  return { scale, maxDim: Math.max(spec.x, spec.y, spec.z) * scale, centerX: BUILDING_ROAD_EDGE_X + (spec.z * scale) / 2, height: spec.y * scale };
+}const LAMP_PAIRS = 6;
 const LAMP_STRIDE_Z = 38;
 const PATH_RIBBON_COUNT = 9;
 
@@ -910,38 +957,18 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
   }
 
   // 6. San Francisco Street-Front Buildings (Victorian, Edwardian, Chinatown & FiDi Mid-Rises) & Streetlamps/Trees
-  const buildingPalette = [
-    "#cbd5e1",
-    "#94a3b8",
-    "#d6c7b2",
-    "#7f1d1d",
-    "#334155",
-    "#e2e8f0",
-    "#475569",
-    "#b45309"
-  ];
   for (let i = 0; i < BUILDING_PAIRS; i++) {
     const bz = -18 - i * BUILDING_STRIDE_Z;
-    const hL = 18 + ((i * 7) % 22);
-    const hR = 20 + ((i * 11) % 24);
-    const colL = buildingPalette[i % buildingPalette.length]!;
-    const colR = buildingPalette[(i + 3) % buildingPalette.length]!;
+    const spec = BUILDING_SPECS[i % BUILDING_SPECS.length]!;
+    const specR = BUILDING_SPECS[(i + 1) % BUILDING_SPECS.length]!;
+    const lay = buildingLayout(spec, 18 + ((i * 7) % 22));
+    const layR = buildingLayout(specR, 20 + ((i * 11) % 24));
     s.addMany([
-      primitives
-        .box({
-          name: `sf-bldg-l-${i}`,
-          size: [14, hL, 22],
-          material: material.pbr({ color: colL, roughness: 0.62, metalness: 0.18 })
-        })
-        .position(-26.5, hL * 0.5, bz)
+      model(assets[spec.key], { name: `sf-bldg-l-${i}`, role: "setDressing", scaleMode: "fit", targetMaxDimension: lay.maxDim })
+        .position(-lay.centerX, 0, bz)
         .runtime(game.runtimeNode(`sf-bldg-l-${i}`)),
-      primitives
-        .box({
-          name: `sf-bldg-r-${i}`,
-          size: [14, hR, 22],
-          material: material.pbr({ color: colR, roughness: 0.62, metalness: 0.18 })
-        })
-        .position(26.5, hR * 0.5, bz)
+      model(assets[specR.key], { name: `sf-bldg-r-${i}`, role: "setDressing", scaleMode: "fit", targetMaxDimension: layR.maxDim })
+        .position(layR.centerX, 0, bz)
         .runtime(game.runtimeNode(`sf-bldg-r-${i}`))
     ]);
   }
@@ -1431,12 +1458,16 @@ async function bootGridDispatchAura3D(): Promise<void> {
     lightL: req(`sf-sig-light-l-${i}`)
   }));
 
-  const buildingHandles = Array.from({ length: BUILDING_PAIRS }, (_, i) => ({
-    left: req(`sf-bldg-l-${i}`),
-    right: req(`sf-bldg-r-${i}`),
-    hL: 18 + ((i * 7) % 22),
-    hR: 20 + ((i * 11) % 24)
-  }));
+  const buildingHandles = Array.from({ length: BUILDING_PAIRS }, (_, i) => {
+    const lay = buildingLayout(BUILDING_SPECS[i % BUILDING_SPECS.length]!, 18 + ((i * 7) % 22));
+    const layR = buildingLayout(BUILDING_SPECS[(i + 1) % BUILDING_SPECS.length]!, 20 + ((i * 11) % 24));
+    const left = req(`sf-bldg-l-${i}`);
+    const right = req(`sf-bldg-r-${i}`);
+    left.setRotation(0, Math.PI / 2, 0);
+    right.setRotation(0, -Math.PI / 2, 0);
+    return { left, right, xL: lay.centerX, xR: layR.centerX };
+  });
+
 
   const lampHandles = Array.from({ length: LAMP_PAIRS }, (_, i) => ({
     lampL: req(`sf-lamp-l-${i}`),
@@ -2457,8 +2488,8 @@ async function bootGridDispatchAura3D(): Promise<void> {
     const camOffsets: Record<0 | 1 | 2 | 3, { y: number; z: number }> = {
       0: { y: 0, z: 0 },
       1: { y: -0.55, z: -2.4 },
-      2: { y: 1.45, z: 5.2 },
-      3: { y: 2.15, z: 7.4 }
+      2: spec.cams?.roof ?? { y: 1.45, z: 5.2 },
+      3: spec.cams?.bumper ?? { y: 2.15, z: 7.4 }
     };
     const camOff = camOffsets[camMode];
     const rx = (wx: number) => wx - playerX * 0.72;
@@ -2534,8 +2565,8 @@ async function bootGridDispatchAura3D(): Promise<void> {
     for (let i = 0; i < BUILDING_PAIRS; i++) {
       const bz = rz(bldgBaseZ - i * BUILDING_STRIDE_Z);
       const b = buildingHandles[i]!;
-      b.left.setPosition(rx(-26.5), ry(b.hL * 0.5), bz);
-      b.right.setPosition(rx(26.5), ry(b.hR * 0.5), bz);
+      b.left.setPosition(rx(-b.xL), ry(0), bz);
+      b.right.setPosition(rx(b.xR), ry(0), bz);
     }
 
     const lampBaseZ = Math.floor(playerZ / LAMP_STRIDE_Z) * LAMP_STRIDE_Z + LAMP_STRIDE_Z;

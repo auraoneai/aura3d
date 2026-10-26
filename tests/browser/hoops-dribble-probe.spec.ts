@@ -10,11 +10,11 @@ import { measureHandBall } from "../../packages/game/src/motion/handBounce";
  * hold W to run); MODE "ai" serves to the away team and watches the AI handlers. It prints the report and a filmstrip of
  * base64 JPEG frames (one per cycle phase bin) from the game's own chase camera.
  */
-const MODE: "player" | "ai" = "player";
+const MODE: "player" | "ai" | "aistand" = "player";
 const EXTRA_QS = "";
-const PROBE_MS = Number(process.env.HOOPSDRIB_PROBE_MS ?? 240_000);
-const SHOT_MS = Number(process.env.HOOPSDRIB_SHOT_MS ?? 420_000);
-const FRAMES = Number(process.env.HOOPSDRIB_FRAMES ?? 36);
+const PROBE_MS = Number(process.env.HOOPSDRIB_PROBE_MS ?? (MODE === "ai" ? 420_000 : 240_000));
+const SHOT_MS = Number(process.env.HOOPSDRIB_SHOT_MS ?? (MODE === "ai" ? 300_000 : 600_000));
+const FRAMES = Number(process.env.HOOPSDRIB_FRAMES ?? 44);
 const TAG = MODE;
 
 let server: ExampleDevServer;
@@ -27,8 +27,8 @@ test(`hoops dribble probe (${MODE})`, async ({ page }) => {
   page.on("pageerror", (e) => errors.push(`pageerror ${e.message}`.slice(0, 300)));
   page.on("console", (m) => { if (m.type() === "error") errors.push(`console.error ${m.text()}`.slice(0, 300)); });
   await page.setViewportSize({ width: 320, height: 180 });
-  const serve = MODE === "ai" ? "&qaServe=away" : "";
-  await page.goto(`${server.origin}/apps/showcase-aura-hoops-3d/index.html?autostart=1&autoplay=1&diag=1&qaDt=0.0167${serve}${EXTRA_QS}`, { waitUntil: "load", timeout: 180_000 });
+  const serve = MODE === "ai" ? "&qaServe=away" : MODE === "aistand" ? "&qaServe=away&qaStand=1" : "";
+  await page.goto(`${server.origin}/apps/showcase-aura-hoops-3d/index.html?autostart=1&autoplay=1&diag=1&qaDt=0.0167&qaCam=front${serve}${EXTRA_QS}`, { waitUntil: "load", timeout: 180_000 });
   await page.waitForFunction(() => (window as unknown as { __AURA3D_GAME__?: { ready?: boolean } }).__AURA3D_GAME__?.ready === true, undefined, { timeout: 240_000 });
   const install = () => page.evaluate(() => {
     const w = window as unknown as { __rec: unknown[]; __lastF: number; __tick?: boolean };
@@ -66,7 +66,7 @@ test(`hoops dribble probe (${MODE})`, async ({ page }) => {
   const seen = new Set<string>();
   while (Date.now() - t0 < SHOT_MS) {
     await page.waitForTimeout(40);
-    if (MODE === "player" && !driving && Date.now() - t0 > SHOT_MS * 0.12) { driving = true; await page.keyboard.down("KeyW"); }
+    if (MODE === "player" && !driving && Date.now() - t0 > SHOT_MS * 0.4) { driving = true; await page.keyboard.down("KeyW"); }
     if (frames.length >= FRAMES) continue;
     const s = await page.evaluate(() => {
       const b = (window as unknown as { __AURA3D_GAME__?: Record<string, any> }).__AURA3D_GAME__;
@@ -74,26 +74,31 @@ test(`hoops dribble probe (${MODE})`, async ({ page }) => {
     });
     if (!s || s.st !== "held" || s.ph !== "live" || s.f === lastF || s.t == null) continue;
     const kind = s.mv ? "run" : "stand";
-    const key = `${kind}-${s.hd?.[0]}-${Math.floor(s.t * 8)}`;
+    const key = `${kind}-${s.hd?.[0]}-${Math.floor(s.t * 16)}`;
     if (seen.has(key)) continue;
     seen.add(key);
     lastF = s.f;
-    const buf = await page.screenshot({ type: "jpeg", quality: 72, clip: { x: 110, y: 40, width: 500, height: 330 } });
+    const buf = await page.screenshot({ type: "jpeg", quality: 72, clip: { x: 150, y: 50, width: 420, height: 320 } });
     frames.push({ tag: `${kind}-${s.hd}-t${s.t.toFixed(2)}-y${s.y.toFixed(2)}`, f: s.f, b64: buf.toString("base64") });
   }
 
   // Held, live frames; the first frames of a new holder are skipped (the cycle restarts at the meet).
   let prevHolder = "";
   let sinceNew = 0;
+  // Also skipped: the 3 frames after the pose switches between standing and running (the rig changes pose in one frame).
+  let prevMv: unknown = null;
+  let sinceSwitch = 99;
   const held = rec.filter((r) => {
     sinceNew = r.hd === prevHolder ? sinceNew + 1 : 0;
     prevHolder = r.hd;
-    return r.bs === "held" && r.ph === "live" && r.palm && r.bp && r.t != null && sinceNew >= 4;
+    sinceSwitch = r.mv === prevMv ? sinceSwitch + 1 : 0;
+    prevMv = r.mv;
+    return r.bs === "held" && r.ph === "live" && r.palm && r.bp && r.t != null && sinceNew >= 4 && sinceSwitch >= 3;
   });
   const failures: string[] = [];
   const kinds: Array<[string, (r: any) => boolean]> = MODE === "player"
     ? [["player", () => true]]
-    : [["ai", () => true]];
+    : [[MODE, () => true]];
   for (const [kindName, keep] of kinds) {
     for (const moving of [false, true]) {
       const g = held.filter((r) => keep(r) && Boolean(r.mv) === moving);

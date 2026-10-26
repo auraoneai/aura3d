@@ -18,7 +18,7 @@ const unit = (a) => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / 
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function rebuildArms(glb, { palms = null, longSleeves = false, capSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
+export function rebuildArms(glb, { capRadius = 0.1, palms = null, longSleeves = false, capSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
   const rest = forward(glb, localPose(glb, null, 0));
   const skinJoints = glb.json.skins[0].joints;
   const jointIndex = new Map(skinJoints.map((j, i) => [rest.names[j], i]));
@@ -156,7 +156,7 @@ export function rebuildArms(glb, { palms = null, longSleeves = false, capSleeves
     const sleeveEnd = longSleeves ? W : add(S, mul(dir, upperLen * 0.45));
     addAxisTube("kit", A, sleeveEnd, (s) => (longSleeves ? skinR(sOff(s), upperLen) + 0.016 : 0.066 - 0.012 * (sOff(s) / (upperLen * 0.45))), (s) => wf(sOff(s)), { flat: 1, capEnd: capSleeves });
     // shoulder cap: closes the armhole left in the torso when the arm swings (kit, follows the chest)
-    addSphere("kit", add(add(S, mul(dir, -0.01)), [0, 0.005, -0.025]), 0.1, shoulderWeights(S), [0.72, 0.85, 0.78]);
+    addSphere("kit", add(add(S, mul(dir, -0.01)), [0, 0.005, -0.025]), capRadius, shoulderWeights(S), [0.72, 0.85, 0.78]);
     // hand: mitten (skin for the outfield kit, kit-coloured glove for the keeper) with a thumb
     const H = add(Wd, mul(hdir, 0.1));
     const wHand = () => [[JI(`${side}Forearm`), 1]];

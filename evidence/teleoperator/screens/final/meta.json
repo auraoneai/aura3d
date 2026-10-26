@@ -3,7 +3,7 @@
     "teleoperator": {
       "390": {
         "notes": [
-          "ready 209s (never lit)",
+          "ready 240s (never lit)",
           "shot 01-title",
           "shot 02-early",
           "shot 03-action",
@@ -26,7 +26,7 @@
       },
       "1280": {
         "notes": [
-          "ready 220s (never lit)",
+          "ready 254s (never lit)",
           "shot 01-title",
           "shot 02-early",
           "shot 03-action",
@@ -49,7 +49,7 @@
       },
       "card": {
         "notes": [
-          "ready 287s (never lit)",
+          "ready 312s (never lit)",
           "shot 04-mid"
         ],
         "errors": [],

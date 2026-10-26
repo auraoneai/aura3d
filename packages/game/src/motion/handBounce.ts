@@ -30,7 +30,7 @@ export interface HandBounceOptions {
   readonly runSpeed?: number;
   /** The ball never strays further than this horizontally from the palm while dribbling. Default 0.25. */
   readonly maxOffset?: number;
-  /** Running only: the ball lands ahead of the hand along the direction of travel by `speed * leadGain`, at most `leadMax`. Defaults 0.025 s and 0.15 m. */
+  /** Running only: the ball lands ahead of the hand along the direction of travel by `speed * leadGain`, at most `leadMax`. Defaults 0.02 s and 0.10 m. */
   readonly leadGain?: number;
   readonly leadMax?: number;
   /** Skeleton bone names; the overlay then names the bones that actually exist. */
@@ -92,8 +92,8 @@ export function resolveHandBounceConfig(options: HandBounceOptions = {}): HandBo
     running: { period: 0.3, palmTop: 0.88, palmPush: 0.54, ...options.running },
     runSpeed: options.runSpeed ?? 0.45,
     maxOffset: options.maxOffset ?? 0.25,
-    leadGain: options.leadGain ?? 0.025,
-    leadMax: options.leadMax ?? 0.15,
+    leadGain: options.leadGain ?? 0.02,
+    leadMax: options.leadMax ?? 0.1,
     phases: { rideEnd: 0.35, palmTurn: 0.6, floorAt: 0.66, catchFrom: 0.92, ...options.phases },
     floorBallY: floorY + ballRadius
   };
@@ -119,7 +119,9 @@ export function handBounceCycle(config: HandBounceConfig, t: number, shoulderY: 
   } else {
     // The palm stays at its lowest until the ball has met the floor, then rises with it (it receives the ball on the way up).
     const s = Math.max(0, (t - floorAt) / (1 - floorAt));
-    effort = t < floorAt ? 1 : 1 - smoothstep(s);
+    // The body stays sunk a little past the floor contact (the arm cannot follow the ball down without it), then comes up.
+    const e = Math.max(0, (t - floorAt - 0.08) / (1 - floorAt - 0.08));
+    effort = 1 - smoothstep(e);
     palmY = lerp(low, top, smoothstep(s));
   }
   return { palmY, ballY: handBounceBallY(config, t, palmY, push - config.ballGap, top - config.ballGap), effort };
@@ -258,11 +260,21 @@ export interface HandBounceRelease {
   readonly velocity: [number, number, number];
 }
 
+export interface HandBouncePlaceInput {
+  readonly palm: HandBounceVec3;
+  readonly holder: { readonly x: number; readonly z: number; readonly vx: number; readonly vz: number };
+}
+
 export interface HandBounce {
   readonly config: HandBounceConfig;
   /** Advance one fixed step (dt > 0, no wall clock) and place the ball. */
   step(dt: number, input: HandBounceInput): HandBounceFrame;
   state(): HandBounceState;
+  /**
+   * Re-place the ball for the CURRENT phase from a fresher palm without advancing the cycle. Call it after the rig has been
+   * updated for the frame (the palm you passed to `step` can be one frame stale), so the ball is exactly under the hand that is drawn.
+   */
+  place(input: HandBouncePlaceInput): HandBounceFrame;
   /** Palm-free recipe for the body: waist bend, shoulder drop, head. Call after step(). */
   overlay(leanScale?: number): HandBounceOverlay;
   /** Leave the hand: current position and velocity for a pass, shot or drop. Stops the cycle. */
@@ -297,6 +309,18 @@ export function createHandBounce(options: HandBounceOptions = {}): HandBounce {
   let lastDt = 1 / 60;
   let floorContact = false;
 
+  const placeOnPalm = (palm: HandBounceVec3, holder: HandBouncePlaceInput["holder"], hold: boolean): void => {
+    if (hold) {
+      ball = [palm[0], palm[1], palm[2]];
+    } else {
+      const at = handBounceBallXZ(config, palm, holder, phase);
+      if (phase < config.phases.rideEnd) releaseY = palm[1] - config.ballGap;
+      ball = [at.x, handBounceBallY(config, phase, palm[1], releaseY, palm[1] - config.ballGap), at.z];
+    }
+    palmY = palm[1];
+    floorContact = ball[1] <= config.floorBallY + 0.02;
+  };
+
   const frame = (): HandBounceFrame => ({ phase, moving, contact, effort, palmY, ball: [ball[0], ball[1], ball[2]], floorContact });
 
   return {
@@ -317,20 +341,16 @@ export function createHandBounce(options: HandBounceOptions = {}): HandBounce {
       prevBall = [ball[0], ball[1], ball[2]];
       lastDt = dt;
       if (input.palm) {
-        const palm = input.palm;
-        if (input.hold) {
-          ball = [palm[0], palm[1], palm[2]];
-        } else {
-          const at = handBounceBallXZ(config, palm, input.holder, phase);
-          if (phase < config.phases.rideEnd) releaseY = palm[1] - config.ballGap;
-          ball = [at.x, handBounceBallY(config, phase, palm[1], releaseY, palm[1] - config.ballGap), at.z];
-        }
-        palmY = palm[1];
+        placeOnPalm(input.palm, input.holder, Boolean(input.hold));
       } else {
         palmY = cyc.palmY;
         ball = [input.holder.x, cyc.ballY, input.holder.z];
       }
       floorContact = ball[1] <= config.floorBallY + 0.02;
+      return frame();
+    },
+    place(input) {
+      placeOnPalm(input.palm, input.holder, false);
       return frame();
     },
     state() {

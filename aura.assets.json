@@ -18865,9 +18865,9 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/diamond-athlete/model.opt.glb",
-      "outputPath": "public/aura-assets/diamondAthleteClean.0561a0ac.glb",
-      "url": "/aura-assets/diamondAthleteClean.0561a0ac.glb",
-      "hash": "sha256-0561a0ac0d9b7fd750aa673529ec34b2b0d26c8639e1540eb904bcc54ddf6ea8",
+      "outputPath": "public/aura-assets/diamondAthleteClean.a0f56372.glb",
+      "url": "/aura-assets/diamondAthleteClean.a0f56372.glb",
+      "hash": "sha256-a0f5637201046f05618f6422b2e26226edcd2c9f0cdaf071f7c0d33e878335c5",
       "sizeBytes": 1418204,
       "bounds": [
         0.938,
@@ -19017,7 +19017,7 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ],
-      "sha256": "sha256-0561a0ac0d9b7fd750aa673529ec34b2b0d26c8639e1540eb904bcc54ddf6ea8"
+      "sha256": "sha256-a0f5637201046f05618f6422b2e26226edcd2c9f0cdaf071f7c0d33e878335c5"
     },
     {
       "id": "diamondBall",
@@ -46339,9 +46339,9 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/hoops-athlete-big/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteBigClean.0cb9e049.glb",
-      "url": "/aura-assets/hoopsAthleteBigClean.0cb9e049.glb",
-      "hash": "sha256-0cb9e049965d1e5004d4b2184c3851c04abb2ac405e6dca0c4986852b8ca7260",
+      "outputPath": "public/aura-assets/hoopsAthleteBigClean.71784cf5.glb",
+      "url": "/aura-assets/hoopsAthleteBigClean.71784cf5.glb",
+      "hash": "sha256-71784cf5097ca4139524970c9ec12f0d1457603e88d5b7ac332b8a0ffbdb367e",
       "sizeBytes": 1341656,
       "bounds": [
         0.878,
@@ -46491,16 +46491,16 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ],
-      "sha256": "sha256-0cb9e049965d1e5004d4b2184c3851c04abb2ac405e6dca0c4986852b8ca7260"
+      "sha256": "sha256-71784cf5097ca4139524970c9ec12f0d1457603e88d5b7ac332b8a0ffbdb367e"
     },
     {
       "id": "hoopsAthleteGuard",
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/hoops-athlete-guard/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteGuardClean.05c14e7b.glb",
-      "url": "/aura-assets/hoopsAthleteGuardClean.05c14e7b.glb",
-      "hash": "sha256-05c14e7bcc65115f125a7420aa4dc96db46b119e6caae79c6afc8a5629e73336",
+      "outputPath": "public/aura-assets/hoopsAthleteGuardClean.00da9726.glb",
+      "url": "/aura-assets/hoopsAthleteGuardClean.00da9726.glb",
+      "hash": "sha256-00da97264bea35b1c6cfb54ae85b268923790c99170eb02ff48b06341b5ab279",
       "sizeBytes": 1616024,
       "bounds": [
         0.905,
@@ -46650,7 +46650,7 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ],
-      "sha256": "sha256-05c14e7bcc65115f125a7420aa4dc96db46b119e6caae79c6afc8a5629e73336"
+      "sha256": "sha256-00da97264bea35b1c6cfb54ae85b268923790c99170eb02ff48b06341b5ab279"
     },
     {
       "id": "hoopsBackboard",
@@ -51185,9 +51185,9 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/linksGolferAthleteMeshy/model.glb",
-      "outputPath": "public/aura-assets/linksGolferAthleteClean.f4f1c0e7.glb",
-      "url": "/aura-assets/linksGolferAthleteClean.f4f1c0e7.glb",
-      "hash": "sha256-f4f1c0e799cb2d802b4eb178332ef2607c4b94dd04568e34cd124ae233db6dc3",
+      "outputPath": "public/aura-assets/linksGolferAthleteClean.d002fc10.glb",
+      "url": "/aura-assets/linksGolferAthleteClean.d002fc10.glb",
+      "hash": "sha256-d002fc10ba0a0980b93fef3c2f08e38599df2b99b5bb9690bb43854c34a26b6a",
       "sizeBytes": 1418176,
       "bounds": [
         0.938,
@@ -51328,7 +51328,7 @@
       "thumbnailUrl": "/aura-assets/linksGolferAthleteMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryCharacter",
-      "sha256": "sha256-f4f1c0e799cb2d802b4eb178332ef2607c4b94dd04568e34cd124ae233db6dc3"
+      "sha256": "sha256-d002fc10ba0a0980b93fef3c2f08e38599df2b99b5bb9690bb43854c34a26b6a"
     },
     {
       "id": "linksPinFlagMeshy",
@@ -142180,17 +142180,17 @@
       "name": "teleopWaymoHero",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-      "source": "public/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-      "sha256": "1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
-      "byteLength": 782864,
-      "sizeBytes": 782864,
+      "url": "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+      "source": "public/aura-assets/teleopVehRobotaxi.f1726137.glb",
+      "sha256": "f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
+      "byteLength": 943256,
+      "sizeBytes": 943256,
       "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-25",
       "quality": "approved",
       "category": "vehicle",
       "nodeCount": 1,
       "meshCount": 1,
-      "materialCount": 5,
+      "materialCount": 6,
       "textureCount": 0,
       "animationClips": [],
       "morphTargets": [],
@@ -142219,17 +142219,17 @@
       "name": "teleopWaymoTraffic",
       "kind": "model",
       "format": "glb",
-      "url": "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-      "source": "public/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-      "sha256": "1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
-      "byteLength": 782864,
-      "sizeBytes": 782864,
+      "url": "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+      "source": "public/aura-assets/teleopVehRobotaxi.f1726137.glb",
+      "sha256": "f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
+      "byteLength": 943256,
+      "sizeBytes": 943256,
       "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-25",
       "quality": "approved",
       "category": "vehicle",
       "nodeCount": 1,
       "meshCount": 1,
-      "materialCount": 5,
+      "materialCount": 6,
       "textureCount": 0,
       "animationClips": [],
       "morphTargets": [],

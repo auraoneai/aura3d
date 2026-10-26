@@ -201,7 +201,7 @@ const report = measureHandBall(samples);
 if (!report.ok) throw new Error(report.failures.join("; "));
 ```
 
-Palm and ball ride together, the ball bounces directly under the palm (a runner's ball lands ahead along travel by at most 0.15 m), hits the floor with its centre at the ball radius, and the palm follows it down and receives it every bounce. Always pass the palm as drawn, whatever pose the athlete is in. `bounce.overlay()` gives the upper-body bend (never the legs). See [motion-hand-bounce](../api/motion-hand-bounce.md).
+Palm and ball ride together, the ball bounces directly under the palm (a runner's ball lands ahead along travel by at most 0.10 m), hits the floor with its centre at the ball radius, and the palm follows it down and receives it every bounce. Always pass the palm as drawn, whatever pose the athlete is in. `bounce.overlay()` gives the upper-body bend (never the legs). See [motion-hand-bounce](../api/motion-hand-bounce.md).
 
 ## 7. A bat, club or racket held in both hands (grip, hand-off, proof)
 

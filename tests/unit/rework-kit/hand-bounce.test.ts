@@ -208,6 +208,16 @@ describe("hand bounce kit (promoted from the Aura Hoops dribble)", () => {
     }
   });
 
+  it("place() re-puts the ball under a fresher palm for the same phase without advancing the cycle", () => {
+    const bounce = createHandBounce();
+    const f = bounce.step(DT, { moving: false, shoulderY: 1.4, palm: [0, 1, 0], holder });
+    const g = bounce.place({ palm: [0.4, 0.95, -0.3], holder });
+    expect(bounce.state().phase).toBe(f.phase);
+    expect(g.ball[0]).toBeCloseTo(0.4, 6);
+    expect(g.ball[2]).toBeCloseTo(-0.3, 6);
+    expect(g.ball[1]).toBeCloseTo(0.95 - bounce.config.ballGap, 6);
+  });
+
   it("measureHandBall flags a detached ball", () => {
     const bad = Array.from({ length: 60 }, (_, i) => ({ phase: (i / 60) % 1, palm: [0, 1.0, 0] as const, ball: [0, 0.17, 0] as const }));
     const report = measureHandBall(bad);

@@ -427,9 +427,11 @@ const STUDIO = {
 const initialParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
 /** ?diag=1&qaDt=0.0167 fixes the simulation step so a slow software-GL run still integrates at a real-device rate (measurement only). */
 const QA_DT = initialParams.get("diag") === "1" ? Number(initialParams.get("qaDt")) || 0 : 0;
-/** ?diag=1&qaLean=1.2 scales the running-dribble waist bend and &qaLead=2 the palm look-ahead (measurement only). */
+/** ?diag=1&qaCam=front is a close front-left view for filmstrips; ?diag=1&qaLean=1.2 scales the running-dribble waist bend and &qaLead=2 the palm look-ahead (measurement only). */
 const QA_LEAN = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLean")) || 1 : 1;
 const QA_SERVE = initialParams.get("diag") === "1" && initialParams.get("qaServe") === "away";
+const QA_STAND = initialParams.get("diag") === "1" && initialParams.get("qaStand") === "1";
+const QA_CAM_FRONT = initialParams.get("diag") === "1" && initialParams.get("qaCam") === "front";
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
 
 const game_ = {
@@ -850,6 +852,8 @@ interface DribbleAim { palm: Vec3; /** the palm as rendered last frame (forearm 
 const dribbleAims = new Map<string, DribbleAim>();
 /** The holder's rendered palm and shoulder height, published every frame whatever pose the athlete is in, so the ball always rides the hand that is drawn. */
 const heldRig = new Map<string, { palm: Vec3 | undefined; shoulderY: number | undefined }>();
+/** Last pose kind per athlete and the frame it changed on: the socket still shows the previous pose on a switch frame. */
+const poseKindOf = new Map<string, { kind: string; changedAt: number }>();
 // Bind-space arm geometry. The rig has no hand bones (arms end at Forearm), so
 // the palm is the calibrated hand-centroid offset in forearm bone space. These
 // measured constants are only the fallback — armRigFor() derives the live
@@ -976,6 +980,7 @@ function resolveHandles(): void {
   overlayPoseOn.clear();
   dribbleAims.clear();
   heldRig.clear();
+  poseKindOf.clear();
   armRigs.clear();
   rigs = ROSTER_IDS.map((id) => ({
     root: req(id),
@@ -1827,6 +1832,20 @@ function stepBallSim(dt: number): void {
   }
 }
 
+/** After every athlete has been synced for the frame: put the held ball exactly under the hand as it is drawn now (body, yaw and pose are current). */
+function refreshHeldBall(): void {
+  if (ball.state !== "held" && ball.state !== "dribbleAir" && ball.state !== "parked") return;
+  const h = athletes[ball.holder];
+  if (!h || !h.hasBall || h.shooting || game_.phase === "check" || h.dunkT > 0) return;
+  const aim = dribbleAims.get(h.nodeId);
+  const rig = heldRig.get(h.nodeId);
+  const switched = poseKindOf.get(h.nodeId)?.changedAt === framesRendered;
+  const palm = switched ? aim?.palm ?? rig?.palm : aim?.actual ?? rig?.palm;
+  if (!palm) return;
+  const f = hoopsBounce.place({ palm, holder: { x: h.x, z: h.z, vx: h.vx, vz: h.vz } });
+  ball.x = f.ball[0]; ball.y = f.ball[1]; ball.z = f.ball[2];
+}
+
 /* ------------------------------------------------------------------ *
  *  AI                                                                 *
  * ------------------------------------------------------------------ */
@@ -1897,6 +1916,7 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
   const squad = game_.awaySquad;
   const speed = PLAYER_SPEED * 0.82 * diff.cpuSpeed * (0.85 + squad.speed * 0.03);
   if (a.hasBall) {
+    if (QA_STAND && !a.shooting) { a.vx = 0; a.vz = 0; return; } // measurement: an AI handler that stands and pounds the ball
     // CPU ball-handler: drive / pullup / pass
     const dRim = dist2d(a.x, a.z, RIM[0], RIM[2]);
     const def = nearestDefender(a);
@@ -2389,15 +2409,16 @@ function resetLabBall(): void {
 }
 
 const lastRenderedPalm = new Map<string, Vec3>();
-/** The rendered palm advanced by one frame of its own motion: the ball is placed from the previous frame's aim, so without the lead it trails a fast palm (and a running body) by one step. */
+/** The rendered palm advanced by one frame of its own motion relative to the body (the socket holds last frame's pose; the body is already current). */
 function renderedPalmLead(a: AthleteState, root: AnyHandle): Vec3 | undefined {
   const p = renderedPalm(a, root);
   if (!p) { lastRenderedPalm.delete(a.nodeId); return undefined; }
+  const local: Vec3 = [p[0] - a.x, p[1], p[2] - a.z];
   const prev = lastRenderedPalm.get(a.nodeId);
-  lastRenderedPalm.set(a.nodeId, p);
+  lastRenderedPalm.set(a.nodeId, local);
   if (!prev) return p;
-  const dx = p[0] - prev[0], dy = p[1] - prev[1], dz = p[2] - prev[2];
-  if (Math.hypot(dx, dy, dz) > 0.25) return p;
+  const dx = local[0] - prev[0], dy = local[1] - prev[1], dz = local[2] - prev[2];
+  if (Math.hypot(dx, dy, dz) > 0.2) return p;
   return [p[0] + dx * QA_LEAD, p[1] + dy * QA_LEAD, p[2] + dz * QA_LEAD];
 }
 
@@ -2493,6 +2514,9 @@ function syncAthlete(a: AthleteState, dt: number): void {
   const upperL = anim?.socket?.("LeftUpperArm");
   const socketsUp = chest?.valid === true && upperR?.valid === true && upperL?.valid === true;
   const cycleT = bouncePhase(a.nodeId);
+  const poseKind = stanceNow ? "stance" : carryNow ? "carry" : "clip";
+  const lastKind = poseKindOf.get(a.nodeId);
+  if (!lastKind || lastKind.kind !== poseKind) poseKindOf.set(a.nodeId, { kind: poseKind, changedAt: framesRendered });
   const rigPalm = holdsBall ? renderedPalmLead(a, r.root) : undefined;
   if (holdsBall) {
     heldRig.set(a.nodeId, { palm: rigPalm, shoulderY: upperR?.valid === true ? mat4Translation(upperR.worldMatrix())[1] + 0.96 + a.y : undefined });
@@ -2688,11 +2712,18 @@ function updateCamera(dt: number): void {
     } else {
       const hx = holder?.x ?? ball.x;
       const hz = Math.max(holder?.z ?? ball.z, ball.z);
-      want = {
-        eye: [hx + 5.6, 3.0, hz + 4.2],
-        target: [hx - 0.2, 1.1, hz - 0.9],
-        fov: 38 + cam.punch
-      };
+      want = QA_CAM_FRONT && holder
+        // measurement: a close, elevated view from in front of the handler on the dribbling-hand side (hand over ball)
+        ? (() => {
+          const cy = Math.cos(holder.yaw), sn = Math.sin(holder.yaw);
+          const at = (lx: number, ly: number, lz: number): Vec3 => [holder.x + cy * lx + sn * lz, ly, holder.z - sn * lx + cy * lz];
+          return { eye: at(-1.9, 1.8, 2.3), target: at(-0.05, 0.75, 0.2), fov: 40 };
+        })()
+        : {
+          eye: [hx + 5.6, 3.0, hz + 4.2],
+          target: [hx - 0.2, 1.1, hz - 0.9],
+          fov: 38 + cam.punch
+        };
     }
   }
   const k = 1 - Math.pow(0.02, dt);
@@ -2990,6 +3021,7 @@ function frame(dtRaw: number): void {
   // Ball + athletes
   stepBallSim(dt);
   for (const a of athletes) syncAthlete(a, dt);
+  refreshHeldBall();
 
   // Ball visuals
   if (ballNode) {

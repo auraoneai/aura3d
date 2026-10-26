@@ -1,10 +1,10 @@
 {
   "info": {
     "robotaxi": {
-      "name": "teleopVehRobotaxi.1f39a6be.glb",
-      "sha": "1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
-      "bytes": 782864,
-      "tris": 23333,
+      "name": "teleopVehRobotaxi.f1726137.glb",
+      "sha": "f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
+      "bytes": 943256,
+      "tris": 29543,
       "size": [
         0.8921,
         1.4132,
@@ -20,7 +20,7 @@
         1.4132,
         0.9508
       ],
-      "materials": 5,
+      "materials": 6,
       "textures": 0,
       "nodes": 1,
       "meshes": 1,

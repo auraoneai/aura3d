@@ -126,9 +126,9 @@ function registerParityShaderFeatures(): void {
     name: POINTS_VERTEX_END,
     owner: "prd15",
     stage: "vertex",
-    // three.js PointsMaterial.sizeAttenuation: device-pixel size ×
-    // (0.5·drawingBufferHeight ÷ view depth). u_pointSize already carries
-    // size·dpr; u_resolutionFarTime.y is the render-target height in device px.
+    // three.js PointsMaterial.sizeAttenuation: size · pixelRatio · (0.5·CSS height ÷ view depth), which is
+    // size · (0.5·device height ÷ view depth). u_pointSize carries the bare `size` here;
+    // u_resolutionFarTime.y is the render-target height in device px.
     glsl: `#ifdef A3D_PARITY_POINT_ATTENUATION
 gl_PointSize = u_pointSize * (0.5 * u_resolutionFarTime.y) / max(gl_Position.w, 1e-3);
 #endif`
@@ -506,10 +506,12 @@ export const pointsNodeHandler: NodeHandler<{ readonly kind: "points" }> = {
     if (!record) return;
     const visible = (handle?.visible ?? (node as AuraPointsNode).visible) !== false;
     if (!visible) return;
-    // three multiplies PointsMaterial.size by pixelRatio — fold dpr in so CSS
-    // sizes stay device-correct; attenuation math runs in the feature chunk.
+    // A fixed-size point is `size` CSS px, so fold dpr in. An attenuated point scales by
+    // 0.5 · render-target height ÷ view depth with that height already in device pixels, so dpr
+    // must not be applied a second time: it made attenuated points dpr× too large on retina.
     const n = node as AuraPointsNode;
-    record.material.setParameter("u_pointSize", (n.size ?? 1) * canvasDpr(ctx));
+    const attenuated = n.sizeAttenuation !== false;
+    record.material.setParameter("u_pointSize", (n.size ?? 1) * (attenuated ? 1 : canvasDpr(ctx)));
     out.addItems([
       {
         geometry: record.geometry,
