@@ -31,7 +31,7 @@ export const lightUniforms = (fog: Rgb = FOG_LOW): NonNullable<CustomSpec["unifo
   groundAmbient: { type: "color3", value: [...GROUND_AMBIENT] }
 });
 
-export const roadSpec = (): CustomSpec => ({ glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT }, uniforms: lightUniforms(), side: "double" });
+export const roadSpec = (): CustomSpec => ({ receiveShadow: true, glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT }, uniforms: lightUniforms(), side: "double" });
 
 export interface SolidExtra {
   readonly transparent?: boolean;
@@ -40,6 +40,7 @@ export interface SolidExtra {
 }
 
 export const solidSpec = (base: Rgb, glowColor: Rgb = [0, 0, 0], glowAmount = 0, extra: SolidExtra = {}): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
   uniforms: {
     ...lightUniforms(),
@@ -84,6 +85,7 @@ export const skySpec = (): CustomSpec => ({
 
 /** Hills and plains. `snowLine` is the world height where frost starts on upward faces; `tint` scales the rock colour. */
 export const terrainSpec = (snowLine: number, tint: Rgb = [1, 1, 1]): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: TERRAIN_FRAGMENT },
   uniforms: {
     ...lightUniforms(),

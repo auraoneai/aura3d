@@ -2,6 +2,7 @@ import { Material } from "./Material";
 import { type DrawCommand, type RenderCommandState, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { ShaderModule } from "./ShaderModule";
+import { TextureBinding } from "./TextureBinding";
 import { createLeanCoreShaderLibrary, DEFAULT_DEPTH_SHADER_NAME, type ShaderLibrary } from "./ShaderLibraryCore";
 import { type RenderItem } from "./ForwardPass";
 import type { DepthVariantFeature, ShadowCasterVariantKey } from "./contracts/shadows";
@@ -137,7 +138,9 @@ export class DepthPass extends BaseRenderPass {
         const cutoff = caster.material?.getParameter?.("u_alphaCutoff");
         const texture = caster.material?.getParameter?.("u_baseColorTexture");
         if (typeof cutoff === "number") uniforms.set("u_alphaCutoff", cutoff);
-        if (texture !== undefined) uniforms.set("u_baseColorTexture", texture);
+        // An unbound sampler reads whatever is left on its texture unit. A custom receiver program puts the cascade's depth
+        // texture on unit 0, so an alpha caster with no map sampled the render target itself (feedback loop, GL 0x502).
+        uniforms.set("u_baseColorTexture", texture !== undefined ? texture : new TextureBinding({ name: "u_baseColorTexture", required: false }));
       }
       // 02-DEPTH: selected C-11 features bind their own uniforms (e.g.
       // prd06.deform's bone texture, prd10.wind's A3DWind/noise).

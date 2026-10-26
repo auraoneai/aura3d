@@ -99,21 +99,21 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
 
   /* the Meshy models are lit surfaces: a cool sky fill and a warm low key, the custom (unlit) road/sky/neon shaders ignore both */
   b.add(lights.hemisphere({ name: "sky-fill", skyColor: "#6fa8d8", groundColor: "#2a1a10", intensity: 1.1 }));
-  b.add(lights.directional({ name: "key", position: [180, 260, -120], target: [0, 0, 0], intensity: 2.6, color: "#ffd9b0" }));
+  b.add(lights.directional({ name: "key", position: [180, 260, -120], target: [0, 0, 0], intensity: 2.6, color: "#ffd9b0", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } as never) }));
   for (const n of sceneryNodes(track)) b.add(n);
 
   /* checkpoint gates: veil across the road + two pylons */
   track.checkpoints.forEach((s, i) => {
     const fr = track.frame(s);
     const color = hexLinear(fr.sec.hud.color);
-    b.add(geometry.custom(dynamicFrom(veilQuad(track, s, 22)), { name: `gate-veil-${i}`, material: material.custom(veilSpec(color, "gate")) }).runtime({ id: `gate-veil-${i}` }));
+    b.add(geometry.custom(dynamicFrom(veilQuad(track, s, 22)), { name: `gate-veil-${i}`, material: material.custom(veilSpec(color, "gate")), castShadow: false }).runtime({ id: `gate-veil-${i}` }));
   });
 
   for (const n of gatePylonNodes(track, (fr) => droneEuler(fr, 0, 0, 0))) b.add(n);
 
   /* boost pads */
   track.boostPads.forEach((p, i) => {
-    b.add(geometry.custom(dynamicFrom(padQuad(track, p.s, p.x)), { name: `pad-${i}`, material: material.custom(veilSpec([1, 0.62, 0.15], "pad")) }).runtime({ id: `pad-${i}` }));
+    b.add(geometry.custom(dynamicFrom(padQuad(track, p.s, p.x)), { name: `pad-${i}`, material: material.custom(veilSpec([1, 0.62, 0.15], "pad")), castShadow: false }).runtime({ id: `pad-${i}` }));
   });
 
   /* pickups and barrels */

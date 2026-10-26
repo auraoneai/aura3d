@@ -33,10 +33,11 @@ float fbm(vec2 p) {
 vec3 applyFog(vec3 color, vec3 world) {
   return a3dFogHeight(color, fogColor, length(world - cameraPosition), world.y, 0.0004, 0.0022, 18.0, 0.031, 0.96);
 }
+float gSun = 1.0; // sun-shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
 vec3 lit(vec3 albedo, vec3 N) {
   vec3 hemi = mix(groundAmbient, skyAmbient, N.y * 0.5 + 0.5);
   float ndl = max(dot(N, normalize(sunDir)), 0.0);
-  return albedo * (hemi + sunColor * ndl) * 0.26;
+  return albedo * (hemi + sunColor * ndl * gSun) * 0.26;
 }
 `;
 
@@ -82,6 +83,7 @@ void main() {
   float dash = step(0.5, fract(s / 14.0)) * (1.0 - smoothstep(0.0, 0.025, abs(u)));
   float curb = smoothstep(0.93, 0.985, abs(u));
   vec3 neon = mix(vRoad, vec3(0.80, 0.95, 1.0), 0.7);
+  gSun = a3dSunShadowAuto(vWorld, N);
   vec3 color = lit(asphalt, N) * 1.55;
   color += vec3(0.10, 0.85, 0.80) * clamp(vein, 0.0, 1.0) * 0.20;
   color += vec3(0.78, 0.88, 0.95) * edgeLine * 0.55;
@@ -110,6 +112,7 @@ void main() {
   vec3 V = normalize(cameraPosition - vWorld);
   float rim = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 3.0);
   vec3 hot = vec3(1.0, 0.42, 0.08);
+  gSun = a3dSunShadowAuto(vWorld, N);
   vec3 color = lit(mix(baseColor, hot * 0.8, heat * 0.55), N);
   color += glowColor * glow * (0.85 + 0.15 * sin(u_time * 5.0));
   color += hot * heat * (0.35 + rim * 1.4);
@@ -230,6 +233,7 @@ void main() {
   float strata = 0.5 + 0.5 * sin(vWorld.y * 0.85 + n * 6.0);
   albedo *= 0.9 + 0.1 * strata * (1.0 - N0.y);
   float cavity = smoothstep(0.35, 0.75, h0);
+  gSun = a3dSunShadowAuto(vWorld, N);
   vec3 color = lit(albedo, N) * 1.25 * (0.75 + 0.35 * cavity);
   color += vec3(0.04, 0.16, 0.18) * pow(1.0 - clamp(N0.y, 0.0, 1.0), 2.0);
   outColor = vec4(applyFog(color, vWorld), 1.0);

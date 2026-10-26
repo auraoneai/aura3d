@@ -213,6 +213,9 @@ export interface WorldRuntime {
   dispose(): void;
 }
 
+/** The sun's cascaded shadow; `?shadow=0` restores the blob-only look. */
+const SUN_SHADOW = !(typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0");
+
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 
 export function buildWorld(options: WorldOptions): World {
@@ -222,8 +225,8 @@ export function buildWorld(options: WorldOptions): World {
     .background("#8fb7c9")
     .camera(camera.perspective({ position: [0, 6, 12], target: [0, 2, -20], fov: 57, near: 0.1, far: 3200 }))
     .add(environments.hdri({ name: "sky ibl", intensity: 0.7, background: false, texture: { type: "texture", format: "hdr", url: "/hdri/autumn_field_puresky_1k.hdr" } as never }))
-    // Cast shadows are off on purpose: with this scene the engine's cascaded shadow lookup marks every receiver as fully shadowed (probes in PORTING-NOTES.md), so the sun shades by direction only and the actors keep blob shadows.
-    .add(lights.directional({ name: "sun", position: [-40, 67, 56], target: [0, 0, 0], intensity: 2.8, color: "#ffe3b1", shadow: false }))
+    // The sun casts cascaded shadows (`?shadow=0` turns them off); the 4000 m sky dome is skipped as an oversize caster and the actors keep blob shadows.
+    .add(lights.directional({ name: "sun", position: [-40, 67, 56], target: [0, 0, 0], intensity: 2.8, color: "#ffe3b1", shadow: (SUN_SHADOW ? { cascades: 2, maxDistance: 90 } : false) as never }))
     .add(lights.hemisphere({ name: "sky fill", skyColor: "#d3ebf3", groundColor: "#80715b", intensity: 0.5 }))
     .add(lights.directional({ name: "cool rim", position: [30, 20, -40], intensity: 0.4, color: "#bcd9ff" }))
     .add(effects.fog({ name: "haze", color: "#b5c8c4", density: 0.0028 }));
@@ -273,7 +276,7 @@ export function buildWorld(options: WorldOptions): World {
     const asset = PROP_ASSETS[id as keyof typeof PROP_ASSETS];
     builder.add(instances.model(asset, {
       name: `model-${id}`,
-      castShadow: false,
+      castShadow: SUN_SHADOW,
       transforms: list.map((p) => ({ position: p.position, rotation: [0, p.yaw, 0] as [number, number, number], scale: p.scale })),
       ...(list.some((p) => p.tint) ? { colors: list.map((p) => p.tint ?? "#ffffff") } : {})
     }));
@@ -427,11 +430,11 @@ function bindRuntime(app: AuraApp, options: WorldOptions, pickups: readonly Spir
     const blob = node(`blob-${slot}`);
     blob.setPosition(g.x, g.y, g.z);
     blob.setScale([0.62 * scale * (1 - Math.min(0.5, lift * 0.1)), 1, 0.62 * scale * (1 - Math.min(0.5, lift * 0.1))]);
-    blob.setUniform?.("solidAlpha", 0.42 * (1 - Math.min(0.7, lift * 0.14)));
+    blob.setUniform?.("solidAlpha", (SUN_SHADOW ? 0.2 : 0.42) * (1 - Math.min(0.7, lift * 0.14)));
   };
 
   const detach = attachRootRenderSource(options.canvas, {
-    source: { collectRenderItems: () => actors.flatMap((actor, i) => visible[i] ? actor.collectRenderItems({ modelMatrix: mm[i]! }).map((item) => ({ ...item, castShadow: false })) : []) }
+    source: { collectRenderItems: () => actors.flatMap((actor, i) => visible[i] ? actor.collectRenderItems({ modelMatrix: mm[i]! }).map((item) => ({ ...item, castShadow: SUN_SHADOW })) : []) }
   });
 
   const aim = (id: string, from: Vec3, to: Vec3, length: number, grip = 0.12): void => {
