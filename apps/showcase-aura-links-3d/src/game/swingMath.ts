@@ -598,7 +598,9 @@ export const CLUB_PARTS: readonly ClubPartSpec[] = [
 export interface AttachOffset {
   readonly id: string;
   readonly position: V3;
-  readonly rotation: V3; // euler XYZ (three.js convention, matches engine)
+  readonly rotation: V3; // the engine attach's euler convention (kept for the bone attachment path)
+  /** the exact rotation (quaternion) relative to the forearm: euler round trips lose the axis, so placement uses this */
+  readonly quat: Quat;
 }
 
 /**
@@ -628,6 +630,28 @@ export function clubAttachOffsets(
       : qFromTo([0, 1, 0], dirM);
     const pos = qRotate(inv, vSub(centre, elbow0));
     const rot = qMul(inv, quat);
-    return { id: part.id, position: pos, rotation: eulerXYZFromQuat(rot) };
+    return { id: part.id, position: pos, rotation: eulerXYZFromQuat(rot), quat: rot };
   });
+}
+
+
+/**
+ * Where one club part sits for a solved pose: its centre in the shot frame and its orientation (model to world: the hero node turns
+ * by root.yaw and then faceYaw about +Y). Pure, so the grip/shaft/head layout can be unit tested without the engine.
+ */
+export function clubPartPose(
+  solved: { readonly rightForearmWorld: Quat; readonly rightElbowModel: V3 },
+  part: { readonly position: readonly number[]; readonly quat: Quat },
+  root: RootFrame,
+  faceYaw: number
+): { readonly centreShot: V3; readonly worldQuat: Quat } {
+  const offsetM = qRotate(solved.rightForearmWorld, [part.position[0], part.position[1], part.position[2]]);
+  const centreShot = toShot(root, [
+    solved.rightElbowModel[0] + offsetM[0],
+    solved.rightElbowModel[1] + offsetM[1],
+    solved.rightElbowModel[2] + offsetM[2]
+  ]);
+  const yawToWorld = faceYaw + root.yaw;
+  const worldQuat = qMul({ x: 0, y: Math.sin(yawToWorld / 2), z: 0, w: Math.cos(yawToWorld / 2) }, qMul(solved.rightForearmWorld, part.quat));
+  return { centreShot, worldQuat };
 }
