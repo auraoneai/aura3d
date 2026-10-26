@@ -155,6 +155,9 @@ function boot(): void {
   let qaKickerId: string | null = null;
   let qaFocus = false;
   let userInteracted = false;
+  const qaProbe: Array<{ t: number; live: number; trauma: number }> = [];
+  let qaProbeT = 0;
+  let qaProbeOff: (() => void) | null | undefined = null;
   const audio = createGameAudio({
     browserContext: false,
     cues: {
@@ -663,7 +666,28 @@ function boot(): void {
         qaKickerId = fastest.id; qaFocus = true; qaTargetFrac = null; qaFrozen = true;
       },
       /** Advance the (frozen) sim `n` fixed steps; the next rendered frame shows the result. */
-      step(n: number) { for (let i = 0; i < n; i++) consumeEvents(sim.step(1 / 60, inputFrame)); }
+      step(n: number) { for (let i = 0; i < n; i++) consumeEvents(sim.step(1 / 60, inputFrame)); },
+      /** Freeze or release the sim without touching the camera (stepping with step() still works while frozen). */
+      freeze(on: boolean) { qaFrozen = on; if (!on) { qaTargetFrac = null; qaFocus = false; } },
+      /** Fire one juice event (fx, shake, punch) at a world position, as the sim would. */
+      fireJuice(ev: string, at?: Vec3) { juiceFire(ev, { position: at ?? [sim.state.ball.x, 0.4, sim.state.ball.z] }); },
+      /** Put the ball loose in flight: speed m/s, launch angle degrees above the grass, heading radians in the XZ plane. */
+      launchBall(x: number, z: number, speed: number, deg: number, heading: number, spin = 0) {
+        const b = sim.state.ball, a = (deg * Math.PI) / 180;
+        b.x = x; b.z = z; b.y = BALL_R; b.mode = "flight"; b.ownerId = null; b.rolling = false; b.spin = spin; b.freeT = 0;
+        b.vx = Math.cos(heading) * speed * Math.cos(a); b.vz = Math.sin(heading) * speed * Math.cos(a); b.vy = speed * Math.sin(a);
+      },
+      /** Sample particles alive and camera trauma once per rendered frame (app time) until probeStop(). */
+      probeStart() {
+        qaProbe.length = 0; qaProbeT = 0;
+        qaProbeOff?.();
+        qaProbeOff = (app as any).onFrame?.((f: { dt: number }) => {
+          qaProbeT += f.dt;
+          qaProbe.push({ t: +qaProbeT.toFixed(3), live: (app as any).effects?.liveCount ?? 0, trauma: +(((app as any).camera?.shake?.energy?.() ?? 0)).toFixed(4) });
+        });
+      },
+      probeSeries() { return qaProbe.slice(); },
+      probeStop() { qaProbeOff?.(); qaProbeOff = null; return qaProbe.slice(); }
     }
   });
 
