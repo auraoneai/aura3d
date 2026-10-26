@@ -48,7 +48,8 @@ const rot = (p: number[]): [number, number, number] => {
 };
 const R = pos.map((p) => rot(p));
 let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-const keep = (i: number): boolean => focus === "full" || (focus === "arms" ? pos[i]![1] > prim0.pos.reduce((m, p) => Math.min(m, p[1]), 1e9) + 1.05 && pos[i]![1] < prim0.pos.reduce((m, p) => Math.max(m, p[1]), -1e9) - 0.2 : pos[i]![1] > 0.35 - 0.95);
+const topY = prim0.pos.reduce((m, p) => Math.max(m, p[1]), -1e9);
+const keep = (i: number): boolean => focus === "full" || (focus === "head" ? pos[i]![1] > topY - 0.4 : false) || (focus === "head" ? false : focus === "arms" ? pos[i]![1] > prim0.pos.reduce((m, p) => Math.min(m, p[1]), 1e9) + 1.05 && pos[i]![1] < prim0.pos.reduce((m, p) => Math.max(m, p[1]), -1e9) - 0.2 : pos[i]![1] > 0.35 - 0.95);
 for (let i = 0; i < R.length; i += 1) { if (!keep(i)) continue; minX = Math.min(minX, R[i]![0]); maxX = Math.max(maxX, R[i]![0]); minY = Math.min(minY, R[i]![1]); maxY = Math.max(maxY, R[i]![1]); }
 const W = Number(pxArg), H = Number(pxArg);
 const scale = Math.min(W / (maxX - minX), H / (maxY - minY)) * 0.9;

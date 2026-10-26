@@ -46,15 +46,15 @@ export const assets = defineAuraAssets({
   fcSoccerStrikerMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcSoccerStrikerMeshyAthlete.dbae7fa0.glb",
-    hash: "sha256-dbae7fa04cab36d39cea543069cff4eb4f5ff95ad2419abf05b11e18e77379c9",
+    url: "/aura-assets/fcSoccerStrikerMeshyAthlete.1b37df23.glb",
+    hash: "sha256-1b37df23525f254dc5bb8483a512d850db21a1f4e67cb056aec68a143633d686",
     bounds: [0.671, 1.891, 0.481]
   },
   fcGoalkeeperMeshy: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcGoalkeeperMeshyAthlete.1cbd9cce.glb",
-    hash: "sha256-1cbd9cce9a25bcae0df931d4d68d69ef3d401b5e1d563640e2ee9be2c7d83911",
+    url: "/aura-assets/fcGoalkeeperMeshyAthlete.b9fe367e.glb",
+    hash: "sha256-b9fe367eb7cc0fa9806d1a39ea85de8d21d38e7e68632fbdff9e5f9015fdd1e7",
     bounds: [0.688, 1.899, 0.508]
   },
   fcSoccerGoalNetMeshy: {
@@ -81,18 +81,18 @@ export const assets = defineAuraAssets({
   "hoopsAthleteGuard": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteGuardClean.74f49b45.glb",
-    hash: "sha256-74f49b45ad164648647f78fabc1bbcd2a13ff1c21e857fb93af426322a7688de",
+    url: "/aura-assets/hoopsAthleteGuardClean.b9f501b4.glb",
+    hash: "sha256-b9f501b40572bca9f132b2814ab8f930301b0b896778f3db0f353a1ec3d0c695",
     bounds: [0.905, 1.903, 0.404],
-    sizeBytes: 1585852,
+    sizeBytes: 1600572,
   },
   "hoopsAthleteBig": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/hoopsAthleteBigClean.b51e5962.glb",
-    hash: "sha256-b51e59623b972d024e4914aa60264c867ad1a74cf07bcdbb4f1f9abe5095370a",
+    url: "/aura-assets/hoopsAthleteBigClean.a53256dd.glb",
+    hash: "sha256-a53256ddcacf537775870136a8a112fb9ec208783d57298f365164b54555c910",
     bounds: [0.878, 1.903, 0.429],
-    sizeBytes: 1311132,
+    sizeBytes: 1325852,
   },
   diamondDugout: {
     type: "model",
