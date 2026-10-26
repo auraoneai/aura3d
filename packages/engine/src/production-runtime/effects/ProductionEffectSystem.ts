@@ -270,6 +270,7 @@ export class ProductionEffectSystem {
   private readonly transients = new Map<string, { readonly born: number; warned: boolean }>();
   private lastTransientAt = 0;
   private lingerWarned = false;
+  private readonly runtimeEffectsOff: boolean;
   private readonly volumes = new Map<string, VolumeBinding>();
   /** C-27 budget share applied to stateless weather volumes in feed (1 = full). */
   private volumeScale = 1;
@@ -309,6 +310,22 @@ export class ProductionEffectSystem {
     this.decals = new DecalBatch(DECAL_TIER_CAP[this.tier]);
     this.budgetCap = QUALITY_TIERS[this.tier].particleBudget;
     this.transientLights = new TransientLightPool(this.tier);
+    const search = typeof location !== "undefined" ? location.search : "";
+    // `?vfx=off` drops every runtime-spawned effect (to prove whether bubbles come from impact effects or from the scene);
+    // `?vfxdebug=1` publishes `window.__AURA_VFX_DEBUG__()` with every live runtime emitter, its age and particle count.
+    this.runtimeEffectsOff = /[?&]vfx=off\b/.test(search);
+    if (/[?&]vfxdebug=1\b/.test(search) && typeof window !== "undefined") {
+      (window as unknown as Record<string, unknown>)["__AURA_VFX_DEBUG__"] = () => ({
+        time: this.time,
+        live: this.liveCount(),
+        transients: [...this.transients].map(([id, record]) => {
+          const binding = this.emitters.get(id);
+          return { id, age: Number((this.time - record.born).toFixed(2)), live: binding?.state.live ?? 0, emissionRate: binding?.state.desc.emissionRate ?? 0 };
+        }),
+        scene: [...this.emitters.keys()].filter((id) => !this.transients.has(id)),
+        notes: this.diagnostics.report().errors
+      });
+    }
     this.rebuildFromScene();
     this.offFrame = app.onFrame((frame) => this.frame(frame.dt));
   }
@@ -646,6 +663,7 @@ export class ProductionEffectSystem {
 
   /** Add a transient effect-instance emitter (effects.burst/spawn). */
   addInstance(nodeId: string, node: EffectNodeLike): string {
+    if (this.runtimeEffectsOff) return nodeId;
     const lowered = lowerEffectNode(node);
     this.diagnostics.track({
       nodeId,
