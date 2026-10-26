@@ -4,14 +4,15 @@ import { emit, shootGame, type GameShot } from "./shotsd-lib";
 
 // Iron Crown roster frames (remote only, software WebGL2): the Versus pick screen, then each fighter in a bout, then the standard final-screens set.
 const CFG: GameShot = { slug: "iron-crown", route: "/apps/showcase-iron-crown/", auto: "#ic-autopilot", modes: [{ name: "versus", click: "[data-mode=\"versus\"]" }], keys: [["KeyD"], ["KeyJ"], ["KeyK"]] };
-const PAIRS: ReadonlyArray<readonly [string, string]> = [["boulder", "seraph"], ["jinx", "sovereign"], ["kenji", "volt"], ["sovereign", "boulder"], ["seraph", "jinx"]];
+const PAIRS: ReadonlyArray<readonly [string, string]> = [["boulder", "sovereign"], ["seraph", "jinx"]]; // Sovereign is a boss: it is not in the Player 1 grid, so it is only seen as the opponent // Sovereign is a boss: it is not in the Player 1 grid, so it is only seen as the opponent
 
 const FAST = false;
+const STANDARD_SET = false; // true also shoots the standard 1280/390/card final-screens set (about 25 minutes more)
 test.setTimeout(3_000_000);
 
 test("p1crown roster", async ({ browser }) => {
   const server = await startExampleDevServer();
-  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   for (const [p1, cpu] of FAST ? PAIRS.slice(0, 1) : PAIRS) {
     const page = await context.newPage();
     const errors: string[] = [];
@@ -38,6 +39,6 @@ test("p1crown roster", async ({ browser }) => {
     await page.close();
   }
   await context.close();
-  if (!FAST) await shootGame(browser, CFG, server.origin);
+  if (STANDARD_SET) await shootGame(browser, CFG, server.origin);
   await server.close();
 });

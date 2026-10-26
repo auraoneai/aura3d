@@ -46,3 +46,7 @@ Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x
 ## Review coverage
 
 Frames opened and checked by eye: 1280 early, mid and modes; 390 mid and modes (5 of 11). The remaining frames were captured but not individually inspected; the problems above come from the frames listed here.
+
+## Update 2026-10-25 (roster art pass)
+
+The 1280 and 390 frames and the card were retaken after Boulder, Seraph and Sovereign got flat stylised faces (`evidence/iron-crown/rework/p1-roster/`). Runner: remote Azure ACR Task, headless Chromium, software WebGL2 (not real-GPU evidence), spec `tests/browser/p1crown.spec.ts` (runs `p1crown-4` for the standard set and `p1crown-5` for the card), dev-server staging (not the shotsd dist). The card (`card-1x.jpg`, `card-2x.jpg`) is a Boulder Kane vs Sovereign Versus frame at 1440x900; the 1280 and 390 frames show the default Quick Bout (Kenji vs Mara). 06-results was not reached. Console errors and failed responses: none in any profile.
