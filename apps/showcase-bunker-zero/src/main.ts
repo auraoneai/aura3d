@@ -10,13 +10,14 @@ import {
   camera, effects, game, gameFeel, lights, looks, material, model,
   primitives, scene, type AuraNodeBuilder, type AuraSceneNode
 } from "@aura3d/engine";
-import { createGame, sfxUrl } from "@aura3d/engine/game";
+import { createGame, sfxUrl, type ForwardAxis } from "@aura3d/engine/game";
 import { assets } from "./aura-assets";
 import { CELL, WALL_H, SILO_H, FLOORS, KILL_HOUSE, type FloorDef } from "./maps";
 import {
   createSim, cellCenter, WEAPONS, type Sim, type SimInput, type WeaponId
 } from "./sim";
 import { VIEWMODEL_ASSET, VIEWMODEL_YAW_OFFSET, weaponHudLabel } from "./weapons-view";
+import { ENEMY_FORWARD, enemyFacingError, nextEnemyYaw } from "./enemy-facing";
 import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
@@ -511,8 +512,16 @@ const boomNodes = Array.from({ length: 6 }, (_, i) => req(`boom-${i}`));
 const rocketNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`rocket-${i}`));
 const tracerNodes = Array.from({ length: MAX_ROCKETS }, (_, i) => req(`tracer-${i}`));
 
+const enemyYaw = new Map<string, number>();
+const forwardOverride: Partial<Record<string, ForwardAxis>> = {};
+const enemyForward = (kind: keyof typeof ENEMY_FORWARD): ForwardAxis => forwardOverride[kind] ?? ENEMY_FORWARD[kind];
+let lastPoseTime = -1;
+let poseDt = 1 / 60;
+let qaFrozen = false;
 function startFloor(idx: number, m: "descent" | "killhouse") {
   mode = m;
+  enemyYaw.clear();
+  lastPoseTime = -1;
   floorIdx = idx;
   const def = m === "killhouse" ? KILL_HOUSE : FLOORS[idx];
   sim = createSim(def, { ox: (m === "killhouse" ? 6 : idx) * FLOOR_SPAN, mode: m, seed: 1337 + idx * 97 + (m === "killhouse" ? 7 : 0) });
@@ -688,6 +697,8 @@ function findCellCenter(s: Sim, ch: string): [number, number] | null {
 
 function syncScenePose(inp: SimInput) {
   const p = sim.state.player;
+  poseDt = lastPoseTime < 0 ? 1 : Math.min(0.1, Math.max(0, sim.state.time - lastPoseTime));
+  lastPoseTime = sim.state.time;
   // ---- camera: eye pose + shake + tactical flashlight tracking
   const shake = sim.state.shake + (p.hurtT > 0 ? 0.3 : 0);
   const shakeYaw = shake * Math.sin(sim.state.time * 91) * 0.012;
@@ -749,7 +760,7 @@ function syncScenePose(inp: SimInput) {
       if (e.deathT < 4) {
         setEnemyClip(id, node, "Idle_Loop", 0.2);
         node.setPosition(e.x + ox, Math.max(-0.6, -e.deathT * 0.2), e.z);
-        node.setRotation(Math.min(Math.PI / 2, e.deathT * 4), e.facing, 0);
+        node.setRotation(Math.min(Math.PI / 2, e.deathT * 4), enemyYaw.get(id) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), 0);
         node.setVisible(true);
       } else node.setVisible(false);
       continue;
@@ -778,7 +789,9 @@ function syncScenePose(inp: SimInput) {
     }
     setEnemyClip(id, node, clip, speed);
     node.setPosition(e.x + ox, strideBob, e.z);
-    node.setRotation(0, -e.facing, strideRoll);
+    const yaw = nextEnemyYaw(enemyYaw.get(id) ?? nextEnemyYaw(0, e.kind, e.facing, 1, enemyForward(e.kind)), e.kind, e.facing, poseDt, enemyForward(e.kind));
+    enemyYaw.set(id, yaw);
+    node.setRotation(0, yaw, strideRoll);
     node.setVisible(true);
     const eyeY = e.kind === "dog" ? 0.8 : e.kind === "boss" ? 2.62 : e.kind === "gunner" ? 1.76 : 1.66;
     eye.setPosition(e.x + ox, eyeY + strideBob, e.z);
@@ -930,7 +943,9 @@ app.onFrame(({ dt }) => {
   pointerFirePressed = false;
 
   // ---- tick (fixed 60Hz substeps for demo determinism)
-  if (DEMO) {
+  if (qaFrozen) {
+    // QA hook froze the world for a still frame: no simulation
+  } else if (DEMO) {
     demoAcc += dt;
     while (demoAcc >= 1 / 60) { sim.tick(1 / 60, inp); demoAcc -= 1 / 60; simSteps++; }
   } else {
@@ -1053,6 +1068,78 @@ function fmtTime(t: number) {
 }
 
 // ---------------------------------------------------------------------------
+// QA hook (deterministic stills and numbers): stage an enemy of a kind in front of the player and report which way it is drawn.
+function installFacingQa() {
+  const KIND_CHAR = { guard: "g", dog: "d", gunner: "G", boss: "B" } as const;
+  const noInput: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
+  const rig = {
+    stage(kind: keyof typeof KIND_CHAR, dist = 4.5, bearingDeg = 0) {
+      const floor = FLOORS.findIndex((f) => f.rows.some((r) => r.includes(KIND_CHAR[kind])));
+      if (floor < 0) return { ok: false, reason: "no floor has this enemy" };
+      if (mode !== "descent" || floorIdx !== floor) startFloor(floor, "descent");
+      qaFrozen = false;
+      const e = sim.state.enemies.find((en) => en.kind === kind && en.state !== "dead");
+      if (!e) return { ok: false, reason: "enemy missing" };
+      const p = sim.state.player;
+      // keep every other enemy out of the shot, then pick the open spot around this enemy with a clear line and room for the player
+      for (const o of sim.state.enemies) if (o !== e) { o.state = "dead"; o.deathT = 99; }
+      const base = (bearingDeg * Math.PI) / 180;
+      for (let k = 0; k < 16; k++) {
+        const a = base + (k * Math.PI) / 8;
+        for (let d = dist; d >= 2.2; d -= 0.4) {
+          const px = e.x + Math.sin(a) * d, pz = e.z - Math.cos(a) * d;
+          if (sim.cellBlocked(Math.floor(px / CELL), Math.floor(pz / CELL))) continue;
+          if (!sim.hasLOS(px, pz, e.x, e.z)) continue;
+          p.x = px; p.z = pz; p.hp = 9999; p.armor = 0;
+          p.yaw = Math.atan2(e.x - px, -(e.z - pz));
+          p.pitch = 0;
+          e.state = "chase"; e.stateT = 0; e.attackCd = 99;
+          sim.tick(1 / 60, noInput);
+          sim.tick(1 / 60, noInput);
+          qaFrozen = true;
+          syncScenePose(noInput);
+          return { ok: true, floor, distance: +d.toFixed(2) };
+        }
+      }
+      return { ok: false, reason: "no open spot" };
+    },
+    unfreeze() { qaFrozen = false; },
+    /** Run the sim and the drawn-yaw smoothing for `seconds` of 60 Hz steps, then refreeze: used to measure convergence. */
+    advance(seconds: number) {
+      const n = Math.round(seconds * 60);
+      for (let i = 0; i < n; i++) { sim.tick(1 / 60, noInput); syncScenePose(noInput); }
+    },
+    /** Make the enemy look away, then call advance() to see it turn back. */
+    turnAway(kind: keyof typeof KIND_CHAR) {
+      const e = sim.state.enemies.find((en) => en.kind === kind && en.state !== "dead");
+      if (!e) return false;
+      const id = `f${sim.state.mode === "killhouse" ? 6 : floorIdx}-en-${e.sx}-${e.sz}`;
+      enemyYaw.set(id, (enemyYaw.get(id) ?? 0) + Math.PI);
+      return true;
+    },
+    setForward(kind: keyof typeof KIND_CHAR, axis: ForwardAxis | null) {
+      if (axis === null) delete forwardOverride[kind]; else forwardOverride[kind] = axis;
+      syncScenePose(noInput);
+    },
+    report() {
+      const p = sim.state.player;
+      const slot = sim.state.mode === "killhouse" ? 6 : floorIdx;
+      return sim.state.enemies.filter((e) => e.state !== "dead").map((e) => {
+        const id = `f${slot}-en-${e.sx}-${e.sz}`;
+        const yaw = enemyYaw.get(id) ?? 0;
+        const dx = p.x - e.x, dz = p.z - e.z;
+        const axis = enemyForward(e.kind);
+        return {
+          kind: e.kind, state: e.state, forward: axis, simFacing: +e.facing.toFixed(4), drawnYaw: +yaw.toFixed(4),
+          distance: +Math.hypot(dx, dz).toFixed(2), errorDeg: +((enemyFacingError(yaw, e.kind, dx, dz, axis) * 180) / Math.PI).toFixed(2)
+        };
+      });
+    }
+  };
+  (window as unknown as { __AURA_BUNKER_ZERO_QA__?: typeof rig }).__AURA_BUNKER_ZERO_QA__ = rig;
+}
+
+// ---------------------------------------------------------------------------
 function publishEvidence() {
   const p = sim.state.player;
   const payload = {
@@ -1127,6 +1214,7 @@ elHud.classList.remove("hidden");
 void mg.ready().then(() => {
   appReady = true;
   document.body.dataset.aura3dReady = "true";
+  installFacingQa();
   window.__AURA3D_ROUTE_READY__ = { ready: true };
 }).catch((err: unknown) => {
   const el = document.getElementById("render-error") ?? document.createElement("div");

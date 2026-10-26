@@ -38,3 +38,5 @@ export type {
   GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone,
   TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport
 } from "./twoHandGrip";
+export { wrapAngle, yawToFace, visualHeading, facingError, faceTowards } from "./facing";
+export type { ForwardAxis, FacingTarget, FaceTowardsOptions } from "./facing";

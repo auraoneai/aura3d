@@ -36,4 +36,4 @@ Default limits (`DEFAULT_GRIP_LIMITS`): bottom palm within 0.06 m of the grip po
 
 Where it fits: any object held with two hands. Not a fit: a single-hand grip (`attachToBone`), a ball in a hand (`createHandBounce`), or a bow (an off-hand draw).
 
-Source of truth for the numbers and lessons: Aura Diamond, `docs/agents/lessons-learned.md` M15, `evidence/aura-diamond-3d/bat-fix/`.
+Source of truth for the numbers and lessons: Aura Diamond, `docs/agents/lessons-learned.md` M16, `evidence/aura-diamond-3d/bat-fix/`.

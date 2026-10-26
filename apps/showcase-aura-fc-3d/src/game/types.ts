@@ -78,7 +78,9 @@ export interface BallState {
   vy: number;
   vz: number;
   rotX: number;
+  rotY: number;
   rotZ: number;
+  quat: [number, number, number, number]; // orientation (x, y, z, w); rotX/rotY/rotZ are its ZYX Euler for the renderer
   spin: number;                   // sidespin rad/s — curl
   rolling: boolean;               // on the ground, rolling (friction regime, no bounces)
   lastKickPower: number;          // power of the last completed strike (evidence)

@@ -82,7 +82,8 @@ export {
   createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHandGripBodyRig, twoHandGripBonesForEngine, relaxedTopHand,
   measureGrip, handCentroid, DEFAULT_GRIP_LIMITS, DEFAULT_GRIP_BONE_NAMES,
   solveGripTwoBone, orbitGripElbow, gripAzimuthTwist, gripQNorm, gripQMul, gripQConj, gripQAxis, gripQRot, gripQFromTo,
-  gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID
+  gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID,
+  wrapAngle, yawToFace, visualHeading, facingError, faceTowards
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
@@ -98,7 +99,8 @@ export type {
   HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample,
   HandBounceReport, HandBounceLimits,
   GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone,
-  TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport
+  TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport,
+  ForwardAxis, FacingTarget, FaceTowardsOptions
 } from "./motion/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";

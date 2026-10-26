@@ -11,6 +11,7 @@ import type {
   SimEvent, TeamId, UserInputFrame, Vec3
 } from "./types";
 import { VENUES } from "./content";
+import { stepFreeBall, spinBall, ROLL_DECEL } from "./ballPhysics";
 import { planCommand } from "./ai";
 
 /* ------------------------------------------------------------------ *
@@ -50,11 +51,8 @@ const KICK_PLANT_RATE = 34;       // 1/s: braking of the kicker during a swing
 const KICK_TURN_RATE = 30;        // 1/s: turn toward the kick direction during a swing
 const FOOT_AHEAD = 0.34;          // kicking-side foot, ahead of body centre (m)
 const FOOT_SIDE = 0.14;           // kicking-side foot, lateral offset to the right boot (m)
-const GRAVITY = 9.81;
-const BOUNCE_RESTITUTION = 0.55;  // vertical energy kept per bounce
-const BOUNCE_HORIZONTAL = 0.8;    // horizontal energy kept per bounce
-const ROLL_DECEL = 3.0;           // rolling friction (m/s²) until the ball stops
-const ROLL_STOP = 0.12;           // below this horizontal speed the ball is at rest (m/s)
+const PASS_ARRIVE = 5.2;          // weighted ground pass: speed left when it reaches the receiver (m/s)
+const DRIVEN_ARRIVE = 7.0;
 
 /** A kick in progress: the swing carries the ball until the contact frame. */
 interface PendKick {
@@ -64,6 +62,7 @@ interface PendKick {
   spin: number;
   targetId: string | null;
   aimLiftDeg: number;             // extra loft for aimed shots (degrees)
+  targetDist: number;             // distance to the receiver's lead point (0 = none): weights ground passes
   T: number;                      // swing duration
   contactAt: number;              // elapsed seconds until the boot reaches the ball
   minFootDist: number;            // closest foot↔ball approach before contact (evidence)
@@ -118,7 +117,7 @@ export function createSim(): Sim {
     mode: "menu", phase: "idle", phaseT: 0, simT: 0,
     half: 1, clock: 0, score: [0, 0], attackSign: [1, -1],
     ball: {
-      x: 0, y: BALL_R, z: 0, vx: 0, vy: 0, vz: 0, rotX: 0, rotZ: 0, spin: 0,
+      x: 0, y: BALL_R, z: 0, vx: 0, vy: 0, vz: 0, rotX: 0, rotY: 0, rotZ: 0, quat: [0, 0, 0, 1], spin: 0,
       rolling: false, lastKickPower: 0, lastKickFootDist: -1, lastKickT: -1,
       mode: "dead", ownerId: null, lastTouchTeam: null, intendedTargetId: null,
       shotPower: 0, freeT: 99, controlT: 0, lastShot: "none", trail: [],
@@ -263,7 +262,7 @@ export function createSim(): Sim {
    * carries a long backswing and follow-through.
    */
   function startKick(p: PlayerInternal, dir: [number, number], power: number, opts: {
-    kind: BallState["lastShot"]; targetId?: string | null; spin?: number; aimLiftDeg?: number;
+    kind: BallState["lastShot"]; targetId?: string | null; spin?: number; aimLiftDeg?: number; targetDist?: number;
   }) {
     if (p.pendKick) return;                        // mid-swing — no double strikes
     const pw = clamp(power, 0.12, 1);
@@ -272,7 +271,7 @@ export function createSim(): Sim {
     p.pendKick = {
       dir: [dx, dz], power: pw, kind: opts.kind,
       spin: opts.spin ?? 0, targetId: opts.targetId ?? null,
-      aimLiftDeg: opts.aimLiftDeg ?? 0,
+      aimLiftDeg: opts.aimLiftDeg ?? 0, targetDist: opts.targetDist ?? 0,
       T, contactAt: T * KICK_CONTACT_FRAC, minFootDist: 99
     };
     p.kickT = T;
@@ -286,12 +285,19 @@ export function createSim(): Sim {
   function launchKick(p: PlayerInternal, pend: PendKick) {
     const b = state.ball;
     let speed: number, angleDeg: number;
+    // weighted ground pass: just enough speed to arrive at the receiver with PASS_ARRIVE left after
+    // rolling friction and drag (a = ROLL_DECEL + ~1.2), so the ball rolls the whole way instead of lobbing
+    const weighted = (arrive: number, lo: number, hi: number): number => {
+      const decel = ROLL_DECEL + 1.2;
+      const v = Math.sqrt(arrive * arrive + 2 * decel * pend.targetDist);
+      return clamp(v * (0.94 + 0.12 * pend.power), lo, hi);
+    };
     switch (pend.kind) {
-      case "shot":     speed = 15 + pend.power * 9;  angleDeg = 10 + pend.power * 5 + pend.aimLiftDeg; break; // 15–24 m/s, rising
-      case "driven":   speed = 14 + pend.power * 5;  angleDeg = 12 + pend.power * 4; break;                  // flat & hard
-      case "cross":    speed = 10.5 + pend.power * 3; angleDeg = 45 + pend.power * 8; break;                 // lofted delivery
-      case "clearance": speed = 13 + pend.power * 6; angleDeg = 30 + pend.power * 10; break;                 // big boot upfield
-      default:         speed = 8 + pend.power * 6;   angleDeg = 20 + pend.power * 8; break;                  // pass 8–14 m/s, 20–28°
+      case "shot":     speed = 15 + pend.power * 9;  angleDeg = 5 + pend.power * 6 + pend.aimLiftDeg; break;  // 15–24 m/s, a driven strike that rises into the goal
+      case "driven":   speed = pend.targetDist > 0 ? weighted(DRIVEN_ARRIVE, 11, 21) : 14 + pend.power * 5; angleDeg = 2 + pend.power * 1.5; break; // flat & hard along the grass
+      case "cross":    speed = 10.5 + pend.power * 3; angleDeg = 38 + pend.power * 8; break;                 // lofted delivery
+      case "clearance": speed = 13 + pend.power * 6; angleDeg = 28 + pend.power * 10; break;                 // big boot upfield
+      default:         speed = pend.targetDist > 0 ? weighted(PASS_ARRIVE, 7, 15) : 8 + pend.power * 6; angleDeg = 2 + pend.power * 1.5; break; // ground pass
     }
     const a = (angleDeg * Math.PI) / 180;
     const vh = speed * Math.cos(a);
@@ -661,7 +667,7 @@ export function createSim(): Sim {
       // kick-in: short pass to nearest open teammate
       giveBall(taker, false);
       const target = choosePassTarget(taker, [state.attackSign[team], 0], false);
-      if (target) startKick(taker, norm2(target.lead[0] - taker.x, target.lead[1] - taker.z), 0.55, { kind: "pass", targetId: target.p.id });
+      if (target) startKick(taker, norm2(target.lead[0] - taker.x, target.lead[1] - taker.z), 0.55, { kind: "pass", targetId: target.p.id, targetDist: dist2(taker.x, taker.z, target.lead[0], target.lead[1]) });
       state.phase = "live"; state.phaseT = 0;
     }
   }
@@ -714,62 +720,15 @@ export function createSim(): Sim {
       b.z = lerp(b.z, tz, Math.min(1, dt * 13));
       b.y = BALL_R; b.vx = o.vx; b.vz = o.vz; b.vy = 0; b.spin = 0;
       b.rolling = false;
-      b.rotX += (b.vz / BALL_R) * dt;
-      b.rotZ -= (b.vx / BALL_R) * dt;
+      spinBall(b, b.vz / BALL_R, 0, -b.vx / BALL_R, dt);
       state.possessionTeam = o.team;
       return true;
     }
     if (b.mode === "dead") return true;
 
-    // loose / flight — integrate
-    b.vy -= GRAVITY * dt;
-    const drag = Math.exp(-0.10 * dt);
-    b.vx *= drag; b.vy *= drag; b.vz *= drag;
-    // Magnus curl: lateral accel perpendicular to travel
-    const hv = Math.hypot(b.vx, b.vz);
-    if (Math.abs(b.spin) > 0.05 && hv > 0.5) {
-      const px = -b.vz / hv, pz = b.vx / hv;
-      const mag = b.spin * 0.34 * Math.min(1.3, hv * 0.09);
-      b.vx += px * mag * dt * 60 * 0.016;
-      b.vz += pz * mag * dt * 60 * 0.016;
-    }
-    b.x += b.vx * dt; b.y += b.vy * dt; b.z += b.vz * dt;
-    // spin about the axis perpendicular to travel (cross(up, velocity));
-    // rate ∝ speed — keeps turning while it rolls
-    b.rotX += (b.vz / BALL_R) * dt;
-    b.rotZ -= (b.vx / BALL_R) * dt;
-
-    // ground: bounce with energy loss, then roll with friction. The ball's
-    // centre settles at grass + radius — it always rides ON TOP of the turf.
-    if (b.y <= BALL_R) {
-      b.y = BALL_R;
-      if (b.vy < -0.55) {
-        const impact = -b.vy;
-        b.vy = impact * BOUNCE_RESTITUTION;             // vertical energy loss
-        b.vx *= BOUNCE_HORIZONTAL; b.vz *= BOUNCE_HORIZONTAL; // horizontal damp
-        emit({ type: "bounce", label: "bounce", severity: "info", position: [b.x, b.y, b.z], value: impact });
-        if (b.vy < 1.4) {                                // no visible hop left → roll
-          b.vy = 0; b.rolling = true;
-          if (b.mode === "flight") b.mode = "loose";
-        }
-      } else {
-        b.vy = 0;
-        b.rolling = true;
-        if (b.mode === "flight") b.mode = "loose";
-      }
-    }
-    if (b.rolling) {
-      // rolling friction: −3 m/s² against travel until the ball stops dead
-      const sp = Math.hypot(b.vx, b.vz);
-      if (sp > ROLL_STOP) {
-        const dec = Math.min(sp, ROLL_DECEL * dt);
-        b.vx -= (b.vx / sp) * dec;
-        b.vz -= (b.vz / sp) * dec;
-      } else {
-        b.vx = 0; b.vz = 0;
-      }
-      b.spin *= Math.exp(-1.6 * dt);
-    }
+    // loose / flight — integrate (drag, Magnus, bounce, roll: see ballPhysics.ts)
+    const impact = stepFreeBall(b, dt);
+    if (impact > 0) emit({ type: "bounce", label: "bounce", severity: "info", position: [b.x, b.y, b.z], value: impact });
 
     // goal posts / bar — clank detection near each goal line
     for (const gx of [-PITCH_HX, PITCH_HX]) {
@@ -982,7 +941,8 @@ export function createSim(): Sim {
         const target = choosePassTarget(p, aim, c.pass === "driven");
         if (target) {
           startKick(p, norm2(target.lead[0] - p.x, target.lead[1] - p.z), c.pass === "driven" ? 0.85 : 0.55, {
-            kind: c.pass === "driven" ? "driven" : "pass", targetId: target.p.id
+            kind: c.pass === "driven" ? "driven" : "pass", targetId: target.p.id,
+            targetDist: dist2(p.x, p.z, target.lead[0], target.lead[1])
           });
           // receiver starts for it
           target.p.replanT = 0;
@@ -1157,7 +1117,7 @@ export function createSim(): Sim {
           giveBall(gk, false);
           const target = choosePassTarget(gk, [state.attackSign[gk.team], 0], true);
           if (target) {
-            startKick(gk, norm2(target.lead[0] - gk.x, target.lead[1] - gk.z), 0.9, { kind: "driven", targetId: target.p.id });
+            startKick(gk, norm2(target.lead[0] - gk.x, target.lead[1] - gk.z), 0.9, { kind: "driven", targetId: target.p.id, targetDist: dist2(gk.x, gk.z, target.lead[0], target.lead[1]) });
           } else {
             startKick(gk, [state.attackSign[gk.team], 0], 0.8, { kind: "clearance" });
           }
