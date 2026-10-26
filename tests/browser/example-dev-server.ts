@@ -239,6 +239,15 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
       });
       const output = result.outputFiles[0]?.text;
       if (!output) return undefined;
+      // esbuild can emit `await init_x()` inside a non-async __esm wrapper when a module with top-level await
+      // (physics-rapier) sits in an import cycle; the browser then fails with "Unexpected reserved word" and the
+      // route never mounts. Native ESM handles that graph, so a bundle that does not parse falls back per-module.
+      try {
+        esbuild.transformSync(output, { loader: "js", format: "esm", logLevel: "silent" });
+      } catch (error) {
+        console.log("[example-dev-server] esbuild bundle does not parse for", file, "- falling back to per-module transform:", String((error as { errors?: Array<{ text: string }> }).errors?.[0]?.text ?? error).slice(0, 200));
+        return undefined;
+      }
       bundleCache.set(file, { mtimeMs, output });
       return output;
     } catch (error) {

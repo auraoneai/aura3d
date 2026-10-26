@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
@@ -83,6 +83,8 @@ export function defineShard(index: number, count: number): void {
         rec.errors = [...new Set(logs)].slice(0, 5);
         console.log(`POSTLUMAGAME_JSON ${JSON.stringify(rec)}`);
         await ctx.close();
+        // A page error means the route failed to evaluate: a luma figure from that run is not a game frame.
+        expect((rec.errors as string[]).filter((e) => e.startsWith("pageerror:"))).toEqual([]);
       });
     }
   });
