@@ -1,7 +1,9 @@
 import { test } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+import { drawnGrip, loadHandMesh, renderedHandCentroid, type HandMesh } from "./diamond-skin-measure";
 
 /**
  * Diamond batter grip, deterministic (remote, software WebGL2). The swing clock is frozen at exact t through
@@ -32,7 +34,23 @@ const VIEWS: Record<string, { eye: number[]; target: number[]; fov: number }> = 
 const PROBE_ONLY = [0.05, 0.2, 0.3, 0.34, 0.38, 0.42, 0.45, 0.5, 0.52, 0.6, 0.65, 0.75, 0.8, 0.9, 0.95];
 const TIMES = [null, 0.12, 0.26, 0.4, 0.476, 0.55, 0.7, 0.87, 1.0];
 
+function loadMesh(): HandMesh {
+  const route = readFileSync("apps/showcase-aura-diamond-3d/src/aura-assets.route.ts", "utf8");
+  const url = /"diamondAthlete":\s*\{[^}]*?url:\s*"([^"]+)"/s.exec(route)![1]!;
+  return loadHandMesh(path.resolve("public", url.replace(/^\//, "")));
+}
+
 test("diamond batter grip across the swing", async ({ page }) => {
+  const mesh = loadMesh();
+  const drawn = async (row: Record<string, unknown> | null): Promise<Record<string, unknown>> => {
+    if (!row) return {};
+    const jm = (await page.evaluate((names) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.jointMatrices?.(names) ?? null, mesh.jointNames)) as { mats: Record<string, number[] | null>; pos: [number, number, number]; yaw: number; s: number; n: [number, number, number] } | null;
+    if (!jm) return {};
+    const r = renderedHandCentroid(mesh, "Right", jm.mats, jm);
+    const l = renderedHandCentroid(mesh, "Left", jm.mats, jm);
+    const g = drawnGrip(r, l, row.knob as [number, number, number], row.tip as [number, number, number]);
+    return { drawnRightHand: r, drawnLeftHand: l, ...g };
+  };
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message.slice(0, 200)));
   page.on("console", (m) => { if (m.type() === "error" && !/404|favicon|fonts\//.test(m.text())) errors.push(m.text().slice(0, 200)); });
@@ -69,7 +87,7 @@ test("diamond batter grip across the swing", async ({ page }) => {
       prev = key;
       await page.waitForTimeout(400);
     }
-    process.stdout.write(`@@PROBE ${JSON.stringify({ view: "sweep", hold: t, stable, ...(s ?? {}) })}\n`);
+    process.stdout.write(`@@PROBE ${JSON.stringify({ view: "sweep", hold: t, stable, ...(s ?? {}), ...(await drawn(s)) })}\n`);
   }
 
   for (const [viewName, view] of Object.entries(VIEWS)) {
@@ -89,7 +107,7 @@ test("diamond batter grip across the swing", async ({ page }) => {
         await page.waitForTimeout(500);
       }
       const label = `${viewName}-${t === null ? "stance" : String(Math.round(t * 1000)).padStart(4, "0")}`;
-      process.stdout.write(`@@PROBE ${JSON.stringify({ view: viewName, hold: t, stable, ...(s ?? {}) })}\n`);
+      process.stdout.write(`@@PROBE ${JSON.stringify({ view: viewName, hold: t, stable, ...(s ?? {}), ...(viewName === "owner" ? await drawn(s) : {}) })}\n`);
       emit(label, await page.screenshot({ type: "jpeg", quality: 88 }));
     }
   }

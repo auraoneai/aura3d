@@ -4091,6 +4091,18 @@ function boot(): void {
       triggerSwing,
       holdSwingAt: (t: number | null) => { if (t === null) { swingDrive.hold = null; return; } triggerSwing(0.84); swingDrive.hold = t; },
       gripProbe,
+      /** QA: every batter joint's world matrix (skeleton frame) plus the node transform, so a spec can skin the mesh on the CPU and measure the drawn hand. */
+      jointMatrices: (names: string[]) => {
+        const actor = H.batter?.animation as { socket?: (b: string) => { valid: boolean; worldMatrix: (o?: Float32Array) => Float32Array } } | undefined;
+        const st = athleteState["batter"];
+        if (!actor?.socket || !st) return null;
+        const mats: Record<string, number[] | null> = {};
+        for (const n of names) {
+          const sock = actor.socket(n);
+          mats[n] = sock.valid ? Array.from(sock.worldMatrix()) : null;
+        }
+        return { mats, pos: st.pos, yaw: st.yaw, s: batSocket.s, n: batSocket.n };
+      },
       predictedContact: () => [...swingDrive.predictedBallWorld] as Vec3,
       setQaBall: (v: Vec3 | null) => {
         qaBall = v;
