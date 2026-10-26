@@ -850,6 +850,8 @@ interface DribbleAim { palm: Vec3; /** the palm as rendered last frame (forearm 
 const dribbleAims = new Map<string, DribbleAim>();
 /** The holder's rendered palm and shoulder height, published every frame whatever pose the athlete is in, so the ball always rides the hand that is drawn. */
 const heldRig = new Map<string, { palm: Vec3 | undefined; shoulderY: number | undefined }>();
+/** Last pose kind per athlete and the frame it changed on: the socket still shows the previous pose on a switch frame. */
+const poseKindOf = new Map<string, { kind: string; changedAt: number }>();
 // Bind-space arm geometry. The rig has no hand bones (arms end at Forearm), so
 // the palm is the calibrated hand-centroid offset in forearm bone space. These
 // measured constants are only the fallback — armRigFor() derives the live
@@ -976,6 +978,7 @@ function resolveHandles(): void {
   overlayPoseOn.clear();
   dribbleAims.clear();
   heldRig.clear();
+  poseKindOf.clear();
   armRigs.clear();
   rigs = ROSTER_IDS.map((id) => ({
     root: req(id),
@@ -1827,6 +1830,20 @@ function stepBallSim(dt: number): void {
   }
 }
 
+/** After every athlete has been synced for the frame: put the held ball exactly under the hand as it is drawn now (body, yaw and pose are current). */
+function refreshHeldBall(): void {
+  if (ball.state !== "held" && ball.state !== "dribbleAir" && ball.state !== "parked") return;
+  const h = athletes[ball.holder];
+  if (!h || !h.hasBall || h.shooting || game_.phase === "check" || h.dunkT > 0) return;
+  const aim = dribbleAims.get(h.nodeId);
+  const rig = heldRig.get(h.nodeId);
+  const switched = poseKindOf.get(h.nodeId)?.changedAt === framesRendered;
+  const palm = switched ? aim?.palm ?? rig?.palm : aim?.actual ?? rig?.palm;
+  if (!palm) return;
+  const f = hoopsBounce.place({ palm, holder: { x: h.x, z: h.z, vx: h.vx, vz: h.vz } });
+  ball.x = f.ball[0]; ball.y = f.ball[1]; ball.z = f.ball[2];
+}
+
 /* ------------------------------------------------------------------ *
  *  AI                                                                 *
  * ------------------------------------------------------------------ */
@@ -2389,15 +2406,16 @@ function resetLabBall(): void {
 }
 
 const lastRenderedPalm = new Map<string, Vec3>();
-/** The rendered palm advanced by one frame of its own motion: the ball is placed from the previous frame's aim, so without the lead it trails a fast palm (and a running body) by one step. */
+/** The rendered palm advanced by one frame of its own motion relative to the body (the socket holds last frame's pose; the body is already current). */
 function renderedPalmLead(a: AthleteState, root: AnyHandle): Vec3 | undefined {
   const p = renderedPalm(a, root);
   if (!p) { lastRenderedPalm.delete(a.nodeId); return undefined; }
+  const local: Vec3 = [p[0] - a.x, p[1], p[2] - a.z];
   const prev = lastRenderedPalm.get(a.nodeId);
-  lastRenderedPalm.set(a.nodeId, p);
+  lastRenderedPalm.set(a.nodeId, local);
   if (!prev) return p;
-  const dx = p[0] - prev[0], dy = p[1] - prev[1], dz = p[2] - prev[2];
-  if (Math.hypot(dx, dy, dz) > 0.25) return p;
+  const dx = local[0] - prev[0], dy = local[1] - prev[1], dz = local[2] - prev[2];
+  if (Math.hypot(dx, dy, dz) > 0.2) return p;
   return [p[0] + dx * QA_LEAD, p[1] + dy * QA_LEAD, p[2] + dz * QA_LEAD];
 }
 
@@ -2493,6 +2511,9 @@ function syncAthlete(a: AthleteState, dt: number): void {
   const upperL = anim?.socket?.("LeftUpperArm");
   const socketsUp = chest?.valid === true && upperR?.valid === true && upperL?.valid === true;
   const cycleT = bouncePhase(a.nodeId);
+  const poseKind = stanceNow ? "stance" : carryNow ? "carry" : "clip";
+  const lastKind = poseKindOf.get(a.nodeId);
+  if (!lastKind || lastKind.kind !== poseKind) poseKindOf.set(a.nodeId, { kind: poseKind, changedAt: framesRendered });
   const rigPalm = holdsBall ? renderedPalmLead(a, r.root) : undefined;
   if (holdsBall) {
     heldRig.set(a.nodeId, { palm: rigPalm, shoulderY: upperR?.valid === true ? mat4Translation(upperR.worldMatrix())[1] + 0.96 + a.y : undefined });
@@ -2990,6 +3011,7 @@ function frame(dtRaw: number): void {
   // Ball + athletes
   stepBallSim(dt);
   for (const a of athletes) syncAthlete(a, dt);
+  refreshHeldBall();
 
   // Ball visuals
   if (ballNode) {

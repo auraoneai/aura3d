@@ -12,8 +12,8 @@ import { measureHandBall } from "../../packages/game/src/motion/handBounce";
  */
 const MODE: "player" | "ai" = "player";
 const EXTRA_QS = "";
-const PROBE_MS = Number(process.env.HOOPSDRIB_PROBE_MS ?? 240_000);
-const SHOT_MS = Number(process.env.HOOPSDRIB_SHOT_MS ?? 420_000);
+const PROBE_MS = Number(process.env.HOOPSDRIB_PROBE_MS ?? (MODE === "ai" ? 420_000 : 240_000));
+const SHOT_MS = Number(process.env.HOOPSDRIB_SHOT_MS ?? (MODE === "ai" ? 300_000 : 420_000));
 const FRAMES = Number(process.env.HOOPSDRIB_FRAMES ?? 36);
 const TAG = MODE;
 
