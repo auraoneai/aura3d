@@ -35,6 +35,7 @@ Format: **ID title.** Symptom. Cause. Avoid / prevent (API or check). Evidence.
 - **M11 Unstable hit decisions.** Hole could hang if contact was missed. Keep a timed fallback behind swept contact (60 ms) so a miss never blocks the game.
 - **M12 Skinning stretch.** FC players stretched up to 120x. Smooth skin weights over the whole mesh and measure every primitive, not only the first.
 - **M13 Idle hands aimed below the shoulder.** Bowed arms. Check idle pose against arm length in frames.
+- **M14 Ball driven by the IK target, not the rendered hand.** Hoops dribble looked fake: the ball bounced about 0.9 m below a hand that never came down (arm reach is 0.55 m, so the rendered palm stayed above 1.0 m while the target went to 0.75 m). Drive contact objects from the bone as rendered (`socket("RightForearm")` plus the palm offset), keep the crouch until the floor contact, and bring the target heights inside the arm's reach. Measure ball-to-rendered-hand distance at the meet (<= 0.12 m) and at the floor, with a fixed sim step (`?diag=1&qaDt=0.0167`) so software-GL frame rates do not exaggerate the one-frame lag. `tests/unit/aura-hoops/dribble.test.ts`, `tests/browser/hoops-dribble-probe.spec.ts`.
 
 ## Game design
 

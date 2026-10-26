@@ -7,18 +7,22 @@ export const DRIB_RIDE_END = 0.35;
 export const DRIB_PALM_TURN = 0.60;
 export const DRIB_FLOOR_AT = 0.66;
 export const DRIB_BALL_GAP = 0.11; // palm centroid rides this far above the ball crown
-export const DRIB_FLOOR_Y = BALL_R + 0.03;
+export const DRIB_FLOOR_Y = BALL_R; // ball centre on the floor at the bounce
 export const DRIB_CYCLE_STAND = 0.46;
 export const DRIB_CYCLE_RUN = 0.34;
-export const DRIB_SHOULDER_FALLBACK = 1.19; // world shoulder Y before sockets resolve
+export const DRIB_SHOULDER_FALLBACK = 1.5; // world shoulder Y (standing) before sockets resolve
+/** Palm heights above the floor: waist at the meet, low in the crouch at the push (the arm alone reaches 0.55 m below the shoulder). */
+export const DRIB_PALM_TOP = 1.02;
+export const DRIB_PALM_PUSH = 0.62;
+export const DRIB_ARM_REACH = 0.55;
 
 /** Phase at which the palm is back on the ball and carries it again (the contact window closes the cycle). */
 export const DRIB_CATCH_FROM = 0.92;
 
 export function dribbleCycleY(t: number, shoulderY: number): { palmY: number; ballY: number; effort: number } {
-  const top = shoulderY - 0.10;
-  const push = Math.max(0.52, shoulderY - 0.64);
-  const low = push - 0.05;
+  const top = Math.min(DRIB_PALM_TOP, shoulderY - 0.30);
+  const push = Math.max(DRIB_PALM_PUSH, shoulderY - DRIB_ARM_REACH);
+  const low = push - 0.04;
   let palmY: number;
   let effort: number;
   if (t < DRIB_RIDE_END) {
@@ -27,26 +31,32 @@ export function dribbleCycleY(t: number, shoulderY: number): { palmY: number; ba
     palmY = lerp(top, push, effort); // palm accelerates down with the ball
   } else if (t < DRIB_PALM_TURN) {
     const s = (t - DRIB_RIDE_END) / (DRIB_PALM_TURN - DRIB_RIDE_END);
-    effort = 1 - smoothstep(s);
+    effort = 1; // stay sunk until the ball has met the floor: standing up early lifts the hand away from the bounce
     palmY = lerp(push, low, 1 - (1 - s) * (1 - s)); // decelerate into the turnaround
   } else {
     const s = (t - DRIB_PALM_TURN) / (1 - DRIB_PALM_TURN);
-    effort = 0;
+    effort = t < DRIB_FLOOR_AT ? 1 : 1 - smoothstep((t - DRIB_FLOOR_AT) / (1 - DRIB_FLOOR_AT));
     palmY = lerp(low, top, smoothstep(s)); // rise back to the meet
   }
-  let ballY: number;
-  if (t < DRIB_RIDE_END) {
-    ballY = palmY - DRIB_BALL_GAP; // glued under the riding palm
-  } else if (t < DRIB_FLOOR_AT) {
-    const s = (t - DRIB_RIDE_END) / (DRIB_FLOOR_AT - DRIB_RIDE_END);
-    ballY = lerp(push - DRIB_BALL_GAP, DRIB_FLOOR_Y, Math.pow(s, 1.2)); // thrown down after separation
-  } else {
-    const s = (t - DRIB_FLOOR_AT) / (1 - DRIB_FLOOR_AT);
-    ballY = lerp(DRIB_FLOOR_Y, top - DRIB_BALL_GAP, 1 - Math.pow(1 - s, 1.7)); // gravity rise into the palm
-  }
-  return { palmY, ballY, effort };
+  return { palmY, ballY: dribbleBallY(t, palmY, push - DRIB_BALL_GAP, top - DRIB_BALL_GAP), effort };
 }
 
+/**
+ * Ball height for phase `t`. `palmY` is the palm the ball rides while in contact (pass the RENDERED palm so the ball can
+ * never leave a hand that could not follow its target); `releaseY` is the ball height at the moment it leaves the palm and
+ * `catchY` the height of the palm that receives it, both read live by the caller. In the air the ball falls to the floor
+ * and rebounds, so the bounce point is always `DRIB_FLOOR_Y`.
+ */
+export function dribbleBallY(t: number, palmY: number, releaseY: number, catchY: number): number {
+  if (t < DRIB_RIDE_END) return palmY - DRIB_BALL_GAP; // glued under the riding palm
+  if (t < DRIB_FLOOR_AT) {
+    const s = (t - DRIB_RIDE_END) / (DRIB_FLOOR_AT - DRIB_RIDE_END);
+    return lerp(releaseY, DRIB_FLOOR_Y, Math.pow(s, 1.2)); // thrown down after separation
+  }
+  if (t >= DRIB_CATCH_FROM) return palmY - DRIB_BALL_GAP; // caught: the palm carries it again
+  const s = (t - DRIB_FLOOR_AT) / (DRIB_CATCH_FROM - DRIB_FLOOR_AT);
+  return lerp(DRIB_FLOOR_Y, catchY, 1 - Math.pow(1 - s, 1.7)); // gravity rise into the palm
+}
 
 /**
  * 1 while the palm is on the ball (riding down, and the catch at the top of the bounce), 0 while the ball is free in
