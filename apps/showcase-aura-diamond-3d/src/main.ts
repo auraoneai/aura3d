@@ -3260,6 +3260,8 @@ function boot(): void {
       knobMinusRightPalm: pr ? rd([knob[0] - pr[0], knob[1] - pr[1], knob[2] - pr[2]]) : null,
       calibration: { s: Number(batSocket.s.toFixed(4)), n: rd(batSocket.n) },
       palmsApart: pr && pl ? dist(pl, pr) : null,
+      camera: { eye: [...G.cam.eye], target: [...G.cam.target], fov: G.cam.fov },
+      canvas: (() => { const c = document.querySelector("#app canvas") as HTMLCanvasElement | null; return c ? { w: c.clientWidth, h: c.clientHeight } : null; })(),
       boneWorldY: Object.fromEntries(feet.map(([b, v]) => [b, v ? Number(v[1].toFixed(3)) : null])),
       poseApplied: batState.poseApplied
     };
