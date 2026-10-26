@@ -215,6 +215,8 @@ export interface WorldRuntime {
 
 /** The sun's cascaded shadow; `?shadow=0` restores the blob-only look. */
 const SUN_SHADOW = !(typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0");
+// The 4000 m sky dome needs the 4.3.0 shadow fit (it skips oversize shells); every other game keeps the 4.2.0 fit by default.
+if (SUN_SHADOW) (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
 
 export interface World { readonly scene: Scene; bind(app: AuraApp): WorldRuntime }
 

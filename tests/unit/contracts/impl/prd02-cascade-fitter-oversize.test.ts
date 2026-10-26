@@ -1,9 +1,14 @@
 // Shadowstep Gauntlet: a 4000 m sky dome that cast shadows darkened the whole frame, and a scene-spanning instanced
 // set inflated every cascade to kilometres. Casters must not widen the ortho footprint, and shells must not cast.
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fitDirectionalCascades, isOversizeShadowCaster } from "../../../../packages/rendering/src/shadows/DirectionalCascadeFitter";
 import { Prd02ShadowSystem } from "../../../../packages/rendering/src/shadows/ShadowSystem";
 import type { RenderItem } from "../../../../packages/rendering/src/contracts/renderItem";
+
+// The 4.3.0 fit, oversize skip and instance-attribute depth path are opt-in (default = 4.2.0): these tests exercise them.
+beforeAll(() => { (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current"; });
+afterAll(() => { delete (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__; });
+
 
 type V3 = readonly [number, number, number];
 const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -92,8 +97,13 @@ describe("oversize shadow casters (sky domes)", () => {
 
   it("scales with the shadow distance but never drops below 100 m", () => {
     expect(isOversizeShadowCaster(box([0, 0, 0], [90, 5, 90], "wall"), 10)).toBe(false);
-    expect(isOversizeShadowCaster(box([0, 0, 0], [700, 5, 700], "plane"), 150)).toBe(true);
-    expect(isOversizeShadowCaster(box([0, 0, 0], [700, 5, 700], "plane"), 400)).toBe(false);
+    expect(isOversizeShadowCaster(box([0, 0, 0], [700, 400, 700], "shell"), 150)).toBe(true);
+    expect(isOversizeShadowCaster(box([0, 0, 0], [700, 400, 700], "shell"), 400)).toBe(false);
+  });
+
+  it("a large flat ground plane or court floor is a receiver, never an oversize shell", () => {
+    expect(isOversizeShadowCaster(box([0, 0, 0], [700, 5, 700], "plane"), 150)).toBe(false);
+    expect(isOversizeShadowCaster(box([0, -0.05, 0], [4000, 0.1, 4000], "court-floor"), 150)).toBe(false);
   });
 
   it("the shadow system skips an oversize caster and reports it", () => {

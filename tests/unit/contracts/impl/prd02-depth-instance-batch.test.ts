@@ -15,7 +15,7 @@
  * evaluates a line-for-line port of GLSL `a3dForwardShadowFactor`
  * (ShaderLibraryCore.ts) at a floor point the caster occludes.
  */
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import "../../../../packages/rendering/src/lanes/prd02";
 // Installs the C-02 program generator, as every app does via the lanes barrel.
 import "../../../../packages/rendering/src/lanes/prd01";
@@ -35,6 +35,11 @@ const CASTER_HALF = 0.5;
 
 import { UnlitMaterial } from "../../../../packages/rendering/src/UnlitMaterial";
 import { TextureBinding } from "../../../../packages/rendering/src/TextureBinding";
+
+// The 4.3.0 fit, oversize skip and instance-attribute depth path are opt-in (default = 4.2.0): these tests exercise them.
+beforeAll(() => { (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current"; });
+afterAll(() => { delete (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__; });
+
 
 function translate(x: number, y: number, z: number): Float32Array {
   const m = Float32Array.from(identityMat4());
@@ -81,6 +86,6 @@ describe("instanced shadow casters are drawn as one batch per cascade", () => {
     expect(draws).toHaveLength(1);
     expect(draws[0]!.instanceCount).toBe(40);
     expect(draws[0]!.instanceAttributes).toBeUndefined();
-    expect((draws[0]!.uniforms as ReadonlyMap<string, unknown>).get("u_instanceAttributeMode")).toBe(0);
+    expect((draws[0]!.uniforms as ReadonlyMap<string, unknown>).get("u_instanceAttributeMode")).toBeUndefined();
   });
 });

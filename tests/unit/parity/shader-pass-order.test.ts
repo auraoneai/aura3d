@@ -13,8 +13,8 @@ import type { WebGL2DeviceHost } from "../../../packages/rendering/src/webgl2/De
 import type { RenderTarget } from "../../../packages/rendering/src/RenderDevice";
 
 // The OutputPass HDR route is opt-in (hotfix 4.3.2): these tests exercise it, so they switch it on.
-beforeAll(() => { (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__ = true; });
-afterAll(() => { delete (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__; });
+beforeAll(() => { (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean; __A3D_LINEAR_VIGNETTE__?: boolean }).__A3D_HDR_OUTPUT_PASS__ = true; (globalThis as { __A3D_LINEAR_VIGNETTE__?: boolean }).__A3D_LINEAR_VIGNETTE__ = true; });
+afterAll(() => { delete (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__; delete (globalThis as { __A3D_LINEAR_VIGNETTE__?: boolean }).__A3D_LINEAR_VIGNETTE__; });
 
 
 const outputPassState: { trace: string[] | null; failNext: boolean } = { trace: null, failNext: false };

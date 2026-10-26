@@ -123,7 +123,7 @@ export class DepthPass extends BaseRenderPass {
     const instanceTotal = instanceTransforms ? instanceTransforms.length / 16 : 1;
     // More instances than the uniform array holds ride a per-instance vertex-attribute buffer: one draw for the whole set
     // instead of ceil(n / 64) draws per cascade (a forest of 2,000 trees was 32 draws in every cascade).
-    const attributeMode = Boolean(variant.instanced && instanceTransforms && instanceTotal > PRD02_DEPTH_MAX_INSTANCES);
+    const attributeMode = Boolean(variant.instanced && instanceTransforms && instanceTotal > PRD02_DEPTH_MAX_INSTANCES && variant.features["prd02.depthInstanceAttr"] !== undefined);
     const batchCount = variant.instanced && instanceTransforms && !attributeMode ? Math.ceil(instanceTotal / PRD02_DEPTH_MAX_INSTANCES) : 1;
     let instanceBuffer: RenderBuffer | null = null;
     let instanceAttributes: readonly InstanceVertexAttribute[] | null = null;
@@ -141,7 +141,6 @@ export class DepthPass extends BaseRenderPass {
         } else {
           const offset = batch * PRD02_DEPTH_MAX_INSTANCES;
           const count = Math.min(PRD02_DEPTH_MAX_INSTANCES, instanceTotal - offset);
-          uniforms.set("u_instanceAttributeMode", 0);
           uniforms.set("u_instanceMatrices", instanceTransforms.subarray(offset * 16, (offset + count) * 16));
           uniforms.set("u_instanceCount", count);
         }
