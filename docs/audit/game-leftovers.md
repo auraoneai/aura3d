@@ -96,7 +96,7 @@ Method: every move has a unit test that compares against the code it replaced (g
 
 ## Cumulus Dash foot slide (closed in 4.3.0)
 
-The hero's feet slid at sprint (about 23% of ground speed by the 4.2.0 estimate, planted-foot p95 3.4 to 8.5 m/s on the library meter). `examples/kid-goku-beyond-the-clouds-port/gait.ts` now drives hips and legs by IK from the sim's ground speed; planted-foot p95 is 0.00 to 0.02 m/s at 4.2 to 19.6 m/s (threshold 0.15). Open: in-engine frames could not be captured because the spec's dev-server page does not boot on the remote runner at this commit (also on `origin/main`); offline silhouettes stand in (`evidence/kid-goku-beyond-the-clouds-port/footslide-fix/README.md`). Library follow-up: the stance/swing planner and the two-bone leg solve are generic and belong in `@aura3d/engine/game` next to `createLocomotion` (a stride-planner that takes ground speed and leg lengths).
+The hero's feet slid at sprint (about 23% of ground speed by the 4.2.0 estimate, planted-foot p95 3.4 to 8.5 m/s on the library meter). `examples/kid-goku-beyond-the-clouds-port/gait.ts` now drives hips and legs by IK from the sim's ground speed; planted-foot p95 is 0.00 to 0.02 m/s at 4.2 to 19.6 m/s (threshold 0.15). Open: in-engine frames could not be captured (the page never reaches `ready` on the remote runner from any staging tried, 23 runs, also on `origin/main`; production boots the same code); offline silhouettes stand in (`evidence/kid-goku-beyond-the-clouds-port/footslide-fix/README.md`). Library follow-up: the stance/swing planner and the two-bone leg solve are generic and belong in `@aura3d/engine/game` next to `createLocomotion` (a stride-planner that takes ground speed and leg lengths).
 
 ## Shadowstep Gauntlet art pass (4.3.0)
 
