@@ -30,7 +30,7 @@ export interface HandBounceOptions {
   readonly runSpeed?: number;
   /** The ball never strays further than this horizontally from the palm while dribbling. Default 0.25. */
   readonly maxOffset?: number;
-  /** Running only: the ball lands ahead of the hand along the direction of travel by `speed * leadGain`, at most `leadMax`. Defaults 0.025 s and 0.15 m. */
+  /** Running only: the ball lands ahead of the hand along the direction of travel by `speed * leadGain`, at most `leadMax`. Defaults 0.02 s and 0.10 m. */
   readonly leadGain?: number;
   readonly leadMax?: number;
   /** Skeleton bone names; the overlay then names the bones that actually exist. */
@@ -92,8 +92,8 @@ export function resolveHandBounceConfig(options: HandBounceOptions = {}): HandBo
     running: { period: 0.3, palmTop: 0.88, palmPush: 0.54, ...options.running },
     runSpeed: options.runSpeed ?? 0.45,
     maxOffset: options.maxOffset ?? 0.25,
-    leadGain: options.leadGain ?? 0.025,
-    leadMax: options.leadMax ?? 0.15,
+    leadGain: options.leadGain ?? 0.02,
+    leadMax: options.leadMax ?? 0.1,
     phases: { rideEnd: 0.35, palmTurn: 0.6, floorAt: 0.66, catchFrom: 0.92, ...options.phases },
     floorBallY: floorY + ballRadius
   };
@@ -119,7 +119,9 @@ export function handBounceCycle(config: HandBounceConfig, t: number, shoulderY: 
   } else {
     // The palm stays at its lowest until the ball has met the floor, then rises with it (it receives the ball on the way up).
     const s = Math.max(0, (t - floorAt) / (1 - floorAt));
-    effort = t < floorAt ? 1 : 1 - smoothstep(s);
+    // The body stays sunk a little past the floor contact (the arm cannot follow the ball down without it), then comes up.
+    const e = Math.max(0, (t - floorAt - 0.08) / (1 - floorAt - 0.08));
+    effort = 1 - smoothstep(e);
     palmY = lerp(low, top, smoothstep(s));
   }
   return { palmY, ballY: handBounceBallY(config, t, palmY, push - config.ballGap, top - config.ballGap), effort };

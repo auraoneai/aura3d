@@ -430,6 +430,7 @@ const QA_DT = initialParams.get("diag") === "1" ? Number(initialParams.get("qaDt
 /** ?diag=1&qaLean=1.2 scales the running-dribble waist bend and &qaLead=2 the palm look-ahead (measurement only). */
 const QA_LEAN = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLean")) || 1 : 1;
 const QA_SERVE = initialParams.get("diag") === "1" && initialParams.get("qaServe") === "away";
+const QA_STAND = initialParams.get("diag") === "1" && initialParams.get("qaStand") === "1";
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
 
 const game_ = {
@@ -1914,6 +1915,7 @@ function stepCpuOffense(a: AthleteState, dt: number): void {
   const squad = game_.awaySquad;
   const speed = PLAYER_SPEED * 0.82 * diff.cpuSpeed * (0.85 + squad.speed * 0.03);
   if (a.hasBall) {
+    if (QA_STAND && !a.shooting) { a.vx = 0; a.vz = 0; return; } // measurement: an AI handler that stands and pounds the ball
     // CPU ball-handler: drive / pullup / pass
     const dRim = dist2d(a.x, a.z, RIM[0], RIM[2]);
     const def = nearestDefender(a);
