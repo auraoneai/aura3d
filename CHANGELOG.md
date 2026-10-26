@@ -6,6 +6,7 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 
 ## 4.3.2 (unreleased)
 
+- **Dev diagnostics for effects that outlive their design (engine).** A runtime emitter still emitting 5 s after it was spawned reports `VFX_UNSTOPPED_EMITTER`, and more than 24 runtime particles alive 3 s after the last spawn report `VFX_LINGERING_PARTICLES` (both appear in the effect diagnostics report; one-shot presets never trip them). On a live page, `?vfx=off` drops every runtime-spawned effect (to show whether floating dots come from impact effects or from the scene) and `?vfxdebug=1` publishes `window.__AURA_VFX_DEBUG__()` with each live runtime emitter, its age and particle count. Note: the production frames read at DPR 1 on the software-GL runner (Links, FC, Iron Crown idle) showed no bubble columns; the owner's real-GPU frames did, so the source on a real GPU is still unconfirmed.
 - **Teleoperator renders again.** The four generated building models were never admitted in `aura.assets.json`, so the production build did not copy them (404 live) and `auraApp.ready()` rejected, leaving the 3D canvas black in 4.3.0 and 4.3.1. They are admitted now, both Teleoperator variants fall back to plain boxes if a building model is unreachable and no longer stop the simulation when `ready()` fails, and a new `deployable-assets` game check fails when a game references a `/aura-assets/` model the build would not copy.
 
 ## 4.3.1 (2026-10-26)
