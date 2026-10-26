@@ -154,7 +154,7 @@ export function buildGolferNodes(fit: GolferFit): any[] {
       .cylinder({ name: "golfer-club-grip", size: [0.03, 0.3, 0.03], material: material.pbr({ color: "#1a1c22", roughness: 0.9 }) })
       .runtime(rt("golfer-club-grip")),
     primitives
-      .cylinder({ name: "golfer-club-shaft", size: [0.016, 0.76, 0.016], material: steel })
+      .cylinder({ name: "golfer-club-shaft", size: [0.016, 0.84, 0.016], material: steel })
       .runtime(rt("golfer-club-shaft")),
     primitives
       .box({
