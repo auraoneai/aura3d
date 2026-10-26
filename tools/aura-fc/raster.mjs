@@ -8,7 +8,7 @@ import { loadSkinnedMesh, skinnedPositions } from "./skin.mjs";
 const COLOURS = { kit: [190, 50, 45], shorts: [245, 245, 235], socks: [190, 50, 45], skin: [196, 140, 100], dark: [25, 25, 30], eyes: [255, 255, 255] };
 
 function crc32(buf) { let c, crc = ~0; for (let n = 0; n < buf.length; n++) { c = (crc ^ buf[n]) & 0xff; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; crc = (crc >>> 8) ^ c; } return ~crc >>> 0; }
-function png(w, h, rgb) {
+export function png(w, h, rgb) {
   const raw = Buffer.alloc((w * 3 + 1) * h);
   for (let y = 0; y < h; y++) { raw[y * (w * 3 + 1)] = 0; rgb.copy(raw, y * (w * 3 + 1) + 1, y * w * 3, (y + 1) * w * 3); }
   const chunk = (type, data) => { const len = Buffer.alloc(4); len.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc32(td)); return Buffer.concat([len, td, c]); };
@@ -16,9 +16,10 @@ function png(w, h, rgb) {
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
 }
 
-export function rasterise(glb, clip, t01, view = "side", px = 700) {
+/** opts.pose: local TRS per node to use instead of the clip; opts.unit: metres per output unit (hero skeleton is in centimetres: 0.01); opts.raw: return { img, W, H } instead of a PNG. */
+export function rasterise(glb, clip, t01, view = "side", px = 700, opts = {}) {
   const anim = glb.json.animations.find((a) => a.name === clip);
-  const fk = forward(glb, localPose(glb, anim, anim ? clipDuration(glb, anim) * t01 : 0));
+  const fk = forward(glb, opts.pose ?? localPose(glb, anim, anim ? clipDuration(glb, anim) * t01 : 0));
   const W = px, H = px, img = Buffer.alloc(W * H * 3, 38), depth = new Float32Array(W * H).fill(-1e9);
   // model forward is +Z; the side view looks down -X (screen right = +Z), the front view looks down -Z (screen right = -X)
   const pr = view === "front" ? (p) => [-p[0], p[1], -p[2]] : (p) => [p[2], p[1], p[0]];
@@ -28,7 +29,7 @@ export function rasterise(glb, clip, t01, view = "side", px = 700) {
     const mesh = loadSkinnedMesh(glb, pi);
     const name = glb.json.materials[p.material]?.name?.split("-").pop() ?? "kit";
     const base = COLOURS[name] ?? [128, 128, 128];
-    const out = skinnedPositions(mesh, fk).map(pr);
+    const out = skinnedPositions(mesh, fk).map((v) => pr(opts.unit ? [v[0] * opts.unit, v[1] * opts.unit, v[2] * opts.unit] : v));
     const flag = Number(process.env.FLAG_EDGE ?? 0);
     for (let t = 0; t < mesh.indices.length; t += 3) {
       let col = base;
@@ -61,7 +62,7 @@ export function rasterise(glb, clip, t01, view = "side", px = 700) {
       for (let t = 0; t <= 1; t += 0.01) dot(ox + (a[0] + (b[0] - a[0]) * t) * scale, oy - (a[1] + (b[1] - a[1]) * t) * scale, [255, 0, 255]);
     }
   }
-  return png(W, H, img);
+  return opts.raw ? { img, W, H } : png(W, H, img);
 }
 
 if (process.argv[1]?.endsWith("raster.mjs") && process.argv[3]) {

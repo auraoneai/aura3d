@@ -15,7 +15,8 @@ import type { Game } from "./game";
 import { ballSpec, glowSpec, LOOK, scenerySpec, shadowSpec, skySpec, valleySpec, waterSpec, warnSpec } from "./materials";
 import { Mesh, cylinder, hex } from "./mesh";
 import { LEG_CLIPS } from "./legcycle";
-import { CLIP_FOOT_SPEED, MAX_RATE, legOverlayPose, strideGain, touchdowns, type LocoClip } from "./locomotion";
+import { CLIP_FOOT_SPEED, MAX_RATE, touchdowns } from "./locomotion";
+import { CLIP_TOUCHDOWN_LEFT, advanceGaitPhase, gaitParams, gaitTouchdowns, gaitWeight, plantedGaitPose } from "./gait";
 import { MESHY } from "./models";
 import { buildBridges, buildClouds, buildGorgePosts, buildHut, buildMesas, buildObstacles, yawOf } from "./props";
 import { smooth } from "./sim";
@@ -38,7 +39,7 @@ const plainGeometry = (m: Mesh) => geometry.dynamic({ positions: f32(m.positions
 
 export interface WorldStats { drawNodes: number; chunks: number; triangles: number }
 /** What the legs are doing this frame: the clip, its phase in cycles, cadence, stride gain and the share of ground speed the planted feet still slide. */
-export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; gain: number; footSpeed: number; slideRatio: number; overspeed: boolean }
+export interface GaitReport { clip: string; phase: number; groundSpeed: number; rate: number; /** Share of the legs driven by the planted-foot IK gait (0 = clip only, 1 = fully planted). */ weight: number; /** Steps per second. */ cadence: number; /** Seconds a foot stays planted. */ stance: number; /** Forward lean of the hips (rad). */ lean: number; overspeed: boolean }
 export interface WorldRuntime { update(game: Game, dt: number, aspect: number, events: readonly string[]): void; cutCamera(): void; readonly stats: WorldStats; readonly gait: GaitReport; readonly camera: { eye: V3; target: V3 } }
 export interface World { readonly scene: ReturnType<typeof scene>; bind(app: AuraApp): WorldRuntime }
 
@@ -183,7 +184,8 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
   const camPos: { eye: V3; target: V3 } = { eye: [0, 0, 0], target: [0, 0, 0] };
   const foot = (g: Game): V3 => at(g.state.s, g.state.lane, g.state.jump);
 
-  const gait: GaitReport = { clip: "", phase: 0, groundSpeed: 0, rate: 1, gain: 1, footSpeed: 0, slideRatio: 0, overspeed: false };
+  const gait: GaitReport = { clip: "", phase: 0, groundSpeed: 0, rate: 1, weight: 0, cadence: 0, stance: 0, lean: 0, overspeed: false };
+  let gaitPhase = 0;
   const loco = createLocomotion({ gaits: [{ name: "idle", speed: 0, cycle: 4.03 }, { name: "run", speed: CLIP_FOOT_SPEED.run, cycle: LEG_CLIPS.run.duration }], minRate: 0.6, maxRate: MAX_RATE });
   const play = (clip: string, rate: number, dt: number, groundSpeed = 0, stepFx?: (side: "left" | "right") => void): void => {
     if (clip !== animClip) { animClip = clip; animT = 0; }
@@ -194,15 +196,24 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
     gait.clip = clip; gait.groundSpeed = groundSpeed; gait.rate = rate;
     if (clip === "run") {
       const dur = LEG_CLIPS.run.duration;
-      const g = strideGain("run", groundSpeed, rate);
-      gait.gain = g.gain; gait.footSpeed = g.footSpeed; gait.slideRatio = g.slideRatio; gait.overspeed = groundSpeed > CLIP_FOOT_SPEED.run * MAX_RATE * 1.8;
-      gait.phase = animT / dur;
-      hero.setAnimationPose(legOverlayPose("run" as LocoClip, gait.phase, g.gain));
-      const td = touchdowns("run", before / dur, animT / dur);
+      const w = gaitWeight(groundSpeed);
+      const gp = gaitParams(groundSpeed);
+      const gBefore = gaitPhase;
+      if (w <= 0) gaitPhase = animT / dur - CLIP_TOUCHDOWN_LEFT;
+      else {
+        // legs, hips and arms share one phase: the clip is locked to the gait so the arm swing matches the stride
+        gaitPhase = advanceGaitPhase(gaitPhase, groundSpeed, dt);
+        animT = (gaitPhase + CLIP_TOUCHDOWN_LEFT) * dur;
+        hero.play(clip, { loop: true, captureTime: animT, crossFade: 0.1 });
+      }
+      gait.weight = w; gait.cadence = gp.cadence; gait.stance = gp.stance; gait.lean = gp.lean * w; gait.overspeed = false;
+      gait.phase = gaitPhase;
+      hero.setAnimationPose(plantedGaitPose(groundSpeed, gaitPhase, w));
+      const td = w > 0 ? gaitTouchdowns(gBefore, gaitPhase) : touchdowns("run", before / dur, animT / dur);
       if (stepFx) { for (let i = 0; i < td.left; i++) stepFx("left"); for (let i = 0; i < td.right; i++) stepFx("right"); }
     } else {
       hero.setAnimationPose(undefined);
-      gait.gain = 1; gait.phase = 0; gait.footSpeed = 0; gait.slideRatio = 0; gait.overspeed = false;
+      gait.weight = 0; gait.cadence = 0; gait.stance = 0; gait.lean = 0; gait.phase = 0; gait.overspeed = false;
     }
   };
 
@@ -260,11 +271,13 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
       if (phase === "menu") yaw = yawOf(f.forward) + Math.PI * 0.85 + Math.sin(clock * 0.3) * 0.08;
       if (phase === "result") yaw = yawOf(f.forward) + (g.result?.won ? Math.PI : 0);
       if (phase === "finale") yaw = yawOf(f.forward) - 0.1;
-      const lf = loco.update(phase === "playing" ? s.speed : 0, phase === "paused" ? 0 : dt);
+      const finaleRun = phase === "finale" && (g.finale?.t ?? 0) < 4;
+      const groundSpeed = phase === "playing" ? s.speed : finaleRun ? (ch.home.s - ch.length) / 4 : 0;
+      const lf = loco.update(groundSpeed, phase === "paused" ? 0 : dt);
       let clip = "run", rate = lf.rates.run ?? 1;
       if (phase === "menu") { clip = "idle"; rate = 1; }
       else if (phase === "result") { clip = g.result?.won ? "cheer" : "dead"; rate = 1; }
-      else if (phase === "finale") { const t = g.finale?.t ?? 0; clip = t < 4 ? "walk" : "cheer"; rate = t < 4 ? 1.1 : 1; }
+      else if (phase === "finale") { clip = finaleRun ? "run" : "cheer"; rate = finaleRun ? (lf.rates.run ?? 1) : 1; }
       else if (phase === "falling") { clip = "jump"; rate = 0.7; }
       else if (s.janken) { clip = s.janken.t < 0.7 ? "idle" : "attack"; rate = s.janken.t < 0.7 ? 1.4 : 1.2; }
       else if (s.strikeTimer > 0) { clip = "attack"; rate = 1.8; }
@@ -283,7 +296,7 @@ function bindRuntime(app: AuraApp, ch: Chapter, fx: Fx, stats: WorldStats): Worl
         const base = at(s.s, Math.max(-5.1, Math.min(5.1, s.lane + side2)), 0.1);
         fx.dust(base, f.up, 1, "#e5cf9f", 0.55, 0.7);
       };
-      play(clip, rate, phase === "paused" ? 0 : dt, phase === "playing" ? s.speed : 0, stepDust);
+      play(clip, rate, phase === "paused" ? 0 : dt, groundSpeed, stepDust);
 
       if (ch.log) {
         const lg = node("ride-log");
