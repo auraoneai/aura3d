@@ -50,6 +50,17 @@ export function rasterise(glb, clip, t01, view = "side", px = 700) {
       }
     }
   });
+  if (process.env.SKELETON) {
+    const sk = glb.json.skins[0].joints;
+    const set = new Set(sk);
+    const dot = (cx, cy, c) => { for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const x = Math.round(cx) + dx, y = Math.round(cy) + dy; if (x >= 0 && y >= 0 && x < W && y < H) { const i = (y * W + x) * 3; img[i] = c[0]; img[i + 1] = c[1]; img[i + 2] = c[2]; } } };
+    for (const j of sk) {
+      const par = fk.parent[j];
+      if (par < 0 || !set.has(par)) continue;
+      const a = pr(fk.pos[par]), b = pr(fk.pos[j]);
+      for (let t = 0; t <= 1; t += 0.01) dot(ox + (a[0] + (b[0] - a[0]) * t) * scale, oy - (a[1] + (b[1] - a[1]) * t) * scale, [255, 0, 255]);
+    }
+  }
   return png(W, H, img);
 }
 

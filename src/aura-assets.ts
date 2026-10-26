@@ -153000,10 +153000,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "fcSoccerStrikerMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcSoccerStrikerMeshyAthlete.1492d1b0.glb",
-    hash: "sha256-1492d1b0dff962bf6cef5d96e2d8b53edaf210642c2c3610a2e93e54fcda57f1",
-    bounds: [0.742, 1.891, 0.755],
-    sizeBytes: 2435332,
+    url: "/aura-assets/fcSoccerStrikerMeshyAthlete.37da8c71.glb",
+    hash: "sha256-37da8c7141cc50ec4dbbcef3e47b4bab53aab710730c9dd272fa668991f60b65",
+    bounds: [0.742, 1.891, 0.619],
+    sizeBytes: 1834692,
     metadata: {
       "materials": [
         "fcSoccerStrikerMeshyAthlete-kit",
@@ -153068,7 +153068,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:26.112Z"
       },
       "sourcePath": "artifacts/meshy/fcSoccerStrikerMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcSoccerStrikerMeshyAthlete.1492d1b0.glb",
+      "outputPath": "public/aura-assets/fcSoccerStrikerMeshyAthlete.37da8c71.glb",
       "boundsMetadata": {
             "min": [
                   -0.373,
@@ -153128,10 +153128,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "fcGoalkeeperMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/fcGoalkeeperMeshyAthlete.a46499bd.glb",
-    hash: "sha256-a46499bda56d32013bc5bcb9376ffd7ea7c52b59c8bad3478d46b7ceec4c1687",
-    bounds: [0.716, 1.899, 0.561],
-    sizeBytes: 2294816,
+    url: "/aura-assets/fcGoalkeeperMeshyAthlete.df457e5d.glb",
+    hash: "sha256-df457e5dbedc8dfcac5ffe82bd146b95bfefa48e7ee8f1d1fdf704f31421dc9e",
+    bounds: [0.679, 1.899, 0.557],
+    sizeBytes: 1700204,
     metadata: {
       "materials": [
         "fcGoalkeeperMeshyAthlete-kit",
@@ -153196,7 +153196,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:17:46.781Z"
       },
       "sourcePath": "artifacts/meshy/fcGoalkeeperMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcGoalkeeperMeshyAthlete.a46499bd.glb",
+      "outputPath": "public/aura-assets/fcGoalkeeperMeshyAthlete.df457e5d.glb",
       "boundsMetadata": {
             "min": [
                   -0.357,
