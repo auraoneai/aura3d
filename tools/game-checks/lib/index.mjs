@@ -191,6 +191,51 @@ function checkPoseArray({ game, src }) {
   return out;
 }
 
+/**
+ * A `scaleMode: "fit"` model (also the default) is grounded on its LOWEST point: the node position is the feet. Placing it at
+ * half its height ("origin at the centre") lifts it that far off the floor (Diamond 0.94 m, Hoops 0.96 m: the hand was a metre
+ * above the bounce). Flags (1) `model(.. targetHeight: H ..).position(x, ~H/2, z)` and (2) a runtime `setPosition(.., k + y, ..)`
+ * / `setPosition(.., y + k, ..)` whose constant k is half of a model's targetHeight declared in the same file.
+ * Escape hatch for a deliberate lift: `// fit-grounding: ok` on the line.
+ */
+function checkFitGrounding({ game, src }) {
+  const out = [];
+  for (const f of src.files) {
+    if (!/^[cm]?[jt]sx?$/.test(f.kind)) continue;
+    const raw = f.raw.split("\n");
+    const heights = [];
+    for (const m of f.text.matchAll(/\bmodel\(/g)) {
+      const chunk = f.text.slice(m.index, m.index + 900);
+      const opt = chunk.match(/\{[^{}]*\}/);
+      const optStr = opt ? opt[0] : "";
+      if (/scaleMode:\s*"world"/.test(optStr)) continue;
+      const th = optStr.match(/targetHeight:\s*([0-9.]+)/);
+      const H = th ? Number(th[1]) : 0;
+      const line = f.text.slice(0, m.index).split("\n").length;
+      if (H >= 0.4) heights.push(H);
+      const pos = chunk.match(/\.position\(\s*[^,()]+,\s*(-?[0-9.]+)\s*,/);
+      if (H >= 0.4 && pos) {
+        const y = Number(pos[1]);
+        if (y > 0.2 && Math.abs(y - H / 2) <= Math.max(0.05, 0.1 * H / 2) && !/fit-grounding: ok/.test(raw[line - 1] ?? "")) {
+          out.push(finding("fit-grounding", "error", game, f.rel, line, `fitted model (targetHeight ${H}) placed at y ${y} = half its height: fitted models are grounded on their lowest point, so it hovers ${y.toFixed(2)} m above the floor. Place it at floor height.`));
+        }
+      }
+    }
+    if (heights.length === 0) continue;
+    const halves = [...new Set(heights.map((h) => h / 2))];
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (!/setPosition\(/.test(lines[i]) || /fit-grounding: ok/.test(raw[i] ?? "")) continue;
+      const m = lines[i].match(/setPosition\([^;]*?,\s*(?:([0-9]*\.[0-9]+)\s*\+\s*[A-Za-z_][\w.]*|[A-Za-z_][\w.]*\s*\+\s*([0-9]*\.[0-9]+))\b[^,)]*,/);
+      if (!m) continue;
+      const k = Number(m[1] ?? m[2]);
+      const half = halves.find((h) => k >= 0.3 && Math.abs(k - h) <= Math.max(0.03, 0.03 * h));
+      if (half !== undefined) out.push(finding("fit-grounding", "error", game, f.rel, i + 1, `setPosition adds ${k} to y, half of a fitted model's targetHeight (${half * 2}) in this file: a fitted model's node position is its feet, so this lifts it ${k} m. Use the floor height (or mark a deliberate lift with // fit-grounding: ok).`));
+    }
+  }
+  return out;
+}
+
 function checkLikeness({ game, src, terms }) {
   const out = [];
   const brand = terms.brandTerms.map((t) => ({ t, re: notInPath(t) }));
@@ -465,6 +510,7 @@ export const GAME_CHECKS = {
   "fixed-step-presenter": checkFixedStepPresenter,
   "hitstop-time": checkHitstopTime,
   "pose-array": checkPoseArray,
+  "fit-grounding": checkFitGrounding,
   likeness: checkLikeness,
   "asset-provenance": checkAssetProvenance,
   kits: checkKits,
