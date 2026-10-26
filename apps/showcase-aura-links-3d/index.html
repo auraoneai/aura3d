@@ -247,6 +247,20 @@
         transform-origin: 50% 50%;
       }
 
+      .shot-strip .pin {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      #h-pin-arrow {
+        display: inline-block;
+        font-size: 13px;
+        color: var(--lime, #d7ff3d);
+        transition: transform 0.12s ease;
+        transform-origin: 50% 50%;
+      }
+
       .shot-strip .k {
         font-size: 9px;
         letter-spacing: 0.18em;
@@ -848,6 +862,12 @@
               <span class="v" id="h-wind-speed">0.0</span>
             </span>
             <span class="sep"></span>
+            <span class="pin">
+              <span class="k">PIN</span>
+              <span id="h-pin-arrow">&#9650;</span>
+              <span class="v" id="h-pin-dist">0M</span>
+            </span>
+            <span class="sep"></span>
             <span class="k">CLUB</span>
             <span class="v club" id="h-club">DRIVER</span>
             <span class="sep"></span>
@@ -968,7 +988,7 @@
       </div>
 
       <div class="aura3d-controls-hint" id="aura-controls-hint">
-        AIM: <b>A/D</b> · CLUB: <b>Q/E</b> · SWING: <b>SPACE ×3</b> · AIM CAM: <b>W/S</b> · MULLIGAN: <b>M</b> · MENU: <b>ESC</b>
+        AIM: <b>A/D</b> (<b>SHIFT</b> FINE) · AT PIN: <b>P</b> · CLUB: <b>Q/E</b> · SWING: <b>SPACE ×3</b> · AIM CAM: <b>W/S</b> · MULLIGAN: <b>M</b> · MENU: <b>ESC</b>
       </div>
 
       <div class="touch-controls" id="touch"></div>

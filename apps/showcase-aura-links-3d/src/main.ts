@@ -84,6 +84,7 @@ import {
   stepBall,
   suggestClub
 } from "./game/sim";
+import { defaultAimYaw, pinArrowDegrees, stepAimOffset, wrapAngle, yawToward } from "./game/aim";
 import { applyGolferFit, buildGolferNodes, golferTelemetry, poseGolfer, resolveGolferRig, type GolferPhase } from "./game/rig";
 import { sweptClubContact, type ClubContact } from "./game/contact";
 import { commitStroke } from "./game/strokeCommit";
@@ -132,7 +133,8 @@ interface RoundState {
   prevPos: Vec3;
   lie: LieKind;
   clubIdx: number;
-  aimOffset: number; // radians off lineYaw
+  aimBase: number; // yaw the address starts on (toward the pin, or the fairway on a dogleg tee)
+  aimOffset: number; // radians off aimBase, unbounded and wrapped at +-PI
   skinsPot: number;
   skinsWon: number;
 }
@@ -1175,7 +1177,7 @@ function updateCamera(dt: number): void {
     // chase cam: behind the ball along its velocity, ahead low
     const v = ball.vel;
     const hv = Math.hypot(v[0], v[2]);
-    const back = hv > 0.5 ? [v[0] / hv, v[2] / hv] : [Math.sin(r.aimOffset + t.lineYaw), Math.cos(r.aimOffset + t.lineYaw)];
+    const back = hv > 0.5 ? [v[0] / hv, v[2] / hv] : [Math.sin(aimYaw()), Math.cos(aimYaw())];
     const distBack = ball.status === "roll" ? 7 : 13;
     cam.eye = [
       ball.pos[0] - back[0] * distBack,
@@ -1202,7 +1204,7 @@ function updateCamera(dt: number): void {
     cam.fov = 34;
   } else if (state.phase === "swing" || strikeHold) {
     cam.mode = "address";
-    const yaw = t.lineYaw + r.aimOffset;
+    const yaw = aimYaw();
     const bx = r.ballPos[0], bz = r.ballPos[2];
     // Low 3/4 view that keeps the full stance, club and swing arc in frame —
     // and through the strike the ball leaving the tee.
@@ -1215,7 +1217,7 @@ function updateCamera(dt: number): void {
     cam.fov = lerp(cam.fov, 42 + 16 * portrait, 1 - Math.pow(0.02, dt));
   } else {
     cam.mode = "aim";
-    const yaw = t.lineYaw + r.aimOffset;
+    const yaw = aimYaw();
     const bx = r.ballPos[0], bz = r.ballPos[2];
     // Over-the-shoulder aim cam — W/S dollies between behind-golfer and overview,
     // low enough that the 1.84 m golfer and club never fall below the frame.
@@ -1405,7 +1407,22 @@ function currentClub() {
 }
 
 function aimYaw(): number {
-  return (state.terrain?.lineYaw ?? 0) + (state.round?.aimOffset ?? 0);
+  return (state.round?.aimBase ?? state.terrain?.lineYaw ?? 0) + (state.round?.aimOffset ?? 0);
+}
+
+function pinYaw(): number {
+  const r = state.round!;
+  return yawToward([r.ballPos[0], r.ballPos[2]], [state.terrain!.cup[0], state.terrain!.cup[2]]);
+}
+
+function updatePinIndicator(): void {
+  const r = state.round;
+  const t = state.terrain;
+  if (!r || !t) return;
+  const arrow = $("h-pin-arrow");
+  if (arrow) arrow.style.transform = `rotate(${pinArrowDegrees(aimYaw(), pinYaw()).toFixed(1)}deg)`;
+  const dist = $("h-pin-dist");
+  if (dist) dist.textContent = `${t.cupDistance(r.ballPos[0], r.ballPos[2]).toFixed(0)}M`;
 }
 
 function beginAddress(): void {
@@ -1414,6 +1431,12 @@ function beginAddress(): void {
   r.lie = r.strokes === 0 ? "tee" : t.zone(r.ballPos[0], r.ballPos[2]);
   if (r.lie === "water" || r.lie === "oob") r.lie = "rough";
   r.clubIdx = CLUB_ORDER.indexOf(suggestClub(r.lie, t.cupDistance(r.ballPos[0], r.ballPos[2])));
+  r.aimBase = defaultAimYaw({
+    ball: [r.ballPos[0], r.ballPos[2]],
+    cup: [t.cup[0], t.cup[2]],
+    lineYaw: t.lineYaw,
+    onTee: r.strokes === 0
+  });
   r.aimOffset = 0;
   state.phase = "address";
   state.swing.reset();
@@ -1423,7 +1446,7 @@ function beginAddress(): void {
   swingDrive.committed = false;
   pendingCommit = null;
   heroCelebrate = false;
-  setPrompt("SPACE — SWING · A/D AIM · Q/E CLUB");
+  setPrompt("SPACE — SWING · A/D AIM (SHIFT FINE) · P PIN · Q/E CLUB");
   $("swing-meter")?.classList.remove("show");
   updateCardHud();
   if (golferRig) {
@@ -1689,6 +1712,7 @@ function startHole(idx: number): void {
     prevPos: [t.tee[0], t.tee[1] + BALL_R, t.tee[2]],
     lie: "tee",
     clubIdx: 0,
+    aimBase: t.lineYaw,
     aimOffset: 0,
     skinsPot: state.round?.skinsPot ?? 0,
     skinsWon: state.round?.skinsWon ?? 0
@@ -1888,6 +1912,8 @@ const isStillMode = bootUrlParams.has("still");
 let autopilot = bootUrlParams.get("autoplay") === "1" || bootUrlParams.get("demo") === "1";
 let appReady = false;
 const pressedKeys = new Set<string>();
+let aimHeldFor = 0;
+let aimHeldDir = 0;
 const justPressed = new Set<string>();
 
 function golferAt(): { pos: Vec3; yaw: number } {
@@ -1929,6 +1955,8 @@ function frame(dt: number): void {
       if (justPressed.has("KeyQ")) { r.clubIdx = (r.clubIdx + CLUB_ORDER.length - 1) % CLUB_ORDER.length; void audio?.cue("ui"); updateCardHud(); }
       if (justPressed.has("KeyE")) { r.clubIdx = (r.clubIdx + 1) % CLUB_ORDER.length; void audio?.cue("ui"); updateCardHud(); }
       if (justPressed.has("KeyM")) { applyMulligan(); }
+      if (justPressed.has("KeyP")) { r.aimOffset = wrapAngle(pinYaw() - r.aimBase); void audio?.cue("ui"); }
+      if (justPressed.has("KeyF")) { r.aimOffset = wrapAngle(t!.lineYaw - r.aimBase); void audio?.cue("ui"); }
       if (justPressed.has("Space") || justPressed.has("Enter")) { startSwing(); }
     } else if (r && state.phase === "swing") {
       if (justPressed.has("Space") || justPressed.has("Enter")) {
@@ -1945,10 +1973,7 @@ function frame(dt: number): void {
   if (autopilot && state.phase !== "menu" && !isStillMode && simTime - lastManualInputAt > 2.2) {
     if (r && t && state.phase === "address" && simTime - addressEnteredAt > 1.35) {
       const targetYaw = Math.atan2(t.cup[0] - r.ballPos[0], t.cup[2] - r.ballPos[2]);
-      let diff = targetYaw - t.lineYaw;
-      while (diff > Math.PI) diff -= Math.PI * 2;
-      while (diff < -Math.PI) diff += Math.PI * 2;
-      r.aimOffset = clamp(diff, -0.55, 0.55);
+      r.aimOffset = wrapAngle(targetYaw - r.aimBase);
       startSwing();
     } else if (state.phase === "roundover" && simTime - roundOverEnteredAt > 3.2) {
       startRound();
@@ -1961,7 +1986,11 @@ function frame(dt: number): void {
     const aimIn = (pressedKeys.has("KeyA") || pressedKeys.has("ArrowLeft") ? 1 : 0) - (pressedKeys.has("KeyD") || pressedKeys.has("ArrowRight") ? 1 : 0);
     const zoomIn = (pressedKeys.has("KeyW") || pressedKeys.has("ArrowUp") ? 1 : 0) - (pressedKeys.has("KeyS") || pressedKeys.has("ArrowDown") ? 1 : 0);
     isTurningAim = aimIn !== 0;
-    r.aimOffset = clamp(r.aimOffset + aimIn * dt * 1.1, -0.75, 0.75);
+    aimHeldFor = aimIn !== 0 && aimIn === aimHeldDir ? aimHeldFor + dt : 0;
+    aimHeldDir = aimIn;
+    const fineAim = pressedKeys.has("ShiftLeft") || pressedKeys.has("ShiftRight");
+    if (aimIn !== 0) r.aimOffset = stepAimOffset(r.aimOffset, aimIn, dt, aimHeldFor, fineAim);
+    updatePinIndicator();
     cam.zoom = clamp(cam.zoom - zoomIn * dt * 1.4, 0.7, 2.6);
   }
 
