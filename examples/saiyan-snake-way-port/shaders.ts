@@ -43,9 +43,10 @@ float fogAmount(float d){ return clamp((d - 430.0) / 580.0, 0.0, 1.0); }
 
 /** The original's toon ramp (bands 0.92 / 0.97 / 1.0 under a sky/ground hemisphere tint). */
 const TOON = /* glsl */ `
+float gToonShadow = 1.0; // sun-shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
 vec3 toon(vec3 albedo, vec3 N) {
   vec3 L = normalize(vec3(-0.45, 1.0, 0.6));
-  float d = dot(N, L) * 0.5 + 0.5;
+  float d = min(dot(N, L) * 0.5 + 0.5, mix(0.30, 1.0, gToonShadow)); // shadow drops the surface to the lowest band
   float band = d < 0.34 ? 0.92 : (d < 0.67 ? 0.97 : 1.0);
   vec3 sky = mix(vec3(0.62, 0.52, 0.5), vec3(1.0, 0.93, 0.9), N.y * 0.5 + 0.5);
   return albedo * band * sky;
@@ -53,7 +54,7 @@ vec3 toon(vec3 albedo, vec3 N) {
 /** The same ramp with deeper bands, a sunset rim and a small highlight, so figures read as solid forms. */
 vec3 toonFigure(vec3 albedo, vec3 N, vec3 V) {
   vec3 L = normalize(vec3(-0.45, 1.0, 0.6));
-  float d = dot(N, L) * 0.5 + 0.5;
+  float d = min(dot(N, L) * 0.5 + 0.5, mix(0.29, 1.0, gToonShadow));
   float band = d < 0.30 ? 0.66 : (d < 0.62 ? 0.84 : (d < 0.86 ? 0.96 : 1.04));
   vec3 sky = mix(vec3(0.66, 0.5, 0.58), vec3(1.0, 0.92, 0.9), N.y * 0.5 + 0.5);
   float rim = pow(1.0 - max(dot(N, V), 0.0), 2.6);
@@ -82,6 +83,7 @@ void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(cameraPosition - vWorld);
   if (dot(N, V) < 0.0) N = -N;
+  gToonShadow = a3dSunShadowAuto(vWorld, N);
   vec3 col = toonFigure(baseColor, N, V) + glowColor * glow;
   outColor = vec4(fogMix(col, length(cameraPosition - vWorld)), 1.0);
 }`;
@@ -212,6 +214,7 @@ void main() {
   vec3 film = 0.5 + 0.5 * cos(6.2831853 * (vec3(0.0, 0.33, 0.67) + fres * 0.9 + tint * 0.6));
   albedo = mix(albedo, albedo * film * 1.08, 0.07 * top * detail);
 
+  gToonShadow = a3dSunShadowAuto(vWorld, N);
   vec3 col = toon(albedo, N);
   col += vec3(1.0, 0.82, 0.9) * pow(max(dot(N, SUN_DIR), 0.0), 3.0) * 0.07 * top;
 

@@ -441,7 +441,7 @@ export function buildWorld(levelIndex: number): World {
   const builder: Scene = scene()
     .background(hexString(level.fog))
     .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000 }))
-    .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color, shadow: enabled("shadow") ? { cascades: 2, maxDistance: 140 } : false }))
+    .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color, shadow: enabled("shadow") ? { cascades: 1, maxDistance: 90 } : false }))
     .add(lights.directional({ name: "fill", position: [-sunDirection[0] * 300, 120, -sunDirection[2] * 300], target: [0, 0, 0], intensity: look.fillLight.intensity, color: look.fillLight.color, shadow: false }));
   if (enabled("env")) builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
   if (enabled("fog")) builder.add(effects.fog({ name: "haze", density: look.engineFogDensity, color: look.engineFog }));
@@ -469,11 +469,11 @@ export function buildWorld(levelIndex: number): World {
       const t = (s - k.s) / k.len;
       return k.h * t * t;
     }, () => true, k.w);
-    builder.add(geometry.custom(dyn(wedge), { name: `kicker-${i}`, material: material.custom(rampSpec(look, glow)) }));
+    builder.add(geometry.custom(dyn(wedge), { name: `kicker-${i}`, material: material.custom(rampSpec(look, glow)), castShadow: false }));
   });
   level.shortcuts.forEach((sc, i) => {
     const deck = strip(level, sc.start, sc.end, 4, [sc.l - 5.5, sc.l, sc.l + 5.5], () => sc.height, () => true, 5.5);
-    builder.add(geometry.custom(dyn(deck), { name: `shortcut-${i}`, material: material.custom(rampSpec(look, glow)) }));
+    builder.add(geometry.custom(dyn(deck), { name: `shortcut-${i}`, material: material.custom(rampSpec(look, glow)), castShadow: false }));
   });
 
   /* ---- terrain, guardrails, towers ---- */
@@ -591,19 +591,20 @@ export function buildWorld(levelIndex: number): World {
     const base = roadPoint(level, g.s, 0, 0);
     for (const side of [-1, 1]) {
       const p = roadPoint(level, g.s, side * (width - 0.4), 6);
-      builder.add(primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, 12, 0.7], material: gateMat() }));
+      builder.add(primitives.box({ name: `gate-post-${i}-${side}`, position: p, rotation: [0, psi, 0], size: [0.7, 12, 0.7], material: gateMat(), castShadow: false }));
     }
-    builder.add(primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat() }));
+    builder.add(primitives.box({ name: `gate-bar-${i}`, position: [base[0], base[1] + 12, base[2]], rotation: [0, psi, 0], size: [width * 2, 0.6, 0.6], material: gateMat(), castShadow: false }));
   });
   level.cells.forEach((c, i) => {
     const p = roadPoint(level, c.s, c.l, c.h);
-    builder.add(primitives.sphere({ name: `cell-${i}`, position: p, size: 1.7, material: material.custom(solidSpec(look, hexLinear(0xf3b548), hexLinear(0xffa31a), 4.2, 0.35, 0.3)) }).runtime({ id: `cell-${i}` }));
+    builder.add(primitives.sphere({ name: `cell-${i}`, position: p, size: 1.7, material: material.custom(solidSpec(look, hexLinear(0xf3b548), hexLinear(0xffa31a), 4.2, 0.35, 0.3)), castShadow: false }).runtime({ id: `cell-${i}` }));
   });
   level.hazards.forEach((h, i) => {
     const tall = h.type === "vent";
     builder.add(primitives.cylinder({
       name: `hazard-${i}`, position: roadPoint(level, h.s, h.l, tall ? 2.5 : 0.8), size: [h.r * 2, tall ? 5 : 1.6, h.r * 2],
-      material: material.custom(solidSpec(look, hexLinear(tall ? 0x6fe4e6 : 0xe34a3a), hexLinear(tall ? 0x6fe4e6 : 0xe34a3a), tall ? 1.0 : 0.6, 0.45))
+      material: material.custom(solidSpec(look, hexLinear(tall ? 0x6fe4e6 : 0xe34a3a), hexLinear(tall ? 0x6fe4e6 : 0xe34a3a), tall ? 1.0 : 0.6, 0.45)),
+      castShadow: false
     }));
   });
 

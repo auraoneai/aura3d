@@ -156,7 +156,7 @@ export function buildWorld(options: WorldOptions = {}): World {
     .camera(camera.perspective({ position: [0, 6, 14], target: [0, 1, 0], fov: 62, near: 0.5, far: 6000 }))
     // the custom materials are unlit; these light the rigged runner (hemisphere colours are the look spec's)
     .add(lights.hemisphere({ name: "sky fill", skyColor: "#f6d0e6", groundColor: "#b98a2e", intensity: 1.1 }))
-    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: 2.2, color: "#fff0dc" }));
+    .add(lights.directional({ name: "sun", position: [-40, 60, -70], target: [0, 0, 0], intensity: 2.2, color: "#fff0dc", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 1, maxDistance: 80 } as never) }));
 
   /* road + sky */
   const mesh = buildRoadMesh(samples);

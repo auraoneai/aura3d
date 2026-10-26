@@ -130,8 +130,8 @@ export function buildWorld(track: Track, quality: "high" | "low" = "high"): Worl
   for (const t of strike.targets) {
     const heavy = t.kind === "heavy";
     const r = STRIKE.radius[t.kind];
-    b.add(primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: material.custom(solidSpec(hexLinear(heavy ? "#7a1c1c" : "#c82828"), hexLinear("#ff5a3a"), 2.2)) }).runtime({ id: `target-${t.id}` }));
-    b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)) }).runtime({ id: `target-ring-${t.id}` }));
+    b.add(primitives.sphere({ name: `target-${t.id}`, size: r * 2.1, material: material.custom(solidSpec(hexLinear(heavy ? "#7a1c1c" : "#c82828"), hexLinear("#ff5a3a"), 2.2)), castShadow: false }).runtime({ id: `target-${t.id}` }));
+    b.add(primitives.torus({ name: `target-ring-${t.id}`, size: [r * 1.9, 0.22, 0.22], material: material.custom(solidSpec(hexLinear("#2a1010"), hexLinear(heavy ? "#ff7a3a" : "#ffb347"), 2.6)), castShadow: false }).runtime({ id: `target-ring-${t.id}` }));
   }
 
   /* bolt tracers: a pooled strip of camera-facing quads, rebuilt every frame */

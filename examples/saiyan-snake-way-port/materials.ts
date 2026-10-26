@@ -32,6 +32,7 @@ export const PALETTE = {
 } as const;
 
 export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, extra: { transparent?: boolean; depthWrite?: boolean } = {}): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
   uniforms: {
     baseColor: { type: "color3", value: [...base] },
@@ -52,6 +53,7 @@ export const glowSpec = (core: Rgb, shell: Rgb, alpha = 1, hollow = 0): CustomSp
 });
 
 export const roadSpec = (): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
   uniforms: {
     roadTop: { type: "color3", value: [...hexLinear(PALETTE.roadTop)] },
