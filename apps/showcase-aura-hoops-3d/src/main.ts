@@ -2712,9 +2712,13 @@ function updateCamera(dt: number): void {
     } else {
       const hx = holder?.x ?? ball.x;
       const hz = Math.max(holder?.z ?? ball.z, ball.z);
-      want = QA_CAM_FRONT
-        // measurement: a close front-left elevated view of the handler (hand over ball)
-        ? { eye: [(holder?.x ?? ball.x) - 2.0, 1.9, (holder?.z ?? ball.z) - 2.6], target: [holder?.x ?? ball.x, 0.8, (holder?.z ?? ball.z) - 0.1], fov: 42 }
+      want = QA_CAM_FRONT && holder
+        // measurement: a close, elevated view from in front of the handler on the dribbling-hand side (hand over ball)
+        ? (() => {
+          const cy = Math.cos(holder.yaw), sn = Math.sin(holder.yaw);
+          const at = (lx: number, ly: number, lz: number): Vec3 => [holder.x + cy * lx + sn * lz, ly, holder.z - sn * lx + cy * lz];
+          return { eye: at(-1.9, 1.8, 2.3), target: at(-0.05, 0.75, 0.2), fov: 40 };
+        })()
         : {
           eye: [hx + 5.6, 3.0, hz + 4.2],
           target: [hx - 0.2, 1.1, hz - 0.9],
