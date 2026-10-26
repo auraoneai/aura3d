@@ -1074,9 +1074,9 @@ function installFacingQa() {
   const noInput: SimInput = { moveX: 0, moveZ: 0, turn: 0, pitchDelta: 0, fire: false, firePressed: false, reload: false, use: false };
   const rig = {
     stage(kind: keyof typeof KIND_CHAR, dist = 4.5, bearingDeg = 0) {
-      const floor = FLOORS.findIndex((f) => f.rows.some((r) => r.includes(KIND_CHAR[kind])));
+      const floor = FLOORS.findIndex((f, i) => createSim(f, { ox: 0, mode: "descent", seed: 1337 + i * 97 }).state.enemies.some((en) => en.kind === kind));
       if (floor < 0) return { ok: false, reason: "no floor has this enemy" };
-      if (mode !== "descent" || floorIdx !== floor) startFloor(floor, "descent");
+      startFloor(floor, "descent");
       qaFrozen = false;
       const e = sim.state.enemies.find((en) => en.kind === kind && en.state !== "dead");
       if (!e) return { ok: false, reason: "enemy missing" };
@@ -1104,6 +1104,12 @@ function installFacingQa() {
       return { ok: false, reason: "no open spot" };
     },
     unfreeze() { qaFrozen = false; },
+    freeze() { qaFrozen = true; syncScenePose(noInput); },
+    /** Let the drawn yaw smooth toward the sim heading for `seconds` without running the simulation (enemies stay where they are). */
+    settle(seconds: number) {
+      const n = Math.max(1, Math.round(seconds * 60));
+      for (let i = 0; i < n; i++) { lastPoseTime = sim.state.time - 1 / 60; syncScenePose(noInput); }
+    },
     /** Run the sim and the drawn-yaw smoothing for `seconds` of 60 Hz steps, then refreeze: used to measure convergence. */
     advance(seconds: number) {
       const n = Math.round(seconds * 60);
@@ -1117,6 +1123,16 @@ function installFacingQa() {
       enemyYaw.set(id, (enemyYaw.get(id) ?? 0) + Math.PI);
       return true;
     },
+    /** Rotate the drawn model by `rad` about Y while frozen (a profile still: forward = camera right when the model's forward is +Z after +90 degrees). */
+    rotateDrawn(kind: keyof typeof KIND_CHAR, rad: number) {
+      const e = sim.state.enemies.find((en) => en.kind === kind && en.state !== "dead");
+      if (!e) return false;
+      const id = `f${sim.state.mode === "killhouse" ? 6 : floorIdx}-en-${e.sx}-${e.sz}`;
+      enemyYaw.set(id, (enemyYaw.get(id) ?? 0) + rad);
+      const node = req(id);
+      node.setRotation(0, enemyYaw.get(id)!, 0);
+      return true;
+    },
     setForward(kind: keyof typeof KIND_CHAR, axis: ForwardAxis | null) {
       if (axis === null) delete forwardOverride[kind]; else forwardOverride[kind] = axis;
       syncScenePose(noInput);
@@ -1128,10 +1144,10 @@ function installFacingQa() {
         const id = `f${slot}-en-${e.sx}-${e.sz}`;
         const yaw = enemyYaw.get(id) ?? 0;
         const dx = p.x - e.x, dz = p.z - e.z;
-        const axis = enemyForward(e.kind);
+        // the error is always measured against the model's real forward axis (ENEMY_FORWARD), never the QA override
         return {
-          kind: e.kind, state: e.state, forward: axis, simFacing: +e.facing.toFixed(4), drawnYaw: +yaw.toFixed(4),
-          distance: +Math.hypot(dx, dz).toFixed(2), errorDeg: +((enemyFacingError(yaw, e.kind, dx, dz, axis) * 180) / Math.PI).toFixed(2)
+          kind: e.kind, state: e.state, forward: enemyForward(e.kind), trueForward: ENEMY_FORWARD[e.kind], simFacing: +e.facing.toFixed(4), drawnYaw: +yaw.toFixed(4),
+          distance: +Math.hypot(dx, dz).toFixed(2), errorDeg: +((enemyFacingError(yaw, e.kind, dx, dz, ENEMY_FORWARD[e.kind]) * 180) / Math.PI).toFixed(2)
         };
       });
     }
