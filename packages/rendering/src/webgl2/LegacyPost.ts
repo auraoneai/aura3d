@@ -2721,6 +2721,27 @@ interface OutputPassRouteTone {
   readonly vignette: OutputVignetteUniforms | undefined;
 }
 
+/**
+ * The OutputPass HDR route (4.3.0) is opt-in: `globalThis.__A3D_HDR_OUTPUT_PASS__ = true` or `?hdrout=1`. It was proven on
+ * software WebGL2 only; real GPUs rendered some scenes dark, so the shipped 4.2.0 fused present stays the default.
+ */
+export function hdrOutputPassEnabled(): boolean {
+  const g = globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean; location?: { search?: string } };
+  if (g.__A3D_HDR_OUTPUT_PASS__ === true) return true;
+  try {
+    return typeof g.location?.search === "string" && new URLSearchParams(g.location.search).get("hdrout") === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** rgba16f colour attachments need EXT_color_buffer_float or EXT_color_buffer_half_float; fake hosts without a GL pass through. */
+function halfFloatColorRenderable(host: WebGL2DeviceHost): boolean {
+  const gl = (host as { gl?: { getExtension?: (name: string) => unknown } }).gl;
+  if (typeof WebGL2RenderingContext === "undefined" || !(gl instanceof WebGL2RenderingContext)) return true;
+  return Boolean(gl.getExtension("EXT_color_buffer_float") || gl.getExtension("EXT_color_buffer_half_float"));
+}
+
 /** The OutputPass OUT-stage configuration for a v2 chain, or undefined when the chain needs the fused present. */
 function outputPassRouteTone(
   passes: readonly LdrPostprocessPassDescriptor[],
@@ -2729,6 +2750,7 @@ function outputPassRouteTone(
   host: WebGL2DeviceHost
 ): OutputPassRouteTone | undefined {
   if (source.colorTexture.format === "rgba8" || !host.device) return undefined;
+  if (!hdrOutputPassEnabled() || !halfFloatColorRenderable(host)) return undefined;
   if (!passes.every((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName) || pass.name === ("bloom" as LdrPostprocessPassName))) return undefined;
   const tonePass = passes.find((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName));
   const whitePoint = tonePass?.options?.whitePoint;
