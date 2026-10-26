@@ -88,3 +88,23 @@ describe("aim maths", () => {
     expect(dogleg).toBeCloseTo(0.1, 9);
   });
 });
+
+describe("the shot goes where it is aimed", () => {
+  it("a ball launched at any aim yaw travels along that yaw (180 degrees travels backward)", async () => {
+    const { CLUBS, launchBall, stepBall } = await import("../../../apps/showcase-aura-links-3d/src/game/sim");
+    const course = COURSES.stAuroras;
+    const terrain = buildHoleTerrain(course, course.holes[0]!);
+    for (const yawDeg of [0, 45, 90, 135, 180, -90, -135]) {
+      const aimYaw = (yawDeg * Math.PI) / 180;
+      const env = { terrain, gravity: course.gravity, airDensity: course.airDensity, wind: { speed: 0, yaw: 0 }, lie: "tee" as const, liePenalty: 1 };
+      let ball = launchBall({ club: CLUBS.iron, power: 0.9, accuracy: 0 as never, spin: 0 as never, aimYaw }, env);
+      const start = [...ball.pos] as [number, number, number];
+      for (let i = 0; i < 60 * 3; i += 1) ball = stepBall(ball, env, 1 / 60).ball;
+      const dx = ball.pos[0] - start[0];
+      const dz = ball.pos[2] - start[2];
+      const travelled = Math.hypot(dx, dz);
+      expect(travelled).toBeGreaterThan(20);
+      expect(Math.sin(aimYaw) * dx + Math.cos(aimYaw) * dz).toBeGreaterThan(0.97 * travelled);
+    }
+  });
+});
