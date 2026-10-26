@@ -1,4 +1,27 @@
-export type Vec3 = [number, number, number];
+import {
+  GRIP_Q_ID,
+  calibrateGripSocket,
+  gripQAxis,
+  gripQConj,
+  gripQFromTo,
+  gripQMul,
+  gripQNorm,
+  gripQRot,
+  gripQToEulerXYZ,
+  gripQToEulerZYX,
+  gripRotY,
+  gripUnit,
+  solveGripTwoBone,
+  solveTwoHandGrip,
+  twoHandGripBonesForEngine,
+  type GripQuat,
+  type GripVec3,
+  type TwoHandGripBodyRig,
+  type TwoHandGripRig
+} from "@aura3d/engine/game";
+
+export type Vec3 = GripVec3;
+export type Quat = GripQuat;
 const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
 const smoothstep = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
@@ -6,14 +29,12 @@ const smoothstep = (t: number): number => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 
 /* ================================================================== *
  * Batter rig + swing pose system                                     *
  *                                                                    *
- * The bat is SOCKETED to the batter's right forearm bone through the *
- * engine's `animation.attach` (engine owns the bat transform while   *
- * attached). The stance and swing are driven by an OVERLAY pose on   *
- * top of the Idle_Loop clip: two-bone IK places both hands on the   *
- * bat knob (right hand at the knob, left hand stacked just above),  *
- * and a forearm twist solves so the socketed bat sweeps the         *
- * authored arc — load, stride, rotation through the zone at contact *
- * height, follow-through wrapping around the torso.                 *
+ * The grip itself (two-bone IK for both arms, the elbow orbit and    *
+ * forearm twist that roll the bat onto the wanted direction, the     *
+ * top hand on the handle) is the library's `solveTwoHandGrip`; this  *
+ * file holds what is specific to this game: the diamondAthlete bind  *
+ * measurements, the stance and swing keyframes and the contact       *
+ * search. The bat follows the solver (`objectRot`, `palm`).          *
  * ================================================================== */
 
 /** diamondAthlete bind skeleton, actor-local (+x = character's LEFT, +z = toward the pitcher). */
@@ -71,81 +92,21 @@ export const SWING_CONTACT_T = 0.5;
 /** Bat/forearm angle fixed by the socket calibration; set from the stance below. */
 export let BAT_CONE_COS = 0.5527;
 
-/* ---------- Tiny quat helpers (x, y, z, w tuples) ---------- */
-export type Quat = [number, number, number, number];
-export const Q_ID: Quat = [0, 0, 0, 1];
-export const qNorm = (q: Quat): Quat => {
-  const l = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
-  return [q[0] / l, q[1] / l, q[2] / l, q[3] / l];
-};
-export const qMul = (a: Quat, b: Quat): Quat => {
-  const [ax, ay, az, aw] = a;
-  const [bx, by, bz, bw] = b;
-  return [aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx, aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz];
-};
-export const qConj = (q: Quat): Quat => [-q[0], -q[1], -q[2], q[3]];
-export const qAxis = (axis: Vec3, angle: number): Quat => {
-  const l = Math.hypot(axis[0], axis[1], axis[2]) || 1;
-  const h = angle / 2;
-  const s = Math.sin(h);
-  return qNorm([(axis[0] / l) * s, (axis[1] / l) * s, (axis[2] / l) * s, Math.cos(h)]);
-};
-export const qRot = (q: Quat, v: Vec3): Vec3 => {
-  const t: Vec3 = [2 * (q[1] * v[2] - q[2] * v[1]), 2 * (q[2] * v[0] - q[0] * v[2]), 2 * (q[0] * v[1] - q[1] * v[0])];
-  const c: Vec3 = [q[1] * t[2] - q[2] * t[1], q[2] * t[0] - q[0] * t[2], q[0] * t[1] - q[1] * t[0]];
-  return [v[0] + t[0] * q[3] + c[0], v[1] + t[1] * q[3] + c[1], v[2] + t[2] * q[3] + c[2]];
-};
-/** Robust rotation taking normalized vector a to normalized vector b. */
-export const qFromTo = (a: Vec3, b: Vec3): Quat => {
-  const d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-  if (d > 0.99999) return Q_ID;
-  if (d < -0.99999) {
-    const axis: Vec3 = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-    const alt = Math.hypot(axis[0], axis[2]) < 1e-6 ? ([0, 0, 1] as Vec3) : ([1, 0, 0] as Vec3);
-    const c: Vec3 = [a[1] * alt[2] - a[2] * alt[1], a[2] * alt[0] - a[0] * alt[2], a[0] * alt[1] - a[1] * alt[0]];
-    return qAxis(c, Math.PI);
-  }
-  return qNorm([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 1 + d]);
-};
-/** Quat → XYZ-intrinsic Euler radians (engine `eulerXYZFromQuat` convention). */
-export const qToEulerXYZ = (q: Quat): Vec3 => {
-  const [x, y, z, w] = qNorm(q);
-  const m13 = 2 * (x * z + y * w);
-  const pitch = Math.asin(clamp(m13, -1, 1));
-  if (Math.abs(m13) >= 0.9999999) {
-    const m32 = 2 * (y * z + x * w);
-    const m22 = 2 * (x * x + w * w);
-    return [Math.atan2(m32, m22), pitch, 0];
-  }
-  const m11 = 1 - 2 * (y * y + z * z);
-  const m12 = 2 * (x * y - z * w);
-  const m23 = 2 * (y * z - x * w);
-  const m33 = 1 - 2 * (x * x + y * y);
-  return [Math.atan2(-m23, m33), pitch, Math.atan2(-m12, m11)];
-};
-/** Quat → Euler radians for the engine's default node rotation order "ZYX" (matrix Rz·Ry·Rx), which `setRotation(x, y, z)` on a route node uses. */
-export const qToEulerZYX = (q: Quat): Vec3 => {
-  const [x, y, z, w] = qNorm(q);
-  const m11 = 1 - 2 * (y * y + z * z);
-  const m21 = 2 * (x * y + z * w);
-  const m31 = 2 * (x * z - y * w);
-  const m32 = 2 * (y * z + x * w);
-  const m33 = 1 - 2 * (x * x + y * y);
-  const m12 = 2 * (x * y - z * w);
-  const m22 = 1 - 2 * (x * x + z * z);
-  const ry = Math.asin(clamp(-m31, -1, 1));
-  if (Math.abs(m31) < 0.9999999) return [Math.atan2(m32, m33), ry, Math.atan2(m21, m11)];
-  return [0, ry, Math.atan2(-m12, m22)];
-};
-export const unit3 = (v: Vec3): Vec3 => {
-  const l = Math.hypot(v[0], v[1], v[2]) || 1;
-  return [v[0] / l, v[1] / l, v[2] / l];
-};
-export const rotY = (angle: number, v: Vec3): Vec3 => {
-  const c = Math.cos(angle);
-  const s = Math.sin(angle);
-  return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c];
-};
+/* ---------- Tiny quat helpers (x, y, z, w tuples), shared with the library ---------- */
+export const Q_ID: Quat = GRIP_Q_ID;
+export const qNorm = gripQNorm;
+export const qMul = gripQMul;
+export const qConj = gripQConj;
+export const qAxis = gripQAxis;
+export const qRot = gripQRot;
+export const qFromTo = gripQFromTo;
+/** Quat to XYZ-intrinsic Euler radians (engine `eulerXYZFromQuat` convention). */
+export const qToEulerXYZ = gripQToEulerXYZ;
+/** Quat to Euler radians for the engine's default node rotation order "ZYX", which `setRotation(x, y, z)` on a route node uses. */
+export const qToEulerZYX = gripQToEulerZYX;
+export const unit3 = gripUnit;
+export const rotY = gripRotY;
+
 
 /** One swing keyframe: knob target, bat direction, chest yaw, hips shift, elbow pole. */
 export interface SwingKey {
@@ -175,72 +136,23 @@ export const GRIP_SPREAD = 0.09;
 export const BATTER_YAW = Math.PI - 0.35;
 
 /** The engine's AnimationPose reads `{x,y,z}` / `{x,y,z,w}` objects: arrays would leave every bone untouched. */
-export function poseBonesForEngine(bones: Record<string, { position?: Vec3; rotation?: Quat }>): Record<string, { position?: { x: number; y: number; z: number }; rotation?: { x: number; y: number; z: number; w: number } }> {
-  const out: Record<string, { position?: { x: number; y: number; z: number }; rotation?: { x: number; y: number; z: number; w: number } }> = {};
-  for (const [name, b] of Object.entries(bones)) {
-    out[name] = {
-      ...(b.position ? { position: { x: b.position[0], y: b.position[1], z: b.position[2] } } : {}),
-      ...(b.rotation ? { rotation: { x: b.rotation[0], y: b.rotation[1], z: b.rotation[2], w: b.rotation[3] } } : {})
-    };
-  }
-  return out;
-}
+export const poseBonesForEngine = twoHandGripBonesForEngine;
 
-/** Two-bone IK: elbow position for shoulder→target with an elbow-hint pole. */
-export function solveTwoBone(shoulder: Vec3, target: Vec3, pole: Vec3, l1: number, l2: number): Vec3 {
-  const to: Vec3 = [target[0] - shoulder[0], target[1] - shoulder[1], target[2] - shoulder[2]];
-  const dRaw = Math.hypot(to[0], to[1], to[2]);
-  const d = clamp(dRaw, Math.abs(l1 - l2) + 1e-4, l1 + l2 - 1e-4);
-  const n: Vec3 = dRaw < 1e-6 ? [0, 0, 1] : [to[0] / dRaw, to[1] / dRaw, to[2] / dRaw];
-  const a = (l1 * l1 - l2 * l2 + d * d) / (2 * d);
-  const h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
-  const pd = pole[0] * n[0] + pole[1] * n[1] + pole[2] * n[2];
-  let b: Vec3 = [pole[0] - n[0] * pd, pole[1] - n[1] * pd, pole[2] - n[2] * pd];
-  const bl = Math.hypot(b[0], b[1], b[2]);
-  b = bl < 1e-5 ? unit3([n[1], n[2], n[0]]) : [b[0] / bl, b[1] / bl, b[2] / bl];
-  return [shoulder[0] + n[0] * a + b[0] * h, shoulder[1] + n[1] * a + b[1] * h, shoulder[2] + n[2] * a + b[2] * h];
-}
+/** Two-bone IK: elbow position for shoulder to target with an elbow-hint pole. */
+export const solveTwoBone = solveGripTwoBone;
 
-/** Elbow for shoulder→target with the hint pole rotated by `gamma` about the shoulder→target axis (the elbow's circle of solutions). */
-function orbitElbow(shoulder: Vec3, target: Vec3, pole: Vec3, l1: number, l2: number, gamma: number): Vec3 {
-  const e0 = solveTwoBone(shoulder, target, pole, l1, l2);
-  if (gamma === 0) return e0;
-  const to: Vec3 = [target[0] - shoulder[0], target[1] - shoulder[1], target[2] - shoulder[2]];
-  const n = unit3(to);
-  // Rotate the elbow's offset from the shoulder→target line about that line (Rodrigues).
-  const r: Vec3 = [e0[0] - shoulder[0], e0[1] - shoulder[1], e0[2] - shoulder[2]];
-  const rn = r[0] * n[0] + r[1] * n[1] + r[2] * n[2];
-  const along: Vec3 = [n[0] * rn, n[1] * rn, n[2] * rn];
-  const perp: Vec3 = [r[0] - along[0], r[1] - along[1], r[2] - along[2]];
-  const cr: Vec3 = [n[1] * perp[2] - n[2] * perp[1], n[2] * perp[0] - n[0] * perp[2], n[0] * perp[1] - n[1] * perp[0]];
-  const c = Math.cos(gamma);
-  const sn = Math.sin(gamma);
-  return [
-    shoulder[0] + along[0] + perp[0] * c + cr[0] * sn,
-    shoulder[1] + along[1] + perp[1] * c + cr[1] * sn,
-    shoulder[2] + along[2] + perp[2] * c + cr[2] * sn
-  ];
-}
+/** The bat's grip rig for the library solver: this game's bind skeleton plus the socket calibrated from the stance. */
+const BODY_RIG: TwoHandGripBodyRig = { ...RIG, poleL: POLE_STANCE_L };
+const SOCKET = calibrateGripSocket(BODY_RIG, { K: STANCE_KEY.K, D: STANCE_KEY.D, phi: STANCE_KEY.phi, pole: POLE_STANCE_R });
 
 /** Socket rotation (bone space) calibrated so the stance reads bat-up-over-the-shoulder. */
 export function stanceAttachQuat(): Quat {
-  const sr = rotY(STANCE_KEY.phi, RIG.shoulderR);
-  const shoulder = [RIG.chestBind[0] + sr[0], RIG.chestBind[1] + sr[1], RIG.chestBind[2] + sr[2]] as Vec3;
-  const elbow = solveTwoBone(shoulder, STANCE_KEY.K, POLE_STANCE_R, RIG.upperArm, RIG.foreHand);
-  const faDir = unit3([STANCE_KEY.K[0] - elbow[0], STANCE_KEY.K[1] - elbow[1], STANCE_KEY.K[2] - elbow[2]]);
-  const qFa = qFromTo(RIG.bindDirFA, faDir);
-  return qMul(qConj(qFa), qFromTo([1, 0, 0], STANCE_KEY.D));
+  return calibrateGripSocket(BODY_RIG, { K: STANCE_KEY.K, D: STANCE_KEY.D, phi: STANCE_KEY.phi, pole: POLE_STANCE_R }).socketRot;
 }
 
 /** Fixed socket constants: bone-space offset TRS placing the KNOB at the right palm. */
-export const BAT_ATTACH_ROT: Quat = stanceAttachQuat();
-BAT_CONE_COS = (() => {
-  const sr = rotY(STANCE_KEY.phi, RIG.shoulderR);
-  const shoulder: Vec3 = [RIG.chestBind[0] + sr[0], RIG.chestBind[1] + sr[1], RIG.chestBind[2] + sr[2]];
-  const elbow = solveTwoBone(shoulder, STANCE_KEY.K, POLE_STANCE_R, RIG.upperArm, RIG.foreHand);
-  const fa = unit3([STANCE_KEY.K[0] - elbow[0], STANCE_KEY.K[1] - elbow[1], STANCE_KEY.K[2] - elbow[2]]);
-  return fa[0] * STANCE_KEY.D[0] + fa[1] * STANCE_KEY.D[1] + fa[2] * STANCE_KEY.D[2];
-})();
+export const BAT_ATTACH_ROT: Quat = SOCKET.socketRot;
+BAT_CONE_COS = SOCKET.coneCos;
 export const BAT_ATTACH_EULER: Vec3 = qToEulerXYZ(BAT_ATTACH_ROT);
 export const BAT_ATTACH_POS: Vec3 = [
   RIG.palmR[0] + qRot(BAT_ATTACH_ROT, [KNOB_HALF, 0, 0])[0],
@@ -248,22 +160,14 @@ export const BAT_ATTACH_POS: Vec3 = [
   RIG.palmR[2] + qRot(BAT_ATTACH_ROT, [KNOB_HALF, 0, 0])[2]
 ];
 
-/** Twist (radians) about `axis` that rolls the rotated grip axis `a` onto `d`, compared as azimuths about `axis` and unwrapped against `prev`. */
-function azimuthTwistAxis(a: Vec3, axis: Vec3, d: Vec3, prev: number): number {
-  const aDot = a[0] * axis[0] + a[1] * axis[1] + a[2] * axis[2];
-  const dDot = d[0] * axis[0] + d[1] * axis[1] + d[2] * axis[2];
-  const aPerp: Vec3 = [a[0] - axis[0] * aDot, a[1] - axis[1] * aDot, a[2] - axis[2] * aDot];
-  const dPerp: Vec3 = [d[0] - axis[0] * dDot, d[1] - axis[1] * dDot, d[2] - axis[2] * dDot];
-  const cr: Vec3 = [aPerp[1] * dPerp[2] - aPerp[2] * dPerp[1], aPerp[2] * dPerp[0] - aPerp[0] * dPerp[2], aPerp[0] * dPerp[1] - aPerp[1] * dPerp[0]];
-  let tau = Math.atan2(cr[0] * axis[0] + cr[1] * axis[1] + cr[2] * axis[2], aPerp[0] * dPerp[0] + aPerp[1] * dPerp[1] + aPerp[2] * dPerp[2]);
-  while (tau - prev > Math.PI) tau -= 2 * Math.PI;
-  while (tau - prev < -Math.PI) tau += 2 * Math.PI;
-  return tau;
-}
-
-function azimuthTwist(qZeroTwist: Quat, axis: Vec3, d: Vec3, prev: number): number {
-  return azimuthTwistAxis(qRot(qZeroTwist, [1, 0, 0]), axis, d, prev);
-}
+const GRIP_RIG: TwoHandGripRig = {
+  ...BODY_RIG,
+  socketRot: BAT_ATTACH_ROT,
+  coneCos: BAT_CONE_COS,
+  gripSpread: GRIP_SPREAD,
+  objectLength: BAT_LEN,
+  sweetSpot: SWEET_SPOT
+};
 
 export interface PoseSolve {
   readonly bones: {
@@ -296,97 +200,33 @@ export interface PoseSolve {
 }
 
 /**
- * Solve the batter pose for (knob target K, bat direction D, chest yaw phi,
- * hips shift). Both arms IK onto the knob (right hand at the knob, left hand
- * GRIP_SPREAD up the bat); a forearm twist rotates the socketed bat onto D.
+ * Solve the batter pose for (knob target K, bat direction D, chest yaw phi, hips shift) with the library's two-handed grip: both arms IK
+ * onto the knob (right hand at the knob, left hand GRIP_SPREAD up the bat); a forearm twist rotates the socketed bat onto D.
  */
 export function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR: Vec3, prevTau: number, prevTauL = 0, prevGamma = 0): PoseSolve {
-  const chest: Vec3 = [RIG.chestBind[0] + hip[0], RIG.chestBind[1] + hip[1], RIG.chestBind[2] + hip[2]];
-  const sr = rotY(phi, RIG.shoulderR);
-  const sl = rotY(phi, RIG.shoulderL);
-  const shRt: Vec3 = [chest[0] + sr[0], chest[1] + sr[1], chest[2] + sr[2]];
-  const shLt: Vec3 = [chest[0] + sl[0], chest[1] + sl[1], chest[2] + sl[2]];
-
-  // Swing the right elbow around its circle of solutions until the forearm sits at the grip's fixed angle to the wanted bat direction D, so the bat points
-  // where the animation asked and the left hand can follow it; prefer the elbow position nearest the previous frame's.
-  let gamma = prevGamma;
-  let bestCost = Infinity;
-  for (let i = 0; i < 96; i++) {
-    const g = -Math.PI + (2 * Math.PI * i) / 96;
-    const e = orbitElbow(shRt, K, poleR, RIG.upperArm, RIG.foreHand, g);
-    const f = unit3([K[0] - e[0], K[1] - e[1], K[2] - e[2]]);
-    const cosA = f[0] * D[0] + f[1] * D[1] + f[2] * D[2];
-    let dg = g - prevGamma;
-    while (dg > Math.PI) dg -= 2 * Math.PI;
-    while (dg < -Math.PI) dg += 2 * Math.PI;
-    const cost = (cosA - BAT_CONE_COS) * (cosA - BAT_CONE_COS) + 0.004 * dg * dg;
-    if (cost < bestCost) {
-      bestCost = cost;
-      gamma = g;
-    }
-  }
-  const eR = orbitElbow(shRt, K, poleR, RIG.upperArm, RIG.foreHand, gamma);
-  const faDir = unit3([K[0] - eR[0], K[1] - eR[1], K[2] - eR[2]]);
-  const qUaR = qFromTo(RIG.bindDirUA, unit3([eR[0] - shRt[0], eR[1] - shRt[1], eR[2] - shRt[2]]));
-  const qFaZt = qFromTo(RIG.bindDirFA, faDir);
-  // Twist about the forearm axis so the socketed bat lands on D (exact azimuth
-  // alignment of the perpendicular projections), unwrapped against prevTau.
-  const tau = azimuthTwist(qMul(qFaZt, BAT_ATTACH_ROT), faDir, D, prevTau);
-  const qFa = qMul(qAxis(faDir, tau), qFaZt);
-  const batDir = qRot(qMul(qFa, BAT_ATTACH_ROT), [1, 0, 0]);
-  const palmOff = qRot(qFa, RIG.palmR);
-  const palm: Vec3 = [eR[0] + palmOff[0], eR[1] + palmOff[1], eR[2] + palmOff[2]];
-
-  // The top hand grips the bat where the bat really is (palm + the socketed bat's own direction), not where D asked for it.
-  const targetL: Vec3 = [palm[0] + batDir[0] * GRIP_SPREAD, palm[1] + batDir[1] * GRIP_SPREAD, palm[2] + batDir[2] * GRIP_SPREAD];
-  const eL = solveTwoBone(shLt, targetL, POLE_STANCE_L, RIG.upperArm, RIG.foreHand);
-  const faDirL = unit3([targetL[0] - eL[0], targetL[1] - eL[1], targetL[2] - eL[2]]);
-  const qFaLZt = qFromTo(RIG.bindDirFAL, faDirL);
-  // Left hand: the mirror of the right hand's grip axis, rolled onto the bat the same way.
-  const gripR = qRot(BAT_ATTACH_ROT, [1, 0, 0]);
-  const gripL: Vec3 = [-gripR[0], gripR[1], gripR[2]];
-  const tauL = azimuthTwistAxis(qRot(qFaLZt, gripL), faDirL, batDir, prevTauL);
-  const qFaL = qMul(qAxis(faDirL, tauL), qFaLZt);
-
-  const qChest = qAxis([0, 1, 0], phi);
-  const qUaL = qFromTo(RIG.bindDirUAL, unit3([eL[0] - shLt[0], eL[1] - shLt[1], eL[2] - shLt[2]]));
-  const palmLOff = qRot(qFaL, RIG.palmL);
-  const palmL: Vec3 = [eL[0] + palmLOff[0], eL[1] + palmLOff[1], eL[2] + palmLOff[2]];
-  const flex = (sh: Vec3, el: Vec3, hand: Vec3): number => {
-    const ua = unit3([el[0] - sh[0], el[1] - sh[1], el[2] - sh[2]]);
-    const fa = unit3([hand[0] - el[0], hand[1] - el[1], hand[2] - el[2]]);
-    return Math.acos(clamp(ua[0] * fa[0] + ua[1] * fa[1] + ua[2] * fa[2], -1, 1));
-  };
+  const p = solveTwoHandGrip(GRIP_RIG, { K, D, phi, hip, pole: poleR }, { tau: prevTau, tauL: prevTauL, gamma: prevGamma });
   return {
-    bones: {
-      Hips: { position: [RIG.hipsBind[0] + hip[0], RIG.hipsBind[1] + hip[1], RIG.hipsBind[2] + hip[2]] },
-      // Pin the spine so the chest FK the socket was calibrated against is exact.
-      Spine: { rotation: Q_ID },
-      Chest: { rotation: qChest },
-      RightUpperArm: { rotation: qMul(qConj(qChest), qUaR) },
-      RightForearm: { rotation: qMul(qConj(qUaR), qFa) },
-      LeftUpperArm: { rotation: qMul(qConj(qChest), qUaL) },
-      LeftForearm: { rotation: qMul(qConj(qUaL), qFaL) }
-    },
-    tau,
-    qFa,
-    elbow: eR,
-    chestActor: chest,
-    shoulderActor: shRt,
-    shoulderLActor: shLt,
-    elbowL: eL,
-    palmLActor: palmL,
-    targetL,
-    tauL,
-    gamma,
-    flexR: flex(shRt, eR, palm),
-    flexL: flex(shLt, eL, palmL),
-    batDir,
-    palmActor: palm,
-    sweetActor: [palm[0] + batDir[0] * SWEET_SPOT, palm[1] + batDir[1] * SWEET_SPOT, palm[2] + batDir[2] * SWEET_SPOT],
-    tipActor: [palm[0] + batDir[0] * BAT_LEN, palm[1] + batDir[1] * BAT_LEN, palm[2] + batDir[2] * BAT_LEN]
+    bones: p.bones as unknown as PoseSolve["bones"],
+    tau: p.tau,
+    qFa: p.qFa,
+    elbow: p.elbow,
+    chestActor: p.chest,
+    shoulderActor: p.shoulder,
+    shoulderLActor: p.shoulderL,
+    elbowL: p.elbowL,
+    palmLActor: p.palmL,
+    targetL: p.targetL,
+    tauL: p.tauL,
+    gamma: p.gamma,
+    flexR: p.flexR,
+    flexL: p.flexL,
+    batDir: p.objectDir,
+    palmActor: p.palm,
+    sweetActor: p.sweetPoint,
+    tipActor: p.tipPoint
   };
 }
+
 
 /** Per-swing contact configuration: sweet spot EXACTLY on the ball, on the cone. */
 export interface ContactConfig {

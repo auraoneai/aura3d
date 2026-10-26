@@ -78,7 +78,11 @@ export {
   createFixedStepPresenter, createRecordBlend, runMotionGate,
   clearCameraEye, createCameraClearance,
   createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ,
-  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS
+  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS,
+  createTwoHandGrip, solveTwoHandGrip, calibrateGripSocket, mirrorTwoHandGripBodyRig, twoHandGripBonesForEngine, relaxedTopHand,
+  measureGrip, handCentroid, DEFAULT_GRIP_LIMITS, DEFAULT_GRIP_BONE_NAMES,
+  solveGripTwoBone, orbitGripElbow, gripAzimuthTwist, gripQNorm, gripQMul, gripQConj, gripQAxis, gripQRot, gripQFromTo,
+  gripQToEulerXYZ, gripQToEulerZYX, gripUnit, gripRotY, GRIP_Q_ID
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
@@ -92,7 +96,9 @@ export type {
   CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance,
   HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone,
   HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample,
-  HandBounceReport, HandBounceLimits
+  HandBounceReport, HandBounceLimits,
+  GripVec3, GripQuat, TwoHandGripBoneNames, TwoHandGripBodyRig, TwoHandGripRig, TwoHandGripTarget, TwoHandGripPrev, TwoHandGripBone,
+  TwoHandGripPose, SolveTwoHandGripOptions, TwoHandGripState, TwoHandGrip, GripSample, GripLimits, GripPhaseReport, GripReport
 } from "./motion/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";

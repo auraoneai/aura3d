@@ -203,6 +203,29 @@ if (!report.ok) throw new Error(report.failures.join("; "));
 
 Palm and ball ride together, the ball bounces directly under the palm (a runner's ball lands ahead along travel by at most 0.15 m), hits the floor with its centre at the ball radius, and the palm follows it down and receives it every bounce. Always pass the palm as drawn, whatever pose the athlete is in. `bounce.overlay()` gives the upper-body bend (never the legs). See [motion-hand-bounce](../api/motion-hand-bounce.md).
 
+## 7. A bat, club or racket held in both hands (grip, hand-off, proof)
+
+```ts
+import { calibrateGripSocket, createTwoHandGrip, measureGrip, twoHandGripBonesForEngine, gripQToEulerZYX } from "@aura3d/engine/game";
+
+const rig = { ...body, ...calibrateGripSocket(body, stance), gripSpread: 0.09, objectLength: 1.02, sweetSpot: 0.73 };
+const grip = createTwoHandGrip(rig);
+const samples: Array<{ phase: string; knob: [number, number, number]; axis: [number, number, number]; bottomPalm: [number, number, number]; topPalm: [number, number, number] }> = [];
+
+// fixed sim step, once per frame while the object is held
+function stepSwing(target: { K: [number, number, number]; D: [number, number, number]; phi: number; hip: [number, number, number]; pole: [number, number, number] }, phase: string) {
+  const pose = grip.step(target);
+  actor.setAnimationPose({ bones: twoHandGripBonesForEngine(pose.bones), mode: "overlay" });
+  object.setPosition(...pose.palm).setRotation(...gripQToEulerZYX(pose.objectRot)); // route nodes use ZYX
+  samples.push({ phase, knob: pose.palm, axis: pose.objectDir, bottomPalm: pose.palm, topPalm: pose.palmL });
+}
+
+const report = measureGrip(samples);
+if (!report.ok) throw new Error(report.failures.join("; "));
+```
+
+Both drawn palms stay on the handle in every phase (stance, load, swing, follow-through); `grip.step(target, release)` lets the top hand go for a one-handed finish. See [motion-two-hand-grip](../api/motion-two-hand-grip.md).
+
 ## Type traps (strict `tsc` errors agents hit on a first draft)
 
 | Error | Cause | Fix |

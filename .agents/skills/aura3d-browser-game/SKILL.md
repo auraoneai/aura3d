@@ -147,4 +147,4 @@ per round until every category reads 7+, 6 rounds, or 2 flat rounds.
 - [Genre looks in the frame](references/genre-looks.md)
 - [Mistakes already made (read first)](https://github.com/auraoneai/aura3d/blob/main/docs/agents/lessons-learned.md)
 - [Kits and hooks (4.1)](references/kits-and-hooks.md)
-- Believable motion (`@aura3d/engine/game`): `attachToBone` (bat, club, ball in a hand), `createLocomotion` and `createFootSlideMeter` (legs that match the ground), `createHandBounce` and `measureHandBall` (a ball dribbled by hand: hand and floor contact, hand-offs, proof): `docs/api/motion-hand-bounce.md`, `docs/agents/build-a-game.md`
+- Believable motion (`@aura3d/engine/game`): `attachToBone` (bat, club, ball in a hand), `createLocomotion` and `createFootSlideMeter` (legs that match the ground), `createHandBounce` and `measureHandBall` (a ball dribbled by hand: hand and floor contact, hand-offs, proof): `docs/api/motion-hand-bounce.md`; `createTwoHandGrip` and `measureGrip` (a bat, club or racket held in both hands: grip, hand-off, proof): `docs/api/motion-two-hand-grip.md`, `docs/agents/build-a-game.md`
