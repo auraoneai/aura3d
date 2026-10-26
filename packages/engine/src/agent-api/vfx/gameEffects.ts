@@ -76,9 +76,10 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
   // snapshot()/update() semantics don't change for consumers (GameFeel ports).
   let boundApp: BoundEffectsApp | null = options.app ? (options.app as BoundEffectsApp) : null;
   let boundOff: (() => void) | null = null;
-  // Game effects are one-shot: `app.effects.spawn` is a CONTINUOUS emitter (rate = count·2 per second, never stopped
-  // unless its handle is), so forwarding to it left a fountain running at every hit, kick and goal for the rest of the
-  // match. Use the one-shot `burst`; if only `spawn` exists, stop the emitter when the effect's duration is over.
+  // Game effects are one-shot. `app.effects.spawn` starts a CONTINUOUS emitter (rate = count·2 per second) that keeps
+  // running at its spot until its handle is stopped; forwarding to it without ever stopping left a fountain at every
+  // hit, kick and goal for the rest of the match. Keep the `spawn` path (it is the one that renders in real browsers)
+  // and stop each emitter when the effect's duration is over; update() below does the stopping.
   const boundHandles: Array<{ handle: { stop(o?: { immediate?: boolean }): void }; ttl: number }> = [];
   const boundSpawn = (kind: GameEffectKind, position: GameVec3, effectOptions: GameEffectOptions): void => {
     const fx = boundApp?.effects;
@@ -92,10 +93,6 @@ export function createGameEffects(options: GameEffectsOptions = {}): GameEffects
       // game feel (juice) owns the camera: the preset's own shake on top of it doubled every impact
       camera: false
     };
-    if (typeof fx.burst === "function") {
-      fx.burst(map.preset, position, forwarded);
-      return;
-    }
     boundHandles.push({ handle: fx.spawn(map.preset, position, forwarded), ttl: effectOptions.duration ?? defaultEffectDuration(kind) });
   };
   const snapshot = (): GameEffectsSnapshot => ({
