@@ -226,6 +226,35 @@ function checkAssetProvenance({ game, src }) {
   return out;
 }
 
+/**
+ * The production build (marketing/scripts/build-showcase-routes.mjs) copies only manifest-admitted assets into dist, so a
+ * /aura-assets/ URL that exists on disk but is not in aura.assets.json (or the route's own public/aura-assets) 404s live
+ * and the model load rejects: Teleoperator shipped a black 3D canvas that way in 4.3.0.
+ */
+function checkDeployableAssets({ game, src, root }) {
+  const out = [];
+  let manifestUrls;
+  try { manifestUrls = new Set(JSON.parse(readFileSync(join(root, "aura.assets.json"), "utf8")).assets.map((a) => a.url)); } catch { return out; }
+  const routeLocal = join(root, "apps", game.appFolder, "public", "aura-assets");
+  const seen = new Set();
+  for (const f of src.files) {
+    if (!/^[cm]?[jt]sx?$/.test(f.kind)) continue;
+    const lines = f.text.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      for (const m of lines[i].matchAll(/["'`](\/aura-assets\/[A-Za-z0-9_.@-]+\.(?:glb|gltf|ktx2|mp3|ogg|wav|hdr|bin))["'`]/g)) {
+        const url = m[1];
+        if (seen.has(url) || /\.meshy-candidate\./.test(url)) continue;
+        seen.add(url);
+        const name = url.replace("/aura-assets/", "");
+        const onDisk = existsSync(join(root, "public", "aura-assets", name)) || existsSync(join(routeLocal, name));
+        if (!onDisk) out.push(finding("deployable-assets", "error", game, f.rel, i + 1, `${url} is not in public/aura-assets (404 live)`));
+        else if (!manifestUrls.has(url) && !existsSync(join(routeLocal, name))) out.push(finding("deployable-assets", "error", game, f.rel, i + 1, `${url} is not admitted in aura.assets.json, so the production build does not copy it (404 live, model load rejects): admit it with aura3d assets add or copy it route-local`));
+      }
+    }
+  }
+  return out;
+}
+
 function checkKits({ game, src }) {
   const out = [];
   const code = src.files.filter((f) => /^[cm]?[jt]sx?$/.test(f.kind));
@@ -439,6 +468,7 @@ export const GAME_CHECKS = {
   likeness: checkLikeness,
   "asset-provenance": checkAssetProvenance,
   kits: checkKits,
+  "deployable-assets": checkDeployableAssets,
   "runtime-masking": checkRuntimeMasking,
   "no-three": checkNoThree,
   fonts: checkFonts,

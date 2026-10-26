@@ -230,6 +230,16 @@ describe("game-checks", () => {
     expect(runGlobal(ok, ["counts"])).toEqual([]);
   });
 
+  it("deployable-assets: errors when a model on disk is not admitted in aura.assets.json, passes once admitted", () => {
+    const src = 'const a = { url: "/aura-assets/bldg.0123abcd.glb" };';
+    const bad = fixture({ "apps/showcase-demo/src/main.ts": src, "public/aura-assets/bldg.0123abcd.glb": "x", "aura.assets.json": JSON.stringify({ assets: [] }) });
+    expect(run(bad, ["deployable-assets"]).map((f: { severity: string }) => f.severity)).toEqual(["error"]);
+    const good = fixture({ "apps/showcase-demo/src/main.ts": src, "public/aura-assets/bldg.0123abcd.glb": "x", "aura.assets.json": JSON.stringify({ assets: [{ id: "bldg", url: "/aura-assets/bldg.0123abcd.glb" }] }) });
+    expect(run(good, ["deployable-assets"])).toEqual([]);
+    const missing = fixture({ "apps/showcase-demo/src/main.ts": src, "aura.assets.json": JSON.stringify({ assets: [{ id: "bldg", url: "/aura-assets/bldg.0123abcd.glb" }] }) });
+    expect(run(missing, ["deployable-assets"]).length).toBe(1);
+  });
+
   it("rejects an unknown game slug", () => {
     const root = fixture({ "apps/showcase-demo/index.html": "<p>x</p>" });
     expect(() => runChecks({ root, slugs: ["nope"], global: false, env: {} })).toThrow(/unknown game/);

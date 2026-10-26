@@ -101,6 +101,8 @@ vercel-auraone deploy --prod --yes
 
 ## 8. Live verification
 
+First run `node tools/verify-asset-urls/index.mjs --base https://aura3d.auraone.ai` (every asset URL a live game references must answer 200 with a matching size and no HTML fallback), then the game smoke below. Run both after EVERY production deploy, hotfixes included.
+
 Run the live smoke over every game in `docs/workflows/game-inventory.json` (remote, software GL: `tests/browser/live-index-games.spec.ts` pattern, evidence under `evidence/live-420/`): 200, non-black frame, 0 console errors, no black-frame guard reload. Check: homepage numbers equal the inventory (26 games), no `800K`, `15 games` or `4 playable` strings in served HTML or `llms*.txt`, redirects from old slugs work, the comparison page renders, the Aura Slam route (draw calls at most 150), and `https://aura3d.auraone.ai/llms.txt` shows 4.2.0. Items that need the owner's real GPU: Aura Slam feel, 120 Hz smoothness, Hoops crash fix, Drift, Silt, Last Train, Cumulus Dash at 2x.
 
 ## 9. After release
