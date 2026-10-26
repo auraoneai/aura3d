@@ -21,7 +21,8 @@ interface Api {
   gait?(): Gait | null;
   errors(): string[];
 }
-declare global { interface Window { __AURA_CUMULUS_DASH__?: Api } }
+declare global { interface Window { __AURA_KID_GOKU__?: Api; __AURA_CUMULUS_DASH__?: Api } }
+// installQaHooks("kid-goku") publishes `__AURA_KID_GOKU__`; the pre-rename global was `__AURA_CUMULUS_DASH__`, so both are read
 
 test.describe("kid-goku rework: leg motion", () => {
   test.setTimeout(2_700_000);
@@ -53,15 +54,15 @@ test.describe("kid-goku rework: leg motion", () => {
     page.on("pageerror", (e) => errors.push(e.message));
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); else if (tail.length < 80 && !/GL Driver Message/.test(m.text())) tail.push(`${m.type()}: ${m.text().slice(0, 240)}`); });
     await page.goto(`${ORIGIN}${LAB}`, { waitUntil: "domcontentloaded", timeout: 120_000 });
-    const probe = setInterval(() => { void page.evaluate(() => ({ hook: Boolean(window.__AURA_CUMULUS_DASH__), hud: document.getElementById("hud")?.textContent?.slice(0, 80) ?? null, res: performance.getEntriesByType("resource").length, t: Math.round(performance.now() / 1000), pathTex: performance.getEntriesByType("resource").filter((e) => /path-(color|normal)/.test(e.name)).map((e) => ({ n: e.name.slice(-22), d: Math.round(e.duration), s: (e as PerformanceResourceTiming).transferSize })) })).then((d) => console.log(`KG_REWORK_BOOT_PROBE ${JSON.stringify({ ...d, pending: [...pending.keys()].map((u) => u.slice(-80)).slice(0, 8), tail: tail.filter((x) => !x.startsWith("mapped")).slice(-5) })}`)).catch(() => undefined); }, 60_000);
-    try { await page.waitForFunction(() => window.__AURA_CUMULUS_DASH__?.ready === true, undefined, { timeout: 600_000 }); } catch (e) { console.log(`KG_REWORK_BOOT_FAIL ${JSON.stringify({ errors, tail: tail.filter((x) => !x.startsWith("mapped")).slice(-30), mapped: tail.filter((x) => x.startsWith("mapped")).length })}`); throw e; } finally { clearInterval(probe); }
+    const probe = setInterval(() => { void page.evaluate(() => ({ hook: Boolean(window.__AURA_KID_GOKU__ ?? window.__AURA_CUMULUS_DASH__), hud: document.getElementById("hud")?.textContent?.slice(0, 80) ?? null, res: performance.getEntriesByType("resource").length, t: Math.round(performance.now() / 1000), pathTex: performance.getEntriesByType("resource").filter((e) => /path-(color|normal)/.test(e.name)).map((e) => ({ n: e.name.slice(-22), d: Math.round(e.duration), s: (e as PerformanceResourceTiming).transferSize })) })).then((d) => console.log(`KG_REWORK_BOOT_PROBE ${JSON.stringify({ ...d, pending: [...pending.keys()].map((u) => u.slice(-80)).slice(0, 8), tail: tail.filter((x) => !x.startsWith("mapped")).slice(-5) })}`)).catch(() => undefined); }, 60_000);
+    try { await page.waitForFunction(() => (window.__AURA_KID_GOKU__ ?? window.__AURA_CUMULUS_DASH__)?.ready === true, undefined, { timeout: 600_000 }); } catch (e) { console.log(`KG_REWORK_BOOT_FAIL ${JSON.stringify({ errors, tail: tail.filter((x) => !x.startsWith("mapped")).slice(-30), mapped: tail.filter((x) => x.startsWith("mapped")).length })}`); throw e; } finally { clearInterval(probe); }
     console.log(`KG_REWORK_BOOT_OK ${JSON.stringify({ assets: tail.filter((t) => t.startsWith("fetched") || t.startsWith("missing")) })}`);
 
     const IDLE = { steer: 0, jump: false, pole: false, glider: false, brake: false };
     const rows: Gait[] = [];
     const grab = async (name: string, steps: number, keep = false): Promise<Gait | null> => {
       const out = await page.evaluate(async ([n, i]) => {
-        const a = window.__AURA_CUMULUS_DASH__!;
+        const a = (window.__AURA_KID_GOKU__ ?? window.__AURA_CUMULUS_DASH__)!;
         a.play(n as number, i as Record<string, unknown>);
         const jpeg = await a.frame(540, 405, 0.9);
         return { jpeg, gait: a.gait?.() ?? null, snap: a.snapshot() };
@@ -72,15 +73,15 @@ test.describe("kid-goku rework: leg motion", () => {
       return out.gait;
     };
 
-    await page.evaluate(() => { window.__AURA_CUMULUS_DASH__!.begin(); });
+    await page.evaluate(() => { (window.__AURA_KID_GOKU__ ?? window.__AURA_CUMULUS_DASH__)!.begin(); });
     // ramp: standing start to a jog, three sim steps per frame (the sim eases 0 to its running speed)
     for (let k = 0; k < 14; k++) await grab(`ramp-${String(k).padStart(2, "0")}`, 3);
     // reach full sprint, then a strip across two stride cycles (about 0.5 s each at 14.5 m/s): 16 frames, 4 sim steps apart
-    await page.evaluate((i) => { window.__AURA_CUMULUS_DASH__!.play(150, i); }, IDLE);
+    await page.evaluate((i) => { (window.__AURA_KID_GOKU__ ?? window.__AURA_CUMULUS_DASH__)!.play(150, i); }, IDLE);
     for (let k = 0; k < 16; k++) await grab(`sprint-${String(k).padStart(2, "0")}`, 4, true);
     // jump then landing
     const jump = await page.evaluate(async (i) => {
-      const a = window.__AURA_CUMULUS_DASH__!;
+      const a = (window.__AURA_KID_GOKU__ ?? window.__AURA_CUMULUS_DASH__)!;
       a.play(1, { ...i, jump: true });
       a.play(10, i);
       const air = await a.frame(540, 405, 0.9);
