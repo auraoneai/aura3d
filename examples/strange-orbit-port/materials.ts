@@ -11,7 +11,7 @@ import {
 export type CustomSpec = Parameters<typeof material.custom>[0];
 type Rgb = readonly [number, number, number];
 
-export const trackSpec = (): CustomSpec => ({ glsl: { vertex: TRACK_VERTEX, fragment: TRACK_FRAGMENT }, side: "double" });
+export const trackSpec = (): CustomSpec => ({ receiveShadow: true, glsl: { vertex: TRACK_VERTEX, fragment: TRACK_FRAGMENT }, side: "double" });
 
 export interface SolidExtra {
   readonly transparent?: boolean;
@@ -20,6 +20,7 @@ export interface SolidExtra {
 }
 
 export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, banding = 0, extra: SolidExtra = {}): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
   uniforms: {
     baseColor: { type: "color3", value: [...base] },
@@ -32,6 +33,7 @@ export const solidSpec = (base: Rgb, glow: Rgb = [0, 0, 0], glowAmount = 0, band
 });
 
 export const mineralSpec = (base: Rgb, opal: boolean): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: MINERAL_VERTEX, fragment: MINERAL_FRAGMENT },
   uniforms: { baseColor: { type: "color3", value: [...base] }, opal: { type: "f32", value: opal ? 1 : 0 } },
   side: "double"

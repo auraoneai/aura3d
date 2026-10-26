@@ -41,11 +41,23 @@ export function defineSunShadowSpec(game: ShadowGame): void {
       const results: Record<string, { luma: number; drawCalls: number | null; shadows: unknown }> = {};
       for (const variant of ["off", "on"] as const) {
         await page.goto(`${server.origin}${game.url}${game.url.includes("?") ? "&" : "?"}shadow=${variant === "off" ? "0" : "1"}`, { waitUntil: "domcontentloaded" });
-        await page.waitForFunction((hook) => {
-          const w = window as unknown as Record<string, { ready?: (() => boolean) | boolean } | undefined>;
-          const ready = w[hook]?.ready;
-          return (typeof ready === "function" ? ready() : ready === true) || Boolean((w as Record<string, unknown>)[hook.replace(/__$/, "_ERROR__")]);
-        }, game.hook, { timeout: 900_000 });
+        try {
+          await page.waitForFunction((hook) => {
+            const w = window as unknown as Record<string, { ready?: (() => boolean) | boolean } | undefined>;
+            const ready = w[hook]?.ready;
+            return (typeof ready === "function" ? ready() : ready === true) || Boolean((w as Record<string, unknown>)[hook.replace(/__$/, "_ERROR__")]);
+          }, game.hook, { timeout: 900_000 });
+        } catch (error) {
+          const info = await page.evaluate((hook) => ({
+            error: (window as unknown as Record<string, unknown>)[hook.replace(/__$/, "_ERROR__")] ?? null,
+            status: document.getElementById("loading-status")?.textContent ?? null,
+            hook: typeof (window as unknown as Record<string, unknown>)[hook]
+          }), game.hook).catch(() => null);
+          console.log(`SUNSHADOW_BOOT_TIMEOUT ${game.id} ${variant} ${JSON.stringify(info)} errors=${JSON.stringify(errors.slice(0, 5))}`);
+          throw error;
+        }
+        const bootError = await page.evaluate((hook) => (window as unknown as Record<string, unknown>)[hook.replace(/__$/, "_ERROR__")] ?? null, game.hook);
+        expect(bootError, `${game.id} boot error`).toBeNull();
         await page.evaluate(`(() => { const h = window.${game.hook}; h.${game.begin}(); ${game.step}; })()`);
         await page.waitForTimeout(1500);
         // The game's own `frame()` hook returns the bare canvas (no DOM HUD on top); fall back to an element screenshot.

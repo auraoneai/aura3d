@@ -21,6 +21,7 @@ export const atmosphereUniforms = (look: Look) => ({
 });
 
 export const roadSpec = (look: Look, line: Rgb, glow: Rgb): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: ROAD_FRAGMENT },
   uniforms: {
     asphalt: c3(look.asphalt), lineColor: c3(line), glowColor: c3(glow), roadGloss: f32(look.roadGloss),
@@ -44,12 +45,14 @@ export const skySpec = (look: Look): CustomSpec => ({
 });
 
 export const terrainSpec = (look: Look): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: TERRAIN_VERTEX, fragment: TERRAIN_FRAGMENT },
   uniforms: { rockA: c3(look.rockA), rockB: c3(look.rockB), grass: c3(look.grass), sand: c3(look.sand), ...atmosphereUniforms(look) },
   side: "double"
 });
 
 export const towerSpec = (look: Look): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: TOWER_FRAGMENT },
   uniforms: { ...atmosphereUniforms(look) },
   side: "double"
@@ -65,12 +68,14 @@ export const beamSpec = (gain: number): CustomSpec => ({
 });
 
 export const rampSpec = (look: Look, glow: Rgb): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: ROAD_VERTEX, fragment: RAMP_FRAGMENT },
   uniforms: { glowColor: c3(glow), ...atmosphereUniforms(look) },
   side: "double"
 });
 
 export const townSpec = (look: Look): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: TOWN_VERTEX, fragment: TOWN_FRAGMENT },
   uniforms: { ...atmosphereUniforms(look) },
   side: "double"
@@ -95,6 +100,7 @@ export const plumeSpec = (style: PlumeStyle): CustomSpec => ({
 });
 
 export const solidSpec = (look: Look, base: Rgb, glow: Rgb, glowAmount: number, rough = 0.55, metal = 0): CustomSpec => ({
+  receiveShadow: true,
   glsl: { vertex: SOLID_VERTEX, fragment: SOLID_FRAGMENT },
   uniforms: {
     baseColor: c3(base), glowColor: c3(glow), glowAmount: f32(glowAmount), surfaceRough: f32(rough), surfaceMetal: f32(metal),

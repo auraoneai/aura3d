@@ -27,13 +27,14 @@ float fbm(vec2 p) {
 
 /** The original's hemisphere (1.65) + key (2.15) + fill (0.95) lights, then exposure 1.2. */
 const LIGHTING = /* glsl */ `
+float gKey = 1.0; // key-light shadow factor, set per fragment by a3dSunShadowAuto in specs with receiveShadow: true
 vec3 shade(vec3 albedo, vec3 N, vec3 emissive) {
   vec3 key = normalize(vec3(150.0, 280.0, -150.0));
   vec3 fill = normalize(vec3(-140.0, 80.0, 210.0));
   vec3 skyC = vec3(0.973, 0.831, 0.627);
   vec3 groundC = vec3(0.184, 0.223, 0.343);
   vec3 hemi = mix(groundC, skyC, N.y * 0.5 + 0.5) * 1.65;
-  vec3 keyC = vec3(1.0, 0.815, 0.604) * 2.15 * max(dot(N, key), 0.0);
+  vec3 keyC = vec3(1.0, 0.815, 0.604) * 2.15 * max(dot(N, key), 0.0) * gKey;
   vec3 fillC = vec3(0.508, 0.584, 0.737) * 0.95 * max(dot(N, fill), 0.0);
   return albedo * (hemi + keyC + fillC) * (1.2 / 3.14159265) + emissive;
 }
@@ -119,6 +120,7 @@ void main() {
   float det = dot(dpx, r1);
   N = normalize(abs(det) * N - 0.05 * sign(det) * (dFdx(h) * r1 + dFdy(h) * r2));
   vec3 emissive = albedo * 0.1 + vec3(0.18, 0.72, 0.66) * (1.0 - across) * 0.3;
+  gKey = a3dSunShadowAuto(vWorld, N);
   outColor = vec4(haze(shade(albedo, N, emissive), vWorld), 1.0);
 }`;
 
@@ -148,6 +150,7 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, cameraPosition - vWorld) < 0.0) N = -N;
   float glow = opal > 0.5 ? 0.17 : 0.025;
+  gKey = a3dSunShadowAuto(vWorld, N);
   outColor = vec4(haze(shade(albedo, N, albedo * glow), vWorld), 1.0);
 }`;
 
@@ -183,9 +186,10 @@ void main() {
   vec3 keyDir = normalize(vec3(150.0, 280.0, -150.0));
   float fres = pow(1.0 - max(dot(N, V), 0.0), 3.0);
   float spec = pow(max(dot(N, normalize(keyDir + V)), 0.0), 36.0);
+  gKey = a3dSunShadowAuto(vWorld, N);
   vec3 lit = shade(albedo, N, emissive);
   lit += vec3(0.42, 0.58, 0.95) * fres * 0.34 * (banding > 0.0 ? 0.0 : 1.0);
-  lit += vec3(1.0, 0.86, 0.66) * spec * 0.28 * (banding > 0.0 ? 0.0 : 1.0);
+  lit += vec3(1.0, 0.86, 0.66) * spec * 0.28 * gKey * (banding > 0.0 ? 0.0 : 1.0);
   outColor = vec4(haze(lit, vWorld), 1.0);
 }`;
 

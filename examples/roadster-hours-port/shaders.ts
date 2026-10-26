@@ -9,6 +9,7 @@
  */
 
 export const ATMOS = /* glsl */ `
+float gSunShadow = 1.0; // set per fragment from a3dSunShadowAuto (specs with receiveShadow: true); 1 elsewhere
 float sq(float x) { return x * x; }
 float rhHash(vec2 q) {
   uvec2 v = uvec2(ivec2(floor(q))) * uvec2(1597334673u, 3812015801u);
@@ -63,10 +64,10 @@ vec3 lightSurface(vec3 albedo, vec3 N, vec3 V, float rough, float metal, vec3 em
   float F = 0.04 + 0.96 * pow(clamp(1.0 - ndv, 0.0, 1.0), 5.0);
   vec3 f0 = mix(vec3(0.04), albedo, metal);
   vec3 fres = f0 + (vec3(1.0) - f0) * pow(clamp(1.0 - dot(H, V), 0.0, 1.0), 5.0);
-  vec3 spec = sunColor * fres * ggx(max(dot(N, H), 0.0), a) * 0.25 * ndl;
+  vec3 spec = sunColor * fres * ggx(max(dot(N, H), 0.0), a) * 0.25 * ndl * gSunShadow;
   vec3 amb = mix(ambGround, ambSky, N.y * 0.5 + 0.5);
   vec3 bounce = (ambSky * 0.5 + sunColor * 0.09) * max(dot(N, normalize(vec3(-sunDir.x, 0.15, -sunDir.z))), 0.0);
-  vec3 diff = albedo * (1.0 - metal) * (amb + bounce + sunColor * ndl);
+  vec3 diff = albedo * (1.0 - metal) * (amb + bounce + sunColor * ndl * gSunShadow);
   vec3 refl = skyAt(reflect(-V, N));
   float rf = F * (1.0 - 0.8 * rough) + metal * 0.5 * (1.0 - rough);
   return diff + spec + refl * rf * mix(vec3(1.0), albedo, metal) * (0.4 + 0.6 * ndl) + emis;
@@ -140,6 +141,7 @@ void main() {
   float tail = step(along, 0.0) * exp(along / 7.0) * exp(-sq(side / 2.2)) * beamAmt * 0.25;
   emis += albedo * vec3(1.0, 0.92, 0.75) * beam * 2.6 + vec3(1.0, 0.1, 0.05) * tail * 0.5;
 
+  gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(albedo, N, V, rough, 0.0, emis);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
@@ -274,6 +276,7 @@ void main() {
   vec3 albedo = mix(rock, turf, flat_ * high * 0.85);
   albedo = mix(albedo, sand, flat_ * (1.0 - high) * 0.9);
   float ao = mix(0.62, 1.0, smoothstep(-2.0, 14.0, vWorld.y)) * (0.8 + 0.2 * blotch);
+  gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(albedo * ao, N, V, 0.9, 0.0, vec3(0.0));
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
@@ -297,6 +300,7 @@ void main() {
   vec3 N = normalize(vNormal);
   if (dot(N, V) < 0.0) N = -N;
   float flicker = glowAmount * (0.85 + 0.15 * sin(u_time * 4.0 + vWorld.z * 0.05));
+  gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(baseColor, N, V, surfaceRough, surfaceMetal, glowColor * flicker);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
@@ -323,6 +327,7 @@ void main() {
   vec3 sharp = warm * win * on * 1.25 * facade;
   vec3 avg = warm * 0.5 * 0.38 * 0.6 * 1.25 * facade;
   vec3 emis = mix(avg, sharp, fade);
+  gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(vec3(0.035, 0.042, 0.07), N, V, 0.6, 0.25, emis);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
@@ -375,6 +380,7 @@ void main() {
   vec3 albedo = mix(steel, yellow, band * mix(0.35, 1.0, fadeBand));
   albedo = mix(albedo, vec3(0.9, 0.9, 0.85), edge);
   vec3 emis = yellow * band * 0.1 + glowColor * edge * 0.2;
+  gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(albedo, N, V, 0.5, 0.15, emis);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;
@@ -417,6 +423,7 @@ void main() {
   albedo = mix(albedo, vec3(0.2, 0.34, 0.4), shutter * fade * 0.7);
   albedo = mix(albedo, vec3(0.52, 0.31, 0.24), (1.0 - facade) * 0.75);
   vec3 emis = vec3(1.0, 0.75, 0.4) * win * fade * nightAmt * 1.2;
+  gSunShadow = a3dSunShadowAuto(vWorld, N);
   vec3 lit = lightSurface(albedo, N, V, 0.82, 0.0, emis);
   outColor = vec4(finish(fogIt(lit, vWorld)), 1.0);
 }`;

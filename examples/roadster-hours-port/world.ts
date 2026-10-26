@@ -441,8 +441,8 @@ export function buildWorld(levelIndex: number): World {
   const builder: Scene = scene()
     .background(hexString(level.fog))
     .camera(camera.perspective({ position: roadPoint(level, 0, 0, 6), target: roadPoint(level, 40, 0, 2), fov: 60, near: 0.4, far: 7000 }))
-    .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color }))
-    .add(lights.directional({ name: "fill", position: [-sunDirection[0] * 300, 120, -sunDirection[2] * 300], target: [0, 0, 0], intensity: look.fillLight.intensity, color: look.fillLight.color }));
+    .add(lights.directional({ name: "sun", position: [sunDirection[0] * 500, sunDirection[1] * 500, sunDirection[2] * 500], target: [0, 0, 0], intensity: look.keyLight.intensity, color: look.keyLight.color, shadow: enabled("shadow") ? { cascades: 2, maxDistance: 140 } : false }))
+    .add(lights.directional({ name: "fill", position: [-sunDirection[0] * 300, 120, -sunDirection[2] * 300], target: [0, 0, 0], intensity: look.fillLight.intensity, color: look.fillLight.color, shadow: false }));
   if (enabled("env")) builder.add(environments.preset(look.night ? "night" : look.id === "redline" ? "sunset" : "outdoor", { name: "route IBL", intensity: look.envIntensity, background: false }));
   if (enabled("fog")) builder.add(effects.fog({ name: "haze", density: look.engineFogDensity, color: look.engineFog }));
   if (enabled("post")) {

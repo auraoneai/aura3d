@@ -185,8 +185,8 @@ export function buildWorld(options: WorldOptions): World {
   if (!off.has("lights")) {
     builder
       .add(lights.hemisphere({ name: "hemisphere", skyColor: "#f8d4a0", groundColor: "#2f3957", intensity: 1.1 }))
-      .add(lights.directional({ name: "key", position: [150, 280, -150], target: [0, 0, 0], intensity: 2.6, color: "#ffd09a" }))
-      .add(lights.directional({ name: "fill", position: [-140, 80, 210], target: [0, 0, 0], intensity: 1.0, color: "#8195bc" }));
+      .add(lights.directional({ name: "key", position: [150, 280, -150], target: [0, 0, 0], intensity: 2.6, color: "#ffd09a", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } as never) }))
+      .add(lights.directional({ name: "fill", position: [-140, 80, 210], target: [0, 0, 0], intensity: 1.0, color: "#8195bc", shadow: false }));
   }
   if (!off.has("bloom")) builder.add(effects.bloom({ name: "bloom", intensity: 0.5, threshold: 0.78, radius: 0.55 }));
   if (!off.has("grade")) builder.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.14 }));
