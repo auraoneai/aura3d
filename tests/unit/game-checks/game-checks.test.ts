@@ -155,6 +155,17 @@ describe("game-checks", () => {
     expect(run(ok, ["pose-array"])).toEqual([]);
   });
 
+  it("fit-grounding: flags a fitted model placed at half its height or lifted by half its height, allows floor placement and marked lifts", () => {
+    const literal = fixture({ "apps/showcase-demo/src/main.ts": 'model(assets.cart, { name: "rack", targetHeight: 1.15 }).position(-8.9, 0.58, 9.4);\n' });
+    expect(run(literal, ["fit-grounding"]).length).toBe(1);
+    const dynamic = fixture({ "apps/showcase-demo/src/main.ts": 'model(assets.guy, { name: "guy", targetHeight: 1.92, scaleMode: "fit" }).position(0, 0, 6);\nroot.setPosition(a.x, 0.96 + a.y, a.z);\n' });
+    expect(run(dynamic, ["fit-grounding"]).length).toBe(1);
+    const swapped = fixture({ "apps/showcase-demo/src/main.ts": 'model(assets.guy, { name: "guy", targetHeight: 1.88, scaleMode: "fit" }).position(0, 0, 6);\nroot.setPosition(a.x, a.y + 0.94, a.z);\n' });
+    expect(run(swapped, ["fit-grounding"]).length).toBe(1);
+    const ok = fixture({ "apps/showcase-demo/src/main.ts": 'model(assets.cart, { name: "rack", targetHeight: 1.15 }).position(-8.9, 0, 9.4);\nmodel(assets.sky, { name: "sky", targetHeight: 40, scaleMode: "world" }).position(0, 20, 0);\nroot.setPosition(a.x, a.y + 0.5, a.z);\naura.setPosition(a.x, 0.95 + a.y, a.z); // fit-grounding: ok\n' });
+    expect(run(ok, ["fit-grounding"])).toEqual([]);
+  });
+
   it("likeness: flags real brand and lore terms in visible text but not in paths or comments", () => {
     const root = fixture({
       "apps/showcase-demo/index.html": "<p>Drive the Waymo to Mount Paozu</p>",

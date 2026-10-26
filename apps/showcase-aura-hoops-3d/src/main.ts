@@ -749,8 +749,8 @@ function buildVenueDressing(v: VenueSpec): any[] {
 
   // Courtside dressing shared by all courts: ball rack and trophy case (no static sideline athlete clones)
   nodes.push(
-    model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0.58, 9.4).rotate(0, 0.5, 0),
-    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0.85, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case"))
+    model(assets.hoopsBallCart, { name: "ball-rack", targetHeight: 1.15 }).position(-8.9, 0, 9.4).rotate(0, 0.5, 0),
+    model(assets.hoopsTrophy, { name: "trophy-case", targetHeight: 1.7, castShadow: false }).position(9.2, 0, -3.4).rotate(0, -0.8, 0).runtime(game.runtimeNode("trophy-case"))
   );
 
   // Court wear decals
@@ -2667,7 +2667,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
   r.ring?.setPosition(a.x, 0.018, a.z).setScale([ringS, ringS, ringS]).setVisible(true);
   // Jam aura
   const auraOn = game_.jamFull && a.team === "home" && a.hasBall;
-  r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn);
+  r.aura?.setPosition(a.x, a.y + 0.95, a.z).setScale(auraOn ? [0.9, 1.9, 0.9] : HIDDEN).setVisible(auraOn); // fit-grounding: ok (a centre-based cylinder primitive)
 }
 
 /* ------------------------------------------------------------------ *
