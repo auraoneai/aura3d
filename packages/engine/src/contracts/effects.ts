@@ -11,7 +11,7 @@ export interface AuraVfxEffectSpec { readonly name: string; readonly layers: rea
 export interface AuraEffectInstanceHandle { readonly id: string; readonly alive: boolean; stop(o?: { immediate?: boolean }): void; setPosition(p: AuraVec3): void; setDirection?(n: AuraVec3): void; }
 export interface AuraDecalOptions { readonly kind?: string; readonly size?: number; readonly lifetime?: number; readonly color?: AuraColor; readonly opacity?: number; }
 export interface AuraAppEffects {
-  burst(kind: AuraVfxKind, position: AuraVec3, options?: { count?: number; speed?: number; scale?: number; color?: AuraColor; normal?: AuraVec3; seed?: number; intensity?: number }): AuraEffectInstanceHandle;
+  burst(kind: AuraVfxKind, position: AuraVec3, options?: { count?: number; speed?: number; scale?: number; color?: AuraColor; normal?: AuraVec3; seed?: number; intensity?: number; /** false: do not add the preset's camera shake/punch (the caller owns the camera) */ camera?: boolean }): AuraEffectInstanceHandle;
   spawn(effect: AuraVfxEffectSpec | AuraVfxKind, at: AuraVec3 | { node: string; socket?: string }, options?: { seed?: number; scale?: number; color?: AuraColor }): AuraEffectInstanceHandle;
   trail(target: string | { node: string; socket?: string }, options: { width: number; life: number; color?: AuraColor }): AuraEffectInstanceHandle;
   decal(at: { position: AuraVec3; normal: AuraVec3; target?: string }, options: AuraDecalOptions): AuraEffectInstanceHandle;
@@ -39,7 +39,7 @@ export class StubAppEffects implements AuraAppEffects {
 
   constructor(private readonly addNode: (kind: "sphere" | "quad" | "line", at: AuraVec3, options?: { color?: AuraColor; scale?: number }) => AuraRuntimeNodeHandle | null) {}
 
-  burst(kind: AuraVfxKind, position: AuraVec3, options?: { count?: number; speed?: number; scale?: number; color?: AuraColor; normal?: AuraVec3; seed?: number; intensity?: number }): AuraEffectInstanceHandle {
+  burst(kind: AuraVfxKind, position: AuraVec3, options?: { count?: number; speed?: number; scale?: number; color?: AuraColor; normal?: AuraVec3; seed?: number; intensity?: number; /** false: do not add the preset's camera shake/punch (the caller owns the camera) */ camera?: boolean }): AuraEffectInstanceHandle {
     const id = `fx-${this.nextId++}`;
     const count = options?.count ?? 8;
     for (let i = 0; i < count; i++) {

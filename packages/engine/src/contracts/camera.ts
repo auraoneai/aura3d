@@ -34,7 +34,7 @@ export interface AuraCameraRig {
   reset?(pose?: AuraCameraPose): void;
 }
 export interface AuraCameraLayer { readonly id: string; readonly timeDomain?: "real" | "sim"; apply(pose: AuraCameraPose, ctx: { readonly dt: number; readonly reducedMotion: boolean }): AuraCameraPose; readonly energy?: () => number; }
-export interface AuraTraumaLayer extends AuraCameraLayer { add(amount: number): void; configure(o: { maxAngleDeg?: number; maxOffset?: number; frequency?: number; decayPerSecond?: number }): void; }
+export interface AuraTraumaLayer extends AuraCameraLayer { add(amount: number): void; configure(o: { maxAngleDeg?: number; maxOffset?: number; frequency?: number; decayPerSecond?: number; maxTrauma?: number }): void; }
 export interface AuraPunchLayer extends AuraCameraLayer { trigger(o: { fov?: number; dolly?: number; attack?: number; hold?: number; release?: number }): void; }
 export interface AuraFovKickLayer extends AuraCameraLayer { set(channel: string, offsetDeg: number, halflife?: number): void; }
 export interface AuraCameraShot { readonly rig: AuraCameraRig; readonly duration: number; readonly blendIn?: number; readonly bars?: boolean; }
