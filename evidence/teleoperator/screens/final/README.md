@@ -1,6 +1,6 @@
 # Teleoperator: final screenshots after the UI and content fixes
 
-**Recaptured 2026-10-25 after the art pass** (`evidence/teleoperator/art-pass/README.md`): the frames, `card-1x.jpg`, `card-2x.jpg` and `meta.json` in this folder are the new capture (run `p1tele-shots6`, `tests/browser/p1tele-shots.spec.ts`, 0 console errors, 0 proxied responses). The text below describes the 2026-10-24 capture; its hero-vehicle and flat-scenery problem is fixed, the name-tag overlap and the 390 portrait stacking are not.
+**Recaptured 2026-10-25 after the art pass** (`evidence/teleoperator/art-pass/README.md`): the frames, `card-1x.jpg`, `card-2x.jpg` and `meta.json` in this folder are the new capture (run `p1tele-shots9`, `tests/browser/p1tele-shots.spec.ts`, 0 console errors, 0 proxied responses). The text below describes the 2026-10-24 capture; its hero-vehicle and flat-scenery problem is fixed, the name-tag overlap and the 390 portrait stacking are not.
 
 Route: `apps/showcase-teleoperator`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
 

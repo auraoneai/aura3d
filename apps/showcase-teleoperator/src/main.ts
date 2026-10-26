@@ -50,15 +50,15 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopWaymoHero: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
     bounds: [0.8921, 1.4132, 1.9017]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
     bounds: [0.8921, 1.4132, 1.9017]
   },
   teleopCybercab: {
@@ -250,6 +250,8 @@ interface FleetSpec {
   hasRoofLidar: boolean;
   hasThrusters: boolean;
   modeLabel: string;
+  /** world offsets for the Roof LiDAR and Bumper cameras when the default (sized for a 4.6 m crossover) would put the camera inside the body */
+  cams?: { roof: { y: number; z: number }; bumper: { y: number; z: number } };
 }
 
 const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
@@ -265,7 +267,8 @@ const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
     accent: "#3fd6c6",
     hasRoofLidar: false,
     hasThrusters: false,
-    modeLabel: "AUTO · APEX L5 AUTOPILOT"
+    modeLabel: "AUTO · APEX L5 AUTOPILOT",
+    cams: { roof: { y: 0.25, z: 8.4 }, bumper: { y: 2.6, z: 9.6 } }
   },
   cybercab: {
     id: "cybercab",
@@ -2627,8 +2630,8 @@ async function bootGridDispatchAura3D(): Promise<void> {
     const camOffsets: Record<0 | 1 | 2 | 3, { y: number; z: number }> = {
       0: { y: 0, z: 0 },
       1: { y: -0.55, z: -2.4 },
-      2: { y: 1.45, z: 5.2 },
-      3: { y: 2.15, z: 7.4 }
+      2: spec.cams?.roof ?? { y: 1.45, z: 5.2 },
+      3: spec.cams?.bumper ?? { y: 2.15, z: 7.4 }
     };
     const camOff = camOffsets[camMode];
     const shakeOffset = cameraShake.update(realDt);

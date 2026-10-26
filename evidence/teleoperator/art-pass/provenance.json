@@ -5,9 +5,9 @@
   "assets": [
     {
       "key": "robotaxi",
-      "file": "teleopVehRobotaxi.1f39a6be.glb",
-      "sha256": "1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
-      "bytes": 782864,
+      "file": "teleopVehRobotaxi.f1726137.glb",
+      "sha256": "f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
+      "bytes": 943256,
       "prompt": "a futuristic driverless electric shuttle pod, smooth egg-shaped rounded body, wide panoramic glass canopy, nearly symmetric front and rear, pearl white paint with teal lower trim, a thin flat sensor strip on the roof, glowing teal light bar across the front, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
       "meshyTasks": [
         "01a175a1-2438-76b9-b528-65cfb3586bd1",
@@ -15,7 +15,7 @@
         "remesh 01a175ca-d61a-71bd-be5b-c98f5e3135d8"
       ],
       "credits": 35,
-      "postProcess": "converted to flat region materials (veh-body, veh-trim, veh-glass, veh-tyre, veh-rim) by tools/teleoperator-vehicles/flatten.mjs, as the repo guard tests/unit/likeness-audit/teleop-robotaxi-flat.test.ts requires: no baked texture atlas"
+      "postProcess": "converted to flat region materials (veh-body, veh-trim, veh-glass, veh-tyre, veh-rim) by tools/teleoperator-vehicles/flatten.mjs (CABIN mode: the generated seats and inner walls are removed and one dark tinted cabin box fills the window openings), as the repo guard tests/unit/likeness-audit/teleop-robotaxi-flat.test.ts requires: no baked texture atlas"
     },
     {
       "key": "hatch",

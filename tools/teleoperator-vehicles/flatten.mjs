@@ -30,20 +30,22 @@ const bodyColor = bodyArg ? bodyArg.split(",").map(Number) : [0.82, 0.84, 0.86];
 const MATERIALS = {
   body: { color: [...bodyColor, 1], metallic: 0.25, roughness: 0.38 },
   trim: { color: [0.06, 0.55, 0.5, 1], metallic: 0.2, roughness: 0.4 },
-  glass: { color: [0.02, 0.035, 0.05, 1], metallic: 0.05, roughness: 0.3 },
+  glass: { color: [0.02, 0.035, 0.05, 1], metallic: 0, roughness: process.env.CABIN ? 0.55 : 0.3 },
+  cabin: { color: [0.01, 0.014, 0.018, 1], metallic: 0, roughness: 1 },
   tyre: { color: [0.012, 0.012, 0.014, 1], metallic: 0, roughness: 0.92 },
   rim: { color: [0.55, 0.57, 0.6, 1], metallic: 0.6, roughness: 0.35 },
   light: { color: [1, 0.95, 0.8, 1], metallic: 0, roughness: 0.3, emissive: [0.9, 0.85, 0.6] }
 };
 const WHEELS = (process.env.WHEELS ?? "-0.621,0.146;0.722,0.146").split(";").map((w) => w.split(",").map(Number)); // [z, y] of each wheel centre
 const WHEEL_R = Number(process.env.WHEEL_R ?? 0.185);
+const CABIN = process.env.CABIN ? process.env.CABIN.split(",").map(Number) : null; // x0,x1,y0,y1,z0,z1: replaces the generated seats and inner walls with one dark tinted cabin box
 const INTERIOR_Y = Number(process.env.INTERIOR_Y ?? 0.5); // faces above this height that look inward (the cabin interior seen through the window openings) are painted as dark glass
 const classify = (p, rgb, n) => {
   const [r, g, b] = rgb;
   const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   const sat = (Math.max(r, g, b) - Math.min(r, g, b)) / Math.max(1, Math.max(r, g, b));
   if (Math.abs(p[0]) > 0.22) for (const [wz, wy] of WHEELS) { const d = Math.hypot(p[2] - wz, p[1] - wy); if (d < WHEEL_R) return d < 0.1 ? "rim" : "tyre"; }
-  if (p[1] > INTERIOR_Y && n && n[0] * p[0] + n[2] * p[2] * 0.3 < -0.04) return "glass";
+  if (p[1] > INTERIOR_Y && n && n[0] * p[0] + n[2] * p[2] * 0.3 < -0.04) return CABIN ? "interior" : "glass";
   if (luma < 75) return "glass";
   if (luma < 125 && g >= r + 12) return "glass";
   if (sat > 0.3 && g > r + 25 && b > r + 15 && luma > 110) return "trim";
@@ -58,13 +60,13 @@ const tris = [];
 function emit(a, b, c, depth) {
   const cen = { p: [0, 1, 2].map((k) => (a.p[k] + b.p[k] + c.p[k]) / 3), n: a.n, uv: [(a.uv[0] + b.uv[0] + c.uv[0]) / 3, (a.uv[1] + b.uv[1] + c.uv[1]) / 3] };
   const cs = [cls(a), cls(b), cls(c), cls(cen)];
-  const coarse = cs.includes("tyre") || cs.includes("rim");
+  const coarse = cs.includes("tyre") || cs.includes("rim") || cs.includes("interior");
   if (depth < MAX_DEPTH && !coarse && !(cs[0] === cs[1] && cs[1] === cs[2] && cs[2] === cs[3])) {
     const ab = mid(a, b), bc = mid(b, c), ca = mid(c, a);
     emit(a, ab, ca, depth + 1); emit(ab, b, bc, depth + 1); emit(ca, bc, c, depth + 1); emit(ab, bc, ca, depth + 1);
     return;
   }
-  tris.push([a.p, b.p, c.p, cs[3]]);
+  if (cs[3] !== "interior") tris.push([a.p, b.p, c.p, cs[3]]);
 }
 for (let t = 0; t < idx.getCount(); t += 3) emit(vert(idx.getScalar(t)), vert(idx.getScalar(t + 1)), vert(idx.getScalar(t + 2)), 0);
 const CREASE = Math.cos((Number(process.env.CREASE ?? 55) * Math.PI) / 180);
@@ -97,6 +99,26 @@ tris.forEach((t, fi) => {
     g.ind.push(i);
   }
 });
+if (CABIN) {
+  const [x0, x1, y0, y1, z0, z1] = CABIN;
+  const g = groups.cabin;
+  const faces = [
+    [[x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0], [1, 0, 0]],
+    [[x0, y0, z1], [x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [-1, 0, 0]],
+    [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1], [0, 1, 0]],
+    [[x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1]],
+    [[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]]
+  ];
+  for (const [a, b, c, d, nn] of faces) {
+    const base = g.p.length / 3;
+    for (const v of [a, b, c, d]) { g.p.push(...v); g.n.push(...nn); }
+    const e1 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], e2 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    const cr = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+    const ccw = cr[0] * nn[0] + cr[1] * nn[1] + cr[2] * nn[2] > 0; // wind each face counter-clockwise seen from outside, or it is culled from outside
+    if (ccw) g.ind.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    else g.ind.push(base, base + 2, base + 1, base, base + 3, base + 2);
+  }
+}
 for (const old of mesh.listPrimitives()) { mesh.removePrimitive(old); old.dispose(); }
 const buffer = root.listBuffers()[0];
 const counts = {};

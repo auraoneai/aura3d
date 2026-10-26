@@ -123576,14 +123576,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopWaymoHero": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
     bounds: [
       0.8921,
       1.4132,
       1.9017
     ],
-    sizeBytes: 782864,
+    sizeBytes: 943256,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123595,7 +123595,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
+      "sourcePath": "public/aura-assets/teleopVehRobotaxi.f1726137.glb",
       "boundsMetadata": {
         "min": [
           -0.4461,
@@ -123617,14 +123617,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopWaymoTraffic": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
-    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
+    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
     bounds: [
       0.8921,
       1.4132,
       1.9017
     ],
-    sizeBytes: 782864,
+    sizeBytes: 943256,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123636,7 +123636,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
+      "sourcePath": "public/aura-assets/teleopVehRobotaxi.f1726137.glb",
       "boundsMetadata": {
         "min": [
           -0.4461,

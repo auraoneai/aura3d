@@ -109,7 +109,7 @@ The hero's feet slid at sprint (about 23% of ground speed by the 4.2.0 estimate,
 **Closed.** The needs-art item "Teleoperator silhouettes" (a hero that still read as a real robotaxi with a smudged texture, traffic resembling familiar cars, and single-colour box buildings) is done in `apps/showcase-teleoperator`: seven generated vehicles (a rounded shuttle pod, hatch, notchback sedan, wedge coupe, van, pickup, box truck; the roadster is unchanged) and four generated building models (Victorian townhouse, brick mid-rise, glass tower, art-deco tower) replace the old files and the 16 box buildings. Provenance, prompts, Meshy task ids and measured numbers (GL draw calls 691 to about 630 per frame; software-GL wall-clock per frame is higher, not reliable across workers) are in `evidence/teleoperator/art-pass/`; final frames and cards are recaptured in `evidence/teleoperator/screens/final/`.
 
 **Still open.**
-- `apps/showcase-teleoperator-v2` has the new vehicles and pod size but still draws box buildings.
+- `apps/showcase-teleoperator-v2` has the new vehicles, pod size, building models and camera offsets, but its route draws 0 GL calls in the remote harness even on origin/main (probes `p1tele-v2a`, `p1tele-v2b`), so none of it was seen in a frame; a real browser check is open.
 - The pod has window openings with no glass pane (the seat is visible, painted as dark glass); its window edges look rough in side and front close-ups, and the Roof LiDAR and Bumper cameras were not checked.
 - No real-GPU run; the higher software-GL frame time is unmeasured on a GPU.
 - The name-tag overlap at 1280 and the stacked HUD at 390 (listed in `evidence/teleoperator/screens/final/README.md`) are UI problems and were not touched.
