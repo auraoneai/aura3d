@@ -2803,7 +2803,7 @@ function handProbe(): Record<string, unknown> | null {
     const elbow = fore?.valid ? athleteLocalToWorld(a, mat4Translation(fore.worldMatrix())) : undefined;
     if (elbow) rec.elbow = elbow.map((v) => Number(v.toFixed(3)));
     if (hips?.valid) rec.hips = athleteLocalToWorld(a, mat4Translation(hips.worldMatrix())).map((v) => Number(v.toFixed(3)));
-    const bnd = (rigs[i]?.root as any)?.bounds;
+    const bnd = (rigs[i]?.root as any)?.bounds?.();
     if (bnd?.min && bnd?.max) rec.bounds = { min: [bnd.min[0], bnd.min[1], bnd.min[2]].map((v: number) => Number(v.toFixed(3))), max: [bnd.max[0], bnd.max[1], bnd.max[2]].map((v: number) => Number(v.toFixed(3))) };
     const footL = anim.socket("LeftFoot") as BoneSocketView;
     if (footL?.valid) rec.footL = athleteLocalToWorld(a, mat4Translation(footL.worldMatrix())).map((v) => Number(v.toFixed(3)));
@@ -2846,7 +2846,7 @@ function publishEvidence(): void {
     handProbe: handProbe(),
     camera: initialParams.get("diag") === "1" ? { eye: cam.eye, target: cam.target, fov: Number(cam.fov.toFixed(3)) } : null,
     drawn: initialParams.get("diag") === "1" ? (() => {
-      const b = (ballNode as any)?.bounds;
+      const b = (ballNode as any)?.bounds?.();
       return { ballCenter: b?.min && b?.max ? [0, 1, 2].map((k) => Number(((b.min[k] + b.max[k]) / 2).toFixed(3))) : null };
     })() : null,
     athleteClips: athletes.map((a) => ({
