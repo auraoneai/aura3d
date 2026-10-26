@@ -31,14 +31,13 @@
  * (target) side, trail (right) side toward -Z — a right-handed stance.
  */
 import { game, material, model, primitives } from "@aura3d/engine";
-import { attachToBone } from "@aura3d/engine/game";
+import { gripQToEulerZYX } from "@aura3d/engine/game";
 import { assets } from "../../../../src/aura-assets";
 import type { GolferFit, Vec3 } from "./types";
 import {
   BALL_SHOT,
   CLUB_PARTS,
   clubAttachOffsets,
-  eulerXYZFromQuat,
   evaluateSwing,
   makeRoot,
   qMul,
@@ -243,29 +242,16 @@ function calibrateClub(rig: GolferRig, root: RootFrame, groundDy: number): void 
     "golfer-club-shaft": rig.clubShaft,
     "golfer-club-head": rig.clubHead
   };
+  // The club follows the swing solve every frame (poseGolfer re-places all three parts), not the engine bone attachment: the
+  // attachment lagged the overlay pose and a bone-space XYZ rotation drew the shaft and head turned away from the grip.
   for (const part of offsets) {
     const handle = parts[part.id];
     if (!handle) continue;
-    // deterministic first placement (also the fallback when the flag is off)
     placeClubPart(handle, root, addr, part);
-    try {
-      const attachment = attachToBone((rig.hero as any).animation, {
-        bone: "RightForearm",
-        // the rig is known (GLB joint list), so skip the live socket probe: the actor may not have loaded its skeleton yet
-        boneNames: GOLFER_BONES,
-        target: part.id,
-        position: [...part.position] as [number, number, number],
-        rotation: [...part.rotation] as [number, number, number]
-      });
-      attachDisposers.push(attachment.detach);
-    } catch (error) {
-      // the solved-pose placement above keeps the club glued; say why the bone attach is off
-      console.warn(`[aura-links] club bone attach unavailable, using the solved placement: ${(error as Error).message}`);
-    }
   }
   lastOffsets = offsets;
   calibGroundDy = groundDy;
-  telemetry = { ...telemetry, attached: attachDisposers.length > 0 };
+  telemetry = { ...telemetry, attached: offsets.length > 0 };
 }
 
 /**
@@ -291,7 +277,8 @@ function placeClubPart(
     solved.rightForearmWorld,
     quatFromEulerXYZ(part.rotation[0], part.rotation[1], part.rotation[2])
   );
-  const worldEuler = eulerXYZFromQuat(worldQuat);
+  // route nodes rotate in the engine's default ZYX order (setRotation), not XYZ
+  const worldEuler = gripQToEulerZYX([worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w]);
   handle?.setPosition?.(centreM[0], centreM[1], centreM[2]);
   handle?.setRotation?.(worldEuler[0], worldEuler[1], worldEuler[2]);
 }
@@ -374,9 +361,9 @@ export function poseGolfer(
     bones.Hips = { rotation: bones.Hips!.rotation, position: { x: solved.hipsPos[0], y: solved.hipsPos[1], z: solved.hipsPos[2] } };
     rig.golferBody?.setAnimationPose?.({ bones, mode: "overlay" } as any);
 
-    // While the bone attachment is unavailable (animation lane flag off),
-    // drive the club parts from the same solve so the swing still reads.
-    if (!telemetry.attached && lastOffsets.length > 0) {
+    // Drive the club parts from the same solve as the arms, every frame.
+    for (const handle of [rig.clubGrip, rig.clubShaft, rig.clubHead]) handle?.setVisible?.(true);
+    if (lastOffsets.length > 0) {
       const parts: Record<string, any> = {
         "golfer-club-grip": rig.clubGrip,
         "golfer-club-shaft": rig.clubShaft,
@@ -401,8 +388,9 @@ export function poseGolfer(
       attached: telemetry.attached
     };
   } else {
-    // walk / celebrate: clip owns the body, club stays socketed in the hand
+    // walk / celebrate: the clip owns the body and no solve places the club, so it is put away rather than left hanging in the air
     rig.golferBody?.setAnimationPose?.(undefined);
+    for (const handle of [rig.clubGrip, rig.clubShaft, rig.clubHead]) handle?.setVisible?.(false);
     telemetry = { ...telemetry, phase, t };
   }
 
