@@ -28,3 +28,5 @@ export type {
   HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample,
   HandBounceReport, HandBounceLimits
 } from "./handBounce";
+export { wrapAngle, yawToFace, visualHeading, facingError, faceTowards } from "./facing";
+export type { ForwardAxis, FacingTarget, FaceTowardsOptions } from "./facing";

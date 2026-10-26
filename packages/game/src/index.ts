@@ -78,7 +78,8 @@ export {
   createFixedStepPresenter, createRecordBlend, runMotionGate,
   clearCameraEye, createCameraClearance,
   createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ,
-  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS
+  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS,
+  wrapAngle, yawToFace, visualHeading, facingError, faceTowards
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
@@ -92,7 +93,8 @@ export type {
   CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance,
   HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone,
   HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample,
-  HandBounceReport, HandBounceLimits
+  HandBounceReport, HandBounceLimits,
+  ForwardAxis, FacingTarget, FaceTowardsOptions
 } from "./motion/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";

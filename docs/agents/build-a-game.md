@@ -325,5 +325,6 @@ Use the motion kit from `@aura3d/engine/game` instead of hand-rolling per game:
 | smooth on 120 and 144 Hz displays (draw between sim steps) | `createFixedStepPresenter`, `createRecordBlend`, `runMotionGate`, `loop.alpha` | [motion-presenter](../api/motion-presenter.md) |
 | ghosted or doubled players | `checkDoubleFrame` | [motion-double-frame](../api/motion-double-frame.md) |
 | a ball dribbled by hand (hand and floor contact, handoffs, proof) | `createHandBounce`, `measureHandBall` | [motion-hand-bounce](../api/motion-hand-bounce.md) |
+| enemies, NPCs and opponents that face their target (per-model forward axis, turn rate, proof) | `faceTowards`, `yawToFace`, `facingError` | [motion-facing](../api/motion-facing.md) |
 
 A game with a fixed-step simulation must draw between the last two steps, or it stands still on every second frame on a 120 Hz display. Put `presenter.afterStep()` in the step callback, draw `presenter.present(loop, live)`, and add a unit test that drives the real simulation through `runMotionGate` at 60, 120 and 144 Hz.

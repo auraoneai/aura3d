@@ -525,7 +525,7 @@ export function createSim(def: FloorDef, opts: { ox: number; mode: "descent" | "
       }
       return;
     }
-    if (e.state === "alert") { if (e.stateT > 0.45) { e.state = "chase"; e.stateT = 0; } return; }
+    if (e.state === "alert") { e.facing = Math.atan2(dx, -dz); if (e.stateT > 0.45) { e.state = "chase"; e.stateT = 0; } return; }
 
     if (e.state === "chase") {
       e.facing = Math.atan2(dx, -dz);
