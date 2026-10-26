@@ -24,4 +24,4 @@ Owner report: in Aura FC the legs look wrong and the white shorts shred into jag
 
 ## What would fully fix it (not done)
 
-Regenerate the athlete with a clean mesh, or replace the shorts with a procedural closed tube skinned to the thigh bones and re-weight the skin with a same-side-only crotch (`tools/aura-fc/reskin.mjs` is the weights prototype; it needs a matching crotch cut and a game filmstrip before it ships). Hoops, Diamond, Links and Red Zone athletes have the same defect and were left unchanged: a triangle cut on those single-mesh GLBs punched shoulder holes (docs/audit/game-leftovers.md F11).
+Regenerate the athlete with a clean mesh, or replace the shorts with a procedural closed tube skinned to the thigh bones and re-weight the skin with a same-side-only crotch (`tools/aura-fc/reskin.mjs` is the weights prototype; it needs a matching crotch cut and a game filmstrip before it ships). Hoops, Diamond and Links athletes have the same defect and were left unchanged: a triangle cut on those single-mesh GLBs punched shoulder holes (docs/audit/game-leftovers.md F11).
