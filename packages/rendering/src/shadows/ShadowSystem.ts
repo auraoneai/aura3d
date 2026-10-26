@@ -22,6 +22,7 @@ import { shadowCasterVariantId, type DepthVariantFeature } from "../contracts/sh
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { QrFlags } from "../contracts/core";
 import type { AuraQualityTierSettings } from "../contracts/quality";
+import { shadowFitLegacy } from "./shadowLegacy";
 import { fitDirectionalCascades, isOversizeShadowCaster, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
 import {
@@ -113,7 +114,8 @@ export class Prd02ShadowSystem {
   update(frame: ShadowSystemFrame): Prd02ShadowFrameUniforms {
     const { camera } = frame;
     const shadowDistance = Math.min(camera.far ?? Infinity, this.config.maxDistance);
-    const oversize = frame.casters.filter((item) => isOversizeShadowCaster(item, shadowDistance));
+    // The oversize-caster skip is part of the 4.3.0 fit; legacy mode (the default) keeps every caster as 4.2.0 did.
+    const oversize = shadowFitLegacy() ? [] : frame.casters.filter((item) => isOversizeShadowCaster(item, shadowDistance));
     const casters = oversize.length > 0 ? frame.casters.filter((item) => !oversize.includes(item)) : frame.casters;
     const sun = frame.sun ?? null;
     this.lastFits = sun

@@ -28,6 +28,10 @@ const GAMES: readonly Game[] = [
   { id: "heatsink", url: "/examples/heatsink-port/?manual=1&quality=high&autostart=1", hook: "__AURA_HEATSINK__", begin: "begin", step: "h.stepFrames(120)" },
   { id: "roadster-hours", url: "/examples/roadster-hours-port/?manual=1&level=0", hook: "__AURA_ROADSTER_HOURS__", begin: "begin", step: "h.stepSteps(180)" },
   { id: "strange-orbit", url: "/examples/strange-orbit-port/?manual=1&autostart=1&mode=trial&quality=high", hook: "__AURA_STRANGE_ORBIT__", begin: "begin", step: "h.stepFrames(120)" },
+  { id: "drift-and-deliver", url: "/examples/drift-and-deliver-port/?manual=1&quality=high&autostart=1", hook: "__AURA_DRIFT_AND_DELIVER__", begin: "begin", step: "h.stepFrames(120)" },
+  { id: "last-train", url: "/examples/last-train-port/?manual=1", hook: "__AURA_LAST_TRAIN__", begin: "begin", step: "h.stepFrames(120)" },
+  { id: "kid-goku", url: "/examples/kid-goku-beyond-the-clouds-port/?manual=1", hook: "__AURA_KID_GOKU__", begin: "begin", step: "h.stepFrames(120)" },
+  { id: "silt", url: "/examples/silt-and-signal-port/?manual=1&start=1", hook: "__AURA_SILT__", begin: "begin", step: "h.stepFrames(120)" },
   { id: "serpentine-sky-run", url: "/examples/saiyan-snake-way-port/?manual=1&autostart=1", hook: "__AURA_SAIYAN_SNAKE_WAY__", begin: "start", step: "h.stepFrames(90)" }
 ];
 
@@ -72,7 +76,7 @@ test.describe("shadow banding", () => {
             const ready = w[hook]?.ready;
             return typeof ready === "function" ? ready() : ready === true;
           }, game.hook, { timeout: 900_000 });
-          await page.evaluate(`(() => { const h = window.${game.hook}; h.${game.begin}(); ${game.step}; })()`);
+          await page.evaluate(`(() => { const h = window.${game.hook}; if (typeof h.${game.begin} === "function") h.${game.begin}(); ${game.step}; })()`);
           await page.evaluate(async (hook) => {
             const h = (window as unknown as Record<string, { textures?: () => { pending: number } | null; renderNow?: () => void }>)[hook];
             if (typeof h?.textures !== "function") return;

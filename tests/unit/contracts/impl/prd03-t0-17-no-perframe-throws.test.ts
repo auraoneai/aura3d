@@ -16,8 +16,8 @@ import type { PostPipelineOptions } from "../../../../packages/rendering/src/con
 import type { RenderTarget, LdrPostprocessPassDescriptor } from "../../../../packages/rendering/src/RenderDevice";
 
 // The OutputPass HDR route is opt-in (hotfix 4.3.2): these tests exercise it, so they switch it on.
-beforeAll(() => { (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__ = true; });
-afterAll(() => { delete (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__; });
+beforeAll(() => { (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean; __A3D_LINEAR_VIGNETTE__?: boolean }).__A3D_HDR_OUTPUT_PASS__ = true; (globalThis as { __A3D_LINEAR_VIGNETTE__?: boolean }).__A3D_LINEAR_VIGNETTE__ = true; });
+afterAll(() => { delete (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__; delete (globalThis as { __A3D_LINEAR_VIGNETTE__?: boolean }).__A3D_LINEAR_VIGNETTE__; });
 
 
 const outputPasses: Array<Record<string, unknown>> = [];

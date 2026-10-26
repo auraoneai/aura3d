@@ -7,6 +7,7 @@
  * under sub-texel camera motion (the `prd02-17` shimmer gate).
  */
 
+import { shadowFitLegacy } from "./shadowLegacy";
 import { instancedWorldBounds } from "../renderer/InstanceBounds";
 import { CascadedShadowMaps } from "../CascadedShadowMaps";
 import type { RenderItem } from "../contracts/renderItem";
@@ -50,6 +51,8 @@ export interface DirectionalCascadeFitOptions {
    * the frustum-corner interpolation.
    */
   readonly maxDistance?: number;
+  /** Restore the 4.2.0 fit (casters widen the ortho, camera near/far as given). Default: `shadowFitLegacy()`. */
+  readonly legacy?: boolean;
 }
 
 function invertMat4(m: readonly number[] | Float32Array): Float32Array {
@@ -297,7 +300,11 @@ export function isOversizeShadowCaster(item: RenderItem, shadowDistance: number)
   if (item.instanceTransforms && item.instanceTransforms.length >= 16) return false;
   const b = itemWorldBounds(item);
   if (!b) return false;
-  const largest = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]);
+  const dx = b.max[0] - b.min[0], dy = b.max[1] - b.min[1], dz = b.max[2] - b.min[2];
+  const largest = Math.max(dx, dy, dz);
+  // A ground plane, court floor or flat terrain is a large receiver, never a shell: every real shell (sky dome, skybox, planet) is
+  // large on all three axes, a floor is thin on one.
+  if (Math.min(dx, dy, dz) < 0.2 * largest) return false;
   return largest > Math.max(OVERSIZE_CASTER_FLOOR, OVERSIZE_CASTER_FACTOR * shadowDistance);
 }
 
@@ -335,7 +342,10 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
   const invVp = invertMat4(vp);
   const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, -1)));
   const farCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, 1)));
-  const clip = resolveClipRange(nearCorners, farCorners, options.camera.near, options.camera.far);
+  const legacyFit = options.legacy ?? shadowFitLegacy();
+  const clip = legacyFit
+    ? { near: Math.max(1e-3, options.camera.near ?? 0.1), far: Math.max(Math.max(1e-3, options.camera.near ?? 0.1) + 1e-3, options.camera.far ?? 100) }
+    : resolveClipRange(nearCorners, farCorners, options.camera.near, options.camera.far);
   const near = clip.near;
   const far = clip.far;
   const shadowFar = options.maxDistance !== undefined && Number.isFinite(options.maxDistance) && options.maxDistance > near
@@ -364,7 +374,7 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     // light-space footprint overlaps the slice can shadow it, so casters never widen x/y (a scene-spanning instanced set
     // or a distant mountain used to inflate every cascade to kilometres: 1 m texels and washed-out shadows); they only
     // extend the depth range toward the light, below.
-    const allPts = frustumPts;
+    const allPts = legacyFit ? [...frustumPts, ...casterBounds.flatMap((b) => [b.min, b.max])] : frustumPts;
     let min = [Infinity, Infinity, Infinity];
     let max = [-Infinity, -Infinity, -Infinity];
     for (const p of allPts) {
@@ -395,7 +405,7 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     let zHi = max[2]!;
     // Casters whose light-space footprint overlaps the slice extend the depth range toward the light (capped, so a huge
     // box cannot stretch the range and cost depth precision); casters behind the slice cannot shadow it.
-    {
+    if (!legacyFit) {
       const reach = Math.max(8 * radius, 200);
       const rx0 = centerX - radius - padding, rx1 = centerX + radius + padding;
       const ry0 = centerY - radius - padding, ry1 = centerY + radius + padding;

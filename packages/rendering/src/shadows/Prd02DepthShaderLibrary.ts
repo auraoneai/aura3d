@@ -28,11 +28,20 @@ import type { Material } from "../Material";
 import type { ShaderLibrary } from "../ShaderLibraryCore";
 import type { RenderDevice, RenderShaderProgram } from "../RenderDevice";
 import { shadowCasterVariantId } from "../contracts/shadows";
+import { shadowFitLegacy } from "./shadowLegacy";
 
 export const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
 /** Uniform-path instancing cap; larger batches split into multiple draws. */
 export const PRD02_DEPTH_MAX_INSTANCES = 64;
+
+/**
+ * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
+ * Part of the 4.3.0 shadow behaviour: off in legacy mode (the default), which draws uniform-array batches exactly as 4.2.0 did.
+ */
+export function depthUsesInstanceAttributes(item: { readonly instanceTransforms?: ArrayLike<number> | undefined }): boolean {
+  return !shadowFitLegacy() && (item.instanceTransforms?.length ?? 0) / 16 > PRD02_DEPTH_MAX_INSTANCES;
+}
 
 export function registerPrd02DepthShader(library: ShaderLibrary): void {
   library.register({
@@ -54,11 +63,13 @@ uniform mat4 u_modelViewProjection;
 #if A3D_DEPTH_INSTANCED
 uniform mat4 u_instanceMatrices[${PRD02_DEPTH_MAX_INSTANCES}];
 uniform float u_instanceCount;
+#if A3D_DEPTH_INSTANCE_ATTR
 uniform float u_instanceAttributeMode;
 layout(location = 8) in vec4 a_instanceMatrix0;
 layout(location = 9) in vec4 a_instanceMatrix1;
 layout(location = 10) in vec4 a_instanceMatrix2;
 layout(location = 11) in vec4 a_instanceMatrix3;
+#endif
 #endif
 #if A3D_DEPTH_SKINNED
 #include <skinning_common>
@@ -74,10 +85,14 @@ void main() {
 #endif
 #if A3D_DEPTH_INSTANCED
   int instanceIndex = clamp(gl_InstanceID, 0, max(int(u_instanceCount) - 1, 0));
+#if A3D_DEPTH_INSTANCE_ATTR
   mat4 instanceMatrix = u_instanceAttributeMode > 0.5
     ? mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3)
     : u_instanceMatrices[instanceIndex];
   gl_Position = u_modelViewProjection * (instanceMatrix * local);
+#else
+  gl_Position = u_modelViewProjection * (u_instanceMatrices[instanceIndex] * local);
+#endif
 #else
   gl_Position = u_modelViewProjection * local;
 #endif
@@ -118,6 +133,17 @@ const PRD02_DEPTH_FEATURES: readonly DepthVariantFeature[] = [
     passes: ["depth"],
     select: (input) => (input.item.instanceTransforms || input.item.instanceAttributes ? 1 : undefined),
     defines: () => ({ A3D_DEPTH_INSTANCED: 1 }),
+    chunks: [],
+    hooks: []
+  },
+  {
+    id: "prd02.depthInstanceAttr",
+    owner: "prd02",
+    flag: "A3D_QR_LIGHTING",
+    order: 11,
+    passes: ["depth"],
+    select: (input) => (depthUsesInstanceAttributes(input.item) ? 1 : undefined),
+    defines: () => ({ A3D_DEPTH_INSTANCE_ATTR: 1 }),
     chunks: [],
     hooks: []
   },
@@ -330,7 +356,8 @@ export function prd02DepthVariantDefines(
   const defines: Record<string, string | number | true> = {
     A3D_DEPTH_INSTANCED: 0,
     A3D_DEPTH_SKINNED: 0,
-    A3D_DEPTH_ALPHA: 0
+    A3D_DEPTH_ALPHA: 0,
+    A3D_DEPTH_INSTANCE_ATTR: 0
   };
   if (key.instanced) defines.A3D_DEPTH_INSTANCED = 1;
   if (key.skinning > 0) defines.A3D_DEPTH_SKINNED = 1;

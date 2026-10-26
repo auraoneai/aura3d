@@ -2735,6 +2735,21 @@ export function hdrOutputPassEnabled(): boolean {
   }
 }
 
+/**
+ * The linear-light vignette in the OUT stage (4.3.0) is opt-in: `globalThis.__A3D_LINEAR_VIGNETTE__ = true` or `?linearvig=1`.
+ * It moved Aura Slam's frame (brighter, no S12 dither) and was proven on software WebGL2 only; the 4.2.0 display-space
+ * vignette in the LDR tail is the default again.
+ */
+export function linearVignetteEnabled(): boolean {
+  const g = globalThis as { __A3D_LINEAR_VIGNETTE__?: boolean; location?: { search?: string } };
+  if (g.__A3D_LINEAR_VIGNETTE__ === true) return true;
+  try {
+    return typeof g.location?.search === "string" && new URLSearchParams(g.location.search).get("linearvig") === "1";
+  } catch {
+    return false;
+  }
+}
+
 /** rgba16f colour attachments need EXT_color_buffer_float or EXT_color_buffer_half_float; fake hosts without a GL pass through. */
 function halfFloatColorRenderable(host: WebGL2DeviceHost): boolean {
   const gl = (host as { gl?: { getExtension?: (name: string) => unknown } }).gl;
@@ -2829,7 +2844,7 @@ export function executePostGraphWebGL2(
   // stage (before the one tone map and encode) instead of darkening display-referred
   // bytes in the LDR tail. The OUT stage always exists on this route — a tone-mapping
   // descriptor, or the linear OutputPass injected for `toneMapping: "none"`.
-  const vignetteInOut = Boolean(pipeline.vignette)
+  const vignetteInOut = linearVignetteEnabled() && Boolean(pipeline.vignette)
     && (request.passes.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName)) || pipeline.toneMapping === "none");
   const tailPipeline: PostPipelineOptions = vignetteInOut ? { ...pipeline, vignette: undefined } : pipeline;
   const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(tailPipeline));
