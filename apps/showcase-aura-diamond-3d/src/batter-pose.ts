@@ -221,10 +221,11 @@ export interface PoseSolve {
  * Solve the batter pose for (knob target K, bat direction D, chest yaw phi, hips shift) with the library's two-handed grip: both arms IK
  * onto the knob (right hand at the knob, left hand GRIP_SPREAD up the bat); a forearm twist rotates the socketed bat onto D.
  */
-export function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR: Vec3, prevTau: number, prevTauL = 0, prevGamma = 0, stride = 0): PoseSolve {
+export function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR: Vec3, prevTau: number, prevTauL = 0, prevGamma = 0, stride = 0, lowerBody = true): PoseSolve {
   const p = solveTwoHandGrip(GRIP_RIG, { K, D, phi, hip, pole: poleR }, { tau: prevTau, tauL: prevTauL, gamma: prevGamma });
-  const lower = lowerBodyBones(phi, hip, stride);
-  const bones = { ...p.bones, ...lower, Hips: { position: p.bones.Hips!.position, rotation: lower.Hips!.rotation } } as unknown as PoseSolve["bones"];
+  // While the batter walks (the clip drives the legs) only the kit's own arms, chest and hips position apply.
+  const lower = lowerBody ? lowerBodyBones(phi, hip, stride) : null;
+  const bones = (lower ? { ...p.bones, ...lower, Hips: { position: p.bones.Hips!.position, rotation: lower.Hips!.rotation } } : p.bones) as unknown as PoseSolve["bones"];
   return {
     bones,
     tau: p.tau,

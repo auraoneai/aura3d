@@ -3348,10 +3348,16 @@ function boot(): void {
    * Drive the batter pose for this frame and report bat geometry (world).
    * Returns null when the overlay should be cleared (running / hidden).
    */
+  let batterStepBlend = 0;
   function updateBatterPose(dt: number, now: number, batterPos: Vec3, batterYaw: number): { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null {
     if (!H.batter || typeof H.batter.setAnimationPose !== "function") return null;
     const sampled = sampleBatterTarget(swingDrive, now);
-    const pose = solveBatterPose(sampled.K, sampled.D, sampled.phi, sampled.hip, sampled.pole, swingDrive.prevTau, swingDrive.prevTauL, swingDrive.prevGamma, sampled.stride);
+    // Walking up to the plate the clip owns the legs: ease the crouch out and back so the hips and feet do not pop.
+    batterStepBlend = clamp(batterStepBlend + (G.batterStepTimer > 0 ? dt : -dt) / 0.3, 0, 1);
+    const keep = 1 - batterStepBlend;
+    const hipEff: Vec3 = [sampled.hip[0] * keep, sampled.hip[1] * keep, sampled.hip[2] * keep];
+    const handsK: Vec3 = [sampled.K[0] - sampled.hip[0] * batterStepBlend, sampled.K[1] - sampled.hip[1] * batterStepBlend, sampled.K[2] - sampled.hip[2] * batterStepBlend];
+    const pose = solveBatterPose(handsK, sampled.D, sampled.phi, hipEff, sampled.pole, swingDrive.prevTau, swingDrive.prevTauL, swingDrive.prevGamma, sampled.stride, batterStepBlend <= 0);
     swingDrive.prevTau = pose.tau;
     swingDrive.prevTauL = pose.tauL;
     swingDrive.prevGamma = pose.gamma;
