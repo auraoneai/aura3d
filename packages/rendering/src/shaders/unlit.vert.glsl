@@ -8,6 +8,6 @@ uniform float u_pointSize;
 out vec4 v_vertexColor;
 void main() {
   v_vertexColor = a_color;
-  gl_PointSize = max(u_pointSize, 1.0);
+  gl_PointSize = min(max(u_pointSize, 1.0), 256.0);
   gl_Position = u_modelViewProjection * vec4(a_position, 1.0);
 }

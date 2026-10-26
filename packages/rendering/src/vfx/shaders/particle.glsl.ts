@@ -74,9 +74,15 @@ void main() {
   float s = sin(rot);
   vec2 k = vec2(c * a_corner.x - s * a_corner.y, s * a_corner.x + c * a_corner.y);
   vec2 off = right2 * (k.x * size * 0.5) + up2 * (k.y * size * 0.5 * stretch);
+  // A particle centre at or behind the camera projects to an unbounded disc on some GPUs: drop it (its near fade is 0 anyway).
+  vec4 clipC = u_viewProjection * vec4(P, 1.0);
+  if (clipC.w < 0.02) {
+    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    v_uv0 = vec2(0.0); v_uv1 = vec2(0.0); v_frameT = 0.0; v_color = vec4(0.0); v_viewZ = 0.0; v_fog = 0.0;
+    return;
+  }
   if (u_maxScreen > 0.0) {
     // Half the cap in NDC (the viewport height spans 2): a soft glow disc can never grow past u_maxScreen of the screen.
-    vec4 clipC = u_viewProjection * vec4(P, 1.0);
     vec4 clipE = u_viewProjection * vec4(P + camUp * (size * 0.5 * stretch), 1.0);
     float halfNdc = abs(clipE.y / max(clipE.w, 1e-4) - clipC.y / max(clipC.w, 1e-4));
     if (halfNdc > u_maxScreen) off *= u_maxScreen / halfNdc;

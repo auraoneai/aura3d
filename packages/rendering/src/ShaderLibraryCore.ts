@@ -268,11 +268,11 @@ void main() {
     mat4 attributeMatrix = mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3);
     mat4 instanceMatrix = u_instanceAttributeMode > 0.5 ? attributeMatrix : u_instanceMatrices[instanceIndex];
     v_vertexColor = a_color * a_instanceColor;
-    gl_PointSize = max(u_pointSize, 1.0);
+    gl_PointSize = min(max(u_pointSize, 1.0), 256.0);
     gl_Position = u_modelViewProjection * instanceMatrix * vec4(a_position, 1.0);
   } else {
     v_vertexColor = a_color;
-    gl_PointSize = max(u_pointSize, 1.0);
+    gl_PointSize = min(max(u_pointSize, 1.0), 256.0);
     gl_Position = u_modelViewProjection * vec4(a_position, 1.0);
   }
 }

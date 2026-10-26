@@ -129,8 +129,14 @@ function registerParityShaderFeatures(): void {
     // three.js PointsMaterial.sizeAttenuation: size · pixelRatio · (0.5·CSS height ÷ view depth), which is
     // size · (0.5·device height ÷ view depth). u_pointSize carries the bare `size` here;
     // u_resolutionFarTime.y is the render-target height in device px.
+    // The cap (12% of the render-target height) and the near cull keep a point that passes close to the camera, or a
+    // huge authored size, from becoming a screen-filling disc on GPUs that allow very large point sizes.
     glsl: `#ifdef A3D_PARITY_POINT_ATTENUATION
-gl_PointSize = u_pointSize * (0.5 * u_resolutionFarTime.y) / max(gl_Position.w, 1e-3);
+{
+  float a3dPointPx = u_pointSize * (0.5 * u_resolutionFarTime.y) / max(gl_Position.w, 1e-3);
+  gl_PointSize = min(a3dPointPx, 0.12 * u_resolutionFarTime.y);
+  if (gl_Position.w < 0.05) gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+}
 #endif`
   });
   registerShaderChunk({

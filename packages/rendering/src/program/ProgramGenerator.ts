@@ -327,7 +327,7 @@ function vertexSource(f: ProgramFeatures, contributions: readonly Contribution[]
     "#ifdef VERTEX_COLORS\n  v_color = a_color;\n#endif",
     "#ifdef USE_INSTANCING_COLOR\n  v_instanceColor = a_instanceColor;\n#endif",
     "  gl_Position = u_viewProjection * a3dWorld;",
-    "  gl_PointSize = u_pointSize;",
+    "  gl_PointSize = min(u_pointSize, 256.0);",
     ...endHooks,
     "}"
   ];

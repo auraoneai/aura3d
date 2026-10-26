@@ -21,6 +21,8 @@ import {
 } from "./shaders/particle.glsl";
 
 const MAX_PARTICLE_PROGRAMS = 12;
+/** Largest on-screen particle diameter (share of the viewport height) for batches that do not set `maxScreen`: nothing grows into a screen-filling disc. */
+export const DEFAULT_PARTICLE_MAX_SCREEN = 0.1;
 
 export interface ParticlePassDiagnostics {
   drawCalls: number;
@@ -250,7 +252,7 @@ export class ParticleBatchPass {
       ["u_grid", batch.desc.atlasGrid ? [batch.desc.atlasGrid[0], batch.desc.atlasGrid[1]] : [1, 1]],
       ["u_atlas", new TextureBinding({ name: "u_atlas", texture: batch.desc.atlas })],
       ["u_nearFade", batch.desc.nearFade ?? 0.5],
-      ["u_maxScreen", batch.desc.maxScreen ?? 0],
+      ["u_maxScreen", batch.desc.maxScreen ?? DEFAULT_PARTICLE_MAX_SCREEN],
       ["u_cameraNear", camera?.near ?? 0.1],
       ["u_softDistance", batch.desc.softDistance ?? 1],
       ["u_outputColorSpace", this.frameOutputColorSpace === "srgb" ? 1 : 0],
