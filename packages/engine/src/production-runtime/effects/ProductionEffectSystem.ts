@@ -254,6 +254,10 @@ export interface AppLike {
   readonly quality?: { readonly tier: AuraQualityTier };
 }
 
+const UNSTOPPED_EMITTER_SECONDS = 5;
+const LINGER_SECONDS = 3;
+const LINGER_PARTICLE_LIMIT = 24;
+
 export class ProductionEffectSystem {
   readonly diagnostics = new EffectDiagnostics();
   readonly atmosphere = new LiveAtmosphere();
@@ -262,6 +266,10 @@ export class ProductionEffectSystem {
   private readonly budgetCap: number;
   private culledTotal = 0;
   private readonly emitters = new Map<string, EmitterBinding>();
+  /** Runtime-spawned emitters (addInstance): watched so a forgotten loop or a never-ending burst cannot hang over the scene. */
+  private readonly transients = new Map<string, { readonly born: number; warned: boolean }>();
+  private lastTransientAt = 0;
+  private lingerWarned = false;
   private readonly volumes = new Map<string, VolumeBinding>();
   /** C-27 budget share applied to stateless weather volumes in feed (1 = full). */
   private volumeScale = 1;
@@ -649,6 +657,8 @@ export class ProductionEffectSystem {
     });
     if (lowered.type === "emitter") {
       this.attachEmitter({ ...lowered, nodeId });
+      this.transients.set(nodeId, { born: this.time, warned: false });
+      this.lastTransientAt = this.time;
     } else if (lowered.type === "volume") {
       this.attachVolume({ ...lowered, nodeId });
     } else {
@@ -668,6 +678,7 @@ export class ProductionEffectSystem {
   }
 
   removeInstance(nodeId: string): void {
+    this.transients.delete(nodeId);
     const binding = this.emitters.get(nodeId);
     if (!binding) {
       this.volumes.delete(nodeId);
@@ -757,8 +768,36 @@ export class ProductionEffectSystem {
     }
     for (const batch of this.meshBatches.values()) batch.step(dt);
     this.transientLights.step(dt);
+    this.watchTransients();
     this.diagnostics.setFrameStats(this.emitters.size + this.volumes.size, this.liveCount());
     this.diagnostics.setBudget({ tier: this.tier, cap: this.budgetCap, culled: this.culledTotal });
+  }
+
+  /**
+   * Dev diagnostics for runtime-spawned effects: an emitter that is still emitting 5 s after it was spawned
+   * (a continuous emitter nobody stopped) and more than {@link LINGER_PARTICLE_LIMIT} transient particles alive
+   * {@link LINGER_SECONDS} s after the last spawn (a burst that outlives its design) are reported once each.
+   */
+  private watchTransients(): void {
+    let live = 0;
+    for (const [id, record] of this.transients) {
+      const binding = this.emitters.get(id);
+      if (!binding) {
+        this.transients.delete(id);
+        continue;
+      }
+      live += binding.state.live;
+      const age = this.time - record.born;
+      if (!record.warned && age > UNSTOPPED_EMITTER_SECONDS && binding.state.desc.emissionRate > 0 && binding.state.live > 0) {
+        record.warned = true;
+        this.diagnostics.note("VFX_UNSTOPPED_EMITTER", id, `runtime emitter still emitting ${age.toFixed(1)} s after it was spawned: stop() its handle or fire a one-shot burst`);
+      }
+    }
+    if (live === 0) this.lingerWarned = false;
+    else if (!this.lingerWarned && live > LINGER_PARTICLE_LIMIT && this.time - this.lastTransientAt > LINGER_SECONDS) {
+      this.lingerWarned = true;
+      this.diagnostics.note("VFX_LINGERING_PARTICLES", "", `${live} runtime particles still alive ${LINGER_SECONDS} s after the last effect was spawned`);
+    }
   }
 
   /**
