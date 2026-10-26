@@ -97,11 +97,13 @@ Method: every move has a unit test that compares against the code it replaced (g
 ## Cumulus Dash foot slide (closed in 4.3.0)
 
 The hero's feet slid at sprint (about 23% of ground speed by the 4.2.0 estimate, planted-foot p95 3.4 to 8.5 m/s on the library meter). `examples/kid-goku-beyond-the-clouds-port/gait.ts` now drives hips and legs by IK from the sim's ground speed; planted-foot p95 is 0.00 to 0.02 m/s at 4.2 to 19.6 m/s (threshold 0.15). Open: in-engine frames could not be captured because the spec's dev-server page does not boot on the remote runner at this commit (also on `origin/main`); offline silhouettes stand in (`evidence/kid-goku-beyond-the-clouds-port/footslide-fix/README.md`). Library follow-up: the stance/swing planner and the two-bone leg solve are generic and belong in `@aura3d/engine/game` next to `createLocomotion` (a stride-planner that takes ground speed and leg lengths).
+
 ## Shadowstep Gauntlet art pass (4.3.0)
 
 **Closed:** the placeholder houses, stalls, pagoda stacks, valley cliffs, rocks, tufts, hills and fences in `examples/ninja-runner-port` are replaced by ten generated models (`houseC`, `houseD`, `teahouse`, `marketStall`, `cliffA`, `cliffB`, `boulder`, `bush`, `ridge`, `fenceRail`). Before/after frames and budgets: `evidence/ninja-runner-port/art-pass/README.md`; credits, prompts and task ids: `examples/ninja-runner-port/assets/ATTRIBUTION.md`.
 
 **Still open (this game):** sun shadows stay off (engine receive defect, `evidence/ninja-runner-port/parity-closeout/README.md`); the stone cottage `houseC` is very dark against the grass; the bridge deck is flat brown planks; foreground oaks and pines keep their faceted leaf cards (existing models).
+
 ## Teleoperator art pass (lane p1-art-teleoperator, 2026-10-25)
 
 **Closed.** The needs-art item "Teleoperator silhouettes" (a hero that still read as a real robotaxi with a smudged texture, traffic resembling familiar cars, and single-colour box buildings) is done in `apps/showcase-teleoperator`: seven generated vehicles (a rounded shuttle pod, hatch, notchback sedan, wedge coupe, van, pickup, box truck; the roadster is unchanged) and four generated building models (Victorian townhouse, brick mid-rise, glass tower, art-deco tower) replace the old files and the 16 box buildings. Provenance, prompts, Meshy task ids and measured numbers (GL draw calls 691 to about 630 per frame; software-GL wall-clock per frame is higher, not reliable across workers) are in `evidence/teleoperator/art-pass/`; final frames and cards are recaptured in `evidence/teleoperator/screens/final/`.
