@@ -191,7 +191,13 @@ export const CLUB_REACH = 0.88;
 export const GRIP_SPAN = 0.105;
 /** pole vectors (model space) that pick the natural elbow of the two solutions */
 const POLE_R: V3 = [-0.62, -0.72, 0.10];
-const POLE_L: V3 = [0.55, -0.80, 0.12];
+/**
+ * Where the DRAWN elbows point (model space). The trail-arm solve above is fixed by the club (palm + shaft angle), and its
+ * elbow lies against the torso, so the drawn right arm sat half inside the jersey and read as a shoulder stub from the
+ * side. The visible right forearm therefore reaches the same grip point through a free elbow that flares outward; the
+ * club still follows the exact solve. Mutable so the offline arm sweep can tune it.
+ */
+export const ARM_POLES = { right: [-0.5, -0.6, 0.8] as V3, left: [0.5, -0.6, 0.8] as V3 };
 
 /* ------------------------------------------------------------------ *
  *  Root placement — GLB model space ↔ shot-local frame               *
@@ -377,6 +383,8 @@ export interface SolvedSwing {
   readonly grip: V3;
   readonly shaftDir: V3;
   readonly leftPalm: V3;
+  /** where the DRAWN right palm lands (shot-local): on the grip point whenever the grip is within reach */
+  readonly rightPalm: V3;
   readonly rightElbowShot: V3;
   readonly shoulderRShot: V3;
   readonly shoulderLShot: V3;
@@ -453,13 +461,16 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
 
   // ---- right arm: exact palm + shaft solve --------------------------------
   const { elbow, foreWorld, wristError } = solveTrailArm(shoulderR, gripM, dirM);
-  const upperWorld = qFromTo(BIND_UPPER_R, unit(vSub(elbow, shoulderR)));
+  // drawn right arm: same palm point, free outward elbow (the club keeps using the exact solve above)
+  const elbowVisR = solveElbowPole(shoulderR, gripM, ARM_POLES.right);
+  const upperWorld = qFromTo(BIND_UPPER_R, unit(vSub(elbowVisR, shoulderR)));
+  const foreVisR = qFromTo(BIND_PALM_R, unit(vSub(gripM, elbowVisR)));
   const upperLocalR = qMul(qConj(chestW), upperWorld);
-  const foreLocalR = qMul(qConj(upperWorld), foreWorld);
+  const foreLocalR = qMul(qConj(upperWorld), foreVisR);
 
   // ---- left arm: palm IK onto the shaft, a hand-span up from the right ----
   const leftPalmM = vSub(gripM, vScale(dirM, GRIP_SPAN));
-  const elbowL = solveElbowPole(shoulderL, leftPalmM, POLE_L);
+  const elbowL = solveElbowPole(shoulderL, leftPalmM, ARM_POLES.left);
   const upperWorldL = qFromTo(BIND_UPPER_L, unit(vSub(elbowL, shoulderL)));
   const foreWorldL = qFromTo(BIND_PALM_L, unit(vSub(leftPalmM, elbowL)));
   const upperLocalL = qMul(qConj(chestW), upperWorldL);
@@ -469,6 +480,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
   const headM = vAdd(gripM, qRotate(foreWorld, vScale(SHAFT_BIND_R, CLUB_REACH)));
   const clubHead = toShot(root, headM);
   const leftPalmShot = toShot(root, vAdd(elbowL, qRotate(foreWorldL, RIG.palmL)));
+  const rightPalmShot = toShot(root, vAdd(elbowVisR, qRotate(foreVisR, RIG.palmR)));
 
   const headShot = toShot(root, headPos);
   const spineVec = vSub(headPos, hipsPos);
@@ -509,6 +521,7 @@ export function solveSwing(key: SwingKey, root: RootFrame, breathe = 0): SolvedS
     grip: key.grip,
     shaftDir: key.dir,
     leftPalm: leftPalmShot,
+    rightPalm: rightPalmShot,
     rightElbowShot: toShot(root, elbow),
     shoulderRShot: toShot(root, shoulderR),
     shoulderLShot: toShot(root, shoulderL),

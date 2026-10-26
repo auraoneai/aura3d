@@ -4,6 +4,10 @@ Version: 4.3.3
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.3.4 (unreleased)
+
+- **Links golfer: the right (trail) arm is drawn in front of the torso, not inside it (games).** An offline sweep (`tools/aura-athletes/links-arm-sweep.ts`, `links-arm-visibility.ts`, `links-arm-render.ts`: the game's own swing solve through the shipped golfer GLB, CPU-skinned, four views) showed the arm lengths were always right but the right arm lay half inside the rebuilt jersey torso in the putting stroke and the backswing/downswing (only 8 to 37 percent of it visible from the best side), which read as a shoulder stub with no arm. The trail-arm solve is pinned by the club (palm plus shaft angle), so its elbow could not move; the drawn right arm now reaches the same grip point through a free elbow (`ARM_POLES`, pointing forward and down like the lead arm) while the club still follows the exact solve. Worst visible fraction over every phase went from 0.19 to 0.54 (right) and 0.57 to 0.76 (left), putting from 0.55 to 0.77. New `tests/unit/aura-links-3d/arm-sweep.test.ts` sweeps every phase and club and the aim yaws and fails on a collapsed, detached or hidden arm. The aim yaw cannot collapse an arm: the arms are solved in the golfer frame and the aim only rotates the whole node.
+
 ## 4.3.3 (2026-10-26)
 
 - **The Hoops, Diamond, Links and FC athletes have a neck again (games).** The shared torso-tube rebuild closed the collar under the chin, which left the head floating 5 to 7 cm above the shoulders in every clip. `tools/aura-athletes/add-neck.ts` appends a short skin tube from inside the collar into the base of the head (Chest to Head weight ramp, skin colour); it only adds vertices, so palm points and head-bone positions are unchanged and every shipped clip still stretches at most 1.6x.
