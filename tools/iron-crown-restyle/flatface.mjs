@@ -5,7 +5,7 @@
 // planar projection from the front of the head, and (3) paints the head's dark triangles (hair, headband) with a flat hair colour.
 // Skeleton, skin weights, clips, cloth and every non-head triangle are untouched.
 // Usage: node tools/iron-crown-restyle/flatface.mjs <in.glb> <out-dir> <name> [config-json]
-// Config: { hair, eye, brow, mouth, skin: [r,g,b] (0..255), hairline, backline, flattenAtlas (default true: false keeps coloured trims that look like skin),
+// Config: { hair, eye, brow, mouth, skin: [r,g,b] (0..255), hairline, backline, flattenAtlas (default true: false keeps coloured trims that look like skin), skinMinV (default 0.3),
 //   skinOnlyHead (true: head triangles whose atlas colour is not face skin stay on the original material: helmets), keepLight (true: near-white head triangles, a face mask, stay on the original material), browWidth, faceExtra (SVG fragment) }.
 // Prints the output file name and sha256.
 import { createHash } from "node:crypto";
@@ -33,7 +33,8 @@ function rgbToHsv(r, g, b) {
   if (d > 0) { if (max === r) h = ((g - b) / d) % 6; else if (max === g) h = (b - r) / d + 2; else h = (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
   return [h, max === 0 ? 0 : d / max, max];
 }
-const isSkin = (r, g, b) => { const [h, s, v] = rgbToHsv(r / 255, g / 255, b / 255); return h >= 8 && h <= 42 && s > 0.18 && s < 0.75 && v > 0.3; };
+const SKIN_MIN_V = CONFIG.skinMinV ?? 0.3; // lower it to catch the dark skin shading between skin and clothing
+const isSkin = (r, g, b) => { const [h, s, v] = rgbToHsv(r / 255, g / 255, b / 255); return h >= 8 && h <= 42 && s > 0.18 && s < 0.75 && v > SKIN_MIN_V; };
 
 const io = new NodeIO();
 const doc = await io.read(inFile);

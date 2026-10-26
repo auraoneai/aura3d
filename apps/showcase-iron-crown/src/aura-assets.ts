@@ -15,14 +15,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownBoulder": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownBoulder.6a3865e0.glb",
-    hash: "sha256-6a3865e06377bc7886d12c2ec3001c705db7301d306c2f0a76d3a035574a3ee6",
+    url: "/aura-assets/ironcrownBoulder.61c77a85.glb",
+    hash: "sha256-61c77a85e233283a241ada65702f0278a1d2a1992f8e958a1860afbc6b6ab420",
     bounds: [
       0.015,
       0.02,
       0.007
     ],
-    sizeBytes: 4961492,
+    sizeBytes: 4724428,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -527,7 +527,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownBoulder.6a3865e0.glb",
+        "sourcePath": "public/aura-assets/ironcrownBoulder.61c77a85.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -542,8 +542,8 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ],
         "checkedAt": "2026-10-17T09:34:55.132Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownBoulder.6a3865e0.glb",
-      "outputPath": "public/aura-assets/ironcrownBoulder.6a3865e0.glb",
+      "sourcePath": "public/aura-assets/ironcrownBoulder.61c77a85.glb",
+      "outputPath": "public/aura-assets/ironcrownBoulder.61c77a85.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [

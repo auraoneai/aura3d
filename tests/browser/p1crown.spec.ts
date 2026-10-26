@@ -6,14 +6,17 @@ import { emit, shootGame, type GameShot } from "./shotsd-lib";
 const CFG: GameShot = { slug: "iron-crown", route: "/apps/showcase-iron-crown/", auto: "#ic-autopilot", modes: [{ name: "versus", click: "[data-mode=\"versus\"]" }], keys: [["KeyD"], ["KeyJ"], ["KeyK"]] };
 const PAIRS: ReadonlyArray<readonly [string, string]> = [["boulder", "seraph"], ["jinx", "sovereign"], ["kenji", "volt"], ["sovereign", "boulder"], ["seraph", "jinx"]];
 
+const FAST = false;
 test.setTimeout(3_000_000);
 
 test("p1crown roster", async ({ browser }) => {
   const server = await startExampleDevServer();
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
-  for (const [p1, cpu] of PAIRS) {
+  for (const [p1, cpu] of FAST ? PAIRS.slice(0, 1) : PAIRS) {
     const page = await context.newPage();
     const errors: string[] = [];
+    const bad: string[] = [];
+    page.on("response", (r) => { if (r.status() >= 400) bad.push(`${r.status()} ${r.url().replace(server.origin, "")}`.slice(0, 140)); });
     page.on("pageerror", (e) => errors.push(e.message.slice(0, 160)));
     page.on("console", (m) => { if (m.type() === "error" && !/favicon/.test(m.text())) errors.push(m.text().slice(0, 160)); });
     await page.goto(`${server.origin}${CFG.route}`, { waitUntil: "load", timeout: 180_000 });
@@ -31,10 +34,10 @@ test("p1crown roster", async ({ browser }) => {
     await page.keyboard.down("KeyJ"); await page.waitForTimeout(250); await page.keyboard.up("KeyJ");
     await page.waitForTimeout(500);
     emit("iron-crown", "roster", `${p1}-vs-${cpu}-attack`, await page.screenshot({ type: "jpeg", quality: 86, timeout: 120_000 }));
-    console.log("P1CROWN_ERRORS", p1, cpu, JSON.stringify(errors.slice(0, 6)));
+    console.log("P1CROWN_ERRORS", p1, cpu, JSON.stringify(errors.slice(0, 4)), "BAD", JSON.stringify([...new Set(bad)].slice(0, 14)));
     await page.close();
   }
   await context.close();
-  await shootGame(browser, CFG, server.origin);
+  if (!FAST) await shootGame(browser, CFG, server.origin);
   await server.close();
 });

@@ -32,7 +32,7 @@ angles.forEach((ang, vi) => {
     const mat = p.getMaterial(), tex = mat?.getBaseColorTexture(), img = tex ? faceTexs.get(tex) : null, bf = mat?.getBaseColorFactor() ?? [0.7, 0.7, 0.7, 1];
     const pos = p.getAttribute("POSITION"), uv = p.getAttribute("TEXCOORD_0"), idx = p.getIndices().getArray();
     for (let i = 0; i < idx.length; i += 3) {
-      const v = [idx[i], idx[i + 1], idx[i + 2]], P = v.map((k) => pos.getElement(k, [])), U = v.map((k) => uv.getElement(k, []));
+      const v = [idx[i], idx[i + 1], idx[i + 2]], P = v.map((k) => pos.getElement(k, [])), U = v.map((k) => (uv ? uv.getElement(k, []) : [0, 0]));
       const sp = P.map(toScreen);
       if (Math.min(...sp.map((a) => a[1])) > H || Math.max(...sp.map((a) => a[1])) < 0) continue;
       const [a, b, c] = sp, den = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]);
