@@ -14,6 +14,7 @@ const docs = [
 ].filter((path) => existsSync(path));
 const knownPackages = new Set([
   "@aura3d/engine",
+  "@aura3d/engine/physics",
   "@aura3d/react",
   "@aura3d/cli",
   "create-aura3d"

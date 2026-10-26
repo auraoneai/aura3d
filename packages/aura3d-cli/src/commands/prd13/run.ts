@@ -10,21 +10,25 @@
 import { cliCommandFor } from "../../contracts/commands.js";
 import "./index.js";
 
-const args = process.argv.slice(2);
-let dispatched = false;
-for (let words = Math.min(args.length, 4); words > 0; words--) {
-  const command = cliCommandFor(args.slice(0, words).join(" "));
-  if (command) {
-    process.exitCode = await command.run(args.slice(words), {
-      cwd: process.cwd(),
-      stdout: (line) => console.log(line),
-      stderr: (line) => console.error(line)
-    });
-    dispatched = true;
-    break;
+async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  let dispatched = false;
+  for (let words = Math.min(args.length, 4); words > 0; words--) {
+    const command = cliCommandFor(args.slice(0, words).join(" "));
+    if (command) {
+      process.exitCode = await command.run(args.slice(words), {
+        cwd: process.cwd(),
+        stdout: (line) => console.log(line),
+        stderr: (line) => console.error(line)
+      });
+      dispatched = true;
+      break;
+    }
+  }
+  if (!dispatched) {
+    console.error(`no prd13 command matches: ${args.join(" ") || "(no args)"}\ncommands: look capture, look judge, look rubric, look lint`);
+    process.exitCode = 2;
   }
 }
-if (!dispatched) {
-  console.error(`no prd13 command matches: ${args.join(" ") || "(no args)"}\ncommands: look capture, look judge, look rubric, look lint`);
-  process.exitCode = 2;
-}
+
+void main();

@@ -1,20 +1,24 @@
 import type * as Rapier from "@dimforge/rapier3d-compat";
 import { toRapierHeightfieldHeights } from "./HeightfieldLayout.js";
 
-// `@dimforge/rapier3d-compat` is an OPTIONAL peer: it must be absent-tolerant
-// at module evaluation so `import { createAuraApp } from "@aura3d/engine"`
-// works in consumers that never use physics. Failure defers to call time.
-const defaultRapierModule = await import("@dimforge/rapier3d-compat").catch(() => null);
-const defaultRapierInit = (defaultRapierModule as unknown as { init?: (input?: unknown) => Promise<unknown> } | null)?.init;
-if (defaultRapierModule && defaultRapierInit) await defaultRapierInit({});
+import { ensureRapier, getRapierModule, rapierInitMode } from "./rapierInit.js";
+
+// `@dimforge/rapier3d-compat` is an OPTIONAL peer: it must be absent-tolerant at module evaluation so
+// `import { createAuraApp } from "@aura3d/engine"` works in consumers that never use physics. Failure defers to
+// call time. Initialisation lives in `./rapierInit.js` (top-level await by default, a lazy variant under the
+// `aura3d-no-tla` bundler condition).
+export { ensureRapier as ensurePhysics, rapierInitMode as physicsInitMode };
 
 function requireRapierModule(): RapierModule {
-  if (!defaultRapierModule) {
+  const rapier = getRapierModule();
+  if (!rapier) {
     throw new Error(
-      "@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics."
+      rapierInitMode === "lazy"
+        ? "@aura3d/engine physics is not ready: this build has no top-level await, so `await ensurePhysics()` (from @aura3d/engine/physics) before creating a world or calling createAuraApp, and install the optional peer @dimforge/rapier3d-compat."
+        : "@aura3d/engine physics requires the optional peer @dimforge/rapier3d-compat — install it (npm i @dimforge/rapier3d-compat) to use Rapier physics."
     );
   }
-  return defaultRapierModule;
+  return rapier;
 }
 
 export type RapierModule = typeof import("@dimforge/rapier3d-compat");

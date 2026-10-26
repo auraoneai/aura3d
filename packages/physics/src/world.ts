@@ -14,6 +14,7 @@
  * adapter module's one-time WASM initialization without pulling unrelated arcade or query APIs.
  */
 export { PhysicsWorld } from "./PhysicsWorld.js";
+export { ensurePhysics, physicsInitMode } from "./ensure.js";
 export type {
   PhysicsBackend,
   PhysicsBackendPreference,

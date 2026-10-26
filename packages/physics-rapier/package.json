@@ -17,6 +17,12 @@
       "import": "./dist/index.js"
     }
   },
+  "imports": {
+    "#aura3d/rapier-init": {
+      "aura3d-no-tla": "./dist/rapierInit.lazy.js",
+      "default": "./dist/rapierInit.js"
+    }
+  },
   "description": "Optional asynchronously loaded Rapier physical-simulation adapter for Aura3D.",
   "keywords": [
     "aura3d",

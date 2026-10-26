@@ -83,6 +83,7 @@ Format: **ID title.** Symptom. Cause. Avoid / prevent (API or check). Evidence.
 - **B5 Registry lag.** npm showed 2 of 24 packages for minutes after a successful publish. Poll from `/tmp`; do not re-publish.
 - **B6 Release steps `prepare-version` misses.** Marketing HTML, showcase index, `CONTRIBUTING.md`, doc stamps, app `package.json` versions, the CHANGELOG version line. Run `marketing/scripts/check-version.mjs`.
 - **B7 Skill mirrors stale.** `check:skills` fails when `llms.txt` changes. Sync with `tools/agent-skills/sync.ts` (via `tsx`, never pnpm in symlinked worktrees).
+- **B8 Top-level await in shipped code.** The Rapier solver initialised with a top-level `await`, so a consumer bundling `@aura3d/engine` with esbuild or Vite at an `es2020` target, or to `iife`/`cjs`, failed ("Top-level await is not available"), and esbuild placed `await` inside non-async wrappers where it was reachable from an import cycle ("Unexpected reserved word", dot-dash-3d test harness). The default build keeps top-level await so `app.physics` stays synchronous; the `aura3d-no-tla` bundler condition selects a lazy build where you `await ensurePhysics()` first. New top-level `await` in shipped packages is a release gate failure (`pnpm verify:no-tla`).
 
 ## Verification
 

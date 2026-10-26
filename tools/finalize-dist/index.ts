@@ -75,6 +75,16 @@ for (const packageName of packageNames) {
   }
 }
 
+// Solver initialisation is selected through the package `imports` map so bundlers that cannot emit top-level
+// await can opt into the lazy variant with the `aura3d-no-tla` condition (docs/agents/lessons-learned.md).
+for (const file of [join(rootDist, "physics-rapier", "index.js"), join(packageRoot, "physics-rapier", "dist", "index.js")]) {
+  if (!existsSync(file)) continue;
+  const source = readFileSync(file, "utf8");
+  const rewritten = source.replace('from "./rapierInit.js"', 'from "#aura3d/rapier-init"');
+  if (rewritten === source) throw new Error(`finalize-dist: ${relative(root, file)} no longer imports ./rapierInit.js`);
+  writeFileSync(file, rewritten);
+}
+
 writeFileSync(join(rootDist, "index.js"), `${rootIndexLines.join("\n")}\n`);
 writeFileSync(join(rootDist, "index.d.ts"), `${rootTypeLines.join("\n")}\n`);
 

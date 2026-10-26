@@ -187,6 +187,26 @@ an actionable message rather than silently substituting a box.
 `mesh` and `heightfield` are static-only: a concave triangle soup has no well-defined inertia
 tensor, and treating one as dynamic produces a body that falls through thin geometry.
 
+## Bundler targets and top-level await
+
+The default build initialises the Rapier solver with a top-level `await`, so `app.physics` and `new PhysicsWorld()` are live
+synchronously. That needs an ES2022+ module build: esbuild with `target: "es2020"` (or any iife/cjs output), Vite with
+`build.target: "es2020"` and Rollup `iife` fail with "Top-level await is not available".
+
+Consumers who must bundle that way opt in to the lazy solver with the `aura3d-no-tla` condition and initialise it first:
+
+```ts
+// esbuild: conditions: ["aura3d-no-tla"]   Vite: resolve.conditions: ["aura3d-no-tla"]   Rollup node-resolve: exportConditions
+import { createAuraApp, scene } from "@aura3d/engine";
+import { ensurePhysics } from "@aura3d/engine/physics";
+
+await ensurePhysics(); // resolves immediately in the default build
+const app = createAuraApp("#stage", { scene: scene() });
+```
+
+In the lazy build a world created before `ensurePhysics()` resolves throws an error that says so. `physicsInitMode` is
+`"top-level-await"` (default) or `"lazy"`.
+
 ## Boundary
 
 The public boundary is `app.physics` on `@aura3d/engine`; the solver boundary is

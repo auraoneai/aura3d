@@ -110,6 +110,12 @@
     "./assets/browser": "./dist/engine/deprecated/assets-browser.js",
     "./workflows/production": "./dist/engine/deprecated/workflows-production.js"
   },
+  "imports": {
+    "#aura3d/rapier-init": {
+      "aura3d-no-tla": "./dist/physics-rapier/rapierInit.lazy.js",
+      "default": "./dist/physics-rapier/rapierInit.js"
+    }
+  },
   "scripts": {
     "arch:check": "tsx --tsconfig tsconfig.base.json tools/arch-gates/index.ts",
     "assets:provenance": "pnpm assets:provenance:raw && tsx --tsconfig tsconfig.base.json tools/aura3d105-release-readiness/index.ts --area assets --out tests/reports/aura3d105/assets-provenance-gate.json",
@@ -223,7 +229,8 @@
     "verify:exports": "node --experimental-strip-types tools/verify-exports/index.ts",
     "verify:external-parity-report-freshness": "tsx --tsconfig tsconfig.base.json tools/external-parity-report-freshness/index.ts",
     "verify:imports": "node --experimental-strip-types tools/verify-imports/index.ts",
-    "verify:npm-release": "pnpm typecheck:raw && pnpm build:raw && pnpm test:packages && pnpm test:packages:dist && pnpm verify:exports && pnpm verify:imports && pnpm verify:size && pnpm verify:package-install-smoke:fresh && node tools/release/publish-all.mjs --dry-run",
+    "verify:no-tla": "node --experimental-strip-types tools/verify-no-tla/index.ts",
+    "verify:npm-release": "pnpm typecheck:raw && pnpm build:raw && pnpm test:packages && pnpm test:packages:dist && pnpm verify:exports && pnpm verify:imports && pnpm verify:no-tla && pnpm verify:size && pnpm verify:package-install-smoke:fresh && node tools/release/publish-all.mjs --dry-run",
     "verify:package-install-smoke:fresh": "node --experimental-strip-types tools/package-install-smoke/index.ts --fresh-pack",
     "verify:public-demo-deployment": "tsx --tsconfig tsconfig.base.json tools/public-demo-deployment-smoke/index.ts",
     "verify:size": "node --experimental-strip-types tools/package-size/index.ts",
