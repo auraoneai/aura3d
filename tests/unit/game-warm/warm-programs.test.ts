@@ -141,4 +141,44 @@ describe("warmPrograms", () => {
       expect(r.environmentReady).toBe(true);
     });
   });
+
+  it("waits for pending texture upgrades, then settles the draw-call count again", async () => {
+    let frame = 0;
+    const app: WarmableApp = {
+      async precompile() {},
+      step() { frame += 1; },
+      diagnostics() {
+        // the textured program variants appear when the upload lands on frame 6: the count only then reaches 131
+        const landed = frame >= 6;
+        return { drawCalls: landed ? 131 : 113, renderer: { runtime: { texturedMaterials: [{ status: landed ? "textured" : "pending" }, { status: "textured" }] } } };
+      }
+    };
+    const result = await warmPrograms(app, { textureTimeoutMs: 5_000 });
+    expect(result.texturesReady).toBe(true);
+    expect(result.textureFrames).toBeGreaterThan(0);
+    expect(result.settled).toBe(true);
+    expect(app.diagnostics!().drawCalls).toBe(131);
+  });
+
+  it("gives up on a texture upgrade that never lands and says so", async () => {
+    const app: WarmableApp = {
+      async precompile() {},
+      step() {},
+      diagnostics: () => ({ drawCalls: 10, renderer: { runtime: { texturedMaterials: [{ status: "pending" }] } } })
+    };
+    const result = await warmPrograms(app, { textureTimeoutMs: 120 });
+    expect(result.texturesReady).toBe(false);
+    expect(result.textureFrames).toBeGreaterThan(0);
+  });
+
+  it("skips the texture wait when asked, and when nothing is pending", async () => {
+    const pending: WarmableApp = {
+      async precompile() {},
+      step() {},
+      diagnostics: () => ({ drawCalls: 10, renderer: { runtime: { texturedMaterials: [{ status: "pending" }] } } })
+    };
+    expect((await warmPrograms(pending, { waitForTextures: false })).textureFrames).toBe(0);
+    const clean = scripted([113]);
+    expect((await warmPrograms(clean.app)).textureFrames).toBe(0);
+  });
 });

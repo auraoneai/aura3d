@@ -271,7 +271,7 @@ export function buildCity(blocks: readonly Block[], buildings: readonly Building
 
 export const GROUND_HALF = 510;
 
-/** The road-tile plane: a grid of quads whose UVs are in tiles so the 60 m tile repeats (tile origin at world 60k - 30). */
+/** The road-tile plane: a grid of quads whose UVs are in tiles so the 60 m tile repeats (tile origin at world 60k - 30). The drawn road is the same for any `cells`; the game uses one quad. */
 export function roadPlane(cells = 1): MeshData {
   const m = createMesh();
   const span = (2 * GROUND_HALF) / cells;
@@ -279,7 +279,8 @@ export function roadPlane(cells = 1): MeshData {
     for (let j = 0; j < cells; j++) {
       const x0 = -GROUND_HALF + i * span;
       const z1 = GROUND_HALF - j * span;
-      quad(m, [x0, 0.0, z1], [span, 0, 0], [0, 0, -span], [1, 1, 1], [(x0 + 30) / PITCH, (z1 - span + 30) / PITCH], [(x0 + span + 30) / PITCH, (z1 + 30) / PITCH]);
+      // u = (x + 30) / PITCH and v = (30 - z) / PITCH for every cell count (the quad's `o` corner is its z1 edge, so v starts at 30 - z1)
+      quad(m, [x0, 0.0, z1], [span, 0, 0], [0, 0, -span], [1, 1, 1], [(x0 + 30) / PITCH, (30 - z1) / PITCH], [(x0 + span + 30) / PITCH, (30 - z1 + span) / PITCH]);
     }
   }
   return m;

@@ -13,13 +13,23 @@
  *  5. A requested environment HDRI that is still loading is waited for (bounded), and steps 3 and 4 run again:
  *     when the HDRI lands, every material switches to its image-based-lighting program variant at once, which
  *     recompiles the whole scene and drops frames after the game believed it was settled.
+ *  6. Textures upgrade one material at a time after mount (`renderer.runtime.texturedMaterials`, status `pending` until the
+ *     upload lands). A material that gains its texture switches to a textured program variant, which compiles
+ *     asynchronously too, so the ground, the road or a facade can drop out for frames after the game believed it was
+ *     settled. Pending upgrades are waited for (bounded) and steps 3 and 4 run again.
  *
  * Call it again after a large jump (a teleport) before capturing a frame.
  */
 export interface WarmableApp {
   precompile?(): Promise<unknown>;
   step(dt?: number): unknown;
-  diagnostics?(): { readonly drawCalls?: number; readonly renderer?: { readonly environment?: { readonly hdriStatus?: string } } };
+  diagnostics?(): {
+    readonly drawCalls?: number;
+    readonly renderer?: {
+      readonly environment?: { readonly hdriStatus?: string };
+      readonly runtime?: { readonly texturedMaterials?: readonly { readonly status?: string }[] };
+    };
+  };
 }
 
 export interface WarmProgramsOptions {
@@ -33,6 +43,10 @@ export interface WarmProgramsOptions {
   readonly waitForEnvironment?: boolean;
   /** Upper bound on that wait, in milliseconds. Default 20000. */
   readonly environmentTimeoutMs?: number;
+  /** Wait for materials whose texture upgrade is still `pending` (`renderer.runtime.texturedMaterials`) before settling. Default true. Needs `app.diagnostics`. */
+  readonly waitForTextures?: boolean;
+  /** Upper bound on that wait, in milliseconds. Default 20000. */
+  readonly textureTimeoutMs?: number;
 }
 
 export interface WarmProgramsResult {
@@ -47,6 +61,10 @@ export interface WarmProgramsResult {
   readonly environmentFrames: number;
   /** False only when an HDRI was still pending when the wait timed out. */
   readonly environmentReady: boolean;
+  /** Frames stepped while waiting for pending texture upgrades (0 when none was pending). */
+  readonly textureFrames: number;
+  /** False only when an upgrade was still pending when the wait timed out. */
+  readonly texturesReady: boolean;
   readonly durationMs: number;
 }
 
@@ -107,5 +125,22 @@ export async function warmPrograms(app: WarmableApp, options: WarmProgramsOption
     }
     await settleCounts();
   }
-  return { passes, frames, settleFrames, settled, environmentFrames, environmentReady, durationMs: now() - startedAt };
+  let textureFrames = 0;
+  const texturesPending = (): boolean => (app.diagnostics?.().renderer?.runtime?.texturedMaterials ?? []).some((row) => row.status === "pending");
+  let texturesReady = true;
+  if (options.waitForTextures !== false && typeof app.diagnostics === "function" && texturesPending()) {
+    const deadline = now() + Math.max(0, options.textureTimeoutMs ?? 20_000);
+    while (texturesPending() && now() < deadline) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 40));
+      app.step(0);
+      textureFrames += 1;
+    }
+    texturesReady = !texturesPending();
+    if (typeof app.precompile === "function") {
+      await app.precompile();
+      passes += 1;
+    }
+    await settleCounts();
+  }
+  return { passes, frames, settleFrames, settled, environmentFrames, environmentReady, textureFrames, texturesReady, durationMs: now() - startedAt };
 }

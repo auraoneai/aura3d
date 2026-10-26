@@ -73,7 +73,7 @@ Audio equivalence is parameter-level only: frequencies, glides, envelopes, delay
 ## Gridlock Courier render (2026-10-24)
 
 - Fixed: the first frame drew 47 of 113 calls because programs compile asynchronously and a draw whose program is pending is skipped (`warmPrograms`, `evidence/drift-and-deliver-port/rework/render-fix/`). Other games render straight after `app.ready()` and share the exposure: adopt `warmPrograms(app)` per game.
-- Open: after a long jump the road still flips in and out of consecutive frames on a loaded software-GL runner; cause not found (see the evidence README for the next step).
+- Open (not reproduced, lane p1-gridlock 2026-10-25): after a long jump the road once flipped in and out of frames on a loaded software-GL runner. 21 consecutive frames across 5 variants and a 5-stop tour all drew the road, so no cause is proven. Fixed on the way: `roadPlane(cells)` mis-mapped the lane paint for most cell counts (one quad, the shipped case, was right) and `warmPrograms` now also waits for pending texture upgrades; a unit probe pins road, decal, ground and water normals and the paint mapping. See `evidence/drift-and-deliver-port/road-fix/README.md`.
 - Open: the hypercar still reads as translucent; texture smoothing and paint overrides had no measurable effect; needs a regenerated model or an engine check of model material overrides.
 
 

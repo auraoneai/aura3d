@@ -146,7 +146,7 @@ const geo = (m: MeshData, _name: string) => {
   return geometry.define({ positions: a.positions, normals: a.normals, uvs: a.uvs, colors: a.colors, indices: a.indices });
 };
 
-export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; start: { x: number; z: number } }): LookRig {
+export function buildLook(world: { blocks: readonly Block[]; buildings: readonly Building[]; traffic: readonly TrafficCar[]; pickups: readonly Pickup[] }, opts: { models: boolean; quality: "high" | "low"; ao: boolean; env: boolean; shadow: boolean; fog: boolean; post: boolean; aa?: boolean; sky: boolean; sun: number; roadCells?: number; start: { x: number; z: number } }): LookRig {
   const high = opts.quality === "high";
   const tex = paintTextures(opts.quality);
   const city = buildCity(world.blocks, world.buildings);
@@ -187,7 +187,7 @@ export function buildLook(world: { blocks: readonly Block[]; buildings: readonly
   if (opts.sky) b.add(primitives.sphere({ name: "sky-dome", size: 3600, material: material.custom(skySpec()), castShadow: false, receiveShadow: false }));
 
   // ---- ground, roads, parks, water ----
-  b.add(geometry.custom(geo(roadPlane(), "road"), { name: "road-tiles", material: material.pbr({ color: "#ffffff", roughness: 0.88, texture: asRef(tex.road), textureAnisotropy: 8 }), castShadow: false, receiveShadow: true }));
+  b.add(geometry.custom(geo(roadPlane(opts.roadCells), "road"), { name: "road-tiles", material: material.pbr({ color: "#ffffff", roughness: 0.88, texture: asRef(tex.road), textureAnisotropy: 8 }), castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(blockDecals(world.blocks, "park", 21.5), "parks"), { name: "parks", material: material.pbr({ color: "#ffffff", roughness: 0.95, texture: asRef(tex.park) }), castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(blockDecals(world.blocks, "plaza", 21.5), "plazas"), { name: "plazas", material: material.pbr({ color: "#ffffff", roughness: 0.9, texture: asRef(tex.plaza) }), castShadow: false, receiveShadow: true }));
   b.add(geometry.custom(geo(outerGround(), "outer"), { name: "outer-ground", material: material.pbr({ color: "#9a9468", roughness: 1 }), castShadow: false, receiveShadow: true }));
@@ -277,13 +277,13 @@ export function outerGroundRects(): readonly (readonly [number, number, number, 
   ];
 }
 
-function outerGround(): MeshData {
+export function outerGround(): MeshData {
   const m = createMesh();
   for (const [x0, z0, x1, z1] of outerGroundRects()) quad(m, [x0, -0.03, z1], [x1 - x0, 0, 0], [0, 0, -(z1 - z0)], [1, 1, 1], [0, 0], [1, 1]);
   return m;
 }
 
-function waterPlane(): MeshData {
+export function waterPlane(): MeshData {
   const m = createMesh();
   quad(m, [-1600, 0.02, 1700], [3200, 0, 0], [0, 0, -1190], [1, 1, 1], [0, 0], [1, 1]);
   return m;

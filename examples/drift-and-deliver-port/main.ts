@@ -56,10 +56,14 @@ const config = {
   warm: params.get("warm") !== "0",
   /** `warmenv=0` skips waiting for the environment HDRI in the warm-up (diagnostics for the first-frames regression spec) */
   warmEnv: params.get("warmenv") !== "0",
-  /** how long the warm-up waits for the environment HDRI; the regression spec raises it for a slow software-GL runner */
+  /** `warmtex=0` skips waiting for pending texture upgrades in the warm-up (diagnostics for the first-frames regression spec) */
+  warmTex: params.get("warmtex") !== "0",
+  /** how long the warm-up waits for the environment HDRI and for texture upgrades; the regression spec raises it for a slow software-GL runner */
   warmEnvMs: Math.max(0, Number(params.get("warmenvms")) || 30_000),
   healFrames: Number(params.get("healframes")) || undefined,
   sky: params.get("sky") !== "0",
+  /** `roadcells=N` splits the road plane into N x N cells (default one per 60 m tile; diagnostics for the road-flip investigation) */
+  roadCells: Number(params.get("roadcells")) ? Math.max(1, Math.min(64, Math.floor(Number(params.get("roadcells"))))) : undefined,
   exposure: Number(params.get("exposure") ?? "2.3") || 2.3,
   sun: Number(params.get("sun") ?? "4.4") || 4.4
 };
@@ -121,7 +125,7 @@ const shellGeometry = (m: LookRig["playerShell"]["paint"]) => {
 let look: LookRig;
 
 function buildScene() {
-  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, start: { x: car.x, z: car.z } });
+  look = buildLook({ blocks, buildings, traffic, pickups }, { models: config.models, quality: config.quality, ao: config.ao, env: config.env, shadow: config.shadow, fog: config.fog, post: config.post, aa: config.aa, sky: config.sky, sun: config.sun, roadCells: config.roadCells, start: { x: car.x, z: car.z } });
   const s = look.builder;
   if (config.models) {
     s.add(carModel("car-rig", "courier", true));
@@ -414,7 +418,7 @@ const hooks = installQaHooks("drift-and-deliver", {
   extras: {
     /** resolves once the programs the current view needs are compiled (call after a teleport before capturing a frame) */
     settle() {
-      return (app ? warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs }) : Promise.resolve()).then(() => status());
+      return (app ? warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs, waitForTextures: config.warmTex, textureTimeoutMs: config.warmEnvMs }) : Promise.resolve()).then(() => status());
     },
     /** per-node texture upgrade status: textures upload one material at a time after mount, so an early frame shows untextured ground */
     textures: () => summarizeTextureUpgrade(app?.diagnostics()),
@@ -457,7 +461,7 @@ async function boot(): Promise<void> {
   });
   await app.ready();
   // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city
-  if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs });
+  if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs, waitForTextures: config.warmTex, textureTimeoutMs: config.warmEnvMs });
   ready = true;
   blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
