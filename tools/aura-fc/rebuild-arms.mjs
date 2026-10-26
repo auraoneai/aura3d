@@ -18,7 +18,7 @@ const unit = (a) => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / 
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function rebuildArms(glb, { taperRoot = false, capRadius = 0.1, palms = null, longSleeves = false, capSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
+export function rebuildArms(glb, { torsoTube = false, taperRoot = false, capRadius = 0.1, palms = null, longSleeves = false, capSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
   const rest = forward(glb, localPose(glb, null, 0));
   const skinJoints = glb.json.skins[0].joints;
   const jointIndex = new Map(skinJoints.map((j, i) => [rest.names[j], i]));
@@ -169,6 +169,41 @@ export function rebuildArms(glb, { taperRoot = false, capRadius = 0.1, palms = n
     addAxisTube(handTarget, thumbA, thumbB, (s) => 0.014 - 0.004 * (s / 0.05), wHand, { flat: 1, capEnd: true });
   }
 
+  // ---- 3b. optional clean torso: the old shell is ragged where the arms were bound (holes show the inside), so it is replaced by a tube
+  // measured from the shell (half width and depth per height) on the straight skeleton axis, closed into the neck with a shoulder slope ----
+  if (torsoTube) {
+    const hipsJ = JI("Hips"), spineJ = JI("Spine"), chestJ = JI("Chest");
+    const own = [...torsoVerts].filter((v) => /^(Hips|Spine|Chest)$/.test(domName(kitMesh, v)));
+    const ys = own.map((v) => kitMesh.pos[v][1]);
+    const yLo = Math.min(...ys), yHi = Math.max(...ys);
+    const bands = [];
+    for (let y = yLo; y <= yHi + 1e-6; y += 0.03) {
+      const pts = own.map((v) => kitMesh.pos[v]).filter((p) => Math.abs(p[1] - y) < 0.025 && Math.abs(p[0] - midX) < 0.3);
+      if (pts.length < 12) continue;
+      const xs = pts.map((p) => Math.abs(p[0] - midX)).sort((a, b) => a - b), zs = pts.map((p) => p[2]).sort((a, b) => a - b);
+      bands.push({ y, rx: xs[Math.floor(xs.length * 0.93)], rz: (zs[Math.floor(zs.length * 0.97)] - zs[Math.floor(zs.length * 0.03)]) / 2 });
+    }
+    const sb = bands.map((b, i) => { const a = bands[Math.max(0, i - 1)], c = bands[Math.min(bands.length - 1, i + 1)]; return { y: b.y, rx: Math.min(0.205, (a.rx + 2 * b.rx + c.rx) / 4), rz: (a.rz + 2 * b.rz + c.rz) / 4 }; });
+    const headY = P("Head")[1];
+    while (sb.length > 3 && sb[sb.length - 1].y > headY - 0.1) sb.pop();   // the collar stops below the chin
+    const top = sb[sb.length - 1];
+    for (const [dy, f, rzN] of [[0.012, 0.93, 0.1], [0.026, 0.78, 0.09], [0.04, 0.55, 0.08], [0.052, 0.4, 0.07], [0.062, 0.36, 0.062]]) sb.push({ y: top.y + dy, rx: Math.min(top.rx, Math.max(0.075, top.rx * f)), rz: Math.min(top.rz, rzN) });
+    const NSEG = 28, z0 = P("Hips")[2];
+    const base = newVerts.kit.length;
+    sb.forEach((r) => {
+      const wH = 1 - smooth(0.95, 1.2, r.y), wC = smooth(1.2, 1.4, r.y), wS = 1 - wH - wC;
+      for (let k = 0; k < NSEG; k++) { const a = (k / NSEG) * Math.PI * 2; newVerts.kit.push({ p: [midX + Math.cos(a) * r.rx, r.y, z0 + Math.sin(a) * r.rz], w: wset([[hipsJ, wH], [spineJ, wS], [chestJ, wC]]) }); }
+    });
+    for (let i = 0; i < sb.length - 1; i++) for (let k = 0; k < NSEG; k++) {
+      const a = base + i * NSEG + k, b = base + i * NSEG + ((k + 1) % NSEG), c = base + (i + 1) * NSEG + k, d = base + (i + 1) * NSEG + ((k + 1) % NSEG);
+      newTris.kit.push([a, c, b], [b, c, d]);
+    }
+    // close the collar so no dark inside shows between it and the neck
+    const last = sb.length - 1, ci = newVerts.kit.length, topR = sb[last];
+    newVerts.kit.push({ p: [midX, topR.y, z0], w: wset([[chestJ, 1]]) });
+    for (let k = 0; k < NSEG; k++) newTris.kit.push([ci, base + last * NSEG + ((k + 1) % NSEG), base + last * NSEG + k]);
+  }
+
   // ---- 4. rebuild the primitives ----
   const json = JSON.parse(JSON.stringify(glb.json));
   let bin = Buffer.from(glb.bin);
@@ -209,7 +244,8 @@ export function rebuildArms(glb, { taperRoot = false, capRadius = 0.1, palms = n
       if (!drop) keep.push(ids);
     }
     let kept = keep;
-    if (mat === "kit") {
+    if (mat === "kit" && torsoTube) kept = [];
+    else if (mat === "kit") {
       // the torso is the largest connected piece; detached cuffs and gloves that belonged to the old arms go
       const wid = new Map(); const w = (v) => { const k = m.pos[v].map((x) => Math.round(x * 500)).join(","); if (!wid.has(k)) wid.set(k, wid.size); return wid.get(k); };
       const par = []; const f = (a) => { while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
@@ -256,6 +292,7 @@ export function rebuildArms(glb, { taperRoot = false, capRadius = 0.1, palms = n
 }
 
 if (process.argv[1]?.endsWith("rebuild-arms.mjs") && process.argv[3]) {
-  const r = rebuildArms(readGlb(process.argv[2]), { longSleeves: process.argv.includes("--long-sleeves") });
+  const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
+  const r = rebuildArms(readGlb(process.argv[2]), { longSleeves: process.argv.includes("--long-sleeves"), taperRoot: process.argv.includes("--taper"), torsoTube: process.argv.includes("--torso-tube"), capSleeves: process.argv.includes("--cap-sleeves"), capRadius: Number(arg("--cap-radius", "0.1")) });
   console.log(JSON.stringify({ report: r.report, lean: r.lean, ...writeGlb(process.argv[3], r.glb) }));
 }
