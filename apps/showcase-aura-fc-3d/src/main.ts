@@ -27,7 +27,7 @@ import { createHud, clubFor } from "./game/hud";
 import { createModes } from "./game/modes";
 import { VENUES, VENUE_ORDER } from "./game/content";
 import type { UserInputFrame, PlayerState, SimEvent } from "./game/types";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {

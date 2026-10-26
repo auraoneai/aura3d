@@ -1,19 +1,20 @@
 /**
- * C-05 / T0-07 routing for a legacy post chain under `A3D_QR_CORE_OUTPUT`.
+ * C-05 / T0-07 routing for a postprocess chain under `A3D_QR_CORE_OUTPUT`.
  *
- * The v2 output path encodes exactly once, in OutputPass (§8.4). A configured
- * legacy postprocess chain (bloom, SSAO, grading, ...) still tone-maps and
- * encodes itself until lane 03 migrates it into post-hdr contributors
- * (Q-03-2/Q-03-3). Running both would double-encode.
+ * A frame with a configured chain (bloom, SSAO, grading, vignette, ...) renders
+ * on the forward graph into a linear HDR target, runs the PostGraph v2 stages
+ * (every effect composes in linear light), and tone-maps and encodes exactly
+ * once in the OUT stage (`createLegacyOutputPass`, the OutputPass boundary).
+ * Nothing authored is dropped (an earlier policy dropped the chain: scene
+ * 18-game-scene lost its bloom, LPIPS 0.026 with `-core_output` vs 0.068 with
+ * `core`, flags-bisect 38188725947).
  *
- * The earlier policy dropped the chain, which silently removed authored effects.
- * On L4, scene 18-game-scene lost its bloom and the soft sky glow on the
- * foreground (LPIPS 0.026 with `-core_output` vs 0.068 with `core`; flags-bisect
- * 38188725947). The frame now keeps the legacy chain and bypasses OutputPass
- * for that frame instead: encode stays single and nothing authored is lost.
- * The bypass is still reported through the C-31 `output.postSkipped` record,
- * so the unmigrated residue stays visible. Frames without a legacy chain take
- * the v2 output path unchanged.
+ * Only a chain the v2 seam cannot run (compat.post "3.0", the `-post` opt-out,
+ * a non-WebGL2 backend, `cpu-deterministic`, passes the fused LDR set cannot
+ * order) takes the explicit legacy chain, which encodes itself. That is
+ * reported through the C-31 `output.postSkipped` record as `post-legacy-route`
+ * with the reason; it is a diagnostic, not a console warning. Frames without a
+ * chain take the OutputPass path unchanged.
  */
 
 import type { QrFlags } from "../contracts/core";
@@ -25,14 +26,16 @@ export interface CoreOutputPostSkipped {
 }
 
 export interface CoreOutputPostRoute {
-  /** Whether this frame takes the v2 HDR target + OutputPass path. */
+  /** Whether this frame takes the v2 HDR target + OutputPass path (no postprocess chain configured). */
   readonly qrOutput: boolean;
-  /** C-31 `output.postSkipped`: the unmigrated legacy chain this frame routed around OutputPass (`null` when none). */
+  /** Whether the frame renders on the chain's forward graph (contributors then read the `color` resource). */
+  readonly legacyGraph: boolean;
+  /** C-31 `output.postSkipped`: the explicit legacy chain this frame took instead of PostGraph v2 (`null` when v2 runs it or no chain exists). */
   readonly skipped: CoreOutputPostSkipped | null;
 }
 
 export const CORE_OUTPUT_LEGACY_POST_MESSAGE =
-  "legacy postprocess chain kept under A3D_QR_CORE_OUTPUT; OutputPass bypassed for this frame (the chain encodes itself) until PostGraph v2 routes it";
+  "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it";
 
 /** Effect keys a legacy postprocess options object enables (booleans or option objects). */
 export function legacyPostEffects(postprocess: object): readonly string[] {
@@ -41,12 +44,23 @@ export function legacyPostEffects(postprocess: object): readonly string[] {
     .map(([key]) => key);
 }
 
-export function resolveCoreOutputPostRoute(coreOutputOn: boolean, postprocess: object | undefined): CoreOutputPostRoute {
-  if (!coreOutputOn) return { qrOutput: false, skipped: null };
-  if (postprocess === undefined) return { qrOutput: true, skipped: null };
+/**
+ * @param v2DeclineReason why the PostGraph v2 seam cannot run `postprocess`
+ *   (`null` when it can); computed by the renderer from the same predicate the
+ *   executor uses.
+ */
+export function resolveCoreOutputPostRoute(
+  coreOutputOn: boolean,
+  postprocess: object | undefined,
+  v2DeclineReason: string | null = null
+): CoreOutputPostRoute {
+  if (!coreOutputOn) return { qrOutput: false, legacyGraph: false, skipped: null };
+  if (postprocess === undefined) return { qrOutput: true, legacyGraph: false, skipped: null };
+  if (v2DeclineReason === null) return { qrOutput: false, legacyGraph: true, skipped: null };
   return {
     qrOutput: false,
-    skipped: { code: "post-v2-unmigrated", message: CORE_OUTPUT_LEGACY_POST_MESSAGE, effects: legacyPostEffects(postprocess) }
+    legacyGraph: true,
+    skipped: { code: "post-legacy-route", message: `${CORE_OUTPUT_LEGACY_POST_MESSAGE}: ${v2DeclineReason}`, effects: legacyPostEffects(postprocess) }
   };
 }
 

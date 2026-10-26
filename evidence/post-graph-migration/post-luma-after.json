@@ -1,0 +1,524 @@
+[
+ {
+  "scene": "daylight",
+  "effects": "none",
+  "flags": "",
+  "meanLuma": 194.295,
+  "meanRgb": [
+   175.1,
+   202.51,
+   169.41
+  ],
+  "meanChroma": 73.625,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "bloom",
+  "flags": "",
+  "meanLuma": 194.477,
+  "meanRgb": [
+   175.39,
+   202.64,
+   169.87
+  ],
+  "meanChroma": 73.267,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "vignette",
+  "flags": "",
+  "meanLuma": 174.267,
+  "meanRgb": [
+   150.35,
+   183.59,
+   152.37
+  ],
+  "meanChroma": 85.518,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "both",
+  "flags": "",
+  "meanLuma": 174.478,
+  "meanRgb": [
+   150.68,
+   183.74,
+   152.83
+  ],
+  "meanChroma": 85.154,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "none",
+  "flags": "-post",
+  "meanLuma": 194.295,
+  "meanRgb": [
+   175.1,
+   202.51,
+   169.41
+  ],
+  "meanChroma": 73.625,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "bloom",
+  "flags": "-post",
+  "meanLuma": 194.35,
+  "meanRgb": [
+   175.16,
+   202.57,
+   169.46
+  ],
+  "meanChroma": 73.603,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "vignette",
+  "flags": "-post",
+  "meanLuma": 194.295,
+  "meanRgb": [
+   175.1,
+   202.51,
+   169.41
+  ],
+  "meanChroma": 73.625,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "daylight",
+  "effects": "both",
+  "flags": "-post",
+  "meanLuma": 194.35,
+  "meanRgb": [
+   175.16,
+   202.57,
+   169.46
+  ],
+  "meanChroma": 73.603,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "none",
+  "flags": "",
+  "meanLuma": 93.075,
+  "meanRgb": [
+   88.59,
+   92.47,
+   112.29
+  ],
+  "meanChroma": 35.686,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "bloom",
+  "flags": "",
+  "meanLuma": 93.629,
+  "meanRgb": [
+   89.17,
+   93.02,
+   112.73
+  ],
+  "meanChroma": 35.534,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "vignette",
+  "flags": "",
+  "meanLuma": 76.502,
+  "meanRgb": [
+   72.97,
+   75.94,
+   92.49
+  ],
+  "meanChroma": 33.041,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "both",
+  "flags": "",
+  "meanLuma": 77.039,
+  "meanRgb": [
+   73.52,
+   76.48,
+   92.95
+  ],
+  "meanChroma": 32.925,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "none",
+  "flags": "-post",
+  "meanLuma": 93.075,
+  "meanRgb": [
+   88.59,
+   92.47,
+   112.29
+  ],
+  "meanChroma": 35.686,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "bloom",
+  "flags": "-post",
+  "meanLuma": 93.246,
+  "meanRgb": [
+   88.69,
+   92.65,
+   112.58
+  ],
+  "meanChroma": 35.494,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "vignette",
+  "flags": "-post",
+  "meanLuma": 93.075,
+  "meanRgb": [
+   88.59,
+   92.47,
+   112.29
+  ],
+  "meanChroma": 35.686,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "dusk-arena",
+  "effects": "both",
+  "flags": "-post",
+  "meanLuma": 93.246,
+  "meanRgb": [
+   88.69,
+   92.65,
+   112.58
+  ],
+  "meanChroma": 35.494,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "none",
+  "flags": "",
+  "meanLuma": 216.707,
+  "meanRgb": [
+   239.95,
+   213.59,
+   179.14
+  ],
+  "meanChroma": 60.946,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "bloom",
+  "flags": "",
+  "meanLuma": 217.103,
+  "meanRgb": [
+   240.53,
+   213.9,
+   179.85
+  ],
+  "meanChroma": 60.788,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "vignette",
+  "flags": "",
+  "meanLuma": 202.61,
+  "meanRgb": [
+   231.78,
+   198.62,
+   156.23
+  ],
+  "meanChroma": 75.874,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "both",
+  "flags": "",
+  "meanLuma": 203.17,
+  "meanRgb": [
+   232.07,
+   199.22,
+   157.15
+  ],
+  "meanChroma": 75.204,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": null,
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "none",
+  "flags": "-post",
+  "meanLuma": 216.707,
+  "meanRgb": [
+   239.95,
+   213.59,
+   179.14
+  ],
+  "meanChroma": 60.946,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "bloom",
+  "flags": "-post",
+  "meanLuma": 221.212,
+  "meanRgb": [
+   242.24,
+   218.38,
+   187.36
+  ],
+  "meanChroma": 55.021,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "vignette",
+  "flags": "-post",
+  "meanLuma": 216.707,
+  "meanRgb": [
+   239.95,
+   213.59,
+   179.14
+  ],
+  "meanChroma": 60.946,
+  "actualPasses": [
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ },
+ {
+  "scene": "pastel",
+  "effects": "both",
+  "flags": "-post",
+  "meanLuma": 221.212,
+  "meanRgb": [
+   242.24,
+   218.38,
+   187.36
+  ],
+  "meanChroma": 55.021,
+  "actualPasses": [
+   "bloom",
+   "tone-mapping"
+  ],
+  "postSkipped": {
+   "code": "post-legacy-route",
+   "message": "postprocess chain took the explicit legacy route under A3D_QR_CORE_OUTPUT (the chain encodes itself); PostGraph v2 does not run it: no-v2-plan",
+   "effects": [
+    "bloom",
+    "toneMapping"
+   ]
+  },
+  "warnings": [],
+  "drawCalls": 3
+ }
+]

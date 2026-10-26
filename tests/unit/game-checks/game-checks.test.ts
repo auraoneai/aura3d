@@ -51,6 +51,54 @@ afterEach(() => {
   while (dirs.length) rmSync(dirs.pop()!, { recursive: true, force: true });
 });
 
+describe("game-checks meshy-cap reads the CLI ledger", () => {
+  const rows = (entries: Array<Record<string, unknown>>) => entries.map((entry) => JSON.stringify(entry)).join("\n") + "\n";
+  const checkLedger = (content: string, env: Record<string, string> = {}) => {
+    const root = fixture({});
+    const dir = mkdtempSync(join(tmpdir(), "meshy-ledger-"));
+    dirs.push(dir);
+    const ledger = join(dir, "ledger.jsonl");
+    writeFileSync(ledger, content);
+    return runChecks({ root, slugs: ["demo-port"], only: ["meshy-cap"], global: true, env: { AURA3D_MESHY_LEDGER: ledger, ...env } }).findings;
+  };
+
+  it("merges per reservation like the CLI: failed counts 0, actual beats est, baseline and unattributed never count", () => {
+    const ledger = rows([
+      { rid: "a", game: "demo", op: "preview", est: 300, status: "reserved" },
+      { rid: "a", status: "ok", actual: 250 },
+      { rid: "b", game: "demo", op: "preview", est: 400, status: "reserved" },
+      { rid: "b", status: "failed" },
+      { rid: "baseline-1", kind: "baseline", status: "ok", pool_remaining: 99999 },
+      { rid: "config-1", kind: "config", status: "ok", game_cap: 9999 },
+      { rid: "reconcile-1", game: "unattributed", op: "adjustment", est: 5000, actual: 5000, status: "ok" }
+    ]);
+    const f = checkLedger(ledger) as Array<{ severity: string; message: string }>;
+    expect(f).toHaveLength(1);
+    expect(f[0].message).toContain("demo 250");
+    expect(f[0].message).toContain("250 attributed");
+  });
+
+  it("never warns: it lists the credits per tag as information, however high", () => {
+    const ledger = rows([
+      { rid: "a", game: "demo", op: "preview", est: 430, status: "ok" },
+      { rid: "b", game: "drift", op: "preview", est: 5000, status: "ok" },
+      { rid: "c", game: "ninja", op: "preview", est: 600, status: "ok" }
+    ]);
+    const f = checkLedger(ledger) as Array<{ severity: string; message: string }>;
+    expect(f).toHaveLength(1);
+    expect(f[0].severity).toBe("info");
+    expect(f[0].message).toMatch(/uncapped by owner decision/);
+    expect(f[0].message).toContain("drift 5000, ninja 600, demo 430");
+    expect(f[0].message).toContain("6030 attributed");
+  });
+
+  it("an empty or missing ledger is informational too", () => {
+    const f = runChecks({ root: fixture({}), slugs: ["demo-port"], only: ["meshy-cap"], global: true, env: { AURA3D_MESHY_LEDGER: "/nonexistent" } }).findings;
+    expect(f).toHaveLength(1);
+    expect(f[0].severity).toBe("info");
+  });
+});
+
 describe("game-checks", () => {
   it("names: flags an old game name, port wording, stale version and the engine chip in visible text", () => {
     const root = fixture(

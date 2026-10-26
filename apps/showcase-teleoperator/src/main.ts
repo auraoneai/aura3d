@@ -13,7 +13,7 @@ import {
   type AuraRuntimeNodeHandle
 } from "@aura3d/engine";
 import { assets as rootAssets } from "../../../src/aura-assets";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon, createCameraShake, createHitStop } from "@aura3d/engine/game";
 import { createCueBank, type CueSpec, type NoiseLayer, type ToneLayer } from "@aura3d/engine/audio";
 import { applyCollisionPenalty, createTrafficContacts, createTrafficRecovery, type PlayerBody, type TrafficBody } from "./collision";

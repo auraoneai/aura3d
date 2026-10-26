@@ -17,7 +17,7 @@ import {
 } from "@aura3d/engine";
 import { AudioContextManager } from "@aura3d/engine/audio";
 import { assets as catalogAssets } from "../../../src/aura-assets";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 import { installGameBeacon } from "@aura3d/engine/game";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;

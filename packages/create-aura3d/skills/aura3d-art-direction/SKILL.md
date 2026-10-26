@@ -76,7 +76,7 @@ Hard checklist (all must hold before claiming done):
 
 ## Default-look facts
 
-No environment authored means the built-in neutral floor (4.1.2 published builds also log `ENV_FETCH_FAILED` for `/aura-environments/neutral.manifest.json`); the legacy post chain makes frames with bloom or vignette 25% to 40% darker (`POSTPROCESS_V2_UNMIGRATED`, known issue); exposure runs brighter than three.js for the same intensities. Judge the captured frame with the same post settings, and read the full list in `docs/agents/art-direction.md` section 3.
+No environment authored means the built-in neutral floor (4.1.2 published builds also log `ENV_FETCH_FAILED` for `/aura-environments/neutral.manifest.json`); in 4.2.x `effects.vignette()` made frames about 25% to 40% darker (it ran on display-referred bytes; 4.3.0 applies it in linear light, about 6% to 18%; bloom does not darken); exposure runs brighter than three.js for the same intensities. Judge the captured frame with the same post settings, and read the full list in `docs/agents/art-direction.md` section 3.
 
 ## References
 

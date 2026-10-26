@@ -8,7 +8,7 @@ One page. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-lear
 - [ ] Pick a unique public name; add it to `docs/workflows/game-names.md` (N1). The game goes into `tools/site/games.catalog.json`; the site count is generated (`node tools/site/gen-game-inventory.mjs`), never typed (N3).
 - [ ] State the objective, the score and the end screen in one paragraph (G1). Player must see the objective from second one.
 - [ ] Start from the kits, not from scratch (P8): `installQaHooks`, `createFixedStepLoop` + `createFixedStepPresenter`, `installGameBeacon`, `installSafetyNet`, `createCueBank`, the impact kit, `attachToBone`, `createLocomotion`, the shared quick bar `apps/showcase-port-shared/quickbar.css`. See `docs/agents/build-a-game.md`.
-- [ ] Assets: catalog or Meshy with a text prompt only, a credit cap for the game tag, isolated admission, sha256 + same-origin + provenance (A5, A6). Never name a brand or model in a prompt. Check licences (A9).
+- [ ] Assets: catalog or Meshy with a text prompt only, every paid call reserved in the ledger for the game tag (uncapped; credits tracked for visibility), isolated admission, sha256 + same-origin + provenance (A5, A6). Never name a brand or model in a prompt. Check licences (A9).
 - [ ] Fonts from the licensed set only (U3).
 
 ## 2. While building
@@ -28,7 +28,7 @@ One page. Entry ids (R1, M2, ...) point into [`lessons-learned.md`](lessons-lear
 
 ```bash
 node tools/game-checks/run.mjs <game-slug>          # static checks (errors fail, warnings need a reason)
-node tools/game-checks/run.mjs --all                # whole repo incl. .vercelignore, counts, Meshy caps
+node tools/game-checks/run.mjs --all                # whole repo incl. .vercelignore, counts, Meshy credits per tag (information)
 node_modules/.bin/vitest run tests/unit/<game>      # sim, replay, likeness (tests/unit/likeness-audit)
 node_modules/.bin/tsc -p tsconfig.build.json        # after merges (P7)
 node marketing/scripts/check-site.mjs               # counts, links, claims guards

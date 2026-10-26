@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { healParams, healRungName, healStage, isBlackFrame } from "../../../examples/drift-and-deliver-port/blackframe";
+import { healParams, healRungName, healStage, isBlackFrame } from "../../../packages/debug/src/index";
 
 describe("black-frame self-heal ladder", () => {
   it("isBlackFrame is true only when every texel is near black", () => {

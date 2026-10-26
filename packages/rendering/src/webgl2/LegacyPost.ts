@@ -14,6 +14,7 @@ import type { WebGL2DeviceHost } from "./DeviceHost";
 // `u_hasFxaa` taps stay the default path.
 import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
 import { recordPostSkipped } from "../renderer/postSkipped";
+import { vignetteColorRgb } from "../post/vignetteColor";
 import type { PostPipelineOptions } from "../contracts/post";
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";
@@ -794,8 +795,10 @@ export class WebGL2LegacyPostPipeline {
     const toneOptions = { ...(toneMappingDefaults ?? {}), ...(tonePass?.options ?? {}) };
     const colorOptions = colorPass?.options ?? {};
     const fxaaOptions = fxaaPass?.options ?? {};
+    const toneVignette = tonePass ? linearVignetteOption(toneOptions) : undefined;
     const program = this.ensureLdrPostprocessProgram({
       toneMapping: Boolean(tonePass),
+      vignette: toneVignette !== undefined,
       operator: toneMappingOperatorId(stringOption(toneOptions, "operator", "reinhard")),
       inputSrgb: colorSpaceId(stringOption(toneOptions, "inputColorSpace", "linear")) === 1,
       outputSrgb: colorSpaceId(stringOption(toneOptions, "outputColorSpace", "linear")) === 1,
@@ -827,6 +830,12 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(program, "u_hasFxaa"), fxaaPass ? 1 : 0);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_edgeThreshold"), numberOption(fxaaOptions, "edgeThreshold", 0.125));
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_subpixelBlend"), numberOption(fxaaOptions, "subpixelBlend", 0.75));
+    if (toneVignette) {
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_vignetteIntensity"), toneVignette.intensity);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_vignetteSmoothness"), toneVignette.smoothness);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(program, "u_vignetteRoundness"), toneVignette.roundness);
+      this.host.gl.uniform3f(this.host.gl.getUniformLocation(program, "u_vignetteColor"), toneVignette.color[0], toneVignette.color[1], toneVignette.color[2]);
+    }
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
   }
 
@@ -2558,6 +2567,29 @@ function taaNumberOption(options: Readonly<Record<string, unknown>>, key: string
   return value;
 }
 
+interface LinearVignette {
+  readonly intensity: number;
+  readonly smoothness: number;
+  readonly roundness: number;
+  readonly color: readonly [number, number, number];
+}
+
+/** The linear-light vignette a tone-mapping descriptor carries (`options.vignette`), or undefined when it is off. */
+function linearVignetteOption(toneOptions: Readonly<Record<string, unknown>>): LinearVignette | undefined {
+  const raw = toneOptions.vignette;
+  if (raw === null || typeof raw !== "object") return undefined;
+  const v = raw as { intensity?: unknown; smoothness?: unknown; roundness?: unknown; color?: unknown };
+  const intensity = typeof v.intensity === "number" && Number.isFinite(v.intensity) ? v.intensity : 0;
+  if (intensity <= 0) return undefined;
+  const finite = (n: unknown, fallback: number): number => (typeof n === "number" && Number.isFinite(n) ? n : fallback);
+  return {
+    intensity,
+    smoothness: finite(v.smoothness, 1),
+    roundness: finite(v.roundness, 1),
+    color: vignetteColorRgb(v.color)
+  };
+}
+
 function toneMappingOperatorId(value: string): number {
   if (value === "linear") return 0;
   if (value === "reinhard") return 1;
@@ -2581,13 +2613,16 @@ function toneMappingOperatorId(value: string): number {
  */
 export function createLegacyOutputPass(
   pipeline: PostPipelineOptions,
-  base?: Readonly<Record<string, unknown>>
+  base?: Readonly<Record<string, unknown>>,
+  /** The authored vignette, folded into the OUT stage so it composes in linear light before the single tone map. */
+  vignette?: PostPipelineOptions["vignette"]
 ): LdrPostprocessPassDescriptor {
   const operator = pipeline.toneMapping === "none" ? "linear" : pipeline.toneMapping;
   return {
     name: "tone-mapping",
     options: {
       ...(base ?? {}),
+      ...(vignette ? { vignette } : {}),
       operator,
       exposure: pipeline.exposure,
       inputColorSpace: "srgb-linear",
@@ -2663,7 +2698,14 @@ export function executePostGraphWebGL2(
     workSource = hdrResult.target;
     afterBloomStage = hdrResult.afterBloom;
   }
-  const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(pipeline));
+  // The vignette is a light falloff: it composes in linear light inside the single OUT
+  // stage (before the one tone map and encode) instead of darkening display-referred
+  // bytes in the LDR tail. The OUT stage always exists on this route — a tone-mapping
+  // descriptor, or the linear OutputPass injected for `toneMapping: "none"`.
+  const vignetteInOut = Boolean(pipeline.vignette)
+    && (request.passes.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName)) || pipeline.toneMapping === "none");
+  const tailPipeline: PostPipelineOptions = vignetteInOut ? { ...pipeline, vignette: undefined } : pipeline;
+  const needsTail = Boolean(v2 && v2.v2NeedsLdrTail(tailPipeline));
   const ldrTailTarget = needsTail && v2
     ? v2.acquireV2Target(host, { width: source.width, height: source.height, format: "rgba8" })
     : undefined;
@@ -2686,7 +2728,7 @@ export function executePostGraphWebGL2(
     )))
     .map((pass) => {
     if (pass.name === ("tone-mapping" as LdrPostprocessPassName)) {
-      return createLegacyOutputPass(pipelineForOut, pass.options);
+      return createLegacyOutputPass(pipelineForOut, pass.options, vignetteInOut ? pipeline.vignette : undefined);
     }
     if (pass.name === ("bloom" as LdrPostprocessPassName)) {
       return { name: pass.name, options: { ...pass.options, v2: true } } as LdrPostprocessPassDescriptor;
@@ -2713,7 +2755,7 @@ export function executePostGraphWebGL2(
   // OutputPass (createLegacyOutputPass maps 'none' to the linear operator)
   // instead of throwing WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED per frame.
   const passes = pipeline.toneMapping === "none" && !depthSkippedPasses.some((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName))
-    ? [...depthSkippedPasses, createLegacyOutputPass(pipelineForOut)]
+    ? [...depthSkippedPasses, createLegacyOutputPass(pipelineForOut, undefined, vignetteInOut ? pipeline.vignette : undefined)]
     : depthSkippedPasses;
   try {
     host.post.presentLdrPostprocess(workSource, {
@@ -2741,7 +2783,7 @@ export function executePostGraphWebGL2(
   }
   if (workSource !== source && v2) v2.releaseV2Target(host, workSource);
   if (ldrTailTarget && v2) {
-    v2.runV2LdrTail(host, ldrTailTarget, pipeline, request.outputTarget, request.frameContext);
+    v2.runV2LdrTail(host, ldrTailTarget, tailPipeline, request.outputTarget, request.frameContext);
     v2.releaseV2Target(host, ldrTailTarget);
   }
 }

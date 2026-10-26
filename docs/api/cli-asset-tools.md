@@ -9,7 +9,7 @@ Five additions to `@aura3d/cli` came out of porting eleven games with generated 
 | `aura3d assets optimize --file in.glb --out out.glb [--role hero\|vehicle\|character\|prop\|background]` | Dedup, weld, budgeted simplify, prune, texture downscale. Direct-file mode of the existing `assets optimize` verb (the id-based admission pipeline is unchanged). |
 | `aura3d assets merge-clips --base rig --out file.glb name=clip ...` | Merge Meshy `animate` clips into one rigged GLB by node name; rejects a foreign skeleton. |
 | `aura3d assets import-meshy <dir> --into <assets-dir> --prefix <game> --name <role>` | Isolated admission: a temporary project, then only the hashed GLB and evidence are copied into the game's folder. |
-| `aura3d meshy ledger status\|reserve\|settle\|reconcile\|list` | Credit ledger with per-game and global caps under a lock. |
+| `aura3d meshy ledger status\|reserve\|settle\|reconcile\|baseline\|config\|list` | Credit ledger: uncapped by default (visibility), opt-in hard-stop caps under a lock, dry run, Prism reconcile. |
 | `aura3d evidence judge --a dir --b dir` | Blind A/B model judge over matched frames (section below). |
 
 ## `assets optimize --file`
@@ -27,14 +27,17 @@ A plain `import-meshy` writes `aura.assets.json`, `src/aura-assets.ts` (typegen 
 ## `meshy ledger`
 
 ```bash
-rid=$(aura3d meshy ledger reserve --game drift --op preview --cap 800 --global-cap 10000)
+aura3d meshy ledger reserve --dry-run --game drift --op preview,refine     # cost of the chain; exit 3 only if a cap you set would refuse it; writes nothing
+rid=$(aura3d meshy ledger reserve --game drift --op preview)
 aura3d meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>
-aura3d meshy ledger status
+aura3d meshy ledger status                                                  # spent, byGame (left and overCap only when you set a cap)
+aura3d meshy ledger reconcile                                               # ledger vs the Prism pool since the baseline
 ```
 
-- The file is `--ledger <path>`, `$AURA3D_MESHY_LEDGER`, or `~/.aura3d/meshy-ledger.jsonl`. The global cap is `--global-cap`, `$AURA3D_MESHY_GLOBAL_CAP`, or 1000.
-- `reserve` refuses (exit 3, nothing written) when the game's spend plus the estimate would pass `--cap` or the global cap. Estimates: preview 20, refine 10, remesh 5, rigging 5, animate 3, retexture 10 (`--est` overrides).
-- A rate-limited (exit 6) or timed-out (exit 8) call settles as `unconfirmed` and keeps counting: the task usually finishes and is charged. Resume it with `meshy <resource> get <id>`, then `reconcile --rid <id> --status ok|failed`. Only a confirmed no-charge outcome (exit 3, 4 or 9, or a FAILED task) counts 0.
+- The file is `--ledger <path>`, `$AURA3D_MESHY_LEDGER`, or `~/.aura3d/meshy-ledger.jsonl`. Spend is uncapped by owner decision on 2026-10-25: there is no default per-game or global cap, and credits are tracked for visibility. A cap is opt-in and resolves as flag, then env, then the value stored by `config`: global `--global-cap` / `$AURA3D_MESHY_GLOBAL_CAP`, per game `--cap` (per call) / `--game-cap` / `$AURA3D_MESHY_GAME_CAP`. `config --global-cap N|off --game-cap N|off --note text` stores or removes them for every shell.
+- `reserve` never refuses for spend unless you opted in to a cap. With a cap set it is a hard stop: when the game's spend plus the estimate would pass the per-game cap or the global cap it exits 3, writes nothing, and prints the credits left and the flag or env var that raises (or `config ... off` that removes) the cap. Without a cap the only automatic stop is the real Prism balance reaching 0 (exit 9 from Meshy). Estimates: preview 20, refine 10, remesh 5, rigging 5, animate 3, retexture 10 (`--est` overrides). `--op preview,refine,rigging` is accepted with `--dry-run` to price a chain.
+- A rate-limited (exit 6) or timed-out (exit 8) call settles as `unconfirmed` and keeps counting: the task usually finishes and is charged. Resume it with `meshy <resource> get <id>`, then `reconcile --rid <id> --status ok|failed`. Pass `--error-text "<meshy stderr>"` to `settle --exit-code`: a 429 on a poll (`/text-to-3d/<id>`) keeps that task id and counts; a 429 on a create counts 0. Only a confirmed no-charge outcome (exit 3, 4 or 9, a FAILED task, a create 429) counts 0.
+- `baseline` snapshots the Prism pool (`GET /admin/meshy`, read-only) as the zero point; `reconcile` without `--rid` prints ledger spend, Prism spend since the baseline, the delta, keys added since and keys topped up. `--apply` books the delta once as an `unattributed` adjustment (global cap only). The key comes from `$AURA3D_PRISM_KEY` or `$AURA3D_PRISM_KEY_FILE` (URL `$AURA3D_PRISM_URL`, default `https://prism.auraone.ai`); it is only sent as a header and never printed. `--pool-json <saved response>` needs no credential. Prism reports a pool-wide balance, not spend per tag.
 - Every record needs a game tag; name raw downloads with that prefix so two games cannot reuse each other's `rocks.raw.glb`.
 - A lock directory next to the ledger serialises writers; a lock left by a dead process is taken over.
 

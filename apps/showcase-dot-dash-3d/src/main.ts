@@ -8,7 +8,7 @@ import { FRUIT_LABEL, type MazeId } from "./game/mazes";
 import type { FruitKind } from "./game/grid";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
 

@@ -14,7 +14,7 @@ import { createRenderInterpolator, drawCanvasMinimap, summarizeTextureUpgrade, w
 import { blendPresented, type Presented } from "./presentation";
 import { buildLook, coinMat, mat, type LookRig } from "./look";
 import { createAudio } from "./audio";
-import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "./blackframe";
+import { createBlackFrameWatch, healParams, healStage, type BlackFrameWatch } from "@aura3d/debug";
 import { carModel } from "./models";
 import { toArrays } from "./mesh";
 import { snapChase, stepChase, type ChaseState } from "./chase";
@@ -33,8 +33,9 @@ import {
   trafficContact
 } from "./world";
 
+const HEAL_STORAGE_KEY = "drift-heal-stage";
 const params = new URLSearchParams(location.search);
-for (const [key, value] of Object.entries(healParams(healStage()))) if (!params.has(key)) params.set(key, value);
+for (const [key, value] of Object.entries(healParams(healStage(undefined, undefined, HEAL_STORAGE_KEY)))) if (!params.has(key)) params.set(key, value);
 const config = {
   manual: params.get("manual") === "1",
   autostart: params.get("autostart") === "1" || params.get("manual") === "1",
@@ -458,7 +459,7 @@ async function boot(): Promise<void> {
   // a draw whose program is still compiling is skipped: settle the programs so the first frame is the whole city
   if (config.warm) warmResult = await warmPrograms(app, { waitForEnvironment: config.warmEnv, environmentTimeoutMs: config.warmEnvMs });
   ready = true;
-  blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
+  blackWatch = createBlackFrameWatch(canvas, { enabled: config.heal, storageKey: HEAL_STORAGE_KEY, ...(config.healFrames ? { fastFrames: config.healFrames } : {}) });
   $("loading").classList.add("hidden");
   $<HTMLButtonElement>("start").disabled = false;
   syncQa();

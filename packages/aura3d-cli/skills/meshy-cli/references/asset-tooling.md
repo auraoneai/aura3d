@@ -56,20 +56,31 @@ a bare `rocks` or `board`: two games sharing one `rocks.raw.glb` silently reuse 
 ## Credit ledger
 
 ```bash
-rid=$(npx @aura3d/cli@latest meshy ledger reserve --game drift --op preview --cap 800 --global-cap 10000)
+npx @aura3d/cli@latest meshy ledger reserve --dry-run --game drift --op preview,refine
+rid=$(npx @aura3d/cli@latest meshy ledger reserve --game drift --op preview)
 npx @aura3d/cli@latest meshy ledger settle --rid "$rid" --exit-code 0 --task-id <id>
 npx @aura3d/cli@latest meshy ledger status
 ```
 
-The ledger (`--ledger path` or `AURA3D_MESHY_LEDGER`, default `~/.aura3d/meshy-ledger.jsonl`) enforces a
-per-game cap and one global cap under a lock, so concurrent agents cannot overspend. `--game` is required
-and must be a lowercase tag. Estimates: preview 20, refine 10, remesh 5, rigging 5, animate 3, retexture 10.
+The ledger (`--ledger path` or `AURA3D_MESHY_LEDGER`, default `~/.aura3d/meshy-ledger.jsonl`) tracks credits under a
+lock so concurrent agents share one total. Spend is uncapped by owner decision on 2026-10-25 (credits are tracked for
+visibility); a per-game cap (`--cap N`, `--game-cap N`, `AURA3D_MESHY_GAME_CAP`) and a global cap (`--global-cap N`,
+`AURA3D_MESHY_GLOBAL_CAP`, or `ledger config`) are opt-in, and `config --global-cap off --game-cap off` removes them.
+A cap that is set is a hard stop: exit 3 with the credits left and the flag that raises it. `--game` is
+required and must be a lowercase tag. Estimates: preview 20, refine 10, remesh 5, rigging 5, animate 3, retexture 10.
+`reserve --dry-run --op preview,refine,rigging` prices a chain without writing.
 
 A rate-limited (exit 6) or timed-out (exit 8) call is NOT a failure: the task usually finishes and is
 charged. `settle --exit-code` records it as `unconfirmed`, which keeps counting its estimate. Resume the
 task with `meshy <resource> get <id>` instead of paying again, then
 `meshy ledger reconcile --rid <id> --status ok` (or `failed`). Only a confirmed no-charge outcome (auth
-exit 3, validation exit 4, credits exit 9, or a FAILED task) settles as `failed` and counts 0.
+exit 3, validation exit 4, credits exit 9, a FAILED task, or a 429 on a create) settles as `failed` and counts 0.
+Pass the Meshy stderr with `settle --exit-code 6 --error-text "<stderr>"`: a 429 on a poll
+(`/text-to-3d/<id>`) means the task exists, so it stays `unconfirmed` with that task id and keeps counting.
+
+`meshy ledger reconcile` (no `--rid`) compares the ledger with the Kiro Prism pool balance since the last
+`baseline` and prints the delta; `--apply` books it as an `unattributed` adjustment. It reads `GET /admin/meshy`
+with `AURA3D_PRISM_KEY` or `AURA3D_PRISM_KEY_FILE` (never printed) or a saved `--pool-json`.
 
 ## Profile traps
 

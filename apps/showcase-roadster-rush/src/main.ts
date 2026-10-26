@@ -16,7 +16,7 @@ import {
 import { createNativeRoadster, findDrawCalls } from "./native";
 import { POWERUP_SECONDS } from "./native/constants";
 import { assets } from "../../../src/aura-assets";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 import { SHIELD_SIZE, shieldSpec } from "./art/shield";
 import { groundSpec } from "./art/ground";
 import { meshyVehicles } from "./meshy-vehicles";

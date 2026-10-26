@@ -6,19 +6,13 @@
  * the ground by `propTransform`.
  * URLs are same-origin pathnames with a content hash: the production bridge refuses http(s) model URLs.
  */
-import { defineAuraAssets, model } from "@aura3d/engine";
+import { defineModelAssets, model } from "@aura3d/engine";
 import type { CarKind } from "./vehicles";
 
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time); original text prompt in assets/ATTRIBUTION.md; 2026-10-23";
-const glb = (file: string, hash: string) => ({
-  type: "model" as const,
-  format: "glb" as const,
-  url: new URL(`./assets/models/${file}`, import.meta.url).pathname,
-  hash: `sha256-${hash}`,
-  metadata: { license: LICENSE }
-});
+const glb = (file: string, sha256: string) => ({ url: new URL(`./assets/models/${file}`, import.meta.url).pathname, sha256 });
 
-export const MODEL_ASSETS = defineAuraAssets({
+export const MODEL_ASSETS = defineModelAssets({
   courier: glb("courier.glb", "5bad4129b1109d866de42b3666bc482073a9a08ed03c7d901f543add48f2cbba"),
   sedan: glb("sedan.glb", "fac209266bd3ed4195b3a809025a773017f64364be1a7641ffa0846945fed39b"),
   hatch: glb("hatch.glb", "4bda108ecb13d9890661e4f9a611904f7c32634d77f4e7baa364bcc880193c98"),
@@ -33,7 +27,7 @@ export const MODEL_ASSETS = defineAuraAssets({
   clocktower: glb("clocktower.glb", "2a1059d8c13b17209202995da8e9acc028399df7534233b255d2f38c28d37706"),
   lighthouse: glb("lighthouse.glb", "dc0753bfeba905a42422e7748a07bf1e62f1cb026f136e06f85b8828347e1418"),
   watertank: glb("watertank.glb", "f79b0d9bfc54302ac90ae4ea8e085337bd73e3ef8b0364e4b039978dd6483ff4")
-});
+}, { license: LICENSE, queryParam: null }).refs;
 
 export type ModelKey = keyof typeof MODEL_ASSETS;
 export type PropKey = Exclude<ModelKey, "courier" | "sedan" | "hatch" | "van" | "truck">;

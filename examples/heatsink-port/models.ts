@@ -2,16 +2,16 @@
  * Meshy-generated models for the HEATSINK port (own text prompts; see assets/ATTRIBUTION.md and PORTING-NOTES.md).
  * Loaded through the production-safe path: same-origin pathname + sha256 hash, never an http(s) URL.
  */
-import { defineAuraAssets, instances, model } from "@aura3d/engine";
+import { defineModelAssets, instances, model } from "@aura3d/engine";
 import { seededRandom } from "./rng";
 import type { Frame, Track } from "./track";
 
 type NodeB = ReturnType<typeof model>;
 const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-23";
 const glb = (name: string): string => new URL(`./assets/models/${name}.glb`, import.meta.url).pathname;
-const entry = (name: string, hash: string) => ({ type: "model" as const, format: "glb" as const, url: glb(name), hash, metadata: { license: LICENSE } });
+const entry = (name: string, sha256: string) => ({ url: glb(name), sha256 });
 
-export const MODELS = defineAuraAssets({
+export const MODELS = defineModelAssets({
   drone: entry("drone2", "sha256-52931d5e54b29b4ca8a26e8ec9a8bc41cbef11c61d149c58d02aec1850af8c41"),
   barrel: entry("barrel", "sha256-8625604ee3c67a56fb2a584715f6b5495c8174657a8f569433de15ba457f9f89"),
   pickupShield: entry("pickup-shield", "sha256-dabd71858e03ddc34a790bf7e14db53321084794f5e5771fdde595c0753b0b1d"),
@@ -21,7 +21,7 @@ export const MODELS = defineAuraAssets({
   ruinArch: entry("ruin-arch", "sha256-c0abd976ddbdf2e301c4d8400a03c9ade7c3cfb5cf52f85a00e87a6055283b21"),
   pickupRepair: entry("pickup-repair", "sha256-884e0b311177e6c45e7fad2c6af7c10d0b4ee748478daee41bb454954f5d9b27"),
   ruinMonolith: entry("ruin-monolith", "sha256-49711ae57d13f48205f007592c7f755e43363629633e379d1bd791401104c8e8")
-});
+}, { license: LICENSE, queryParam: null }).refs;
 
 /** the quad-rotor drone's largest dimension in metres (the old primitive craft was ~4.6 m across the arms) */
 export const DRONE_LENGTH = 4.2;

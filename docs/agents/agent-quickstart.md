@@ -102,7 +102,7 @@ Not mapped: Matcap, Lambert, Phong and Toon materials (toon is `effects.toon`, a
 | `import { createGame } from "@aura3d/engine"` | Root `createGame` is a headless stub (`CREATE_GAME_STUB` warning, no HUD or sound) | `import { createGame } from "@aura3d/engine/game"` |
 | `vite build` fails with `"readFileSync" is not exported by "__vite-browser-external"` | A Node-only asset module was reachable from the browser entry in 4.1.2 | Use `@aura3d/engine` 4.1.3 or newer (see `CHANGELOG.md`) |
 | Console `ENV_FETCH_FAILED:/aura-environments/neutral.manifest.json:404` | Falls back to a neutral floor; frames differ from the authored look | Serve the repo `public/aura-environments/` files at `/aura-environments/` |
-| Console `POSTPROCESS_V2_UNMIGRATED` with bloom or vignette on | Known issue: frames are 25 to 40% darker than with post off | Compare with post off; do not retune every light to compensate |
+| Frame 25 to 40% darker with `effects.vignette()` on (4.2.x; console `POSTPROCESS_V2_UNMIGRATED`) | The vignette ran on display-referred bytes; fixed in 4.3.0 (about 6 to 18% now) | Upgrade, or lower the vignette `intensity`; do not retune every light to compensate |
 | Copying three.js light intensities | Aura3D renders brighter at equal intensities | Start from the look preset; adjust one value at a time |
 
 ## 7. Where next

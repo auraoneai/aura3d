@@ -19,11 +19,14 @@ export interface LdrProgramVariant {
   /** Sharpening is only meaningful with a grade; callers pass `grade && sharpening > 0`. */
   readonly sharpening: boolean;
   readonly fxaa: boolean;
+  /** Linear-light vignette applied to the HDR/linear colour just before the tone operator (only meaningful with `toneMapping`). */
+  readonly vignette?: boolean;
 }
 
 export function ldrVariantKey(variant: LdrProgramVariant): string {
   const op = variant.toneMapping ? Math.min(6, Math.max(0, Math.floor(variant.operator))) : 0;
-  return [variant.toneMapping ? 1 : 0, op, variant.inputSrgb ? 1 : 0, variant.outputSrgb ? 1 : 0, variant.grade ? 1 : 0, variant.grade && variant.sharpening ? 1 : 0, variant.fxaa ? 1 : 0].join("");
+  const base = [variant.toneMapping ? 1 : 0, op, variant.inputSrgb ? 1 : 0, variant.outputSrgb ? 1 : 0, variant.grade ? 1 : 0, variant.grade && variant.sharpening ? 1 : 0, variant.fxaa ? 1 : 0].join("");
+  return variant.toneMapping && variant.vignette ? `${base}v` : base;
 }
 
 export function ldrFragmentSource(variant: LdrProgramVariant): string {
@@ -37,6 +40,7 @@ precision highp float;
 #define LDR_GRADE ${variant.grade ? 1 : 0}
 #define LDR_SHARPEN ${variant.grade && variant.sharpening ? 1 : 0}
 #define LDR_FXAA ${variant.fxaa ? 1 : 0}
+#define LDR_VIGNETTE ${variant.toneMapping && variant.vignette ? 1 : 0}
 uniform sampler2D u_source;
 uniform vec2 u_texelSize;
 uniform int u_hasToneMapping;
@@ -57,6 +61,12 @@ uniform float u_sharpening;
 uniform int u_hasFxaa;
 uniform float u_edgeThreshold;
 uniform float u_subpixelBlend;
+#if LDR_VIGNETTE
+uniform float u_vignetteIntensity;
+uniform float u_vignetteSmoothness;
+uniform float u_vignetteRoundness;
+uniform vec3 u_vignetteColor;
+#endif
 in vec2 v_uv;
 out vec4 outColor;
 
@@ -161,9 +171,23 @@ float toneMapChannel(float value) {
 }
 #endif
 
-vec3 applyToneMapping(vec3 color) {
+#if LDR_VIGNETTE
+// PostGraph v2: the vignette is a light falloff, so it multiplies the linear colour before the tone operator
+// (tone map and encode run once, after every effect). Same radial law as the display-grade vignette.
+vec3 vignetteLinear(vec3 color, vec2 uv) {
+  vec2 p = (uv - 0.5) * 2.0;
+  p.x *= (u_texelSize.y / u_texelSize.x) * u_vignetteRoundness;
+  float len = length(p) * u_vignetteIntensity;
+  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignetteSmoothness));
+}
+#endif
+
+vec3 applyToneMapping(vec3 color, vec2 uv) {
 #if LDR_TONE
   vec3 decoded = decodeColor(color);
+#if LDR_VIGNETTE
+  decoded = vignetteLinear(decoded, uv);
+#endif
 #if LDR_OP == 2
   vec3 mapped = acesFilmic(max(vec3(0.0), decoded * u_exposure) / max(0.0001, u_whitePoint));
 #else
@@ -198,7 +222,7 @@ vec3 applyColorGrade(vec3 color, vec2 uv) {
 vec3 baseColorAt(vec2 uv) {
   vec2 clampedUv = clamp(uv, vec2(0.0), vec2(1.0));
   vec3 color = texture(u_source, clampedUv).rgb;
-  return applyColorGrade(applyToneMapping(color), clampedUv);
+  return applyColorGrade(applyToneMapping(color, clampedUv), clampedUv);
 }
 
 vec3 finalColorAt(vec2 uv) {

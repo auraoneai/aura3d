@@ -1,0 +1,740 @@
+[
+ {
+  "slug": "top-tennis",
+  "appFolder": "showcase-top-tennis",
+  "before": {
+   "slug": "top-tennis",
+   "stats": {
+    "nonBlack": 0.97575,
+    "mean": 54.5817710027899,
+    "chroma": 46.44647222222222
+   },
+   "unmigratedWarning": true,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "top-tennis",
+   "stats": {
+    "nonBlack": 0.9730347222222222,
+    "mean": 55.92879985834374,
+    "chroma": 49.33399305555555
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ {
+  "slug": "roadster-rush",
+  "appFolder": "showcase-roadster-rush",
+  "before": {
+   "slug": "roadster-rush",
+   "stats": {
+    "nonBlack": 0.9875347222222223,
+    "mean": 58.94727212221575,
+    "chroma": 17.986604166666666
+   },
+   "unmigratedWarning": true,
+   "errors": []
+  },
+  "after": {
+   "slug": "roadster-rush",
+   "stats": {
+    "nonBlack": 0.9772847222222222,
+    "mean": 67.55884338755284,
+    "chroma": 26.153506944444445
+   },
+   "unmigratedWarning": false,
+   "errors": []
+  }
+ },
+ {
+  "slug": "heatsink",
+  "appFolder": "showcase-heatsink",
+  "before": {
+   "slug": "heatsink",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 59.555674505557306,
+    "chroma": 18.420131944444446
+   },
+   "unmigratedWarning": true,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "heatsink",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 67.45890384446778,
+    "chroma": 23.857222222222223
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ {
+  "slug": "teleoperator",
+  "appFolder": "showcase-teleoperator",
+  "before": {
+   "slug": "teleoperator",
+   "stats": {
+    "nonBlack": 0.9986111111111111,
+    "mean": 45.624517109709046,
+    "chroma": 14.60961111111111
+   },
+   "unmigratedWarning": true,
+   "errors": []
+  },
+  "after": {
+   "slug": "teleoperator",
+   "stats": {
+    "nonBlack": 0.9989861111111111,
+    "mean": 51.484149083330244,
+    "chroma": 16.43753472222222
+   },
+   "unmigratedWarning": false,
+   "errors": []
+  }
+ },
+ {
+  "slug": "iron-crown",
+  "appFolder": "showcase-iron-crown",
+  "before": {
+   "slug": "iron-crown",
+   "stats": {
+    "nonBlack": 0.26597916666666666,
+    "mean": 15.261484743051803,
+    "chroma": 10.183902777777778
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/ironcrownCrown."
+   ]
+  },
+  "after": {
+   "slug": "iron-crown",
+   "stats": {
+    "nonBlack": 0.26597916666666666,
+    "mean": 15.261484743051803,
+    "chroma": 10.183902777777778
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/ironcrownCrown."
+   ]
+  }
+ },
+ {
+  "slug": "pips-big-leap",
+  "appFolder": "showcase-pips-big-leap",
+  "before": {
+   "slug": "pips-big-leap",
+   "stats": {
+    "nonBlack": 0.33603472222222225,
+    "mean": 16.022612233335433,
+    "chroma": 9.224638888888888
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/pipsSunseed.b9b"
+   ]
+  },
+  "after": {
+   "slug": "pips-big-leap",
+   "stats": {
+    "nonBlack": 0.33603472222222225,
+    "mean": 16.022612233335433,
+    "chroma": 9.224638888888888
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/pipsSunseed.b9b"
+   ]
+  }
+ },
+ {
+  "slug": "aura-hoops-3d",
+  "appFolder": "showcase-aura-hoops-3d",
+  "before": {
+   "slug": "aura-hoops-3d",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 50.25379505417335,
+    "chroma": 22.065090277777777
+   },
+   "unmigratedWarning": true,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "aura-hoops-3d",
+   "stats": {
+    "nonBlack": 0.9994027777777778,
+    "mean": 55.64017649721178,
+    "chroma": 25.107555555555557
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ {
+  "slug": "aura-diamond-3d",
+  "appFolder": "showcase-aura-diamond-3d",
+  "before": {
+   "slug": "aura-diamond-3d",
+   "stats": {
+    "nonBlack": 0.9997777777777778,
+    "mean": 53.12993608196056,
+    "chroma": 31.94498611111111
+   },
+   "unmigratedWarning": true,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "aura-diamond-3d",
+   "stats": {
+    "nonBlack": 0.9986041666666666,
+    "mean": 55.317262926408084,
+    "chroma": 36.96204861111111
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ {
+  "slug": "aura-fc-3d",
+  "appFolder": "showcase-aura-fc-3d",
+  "before": {
+   "slug": "aura-fc-3d",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 89.95595279585649,
+    "chroma": 66.30265277777778
+   },
+   "unmigratedWarning": true,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "aura-fc-3d",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 90.33501978196662,
+    "chroma": 66.2918125
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ {
+  "slug": "red-zone-3d",
+  "appFolder": "showcase-red-zone-3d",
+  "before": {
+   "slug": "red-zone-3d",
+   "stats": {
+    "nonBlack": 0.9617083333333334,
+    "mean": 62.46601981944882,
+    "chroma": 32.96875
+   },
+   "unmigratedWarning": true,
+   "errors": []
+  },
+  "after": {
+   "slug": "red-zone-3d",
+   "stats": {
+    "nonBlack": 0.9461666666666667,
+    "mean": 66.71516078195657,
+    "chroma": 37.76848611111111
+   },
+   "unmigratedWarning": false,
+   "errors": []
+  }
+ },
+ {
+  "slug": "aura-links-3d",
+  "appFolder": "showcase-aura-links-3d",
+  "before": {
+   "slug": "aura-links-3d",
+   "stats": {
+    "nonBlack": 0.9994722222222222,
+    "mean": 109.78970414445834,
+    "chroma": 33.06913888888889
+   },
+   "unmigratedWarning": true,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "aura-links-3d",
+   "stats": {
+    "nonBlack": 0.999125,
+    "mean": 126.88336544027096,
+    "chroma": 42.362381944444444
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ {
+  "slug": "bunker-zero",
+  "appFolder": "showcase-bunker-zero",
+  "before": {
+   "slug": "bunker-zero",
+   "stats": {
+    "nonBlack": 0.31524305555555554,
+    "mean": 19.44595913332916,
+    "chroma": 9.823944444444445
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/bzGuardMeshy.01"
+   ]
+  },
+  "after": {
+   "slug": "bunker-zero",
+   "stats": {
+    "nonBlack": 0.31524305555555554,
+    "mean": 19.44595913332916,
+    "chroma": 9.823944444444445
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/bzGuardMeshy.01"
+   ]
+  }
+ },
+ {
+  "slug": "slingshot-siege",
+  "appFolder": "showcase-slingshot-siege",
+  "before": {
+   "slug": "slingshot-siege",
+   "stats": {
+    "nonBlack": 0.9767152777777778,
+    "mean": 85.25502080695897,
+    "chroma": 52.74758333333333
+   },
+   "unmigratedWarning": true,
+   "errors": []
+  },
+  "after": {
+   "slug": "slingshot-siege",
+   "stats": {
+    "nonBlack": 0.9696805555555555,
+    "mean": 91.1925540194756,
+    "chroma": 60.22503472222222
+   },
+   "unmigratedWarning": false,
+   "errors": []
+  }
+ },
+ {
+  "slug": "dot-dash-3d",
+  "appFolder": "showcase-dot-dash-3d",
+  "before": {
+   "slug": "dot-dash-3d",
+   "stats": {
+    "nonBlack": 0.959875,
+    "mean": 26.54510969858886,
+    "chroma": 13.8054375
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "pageerror: Unexpected reserved word"
+   ]
+  },
+  "after": {
+   "slug": "dot-dash-3d",
+   "stats": {
+    "nonBlack": 0.959875,
+    "mean": 26.54510969858886,
+    "chroma": 13.8054375
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "pageerror: Unexpected reserved word"
+   ]
+  }
+ },
+ {
+  "slug": "cross-hop",
+  "appFolder": "showcase-cross-hop",
+  "before": {
+   "slug": "cross-hop",
+   "stats": {
+    "nonBlack": 0.1606388888888889,
+    "mean": 8.247213569443302,
+    "chroma": 5.484583333333333
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c"
+   ]
+  },
+  "after": {
+   "slug": "cross-hop",
+   "stats": {
+    "nonBlack": 0.1606388888888889,
+    "mean": 8.247213569443302,
+    "chroma": 5.484583333333333
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/trafficSedan.5c"
+   ]
+  }
+ },
+ {
+  "slug": "strange-orbit-port",
+  "appFolder": "showcase-strange-orbit-port",
+  "before": {
+   "slug": "strange-orbit-port",
+   "stats": {
+    "nonBlack": 0.35891666666666666,
+    "mean": 25.526849186093976,
+    "chroma": 11.72154861111111
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-strange-orbit"
+   ]
+  },
+  "after": {
+   "slug": "strange-orbit-port",
+   "stats": {
+    "nonBlack": 0.35891666666666666,
+    "mean": 25.526849186093976,
+    "chroma": 11.72154861111111
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-strange-orbit"
+   ]
+  }
+ },
+ {
+  "slug": "splat-rush-port",
+  "appFolder": "showcase-splat-rush-port",
+  "before": {
+   "slug": "splat-rush-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 184.0549372390849,
+    "chroma": 41.70502777777778
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-splat-rush-po"
+   ]
+  },
+  "after": {
+   "slug": "splat-rush-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 184.0549372390849,
+    "chroma": 41.70502777777778
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-splat-rush-po"
+   ]
+  }
+ },
+ {
+  "slug": "serpentine-sky-run-port",
+  "appFolder": "showcase-serpentine-sky-run-port",
+  "before": {
+   "slug": "serpentine-sky-run-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 47.42220386943733,
+    "chroma": 33.98914583333333
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-serpentine-sk"
+   ]
+  },
+  "after": {
+   "slug": "serpentine-sky-run-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 47.42220386943733,
+    "chroma": 33.98914583333333
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-serpentine-sk"
+   ]
+  }
+ },
+ {
+  "slug": "drift-and-deliver-port",
+  "appFolder": "showcase-drift-and-deliver-port",
+  "before": {
+   "slug": "drift-and-deliver-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 42.2194168388748,
+    "chroma": 21.584506944444446
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-drift-and-del"
+   ]
+  },
+  "after": {
+   "slug": "drift-and-deliver-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 42.2194168388748,
+    "chroma": 21.584506944444446
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-drift-and-del"
+   ]
+  }
+ },
+ {
+  "slug": "heatsink-port",
+  "appFolder": "showcase-heatsink-port",
+  "before": {
+   "slug": "heatsink-port",
+   "stats": {
+    "nonBlack": 0.8005972222222222,
+    "mean": 25.19561557504714,
+    "chroma": 21.457159722222222
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-heatsink-port"
+   ]
+  },
+  "after": {
+   "slug": "heatsink-port",
+   "stats": {
+    "nonBlack": 0.8005972222222222,
+    "mean": 25.19561557504714,
+    "chroma": 21.457159722222222
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-heatsink-port"
+   ]
+  }
+ },
+ {
+  "slug": "ninja-runner-port",
+  "appFolder": "showcase-ninja-runner-port",
+  "before": {
+   "slug": "ninja-runner-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 38.55302277786875,
+    "chroma": 29.14314583333333
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Error: glTF request failed with 404\n    at attempt (http://127.0.0.1:43277/apps/showcase-ninja-runner-port/src/main.ts:111351:21)\n    at async http://127.0.0.1:"
+   ]
+  },
+  "after": {
+   "slug": "ninja-runner-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 38.55302277786875,
+    "chroma": 29.14314583333333
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Error: glTF request failed with 404\n    at attempt (http://127.0.0.1:32991/apps/showcase-ninja-runner-port/src/main.ts:111401:21)\n    at async http://127.0.0.1:"
+   ]
+  }
+ },
+ {
+  "slug": "last-train-port",
+  "appFolder": "showcase-last-train-port",
+  "before": {
+   "slug": "last-train-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 21.67551533609494,
+    "chroma": 19.492229166666668
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "SyntaxError: Unexpected token 'N', \"Not found\" is not valid JSON"
+   ]
+  },
+  "after": {
+   "slug": "last-train-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 21.67551533609494,
+    "chroma": 19.492229166666668
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "SyntaxError: Unexpected token 'N', \"Not found\" is not valid JSON"
+   ]
+  }
+ },
+ {
+  "slug": "roadster-hours-port",
+  "appFolder": "showcase-roadster-hours-port",
+  "before": {
+   "slug": "roadster-hours-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 59.139090424975805,
+    "chroma": 21.011256944444444
+   },
+   "unmigratedWarning": true,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "roadster-hours-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 70.22682669026553,
+    "chroma": 29.7510625
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ },
+ {
+  "slug": "where-the-wind-wanders-port",
+  "appFolder": "showcase-where-the-wind-wanders-port",
+  "before": {
+   "slug": "where-the-wind-wanders-port",
+   "stats": {
+    "nonBlack": 0.9000694444444445,
+    "mean": 162.0254028706974,
+    "chroma": 11.83801388888889
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-where-the-win"
+   ]
+  },
+  "after": {
+   "slug": "where-the-wind-wanders-port",
+   "stats": {
+    "nonBlack": 0.9000694444444445,
+    "mean": 162.0254028706974,
+    "chroma": 11.83801388888889
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-where-the-win"
+   ]
+  }
+ },
+ {
+  "slug": "silt-and-signal-port",
+  "appFolder": "showcase-silt-and-signal-port",
+  "before": {
+   "slug": "silt-and-signal-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 30.794989645843465,
+    "chroma": 9.586180555555556
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-silt-and-sign"
+   ]
+  },
+  "after": {
+   "slug": "silt-and-signal-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 30.794989645843465,
+    "chroma": 9.586180555555556
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /apps/showcase-silt-and-sign"
+   ]
+  }
+ },
+ {
+  "slug": "cloud-runner-port",
+  "appFolder": "showcase-cloud-runner-port",
+  "before": {
+   "slug": "cloud-runner-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 174.89488358740186,
+    "chroma": 70.11938194444444
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  },
+  "after": {
+   "slug": "cloud-runner-port",
+   "stats": {
+    "nonBlack": 1,
+    "mean": 174.89488358740186,
+    "chroma": 70.11938194444444
+   },
+   "unmigratedWarning": false,
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ]
+  }
+ }
+]

@@ -27,7 +27,7 @@ import { createHud } from "./game/hud.js";
 import { loadSave, persistSave, recordSeeds, totalSeeds, type PipSave } from "./game/save.js";
 import { worldSpec } from "./game/worlds.js";
 import type { ModeId, WorldId } from "./game/types.js";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
 

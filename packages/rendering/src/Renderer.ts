@@ -488,7 +488,6 @@ export class Renderer {
   private hdrMsaaMrtDegraded = false;
   private sceneDepthCopyTarget: RenderTarget | null = null;
   private lastAppliedOutput: RendererAppliedOutput | null = null;
-  private warnedV2Postprocess = false;
   /** T0-07: C-36-shaped record of the last legacy postprocess chain skipped
    *  under A3D_QR_CORE_OUTPUT (`null` when nothing was skipped). Read by the
    *  engine's C-31 `output.postSkipped` section; routing through PostGraph v2
@@ -496,11 +495,6 @@ export class Renderer {
   private lastPostSkipped: CoreOutputPostSkipped | null = null;
   get postSkipped(): CoreOutputPostSkipped | null {
     return this.lastPostSkipped;
-  }
-  private warnPostLegacyRoute(record: CoreOutputPostSkipped): void {
-    if (this.warnedV2Postprocess) return;
-    this.warnedV2Postprocess = true;
-    if (typeof console !== "undefined") console.warn(`POSTPROCESS_V2_UNMIGRATED: ${record.message}`);
   }
   private resolutionGovernor?: ResolutionGovernor;
   private renderScaleCeiling = 1;
@@ -1030,7 +1024,8 @@ export class Renderer {
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
     // C-05/T0-07: decide the frame's output route before the hooks exist, so
     // contributors see the same v2/legacy resource names the graph writes.
-    const route = resolveCoreOutputPostRoute(qrCoreOutputOn(rendererQrFlags(this.device)), collectPostprocess(source));
+    const routePost = collectPostprocess(source);
+    const route = resolveCoreOutputPostRoute(qrCoreOutputOn(rendererQrFlags(this.device)), routePost, routePost ? this.host.post.v2SeamDeclineFor(routePost) : null);
     const frameHooks = createRendererFrameHooks({
       device: this.device,
       width: this.width,
@@ -1039,7 +1034,7 @@ export class Renderer {
       camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition),
       // PRD 11: the app's live C-27 tier (A3D_QR_TIERS); undefined → high.
       tier: this.liveQualityTier()?.settings,
-      ...(route.skipped ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
+      ...(route.legacyGraph ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
     });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
@@ -1064,7 +1059,6 @@ export class Renderer {
     // §6.2.7: lane passes encode in-shader only on the legacy LDR path.
     frameHooks.setOutputColorSpace(postprocess || qrOutput ? "linear" : "srgb");
     this.lastPostSkipped = route.skipped;
-    if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     if (postprocess) {
       const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);
@@ -1420,7 +1414,8 @@ export class Renderer {
     let cameraPosition = sourceCameraPosition ?? resolvedCamera?.cameraPosition;
     // C-05/T0-07: decide the frame's output route before the hooks exist, so
     // contributors see the same v2/legacy resource names the graph writes.
-    const route = resolveCoreOutputPostRoute(qrCoreOutputOn(rendererQrFlags(this.device)), collectPostprocess(source));
+    const routePost = collectPostprocess(source);
+    const route = resolveCoreOutputPostRoute(qrCoreOutputOn(rendererQrFlags(this.device)), routePost, routePost ? this.host.post.v2SeamDeclineFor(routePost) : null);
     const frameHooks = createRendererFrameHooks({
       device: this.device,
       width: this.width,
@@ -1429,7 +1424,7 @@ export class Renderer {
       camera: toFrameCamera(resolvedCamera, cameraViewProjection, cameraPosition),
       // PRD 11: the app's live C-27 tier (A3D_QR_TIERS); undefined → high.
       tier: this.liveQualityTier()?.settings,
-      ...(route.skipped ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
+      ...(route.legacyGraph ? { flags: withCoreOutputOff(rendererQrFlags(this.device)) } : {})
     });
     if (!resolvedCamera && cameraPolicy === "auto-frame") {
       const autoFrame = createAutoFrameCamera(source, items, this.width, this.height);
@@ -1454,7 +1449,6 @@ export class Renderer {
     // §6.2.7: lane passes encode in-shader only on the legacy LDR path.
     frameHooks.setOutputColorSpace(postprocess || qrOutput ? "linear" : "srgb");
     this.lastPostSkipped = route.skipped;
-    if (route.skipped) this.warnPostLegacyRoute(route.skipped);
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     if (postprocess) {
       const format = postprocess.targetFormat ?? defaultPostprocessTargetFormat(this.device, postprocess);

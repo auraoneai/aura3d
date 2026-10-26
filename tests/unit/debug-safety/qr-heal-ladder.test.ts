@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { HEAL_LADDER, healRungName, healStage, healUrl, isBlackFrame } from "../../../apps/showcase-port-shared/blackframe";
+import { QR_HEAL_LADDER as HEAL_LADDER, isBlackFrame, qrHealRungName as healRungName, qrHealStage as healStage, qrHealUrl as healUrl } from "../../../packages/debug/src/index";
 
-describe("showcase black-frame guard", () => {
+describe("black-frame guard QR ladder", () => {
   it("detects an all-black frame and ignores any lit texel", () => {
     expect(isBlackFrame(new Uint8Array(16 * 4).map((_, i) => (i % 4 === 3 ? 255 : 0)))).toBe(true);
     const lit = new Uint8Array(16 * 4);
@@ -34,7 +34,7 @@ describe("showcase black-frame guard", () => {
 });
 
 import { afterEach, beforeEach, vi } from "vitest";
-import { installBlackFrameGuard } from "../../../apps/showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "../../../packages/debug/src/index";
 
 describe("installBlackFrameGuard (simulated browser)", () => {
   let nextFrame: (() => void) | null = null;

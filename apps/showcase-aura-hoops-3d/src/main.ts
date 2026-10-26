@@ -47,8 +47,7 @@ import {
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import "../../showcase-port-shared/quickbar.css";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
-import { createFrameErrorBoundary } from "@aura3d/debug";
+import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
 import { BALL_R, DRIB_BALL_GAP, DRIB_CYCLE_RUN, DRIB_CYCLE_STAND, DRIB_RIDE_END, DRIB_SHOULDER_FALLBACK, dribbleBallXZ, dribbleBallY, dribbleCycleY } from "./dribble";

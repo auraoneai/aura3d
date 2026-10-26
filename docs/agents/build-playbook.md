@@ -34,7 +34,7 @@ Before calling a game done it must prove keyboard (and touch) input, an objectiv
 
 1. Try the catalog first (`aura3d-assets`); generate only what it lacks.
 2. Write a text prompt in your own words; never image-to-3D from screenshots of someone else's game.
-3. Keep a credit ledger (`aura3d meshy ledger reserve | settle | status`) with a per-game cap; a rate-limited call is `unconfirmed`, not failed. Paid generation needs approval (`meshy-cli`).
+3. Keep a credit ledger (`aura3d meshy ledger reserve | settle | status`) (uncapped by default; any cap is opt-in); a rate-limited call is `unconfirmed`, not failed (`meshy-cli`).
 4. `assets optimize --role`, then `assets import-meshy --into <dir> --prefix <game> --name <role>` (isolated admission), then declare it with `defineModelAssets`.
 5. Prove it renders in the production build: non-blank canvas and `drawCalls > 0`. Details: `docs/api/cli-asset-tools.md`.
 

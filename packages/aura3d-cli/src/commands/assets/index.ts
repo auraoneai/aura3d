@@ -48,8 +48,8 @@ registerCliCommand({
 registerCliCommand({
   name: "meshy ledger",
   owner: "assets-tooling",
-  summary: "Credit ledger for paid Meshy generation: per-game caps, a global cap, safe settlement.",
-  usage: "aura3d meshy ledger status|reserve|settle|reconcile|list [--ledger path] [--global-cap N] [--game tag] [--op op] [--cap N] [--est N] [--rid id] [--status s] [--exit-code N] [--task-id id] [--task-status s] [--actual N] [--note text]",
+  summary: "Credit ledger for paid Meshy generation: tracks spend (uncapped by default), opt-in caps, dry run, Prism reconcile, safe settlement.",
+  usage: "aura3d meshy ledger status|reserve|settle|reconcile|baseline|config|list [--ledger path] [--global-cap N] [--game-cap N] [--dry-run] [--apply] [--pool-json file] [--error-text text] [--game tag] [--op op] [--cap N] [--est N] [--rid id] [--status s] [--exit-code N] [--task-id id] [--task-status s] [--actual N] [--note text]",
   run: (argv, io) => meshyLedgerCommand(argv, io)
 });
 

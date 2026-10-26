@@ -7,7 +7,7 @@ Decide where a model comes from before you search or generate. The command detai
 1. **Reuse** an existing typed key in `src/aura-assets.ts` or the game's `assets/` folder.
 2. **User-supplied file**: admit it with `assets add` and its provenance.
 3. **Catalog**: `assets search` then `assets resolve`. Only auto-pullable, redistributable, direct-download candidates are pulled automatically.
-4. **Meshy from a text prompt**: when the catalog has no clean candidate or the game needs a bespoke or stylised model. Requires an approved credit maximum, a ledger reservation, optimisation and isolated admission.
+4. **Meshy from a text prompt**: when the catalog has no clean candidate or the game needs a bespoke or stylised model. Requires a dry run, a ledger reservation (credits are tracked, not capped, unless you opt in to a cap), optimisation and isolated admission.
 5. **Stop and report** if none works. Do not substitute primitives for a named subject.
 
 ## Pick by role

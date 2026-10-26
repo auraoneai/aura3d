@@ -1,9 +1,9 @@
 /**
  * Roadster Hours world on the public `@aura3d/engine` surface only: a procedural sky dome, a footprint-filtered ocean,
  * rock cliffs, guardrails, the road ribbon, kickers and roofline shortcuts (`geometry.dynamic` + `material.custom`), relay
- * gates, data cells and hazards, the Roadster, and every traffic and lineup vehicle: generated (Meshy) models as textured
- * `instances.custom` nodes (one per model; `batched.mesh` cannot bind a texture), with the baked CC0 cars in per-material
- * `batched.mesh`es and the box rigs as the fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
+ * gates, data cells and hazards, the Roadster, and every traffic and lineup vehicle in `batched.mesh`es: generated (Meshy)
+ * models as one textured batched mesh per model, the baked CC0 cars in per-material batched meshes and the box rigs as the
+ * fallback when a generated model is unavailable (`meshy.ts`, `PORTING-NOTES.md`).
  */
 import {
   batched, camera, cameras, effects, environments, geometry, instances, lights, material, primitives, scene, type AuraApp
@@ -324,29 +324,8 @@ const unionBox = (boxes: readonly LocalBox[]): LocalBox => {
   return { min, max };
 };
 
-/** Dense per-model instance pool for the generated vehicles: slot matrices are written like batched instances and flushed to the instanced node once per frame (batched meshes cannot bind a texture, instanced custom nodes can). */
+/** The slice of a `batched.mesh` handle a vehicle slot writes through. */
 interface SlotMesh { setMatrixAt(i: number, matrix: Float32Array): void; setVisibleAt(i: number, visible: boolean): void }
-class InstancePool implements SlotMesh {
-  readonly matrices: Float32Array;
-  readonly shown: boolean[];
-  count = 0;
-  dirty = true;
-  constructor(readonly capacity: number) { this.matrices = new Float32Array(capacity * 16); this.shown = new Array<boolean>(capacity).fill(true); }
-  add(): number { return this.count++; }
-  setMatrixAt(i: number, matrix: Float32Array): void { this.matrices.set(matrix, i * 16); this.dirty = true; }
-  setVisibleAt(i: number, visible: boolean): void { this.shown[i] = visible; this.dirty = true; }
-  /** Decodes the y-rotation + scale + translation matrices written by `matrixFor`. */
-  transforms(): { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] {
-    const out: { position: [number, number, number]; rotation: [number, number, number]; scale: [number, number, number] }[] = [];
-    for (let i = 0; i < this.capacity; i++) {
-      const m = this.matrices.subarray(i * 16, i * 16 + 16);
-      const live = i < this.count && this.shown[i];
-      const sx = Math.hypot(m[0]!, m[2]!) || 1, sz = Math.hypot(m[8]!, m[10]!) || 1;
-      out.push({ position: [m[12]!, m[13]!, m[14]!], rotation: [0, Math.atan2(-m[2]!, m[0]!), 0], scale: live ? [sx, m[5]!, sz] : [0.0001, 0.0001, 0.0001] });
-    }
-    return out;
-  }
-}
 
 const carFor = (piece: string, index: number): CarKey | null => {
   if (piece === "sedan") return index % 2 === 0 ? "sedan" : "sportsCar";
@@ -422,7 +401,7 @@ export interface WorldRuntime {
   reset(run: Run): void;
   batching(): Record<string, unknown> | null;
   /** Draw calls with every vehicle hidden vs shown: the delta is what the batched meshes cost. */
-  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; instancedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] };
+  probeBatchedDraws(): { hidden: number; visible: number; delta: number; instances: number; texturedInstances: number; batchedGeometries: number; geometries: number; features: readonly string[] };
   readonly vehicleInstances: number;
 }
 
@@ -671,16 +650,15 @@ export function buildWorld(levelIndex: number): World {
     builder.add(mesh);
     groupHandles.set(g, { mesh, geo });
   }
-  /* generated vehicles: one textured instanced node per model (each model carries its own texture) */
-  const meshyPools = new Map<string, InstancePool>();
+  /* generated vehicles: one textured batched mesh per model (each model carries its own texture, one material per batched mesh) */
+  const meshyBatches = new Map<string, { mesh: ReturnType<typeof batched.mesh>; geo: number }>();
   for (const key of meshyKeys) {
     const data = meshyGeometry(key)!;
     const count = defs.filter((d) => d.meshy === key).length;
-    const pool = new InstancePool(count);
-    meshyPools.set(key, pool);
-    builder.add(instances.custom(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }) as never, {
-      name: `vehicles-${key}`, material: meshyMaterial(key, { roughness: 0.5, metallic: 0.12 }), transforms: pool.transforms()
-    } as never).runtime({ id: `vehicles-${key}` }));
+    const mesh = batched.mesh({ name: `vehicles-${key}`, maxInstances: count + 8, maxVertices: data.positions.length / 3 + 64, maxIndices: data.indices.length + 64, material: meshyMaterial(key, { roughness: 0.5, metallic: 0.12 }) });
+    const geo = mesh.addGeometry(geometry.dynamic({ positions: data.positions, normals: data.normals, uvs: data.uvs, indices: data.indices }));
+    meshyBatches.set(key, { mesh, geo });
+    builder.add(mesh);
     geometryTotal++;
   }
   const rigDefs = defs.filter((d) => !d.car && !d.meshy);
@@ -704,8 +682,8 @@ export function buildWorld(levelIndex: number): World {
   const slotsFor = (def: VehicleDef): Slot[] => {
     const slots: Slot[] = [];
     if (def.meshy) {
-      const pool = meshyPools.get(def.meshy)!;
-      slots.push({ mesh: pool, slot: pool.add(), box: unionBox(pieceSpec(def.piece, def.variant)!.boxes) });
+      const handle = meshyBatches.get(def.meshy)!;
+      slots.push({ mesh: handle.mesh, slot: handle.mesh.addInstance(handle.geo), box: unionBox(pieceSpec(def.piece, def.variant)!.boxes) });
     } else if (def.car) {
       const box = unionBox(pieceSpec(def.piece, def.variant)!.boxes);
       for (const g of CAR_GROUPS) {
@@ -779,8 +757,8 @@ export function buildWorld(levelIndex: number): World {
     vehicleCount: defs.length,
     vehicleSlots: slotTotal,
     vehicleGeometries: geometryTotal,
-    vehicleMeshes: groupHandles.size + meshyPools.size + 3,
-    texturedNodes: meshyPools.size + (meshyPlayer ? 1 : 0) + texturedScenery,
+    vehicleMeshes: groupHandles.size + meshyBatches.size + 3,
+    texturedNodes: meshyBatches.size + (meshyPlayer ? 1 : 0) + texturedScenery,
     bind(app: AuraApp): WorldRuntime {
       const camCtl = app.camera;
       const chase = cameras.chase();
@@ -788,8 +766,6 @@ export function buildWorld(levelIndex: number): World {
       const handles = new Map<string, ReturnType<AuraApp["nodes"]["require"]>>();
       const node = (id: string) => { let h = handles.get(id); if (!h) handles.set(id, h = app.nodes.require(id)); return h; };
       const parts = playerIds.map((id) => node(id));
-      const poolNodes = [...meshyPools].map(([key, pool]) => ({ pool, handle: node(`vehicles-${key}`) }));
-      const flushPools = (): void => { for (const { pool, handle } of poolNodes) if (pool.dirty) { handle.setInstances?.(pool.transforms()); pool.dirty = false; } };
       const sky = node("sky");
       const roadNode = node("road");
       const cells = level.cells.map((_c, i) => node(`cell-${i}`));
@@ -814,23 +790,20 @@ export function buildWorld(levelIndex: number): World {
         layout.vehicles.forEach((v, vi) => { for (const slot of lineupSlots[vi]!) writeVehicle(slot, v.s, v.l, v.yaw); });
       };
       placeLineup();
-      flushPools();
 
       const allSlots = [...lineupSlots.flat(), ...trafficSlots.flat()];
       const offCentre = 0;
       return {
         vehicleInstances: allSlots.length,
-        reset: () => { placeLineup(); flushPools(); },
+        reset: () => { placeLineup(); },
         probeBatchedDraws() {
           const draws = (): number => { app.step(0); return app.diagnostics().drawCalls ?? 0; };
           for (const s of allSlots) s.mesh.setVisibleAt(s.slot, false);
-          flushPools();
           const hidden = draws();
           for (const s of allSlots) s.mesh.setVisibleAt(s.slot, true);
-          flushPools();
           const visible = draws();
           const features = (app.diagnostics() as unknown as { compiledFeatures?: readonly string[] }).compiledFeatures ?? [];
-          return { hidden, visible, delta: visible - hidden, instances: allSlots.length, instancedInstances: [...meshyPools.values()].reduce((n, pool) => n + pool.count, 0), batchedGeometries: geometryTotal - meshyPools.size, geometries: geometryTotal, features: features.map(String) };
+          return { hidden, visible, delta: visible - hidden, instances: allSlots.length, texturedInstances: allSlots.filter((s) => [...meshyBatches.values()].some((b) => b.mesh === s.mesh)).length, batchedGeometries: geometryTotal, geometries: geometryTotal, features: features.map(String) };
         },
         batching: () => ((app.diagnostics() as unknown as Record<string, unknown>)["renderer.batching"] as Record<string, unknown> | undefined) ?? null,
         update(run: Run, dt: number, time: number, aspect: number): void {
@@ -860,7 +833,6 @@ export function buildWorld(levelIndex: number): World {
             const car = run.traffic[ci]!;
             for (const slot of slots) writeVehicle(slot, car.s, car.l, 0);
           });
-          flushPools();
           // headlight pool on the road follows the car
           roadNode.setUniform?.("carPos", [carP[0], carP[1], carP[2]]);
           roadNode.setUniform?.("carDir", [-Math.sin(psi), -Math.cos(psi)]);

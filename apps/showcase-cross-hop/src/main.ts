@@ -5,7 +5,7 @@ import { buildScene, probeScene, bindApp, frame, syncVisuals, st, startRun, evid
 import { mountUI, tickUI } from "./game/ui";
 import "../../showcase-port-shared/quickbar.css";
 import "./styles.css";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 installBlackFrameGuard();
 

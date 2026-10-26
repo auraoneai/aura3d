@@ -48,7 +48,7 @@ import {
 import { assets } from "./aura-assets.route";
 import { batContact, boundedBlend } from "./contact";
 import "../../showcase-port-shared/quickbar.css";
-import { installBlackFrameGuard } from "../../showcase-port-shared/blackframe";
+import { installBlackFrameGuard } from "@aura3d/debug";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
