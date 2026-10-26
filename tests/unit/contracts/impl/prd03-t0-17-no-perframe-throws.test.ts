@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { executePostGraphWebGL2, createLegacyOutputPass } from "../../../../packages/rendering/src/webgl2/LegacyPost";
 import { runV2HdrStages } from "../../../../packages/rendering/src/post/v2Stages";
 import {
@@ -14,6 +14,11 @@ import { createProductionRuntimePostprocess } from "../../../../packages/engine/
 import type { WebGL2DeviceHost } from "../../../../packages/rendering/src/webgl2/DeviceHost";
 import type { PostPipelineOptions } from "../../../../packages/rendering/src/contracts/post";
 import type { RenderTarget, LdrPostprocessPassDescriptor } from "../../../../packages/rendering/src/RenderDevice";
+
+// The OutputPass HDR route is opt-in (hotfix 4.3.2): these tests exercise it, so they switch it on.
+beforeAll(() => { (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__ = true; });
+afterAll(() => { delete (globalThis as { __A3D_HDR_OUTPUT_PASS__?: boolean }).__A3D_HDR_OUTPUT_PASS__; });
+
 
 const outputPasses: Array<Record<string, unknown>> = [];
 vi.mock("../../../../packages/rendering/src/output/OutputPass", () => ({

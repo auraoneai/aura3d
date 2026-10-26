@@ -7,6 +7,8 @@ Public claims and release wording are governed by `docs/project/product-studio-c
 ## 4.3.2 (unreleased)
 
 - **Teleoperator renders again.** The four generated building models were never admitted in `aura.assets.json`, so the production build did not copy them (404 live) and `auraApp.ready()` rejected, leaving the 3D canvas black in 4.3.0 and 4.3.1. They are admitted now, both Teleoperator variants fall back to plain boxes if a building model is unreachable and no longer stop the simulation when `ready()` fails, and a new `deployable-assets` game check fails when a game references a `/aura-assets/` model the build would not copy.
+- **The OutputPass HDR route for post chains is opt-in again.** 4.3.0 sent chains made of only bloom and tone mapping through a new rgba16f target and the shared OutputPass; it was proven on software WebGL2 only and real GPUs rendered some scenes dark (Teleoperator black, Aura Slam dark). The fused present of 4.2.0 is the default again; opt in with `globalThis.__A3D_HDR_OUTPUT_PASS__ = true` or `?hdrout=1`. The route also requires `EXT_color_buffer_float` or `EXT_color_buffer_half_float` on a real WebGL2 context. Linear-light vignette, one tone map and the 4.3.0 luma numbers on the fused path are unchanged.
+- **`tests/browser/shadow-banding.spec.ts`** captures every sun-shadow game (and the live Aura Slam page) at DPR 1 and 2 on the remote runner; `tests/browser/shadow-banding.config.json` lets it drive the production URL. Software WebGL2 did not reproduce the real-GPU stripes: the frames are the evidence, the stripe number is a smoke check.
 
 ## 4.3.1 (2026-10-26)
 
