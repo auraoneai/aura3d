@@ -111,7 +111,8 @@ lighting you evaluate materials and silhouettes against.
    `src/aura-assets.ts` (a 100k-line diff) and `public/aura-assets/*`.
 9. Hand off: fighters and games to `aura3d-browser-game`
    (`assets validate-game`), rigs and clips to `aura3d-character-animation`
-   (`assets validate-animation`), release checks to `aura3d-evidence-review`.
+   (`assets validate-animation`, `assets validate --skin`), release checks to
+   `aura3d-evidence-review`.
 
 ## Reject a candidate when
 

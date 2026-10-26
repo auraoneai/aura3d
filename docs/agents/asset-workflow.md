@@ -133,6 +133,8 @@ aura3d assets inspect <glb> --animation --humanoid --skeleton --morphs
 aura3d assets validate-animation --clips idle,walk,run --map idle=<clip>,walk=<clip>,run=<clip> --require idle,walk,run --require-rig
 ```
 
+8. Prove the skin before any code uses the character: `aura3d assets validate --skin <glb>`. It poses the rig through every clip and fails on stretched triangles, thin flaps, bad weights and a mesh modelled in a different pose than its skeleton (the defect that tore the FC athletes' shorts). Fix with `assets repair-skin` (see docs/api/cli-asset-tools.md) or regenerate; a known defect that must ship goes in `aura.skin-allow.json` with a reason. `validate --release` and `check-deploy --release` run it for you.
+
 `"ok": false` with `missingActions` means the rig cannot play that action: report it, do not rename clips in code. Drive the character with `AnimationController` or `cloneSkinned` (skill `aura3d-character-animation`).
 
 ## 6. Retexture

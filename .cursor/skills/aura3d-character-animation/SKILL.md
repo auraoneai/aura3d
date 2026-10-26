@@ -50,7 +50,9 @@ in flat light can vanish inside night-city shadow pools or golden-hour haze.
    ```
 
    Pass `--clips` from the inspection output. `"ok": false` with a
-   `missingActions` entry means the rig cannot play that action.
+   `missingActions` entry means the rig cannot play that action. Then run
+   `assets validate --skin <glb>`: it fails on stretched triangles, flaps and
+   a mesh not in its skeleton's pose (`assets repair-skin` fixes or guides).
 2. Multi-part characters: build the assembly from typed keys first.
 
    ```bash

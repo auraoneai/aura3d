@@ -377,6 +377,53 @@ function checkMeshyCap({ env }) {
   return [finding("meshy-cap", "info", null, ledger, 0, `Meshy credits per tag, tracked for visibility (spend is uncapped by owner decision 2026-10-25): ${list || "none"}; ${total} attributed in total`)];
 }
 
+// Rigged characters a game ships must pass `aura3d assets validate --skin` (stretched triangles, flaps, bad weights). Known defects that
+// still ship are listed with a reason in aura.skin-allow.json; those report as info, anything else is an error.
+function checkSkin({ root, inventory }) {
+  const runner = join(root, "tools/game-checks/skin-runner.mts");
+  const tsx = join(root, "node_modules/.bin/tsx");
+  if (!existsSync(runner) || !existsSync(tsx)) return [finding("skin", "info", null, "tools/game-checks/skin-runner.mts", 0, "skin check skipped: tsx is not installed (run pnpm install)")];
+  const byFile = new Map();
+  const manifestPath = join(root, "aura.assets.json");
+  const manifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, "utf8")) : { assets: [] };
+  const fileOfId = new Map();
+  for (const a of manifest.assets ?? []) {
+    const url = a.derived?.url ?? a.url;
+    if (a.format === "glb" && typeof url === "string") fileOfId.set(a.id, join(root, "public", url.replace(/^\//, "")));
+  }
+  for (const game of inventory.games.filter((g) => g.status === "live")) {
+    const src = gameSources(root, game);
+    for (const f of src.files) {
+      // the typed-asset catalogues list every asset in the repo; only code that uses an asset counts
+      if (/aura-assets[^/]*\.(?:ts|json)$/.test(f.rel)) continue;
+      for (const m of f.text.matchAll(/[A-Za-z][A-Za-z0-9_]{5,}/g)) {
+        const file = fileOfId.get(m[0]);
+        if (!file || !existsSync(file)) continue;
+        if (!byFile.has(file)) byFile.set(file, new Set());
+        byFile.get(file).add(game.slug);
+      }
+    }
+  }
+  const rigged = [...byFile.keys()].filter((file) => { try { const b = readFileSync(file); return b.length > 24 && b.readUInt32LE(0) === 0x46546c67 && b.toString("utf8", 20, 20 + b.readUInt32LE(12)).includes('"skins"'); } catch { return false; } });
+  if (rigged.length === 0) return [];
+  let results;
+  try {
+    const out = execFileSync(tsx, ["--tsconfig", join(root, "tsconfig.base.json"), runner, root, ...rigged], { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] });
+    results = JSON.parse(out.trim().split("\n").pop());
+  } catch (error) {
+    return [finding("skin", "warn", null, "tools/game-checks/skin-runner.mts", 0, `skin check could not run: ${String(error.message).split("\n")[0]}`)];
+  }
+  const findings = [];
+  for (const r of results) {
+    const games = [...(byFile.get(join(root, "public", "aura-assets", r.file)) ?? [])];
+    for (const slug of games) {
+      for (const b of r.blocking) findings.push(finding("skin", "error", { slug }, `public/aura-assets/${r.file}`, 0, `${r.id}: ${b.message}`));
+      if (r.allowedFindings.length) findings.push(finding("skin", "info", { slug }, `public/aura-assets/${r.file}`, 0, `${r.id}: known skin defect(s) ${r.allowedFindings.join(", ")} allowed: ${r.allowReason}`));
+    }
+  }
+  return findings;
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -397,7 +444,7 @@ export const GAME_CHECKS = {
   fonts: checkFonts,
   "screens-tracked": checkScreensTracked
 };
-export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap };
+export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 
 /**
  * Run checks. options: { root, slugs?: string[] | "all", only?: string[], global?: boolean, env? }

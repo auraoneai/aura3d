@@ -1,4 +1,5 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { readSkinAllowlist, skinReleaseFailures } from "./skin/command.js";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
@@ -99,6 +100,14 @@ export {
   getAnimationAssetProfileDefinition
 } from "./animation-asset-profiles.js";
 export { validateAnimationAssets, parseAnimationClipMap, DEFAULT_ANIMATION_ACTIONS } from "./animation-asset-validator.js";
+export { analyzeSkin, DEFAULT_SKIN_THRESHOLDS, findHumanoidLegs, SKIN_BIND_MISMATCH, SKIN_FLAP, SKIN_JOINT_RANGE, SKIN_STRETCH, SKIN_WEIGHT_DISTANT, SKIN_WEIGHT_SUM } from "./skin/analysis.js";
+export type { SkinAnalysisOptions, SkinCode, SkinFinding, SkinReport, SkinThresholds } from "./skin/analysis.js";
+export { repairSkin } from "./skin/repair.js";
+export type { RepairSkinOptions, RepairSkinReport } from "./skin/repair.js";
+export { rebuildLimbs, RebuildLimbsUnsupported } from "./skin/rebuildLimbs.js";
+export type { RebuildLimbsOptions, RebuildLimbsReport } from "./skin/rebuildLimbs.js";
+export { checkProjectSkins, checkAssetSkin, readSkinAllowlist, SKIN_ALLOW_FILE } from "./skin/command.js";
+export { parseGlb, readGlbFile, writeGlbFile } from "./skin/gltf.js";
 export type { AnimationAssetValidationOptions, AnimationAssetValidationReport } from "./animation-asset-validator.js";
 export type {
   AuraCliAnimationAssetProfile,
@@ -965,6 +974,7 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
     failures.push(`Missing asset provenance evidence file: ${options.provenanceFile}`);
   }
   const warnings: string[] = [];
+  let skinAllow: ReturnType<typeof readSkinAllowlist> | undefined;
   warnings.push(...createDuplicateHashWarnings(manifest, externalProvenance));
   for (const asset of manifest.assets) {
     const outputPath = resolve(projectDir, asset.outputPath);
@@ -1000,6 +1010,11 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
         meta?.truePeakDb === undefined ? "truePeakDb" : undefined,
       ].filter(Boolean);
       if (missingAudio.length) failures.push(`${asset.id}: release audio missing C-25 provenance fields: ${missingAudio.join(", ")}.`);
+    }
+    if (release) {
+      // Rigged characters: stretched triangles, flaps, bad weights, impossible joint ranges (known defects live in aura.skin-allow.json)
+      skinAllow ??= readSkinAllowlist(projectDir);
+      failures.push(...skinReleaseFailures(projectDir, asset, skinAllow).failures);
     }
     warnings.push(...createDerivedMetadataDriftWarnings(outputPath, asset));
     if (release) warnings.push(...createReleaseStructuredQualityWarnings(projectDir, asset));

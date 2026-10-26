@@ -34,6 +34,8 @@ import { LADDER_ROLES, printLadderReport, runResolveLadder, type LadderRole } fr
 import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
 import "./commands/registry.js";
 import { importMeshyIsolated, importMeshyIsolatedUsage, isAuraMonorepoRoot } from "./commands/assets/importMeshy.js";
+import { ALL_SKIN_CODES, checkAssetSkin, checkProjectSkins, formatProjectSkinReport, parseMaterialMap, readSkinAllowlist, resolveAssetFile, runRepairSkin, SKIN_HELP, type SkinCliOptions } from "./skin/command.js";
+import type { SkinCode } from "./skin/analysis.js";
 
 const args = process.argv.slice(2);
 const {
@@ -201,6 +203,30 @@ async function main(): Promise<void> {
         morphs: hasFlag("--morphs"),
         license: hasFlag("--license")
       }));
+    } else if (action === "validate" && hasFlag("--skin")) {
+      if (helpRequested) { console.log(SKIN_HELP); return; }
+      const skinOptions = readSkinCliOptions();
+      const report = checkProjectSkins(process.cwd(), skinOptions);
+      if (hasFlag("--json")) console.log(JSON.stringify(report, null, 2));
+      else console.log(formatProjectSkinReport(report));
+      if (!report.ok) process.exitCode = 1;
+    } else if (action === "repair-skin") {
+      if (helpRequested || !args[2] || args[2].startsWith("--")) { console.log(SKIN_HELP); if (!helpRequested) process.exitCode = 1; return; }
+      const stretch = readOption("--cut-stretch");
+      const influences = readOption("--max-influences");
+      const result = runRepairSkin(process.cwd(), args[2], {
+        out: readOption("--out"),
+        normalize: hasFlag("--normalize"),
+        ...(influences ? { maxInfluences: Number(influences) } : {}),
+        pruneDistant: hasFlag("--prune-distant"),
+        smoothBridges: hasFlag("--smooth-bridges"),
+        ...(stretch ? { cutStretch: Number(stretch) } : {}),
+        rebuildLimbs: hasFlag("--rebuild-limbs"),
+        materialMap: parseMaterialMap(readOption("--material-map")),
+      });
+      if (hasFlag("--json")) console.log(JSON.stringify(result, null, 2));
+      else for (const message of result.messages) console.log(message);
+      if (!result.ok) process.exitCode = 1;
     } else if (action === "validate") {
       // PRD-05 §6.4: `--route apps/<app>` runs the full G1–G11 admission
       // table per referenced asset (async — G6 decodes textures).
@@ -237,7 +263,18 @@ async function main(): Promise<void> {
         requiredActions: requireFlag ? requireFlag.split(",").map((a) => a.trim()).filter(Boolean) : undefined,
         requireRig: hasFlag("--require-rig")
       });
-      print(report);
+      const skinTarget = readOption("--file") ?? readOption("--asset");
+      if (skinTarget) {
+        // rigged characters also get the skin check: stretched triangles, flaps, bad weights, bind-pose mismatch
+        const file = resolveAssetFile(process.cwd(), skinTarget);
+        const skin = checkAssetSkin(skinTarget, file, {}, readSkinAllowlist(process.cwd()));
+        const skinFailures = skin.report.findings.filter((f) => f.severity === "error" && !skin.allowed.includes(f.code)).map((f) => f.message);
+        const combined = { ...report, ok: report.ok && skin.ok, failures: [...report.failures, ...skinFailures], messages: [...report.messages, ...(skin.ok ? [`skin check passed for ${skinTarget}`] : skinFailures)], skin: skin.report };
+        console.log(JSON.stringify(combined, null, 2));
+        if (!combined.ok) process.exitCode = 1;
+      } else {
+        print(report);
+      }
     } else if (action === "assemble-character") {
       const name = readOption("--name");
       const body = readOption("--body");
@@ -462,9 +499,31 @@ function registeredCommandsHelp(): string {
 }
 
 main().catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error));
+  console.error(error instanceof Error ? (process.env.AURA3D_DEBUG ? error.stack : error.message) : String(error));
   process.exitCode = 1;
 });
+
+function readSkinCliOptions(): SkinCliOptions {
+  const skinValue = hasFlag("--skin") ? readOption("--skin") : undefined;
+  const positional = skinValue && !skinValue.startsWith("--") ? skinValue : args[2] && !args[2].startsWith("--") ? args[2] : undefined;
+  const clips = readOption("--clips");
+  const samples = readOption("--samples");
+  const stretch = readOption("--stretch-limit");
+  const warnOnly = readOption("--warn-only");
+  const known = new Set<string>(ALL_SKIN_CODES);
+  const warn = warnOnly ? warnOnly.split(",").map((c) => c.trim()).filter(Boolean) : undefined;
+  for (const code of warn ?? []) if (!known.has(code)) throw new Error(`--warn-only: unknown skin code ${code}. Known: ${ALL_SKIN_CODES.join(", ")}`);
+  return {
+    ...(positional ? { file: positional } : {}),
+    assetIds: readAssetValidationOptions().assetIds,
+    ...(clips ? { clips: clips.split(",").map((c) => c.trim()).filter(Boolean) } : {}),
+    ...(samples ? { samples: Number(samples) } : {}),
+    ...(stretch ? { stretchLimit: Number(stretch) } : {}),
+    strict: hasFlag("--strict"),
+    ...(warn ? { warnOnly: warn as SkinCode[] } : {}),
+    json: hasFlag("--json"),
+  };
+}
 
 function print(value: { readonly ok: boolean; readonly messages: readonly string[]; readonly failures?: readonly string[]; readonly warnings?: readonly string[] }): void {
   console.log(JSON.stringify(value, null, 2));

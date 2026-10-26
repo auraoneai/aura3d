@@ -10,6 +10,8 @@ Five additions to `@aura3d/cli` came out of porting eleven games with generated 
 | `aura3d assets merge-clips --base rig --out file.glb name=clip ...` | Merge Meshy `animate` clips into one rigged GLB by node name; rejects a foreign skeleton. |
 | `aura3d assets import-meshy <dir> --into <assets-dir> --prefix <game> --name <role>` | Isolated admission: a temporary project, then only the hashed GLB and evidence are copied into the game's folder. |
 | `aura3d meshy ledger status\|reserve\|settle\|reconcile\|baseline\|config\|list` | Credit ledger: uncapped by default (visibility), opt-in hard-stop caps under a lock, dry run, Prism reconcile. |
+| `aura3d assets validate --skin [file.glb] [--asset id]` | Poses every rigged GLB through its clips and fails on stretched triangles, thin flaps, bad weights, a mesh not in its skeleton's pose and impossible joint ranges. Also run by `assets validate --release` and `check-deploy --release`. |
+| `aura3d assets repair-skin <file.glb\|assetId> [--normalize] [--prune-distant] [--smooth-bridges] [--cut-stretch N] [--rebuild-limbs]` | Opt-in repairs for a failing skin; `--rebuild-limbs` rebuilds the legs of a recognised humanoid in the pose its skeleton assumes. |
 | `aura3d evidence judge --a dir --b dir` | Blind A/B model judge over matched frames (section below). |
 
 ## `assets optimize --file`
@@ -40,6 +42,36 @@ aura3d meshy ledger reconcile                                               # le
 - `baseline` snapshots the Prism pool (`GET /admin/meshy`, read-only) as the zero point; `reconcile` without `--rid` prints ledger spend, Prism spend since the baseline, the delta, keys added since and keys topped up. `--apply` books the delta once as an `unattributed` adjustment (global cap only). The key comes from `$AURA3D_PRISM_KEY` or `$AURA3D_PRISM_KEY_FILE` (URL `$AURA3D_PRISM_URL`, default `https://prism.auraone.ai`); it is only sent as a header and never printed. `--pool-json <saved response>` needs no credential. Prism reports a pool-wide balance, not spend per tag.
 - Every record needs a game tag; name raw downloads with that prefix so two games cannot reuse each other's `rocks.raw.glb`.
 - A lock directory next to the ledger serialises writers; a lock left by a dead process is taken over.
+
+## `assets validate --skin` and `assets repair-skin`
+
+Why: Meshy auto-rigs often model the character in a pose (a running stride, a swung arm) and bind the mesh to a straight skeleton. Every clip then rotates a limb about a joint 10 to 20 cm off the limb, and bridging triangles between parts that move independently stretch into sails and shards. The Aura FC athletes shipped like that (shorts torn into shards, 327 triangles past 1.6x); the same check found it in Hoops, Diamond, Links, Bunker Zero, Slingshot Siege.
+
+```bash
+aura3d assets validate --skin ./hero.glb              # one file; exit 1 on failure
+aura3d assets validate --skin --asset hero,rival      # manifest assets (every rigged GLB when none is named)
+aura3d assets validate --skin ./hero.glb --json --clips Walk_Loop,Run --samples 12 --stretch-limit 1.6 --strict
+```
+
+Each rigged GLB is posed at `--samples` poses (default 10) of every clip it ships (or `--clips`). Per material the report gives the worst triangle edge stretch against the rest pose, the triangles past the limit, thin flaps, and per primitive the vertices whose weights do not sum to 1 or point at a distant bone. On a recognised humanoid (Left/Right `UpperLeg`/`UpLeg`/`Thigh`, `LowerLeg`/`Leg`/`Shin`, `Foot`) it also reports hip, knee and thigh-twist ranges per clip.
+
+| Code | Fails when | Default |
+| --- | --- | --- |
+| `SKIN_STRETCH` | a triangle grows past 2.5x, or more than 2 triangles (0.1% of the mesh) pass 1.6x | error |
+| `SKIN_FLAP` | a thin triangle, much longer than the mesh's normal triangles and 14% of the model height, is posed in a clip | error |
+| `SKIN_WEIGHT_SUM` | weights do not sum to 1 (+-0.02), or point past the joint list | error |
+| `SKIN_JOINT_RANGE` | knee bends forward, hip flexion outside -70..120 deg, abduction past 75, knee past 155, thigh twist past 60 | error |
+| `SKIN_WEIGHT_DISTANT` | an influence of 0.15 or more on a bone farther than half the model height | warning (error with `--strict`) |
+| `SKIN_BIND_MISMATCH` | the vertices a limb bone dominates sit more than 34% of the bone length off its axis (the mesh was modelled in another pose) | warning (error with `--strict`) |
+
+`assets validate --release` and `check-deploy --release` run the same check on every rigged GLB in the manifest. A known defect that still ships is listed in `aura.skin-allow.json` at the project root, `{ "<assetId>": { "allow": ["SKIN_STRETCH"], "reason": "what is wrong and where it is tracked" } }`; the reason is required and allowed findings are reported, not hidden. `assets validate-animation --asset <id>|--file <glb>` adds the skin result to the clip-map report.
+
+```bash
+aura3d assets repair-skin ./hero.glb --out hero.repaired.glb --normalize --smooth-bridges
+aura3d assets repair-skin ./hero.glb --rebuild-limbs --material-map skin=skin,shorts=short,socks=sock,boots=dark --cut-stretch 1.6
+```
+
+Every step is opt-in and the original file is never overwritten (default output `<name>.repaired.glb`; re-admit it with `assets add`). `--normalize` renormalises weights and keeps the strongest `--max-influences` (default 4); `--prune-distant` drops influences from far bones; `--smooth-bridges` softens the weights around stretched triangles so the patch deforms as one surface (it masks a bridge, it does not remove it); `--cut-stretch N` removes triangles still past N (opens holes: last resort). `--rebuild-limbs` is the Aura FC fix generalised: for a recognised humanoid with separate skin, shorts, socks and boot materials it removes the leg geometry, straightens the boots and builds thigh and shin tubes, shorts, a pelvis skirt and socks around the real bone axes with smooth hip, knee and ankle weights (lengths scale with the rig). On the pre-rebuild FC striker it reproduces the shipped result (shorts 1,968 and skin 11,999 triangles) and the check passes. A single-material mesh or a non-humanoid rig is refused with guidance: split its regions or regenerate it, then re-run the check. The model-side cause is documented in `docs/agents/lessons-learned.md` (A10).
 
 ## `aura3d evidence judge`
 

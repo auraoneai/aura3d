@@ -102,8 +102,7 @@ when an open-source candidate already passes the rubric.
    `defineAuraAssets(...)` / `defineAssets` declarations (keeps shadow and
    reflection intact) or place unhashed duplicate GLBs in
    `apps/<route>/public/aura-assets/`.
-8. Rig handoff: after importing a rigged humanoid, inspect it and map clips
-   before any code names them, then load `aura3d-character-animation`.
+8. Rig handoff: after importing a rigged humanoid, inspect it, map clips and run `assets validate --skin <glb>` (a mesh modelled in a pose tears) before any code names them, then load `aura3d-character-animation`.
 
    ```bash
    npx @aura3d/cli@latest assets inspect public/aura-assets/<file>.glb --animation --humanoid --skeleton
