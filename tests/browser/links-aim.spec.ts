@@ -16,6 +16,12 @@ const COURSES = (process.env.LINKS_AIM_COURSES ?? "stAuroras,mapleHollow,cinderR
 
 for (const id of COURSES) {
   test(`links-aim ${id}`, async ({ page }) => {
+    // the slim remote context has no public/aura-assets: serve the same hash-named files from production
+    await page.route(/\/aura-assets\//, async (route) => {
+      const u = new URL(route.request().url());
+      const response = await route.fetch({ url: `https://aura3d.auraone.ai${u.pathname}${u.search}` });
+      await route.fulfill({ response });
+    });
     await runShots(page, server, {
       slug: `links-aim-${id}`,
       route: "/apps/showcase-aura-links-3d/index.html",
