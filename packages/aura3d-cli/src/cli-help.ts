@@ -51,7 +51,7 @@ Commands:
   aura3d assets validate-game [--profile fighting-character] [--asset fighter] [--output artifacts/aura3d/game-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
   aura3d assets validate-animation-studio [--episode] [--asset character] [--output artifacts/aura3d/animation-studio-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
   aura3d assets validate --skin [file.glb] [--asset id] [--clips Walk,Run] [--strict] [--json]   (skinned-mesh stretch, flaps, weights, bind-pose mismatch; known defects in aura.skin-allow.json)
-  aura3d assets repair-skin <file.glb|assetId> [--out file.glb] [--normalize] [--prune-distant] [--smooth-bridges] [--cut-stretch 2] [--rebuild-limbs]
+  aura3d assets repair-skin <file.glb|assetId> [--out file.glb] [--normalize] [--prune-distant] [--smooth-bridges] [--cut-stretch 2] [--rebuild-limbs] [--refit-skeleton] [--keep-clips Idle_Loop,Walk_Loop]
   aura3d assets validate-animation --clips Idle_Loop,Walk_Loop,Sprint_Loop --map idle=Idle_Loop,walk=Walk_Loop,run=Sprint_Loop [--require idle,walk,run] [--require-rig]
   aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
   aura3d assets list

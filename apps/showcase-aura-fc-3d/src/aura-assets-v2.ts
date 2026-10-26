@@ -78,13 +78,6 @@ export const assets = defineAuraAssets({
     hash: "sha256-1e9df6514b4a34f62b7f6f0eead31724252bd7d02a495e752e61668ed9473c55",
     bounds: [0.831, 1.886, 0.646]
   },
-  gallerySecurityGuardMeshy: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
-    hash: "sha256-4d66273f50e7fe1ba1b814f8c44f665186d9e74292dfce10e7308454dca72bd9",
-    bounds: [0.739, 1.896, 0.483]
-  },
   "hoopsAthleteGuard": {
     type: "model",
     format: "glb",

@@ -145,7 +145,6 @@ type AuraGeneratedAssetDefinitions = {
   readonly "galleryLaserSecurityPylonMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryMarbleBustExhibitMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryPharaohRelicMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
-  readonly "gallerySecurityGuardMeshy": AuraAssetDefinition & { readonly type: "model"; readonly format: "glb"; readonly url: string; readonly hash: string; readonly bounds: readonly [number, number, number]; };
   readonly "galleryShiftAlertRiseSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "galleryShiftAmbientHallSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
   readonly "galleryShiftCameraWhirSfx": AuraAssetDefinition & { readonly type: "audio"; readonly format: "wav"; readonly url: string; readonly hash: string; };
@@ -9958,10 +9957,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bunkerGuardMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bunkerGuardMeshy.94733051.glb",
-    hash: "sha256-853b41b8a86669c75b4d9f70099abc10b28775c2b2d5840978eb26b4f9caad66",
+    url: "/aura-assets/bunkerGuardMeshy.c0b7e868.glb",
+    hash: "sha256-c0b7e86868b62e42901f41dcd7fd47a3872d01a9e00dd4e4c2cf1a9a2d6f7582",
     bounds: [1.012, 1.9, 0.813],
-    sizeBytes: 1524104,
+    sizeBytes: 1461524,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10023,7 +10022,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:16:02.769Z"
       },
       "sourcePath": "artifacts/meshy/bunker-guard/model.glb",
-      "outputPath": "public/aura-assets/bunkerGuardMeshy.94733051.glb",
+      "outputPath": "public/aura-assets/bunkerGuardMeshy.c0b7e868.glb",
       "boundsMetadata": {
         "min": [
           -0.508,
@@ -10086,10 +10085,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bunkerGunnerMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bunkerGunnerMeshy.a7ba1919.glb",
-    hash: "sha256-523d8102193383d32b574decc0ead9111740a51021cb63b77fd6a85c89ca512e",
+    url: "/aura-assets/bunkerGunnerMeshy.3fbd7552.glb",
+    hash: "sha256-3fbd7552fe6eac91bde7c91e6adc5989ccce5daf30453808ca2355f1aa5577c0",
     bounds: [1.07, 1.892, 1.201],
-    sizeBytes: 1497260,
+    sizeBytes: 1434724,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10151,7 +10150,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:21:55.725Z"
       },
       "sourcePath": "artifacts/meshy/bunker-gunner/model.glb",
-      "outputPath": "public/aura-assets/bunkerGunnerMeshy.a7ba1919.glb",
+      "outputPath": "public/aura-assets/bunkerGunnerMeshy.3fbd7552.glb",
       "boundsMetadata": {
         "min": [
           -0.534,
@@ -10214,10 +10213,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bunkerHoundMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bunkerHoundMeshy.5635dd96.glb",
-    hash: "sha256-ecd4874870aa5e371d9cda0426eb7d92498a05343a08a68d2e6921121dcc7513",
+    url: "/aura-assets/bunkerHoundMeshy.0a3aafc8.glb",
+    hash: "sha256-0a3aafc8e6ad84527865b127d95ea91d2e69d6e2ab3f4d2e3f33b51f7ad5a0c3",
     bounds: [0.616, 1.116, 1.903],
-    sizeBytes: 1508208,
+    sizeBytes: 1424968,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10279,7 +10278,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:15:35.894Z"
       },
       "sourcePath": "artifacts/meshy/bunker-hound/model.glb",
-      "outputPath": "public/aura-assets/bunkerHoundMeshy.5635dd96.glb",
+      "outputPath": "public/aura-assets/bunkerHoundMeshy.0a3aafc8.glb",
       "boundsMetadata": {
         "min": [
           -0.308,
@@ -10606,10 +10605,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "bunkerWardenMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/bunkerWardenMeshy.e64afa2d.glb",
-    hash: "sha256-91166e4f62623ef6e9910c30f82ff2afa3f94c2b05e0081cebaa84c272612405",
+    url: "/aura-assets/bunkerWardenMeshy.90aaa7f1.glb",
+    hash: "sha256-90aaa7f14b381b07d5a3838f0b6fea3e88c897c3e10370d73d4c1fd99aa57743",
     bounds: [1.007, 1.902, 0.588],
-    sizeBytes: 1499948,
+    sizeBytes: 1437388,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -10671,7 +10670,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T09:23:06.781Z"
       },
       "sourcePath": "artifacts/meshy/bunker-warden/model.glb",
-      "outputPath": "public/aura-assets/bunkerWardenMeshy.e64afa2d.glb",
+      "outputPath": "public/aura-assets/bunkerWardenMeshy.90aaa7f1.glb",
       "boundsMetadata": {
         "min": [
           -0.504,
@@ -17995,144 +17994,6 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "thumbnailUrl": "/aura-assets/galleryPharaohRelicMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryVehicle",
-      "renderedProbe": {
-        "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
-        "kind": "manual-inspection",
-        "sha256": "sha256-5dba189c41e4727649102bce244aa5ddf635aa6c7a4be0d4ef4ee96990bae9bc",
-        "checkedAt": "2026-10-14T21:02:59.667Z"
-      }
-    },
-  },
-  "gallerySecurityGuardMeshy": {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
-    hash: "sha256-4d66273f50e7fe1ba1b814f8c44f665186d9e74292dfce10e7308454dca72bd9",
-    bounds: [
-      0.739,
-      1.896,
-      0.483
-    ],
-    sizeBytes: 1638972,
-    metadata: {
-      "materials": [
-        "BakedMaterial"
-      ],
-      "animations": [],
-      "animationClips": [],
-      "animationMetadata": {
-        "clipCount": 0,
-        "clips": [],
-        "messages": [
-          "No embedded animation clips detected."
-        ]
-      },
-      "humanoid": false,
-      "humanoidStatus": "non-humanoid",
-      "humanoidConfidence": "low",
-      "skeleton": {
-        "skinCount": 0,
-        "jointCount": 0,
-        "skins": [],
-        "messages": [
-          "No skin/skeleton metadata detected."
-        ]
-      },
-      "morphTargets": {
-        "targetCount": 0,
-        "targetNames": [],
-        "meshes": [],
-        "messages": [
-          "No morph target metadata detected."
-        ]
-      },
-      "hierarchy": {
-        "nodeCount": 1,
-        "meshCount": 1,
-        "materialCount": 1,
-        "textureCount": 3,
-        "animationClipCount": 0,
-        "skinCount": 0,
-        "morphTargetCount": 0,
-        "rootNodeNames": [
-          "output_unwrapped"
-        ],
-        "maxDepth": 1,
-        "messages": [
-          "Detected 1 node across 1 root."
-        ]
-      },
-      "provenance": {
-        "sourcePath": "artifacts/meshy/aura-clash-corner-pylon-v1/model.glb",
-        "license": "Meshy paid private generation terms",
-        "licenseName": "Meshy paid private generation terms",
-        "licenseUrl": "https://www.meshy.ai/terms",
-        "licenseRaw": "Generated through the authenticated paid Meshy API account with --max-credits 60 for candidate use (Aura Clash Arena lane boundary corner pylon) under the current Meshy terms; this does not certify release-ready geometry or broader commercial rights.",
-        "sourceFamily": "meshy",
-        "retrievedAt": "2026-10-14T20:41:04.404Z",
-        "evidence": [
-          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.rights.b940ae66c925.json",
-          "aura-evidence/meshy/auraClashCornerBrazierPylonMeshy.metadata.add1fddb77b6.json",
-          "public/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png"
-        ],
-        "checkedAt": "2026-10-14T20:41:04.404Z"
-      },
-      "sourcePath": "artifacts/meshy/gallerySecurityGuardMeshy/model.glb",
-      "outputPath": "public/aura-assets/gallerySecurityGuardMeshy.e45c9d16.glb",
-      "license": "Meshy paid private generation terms",
-      "boundsMetadata": {
-        "min": [
-          -0.374,
-          0,
-          -0.24
-        ],
-        "max": [
-          0.366,
-          1.896,
-          0.244
-        ],
-        "size": [
-          0.739,
-          1.896,
-          0.483
-        ],
-        "center": [
-          -0.004,
-          0.948,
-          0.002
-        ],
-        "maxDimension": 1.896,
-        "grounded": true
-      },
-      "materialMetadata": [
-        {
-          "name": "BakedMaterial",
-          "visible": true,
-          "readable": true,
-          "opacity": 1,
-          "reasons": []
-        }
-      ],
-      "orientation": {
-        "source": "manifest-override",
-        "forwardAxis": "+Z",
-        "upAxis": "+Y",
-        "messages": [
-          "Normalized +Z forward and grounded min-Y=0 for gallerySecurityGuardMeshy."
-        ]
-      },
-      "nodeNames": [
-        "output_unwrapped"
-      ],
-      "textures": [
-        "normal",
-        "texture_0",
-        "texture_0_metallic_roughness"
-      ],
-      "dependencies": [],
-      "thumbnailUrl": "/aura-assets/gallerySecurityGuardMeshy.thumb.svg",
-      "quality": "production",
-      "role": "primaryCharacter",
       "renderedProbe": {
         "url": "/aura-assets/auraClashCornerBrazierPylonMeshy.meshy-candidate.5dba189c.png",
         "kind": "manual-inspection",
@@ -153895,10 +153756,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "gullsiegeHeroGullMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/gullsiegeHeroGullMeshy.bcd7da13.glb",
-    hash: "sha256-4793954ad28df5c072b4cfc5602657f653a405c641a55470816f7915a9d53ad3",
+    url: "/aura-assets/gullsiegeHeroGullMeshy.c3f90fb7.glb",
+    hash: "sha256-c3f90fb7d098f8bff9b9dd5ff846d56115bc4678ee504fe5903c51e6af798e89",
     bounds: [1.396, 1.898, 1.219],
-    sizeBytes: 1391008,
+    sizeBytes: 1352832,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -153959,7 +153820,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:18:01.285Z"
       },
       "sourcePath": "artifacts/meshy/gullsiegeHeroGullMeshy/model.glb",
-      "outputPath": "public/aura-assets/gullsiegeHeroGullMeshy.bcd7da13.glb",
+      "outputPath": "public/aura-assets/gullsiegeHeroGullMeshy.c3f90fb7.glb",
       "boundsMetadata": {
             "min": [
                   -0.701,
@@ -154019,10 +153880,10 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "gullsiegeRaiderBossMeshy": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/gullsiegeRaiderBossMeshy.f16f17d6.glb",
-    hash: "sha256-98c512e6b3c6d7c4dc8918ab63fffef0bb811daad8ce2f89ff71ab7ff8689a0b",
+    url: "/aura-assets/gullsiegeRaiderBossMeshy.d84a9080.glb",
+    hash: "sha256-d84a908036ac53831eb2d88cd668523ec2f2dfbf958f499ef80bed0b036d5930",
     bounds: [1.08, 1.897, 1.215],
-    sizeBytes: 1416400,
+    sizeBytes: 1352588,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -154083,7 +153944,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "checkedAt": "2026-10-17T17:18:12.503Z"
       },
       "sourcePath": "artifacts/meshy/gullsiegeRaiderBossMeshy/model.glb",
-      "outputPath": "public/aura-assets/gullsiegeRaiderBossMeshy.f16f17d6.glb",
+      "outputPath": "public/aura-assets/gullsiegeRaiderBossMeshy.d84a9080.glb",
       "boundsMetadata": {
             "min": [
                   -0.541,

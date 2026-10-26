@@ -222,6 +222,11 @@ async function main(): Promise<void> {
         smoothBridges: hasFlag("--smooth-bridges"),
         ...(stretch ? { cutStretch: Number(stretch) } : {}),
         rebuildLimbs: hasFlag("--rebuild-limbs"),
+        refitSkeleton: hasFlag("--refit-skeleton"),
+        ...(readOption("--keep-clips") ? { keepClips: readOption("--keep-clips")!.split(",").map((c) => c.trim()).filter(Boolean) } : {}),
+        ...(readOption("--smooth-rounds") ? { smoothRounds: Number(readOption("--smooth-rounds")) } : {}),
+        ...(readOption("--smooth-rings") ? { smoothRings: Number(readOption("--smooth-rings")) } : {}),
+        ...(readOption("--smooth-threshold") ? { smoothThreshold: Number(readOption("--smooth-threshold")) } : {}),
         materialMap: parseMaterialMap(readOption("--material-map")),
       });
       if (hasFlag("--json")) console.log(JSON.stringify(result, null, 2));

@@ -73,6 +73,21 @@ aura3d assets repair-skin ./hero.glb --rebuild-limbs --material-map skin=skin,sh
 
 Every step is opt-in and the original file is never overwritten (default output `<name>.repaired.glb`; re-admit it with `assets add`). `--normalize` renormalises weights and keeps the strongest `--max-influences` (default 4); `--prune-distant` drops influences from far bones; `--smooth-bridges` softens the weights around stretched triangles so the patch deforms as one surface (it masks a bridge, it does not remove it); `--cut-stretch N` removes triangles still past N (opens holes: last resort). `--rebuild-limbs` is the Aura FC fix generalised: for a recognised humanoid with separate skin, shorts, socks and boot materials it removes the leg geometry, straightens the boots and builds thigh and shin tubes, shorts, a pelvis skirt and socks around the real bone axes with smooth hip, knee and ankle weights (lengths scale with the rig). On the pre-rebuild FC striker it reproduces the shipped result (shorts 1,968 and skin 11,999 triangles) and the check passes. A single-material mesh or a non-humanoid rig is refused with guidance: split its regions or regenerate it, then re-run the check. The model-side cause is documented in `docs/agents/lessons-learned.md` (A10).
 
+### Textured single-mesh rigs: `--refit-skeleton`
+
+`--rebuild-limbs` needs separate skin, shorts and sock materials. A textured Meshy character is one `BakedMaterial` mesh, so you cannot rebuild its limbs without losing the texture. `--refit-skeleton` fixes the other side of the mismatch: it moves each joint to where the mesh actually bends (the seam between the two segments the joint separates), re-orients the bones along the mesh's limbs, recomputes the inverse bind matrices (the mesh does not move at rest), keeps a knee in front of the hip-ankle line, and re-targets every clip by world-space delta, re-baked at 30 fps. The mesh's authored pose becomes the rest pose.
+
+```bash
+aura3d assets repair-skin public/aura-assets/guard.glb --out guard.fixed.glb \
+  --keep-clips Idle_Loop,Walk_Loop --refit-skeleton --normalize --prune-distant \
+  --smooth-bridges --smooth-threshold 1.25 --smooth-rounds 12 --smooth-rings 6 --cut-stretch 2.3
+```
+
+- `--keep-clips` drops every clip the game does not play. The check measures the clips a file ships, so ship only what is played (it also shrinks the file).
+- `--smooth-bridges` softens the weights around stretched triangles; `--smooth-rounds` re-measures and repeats (each round re-checks the stretch with the new weights), `--smooth-rings` widens the region and `--smooth-threshold` sets the stretch that starts smoothing. `--cut-stretch 2.3` as the last step removes the one to three triangles smoothing cannot fix (tiny holes, hidden inside the surface).
+- It does not turn a four-legged mesh on a humanoid skeleton into a walking quadruped. For that (the Bunker Zero hound) use `tools/skin-fixes/bounding-quadruped.ts`: rear half on Hips, front half on Chest, head on Head, with authored Idle_Loop and Walk_Loop clips.
+- After a repair, swap the file in with `tools/aura-fc/swap-asset.mjs <old.glb> <new.glb>` (content-hash rename and manifest and typed-table rewrite), then run `assets validate --asset <id>`; if it reports a hash mismatch, update the recorded `hash` it prints.
+
 ## `aura3d evidence judge`
 
 Blind A/B **model** judge over two folders of matched frames (a vision model reached through Kiro Prism, not a human). Promoted from the per-game judge scripts in `tools/crayon-capture/`.

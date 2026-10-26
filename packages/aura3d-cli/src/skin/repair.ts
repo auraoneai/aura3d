@@ -16,6 +16,10 @@ export interface RepairSkinOptions {
   readonly smoothBridges?: boolean;
   /** Triangles stretched past this multiple are the smoothing region (default 1.5). */
   readonly smoothThreshold?: number;
+  /** Smoothing rounds: each re-measures the stretch with the new weights and smooths what is still stretched (default 1). */
+  readonly smoothRounds?: number;
+  /** How many rings of neighbouring vertices around a stretched triangle are smoothed (default 4). */
+  readonly smoothRings?: number;
   /** Remove triangles stretched past this limit after the other steps (off by default). */
   readonly cutStretch?: number;
   readonly clips?: readonly string[];
@@ -96,10 +100,18 @@ export function repairSkin(glb: GlbData, options: RepairSkinOptions = {}): { glb
       if (needPoses) stretch = triangleStretch(skin, prim, poses, Infinity, 0).worst;
       if (options.smoothBridges && stretch) {
         const adj = adjacency(prim);
-        let region = new Set<number>();
         const threshold = options.smoothThreshold ?? 1.5;
+        const rounds = Math.max(1, Math.floor(options.smoothRounds ?? 1));
+        for (let round = 0; round < rounds; round += 1) {
+        if (round > 0) {
+          stretch = triangleStretch(skin, withWeights(prim, weights, K), poses, Infinity, 0).worst;
+          let over = 0;
+          for (let t = 0; t < stretch.length; t += 1) if ((stretch[t] as number) > DEFAULT_SKIN_THRESHOLDS.stretchLimit) over += 1;
+          if (over <= Math.max(DEFAULT_SKIN_THRESHOLDS.stretchAllowTriangles, Math.floor(stretch.length * 0.001))) break;
+        }
+        let region = new Set<number>();
         for (let t = 0; t < stretch.length; t += 1) if ((stretch[t] as number) > threshold) for (let k = 0; k < 3; k += 1) region.add(prim.indices[t * 3 + k] as number);
-        for (let r = 0; r < 4; r += 1) { const next = new Set(region); for (const v of region) for (const n of adj[v] ?? []) next.add(n); region = next; }
+        for (let r = 0; r < Math.max(1, Math.floor(options.smoothRings ?? 4)); r += 1) { const next = new Set(region); for (const v of region) for (const n of adj[v] ?? []) next.add(n); region = next; }
         for (let it = 0; it < 30; it += 1) {
           const next = weights.map((m) => new Map(m));
           for (const v of region) {
@@ -114,7 +126,8 @@ export function repairSkin(glb: GlbData, options: RepairSkinOptions = {}): { glb
           }
           weights = next;
         }
-        smoothedVertices = region.size;
+        smoothedVertices = Math.max(smoothedVertices, region.size);
+        }
       }
       const changedWeights = Boolean(options.normalize || options.pruneDistant || options.smoothBridges);
       let indices = prim.indices;
