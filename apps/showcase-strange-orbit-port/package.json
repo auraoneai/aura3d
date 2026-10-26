@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-strange-orbit-port",
-  "version": "4.3.3",
+  "version": "4.3.4",
   "private": true,
   "type": "module",
   "description": "Moon-rim bike racing: a seven-lap cup against five rivals, with route splits, checkpoints and a rescue budget.",

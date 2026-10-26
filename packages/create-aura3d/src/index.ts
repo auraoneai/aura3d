@@ -106,7 +106,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   const dependencies = { ...(packageJson.dependencies ?? {}) };
   const auraDependencies = Object.keys(dependencies).filter((name) => name.startsWith("@aura3d/"));
   if (auraDependencies.length === 0) {
-    dependencies["@aura3d/engine"] = options.packageVersion ?? "4.3.3";
+    dependencies["@aura3d/engine"] = options.packageVersion ?? "4.3.4";
   } else if (options.packageVersion) {
     for (const dependency of auraDependencies) dependencies[dependency] = options.packageVersion;
   }

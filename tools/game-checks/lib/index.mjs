@@ -412,7 +412,7 @@ function checkCounts({ root, inventory }) {
     const lines = readFileSync(p, "utf8").split("\n");
     lines.forEach((line, i) => {
       if (/\{\{|__\w+__|data-count|genre|eyebrow/.test(line)) return;
-      for (const m of line.matchAll(/\b(\d{1,3}|four|fifteen|twenty-six|thirty)\s+(?:playable\s+|live\s+|showcase\s+)?games\b/gi)) {
+      for (const m of line.matchAll(/(?<![\d.])\b(\d{1,3}|four|fifteen|twenty-six|thirty)\s+(?:playable\s+|live\s+|showcase\s+)?games\b/gi)) {
         const n = words[m[1].toLowerCase()] ?? Number(m[1]);
         if (n !== live && n >= 4 && !/index games|ports|per genre|of the|new|old/i.test(line)) out.push(finding("counts", "warn", null, rel, i + 1, `hand-typed game count "${m[0]}" differs from the inventory (${live})`));
       }

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-roadster-rush-v2",
-  "version": "4.3.3",
+  "version": "4.3.4",
   "private": true,
   "type": "module",
   "description": "Apex Overdrive v2 — flagship 3D sky-lane racer on the Aura3D game kits: vehicle chassis + driver AI traffic, carrier ramp launches, barrel rolls, dogfights, wet-freeway storm mode, game-feel juice, shell screens, HUD kit, and voice callouts.",

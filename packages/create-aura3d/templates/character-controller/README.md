@@ -38,7 +38,7 @@ npm run enable:physics
 ```
 
 The script executes
-`npm install @aura3d/physics@4.3.3 @aura3d/physics-rapier@4.3.3`, so the
+`npm install @aura3d/physics@4.3.4 @aura3d/physics-rapier@4.3.4`, so the
 large asynchronous physical backend is added only when this physical capsule
 path is selected and never enters the default kinematic scaffold transitively.
 
