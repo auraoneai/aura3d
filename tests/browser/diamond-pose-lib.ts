@@ -18,8 +18,9 @@ function emit(name: string, buf: Buffer): void {
 }
 
 const TIMES: Array<number | null> = [null, 0.22, 0.34, 0.43, 0.5, 0.62, 0.85];
+const CPU_TIMES: Array<number | null> = [null, 0.5, 0.85];
 
-export async function runPose(page: Page, origin: string, VIEW: "default" | "side"): Promise<void> {
+export async function runPose(page: Page, origin: string, VIEW: "default" | "side" | "cpu"): Promise<void> {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message.slice(0, 200)));
   await page.goto(`${origin}/apps/showcase-aura-diamond-3d/index.html?mode=quick&post=0&shadow=0&aa=0`, { waitUntil: "load", timeout: 300_000 });
@@ -36,10 +37,11 @@ export async function runPose(page: Page, origin: string, VIEW: "default" | "sid
     await page.waitForTimeout(1_000);
   }
   await page.addStyleTag({ content: "#hud,#menu,#event-ticker,#controls-hint,#render-error{display:none!important} body > *:not(#app){display:none!important}" });
-  await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v === "side" ? { eye: [3.4, 1.7, 0.3], target: [-0.85, 1.35, 0.3], fov: 34 } : null), VIEW);
+  await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v === "side" ? { eye: [-0.85, 1.5, -3.2], target: [-0.85, 1.35, 0.3], fov: 34 } : null), VIEW);
+  if (VIEW === "cpu") await page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setHalf?.("bottom"));
   await page.waitForTimeout(4_000);
   const probe = () => page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.gripProbe?.() ?? null) as Promise<Record<string, any> | null>;
-  for (const t of TIMES) {
+  for (const t of VIEW === "cpu" ? CPU_TIMES : TIMES) {
     await page.evaluate((tt) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.holdSwingAt?.(tt), t);
     if (t === null) await page.waitForTimeout(2_500);
     let prev = "";

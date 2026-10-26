@@ -4122,6 +4122,10 @@ function boot(): void {
       setQaBall: (v: Vec3 | null) => {
         qaBall = v;
       },
+      /** QA: which half is batting (`bottom` puts the CPU club at bat, to frame the AI batter). */
+      setHalf: (h: "top" | "bottom") => {
+        G.half = h;
+      },
       setCamOverride: (o: { eye: Vec3; target: Vec3; fov: number } | null) => {
         qaCam = o;
       },

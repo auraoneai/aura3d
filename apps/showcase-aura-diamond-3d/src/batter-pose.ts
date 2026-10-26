@@ -407,7 +407,7 @@ export function swingKeys(c: ContactConfig | null): SwingKey[] {
     { t: 0.34, K: handsAt(-0.1, strideHip, add3(STANCE_LOCAL, [-0.05, 0.0, -0.08])), D: dirW(-0.25, 0.7, 0.66), phi: -0.1, hip: strideHip, stride: 1 },
     { t: 0.43, K: handsAt(0.2, slotHip, add3(STANCE_LOCAL, [-0.02, -0.09, 0.05])), D: dirW(0.1, 0.4, 0.9), phi: 0.2, hip: slotHip, stride: 1 },
     contact,
-    { t: 0.62, K: handsAt(1.0, throughHip, add3(STANCE_LOCAL, [0.0, -0.1, 0.1])), D: dirW(-0.6, 0.1, -0.8), phi: 1.0, hip: throughHip, stride: 1 },
+    { t: 0.62, K: handsAt(1.0, throughHip, add3(STANCE_LOCAL, [0.05, -0.28, 0.1])), D: dirW(-0.6, -0.05, -0.8), phi: 1.0, hip: throughHip, stride: 1 },
     { t: 0.85, K: handsAt(1.5, finishHip, finishLocal), D: dirW(-0.6, 0.0, 0.8), phi: 1.5, hip: finishHip, stride: 1 },
     { t: 1, K: handsAt(1.5, finishHip, finishLocal), D: dirW(-0.6, 0.0, 0.8), phi: 1.5, hip: finishHip, stride: 1 }
   ];
