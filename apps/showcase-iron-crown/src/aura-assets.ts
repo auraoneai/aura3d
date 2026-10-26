@@ -15,14 +15,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownBoulder": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownBoulder.6a7745b6.glb",
-    hash: "sha256-6a7745b60dc89dc595d596de415994ca3926af4e2506610e36dc2a51b234937d",
+    url: "/aura-assets/ironcrownBoulder.6a3865e0.glb",
+    hash: "sha256-6a3865e06377bc7886d12c2ec3001c705db7301d306c2f0a76d3a035574a3ee6",
     bounds: [
       0.015,
       0.02,
       0.007
     ],
-    sizeBytes: 5859188,
+    sizeBytes: 4961492,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -527,7 +527,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownBoulder.6a7745b6.glb",
+        "sourcePath": "public/aura-assets/ironcrownBoulder.6a3865e0.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -537,12 +537,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "aura-evidence/meshy/ironcrownBoulder.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownBoulder.metadata.53a33b921576.json",
+          "aura-evidence/restyle/ironcrownBoulder.flatface.json",
           "public/aura-assets/ironcrownBoulder.meshy-candidate.d5eb65ae.png"
         ],
         "checkedAt": "2026-10-17T09:34:55.132Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownBoulder.6a7745b6.glb",
-      "outputPath": "public/aura-assets/ironcrownBoulder.6a7745b6.glb",
+      "sourcePath": "public/aura-assets/ironcrownBoulder.6a3865e0.glb",
+      "outputPath": "public/aura-assets/ironcrownBoulder.6a3865e0.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -1993,14 +1994,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownSeraph": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownSeraph.1d675519.glb",
-    hash: "sha256-1d675519da646ad8343c324c2a97d17e366b3119b70093673b002cf90aeb45fb",
+    url: "/aura-assets/ironcrownSeraph.59a8fff4.glb",
+    hash: "sha256-59a8fff4499d9efaef171fa48a9928fc63dbd2062a6851dcb14e29d98d687df8",
     bounds: [
       0.011,
       0.019,
       0.007
     ],
-    sizeBytes: 6812564,
+    sizeBytes: 6793572,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -2505,7 +2506,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownSeraph.1d675519.glb",
+        "sourcePath": "public/aura-assets/ironcrownSeraph.59a8fff4.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -2515,12 +2516,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "aura-evidence/meshy/ironcrownSeraph.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownSeraph.metadata.a345b576c622.json",
+          "aura-evidence/restyle/ironcrownSeraph.flatface.json",
           "public/aura-assets/ironcrownSeraph.meshy-candidate.51b3e26d.png"
         ],
         "checkedAt": "2026-10-17T09:35:27.051Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownSeraph.1d675519.glb",
-      "outputPath": "public/aura-assets/ironcrownSeraph.1d675519.glb",
+      "sourcePath": "public/aura-assets/ironcrownSeraph.59a8fff4.glb",
+      "outputPath": "public/aura-assets/ironcrownSeraph.59a8fff4.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [
@@ -2607,14 +2609,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "ironcrownSovereign": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/ironcrownSovereign.ad8cc564.glb",
-    hash: "sha256-ad8cc56419840e0f3a124418f7839e8f8d5284ad38d0fe7ebebb3649f32975b0",
+    url: "/aura-assets/ironcrownSovereign.5805a846.glb",
+    hash: "sha256-5805a846bc81049e2305bf6e6e38b44598292b7b7580ecc8cf69c2b24d9731b4",
     bounds: [
       0.019,
       0.02,
       0.016
     ],
-    sizeBytes: 7603420,
+    sizeBytes: 7585400,
     metadata: {
       "materials": [
         "BakedMaterial"
@@ -3119,7 +3121,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         ]
       },
       "provenance": {
-        "sourcePath": "public/aura-assets/ironcrownSovereign.ad8cc564.glb",
+        "sourcePath": "public/aura-assets/ironcrownSovereign.5805a846.glb",
         "license": "Meshy AI generated asset - project owner subscription",
         "licenseName": "Meshy AI generated asset - project owner subscription",
         "licenseUrl": "https://www.meshy.ai/terms",
@@ -3129,12 +3131,13 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
         "evidence": [
           "aura-evidence/meshy/ironcrownSovereign.rights.968cd708eaf2.json",
           "aura-evidence/meshy/ironcrownSovereign.metadata.34d990cc2ffb.json",
+          "aura-evidence/restyle/ironcrownSovereign.flatface.json",
           "public/aura-assets/ironcrownSovereign.meshy-candidate.3931a35c.png"
         ],
         "checkedAt": "2026-10-17T09:35:44.853Z"
       },
-      "sourcePath": "public/aura-assets/ironcrownSovereign.ad8cc564.glb",
-      "outputPath": "public/aura-assets/ironcrownSovereign.ad8cc564.glb",
+      "sourcePath": "public/aura-assets/ironcrownSovereign.5805a846.glb",
+      "outputPath": "public/aura-assets/ironcrownSovereign.5805a846.glb",
       "license": "Meshy AI generated asset - project owner subscription",
       "boundsMetadata": {
         "min": [

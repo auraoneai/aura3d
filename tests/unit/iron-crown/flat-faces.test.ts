@@ -8,18 +8,19 @@ const manifest = JSON.parse(readFileSync(path.join(APP, "aura.assets.json"), "ut
 const entries: Array<{ id: string; source: string }> = manifest.assets ?? manifest;
 
 describe("iron crown fighters: flat stylised faces", () => {
-  for (const id of ["ironcrownKenji", "ironcrownVolt"]) {
+  for (const id of ["ironcrownKenji", "ironcrownVolt", "ironcrownBoulder", "ironcrownSeraph", "ironcrownSovereign"]) {
     it(`${id}: head skin uses a small flat face texture and the head hair a flat colour`, async () => {
       const entry = entries.find((e) => e.id === id)!;
       const doc = await new NodeIO().read(path.join(APP, entry.source));
       const root = doc.getRoot();
       const mats = root.listMaterials().map((m) => m.getName());
       expect(mats).toContain("face");
-      expect(mats).toContain("hair");
+      const helmeted = id === "ironcrownSovereign"; // a helmet covers the hair: no hair primitive
+      if (!helmeted) expect(mats).toContain("hair");
       const face = root.listMaterials().find((m) => m.getName() === "face")!;
       const faceTex = face.getBaseColorTexture()!;
       expect(faceTex.getSize()![0]).toBeLessThanOrEqual(512);
-      expect(root.listMaterials().find((m) => m.getName() === "hair")!.getBaseColorTexture()).toBeNull();
+      if (!helmeted) expect(root.listMaterials().find((m) => m.getName() === "hair")!.getBaseColorTexture()).toBeNull();
       // the skeleton and the animation clips are untouched
       expect(root.listSkins()).toHaveLength(1);
       expect(root.listAnimations().length).toBeGreaterThanOrEqual(10);

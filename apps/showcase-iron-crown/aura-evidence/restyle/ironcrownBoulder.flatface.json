@@ -1,0 +1,38 @@
+{
+  "tool": "tools/iron-crown-restyle/flatface.mjs",
+  "input": "ironcrownBoulder.6a7745b6.glb",
+  "inputSha256": "6a7745b60dc89dc595d596de415994ca3926af4e2506610e36dc2a51b234937d",
+  "output": "ironcrownBoulder.6a3865e0.glb",
+  "outputSha256": "6a3865e06377bc7886d12c2ec3001c705db7301d306c2f0a76d3a035574a3ee6",
+  "config": {
+    "hair": [
+      58,
+      38,
+      26
+    ],
+    "eye": [
+      28,
+      24,
+      24
+    ],
+    "brow": [
+      44,
+      28,
+      20
+    ],
+    "mouth": [
+      104,
+      52,
+      46
+    ],
+    "browWidth": 0.04,
+    "faceExtra": "<path d=\"M 72 96 L 96 118\" stroke=\"rgb(150,86,74)\" stroke-width=\"4\" stroke-linecap=\"round\"/>",
+    "skin": [
+      198,
+      138,
+      100
+    ]
+  },
+  "note": "flat stylised face (eyes, brows, nose, mouth) on the head skin triangles, flat hair colour on the hair triangles; skeleton, clips and every non-head triangle unchanged",
+  "date": "2026-10-25"
+}

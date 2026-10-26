@@ -1,0 +1,40 @@
+{
+  "tool": "tools/iron-crown-restyle/flatface.mjs",
+  "input": "ironcrownSeraph.1d675519.glb",
+  "inputSha256": "1d675519da646ad8343c324c2a97d17e366b3119b70093673b002cf90aeb45fb",
+  "output": "ironcrownSeraph.59a8fff4.glb",
+  "outputSha256": "59a8fff4499d9efaef171fa48a9928fc63dbd2062a6851dcb14e29d98d687df8",
+  "config": {
+    "hair": [
+      18,
+      14,
+      16
+    ],
+    "eye": [
+      24,
+      20,
+      22
+    ],
+    "brow": [
+      30,
+      22,
+      22
+    ],
+    "mouth": [
+      150,
+      70,
+      70
+    ],
+    "flattenAtlas": false,
+    "browWidth": 0.014,
+    "faceExtra": "<path d=\"M 80 124 Q 92 116 108 122\" stroke=\"rgb(24,20,22)\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 176 124 Q 164 116 148 122\" stroke=\"rgb(24,20,22)\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/>",
+    "skin": [
+      228,
+      190,
+      164
+    ],
+    "keepLight": true
+  },
+  "note": "flat stylised face (eyes, brows, nose, mouth) on the head skin triangles, flat hair colour on the hair triangles; skeleton, clips and every non-head triangle unchanged",
+  "date": "2026-10-25"
+}

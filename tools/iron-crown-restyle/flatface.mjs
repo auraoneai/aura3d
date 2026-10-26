@@ -5,12 +5,15 @@
 // planar projection from the front of the head, and (3) paints the head's dark triangles (hair, headband) with a flat hair colour.
 // Skeleton, skin weights, clips, cloth and every non-head triangle are untouched.
 // Usage: node tools/iron-crown-restyle/flatface.mjs <in.glb> <out-dir> <name> [config-json]
-// Config: { hair: [r,g,b], eye: [r,g,b], brow: [r,g,b], mouth: [r,g,b] } (0..255). Prints the output file name and sha256.
+// Config: { hair, eye, brow, mouth, skin: [r,g,b] (0..255), hairline, backline, flattenAtlas (default true: false keeps coloured trims that look like skin),
+//   skinOnlyHead (true: head triangles whose atlas colour is not face skin stay on the original material: helmets), keepLight (true: near-white head triangles, a face mask, stay on the original material), browWidth, faceExtra (SVG fragment) }.
+// Prints the output file name and sha256.
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync } from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { NodeIO } from "@gltf-transform/core";
+import { prune } from "@gltf-transform/functions";
 
 const require = createRequire(import.meta.url);
 const sharp = require("sharp");
@@ -53,14 +56,14 @@ pool.sort((a, b) => (a[0] + a[1] + a[2]) - (b[0] + b[1] + b[2]));
 const SKIN = CONFIG.skin ?? pool[Math.floor(pool.length * 0.6)] ?? [210, 160, 125];
 const skinLuma = 0.3 * SKIN[0] + 0.59 * SKIN[1] + 0.11 * SKIN[2];
 const atlas = Buffer.from(data);
-for (let i = 0; i < atlas.length; i += 4) {
+for (let i = 0; CONFIG.flattenAtlas !== false && i < atlas.length; i += 4) {
   if (!isSkin(atlas[i], atlas[i + 1], atlas[i + 2])) continue;
   const l = 0.3 * atlas[i] + 0.59 * atlas[i + 1] + 0.11 * atlas[i + 2];
   const k = Math.max(0.9, Math.min(1.08, l / skinLuma));
   atlas[i] = Math.min(255, SKIN[0] * k); atlas[i + 1] = Math.min(255, SKIN[1] * k); atlas[i + 2] = Math.min(255, SKIN[2] * k);
 }
 const atlasPng = await sharp(atlas, { raw: { width: info.width, height: info.height, channels: 4 } }).png({ compressionLevel: 9 }).toBuffer();
-tex.setImage(new Uint8Array(atlasPng));
+if (CONFIG.flattenAtlas !== false) tex.setImage(new Uint8Array(atlasPng));
 
 // 2. read geometry
 const attrNames = prim.listSemantics();
@@ -110,6 +113,21 @@ for (let t = 0; t < idx.length; t += 3) {
   const vt = (ymax - cy) / (ymax - ymin);
   const frontness = ((cx - hcx) * fx + (cz - hcz) * fz) / hr; // +1 at the face, -1 at the back of the skull
   const hair = vt < HAIRLINE || (frontness < BACKLINE && vt < 0.8);
+  if (CONFIG.skinOnlyHead && !hair) {
+    // keep the original material where the atlas is not face skin: sample the centroid and each corner pulled 30% toward it
+    const cu = (UV[v[0]][0] + UV[v[1]][0] + UV[v[2]][0]) / 3, cv = (UV[v[0]][1] + UV[v[1]][1] + UV[v[2]][1]) / 3;
+    const at = (uu, vv) => { const o = (Math.min(info.height - 1, Math.max(0, Math.floor(vv * info.height))) * info.width + Math.min(info.width - 1, Math.max(0, Math.floor(uu * info.width)))) * 4; return [data[o], data[o + 1], data[o + 2]]; };
+    const faceSkin = (c) => { const [h, sat, val] = rgbToHsv(c[0] / 255, c[1] / 255, c[2] / 255); return h >= 8 && h <= 34 && sat >= 0.14 && sat <= 0.62 && val > 0.42; };
+    let hits = faceSkin(at(cu, cv)) ? 1 : 0;
+    for (const i of v) hits += faceSkin(at(UV[i][0] + (cu - UV[i][0]) * 0.3, UV[i][1] + (cv - UV[i][1]) * 0.3)) ? 1 : 0;
+    if (hits < 2) { bodyTris.push(...v); continue; }
+  }
+  if (CONFIG.keepLight && !hair) {
+    const cu = (UV[v[0]][0] + UV[v[1]][0] + UV[v[2]][0]) / 3, cv = (UV[v[0]][1] + UV[v[1]][1] + UV[v[2]][1]) / 3;
+    const o = (Math.min(info.height - 1, Math.max(0, Math.floor(cv * info.height))) * info.width + Math.min(info.width - 1, Math.max(0, Math.floor(cu * info.width)))) * 4;
+    const [h2, s2, v2] = rgbToHsv(data[o] / 255, data[o + 1] / 255, data[o + 2] / 255);
+    if (v2 > 0.78 && s2 < 0.16) { bodyTris.push(...v); continue; }
+  }
   (hair ? hairTris : skinTris).push(...v);
 }
 
@@ -122,10 +140,11 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" 
   <ellipse cx="${S * 0.64}" cy="${S * 0.5}" rx="${S * 0.055}" ry="${S * 0.04}" fill="${rgb(EYE)}"/>
   <circle cx="${S * 0.37}" cy="${S * 0.485}" r="${S * 0.012}" fill="rgb(240,240,240)"/>
   <circle cx="${S * 0.65}" cy="${S * 0.485}" r="${S * 0.012}" fill="rgb(240,240,240)"/>
-  <path d="M ${S * 0.29} ${S * 0.43} L ${S * 0.43} ${S * 0.415}" stroke="${rgb(BROW)}" stroke-width="${S * 0.022}" stroke-linecap="round"/>
-  <path d="M ${S * 0.71} ${S * 0.43} L ${S * 0.57} ${S * 0.415}" stroke="${rgb(BROW)}" stroke-width="${S * 0.022}" stroke-linecap="round"/>
+  <path d="M ${S * 0.29} ${S * 0.43} L ${S * 0.43} ${S * 0.415}" stroke="${rgb(BROW)}" stroke-width="${S * (CONFIG.browWidth ?? 0.022)}" stroke-linecap="round"/>
+  <path d="M ${S * 0.71} ${S * 0.43} L ${S * 0.57} ${S * 0.415}" stroke="${rgb(BROW)}" stroke-width="${S * (CONFIG.browWidth ?? 0.022)}" stroke-linecap="round"/>
   <path d="M ${S * 0.5} ${S * 0.52} L ${S * 0.485} ${S * 0.6} L ${S * 0.515} ${S * 0.6}" stroke="${rgb(shade(SKIN, 0.78))}" stroke-width="${S * 0.014}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M ${S * 0.42} ${S * 0.72} Q ${S * 0.5} ${S * 0.745} ${S * 0.58} ${S * 0.72}" stroke="${rgb(MOUTH)}" stroke-width="${S * 0.02}" fill="none" stroke-linecap="round"/>
+  ${CONFIG.faceExtra ?? ""}
 </svg>`;
 const facePng = await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
 
@@ -156,6 +175,7 @@ const parts = [makePrim(bodyTris, baseMat, "body"), makePrim(skinTris, faceMat, 
 mesh.removePrimitive(prim); prim.dispose();
 for (const p of parts) mesh.addPrimitive(p);
 
+await doc.transform(prune()); // drop the orphaned original accessors so splitting the primitive does not duplicate vertex data
 mkdirSync(outDir, { recursive: true });
 const tmp = path.join(outDir, `${name}.tmp.glb`);
 await io.write(tmp, doc);
