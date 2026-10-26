@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 4.3.0
+Version: 4.3.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.3.1 (unreleased)
+## 4.3.1 (2026-10-26)
 
 - **Teleoperator: `showcase-teleoperator-v2` gets the generated buildings, and the shuttle pod holds up in every camera.** The four building models now line the v2 street too. The pod's window openings are filled with one dark tinted cabin box in place of the generated seats and inner walls, and the Roof LiDAR and Bumper cameras, which sat inside the taller pod and showed its shell polygons, now use pod-specific offsets (`PLAYABLE_FLEET.waymo.cams`) in both variants. Verified on the remote runner in all four cameras for `showcase-teleoperator`; `-v2` renders nothing in that harness even on 4.3.0's source, so it is unseen. Evidence: `evidence/teleoperator/art-pass/`.
 

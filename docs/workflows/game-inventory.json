@@ -355,7 +355,7 @@
         "set": "final",
         "dir": "evidence/ninja-runner-port/screens/final",
         "card": "card@2x.jpg",
-        "frameCount": 16
+        "frameCount": 12
       }
     },
     {
