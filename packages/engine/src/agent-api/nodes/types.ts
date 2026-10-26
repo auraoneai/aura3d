@@ -2627,6 +2627,12 @@ export interface AuraCustomMaterialSpec {
   readonly fog?: boolean;
   /** SH-09: `#include <name>` chunk replacement map; salts the program cache key. */
   readonly patch?: Readonly<Record<string, string>>;
+  /**
+   * Receive the key light's sun shadow. Adds `#include <a3d_shadow>` to the fragment shader and binds `u_a3dSunDirection`, so
+   * `a3dSunShadowAuto(worldPos, normal)` returns 1 in light and less than 1 in shadow. Multiply your lit term by it.
+   * Honours the light's `shadow` options (cascades, bias, normalBias, filter). GLSL only.
+   */
+  readonly receiveShadow?: boolean;
 }
 
 // ── SG-05 dynamic geometry (L2) ────────────────────────────────────────────

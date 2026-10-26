@@ -2,6 +2,7 @@ import { A3D_FOG_GLSL } from "./fog.glsl";
 import { A3D_MATH_GLSL } from "./math.glsl";
 import { A3D_NOISE_GLSL } from "./noise.glsl";
 import { A3D_SKY_GLSL } from "./sky.glsl";
+import { A3D_SHADOW_GLSL } from "./shadow.glsl";
 import { A3D_TOON_GLSL } from "./toon.glsl";
 import { A3D_TRIPLANAR_GLSL } from "./triplanar.glsl";
 import { COLORSPACE_DECODE_GLSL, COLORSPACE_ENCODE_GLSL } from "./colorspace.glsl";
@@ -70,6 +71,12 @@ export const A3D_AUTHOR_GLSL_CHUNKS: readonly A3dAuthorGlslChunk[] = [
     source: A3D_TOON_GLSL,
     stages: ["vertex", "fragment"],
     provides: ["float a3dToonRamp(x, steps, soft)", "float a3dToonLight(n, lightDir, steps)", "float a3dToonRim(n, viewDir, width)", "float a3dToonStep(x, edge, soft)"]
+  },
+  {
+    name: "a3d_shadow",
+    source: A3D_SHADOW_GLSL,
+    stages: ["fragment"],
+    provides: ["float a3dSunShadow(worldPos, normal, toLight)", "float a3dSunShadowAuto(worldPos, normal)"]
   },
   {
     name: "colorspace_decode",

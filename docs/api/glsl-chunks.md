@@ -29,10 +29,37 @@ Custom shaders write linear light and the output stage sRGB-encodes it (see `col
 | `a3d_fog` | vertex, fragment | `a3dFogLinear(color, fogColor, dist, near, far)`, `a3dFogExp2(color, fogColor, dist, density)`, `a3dFogHeight(color, fogColor, dist, worldY, density, heightDensity, heightBase, heightFalloff, maxFog)`; custom materials do not receive scene fog automatically |
 | `a3d_triplanar` | fragment | `a3dTriplanarWeights(n, blendBias)`, `a3dTriplanar(sampler2D tex, p, n, scale, blendBias)` |
 | `a3d_toon` | vertex, fragment | `a3dToonRamp(x, steps, soft)`, `a3dToonLight(n, lightDir, steps)`, `a3dToonRim(n, viewDir, width)`, `a3dToonStep(x, edge, soft)` |
+| `a3d_shadow` | fragment | `a3dSunShadow(worldPos, normal, toLight)`, `a3dSunShadowAuto(worldPos, normal)`: 1 in light, less than 1 in the key light's shadow; set `receiveShadow: true` on the spec to include it automatically |
 | `colorspace_decode` | vertex, fragment | `a3dSrgbToLinear(vec3\|vec4)`: use with `output: { toneMapping: "none" }` so a hex colour shows as authored |
 | `colorspace_encode` | vertex, fragment | `a3dLinearToSrgb(vec3\|vec4)` |
 
 Include several chunks in one shader freely: they define disjoint names.
+
+## Sun shadows on custom materials
+
+A `material.custom` surface receives the key light's sun shadow the same way the built-in lit materials do. Set `receiveShadow: true` on the spec (or write `#include <a3d_shadow>` yourself) and multiply the lit term by the factor:
+
+```ts
+material.custom({
+  receiveShadow: true,
+  glsl: {
+    vertex: `out vec3 vWorld; out vec3 vN;
+void main() { vWorld = (modelMatrix * vec4(position, 1.0)).xyz; vN = normalize(normalMatrix * normal);
+  gl_Position = modelViewProjectionMatrix * vec4(position, 1.0); }`,
+    fragment: `in vec3 vWorld; in vec3 vN; out vec4 outColor;
+void main() {
+  vec3 N = normalize(vN);
+  float sun = max(dot(N, vec3(0.3, 0.8, 0.5)), 0.0) * a3dSunShadowAuto(vWorld, N);
+  outColor = vec4(vec3(0.25 + 0.75 * sun), 1.0);
+}`
+  }
+});
+```
+
+- `a3dSunShadowAuto(worldPos, normal)` uses the shadow-casting directional light's direction (`u_a3dSunDirection`, bound for you). `a3dSunShadow(worldPos, normal, toLight)` takes the direction to the light yourself, for a hand-tuned sun.
+- The sun must cast shadows (`lights.directional({ shadow: true })` or a `shadow: { cascades, bias, normalBias, filter }` object). Cascade choice, bias, slope bias, normal bias, the PCF kernel and `strength` come from that light, so a custom surface and a PBR surface darken identically.
+- With no shadow map in the scene, or when the item has `receiveShadow: false`, the factor is exactly 1.
+- Only the fragment is affected: the surface does not cast through its own shader (set `castShadow` on the mesh as usual). GLSL only, like every chunk.
 
 ## Verification
 

@@ -22,7 +22,7 @@ import { shadowCasterVariantId, type DepthVariantFeature } from "../contracts/sh
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { QrFlags } from "../contracts/core";
 import type { AuraQualityTierSettings } from "../contracts/quality";
-import { fitDirectionalCascades, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
+import { fitDirectionalCascades, isOversizeShadowCaster, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
 import {
   activeDepthFeatures,
@@ -111,7 +111,10 @@ export class Prd02ShadowSystem {
   }
 
   update(frame: ShadowSystemFrame): Prd02ShadowFrameUniforms {
-    const { camera, casters } = frame;
+    const { camera } = frame;
+    const shadowDistance = Math.min(camera.far ?? Infinity, this.config.maxDistance);
+    const oversize = frame.casters.filter((item) => isOversizeShadowCaster(item, shadowDistance));
+    const casters = oversize.length > 0 ? frame.casters.filter((item) => !oversize.includes(item)) : frame.casters;
     const sun = frame.sun ?? null;
     this.lastFits = sun
       ? fitDirectionalCascades({
@@ -137,6 +140,7 @@ export class Prd02ShadowSystem {
     this.lastTiles = plannedTiles.slice(0, MAX_LOCAL_TILES);
     // C-31 droppedFeatures: report any local light whose tiles didn't fit.
     this.lastDropped = [];
+    for (const item of oversize) this.lastDropped.push(`shadow.caster.oversize:${item.label ?? "unnamed"}`);
     if (plannedTiles.length > this.lastTiles.length) {
       const keptCounts = new Map<number, number>();
       for (const tile of this.lastTiles) {

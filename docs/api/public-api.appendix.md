@@ -228,7 +228,7 @@ mergeStatic(parts: readonly AuraStaticPart[], options?: AuraMergeStaticOptions):
 mergeStaticByKey(parts: readonly (AuraStaticPart & { key: K })[], options?: AuraMergeStaticOptions): Map<K, AuraCustomGeometrySpec>
 ```
 
-Built-in author chunks for `material.custom` (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<colorspace_decode>`, `<colorspace_encode>`) are listed in [`glsl-chunks.md`](./glsl-chunks.md).
+Built-in author chunks for `material.custom` (`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`, `<a3d_toon>`, `<a3d_shadow>`, `<colorspace_decode>`, `<colorspace_encode>`) are listed in [`glsl-chunks.md`](./glsl-chunks.md).
 
 
 `geometry.toNonIndexed` does not exist as a public member — the equivalent

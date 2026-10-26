@@ -440,6 +440,15 @@ const DEFAULT_GLSL_VERTEX = `void main() {
   gl_Position = u_modelViewProjection * vec4(position, 1.0);
 }`;
 
+/** `receiveShadow: true` adds `#include <a3d_shadow>` after any `#version` line unless the author already included it. */
+function withShadowInclude(spec: AuraCustomMaterialSpec): string {
+  const source = spec.glsl.fragment;
+  if (spec.receiveShadow !== true || /#include\s*<a3d_shadow>/.test(source)) return source;
+  const version = source.match(/^\s*#version[^\n]*\n?/);
+  const head = version ? version[0] : "";
+  return `${head}#include <a3d_shadow>\n${source.slice(head.length)}`;
+}
+
 /** Splits `#version` off the authored stage so the prelude lands legally after it. */
 function injectPreamble(source: string, preamble: string, stage: "vertex" | "fragment"): string {
   let head = "";
@@ -544,6 +553,7 @@ export function customMaterialCacheKey(spec: AuraCustomMaterialSpec): string {
       isRecord(uniform) ? { type: uniform.type, value: normalizeHashableValue(uniform.value) } : uniform
     ])),
     patch: spec.patch ?? {},
+    receiveShadow: spec.receiveShadow === true,
     state: customRenderState(spec),
     fog: spec.fog === true
   });
@@ -607,9 +617,10 @@ export class AuraCustomShaderMaterial extends PortableShaderMaterial {
       vertexPreamble(uniforms, vertexSource),
       "vertex"
     );
+    const fragmentSource = withShadowInclude(spec);
     const glslFragment = injectPreamble(
-      adapterPreprocessor.preprocess(spec.glsl.fragment, { defines: spec.defines ?? {}, includes }).source,
-      fragmentPreamble(uniforms, spec.glsl.fragment),
+      adapterPreprocessor.preprocess(fragmentSource, { defines: spec.defines ?? {}, includes }).source,
+      fragmentPreamble(uniforms, fragmentSource),
       "fragment"
     );
     const sources: PortableShaderSources = {

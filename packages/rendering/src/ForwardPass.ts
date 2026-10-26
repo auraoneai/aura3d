@@ -2042,6 +2042,13 @@ function applyCustomShaderFrameUniforms(
   if (reflected.has("u_viewMatrix") && !uniforms.has("u_viewMatrix")) {
     uniforms.set("u_viewMatrix", toMat4Uniform(options.customFrameCamera?.viewMatrix ?? options.cameraViewMatrix ?? identityMatrix(), "cameraViewMatrix"));
   }
+  if (reflected.has("u_a3dSunDirection") && !uniforms.has("u_a3dSunDirection")) {
+    // `#include <a3d_shadow>`: direction from the surface toward the shadow-casting directional light.
+    const sun = options.lights?.find((light) => light.castsShadow && light.kind === "directional");
+    const d = sun?.direction ?? [0, -1, 0];
+    const length = Math.hypot(d[0], d[1], d[2]) || 1;
+    uniforms.set("u_a3dSunDirection", [-d[0] / length, -d[1] / length, -d[2] / length]);
+  }
   if (reflected.has("u_projectionMatrix") && !uniforms.has("u_projectionMatrix")) {
     uniforms.set("u_projectionMatrix", toMat4Uniform(options.customFrameCamera?.projectionMatrix ?? options.auraFrameCamera?.projectionMatrix ?? identityMatrix(), "auraFrameCamera.projectionMatrix"));
   }

@@ -134,7 +134,7 @@ const IDENTITY_MODEL: readonly number[] = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0
  * envelope — the base-geometry box alone let the caster-rect clamp crop most
  * instances out of the ortho (prd02-16b IoU 0.34, 6 of 16 instance shadows).
  */
-function itemWorldBounds(item: RenderItem): { min: Vec3Tuple; max: Vec3Tuple } | null {
+export function itemWorldBounds(item: RenderItem): { min: Vec3Tuple; max: Vec3Tuple } | null {
   const b = item.skinning && item.geometry
     ? skinnedItemLocalBounds(item.geometry as Geometry, item.skinning)
     : item.geometry?.bounds;
@@ -282,13 +282,62 @@ export function sliceDepthWithinRect(pts: readonly Vec3Tuple[], rect: LightRect)
   return Number.isFinite(zMin) && Number.isFinite(zMax) ? { zMin, zMax } : null;
 }
 
+
+/** Casters bigger than this many shadow distances (and than `OVERSIZE_CASTER_FLOOR` metres) are environment shells, not casters. */
+export const OVERSIZE_CASTER_FACTOR = 4;
+export const OVERSIZE_CASTER_FLOOR = 100;
+
+/**
+ * A single, non-instanced caster whose world box is far larger than the shadow distance is a sky dome, skybox or planet-sized
+ * plane. Cascades only cover `[near, shadowDistance]`, so such a mesh cannot be shadowed meaningfully; worse, a dome that
+ * encloses the camera puts its near hemisphere between the light and every receiver and darkens the whole frame (Shadowstep
+ * Gauntlet's 4000 m sky). Instanced casters are exempt: their box spans every instance, not one large surface.
+ */
+export function isOversizeShadowCaster(item: RenderItem, shadowDistance: number): boolean {
+  if (item.instanceTransforms && item.instanceTransforms.length >= 16) return false;
+  const b = itemWorldBounds(item);
+  if (!b) return false;
+  const largest = Math.max(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]);
+  return largest > Math.max(OVERSIZE_CASTER_FLOOR, OVERSIZE_CASTER_FACTOR * shadowDistance);
+}
+
+
+const dist3 = (a: Vec3Tuple, b: Vec3Tuple): number => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+
+/**
+ * The slice corners are lerped between the VP's own near and far corners, so the fractions must use the VP's real clip range.
+ * A caller whose `near`/`far` disagree with the VP (a frame camera without a clip range, a test camera) made every slice a
+ * sliver of the frustum. For a perspective VP the true range follows from the near/far plane widths (similar triangles);
+ * the caller's values are kept whenever they agree with it, and for orthographic projections.
+ */
+function resolveClipRange(nearCorners: readonly Vec3Tuple[], farCorners: readonly Vec3Tuple[], givenNear: number | undefined, givenFar: number | undefined): { near: number; far: number } {
+  const near = Math.max(1e-3, givenNear ?? 0.1);
+  const far = Math.max(near + 1e-3, givenFar ?? 100);
+  const nc = (i: number): Vec3Tuple => nearCorners[i]!;
+  const fc = (i: number): Vec3Tuple => farCorners[i]!;
+  const wN = dist3(nc(0), nc(3));
+  const wF = dist3(fc(0), fc(3));
+  const mid = (a: Vec3Tuple, b: Vec3Tuple): Vec3Tuple => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
+  const planeGap = dist3(mid(nc(0), nc(3)), mid(fc(0), fc(3)));
+  const ratio = wF / Math.max(wN, 1e-12);
+  if (!(ratio > 1.0001) || !Number.isFinite(ratio) || !(planeGap > 0)) return { near, far };
+  const trueNear = planeGap / (ratio - 1);
+  const trueFar = trueNear + planeGap;
+  if (!Number.isFinite(trueNear) || !Number.isFinite(trueFar) || trueNear <= 0) return { near, far };
+  const agrees = Math.abs(trueFar - far) <= 0.05 * trueFar && Math.abs(trueNear - near) <= 0.05 * Math.max(trueNear, near);
+  return agrees ? { near, far } : { near: Math.max(1e-3, trueNear), far: trueFar };
+}
+
 /** Stable-fit cascades for one directional light from a C-08 CameraLike. */
 export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): DirectionalCascadeFit[] {
   const vp = options.camera.viewProjectionMatrix;
   if (!vp || vp.length < 16) throw new Error("CascadeFitter requires camera.viewProjectionMatrix (16 numbers)");
   const invVp = invertMat4(vp);
-  const near = Math.max(1e-3, options.camera.near ?? 0.1);
-  const far = Math.max(near + 1e-3, options.camera.far ?? 100);
+  const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, -1)));
+  const farCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, 1)));
+  const clip = resolveClipRange(nearCorners, farCorners, options.camera.near, options.camera.far);
+  const near = clip.near;
+  const far = clip.far;
   const shadowFar = options.maxDistance !== undefined && Number.isFinite(options.maxDistance) && options.maxDistance > near
     ? Math.min(far, options.maxDistance)
     : far;
@@ -298,8 +347,6 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     far: shadowFar,
     lambda: options.splitLambda ?? 0.75
   });
-  const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, -1)));
-  const farCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => ndcToWorld(invVp, x, y, 1)));
   const basis = lightBasis(options.lightDirection);
   const padding = options.padding ?? 0.25;
   const casterBounds = options.casters
@@ -313,8 +360,11 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
       lerp3(nc, farCorners[i]!, t0),
       lerp3(nc, farCorners[i]!, t1)
     ]);
-    // Frustum slice + caster bounds → light-space ortho, snapped to texels.
-    const allPts = [...frustumPts, ...casterBounds.flatMap((b) => [b.min, b.max])];
+    // Frustum slice → light-space ortho, snapped to texels. In an orthographic light projection only casters whose
+    // light-space footprint overlaps the slice can shadow it, so casters never widen x/y (a scene-spanning instanced set
+    // or a distant mountain used to inflate every cascade to kilometres: 1 m texels and washed-out shadows); they only
+    // extend the depth range toward the light, below.
+    const allPts = frustumPts;
     let min = [Infinity, Infinity, Infinity];
     let max = [-Infinity, -Infinity, -Infinity];
     for (const p of allPts) {
@@ -343,6 +393,24 @@ export function fitDirectionalCascades(options: DirectionalCascadeFitOptions): D
     let extent = 2 * radius + padding * 2;
     let zLo = min[2]!;
     let zHi = max[2]!;
+    // Casters whose light-space footprint overlaps the slice extend the depth range toward the light (capped, so a huge
+    // box cannot stretch the range and cost depth precision); casters behind the slice cannot shadow it.
+    {
+      const reach = Math.max(8 * radius, 200);
+      const rx0 = centerX - radius - padding, rx1 = centerX + radius + padding;
+      const ry0 = centerY - radius - padding, ry1 = centerY + radius + padding;
+      for (const b of casterBounds) {
+        let cx0 = Infinity, cx1 = -Infinity, cy0 = Infinity, cy1 = -Infinity, cz0 = Infinity;
+        for (const x of [b.min[0], b.max[0]]) for (const y of [b.min[1], b.max[1]]) for (const z of [b.min[2], b.max[2]]) {
+          const lx = x * basis.right[0] + y * basis.right[1] + z * basis.right[2];
+          const ly = x * basis.up[0] + y * basis.up[1] + z * basis.up[2];
+          const lz = x * basis.forward[0] + y * basis.forward[1] + z * basis.forward[2];
+          cx0 = Math.min(cx0, lx); cx1 = Math.max(cx1, lx); cy0 = Math.min(cy0, ly); cy1 = Math.max(cy1, ly); cz0 = Math.min(cz0, lz);
+        }
+        if (cx1 < rx0 || cx0 > rx1 || cy1 < ry0 || cy0 > ry1) continue;
+        zLo = Math.min(zLo, Math.max(cz0, min[2]! - reach));
+      }
+    }
     // #1141: a slice reaching far past a bounded scene (camera far 100 m over a
     // 14 m set) inflated the ortho to ~130 m — 13× coarser texels and a depth
     // range that turned the constant compare bias into detached, washed-out

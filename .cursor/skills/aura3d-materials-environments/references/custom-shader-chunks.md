@@ -20,11 +20,17 @@ signatures: `docs/api/glsl-chunks.md`.
 
 ## Chunks
 
-`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`
-and `<a3d_toon>` are tested GLSL ES 3.00 helpers prefixed `a3d`. Use them instead of
+`#include <a3d_math>`, `<a3d_noise>`, `<a3d_sky>`, `<a3d_fog>`, `<a3d_triplanar>`,
+`<a3d_toon>` and `<a3d_shadow>` are tested GLSL ES 3.00 helpers prefixed `a3d`. Use them instead of
 pasting hashes, fbm, sky gradients or fog into every shader. Precedence when names
 collide: built-in chunks, then these, then `registerShaderChunk`, then the material's
 `patch`. A material that includes chunks is GLSL-only: it has no WGSL twin.
+
+## Sun shadows
+
+Set `receiveShadow: true` on the `material.custom` spec (or `#include <a3d_shadow>`) and multiply
+your lit term by `a3dSunShadowAuto` (arguments: world position, normal): 1 in light, less in the key light's shadow.
+It follows the light's `shadow` options like a PBR surface does, and is exactly 1 with no shadow map.
 
 ## NaN and Inf safety
 
