@@ -475,7 +475,12 @@ function boot(): void {
       const rx = b.rotX ?? 0;
       const ry = b.rotY ?? 0;
       const rz = b.rotZ ?? 0;
-      world.ballMesh?.setPosition(b.x, by, b.z).setRotation(rx, ry, rz).setScale([1, 1, 1]).setVisible(true);
+      // The ball GLB is fitted (origin = its lowest point, rotation pivots there): place the node so the CENTRE lands on (b.x, by, b.z).
+      const cxr = Math.cos(rx), sxr = Math.sin(rx), cyr = Math.cos(ry), syr = Math.sin(ry), czr = Math.cos(rz), szr = Math.sin(rz);
+      const ux = syr * sxr, uy = cxr, uz = cyr * sxr;
+      world.ballMesh
+        ?.setPosition(b.x - (czr * ux - szr * uy) * BALL_VIS_R, by - (szr * ux + czr * uy) * BALL_VIS_R, b.z - uz * BALL_VIS_R)
+        .setRotation(rx, ry, rz).setScale([1, 1, 1]).setVisible(true);
       const shScale = clamp(1 - (by - BALL_VIS_R) * 0.12, 0.35, 1.08);
       world.ballShadow?.setPosition(b.x, 0.015, b.z).setScale([shScale, 1, shScale]).setVisible(true);
 

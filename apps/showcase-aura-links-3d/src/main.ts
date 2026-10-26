@@ -1453,7 +1453,7 @@ function beginAddress(): void {
     const g = golferAt();
     poseGolfer(golferRig, "address", 0, g.pos, g.yaw, (x, z) => t.height(x, z));
   }
-  ballHandle?.setPosition(r.ballPos[0], Math.max(r.ballPos[1], t.height(r.ballPos[0], r.ballPos[2]) + BALL_R * 0.6), r.ballPos[2]);
+  ballHandle?.setPosition(r.ballPos[0], Math.max(r.ballPos[1] - BALL_R, t.height(r.ballPos[0], r.ballPos[2]) - 0.01), r.ballPos[2]);
   updateCamera(0);
 }
 
@@ -2049,7 +2049,7 @@ function frame(dt: number): void {
   // --- visuals ---
   if (r && t) {
     const bp = state.ball ? state.ball.pos : r.ballPos;
-    ballHandle?.setPosition(bp[0], Math.max(bp[1], t.height(bp[0], bp[2]) + BALL_R * 0.6), bp[2]);
+    ballHandle?.setPosition(bp[0], Math.max(bp[1] - BALL_R, t.height(bp[0], bp[2]) - 0.01), bp[2]);
     const bh = bp[1] - t.height(bp[0], bp[2]);
     const ss = clamp(1 - bh * 0.05, 0.4, 1);
     ballShadowHandle?.setPosition(bp[0], t.height(bp[0], bp[2]) + 0.02, bp[2]).setScale([ss, 1, ss]).setVisible(bh < 12);
