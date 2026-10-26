@@ -217,15 +217,26 @@ describe("L6 handlers — flag gate + per-frame items", () => {
     lineNodeHandler.dispose?.(node as never);
   });
 
-  it("points folds devicePixelRatio into u_pointSize (three's size·pixelRatio)", () => {
+  it("a fixed-size point folds devicePixelRatio into u_pointSize (size CSS px · pixelRatio)", () => {
     const ctx = fakeCtx(flagOn); // canvas 1600×1200, clientWidth 800 → dpr 2
-    const node = points({ positions: [[0, 0, 0], [1, 1, 1]], size: 8 }).toJSON();
+    const node = points({ positions: [[0, 0, 0], [1, 1, 1]], size: 8, sizeAttenuation: false }).toJSON();
     const out = fakeOut();
     pointsNodeHandler.compile(node as never, ctx, out as never);
     pointsNodeHandler.update?.(node as never, undefined, ctx, out as never, 0);
     expect(out.items).toHaveLength(1);
     expect(out.items[0]!.geometry.topology).toBe("points");
     expect(out.items[0]!.material.getParameter("u_pointSize")).toBe(16);
+    expect(out.items[0]!.material.getParameter("u_pointSizeAttenuation")).toBe(0);
+    pointsNodeHandler.dispose?.(node as never);
+  });
+
+  it("an attenuated point keeps the bare size: the shader's device-pixel height already carries dpr", () => {
+    const ctx = fakeCtx(flagOn); // dpr 2
+    const node = points({ positions: [[0, 0, 0], [1, 1, 1]], size: 8 }).toJSON();
+    const out = fakeOut();
+    pointsNodeHandler.compile(node as never, ctx, out as never);
+    pointsNodeHandler.update?.(node as never, undefined, ctx, out as never, 0);
+    expect(out.items[0]!.material.getParameter("u_pointSize")).toBe(8);
     expect(out.items[0]!.material.getParameter("u_pointSizeAttenuation")).toBe(1);
     pointsNodeHandler.dispose?.(node as never);
   });

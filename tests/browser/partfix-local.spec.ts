@@ -5,10 +5,24 @@ import { emit } from "./shotsd-lib";
 // Particle size repro served from this checkout through the example dev server (remote only, software WebGL2): Iron Crown autopilot bout and FC demo at deviceScaleFactor 1 and 2.
 test.setTimeout(3_000_000);
 
+// The slim remote context carries no model files: any binary the dev server 404s is fetched from production instead.
+async function fillFromProduction(context: import("@playwright/test").BrowserContext, origin: string): Promise<void> {
+  await context.route(/\.(glb|gltf|ktx2|png|jpe?g|webp|wav|mp3|ogg|bin|woff2?)(\?.*)?$/i, async (route) => {
+    const url = new URL(route.request().url());
+    if (url.origin !== origin) return route.continue();
+    const local = await route.fetch().catch(() => null);
+    if (local && local.status() < 400) return route.fulfill({ response: local });
+    const remote = await route.fetch({ url: `https://aura3d.auraone.ai${url.pathname}${url.search}` }).catch(() => null);
+    if (remote) return route.fulfill({ response: remote });
+    return route.continue();
+  });
+}
+
 for (const dpr of [1, 2]) {
   test(`partfix iron-crown dpr${dpr}`, async ({ browser }) => {
     const server = await startExampleDevServer();
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: dpr });
+    await fillFromProduction(context, server.origin);
     const page = await context.newPage();
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message.slice(0, 160)));
@@ -31,6 +45,7 @@ for (const dpr of [1, 2]) {
   test(`partfix fc dpr${dpr}`, async ({ browser }) => {
     const server = await startExampleDevServer();
     const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: dpr });
+    await fillFromProduction(context, server.origin);
     const page = await context.newPage();
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message.slice(0, 160)));
