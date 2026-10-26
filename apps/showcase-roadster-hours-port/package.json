@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-roadster-hours-port",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "private": true,
   "type": "module",
   "description": "Coastal drive among 92 vehicles in one batched mesh, with sky, ocean and a lit road.",

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-splat-rush-port",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "private": true,
   "type": "module",
   "description": "Colour-gate ball runner: switch colour to pass gates, grab power-ups and avoid the splatter game over.",

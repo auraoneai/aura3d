@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-teleoperator-v2",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "private": true,
   "type": "module",
   "description": "Grid Dispatch V2 — Aura3D 4.0.1 San Francisco robotaxi showcase rebuild: Apex Lidar Cruiser, Cyber Coupe, Titan EV, Vortex GT, Apex Interceptor on a hilly night-city California Street with driver-AI L5 fares, chassis suspension, crowds, fog, wet reflections, surge zones, progression unlocks, dispatch feed, touch controls and cinematic cameras.",

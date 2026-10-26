@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/react",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "type": "module",
   "exports": {
     ".": {
@@ -11,7 +11,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "peerDependencies": {
-    "@aura3d/engine": "^4.3.2",
+    "@aura3d/engine": "^4.3.3",
     "react": "^19.0.0 || ^18.0.0"
   },
   "devDependencies": {

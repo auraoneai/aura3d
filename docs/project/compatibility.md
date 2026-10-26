@@ -1,6 +1,6 @@
 # Compatibility Matrix
 
-Version: 4.3.2
+Version: 4.3.3
 
 Current release: Aura3D 4.0.0.
 

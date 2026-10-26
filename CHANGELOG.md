@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 4.3.2
+Version: 4.3.3
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.3.3 (unreleased)
+## 4.3.3 (2026-10-26)
 
 - **The Hoops, Diamond, Links and FC athletes have a neck again (games).** The shared torso-tube rebuild closed the collar under the chin, which left the head floating 5 to 7 cm above the shoulders in every clip. `tools/aura-athletes/add-neck.ts` appends a short skin tube from inside the collar into the base of the head (Chest to Head weight ramp, skin colour); it only adds vertices, so palm points and head-bone positions are unchanged and every shipped clip still stretches at most 1.6x.
 - **Aura Diamond 3D: the batter stands and swings like a baseball hitter, not a barbell across the head.** The grip was right but the pose was not: the bat lay at 30 degrees across the back of the head with the arms straight out. The ready stance is now a real one: feet a little wider than the shoulders, knees bent, weight on the back leg, chest turned toward the plate, head turned to the pitcher, hands together 20 cm in front of and above the rear shoulder, rear elbow out at shoulder height, bat upright (67 degrees) and leaning back over the rear shoulder (never closer than 25 cm to the head). The swing runs load (hands back, front foot lifts, bat 50 degrees), stride (foot lands), slot (hips and chest open first, hands lead, barrel lags), contact (bat level in front of the front hip, any pitch within reach), through and a high finish with the bat wrapped over the front shoulder. Hand targets are interpolated in the turning chest's own frame and kept off the shoulder and inside the arm's reachable cone, so no elbow folds. Legs are IK-planted (`legBones` in `src/batter-pose.ts`) with a front-foot stride; the walk-up still plays the clip. `tests/unit/aura-diamond/batter-pose.test.ts` asserts the pose (bat elevation 55 to 80 degrees in the stance, barrel above hands and rear shoulder, 8 cm head clearance, both hands on the handle). Evidence: `evidence/aura-diamond-3d/bat-fix/pose/`.

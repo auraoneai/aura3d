@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-aura-links-3d",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "private": true,
   "type": "module",
   "description": "Aura Links 3D — postcard arcade golf on the Aura3D engine: three-click swing, ball-flight sim with wind and lies, six courses from Scottish dunes to a lunar crater, Range Lab, Putting Lab, Player Studio and a 32-player Pro Circuit.",
