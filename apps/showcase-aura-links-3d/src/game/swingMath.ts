@@ -591,7 +591,7 @@ export interface ClubPartSpec {
 /** the three primitive club parts, laid out along the shaft axis */
 export const CLUB_PARTS: readonly ClubPartSpec[] = [
   { id: "golfer-club-grip", along: -0.07, faceAim: false }, // grip spans butt(-0.22)..(+0.08)
-  { id: "golfer-club-shaft", along: 0.44, faceAim: false }, // shaft spans +0.06..+0.82
+  { id: "golfer-club-shaft", along: 0.44, faceAim: false }, // shaft spans +0.02..+0.86: it runs 6 cm up into the grip (ends +0.08) so there is never a gap, and into the head
   { id: "golfer-club-head", along: 0.88, faceAim: true }    // head centre at the sweet spot
 ];
 

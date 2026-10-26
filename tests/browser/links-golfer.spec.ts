@@ -13,14 +13,15 @@ test.afterAll(async () => { await server?.close(); });
 
 const G = "__AURA3D_SHOWCASE_AURA_LINKS_3D__";
 
-test("links golfer grip across the swing", async ({ page }) => {
+const CLUBS: Array<[string, number]> = [["driver", 0], ["wedge", 2], ["putter", 1], ["iron", 3]];
+for (const [clubName, qPresses] of CLUBS) test(`links golfer grip across the swing: ${clubName}`, async ({ page }) => {
   await page.route(/\/aura-assets\//, async (route) => {
     const u = new URL(route.request().url());
     const response = await route.fetch({ url: `https://aura3d.auraone.ai${u.pathname}${u.search}` });
     await route.fulfill({ response });
   });
   await runShots(page, server, {
-    slug: "links-golfer",
+    slug: `links-golfer-${clubName}`,
     route: "/apps/showcase-aura-links-3d/index.html",
     titleQuery: "",
     playQuery: "?course=stAuroras",
@@ -32,15 +33,18 @@ test("links golfer grip across the swing", async ({ page }) => {
     drive: async (p, snap) => {
       await p.waitForFunction((g) => (window as unknown as Record<string, any>)[g]?.phase === "address", G, { timeout: 420_000 }).catch(() => undefined);
       await p.waitForTimeout(1_500);
-      await snap("g-address-aimcam");
+      for (let i = 0; i < qPresses; i += 1) { await p.keyboard.press("KeyQ"); await p.waitForTimeout(250); }
+      await p.waitForTimeout(800);
+      await snap(`${clubName}-address-aimcam`);
       await p.keyboard.press("Space");
       await p.waitForTimeout(1_800);
-      await snap("g-address-swingcam");
+      await snap(`${clubName}-address-swingcam`);
       await p.keyboard.press("Space");
       await p.waitForTimeout(1_200);
-      await snap("g-power");
+      await snap(`${clubName}-power`);
       await p.keyboard.press("Space");
-      for (let i = 0; i < 8; i += 1) { await p.waitForTimeout(450); await snap(`g-swing-${i}`); }
+      const frames = clubName === "driver" ? 8 : 4;
+      for (let i = 0; i < frames; i += 1) { await p.waitForTimeout(450); await snap(`${clubName}-swing-${i}`); }
     }
   });
 });
