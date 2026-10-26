@@ -97,7 +97,7 @@ const tube = { P: [] as number[], N: [] as number[], J: [] as number[], W: [] as
   const NSEG = 28; const rings: { y: number; rx: number; rz: number }[] = smoothBands.map((b) => ({ y: b.y, rx: b.rx, rz: b.rz }));
   // close the top into the neck over the last rings
   const top = rings[rings.length - 1]!;
-  for (const [dy, f, rzN] of [[0.012, 0.93, 0.1], [0.026, 0.78, 0.09], [0.04, 0.55, 0.08], [0.052, 0.4, 0.07], [0.062, 0.36, 0.062]] as [number, number, number][]) rings.push({ y: top.y + dy, rx: Math.min(top.rx, Math.max(0.075, top.rx * f)), rz: Math.min(top.rz, rzN) });
+  for (const [dy, f, rzN] of [[0.026, 0.85, 0.1], [0.052, 0.6, 0.085], [0.078, 0.4, 0.065]] as [number, number, number][]) rings.push({ y: top.y + dy, rx: Math.min(top.rx, Math.max(0.075, top.rx * f)), rz: Math.min(top.rz, rzN) });
   rings.forEach((r) => {
     const wH = 1 - sm(0.95, 1.2, r.y), wC = sm(1.2, 1.4, r.y), wS = 1 - wH - wC;
     for (let k = 0; k < NSEG; k += 1) {
@@ -116,8 +116,8 @@ const tube = { P: [] as number[], N: [] as number[], J: [] as number[], W: [] as
 const newPrims: typeof meshJson.primitives = [];
 const materials: { name: string }[] = [];
 for (const mat of MATS) {
-  const tri = mat === "kit" ? [] : triMat.get(mat)!;
-  if (tri.length === 0 && mat !== "kit") continue;
+  const tri = triMat.get(mat)!;
+  if (tri.length === 0) continue;
   const remap = new Map<number, number>();
   const P: number[] = [], N: number[] = [], J: number[] = [], W: number[] = [], I: number[] = [];
   for (const v of tri) {
@@ -129,7 +129,6 @@ for (const mat of MATS) {
     }
     I.push(remap.get(v)!);
   }
-  if (mat === "kit") { P.push(...tube.P); N.push(...tube.N); J.push(...tube.J); W.push(...tube.W); I.push(...tube.I); }
   materials.push({ name: mat });
   newPrims.push({
     attributes: {
@@ -167,7 +166,7 @@ const palmWorld = (side: "Left" | "Right"): number[] | null => {
   return [w[0]!, w[1]! + lift, w[2]!];
 };
 const palms = palmArg ? { Left: palmWorld("Left"), Right: palmWorld("Right") } : null;
-const arms = rebuildArms(legs.glb, { taperRoot: true, capSleeves: true, palms, capRadius: Number(opt("--cap-radius", "0")) });
+const arms = rebuildArms(legs.glb, { torsoTube: true, taperRoot: true, capSleeves: true, palms, capRadius: Number(opt("--cap-radius", "0")) });
 const clips = (orig.json.animations ?? []).map((a: { name?: string }) => a.name as string);
 const cut = args.includes("--no-cut") ? { glb: arms.glb, report: [] } : cutBridges(arms.glb, { limit: 1.6, clips, samples: 10, keepMaterials: null });
 const rebuilt = join(work, "rebuilt.glb");

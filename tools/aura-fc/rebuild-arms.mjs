@@ -185,9 +185,9 @@ export function rebuildArms(glb, { torsoTube = false, taperRoot = false, capRadi
     }
     const sb = bands.map((b, i) => { const a = bands[Math.max(0, i - 1)], c = bands[Math.min(bands.length - 1, i + 1)]; return { y: b.y, rx: Math.min(0.205, (a.rx + 2 * b.rx + c.rx) / 4), rz: (a.rz + 2 * b.rz + c.rz) / 4 }; });
     const headY = P("Head")[1];
-    while (sb.length > 3 && sb[sb.length - 1].y > headY - 0.1) sb.pop();   // the collar stops below the chin
+    while (sb.length > 3 && sb[sb.length - 1].y > headY - 0.08) sb.pop();   // the collar closes just under the chin
     const top = sb[sb.length - 1];
-    for (const [dy, f, rzN] of [[0.012, 0.93, 0.1], [0.026, 0.78, 0.09], [0.04, 0.55, 0.08], [0.052, 0.4, 0.07], [0.062, 0.36, 0.062]]) sb.push({ y: top.y + dy, rx: Math.min(top.rx, Math.max(0.075, top.rx * f)), rz: Math.min(top.rz, rzN) });
+    for (const [dy, f, rzN] of [[0.026, 0.85, 0.1], [0.052, 0.6, 0.085], [0.078, 0.4, 0.065]]) sb.push({ y: top.y + dy, rx: Math.min(top.rx, Math.max(0.075, top.rx * f)), rz: Math.min(top.rz, rzN) });
     const NSEG = 28, z0 = P("Hips")[2];
     const base = newVerts.kit.length;
     sb.forEach((r) => {
