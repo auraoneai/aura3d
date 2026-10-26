@@ -69,6 +69,11 @@ test("diamond batter grip across the swing", async ({ page }) => {
     if (Date.now() - t0 > 600_000) { process.stdout.write(`@@PROBE {"error":"socket never attached"}\n`); break; }
     await page.waitForTimeout(1_000);
   }
+  // The owner's own view: the default batting camera and HUD at the size of their screenshot.
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.waitForTimeout(4_000);
+  emit("default-stance", await page.screenshot({ type: "jpeg", quality: 90 }));
+  await page.setViewportSize({ width: 640, height: 360 });
   await page.addStyleTag({ content: "#hud,#menu,#event-ticker,#controls-hint,#render-error{display:none!important} body > *:not(#app){display:none!important}" });
   await page.waitForTimeout(3_000);
 
@@ -111,6 +116,21 @@ test("diamond batter grip across the swing", async ({ page }) => {
       emit(label, await page.screenshot({ type: "jpeg", quality: 88 }));
     }
   }
+  // Walk-up (the batter stepping, Walk_Loop) and the run to first (bat put down), from the owner's camera.
+  await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), VIEWS.owner);
+  await page.evaluate(() => { const hook = (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__; hook?.holdSwingAt?.(null); hook?.qaWalk?.(60); });
+  await page.waitForTimeout(6_000);
+  const walkRow = await probe();
+  process.stdout.write(`@@PROBE ${JSON.stringify({ view: "owner", state: "walk", ...(walkRow ?? {}), ...(await drawn(walkRow)) })}\n`);
+  emit("owner-walk", await page.screenshot({ type: "jpeg", quality: 88 }));
+  emit("hands-walk", await (async () => { await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), VIEWS.hands); await page.waitForTimeout(1_500); return page.screenshot({ type: "jpeg", quality: 88 }); })());
+  await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), VIEWS.owner);
+  await page.evaluate(() => { const hook = (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__; hook?.qaWalk?.(0); hook?.qaRun?.(true); });
+  await page.waitForTimeout(3_500);
+  emit("owner-run", await page.screenshot({ type: "jpeg", quality: 88 }));
+  await page.evaluate(() => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.qaRun?.(false));
+  await page.waitForTimeout(2_000);
+
   // Contact: freeze at the contact key with the ball drawn at the predicted contact point, so the sweet spot and the ball can be compared by eye.
   for (const viewName of ["side", "front", "hands"]) {
     await page.evaluate((v) => (window as unknown as Record<string, any>).__AURA3D_GAME_DIAMOND__?.setCamOverride?.(v), VIEWS[viewName]);

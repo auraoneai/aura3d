@@ -3415,12 +3415,13 @@ function boot(): void {
     // Batter at the plate; completes the swing follow-through at home plate, then sprints down the 1B line
     const batterX = -0.82 + G.batterAimX;
     const batterZ = 0.28 + G.batterAimZ;
-    const sprintingToFirst = G.phase === "batted" && Boolean(G.batted) && G.batterRunning && G.batted!.age >= 0.22;
+    if (qaRunT !== null) qaRunT += dt;
+    const sprintingToFirst = qaRunT !== null || (G.phase === "batted" && Boolean(G.batted) && G.batterRunning && G.batted!.age >= 0.22);
     let batGeom: { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null = null;
-    if (sprintingToFirst && G.batted) {
+    if (sprintingToFirst && (G.batted || qaRunT !== null)) {
       const b = G.batted;
-      const runAge = Math.max(0, b.age - 0.22);
-      const prog = clamp(runAge / Math.max(0.45, b.resolveAt * 0.55), 0, 1);
+      const runAge = qaRunT !== null ? qaRunT : Math.max(0, b!.age - 0.22);
+      const prog = clamp(runAge / (qaRunT !== null ? 2.4 : Math.max(0.45, b!.resolveAt * 0.55)), 0, 1);
       const dest = BASES[0]!;
       const bx = lerp(batterX, dest[0], prog * 0.92);
       const bz = lerp(batterZ, dest[2], prog * 0.92);
@@ -3658,6 +3659,7 @@ function boot(): void {
 
   /* ---------- Camera director ---------- */
   let qaBall: Vec3 | null = null;
+  let qaRunT: number | null = null;
   let qaCam: { eye: Vec3; target: Vec3; fov: number } | null = null;
   function updateCamera(dt: number): void {
     const c = G.cam;
@@ -4091,6 +4093,13 @@ function boot(): void {
       triggerSwing,
       holdSwingAt: (t: number | null) => { if (t === null) { swingDrive.hold = null; return; } triggerSwing(0.84); swingDrive.hold = t; },
       gripProbe,
+      /** QA: show the walk-up (batter stepping) or the run to first, to frame those states from the owner's camera. */
+      qaWalk: (sec: number) => {
+        G.batterStepTimer = sec;
+      },
+      qaRun: (on: boolean) => {
+        qaRunT = on ? 0 : null;
+      },
       /** QA: every batter joint's world matrix (skeleton frame) plus the node transform, so a spec can skin the mesh on the CPU and measure the drawn hand. */
       jointMatrices: (names: string[]) => {
         const actor = H.batter?.animation as { socket?: (b: string) => { valid: boolean; worldMatrix: (o?: Float32Array) => Float32Array } } | undefined;
