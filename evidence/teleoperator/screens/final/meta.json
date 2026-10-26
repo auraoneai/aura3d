@@ -3,7 +3,7 @@
     "teleoperator": {
       "390": {
         "notes": [
-          "ready 219s (never lit)",
+          "ready 209s (never lit)",
           "shot 01-title",
           "shot 02-early",
           "shot 03-action",
@@ -22,11 +22,11 @@
           "state": "playing",
           "rung": 0
         },
-        "proxied": 1
+        "proxied": 0
       },
       "1280": {
         "notes": [
-          "ready 235s (never lit)",
+          "ready 220s (never lit)",
           "shot 01-title",
           "shot 02-early",
           "shot 03-action",
@@ -45,11 +45,11 @@
           "state": "playing",
           "rung": 0
         },
-        "proxied": 1
+        "proxied": 0
       },
       "card": {
         "notes": [
-          "ready 206s (never lit)",
+          "ready 287s (never lit)",
           "shot 04-mid"
         ],
         "errors": [],
@@ -62,7 +62,7 @@
           "state": "playing",
           "rung": 0
         },
-        "proxied": 1
+        "proxied": 0
       }
     }
   },

@@ -50,37 +50,37 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopWaymoHero: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
-    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
-    bounds: [0.9293, 0.9414, 1.9037]
+    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
+    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    bounds: [0.8921, 1.4132, 1.9017]
   },
   teleopWaymoTraffic: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
-    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
-    bounds: [0.9293, 0.9414, 1.9037]
+    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
+    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+    bounds: [0.8921, 1.4132, 1.9017]
   },
   teleopCybercab: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehHatch.67925e22.glb",
-    hash: "sha256-67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
-    bounds: [1.0178, 1.0578, 1.9025]
+    url: "/aura-assets/teleopVehHatch.53933015.glb",
+    hash: "sha256-539330153115bc87e3174152b2a9bae64315536a6813e3ad1f26246e6e5584ae",
+    bounds: [1.2939, 1.1513, 1.9016]
   },
   teleopCybertruck: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehPickup.75a710f9.glb",
-    hash: "sha256-75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
-    bounds: [0.8166, 0.7167, 1.9027]
+    url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
+    hash: "sha256-aaee30b6487d0b33f436eec2885f9c39a258a31259569a60084a48f67a4a3fd1",
+    bounds: [0.7774, 0.7276, 1.9027]
   },
   teleopCorvette: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehCoupe.7f3a1b6a.glb",
-    hash: "sha256-7f3a1b6ab764b97e22d51060d175532d4b4d6646295d07372283c96548f6e87d",
-    bounds: [0.8532, 0.5828, 1.9025]
+    url: "/aura-assets/teleopVehCoupe.83b731ca.glb",
+    hash: "sha256-83b731ca6b1fd5d63f81d5fa2308dfc071a9ec07d744c03e3790c3f4fbb34631",
+    bounds: [0.9245, 0.5271, 1.9061]
   },
   teleopMissions: {
     type: "model",
@@ -99,44 +99,72 @@ const teleopAdmittedAssets = defineAuraAssets({
   teleopSedan: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehSedan.7bc528fc.glb",
-    hash: "sha256-7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
-    bounds: [0.8674, 0.6622, 1.9013]
+    url: "/aura-assets/teleopVehSedan.431efea6.glb",
+    hash: "sha256-431efea6742402eacb7aa4543c9223391a87fe7d66aee20e356a63f2d4af9596",
+    bounds: [0.8144, 0.6568, 1.9007]
   },
   teleopSuv: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehHatch.67925e22.glb",
-    hash: "sha256-67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
-    bounds: [1.0178, 1.0578, 1.9025]
+    url: "/aura-assets/teleopVehHatch.53933015.glb",
+    hash: "sha256-539330153115bc87e3174152b2a9bae64315536a6813e3ad1f26246e6e5584ae",
+    bounds: [1.2939, 1.1513, 1.9016]
   },
   teleopTaxi: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehSedan.7bc528fc.glb",
-    hash: "sha256-7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
-    bounds: [0.8674, 0.6622, 1.9013]
+    url: "/aura-assets/teleopVehSedan.431efea6.glb",
+    hash: "sha256-431efea6742402eacb7aa4543c9223391a87fe7d66aee20e356a63f2d4af9596",
+    bounds: [0.8144, 0.6568, 1.9007]
   },
   teleopVan: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehVan.44a544bc.glb",
-    hash: "sha256-44a544bcde7b475580bbc7b3ff7a8047e9cb7cbf3dea04d34f9f50ed12084216",
-    bounds: [0.9098, 1.0016, 1.9027]
+    url: "/aura-assets/teleopVehVan.6e9c71d7.glb",
+    hash: "sha256-6e9c71d779c64bc31fe74c6f02376e3c7e809efefa113f1b7f46426be1863e37",
+    bounds: [0.895, 1.1164, 1.9004]
   },
   teleopPickup: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehPickup.75a710f9.glb",
-    hash: "sha256-75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
-    bounds: [0.8166, 0.7167, 1.9027]
+    url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
+    hash: "sha256-aaee30b6487d0b33f436eec2885f9c39a258a31259569a60084a48f67a4a3fd1",
+    bounds: [0.7774, 0.7276, 1.9027]
   },
   teleopBus: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehBoxTruck.8cf91d05.glb",
-    hash: "sha256-8cf91d0505f83b8caf170b60d5590987cf11a094005702df0ce7f3ce509c114b",
-    bounds: [0.6786, 0.8458, 1.9016]
+    url: "/aura-assets/teleopVehBoxTruck.de4b81d4.glb",
+    hash: "sha256-de4b81d45d5203751d7872ebde6c437ef1348d71495d8fe77442100f0422d920",
+    bounds: [0.9023, 1.0833, 1.9004]
+  },
+  teleopBldg_victorian: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_victorian.39183fbd.glb",
+    hash: "sha256-39183fbdb70ed181352c097a0fbdf6ceaa3bceb21481f22b48e57b3509513aa0",
+    bounds: [0.912, 1.737, 1.918]
+  },
+  teleopBldg_midrise: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_midrise.900faa17.glb",
+    hash: "sha256-900faa17b4ef1e68ade58153dd5276b66d9adf1cdb34e52b2ea4c5a19e4dec12",
+    bounds: [1.85, 1.893, 1.641]
+  },
+  teleopBldg_glasstower: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_glasstower.6338509c.glb",
+    hash: "sha256-6338509cd5bdf322c977c3c3999cc4f7dd7da1f9821beac6c8dbcc44f87d448a",
+    bounds: [0.844, 1.902, 0.87]
+  },
+  teleopBldg_artdeco: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/teleopBldg_artdeco.9b8dc08f.glb",
+    hash: "sha256-9b8dc08f5391bb79295dff5807225448e84876aa9c515439429b951218495771",
+    bounds: [0.952, 1.902, 0.951]
   },
   heatsinkTowerL: {
     type: "model",
@@ -229,7 +257,7 @@ const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
     id: "waymo",
     name: "Apex Lidar Cruiser",
     maker: "Apex Autonomous",
-    maxDim: 4.58,
+    maxDim: 3.9,
     rideY: 0,
     maxSpeedMps: 38,
     accel: 18,
@@ -457,6 +485,23 @@ const INTERSECTION_COUNT = 3;
 const INTERSECTION_STRIDE_Z = 92;
 const BUILDING_PAIRS = 8;
 const BUILDING_STRIDE_Z = 34;
+
+// Street-front building models (facade on +Z in the file). Left blocks are yawed +90 degrees and right blocks -90 degrees so
+// the facade faces the road; "depth" runs along the file's z axis (away from the road) and "frontage" along its x axis.
+const BUILDING_SPECS = [
+  { key: "teleopBldg_victorian", x: 0.912, y: 1.737, z: 1.918 },
+  { key: "teleopBldg_glasstower", x: 0.844, y: 1.902, z: 0.87 },
+  { key: "teleopBldg_midrise", x: 1.85, y: 1.893, z: 1.641 },
+  { key: "teleopBldg_artdeco", x: 0.952, y: 1.902, z: 0.951 }
+] as const;
+const BUILDING_ROAD_EDGE_X = 19.5;
+const BUILDING_MAX_DEPTH = 24;
+const BUILDING_MAX_FRONTAGE = 30;
+
+function buildingLayout(spec: (typeof BUILDING_SPECS)[number], targetHeight: number): { scale: number; maxDim: number; centerX: number; height: number } {
+  const scale = Math.min(targetHeight / spec.y, BUILDING_MAX_DEPTH / spec.z, BUILDING_MAX_FRONTAGE / spec.x);
+  return { scale, maxDim: Math.max(spec.x, spec.y, spec.z) * scale, centerX: BUILDING_ROAD_EDGE_X + (spec.z * scale) / 2, height: spec.y * scale };
+}
 const LAMP_PAIRS = 6;
 const LAMP_STRIDE_Z = 38;
 const PATH_RIBBON_COUNT = 9;
@@ -895,38 +940,18 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
   }
 
   // 6. San Francisco Street-Front Buildings (Victorian, Edwardian, Chinatown & FiDi Mid-Rises) & Streetlamps/Trees
-  const buildingPalette = [
-    "#cbd5e1",
-    "#94a3b8",
-    "#d6c7b2",
-    "#7f1d1d",
-    "#334155",
-    "#e2e8f0",
-    "#475569",
-    "#b45309"
-  ];
   for (let i = 0; i < BUILDING_PAIRS; i++) {
     const bz = -18 - i * BUILDING_STRIDE_Z;
-    const hL = 18 + ((i * 7) % 22);
-    const hR = 20 + ((i * 11) % 24);
-    const colL = buildingPalette[i % buildingPalette.length]!;
-    const colR = buildingPalette[(i + 3) % buildingPalette.length]!;
+    const spec = BUILDING_SPECS[i % BUILDING_SPECS.length]!;
+    const specR = BUILDING_SPECS[(i + 1) % BUILDING_SPECS.length]!;
+    const lay = buildingLayout(spec, 18 + ((i * 7) % 22));
+    const layR = buildingLayout(specR, 20 + ((i * 11) % 24));
     s.addMany([
-      primitives
-        .box({
-          name: `sf-bldg-l-${i}`,
-          size: [14, hL, 22],
-          material: material.pbr({ color: colL, roughness: 0.62, metalness: 0.18 })
-        })
-        .position(-26.5, hL * 0.5, bz)
+      model(assets[spec.key], { name: `sf-bldg-l-${i}`, role: "setDressing", scaleMode: "fit", targetMaxDimension: lay.maxDim })
+        .position(-lay.centerX, 0, bz)
         .runtime(game.runtimeNode(`sf-bldg-l-${i}`)),
-      primitives
-        .box({
-          name: `sf-bldg-r-${i}`,
-          size: [14, hR, 22],
-          material: material.pbr({ color: colR, roughness: 0.62, metalness: 0.18 })
-        })
-        .position(26.5, hR * 0.5, bz)
+      model(assets[specR.key], { name: `sf-bldg-r-${i}`, role: "setDressing", scaleMode: "fit", targetMaxDimension: layR.maxDim })
+        .position(layR.centerX, 0, bz)
         .runtime(game.runtimeNode(`sf-bldg-r-${i}`))
     ]);
   }
@@ -1182,7 +1207,7 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
       name: "peer-car-0",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 4.58
+      targetMaxDimension: 3.9
     })
       .position(-3.2, 0, -24)
       .runtime(game.runtimeNode("peer-car-0")),
@@ -1426,12 +1451,16 @@ async function bootGridDispatchAura3D(): Promise<void> {
     lightL: req(`sf-sig-light-l-${i}`)
   }));
 
-  const buildingHandles = Array.from({ length: BUILDING_PAIRS }, (_, i) => ({
-    left: req(`sf-bldg-l-${i}`),
-    right: req(`sf-bldg-r-${i}`),
-    hL: 18 + ((i * 7) % 22),
-    hR: 20 + ((i * 11) % 24)
-  }));
+  const buildingHandles = Array.from({ length: BUILDING_PAIRS }, (_, i) => {
+    const lay = buildingLayout(BUILDING_SPECS[i % BUILDING_SPECS.length]!, 18 + ((i * 7) % 22));
+    const layR = buildingLayout(BUILDING_SPECS[(i + 1) % BUILDING_SPECS.length]!, 20 + ((i * 11) % 24));
+    const left = req(`sf-bldg-l-${i}`);
+    const right = req(`sf-bldg-r-${i}`);
+    left.setRotation(0, Math.PI / 2, 0);
+    right.setRotation(0, -Math.PI / 2, 0);
+    return { left, right, xL: lay.centerX, xR: layR.centerX };
+  });
+
 
   const lampHandles = Array.from({ length: LAMP_PAIRS }, (_, i) => ({
     lampL: req(`sf-lamp-l-${i}`),
@@ -2676,8 +2705,8 @@ async function bootGridDispatchAura3D(): Promise<void> {
     for (let i = 0; i < BUILDING_PAIRS; i++) {
       const bz = rz(bldgBaseZ - i * BUILDING_STRIDE_Z);
       const b = buildingHandles[i]!;
-      b.left.setPosition(rx(-26.5), ry(b.hL * 0.5), bz);
-      b.right.setPosition(rx(26.5), ry(b.hR * 0.5), bz);
+      b.left.setPosition(rx(-b.xL), ry(0), bz);
+      b.right.setPosition(rx(b.xR), ry(0), bz);
     }
 
     const lampBaseZ = Math.floor(playerZ / LAMP_STRIDE_Z) * LAMP_STRIDE_Z + LAMP_STRIDE_Z;

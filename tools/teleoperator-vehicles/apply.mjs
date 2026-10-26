@@ -38,7 +38,7 @@ const FILE_STEM = {
   van: "teleopVehVan",
   boxtruck: "teleopVehBoxTruck"
 };
-const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-24";
+const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-25";
 
 await MeshoptDecoder.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ "meshopt.decoder": MeshoptDecoder });
@@ -94,8 +94,9 @@ for (const model of new Set(Object.values(MODEL_FOR_KEY))) {
 const jsonPath = join(root, "aura.assets.json");
 const jsonText = readFileSync(jsonPath, "utf8");
 const manifest = JSON.parse(jsonText);
-if (JSON.stringify(manifest, null, 2) + "\n" !== jsonText && JSON.stringify(manifest, null, 2) !== jsonText)
-  throw new Error("aura.assets.json does not round-trip through JSON.stringify; edit textually instead");
+// \uXXXX escapes in the committed file become literal characters on rewrite; any other drift is an error.
+const canon = (t) => JSON.stringify(JSON.parse(t), null, 2);
+if (canon(jsonText) + "\n" !== JSON.stringify(manifest, null, 2) + "\n") throw new Error("aura.assets.json parse mismatch");
 for (const entry of manifest.assets) {
   const model = MODEL_FOR_KEY[entry.name];
   if (!model || !info[model]) continue;

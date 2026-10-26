@@ -1,0 +1,13 @@
+{
+  "suffix": "stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+  "vehicles": {
+    "robotaxi": "a futuristic driverless electric shuttle pod, smooth egg-shaped rounded body, wide panoramic glass canopy, nearly symmetric front and rear, pearl white paint with teal lower trim, a thin flat sensor strip on the roof, glowing teal light bar across the front",
+    "hatch": "a tiny rounded two-door electric city car, bubble-shaped body, short overhangs, bright orange paint with a cream roof, large round headlights",
+    "sedan": "a four-door three-box sedan with flat angular retro-futuristic panels, matte sand-beige paint, dark tinted windows, slim horizontal tail light bar",
+    "coupe": "a low wedge-shaped two-door sports coupe with sharp angular panels, glossy lemon-yellow paint, black roof, slim light bars, no wing",
+    "van": "a boxy delivery van with a tall rounded cargo body, sliding side door, plain white paint with a navy lower band, short bonnet",
+    "pickup": "a rugged double-cab pickup truck with an open cargo bed, squared wheel arches, matte forest-green paint, chunky off-road tyres",
+    "boxtruck": "a medium box truck with a tall rectangular cargo box on a cab chassis, plain pale grey paint with a single red lower stripe, roll-up rear door",
+    "roadster": "a sleek low open-top two-seat electric roadster, wide stance, smooth aerodynamic fenders, metallic electric-blue paint, slim light bars front and rear"
+  }
+}

@@ -102,3 +102,13 @@ The hero's feet slid at sprint (about 23% of ground speed by the 4.2.0 estimate,
 **Closed:** the placeholder houses, stalls, pagoda stacks, valley cliffs, rocks, tufts, hills and fences in `examples/ninja-runner-port` are replaced by ten generated models (`houseC`, `houseD`, `teahouse`, `marketStall`, `cliffA`, `cliffB`, `boulder`, `bush`, `ridge`, `fenceRail`). Before/after frames and budgets: `evidence/ninja-runner-port/art-pass/README.md`; credits, prompts and task ids: `examples/ninja-runner-port/assets/ATTRIBUTION.md`.
 
 **Still open (this game):** sun shadows stay off (engine receive defect, `evidence/ninja-runner-port/parity-closeout/README.md`); the stone cottage `houseC` is very dark against the grass; the bridge deck is flat brown planks; foreground oaks and pines keep their faceted leaf cards (existing models).
+## Teleoperator art pass (lane p1-art-teleoperator, 2026-10-25)
+
+**Closed.** The needs-art item "Teleoperator silhouettes" (a hero that still read as a real robotaxi with a smudged texture, traffic resembling familiar cars, and single-colour box buildings) is done in `apps/showcase-teleoperator`: seven generated vehicles (a rounded shuttle pod, hatch, notchback sedan, wedge coupe, van, pickup, box truck; the roadster is unchanged) and four generated building models (Victorian townhouse, brick mid-rise, glass tower, art-deco tower) replace the old files and the 16 box buildings. Provenance, prompts, Meshy task ids and measured numbers (GL draw calls 691 to about 630 per frame; software-GL wall-clock per frame is higher, not reliable across workers) are in `evidence/teleoperator/art-pass/`; final frames and cards are recaptured in `evidence/teleoperator/screens/final/`.
+
+**Still open.**
+- `apps/showcase-teleoperator-v2` has the new vehicles and pod size but still draws box buildings.
+- The pod has window openings with no glass pane (the seat is visible, painted as dark glass); its window edges look rough in side and front close-ups, and the Roof LiDAR and Bumper cameras were not checked.
+- No real-GPU run; the higher software-GL frame time is unmeasured on a GPU.
+- The name-tag overlap at 1280 and the stacked HUD at 390 (listed in `evidence/teleoperator/screens/final/README.md`) are UI problems and were not touched.
+- Card previews of other games (diamond, fc, hoops, links, slingshot) in `public/previews/showcase-index/` and `marketing/public/previews/showcase-index/` are stale against their newer `evidence/*/screens/final` cards: run `node tools/site/build-card-images.mjs` before the next deploy.

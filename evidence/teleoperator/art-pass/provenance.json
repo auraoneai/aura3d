@@ -1,0 +1,167 @@
+{
+  "date": "2026-10-25",
+  "generator": "Meshy text-to-3D (preview + refine, 2k PBR) through Kiro Prism; no image input, no brand words",
+  "rights": "Meshy plan terms of the AuraOne account at generation time (not CC0, no exclusivity claimed)",
+  "assets": [
+    {
+      "key": "robotaxi",
+      "file": "teleopVehRobotaxi.1f39a6be.glb",
+      "sha256": "1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
+      "bytes": 782864,
+      "prompt": "a futuristic driverless electric shuttle pod, smooth egg-shaped rounded body, wide panoramic glass canopy, nearly symmetric front and rear, pearl white paint with teal lower trim, a thin flat sensor strip on the roof, glowing teal light bar across the front, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+      "meshyTasks": [
+        "01a175a1-2438-76b9-b528-65cfb3586bd1",
+        "01a175a2-6eb9-7170-891c-764fe9c8dfa0",
+        "remesh 01a175ca-d61a-71bd-be5b-c98f5e3135d8"
+      ],
+      "credits": 35,
+      "postProcess": "converted to flat region materials (veh-body, veh-trim, veh-glass, veh-tyre, veh-rim) by tools/teleoperator-vehicles/flatten.mjs, as the repo guard tests/unit/likeness-audit/teleop-robotaxi-flat.test.ts requires: no baked texture atlas"
+    },
+    {
+      "key": "hatch",
+      "file": "teleopVehHatch.53933015.glb",
+      "sha256": "539330153115bc87e3174152b2a9bae64315536a6813e3ad1f26246e6e5584ae",
+      "bytes": 3399932,
+      "prompt": "a tiny rounded two-door electric city car, bubble-shaped body, short overhangs, bright orange paint with a cream roof, large round headlights, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+      "meshyTasks": [
+        "01a1759d-1302-7072-b317-5e2e66c2d861",
+        "01a1759d-dd2f-75e9-8831-0ad29ff23c95",
+        "remesh 01a175ca-e935-775c-a154-d702775e3352"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "sedan",
+      "file": "teleopVehSedan.431efea6.glb",
+      "sha256": "431efea6742402eacb7aa4543c9223391a87fe7d66aee20e356a63f2d4af9596",
+      "bytes": 3267128,
+      "prompt": "a boxy four-door notchback sedan with a clearly separate boot lid, flat angular retro-futuristic panels, matte sand-beige paint, dark tinted windows, slim horizontal tail light bar, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+      "meshyTasks": [
+        "01a175a1-742d-7239-97c1-69e28c554cb8",
+        "01a175a2-1dab-76cf-8a3e-64f3d54fd6a4",
+        "remesh 01a175ca-ffa4-74e1-8928-bb5aefabe36a"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "coupe",
+      "file": "teleopVehCoupe.83b731ca.glb",
+      "sha256": "83b731ca6b1fd5d63f81d5fa2308dfc071a9ec07d744c03e3790c3f4fbb34631",
+      "bytes": 4134452,
+      "prompt": "a low angular wedge-shaped electric sports car, flat sharp folded-panel bodywork, long flat bonnet, canopy-style glass cabin, glowing slim front and rear light bars, glossy lemon-yellow paint with black roof, no wing, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+      "meshyTasks": [
+        "01a175a1-54f8-7332-9e69-de523ae15d89",
+        "01a175a2-9d8b-7619-a484-785483b8e067",
+        "remesh30000 01a175d1-20ff-70fc-a1a8-cd24847eaa14"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "van",
+      "file": "teleopVehVan.6e9c71d7.glb",
+      "sha256": "6e9c71d779c64bc31fe74c6f02376e3c7e809efefa113f1b7f46426be1863e37",
+      "bytes": 4114448,
+      "prompt": "a boxy delivery van with a tall rounded cargo body, sliding side door, plain white paint with a navy lower band, short bonnet, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+      "meshyTasks": [
+        "01a1759d-5ca0-73e9-a415-9e4ccd1e0fd1",
+        "01a1759e-a910-7437-8f37-7483ae40e4db",
+        "remesh 01a175a2-2ae5-709e-a8c8-8f0dd1213e79"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "pickup",
+      "file": "teleopVehPickup.aaee30b6.glb",
+      "sha256": "aaee30b6487d0b33f436eec2885f9c39a258a31259569a60084a48f67a4a3fd1",
+      "bytes": 3694216,
+      "prompt": "a rugged double-cab pickup truck with an open cargo bed, squared wheel arches, matte forest-green paint, chunky off-road tyres, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+      "meshyTasks": [
+        "01a1759d-7018-725c-b8d5-c8e531c37dd7",
+        "01a1759e-64c9-7385-a148-21182d751e91",
+        "remesh 01a175cb-25ee-76aa-bf31-fce0f24dd637"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "boxtruck",
+      "file": "teleopVehBoxTruck.de4b81d4.glb",
+      "sha256": "de4b81d45d5203751d7872ebde6c437ef1348d71495d8fe77442100f0422d920",
+      "bytes": 3720840,
+      "prompt": "a medium box truck with a tall rectangular cargo box on a cab chassis, plain pale grey paint with a single red lower stripe, roll-up rear door, stylised game vehicle with clean simple shapes, clean uniform glossy paint in solid colours, smooth panels, no dirt, no scratches, no decals, no text, no logos, no badges, no brand marks, blank licence plates, four wheels with plain alloy rims, shown at three-quarter angle on flat ground, PBR materials",
+      "meshyTasks": [
+        "01a1759d-8767-76df-a845-40df8538828c",
+        "01a1759e-8798-7256-8a6d-2c00472b2a35",
+        "remesh 01a175cb-4a07-70a3-a88c-eb82d99d986a"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "building-victorian",
+      "file": "teleopBldg_victorian.39183fbd.glb",
+      "sha256": "39183fbdb70ed181352c097a0fbdf6ceaa3bceb21481f22b48e57b3509513aa0",
+      "bytes": 3333740,
+      "prompt": "a narrow four-storey Victorian-style city townhouse with a bay window, pastel painted wooden siding and white trim, steep cornice, stylised game building with clean simple shapes, clean painted surfaces and crisp window details, no text, no signs, no logos, flat back and flat sides, front facade only detailed, standing on a flat base",
+      "meshyTasks": [
+        "01a175a9-4abf-748a-9ecf-d67e3a93a10f",
+        "01a175aa-45cc-7761-84ba-aa7dd5d98fdc",
+        "remesh 01a175ac-f941-7601-a530-671e56165d2d"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "building-midrise",
+      "file": "teleopBldg_midrise.900faa17.glb",
+      "sha256": "900faa17b4ef1e68ade58153dd5276b66d9adf1cdb34e52b2ea4c5a19e4dec12",
+      "bytes": 3481108,
+      "prompt": "a mid-rise city apartment building with a regular grid of windows, warm brick and concrete facade, flat roof with a small rooftop water tank, stylised game building with clean simple shapes, clean painted surfaces and crisp window details, no text, no signs, no logos, flat back and flat sides, front facade only detailed, standing on a flat base",
+      "meshyTasks": [
+        "01a175a9-619d-721d-92e5-63efb0dc465d",
+        "01a175aa-567d-72c7-922b-e79190610517",
+        "remesh 01a175ad-104a-7259-9e1e-79cbb95f96ad"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "building-glasstower",
+      "file": "teleopBldg_glasstower.6338509c.glb",
+      "sha256": "6338509cd5bdf322c977c3c3999cc4f7dd7da1f9821beac6c8dbcc44f87d448a",
+      "bytes": 3062652,
+      "prompt": "a modern glass office tower with a blue-green reflective curtain wall window grid and a flat roof with a small mechanical box, stylised game building with clean simple shapes, clean painted surfaces and crisp window details, no text, no signs, no logos, flat back and flat sides, front facade only detailed, standing on a flat base",
+      "meshyTasks": [
+        "01a175a9-791f-72a4-b44c-dfd409c3bab6",
+        "01a175aa-6f94-70d2-8d1f-888a6813a512",
+        "remesh 01a175ad-27eb-7285-b2cb-9bb3230e36f1"
+      ],
+      "credits": 35
+    },
+    {
+      "key": "building-artdeco",
+      "file": "teleopBldg_artdeco.9b8dc08f.glb",
+      "sha256": "9b8dc08f5391bb79295dff5807225448e84876aa9c515439429b951218495771",
+      "bytes": 2769760,
+      "prompt": "an art-deco stepped tower with a pale limestone facade, vertical fins and setback upper floors, stylised game building with clean simple shapes, clean painted surfaces and crisp window details, no text, no signs, no logos, flat back and flat sides, front facade only detailed, standing on a flat base",
+      "meshyTasks": [
+        "01a175a9-9086-72f7-a569-0c1043da0398",
+        "01a175aa-3a47-7012-a0f0-2fc5b30bca73",
+        "remesh 01a175ad-3fc5-72f1-8ced-ca9285099d1e"
+      ],
+      "credits": 35
+    }
+  ],
+  "notShipped": [
+    {
+      "key": "roadster-v2",
+      "note": "generated (preview 01a175a1... family, remeshed 01a175a2-3e85-7133-a23b-b04ea7bb94c5): rear and front texture transfer artefacts after remesh, so the shipped roadster is unchanged (teleopVehRoadster.35a1e8b7)"
+    },
+    {
+      "key": "coupe-v1, sedan-v1",
+      "note": "first-pass coupe and sedan read as specific real cars (sports coupe, wagon); regenerated with sharper prompts"
+    },
+    {
+      "key": "coupe-remesh-20000, coupe-remesh-36000",
+      "note": "the 20k remesh left jagged dark patches on the nose and tail; a 36k remesh was generated for comparison; the 30k remesh ships (25,353 triangles)"
+    }
+  ],
+  "ledgerTagTotalAfterPass": 735,
+  "ledgerTagTotalBeforePass": 255
+}

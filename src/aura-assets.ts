@@ -123342,14 +123342,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopBus": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehBoxTruck.8cf91d05.glb",
-    hash: "sha256-8cf91d0505f83b8caf170b60d5590987cf11a094005702df0ce7f3ce509c114b",
+    url: "/aura-assets/teleopVehBoxTruck.de4b81d4.glb",
+    hash: "sha256-de4b81d45d5203751d7872ebde6c437ef1348d71495d8fe77442100f0422d920",
     bounds: [
-      0.6786,
-      0.8458,
-      1.9016
+      0.9023,
+      1.0833,
+      1.9004
     ],
-    sizeBytes: 2080112,
+    sizeBytes: 3720840,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123360,7 +123360,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoid": false,
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
-      "sourcePath": "public/aura-assets/teleopVehBoxTruck.8cf91d05.glb",
+      "sourcePath": "public/aura-assets/teleopVehBoxTruck.de4b81d4.glb",
       "nodeNames": [],
       "dependencies": [],
       "quality": "approved",
@@ -123411,14 +123411,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopCorvette": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehCoupe.7f3a1b6a.glb",
-    hash: "sha256-7f3a1b6ab764b97e22d51060d175532d4b4d6646295d07372283c96548f6e87d",
+    url: "/aura-assets/teleopVehCoupe.83b731ca.glb",
+    hash: "sha256-83b731ca6b1fd5d63f81d5fa2308dfc071a9ec07d744c03e3790c3f4fbb34631",
     bounds: [
-      0.8532,
-      0.5828,
-      1.9025
+      0.9245,
+      0.5271,
+      1.9061
     ],
-    sizeBytes: 1546796,
+    sizeBytes: 4134452,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123430,17 +123430,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopVehCoupe.7f3a1b6a.glb",
+      "sourcePath": "public/aura-assets/teleopVehCoupe.83b731ca.glb",
       "boundsMetadata": {
         "min": [
-          -0.4266,
+          -0.4623,
           0,
-          -0.9512
+          -0.9502
         ],
         "max": [
-          0.4266,
-          0.5828,
-          0.9512
+          0.4623,
+          0.5271,
+          0.9559
         ]
       },
       "nodeNames": [],
@@ -123452,14 +123452,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopCybercab": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehHatch.67925e22.glb",
-    hash: "sha256-67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
+    url: "/aura-assets/teleopVehHatch.53933015.glb",
+    hash: "sha256-539330153115bc87e3174152b2a9bae64315536a6813e3ad1f26246e6e5584ae",
     bounds: [
-      1.0178,
-      1.0578,
-      1.9025
+      1.2939,
+      1.1513,
+      1.9016
     ],
-    sizeBytes: 1477612,
+    sizeBytes: 3399932,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123471,17 +123471,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopVehHatch.67925e22.glb",
+      "sourcePath": "public/aura-assets/teleopVehHatch.53933015.glb",
       "boundsMetadata": {
         "min": [
-          -0.5089,
+          -0.647,
           0,
-          -0.9512
+          -0.9508
         ],
         "max": [
-          0.5089,
-          1.0578,
-          0.9512
+          0.647,
+          1.1513,
+          0.9508
         ]
       },
       "nodeNames": [],
@@ -123493,14 +123493,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopCybertruck": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehPickup.75a710f9.glb",
-    hash: "sha256-75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
+    url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
+    hash: "sha256-aaee30b6487d0b33f436eec2885f9c39a258a31259569a60084a48f67a4a3fd1",
     bounds: [
-      0.8166,
-      0.7167,
+      0.7774,
+      0.7276,
       1.9027
     ],
-    sizeBytes: 1953404,
+    sizeBytes: 3694216,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123512,17 +123512,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopVehPickup.75a710f9.glb",
+      "sourcePath": "public/aura-assets/teleopVehPickup.aaee30b6.glb",
       "boundsMetadata": {
         "min": [
-          -0.4083,
+          -0.3887,
           0,
-          -0.9514
+          -0.9513
         ],
         "max": [
-          0.4083,
-          0.7167,
-          0.9514
+          0.3887,
+          0.7276,
+          0.9513
         ]
       },
       "nodeNames": [],
@@ -123575,14 +123575,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopPickup": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehPickup.75a710f9.glb",
-    hash: "sha256-75a710f990d0ad35bd10bc769365b558693271bde01abc65ea492d4095a288fd",
+    url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
+    hash: "sha256-aaee30b6487d0b33f436eec2885f9c39a258a31259569a60084a48f67a4a3fd1",
     bounds: [
-      0.8166,
-      0.7167,
+      0.7774,
+      0.7276,
       1.9027
     ],
-    sizeBytes: 1953404,
+    sizeBytes: 3694216,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123593,7 +123593,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoid": false,
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
-      "sourcePath": "public/aura-assets/teleopVehPickup.75a710f9.glb",
+      "sourcePath": "public/aura-assets/teleopVehPickup.aaee30b6.glb",
       "nodeNames": [],
       "dependencies": [],
       "quality": "approved",
@@ -123603,14 +123603,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopSedan": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehSedan.7bc528fc.glb",
-    hash: "sha256-7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
+    url: "/aura-assets/teleopVehSedan.431efea6.glb",
+    hash: "sha256-431efea6742402eacb7aa4543c9223391a87fe7d66aee20e356a63f2d4af9596",
     bounds: [
-      0.8674,
-      0.6622,
-      1.9013
+      0.8144,
+      0.6568,
+      1.9007
     ],
-    sizeBytes: 2084388,
+    sizeBytes: 3267128,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123621,7 +123621,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoid": false,
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
-      "sourcePath": "public/aura-assets/teleopVehSedan.7bc528fc.glb",
+      "sourcePath": "public/aura-assets/teleopVehSedan.431efea6.glb",
       "nodeNames": [],
       "dependencies": [],
       "quality": "approved",
@@ -123631,14 +123631,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopSuv": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehHatch.67925e22.glb",
-    hash: "sha256-67925e2257f80748e7228359b4c1f97500399245dfe9b07a70e2d27ecd3f68c1",
+    url: "/aura-assets/teleopVehHatch.53933015.glb",
+    hash: "sha256-539330153115bc87e3174152b2a9bae64315536a6813e3ad1f26246e6e5584ae",
     bounds: [
-      1.0178,
-      1.0578,
-      1.9025
+      1.2939,
+      1.1513,
+      1.9016
     ],
-    sizeBytes: 1477612,
+    sizeBytes: 3399932,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123649,7 +123649,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoid": false,
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
-      "sourcePath": "public/aura-assets/teleopVehHatch.67925e22.glb",
+      "sourcePath": "public/aura-assets/teleopVehHatch.53933015.glb",
       "nodeNames": [],
       "dependencies": [],
       "quality": "approved",
@@ -123659,14 +123659,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopTaxi": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehSedan.7bc528fc.glb",
-    hash: "sha256-7bc528fce26c70feede6e058ff20d4ff36d1b5f7885168a75536aad89d8d5854",
+    url: "/aura-assets/teleopVehSedan.431efea6.glb",
+    hash: "sha256-431efea6742402eacb7aa4543c9223391a87fe7d66aee20e356a63f2d4af9596",
     bounds: [
-      0.8674,
-      0.6622,
-      1.9013
+      0.8144,
+      0.6568,
+      1.9007
     ],
-    sizeBytes: 2084388,
+    sizeBytes: 3267128,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123677,7 +123677,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoid": false,
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
-      "sourcePath": "public/aura-assets/teleopVehSedan.7bc528fc.glb",
+      "sourcePath": "public/aura-assets/teleopVehSedan.431efea6.glb",
       "nodeNames": [],
       "dependencies": [],
       "quality": "approved",
@@ -123687,14 +123687,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopVan": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehVan.44a544bc.glb",
-    hash: "sha256-44a544bcde7b475580bbc7b3ff7a8047e9cb7cbf3dea04d34f9f50ed12084216",
+    url: "/aura-assets/teleopVehVan.6e9c71d7.glb",
+    hash: "sha256-6e9c71d779c64bc31fe74c6f02376e3c7e809efefa113f1b7f46426be1863e37",
     bounds: [
-      0.9098,
-      1.0016,
-      1.9027
+      0.895,
+      1.1164,
+      1.9004
     ],
-    sizeBytes: 1573776,
+    sizeBytes: 4114448,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123705,7 +123705,7 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoid": false,
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
-      "sourcePath": "public/aura-assets/teleopVehVan.44a544bc.glb",
+      "sourcePath": "public/aura-assets/teleopVehVan.6e9c71d7.glb",
       "nodeNames": [],
       "dependencies": [],
       "quality": "approved",
@@ -123715,14 +123715,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopWaymoHero": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
-    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
+    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
+    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
     bounds: [
-      0.9293,
-      0.9414,
-      1.9037
+      0.8921,
+      1.4132,
+      1.9017
     ],
-    sizeBytes: 1054364,
+    sizeBytes: 782864,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123734,17 +123734,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
+      "sourcePath": "public/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
       "boundsMetadata": {
         "min": [
-          -0.4647,
+          -0.4461,
           0,
-          -0.9518
+          -0.9508
         ],
         "max": [
-          0.4647,
-          0.9414,
-          0.9518
+          0.4461,
+          1.4132,
+          0.9508
         ]
       },
       "nodeNames": [],
@@ -123756,14 +123756,14 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
   "teleopWaymoTraffic": {
     type: "model",
     format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
-    hash: "sha256-e8b4f052b5aaebd0af2213c0b4eaebeb72b1dbb07ca8109eceaebfe5807a12b4",
+    url: "/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
+    hash: "sha256-1f39a6beccf6fb38e534ec2a1e17b6a54d415cf4a1addaaa695ac6baa5a297da",
     bounds: [
-      0.9293,
-      0.9414,
-      1.9037
+      0.8921,
+      1.4132,
+      1.9017
     ],
-    sizeBytes: 1054364,
+    sizeBytes: 782864,
     metadata: {
       "animations": [],
       "animationClips": [],
@@ -123775,17 +123775,17 @@ export const assets: AuraAssetMap<AuraGeneratedAssetDefinitions> = defineAuraAss
       "humanoidStatus": "unknown",
       "humanoidConfidence": "low",
       "morphTargets": [],
-      "sourcePath": "public/aura-assets/teleopVehRobotaxi.e8b4f052.glb",
+      "sourcePath": "public/aura-assets/teleopVehRobotaxi.1f39a6be.glb",
       "boundsMetadata": {
         "min": [
-          -0.4647,
+          -0.4461,
           0,
-          -0.9518
+          -0.9508
         ],
         "max": [
-          0.4647,
-          0.9414,
-          0.9518
+          0.4461,
+          1.4132,
+          0.9508
         ]
       },
       "nodeNames": [],
