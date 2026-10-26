@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 4.2.0
+Version: 4.3.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.3.0 (unreleased)
+## 4.3.0 (2026-10-25)
 
 - **Aura Diamond 3D: the batter stands on the ground and both hands are on the bat in every phase (solver level).** Every athlete was placed at `y + 0.94` although `scaleMode: "fit"` already grounds the model, so all of them hovered a metre above the dirt and the swing was built to hit a ball a metre too low. The top hand also used the right arm's bind directions (23 cm off the bat), the grip point was a stale estimate, and the engine's bone attachment let the bat drift 14 to 76 cm from the hands in fast segments. The solver and swing keys now live in `src/batter-pose.ts` (pure functions, `tests/unit/aura-diamond/batter-grip.test.ts` sweeps stance, load, stride, contact across the strike zone, follow-through and recovery), the bat is placed from the same solve as the arms, and the stance is a real ready position. Bone-level grip is 0.1 cm in every phase; the drawn hands still do not meet the bat because the Diamond athlete mesh is bound mid-stride to a straight skeleton (rebuild tracked by the rigs lane). Evidence: `evidence/aura-diamond-3d/bat-fix/`.
 - **Sun shadows are back in Shadowstep Gauntlet and Ion Circuit.** Shadowstep Gauntlet (2 cascades, 90 m, village models, trees and actors cast, 127 draw calls against its 133 budget) and Ion Circuit (custom road, terrain and props receive through `a3d_shadow`). `?shadow=0` restores the previous look. Mean luma with the shadow is within 2 points of the no-shadow frame in both.
