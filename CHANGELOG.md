@@ -4,6 +4,10 @@ Version: 4.3.1
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.3.2 (unreleased)
+
+- **Teleoperator renders again.** The four generated building models were never admitted in `aura.assets.json`, so the production build did not copy them (404 live) and `auraApp.ready()` rejected, leaving the 3D canvas black in 4.3.0 and 4.3.1. They are admitted now, both Teleoperator variants fall back to plain boxes if a building model is unreachable and no longer stop the simulation when `ready()` fails, and a new `deployable-assets` game check fails when a game references a `/aura-assets/` model the build would not copy.
+
 ## 4.3.1 (2026-10-26)
 
 - **Teleoperator: `showcase-teleoperator-v2` gets the generated buildings, and the shuttle pod holds up in every camera.** The four building models now line the v2 street too. The pod's window openings are filled with one dark tinted cabin box in place of the generated seats and inner walls, and the Roof LiDAR and Bumper cameras, which sat inside the taller pod and showed its shell polygons, now use pod-specific offsets (`PLAYABLE_FLEET.waymo.cams`) in both variants. Verified on the remote runner in all four cameras for `showcase-teleoperator`; `-v2` renders nothing in that harness even on 4.3.0's source, so it is unseen. Evidence: `evidence/teleoperator/art-pass/`.

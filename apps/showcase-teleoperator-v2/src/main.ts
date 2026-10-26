@@ -483,6 +483,24 @@ const BUILDING_ROAD_EDGE_X = 19.5;
 const BUILDING_MAX_DEPTH = 24;
 const BUILDING_MAX_FRONTAGE = 30;
 
+// A missing building GLB must never take the whole scene down: the production build only copies manifest-admitted assets, and
+// a 404 here rejects auraApp.ready() (4.3.0 shipped a black canvas that way). Unreachable models get a plain box instead.
+const buildingModelReachable: Record<string, boolean> = {};
+async function probeBuildingModels(): Promise<void> {
+  await Promise.all(
+    BUILDING_SPECS.map(async (spec) => {
+      try {
+        const res = await fetch(assets[spec.key].url, { method: "HEAD", cache: "force-cache" });
+        buildingModelReachable[spec.key] = res.ok && !/text\/html/i.test(res.headers.get("content-type") ?? "");
+      } catch {
+        buildingModelReachable[spec.key] = false;
+      }
+    })
+  );
+  const missing = BUILDING_SPECS.filter((spec) => buildingModelReachable[spec.key] === false).map((spec) => spec.key);
+  if (missing.length) console.error(`[teleoperator] building models unreachable, using box fallbacks: ${missing.join(", ")}`);
+}
+
 function buildingLayout(spec: (typeof BUILDING_SPECS)[number], targetHeight: number): { scale: number; maxDim: number; centerX: number; height: number } {
   const scale = Math.min(targetHeight / spec.y, BUILDING_MAX_DEPTH / spec.z, BUILDING_MAX_FRONTAGE / spec.x);
   return { scale, maxDim: Math.max(spec.x, spec.y, spec.z) * scale, centerX: BUILDING_ROAD_EDGE_X + (spec.z * scale) / 2, height: spec.y * scale };
@@ -494,6 +512,17 @@ const PATH_RIBBON_COUNT = 9;
 const SCENE_CAM_POS: Vec3 = [0, 3.4, 6.5];
 const SCENE_CAM_TARGET: Vec3 = [0, 1.0, -7.2];
 const SCENE_CAM_FOV_DEG = 56;
+
+const buildingFallbackMat = material.pbr({ color: "#94a3b8", roughness: 0.82, metalness: 0.05 });
+function buildingNode(spec: (typeof BUILDING_SPECS)[number], name: string, lay: ReturnType<typeof buildingLayout>, x: number, z: number) {
+  if (buildingModelReachable[spec.key] === false) {
+    const k = lay.maxDim / Math.max(spec.x, spec.y, spec.z);
+    return primitives
+      .box({ name, size: [spec.z * k, spec.y * k, spec.x * k], material: buildingFallbackMat })
+      .position(x, (spec.y * k) / 2, z);
+  }
+  return model(assets[spec.key], { name, role: "setDressing", scaleMode: "fit", targetMaxDimension: lay.maxDim }).position(x, 0, z);
+}
 
 function buildGridDispatchScene(): ReturnType<typeof scene> {
   const s = scene()
@@ -964,11 +993,9 @@ function buildGridDispatchScene(): ReturnType<typeof scene> {
     const lay = buildingLayout(spec, 18 + ((i * 7) % 22));
     const layR = buildingLayout(specR, 20 + ((i * 11) % 24));
     s.addMany([
-      model(assets[spec.key], { name: `sf-bldg-l-${i}`, role: "setDressing", scaleMode: "fit", targetMaxDimension: lay.maxDim })
-        .position(-lay.centerX, 0, bz)
+      buildingNode(spec, `sf-bldg-l-${i}`, lay, -lay.centerX, bz)
         .runtime(game.runtimeNode(`sf-bldg-l-${i}`)),
-      model(assets[specR.key], { name: `sf-bldg-r-${i}`, role: "setDressing", scaleMode: "fit", targetMaxDimension: layR.maxDim })
-        .position(layR.centerX, 0, bz)
+      buildingNode(specR, `sf-bldg-r-${i}`, layR, layR.centerX, bz)
         .runtime(game.runtimeNode(`sf-bldg-r-${i}`))
     ]);
   }
@@ -1408,6 +1435,7 @@ async function bootGridDispatchAura3D(): Promise<void> {
     throw new Error("Missing #c canvas element for Grid Dispatch.");
   }
 
+  await probeBuildingModels();
   const builtScene = buildGridDispatchScene();
   const auraApp = createAuraApp(canvas, {
     scene: builtScene,
@@ -2316,7 +2344,11 @@ async function bootGridDispatchAura3D(): Promise<void> {
   );
 
   // Wait for all GLB assets & scene nodes to finish loading before starting simulation or setting ready flags
-  await auraApp.ready();
+  try {
+    await auraApp.ready();
+  } catch (error) {
+    console.error("[teleoperator] scene assets failed to load; continuing with what rendered", error);
+  }
   setAutopilotLevel(autopilotLevel);
 
   // Main 60 FPS Simulation & Render Sync Loop (Required by @aura3d/engine)

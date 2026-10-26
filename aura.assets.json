@@ -163738,6 +163738,90 @@
       "warnings": [
         "bounds could not be extracted"
       ]
+    },
+    {
+      "id": "teleopBldg_victorian",
+      "name": "teleopBldg_victorian",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopBldg_victorian.39183fbd.glb",
+      "source": "public/aura-assets/teleopBldg_victorian.39183fbd.glb",
+      "sha256": "39183fbdb70ed181352c097a0fbdf6ceaa3bceb21481f22b48e57b3509513aa0",
+      "byteLength": 3333740,
+      "sizeBytes": 3333740,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-25",
+      "quality": "approved",
+      "category": "building",
+      "animations": [],
+      "type": "model",
+      "bounds": [
+        0.912,
+        1.737,
+        1.918
+      ]
+    },
+    {
+      "id": "teleopBldg_midrise",
+      "name": "teleopBldg_midrise",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopBldg_midrise.900faa17.glb",
+      "source": "public/aura-assets/teleopBldg_midrise.900faa17.glb",
+      "sha256": "900faa17b4ef1e68ade58153dd5276b66d9adf1cdb34e52b2ea4c5a19e4dec12",
+      "byteLength": 3481108,
+      "sizeBytes": 3481108,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-25",
+      "quality": "approved",
+      "category": "building",
+      "animations": [],
+      "type": "model",
+      "bounds": [
+        1.85,
+        1.893,
+        1.641
+      ]
+    },
+    {
+      "id": "teleopBldg_glasstower",
+      "name": "teleopBldg_glasstower",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopBldg_glasstower.6338509c.glb",
+      "source": "public/aura-assets/teleopBldg_glasstower.6338509c.glb",
+      "sha256": "6338509cd5bdf322c977c3c3999cc4f7dd7da1f9821beac6c8dbcc44f87d448a",
+      "byteLength": 3062652,
+      "sizeBytes": 3062652,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-25",
+      "quality": "approved",
+      "category": "building",
+      "animations": [],
+      "type": "model",
+      "bounds": [
+        0.844,
+        1.902,
+        0.87
+      ]
+    },
+    {
+      "id": "teleopBldg_artdeco",
+      "name": "teleopBldg_artdeco",
+      "kind": "model",
+      "format": "glb",
+      "url": "/aura-assets/teleopBldg_artdeco.9b8dc08f.glb",
+      "source": "public/aura-assets/teleopBldg_artdeco.9b8dc08f.glb",
+      "sha256": "9b8dc08f5391bb79295dff5807225448e84876aa9c515439429b951218495771",
+      "byteLength": 2769760,
+      "sizeBytes": 2769760,
+      "license": "Meshy generated asset (AuraOne account plan terms at generation time), original text prompt, 2026-10-25",
+      "quality": "approved",
+      "category": "building",
+      "animations": [],
+      "type": "model",
+      "bounds": [
+        0.952,
+        1.902,
+        0.951
+      ]
     }
   ]
 }
