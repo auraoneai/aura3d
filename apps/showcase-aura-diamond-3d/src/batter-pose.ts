@@ -108,6 +108,9 @@ export const unit3 = gripUnit;
 export const rotY = gripRotY;
 
 
+/** Batter yaw: right-handed box, chest turned toward the plate (the pitcher is on his left), rear shoulder toward the catcher. */
+export const BATTER_YAW = Math.PI - 1.0;
+
 /** One swing keyframe: knob target, bat direction, chest yaw, hips shift, elbow pole. */
 export interface SwingKey {
   readonly t: number;
@@ -115,25 +118,33 @@ export interface SwingKey {
   readonly D: Vec3;
   readonly phi: number;
   readonly hip: Vec3;
+  /** Front-foot stride 0 to 1 (0 = planted in the stance, 1 = landed forward). */
+  readonly stride?: number;
 }
 
-/** Stance: hands a fist in front of the back shoulder at chin height, bat leaning up and back behind the head. */
+/**
+ * Ready stance (right-handed batter, chest turned toward the plate, head turned to the pitcher): hands together a fist in front of and above
+ * the rear shoulder, rear elbow out at shoulder height, bat upright and tilted back over the rear shoulder. Hands are placed in CHEST-local
+ * coordinates (see `handsAt`) so the arms keep their reach while the hips crouch and the chest turns.
+ */
+export const STANCE_HANDS_LOCAL: Vec3 = [-0.17, 0.22, 0.23];
+/** A direction given in WORLD terms (+x toward the plate, -z toward the pitcher) as the actor-frame direction the solver wants. */
+export const dirW = (x: number, y: number, z: number): Vec3 => unit3(rotY(-BATTER_YAW, [x, y, z]));
 export const STANCE_KEY: SwingKey = {
   t: 0,
-  K: [-0.08, 0.58, 0.4],
-  D: unit3([0.2, 0.5, -0.84]),
-  phi: 0.2,
-  hip: [0, 0, 0]
+  K: [RIG.chestBind[0] + STANCE_HANDS_LOCAL[0], RIG.chestBind[1] + STANCE_HANDS_LOCAL[1], RIG.chestBind[2] + STANCE_HANDS_LOCAL[2]],
+  D: dirW(-0.1, 0.92, 0.38),
+  phi: 0,
+  hip: [-0.05, -0.07, -0.03],
+  stride: 0
 };
 /** Contact bat direction (toward the plate, level, slightly pitcher-side). */
-export const CONTACT_DIR: Vec3 = unit3([-0.99, -0.06, 0.12]);
+export const CONTACT_DIR: Vec3 = dirW(0.97, -0.06, -0.18);
 /** Elbow poles: arms hang naturally; the contact pole comes from the per-swing solve. */
-export const POLE_STANCE_R: Vec3 = unit3([-0.3, -1, -0.3]);
-export const POLE_STANCE_L: Vec3 = unit3([0.3, -1, -0.3]);
+export const POLE_STANCE_R: Vec3 = unit3([-1, 0.1, -0.15]);
+export const POLE_STANCE_L: Vec3 = unit3([0.2, -1, 0.35]);
 /** Left hand stacks just above the right on the knob. */
 export const GRIP_SPREAD = 0.09;
-/** Batter stance yaw — right-handed box, right (back) shoulder toward the catcher. */
-export const BATTER_YAW = Math.PI - 0.35;
 
 /** The engine's AnimationPose reads `{x,y,z}` / `{x,y,z,w}` objects: arrays would leave every bone untouched. */
 export const poseBonesForEngine = twoHandGripBonesForEngine;
@@ -171,8 +182,15 @@ const GRIP_RIG: TwoHandGripRig = {
 
 export interface PoseSolve {
   readonly bones: {
-    Hips: { position: Vec3 };
+    Hips: { position: Vec3; rotation: Quat };
     Spine: { rotation: Quat };
+    Head: { rotation: Quat };
+    LeftUpperLeg: { rotation: Quat };
+    LeftLowerLeg: { rotation: Quat };
+    LeftFoot: { rotation: Quat };
+    RightUpperLeg: { rotation: Quat };
+    RightLowerLeg: { rotation: Quat };
+    RightFoot: { rotation: Quat };
     Chest: { rotation: Quat };
     RightUpperArm: { rotation: Quat };
     RightForearm: { rotation: Quat };
@@ -203,10 +221,12 @@ export interface PoseSolve {
  * Solve the batter pose for (knob target K, bat direction D, chest yaw phi, hips shift) with the library's two-handed grip: both arms IK
  * onto the knob (right hand at the knob, left hand GRIP_SPREAD up the bat); a forearm twist rotates the socketed bat onto D.
  */
-export function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR: Vec3, prevTau: number, prevTauL = 0, prevGamma = 0): PoseSolve {
+export function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR: Vec3, prevTau: number, prevTauL = 0, prevGamma = 0, stride = 0): PoseSolve {
   const p = solveTwoHandGrip(GRIP_RIG, { K, D, phi, hip, pole: poleR }, { tau: prevTau, tauL: prevTauL, gamma: prevGamma });
+  const lower = lowerBodyBones(phi, hip, stride);
+  const bones = { ...p.bones, ...lower, Hips: { position: p.bones.Hips!.position, rotation: lower.Hips!.rotation } } as unknown as PoseSolve["bones"];
   return {
-    bones: p.bones as unknown as PoseSolve["bones"],
+    bones,
     tau: p.tau,
     qFa: p.qFa,
     elbow: p.elbow,
@@ -227,6 +247,76 @@ export function solveBatterPose(K: Vec3, D: Vec3, phi: number, hip: Vec3, poleR:
   };
 }
 
+/* ---------- Lower body: planted feet, knee bend, hip turn, head on the pitcher ---------- */
+const sub3 = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const THIGH = 0.4123083794;
+const SHIN = 0.3373432195;
+const HIP_JOINT_L: Vec3 = [0.1143178073, -0.0374825799, 0];
+const HIP_JOINT_R: Vec3 = [-0.1624494370, -0.0374825799, 0];
+/** Hips bone position in the actor frame at bind (the actor frame has the Chest at RIG.chestBind). */
+const HIPS_ACTOR_Y = RIG.chestBind[1] - 0.2623780598 - 0.1499303198;
+/** Ankle height with the leg straight under the hips. */
+const ANKLE_Y = HIPS_ACTOR_Y + HIP_JOINT_L[1] - THIGH - SHIN;
+/** Direction to the pitcher in the actor frame (the front foot strides along it). */
+export const PITCHER_DIR: Vec3 = dirW(0, 0, -1);
+/** Feet point at the plate (perpendicular to the pitch line). */
+export const FOOT_YAW = Math.PI / 2 - BATTER_YAW;
+/** Head turn that faces the pitcher, relative to the body. */
+export const HEAD_FACE = Math.PI - BATTER_YAW;
+export const STANCE_FOOT_HALF = 0.21;
+export const STRIDE_LEN = 0.3;
+const STRIDE_LIFT = 0.1;
+const FOOT_CENTRE: Vec3 = [-0.02, 0, 0];
+export const FRONT_FOOT_STANCE: Vec3 = [FOOT_CENTRE[0] + PITCHER_DIR[0] * STANCE_FOOT_HALF, ANKLE_Y, FOOT_CENTRE[2] + PITCHER_DIR[2] * STANCE_FOOT_HALF];
+export const BACK_FOOT_STANCE: Vec3 = [FOOT_CENTRE[0] - PITCHER_DIR[0] * STANCE_FOOT_HALF, ANKLE_Y, FOOT_CENTRE[2] - PITCHER_DIR[2] * STANCE_FOOT_HALF];
+
+/** Ankle planted at `foot`, pulled in horizontally if the leg cannot reach it. Returns the leg's local bone rotations (hips-relative). */
+function legBones(hipsPos: Vec3, qHips: Quat, off: Vec3, foot: Vec3): { qU: Quat; qL: Quat; qF: Quat } {
+  const ho = qRot(qHips, off);
+  const hj: Vec3 = [hipsPos[0] + ho[0], hipsPos[1] + ho[1], hipsPos[2] + ho[2]];
+  const reachMax = 0.985 * (THIGH + SHIN);
+  const dv = hj[1] - foot[1];
+  const hx = foot[0] - hj[0];
+  const hz = foot[2] - hj[2];
+  const hMax = Math.sqrt(Math.max(1e-6, reachMax * reachMax - dv * dv));
+  const hLen = Math.hypot(hx, hz);
+  const k = hLen > hMax ? hMax / hLen : 1;
+  const target: Vec3 = [hj[0] + hx * k, foot[1], hj[2] + hz * k];
+  const toeDir: Vec3 = [Math.sin(FOOT_YAW), 0, Math.cos(FOOT_YAW)];
+  const knee = solveTwoBone(hj, target, toeDir, THIGH, SHIN);
+  const down: Vec3 = [0, -1, 0];
+  const qUw = qFromTo(down, unit3(sub3(knee, hj)));
+  const qLw = qFromTo(down, unit3(sub3(target, knee)));
+  return {
+    qU: qMul(qConj(qHips), qUw),
+    qL: qMul(qConj(qUw), qLw),
+    qF: qMul(qConj(qLw), qAxis([0, 1, 0], FOOT_YAW))
+  };
+}
+
+/** Hips turn, crouch, legs and head for the pose's chest yaw, hip shift and stride. Hips lead the chest turn. */
+function lowerBodyBones(phi: number, hip: Vec3, stride: number): Record<string, { position?: Vec3; rotation: Quat }> {
+  const hy = 0.65 * phi;
+  const qHips = qAxis([0, 1, 0], hy);
+  const hipsPos: Vec3 = [hip[0], HIPS_ACTOR_Y + hip[1], hip[2]];
+  const s = clamp(stride, 0, 1);
+  const lift = STRIDE_LIFT * Math.sin(Math.PI * s);
+  const front: Vec3 = [FRONT_FOOT_STANCE[0] + PITCHER_DIR[0] * STRIDE_LEN * s, ANKLE_Y + lift, FRONT_FOOT_STANCE[2] + PITCHER_DIR[2] * STRIDE_LEN * s];
+  const L = legBones(hipsPos, qHips, HIP_JOINT_L, front);
+  const R = legBones(hipsPos, qHips, HIP_JOINT_R, BACK_FOOT_STANCE);
+  const headYaw = clamp(0.88 * HEAD_FACE - phi, -1.15, 1.15);
+  return {
+    Hips: { rotation: qHips },
+    Chest: { rotation: qAxis([0, 1, 0], phi - hy) },
+    Head: { rotation: qAxis([0, 1, 0], headYaw) },
+    LeftUpperLeg: { rotation: L.qU },
+    LeftLowerLeg: { rotation: L.qL },
+    LeftFoot: { rotation: L.qF },
+    RightUpperLeg: { rotation: R.qU },
+    RightLowerLeg: { rotation: R.qL },
+    RightFoot: { rotation: R.qF }
+  };
+}
 
 /** Per-swing contact configuration: sweet spot EXACTLY on the ball, on the cone. */
 export interface ContactConfig {
@@ -234,10 +324,15 @@ export interface ContactConfig {
   readonly pole: Vec3;
   readonly phi: number;
   readonly hipY: number;
-  /** Sideways hip lunge toward the plate (actor -x) for pitches off the plate. */
+  /** Hip lunge toward the plate (actor -x) for pitches off the plate. */
   readonly hipX: number;
+  /** Forward part of the same lunge (actor +z). */
+  readonly hipZ: number;
   readonly dir: Vec3;
 }
+
+/** Unit actor-frame direction to the plate (hip lunges follow it). */
+const LUNGE_DIR: Vec3 = dirW(1, 0, 0);
 
 /** Farthest the grip point is asked to be from the shoulder (the arm stays slightly bent). */
 const MAX_GRIP_REACH = 0.58;
@@ -257,21 +352,23 @@ export function buildContactConfig(ballActor: Vec3, hipY: number): ContactConfig
     const dir = unit3([CONTACT_DIR[0] * (1 - mix) + toBall[0] * mix, CONTACT_DIR[1] * (1 - mix) + toBall[1] * mix, CONTACT_DIR[2] * (1 - mix) + toBall[2] * mix]);
     const Kball: Vec3 = [ballActor[0] - dir[0] * SWEET_SPOT, ballActor[1] - dir[1] * SWEET_SPOT, ballActor[2] - dir[2] * SWEET_SPOT];
     for (let pg = 0; pg <= 36 * 4 + 3; pg++) {
-      const phi = -1.35 + (1.65 * (pg % 37)) / 36;
-      const hipX = [0, -0.1, -0.2, -0.3][Math.floor(pg / 37)]!;
-      const hip: Vec3 = [hipX, hipY, 0.1];
+      const phi = -0.5 + (1.6 * (pg % 37)) / 36;
+      const lunge = [0, 0.1, 0.2, 0.3][Math.floor(pg / 37)]!;
+      const hipX = LUNGE_DIR[0] * lunge;
+      const hipZ = 0.1 + LUNGE_DIR[2] * lunge;
+      const hip: Vec3 = [hipX, hipY, hipZ];
       // A ball past the arms' reach gets the farthest comfortable grip point on the line to it (the bat falls short of the ball).
       const sr = rotY(phi, RIG.shoulderR);
       const S: Vec3 = [RIG.chestBind[0] + hip[0] + sr[0], RIG.chestBind[1] + hip[1] + sr[1], RIG.chestBind[2] + hip[2] + sr[2]];
       const dS = Math.hypot(Kball[0] - S[0], Kball[1] - S[1], Kball[2] - S[2]);
       const k = dS > MAX_GRIP_REACH ? MAX_GRIP_REACH / dS : 1;
       const K: Vec3 = [S[0] + (Kball[0] - S[0]) * k, S[1] + (Kball[1] - S[1]) * k, S[2] + (Kball[2] - S[2]) * k];
-      const pose = solveBatterPose(K, dir, phi, hip, POLE_STANCE_R, 0, 0, 0);
+      const pose = solveBatterPose(K, dir, phi, hip, POLE_STANCE_R, 0, 0, 0, 1);
       const reachR = Math.hypot(pose.palmActor[0] - K[0], pose.palmActor[1] - K[1], pose.palmActor[2] - K[2]);
       const reachL = Math.hypot(pose.palmLActor[0] - pose.targetL[0], pose.palmLActor[1] - pose.targetL[1], pose.palmLActor[2] - pose.targetL[2]);
       const batErr = Math.acos(clamp(pose.batDir[0] * dir[0] + pose.batDir[1] * dir[1] + pose.batDir[2] * dir[2], -1, 1));
-      const score = 20 * reachR + 20 * reachL + 2 * batErr + 3 * (flexViolation(pose.flexR) + flexViolation(pose.flexL)) + 0.05 * Math.abs(phi + 0.6) + 0.1 * mix + 0.8 * Math.abs(hipX) + 3 * Math.hypot(K[0] - Kball[0], K[1] - Kball[1], K[2] - Kball[2]);
-      if (!best || score < best.score) best = { score, cfg: { K, pole: POLE_STANCE_R, phi, hipY, hipX, dir } };
+      const score = 20 * reachR + 20 * reachL + 2 * batErr + 3 * (flexViolation(pose.flexR) + flexViolation(pose.flexL)) + 0.05 * Math.abs(phi - 0.4) + 0.1 * mix + 0.8 * lunge + 3 * Math.hypot(K[0] - Kball[0], K[1] - Kball[1], K[2] - Kball[2]);
+      if (!best || score < best.score) best = { score, cfg: { K, pole: POLE_STANCE_R, phi, hipY, hipX, hipZ, dir } };
     }
   }
   return best!.cfg;
@@ -284,30 +381,43 @@ function handsAt(phi: number, hip: Vec3, local: Vec3): Vec3 {
 }
 
 /** Chest-local hand offset of the stance (what the keys below move relative to). */
-const STANCE_LOCAL: Vec3 = rotY(-STANCE_KEY.phi, [STANCE_KEY.K[0] - RIG.chestBind[0], STANCE_KEY.K[1] - RIG.chestBind[1], STANCE_KEY.K[2] - RIG.chestBind[2]]);
+const STANCE_LOCAL: Vec3 = STANCE_HANDS_LOCAL;
 const add3 = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 
-/** Swing keyframes with the per-swing contact config spliced in at t=0.5. */
+/**
+ * Swing keyframes with the per-swing contact config spliced in at t=0.5. World terms: the plate is +x, the pitcher -z, the catcher +z.
+ * load: coil back, hands back a few cm, front foot lifts, bat 45 to 60 degrees up and back; stride: foot lands, hands still back;
+ * slot: hips and shoulders open, hands lead down and forward while the barrel lags behind; contact: bat level in front of the front hip;
+ * through: bat whips on round; finish: bat wraps over the front shoulder, hands high beside it.
+ */
 export function swingKeys(c: ContactConfig | null): SwingKey[] {
   const contact: SwingKey = c
-    ? { t: SWING_CONTACT_T, K: c.K, D: c.dir, phi: c.phi, hip: [c.hipX, c.hipY, 0.1] }
-    : { t: SWING_CONTACT_T, K: [-0.24, 0.16, 0.22], D: CONTACT_DIR, phi: -0.6, hip: [0, -0.03, 0.1] };
-  const loadHip: Vec3 = [0, 0, -0.04];
-  const strideHip: Vec3 = [0, -0.015, 0.1];
-  const throughHip: Vec3 = [contact.hip[0] * 0.5, contact.hip[1], 0.1];
-  const finishHip: Vec3 = [0, -0.02, 0.1];
+    ? { t: SWING_CONTACT_T, K: c.K, D: c.dir, phi: c.phi, hip: [c.hipX, c.hipY, c.hipZ], stride: 1 }
+    : { t: SWING_CONTACT_T, K: handsAt(0.4, [0, -0.1, 0.1], [-0.12, 0.0, 0.5]), D: CONTACT_DIR, phi: 0.4, hip: [0, -0.1, 0.1], stride: 1 };
+  const loadHip: Vec3 = [-0.09, -0.08, -0.07];
+  const strideHip: Vec3 = [-0.04, -0.09, -0.01];
+  const slotHip: Vec3 = [-0.03, -0.1, 0.06];
+  const throughHip: Vec3 = [contact.hip[0] * 0.5, contact.hip[1], 0.1 + (contact.hip[2] - 0.1) * 0.5];
+  const finishHip: Vec3 = [0.02, -0.07, 0.1];
+  const finishLocal: Vec3 = [0.22, 0.26, 0.3];
   return [
-    { t: 0, K: STANCE_KEY.K, D: STANCE_KEY.D, phi: STANCE_KEY.phi, hip: [0, 0, 0] },
-    { t: 0.26, K: handsAt(0.62, loadHip, add3(STANCE_LOCAL, [-0.03, 0.02, -0.07])), D: unit3([0.1, 0.62, -0.78]), phi: 0.62, hip: loadHip },
-    { t: 0.4, K: handsAt(0.45, strideHip, add3(STANCE_LOCAL, [-0.02, -0.08, -0.04])), D: unit3([0, 0.35, -0.94]), phi: 0.45, hip: strideHip },
+    { t: 0, K: handsAt(0, STANCE_KEY.hip, STANCE_LOCAL), D: STANCE_KEY.D, phi: 0, hip: STANCE_KEY.hip, stride: 0 },
+    { t: 0.22, K: handsAt(-0.2, loadHip, add3(STANCE_LOCAL, [-0.04, 0.02, -0.07])), D: dirW(-0.25, 0.77, 0.58), phi: -0.2, hip: loadHip, stride: 0.45 },
+    { t: 0.34, K: handsAt(-0.1, strideHip, add3(STANCE_LOCAL, [-0.05, 0.0, -0.08])), D: dirW(-0.25, 0.7, 0.66), phi: -0.1, hip: strideHip, stride: 1 },
+    { t: 0.43, K: handsAt(0.2, slotHip, add3(STANCE_LOCAL, [-0.02, -0.09, 0.05])), D: dirW(0.1, 0.4, 0.9), phi: 0.2, hip: slotHip, stride: 1 },
     contact,
-    { t: 0.62, K: handsAt(-0.95, throughHip, add3(STANCE_LOCAL, [0.08, -0.22, 0.02])), D: unit3([-0.55, 0.1, 0.83]), phi: -0.95, hip: throughHip },
-    { t: 0.85, K: handsAt(-1.55, finishHip, add3(STANCE_LOCAL, [0.2, 0.0, 0.0])), D: unit3([0.55, 0.72, -0.42]), phi: -1.55, hip: finishHip },
-    { t: 1, K: handsAt(-1.55, finishHip, add3(STANCE_LOCAL, [0.2, 0.0, 0.0])), D: unit3([0.55, 0.72, -0.42]), phi: -1.55, hip: finishHip }
+    { t: 0.62, K: handsAt(1.0, throughHip, add3(STANCE_LOCAL, [0.0, -0.1, 0.1])), D: dirW(-0.6, 0.1, -0.8), phi: 1.0, hip: throughHip, stride: 1 },
+    { t: 0.85, K: handsAt(1.5, finishHip, finishLocal), D: dirW(-0.6, 0.0, 0.8), phi: 1.5, hip: finishHip, stride: 1 },
+    { t: 1, K: handsAt(1.5, finishHip, finishLocal), D: dirW(-0.6, 0.0, 0.8), phi: 1.5, hip: finishHip, stride: 1 }
   ];
 }
 
-export function sampleSwing(t: number, contactCfg: ContactConfig | null): { K: Vec3; D: Vec3; phi: number; hip: Vec3; pole: Vec3 } {
+/** Chest-local hand offset of a key: interpolated in the turning chest's frame so the hands never cut through the shoulder when the chest rotates fast. */
+function localOf(k: SwingKey): Vec3 {
+  return rotY(-k.phi, [k.K[0] - RIG.chestBind[0] - k.hip[0], k.K[1] - RIG.chestBind[1] - k.hip[1], k.K[2] - RIG.chestBind[2] - k.hip[2]]);
+}
+
+export function sampleSwing(t: number, contactCfg: ContactConfig | null): { K: Vec3; D: Vec3; phi: number; hip: Vec3; pole: Vec3; stride: number; local: Vec3 } {
   const keys = swingKeys(contactCfg);
   const finish = keys[keys.length - 1]!;
   const pick = (t01: number) => {
@@ -318,15 +428,22 @@ export function sampleSwing(t: number, contactCfg: ContactConfig | null): { K: V
         const raw = (t01 - a.t) / (b.t - a.t || 1);
         // The bat is at full speed when it meets the ball: accelerate into the contact key and leave it decelerating (smoothstep would stop the bat dead there).
         const u = b.t === SWING_CONTACT_T ? raw * raw : a.t === SWING_CONTACT_T ? 1 - (1 - raw) * (1 - raw) : smoothstep(raw);
+        const la = localOf(a);
+        const lb = localOf(b);
+        const phi = lerp(a.phi, b.phi, u);
+        const hip: Vec3 = [lerp(a.hip[0], b.hip[0], u), lerp(a.hip[1], b.hip[1], u), lerp(a.hip[2], b.hip[2], u)];
+        const local: Vec3 = [lerp(la[0], lb[0], u), lerp(la[1], lb[1], u), lerp(la[2], lb[2], u)];
         return {
-          K: [lerp(a.K[0], b.K[0], u), lerp(a.K[1], b.K[1], u), lerp(a.K[2], b.K[2], u)] as Vec3,
+          K: handsAt(phi, hip, local),
+          local,
           D: unit3([lerp(a.D[0], b.D[0], u), lerp(a.D[1], b.D[1], u), lerp(a.D[2], b.D[2], u)]),
-          phi: lerp(a.phi, b.phi, u),
-          hip: [lerp(a.hip[0], b.hip[0], u), lerp(a.hip[1], b.hip[1], u), lerp(a.hip[2], b.hip[2], u)] as Vec3
+          phi,
+          hip,
+          stride: lerp(a.stride ?? 0, b.stride ?? 0, u)
         };
       }
     }
-    return { K: finish.K, D: finish.D, phi: finish.phi, hip: finish.hip };
+    return { K: finish.K, local: localOf(finish), D: finish.D, phi: finish.phi, hip: finish.hip, stride: finish.stride ?? 0 };
   };
   const s = pick(clamp(t, 0, 1));
   // Blend the elbow pole toward the calibrated contact pole around contact.
@@ -335,27 +452,72 @@ export function sampleSwing(t: number, contactCfg: ContactConfig | null): { K: V
   return { ...s, pole: unit3([lerp(POLE_STANCE_R[0], cp[0], w), lerp(POLE_STANCE_R[1], cp[1], w), lerp(POLE_STANCE_R[2], cp[2], w)]) };
 }
 
+/**
+ * The bat direction the arms can actually hold from `K`: the forearm sits at the grip's fixed angle to the bat, so the bat's angle to the
+ * shoulder-to-hand line must lie inside the elbow's reachable cone. Targets outside it are rotated to its nearest edge (the swing keys stay
+ * readable as bat poses, the solver never folds an arm to chase an impossible direction).
+ */
+export function feasibleBatDir(K: Vec3, D: Vec3, phi: number, hip: Vec3): Vec3 {
+  const sr = rotY(phi, RIG.shoulderR);
+  const v: Vec3 = [K[0] - (RIG.chestBind[0] + hip[0] + sr[0]), K[1] - (RIG.chestBind[1] + hip[1] + sr[1]), K[2] - (RIG.chestBind[2] + hip[2] + sr[2])];
+  const d = Math.hypot(v[0], v[1], v[2]);
+  if (d < 1e-4) return D;
+  const u: Vec3 = [v[0] / d, v[1] / d, v[2] / d];
+  const alpha = Math.acos(clamp((RIG.foreHand * RIG.foreHand + d * d - RIG.upperArm * RIG.upperArm) / (2 * RIG.foreHand * d), -1, 1));
+  const theta = Math.acos(BAT_CONE_COS);
+  const margin = 0.06;
+  const lo = Math.abs(theta - alpha) + margin;
+  const hi = theta + alpha - margin;
+  if (hi <= lo) return D;
+  const ang = Math.acos(clamp(D[0] * u[0] + D[1] * u[1] + D[2] * u[2], -1, 1));
+  if (ang >= lo && ang <= hi) return D;
+  const want = clamp(ang, lo, hi);
+  const along = D[0] * u[0] + D[1] * u[1] + D[2] * u[2];
+  let perp: Vec3 = [D[0] - u[0] * along, D[1] - u[1] * along, D[2] - u[2] * along];
+  if (Math.hypot(perp[0], perp[1], perp[2]) < 1e-4) perp = Math.abs(u[1]) < 0.9 ? [-u[2], 0, u[0]] : [1, 0, 0];
+  perp = unit3(perp);
+  return unit3([u[0] * Math.cos(want) + perp[0] * Math.sin(want), u[1] * Math.cos(want) + perp[1] * Math.sin(want), u[2] * Math.cos(want) + perp[2] * Math.sin(want)]);
+}
+
+/** Keep the grip point off the rear shoulder: closer than this folds the elbow flat against the arm. */
+const MIN_GRIP_REACH = 0.2;
+function keepArmReach(K: Vec3, phi: number, hip: Vec3): Vec3 {
+  const sr = rotY(phi, RIG.shoulderR);
+  const S: Vec3 = [RIG.chestBind[0] + hip[0] + sr[0], RIG.chestBind[1] + hip[1] + sr[1], RIG.chestBind[2] + hip[2] + sr[2]];
+  const v: Vec3 = [K[0] - S[0], K[1] - S[1], K[2] - S[2]];
+  const d = Math.hypot(v[0], v[1], v[2]);
+  if (d >= MIN_GRIP_REACH) return K;
+  const u: Vec3 = d < 1e-4 ? rotY(phi, [0, 0, 1]) : [v[0] / d, v[1] / d, v[2] / d];
+  return [S[0] + u[0] * MIN_GRIP_REACH, S[1] + u[1] * MIN_GRIP_REACH, S[2] + u[2] * MIN_GRIP_REACH];
+}
+
 export interface PoseTarget {
   readonly K: Vec3;
   readonly D: Vec3;
   readonly phi: number;
   readonly hip: Vec3;
   readonly pole: Vec3;
+  readonly stride: number;
 }
 
 /** The pose target for this frame: the swing sample, the recovery blend back to stance, or the idle stance sway. */
 export function sampleBatterTarget(drive: { active: boolean; t: number; recover: number; contact: ContactConfig | null }, now: number): PoseTarget {
-  let sampled: PoseTarget = sampleSwing(drive.active ? drive.t : 0, drive.contact);
+  const drive0 = sampleSwing(drive.active ? drive.t : 0, drive.contact);
+  let sampled: PoseTarget = drive0;
   if (drive.active && drive.recover > 0) {
     // Blend the high finish back down into the stance.
     const stance = sampleSwing(0, drive.contact);
     const u = smoothstep(drive.recover);
+    const phiB = lerp(sampled.phi, stance.phi, u);
+    const hipB: Vec3 = [lerp(sampled.hip[0], stance.hip[0], u), lerp(sampled.hip[1], stance.hip[1], u), lerp(sampled.hip[2], stance.hip[2], u)];
+    const localB = [lerp(drive0.local[0], stance.local[0], u), lerp(drive0.local[1], stance.local[1], u), lerp(drive0.local[2], stance.local[2], u)] as Vec3;
     sampled = {
-      K: [lerp(sampled.K[0], stance.K[0], u), lerp(sampled.K[1], stance.K[1], u), lerp(sampled.K[2], stance.K[2], u)] as Vec3,
+      K: handsAt(phiB, hipB, localB),
       D: unit3([lerp(sampled.D[0], stance.D[0], u), lerp(sampled.D[1], stance.D[1], u), lerp(sampled.D[2], stance.D[2], u)]),
-      phi: lerp(sampled.phi, stance.phi, u),
-      hip: [lerp(sampled.hip[0], stance.hip[0], u), lerp(sampled.hip[1], stance.hip[1], u), lerp(sampled.hip[2], stance.hip[2], u)] as Vec3,
-      pole: stance.pole
+      phi: phiB,
+      hip: hipB,
+      pole: stance.pole,
+      stride: lerp(sampled.stride, stance.stride, u)
     };
   }
   if (!drive.active) {
@@ -366,5 +528,6 @@ export function sampleBatterTarget(drive: { active: boolean; t: number; recover:
       phi: sampled.phi + 0.016 * Math.sin(now * 0.9)
     };
   }
-  return sampled;
+  const K = keepArmReach(sampled.K, sampled.phi, sampled.hip);
+  return { ...sampled, K, D: feasibleBatDir(K, sampled.D, sampled.phi, sampled.hip) };
 }

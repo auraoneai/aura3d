@@ -3351,7 +3351,7 @@ function boot(): void {
   function updateBatterPose(dt: number, now: number, batterPos: Vec3, batterYaw: number): { tipWorld: Vec3; sweetWorld: Vec3; palmWorld: Vec3 } | null {
     if (!H.batter || typeof H.batter.setAnimationPose !== "function") return null;
     const sampled = sampleBatterTarget(swingDrive, now);
-    const pose = solveBatterPose(sampled.K, sampled.D, sampled.phi, sampled.hip, sampled.pole, swingDrive.prevTau, swingDrive.prevTauL, swingDrive.prevGamma);
+    const pose = solveBatterPose(sampled.K, sampled.D, sampled.phi, sampled.hip, sampled.pole, swingDrive.prevTau, swingDrive.prevTauL, swingDrive.prevGamma, sampled.stride);
     swingDrive.prevTau = pose.tau;
     swingDrive.prevTauL = pose.tauL;
     swingDrive.prevGamma = pose.gamma;
