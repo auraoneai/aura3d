@@ -13,8 +13,8 @@ test.afterAll(async () => { await server?.close(); });
 
 const G = "__AURA3D_SHOWCASE_AURA_LINKS_3D__";
 
-const CLUBS: Array<[string, number]> = [["driver", 0], ["wedge", 2], ["putter", 1], ["iron", 3]];
-for (const [clubName, qPresses] of CLUBS) test(`links golfer grip across the swing: ${clubName}`, async ({ page }) => {
+const CLUBS: Array<[string, number, boolean]> = [["driver", 0, false], ["driver-rev", 0, true], ["wedge", 2, false], ["putter", 1, false], ["putter-rev", 1, true]];
+for (const [clubName, qPresses, reverse] of CLUBS) test(`links golfer grip across the swing: ${clubName}`, async ({ page }) => {
   await page.route(/\/aura-assets\//, async (route) => {
     const u = new URL(route.request().url());
     const response = await route.fetch({ url: `https://aura3d.auraone.ai${u.pathname}${u.search}` });
@@ -35,6 +35,17 @@ for (const [clubName, qPresses] of CLUBS) test(`links golfer grip across the swi
       await p.waitForTimeout(1_500);
       for (let i = 0; i < qPresses; i += 1) { await p.keyboard.press("KeyQ"); await p.waitForTimeout(250); }
       await p.waitForTimeout(800);
+      if (reverse) {
+        // view the golfer from the other side: turn the aim 180 degrees so the far arm is the near one
+        const read = () => p.evaluate((g) => (window as unknown as Record<string, any>)[g]?.aimYaw as number, G);
+        const base = await read();
+        for (let i = 0; i < 160; i += 1) {
+          await p.keyboard.down("KeyA"); await p.waitForTimeout(160); await p.keyboard.up("KeyA");
+          const now = await read();
+          if ((((now - base) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) >= Math.PI) break;
+        }
+        await p.waitForTimeout(1_200);
+      }
       await snap(`${clubName}-address-aimcam`);
       await p.keyboard.press("Space");
       await p.waitForTimeout(1_800);
@@ -43,7 +54,7 @@ for (const [clubName, qPresses] of CLUBS) test(`links golfer grip across the swi
       await p.waitForTimeout(1_200);
       await snap(`${clubName}-power`);
       await p.keyboard.press("Space");
-      const frames = clubName === "driver" ? 8 : 4;
+      const frames = clubName === "driver" ? 8 : 5;
       for (let i = 0; i < frames; i += 1) { await p.waitForTimeout(450); await snap(`${clubName}-swing-${i}`); }
     }
   });

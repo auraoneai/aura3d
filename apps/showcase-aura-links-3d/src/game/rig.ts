@@ -244,11 +244,6 @@ function calibrateClub(rig: GolferRig, root: RootFrame, groundDy: number): void 
   };
   // The club follows the swing solve every frame (poseGolfer re-places all three parts), not the engine bone attachment: the
   // attachment lagged the overlay pose and a bone-space XYZ rotation drew the shaft and head turned away from the grip.
-  for (const part of offsets) {
-    const handle = parts[part.id];
-    if (!handle) continue;
-    placeClubPart(handle, root, addr, part);
-  }
   lastOffsets = offsets;
   calibGroundDy = groundDy;
   telemetry = { ...telemetry, attached: offsets.length > 0 };
@@ -265,7 +260,9 @@ function placeClubPart(
   handle: any,
   root: RootFrame,
   solved: ReturnType<typeof solveSwing>,
-  part: { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[] }
+  part: { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[] },
+  toWorld: (shotLocal: readonly number[]) => readonly number[],
+  faceYaw: number
 ): void {
   const offsetM = qRotate(solved.rightForearmWorld, [part.position[0], part.position[1], part.position[2]]);
   const centreM = toShot(root, [
@@ -273,13 +270,17 @@ function placeClubPart(
     solved.rightElbowModel[1] + offsetM[1],
     solved.rightElbowModel[2] + offsetM[2]
   ]);
-  const worldQuat = qMul(
+  const shotQuat = qMul(
     solved.rightForearmWorld,
     quatFromEulerXYZ(part.rotation[0], part.rotation[1], part.rotation[2])
   );
+  // model frame to world: the hero node turns by root.yaw (model to shot) and then faceYaw (shot to world), both about +Y
+  const yawToWorld = faceYaw + root.yaw;
+  const worldQuat = qMul({ x: 0, y: Math.sin(yawToWorld / 2), z: 0, w: Math.cos(yawToWorld / 2) }, shotQuat);
+  const centreW = toWorld(centreM);
   // route nodes rotate in the engine's default ZYX order (setRotation), not XYZ
   const worldEuler = gripQToEulerZYX([worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w]);
-  handle?.setPosition?.(centreM[0], centreM[1], centreM[2]);
+  handle?.setPosition?.(centreW[0], centreW[1], centreW[2]);
   handle?.setRotation?.(worldEuler[0], worldEuler[1], worldEuler[2]);
 }
 
@@ -370,7 +371,7 @@ export function poseGolfer(
         "golfer-club-head": rig.clubHead
       };
       for (const part of lastOffsets) {
-        placeClubPart(parts[part.id], root, solved, part);
+        placeClubPart(parts[part.id], root, solved, part, W, faceYaw);
       }
     }
 
