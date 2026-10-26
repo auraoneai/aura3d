@@ -1,5 +1,5 @@
 import { Material } from "./Material";
-import { type DrawCommand, type RenderCommandState, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
+import { type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderCommandState, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { ShaderModule } from "./ShaderModule";
 import { TextureBinding } from "./TextureBinding";
@@ -38,6 +38,8 @@ export class DepthMaterial extends Material {
     });
   }
 }
+
+const DEPTH_INSTANCE_ATTRIBUTE_NAMES = ["a_instanceMatrix0", "a_instanceMatrix1", "a_instanceMatrix2", "a_instanceMatrix3"] as const;
 
 export class DepthPass extends BaseRenderPass {
   /**
@@ -119,14 +121,30 @@ export class DepthPass extends BaseRenderPass {
     const skinning = caster.skinning;
     const instanceTransforms = caster.instanceTransforms ? Float32Array.from(caster.instanceTransforms) : null;
     const instanceTotal = instanceTransforms ? instanceTransforms.length / 16 : 1;
-    const batchCount = variant.instanced && instanceTransforms ? Math.ceil(instanceTotal / PRD02_DEPTH_MAX_INSTANCES) : 1;
+    // More instances than the uniform array holds ride a per-instance vertex-attribute buffer: one draw for the whole set
+    // instead of ceil(n / 64) draws per cascade (a forest of 2,000 trees was 32 draws in every cascade).
+    const attributeMode = Boolean(variant.instanced && instanceTransforms && instanceTotal > PRD02_DEPTH_MAX_INSTANCES);
+    const batchCount = variant.instanced && instanceTransforms && !attributeMode ? Math.ceil(instanceTotal / PRD02_DEPTH_MAX_INSTANCES) : 1;
+    let instanceBuffer: RenderBuffer | null = null;
+    let instanceAttributes: readonly InstanceVertexAttribute[] | null = null;
+    if (attributeMode && instanceTransforms) {
+      instanceBuffer = device.createBuffer("vertex", instanceTransforms.byteLength, instanceTransforms);
+      const buffer = instanceBuffer;
+      instanceAttributes = DEPTH_INSTANCE_ATTRIBUTE_NAMES.map((shaderName, column) => ({ buffer, shaderName, components: 4 as const, offset: column * 16, stride: 64, divisor: 1 }));
+    }
     for (let batch = 0; batch < batchCount; batch += 1) {
       const uniforms = new Map<string, UniformValue>([["u_modelViewProjection", mvp]]);
       if (variant.instanced && instanceTransforms) {
-        const offset = batch * PRD02_DEPTH_MAX_INSTANCES;
-        const count = Math.min(PRD02_DEPTH_MAX_INSTANCES, instanceTotal - offset);
-        uniforms.set("u_instanceMatrices", instanceTransforms.subarray(offset * 16, (offset + count) * 16));
-        uniforms.set("u_instanceCount", count);
+        if (attributeMode) {
+          uniforms.set("u_instanceAttributeMode", 1);
+          uniforms.set("u_instanceCount", instanceTotal);
+        } else {
+          const offset = batch * PRD02_DEPTH_MAX_INSTANCES;
+          const count = Math.min(PRD02_DEPTH_MAX_INSTANCES, instanceTotal - offset);
+          uniforms.set("u_instanceAttributeMode", 0);
+          uniforms.set("u_instanceMatrices", instanceTransforms.subarray(offset * 16, (offset + count) * 16));
+          uniforms.set("u_instanceCount", count);
+        }
       }
       if (variant.skinning > 0 && skinning) {
         const joints = Math.min(skinning.jointCount, skinning.matrices.length / 16);
@@ -156,8 +174,9 @@ export class DepthPass extends BaseRenderPass {
         vertexCount: indexBuffer ? caster.geometry.vertexBuffer.vertexCount : drawRange.count,
         ...(indexBuffer === undefined && drawRange.start > 0 ? { firstVertex: drawRange.start } : {}),
         ...(variant.instanced && instanceTransforms
-          ? { instanceCount: Math.min(PRD02_DEPTH_MAX_INSTANCES, instanceTotal - batch * PRD02_DEPTH_MAX_INSTANCES) }
+          ? { instanceCount: attributeMode ? instanceTotal : Math.min(PRD02_DEPTH_MAX_INSTANCES, instanceTotal - batch * PRD02_DEPTH_MAX_INSTANCES) }
           : {}),
+        ...(instanceAttributes ? { instanceAttributes } : {}),
         shader,
         uniforms,
         renderState: depthRenderState(this.options.scissor, variant.doubleSided)
@@ -172,6 +191,7 @@ export class DepthPass extends BaseRenderPass {
       }
       device.draw(command);
     }
+    instanceBuffer?.dispose();
   }
 
   private getShader(device: RenderDevice): RenderShaderProgram {

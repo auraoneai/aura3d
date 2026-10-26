@@ -59,6 +59,17 @@ export function defineSunShadowSpec(game: ShadowGame): void {
         const bootError = await page.evaluate((hook) => (window as unknown as Record<string, unknown>)[hook.replace(/__$/, "_ERROR__")] ?? null, game.hook);
         expect(bootError, `${game.id} boot error`).toBeNull();
         await page.evaluate(`(() => { const h = window.${game.hook}; h.${game.begin}(); ${game.step}; })()`);
+        // Textures upgrade one material at a time after mount (an early frame shows white models): wait until none is pending.
+        await page.evaluate(async (hook) => {
+          const h = (window as unknown as Record<string, { textures?: () => { pending: number } | null; renderNow?: () => void }>)[hook];
+          if (typeof h?.textures !== "function") return;
+          const t0 = performance.now();
+          while (performance.now() - t0 < 240_000) {
+            h.renderNow?.();
+            if ((h.textures()?.pending ?? 0) === 0) break;
+            await new Promise((r) => setTimeout(r, 1000));
+          }
+        }, game.hook);
         await page.waitForTimeout(1500);
         // The game's own `frame()` hook returns the bare canvas (no DOM HUD on top); fall back to an element screenshot.
         const viaHook = await page.evaluate(async (hook) => {

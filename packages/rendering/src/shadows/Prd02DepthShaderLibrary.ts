@@ -54,6 +54,11 @@ uniform mat4 u_modelViewProjection;
 #if A3D_DEPTH_INSTANCED
 uniform mat4 u_instanceMatrices[${PRD02_DEPTH_MAX_INSTANCES}];
 uniform float u_instanceCount;
+uniform float u_instanceAttributeMode;
+layout(location = 8) in vec4 a_instanceMatrix0;
+layout(location = 9) in vec4 a_instanceMatrix1;
+layout(location = 10) in vec4 a_instanceMatrix2;
+layout(location = 11) in vec4 a_instanceMatrix3;
 #endif
 #if A3D_DEPTH_SKINNED
 #include <skinning_common>
@@ -69,7 +74,10 @@ void main() {
 #endif
 #if A3D_DEPTH_INSTANCED
   int instanceIndex = clamp(gl_InstanceID, 0, max(int(u_instanceCount) - 1, 0));
-  gl_Position = u_modelViewProjection * (u_instanceMatrices[instanceIndex] * local);
+  mat4 instanceMatrix = u_instanceAttributeMode > 0.5
+    ? mat4(a_instanceMatrix0, a_instanceMatrix1, a_instanceMatrix2, a_instanceMatrix3)
+    : u_instanceMatrices[instanceIndex];
+  gl_Position = u_modelViewProjection * (instanceMatrix * local);
 #else
   gl_Position = u_modelViewProjection * local;
 #endif
