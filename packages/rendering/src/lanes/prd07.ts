@@ -120,7 +120,7 @@ export { PRD07_FOG_CHUNK_GLSL } from "../atmosphere/shaders/fog.glsl";
 export { ParticleGpuSim, particleGpuSimAvailable, gpuSimCpuStep, gpuSimEmit, a3dValueNoise, a3dCurlNoise } from "../vfx/ParticleGpuSim";
 export type { GpuSimSpec, GpuSimEmitterSpec, ParticleGpuSimState } from "../vfx/ParticleGpuSim";
 export { PRD07_GPU_SIM_MARKER, gpuSimVertexSource, gpuSimPositionFragmentSource, gpuSimVelocityFragmentSource } from "../vfx/shaders/gpu-sim.glsl";
-export { ProceduralVolumeEmitter, VOLUME_PRESETS, proceduralVolumePos, proceduralVolumeEdgeFade, a3dHash31Cpu } from "../vfx/ProceduralVolumeEmitter";
+export { ProceduralVolumeEmitter, VOLUME_PRESETS, VOLUME_SPRITE_LIMITS, volumeSpriteScreenSize, proceduralVolumePos, proceduralVolumeEdgeFade, a3dHash31Cpu } from "../vfx/ProceduralVolumeEmitter";
 export type { VolumeEmitterSpec } from "../vfx/ProceduralVolumeEmitter";
 export { PRD07_VOLUME_CHUNK_GLSL, registerPrd07VolumeChunk } from "../vfx/shaders/volume.glsl";
 export { VolumetricFogPass, froxelGridFor, invertRigid } from "../atmosphere/VolumetricFogPass";

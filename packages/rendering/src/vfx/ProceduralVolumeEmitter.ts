@@ -71,6 +71,37 @@ export const VOLUME_PRESETS = {
   }
 } as const satisfies Record<string, VolumeEmitterSpec>;
 
+/**
+ * On-screen limits for the camera-following volume sprites. A world-size sprite that passes close to the lens
+ * projects to a large soft disc, so each preset carries a cap on its diameter (share of the viewport height,
+ * which is the same for every device pixel ratio) and a distance, in metres, under which it fades out.
+ * 0.0155 of a 900 px viewport is about 14 px (snow), 0.009 about 8 px (dust motes and marine snow).
+ */
+export const VOLUME_SPRITE_LIMITS = {
+  rain: { maxScreen: 0.04, nearFade: 1 },
+  snow: { maxScreen: 0.0155, nearFade: 1 },
+  marineSnow: { maxScreen: 0.009, nearFade: 1 },
+  dustMotes: { maxScreen: 0.009, nearFade: 1 }
+} as const satisfies Record<keyof typeof VOLUME_PRESETS, { readonly maxScreen: number; readonly nearFade: number }>;
+
+/**
+ * CPU model of the particle vertex shader's size math for a camera-facing sprite: the projected diameter in
+ * pixels at `distance` metres, after the `maxScreen` cap, and the alpha factor of the near fade.
+ */
+export function volumeSpriteScreenSize(
+  size: number,
+  distance: number,
+  fovYRadians: number,
+  viewportHeightPx: number,
+  limits: { readonly maxScreen: number; readonly nearFade: number }
+): { readonly pixels: number; readonly alpha: number } {
+  const d = Math.max(distance, 1e-4);
+  const ndcHalf = (size * 0.5) / (d * Math.tan(fovYRadians * 0.5));
+  const cappedHalf = limits.maxScreen > 0 && ndcHalf > limits.maxScreen ? limits.maxScreen : ndcHalf;
+  const alpha = limits.nearFade > 0 ? clamp(d / limits.nearFade, 0, 1) : 1;
+  return { pixels: cappedHalf * viewportHeightPx, alpha };
+}
+
 function fract(x: number): number {
   return x - Math.floor(x);
 }

@@ -8,7 +8,7 @@
 
 import type { EmitterDescriptor } from "./CpuEmitter";
 import type { AuraVec3 } from "./CpuEmitter";
-import { VOLUME_PRESETS, type VolumeEmitterSpec } from "@aura3d/rendering";
+import { VOLUME_PRESETS, VOLUME_SPRITE_LIMITS, type VolumeEmitterSpec } from "@aura3d/rendering";
 
 export interface EffectNodeLike {
   readonly kind: string;
@@ -363,6 +363,9 @@ export function lowerEffectNode(node: EffectNodeLike, seedOverride?: number): Lo
           stretch: isRain,
           frameBlend: false,
           atlasKey: isRain ? "streak" : "soft-dot",
+          // snow and rain are camera-following world-size sprites: cap their on-screen size and fade them near the lens
+          maxScreen: node.maxScreen !== undefined && node.maxScreen > 0 ? node.maxScreen : (isRain ? VOLUME_SPRITE_LIMITS.rain : VOLUME_SPRITE_LIMITS.snow).maxScreen,
+          nearFade: node.nearFade !== undefined ? node.nearFade : (isRain ? VOLUME_SPRITE_LIMITS.rain : VOLUME_SPRITE_LIMITS.snow).nearFade,
           ...(node.lowRes === true ? { lowRes: true } : {})
         },
         volume,
