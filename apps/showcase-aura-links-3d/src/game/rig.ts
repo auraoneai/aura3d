@@ -38,13 +38,10 @@ import {
   BALL_SHOT,
   CLUB_PARTS,
   clubAttachOffsets,
+  clubPartPose,
   evaluateSwing,
   makeRoot,
-  qMul,
-  qRotate,
-  quatFromEulerXYZ,
   solveSwing,
-  toShot,
   vDist,
   type Quat,
   type RootFrame,
@@ -171,7 +168,7 @@ export function buildGolferNodes(fit: GolferFit): any[] {
  * ------------------------------------------------------------------ */
 
 let attachDisposers: (() => void)[] = [];
-let lastOffsets: readonly { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[] }[] = [];
+let lastOffsets: readonly { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[]; readonly quat: Quat }[] = [];
 let calibGroundDy: number | null = null;
 let lastGolferAnimKey = "";
 let lastCaddyAnimKey = "";
@@ -260,24 +257,12 @@ function placeClubPart(
   handle: any,
   root: RootFrame,
   solved: ReturnType<typeof solveSwing>,
-  part: { readonly id: string; readonly position: readonly number[]; readonly rotation: readonly number[] },
+  part: { readonly id: string; readonly position: readonly number[]; readonly quat: Quat },
   toWorld: (shotLocal: readonly number[]) => readonly number[],
   faceYaw: number
 ): void {
-  const offsetM = qRotate(solved.rightForearmWorld, [part.position[0], part.position[1], part.position[2]]);
-  const centreM = toShot(root, [
-    solved.rightElbowModel[0] + offsetM[0],
-    solved.rightElbowModel[1] + offsetM[1],
-    solved.rightElbowModel[2] + offsetM[2]
-  ]);
-  const shotQuat = qMul(
-    solved.rightForearmWorld,
-    quatFromEulerXYZ(part.rotation[0], part.rotation[1], part.rotation[2])
-  );
-  // model frame to world: the hero node turns by root.yaw (model to shot) and then faceYaw (shot to world), both about +Y
-  const yawToWorld = faceYaw + root.yaw;
-  const worldQuat = qMul({ x: 0, y: Math.sin(yawToWorld / 2), z: 0, w: Math.cos(yawToWorld / 2) }, shotQuat);
-  const centreW = toWorld(centreM);
+  const { centreShot, worldQuat } = clubPartPose(solved, part, root, faceYaw);
+  const centreW = toWorld(centreShot);
   // route nodes rotate in the engine's default ZYX order (setRotation), not XYZ
   const worldEuler = gripQToEulerZYX([worldQuat.x, worldQuat.y, worldQuat.z, worldQuat.w]);
   handle?.setPosition?.(centreW[0], centreW[1], centreW[2]);
