@@ -1,0 +1,3 @@
+HOOPSDRIB_MEASURE {"who":"aistand","moving":false,"n":154,"samples":154,"meetMax":0.1470578117612254,"floorContactMax":0.31000161289902994,"floorContactXZMax":0.0010000000000000009,"floorContactPalmHeightMax":0.453,"floorError":0,"maxDistance":0.31000161289902994,"maxXZ":0.07200694410957971,"floorSamples":29,"meetSamples":15,"ok":true,"failures":[]}
+HOOPSDRIB_MEASURE {"who":"aistand","moving":true,"n":0,"samples":0,"meetMax":0,"floorContactMax":null,"floorContactXZMax":null,"floorContactPalmHeightMax":null,"floorError":null,"maxDistance":0,"maxXZ":0,"floorSamples":0,"meetSamples":0,"ok":false,"failures":["no dribble samples"]}
+HOOPSDRIB_HOLDERS ["a0"] frames=16 errors=["console.error Failed to load resource: the server responded with a status of 404 (Not Found)"]

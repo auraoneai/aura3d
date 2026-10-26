@@ -1,0 +1,2 @@
+HOOPSDRIB_MEASURE {"who":"ai","moving":true,"n":93,"samples":93,"meetMax":0.14253069844773794,"floorContactMax":0.42740262048798905,"floorContactXZMax":0.11539497389401333,"floorContactPalmHeightMax":0.57,"floorError":0.01999999999999999,"maxDistance":0.42740262048798905,"maxXZ":0.18064606278576903,"floorSamples":10,"meetSamples":10,"ok":true,"failures":[]}
+HOOPSDRIB_HOLDERS ["a0"] frames=0 errors=["console.error Failed to load resource: the server responded with a status of 404 (Not Found)"]
