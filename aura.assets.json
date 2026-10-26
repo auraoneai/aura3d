@@ -18865,10 +18865,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/diamond-athlete/model.opt.glb",
-      "outputPath": "public/aura-assets/diamondAthleteClean.0c16a140.glb",
-      "url": "/aura-assets/diamondAthleteClean.0c16a140.glb",
-      "hash": "sha256-0c16a1403e74800f0a41f465a71c457119b1923e1280bc487b044c2ce7be1fa2",
-      "sizeBytes": 1386960,
+      "outputPath": "public/aura-assets/diamondAthleteClean.678bff87.glb",
+      "url": "/aura-assets/diamondAthleteClean.678bff87.glb",
+      "hash": "sha256-678bff87d051a7ee77c5ca63d7ff830eff4cb026d3b15cf97a9cffa131b3a46e",
+      "sizeBytes": 1401680,
       "bounds": [
         0.938,
         1.903,
@@ -19017,7 +19017,7 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ],
-      "sha256": "sha256-0c16a1403e74800f0a41f465a71c457119b1923e1280bc487b044c2ce7be1fa2"
+      "sha256": "sha256-678bff87d051a7ee77c5ca63d7ff830eff4cb026d3b15cf97a9cffa131b3a46e"
     },
     {
       "id": "diamondBall",
@@ -24219,10 +24219,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/fcGoalkeeperMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcGoalkeeperMeshyAthlete.1cbd9cce.glb",
-      "url": "/aura-assets/fcGoalkeeperMeshyAthlete.1cbd9cce.glb",
-      "hash": "sha256-1cbd9cce9a25bcae0df931d4d68d69ef3d401b5e1d563640e2ee9be2c7d83911",
-      "sizeBytes": 1445456,
+      "outputPath": "public/aura-assets/fcGoalkeeperMeshyAthlete.b9fe367e.glb",
+      "url": "/aura-assets/fcGoalkeeperMeshyAthlete.b9fe367e.glb",
+      "hash": "sha256-b9fe367eb7cc0fa9806d1a39ea85de8d21d38e7e68632fbdff9e5f9015fdd1e7",
+      "sizeBytes": 1393068,
       "bounds": [
         0.716,
         1.899,
@@ -24394,7 +24394,7 @@
       "thumbnailUrl": "/aura-assets/fcGoalkeeperMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryCharacter",
-      "sha256": "sha256-1cbd9cce9a25bcae0df931d4d68d69ef3d401b5e1d563640e2ee9be2c7d83911"
+      "sha256": "sha256-b9fe367eb7cc0fa9806d1a39ea85de8d21d38e7e68632fbdff9e5f9015fdd1e7"
     },
     {
       "id": "fcHeroTrophyMeshy",
@@ -25034,10 +25034,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/fcSoccerStrikerMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcSoccerStrikerMeshyAthlete.dbae7fa0.glb",
-      "url": "/aura-assets/fcSoccerStrikerMeshyAthlete.dbae7fa0.glb",
-      "hash": "sha256-dbae7fa04cab36d39cea543069cff4eb4f5ff95ad2419abf05b11e18e77379c9",
-      "sizeBytes": 1458816,
+      "outputPath": "public/aura-assets/fcSoccerStrikerMeshyAthlete.1b37df23.glb",
+      "url": "/aura-assets/fcSoccerStrikerMeshyAthlete.1b37df23.glb",
+      "hash": "sha256-1b37df23525f254dc5bb8483a512d850db21a1f4e67cb056aec68a143633d686",
+      "sizeBytes": 1396660,
       "bounds": [
         0.742,
         1.891,
@@ -25209,7 +25209,7 @@
       "thumbnailUrl": "/aura-assets/fcSoccerStrikerMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryCharacter",
-      "sha256": "sha256-dbae7fa04cab36d39cea543069cff4eb4f5ff95ad2419abf05b11e18e77379c9"
+      "sha256": "sha256-1b37df23525f254dc5bb8483a512d850db21a1f4e67cb056aec68a143633d686"
     },
     {
       "id": "fpsEnergyCorePickupMeshy",
@@ -46339,10 +46339,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/hoops-athlete-big/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteBigClean.b51e5962.glb",
-      "url": "/aura-assets/hoopsAthleteBigClean.b51e5962.glb",
-      "hash": "sha256-b51e59623b972d024e4914aa60264c867ad1a74cf07bcdbb4f1f9abe5095370a",
-      "sizeBytes": 1311132,
+      "outputPath": "public/aura-assets/hoopsAthleteBigClean.a53256dd.glb",
+      "url": "/aura-assets/hoopsAthleteBigClean.a53256dd.glb",
+      "hash": "sha256-a53256ddcacf537775870136a8a112fb9ec208783d57298f365164b54555c910",
+      "sizeBytes": 1325852,
       "bounds": [
         0.878,
         1.903,
@@ -46491,17 +46491,17 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ],
-      "sha256": "sha256-b51e59623b972d024e4914aa60264c867ad1a74cf07bcdbb4f1f9abe5095370a"
+      "sha256": "sha256-a53256ddcacf537775870136a8a112fb9ec208783d57298f365164b54555c910"
     },
     {
       "id": "hoopsAthleteGuard",
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/hoops-athlete-guard/model.opt.glb",
-      "outputPath": "public/aura-assets/hoopsAthleteGuardClean.74f49b45.glb",
-      "url": "/aura-assets/hoopsAthleteGuardClean.74f49b45.glb",
-      "hash": "sha256-74f49b45ad164648647f78fabc1bbcd2a13ff1c21e857fb93af426322a7688de",
-      "sizeBytes": 1585852,
+      "outputPath": "public/aura-assets/hoopsAthleteGuardClean.b9f501b4.glb",
+      "url": "/aura-assets/hoopsAthleteGuardClean.b9f501b4.glb",
+      "hash": "sha256-b9f501b40572bca9f132b2814ab8f930301b0b896778f3db0f353a1ec3d0c695",
+      "sizeBytes": 1600572,
       "bounds": [
         0.905,
         1.903,
@@ -46650,7 +46650,7 @@
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
       ],
-      "sha256": "sha256-74f49b45ad164648647f78fabc1bbcd2a13ff1c21e857fb93af426322a7688de"
+      "sha256": "sha256-b9f501b40572bca9f132b2814ab8f930301b0b896778f3db0f353a1ec3d0c695"
     },
     {
       "id": "hoopsBackboard",
@@ -51185,10 +51185,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/linksGolferAthleteMeshy/model.glb",
-      "outputPath": "public/aura-assets/linksGolferAthleteClean.6364f9fa.glb",
-      "url": "/aura-assets/linksGolferAthleteClean.6364f9fa.glb",
-      "hash": "sha256-6364f9fa5f6fe21c39ba1a8411583fe7fc0ba34048b399eef827d6089acf762a",
-      "sizeBytes": 1386932,
+      "outputPath": "public/aura-assets/linksGolferAthleteClean.b56529b1.glb",
+      "url": "/aura-assets/linksGolferAthleteClean.b56529b1.glb",
+      "hash": "sha256-b56529b145d5022acbe7f5d8f2d6dc5c3953f3944bae37ae347d43f28e85a2bd",
+      "sizeBytes": 1401652,
       "bounds": [
         0.938,
         1.903,
@@ -51328,7 +51328,7 @@
       "thumbnailUrl": "/aura-assets/linksGolferAthleteMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryCharacter",
-      "sha256": "sha256-6364f9fa5f6fe21c39ba1a8411583fe7fc0ba34048b399eef827d6089acf762a"
+      "sha256": "sha256-b56529b145d5022acbe7f5d8f2d6dc5c3953f3944bae37ae347d43f28e85a2bd"
     },
     {
       "id": "linksPinFlagMeshy",
