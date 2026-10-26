@@ -1,0 +1,20 @@
+{
+  "top-tennis": { "path": "/apps/showcase-top-tennis/", "settleMs": 8000, "steps": [
+    { "shot": "idle" }, { "press": "Space" }, { "wait": 1500, "shot": "serve" } ] },
+  "teleoperator": { "path": "/apps/showcase-teleoperator/", "settleMs": 10000, "steps": [
+    { "shot": "chase" }, { "click": "Far Chase", "wait": 1500, "shot": "far" }, { "click": "Bumper", "wait": 1500, "shot": "bumper" } ] },
+  "hoops": { "path": "/apps/showcase-aura-hoops-3d/", "settleMs": 8000, "steps": [
+    { "click": "Quick Play", "wait": 2500, "shot": "start" },
+    { "down": "w" }, { "burst": { "count": 12, "everyMs": 250, "label": "dribble" } }, { "up": "w" } ] },
+  "diamond": { "path": "/apps/showcase-aura-diamond-3d/", "settleMs": 8000, "steps": [
+    { "click": "Quick Play", "wait": 3000, "shot": "stance" },
+    { "burst": { "count": 6, "everyMs": 400, "label": "stance" } }, { "press": "Space" }, { "burst": { "count": 8, "everyMs": 150, "label": "swing" } } ] },
+  "links": { "path": "/apps/showcase-aura-links-3d/", "settleMs": 8000, "steps": [
+    { "shot": "tee" }, { "hold": { "key": "d", "ms": 900 }, "shot": "aim-d" }, { "press": "Space" }, { "wait": 700, "shot": "swing-a" },
+    { "press": "Space" }, { "wait": 6000, "shot": "after-shot" }, { "wait": 6000, "shot": "bubbles-check" } ] },
+  "fc": { "path": "/apps/showcase-aura-fc-3d/", "settleMs": 8000, "steps": [
+    { "click": "Quick Play", "wait": 3000, "shot": "kickoff" },
+    { "down": "d" }, { "burst": { "count": 6, "everyMs": 500, "label": "run" } }, { "up": "d" }, { "press": "Space" }, { "burst": { "count": 6, "everyMs": 400, "label": "kick" } } ] },
+  "iron-crown": { "path": "/apps/showcase-iron-crown/", "settleMs": 8000, "steps": [
+    { "click": "Quick Bout", "wait": 2500, "shot": "intro" }, { "burst": { "count": 4, "everyMs": 600, "label": "fight" } } ] }
+}
