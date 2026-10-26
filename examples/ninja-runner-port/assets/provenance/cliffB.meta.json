@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a1759d-721e-7588-8ccd-aac9a3ae7a6d",
+  "refine": "01a1759e-749b-7357-817a-7f5c484aede0",
+  "remesh": "01a175a5-d6e7-74d9-9035-5027c91cce89"
+ },
+ "prompt": "a rugged sandstone rock outcrop cliff with warm tan and ochre layers, a few dry shrubs on top, smooth worn edges, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

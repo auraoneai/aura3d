@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a1759d-7215-713c-9f4c-4b385efa602f",
+  "refine": "01a175a0-441a-71cd-b7b9-ababfce69f45",
+  "remesh": "01a175a5-d7c8-71a2-a475-027e7cde3802"
+ },
+ "prompt": "a small two-tier tea house with curved dark-tile eaves, red-lacquered wooden pillars, paper lantern strings, sliding screen doors, stone base steps, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

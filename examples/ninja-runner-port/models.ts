@@ -19,7 +19,7 @@ export const CHARACTER_URLS: Readonly<Record<CharacterId, string>> = {
 /** Which character model each of the thirteen actor slots clones: 0 hero, 1-3 shadow clones, 4-9 soldiers, 10-11 brutes, 12 sage. */
 export const SLOT_MODEL: readonly CharacterId[] = ["hero", "hero", "hero", "hero", "soldier", "soldier", "soldier", "soldier", "soldier", "soldier", "brute", "brute", "sage"];
 
-const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23";
+const LICENSE = "Meshy generated asset (AuraOne account plan terms at generation time), own text prompt, 2026-10-23 and 2026-10-25";
 const url = (id: PropId): string => new URL(`./assets/meshy/${id}.glb`, import.meta.url).pathname;
 const entry = (id: PropId) => ({ url: url(id), sha256: MESHY_MANIFEST[id].sha256 });
 
@@ -30,5 +30,15 @@ export const PROP_ASSETS = defineModelAssets({
   gate: entry("gate"),
   pine: entry("pine"),
   lantern: entry("lantern"),
-  oak: entry("oak")
+  oak: entry("oak"),
+  houseC: entry("houseC"),
+  houseD: entry("houseD"),
+  teahouse: entry("teahouse"),
+  marketStall: entry("marketStall"),
+  cliffA: entry("cliffA"),
+  cliffB: entry("cliffB"),
+  boulder: entry("boulder"),
+  bush: entry("bush"),
+  ridge: entry("ridge"),
+  fenceRail: entry("fenceRail")
 }, { license: LICENSE, queryParam: null }).refs;

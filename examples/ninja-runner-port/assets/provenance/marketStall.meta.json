@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a1759d-729d-7402-bd00-a5ee27dccaac",
+  "refine": "01a1759e-b769-7714-9d55-4c7f91961db8",
+  "remesh": "01a175a5-d776-723c-950f-8ff6b43e3678"
+ },
+ "prompt": "a village market stall with a striped teal and cream cloth awning, wooden counter, baskets of vegetables and wooden crates, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

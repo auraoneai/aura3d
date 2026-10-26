@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a1759d-72bb-7288-9d4c-bdb2ca392cc4",
+  "refine": "01a1759e-1d4f-73f5-b4ab-14ed7e2cc657",
+  "remesh": "01a175a5-d69f-7695-b31f-393f2cde8e67"
+ },
+ "prompt": "a tall weathered granite cliff face section for a game background, layered grey rock strata with moss-covered ledges, small ferns, vertical cracks, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a1759d-725a-7697-8527-a3104534cec9",
+  "refine": "01a1759e-75f1-7330-b795-2cf08cf3811a",
+  "remesh": "01a175a5-d77b-7095-b992-1469956de072"
+ },
+ "prompt": "a tall narrow timber-frame townhouse with an overhanging upper storey, dark wood beams, cream plaster, red clay tile roof, small balcony with flower boxes, stylized realistic fantasy village building, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

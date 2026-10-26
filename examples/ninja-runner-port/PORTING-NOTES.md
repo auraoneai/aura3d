@@ -47,3 +47,9 @@ Phase C exit for the three.js parity PRD (R-20), plus the art-fidelity pass. Ref
 - Rights: Meshy output terms of the AuraOne plan at generation time (recorded per asset in `assets/provenance/*.rights.json`); no CC0 or exclusivity claim.
 - Prompts are generic descriptions in our own words; no image-to-3D, no original names.
 - Known: the engine re-grounds a loaded model so its base sits at the node origin (props are placed with y = ground, no extra offset); sun shadows stay off (see Budget and gates); the clip `punch` of the hero is the long kung-fu animation sampled across the sim's attack window; the new scene reads brighter than the original (judge notes in `evidence/ninja-runner-port/README.md`).
+
+## 4.3.0 art pass (generated scenery)
+
+- Ten more Meshy props (`houseC`, `houseD`, `teahouse`, `marketStall`, `cliffA`, `cliffB`, `boulder`, `bush`, `ridge`, `fenceRail`) replace the box houses and stalls, flat-faceted valley cliffs, cone tufts, low-poly rocks, sphere hills and stone-slab fences. Placement stays in `scenery.ts` (`mput`, `mputH` for uniform-by-height, `mputFree` for the stretched ridge) and the procedural shapes remain as the fallback when no model sink is passed. Evidence: `evidence/ninja-runner-port/art-pass/`.
+- Budgets: draw calls drop 2 to 4 per frame; model files total 28.3 MB (test budget 32 MB); every prop under 8,000 triangles. Render-only, so the course digest and replay are untouched.
+- Credits (ledger tag `ninja`, uncapped by owner decision 2026-10-25): ten text-to-3D preview + refine chains and ten remeshes, plus one unused duplicate `bush` preview.

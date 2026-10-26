@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a175af-2dc4-7503-b45c-9bd3022ca292",
+  "refine": "01a175af-da37-7253-981e-407ee788229a",
+  "remesh": "01a175b8-0ed8-7798-8294-194603e7f8a3"
+ },
+ "prompt": "a short section of rustic wooden post-and-rail fence with weathered grey planks and small moss patches, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

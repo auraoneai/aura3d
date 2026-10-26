@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a1759d-72c2-70e2-9715-592a0463452b",
+  "refine": "01a1759f-094a-7220-b637-8f3a6b8c3069",
+  "remesh": "01a175a5-d756-7038-97a8-7686c717358a"
+ },
+ "prompt": "a small stone cottage with a steep slate roof, stone chimney, wooden door, two small shuttered windows, ivy on one wall, warm lamp glow in the windows, stylized realistic fantasy village building, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

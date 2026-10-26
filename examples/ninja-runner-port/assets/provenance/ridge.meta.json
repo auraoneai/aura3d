@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a175af-2dd3-77d8-835c-99dc97118ba8",
+  "refine": "01a175af-da23-752f-8017-3fc3fcc01bf2",
+  "remesh": "01a175b8-0f59-728d-adf5-6b4a801a2660"
+ },
+ "prompt": "a distant forested mountain ridge landform with soft rounded peaks covered in dark green pine forest and grey rock outcrops, low detail background scenery, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

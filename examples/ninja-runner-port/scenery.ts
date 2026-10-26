@@ -15,7 +15,8 @@ import { MESHY_MANIFEST } from "./assets/meshy/manifest";
 export interface ModelPlacement { readonly position: [number, number, number]; readonly yaw: number; readonly scale: [number, number, number]; readonly tint?: string }
 export type ModelSink = Record<string, ModelPlacement[]>;
 /** Extra yaw that turns each model's authored front toward +z (calibrated from render frames). */
-export const MODEL_FRONT_YAW: Readonly<Record<string, number>> = { houseA: 0, houseB: 0, tower: 0, gate: 0, pine: 0, lantern: 0, oak: 0 };
+export const MODEL_FRONT_YAW: Readonly<Record<string, number>> = { houseA: 0, houseB: 0, houseC: 0, houseD: 0, teahouse: 0, marketStall: 0, tower: 0, gate: 0, pine: 0, lantern: 0, oak: 0, boulder: 0, cliffA: 0, cliffB: 0, bush: 0, ridge: 0, fenceRail: 0 };
+const HOUSES = ["houseA", "houseB", "houseC", "houseD"] as const;
 
 export type ShapeId = "box" | "gable" | "hip" | "cylinder" | "cone" | "sphere" | "rock" | "cliff";
 export interface Placement { readonly matrix: number[]; readonly color: string }
@@ -75,6 +76,16 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     sx = Math.min(hi, Math.max(lo, sx)); sy = Math.min(hi, Math.max(lo, sy)); sz = Math.min(hi, Math.max(lo, sz));
     (models![id] ??= []).push({ position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [sx, sy, sz], ...(tint ? { tint } : {}) });
   };
+  /** Uniform-by-height placement (`wk` widens or narrows the plan) for props that keep their authored proportions. */
+  const mputH = (id: string, x: number, y: number, z: number, yaw: number, height: number, wk = 1, tint?: string): void => {
+    const k = height / MESHY_MANIFEST[id]!.size[1];
+    (models![id] ??= []).push({ position: [x, y, z], yaw: yaw + (MODEL_FRONT_YAW[id] ?? 0), scale: [k * wk, k, k * wk], ...(tint ? { tint } : {}) });
+  };
+  /** Free per-axis placement for landforms that may be stretched (distant ridges). */
+  const mputFree = (id: string, x: number, y: number, z: number, yaw: number, width: number, height: number, depth: number, tint?: string): void => {
+    const m = MESHY_MANIFEST[id]!;
+    (models![id] ??= []).push({ position: [x, y, z], yaw, scale: [width / m.size[0], height / m.size[1], depth / m.size[2]], ...(tint ? { tint } : {}) });
+  };
   /** World position of a point given in a box's local frame (+x across the route away from the right-hand side, +z forward). */
   const local = (c: { x: number; z: number; yaw: number }, lx: number, lz: number): [number, number] => {
     const co = Math.cos(c.yaw), si = Math.sin(c.yaw);
@@ -90,7 +101,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     const face = side;
     if (models) {
       /* the model's width runs along the route, its depth across it; the façade (+z) faces the path; the base sinks 0.3 below the lowest ground */
-      mput(r() < 0.5 ? "houseA" : "houseB", c.x, y0 - 0.2, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), o.bd, o.bh + 2.6, o.bw);
+      mput(HOUSES[Math.floor(r() * HOUSES.length) % HOUSES.length]!, c.x, y0 - 0.2, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), o.bd, o.bh + 2.6, o.bw);
       return;
     }
     put("walls", c.x, y0, c.z, c.yaw, o.bw, o.bh, o.bd, pick(r, WALLS));
@@ -231,10 +242,17 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     if (d > 150 && d < 190) continue;
     const side = stalls() < 0.5 ? -1 : 1;
     const c = at(d, side * (pathWidth(d) / 2 + 2.6));
+    if (models) { mputH("marketStall", c.x, c.y - 0.05, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), 3.4, 1.15); continue; }
     put("trim", c.x, c.y, c.z, c.yaw, 3.2, 0.95, 1.5, "#8a5a35");
     for (const [sx, sz] of [[-1.5, -0.7], [1.5, -0.7], [-1.5, 0.7], [1.5, 0.7]] as const) { const [px, pz] = local(c, sx, sz); put("posts", px, c.y, pz, 0, 0.06, 2.4, 0.06, "#3a3028"); }
     put("hips", c.x, c.y + 2.35, c.z, c.yaw, 3.9, 0.9, 2.3, pick(stalls, CLOTH));
     put("walls", c.x, c.y + 0.95, c.z, c.yaw, 0.7, 0.45, 0.7, "#c8a57b");
+  }
+  if (models) {
+    for (const [d, side] of [[172, 1], [1436, 1]] as const) {
+      const c = at(d, side * (pathWidth(d) / 2 + 9));
+      mputH("teahouse", c.x, c.y - 0.2, c.z, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), 10.5);
+    }
   }
   const fences = seededRandom(77);
   for (let d = 40; d < 1236; d += 5) {
@@ -243,6 +261,10 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     if (biome !== "alley" && biome !== "stairs" && biome !== "descent" && biome !== "riverside") continue;
     for (const side of [-1, 1] as const) {
       const c = at(d, side * (pathWidth(d) / 2 + 0.7));
+      if (models) {
+        for (const along of [-1.3, 1.3]) { const [fx, fz] = local(c, 0, along); mputFree("fenceRail", fx, c.y - 0.04, fz, c.yaw + (side > 0 ? -Math.PI / 2 : Math.PI / 2), 2.7, 1.05 + fences() * 0.2, 0.22); }
+        continue;
+      }
       put("walls", c.x, c.y - 0.1, c.z, c.yaw, 0.38, 0.9 + fences() * 0.25, 5.2, shade(pick(fences, STONE), 1.05));
     }
   }
@@ -285,6 +307,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
   for (let d = 580; d < 990; d += 70 + Math.floor(roofsRand() * 30)) {
     const side = roofsRand() < 0.5 ? -1 : 1;
     const c = at(d, side * (pathWidth(d) / 2 + 20 + roofsRand() * 6));
+    if (models) { mputH("teahouse", c.x, FLOOR_Y - 0.4, c.z, c.yaw, 15, 1.1); continue; }
     for (let t = 0; t < 3; t++) {
       const sz = 7.5 - t * 1.6;
       put("walls", c.x, FLOOR_Y + t * 4.6, c.z, c.yaw, sz, 4.2, sz, shade("#d9c9a8", 1 - t * 0.04));
@@ -319,14 +342,16 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     }
   }
   for (let d = 1500; d < 2270; d += 2.2) for (const side of [-1, 1] as const) {
-    if (forest() < 0.45) continue;
+    if (forest() < (models ? 0.82 : 0.45)) continue;
     const c = at(d, side * (pathWidth(d) / 2 + 0.8 + forest() * 5));
+    if (models) { mputH("bush", c.x, c.y - 0.1, c.z, forest() * 6, 0.7 + forest() * 0.9, 0.9 + forest() * 0.5, "#9fc08f"); continue; }
     put("tufts", c.x, c.y - 0.05, c.z, forest() * 6, 0.5 + forest() * 0.5, 0.7 + forest() * 0.8, 0.5 + forest() * 0.5, pick(forest, LEAVES));
   }
   for (let d = 1500; d < 2270; d += 9) for (const side of [-1, 1] as const) {
     if (forest() < 0.4) continue;
     const c = at(d, side * (pathWidth(d) / 2 + 2 + forest() * 22));
     const s = 0.7 + forest() * 1.9;
+    if (models) { mputH("boulder", c.x, c.y - s * 0.08, c.z, forest() * 6, s * 1.5, 1.1 + forest() * 0.3); continue; }
     put("rocks", c.x, c.y + s * 0.15, c.z, forest() * 6, s * 1.2, s, s * 1.1, "#7d9188");
   }
 
@@ -348,8 +373,9 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
     if (!forested && biome !== "water") {
       const verge = BIOME_TONES[biome]![1];
       for (const side of [-1, 1] as const) {
-        if (ground() < 0.4) continue;
+        if (ground() < (models ? 0.82 : 0.4)) continue;
         const c = at(d, side * (w / 2 + 0.9 + ground() * 7));
+        if (models) { mputH("bush", c.x, c.y - 0.1, c.z, ground() * 6, 0.8 + ground() * 1.1, 0.9 + ground() * 0.5, biome === "water" ? undefined : "#d4e6c4"); continue; }
         put("tufts", c.x, c.y - 0.04, c.z, ground() * 6, 0.34 + ground() * 0.3, 0.45 + ground() * 0.5, 0.34 + ground() * 0.3, shade(verge, 0.9 + ground() * 0.35));
       }
     }
@@ -362,6 +388,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
       if (banks() < 0.35) continue;
       const c = at(d, side * (pathWidth(d) / 2 + 3 + banks() * 26));
       const s = 0.8 + banks() * 2.4;
+      if (models) { mputH("boulder", c.x, c.y - s * 0.06, c.z, banks() * 6, s * 1.5, 1.1 + banks() * 0.3); continue; }
       put("rocks", c.x, c.y + s * 0.1, c.z, banks() * 6, s * 1.3, s, s * 1.1, pick(banks, STONE));
     }
   }
@@ -371,6 +398,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
       const lat = side * (pathWidth(Math.min(d, COURSE_LENGTH)) / 2 + 12 + valley() * 55);
       const c = at(d, lat);
       const s = 8 + valley() * 20;
+      if (models) { const slab = valley() < 0.3; mputH(slab ? "cliffA" : "cliffB", c.x, c.y - s * (slab ? 0.5 : 0.22), c.z, valley() * 6, s * (slab ? 1.6 : 1.35), (slab ? 1.2 : 1.0) + valley() * 0.4, slab ? "#b4bdb9" : "#cdc7b6"); continue; }
       put("cliffs", c.x, c.y - s * 0.35, c.z, valley() * 6, s * 1.2, s * 1.5, s, pick(valley, ["#8f9a96", "#7d9188", "#a1a18b"] as const));
     }
   }
@@ -384,6 +412,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
       const s = 45 + hills() * 90;
       const biome = biomeAt(Math.max(0, d));
       const tone = biome.startsWith("forest") ? "#4d7658" : biome === "water" ? "#8d9a9c" : "#7e9a6a";
+      if (models) { mputFree("ridge", c.x, c.y - 10, c.z, hills() * 6, s * 2.6, 22 + hills() * 40, s * 2.2, biome.startsWith("forest") ? "#c8e0cc" : biome === "water" ? "#d6dcdc" : "#f0f6e6"); continue; }
       put("hills", c.x, c.y - 24, c.z, 0, s, 18 + hills() * 42, s * (0.8 + hills() * 0.6), shade(tone, 0.85 + hills() * 0.25));
     }
   }
@@ -395,6 +424,7 @@ export function buildScenery(models?: ModelSink): SceneryLayer[] {
       const c = at(Math.min(Math.max(d, 0), COURSE_LENGTH), lat);
       const s = 130 + peaks() * 140;
       const tone = d > 1500 && d < 2300 ? "#5f8a86" : "#7a97a4";
+      if (models) { mputFree("ridge", c.x, c.y - 30, c.z, peaks() * 6, s * 2.6, 60 + peaks() * 80, s * 2.2, d > 1500 && d < 2300 ? "#bcd8d4" : "#c4d6e0"); continue; }
       put("hills", c.x, c.y - 40, c.z, 0, s, 80 + peaks() * 110, s * (0.7 + peaks() * 0.6), shade(tone, 0.9 + peaks() * 0.2));
     }
   }

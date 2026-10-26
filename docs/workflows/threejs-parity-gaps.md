@@ -1332,7 +1332,7 @@ The owner clarified that "the previous 15 games" are the fifteen playable cards 
 4. **Cumulus Dash (Cloud Runner) mesas stay on hand-written placement** (scatter planner differs in scale in the last digit). Foot-slide is about 23% at sprint (stride caps versus simulation speed; decision default: keep, listed as a known issue).
 5. **Diamond bat grip:** residual 14.6 cm offset at the end of the follow-through (16.9 cm spike), cause unknown (`evidence/release-4.2.0/README.md`).
 6. **Gridlock road flip** is unresolved.
-7. **Art passes still needed:** Shadowstep Gauntlet houses and cliffs, Teleoperator silhouettes, Duneglide slabs, Iron Crown's four roster fighters.
+7. **Art passes still needed:** (Shadowstep Gauntlet houses and cliffs: done in the 4.3.0 art pass, `evidence/ninja-runner-port/art-pass/`) Teleoperator silhouettes, Duneglide slabs, Iron Crown's four roster fighters.
 8. **Aura Slam Phase 2** (tournament, tour, online play, roster and appearance select) is deferred and shown as disabled menu entries; `prefabs.tennisCourt`, the `AiController` pattern and the menu state machine were not extracted.
 9. **Merge `parity-closeout` to `main`** in a later release (4.3.0). The Diamond-grip evidence commit `fa4719640` lives on `game-rework` and is not on `main`.
 10. Carried from the 2026-10-24 list and not re-checked in v12: re-test the retired apps listed in §12.11, run the Last Train full path on a GPU, and the "write less code" claim against three.js is **not measured** (the cold-start trial results are in `evidence/agent-eval/`, comparison numbers in `evidence/vs-threejs/RESULTS.md`).

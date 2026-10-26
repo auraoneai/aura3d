@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "see ledger",
+  "refine": "01a175b2-1795-7144-a949-33866a248174",
+  "remesh": "01a175ba-9247-76ea-918d-e6a2f1e56937"
+ },
+ "prompt": "a lush round green shrub with dense layered leaves and a few small pink blossoms, rounded bush for a village roadside, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}

@@ -1,0 +1,16 @@
+{
+ "resource": "text-to-3d + remesh",
+ "tasks": {
+  "preview": "01a1759d-7194-75cf-8700-8cd2b1d0d32f",
+  "refine": "01a1759e-743d-760a-a6e3-8829a74b4443",
+  "remesh": "01a175a5-d755-746e-b47d-c52d7a7cbbc8"
+ },
+ "prompt": "a large mossy river boulder, rounded grey stone with green moss patches and small cracks, stylized realistic, game prop",
+ "credits": {
+  "preview": 20,
+  "refine": 10,
+  "remesh": 5
+ },
+ "generated": "2026-10-25",
+ "optimise": "dedup, weld, 512-640 px textures, meshopt (tools: /tmp/meshy/optimize.mjs)"
+}
