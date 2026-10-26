@@ -1,0 +1,6 @@
+HOOPSDRIB_GROUP {"moving":false,"n":27,"topN":3,"topGapMax":0.068,"floorN":1,"floorBallY":0.14,"floorPalmY":0.624,"floorPalmToBall":0.484,"maxPalmToBall":0.484}
+HOOPSDRIB_GROUP {"moving":true,"n":15,"topN":2,"topGapMax":0.055,"floorN":1,"floorBallY":0.19,"floorPalmY":0.596,"floorPalmToBall":0.475,"maxPalmToBall":0.481}
+HOOPSDRIB_MEASURE {"moving":false,"samples":27,"meetMax":0.06801470429252789,"floorContactMax":0.4842189587366443,"floorContactPalmHeightMax":0.624,"floorError":0.010000000000000009,"maxDistance":0.4842189587366443,"floorSamples":1,"meetSamples":3,"ok":true,"failures":[]}
+HOOPSDRIB_MEASURE {"moving":true,"samples":15,"meetMax":0.054525223520862434,"floorContactMax":null,"floorContactPalmHeightMax":null,"floorError":0.06,"maxDistance":0.48075565519294694,"floorSamples":0,"meetSamples":2,"ok":false,"failures":["ball centre misses the floor by 0.060 m > 0.05 m"]}
+  109 |     console.log(`HOOPSDRIB_GROUP ${JSON.stringify({ moving, n: g.length, topN: gt.length, topGapMax: q(gt.map((r) => dist(r.bp, r.palm)), 1), floorN: gf.length, floorBallY: q(gf.map((r) => r.bp[1]), 0.5), floorPalmY: q(gf.map((r) => r.palm[1]), 0.5), floorPalmToBall: q(gf.map((r) => dist(r.bp, r.palm)), 1), maxPalmToBall: q(g.map((r) => dist(r.bp, r.palm)), 1) })}`);
+  115 |     console.log(`HOOPSDRIB_MEASURE ${JSON.stringify({ moving, ...report })}`);

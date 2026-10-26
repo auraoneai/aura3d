@@ -19,3 +19,12 @@ export { runMotionGate } from "./motionGate";
 export type { MotionGateOptions, MotionGateReport } from "./motionGate";
 export { clearCameraEye, createCameraClearance } from "./cameraClear";
 export type { CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance } from "./cameraClear";
+export {
+  createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ,
+  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS
+} from "./handBounce";
+export type {
+  HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone,
+  HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample,
+  HandBounceReport, HandBounceLimits
+} from "./handBounce";

@@ -76,7 +76,9 @@ export {
   attachToBone, resolveBone, boneAliases, boneWorldPosition, attachmentDistance,
   checkDoubleFrame, detectSharedSkeleton, detectCoincidentModels, detectDoubleBlend,
   createFixedStepPresenter, createRecordBlend, runMotionGate,
-  clearCameraEye, createCameraClearance
+  clearCameraEye, createCameraClearance,
+  createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ,
+  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,
@@ -87,7 +89,10 @@ export type {
   BoneRole, SocketLike, AttachableActor, AttachToBoneOptions, BoneAttachment,
   DrawEntry, ModelInstance, AnimLayer, DoubleFrameFinding, DoubleFrameReport,
   AlphaSource, FixedStepPresenterOptions, FixedStepPresenter, RecordBlendOptions, MotionGateOptions, MotionGateReport,
-  CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance
+  CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance,
+  HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone,
+  HandBounceOverlay, HandBounceInput, HandBounceFrame, HandBounceState, HandBounceRelease, HandBounce, HandBounceSample,
+  HandBounceReport, HandBounceLimits
 } from "./motion/index";
 export { installEvidenceChannel, createPerfRing, type EvidenceChannelContract } from "./evidence/channel";
 export type { Prd09CreateGameOptions } from "./createGame";

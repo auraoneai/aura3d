@@ -178,6 +178,31 @@ await app.ready();
 
 `material.custom` auto-declares the uniforms you list. Prelude names available in both stages: `position`, `modelViewProjectionMatrix`, `eyePos`, and `outColor` in the fragment stage (GLSL 3 `in`/`out`). If the shader fails to compile the engine logs `CUSTOM_SHADER_COMPILE_FAILED` with the GLSL log (see [`troubleshooting.md`](troubleshooting.md)).
 
+## 6. A ball dribbled by hand (hand and floor contact, handoffs, proof)
+
+```ts
+import { createHandBounce, measureHandBall } from "@aura3d/engine/game";
+
+const bounce = createHandBounce({ hand: "right", ballRadius: 0.13, floorY: 0 });
+const samples: Array<{ phase: number; palm: [number, number, number]; ball: [number, number, number] }> = [];
+
+// fixed sim step, once per frame while the handler holds the ball
+function stepDribble(dt: number, holder: { x: number; z: number; vx: number; vz: number }, shoulderY: number, palm: [number, number, number]) {
+  const frame = bounce.step(dt, { speed: Math.hypot(holder.vx, holder.vz), shoulderY, palm, holder });
+  samples.push({ phase: frame.phase, palm, ball: frame.ball });
+  return frame.ball; // put the ball node here; frame.floorContact is the moment to play the bounce cue
+}
+
+// pass or shot: start the flight from the hand with the ball's own velocity, so it leaves without a pop
+const { position, velocity } = bounce.release();
+
+// prove it after a few seconds of dribble (human and AI handlers, standing and running)
+const report = measureHandBall(samples);
+if (!report.ok) throw new Error(report.failures.join("; "));
+```
+
+Palm and ball ride together, the ball hits the floor with its centre at the ball radius, and the palm returns to the ball every bounce. `bounce.overlay()` gives the upper-body bend (never the legs). See [motion-hand-bounce](../api/motion-hand-bounce.md).
+
 ## Type traps (strict `tsc` errors agents hit on a first draft)
 
 | Error | Cause | Fix |

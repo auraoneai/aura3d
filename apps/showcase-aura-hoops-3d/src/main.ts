@@ -43,14 +43,16 @@ import {
   mountTouchControls,
   installGameBeacon,
   createFootSlideMeter,
-  createHitStop
+  createHitStop,
+  createHandBounce,
+  handBounceOverlayAngles
 } from "@aura3d/engine/game";
 import { assets } from "./aura-assets.route";
 import "../../showcase-port-shared/quickbar.css";
 import { createFrameErrorBoundary, installBlackFrameGuard } from "@aura3d/debug";
 import { pickLocomotion } from "./locomotionRates";
 import { advanceShotBall, aimError, createHoopWorld, crossedRimDownward, solveLaunch } from "./shotPhysics";
-import { BALL_R, DRIB_BALL_GAP, DRIB_CYCLE_RUN, DRIB_CYCLE_STAND, DRIB_RIDE_END, DRIB_SHOULDER_FALLBACK, dribbleBallXZ, dribbleBallY, dribbleCycleY } from "./dribble";
+import { BALL_R, DRIB_SHOULDER_FALLBACK, dribbleCycleY } from "./dribble";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -1639,7 +1641,9 @@ const trailHist: Vec3[] = [];
  *  any torso posture, and the ball follows gravity-like easing (fast   *
  *  at the floor, slow at the top) between meets.                       *
  * ------------------------------------------------------------------ */
-const dribbleClock = { key: "", phase: 0, moving: false, releaseY: 0.5 };
+const hoopsBounce = createHandBounce({ ballRadius: BALL_R });
+const dribbleClock = { key: "" };
+const bouncePhase = (key: string): number => (dribbleClock.key === key ? hoopsBounce.state().phase : 0);
 let dribbleEvidence: { t: number; palmY: number; ballY: number; moving: boolean } | null = null;
 
 function stepBallSim(dt: number): void {
@@ -1756,17 +1760,24 @@ function stepBallSim(dt: number): void {
       // holder restarts at the meet so the hand is already on the rock.
       if (dribbleClock.key !== h.nodeId) {
         dribbleClock.key = h.nodeId;
-        dribbleClock.phase = 0;
+        hoopsBounce.reset();
       }
-      dribbleClock.moving = moving;
-      if (game_.phase === "check") dribbleClock.phase = 0; // dead ball at the check
-      else dribbleClock.phase = (dribbleClock.phase + dt / (moving ? DRIB_CYCLE_RUN : DRIB_CYCLE_STAND)) % 1;
       // syncAthlete solves the dribble palm (two-bone IK over the live
       // shoulder) every frame and publishes it through dribbleAims; the ball
-      // rides that same cycle, so palm and ball stay phase-locked — never a
-      // static hip offset — whether the handler is standing or driving.
+      // rides that same cycle (library createHandBounce), so palm and ball stay
+      // phase-locked whether the handler is standing or driving. Contact point
+      // tracks the palm as RENDERED (the arm may not reach its target); at the
+      // check the dead ball sits in the targeted palm and the phase is held.
       const aim = dribbleAims.get(h.nodeId);
-      const cyc = dribbleCycleY(dribbleClock.phase, aim?.shoulderY ?? DRIB_SHOULDER_FALLBACK, moving);
+      const checkNow = game_.phase === "check";
+      const frame = hoopsBounce.step(dt, {
+        moving,
+        shoulderY: aim?.shoulderY ?? DRIB_SHOULDER_FALLBACK,
+        palm: aim ? (checkNow ? aim.palm : aim.actual ?? aim.palm) : undefined,
+        holder: { x: h.x, z: h.z, vx: h.vx, vz: h.vz },
+        hold: checkNow
+      });
+      const cyc = dribbleCycleY(frame.phase, aim?.shoulderY ?? DRIB_SHOULDER_FALLBACK, moving);
       const prevY = ball.y;
       if (aim) {
         dribbleHand = {
@@ -1778,23 +1789,10 @@ function stepBallSim(dt: number): void {
           ball.x = h.x + Math.sin(h.yaw) * 0.22;
           ball.z = h.z + Math.cos(h.yaw) * 0.22;
           ball.y = 1.65 + h.y + game_.shotMeter.t * 0.35;
-        } else if (game_.phase === "check") {
-          // Check ball: held between both hands, no bounce before the live phase.
-          ball.x = aim.palm[0];
-          ball.y = aim.palm[1];
-          ball.z = aim.palm[2];
         } else {
-          // Contact point tracks the palm solve, nudged outward so the fingers
-          // don't clip the ball, and carried slightly with the handler's stride.
-          // The ball rides the palm as RENDERED (the arm may not reach its
-          // target), is released from wherever that palm was, bounces on the
-          // floor and is caught by the palm's live position.
-          const palm = aim.actual ?? aim.palm;
-          const at = dribbleBallXZ(palm, h, dribbleClock.phase);
-          ball.x = at.x;
-          ball.z = at.z;
-          if (dribbleClock.phase < DRIB_RIDE_END) dribbleClock.releaseY = palm[1] - DRIB_BALL_GAP;
-          ball.y = dribbleBallY(dribbleClock.phase, palm[1], dribbleClock.releaseY, palm[1] - DRIB_BALL_GAP);
+          ball.x = frame.ball[0];
+          ball.y = frame.ball[1];
+          ball.z = frame.ball[2];
         }
       } else {
         // Socket warm-up fallback: still cycle the ball beside the right hand
@@ -1810,10 +1808,10 @@ function stepBallSim(dt: number): void {
         };
       }
       dribbleEvidence = {
-        t: dribbleClock.phase,
+        t: frame.phase,
         palmY: aim ? (aim.actual ?? aim.palm)[1] : cyc.palmY,
         ballY: ball.y,
-        moving: dribbleClock.moving
+        moving: frame.moving
       };
       if (!h.shooting && game_.phase !== "check" && prevY > 0.28 && ball.y <= 0.22) cue("dribble");
     } else {
@@ -2487,7 +2485,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
   const upperR = anim?.socket?.("RightUpperArm");
   const upperL = anim?.socket?.("LeftUpperArm");
   const socketsUp = chest?.valid === true && upperR?.valid === true && upperL?.valid === true;
-  const cycleT = dribbleClock.key === a.nodeId ? dribbleClock.phase : 0;
+  const cycleT = bouncePhase(a.nodeId);
   const shoulderOf = (upper: { worldMatrix(out?: Float32Array): ArrayLike<number> }): Vec3 =>
     mat4Translation(upper.worldMatrix());
   let aimed: DribbleAim | undefined;
@@ -2504,9 +2502,10 @@ function syncAthlete(a: AthleteState, dt: number): void {
       // Lean over the ball; the torso dips hard into each push because the arm
       // alone cannot reach the low bounce (arm 0.56m from a ~1.2m shoulder).
       const effort = checkHold ? 0 : cyc.effort;
-      bones.Spine = { rotation: qX(checkHold ? 0.16 : 0.20 + 0.30 * effort) };
-      bones.Chest = { rotation: qX(checkHold ? 0.10 : 0.12 + 0.20 * effort) };
-      bones.Head = { rotation: qX(-0.22) };
+      const lean = handBounceOverlayAngles(effort, false);
+      bones.Spine = { rotation: qX(checkHold ? 0.16 : lean.spine) };
+      bones.Chest = { rotation: qX(checkHold ? 0.10 : lean.chest) };
+      bones.Head = { rotation: qX(lean.head) };
     }
     if (socketsUp && shoulderR && shoulderL) {
       const chestRot = qFromMat4(chest!.worldMatrix());
@@ -2573,11 +2572,11 @@ function syncAthlete(a: AthleteState, dt: number): void {
     const cyc = dribbleCycleY(cycleT, shoulderY, true);
     // Upper-body-only run dribble: the torso bends over the ball at the waist (a steady lean plus a push dip) so the
     // dribbling shoulder comes down far enough for the arm to follow the ball. Legs, hips and feet stay on the clip.
-    const lean = (1.28 + 0.77 * cyc.effort) * QA_LEAN;
+    const lean = handBounceOverlayAngles(cyc.effort, true, QA_LEAN);
     const bones: Record<string, { rotation?: Quat; position?: { x: number; y: number; z: number } }> = {
-      Spine: { rotation: qX(lean * 0.55) },
-      Chest: { rotation: qX(lean * 0.45) },
-      Head: { rotation: qX(-lean * 0.6) }
+      Spine: { rotation: qX(lean.spine) },
+      Chest: { rotation: qX(lean.chest) },
+      Head: { rotation: qX(lean.head) }
     };
     // The contact point leads the handler in the movement direction (yaw
     // tracks velocity); the off hand guards near the body instead of mirroring.

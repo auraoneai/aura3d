@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+import { measureHandBall } from "../../packages/game/src/motion/handBounce";
 
 /**
  * Aura Hoops 3D dribble probe (remote only, software WebGL2). Records, per rendered frame, the sim ball against the
@@ -106,6 +107,14 @@ test("hoops dribble probe", async ({ page }) => {
     if (mg > 0.13) failures.push(`meet gap ${moving ? "moving" : "standing"} ${mg.toFixed(3)} > 0.13`);
     if (fg > 0.6) failures.push(`floor palm-to-ball ${moving ? "moving" : "standing"} ${fg.toFixed(3)} > 0.6`);
     console.log(`HOOPSDRIB_GROUP ${JSON.stringify({ moving, n: g.length, topN: gt.length, topGapMax: q(gt.map((r) => dist(r.bp, r.palm)), 1), floorN: gf.length, floorBallY: q(gf.map((r) => r.bp[1]), 0.5), floorPalmY: q(gf.map((r) => r.palm[1]), 0.5), floorPalmToBall: q(gf.map((r) => dist(r.bp, r.palm)), 1), maxPalmToBall: q(g.map((r) => dist(r.bp, r.palm)), 1) })}`);
+  }
+  // The library probe over the same samples (render-rate sampling: the floor tolerance is looser than the dense unit test).
+  for (const moving of [false, true]) {
+    const g = held.filter((r) => Boolean(r.mv) === moving && (!moving || r.steady) && r.t != null);
+    const report = measureHandBall(g.map((r) => ({ phase: r.t as number, palm: r.palm, ball: r.bp })), { limits: { meet: 0.13, floorContact: 0.6, floorError: 0.05 } });
+    console.log(`HOOPSDRIB_MEASURE ${JSON.stringify({ moving, ...report })}`);
+    // floor error is informational here: render-rate samples rarely land on the exact floor frame (the dense unit test owns it)
+    if (g.length > 10) for (const f of report.failures.filter((x) => !/misses the floor/.test(x))) failures.push(`measureHandBall ${moving ? "moving" : "standing"}: ${f}`);
   }
   const worst = held.map((r) => ({ f: r.f, d: Number(dist(r.bp, r.palm).toFixed(2)), ball: r.bp, palm: r.palm, hips: r.hips, t: r.t, mv: r.mv })).sort((a, b) => b.d - a.d).slice(0, 6);
   console.log(`HOOPSDRIB_WORST ${JSON.stringify(worst)}`);
