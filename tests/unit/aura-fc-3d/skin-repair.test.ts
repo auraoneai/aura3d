@@ -44,7 +44,7 @@ describe.each(["fcSoccerStrikerMeshy", "fcGoalkeeperMeshy"])("%s skinned mesh", 
     expect(now.shortsMax).toBeLessThanOrEqual(1.75);
   }, 180_000);
 
-  it("the legs are bound where they are: every leg-owned skin vertex is within 15 cm of its bone segment in the rest pose", () => {
+  it("the limbs are bound where they are: every leg- or arm-owned vertex is within 15 cm of its bone segment in the rest pose", () => {
     const glb = readGlb(glbPath(key));
     const rest = forward(glb, localPose(glb, null, 0));
     const P = (n: string) => rest.pos[rest.id(n)] as number[];
@@ -52,6 +52,11 @@ describe.each(["fcSoccerStrikerMeshy", "fcGoalkeeperMeshy"])("%s skinned mesh", 
       LeftUpperLeg: [P("LeftUpperLeg"), P("LeftLowerLeg")], LeftLowerLeg: [P("LeftLowerLeg"), P("LeftFoot")],
       RightUpperLeg: [P("RightUpperLeg"), P("RightLowerLeg")], RightLowerLeg: [P("RightLowerLeg"), P("RightFoot")]
     };
+    for (const side of ["Left", "Right"]) {
+      const S = P(`${side}UpperArm`), E = P(`${side}Forearm`);
+      segs[`${side}UpperArm`] = [S, E];
+      segs[`${side}Forearm`] = [E, E.map((x, i) => x + (x - S[i]!) * 1.02)];
+    }
     const dseg = (p: number[], [a, b]: number[][]) => {
       const ab = b.map((x, i) => x - a[i]!), ap = p.map((x, i) => x - a[i]!);
       const t = Math.max(0, Math.min(1, (ap[0]! * ab[0]! + ap[1]! * ab[1]! + ap[2]! * ab[2]!) / (ab[0]! ** 2 + ab[1]! ** 2 + ab[2]! ** 2)));
@@ -60,7 +65,7 @@ describe.each(["fcSoccerStrikerMeshy", "fcGoalkeeperMeshy"])("%s skinned mesh", 
     let worst = 0;
     const prims = glb.json.meshes[0].primitives;
     for (let i = 0; i < prims.length; i += 1) {
-      if (!/skin|shorts/.test(glb.json.materials[prims[i].material]?.name ?? "")) continue;
+      if (!/skin|shorts|kit/.test(glb.json.materials[prims[i].material]?.name ?? "")) continue;
       const mesh = loadSkinnedMesh(glb, i);
       for (let v = 0; v < mesh.pos.length; v += 1) {
         let top = 0, joint = "";

@@ -1,6 +1,6 @@
-# Aura FC legs and shorts: rebuilt (2026-10-25)
+# Aura FC legs, shorts and arms: rebuilt (2026-10-25)
 
-Owner report: in Aura FC the legs look wrong and the white shorts shred into jagged shards while running.
+Owner report: in Aura FC the legs look wrong and the white shorts shred into jagged shards while running. Follow-up: thin fragments at the elbows and shoulders (same cause, arms).
 
 ## Cause (measured with `tools/aura-fc`)
 
@@ -10,22 +10,21 @@ Owner report: in Aura FC the legs look wrong and the white shorts shred into jag
 
 ## What shipped
 
-`tools/aura-fc/rebuild-legs.mjs` (then `bridge-cut.mjs --limit 1.6` for stragglers) on the striker and goalkeeper GLBs, which are the only athletes FC instantiates (every team kit and skin tone is a material override on these two). The lower body is rebuilt in the straight pose the skeleton assumes: thigh and shin skin tubes, thigh shorts tubes, a pelvis skirt and ankle socks around the real bone axes with smooth hip, knee and ankle weights; the boots are flattened and placed under the shin; torso, arms, head and eyes are untouched. Material names, vertex attributes and clips are unchanged, so kit colours and every clip still apply. Bounds in the manifests are updated.
+`tools/aura-fc/rebuild-legs.mjs`, then `rebuild-arms.mjs`, then `bridge-cut.mjs --limit 1.6` on the striker and goalkeeper GLBs, which are the only athletes FC instantiates (every team kit and skin tone is a material override on these two). Legs: thigh and shin skin tubes, thigh shorts tubes, a pelvis skirt, ankle socks, boots flattened under the shin. Arms and torso: the spine bent about 30 degrees forward in the bind, so the torso, neck and head are sheared upright; the old sleeves, forearm skin, hands and detached cuffs are removed; shoulder caps, kit sleeves (short for the striker, long for the keeper), upper-arm and forearm skin tubes and mitten hands (skin for the striker, kit-coloured gloves for the keeper) follow the real shoulder, elbow and wrist axes with smooth weights. Material names (6 per athlete), vertex attributes and clips are unchanged, so kit colours, clips, draw calls (one per material) and the QA hooks are as before. Bounds in the manifests are updated.
 
 | | striker before | striker after | keeper before | keeper after |
 |---|---|---|---|---|
-| triangles past 1.6x (walk, run, sprint, 3 kicks, jump, slide, ready) | 327 | 0 | 15 | 0 |
-| worst triangle stretch | 5.2x (120x over every clip) | 1.5x | 3.3x | 1.5x |
-| longest posed triangle edge in run and sprint | 0.78 m | 0.15 m | 0.29 m | 0.23 m |
-| file size | 2.46 MB | 1.83 MB | 2.37 MB | 1.70 MB |
+| triangles past 1.6x, all 26 clips in the file (walk, run, sprint, kicks, jump, slide, release, shoot, contest, ...) | 327 (played clips) | 0 | 15 | 0 |
+| worst triangle stretch | 5.2x (120x over every clip) | 1.53x | 3.3x | 1.51x |
+| file size | 2.46 MB | 1.75 MB | 2.37 MB | 1.77 MB |
 
-Per material (kit, shorts, socks, skin, dark, eyes) the maximum stretch is 1.49, 1.36, 1.51, 1.50, 1.26, 1.00 for the striker. Unit tests: `tests/unit/aura-fc-3d/skin-repair.test.ts` (stretch ceiling, shorts edge length, legs within 15 cm of their bone), `gait-limits.test.ts`.
+Per material (kit, shorts, socks, skin, dark, eyes) the maximum stretch over all 26 clips is 1.53, 1.36, 1.51, 1.49, 1.26, 1.00 for the striker and 1.45, 1.36, 1.51, 1.49, 1.29, 1.00 for the keeper. Unit tests: `tests/unit/aura-fc-3d/skin-repair.test.ts` (stretch ceiling, shorts edge length, every leg and arm vertex within 15 cm of its bone), `gait-limits.test.ts`.
 
 ## Frames
 
-`before/` and `after/` are 900x506 software-GL frames from the real game (QA hook `focusFastest` and `freezeAtKick`, `tests/browser/fclegs-fc.spec.ts`; run ids fclegs-before and fclegs-solid): ten kick frames and a run cycle for the striker and the away kit. After: intact shorts in both kits, believable legs through the run, sprint and the kick, boots on the ground. `raster/` has GPU-free silhouettes (`tools/aura-fc/raster.mjs`) of the same pose before and after, and the skeleton overlay.
+`before/` and `after/` are 900x506 software-GL frames from the real game (QA hook `focusFastest` and `freezeAtKick`, `tests/browser/fclegs-fc.spec.ts`; run ids fclegs-before and fclegs-arms3): ten kick frames and a run cycle for the striker and the away kit. After: intact shorts in both kits, believable legs through the run, sprint and the kick, boots on the ground. `raster/` has GPU-free silhouettes (`tools/aura-fc/raster.mjs`) of the same pose before and after, and the skeleton overlay.
 
-Not touched and still visible in the run frames: thin fragments at the elbows where the sleeve and the arm skin overlap (the arms have the same mid-stride bind and no stretched triangles; logged in `docs/audit/game-leftovers.md`).
+Arms: no fragments at the elbows; the shoulders read as a cap with the sleeve emerging from it. A small ragged tuft remains on the back of the shirt at the far shoulder in side views (old armhole edge). The keeper is checked offline (`raster/keeper-*.png`: long sleeves, gloves, dive pose); FC's framing never closes in on a keeper in the filmstrip.
 
 ## Regression check on the other sports games
 

@@ -25,6 +25,12 @@ Offline tools for the Aura FC 3D athlete rigs (`fcSoccerStrikerMeshy`, `fcGoalke
   the real bone axes with smooth hip (0.70 to 0.99 m), knee (+-0.14 m) and ankle weights wide enough to keep every triangle under 1.6x. Material names, vertex
   attributes (position, normal, joints, weights) and clips are unchanged, so kit colours and clips still apply. Follow it with `bridge-cut.mjs --limit 1.6` to
   drop any residual stretched triangle (the keeper loses 10).
+- `rebuild-arms.mjs` — the arms step, run on the output of `rebuild-legs.mjs`: `node tools/aura-fc/rebuild-arms.mjs <in.glb> <out.glb> [--long-sleeves]`. The same mid-stride
+  bind bent the spine about 30 degrees and the arms at the elbow, so shoulders and elbows pivoted far from the limbs. It shears the torso, neck and head upright
+  (per-height shift of the torso cluster centres onto the skeleton axis), removes the old sleeves, forearm skin, hands and detached cuffs, and builds shoulder caps,
+  kit sleeves (short for the striker, `--long-sleeves` for the keeper), upper-arm and forearm skin tubes and mitten hands (skin for the striker, kit-coloured gloves
+  for the keeper) around the real shoulder, elbow and wrist axes with smooth shoulder (-0.05 to 0.16 m) and elbow (+-0.1 m) weights. Pipeline for the FC athletes:
+  `rebuild-legs.mjs` -> `rebuild-arms.mjs` -> `bridge-cut.mjs --limit 1.6`.
 - `bridge-cut.mjs` — removes the triangles stretched past a limit in the played clips and repacks the binary:
   `node tools/aura-fc/bridge-cut.mjs <in.glb> <out.glb> [--limit 1.6] [--clips Run,Sprint_Loop,...] [--sliver 0.1] [--keep-stretch skin]`. Cutting alone does not
   fix the Meshy athletes (it tore the thighs in the game render); it is the cleanup pass after `rebuild-legs.mjs`.
