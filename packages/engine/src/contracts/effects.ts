@@ -18,6 +18,8 @@ export interface AuraAppEffects {
   readonly presets: Readonly<Record<AuraVfxKind, AuraVfxEffectSpec>>;
   registerPreset(kind: string, spec: AuraVfxEffectSpec): void;
   readonly liveCount: number;
+  /** Runtime-spawned effects (burst, spawn, game effects): "off" drops the particles and keeps the camera and light feedback. The URL's `?vfx=on|off` overrides it. Authored scene effects are unaffected. */
+  runtime: "on" | "off";
   clear(): void;
 }
 // AuraApp.effects: AuraAppEffects (via C-38)
@@ -35,12 +37,14 @@ export interface AuraEffectsDiagnostics { readonly nodes: readonly { readonly id
 export class StubAppEffects implements AuraAppEffects {
   private readonly live = new Map<string, { readonly handle: AuraRuntimeNodeHandle | null; readonly effect: string; count: number }>();
   private nextId = 0;
+  runtime: "on" | "off" = "on";
   private readonly presetMap = new Map<string, AuraVfxEffectSpec>();
 
   constructor(private readonly addNode: (kind: "sphere" | "quad" | "line", at: AuraVec3, options?: { color?: AuraColor; scale?: number }) => AuraRuntimeNodeHandle | null) {}
 
   burst(kind: AuraVfxKind, position: AuraVec3, options?: { count?: number; speed?: number; scale?: number; color?: AuraColor; normal?: AuraVec3; seed?: number; intensity?: number; /** false: do not add the preset's camera shake/punch (the caller owns the camera) */ camera?: boolean }): AuraEffectInstanceHandle {
     const id = `fx-${this.nextId++}`;
+    if (this.runtime === "off") return this.makeHandle(id);
     const count = options?.count ?? 8;
     for (let i = 0; i < count; i++) {
       this.addNode("sphere", position, { color: options?.color, scale: options?.scale });
@@ -53,6 +57,7 @@ export class StubAppEffects implements AuraAppEffects {
     const id = `fx-${this.nextId++}`;
     const kind = typeof effect === "string" ? effect : effect.name;
     const position: AuraVec3 = Array.isArray(at) ? (at as AuraVec3) : ([0, 0, 0] as AuraVec3);
+    if (this.runtime === "off") return this.makeHandle(id);
     this.addNode("quad", position, { color: options?.color, scale: options?.scale });
     this.live.set(id, { handle: null, effect: kind, count: 1 });
     return this.makeHandle(id);

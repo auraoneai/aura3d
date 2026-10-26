@@ -63,6 +63,8 @@ function boot(): void {
     if (errEl) errEl.hidden = false;
     return;
   }
+  // Runtime-spawned effect clouds are off by default until the floating-dot report is root-caused; `?vfx=on` re-enables them for diagnosis.
+  (app as any).effects.runtime = "off";
   const canvas = app.canvas;
 
   /* -------------------------- handles -------------------------- */

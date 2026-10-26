@@ -2512,6 +2512,8 @@ function boot(): void {
     ...looks.appOptions(state.course.look),
     qualityRebuild: { flags: ["game"] }
   } as any);
+  // Runtime-spawned effect clouds are off by default until the floating-dot report is root-caused; `?vfx=on` re-enables them for diagnosis.
+  (auraApp as any).effects.runtime = "off";
 
   bootStage("audio");
   setupAudio();

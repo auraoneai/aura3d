@@ -355,6 +355,8 @@ const fightingGame = createGame({
 });
 
 const app = fightingGame.app;
+// Runtime-spawned effect clouds are off by default until the floating-dot report is root-caused; `?vfx=on` re-enables them for diagnosis.
+(app as any).effects.runtime = "off";
 fightingGame.start();
 const input = fightingGame.input as GameInputController;
 if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");

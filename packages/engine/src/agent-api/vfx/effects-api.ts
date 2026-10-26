@@ -227,6 +227,12 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
   };
 
   return {
+    get runtime() {
+      return system.runtimeEffects;
+    },
+    set runtime(mode: "on" | "off") {
+      system.setRuntimeEffects(mode);
+    },
     burst(kind: AuraVfxKind, position: AuraVec3, options) {
       return spawnEmitter(kind, position, options ?? {});
     },

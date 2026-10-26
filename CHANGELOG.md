@@ -4,6 +4,12 @@ Version: 4.3.4
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.3.5 (unreleased)
+
+- **`app.effects.runtime = "off" | "on"` switches runtime-spawned effects per app (engine).** With `"off"`, `effects.burst`, `effects.spawn`, game effects and impact presets create no particles; the camera and light feedback still run, authored scene effects are untouched, and the library default stays `"on"`. The URL's `?vfx=on` and `?vfx=off` override the app either way, and `window.__AURA_VFX_DEBUG__` (`?vfxdebug=1`) still lists live emitters. Tests: `tests/qr/prd07/unit/runtime-effects-switch.test.ts`.
+- **Runtime effects are off by default in Aura Links 3D, Aura FC 3D and Iron Crown (games).** The cause of the floating yellow/white and blue/gold bubbles the owner sees on a real GPU is still unproven. Open any of the three with `?vfx=on` to re-enable the effects for diagnosis, together with `?vfxdebug=1`. Aura Hoops and Aura Diamond also use runtime effects (hit sparks and bursts); no bubbles were reported there, so they stay on.
+- **Correction to the 4.3.4 note on point sizes.** SwiftShader reports `ALIASED_POINT_SIZE_RANGE` as [1, 1023], so the explanation that software GL hides oversized points was wrong. The 4.3.4 on-screen cap (12 percent of the render height) is a safety net only and does not shrink 20 to 60 px bubbles.
+
 ## 4.3.4 (2026-10-26)
 
 - **Particles and points can no longer grow into screen-filling discs on real GPUs (engine, rendering).** SwiftShader clamps `gl_PointSize` tightly, while real GPUs (ANGLE/Metal) allow very large point sizes, so a size-attenuated point that passed close to the camera, or had a large authored size, drew as a giant soft disc. Attenuated `points()` are now capped at 12% of the render height with a near cull, fixed-pixel points at 256 px, and billboard particle batches default to a 10% screen cap (`DEFAULT_PARTICLE_MAX_SCREEN`) and drop any particle behind the camera. Unit tests mirror the vertex math and pin the shader source.
