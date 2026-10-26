@@ -163,6 +163,7 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     const preset = BURST_PRESETS[kind] ?? BURST_PRESETS.spark;
     if (options.camera !== false) applyPresetLayers(kind);
     const color = toVec3(options.color, preset.color);
+    const sizeScale = options.scale !== undefined && Number.isFinite(options.scale) && options.scale > 0 ? options.scale : 1;
     // P2-T7 §6.2.12 light layer — tier-capped transient pool flash.
     if (preset.light) {
       system.flashLight({
@@ -192,11 +193,13 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       particleCount: options.continuous ? Math.max(64, options.count ?? 64) : Math.max(1, options.count ?? 24),
       ...(options.continuous ? {} : { burst: Math.max(1, options.count ?? 24) }),
       materialMode: preset.additive ? "additive-glow" : "soft-alpha",
-      // a one-shot burst lives and sizes like its preset (spark 0.25-0.6 s, dust 0.8-1.6 s); without these the
-      // emitter fell back to the generic 1.2-2.4 s lifetime, so every burst hung around twice as long as designed
-      ...(options.continuous ? {} : { lifetime: preset.life, size: preset.size }),
-      speed: options.speed ?? preset.speed[1],
+      speed: options.speed ?? preset.speed,
       gravity: preset.gravity,
+      // The preset's own life, size and spread: without them every kind inherited the
+      // emitter defaults (1.2 to 2.4 s lifetime, 5 to 14 cm glow discs) and read as lingering bubbles.
+      lifetime: preset.life,
+      size: [preset.size[0] * sizeScale, preset.size[1] * sizeScale],
+      spread: preset.spread,
       emissionRate: options.continuous ? (options.count ?? 24) * 2 : 0,
       color,
       seed: options.seed
@@ -225,7 +228,9 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
     spawn(effect: AuraVfxEffectSpec | AuraVfxKind, at: AuraVec3 | { node: string }, options) {
       const kind = typeof effect === "string" ? effect : effect.name;
       const position: AuraVec3 = Array.isArray(at) ? (at as unknown as AuraVec3) : [0, 0, 0];
-      return spawnEmitter(kind, position, { ...(options ?? {}), continuous: true });
+      // A named preset is a one-shot impact: it bursts and dies with its particles. Only an authored
+      // AuraVfxEffectSpec object is a looping effect that the caller stops.
+      return spawnEmitter(kind, position, { ...(options ?? {}), continuous: typeof effect !== "string" });
     },
     trail(_target, options) {
       void options;
