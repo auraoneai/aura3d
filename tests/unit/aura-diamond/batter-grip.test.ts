@@ -75,7 +75,7 @@ function runPlateAppearance(): Row[] {
   let gamma = 0;
   for (let now = 0; now < 8; now += 0.05) {
     const s = sampleBatterTarget({ active: false, t: 0, recover: 0, contact: null }, now);
-    const pose = solveBatterPose(s.K, s.D, s.phi, s.hip, s.pole, tau, tauL, gamma);
+    const pose = solveBatterPose(s.K, s.D, s.phi, s.hip, s.pole, tau, tauL, gamma, s.stride);
     tau = pose.tau;
     tauL = pose.tauL;
     gamma = pose.gamma;
@@ -96,7 +96,7 @@ function runPlateAppearance(): Row[] {
     gamma = 0;
     for (let t = 0; t <= 1.0001; t += 0.01) {
       const s = sampleBatterTarget({ active: true, t, recover: 0, contact }, 0);
-      const pose = solveBatterPose(s.K, s.D, s.phi, s.hip, s.pole, tau, tauL, gamma);
+      const pose = solveBatterPose(s.K, s.D, s.phi, s.hip, s.pole, tau, tauL, gamma, s.stride);
       tau = pose.tau;
       tauL = pose.tauL;
       gamma = pose.gamma;
@@ -104,7 +104,7 @@ function runPlateAppearance(): Row[] {
     }
     for (let r = 0.02; r <= 1.0001; r += 0.02) {
       const s = sampleBatterTarget({ active: true, t: 1, recover: r, contact }, 0);
-      const pose = solveBatterPose(s.K, s.D, s.phi, s.hip, s.pole, tau, tauL, gamma);
+      const pose = solveBatterPose(s.K, s.D, s.phi, s.hip, s.pole, tau, tauL, gamma, s.stride);
       tau = pose.tau;
       tauL = pose.tauL;
       gamma = pose.gamma;

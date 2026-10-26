@@ -60,7 +60,7 @@ export function setLiveCam(c: { eye: V3; target: V3; fov: number } | null): void
 export type Snap = { probe: Record<string, any> | null; joints: { mats: Record<string, number[] | null>; pos: V3; yaw: number; s: number; n: V3 } | null; state: { phase: string } | undefined; url: string | null; frame: number };
 
 /** Boot the live page the owner's way (Quick Play) and run one part: "swing" (stance + a real swing) or "hold" (frozen filmstrip). */
-export async function runLive(page: Page, part: "swing" | "hold", dpr: number): Promise<void> {
+export async function runLive(page: Page, part: "swing" | "hold" | "multi", dpr: number): Promise<void> {
   const mesh = loadMesh();
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message.slice(0, 200)));
@@ -156,6 +156,24 @@ export async function runLive(page: Page, part: "swing" | "hold", dpr: number): 
     const kept = swing.filter((x) => x.url);
     line({ real: "swing", frames: swing.length, keptFrames: kept.length });
     kept.slice(0, 40).forEach((x, i) => report(`02-swing-${String(i).padStart(2, "0")}`, x));
+  } else if (part === "multi") {
+    // Several plate appearances in a row the way the owner plays: stance, Space, ball in play, the batter runs and is hidden, the next batter steps in.
+    // A snapshot (numbers and pixels of the same frame) every few seconds for up to 30 minutes, whatever the game is doing, so batter run, hide and return are all covered.
+    let swings = 0;
+    const started = Date.now();
+    let shot = 0;
+    while (Date.now() - started < 1_800_000 && shot < 70) {
+      const snaps = await collect({ maxFrames: 2, mode: "all" });
+      const last = snaps[snaps.length - 1]!;
+      const ph = last.state?.phase;
+      report(`04-multi-${String(shot).padStart(2, "0")}-${ph ?? "x"}`, last, { swings });
+      shot += 1;
+      if (ph === "between" && last.probe && last.probe.phase === "stance") {
+        await page.keyboard.press("Space");
+        swings += 1;
+      }
+      await page.waitForTimeout(1_800);
+    }
   } else {
     const times = [0.03, 0.08, 0.14, 0.2, 0.26, 0.33, 0.4, 0.45, 0.476, 0.52, 0.55, 0.62, 0.7, 0.8, 0.9, 1.0];
     const held = await collect({ maxFrames: 0, mode: "all", holdTimes: times });
