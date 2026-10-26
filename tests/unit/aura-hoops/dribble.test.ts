@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BALL_R, DRIB_ARM_REACH, DRIB_BALL_GAP, DRIB_FLOOR_Y, DRIB_RIDE_END, dribbleBallXZ, dribbleBallY, dribbleContactWeight, dribbleCycleY } from "../../../apps/showcase-aura-hoops-3d/src/dribble";
+import { BALL_R, DRIB_ARM_REACH, DRIB_BALL_GAP, DRIB_FLOOR_Y, DRIB_CYCLE_RUN, DRIB_RIDE_END, dribbleBallXZ, dribbleBallY, dribbleContactWeight, dribbleCycleY } from "../../../apps/showcase-aura-hoops-3d/src/dribble";
 
 const SHOULDER = 1.2;
 
@@ -37,7 +37,7 @@ describe("Aura Hoops dribble", () => {
   });
 
   /** Kinematic stand-in for the rig: the standing shoulder drops with the crouch, and the arm reaches `DRIB_ARM_REACH` below it. */
-  function simulate(seconds: number, cycleSeconds: number, lag: number) {
+  function simulate(seconds: number, cycleSeconds: number, lag: number, moving = false) {
     const dt = 1 / 60;
     let phase = 0;
     let releaseY = 0.5;
@@ -45,9 +45,10 @@ describe("Aura Hoops dribble", () => {
     const rows: Array<{ t: number; ball: number; palm: number; gap: number }> = [];
     for (let i = 0; i < seconds / dt; i += 1) {
       phase = (phase + dt / cycleSeconds) % 1;
-      const standing = 1.5;
-      const cyc = dribbleCycleY(phase, standing - 0.43 * dribbleCycleY(phase, standing).effort);
-      const shoulder = standing - 0.43 * cyc.effort;
+      const standing = moving ? 1.45 : 1.5;
+      const drop = moving ? 0.34 : 0.43; // run: waist bend only; stand: crouch + lean
+      const cyc = dribbleCycleY(phase, standing - drop * dribbleCycleY(phase, standing, moving).effort, moving);
+      const shoulder = standing - drop * cyc.effort;
       const reachable = Math.max(cyc.palmY, shoulder - DRIB_ARM_REACH);
       renderedPalm += (reachable - renderedPalm) * Math.min(1, dt / Math.max(lag, 1e-3));
       if (phase < DRIB_RIDE_END) releaseY = renderedPalm - DRIB_BALL_GAP;
@@ -70,6 +71,17 @@ describe("Aura Hoops dribble", () => {
 
   it("brings the palm within 0.45 m of the ball at the floor contact (the hand follows the ball down)", () => {
     const rows = simulate(6, 0.46, 0.03);
+    const floor = rows.filter((r) => r.ball <= BALL_R + 0.02);
+    expect(floor.length).toBeGreaterThan(3);
+    expect(Math.max(...floor.map((r) => r.gap))).toBeLessThanOrEqual(0.55);
+  });
+
+  it("running dribble: lower apex, shorter period, the palm within 0.55 m of the ball at the bounce, ball centre at the radius", () => {
+    const rows = simulate(6, DRIB_CYCLE_RUN, 0.02, true);
+    expect(DRIB_CYCLE_RUN).toBeLessThan(0.46);
+    expect(Math.max(...rows.map((r) => r.ball))).toBeLessThanOrEqual(0.86);
+    expect(Math.abs(Math.min(...rows.map((r) => r.ball)) - BALL_R)).toBeLessThanOrEqual(0.02);
+    for (const r of rows.filter((x) => x.t < 0.04 || x.t > 0.93)) expect(r.gap).toBeLessThanOrEqual(0.12);
     const floor = rows.filter((r) => r.ball <= BALL_R + 0.02);
     expect(floor.length).toBeGreaterThan(3);
     expect(Math.max(...floor.map((r) => r.gap))).toBeLessThanOrEqual(0.55);

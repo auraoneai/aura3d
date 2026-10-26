@@ -6,22 +6,25 @@ const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
 export const DRIB_RIDE_END = 0.35;
 export const DRIB_PALM_TURN = 0.60;
 export const DRIB_FLOOR_AT = 0.66;
-export const DRIB_BALL_GAP = 0.11; // palm centroid rides this far above the ball crown
+export const DRIB_BALL_GAP = 0.09; // palm centroid rides this far above the ball crown
 export const DRIB_FLOOR_Y = BALL_R; // ball centre on the floor at the bounce
 export const DRIB_CYCLE_STAND = 0.46;
-export const DRIB_CYCLE_RUN = 0.34;
+export const DRIB_CYCLE_RUN = 0.30;
 export const DRIB_SHOULDER_FALLBACK = 1.5; // world shoulder Y (standing) before sockets resolve
 /** Palm heights above the floor: waist at the meet, low in the crouch at the push (the arm alone reaches 0.55 m below the shoulder). */
 export const DRIB_PALM_TOP = 1.02;
 export const DRIB_PALM_PUSH = 0.62;
 export const DRIB_ARM_REACH = 0.55;
+/** Running dribble: a lower apex (ball about 0.8 m) and a palm that follows it down with the torso bent over (the legs stay on the run clip). */
+export const DRIB_PALM_TOP_RUN = 0.92;
+export const DRIB_PALM_PUSH_RUN = 0.60;
 
 /** Phase at which the palm is back on the ball and carries it again (the contact window closes the cycle). */
 export const DRIB_CATCH_FROM = 0.92;
 
-export function dribbleCycleY(t: number, shoulderY: number): { palmY: number; ballY: number; effort: number } {
-  const top = Math.min(DRIB_PALM_TOP, shoulderY - 0.30);
-  const push = Math.max(DRIB_PALM_PUSH, shoulderY - DRIB_ARM_REACH);
+export function dribbleCycleY(t: number, shoulderY: number, moving = false): { palmY: number; ballY: number; effort: number } {
+  const top = Math.min(moving ? DRIB_PALM_TOP_RUN : DRIB_PALM_TOP, shoulderY - 0.30);
+  const push = Math.max(moving ? DRIB_PALM_PUSH_RUN : DRIB_PALM_PUSH, shoulderY - DRIB_ARM_REACH);
   const low = push - 0.04;
   let palmY: number;
   let effort: number;

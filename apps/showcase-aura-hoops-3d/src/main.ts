@@ -425,6 +425,9 @@ const STUDIO = {
 const initialParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
 /** ?diag=1&qaDt=0.0167 fixes the simulation step so a slow software-GL run still integrates at a real-device rate (measurement only). */
 const QA_DT = initialParams.get("diag") === "1" ? Number(initialParams.get("qaDt")) || 0 : 0;
+/** ?diag=1&qaLean=1.2 scales the running-dribble waist bend and &qaLead=2 the palm look-ahead (measurement only). */
+const QA_LEAN = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLean")) || 1 : 1;
+const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
 
 const game_ = {
   mode: "quick" as ModeId,
@@ -1763,7 +1766,7 @@ function stepBallSim(dt: number): void {
       // rides that same cycle, so palm and ball stay phase-locked — never a
       // static hip offset — whether the handler is standing or driving.
       const aim = dribbleAims.get(h.nodeId);
-      const cyc = dribbleCycleY(dribbleClock.phase, aim?.shoulderY ?? DRIB_SHOULDER_FALLBACK);
+      const cyc = dribbleCycleY(dribbleClock.phase, aim?.shoulderY ?? DRIB_SHOULDER_FALLBACK, moving);
       const prevY = ball.y;
       if (aim) {
         dribbleHand = {
@@ -2390,7 +2393,7 @@ function renderedPalmLead(a: AthleteState, root: AnyHandle): Vec3 | undefined {
   if (!prev) return p;
   const dx = p[0] - prev[0], dy = p[1] - prev[1], dz = p[2] - prev[2];
   if (Math.hypot(dx, dy, dz) > 0.25) return p;
-  return [p[0] + dx, p[1] + dy, p[2] + dz];
+  return [p[0] + dx * QA_LEAD, p[1] + dy * QA_LEAD, p[2] + dz * QA_LEAD];
 }
 
 /** The dribbling palm as the skinned arm really rendered it (forearm bone + palm offset), or undefined until the sockets load. */
@@ -2567,14 +2570,18 @@ function syncAthlete(a: AthleteState, dt: number): void {
     const shoulderR = shoulderOf(upperR!);
     const shoulderL = shoulderOf(upperL!);
     const shoulderY = shoulderR[1] + 0.96 + a.y;
-    const cyc = dribbleCycleY(cycleT, shoulderY);
+    const cyc = dribbleCycleY(cycleT, shoulderY, true);
+    // Upper-body-only run dribble: the torso bends over the ball at the waist (a steady lean plus a push dip) so the
+    // dribbling shoulder comes down far enough for the arm to follow the ball. Legs, hips and feet stay on the clip.
+    const lean = (1.28 + 0.77 * cyc.effort) * QA_LEAN;
     const bones: Record<string, { rotation?: Quat; position?: { x: number; y: number; z: number } }> = {
-      Spine: { rotation: qX(0.22 + 0.30 * cyc.effort) },
-      Chest: { rotation: qX(0.12 + 0.18 * cyc.effort) }
+      Spine: { rotation: qX(lean * 0.55) },
+      Chest: { rotation: qX(lean * 0.45) },
+      Head: { rotation: qX(-lean * 0.6) }
     };
     // The contact point leads the handler in the movement direction (yaw
     // tracks velocity); the off hand guards near the body instead of mirroring.
-    const palmR: Vec3 = [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.36];
+    const palmR: Vec3 = [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.24];
     const palmL: Vec3 = [shoulderL[0] + 0.04, shoulderL[1] - 0.30, shoulderL[2] + 0.22];
     const chestRot = qFromMat4(chest!.worldMatrix());
     const rightArm = armIK(chestRot, shoulderR, palmR, facts.upperLenR, facts.foreLenR, facts.upperDirR, facts.foreDirR,
@@ -2744,6 +2751,8 @@ function handProbe(): Record<string, unknown> | null {
     const rec: Record<string, unknown> = { sim: [Number(a.x.toFixed(2)), Number(a.z.toFixed(2))], hasBall: a.hasBall, yaw: Number(a.yaw.toFixed(2)) };
     if (fore?.valid) rec.palm = athleteLocalToWorld(a, mat4Point(fore.worldMatrix(), PALM_OFFSET_R)).map((v) => Number(v.toFixed(3)));
     if (hips?.valid) rec.hips = athleteLocalToWorld(a, mat4Translation(hips.worldMatrix())).map((v) => Number(v.toFixed(3)));
+    const upper = anim.socket("RightUpperArm") as BoneSocketView;
+    if (upper?.valid) rec.shoulder = athleteLocalToWorld(a, mat4Translation(upper.worldMatrix())).map((v) => Number(v.toFixed(3)));
     out[a.nodeId] = rec;
   });
   return out;

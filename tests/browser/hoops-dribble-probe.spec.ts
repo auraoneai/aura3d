@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
@@ -7,10 +7,11 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * filmstrip of base64 JPEG frames. Env: HOOPSDRIB_MS (run length), HOOPSDRIB_TAG (label), HOOPSDRIB_FRAMES (frame count).
  */
 const PROBE_MS = Number(process.env.HOOPSDRIB_PROBE_MS ?? 200_000);
-const SHOT_MS = Number(process.env.HOOPSDRIB_SHOT_MS ?? 240_000);
+const SHOT_MS = Number(process.env.HOOPSDRIB_SHOT_MS ?? 420_000);
 const RUN_MS = PROBE_MS + SHOT_MS;
+const EXTRA_QS = "";
 const TAG = process.env.HOOPSDRIB_TAG ?? "run";
-const FRAMES = Number(process.env.HOOPSDRIB_FRAMES ?? 18);
+const FRAMES = Number(process.env.HOOPSDRIB_FRAMES ?? 30);
 
 let server: ExampleDevServer;
 test.setTimeout(RUN_MS + 600_000);
@@ -22,7 +23,7 @@ test("hoops dribble probe", async ({ page }) => {
   page.on("pageerror", (e) => errors.push(`pageerror ${e.message}`.slice(0, 300)));
   page.on("console", (m) => { if (m.type() === "error") errors.push(`console.error ${m.text()}`.slice(0, 300)); });
   await page.setViewportSize({ width: 320, height: 180 });
-  await page.goto(`${server.origin}/apps/showcase-aura-hoops-3d/index.html?autostart=1&autoplay=1&diag=1&qaDt=0.0167`, { waitUntil: "load", timeout: 180_000 });
+  await page.goto(`${server.origin}/apps/showcase-aura-hoops-3d/index.html?autostart=1&autoplay=1&diag=1&qaDt=0.0167${EXTRA_QS}`, { waitUntil: "load", timeout: 180_000 });
   await page.waitForFunction(() => (window as unknown as { __AURA3D_GAME__?: { ready?: boolean } }).__AURA3D_GAME__?.ready === true, undefined, { timeout: 240_000 });
   await page.evaluate(() => {
     const w = window as unknown as { __rec: unknown[]; __lastF: number };
@@ -33,7 +34,7 @@ test("hoops dribble probe", async ({ page }) => {
         w.__lastF = b.framesRendered;
         const hp = b.handProbe ?? {};
         const h = b.holder ? hp[b.holder] : null;
-        w.__rec.push({ f: b.framesRendered, ph: b.phase, bs: b.ball?.state, bp: b.ball?.position, hd: b.holder, t: b.dribbleCycle?.t ?? null, mv: b.dribbleCycle?.moving ?? null, palm: h?.palm ?? null, hips: h?.hips ?? null, sim: h?.sim ?? null, pose: b.dribblePose, target: b.dribbleHand ? [b.dribbleHand.x, b.dribbleHand.y, b.dribbleHand.z] : null,
+        w.__rec.push({ f: b.framesRendered, ph: b.phase, bs: b.ball?.state, bp: b.ball?.position, hd: b.holder, t: b.dribbleCycle?.t ?? null, mv: b.dribbleCycle?.moving ?? null, palm: h?.palm ?? null, hips: h?.hips ?? null, sh: h?.shoulder ?? null, yaw: h?.yaw ?? null, sim: h?.sim ?? null, pose: b.dribblePose, target: b.dribbleHand ? [b.dribbleHand.x, b.dribbleHand.y, b.dribbleHand.z] : null,
           others: Object.entries(hp).filter(([k]) => k !== b.holder).map(([k, v]: [string, any]) => ({ k, sim: v.sim, hips: v.hips })) });
       }
       requestAnimationFrame(tick);
@@ -52,8 +53,10 @@ test("hoops dribble probe", async ({ page }) => {
   const t0 = Date.now();
   let lastF = -1;
   const seen = new Set<string>();
+  let driving = false;
   while (Date.now() - t0 < SHOT_MS) {
     await page.waitForTimeout(40);
+    if (!driving && Date.now() - t0 > SHOT_MS * 0.12) { driving = true; await page.keyboard.down("KeyW"); }
     if (frames.length >= FRAMES) continue;
     const s = await page.evaluate(() => {
       const b = (window as unknown as { __AURA3D_GAME__?: Record<string, any> }).__AURA3D_GAME__;
@@ -71,6 +74,7 @@ test("hoops dribble probe", async ({ page }) => {
   }
 
   const rec = probeRec;
+  rec.forEach((r, i) => { r.steady = i >= 10 && rec.slice(i - 10, i + 1).every((x) => x.mv === true && x.bs === "held"); });
   const held = rec.filter((r) => r.bs === "held" && r.ph === "live" && r.palm && r.bp);
   const dist = (a: number[], b: number[]) => Math.hypot(a[0]! - b[0]!, a[1]! - b[1]!, a[2]! - b[2]!);
   const horiz = (a: number[], b: number[]) => Math.hypot(a[0]! - b[0]!, a[2]! - b[2]!);
@@ -92,16 +96,27 @@ test("hoops dribble probe", async ({ page }) => {
     errors: errors.slice(0, 8)
   };
   console.log(`HOOPSDRIB_SUMMARY ${JSON.stringify(summary)}`);
+  const failures: string[] = [];
   for (const moving of [false, true]) {
-    const g = held.filter((r) => Boolean(r.mv) === moving);
+    const g = held.filter((r) => Boolean(r.mv) === moving && (!moving || r.steady));
     const gt = g.filter((r) => r.t != null && (r.t < 0.04 || r.t >= 0.93));
     const gf = g.filter((r) => r.bp[1] < 0.2);
+    const mg = gt.length ? Math.max(...gt.map((r) => dist(r.bp, r.palm))) : 0;
+    const fg = gf.length ? Math.max(...gf.map((r) => dist(r.bp, r.palm))) : 0;
+    if (mg > 0.13) failures.push(`meet gap ${moving ? "moving" : "standing"} ${mg.toFixed(3)} > 0.13`);
+    if (fg > 0.6) failures.push(`floor palm-to-ball ${moving ? "moving" : "standing"} ${fg.toFixed(3)} > 0.6`);
     console.log(`HOOPSDRIB_GROUP ${JSON.stringify({ moving, n: g.length, topN: gt.length, topGapMax: q(gt.map((r) => dist(r.bp, r.palm)), 1), floorN: gf.length, floorBallY: q(gf.map((r) => r.bp[1]), 0.5), floorPalmY: q(gf.map((r) => r.palm[1]), 0.5), floorPalmToBall: q(gf.map((r) => dist(r.bp, r.palm)), 1), maxPalmToBall: q(g.map((r) => dist(r.bp, r.palm)), 1) })}`);
   }
   const worst = held.map((r) => ({ f: r.f, d: Number(dist(r.bp, r.palm).toFixed(2)), ball: r.bp, palm: r.palm, hips: r.hips, t: r.t, mv: r.mv })).sort((a, b) => b.d - a.d).slice(0, 6);
   console.log(`HOOPSDRIB_WORST ${JSON.stringify(worst)}`);
-  const cyc = held.slice(0, 160).map((r) => [r.f, r.t == null ? null : Number(r.t.toFixed(2)), r.bp[1], r.palm[1], Number(horiz(r.bp, r.palm).toFixed(2))]);
+  const cyc = held.slice(0, 200).map((r) => [r.f, r.t == null ? null : Number(r.t.toFixed(2)), r.mv ? 1 : 0, r.bp[1], r.palm[1], Number(horiz(r.bp, r.palm).toFixed(2)), r.sh ? r.sh[1] : null, r.sh && r.hips ? Number(Math.hypot(r.sh[0] - r.hips[0], r.sh[2] - r.hips[2]).toFixed(2)) : null, r.sh && r.hips ? Number((r.sh[1] - r.hips[1]).toFixed(2)) : null, r.yaw == null ? null : Number(((r.bp[0] - r.palm[0]) * Math.sin(r.yaw) + (r.bp[2] - r.palm[2]) * Math.cos(r.yaw)).toFixed(2)), r.steady ? 1 : 0]);
   console.log(`HOOPSDRIB_CYCLE ${JSON.stringify(cyc)}`);
   for (const fr of frames) console.log(`HOOPSDRIB_FRAME ${TAG} ${fr.tag} ${fr.f} ${fr.b64}`);
+  const foot = await page.evaluate(() => {
+    const b = (window as unknown as { __AURA3D_GAME__?: Record<string, any> }).__AURA3D_GAME__;
+    return b?.footSlide ?? null;
+  });
+  console.log(`HOOPSDRIB_FOOT ${JSON.stringify(foot)}`.slice(0, 4000));
   console.log(`HOOPSDRIB_DONE ${TAG}`);
+  expect(failures).toEqual([]);
 });
