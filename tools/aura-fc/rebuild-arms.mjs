@@ -18,7 +18,7 @@ const unit = (a) => { const l = len(a) || 1; return [a[0] / l, a[1] / l, a[2] / 
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function rebuildArms(glb, { longSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
+export function rebuildArms(glb, { palms = null, longSleeves = false, capSleeves = false, ringSegments = 20, ringStep = 0.025, elbowHalf = 0.1, shoulderBlend = [-0.05, 0.16] } = {}) {
   const rest = forward(glb, localPose(glb, null, 0));
   const skinJoints = glb.json.skins[0].joints;
   const jointIndex = new Map(skinJoints.map((j, i) => [rest.names[j], i]));
@@ -142,20 +142,28 @@ export function rebuildArms(glb, { longSleeves = false, ringSegments = 20, ringS
     const A = sub(S, mul(dir, 0.06));
     const wf = weightsArm(side, S, dir, upperLen);
     const sOff = (s) => s - 0.06; // distances in the tube are measured from A
-    // skin: upper arm and forearm (from inside the torso to the wrist)
-    addAxisTube("skin", A, W, (s) => skinR(sOff(s), upperLen), (s) => wf(sOff(s)), { flat: 1 });
+    // skin: upper arm and forearm (from inside the torso to the wrist). With `palms` the forearm follows the shoulder -> elbow -> palm path
+    // of the rigs whose games solve the hand onto a calibrated palm point in forearm bone space (the palm is not on the bone axis).
+    const palm = palms?.[side] ?? null;
+    let Wd = W, hdir = dir;
+    if (palm) {
+      const f = unit(sub(palm, E));
+      Wd = sub(palm, mul(f, 0.05)); hdir = f;
+      addAxisTube("skin", A, E, (s) => skinR(sOff(s), upperLen), (s) => wf(sOff(s)), { flat: 1 });
+      addAxisTube("skin", E, Wd, (s) => skinR(upperLen + s * (upperLen / len(sub(Wd, E))), upperLen), (s) => wf(upperLen + s), { flat: 1 });
+    } else addAxisTube("skin", A, W, (s) => skinR(sOff(s), upperLen), (s) => wf(sOff(s)), { flat: 1 });
     // sleeves: kit
     const sleeveEnd = longSleeves ? W : add(S, mul(dir, upperLen * 0.45));
-    addAxisTube("kit", A, sleeveEnd, (s) => (longSleeves ? skinR(sOff(s), upperLen) + 0.016 : 0.066 - 0.012 * (sOff(s) / (upperLen * 0.45))), (s) => wf(sOff(s)), { flat: 1 });
+    addAxisTube("kit", A, sleeveEnd, (s) => (longSleeves ? skinR(sOff(s), upperLen) + 0.016 : 0.066 - 0.012 * (sOff(s) / (upperLen * 0.45))), (s) => wf(sOff(s)), { flat: 1, capEnd: capSleeves });
     // shoulder cap: closes the armhole left in the torso when the arm swings (kit, follows the chest)
     addSphere("kit", add(add(S, mul(dir, -0.01)), [0, 0.005, -0.025]), 0.1, shoulderWeights(S), [0.72, 0.85, 0.78]);
     // hand: mitten (skin for the outfield kit, kit-coloured glove for the keeper) with a thumb
-    const H = add(W, mul(dir, 0.1));
+    const H = add(Wd, mul(hdir, 0.1));
     const wHand = () => [[JI(`${side}Forearm`), 1]];
     const handTarget = longSleeves ? "kit" : "skin";
-    addAxisTube(handTarget, W, H, (s) => { const t = s / 0.1; return 0.03 + 0.016 * Math.sin(Math.PI * Math.min(1, t * 0.9)) - 0.012 * t * t; }, wHand, { flat: 0.55, capEnd: true });
-    const thumbA = add(W, mul(dir, 0.03));
-    const thumbB = add(thumbA, add(mul(unit([0, 0, 1]), 0.045), mul(dir, 0.012)));
+    addAxisTube(handTarget, Wd, H, (s) => { const t = s / 0.1; return 0.03 + 0.016 * Math.sin(Math.PI * Math.min(1, t * 0.9)) - 0.012 * t * t; }, wHand, { flat: 0.55, capEnd: true });
+    const thumbA = add(Wd, mul(hdir, 0.03));
+    const thumbB = add(thumbA, add(mul(unit([0, 0, 1]), 0.045), mul(hdir, 0.012)));
     addAxisTube(handTarget, thumbA, thumbB, (s) => 0.014 - 0.004 * (s / 0.05), wHand, { flat: 1, capEnd: true });
   }
 

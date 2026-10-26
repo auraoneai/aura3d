@@ -47,6 +47,9 @@ export interface HandMesh {
   hands: Record<"Right" | "Left", Array<{ v: V3; j: number[]; w: number[] }>>;
 }
 
+/** Forearm-bone distance beyond which a vertex belongs to the hand (the rebuilt hand starts at the wrist, 0.26 m from the elbow). */
+export const HAND_MIN_DIST = 0.27;
+
 export function loadHandMesh(path: string): HandMesh {
   const g = readGlb(path);
   const skin = g.json.skins[0];
@@ -64,7 +67,7 @@ export function loadHandMesh(path: string): HandMesh {
         for (let c = 0; c < 4; c++) if (jt[k]![c] === ji) w += wt[k]![c]!;
         if (w <= 0.6) continue;
         const local = apply(ibm[ji]!, pos[k]! as V3);
-        if (Math.hypot(...local) <= 0.34) continue;
+        if (Math.hypot(...local) <= HAND_MIN_DIST) continue;
         hands[side].push({ v: pos[k]! as V3, j: jt[k]!, w: wt[k]! });
       }
     }
