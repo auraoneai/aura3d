@@ -250,6 +250,7 @@ export class ParticleBatchPass {
       ["u_grid", batch.desc.atlasGrid ? [batch.desc.atlasGrid[0], batch.desc.atlasGrid[1]] : [1, 1]],
       ["u_atlas", new TextureBinding({ name: "u_atlas", texture: batch.desc.atlas })],
       ["u_nearFade", batch.desc.nearFade ?? 0.5],
+      ["u_maxScreen", batch.desc.maxScreen ?? 0],
       ["u_cameraNear", camera?.near ?? 0.1],
       ["u_softDistance", batch.desc.softDistance ?? 1],
       ["u_outputColorSpace", this.frameOutputColorSpace === "srgb" ? 1 : 0],

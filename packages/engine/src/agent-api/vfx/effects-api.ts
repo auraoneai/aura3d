@@ -32,6 +32,9 @@ interface BurstPreset {
   readonly light?: { readonly intensity: number; readonly range: number; readonly duration: number };
 }
 
+/** Largest on-screen diameter (fraction of the viewport height) per preset; flashes and explosions may be bigger. */
+const PRESET_MAX_SCREEN: Record<string, number> = { "explosion-small": 0.12, "impact-flash": 0.15, "super-flash": 0.2, "aura-burst": 0.06 };
+
 const BURST_PRESETS: Record<string, BurstPreset> = {
   spark: { speed: [2, 5], life: [0.25, 0.6], gravity: -4, color: [4, 2.4, 0.8], size: [0.03, 0.07], spread: 1, additive: true },
   dust: { speed: [0.4, 1.2], life: [0.8, 1.6], gravity: -0.4, color: [0.55, 0.5, 0.42], size: [0.12, 0.3], spread: 1, additive: false },
@@ -200,6 +203,8 @@ export function createAppEffects(app: AuraApp, system: ProductionEffectSystem): 
       lifetime: preset.life,
       size: [preset.size[0] * sizeScale, preset.size[1] * sizeScale],
       spread: preset.spread,
+      // a preset's soft discs never grow past this share of the screen height: sparks and dust stay specks, not bubbles
+      maxScreen: PRESET_MAX_SCREEN[kind] ?? 0.05,
       emissionRate: options.continuous ? (options.count ?? 24) * 2 : 0,
       color,
       seed: options.seed
