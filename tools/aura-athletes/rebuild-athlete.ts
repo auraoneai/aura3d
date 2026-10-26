@@ -167,7 +167,7 @@ const palmWorld = (side: "Left" | "Right"): number[] | null => {
   return [w[0]!, w[1]! + lift, w[2]!];
 };
 const palms = palmArg ? { Left: palmWorld("Left"), Right: palmWorld("Right") } : null;
-const arms = rebuildArms(legs.glb, { capSleeves: true, palms });
+const arms = rebuildArms(legs.glb, { capSleeves: true, palms, capRadius: Number(opt("--cap-radius", "0.075")) });
 const clips = (orig.json.animations ?? []).map((a: { name?: string }) => a.name as string);
 const cut = args.includes("--no-cut") ? { glb: arms.glb, report: [] } : cutBridges(arms.glb, { limit: 1.6, clips, samples: 10, keepMaterials: null });
 const rebuilt = join(work, "rebuilt.glb");
