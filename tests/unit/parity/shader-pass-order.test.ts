@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import * as v2Entry from "../../../packages/rendering/src/post/v2Entry";
 import { mergedCustomPasses, runV2HdrStages, runV2LdrTail } from "../../../packages/rendering/src/post/v2Stages";
 import { executePostGraphWebGL2 } from "../../../packages/rendering/src/webgl2/LegacyPost";
@@ -11,6 +11,17 @@ import type { AuraCustomPostPass } from "../../../packages/engine/src/contracts/
 import type { PostPipelineOptions } from "../../../packages/rendering/src/contracts/post";
 import type { WebGL2DeviceHost } from "../../../packages/rendering/src/webgl2/DeviceHost";
 import type { RenderTarget } from "../../../packages/rendering/src/RenderDevice";
+
+const outputPassState: { trace: string[] | null; failNext: boolean } = { trace: null, failNext: false };
+vi.mock("../../../packages/rendering/src/output/OutputPass", () => ({
+  OutputPass: class {},
+  outputPassForDevice: () => ({
+    execute: () => {
+      outputPassState.trace?.push("tonemap");
+      if (outputPassState.failNext) { outputPassState.failNext = false; throw new Error("boom"); }
+    }
+  })
+}));
 
 const PIPELINE: PostPipelineOptions = {
   antiAliasing: "off",
@@ -263,18 +274,28 @@ describe("WebGL2 post order — before-tonemap passes run after the bloom compos
     { name: "tone-mapping", options: {} }
   ] as never;
 
+  /* The OutputPass route runs bloom through `presentHdrBloom` and the OutputPass
+   * (mocked: it records "tonemap"); a chain with a legacy display-space
+   * descriptor (colour grade) keeps the fused present, mirrored by
+   * `presentLdrPostprocess`. */
   function fusedHost(trace: string[], createdTargets?: { count: number }): WebGL2DeviceHost {
+    outputPassState.trace = trace;
+    outputPassState.failNext = false;
     const base = fakeHost(trace) as unknown as Record<string, unknown>;
     const device = base.device as { createRenderTarget: () => RenderTarget };
     return {
       ...base,
       device: {
+        setRenderTarget: () => undefined,
         createRenderTarget: () => {
           if (createdTargets) createdTargets.count += 1;
           return device.createRenderTarget();
         }
       },
       post: {
+        presentHdrBloom() {
+          trace.push("bloom");
+        },
         presentLdrPostprocess(_source: unknown, options: {
           passes: ReadonlyArray<{ name: string }>;
           afterBloom?: (input: { colorHandle: unknown; width: number; height: number }) => unknown;
@@ -288,6 +309,13 @@ describe("WebGL2 post order — before-tonemap passes run after the bloom compos
       }
     } as unknown as WebGL2DeviceHost;
   }
+
+  /** A legacy colour-grade descriptor keeps the chain on the fused present. */
+  const FUSED_PASSES = [
+    { name: "bloom", options: {} },
+    { name: "tone-mapping", options: {} },
+    { name: "color-grade", options: {} }
+  ] as never;
 
   const runFrame = (host: WebGL2DeviceHost, passes: unknown = LDR_PASSES): void =>
     executePostGraphWebGL2(host, fakeTarget("rgba16f", true), {
@@ -334,7 +362,7 @@ describe("WebGL2 post order — before-tonemap passes run after the bloom compos
     const trace: string[] = [];
     const host = fusedHost(trace) as unknown as { post: { presentLdrPostprocess: (...args: never[]) => void } };
     host.post.presentLdrPostprocess = () => { trace.push("tonemap"); };
-    runFrame(host as unknown as WebGL2DeviceHost);
+    runFrame(host as unknown as WebGL2DeviceHost, FUSED_PASSES);
     expect(trace).toEqual(["tonemap"]);
     expect(trace).not.toContain("skip_after_bloom");
     expect(postSkippedReasons()).toContain("POSTPROCESS_AFTER_BLOOM_UNUSED:before-tonemap-custom-passes");
@@ -369,9 +397,24 @@ describe("WebGL2 post order — before-tonemap passes run after the bloom compos
       original(...args);
       if (failNext) { failNext = false; throw new Error("boom"); }
     }) as never;
-    expect(() => runFrame(host as unknown as WebGL2DeviceHost)).toThrowError("boom");
+    expect(() => runFrame(host as unknown as WebGL2DeviceHost, FUSED_PASSES)).toThrowError("boom");
     const afterThrow = created.count;
-    runFrame(host as unknown as WebGL2DeviceHost);
+    runFrame(host as unknown as WebGL2DeviceHost, FUSED_PASSES);
+    expect(created.count).toBe(afterThrow);
+  });
+
+  it("releases the stage and the bloom target even when the OutputPass throws", () => {
+    setRendererQrFlags(POST_FLAGS);
+    const s = surface();
+    releases.push(s.addPostPass(pass("op-throw-a", { order: "after-bloom" })));
+    const trace: string[] = [];
+    const created = { count: 0 };
+    const host = fusedHost(trace, created);
+    outputPassState.failNext = true;
+    expect(() => runFrame(host)).toThrowError("boom");
+    const afterThrow = created.count;
+    runFrame(host);
+    runFrame(host);
     expect(created.count).toBe(afterThrow);
   });
 

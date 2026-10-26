@@ -8,7 +8,8 @@ import type { RenderDevice } from "../RenderDevice";
 
 // "cineon" added by threejs-parity B (docs/workflows/threejs-parity-gaps.md §5.0); L7-02 lands the GLSL operator.
 export type AuraToneMappingOperatorLike = "none" | "linear" | "reinhard" | "aces" | "agx" | "neutral" | "cineon";
-export interface OutputPassOptions { readonly toneMapping: AuraToneMappingOperatorLike; readonly exposure: number; readonly dithering: boolean; readonly backgroundCoverage: boolean; readonly overlay?: OutputOverlayUniforms; }
+export interface OutputPassOptions { readonly toneMapping: AuraToneMappingOperatorLike; readonly exposure: number; readonly dithering: boolean; readonly backgroundCoverage: boolean; readonly overlay?: OutputOverlayUniforms; /** Linear-light vignette multiplied into the HDR colour before exposure and the tone operator (PostGraph v2 OUT stage). */ readonly vignette?: OutputVignetteUniforms; /** Tone-map every pixel (PostGraph v2 chain frames): the alpha-derived background mix is skipped. */ readonly fullCoverage?: boolean; }
+export interface OutputVignetteUniforms { readonly intensity: number; readonly smoothness: number; readonly roundness: number; readonly color: readonly [number, number, number]; }
 export interface OutputOverlayUniforms { readonly flash: readonly [number, number, number, number]; readonly vignette: readonly [number, number, number, number]; readonly shape: readonly [number, number]; readonly fade: readonly [number, number, number, number]; }
 export interface OutputPassLike { execute(input: RenderTarget, coverage: RenderTarget | null, options: OutputPassOptions, output: RenderTarget | "canvas"): void; }
 

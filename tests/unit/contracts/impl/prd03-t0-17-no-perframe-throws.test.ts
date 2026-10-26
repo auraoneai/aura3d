@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { executePostGraphWebGL2, createLegacyOutputPass } from "../../../../packages/rendering/src/webgl2/LegacyPost";
 import { runV2HdrStages } from "../../../../packages/rendering/src/post/v2Stages";
 import {
@@ -14,6 +14,12 @@ import { createProductionRuntimePostprocess } from "../../../../packages/engine/
 import type { WebGL2DeviceHost } from "../../../../packages/rendering/src/webgl2/DeviceHost";
 import type { PostPipelineOptions } from "../../../../packages/rendering/src/contracts/post";
 import type { RenderTarget, LdrPostprocessPassDescriptor } from "../../../../packages/rendering/src/RenderDevice";
+
+const outputPasses: Array<Record<string, unknown>> = [];
+vi.mock("../../../../packages/rendering/src/output/OutputPass", () => ({
+  OutputPass: class {},
+  outputPassForDevice: () => ({ execute: (_i: unknown, _c: unknown, options: Record<string, unknown>) => { outputPasses.push(options); } })
+}));
 
 /**
  * T0-17 (PRD-16 §2.2, FLAG-ON-3/4): no per-frame throws under `post`.
@@ -77,7 +83,7 @@ function fakeTarget(format: "rgba8" | "rgba16f" = "rgba8", depth = false): Rende
 
 function fakeHost(): { host: WebGL2DeviceHost; presented: () => LdrPostprocessPassDescriptor[] } {
   let presented: readonly LdrPostprocessPassDescriptor[] = [];
-  const device = { createRenderTarget: () => fakeTarget() };
+  const device = { createRenderTarget: () => fakeTarget(), setRenderTarget: () => undefined };
   const host = {
     gl: fakeGl(),
     device,
@@ -86,7 +92,8 @@ function fakeHost(): { host: WebGL2DeviceHost; presented: () => LdrPostprocessPa
     post: {
       presentLdrPostprocess: (_s: RenderTarget, options: { passes: readonly LdrPostprocessPassDescriptor[] }) => {
         presented = options.passes;
-      }
+      },
+      presentHdrBloom: () => undefined
     },
     activeRenderTarget: null
   } as unknown as WebGL2DeviceHost;
@@ -131,11 +138,30 @@ describe("T0-17 FLAG-ON-3: toneMapping 'none' keeps HDR presentable", () => {
   });
 
   it("v2 seam injects the linear OutputPass when no tone pass was planned", () => {
+    outputPasses.length = 0;
     const { host, presented } = fakeHost();
     const source = fakeTarget("rgba16f", true);
     executePostGraphWebGL2(host, source, {
       pipeline: { ...PIPELINE, toneMapping: "none" },
       passes: [{ name: "bloom", options: {} }],
+      v2: {
+        runV2HdrStages: () => ({ target: source, aoPending: false, skipped: [] }),
+        v2NeedsLdrTail: () => false,
+        acquireV2Target: () => fakeTarget("rgba16f"),
+        releaseV2Target: () => undefined
+      } as never
+    });
+    expect(presented()).toHaveLength(0);
+    expect(outputPasses).toHaveLength(1);
+    expect(outputPasses[0]!.toneMapping).toBe("linear");
+  });
+
+  it("a legacy display-space descriptor keeps the fused present, which still injects the linear OUT stage", () => {
+    const { host, presented } = fakeHost();
+    const source = fakeTarget("rgba16f", true);
+    executePostGraphWebGL2(host, source, {
+      pipeline: { ...PIPELINE, toneMapping: "none" },
+      passes: [{ name: "color-grade", options: {} }],
       v2: {
         runV2HdrStages: () => ({ target: source, aoPending: false, skipped: [] }),
         v2NeedsLdrTail: () => false
@@ -169,6 +195,7 @@ describe("T0-17 FLAG-ON-4: per-frame throws degrade to recorded skips", () => {
   });
 
   it("v2-owned native twins are filtered (no double-run)", () => {
+    outputPasses.length = 0;
     const { host, presented } = fakeHost();
     const source = fakeTarget("rgba16f", true);
     executePostGraphWebGL2(host, source, {
@@ -176,6 +203,26 @@ describe("T0-17 FLAG-ON-4: per-frame throws degrade to recorded skips", () => {
       passes: [
         { name: "depth-of-field", options: {} },
         { name: "tone-mapping", options: {} }
+      ],
+      v2: {
+        runV2HdrStages: () => ({ target: source, aoPending: false, skipped: [] }),
+        v2NeedsLdrTail: () => false
+      } as never
+    });
+    expect(presented().some((pass) => pass.name === "depth-of-field")).toBe(false);
+    expect(presented()).toHaveLength(0);
+    expect(outputPasses).toHaveLength(1);
+  });
+
+  it("v2-owned native twins are filtered from the fused present too", () => {
+    const { host, presented } = fakeHost();
+    const source = fakeTarget("rgba16f", true);
+    executePostGraphWebGL2(host, source, {
+      pipeline: { ...PIPELINE, dof: { enabled: true } as never },
+      passes: [
+        { name: "depth-of-field", options: {} },
+        { name: "tone-mapping", options: {} },
+        { name: "color-grade", options: {} }
       ],
       v2: {
         runV2HdrStages: () => ({ target: source, aoPending: false, skipped: [] }),

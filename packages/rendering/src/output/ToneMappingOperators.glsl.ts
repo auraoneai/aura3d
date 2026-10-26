@@ -160,6 +160,17 @@ float a3dTriangularNoise(vec2 p) {
   float u = fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715))));
   return u < 0.5 ? sqrt(2.0 * u) - 1.0 : 1.0 - sqrt(2.0 - 2.0 * u);
 }
+#ifdef OUTPUT_VIGNETTE
+uniform vec4 u_vignette;      // x = intensity, y = smoothness, z = roundness, w = aspect (w/h)
+uniform vec3 u_vignetteColor; // linear multiplier at the frame edge
+// PostGraph v2: the vignette is a light falloff, so it multiplies linear light before exposure and the tone operator.
+vec3 a3dLinearVignette(vec3 color, vec2 uv) {
+  vec2 p = (uv - 0.5) * 2.0;
+  p.x *= u_vignette.w * u_vignette.z;
+  float len = length(p) * u_vignette.x;
+  return color * mix(vec3(1.0), u_vignetteColor, pow(clamp(len, 0.0, 1.0), u_vignette.y));
+}
+#endif
 #ifdef OUTPUT_OVERLAY
 uniform vec4 u_overlayFlash;    // rgb = linear color, a = amount 0..1 (additive)
 uniform vec4 u_overlayVignette; // rgb = linear color, a = amount 0..1
@@ -186,11 +197,16 @@ void main() {
   // A single NaN/Inf texel (some GPUs propagate them where others flush to zero) must not turn the frame black.
   if (any(isnan(scene)) || any(isinf(scene))) scene = vec4(0.0);
   vec3 hdr = scene.rgb;
+#ifdef OUTPUT_VIGNETTE
+  hdr = a3dLinearVignette(hdr, v_uv);
+#endif
   // Coverage: drawn content is tone-mapped, the clear colour is not (three
   // r185: the clear is a raw glClear, tone mapping is per material). Without
   // the coverage attachment, HDR alpha carries it — cleared alpha 0, drawn 1.
 #ifdef BACKGROUND_COVERAGE
   float a3dCoverage = texture(u_coverage, v_uv).r;
+#elif defined(OUTPUT_FULL_COVERAGE)
+  float a3dCoverage = 1.0;
 #else
   float a3dCoverage = clamp(scene.a, 0.0, 1.0);
 #endif
@@ -215,12 +231,14 @@ export const TONE_MAP_OPERATOR_FUNCTIONS: Readonly<Record<string, string>> = {
 };
 
 /** Compose the output fragment for one variant key. */
-export function outputFragmentGlsl(options: { toneMapping: string; backgroundCoverage: boolean; overlay: boolean }): string {
+export function outputFragmentGlsl(options: { toneMapping: string; backgroundCoverage: boolean; overlay: boolean; vignette?: boolean; fullCoverage?: boolean }): string {
   const fn = TONE_MAP_OPERATOR_FUNCTIONS[options.toneMapping] ?? TONE_MAP_OPERATOR_FUNCTIONS["aces"];
   const defines = [
     `#define TONE_MAP(c) ${fn}(c)`,
     ...(options.backgroundCoverage ? ["#define BACKGROUND_COVERAGE"] : []),
-    ...(options.overlay ? ["#define OUTPUT_OVERLAY"] : [])
+    ...(options.overlay ? ["#define OUTPUT_OVERLAY"] : []),
+    ...(options.vignette ? ["#define OUTPUT_VIGNETTE"] : []),
+    ...(options.fullCoverage && !options.backgroundCoverage ? ["#define OUTPUT_FULL_COVERAGE"] : [])
   ];
   return [
     "#version 300 es",

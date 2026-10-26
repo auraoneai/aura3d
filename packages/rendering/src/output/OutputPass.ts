@@ -40,10 +40,12 @@ interface OutputVariantKey {
   readonly toneMapping: AuraToneMappingOperatorLike;
   readonly coverage: boolean;
   readonly overlay: boolean;
+  readonly vignette: boolean;
+  readonly fullCoverage: boolean;
 }
 
 function variantCacheKey(key: OutputVariantKey): string {
-  return `${key.toneMapping}|${key.coverage ? 1 : 0}|${key.overlay ? 1 : 0}`;
+  return `${key.toneMapping}|${key.coverage ? 1 : 0}|${key.overlay ? 1 : 0}|${key.vignette ? 1 : 0}|${key.fullCoverage ? 1 : 0}`;
 }
 
 function createFullscreenTriangleGeometry(): Geometry {
@@ -86,7 +88,14 @@ export class OutputPass implements OutputPassLike, DisposableResource {
     const useCoverage = options.backgroundCoverage && coverage !== null;
     const overlay = options.overlay ?? null;
     const overlayActive = overlay !== null && overlayEnabledAmounts(overlay);
-    const key: OutputVariantKey = { toneMapping, coverage: useCoverage, overlay: overlay !== null };
+    const vignette = options.vignette !== undefined && options.vignette.intensity > 0 ? options.vignette : null;
+    const key: OutputVariantKey = {
+      toneMapping,
+      coverage: useCoverage,
+      overlay: overlay !== null,
+      vignette: vignette !== null,
+      fullCoverage: options.fullCoverage === true && !useCoverage
+    };
     const cacheKey = variantCacheKey(key);
     const shader = this.moduleFor(key).compile(this.device);
 
@@ -98,6 +107,10 @@ export class OutputPass implements OutputPassLike, DisposableResource {
     }
     uniforms.set("u_exposure", options.exposure);
     uniforms.set("u_dither", options.dithering ? 1 : 0);
+    if (vignette) {
+      uniforms.set("u_vignette", [vignette.intensity, vignette.smoothness, vignette.roundness, input.width / Math.max(1, input.height)]);
+      uniforms.set("u_vignetteColor", [vignette.color[0], vignette.color[1], vignette.color[2]]);
+    }
     if (overlay) {
       overlayUniforms(overlay, input.width / Math.max(1, input.height), overlayActive, uniforms);
     }
@@ -143,7 +156,9 @@ export class OutputPass implements OutputPassLike, DisposableResource {
         fragment: outputFragmentGlsl({
           toneMapping: TONE_MAP_OPERATOR_FUNCTIONS[key.toneMapping] ? key.toneMapping : DEFAULT_TONE_MAPPING,
           backgroundCoverage: key.coverage,
-          overlay: key.overlay
+          overlay: key.overlay,
+          vignette: key.vignette,
+          fullCoverage: key.fullCoverage
         })
       });
       this.modules.set(cacheKey, module);
@@ -159,4 +174,16 @@ export class OutputPass implements OutputPassLike, DisposableResource {
     for (const cached of this.drawCache.values()) cached.geometry.dispose();
     this.drawCache.clear();
   }
+}
+
+const outputPassesByDevice = new WeakMap<RenderDevice, OutputPass>();
+
+/** The device's one OutputPass (one shader-variant cache), shared by the no-chain route and the PostGraph v2 OUT stage. */
+export function outputPassForDevice(device: RenderDevice): OutputPass {
+  let pass = outputPassesByDevice.get(device);
+  if (!pass) {
+    pass = new OutputPass(device);
+    outputPassesByDevice.set(device, pass);
+  }
+  return pass;
 }

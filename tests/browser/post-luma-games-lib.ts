@@ -11,6 +11,8 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 interface Game { readonly slug: string; readonly appFolder: string }
 const GAMES = JSON.parse(readFileSync(new URL("./post-luma-games.json", import.meta.url), "utf8")) as Game[];
 const BOOT_MS = 14_000;
+const ASSET_ORIGIN = process.env.LUMA_ASSET_ORIGIN ?? "https://aura3d.auraone.ai";
+const ASSET_PATH = /\.(glb|gltf|bin|ktx2|png|jpe?g|webp|wav|mp3|ogg|hdr|exr|json)(\?.*)?$/i;
 
 async function lumaStats(lab: Page, png: Buffer): Promise<{ nonBlack: number; mean: number; chroma: number }> {
   return lab.evaluate(async (b64: string) => {
@@ -45,6 +47,19 @@ export function defineShard(index: number, count: number): void {
         const lab = await (await browser.newContext()).newPage();
         await lab.goto("about:blank");
         const ctx = await browser.newContext({ viewport: { width: 480, height: 300 } });
+        // Hash-named model files are produced by the production build and are not in the checkout:
+        // fetch whatever the local server 404s from the deployed site so every game can mount.
+        await ctx.route((url) => ASSET_PATH.test(url.pathname + url.search) && url.hostname !== new URL(ASSET_ORIGIN).hostname, async (route) => {
+          const local = await route.fetch().catch(() => null);
+          if (local && local.status() < 400 && !(local.headers()["content-type"] ?? "").includes("text/html")) { await route.fulfill({ response: local }); return; }
+          const url = new URL(route.request().url());
+          const remote = await fetch(`${ASSET_ORIGIN}${url.pathname}${url.search}`).catch(() => null);
+          if (remote && remote.ok) {
+            await route.fulfill({ status: 200, headers: { "content-type": remote.headers.get("content-type") ?? "application/octet-stream", "access-control-allow-origin": "*" }, body: Buffer.from(await remote.arrayBuffer()) });
+          } else {
+            await route.fulfill(local ? { response: local } : { status: 404, body: "" });
+          }
+        });
         const page = await ctx.newPage();
         const logs: string[] = [];
         let warned = false;

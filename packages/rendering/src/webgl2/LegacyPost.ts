@@ -13,9 +13,12 @@ import type { WebGL2DeviceHost } from "./DeviceHost";
 // split is opt-in via `fxaa: { variant: "r185" }`; the legacy in-shader
 // `u_hasFxaa` taps stay the default path.
 import { FXAA_185_FRAGMENT_GLSL } from "../post/shaders/fxaa.glsl";
-import { recordPostSkipped } from "../renderer/postSkipped";
+import { recordPostSkipped, recordPostStage } from "../renderer/postSkipped";
 import { vignetteColorRgb } from "../post/vignetteColor";
 import type { PostPipelineOptions } from "../contracts/post";
+import type { AuraToneMappingOperatorLike, OutputVignetteUniforms } from "../contracts/output";
+import { outputPassForDevice } from "../output/OutputPass";
+import { TONE_MAP_OPERATOR_FUNCTIONS } from "../output/ToneMappingOperators.glsl";
 import type { FrameCamera } from "../contracts/frameGraph";
 import type { LdrPostprocessPassName } from "../RenderDevice";
 import { ldrFragmentSource, ldrVariantKey, type LdrProgramVariant } from "./LdrPostprocessShader";
@@ -548,6 +551,84 @@ export class WebGL2LegacyPostPipeline {
     this.host.device.setRenderTarget(webglOutputTarget ?? null);
   }
 
+  /**
+   * PostGraph v2 bloom stage: runs the native HDR bloom over `source` and writes the
+   * composite (source + bloom) into the rgba16f `destination`, so the single tone map
+   * and encode run afterwards in the OutputPass. The same passes `presentLdrPostprocess`
+   * runs for a bloom descriptor, minus the fused tone/grade/FXAA stage.
+   */
+  presentHdrBloom(source: RenderTarget, bloomOptionsRaw: Readonly<Record<string, unknown>>, destination: RenderTarget): void {
+    this.host.lifecycle.assertAlive();
+    if (!(source instanceof WebGL2RenderTarget) || !this.host.renderTargets.has(source) || source.disposed) {
+      throw new RenderDeviceError("Render target is not a live WebGL2 resource owned by this device", "INVALID_RESOURCE", { targetId: source.id });
+    }
+    if (!(destination instanceof WebGL2RenderTarget) || !this.host.renderTargets.has(destination) || destination.disposed
+      || destination.colorTexture.format !== "rgba16f" || destination.width !== source.width || destination.height !== source.height) {
+      throw new RenderDeviceError("HDR bloom destination must be a live rgba16f WebGL2 target matching the source size.", "INVALID_RESOURCE", { targetId: destination.id });
+    }
+    if (source.colorTexture.format === "rgba8") {
+      throw new RenderDeviceError("HDR bloom requires a floating-point source target.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", { targetId: source.id });
+    }
+    this.host.resolveMultisampleTarget(source);
+    const bloomOptions = normalizeNativeBloomOptions({ ...bloomOptionsRaw, v2: true });
+    const vertexArray = this.ensurePresentationVertexArray();
+    const resources = this.ensureBloomPingPongResources(source.width, source.height, true);
+    const previousState = this.prepareFullscreenPresentation(destination.framebuffer, source.width, source.height);
+    try {
+      if (bloomOptions.quality === "performance") {
+        this.executeNativeBloomPasses(source.colorHandle, resources, bloomOptions, vertexArray, true, destination);
+        this.recordBloomDiagnostics(bloomOptions, source.width, source.height, true, 1);
+      } else {
+        const plan = resolveBloomPyramidPlan(source.width, source.height, bloomOptions.quality, true);
+        const pyramid = this.ensureBloomPyramidResources(plan, true);
+        const pyramidResult = this.executeNativeBloomPyramidPasses(
+          source.colorHandle,
+          source.width,
+          source.height,
+          pyramid,
+          {
+            textureA: resources.textures[0],
+            framebufferA: resources.framebuffers[0],
+            textureB: resources.textures[1],
+            framebufferB: resources.framebuffers[1]
+          },
+          bloomOptions,
+          vertexArray,
+          true
+        );
+        this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, destination.framebuffer);
+        this.host.gl.viewport(0, 0, source.width, source.height);
+        const composite = this.ensureBloomCompositeProgram();
+        this.host.gl.useProgram(composite);
+        this.host.gl.bindVertexArray(vertexArray);
+        this.bindFullscreenTexture(0, source.colorHandle);
+        this.bindFullscreenTexture(1, pyramidResult);
+        if (this.bloomCompositeLutTexture) this.bindFullscreenTexture(2, this.bloomCompositeLutTexture);
+        this.host.gl.uniform1i(this.host.gl.getUniformLocation(composite, "u_source"), 0);
+        this.host.gl.uniform1i(this.host.gl.getUniformLocation(composite, "u_blurred"), 1);
+        this.host.gl.uniform1i(this.host.gl.getUniformLocation(composite, "u_compositeLut"), 2);
+        this.host.gl.uniform1i(this.host.gl.getUniformLocation(composite, "u_hdr"), 1);
+        this.host.gl.uniform1f(
+          this.host.gl.getUniformLocation(composite, "u_intensity"),
+          bloomOptions.intensity * nativeBloomResponseGain(plan, bloomOptions)
+        );
+        this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
+        this.recordBloomDiagnostics(bloomOptions, source.width, source.height, true, plan.mipCount);
+      }
+      this.host.gl.flush();
+    } finally {
+      this.restoreFullscreenPresentationState(previousState, source.width, source.height);
+      this.host.stateCache.invalidate();
+    }
+    this.host.lifecycle.lastError = this.host.lifecycle.readError();
+    if (this.host.lifecycle.lastError) {
+      throw new RenderDeviceError(`WebGL2 HDR bloom failed: ${this.host.lifecycle.lastError}`, "WEBGL_LDR_POSTPROCESS_FAILED", {
+        targetId: source.id,
+        error: this.host.lifecycle.lastError
+      });
+    }
+  }
+
   drawRenderTargetToBackbuffer(source: WebGL2RenderTarget, outputWidth: number, outputHeight: number): void {
     const program = this.ensurePresentationProgram();
     const vertexArray = this.ensurePresentationVertexArray();
@@ -844,7 +925,8 @@ export class WebGL2LegacyPostPipeline {
     resources: WebGL2BloomPingPongResources,
     options: NativeBloomOptions,
     vertexArray: WebGLVertexArrayObject,
-    hdr: boolean
+    hdr: boolean,
+    destination?: WebGL2RenderTarget
   ): WebGLTexture {
     const brightLut = this.bloomBrightLutTexture;
     const compositeLut = this.bloomCompositeLutTexture;
@@ -886,7 +968,7 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
 
     const compositeProgram = this.ensureBloomCompositeProgram();
-    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, framebufferB);
+    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, destination?.framebuffer ?? framebufferB);
     this.host.gl.useProgram(compositeProgram);
     this.bindFullscreenTexture(0, sourceTexture);
     this.bindFullscreenTexture(1, textureA);
@@ -897,7 +979,7 @@ export class WebGL2LegacyPostPipeline {
     this.host.gl.uniform1i(this.host.gl.getUniformLocation(compositeProgram, "u_hdr"), hdr ? 1 : 0);
     this.host.gl.uniform1f(this.host.gl.getUniformLocation(compositeProgram, "u_intensity"), options.intensity);
     this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
-    return textureB;
+    return destination ? destination.colorHandle : textureB;
   }
 
   executeNativeBloomPyramidPasses(
@@ -2634,6 +2716,29 @@ export function createLegacyOutputPass(
   };
 }
 
+interface OutputPassRouteTone {
+  readonly operator: AuraToneMappingOperatorLike;
+  readonly vignette: OutputVignetteUniforms | undefined;
+}
+
+/** The OutputPass OUT-stage configuration for a v2 chain, or undefined when the chain needs the fused present. */
+function outputPassRouteTone(
+  passes: readonly LdrPostprocessPassDescriptor[],
+  pipeline: PostPipelineOptions,
+  source: RenderTarget,
+  host: WebGL2DeviceHost
+): OutputPassRouteTone | undefined {
+  if (source.colorTexture.format === "rgba8" || !host.device) return undefined;
+  if (!passes.every((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName) || pass.name === ("bloom" as LdrPostprocessPassName))) return undefined;
+  const tonePass = passes.find((pass) => pass.name === ("tone-mapping" as LdrPostprocessPassName));
+  const whitePoint = tonePass?.options?.whitePoint;
+  if (whitePoint !== undefined && whitePoint !== 1) return undefined;
+  const operator: AuraToneMappingOperatorLike = pipeline.toneMapping === "none" ? "linear" : pipeline.toneMapping;
+  if (!TONE_MAP_OPERATOR_FUNCTIONS[operator]) return undefined;
+  const vignette = linearVignetteOption({ vignette: pipeline.vignette });
+  return { operator, vignette: vignette ? { intensity: vignette.intensity, smoothness: vignette.smoothness, roundness: vignette.roundness, color: vignette.color as [number, number, number] } : undefined };
+}
+
 /**
  * `executePostGraphWebGL2` — the C-13 device carve (CONTRACTS §3.1 /
  * PRD-03 §7.2). It receives the device's GL internals (the registered
@@ -2714,18 +2819,67 @@ export function executePostGraphWebGL2(
   const pipelineForOut = needsTail && pipeline.dither !== false
     ? { ...pipeline, dither: false as const }
     : pipeline;
-  const mappedPasses = request.passes
-    // §6.9/T0-17 (FLAG-ON-4): on the v2 chain the HDR stages own their
-    // effects — S2 GTAO (ssao), S6 (depth-of-field), S7 (motion-blur),
-    // S5 (taa). The legacy twin must not double-run, and its native depth
-    // read would throw WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED per frame on
-    // the pooled depth-less stage output.
+  // §6.9/T0-17 (FLAG-ON-4): on the v2 chain the HDR stages own their
+  // effects — S2 GTAO (ssao), S6 (depth-of-field), S7 (motion-blur),
+  // S5 (taa). The legacy twin must not double-run, and its native depth
+  // read would throw WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED per frame on
+  // the pooled depth-less stage output.
+  const v2Passes = request.passes
     .filter((pass) => !(v2 && (
       (pipeline.ao && pass.name === ("ssao" as LdrPostprocessPassName))
       || (pipeline.dof && pass.name === ("depth-of-field" as LdrPostprocessPassName))
       || (pipeline.motionBlur && pass.name === ("motion-blur" as LdrPostprocessPassName))
       || ((pipeline.antiAliasing === "taa" || Boolean(pipeline.taa)) && pass.name === ("taa" as LdrPostprocessPassName))
-    )))
+    )));
+  // The single tone map and sRGB encode run in the OutputPass whenever the remaining
+  // descriptors are only bloom and tone mapping (every effect before them composes in
+  // linear HDR); chains with legacy display-space kernels (ssr, outline, grade, fxaa
+  // descriptors) or a non-default white point keep the fused present.
+  const outputPassTone = v2 ? outputPassRouteTone(v2Passes, pipeline, source, host) : undefined;
+  if (v2 && outputPassTone) {
+    const bloomPass = v2Passes.find((pass) => pass.name === ("bloom" as LdrPostprocessPassName));
+    const owned: RenderTarget[] = [];
+    try {
+      let current: RenderTarget = workSource;
+      if (bloomPass) {
+        const bloomed = v2.acquireV2Target(host, { width: source.width, height: source.height, format: "rgba16f" });
+        owned.push(bloomed);
+        host.post.presentHdrBloom(workSource, bloomPass.options, bloomed);
+        current = bloomed;
+        if (afterBloomStage) {
+          afterBloomRan = true;
+          current = afterBloomStage.run(bloomed as unknown as import("../post/v2Stages").PostColorInput) as unknown as RenderTarget;
+        }
+      } else {
+        host.resolveMultisampleTarget(workSource as WebGL2RenderTarget);
+      }
+      // Bind the final destination first: the OutputPass restores the previously bound target, so the
+      // frame ends on the default framebuffer (or the explicit output target), never on an HDR target.
+      host.device.setRenderTarget(request.outputTarget ?? null);
+      // `dither: false`: the S12 finalize owns the one triangular dither when a tail exists, and
+      // the fused OUT this replaces never dithered; the chain's output must not change.
+      outputPassForDevice(host.device).execute(current, null, {
+        toneMapping: outputPassTone.operator,
+        exposure: pipelineForOut.exposure,
+        dithering: false,
+        backgroundCoverage: false,
+        fullCoverage: true,
+        ...(vignetteInOut && outputPassTone.vignette ? { vignette: outputPassTone.vignette } : {})
+      }, ldrTailTarget ?? request.outputTarget ?? "canvas");
+    } finally {
+      afterBloomStage?.release();
+      for (const target of owned) v2.releaseV2Target(host, target);
+    }
+    if (workSource !== source) v2.releaseV2Target(host, workSource);
+    if (ldrTailTarget) {
+      v2.runV2LdrTail(host, ldrTailTarget, tailPipeline, request.outputTarget, request.frameContext);
+      v2.releaseV2Target(host, ldrTailTarget);
+    }
+    host.device.setRenderTarget(request.outputTarget ?? null);
+    recordPostStage("out:output-pass");
+    return;
+  }
+  const mappedPasses = v2Passes
     .map((pass) => {
     if (pass.name === ("tone-mapping" as LdrPostprocessPassName)) {
       return createLegacyOutputPass(pipelineForOut, pass.options, vignetteInOut ? pipeline.vignette : undefined);
