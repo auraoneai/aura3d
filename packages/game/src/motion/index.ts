@@ -21,7 +21,7 @@ export { clearCameraEye, createCameraClearance } from "./cameraClear";
 export type { CameraVec3, ClearEyeOptions, ClearEye, CameraClearanceOptions, CameraClearance } from "./cameraClear";
 export {
   createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ,
-  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS
+  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS
 } from "./handBounce";
 export type {
   HandBounceVec3, HandBounceGait, HandBounceOptions, HandBouncePhases, HandBounceConfig, HandBounceCycle, HandBounceOverlayBone,

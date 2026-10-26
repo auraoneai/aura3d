@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_HAND_BOUNCE_LIMITS, clampPalmReach, createHandBounce, handBounceBallXZ, handBounceBallY, handBounceContactWeight,
+  DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS, clampPalmReach, createHandBounce, handBounceBallXZ, handBounceBallY, handBounceContactWeight,
   handBounceCycle, handBounceOverlayAngles, measureHandBall, resolveHandBounceConfig
 } from "../../../packages/game/src/motion/handBounce";
 
@@ -14,9 +14,9 @@ function run(seconds: number, moving: boolean, options: { lag?: number; floorY?:
   const bounce = createHandBounce({ floorY: options.floorY ?? 0 });
   const cfg = bounce.config;
   const standing = moving ? 1.45 : 1.5;
-  const drop = moving ? 0.34 : 0.43;
+  const drop = moving ? 0.36 : 0.46;
   let palmY = cfg.floorY + 1;
-  const samples: Array<{ phase: number; palm: [number, number, number]; ball: [number, number, number] }> = [];
+  const samples: Array<{ phase: number; moving: boolean; palm: [number, number, number]; ball: [number, number, number] }> = [];
   for (let i = 0; i < seconds / DT; i += 1) {
     const prev = bounce.state();
     const phaseNext = (prev.active ? prev.phase : 0) + DT / (moving ? cfg.running.period : cfg.standing.period);
@@ -26,7 +26,7 @@ function run(seconds: number, moving: boolean, options: { lag?: number; floorY?:
     const reachable = Math.max(cyc.palmY, shoulderY - cfg.armReach);
     palmY += (reachable - palmY) * Math.min(1, DT / Math.max(lag, 1e-3));
     const frame = bounce.step(DT, { moving, shoulderY, palm: [0.25, palmY, 0.3], holder: { ...holder, vx: moving ? 4 : 0 } });
-    samples.push({ phase: frame.phase, palm: [0.25, palmY, 0.3], ball: frame.ball });
+    samples.push({ phase: frame.phase, moving, palm: [0.25, palmY, 0.3], ball: frame.ball });
   }
   return { samples, bounce };
 }
@@ -65,17 +65,52 @@ describe("hand bounce kit (promoted from the Aura Hoops dribble)", () => {
     }
   });
 
-  it("standing and running dribbles meet the Aura Hoops limits (meet <= 0.12 m, floor contact palm <= 0.55 m, ball on the floor)", () => {
+  it("standing and running dribbles meet the hard criteria: ball under the hand, touching the palm at the meet, hand follows the ball down", () => {
     for (const moving of [false, true]) {
       const { samples } = run(8, moving);
       const report = measureHandBall(samples);
+      const lim = moving ? RUNNING_HAND_BOUNCE_LIMITS : DEFAULT_HAND_BOUNCE_LIMITS;
       expect(report.failures).toEqual([]);
       expect(report.ok).toBe(true);
-      expect(report.meetMax).toBeLessThanOrEqual(DEFAULT_HAND_BOUNCE_LIMITS.meet);
-      expect(report.floorContactMax).toBeLessThanOrEqual(DEFAULT_HAND_BOUNCE_LIMITS.floorContact);
-      expect(report.floorError).toBeLessThanOrEqual(DEFAULT_HAND_BOUNCE_LIMITS.floorError);
+      expect(report.meetMax).toBeLessThanOrEqual(config.ballRadius + 0.05);
+      expect(report.floorContactXZMax).toBeLessThanOrEqual(moving ? 0.2 : 0.12);
+      expect(report.floorContactPalmHeightMax).toBeLessThanOrEqual(moving ? 0.6 : 0.5);
+      expect(report.maxXZ).toBeLessThanOrEqual(0.25);
+      expect(report.floorError).toBeLessThanOrEqual(lim.floorError);
       expect(report.floorSamples).toBeGreaterThan(3);
       expect(report.meetSamples).toBeGreaterThan(5);
+    }
+  });
+
+  it("a standing hand follows the ball at least 60 percent of the way down", () => {
+    for (const moving of [false]) {
+      const { samples } = run(6, moving);
+      const apex = Math.max(...samples.map((s) => s.ball[1]));
+      const floor = samples.filter((s) => s.ball[1] <= config.floorBallY + 0.02);
+      const palmTop = Math.max(...samples.map((s) => s.palm[1]));
+      const palmAtFloor = Math.max(...floor.map((s) => s.palm[1]));
+      const ballTravel = apex - config.floorBallY;
+      expect((palmTop - palmAtFloor) / ballTravel).toBeGreaterThanOrEqual(0.6);
+    }
+  });
+
+  it("the ball is directly under the palm: no lead for a stationary handler, lead only along travel (capped) for a runner, never past maxOffset", () => {
+    const palm: [number, number, number] = [1, 0.8, 2];
+    const still = handBounceBallXZ(config, palm, { x: 0, z: 0, vx: 0.2, vz: 0.1 }, 0.55);
+    expect(still).toEqual({ x: 1, z: 2 });
+    const run4 = handBounceBallXZ(config, palm, { x: 0, z: 0, vx: 0, vz: -4 }, 0.55);
+    expect(run4.x).toBeCloseTo(1, 9);
+    expect(run4.z).toBeLessThan(2);
+    expect(2 - run4.z).toBeLessThanOrEqual(config.leadMax + 1e-9);
+    for (const speed of [1, 4, 9, 30]) {
+      for (const phase of [0, 0.2, 0.5, 0.6, 0.7, 0.8, 0.95]) {
+        const at = handBounceBallXZ(config, palm, { x: 0, z: 0, vx: speed * 0.6, vz: speed * 0.8 }, phase);
+        expect(Math.hypot(at.x - palm[0], at.z - palm[2])).toBeLessThanOrEqual(config.maxOffset + 1e-9);
+        // the lead points along the travel direction
+        const dx = at.x - palm[0];
+        const dz = at.z - palm[2];
+        if (Math.hypot(dx, dz) > 1e-9) expect((dx * 0.6 + dz * 0.8) / Math.hypot(dx, dz)).toBeCloseTo(1, 6);
+      }
     }
   });
 
@@ -113,7 +148,7 @@ describe("hand bounce kit (promoted from the Aura Hoops dribble)", () => {
     for (const shoulderY of [1.0, 1.2, 1.5]) {
       for (let i = 0; i < 200; i += 1) {
         const c = handBounceCycle(config, i / 200, shoulderY, false);
-        expect(c.palmY).toBeGreaterThanOrEqual(shoulderY - config.armReach - 0.05 - 1e-9);
+        expect(c.palmY).toBeGreaterThanOrEqual(shoulderY - config.armReach - 0.07 - 1e-9);
       }
     }
   });

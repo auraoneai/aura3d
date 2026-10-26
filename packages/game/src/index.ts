@@ -78,7 +78,7 @@ export {
   createFixedStepPresenter, createRecordBlend, runMotionGate,
   clearCameraEye, createCameraClearance,
   createHandBounce, resolveHandBounceConfig, handBounceCycle, handBounceBallY, handBounceContactWeight, handBounceBallXZ,
-  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS
+  clampPalmReach, handBounceOverlayAngles, measureHandBall, DEFAULT_HAND_BOUNCE_LIMITS, RUNNING_HAND_BOUNCE_LIMITS
 } from "./motion/index";
 export type {
   DampResult, SmoothFollow3, RenderInterpolator, JitterReport,

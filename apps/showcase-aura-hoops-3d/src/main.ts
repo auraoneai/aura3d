@@ -429,6 +429,7 @@ const initialParams = typeof window !== "undefined" ? new URLSearchParams(window
 const QA_DT = initialParams.get("diag") === "1" ? Number(initialParams.get("qaDt")) || 0 : 0;
 /** ?diag=1&qaLean=1.2 scales the running-dribble waist bend and &qaLead=2 the palm look-ahead (measurement only). */
 const QA_LEAN = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLean")) || 1 : 1;
+const QA_SERVE = initialParams.get("diag") === "1" && initialParams.get("qaServe") === "away";
 const QA_LEAD = initialParams.get("diag") === "1" ? Number(initialParams.get("qaLead")) || 1 : 1;
 
 const game_ = {
@@ -847,6 +848,8 @@ const overlayPoseOn = new Set<string>();
 /** Per-handler palm solve handed from syncAthlete's pose to the ball hold branch. */
 interface DribbleAim { palm: Vec3; /** the palm as rendered last frame (forearm bone), when the sockets are live */ actual?: Vec3; shoulderY: number; t: number; moving: boolean }
 const dribbleAims = new Map<string, DribbleAim>();
+/** The holder's rendered palm and shoulder height, published every frame whatever pose the athlete is in, so the ball always rides the hand that is drawn. */
+const heldRig = new Map<string, { palm: Vec3 | undefined; shoulderY: number | undefined }>();
 // Bind-space arm geometry. The rig has no hand bones (arms end at Forearm), so
 // the palm is the calibrated hand-centroid offset in forearm bone space. These
 // measured constants are only the fallback — armRigFor() derives the live
@@ -933,18 +936,18 @@ function armIK(
 // frame from Crouch_Idle_Loop; procedural arm IK is layered on top each frame.
 /** Idle hand target below the shoulder: 0.53 m of a 0.555 m arm hangs it nearly straight (0.46 bent the elbow about 15 cm and, flared out, bowed both arms). */
 const IDLE_HAND_DROP = 0.53;
-/** Full-body stance; `crouch` 0..1 sinks the hips 0.28 m with the knees folded so the feet stay planted (the pound dribble needs the shoulder down for the hand to reach the bounce). */
+/** Full-body stance; `crouch` 0..1 sinks the hips 0.36 m with the knees folded so the feet stay planted (the pound dribble needs the shoulder down for the hand to reach the bounce). */
 const stanceLegs = (crouch = 0) => ({
-  Hips: { position: { x: 0, y: 0.882 - 0.28 * crouch, z: 0 } },
+  Hips: { position: { x: 0, y: 0.882 - 0.36 * crouch, z: 0 } },
   Spine: { rotation: qX(0.105) },
   Chest: { rotation: qX(0.07) },
   Head: { rotation: qX(-0.122) },
-  LeftUpperLeg: { rotation: qX(-(0.208 + 0.742 * crouch)) },
-  LeftLowerLeg: { rotation: qX(0.276 + 1.411 * crouch) },
-  LeftFoot: { rotation: qX(-(0.07 + 0.667 * crouch)) },
-  RightUpperLeg: { rotation: qX(-(0.208 + 0.742 * crouch)) },
-  RightLowerLeg: { rotation: qX(0.276 + 1.411 * crouch) },
-  RightFoot: { rotation: qX(-(0.07 + 0.667 * crouch)) }
+  LeftUpperLeg: { rotation: qX(-(0.208 + 0.892 * crouch)) },
+  LeftLowerLeg: { rotation: qX(0.276 + 1.674 * crouch) },
+  LeftFoot: { rotation: qX(-(0.07 + 0.78 * crouch)) },
+  RightUpperLeg: { rotation: qX(-(0.208 + 0.892 * crouch)) },
+  RightLowerLeg: { rotation: qX(0.276 + 1.674 * crouch) },
+  RightFoot: { rotation: qX(-(0.07 + 0.78 * crouch)) }
 });
 
 function setNodeClip(id: string, handle: AnyHandle, clip: string, speed = 1.0): void {
@@ -972,6 +975,7 @@ function resolveHandles(): void {
   livePoseOn.clear();
   overlayPoseOn.clear();
   dribbleAims.clear();
+  heldRig.clear();
   armRigs.clear();
   rigs = ROSTER_IDS.map((id) => ({
     root: req(id),
@@ -1769,21 +1773,24 @@ function stepBallSim(dt: number): void {
       // tracks the palm as RENDERED (the arm may not reach its target); at the
       // check the dead ball sits in the targeted palm and the phase is held.
       const aim = dribbleAims.get(h.nodeId);
+      const rig = heldRig.get(h.nodeId);
       const checkNow = game_.phase === "check";
+      const palmNow: Vec3 | undefined = aim ? (checkNow ? aim.palm : aim.actual ?? aim.palm) : rig?.palm;
       const frame = hoopsBounce.step(dt, {
         moving,
-        shoulderY: aim?.shoulderY ?? DRIB_SHOULDER_FALLBACK,
-        palm: aim ? (checkNow ? aim.palm : aim.actual ?? aim.palm) : undefined,
+        shoulderY: aim?.shoulderY ?? rig?.shoulderY ?? DRIB_SHOULDER_FALLBACK,
+        palm: palmNow,
         holder: { x: h.x, z: h.z, vx: h.vx, vz: h.vz },
         hold: checkNow
       });
-      const cyc = dribbleCycleY(frame.phase, aim?.shoulderY ?? DRIB_SHOULDER_FALLBACK, moving);
+      const cyc = dribbleCycleY(frame.phase, aim?.shoulderY ?? rig?.shoulderY ?? DRIB_SHOULDER_FALLBACK, moving);
       const prevY = ball.y;
-      if (aim) {
+      if (palmNow) {
+        const tgt = aim?.palm ?? palmNow;
         dribbleHand = {
-          x: aim.palm[0], y: aim.palm[1], z: aim.palm[2],
+          x: tgt[0], y: tgt[1], z: tgt[2],
           socket: true, forearmValid: true, socketApi: true,
-          raw: [aim.palm[0], aim.palm[1], aim.palm[2]], point: [aim.palm[0], aim.palm[1], aim.palm[2]]
+          raw: [tgt[0], tgt[1], tgt[2]], point: [tgt[0], tgt[1], tgt[2]]
         };
         if (h.shooting) {
           ball.x = h.x + Math.sin(h.yaw) * 0.22;
@@ -1809,7 +1816,7 @@ function stepBallSim(dt: number): void {
       }
       dribbleEvidence = {
         t: frame.phase,
-        palmY: aim ? (aim.actual ?? aim.palm)[1] : cyc.palmY,
+        palmY: palmNow ? palmNow[1] : cyc.palmY,
         ballY: ball.y,
         moving: frame.moving
       };
@@ -2486,6 +2493,12 @@ function syncAthlete(a: AthleteState, dt: number): void {
   const upperL = anim?.socket?.("LeftUpperArm");
   const socketsUp = chest?.valid === true && upperR?.valid === true && upperL?.valid === true;
   const cycleT = bouncePhase(a.nodeId);
+  const rigPalm = holdsBall ? renderedPalmLead(a, r.root) : undefined;
+  if (holdsBall) {
+    heldRig.set(a.nodeId, { palm: rigPalm, shoulderY: upperR?.valid === true ? mat4Translation(upperR.worldMatrix())[1] + 0.96 + a.y : undefined });
+  } else {
+    heldRig.delete(a.nodeId);
+  }
   const shoulderOf = (upper: { worldMatrix(out?: Float32Array): ArrayLike<number> }): Vec3 =>
     mat4Translation(upper.worldMatrix());
   let aimed: DribbleAim | undefined;
@@ -2516,7 +2529,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
       const palmR: Vec3 = checkHold
         ? [shoulderR[0] - 0.06, shoulderR[1] - 0.46, shoulderR[2] + 0.20]
         : dribbleNow
-          ? [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.27]
+          ? [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.14]
           : [shoulderR[0] - 0.03, shoulderR[1] - IDLE_HAND_DROP, shoulderR[2] + 0.03];
       const palmL: Vec3 = checkHold
         ? [shoulderL[0] - 0.04, shoulderL[1] - 0.42, shoulderL[2] + 0.10]
@@ -2548,7 +2561,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
             0.96 + a.y + aimPalm[1],
             a.z - sn * aimPalm[0] + cy * aimPalm[2]
           ],
-          actual: renderedPalmLead(a, r.root),
+          actual: rigPalm,
           shoulderY,
           t: cycleT,
           moving: false
@@ -2580,7 +2593,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
     };
     // The contact point leads the handler in the movement direction (yaw
     // tracks velocity); the off hand guards near the body instead of mirroring.
-    const palmR: Vec3 = [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.24];
+    const palmR: Vec3 = [shoulderR[0] - 0.06, cyc.palmY - 0.96 - a.y, shoulderR[2] + 0.12];
     const palmL: Vec3 = [shoulderL[0] + 0.04, shoulderL[1] - 0.30, shoulderL[2] + 0.22];
     const chestRot = qFromMat4(chest!.worldMatrix());
     const rightArm = armIK(chestRot, shoulderR, palmR, facts.upperLenR, facts.foreLenR, facts.upperDirR, facts.foreDirR,
@@ -2601,7 +2614,7 @@ function syncAthlete(a: AthleteState, dt: number): void {
         0.96 + a.y + palmR[1],
         a.z - sn * palmR[0] + cy * palmR[2]
       ],
-      actual: renderedPalmLead(a, r.root),
+      actual: rigPalm,
       shoulderY,
       t: cycleT,
       moving: true
@@ -3213,6 +3226,7 @@ if (menuParam) {
 } else {
   menuOverlay?.classList.remove("open");
   startMatch(modeParam ?? "quick");
+  if (QA_SERVE) enterCheck("away");
   enterLive();
 }
 

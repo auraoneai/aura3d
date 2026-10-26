@@ -31,7 +31,8 @@ describe("Aura Hoops dribble", () => {
   it("lets the stride carry the ball only while it is in the air, and reaches the floor", () => {
     const palm: [number, number, number] = [0, 1, 0];
     const free = dribbleBallXZ(palm, { x: 0, z: 0, vx: 4, vz: 0 }, 0.6);
-    expect(free.x).toBeGreaterThan(0.1);
+    expect(free.x).toBeGreaterThan(0.05);
+    expect(free.x).toBeLessThanOrEqual(0.15);
     const ys = Array.from({ length: 100 }, (_, i) => dribbleCycleY(i / 100, SHOULDER).ballY);
     expect(Math.min(...ys)).toBeCloseTo(DRIB_FLOOR_Y, 2);
   });

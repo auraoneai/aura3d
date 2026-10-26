@@ -4,6 +4,10 @@ Version: 4.2.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+## 4.3.1 (unreleased)
+
+- **Hoops dribble: the ball bounces under the hand, in every pose.** In the owner's 4.3.0 frames the ball sat on the floor about 0.4 m beside the handler while the hand hung at hip height. The ball now always rides the palm as drawn (also when the athlete is not in a dribble pose), its XZ is the palm's XZ (a runner's ball lands ahead along travel by at most 0.15 m, never beyond 0.25 m from the palm), the standing handler crouches 0.36 m with deeper waist bend so the palm reaches 0.5 m at the bounce, and the running profile lowers the palm to about 0.54 m. `measureHandBall` now enforces ball-under-hand (XZ), palm touching the ball at the meet, palm height at the floor contact and maximum XZ offset, for standing and running (`RUNNING_HAND_BOUNCE_LIMITS`).
+
 ## 4.3.0 (unreleased)
 
 - **Aura Diamond 3D: the batter stands on the ground and both hands are on the bat in every phase (solver level).** Every athlete was placed at `y + 0.94` although `scaleMode: "fit"` already grounds the model, so all of them hovered a metre above the dirt and the swing was built to hit a ball a metre too low. The top hand also used the right arm's bind directions (23 cm off the bat), the grip point was a stale estimate, and the engine's bone attachment let the bat drift 14 to 76 cm from the hands in fast segments. The solver and swing keys now live in `src/batter-pose.ts` (pure functions, `tests/unit/aura-diamond/batter-grip.test.ts` sweeps stance, load, stride, contact across the strike zone, follow-through and recovery), the bat is placed from the same solve as the arms, and the stance is a real ready position. Bone-level grip is 0.1 cm in every phase; the drawn hands still do not meet the bat because the Diamond athlete mesh is bound mid-stride to a straight skeleton (rebuild tracked by the rigs lane). Evidence: `evidence/aura-diamond-3d/bat-fix/`.

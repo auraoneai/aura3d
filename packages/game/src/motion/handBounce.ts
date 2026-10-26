@@ -22,12 +22,17 @@ export interface HandBounceOptions {
   readonly armReach?: number;
   /** Palm centroid rides this far above the ball crown while in contact. Default 0.09. */
   readonly ballGap?: number;
-  /** Standing profile; defaults are the Aura Hoops numbers (0.46 s, palm 1.02 to 0.62 m). */
+  /** Standing profile; defaults are the Aura Hoops numbers (0.46 s, palm 1.02 to 0.50 m). */
   readonly standing?: Partial<HandBounceGait>;
-  /** Running profile (lower apex, shorter period); defaults 0.30 s, palm 0.92 to 0.60 m. */
+  /** Running profile (lower apex, shorter period); defaults 0.30 s, palm 0.88 to 0.54 m. */
   readonly running?: Partial<HandBounceGait>;
   /** Horizontal speed (m/s) above which the running profile applies. Default 0.45. */
   readonly runSpeed?: number;
+  /** The ball never strays further than this horizontally from the palm while dribbling. Default 0.25. */
+  readonly maxOffset?: number;
+  /** Running only: the ball lands ahead of the hand along the direction of travel by `speed * leadGain`, at most `leadMax`. Defaults 0.025 s and 0.15 m. */
+  readonly leadGain?: number;
+  readonly leadMax?: number;
   /** Skeleton bone names; the overlay then names the bones that actually exist. */
   readonly boneNames?: readonly string[];
   /** Phase landmarks of one bounce (0 = palm meets ball at the top). */
@@ -54,6 +59,9 @@ export interface HandBounceConfig {
   readonly standing: HandBounceGait;
   readonly running: HandBounceGait;
   readonly runSpeed: number;
+  readonly maxOffset: number;
+  readonly leadGain: number;
+  readonly leadMax: number;
   readonly phases: HandBouncePhases;
   /** Ball centre height at the floor contact. */
   readonly floorBallY: number;
@@ -80,9 +88,12 @@ export function resolveHandBounceConfig(options: HandBounceOptions = {}): HandBo
     floorY,
     armReach: options.armReach ?? 0.55,
     ballGap: options.ballGap ?? 0.09,
-    standing: { period: 0.46, palmTop: 1.02, palmPush: 0.62, ...options.standing },
-    running: { period: 0.3, palmTop: 0.92, palmPush: 0.6, ...options.running },
+    standing: { period: 0.46, palmTop: 1.02, palmPush: 0.5, ...options.standing },
+    running: { period: 0.3, palmTop: 0.88, palmPush: 0.54, ...options.running },
     runSpeed: options.runSpeed ?? 0.45,
+    maxOffset: options.maxOffset ?? 0.25,
+    leadGain: options.leadGain ?? 0.025,
+    leadMax: options.leadMax ?? 0.15,
     phases: { rideEnd: 0.35, palmTurn: 0.6, floorAt: 0.66, catchFrom: 0.92, ...options.phases },
     floorBallY: floorY + ballRadius
   };
@@ -94,7 +105,7 @@ export function handBounceCycle(config: HandBounceConfig, t: number, shoulderY: 
   const { rideEnd, palmTurn, floorAt } = config.phases;
   const top = Math.min(config.floorY + gait.palmTop, shoulderY - 0.3);
   const push = Math.max(config.floorY + gait.palmPush, shoulderY - config.armReach);
-  const low = push - 0.04;
+  const low = push - 0.06;
   let palmY: number;
   let effort: number;
   if (t < rideEnd) {
@@ -106,8 +117,9 @@ export function handBounceCycle(config: HandBounceConfig, t: number, shoulderY: 
     effort = 1;
     palmY = lerp(push, low, 1 - (1 - s) * (1 - s));
   } else {
-    const s = (t - palmTurn) / (1 - palmTurn);
-    effort = t < floorAt ? 1 : 1 - smoothstep((t - floorAt) / (1 - floorAt));
+    // The palm stays at its lowest until the ball has met the floor, then rises with it (it receives the ball on the way up).
+    const s = Math.max(0, (t - floorAt) / (1 - floorAt));
+    effort = t < floorAt ? 1 : 1 - smoothstep(s);
     palmY = lerp(low, top, smoothstep(s));
   }
   return { palmY, ballY: handBounceBallY(config, t, palmY, push - config.ballGap, top - config.ballGap), effort };
@@ -145,7 +157,11 @@ export function handBounceContactWeight(config: HandBounceConfig, phase: number)
   return 1;
 }
 
-/** Horizontal ball position: on the palm at contact, drifting ahead with the handler's stride only while the ball is in the air. */
+/**
+ * Horizontal ball position: directly under the palm. While the ball is in the air a runner's ball lands a little ahead of the
+ * hand, only along the direction of travel and at most `leadMax`; a stationary handler gets no lead. The result is never more
+ * than `maxOffset` from the palm.
+ */
 export function handBounceBallXZ(
   config: HandBounceConfig,
   palm: HandBounceVec3,
@@ -153,13 +169,17 @@ export function handBounceBallXZ(
   phase: number
 ): { x: number; z: number } {
   const free = 1 - handBounceContactWeight(config, phase);
-  const ox = palm[0] - holder.x;
-  const oz = palm[2] - holder.z;
-  const olen = Math.hypot(ox, oz) || 1;
-  return {
-    x: palm[0] + (ox / olen) * 0.02 * free + holder.vx * 0.04 * free,
-    z: palm[2] + (oz / olen) * 0.02 * free + holder.vz * 0.04 * free
-  };
+  const speed = Math.hypot(holder.vx, holder.vz);
+  let lx = 0;
+  let lz = 0;
+  if (speed > config.runSpeed) {
+    const lead = Math.min(speed * config.leadGain, config.leadMax) * free;
+    lx = (holder.vx / speed) * lead;
+    lz = (holder.vz / speed) * lead;
+  }
+  const len = Math.hypot(lx, lz);
+  const k = len > config.maxOffset ? config.maxOffset / len : 1;
+  return { x: palm[0] + lx * k, z: palm[2] + lz * k };
 }
 
 /** Clamp a palm target into the arm's reach sphere around the shoulder (a target the arm cannot reach makes the hand miss the ball). */
@@ -179,7 +199,7 @@ export function handBounceOverlayAngles(effort: number, moving: boolean, leanSca
     const lean = (1.28 + 0.77 * effort) * leanScale;
     return { spine: lean * 0.55, chest: lean * 0.45, head: -lean * 0.6 };
   }
-  return { spine: (0.2 + 0.3 * effort) * leanScale, chest: (0.12 + 0.2 * effort) * leanScale, head: -0.22 };
+  return { spine: (0.3 + 0.55 * effort) * leanScale, chest: (0.2 + 0.4 * effort) * leanScale, head: -0.22 };
 }
 
 export interface HandBounceOverlayBone {
@@ -353,6 +373,8 @@ export function createHandBounce(options: HandBounceOptions = {}): HandBounce {
 
 export interface HandBounceSample {
   readonly phase: number;
+  /** True for a running handler: the running limits apply to the sample. */
+  readonly moving?: boolean;
   readonly palm: HandBounceVec3;
   readonly ball: HandBounceVec3;
   /** False when the ball is not in dribble state (loose, shot, pass): such samples are skipped. */
@@ -361,77 +383,118 @@ export interface HandBounceSample {
 
 export interface HandBounceReport {
   readonly samples: number;
-  /** Max palm-to-ball distance at the meet and the catch (m). */
+  /** Max palm-to-ball-centre distance at the meet and the catch (m). */
   readonly meetMax: number;
   /** Max palm-to-ball distance at the floor contact (m); NaN when no sample touched the floor. */
   readonly floorContactMax: number;
+  /** Max horizontal (XZ) palm-to-ball distance at the floor contact (m); NaN when no sample touched the floor. */
+  readonly floorContactXZMax: number;
   /** Highest palm height at the floor contact (m above the floor). */
   readonly floorContactPalmHeightMax: number;
   /** Lowest ball centre minus the ball radius over the floor: 0 when the ball bounces exactly on the floor. */
   readonly floorError: number;
   /** Max palm-to-ball distance over every dribble sample. */
   readonly maxDistance: number;
+  /** Max horizontal palm-to-ball distance over every dribble sample. */
+  readonly maxXZ: number;
   readonly floorSamples: number;
   readonly meetSamples: number;
 }
 
 export interface HandBounceLimits {
+  /** Palm to ball centre at the meet and the catch: the ball surface touches the palm (ball radius + 0.05 m by default). */
   readonly meet: number;
+  /** Palm to ball (3D) at the floor contact. */
   readonly floorContact: number;
+  /** Horizontal palm to ball at the floor contact: the ball bounces under the hand. */
+  readonly floorXZ: number;
+  /** Highest the palm may be above the floor at the floor contact: the hand follows the ball down. */
+  readonly floorPalmHeight: number;
   readonly floorError: number;
+  /** The ball never strays further than this horizontally from the palm while dribbling. */
+  readonly maxXZ: number;
   readonly maxDistance: number;
 }
 
-/** Limits the Aura Hoops dribble is held to. */
-export const DEFAULT_HAND_BOUNCE_LIMITS: HandBounceLimits = { meet: 0.12, floorContact: 0.55, floorError: 0.02, maxDistance: 0.9 };
+/** Limits for a stationary handler (the Aura Hoops dribble is held to these). The meet limit is ball radius + 0.05 m: `measureHandBall` replaces it with the configured radius. */
+export const DEFAULT_HAND_BOUNCE_LIMITS: HandBounceLimits = {
+  meet: 0.18, floorContact: 0.6, floorXZ: 0.12, floorPalmHeight: 0.5, floorError: 0.02, maxXZ: 0.25, maxDistance: 0.9
+};
+
+/** Limits for a running handler: the ball may land up to 0.2 m ahead of the hand, and the hand may stay up to 0.6 m above the floor. */
+export const RUNNING_HAND_BOUNCE_LIMITS: HandBounceLimits = {
+  meet: 0.18, floorContact: 0.65, floorXZ: 0.2, floorPalmHeight: 0.6, floorError: 0.02, maxXZ: 0.25, maxDistance: 0.9
+};
 
 /** Probe: feed per-frame palm and ball world positions of a dribble; returns the distances the game must keep small. Call it from QA hooks and tools/game-checks. */
 export function measureHandBall(
   samples: readonly HandBounceSample[],
-  options: HandBounceOptions & { readonly limits?: Partial<HandBounceLimits> } = {}
+  options: HandBounceOptions & {
+    readonly limits?: Partial<HandBounceLimits>;
+    readonly runningLimits?: Partial<HandBounceLimits>;
+    /** A sample counts as a floor contact when the ball centre is within this of floor + radius. Default 0.02; widen it for render-rate sampling. */
+    readonly floorWindow?: number;
+  } = {}
 ): HandBounceReport & { readonly ok: boolean; readonly failures: readonly string[] } {
   const config = resolveHandBounceConfig(options);
-  const limits = { ...DEFAULT_HAND_BOUNCE_LIMITS, ...options.limits };
+  const meetDefault = config.ballRadius + 0.05;
+  const floorWindow = options.floorWindow ?? 0.02;
+  const standingLimits: HandBounceLimits = { ...DEFAULT_HAND_BOUNCE_LIMITS, meet: meetDefault, ...options.limits };
+  const runningLimits: HandBounceLimits = { ...RUNNING_HAND_BOUNCE_LIMITS, meet: meetDefault, ...options.runningLimits };
   let meetMax = 0;
   let floorMax = Number.NaN;
+  let floorXZMax = Number.NaN;
   let floorPalm = Number.NaN;
   let maxDistance = 0;
+  let maxXZ = 0;
   let lowest = Infinity;
   let floorSamples = 0;
   let meetSamples = 0;
   let used = 0;
+  const failures: string[] = [];
+  const fail = (message: string): void => { if (!failures.includes(message)) failures.push(message); };
+  const worst = (cur: number, v: number): number => (Number.isNaN(cur) ? v : Math.max(cur, v));
   for (const s of samples) {
     if (s.dribbling === false) continue;
     used += 1;
+    const lim = s.moving ? runningLimits : standingLimits;
+    const mode = s.moving ? "running" : "standing";
     const d = Math.hypot(s.palm[0] - s.ball[0], s.palm[1] - s.ball[1], s.palm[2] - s.ball[2]);
+    const xz = Math.hypot(s.palm[0] - s.ball[0], s.palm[2] - s.ball[2]);
     maxDistance = Math.max(maxDistance, d);
+    maxXZ = Math.max(maxXZ, xz);
     lowest = Math.min(lowest, s.ball[1]);
+    if (xz > lim.maxXZ) fail(`${mode}: ball strays ${xz.toFixed(3)} m horizontally from the palm > ${lim.maxXZ} m`);
+    if (d > lim.maxDistance) fail(`${mode}: ball strays ${d.toFixed(3)} m from the hand > ${lim.maxDistance} m`);
     const t = ((s.phase % 1) + 1) % 1;
     if (t < 0.04 || t > config.phases.catchFrom + 0.01) {
       meetMax = Math.max(meetMax, d);
       meetSamples += 1;
+      if (d > lim.meet) fail(`${mode}: palm to ball at the meet ${d.toFixed(3)} m > ${lim.meet.toFixed(2)} m`);
     }
-    if (s.ball[1] <= config.floorBallY + 0.02) {
-      floorMax = Number.isNaN(floorMax) ? d : Math.max(floorMax, d);
+    if (s.ball[1] <= config.floorBallY + floorWindow) {
       const h = s.palm[1] - config.floorY;
-      floorPalm = Number.isNaN(floorPalm) ? h : Math.max(floorPalm, h);
+      floorMax = worst(floorMax, d);
+      floorXZMax = worst(floorXZMax, xz);
+      floorPalm = worst(floorPalm, h);
       floorSamples += 1;
+      if (d > lim.floorContact) fail(`${mode}: palm to ball at the floor contact ${d.toFixed(3)} m > ${lim.floorContact} m`);
+      if (xz > lim.floorXZ) fail(`${mode}: horizontal palm to ball at the floor contact ${xz.toFixed(3)} m > ${lim.floorXZ} m`);
+      if (h > lim.floorPalmHeight) fail(`${mode}: palm ${h.toFixed(3)} m above the floor at the floor contact > ${lim.floorPalmHeight} m`);
     }
   }
   const floorError = used === 0 ? Number.NaN : Math.abs(lowest - config.floorBallY);
-  const failures: string[] = [];
-  if (used === 0) failures.push("no dribble samples");
-  if (meetSamples > 0 && meetMax > limits.meet) failures.push(`palm to ball at the meet ${meetMax.toFixed(3)} m > ${limits.meet} m`);
-  if (floorSamples > 0 && floorMax > limits.floorContact) failures.push(`palm to ball at the floor contact ${floorMax.toFixed(3)} m > ${limits.floorContact} m`);
-  if (used > 0 && floorError > limits.floorError) failures.push(`ball centre misses the floor by ${floorError.toFixed(3)} m > ${limits.floorError} m`);
-  if (maxDistance > limits.maxDistance) failures.push(`ball strays ${maxDistance.toFixed(3)} m from the hand > ${limits.maxDistance} m`);
+  if (used === 0) fail("no dribble samples");
+  if (used > 0 && floorError > standingLimits.floorError) fail(`ball centre misses the floor by ${floorError.toFixed(3)} m > ${standingLimits.floorError} m`);
   return {
     samples: used,
     meetMax,
     floorContactMax: floorMax,
+    floorContactXZMax: floorXZMax,
     floorContactPalmHeightMax: floorPalm,
     floorError,
     maxDistance,
+    maxXZ,
     floorSamples,
     meetSamples,
     ok: failures.length === 0,
