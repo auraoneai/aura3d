@@ -465,8 +465,9 @@ function boot(): void {
       const b = s.ball;
       const by = Math.max(BALL_VIS_R, b.y + (BALL_VIS_R - BALL_R));
       const rx = b.rotX ?? 0;
+      const ry = b.rotY ?? 0;
       const rz = b.rotZ ?? 0;
-      world.ballMesh?.setPosition(b.x, by, b.z).setRotation(rx, 0, rz).setScale([1, 1, 1]).setVisible(true);
+      world.ballMesh?.setPosition(b.x, by, b.z).setRotation(rx, ry, rz).setScale([1, 1, 1]).setVisible(true);
       const shScale = clamp(1 - (by - BALL_VIS_R) * 0.12, 0.35, 1.08);
       world.ballShadow?.setPosition(b.x, 0.015, b.z).setScale([shScale, 1, shScale]).setVisible(true);
 
@@ -553,7 +554,7 @@ function boot(): void {
         clock: Math.round(s.clock * 10) / 10,
         venue: s.venue,
         score: [...s.score],
-        ball: { position: [b.x, by, b.z], radius: BALL_VIS_R, rotX: rx, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
+        ball: { position: [b.x, by, b.z], radius: BALL_VIS_R, rotX: rx, rotY: ry, rotZ: rz, mode: b.mode, lastShot: b.lastShot, freeT: Math.round(b.freeT * 100) / 100 },
         ballPhysics,
         possessionTeam: s.possessionTeam,
         possession: [Math.round(s.possession[0] * 10) / 10, Math.round(s.possession[1] * 10) / 10],
