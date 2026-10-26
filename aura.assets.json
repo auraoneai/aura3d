@@ -24219,10 +24219,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/fcGoalkeeperMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcGoalkeeperMeshyAthlete.c9f9dce1.glb",
-      "url": "/aura-assets/fcGoalkeeperMeshyAthlete.c9f9dce1.glb",
-      "hash": "sha256-c9f9dce19bbfad165f21d371881666b8f0ee1e91a68207d8f3c89b58ae1ec976",
-      "sizeBytes": 2370088,
+      "outputPath": "public/aura-assets/fcGoalkeeperMeshyAthlete.a46499bd.glb",
+      "url": "/aura-assets/fcGoalkeeperMeshyAthlete.a46499bd.glb",
+      "hash": "sha256-a46499bda56d32013bc5bcb9376ffd7ea7c52b59c8bad3478d46b7ceec4c1687",
+      "sizeBytes": 2294816,
       "bounds": [
         0.716,
         1.899,
@@ -24394,7 +24394,7 @@
       "thumbnailUrl": "/aura-assets/fcGoalkeeperMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryCharacter",
-      "sha256": "sha256-c9f9dce19bbfad165f21d371881666b8f0ee1e91a68207d8f3c89b58ae1ec976"
+      "sha256": "sha256-a46499bda56d32013bc5bcb9376ffd7ea7c52b59c8bad3478d46b7ceec4c1687"
     },
     {
       "id": "fcHeroTrophyMeshy",
@@ -25034,10 +25034,10 @@
       "type": "model",
       "format": "glb",
       "source": "artifacts/meshy/fcSoccerStrikerMeshy/model.glb",
-      "outputPath": "public/aura-assets/fcSoccerStrikerMeshyAthlete.e49f8be2.glb",
-      "url": "/aura-assets/fcSoccerStrikerMeshyAthlete.e49f8be2.glb",
-      "hash": "sha256-e49f8be27e28c75b80aa3baa6baf5d44bb6530fcae348c371a4dab8714721091",
-      "sizeBytes": 2464676,
+      "outputPath": "public/aura-assets/fcSoccerStrikerMeshyAthlete.1492d1b0.glb",
+      "url": "/aura-assets/fcSoccerStrikerMeshyAthlete.1492d1b0.glb",
+      "hash": "sha256-1492d1b0dff962bf6cef5d96e2d8b53edaf210642c2c3610a2e93e54fcda57f1",
+      "sizeBytes": 2435332,
       "bounds": [
         0.742,
         1.891,
@@ -25209,7 +25209,7 @@
       "thumbnailUrl": "/aura-assets/fcSoccerStrikerMeshy.thumb.svg",
       "quality": "production",
       "role": "primaryCharacter",
-      "sha256": "sha256-e49f8be27e28c75b80aa3baa6baf5d44bb6530fcae348c371a4dab8714721091"
+      "sha256": "sha256-1492d1b0dff962bf6cef5d96e2d8b53edaf210642c2c3610a2e93e54fcda57f1"
     },
     {
       "id": "fpsEnergyCorePickupMeshy",
