@@ -1,0 +1,175 @@
+{
+  "build": {
+    "aura": "4.3.5",
+    "three": "0.185.1",
+    "vite": "7.3.2",
+    "apps": {
+      "aura-hello": {
+        "scaffold": "AGENTS.md\",\n    \"README.md\",\n    \"aura.assets.json\",\n    \"index.html\",\n    \"package.json\",\n    \"playwright.config.ts\",\n    \"public/aura-assets/product-fixture.glb\",\n    \"public/aura-assets/product.thumb.svg\",\n    \"public/hdri/ATTRIBUTION.md\",\n    \"public/hdri/autumn_field_puresky_1k.hdr\",\n    \"public/hdri/kloppenheim_06_puresky_1k.hdr\",\n    \"public/hdri/night-2k.hdr\",\n    \"public/hdri/studio_small_08_1k.hdr\",\n    \"src/aura-assets.ts\",\n    \"src/main.ts\",\n    \"tests/look-floor.ts\",\n    \"tests/route-health.spec.ts\",\n    \"tests/screenshot.spec.ts\",\n    \"tsconfig.json\",\n    \"vite.config.ts\"\n  ]\n}\n\n",
+        "installOk": true,
+        "installTail": "",
+        "typecheckOk": true,
+        "typecheckOut": "",
+        "buildOk": true,
+        "buildOut": "this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\nnew URL(\"../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\u001b[33m[plugin vite:resolve] Module \"node:fs\" has been externalized for browser compatibility, imported by \"/tmp/tagline/aura-hello/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\u001b[39m\n\u001b[33m[plugin vite:resolve] Module \"node:path\" has been externalized for browser compatibility, imported by \"/tmp/tagline/aura-hello/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\u001b[39m\n\u001b[33m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n",
+        "lines": {
+          "src/main.ts": {
+            "physical": 7,
+            "code": 6
+          },
+          "src/aura-assets.ts (generated)": {
+            "physical": 17,
+            "code": 16
+          },
+          "vite.config.ts (scaffold)": {
+            "physical": 7,
+            "code": 3
+          }
+        },
+        "installed": "4.3.5",
+        "dist": "/tmp/tagline/aura-hello/dist",
+        "bundle": {
+          "jsFiles": 42,
+          "raw": 4093042,
+          "gzip": 1223379,
+          "brotli": 1032882
+        }
+      },
+      "aura-cube": {
+        "buildOk": true,
+        "buildOut": "f this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\nnew URL(\"../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\nnew URL(\"../../vendor/basis/basis_transcoder.js\", import.meta.url) doesn't exist at build time, it will remain unchanged to be resolved at runtime. If this is intended, you can use the /* @vite-ignore */ comment to suppress this warning.\n\u001b[33m[plugin vite:resolve] Module \"node:fs\" has been externalized for browser compatibility, imported by \"/tmp/tagline/aura-cube/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\u001b[39m\n\u001b[33m[plugin vite:resolve] Module \"node:path\" has been externalized for browser compatibility, imported by \"/tmp/tagline/aura-cube/node_modules/@gltf-transform/core/dist/index.js\". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.\u001b[39m\n\u001b[33m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n",
+        "lines": {
+          "src/scene.ts": {
+            "physical": 19,
+            "code": 18
+          }
+        },
+        "dist": "/tmp/tagline/aura-cube/dist",
+        "bundle": {
+          "jsFiles": 42,
+          "raw": 4094618,
+          "gzip": 1224035,
+          "brotli": 1033212
+        }
+      },
+      "three-minimal": {
+        "installOk": true,
+        "typecheckOk": true,
+        "typecheckOut": "",
+        "buildOk": true,
+        "buildOut": "\n\u001b[33m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n",
+        "lines": {
+          "src/main.ts": {
+            "physical": 43,
+            "code": 38
+          }
+        },
+        "dist": "/tmp/tagline/three/three-minimal/dist",
+        "bundle": {
+          "jsFiles": 1,
+          "raw": 612843,
+          "gzip": 157106,
+          "brotli": 129234
+        }
+      },
+      "three-look": {
+        "installOk": true,
+        "typecheckOk": true,
+        "typecheckOut": "",
+        "buildOk": true,
+        "buildOut": "\n\u001b[33m\n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\u001b[39m\n",
+        "lines": {
+          "src/main.ts": {
+            "physical": 61,
+            "code": 55
+          }
+        },
+        "dist": "/tmp/tagline/three/three-look/dist",
+        "bundle": {
+          "jsFiles": 1,
+          "raw": 664383,
+          "gzip": 168942,
+          "brotli": 138483
+        }
+      }
+    }
+  },
+  "aura-hello": {
+    "wallMs": 45935,
+    "stats": {
+      "width": 1280,
+      "height": 720,
+      "mean": 211.1389782665659,
+      "std": 27.37181725101452
+    },
+    "gl": {
+      "firstDrawMs": 4980.700000000012,
+      "framesIn5s": 4,
+      "drawsIn5s": 300
+    },
+    "extra": null,
+    "failedRequests": [],
+    "console": [
+      "[warning] [.WebGL-0x1c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[warning] [.WebGL-0x1c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[warning] [.WebGL-0x1c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+      "[warning] [.WebGL-0x1c400102400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    ]
+  },
+  "aura-cube": {
+    "wallMs": 9210,
+    "stats": {
+      "width": 640,
+      "height": 360,
+      "mean": 13.435426568509257,
+      "std": 10.161430639746035
+    },
+    "gl": {
+      "firstDrawMs": 2719.8000000000175,
+      "framesIn5s": 293,
+      "drawsIn5s": 0
+    },
+    "extra": {
+      "ready": true,
+      "firstFrameMs": 2934,
+      "mean": 12.759226736068344,
+      "std": 10.317339136303925
+    },
+    "failedRequests": [],
+    "console": []
+  },
+  "three-minimal": {
+    "wallMs": 33096,
+    "stats": {
+      "width": 1280,
+      "height": 720,
+      "mean": 66.80813982196197,
+      "std": 42.125224259589515
+    },
+    "gl": {
+      "firstDrawMs": 310.29999999998836,
+      "framesIn5s": 7,
+      "drawsIn5s": 154
+    },
+    "extra": null,
+    "failedRequests": [],
+    "console": []
+  },
+  "three-look": {
+    "wallMs": 54506,
+    "stats": {
+      "width": 1280,
+      "height": 720,
+      "mean": 45.51116841994875,
+      "std": 56.33170270143263
+    },
+    "gl": {
+      "firstDrawMs": 734.9000000000233,
+      "framesIn5s": 3,
+      "drawsIn5s": 189
+    },
+    "extra": null,
+    "failedRequests": [],
+    "console": []
+  }
+}

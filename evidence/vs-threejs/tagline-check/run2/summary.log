@@ -1,0 +1,18 @@
+TAGLINE_BUILD aura-hello: build=true lines={"src/main.ts":{"physical":7,"code":6},"src/aura-assets.ts (generated)":{"physical":17,"code":16},"vite.config.ts (scaffold)":{"physical":7,"code":3}} js=4093042
+TAGLINE_BUILD aura-template-stock: build=true lines={"src/main.ts":{"physical":99,"code":81}} js=4094201
+TAGLINE_BUILD aura-hero-floor: build=true lines={"src/main.ts":{"physical":12,"code":11}} js=4093268
+TAGLINE_BUILD aura-hero-no-appoptions: build=true lines={"src/main.ts":{"physical":10,"code":9}} js=4093142
+TAGLINE_BUILD aura-hero: build=true lines={"src/main.ts":{"physical":11,"code":10}} js=4093177
+TAGLINE_BUILD aura-cube: build=true lines={"src/scene.ts":{"physical":19,"code":18}} js=4094618
+TAGLINE_BUILD three-minimal: build=true lines={"src/main.ts":{"physical":43,"code":38}} js=612843
+TAGLINE_BUILD three-look: build=true lines={"src/main.ts":{"physical":61,"code":55}} js=664383
+TAGLINE_RENDER aura-hello: mean=211.1 std=27.4 draws5s=225 frames5s=3 failed=0 console=4
+TAGLINE_RENDER aura-template-stock: mean=132.4 std=84.4 draws5s=240 frames5s=3 failed=0 console=0
+TAGLINE_RENDER aura-hero-floor: mean=114.3 std=78.2 draws5s=152 frames5s=2 failed=0 console=0
+TAGLINE_RENDER aura-hero-no-appoptions: mean=205.5 std=36.3 draws5s=300 frames5s=4 failed=0 console=0
+TAGLINE_RENDER aura-hero: mean=205.5 std=36.3 draws5s=300 frames5s=4 failed=0 console=0
+TAGLINE_RENDER aura-cube: mean=13.4 std=10.2 draws5s=0 frames5s=292 failed=0 console=0
+TAGLINE_RENDER three-minimal: mean=66.8 std=42.1 draws5s=176 frames5s=8 failed=0 console=0
+TAGLINE_RENDER three-look: mean=45.5 std=56.3 draws5s=252 frames5s=4 failed=0 console=0
+  1 passed (9.0m)
+[task-run] PLAYWRIGHT_EXIT=0
