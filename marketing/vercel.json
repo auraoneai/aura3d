@@ -2,6 +2,18 @@
   "buildCommand": "pnpm --dir marketing build",
   "outputDirectory": "marketing/dist",
   "redirects": [
+    { "source": "/apps/showcase-roadster-rush-v2", "destination": "/apps/showcase-roadster-rush/", "permanent": true },
+    { "source": "/apps/showcase-roadster-rush-v2/", "destination": "/apps/showcase-roadster-rush/", "permanent": true },
+    { "source": "/apps/showcase-roadster-rush-v2/:path*", "destination": "/apps/showcase-roadster-rush/", "permanent": true },
+    { "source": "/apps/showcase-heatsink-v2", "destination": "/apps/showcase-heatsink/", "permanent": true },
+    { "source": "/apps/showcase-heatsink-v2/", "destination": "/apps/showcase-heatsink/", "permanent": true },
+    { "source": "/apps/showcase-heatsink-v2/:path*", "destination": "/apps/showcase-heatsink/", "permanent": true },
+    { "source": "/apps/showcase-teleoperator-v2", "destination": "/apps/showcase-teleoperator/", "permanent": true },
+    { "source": "/apps/showcase-teleoperator-v2/", "destination": "/apps/showcase-teleoperator/", "permanent": true },
+    { "source": "/apps/showcase-teleoperator-v2/:path*", "destination": "/apps/showcase-teleoperator/", "permanent": true },
+    { "source": "/apps/showcase-top-tennis-v2", "destination": "/apps/showcase-top-tennis/", "permanent": true },
+    { "source": "/apps/showcase-top-tennis-v2/", "destination": "/apps/showcase-top-tennis/", "permanent": true },
+    { "source": "/apps/showcase-top-tennis-v2/:path*", "destination": "/apps/showcase-top-tennis/", "permanent": true },
     {
       "source": "/docs/index.html",
       "destination": "/",

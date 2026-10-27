@@ -59,9 +59,6 @@ const showcaseRoutes = [
   "showcase-aura-diamond-3d",
   "showcase-aura-fc-3d",
   "showcase-aura-links-3d",
-  "showcase-roadster-rush-v2",
-  "showcase-heatsink-v2",
-  "showcase-teleoperator-v2",
   "showcase-bunker-zero",
   "showcase-slingshot-siege",
   "showcase-dot-dash-3d",
@@ -80,7 +77,6 @@ const showcaseRoutes = [
 ];
 
 const retiredPrototypeRoutes = [
-  "showcase-top-tennis-v2",
   "aura-clash-showcase",
   "showcase-blockfall-reactor",
   "showcase-turbo-ball",
