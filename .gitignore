@@ -282,6 +282,7 @@ release-artifacts/external-demos/
 # and CI must resolve them without running the generator first.
 !vite.aliases.generated.ts
 !tsconfig.paths.generated.ts
+!tools/bench-vs-threejs/**/assets.generated.ts
 
 # Shader compilation cache
 shader-cache/
@@ -459,6 +460,11 @@ evidence/look-reference-frames/
 !evidence/**/rework/**/*.png
 !evidence/live-*/**/*.jpg
 !evidence/live-*/**/*.png
+!evidence/**/dribble-fix/**/*.jpg
+!evidence/**/neck-fix/**/*.jpg
+!evidence/**/neck-fix/**/*.png
+!evidence/**/shoulder-fix/**/*.jpg
+!evidence/**/shoulder-fix/**/*.png
 
 # tools/site and tests/unit/site are source (the site/ rule above targets build output)
 !tools/site/
