@@ -1,7 +1,12 @@
 # @aura3d/cli
 
 Bring real 3D assets into a browser app without losing types, provenance, or
-shipping confidence.
+shipping confidence. Every model is typed, hashed and licensed: the CLI records
+its source, licence, author and sha256 in `aura.assets.json`, generates a typed
+`assets.<name>` key, and `check-deploy` statically checks the build output
+against that manifest (a static check of files, not a browser run), so a missing
+hashed asset or a stray file in `dist` fails before you ship. Add `--release`
+for licence and quality gates.
 
 `@aura3d/cli` is the Aura3D command center for GLB/glTF projects. It finds
 usable assets, copies local models into the right public path, records source
@@ -62,7 +67,7 @@ so the rest of the app still uses `model(assets.helmet)`.
 Meshy generation runs through the pinned official Meshy CLI. After a completed run is downloaded locally, admit a selected GLB through Aura3D:
 
 ```bash
-npx @aura3d/cli@4.0.1 assets import-meshy artifacts/meshy/arena-relic/ \
+npx @aura3d/cli@latest assets import-meshy artifacts/meshy/arena-relic/ \
   --name arenaRelic \
   --quality candidate \
   --role prop \
@@ -70,27 +75,27 @@ npx @aura3d/cli@4.0.1 assets import-meshy artifacts/meshy/arena-relic/ \
   --rights-evidence artifacts/meshy/arena-relic/rights.json
 ```
 
-The import reuses the normal Aura3D add, inspect, hash, manifest, and type-generation path and prints the generated `assets.arenaRelic` key plus the next validation steps. It records supplied rights evidence and generates typed `model(assets.arenaRelic)` keys for `@aura3d/engine@4.0.1`.
+The import reuses the normal Aura3D add, inspect, hash, manifest, and type-generation path and prints the generated `assets.arenaRelic` key plus the next validation steps. It records supplied rights evidence and generates typed `model(assets.arenaRelic)` keys for `@aura3d/engine`.
 
 See the [Meshy CLI guide](https://github.com/auraoneai/aura3d/blob/main/docs/meshy-cli.md).
 
 ## Command Shortlist
 
 ```bash
-npx @aura3d/cli@4.0.1 assets add ./model.glb --name model
-npx @aura3d/cli@4.0.1 assets search "studio robot" --json
-npx @aura3d/cli@4.0.1 assets resolve "studio robot" --name robot
-npx @aura3d/cli@4.0.1 assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
-npx @aura3d/cli@4.0.1 assets inspect ./model.glb --animation --humanoid
-npx @aura3d/cli@4.0.1 assets validate --source --release
-npx @aura3d/cli@4.0.1 assets validate-game --profile fighting-character --asset fighter
-npx @aura3d/cli@4.0.1 assets validate-animation --clips idle,walk,run
-npx @aura3d/cli@4.0.1 assets certify-game-geometry --asset track --category racing
-npx @aura3d/cli@4.0.1 assets bind-game-route-evidence --route my-race --category racing --assets car,track --screenshot tests/reports/route.png --geometry-report tests/reports/topology.json --composition-report tests/reports/composition.json --visual-review docs/visual-review.json
-npx @aura3d/cli@4.0.1 assets assemble-character --name hero --body heroBody --part hair=heroHair
-npx @aura3d/cli@4.0.1 migrate three ./src
-npx @aura3d/cli@4.0.1 check-deploy --dist dist
-npx @aura3d/cli@4.0.1 init --agent all
+npx @aura3d/cli@latest assets add ./model.glb --name model
+npx @aura3d/cli@latest assets search "studio robot" --json
+npx @aura3d/cli@latest assets resolve "studio robot" --name robot
+npx @aura3d/cli@latest assets import-meshy artifacts/meshy/arena-relic/ --name arenaRelic --quality candidate --role prop --profile prop --rights-evidence artifacts/meshy/arena-relic/rights.json
+npx @aura3d/cli@latest assets inspect ./model.glb --animation --humanoid
+npx @aura3d/cli@latest assets validate --source --release
+npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset fighter
+npx @aura3d/cli@latest assets validate-animation --clips idle,walk,run
+npx @aura3d/cli@latest assets certify-game-geometry --asset track --category racing
+npx @aura3d/cli@latest assets bind-game-route-evidence --route my-race --category racing --assets car,track --screenshot tests/reports/route.png --geometry-report tests/reports/topology.json --composition-report tests/reports/composition.json --visual-review docs/visual-review.json
+npx @aura3d/cli@latest assets assemble-character --name hero --body heroBody --part hair=heroHair
+npx @aura3d/cli@latest migrate three ./src
+npx @aura3d/cli@latest check-deploy --dist dist
+npx @aura3d/cli@latest init --agent all
 ```
 
 ## What It Writes

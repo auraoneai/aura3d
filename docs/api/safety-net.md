@@ -1,5 +1,7 @@
 # Runtime safety net (`@aura3d/debug`)
 
+> three.js does not detect a black frame or contain a throwing frame callback. `installSafetyNet` detects black frames and reloads one quality rung down to recover, and `createFrameErrorBoundary` (also in `@aura3d/debug`) keeps the loop running when a frame step throws. Both are opt-in.
+
 Real browsers and GPUs differ from the software renderers used in CI. A page can draw 123 calls and still present a black
 frame on one driver, and the only evidence is a screenshot from the player. The safety net is an **opt-in** module that makes
 those reports diagnosable and, where possible, self-correcting. It never runs unless you ask for it.

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { AURA3D_2_SPECIFIER_MIGRATIONS } from "../../../tools/migrate-2.0/index";
 
 const BASE_TAG = "v1.5.2";
-const MIGRATION = readFileSync("docs/migration/2.0.md", "utf8");
+const MIGRATION = readFileSync("docs/archive/docs/migration/2.0.md", "utf8");
 const MIGRATION_FLAT = MIGRATION.replace(/\s+/g, " ");
 const REMOVED_PRIVATE_PACKAGE = ["test", "utils"].join("-");
 
@@ -83,7 +83,7 @@ describe("Aura3D 2.0 version and package migration matrix", () => {
 
 describe("the 2.0 removal and retrieval record remains verifiable", () => {
   it("keeps the deletion retrieval command and complete original record", () => {
-    const removed = readFileSync("docs/architecture/2.0-removals.md", "utf8");
+    const removed = readFileSync("docs/archive/docs/architecture/2.0-removals.md", "utf8");
     expect(removed).toMatch(/git show <commit>\^:<path>/);
     expect(execFileSync("git", ["show", "c9d6044a^:QuickFixes.md"], { encoding: "utf8" }).length).toBeGreaterThan(1000);
   });

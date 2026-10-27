@@ -1,5 +1,7 @@
 # Audio synth kit (`@aura3d/audio`, also `@aura3d/engine/audio`)
 
+> three.js ships positional audio primitives and no game sound layer. This kit adds a procedural cue bank, a step sequencer and tone loops on the page's one audio context, with no samples or assets to load.
+
 Procedural sound cues with no samples and no assets. Games kept re-writing the same Web Audio synth (ten `audio.ts` files); this kit is that code, once.
 
 It sits on the page's single `AudioContextManager`, so the one-`AudioContext`-owner rule still holds: the kit never constructs a context itself.

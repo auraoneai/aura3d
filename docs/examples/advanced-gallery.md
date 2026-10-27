@@ -1,7 +1,5 @@
 # Advanced Examples Gallery
 
-Version: 4.0.0
-
 The advanced examples gallery is the current evidence surface for the showcase work that was previously tracked in the root execution PRD. The durable source lives in `apps/advanced-examples-gallery/`, `tools/advanced-gallery-*`, `tools/advanced-gallery-assets/`, and the ignored generated local evidence directory `tests/reports/advanced-examples-gallery/`.
 
 ## What Was Created

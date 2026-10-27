@@ -29,7 +29,7 @@ Measured with `docs/audit/scripts/{links,snippets,tokens}.mjs` (tokens: o200k_ba
 
 ## Not done, and why
 
-- 57 ARCHIVE-verdict files were left in place because a test, tool or generator reads them (for example `docs/architecture/2.0-removals.md`, `docs/migration/2.0.md`, the quality-rebuild evidence pages).
+- 57 ARCHIVE-verdict files were left in place because a test, tool or generator reads them (for example `docs/archive/docs/architecture/2.0-removals.md`, `docs/archive/docs/migration/2.0.md`, the quality-rebuild evidence pages).
 - `benchmark/context/**` (21 files) was kept: benchmark runners and tests read it.
 - `packages/create-aura3d/skills/**` and `packages/engine/README.md` (DELETE-GENERATED) were kept: they are generated and checked by `check.ts` and `sync-engine-readme.mjs`.
 - MERGE-INTO verdicts for `docs/agents/skills-examples/**` were not applied; one example was marked historical instead.

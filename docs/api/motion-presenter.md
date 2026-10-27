@@ -1,5 +1,7 @@
 # createFixedStepPresenter, createRecordBlend and runMotionGate: smooth on 120 and 144 Hz displays
 
+> With three.js you write the interpolation between simulation steps yourself. `createFixedStepPresenter` draws between the last two steps, and `runMotionGate` tests it at 60, 120 and 144 Hz. A game that draws the latest step instead has about half its frames unchanged at 120 and 144 Hz.
+
 `import { createFixedStepPresenter, createRecordBlend, runMotionGate } from "@aura3d/engine/game"` and `createFixedStepLoop` from `@aura3d/engine`.
 
 A 60 Hz fixed-step simulation shown on a 120 Hz display advances the drawn entity on every second frame (an unchanged frame, then a double jump), and an animation driven from it flips between clips. The fix is to draw between the last two simulation steps.

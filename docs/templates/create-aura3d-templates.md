@@ -1,5 +1,7 @@
 # create-aura3d templates
 
+> With three.js you set up the Vite project, asset handling and browser tests yourself. Each `create-aura3d` template starts from a working scene with typed assets, route-health checks and screenshot tests, and `create-aura3d` also writes `llms.txt` and the Aura3D skills into the project for coding agents.
+
 `create-aura3d` scaffolds Vite apps that use the public `@aura3d/engine` API, typed GLB/glTF assets, route health checks, screenshot contracts, and static deployment workflows.
 
 ## Starter templates

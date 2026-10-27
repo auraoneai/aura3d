@@ -37,44 +37,45 @@ npx create-aura3d@latest --help
 ## Why Use It
 
 - **You get an app, not a blank canvas.** Templates ship with Vite, source,
-  scripts, test files, and `@aura3d/engine@4.0.1` imports wired up.
+  scripts, test files, and `@aura3d/engine` imports wired up.
 - **Assets stay typed.** Generated projects use `src/aura-assets.ts` so scene
   code renders `model(assets.product)` instead of guessed URLs or string IDs.
-- **Complete 4.0.0 effects & looks built in.** Every scaffold has immediate access to the 28+ `effects.*` post-processing, atmospheric, volumetric, weather, and GPU/CPU particle builders (`effects.bloom`, `effects.ambientOcclusion`, `effects.contactShadows`, `effects.screenSpaceReflections`, `effects.depthOfField`, `effects.volumetricFog`, `effects.particles`, `effects.rain`, `effects.snow`) plus 8 `looks.preset` / `looks.appOptions` art-direction recipes and `game.feel` combat/arcade juice.
+- **Lighting, effects and looks built in.** Every scaffold can use the `effects.*` post-processing, atmosphere and weather builders (`effects.bloom`, `effects.ambientOcclusion`, `effects.contactShadows`, `effects.screenSpaceReflections`, `effects.depthOfField`, `effects.volumetricFog`, `effects.rain`, `effects.snow`) and the `looks.preset` / `looks.appOptions` art-direction recipes, which set light, shadow, fog, background and grade together.
+- **Built for AI coding agents.** Every new project includes `llms.txt`, the Aura3D agent skills and compiled recipes, so an agent starts from working code.
 - **AI output stays maintainable.** Coding agents can generate scenes while
   developers keep normal TypeScript, package scripts, and browser tests.
 - **Proof is part of the starter.** Route-health, screenshot, gameplay, composition, and deploy checks are included out of the box.
 - **Static deploys are first-class.** Build output is a browser app you can
   deploy like any Vite project.
 
-Aura3D `4.0.0` scaffolds pin the consolidated `@aura3d/engine@4.0.1` dependency graph across all 24 active public packages (with all `< 4.0.0` versions and legacy compatibility packages deprecated in full on npm).
+Each scaffold pins the matching `@aura3d/engine` release in its `package.json`, so a new project starts on a consistent set of Aura3D packages.
 
 ## Add A Real Model
 
 Add a local GLB/glTF asset:
 
 ```bash
-npx @aura3d/cli@4.0.1 assets add ./assets/sneaker.glb --name sneaker
+npx @aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker
 ```
 
 Or resolve a catalog candidate or Meshy 3D PBR model:
 
 ```bash
-npx @aura3d/cli@4.0.1 assets search "battle-worn knight helmet"
-npx @aura3d/cli@4.0.1 assets resolve "battle-worn knight helmet" --name helmet
+npx @aura3d/cli@latest assets search "battle-worn knight helmet"
+npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
 ```
 
-Then render the generated typed reference with `4.0.0` studio lighting and effects:
+Then render the generated typed reference with studio lighting and effects:
 
 ```ts
-import { createAuraApp, effects, lights, looks, model, scene } from "@aura3d/engine";
+import { createAuraApp, effects, looks, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 createAuraApp("#app", {
-  ...looks.appOptions("studio-product"),
+  ...looks.appOptions("product-studio"),
   scene: scene()
+    .add(looks.preset("product-studio"))
     .add(model(assets.sneaker))
-    .add(lights.studio())
     .add(effects.bloom({ intensity: 0.24 }))
     .add(effects.ambientOcclusion({ intensity: 0.35, radius: 0.5 }))
     .add(effects.contactShadows({ opacity: 0.45, blur: 1.6 }))

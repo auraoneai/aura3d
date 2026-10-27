@@ -1,9 +1,7 @@
 # Aura3D Current State
 
-Version: 4.0.0
-
 Date: 2026-10-15
-Status: Aura3D 4.0.0 is the current release across the unified `@aura3d/engine` public surface and workspace packages.
+Status: Aura3D 4.3.5 is the current release across the unified `@aura3d/engine` public surface and workspace packages.
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
 and agent-readable documentation set for browser 3D apps. AI coding agents write
@@ -11,7 +9,7 @@ normal TypeScript or JavaScript against public `@aura3d/engine` APIs and use the
 Aura3D CLI to register typed assets.
 
 The current release is available at
-https://github.com/auraoneai/aura3d/releases/tag/v4.0.0. Claims remain scoped to
+https://github.com/auraoneai/aura3d/releases. Claims remain scoped to
 the public API and evidence described in this document.
 
 ## Current Public Root API Strengths
@@ -35,7 +33,7 @@ only `@aura3d/engine`, import generated typed assets, and pass browser evidence:
 - frame updates, app pause/resume/step, and deterministic runtime tests;
 - basic game input helpers and fighting-game helper surfaces where the APIs are
   exported from root `@aura3d/engine`;
-- unified `@aura3d/engine@4.0.0` root and subpath entries (`.`, `./game`,
+- unified `@aura3d/engine` root and subpath entries (`.`, `./game`,
   `./renderer`, `./devtools`, `./physics`, `./animation`, `./assets`) replacing
   the former `@aura3d/lean` package;
 - screenshots, diagnostics, deployment checks, and route-health style evidence

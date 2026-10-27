@@ -1,7 +1,5 @@
 # Getting Started
 
-Version: 4.0.0
-
 ## Install
 
 ```sh

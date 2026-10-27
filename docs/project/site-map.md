@@ -34,7 +34,6 @@ copy boundary and must not present prototypes as public release examples.
 - [Release process](release-process.md)
 - [Aura3D 4.0.0 release notes](../archive/docs/project/aura3d-400-release-notes.md)
 - [2.0 platform architecture](../archive/docs/architecture/2.0-platform.md)
-- [2.0 removals and retrieval](../architecture/2.0-removals.md)
 - [Aura3D Three.js comparison status](threejs-superiority-status.md)
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase/quality-gates.md)

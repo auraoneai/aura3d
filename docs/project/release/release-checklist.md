@@ -5,7 +5,7 @@ Version: 4.3.5
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
 Date: 2026-10-15
-Status: 4.0.0 release checklist. Retained for current and future releases.
+Status: release checklist. Retained for current and future releases.
 
 Use this checklist before publishing packages, docs, hosted demos, showcase
 routes, benchmark claims, or marketing copy. Checked items have current retained

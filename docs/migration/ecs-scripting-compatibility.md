@@ -30,5 +30,4 @@ The symbol names are unchanged. Consumers must add the destination package to
 their manifest. Dedicated-package removal is not scheduled: it requires a
 separate external adapter, consumer migration, and deletion-safety proof.
 
-Run `pnpm migrate:2.0 ./src` from this repository checkout, or apply the five
-the 3.x→4.0 removal surface is tracked in `docs/migration-4.0.md`; 2.0 mappings live in `docs/migration/2.0.md`.
+The 3.x to 4.0 and 2.0 removal records are kept in the archived guides under `docs/archive/docs/`.

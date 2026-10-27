@@ -56,7 +56,6 @@ Members of each namespace (for example `effects.bloom`, `camera.orbit`, `ui.slid
 | `unsafeModelUrl`, `loadAsset`, `GLTFLoader` | Typed assets and `model(assets.name)`. `unsafeModelUrl` is banned in public examples |
 | `createDiagnosticsPanel`, `createEnvironment` | `app.diagnostics()`, `environments.*` |
 | `sky`, `water`, `weather`, `workflows` | Marked deprecated with no replacement at the root; check `root-exports.md` before teaching them |
-| `scatterInArea`, `scatterAlongPath`, `scatterTransforms`, `mergeStatic` | Marked deprecated at the root; see `docs/api/scatter-merge.md` for the current form |
 
 Do not import `three`, `three/examples/...`, `GLTFLoader`, renderer internals or `@aura3d/engine/production-runtime` internals to make a public example look better. If a feature needs internals, the right output is a library task or a roadmap item, not route-local workaround code.
 

@@ -1,5 +1,7 @@
 # CLI asset tools
 
+> three.js leaves GLB preparation to separate scripts. One `aura3d` CLI optimizes a GLB, merges animation clips onto a rig, admits Meshy output with a hash, and validates and repairs skins. The same CLI also types and checks your assets; see [`docs/agents/asset-workflow.md`](../agents/asset-workflow.md).
+
 Capability label: CLI asset pipeline (local files only; nothing here calls Meshy or handles a credential).
 
 Five additions to `@aura3d/cli` came out of porting eleven games with generated 3D assets. Each replaces a script the games had copied by hand. The step-by-step workflow that uses them (catalog, Meshy, optimise, isolated admission, rig and clips, production rules) is `docs/agents/asset-workflow.md`.

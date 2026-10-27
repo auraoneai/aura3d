@@ -1,6 +1,6 @@
 # Physics
 
-Version: 4.0.0
+> three.js ships no physics layer, so you pick a solver and sync it to your meshes yourself. In Aura3D `app.physics` is on the live app, from `@aura3d/engine` with no deep imports: bodies declared on scene nodes, impulses, trigger sensors, raycasts, collision layers and joints.
 
 Aura3D physics has two layers, and the distinction matters when you are deciding what to reach for:
 

@@ -324,7 +324,7 @@ A large release: eight reusable kits extracted from the eleven Crayon game ports
 - **Meshy art pass over the eleven Crayon ports** (about 4.2k credits at last count by the helper ledger, which undercounts rate-limited calls) and the look-spec extractor under `tools/crayon-capture/`.
 - **Apex Overdrive** (`showcase-roadster-rush` and `-v2`) runs on a native Aura3D simulation; the 1.1 MB third-party `engine.js` bundle is gone.
 - **The 15 index games** dropped their blanket post, compiler and fog pins and share a black-frame self-heal; every port page supports `?diag=1`. Strict live-port smoke specs, a hi-dpi spec and the port page generator were added.
-- Docs: `docs/whats-new-4.1.md`, `docs/migration/4.0-to-4.1.md`, `docs/workflows/game-conversion-playbook.md`, `docs/aura-slam/ARCHITECTURE.md`, and the topic pages under `docs/api/`.
+- Docs: `docs/archive/docs/whats-new-4.1.md`, `docs/archive/docs/migration/4.0-to-4.1.md`, `docs/workflows/game-conversion-playbook.md`, `docs/aura-slam/ARCHITECTURE.md`, and the topic pages under `docs/api/`.
 
 ### Verified vs not verified
 

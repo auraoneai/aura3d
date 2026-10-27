@@ -1360,7 +1360,7 @@ The owner clarified that "the previous 15 games" are the fifteen playable cards 
 
 #### Earlier text (2026-10-24), superseded by the lists above and kept as history
 
-**Release.** 4.1.0 (`v4.1.0`), 4.1.1 (`v4.1.1`) and 4.1.2 (`v4.1.2`) are published to npm (all 24 packages each, verified from a directory outside the repo) and production serves 4.1.2. **Deprecation window (done):** the ten deprecated subpaths (`@aura3d/engine/` `contracts`, `media-node`, `apps`, `rendering`, `rendering/production-runtime`, `rendering/webgpu`, `production-runtime`, `advanced-runtime`, `assets/browser`, `workflows/production`) now warn "removed in 5.0.0" (`packages/aura3d-cli/data/aura.exports.json`, `packages/engine/src/deprecated/*`, `docs/migration/4.0-to-4.1.md`); removing public subpaths in a minor release would break users. The owner can still override this.
+**Release.** 4.1.0 (`v4.1.0`), 4.1.1 (`v4.1.1`) and 4.1.2 (`v4.1.2`) are published to npm (all 24 packages each, verified from a directory outside the repo) and production serves 4.1.2. **Deprecation window (done):** the ten deprecated subpaths (`@aura3d/engine/` `contracts`, `media-node`, `apps`, `rendering`, `rendering/production-runtime`, `rendering/webgpu`, `production-runtime`, `advanced-runtime`, `assets/browser`, `workflows/production`) now warn "removed in 5.0.0" (`packages/aura3d-cli/data/aura.exports.json`, `packages/engine/src/deprecated/*`, `docs/archive/docs/migration/4.0-to-4.1.md`); removing public subpaths in a minor release would break users. The owner can still override this.
 
 **Generated docs.** `public-api.md`, `public-api-contract.md` and `public-surface-diff-2.0.md` were regenerated for 4.1.0, 4.1.1 and 4.1.2.
 

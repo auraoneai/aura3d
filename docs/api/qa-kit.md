@@ -1,5 +1,7 @@
 # QA and replay kit
 
+> With three.js you write the fixed-timestep loop, the seeded random stream and the test hooks yourself. Here `createFixedStepLoop`, `createCountedRng` and `installQaHooks` are exported from `@aura3d/engine`, so specs, capture tools and replays drive every game the same way.
+
 Public helpers (all exported from `@aura3d/engine`) that replace the hooks and fixed-timestep loops every game used to copy into its own `main.ts`. They exist so browser specs, capture tools and the live smoke can drive a game the same way everywhere, with no engine internals.
 
 | Export | Purpose |

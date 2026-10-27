@@ -2,7 +2,7 @@
 
 Version: 4.3.5
 
-Current release: Aura3D 4.0.0.
+Current release: Aura3D 4.3.5.
 
 ## Aura3D advantage
 

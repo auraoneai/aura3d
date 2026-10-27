@@ -1,10 +1,20 @@
 # Porting three.js code to Aura3D
 
+Version: 4.3.5
+
 Status: verified against `packages/aura3d-cli/src/migrate-three/mappings.ts` (245 rows: 21 exact, 174 approximate, 47 none, 3 pending) and against `tools/bench-vs-threejs` on current main, 2026-10-24.
 
-Aura3D is not a three.js drop-in. A port is a rewrite of the scene against `@aura3d/engine`, helped by a codemod that reports what maps and what does not. There is no compatibility shim package (`@aura3d/three-compat` was deleted in 4.0.0); do not import it.
+## What you get with Aura3D
 
-Read [`../aura3d-vs-threejs.md`](../aura3d-vs-threejs.md) first if you are deciding whether to port at all.
+- **Typed, hashed, licensed assets.** `model(assets.robot)` is a generated typed key; each model records source, licence, author and sha256, and in production an unverified model does not draw.
+- **Looks.** `looks.preset(id)` supplies HDRI lighting, a shadow-casting key light, grade and post effects in one call. A lit, framed, orbitable product is 10 lines ([evidence](../../evidence/vs-threejs/tagline-check/README.md)).
+- **A game kit.** HUD, touch, audio cues, a fixed-step loop, seeded replay, a safety net and smooth motion on 120 and 144 Hz displays.
+- **Agent docs.** `llms.txt`, 14 skills and compiled recipes are written into every new project.
+- **Deploy checks.** `aura3d check-deploy` fails the build on a missing hashed asset, unreferenced files and asset-validation errors; `--release` adds licence and quality gates.
+
+Aura3D is a standalone engine with its own renderer (`@aura3d/rendering`) and no `three` dependency. A port is a rewrite of the scene against `@aura3d/engine`, and the `aura3d migrate three` codemod is a helper for that rewrite: it reports what maps, what is approximate and what has no equivalent. It is not a compatibility layer, and there is no shim package, so do not import `@aura3d/three-compat`.
+
+See [why teams port](../aura3d-vs-threejs.md) for the evidence behind the list above.
 
 ## 1. The fast path (about 10 minutes for a small scene)
 
@@ -41,7 +51,7 @@ Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in
 | 6 | `Group` / `Object3D` | `group(...)` | approximate | Children move into the group |
 | 7 | `BoxGeometry` | `primitives.box({ size: [w, h, d] })` | approximate | Segment counts live in `params` |
 | 8 | `SphereGeometry` | `primitives.sphere` | approximate | Aura spheres are unit diameter: radius maps to `size: r * 2` |
-| 9 | `PlaneGeometry` | `primitives.plane` | approximate | three's plane faces +Z; Aura's lies in XZ. Segment params are not honoured for displacement in 4.1.2: build a grid with `geometry.dynamic` |
+| 9 | `PlaneGeometry` | `primitives.plane` | approximate | three's plane faces +Z; Aura's lies in XZ. For vertex displacement, build the grid with `geometry.dynamic` |
 | 10 | `CylinderGeometry` | `primitives.cylinder` | approximate | Unit cylinder; radii and height map through `size` |
 | 11 | `BufferGeometry` / attributes | `geometry.dynamic(spec)` | approximate | Typed-array attributes and indices |
 | 12 | `MeshStandardMaterial` | `material.pbr(...)` | approximate | |
@@ -114,7 +124,7 @@ const app = createAuraApp(canvas, {
 });
 ```
 
-Caveats: one author wrote both sides, knowing three.js far better. The numbers come from `evidence/vs-threejs/RESULTS.md` (software WebGL2). The frames are not identical: mean luma was 55.0 in three.js and 89.3 in Aura3D at frame 25, so a port needs exposure tuning. Do not quote the line counts as a general "less code" claim; see the comparison page for the scenes where Aura3D was not shorter.
+Small print: Aura3D benchmark, five scenes; one author wrote both sides. The numbers come from `evidence/vs-threejs/RESULTS.md` (software WebGL2). The frames are not identical: mean luma was 55.0 in three.js and 89.3 in Aura3D at frame 25, so a port needs exposure tuning. When you quote the line counts, keep the qualifier "Aura3D benchmark, five scenes".
 
 ## 6. Stop conditions
 

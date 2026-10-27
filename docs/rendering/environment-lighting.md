@@ -1,7 +1,5 @@
 # Renderer Environment Lighting
 
-Version: 4.0.0
-
 Environment lighting is implemented through renderer environment resources, environment presets, and fixture manifests.
 
 For the current Three.js lighting, shadow, PMREM, HDR, tone/color, CSM, and

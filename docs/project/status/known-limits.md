@@ -1,7 +1,5 @@
 # Aura3D Known Limits
 
-Version: 4.0.0
-
 Date: 2026-10-15
 Status: canonical limitations doc
 
@@ -9,9 +7,9 @@ This file is the public limitations source for project docs, release copy, and
 showcase review. If a guide or README makes a claim narrowed by this file, the
 guide or README must include the narrower wording.
 
-## 4.0.0 limits
+## Release limits
 
-Aura3D 4.0.0 is the current release. Capability claims remain limited to the named public
+Aura3D 4.3.5 is the current release. Capability claims remain limited to the named public
 API, packages, routes, and retained evidence. The project does not claim a
 universal replacement for Three.js, Unity, or Unreal, and route-specific visual
 approval does not transfer automatically to other examples.

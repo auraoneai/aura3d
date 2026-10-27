@@ -2,7 +2,7 @@
 
 4.1 is a large release. It came out of porting eleven browser games onto the public engine surface, fixing what that exposed, and moving the code every game had copied into the library. Most of it is additive. A short list of behaviour changes is in [`docs/migration/4.0-to-4.1.md`](migration/4.0-to-4.1.md); read it before upgrading a shipped route.
 
-Each section below has a short example. The API names and options were checked against the source; the per-topic pages under [`docs/api/`](api/readme.md) have the full reference.
+Each section below has a short example. The API names and options were checked against the source; the per-topic pages under [`docs/api/`](../../api/readme.md) have the full reference.
 
 - [Game kit](#game-kit-aura3denginegame)
 - [QA and replay hooks](#qa-and-replay-hooks)
@@ -35,7 +35,7 @@ game.start();
 await game.ready();
 ```
 
-`createGame` from the root `@aura3d/engine` is still the headless stub; it now logs `CREATE_GAME_STUB` once and points you to the subpath. To opt out of the real kit use `?a3d-qr=-game`, `A3D_QR_GAME=0`, or `qualityRebuild: { flags: ["-game"] }` / `"none"`. Reference: [`docs/api/game-kit.md`](api/game-kit.md).
+`createGame` from the root `@aura3d/engine` is still the headless stub; it now logs `CREATE_GAME_STUB` once and points you to the subpath. To opt out of the real kit use `?a3d-qr=-game`, `A3D_QR_GAME=0`, or `qualityRebuild: { flags: ["-game"] }` / `"none"`. Reference: [`docs/api/game-kit.md`](../../api/game-kit.md).
 
 ## QA and replay hooks
 
@@ -72,7 +72,7 @@ const qa = installQaHooks("my-game", {         // window.__AURA_MY_GAME__
 loop.start();
 ```
 
-A spec then drives `window.__AURA_MY_GAME__.stepFrames(120)` and compares `state()` with a recorded reference. The first error is kept in `window.__AURA_MY_GAME_ERROR__` through `qa.reportError(error)`. Reference: [`docs/api/qa-kit.md`](api/qa-kit.md).
+A spec then drives `window.__AURA_MY_GAME__.stepFrames(120)` and compares `state()` with a recorded reference. The first error is kept in `window.__AURA_MY_GAME_ERROR__` through `qa.reportError(error)`. Reference: [`docs/api/qa-kit.md`](../../api/qa-kit.md).
 
 ## Safety net and diagnostics
 
@@ -88,7 +88,7 @@ const { post, shadow, env, quality } = net.switches; // read before building the
 net.sample(framesDrawn);
 ```
 
-Nothing runs unless `safety` is `true` or a settings object. The ladder rungs are `no-aa`, `no-post`, `aces-tone`, `no-env`, `no-shadow` and `low-quality`; the reload logs `SAFETY_BLACK_FRAME`, and the next load logs `SAFETY_COMPAT_MODE` with the rung in force. A URL parameter you set always wins over a rung. Reference: [`docs/api/safety-net.md`](api/safety-net.md).
+Nothing runs unless `safety` is `true` or a settings object. The ladder rungs are `no-aa`, `no-post`, `aces-tone`, `no-env`, `no-shadow` and `low-quality`; the reload logs `SAFETY_BLACK_FRAME`, and the next load logs `SAFETY_COMPAT_MODE` with the rung in force. A URL parameter you set always wins over a rung. Reference: [`docs/api/safety-net.md`](../../api/safety-net.md).
 
 ## Procedural audio (`@aura3d/audio`)
 
@@ -129,7 +129,7 @@ slices.preload();
 slices.play("hit", { gain: 0.6, pan: -0.2, lowpass: 4400 });
 ```
 
-`play()` returns `false` instead of throwing when the bank is locked, muted, cooling down or over budget. A slice never repeats the previous take of the same sprite. Reference: [`docs/api/audio-synth.md`](api/audio-synth.md).
+`play()` returns `false` instead of throwing when the bank is locked, muted, cooling down or over budget. A slice never repeats the previous take of the same sprite. Reference: [`docs/api/audio-synth.md`](../../api/audio-synth.md).
 
 ## Production model loader
 
@@ -154,7 +154,7 @@ scene({
 });
 ```
 
-With `?models=0` in the URL (or `enabled: false`) `assets.node` returns the fallback you passed, or a hidden model when you passed none. A bad `sha256` or a cross-origin URL without a `sourcePath` under `public/aura-assets/` throws `invalid-model-assets` naming the entry. `assets.refs.<id>` works with `model(...)`, `instances.model(...)` and `cloneSkinned(...)`. `modelsEnabledFromUrl(param?, href?)` is exported for code that needs the same rule. Reference: [`docs/api/model-loader.md`](api/model-loader.md).
+With `?models=0` in the URL (or `enabled: false`) `assets.node` returns the fallback you passed, or a hidden model when you passed none. A bad `sha256` or a cross-origin URL without a `sourcePath` under `public/aura-assets/` throws `invalid-model-assets` naming the entry. `assets.refs.<id>` works with `model(...)`, `instances.model(...)` and `cloneSkinned(...)`. `modelsEnabledFromUrl(param?, href?)` is exported for code that needs the same rule. Reference: [`docs/api/model-loader.md`](../../api/model-loader.md).
 
 ## GLSL chunk library for `material.custom`
 
@@ -177,7 +177,7 @@ void main() {
 });
 ```
 
-A material's own `patch` and chunks registered with `registerShaderChunk` still override these. The chunks are GLSL only, so a material that includes them has no WGSL twin and runs on the default WebGL2 backend. Reference: [`docs/api/glsl-chunks.md`](api/glsl-chunks.md).
+A material's own `patch` and chunks registered with `registerShaderChunk` still override these. The chunks are GLSL only, so a material that includes them has no WGSL twin and runs on the default WebGL2 backend. Reference: [`docs/api/glsl-chunks.md`](../../api/glsl-chunks.md).
 
 ## Scatter and static merge
 
@@ -197,7 +197,7 @@ const village = mergeStatic([
 ]); // undefined when the list is empty
 ```
 
-The same seed gives the same layout on every machine, and adding an exclusion zone never moves the placements that survive. An empty list is valid everywhere. Reference: [`docs/api/scatter-merge.md`](api/scatter-merge.md).
+The same seed gives the same layout on every machine, and adding an exclusion zone never moves the placements that survive. An empty list is valid everywhere. Reference: [`docs/api/scatter-merge.md`](../../api/scatter-merge.md).
 
 ## Racket-sport kit
 
@@ -223,7 +223,7 @@ state = result.state;
 rules.label(state.points[0], state.points[1]); // "0" / "15" / "30" / "40" / "AD"
 ```
 
-`ballFlight` is exact event-time flight (closed-form under gravity and drag, bounce, net and board events, a shot solver and a serve solver) and does not depend on frame rate; the older `stepBallPhysics` stays as the simple model. `scoring` is a game, tiebreak and match state machine whose rules (`pointsToGame`, `winBy`, `gamesToMatch`, `matchWinBy`, `tiebreak`) you can change. `athleteRig` has `locomotion()` (stride, split step, slide, planted stance) and `applyLimbs()` (leg, two-bone arm IK and racket posing). The tennis physics replays the original game to 1e-12, and the scoring matches the original over 2,000 seeded matches. References: [`ball-flight.md`](api/ball-flight.md) and [`racket-athlete-rig.md`](api/racket-athlete-rig.md); scoring is described in the CHANGELOG entry for this release.
+`ballFlight` is exact event-time flight (closed-form under gravity and drag, bounce, net and board events, a shot solver and a serve solver) and does not depend on frame rate; the older `stepBallPhysics` stays as the simple model. `scoring` is a game, tiebreak and match state machine whose rules (`pointsToGame`, `winBy`, `gamesToMatch`, `matchWinBy`, `tiebreak`) you can change. `athleteRig` has `locomotion()` (stride, split step, slide, planted stance) and `applyLimbs()` (leg, two-bone arm IK and racket posing). The tennis physics replays the original game to 1e-12, and the scoring matches the original over 2,000 seeded matches. References: [`ball-flight.md`](../../api/ball-flight.md) and [`racket-athlete-rig.md`](../../api/racket-athlete-rig.md); scoring is described in the CHANGELOG entry for this release.
 
 ## CLI asset tools
 
@@ -234,7 +234,7 @@ rules.label(state.points[0], state.points[1]); // "0" / "15" / "30" / "40" / "AD
 | `aura3d assets import-meshy <dir> --into <assets-dir> --prefix <game> --name <role>` | Isolated admission in a temporary project; shared manifest files are never touched. |
 | `aura3d meshy ledger status\|reserve\|settle\|reconcile\|list` | Credit ledger with per-game and global caps under a lock. |
 
-Inside the Aura3D monorepo, `import-meshy` now runs isolated by default (`--shared-manifest` opts out), because several agents or games writing `aura.assets.json` and `src/aura-assets.ts` at once is a race. The ledger keeps a rate-limited or timed-out call as `unconfirmed` and keeps counting it, because the task usually finishes and is charged. These tools call no Meshy API and handle no credential. Reference: [`docs/api/cli-asset-tools.md`](api/cli-asset-tools.md).
+Inside the Aura3D monorepo, `import-meshy` now runs isolated by default (`--shared-manifest` opts out), because several agents or games writing `aura.assets.json` and `src/aura-assets.ts` at once is a race. The ledger keeps a rate-limited or timed-out call as `unconfirmed` and keeps counting it, because the task usually finishes and is charged. These tools call no Meshy API and handle no credential. Reference: [`docs/api/cli-asset-tools.md`](../../api/cli-asset-tools.md).
 
 ## Engine fixes you will notice
 

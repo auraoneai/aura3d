@@ -1,5 +1,7 @@
 # Production model loader (`defineModelAssets`)
 
+> three.js loads whatever path string you give it. `defineModelAssets` gives each model a typed ref, a `sha256` and a license string, and fails at definition time on a bad hash or URL. In production, a model the bridge cannot trust does not draw.
+
 Every game that ships GLBs used to hand-write the same module: a same-origin URL, a `sha256`, a license string, a manifest object and an `?models=0` switch for a procedural fallback. The production bridge silently drops any model it cannot trust, so a wrong hash or URL drew nothing. `defineModelAssets` does that work once and fails at definition time.
 
 ```ts

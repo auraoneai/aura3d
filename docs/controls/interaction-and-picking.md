@@ -1,8 +1,6 @@
 # Controls, Interaction, And Picking
 
-Version: 4.0.0
-
-Current release: Aura3D 4.0.0. Historical measurements remain labeled by their recorded version and scope.
+Historical measurements remain labeled by their recorded version and scope.
 
 `@aura3d/controls` owns camera controls, transform controls, selection, picking helpers, annotation picking, and interaction-mode adapters. The package is exported from `@aura3d/engine/controls`.
 

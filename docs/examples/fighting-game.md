@@ -1,8 +1,8 @@
 # Fighting Game Example
 
-Version: 4.0.0
+Version: 4.3.5
 
-This example shows the Aura3D 4.0.0 game runtime path for a small 2.5D fighting-game slice.
+This example shows the Aura3D game runtime path for a small 2.5D fighting-game slice.
 
 Use the template when starting a real app:
 

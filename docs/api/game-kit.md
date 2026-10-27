@@ -1,5 +1,7 @@
 # Game kit: `@aura3d/engine/game`
 
+> three.js has no HUD, touch, session or game-sound layer. This page covers all of them, plus pause and results and camera juice, in one import with nothing extra to install.
+
 The game kit is the full game shell for Aura3D routes: lifecycle, pause and results, a DOM HUD, touch controls, juice (camera punch, flash, hit-stop, rumble, particles), game sound and a sound-effect pack. It ships inside the `@aura3d/engine` package as the `./game` subpath. There is no separate package to install.
 
 ```ts

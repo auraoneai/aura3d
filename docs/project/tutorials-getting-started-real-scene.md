@@ -1,7 +1,5 @@
 # Getting Started: Render A Real Scene
 
-Version: 4.0.0
-
 This tutorial uses the current asset and renderer APIs with a local GLB fixture.
 
 ## Run The Route Registry

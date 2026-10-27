@@ -23,13 +23,13 @@ interface PackageSurface {
 }
 
 const migrationText = [
-  readFileSync("docs/migration/2.0.md", "utf8"),
-  readFileSync("docs/migration/physics-rapier-2.0.md", "utf8"),
-  readFileSync("docs/migration/navigation-recast-2.0.md", "utf8"),
+  readFileSync("docs/archive/docs/migration/2.0.md", "utf8"),
+  readFileSync("docs/archive/docs/migration/physics-rapier-2.0.md", "utf8"),
+  readFileSync("docs/archive/docs/migration/navigation-recast-2.0.md", "utf8"),
   readFileSync("docs/migration/ecs-scripting-compatibility.md", "utf8"),
   // 4.0.0 removal record (PRD-15 T8.1): 22 removed subpaths, the lean package,
   // the AdvancedRenderer alias, and the CCR-15-1 mode types.
-  readFileSync("docs/migration-4.0.md", "utf8"),
+  readFileSync("docs/archive/docs/migration-4.0.md", "utf8"),
   // 4.2.0: the hosted asset index and its adapter/store/refresh exports were retired.
   readFileSync("docs/migration/4.2.0.md", "utf8")
 ].join("\n");
@@ -381,7 +381,7 @@ function classifyRemoval(scope: string, name: string): string {
     return "documented-prd04-p4-transmission-pass-moved-to-test-oracles";
   }
   // T8.1: the AdvancedRenderer alias (and its options type) removed at 4.0.0;
-  // `Renderer` is the canonical name (docs/migration-4.0.md).
+  // `Renderer` is the canonical name (docs/archive/docs/migration-4.0.md).
   if (/^AdvancedRenderer(?:Options)?$/.test(name)) return "documented-4.0-advanced-renderer-alias-removed-use-renderer";
   // PRD-15 §6 (T6.2/T6.5/T6.6): the three packages are deleted outright — their
   // real surfaces moved into engine devtools barrels and the aura3d CLI codemod.
@@ -416,7 +416,7 @@ try {
   // PRD-15 §6.1: "." is the curated surface; names removed from it must remain
   // importable on deprecated subpath stubs until their documented removeIn.
   // The pre-4.0 `./engine` / `./engine-runtime` stubs were removed at 4.0.0
-  // (docs/migration-4.0.md); the current deprecated surface is the set of
+  // (docs/archive/docs/migration-4.0.md); the current deprecated surface is the set of
   // subpaths generated from src/deprecated/. A "." removal that still resolves
   // on one is the documented collapse; anything else stays unclassified and
   // fails.
@@ -445,7 +445,7 @@ try {
   }
   // Names that were importable on the baseline `./engine` / `./engine-runtime`
   // deprecated stubs — the §6.1 retention path the 4.0.0 stub removal deleted
-  // (docs/migration-4.0.md removed-subpath table).
+  // (docs/archive/docs/migration-4.0.md removed-subpath table).
   const baselineEngineStubSymbols = new Set((before.find((pkg) => pkg.name === "@aura3d/engine")?.exports ?? [])
     .filter((entry) => entry.subpath === "./engine" || entry.subpath === "./engine-runtime")
     .flatMap((entry) => entry.symbols.map((symbol) => symbol.name)));

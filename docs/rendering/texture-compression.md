@@ -8,8 +8,6 @@
   itself — ordered KTX2/transcoding proof lives in the decoder reports
   cited under Current Behavior, not here.
 
-Version: 4.0.0
-
 Texture compression support is split between asset decoding/transcoding and renderer texture submission.
 
 ## Current Code

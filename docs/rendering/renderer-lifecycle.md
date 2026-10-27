@@ -1,7 +1,5 @@
 # Renderer Lifecycle
 
-Version: 4.0.0
-
 Renderer lifecycle behavior is implemented by renderer/device classes, explicit disposal paths, and resource accounting tests.
 
 ## Current Code

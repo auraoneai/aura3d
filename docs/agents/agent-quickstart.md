@@ -1,5 +1,9 @@
 # Agent quickstart: zero to a rendering Aura3D scene
 
+**Why Aura3D.** A lit, framed, orbitable product is 10 lines of TypeScript ([tagline check](../../evidence/vs-threejs/tagline-check/)), and `model(assets.x)` is a typed reference to a hashed, licensed model.
+HUD, touch, audio, a fixed-step loop and a safety net ship in the same install, so a game needs no extra libraries.
+The `llms.txt`, skills and recipes in this project are written for coding agents, which is why the rules below are short.
+
 Aura3D is a TypeScript engine API (`@aura3d/engine`), an asset CLI (`@aura3d/cli`), templates (`create-aura3d`) and a deploy checker. You write declarative scene source; `createAuraApp` owns the renderer, camera, frame loop and resize. Do not import `three`, write a loader or add a render loop.
 
 Read first: this page, then [`recipes.md`](recipes.md) (a complete scene for the common tasks: copy it, then adapt) and `docs/agents/claims-and-boundaries.md`. Everything below was compiled against the engine types (`tsc`, strict).
