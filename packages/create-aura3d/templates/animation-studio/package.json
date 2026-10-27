@@ -16,15 +16,15 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
-    "@aura3d/animation": "4.3.4",
-    "@aura3d/assets": "4.3.4",
-    "@aura3d/engine": "4.3.4",
+    "@aura3d/animation": "4.3.5",
+    "@aura3d/assets": "4.3.5",
+    "@aura3d/engine": "4.3.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "@aura3d/cli": "4.3.4",
+    "@aura3d/cli": "4.3.5",
     "@playwright/test": "1.59.1",
     "@types/node": "^24.0.0",
     "@types/react": "^18.3.31",

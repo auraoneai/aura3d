@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-serpentine-sky-run-port",
-  "version": "4.3.4",
+  "version": "4.3.5",
   "private": true,
   "type": "module",
   "description": "Endless runner on a winding sky road: eight stages with boost rungs, roll sections and traffic hazards (outbound run).",

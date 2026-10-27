@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-slingshot-siege",
-  "version": "4.3.4",
+  "version": "4.3.5",
   "private": true,
   "type": "module",
   "description": "Aura3D Slingshot Siege prototype: Angry Birds-style 3D physics destruction showcase over the public Rapier runtime - five ammo abilities, six chapters, thirty levels.",

@@ -1,6 +1,6 @@
 # Release Process
 
-Version: 4.3.4
+Version: 4.3.5
 
 Current release: Aura3D 4.0.0.
 
@@ -45,7 +45,7 @@ node tools/release/publish-all.mjs --pack-only
 node tools/release/consumer-build-smoke.mjs
 ```
 
-Site deploys have two asset gates. `pnpm verify:asset-urls` runs at the end of the marketing build (it is part of `marketing/package.json` `build`, so Vercel fails the deploy) and checks that every asset URL a live game references exists in `marketing/dist` with the same size. After the deploy run `node tools/verify-asset-urls/index.mjs --base https://aura3d.auraone.ai` to HEAD every referenced URL on production (status, content type, size). 4.3.0 and 4.3.4 shipped four 404ing Teleoperator building models and a black 3D canvas because neither check existed (lessons-learned B9).
+Site deploys have two asset gates. `pnpm verify:asset-urls` runs at the end of the marketing build (it is part of `marketing/package.json` `build`, so Vercel fails the deploy) and checks that every asset URL a live game references exists in `marketing/dist` with the same size. After the deploy run `node tools/verify-asset-urls/index.mjs --base https://aura3d.auraone.ai` to HEAD every referenced URL on production (status, content type, size). 4.3.0 and 4.3.5 shipped four 404ing Teleoperator building models and a black 3D canvas because neither check existed (lessons-learned B9).
 
 `consumer-build-smoke.mjs` is a required gate: it installs the packed tarballs into a temp project outside the
 repository and runs a stock `vite build` and `vite dev` for the `mini-game`, `racing-starter`,

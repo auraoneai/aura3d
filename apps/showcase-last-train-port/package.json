@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-last-train-port",
-  "version": "4.3.4",
+  "version": "4.3.5",
   "private": true,
   "type": "module",
   "description": "Tram-driving loop with day and night, passengers, fares and tips: balance the lean and keep every rider happy.",

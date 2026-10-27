@@ -1,10 +1,10 @@
-# Aura3D 4.3.4 Public-Surface Diff
+# Aura3D 4.3.5 Public-Surface Diff
 
 Generated from `v1.5.2` and the current source tree. This audit covers every non-private package manifest, export subpath, recursively re-exported runtime/type symbol, CLI binary/command detected in source, and scaffold template name.
 
 - Baseline packages: **26**; current packages: **24**
 - Baseline export subpaths: **68**; current export subpaths: **74**
-- Baseline symbols: **13007**; current symbols: **12992**
+- Baseline symbols: **13007**; current symbols: **12998**
 - Classified removals: **2129**; unclassified removals: **0**
 - Incompatible retained-symbol declaration changes: **0**
 - Compatible retained-symbol declaration additions: **0**
