@@ -14,6 +14,13 @@
  *
  * Run from the repo root:
  *   node marketing/scripts/generate-og.mjs
+ *   node marketing/scripts/generate-og.mjs --html-only
+ *
+ * --html-only writes og-composite.html and exits before any browser is
+ * launched (pure node). The PNGs are then rasterized remotely by
+ * tests/browser/og-render.spec.ts (tools/remote-acr/run.sh), which loads that
+ * HTML at 1200x630, deviceScaleFactor 1, and applies the same compressPng
+ * settings.
  *
  * Renderer: Playwright Chromium with a bundled -> Chrome channel -> cached build
  * fallback chain. All fonts and the screenshot are inlined as data URIs so the
@@ -35,7 +42,6 @@ import { fileURLToPath } from "node:url";
 import os from "node:os";
 
 const require = createRequire(import.meta.url);
-const { chromium } = require("playwright");
 const sharp = require("sharp");
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -151,7 +157,7 @@ html, body {
 h1 {
   margin-top: 16px;
   font-family: "Graphik Web", sans-serif; font-weight: 600; color: ${INK};
-  font-size: 52px; line-height: 1.05; letter-spacing: -0.029em;
+  font-size: 46px; line-height: 1.08; letter-spacing: -0.028em;
   white-space: nowrap;
 }
 h1 .accent { color: ${TEAL}; }
@@ -163,7 +169,7 @@ h1 .accent { color: ${TEAL}; }
   box-shadow: 0 12px 26px rgba(26,30,38,0.16), inset 0 1px 0 rgba(251,251,248,0.07);
 }
 .install .cmd {
-  font-family: "TT Commons Pro Mono", monospace; font-size: 15px; line-height: 1;
+  font-family: "TT Commons Pro Mono", monospace; font-size: 11.5px; line-height: 1;
   color: ${BG}; white-space: pre;
 }
 .install .dollar { color: #5ec9a4; }
@@ -274,11 +280,10 @@ h1 .accent { color: ${TEAL}; }
 
     <div class="eyebrow">TypeScript 3D engine</div>
 
-    <h1>Ship a 3D scene<br>in <span class="accent">18 lines</span> of<br>TypeScript.</h1>
+    <h1>A lit 3D product<br>in <span class="accent">10 lines</span> of<br>TypeScript.</h1>
 
     <div class="install">
-      <span class="cmd"><span class="dollar">$</span> npm i <span class="pkg">@aura3d/engine</span></span>
-      <span class="version">1 command</span>
+      <span class="cmd"><span class="dollar">$</span> npx <span class="pkg">create-aura3d@4.3.5</span> my-scene --template product-viewer</span>
     </div>
 
     <div class="meta">
@@ -287,7 +292,7 @@ h1 .accent { color: ${TEAL}; }
       <span class="dot"></span><span><b>WebGL2</b> runtime</span>
     </div>
 
-    <div class="code"><span class="kw">import</span> { createAuraApp } <span class="kw">from</span> <span class="str">"@aura3d/engine"</span></div>
+    <div class="code">.add(looks.preset(<span class="str">"product-studio"</span>))</div>
   </div>
 
   <div class="footer">
@@ -317,6 +322,17 @@ h1 .accent { color: ${TEAL}; }
 </html>`;
 
 const CANVAS = { width: 1200, height: 630 };
+
+mkdirSync(OUT_STORE, { recursive: true });
+mkdirSync(OUT_PUBLIC, { recursive: true });
+writeFileSync(join(OUT_STORE, "og-composite.html"), HTML + "\n");
+
+if (process.argv.includes("--html-only")) {
+  console.log(`Wrote ${join(OUT_STORE, "og-composite.html")} (--html-only: no browser launched)`);
+  process.exit(0);
+}
+
+const { chromium } = require("playwright");
 
 async function launchChromium() {
   try {
@@ -390,7 +406,7 @@ const diagnostics = await page.evaluate(() => {
   const shot = document.querySelector("img.shot");
   return {
     fonts: {
-      semibold: document.fonts.check('600 52px "Graphik Web"'),
+      semibold: document.fonts.check('600 46px "Graphik Web"'),
       regular: document.fonts.check('400 13px "Graphik Web"'),
       mono: document.fonts.check('400 15px "TT Commons Pro Mono"'),
     },
@@ -414,7 +430,8 @@ const diagnostics = await page.evaluate(() => {
 if (!diagnostics.fonts.semibold || !diagnostics.fonts.regular || !diagnostics.fonts.mono) {
   throw new Error("Brand fonts failed to load; refusing to rasterize a fallback face.");
 }
-if (diagnostics.image.naturalWidth !== 960 || diagnostics.image.naturalHeight !== 540) {
+// The frame is drawn at 656x369 with object-fit: cover, so it must be at least that large (the committed webp is 720x450).
+if (!(diagnostics.image.naturalWidth >= 656 && diagnostics.image.naturalHeight >= 369)) {
   throw new Error(`Real screenshot failed to decode: ${JSON.stringify(diagnostics.image)}`);
 }
 if (diagnostics.h1ScrollWidth > diagnostics.h1ClientWidth + 1) {
@@ -430,10 +447,6 @@ const rawOg = await page.screenshot({ type: "png" });
 // Twitter's summary_large_image card accepts 1.91:1, which 1200x630 matches.
 const rawTwitter = rawOg;
 await browser.close();
-
-mkdirSync(OUT_STORE, { recursive: true });
-mkdirSync(OUT_PUBLIC, { recursive: true });
-writeFileSync(join(OUT_STORE, "og-composite.html"), HTML + "\n");
 
 const outputs = [];
 for (const [filename, raw] of [

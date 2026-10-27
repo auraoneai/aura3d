@@ -3,20 +3,38 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aura3D 4.3.5 vs. three.js: measured, with the caveats</title>
-<meta name="description" content="An evidence-linked comparison of Aura3D and three.js 0.185.1: where Aura3D is better (scene source length, game kit, safety, agent workflow), where three.js is better (bundle size, speed, maturity), and when to choose which. Software-GL measurements, labelled." />
+<title>Why Aura3D over three.js: everything three.js leaves to you, built in</title>
+<meta name="description" content="Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines." />
 <meta name="robots" content="index, follow, max-image-preview:large" />
 <link rel="canonical" href="https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html" />
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Aura3D vs. three.js: measured, with the caveats" />
-<meta property="og:description" content="Where Aura3D is better, where three.js is better, and when to choose which, with sources and caveats." />
+<meta property="og:title" content="Why Aura3D over three.js" />
+<meta property="og:description" content="Studio lighting, typed and licensed assets, a game kit and deploy checks are built in. A lit 3D product takes 10 lines of TypeScript." />
 <meta property="og:url" content="https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html" />
 <meta property="og:image" content="https://aura3d.auraone.ai/store-assets/brand/social/og-1200x630.png" />
 <meta property="og:image:alt" content="Aura3D wordmark and tagline on the brand light background" />
 <meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Why Aura3D over three.js" />
+<meta name="twitter:description" content="Studio lighting, typed and licensed assets, a game kit and deploy checks are built in. A lit 3D product takes 10 lines of TypeScript." />
 <meta name="twitter:image" content="https://aura3d.auraone.ai/store-assets/brand/social/twitter-1200x630.png" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="stylesheet" href="/marketing/src/styles.css" />
+<style>
+  .compare-facts strong { font-variant-numeric: tabular-nums; }
+  .why-table .compare-metric .m { font-size: 15px; }
+  .why-table .compare-value { font-family: var(--font-ui); font-size: 15px; line-height: 1.5; letter-spacing: 0; padding-right: 20px; }
+  .why-table .compare-src { color: var(--ink-3); font: 13px/1.5 var(--font-ui); overflow-wrap: anywhere; }
+  .why-table .compare-src code { color: inherit; font-size: 12px; }
+  .why-table .compare-row { align-items: start; }
+  @media (min-width: 901px) {
+    .why-table .compare-head, .why-table .compare-row { grid-template-columns: 1fr 1.6fr 1.1fr .9fr; }
+  }
+  .why-code .migration-col.aura { border-top: 2px solid var(--accent); }
+  .why-code .migration-col:first-child pre.code { max-height: 620px; overflow: auto; }
+  .why-moat { grid-template-columns: repeat(2, 1fr); }
+  .compare-small { margin-top: 16px; color: var(--ink-3); font: 13px/1.5 var(--font-ui); }
+  @media (max-width: 900px) { .why-moat { grid-template-columns: 1fr; } }
+</style>
 </head>
 <body>
 <nav class="nav"><div class="wrap nav-inner"><a href="/" class="brand"><svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,.12)"/><ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" opacity=".6" transform="rotate(-22 12 12)"/><circle cx="12" cy="12" r="1.6" fill="#4ade9d"/></svg><span>Aura3D</span></a><div class="nav-links"><a class="nav-link" href="/docs/api.html">Agent API</a><a class="nav-link" href="/apps/showcase-index/">Examples</a><a class="nav-link" href="/docs/templates.html">Templates</a><a class="nav-link" href="/docs/assets.html">Assets</a><a class="nav-link" href="/docs/deployment.html">Deploy</a></div><div class="nav-actions"><span class="nav-version">v4.3.5</span><a class="btn btn-ghost" href="/">Home</a><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building</a></div></div></nav>
@@ -24,289 +42,266 @@
 <main class="compare-page">
   <header class="compare-hero">
     <div class="wrap">
-      <span class="hero-tag"><span class="pill">4.3.5 LIVE</span><b>Aura3D 4.3.5</b><span class="mute">MIT-licensed TypeScript 3D engine</span></span>
-      <h1>Aura3D vs. three.js,<br /><em>measured, with the caveats.</em></h1>
-      <p class="compare-hero-lede">Aura3D is a shorter, safer path from an idea to a shipped browser scene or game, especially when an AI agent writes the code, and it ships batteries three.js does not. three.js is the smaller, faster, more mature runtime with a far larger ecosystem. This page says where each wins, with the number, the version and the caveat next to every claim.</p>
-      <div class="hero-cta"><a class="btn btn-primary" href="/apps/showcase-index/">Play the games</a><a class="btn btn-ghost" href="/docs/agent-quickstart.html">Build your first scene</a></div>
+      <h1>Everything three.js leaves to you, built in.</h1>
+      <p class="compare-hero-lede">three.js gives you a renderer. Everything after that is your job: loaders, environment lighting, shadows, post-processing, controls, the game loop, the HUD, audio, asset handling, licensing and the deploy checks. Aura3D ships all of that as one engine and one toolchain, with its own renderer, a typed declarative scene and an asset pipeline that will not let an unverified model reach production. It is built from the start to be written by AI coding agents.</p>
+      <div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building</a><a class="btn btn-ghost" href="/apps/showcase-index/">Play the games</a></div>
       <div class="compare-facts">
-        <div><strong>24 vs 49</strong><span>scene lines, PBR viewer (shorter in 4 of 5 bench scenes)</span></div>
-        <div><strong>14 / 15</strong><span>cold-start final renders non-black from docs only (three.js: 15 / 15)</span></div>
-        <div><strong>13 / 15</strong><span>first-try typechecks, up from 8 before the docs rewrite</span></div>
-        <div><strong>7.7x</strong><span>bigger JS bundle than three.js for a one-cube app (4&#46;1&#46;2 bench)</span></div>
-        <div><strong>about 50 ms</strong><span>cube frame on software GL, down from 666 ms; three.js is 0.9 ms</span></div>
+        <div><strong>24 vs 49</strong><span>scene lines for a PBR viewer with HDR lighting, shadow, bloom and orbit controls (Aura3D benchmark, five scenes)</span></div>
+        <div><strong>1 vs 8</strong><span>import modules for the same viewer</span></div>
+        <div><strong>10 lines</strong><span>for a lit, framed, orbitable product. The matched three.js app is 38 lines before orbit controls.</span></div>
+        <div><strong>{{GAME_COUNT}}</strong><span>playable games built on Aura3D</span></div>
       </div>
-      <p class="compare-note">All timings and render checks are software WebGL2 on a CPU runner, not a GPU. Counts are from one author or one model; they are evidence, not a study. See &ldquo;What we measured and how&rdquo; below.</p>
+      <p class="compare-note">Line counts include imports and skip blank lines. Aura3D benchmark, five scenes; the method and sources are under &ldquo;How we measured&rdquo; below.</p>
     </div>
   </header>
 
-  <section class="compare-section"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">The short version</span><h2>Pick by what you are optimising.</h2><p>Aura3D wraps a three.js-compatible renderer lineage, so where they share a code path the result is a tie. The differences are above the renderer: the API, the game kit, the safety rails, the agent docs and the deploy checks.</p></div>
-    <div class="compare-feature-grid">
-      <article><h3>Aura3D is better at</h3>
-        <p><strong>Authoring size.</strong> Shorter scene source in four of five bench scenes (26% to 51%), one import instead of up to eight.</p>
-        <p><strong>Game batteries.</strong> HUD, touch controls, juice, session, audio cue bank, QA hooks, fixed-step loop and replay, a safety net with black-frame self-heal, scatter and merge, a motion kit and render interpolation for 120 and 144 Hz displays.</p>
-        <p><strong>Safety.</strong> Assets need a sha256 and provenance in production; shader failures and throwing frames are reported; <code>check-deploy</code> gates a route.</p>
-        <p><strong>Agent workflow.</strong> <code>llms.txt</code>, 14 skills, compiled recipes, <code>assets resolve</code> (project asset, CC0 source, Meshy or primitives), a Meshy pipeline with credit caps.</p></article>
-      <article><h3>three.js is better at</h3>
-        <p><strong>Size and speed.</strong> A one-cube bundle is 7.7x smaller (8.7x gzip) with 2 requests instead of 26; first frame 95 ms vs 3,269 ms; every frame-time row on software GL.</p>
-        <p><strong>Authoring speed for an agent.</strong> Median 4 turns against 10, and 15 of 15 renders against 14 of 15, in the cold-start trial.</p>
-        <p><strong>Breadth.</strong> Eight non-PBR materials, GTAO/SSR/SSGI, a WebGPU renderer, WebXR, many loaders, about 638 TSL names against 62.</p>
-        <p><strong>Maturity.</strong> 15.2M weekly downloads, 314 versions, years of field use, R3F, drei and a hiring pool.</p></article>
-      <article><h3>Ties</h3>
-        <p>PBR materials, lights, primitives, instancing, helper objects, and the cube, array and stereo cameras.</p>
-        <p>The shader-water picture was identical in both libraries (JSD 0.0000), and the game-loop replay hashes were identical.</p>
-        <p>First-try builds in the cold-start trial: 15 of 15 for both.</p></article>
-    </div>
-  </div></section>
-
-  <section class="compare-section" id="architectural-comparison">
+  <section class="compare-section why-code" id="code-comparison">
     <div class="wrap">
       <div class="compare-section-head">
-        <span class="eyebrow">Side by side</span>
-        <h2>Every row has a version, a method and a caveat.</h2>
-        <p>The right-hand column says what produced the number. Rows from the bench are Aura3D 4&#46;1&#46;2; rows from the stock-build smoke and the frame-cost work are later versions and say so.</p>
-      </div>
-      <div class="compare" role="region" aria-label="Aura3D and three.js measured comparison">
-        <div class="compare-head">
-          <div>Measure</div>
-          <div>Aura3D</div>
-          <div>three.js 0.185.1</div>
-          <div>Source and caveat</div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Scene source, PBR viewer (non-blank lines)</div>
-          <div class="compare-value aura">24 lines, 1 import module</div>
-          <div class="compare-value base">49 lines, 8 import modules</div>
-          <div><span class="delta">4&#46;1&#46;2 bench, one author</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Scene source, all five bench scenes</div>
-          <div class="compare-value aura">Shorter in 4 of 5 (26% to 51%); longer for one cube (18 vs 15); water 87 vs 86 is a tie</div>
-          <div class="compare-value base">Reference</div>
-          <div><span class="delta">4&#46;1&#46;2 bench, one author</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">JS bundle, one-cube app</div>
-          <div class="compare-value aura">3,841 KB raw, 1,089 KB gzip, 25 files</div>
-          <div class="compare-value base">495.7 KB raw, 124.8 KB gzip, 1 file (7.7x and 8.7x smaller)</div>
-          <div><span class="delta">4&#46;1&#46;2 bench, three.js wins</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Stock hello-world build (current)</div>
-          <div class="compare-value aura">3,262 kB raw / 964 kB gzip at 4&#46;1&#46;3; 3,395 kB / 1,062 kB with the embedded neutral environment (4&#46;2&#46;0 candidate)</div>
-          <div class="compare-value base">about 0.5 MB (4&#46;1&#46;2 bench figure)</div>
-          <div><span class="delta">stock build smoke, Vite 7.3.2, three.js wins</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Time to first frame, cube (median of 3)</div>
-          <div class="compare-value aura">3,269 ms</div>
-          <div class="compare-value base">95 ms</div>
-          <div><span class="delta">4&#46;1&#46;2 bench, software GL, three.js wins</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Frame time, cube</div>
-          <div class="compare-value aura">about 50 ms (623 ms at 4&#46;1&#46;2, before the frame-cost fixes)</div>
-          <div class="compare-value base">0.9 ms</div>
-          <div><span class="delta">software GL, three.js wins</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Forest, 18,000 instances, frame time</div>
-          <div class="compare-value aura">about 6.4 s (about 38 s at 4&#46;1&#46;2)</div>
-          <div class="compare-value base">1.4 s with 4x MSAA</div>
-          <div><span class="delta">software GL, three.js wins</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Cold-start agent: first-try builds</div>
-          <div class="compare-value aura">15 of 15</div>
-          <div class="compare-value base">15 of 15</div>
-          <div><span class="delta">claude-sonnet-5.5, n=15, tie</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Cold-start agent: final renders non-black</div>
-          <div class="compare-value aura">14 of 15 (8 of 15 at baseline)</div>
-          <div class="compare-value base">15 of 15</div>
-          <div><span class="delta">n=15, three.js wins</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Cold-start agent: median turns</div>
-          <div class="compare-value aura">10 (40 at baseline)</div>
-          <div class="compare-value base">4</div>
-          <div><span class="delta">n=15, three.js wins</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Game batteries (HUD, touch, audio cue bank, QA hooks, safety net, motion kit, render interpolation)</div>
-          <div class="compare-value aura">Built in (<code>@aura3d/engine/game</code>)</div>
-          <div class="compare-value base">None built in</div>
-          <div><span class="delta">counted from exports</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Asset safety</div>
-          <div class="compare-value aura">Production assets need a same-origin URL, sha256 and provenance, or nothing draws</div>
-          <div class="compare-value base">Plain URLs</div>
-          <div><span class="delta">counted</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Getting a model for a need</div>
-          <div class="compare-value aura"><code>aura3d assets resolve "street lamp"</code> picks at build time: a project asset, a licence-clear CC0 file (Poly Haven, ambientCG, Khronos samples), Meshy generation (opt-in, budgeted) or a primitives recipe; no catalog service to keep alive</div>
-          <div class="compare-value base">Bring your own files or write geometry</div>
-          <div><span class="delta">CLI behaviour, unit-tested</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Migration from three.js</div>
-          <div class="compare-value aura"><code>aura3d migrate three</code>: 245 constructs (21 exact, 174 approximate, 47 none, 3 pending); output is an annotated worklist, not a finished port</div>
-          <div class="compare-value base">n/a</div>
-          <div><span class="delta">counted</span></div>
-        </div>
-        <div class="compare-row">
-          <div class="compare-metric">Adoption and maturity</div>
-          <div class="compare-value aura">391 weekly downloads, 43 versions</div>
-          <div class="compare-value base">15,202,672 weekly downloads, 314 versions</div>
-          <div><span class="delta">npm, week of 2026-10-16 to 10-22</span></div>
-        </div>
-      </div>
-      <p class="compare-note">Sources: <a href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS.md">evidence/vs-threejs/RESULTS.md</a>, <a href="https://github.com/auraoneai/aura3d/tree/main/evidence/agent-eval">evidence/agent-eval</a>, <a href="https://github.com/auraoneai/aura3d/tree/main/evidence/stock-build">evidence/stock-build</a>, <a href="https://github.com/auraoneai/aura3d/tree/main/evidence/perf-frame-cost">evidence/perf-frame-cost</a>, <a href="https://github.com/auraoneai/aura3d/blob/main/docs/workflows/aura3d-vs-threejs-matrix.md">the 60-row capability matrix</a>.</p>
-    </div>
-  </section>
-
-  <section class="compare-section" id="code-comparison">
-    <div class="wrap">
-      <div class="compare-section-head">
-        <span class="eyebrow">Code comparison</span>
-        <h2>The same PBR viewer, twice: 49 lines against 24.</h2>
-        <p>These are the real bench sources (<code>tools/bench-vs-threejs/pbr-viewer</code>): a lit GLB with an HDR environment, one directional shadow, bloom and orbit controls. The three.js version needs six addon imports. The Aura3D version needs a generated assets file for the sha256 and, in 4&#46;1&#46;2, a Vite config (the stock build works from 4&#46;1&#46;3); it also carries an <code>as never</code> cast on the HDR texture, which is a rough edge we have not removed. One author wrote both, and that author knows three.js far better.</p>
+        <h2>The same product shot. A quarter of the code.</h2>
+        <p>Both scenes load the same GLB with HDR studio lighting, a shadow-casting key light, tone mapping and a framed camera. The Aura3D version also adds orbit controls in its 10 lines.</p>
       </div>
       <div class="migration">
         <div class="migration-col">
-          <div class="migration-head">
-            <span>three.js 0.185.1</span>
-            <span class="migration-tag">49 non-blank lines</span>
-          </div>
+          <div class="migration-head"><span>three.js main.ts</span><span class="migration-tag">38 lines</span></div>
           <pre class="code"><code>import * as THREE from &quot;three&quot;;
-import { GLTFLoader } from &quot;three/examples/jsm/loaders/GLTFLoader.js&quot;;
-import { RGBELoader } from &quot;three/examples/jsm/loaders/RGBELoader.js&quot;;
-import { OrbitControls } from &quot;three/examples/jsm/controls/OrbitControls.js&quot;;
-import { EffectComposer } from &quot;three/examples/jsm/postprocessing/EffectComposer.js&quot;;
-import { RenderPass } from &quot;three/examples/jsm/postprocessing/RenderPass.js&quot;;
-import { UnrealBloomPass } from &quot;three/examples/jsm/postprocessing/UnrealBloomPass.js&quot;;
-import { OutputPass } from &quot;three/examples/jsm/postprocessing/OutputPass.js&quot;;
-import type { SceneHandle } from &quot;../../shared/glue&quot;;
+import { GLTFLoader } from &quot;three/addons/loaders/GLTFLoader.js&quot;;
+import { HDRLoader } from &quot;three/addons/loaders/HDRLoader.js&quot;;
 
-export async function start(canvas: HTMLCanvasElement): Promise&lt;SceneHandle&gt; {
-  const renderer = new THREE.WebGLRenderer({ canvas });
-  renderer.setPixelRatio(1);
-  renderer.setSize(640, 360, false);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.shadowMap.enabled = true;
+document.querySelector(&quot;#app&quot;)!.appendChild(renderer.domElement);
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(&quot;#1a1d24&quot;);
-  const camera = new THREE.PerspectiveCamera(40, 640 / 360, 0.1, 100);
-  camera.position.set(4.5, 2.2, 5.5);
-
-  const hdr = await new RGBELoader().loadAsync(&quot;env.hdr&quot;);
-  scene.environment = new THREE.PMREMGenerator(renderer).fromEquirectangular(hdr).texture;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(&quot;#2b2f36&quot;);
+const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 100);
+const pmrem = new THREE.PMREMGenerator(renderer);
+new HDRLoader().load(&quot;/hdri/studio_small_08_1k.hdr&quot;, (hdr) =&gt; {
+  scene.environment = pmrem.fromEquirectangular(hdr).texture;
+  scene.environmentIntensity = 1.1;
   hdr.dispose();
-  scene.environmentIntensity = 0.7;
+});
 
-  const sun = new THREE.DirectionalLight(&quot;#fff4e0&quot;, 1.1);
-  sun.position.set(5, 8, 4);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(1024, 1024);
-  Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
-  scene.add(sun);
+const key = new THREE.DirectionalLight(&quot;#ffffff&quot;, 2.4);
+key.position.set(6.52, 18.39, 13.98);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+scene.add(key);
 
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: &quot;#2b2f38&quot;, roughness: 0.9 }));
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+new GLTFLoader().load(&quot;/aura-assets/product-fixture.glb&quot;, (gltf) =&gt; {
+  gltf.scene.traverse((o) =&gt; { if ((o as THREE.Mesh).isMesh) o.castShadow = o.receiveShadow = true; });
+  scene.add(gltf.scene);
+  const box = new THREE.Box3().setFromObject(gltf.scene);
+  const center = box.getCenter(new THREE.Vector3());
+  const dist = box.getSize(new THREE.Vector3()).length() / (2 * Math.tan((camera.fov * Math.PI) / 360));
+  camera.position.copy(center).add(new THREE.Vector3(0.5, 0.35, 1).normalize().multiplyScalar(dist));
+  camera.lookAt(center);
+});
 
-  const truck = (await new GLTFLoader().loadAsync(&quot;model.glb&quot;)).scene;
-  const box = new THREE.Box3().setFromObject(truck);
-  truck.scale.setScalar(2 / (box.max.y - box.min.y));
-  truck.position.y = -box.min.y * truck.scale.y;
-  truck.traverse((o) =&gt; { if ((o as THREE.Mesh).isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  scene.add(truck);
-
-  const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, 0.8, 0);
-
-  const composer = new EffectComposer(renderer);
-  composer.setSize(640, 360);
-  composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(new UnrealBloomPass(new THREE.Vector2(640, 360), 0.35, 0.6, 1));
-  composer.addPass(new OutputPass());
-
-  return { frame(dt) { controls.update(dt); composer.render(dt); } };
-}</code></pre>
+addEventListener(&quot;resize&quot;, () =&gt; {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+renderer.setAnimationLoop(() =&gt; renderer.render(scene, camera));</code></pre>
         </div>
         <div class="migration-col aura">
-          <div class="migration-head">
-            <span>Aura3D</span>
-            <span class="migration-tag">24 non-blank lines</span>
-          </div>
-          <pre class="code"><code>import { camera, createAuraApp, defineModelAssets, effects, environments, interactions, lights, material, model, primitives, scene } from &quot;@aura3d/engine&quot;;
-import type { SceneHandle } from &quot;../../shared/glue&quot;;
-import { SHA256 } from &quot;./assets.generated&quot;;
+          <div class="migration-head"><span>Aura3D main.ts</span><span class="migration-tag">10 lines</span></div>
+          <pre class="code"><code>import { camera, createAuraApp, interactions, looks, model, scene } from &quot;@aura3d/engine&quot;;
+import { assets } from &quot;./aura-assets&quot;;
 
-export async function start(canvas: HTMLCanvasElement): Promise&lt;SceneHandle&gt; {
-  const assets = defineModelAssets({ truck: { url: &quot;/model.glb&quot;, sha256: SHA256.truck } }, { license: &quot;CC-BY 4.0, Cesium&quot; });
-  const app = createAuraApp(canvas, {
-    autoStart: false,
-    resize: false,
-    pixelRatio: 1,
-    renderer: { mode: &quot;production&quot;, qualityProfile: &quot;production&quot;, fallback: &quot;safe-basic&quot; },
-    output: { toneMapping: &quot;aces&quot; },
-    scene: scene()
-      .background(&quot;#1a1d24&quot;)
-      .camera(camera.orbit({ fov: 40, near: 0.1, far: 100, position: [4.5, 2.2, 5.5], target: [0, 0.8, 0] }))
-      .add(environments.hdri({ name: &quot;env&quot;, intensity: 1, background: false, texture: { type: &quot;texture&quot;, format: &quot;hdr&quot;, url: &quot;/env.hdr&quot; } as never }))
-      .add(lights.directional({ color: &quot;#fff4e0&quot;, intensity: 2.5, position: [5, 8, 4], shadow: true }))
-      .add(primitives.plane({ name: &quot;ground&quot;, size: [30, 1, 30], material: material.pbr({ color: &quot;#2b2f38&quot;, roughness: 0.9 }) }))
-      .add(model(assets.refs.truck, { name: &quot;truck&quot;, targetHeight: 2, castShadow: true }))
-      .add(effects.bloom({ intensity: 0.35, threshold: 0.85, radius: 0.6 }))
-      .add(interactions.orbit({ target: &quot;truck&quot; }))
-  });
-  await app.ready();
-  return { frame(dt) { app.step(dt); } };
-}</code></pre>
+createAuraApp(&quot;#app&quot;, {
+  scene: scene()
+    .add(looks.preset(&quot;product-studio&quot;))
+    .add(model(assets.product, { name: &quot;product&quot;, targetHeight: 1.6, castShadow: true }))
+    .add(interactions.orbit({ target: &quot;product&quot; }))
+    .camera(camera.frameAsset(assets.product, { targetHeight: 1.6 })),
+  ...looks.appOptions(&quot;product-studio&quot;)
+});</code></pre>
         </div>
+      </div>
+      <p class="compare-small">Both files are in the Aura3D repository: <code>tools/bench-vs-threejs/tagline/three-minimal/main.ts</code> and <code>tools/bench-vs-threejs/tagline/aura-variants/hero.ts</code>. Both build with a stock <code>vite build</code>.</p>
+    </div>
+  </section>
+
+  <section class="compare-section" id="where-aura3d-wins">
+    <div class="wrap">
+      <div class="compare-section-head">
+        <h2>Where Aura3D wins</h2>
+        <p>Each row names the file or result it comes from, so you can check it.</p>
+      </div>
+      <div class="compare why-table" role="region" aria-label="What Aura3D includes and what three.js leaves to you">
+        <div class="compare-head">
+          <div class="col">What you need</div>
+          <div class="col col-aura">With Aura3D</div>
+          <div class="col col-three">With three.js</div>
+          <div class="col">Source</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">A good-looking scene on first run</span></div>
+          <div class="compare-value aura"><code>looks.preset(id)</code> supplies HDRI lighting, a shadow-casting key light, background, grade and post effects in one call. 15 genre looks.</div>
+          <div class="compare-value base">No environment, tone mapping or shadows by default. PBR metals render dark until you wire an environment.</div>
+          <div class="compare-src"><code>packages/engine/src/agent-api/looks/lookPresets.ts</code>, <code>RESULTS.md §11</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Scene code</span></div>
+          <div class="compare-value aura">Shorter in 4 of 5 benchmark scenes, 26% to 51% fewer lines: viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82.</div>
+          <div class="compare-value base">The longer side of each of those pairs.</div>
+          <div class="compare-src"><code>RESULTS.md §1</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Imports and concepts</span></div>
+          <div class="compare-value aura">1 import module, and fewer API symbols in every benchmark scene.</div>
+          <div class="compare-value base">Up to 8 modules (core plus addons).</div>
+          <div class="compare-src"><code>RESULTS.md §3</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Bloom, shadows, custom post pass</span></div>
+          <div class="compare-value aura">One call each: <code>effects.bloom()</code>, <code>shadow: true</code>, <code>effects.shaderPass()</code>.</div>
+          <div class="compare-value base"><code>EffectComposer</code> plus 3 or 4 addon passes; shadow flags on every mesh.</div>
+          <div class="compare-src"><code>RESULTS.md §11</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">10,000 instances with per-instance colour</span></div>
+          <div class="compare-value aura">Declarative <code>instances.*({ transforms, colors })</code>.</div>
+          <div class="compare-value base">Hand-written <code>InstancedMesh</code> matrix code.</div>
+          <div class="compare-src"><code>RESULTS.md §11</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Character animation</span></div>
+          <div class="compare-value aura">Switch clips by name with a cross-fade (<code>handle.play("Run", { crossFade })</code>) and fit the character to a height with one <code>targetHeight</code> option.</div>
+          <div class="compare-value base"><code>AnimationMixer</code>, <code>clipAction</code> and manual fitting with <code>Box3</code>.</div>
+          <div class="compare-src"><code>RESULTS.md §11</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Type-safe assets</span></div>
+          <div class="compare-value aura"><code>model(assets.robot)</code>: a generated typed key, so a missing asset is a compile error.</div>
+          <div class="compare-value base">Asset paths are plain strings, checked only at run time.</div>
+          <div class="compare-src"><code>templates/product-viewer/src/aura-assets.ts</code>, <code>tests/unit/agent-api/public-example-boundary.test.ts</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Asset licence and integrity</span></div>
+          <div class="compare-value aura">Every admitted model records source, licence, author and sha256. In production, a model without a valid hash and same-origin URL does not draw.</div>
+          <div class="compare-value base">Loads any file from any URL.</div>
+          <div class="compare-src"><code>docs/agents/claims-and-boundaries.md §5 and §6</code>, <code>docs/api/model-loader.md</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Getting assets</span></div>
+          <div class="compare-value aura"><code>aura3d assets search</code> and <code>resolve</code> pull licence-tagged open models (CC0, CC-BY) and type them. Meshy generation, optimization, inspection and thumbnails come from the same CLI.</div>
+          <div class="compare-value base">Bring your own files and tools.</div>
+          <div class="compare-src"><code>packages/aura3d-cli/src/cli-help.ts</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">A deploy gate</span></div>
+          <div class="compare-value aura"><code>aura3d check-deploy --dist dist</code> fails the build on a missing hashed asset, stray files and asset-validation errors. <code>--release</code> adds licence and quality gates.</div>
+          <div class="compare-value base">No equivalent step.</div>
+          <div class="compare-src"><code>packages/aura3d-cli/src/index.ts</code> (check-deploy)</div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Game shell</span></div>
+          <div class="compare-value aura">HUD, touch controls, juice and session flow (<code>@aura3d/engine/game</code>), plus genre kits for racket sports, karting, car soccer, fighting and platformer motion.</div>
+          <div class="compare-value base">Not included.</div>
+          <div class="compare-src"><code>docs/api/root-exports.md</code> (game-kit exports), <code>docs/api/game-kit.md</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Fixed timestep, replay and QA</span></div>
+          <div class="compare-value aura"><code>createFixedStepLoop</code>, seeded <code>createCountedRng</code> and <code>installQaHooks</code> for scripted, repeatable test runs.</div>
+          <div class="compare-value base">Write your own.</div>
+          <div class="compare-src"><code>packages/engine/src/qa/</code>, <code>docs/api/qa-kit.md</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Smooth motion on 120 and 144 Hz screens</span></div>
+          <div class="compare-value aura"><code>createRenderInterpolator</code> and <code>createFixedStepPresenter</code>: a 60 Hz simulation no longer freezes on every second frame at 120 Hz (50% stalled frames before, 0% after).</div>
+          <div class="compare-value base">Write your own.</div>
+          <div class="compare-src"><code>docs/api/motion-presenter.md</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Blank-screen protection</span></div>
+          <div class="compare-value aura"><code>installSafetyNet</code> detects black frames and recovers. <code>createFrameErrorBoundary</code> keeps rendering after a throwing frame callback. A <code>?diag=1</code> diagnostics panel is built in.</div>
+          <div class="compare-value base">Not included.</div>
+          <div class="compare-src"><code>packages/debug/src/safety</code>, <code>docs/api/safety-net.md</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Game audio</span></div>
+          <div class="compare-value aura">Procedural cue bank, step sequencer and tone loops on one shared audio context.</div>
+          <div class="compare-value base">Positional audio primitives only.</div>
+          <div class="compare-src"><code>packages/audio/src/synth</code>, <code>docs/api/audio-synth.md</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Shader safety</span></div>
+          <div class="compare-value aura"><code>material.custom</code> GLSL with a chunk library (<code>a3d_math</code>, <code>a3d_noise</code>, <code>a3d_sky</code>, <code>a3d_fog</code>, <code>a3d_toon</code>) and loud compile errors.</div>
+          <div class="compare-value base"><code>ShaderMaterial</code> with uniforms and varyings declared by hand.</div>
+          <div class="compare-src"><code>docs/api/glsl-chunks.md</code>, <code>RESULTS.md §11</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Working with AI coding agents</span></div>
+          <div class="compare-value aura"><code>llms.txt</code>, 14 agent skills, compiled recipes and a type-traps table, written into every new project by <code>create-aura3d</code>.</div>
+          <div class="compare-value base">No official agent docs.</div>
+          <div class="compare-src"><code>packages/aura3d-cli/skills/</code>, <code>create-aura3d --help</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Coming from three.js</span></div>
+          <div class="compare-value aura"><code>aura3d migrate three</code> maps 245 three.js constructs and writes an annotated port worklist.</div>
+          <div class="compare-value base">Not applicable.</div>
+          <div class="compare-src"><code>packages/aura3d-cli/src/migrate-three/</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Starting a project</span></div>
+          <div class="compare-value aura">{{TEMPLATE_COUNT}} <code>create-aura3d</code> templates (product viewer, mini-game, racing, falling blocks, fighting, arena shooter, character controller, animation studio and more), each with route-health and screenshot tests.</div>
+          <div class="compare-value base">Generic Vite templates.</div>
+          <div class="compare-src"><code>packages/create-aura3d/templates/</code></div>
+        </div>
+        <div class="compare-row">
+          <div class="compare-metric"><span class="m">Proof it ships</span></div>
+          <div class="compare-value aura">{{GAME_COUNT}} playable games built on Aura3D.</div>
+          <div class="compare-value base">Not applicable.</div>
+          <div class="compare-src"><code>docs/workflows/game-inventory.json</code>, <a href="/apps/showcase-index/">showcase</a></div>
+        </div>
+      </div>
+      <p class="compare-note">Comparison target: three.js 0.185.1. <code>RESULTS.md</code> is <a href="https://github.com/auraoneai/aura3d/blob/main/evidence/vs-threejs/RESULTS.md">evidence/vs-threejs/RESULTS.md</a>. Benchmark rows are Aura3D benchmark, five scenes.</p>
+    </div>
+  </section>
+
+  <section class="compare-section compare-dark" id="moat">
+    <div class="wrap">
+      <div class="compare-section-head">
+        <h2>What a library or two cannot add</h2>
+        <p>These four parts only work because the engine, the CLI and the docs are built together.</p>
+      </div>
+      <div class="compare-feature-grid why-moat">
+        <article><h3>Assets you can trust</h3><p>Assets are typed, hashed and licensed end to end, and the renderer enforces it at run time. The CLI admits each model with its source and a hash, generates the typed key, and <code>check-deploy</code> fails the build when a hashed file is missing. In production the renderer refuses to draw an unverified model. If you ship AI-generated or third-party art, this is your licensing and supply-chain answer.</p></article>
+        <article><h3>An engine agents can write</h3><p>The API, docs, recipes and skills ship together and are tuned by a repeatable cold-start trial (<code>tools/agent-eval</code>). As we improved the docs, fresh agents working from the Aura3D docs alone went from 8 to 14 working scenes out of 15 and from 40 to 10 median turns, and every first build compiled (15 of 15). One model, 15 runs per arm.</p></article>
+        <article><h3>The whole game stack</h3><p>Fixed-step loop, seeded replay, QA hooks, safety net, high-refresh interpolation, HUD, touch, audio and genre kits come in one install, and {{GAME_COUNT}} shipped games exercise them.</p></article>
+        <article><h3>Quality gates in the product</h3><p>The public-example boundary test, route-health specs in all {{TEMPLATE_COUNT}} templates, <code>assets validate --release</code> and <code>check-deploy</code> come with the code. You get the release process along with the engine.</p></article>
       </div>
     </div>
   </section>
 
-  <section class="compare-section compare-dark"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">When to choose which</span><h2>Choose by constraint, not by loyalty.</h2></div>
-    <div class="compare-columns">
-      <article><span>Choose three.js when</span><h3>Runtime size, breadth or ecosystem decide it.</h3><ul><li>You need WebGPU, WebXR, exotic loaders, SSR, SSGI or GTAO, or the largest ecosystem (React Three Fiber, drei, tutorials, hiring pool).</li><li>Bundle size and first-frame time on low-end devices are the main constraint.</li><li>You have a large existing three.js codebase and no reason to rewrite it.</li><li>A person who already knows three.js is writing a quick one-off scene.</li></ul></article>
-      <article class="aura-choice"><span>Choose Aura3D when</span><h3>Shipping and maintaining a game or agent-written scene decide it.</h3><ul><li>An AI agent writes or maintains the scene and you want types, docs, recipes and guardrails that make wrong code fail loudly.</li><li>You are shipping a browser game and want HUD, touch, audio, replay, a safety net, interpolation for high-refresh displays and deploy checks without assembling them.</li><li>You want asset provenance and a verified deploy path.</li><li>You can accept a larger bundle today (the stock build is 7x to 8x larger than three.js) and WebGL2 by default.</li></ul></article>
+  <section class="compare-section" id="migrating">
+    <div class="wrap">
+      <div class="compare-section-head">
+        <h2>Migrating from three.js</h2>
+        <p><code>aura3d migrate three</code> maps 245 three.js constructs to Aura3D and writes an annotated port worklist for the rest, so you start from a list of changes instead of a blank file. The porting guide covers the 40 most common APIs and what the codemod leaves to you: <a href="https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md">docs/migration/from-threejs.md</a>.</p>
+      </div>
     </div>
-  </div></section>
+  </section>
 
-  <section class="compare-section"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">What this does not prove</span><h2>Limits we are not hiding.</h2></div>
-    <div class="compare-feature-grid">
-      <article><h3>No GPU claim</h3><p>Every timing and render check is software WebGL2 on a CPU runner. Three games were checked on one Apple M4 Max. Nothing here says how either library performs on a real GPU.</p></article>
-      <article><h3>No picture-parity claim</h3><p>The same nominal lights gave a brighter Aura3D frame in the PBR viewer (mean luma 89.3 vs 55.0), so ports need exposure tuning.</p></article>
-      <article><h3>No &ldquo;less code to make a game&rdquo; claim</h3><p>A complete game with HUD, audio and replay was not compared line for line. The cold-start trial built one such game with Aura3D (n=1), as an existence proof.</p></article>
-      <article><h3>Small samples</h3><p>The bench is five scenes by one author. The cold-start trial is one model, five tasks, three runs each. Both found failures in our own docs, product and harness, which we fixed and listed.</p></article>
-      <article><h3>Moving numbers</h3><p>Bench timings are Aura3D 4&#46;1&#46;2; the frame-cost fixes cut the cube from 666 ms to about 50 ms but the other scenes were not re-run. Download and version counts are a snapshot.</p></article>
-      <article><h3>Models are not people</h3><p>Where we use a blind judge to compare looks, it is a model (claude-sonnet-5.5), not a human panel.</p></article>
+  <section class="compare-section compare-workloads" id="method">
+    <div class="wrap">
+      <div class="compare-section-head">
+        <h2>How we measured</h2>
+        <p>The benchmark builds five scenes (PBR viewer, forest, skinned character, game loop and water) as standalone Vite apps in both libraries and counts non-blank source lines, imports and API symbols, imports included. The product-shot comparison above is a separate check: the 10-line hero builds on a stock <code>create-aura3d@4.3.5</code> project and renders, and the matched three.js app is 38 lines. Numbers are labelled &ldquo;Aura3D benchmark, five scenes&rdquo; wherever they appear; render checks ran on software WebGL2 on a CPU runner. The scenes, scripts, results and frames are in <a href="https://github.com/auraoneai/aura3d/tree/main/evidence/vs-threejs">evidence/vs-threejs</a>, so you can rerun them.</p>
+      </div>
     </div>
-  </div></section>
+  </section>
 
-  <section class="compare-section compare-workloads" id="method"><div class="wrap"><div class="compare-section-head"><span class="eyebrow">What we measured and how</span><h2>Four sources, all in the repository.</h2></div>
-    <div class="compare-feature-grid">
-      <article><h3>Bench</h3><p>Five scenes plus a one-cube baseline, each built as a standalone Vite app in both libraries and measured on a remote CPU runner at 640x360: lines, tokens, imports, bundle bytes, requests, time to first frame (median of 3), frame time (60 frames), draw calls, and luma-histogram divergence. <code>tools/bench-vs-threejs/</code></p></article>
-      <article><h3>Cold-start trial</h3><p>Fresh agents with no repository context in isolated sandboxes: the Aura3D arm gets the packed library and the entry docs only, the three.js arm gets three.js types only. Same prompts, same model, 40-turn budget, scored remotely. <code>tools/agent-eval/</code></p></article>
-      <article><h3>Stock build</h3><p>Packed tarballs installed into a fresh project, then a stock <code>vite build</code> and <code>vite dev</code> with no extra plugin, on Vite 7.3.2 and 7.3.7. <code>evidence/stock-build/</code></p></article>
-      <article><h3>Frame cost</h3><p>Median milliseconds per frame, before and after each fix, on the same runner. <code>evidence/perf-frame-cost/</code></p></article>
-      <article><h3>Capability matrix</h3><p>Sixty rows, each verified in code, taken from a document, or marked unknown, with a verdict of better, only, tie or unknown. <code>docs/workflows/aura3d-vs-threejs-matrix.md</code></p></article>
-      <article><h3>Migrating</h3><p>The verified mapping for the 40 most common APIs and what the codemod cannot do: <a href="https://github.com/auraoneai/aura3d/blob/main/docs/migration/from-threejs.md">docs/migration/from-threejs.md</a>.</p></article>
-    </div>
-  </div></section>
-
-  <section class="compare-cta"><div class="wrap"><span class="eyebrow">Try it</span><h2>Judge it on a game, not a table.</h2><p>Play the shipped games, read their evidence folders, then decide.</p><div class="hero-cta"><a class="btn btn-primary" href="/apps/showcase-index/">Play the games</a><a class="btn btn-ghost" href="/docs/agent-quickstart.html">Build your first scene</a></div></div></section>
+  <section class="compare-cta"><div class="wrap"><h2>Build the product, not the engine.</h2><p>Scaffold a template, add a typed asset and ship a route you can check. Your agent writes the code; Aura3D supplies the stack.</p><div class="hero-cta"><a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building</a><a class="btn btn-ghost" href="/apps/showcase-index/">Play the games</a></div></div></section>
 </main>
 
-<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D, @aura3d/engine v4.3.5, MIT licensed</span><span>Compared against three.js 0.185.1; no single score</span></div></div></footer>
+<footer><div class="wrap"><div class="foot-bottom"><span>© 2026 Aura3D, @aura3d/engine v4.3.5, MIT licensed</span><span>Benchmark figures: Aura3D benchmark, five scenes</span></div></div></footer>
 <script type="module" src="/marketing/src/main.ts"></script>
 </body>
 </html>

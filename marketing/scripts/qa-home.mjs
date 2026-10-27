@@ -1075,7 +1075,7 @@ async function auditViewport(browser, url, viewport, origin, outDir, scope = nul
           ".template-card",
           ".prompt-card",
           ".package-card",
-          ".studio-card",
+          ".pillar",
           ".gallery .tile",
           ".gallery--showcase > *",
           ".visual-proof-grid > *",
@@ -3114,14 +3114,14 @@ function buildChecks(result) {
       "H1/H2/card type scale meets plan targets",
       "advisory",
       Boolean(
-        fonts.h1Min >= 44 &&
-          h1Max <= 64 &&
-          fonts.h2Min >= 30 &&
-          h2Max <= 40 &&
+        fonts.h1Min >= 36 &&
+          h1Max <= 56 &&
+          fonts.h2Min >= 28 &&
+          h2Max <= 36 &&
           fonts.cardMin >= 14 &&
           cardMax <= 15
       ),
-      `H1 ${fonts.h1Min ?? "?"}px (target 44-64), H2 ${fonts.h2Min ?? "?"}px (target 30-40), card ${
+      `H1 ${fonts.h1Min ?? "?"}px (target 36-56), H2 ${fonts.h2Min ?? "?"}px (target 28-36), card ${
         fonts.cardMin ?? "?"
       }px (target 14-15)${smallestCard ? `; smallest ${smallestCard.selector} "${smallestCard.text.slice(0, 40)}"` : ""}`,
       { h1: fonts.h1, h2: fonts.h2, cardCopy: fonts.cardCopy, h1Max, h2Max, cardMax }

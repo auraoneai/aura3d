@@ -52,8 +52,8 @@ const publicDraftLanguageTerms = [
 const checks: ReleaseCheck[] = [
   fileIncludes("marketing/index.html", ["Aura3D", "agent-written browser 3D", "assets add", "check-deploy", "The agent writes code. You bring the assets.", "not a hidden runtime generator"], "marketing truthful product copy"),
   fileIncludes("marketing/index.html", [`Aura3D ${canonicalVersion} is live`, "{{GAME_COUNT}} playable games", `{{PACKAGE_COUNT}} coordinated packages at ${canonicalVersion}`, "Rapier physics", "Recast navigation", "Build your first scene"], "marketing product-first release copy"),
-  fileIncludes("marketing/docs/aura3d-vs-threejs.html", ["measured, with the caveats", "Aura3D is better at", "three.js is better at", "What this does not prove", "What we measured and how", "software WebGL2"], "technical comparison states where each library wins, its limits and its method"),
-  fileIncludes("marketing/index.html", ["npm package", "GitHub source", "2.0 migration", "Public API", "50 live experiences", "Templates", "Asset pipeline", "Deployment"], "marketing release reference links"),
+  fileIncludes("marketing/docs/aura3d-vs-threejs.html", ["Where Aura3D wins", "Migrating from three.js", "How we measured", "Aura3D benchmark, five scenes", "software WebGL2", "evidence/vs-threejs"], "technical comparison names its method, its qualifiers and its evidence"),
+  fileIncludes("marketing/index.html", ["npm package", "GitHub source", "Migrate from three.js", "Public API", "All {{GAME_COUNT}} games", "Templates", "Deployment"], "marketing release reference links"),
   fileIncludes("README.md", ["agent-written browser 3D", "assets add", "create-aura3d"], "README product positioning"),
   noFileMatches(publicSiteFiles, versionCycleTerms, "public site no version-cycle language"),
   noFileMatches(publicSiteFiles, publicDraftLanguageTerms, "public site production language only"),

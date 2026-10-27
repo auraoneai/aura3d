@@ -80,7 +80,7 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 <!-- agent-guide: everything below this marker is the long-form agent guide; gen-seo.mjs preserves it verbatim -->
 Aura3D agent guide — a typed scene API for building real 3D apps: scenes, looks,
 lighting, materials, typed assets, camera rigs, gameFeel, SDF text, decals, rigid bodies, and gameplay through
-`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: see Facts above (4.1 adds the game kit, QA replay hooks, safety net, audio synth, model loader, GLSL chunks, scatter/merge, racket-sports kits and CLI asset tools).
+`@aura3d/engine` plus the `@aura3d/cli` toolchain. Current release: see Facts above. It includes the game kit, QA replay hooks, safety net, audio synth, model loader, GLSL chunks, scatter/merge helpers, racket-sports kits and CLI asset tools.
 
 Hello world: every scene gets a look first.
 
@@ -125,7 +125,7 @@ three.js → Aura3D mapping (corrected):
 | `setPixelRatio` | `quality: "auto"` via `looks.appOptions` |
 | `castShadow = true` | `shadow: true` on the light/node |
 | `EffectComposer` passes | `output.preset` + `effects.*` |
-| `AnimationMixer` | `AnimationController` / `createAnimationController` |
+| `AnimationMixer` | `AnimationController` |
 | `new OrbitControls(...)` | `interactions.orbit(...)` |
 
 Effects, post-processing, atmospherics & VFX (`effects.*` in `@aura3d/engine`):
@@ -210,7 +210,7 @@ Mandatory 3D game & scene anti-failure guardrails:
    - Size `html, body, #app, canvas` to `100vw × 100vh` (`position: fixed; inset: 0; overflow: hidden`) and extend the 3D ground/stage apron deep enough in `+Z`/`-Z` under the camera frustum so the bottom third of the viewport never shows a black clear-color void. Disable `collision: true` on `camera.rigs.shoulder` when the target character has attached child runtime nodes, and enforce `>= 1.4m` fighter pushbox separation (`|x| >= 1.8m` at spawn).
 
 
-Aura3D 4.1 kits (build the shell from these, do not hand-roll it):
+Kits (build the shell from these, do not hand-roll it):
 
 - `@aura3d/engine/game`: `createGame` (lifecycle, pause, results, DOM HUD, touch, juice, game sound); the root `createGame` is a headless stub.
 - `@aura3d/engine`: `createFixedStepLoop`, `installQaHooks` (`window.__AURA_<NAME>__`), `readQaParams`, `createCountedRng` for deterministic replay and automated checks; `defineModelAssets` for hashed same-origin models with a `?models=0` procedural fallback; `scatterAlongPath`, `scatterInArea`, `splitScatterByDistance`, `mergeStatic` for draw-call budgets; `game.racketSports()` with `ballFlight`, `scoring`, `athleteRig`.
