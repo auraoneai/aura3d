@@ -31,7 +31,7 @@ const vnoise = (x: number, z: number): number => {
   const a = hash2(ix, iz), b = hash2(ix + 1, iz), c = hash2(ix, iz + 1), d = hash2(ix + 1, iz + 1);
   return a + (b - a) * ux + (c - a) * uz + (a - b - c + d) * ux * uz;
 };
-const fbm = (x: number, z: number, octaves = 4): number => {
+export const fbm = (x: number, z: number, octaves = 4): number => {
   let amp = 0.5, sum = 0, norm = 0;
   for (let i = 0; i < octaves; i++) { sum += amp * vnoise(x, z); norm += amp; x = x * 2.03 + 17.1; z = z * 2.03 - 9.7; amp *= 0.5; }
   return sum / norm;

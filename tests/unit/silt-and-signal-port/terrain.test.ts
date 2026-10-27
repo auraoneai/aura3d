@@ -6,6 +6,7 @@ import { CHAPTERS } from "../../../examples/silt-and-signal-port/chapters-data";
 import { CHAPTER0_COLLIDERS } from "../../../examples/silt-and-signal-port/colliders-ch0";
 import { CHAPTER_COPY, OBJECTIVE_TITLES, SCENE_COPY } from "../../../examples/silt-and-signal-port/copy";
 import { ASSET_HASHES, assets } from "../../../examples/silt-and-signal-port/assets";
+import { buildArchitecture, farDunes, terrainColors } from "../../../examples/silt-and-signal-port/architecture";
 import { canalX, createTerrain } from "../../../examples/silt-and-signal-port/terrain";
 import { canalCentre } from "../../../examples/silt-and-signal-port/world-ch0";
 
@@ -67,6 +68,37 @@ describe("silt-and-signal-port terrain", () => {
       expect(props.trees.length).toBeGreaterThan(100);
       for (const t of props.trees) expect(terrain.corridorDistance(t.x, t.z)).toBeGreaterThan(20);
     }
+  });
+
+  it("builds procedural architecture, terrain vertex colors, and far dunes with valid finite geometry", () => {
+    const terrain = createTerrain(0);
+    const props = terrain.props();
+    const arch = buildArchitecture(props.walls, props.houses);
+    expect(arch.plaster.length).toBe(5);
+    for (const [name, mesh] of [
+      ["cliff", arch.cliff],
+      ["stone", arch.stone],
+      ["roofs", arch.roofs],
+      ["dark", arch.dark],
+      ...arch.plaster.map((m, i) => [`plaster-${i}`, m] as const),
+    ] as const) {
+      const vertexCount = mesh.positions.length / 3;
+      expect(vertexCount, name).toBeGreaterThan(0);
+      expect(mesh.normals.length, name).toBe(mesh.positions.length);
+      expect(mesh.colors?.length, name).toBe(vertexCount * 4);
+      expect(mesh.uvs.length / 2, name).toBe(vertexCount);
+      expect(mesh.indices.length % 3, name).toBe(0);
+      expect(mesh.positions.every(Number.isFinite), name).toBe(true);
+    }
+    const baseTerrain = terrain.terrainMesh();
+    const colors = terrainColors(baseTerrain.positions, baseTerrain.normals, terrain.water.level);
+    expect(colors.length).toBe((baseTerrain.positions.length / 3) * 4);
+    expect(colors.every((c) => Number.isFinite(c) && c > 0)).toBe(true);
+
+    const horizon = farDunes(200, -400, 1200, 2900, [0.85, 0.72, 0.58]);
+    expect(horizon.positions.length / 3).toBeGreaterThan(100);
+    expect(horizon.colors?.length).toBe((horizon.positions.length / 3) * 4);
+    expect(horizon.indices.length % 3).toBe(0);
   });
 });
 

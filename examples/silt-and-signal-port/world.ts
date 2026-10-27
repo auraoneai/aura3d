@@ -15,7 +15,8 @@ import { CHAPTERS } from "./chapters-data";
 import { chaseEyeBlocked, clearChaseEye, createChaseClearance, sceneryColumns, wantedChaseEye } from "./camera";
 import { objectiveOf, type Sim } from "./sim";
 import { RING_FRAGMENT, RING_VERTEX, SKY_FRAGMENT, SKY_VERTEX, WATER_FRAGMENT, WATER_VERTEX } from "./shaders";
-import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain, type Wall } from "./terrain";
+import { buildArchitecture, farDunes, terrainColors, type ColoredMesh } from "./architecture";
+import { createTerrain, usesOriginalTerrain, type Column, type MeshData, type Placement, type Terrain } from "./terrain";
 
 type Scene = ReturnType<typeof scene>;
 export type Rgb = readonly [number, number, number];
@@ -125,7 +126,7 @@ const DECK_TOP = 0.18 * BOARD_SCALE;
 const BOARD_YAW = Math.PI / 2;
 const RIDER_HEIGHT = 2.1;
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
-const dynamicFrom = (m: MeshData) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices) });
+const dynamicFrom = (m: MeshData | ColoredMesh) => geometry.dynamic({ positions: f32(m.positions), normals: f32(m.normals), uvs: f32(m.uvs), indices: Uint32Array.from(m.indices), ...("colors" in m ? { colors: f32(m.colors) } : {}) });
 
 /** Lighting rig per chapter, from the measured chapter-0 rig (warm key 2.2, sky/ground hemisphere 1.05, exp2 fog) and the palette. */
 function rigOf(chapter: number) {
@@ -150,12 +151,6 @@ const placements = (list: readonly Placement[], offset: { x: number; y: number; 
     position: [p.x - offset.x * p.scale, p.y + offset.y * p.scale, p.z - offset.z * p.scale] as [number, number, number],
     rotation: [0, p.yaw, 0] as [number, number, number],
     scale: p.scale
-  }));
-
-const wallTransforms = (list: readonly Wall[]) =>
-  list.map((w) => ({
-    position: [w.x, (w.bottom + w.top) / 2, w.z] as [number, number, number],
-    scale: [w.halfX * 2, w.top - w.bottom, w.halfZ * 2] as [number, number, number]
   }));
 
 const columnTransforms = (list: readonly Column[]) =>
@@ -194,7 +189,7 @@ export function buildWorld(chapter: number): World {
 
   builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, material: material.custom(skySpec(chapter)) }).runtime({ id: "sky" }));
 
-  builder.add(geometry.custom(dynamicFrom(terrainMesh), {
+  builder.add(geometry.custom(dynamicFrom({ ...terrainMesh, colors: terrainColors(terrainMesh.positions) }), {
     name: "terrain",
     receiveShadow: true,
     material: pbr({ color: grassTint, texture: assets.grassColor, normal: assets.grassNormal, roughnessMap: assets.grassRough, normalScale: 0.9, roughness: 1 })
@@ -229,15 +224,30 @@ export function buildWorld(chapter: number): World {
       material: pbr({ color: "#efe2c8", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1 })
     }).runtime({ id: "cistern-deck" }));
   }
-  const wallGroups: readonly { kind: Wall["kind"]; spec: AuraMaterialSpec }[] = [
-    { kind: "cliff", spec: pbr({ color: "#b7bcc4", texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1, texTransforms: { baseColor: { scale: [6, 2] }, normal: { scale: [6, 2] }, metallicRoughness: { scale: [6, 2] } } }) },
-    { kind: "stone", spec: pbr({ color: "#e8d3b0", texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, texTransforms: { baseColor: { scale: [4, 3] }, normal: { scale: [4, 3] }, metallicRoughness: { scale: [4, 3] } } }) },
-    { kind: "plaster", spec: pbr({ color: "#fff0d5", roughness: 0.85 }) }
+  const arch = buildArchitecture(props.walls);
+  const white = "#ffffff";
+  const archMeshes: readonly { name: string; mesh: ColoredMesh; spec: AuraMaterialSpec; cast: boolean }[] = [
+    { name: "cliffs", mesh: arch.cliff, cast: true, spec: pbr({ color: white, texture: assets.rockColor, normal: assets.rockNormal, roughnessMap: assets.rockRough, roughness: 1 }) },
+    { name: "limestone", mesh: arch.stone, cast: true, spec: pbr({ color: white, texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 1, normalScale: 0.8 }) },
+    ...arch.plaster.map((mesh, i) => ({
+      name: `plaster-${i}`, mesh, cast: true,
+      spec: pbr({ color: cssHex(((Math.round(Math.min(1, arch.plasterHues[i]![0] ** (1 / 2.2)) * 255) << 16) | (Math.round(Math.min(1, arch.plasterHues[i]![1] ** (1 / 2.2)) * 255) << 8) | Math.round(Math.min(1, arch.plasterHues[i]![2] ** (1 / 2.2)) * 255))), normal: assets.groundNormal, normalScale: 0.6, roughness: 0.9 })
+    })),
+    { name: "roof-tiles", mesh: arch.roofs, cast: true, spec: pbr({ color: white, texture: assets.bricksColor, normal: assets.bricksNormal, roughnessMap: assets.bricksRough, roughness: 0.85 }) },
+    { name: "window-dark", mesh: arch.dark, cast: false, spec: pbr({ color: "#1a1612", roughness: 0.6 }) }
   ];
-  for (const group of wallGroups) {
-    const list = props.walls.filter((w) => w.kind === group.kind);
-    if (!list.length) continue;
-    builder.add(instances.box({ name: `walls-${group.kind}`, size: [1, 1, 1], transforms: wallTransforms(list), castShadow: true, receiveShadow: true, material: group.spec }));
+  for (const g of archMeshes) {
+    if (!g.mesh.indices.length) continue;
+    builder.add(geometry.custom(dynamicFrom(g.mesh), { name: g.name, castShadow: g.cast, receiveShadow: true, material: g.spec }).runtime({ id: g.name }));
+  }
+  // distant dunes and mesas: the horizon silhouette (outside the +-640 m play corridor, inside the far plane)
+  {
+    const mid = -terrain.length / 2;
+    const haze = hexLinear(chapter === 0 ? 0xdcc5b1 : palette.fog!);
+    builder.add(geometry.custom(dynamicFrom(farDunes(0, mid, 1500, 2150, haze)), {
+      name: "far-dunes", castShadow: false, receiveShadow: false,
+      material: pbr({ color: white, roughness: 1, envMapIntensity: 0.3 })
+    }).runtime({ id: "far-dunes" }));
   }
 
   if (props.trees.length) builder.add(instances.model(assets.tree, { name: "trees", transforms: placements(props.trees), castShadow: true, receiveShadow: true }));
@@ -308,7 +318,7 @@ export function buildWorld(chapter: number): World {
   builder.addMany(prefabs.objectiveMarker({ id: "beacon", diameter: 66, hiddenPosition: [...FAR] }));
 
   for (const side of ["l", "r"]) {
-    builder.add(primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.7, 1.5, 0.7], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) }).runtime({ id: `thruster-${side}` }));
+    builder.add(primitives.sphere({ name: `thruster-${side}`, position: [0, 4, 0], size: [0.34, 1.1, 0.34], material: material.emissive({ color: "#38d6ff", emissiveIntensity: 3 }) }).runtime({ id: `thruster-${side}` }));
   }
   builder.add(model(assets.hoverboard, { name: "board", position: [0, 4, 0], scale: BOARD_SCALE, castShadow: true }).runtime({ id: "board" }));
   builder.add(model(assets.courier, { name: "rider", position: [0, 4, 0], targetHeight: RIDER_HEIGHT, castShadow: true }).runtime({ id: "rider" }));
