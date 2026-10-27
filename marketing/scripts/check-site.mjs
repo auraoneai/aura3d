@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const marketingDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -157,6 +157,25 @@ for (const script of ["gen-game-inventory.mjs --check", "gen-showcase-index.mjs 
   const [file, ...args] = script.split(" ");
   const result = spawnSync(process.execPath, [resolve(repoRoot, "tools", "site", file), ...args], { encoding: "utf8" });
   if (result.status !== 0) failures.push(`${file}: ${(result.stderr || result.stdout).trim()}`);
+}
+
+// Stale-content guard (docs/design/marketing-site-update.md section 11.4): no old release numbers, version-numbered build names,
+// deprecated or removed APIs in code samples, or claims the product does not back. The same rules scan the live site
+// (tools/site/scan-live-site.mjs).
+{
+  const { loadDeprecatedNames, scanText } = await import(pathToFileURL(resolve(repoRoot, "tools", "site", "stale-rules.mjs")).href);
+  const canonical = JSON.parse(readFileSync(resolve(repoRoot, "package.json"), "utf8")).version;
+  const deprecatedNames = loadDeprecatedNames(repoRoot);
+  const staleTargets = [
+    ...htmlFiles.map((file) => [file, "html"]),
+    ...["content/llms-core.txt", "public/llms.txt", "public/llms-full.txt"].map((file) => [resolve(marketingDir, file), "text"])
+  ];
+  for (const [file, kind] of staleTargets) {
+    if (!existsSync(file)) continue;
+    for (const violation of scanText(readFileSync(file, "utf8"), { kind, canonical, deprecatedNames })) {
+      failures.push(`${file.replace(`${repoRoot}/`, "")}: ${violation}`);
+    }
+  }
 }
 
 if (failures.length > 0) {
