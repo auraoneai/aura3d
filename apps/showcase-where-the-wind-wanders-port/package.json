@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-where-the-wind-wanders-port",
-  "version": "4.3.5",
+  "version": "4.3.6",
   "private": true,
   "type": "module",
   "description": "Meadow walk: collect three letters and ring the bell, with a boat epilogue, a journal and audio.",

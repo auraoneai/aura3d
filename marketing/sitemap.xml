@@ -3,7 +3,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://aura3d.auraone.ai/</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.00</priority>
   </url>
@@ -21,7 +21,7 @@
   </url>
   <url>
     <loc>https://aura3d.auraone.ai/docs/api.html</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.88</priority>
   </url>
@@ -75,13 +75,13 @@
   </url>
   <url>
     <loc>https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.82</priority>
   </url>
   <url>
     <loc>https://aura3d.auraone.ai/docs/aura-clash-showcase.html</loc>
-    <lastmod>2026-10-26</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.86</priority>
   </url>
@@ -116,32 +116,14 @@
     <priority>0.70</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/</loc>
-    <lastmod>2026-10-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.70</priority>
-  </url>
-  <url>
     <loc>https://aura3d.auraone.ai/apps/showcase-heatsink/</loc>
     <lastmod>2026-10-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.70</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/apps/showcase-heatsink-v2/</loc>
-    <lastmod>2026-10-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.70</priority>
-  </url>
-  <url>
     <loc>https://aura3d.auraone.ai/apps/showcase-teleoperator/</loc>
     <lastmod>2026-10-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.70</priority>
-  </url>
-  <url>
-    <loc>https://aura3d.auraone.ai/apps/showcase-teleoperator-v2/</loc>
-    <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.70</priority>
   </url>

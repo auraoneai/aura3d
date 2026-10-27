@@ -1,6 +1,6 @@
 # Assets
 
-Version: 4.3.5
+Version: 4.3.6
 
 > In three.js a model is a path string that loads from any URL and fails at run time. In Aura3D `assets add` hashes each file and generates typed keys, so `model(assets.robot)` is a typed reference and a missing asset is a compile error.
 

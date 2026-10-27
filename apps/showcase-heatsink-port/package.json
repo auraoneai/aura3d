@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-heatsink-port",
-  "version": "4.3.5",
+  "version": "4.3.6",
   "private": true,
   "type": "module",
   "description": "Anti-gravity time trial with boost pads, pickups, barrels and heat management. Time Trial mode.",

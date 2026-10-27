@@ -1,23 +1,23 @@
 # Aura3D (full agent guide)
 
-> Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through `@aura3d/engine` plus the `@aura3d/cli` toolchain, for browser 3D apps and interactive websites. Start with https://aura3d.auraone.ai/llms.txt (fast path); this file is the long form.
+> Aura3D: the TypeScript 3D engine that ships the whole stack — typed scenes, looks, typed GLB/glTF assets, camera rigs, gameFeel, and gameplay through `@aura3d/engine` plus the `@aura3d/cli` toolchain, for browser 3D apps and interactive websites. Start with https://aura3d.auraone.ai/llms.txt (fast path); this file is the long form.
 
-Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks.
+Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy checks in one TypeScript 3D engine for the browser. Built for AI coding agents.
 
 ## Facts
 
 - Product: AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, and prompt-to-code scene kits
 - Website: https://aura3d.auraone.ai
-- Current release: Aura3D 4.3.5 (per the repo manifest — the same source the build's version guard uses)
+- Current release: Aura3D 4.3.6 (per the repo manifest — the same source the build's version guard uses)
 - Docs: https://aura3d.auraone.ai/docs/api.html
 - Showcase game: https://aura3d.auraone.ai/showcase/aura-clash/
 - Sitemap: https://aura3d.auraone.ai/sitemap.xml
 - Crawl policy: https://aura3d.auraone.ai/robots.txt (public content allow-all; build internals and source maps disallowed)
-- Last updated: 2026-10-26
+- Last updated: 2026-10-27
 
 ## Pages
 
-- [Home](https://aura3d.auraone.ai/): Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websites, prompt-to-code scene kits, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deploy checks.
+- [Home](https://aura3d.auraone.ai/): Typed lighting looks, licensed and hashed GLB assets, a game kit and deploy checks in one TypeScript 3D engine for the browser. Built for AI coding agents.
 
 ### Docs
 
@@ -31,8 +31,8 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura3D Guide for Claude-Assisted 3D Apps](https://aura3d.auraone.ai/docs/claude.html): Use Claude with Aura3D to generate TypeScript browser 3D scenes from scene kits, primitives, typed GLB/glTF assets, and Vite templates.
 - [Aura3D Guide for Cursor AI 3D Development](https://aura3d.auraone.ai/docs/cursor.html): Use Cursor with Aura3D projects to edit TypeScript browser 3D scenes, Vite templates, typed GLB/glTF assets, scene kits, and prompt-to-3D workflows.
 - [Aura3D Evidence and Release Gates](https://aura3d.auraone.ai/docs/evidence.html): How Aura3D binds public package, asset, browser, game, visual, and deployment claims to retained evidence.
-- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.3.5 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
-- [Aura3D 4.3.5 vs. three.js: measured, with the caveats](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): An evidence-linked comparison of Aura3D and three.js 0.185.1: where Aura3D is better (scene source length, game kit, safety, agent workflow), where three.js is better (bundle size, speed, maturity), and when to choose which. Software-GL measurements, labelled.
+- [Aura3D Claims, Limits, and Release Scope](https://aura3d.auraone.ai/docs/claims.html): Current Aura3D 4.3.6 claim boundaries for the root API, game presentations, assets, rendering, WebGPU, and diagnostics.
+- [Why Aura3D over three.js: everything three.js leaves to you, built in](https://aura3d.auraone.ai/docs/aura3d-vs-threejs.html): Aura3D builds in what three.js leaves to you: studio lighting, typed and licensed assets, a game kit and deploy checks. A lit 3D product in 10 lines.
 - [Aura Clash: Aura3D Browser Fighting-Game Runtime Proof](https://aura3d.auraone.ai/docs/aura-clash-showcase.html): Aura Clash Arena is the Aura3D browser fighting-game development showcase: typed GLB runtime evidence, arena visuals, gameplay UI, accessibility controls, evidence routes, and release gates.
 
 ### Showcase
@@ -46,11 +46,8 @@ Aura3D is the AI-native TypeScript 3D SDK for browser 3D apps, interactive websi
 - [Aura3D Examples and Games](https://aura3d.auraone.ai/apps/showcase-index/): 25 playable 3D browser games built on Aura3D: racing, sports, action, platformers and arcade, each with its own limits stated.
 - [Aura Slam 3D — Championship 3D Tennis on Aura3D](https://aura3d.auraone.ai/apps/showcase-top-tennis/)
 - [Apex Overdrive — 3D Sky-Lane Highway Racer on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush/)
-- [Apex Overdrive — 3D Sky-Lane Highway Racer (V2) on Aura3D](https://aura3d.auraone.ai/apps/showcase-roadster-rush-v2/)
 - [THERMAL DRIFT — High-Velocity Combat Drone Racer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink/)
-- [THERMAL DRIFT — High-Velocity Combat Drone Racer (V2) · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-heatsink-v2/)
 - [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase](https://aura3d.auraone.ai/apps/showcase-teleoperator/)
-- [Grid Dispatch — San Francisco Robotaxi &amp;amp; Autonomous Fleet Showcase (V2, Aura3D 4.0.2)](https://aura3d.auraone.ai/apps/showcase-teleoperator-v2/)
 - [IRON CROWN — 2.5D Arena Fighter · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-iron-crown/)
 - [PIP'S BIG LEAP — 3D Mascot Platformer · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-pips-big-leap/)
 - [Aura Hoops 3D — Streetball Worldwide · Aura3D Showcase](https://aura3d.auraone.ai/apps/showcase-aura-hoops-3d/): Aura Hoops 3D: NBA-Jam-pace 3v3 streetball on the Aura3D engine — check-ball, shot meter, Jam Meter dunk packages, six world courts, Dunk Lab, Handles Lab and a 32-team Street Tour.

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-cloud-runner-port",
-  "version": "4.3.5",
+  "version": "4.3.6",
   "private": true,
   "type": "module",
   "description": "Obstacle runner on a cloud: creatures, boulders, a duel and a finale, with audio.",

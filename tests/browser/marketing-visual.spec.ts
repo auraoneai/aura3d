@@ -11,7 +11,10 @@ import { test } from "@playwright/test";
  * takes full-page screenshots at a desktop and a mobile width, and prints them plus layout metrics as base64 chunks in the log.
  * Software WebGL2 / CPU runner: this is a layout and copy check, not a performance measurement.
  */
-const REPO = process.env.MARKETING_VISUAL_ROOT ?? "/repo";
+// The remote image copies only a fixed set of directories, so the run stages a trimmed copy of marketing/ plus the game inventory and a
+// tokens.json (package and template counts computed locally) under apps/mkt-stage-tmp (EXTRA_DIRS); locally the repo root is used.
+const STAGED = "/repo/apps/mkt-stage-tmp";
+const REPO = process.env.MARKETING_VISUAL_ROOT ?? (existsSync(join(STAGED, "marketing")) ? STAGED : "/repo");
 const MARKETING = join(REPO, "marketing");
 const PAGES = (process.env.MARKETING_VISUAL_PAGES ?? "/,/docs/aura3d-vs-threejs.html,/docs/index.html").split(",");
 const VIEWPORTS = [
@@ -31,14 +34,15 @@ function tokens(html: string): string {
   const others = live.map((g) => g.title).filter((t) => !featured.includes(t));
   const list = others.length <= 2 ? others.join(" and ") : `${others.slice(0, -1).join(", ")}, and ${others[others.length - 1]}`;
   const word = WORDS[featured.length] ?? String(featured.length);
+  const staged = existsSync(join(REPO, "tokens.json")) ? (JSON.parse(readFileSync(join(REPO, "tokens.json"), "utf8")) as { packages: number; templates: number }) : null;
   let packages = 1;
-  for (const dir of existsSync(join(REPO, "packages")) ? readdirSync(join(REPO, "packages")) : []) {
+  for (const dir of !staged && existsSync(join(REPO, "packages")) ? readdirSync(join(REPO, "packages")) : []) {
     const manifest = join(REPO, "packages", dir, "package.json");
     if (existsSync(manifest) && !JSON.parse(readFileSync(manifest, "utf8")).private) packages += 1;
   }
-  // The remote build context omits the create-aura3d template payloads, so fall back to the committed count when the folder is absent.
   const templatesDir = join(REPO, "packages/create-aura3d/templates");
-  const templates = existsSync(templatesDir) ? readdirSync(templatesDir, { withFileTypes: true }).filter((e) => e.isDirectory()).length : Number(process.env.MARKETING_VISUAL_TEMPLATES ?? 20);
+  const templates = staged ? staged.templates : existsSync(templatesDir) ? readdirSync(templatesDir, { withFileTypes: true }).filter((e) => e.isDirectory()).length : 0;
+  if (staged) packages = staged.packages;
   return html
     .replaceAll("{{GAME_COUNT}}", String(inventory.liveGameCount))
     .replaceAll("{{GAME_FEATURED_COUNT_WORD}}", word)

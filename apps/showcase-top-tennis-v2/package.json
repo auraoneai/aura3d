@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-top-tennis-v2",
-  "version": "4.3.5",
+  "version": "4.3.6",
   "private": true,
   "type": "module",
   "description": "Aura Slam 3D v2 — flagship 3D court tennis on Aura3D: deterministic ball flight, 2-bone IK athletes, 6 stadiums, Smash Lab, 32-player World Tour, broadcast camera director, juice/VFX pipeline, and runtime evidence.",

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-drift-and-deliver-port",
-  "version": "4.3.5",
+  "version": "4.3.6",
   "private": true,
   "type": "module",
   "description": "Arcade drift driving through a block city: coin pickups, 84 traffic cars, bloom and a chase camera.",

@@ -1,8 +1,19 @@
 # Changelog
 
-Version: 4.3.5
+Version: 4.3.6
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.3.6 (2026-10-27)
+
+A documentation and site release. The published packages carry no runtime change from 4.3.5; their READMEs (the npm pages) and one source comment are updated.
+
+- **The site and docs lead with what Aura3D ships (site, docs).** The homepage hero is now "A lit 3D product in 10 lines of TypeScript", shown next to the matching three.js app (38 lines before orbit controls). Both scenes are in `tools/bench-vs-threejs/tagline/` and were built and rendered on the remote runner against the stock `create-aura3d` product-viewer scaffold (`evidence/vs-threejs/tagline-check/`). The comparison page is now "Why Aura3D over three.js"; the README, the engine, create-aura3d and cli npm pages and the feature guides say what each gives you versus assembling it yourself. `docs/comparisons/threejs-positioning.md` holds the claim table and the evidence for each number; `docs/comparisons/aura3d-capability-audit.md` labels every capability shipped, partial or experimental.
+- **Homepage code samples compile again (site).** The SDK and typed-asset samples used `orbitCamera`, `environment.studio` and `createAuraApp({ target, scene: [...] })`, none of which exist. They are replaced by the verified hello-world and hero scenes.
+- **`check-deploy` is described as the static check it is (site).** The homepage said it loads a route and reports failed requests and console errors. It checks the build output against the asset manifest (missing hashed assets, unreferenced files in `dist`) and, with `--release`, the licence and quality gates.
+- **References to releases that can no longer be installed are gone (site, docs, npm pages).** The create-aura3d npm page no longer talks about 4.0.x, `llms.txt` no longer carries the 4.1.2 build warning, `docs/project/migration.md` no longer sends people to the retired `@aura3d/three-compat` package, `docs/agents/api-surface.md` no longer lists the live scatter helpers as deprecated, and the guides for 2.0, 4.0 and 4.1 moved to `docs/archive/`. Version stamps across `docs/` are restamped or dropped.
+- **The three "V2" game builds redirect to the current games (site).** `/apps/showcase-{roadster-rush,heatsink,teleoperator,top-tennis}-v2/` answer with a permanent redirect to the game they replaced and are out of the inventory, the sitemap and `llms-full.txt`. The live game count stays 25.
+- **New social card and site checks (site).** The card carries the new headline. `marketing/scripts/check-site.mjs` now fails on old release numbers, version-numbered build names, deprecated APIs in code samples and unbacked `check-deploy` claims, and `tools/site/scan-live-site.mjs` runs the same rules against the live site.
 
 ## 4.3.5 (2026-10-26)
 

@@ -283,7 +283,7 @@ h1 .accent { color: ${TEAL}; }
     <h1>A lit 3D product<br>in <span class="accent">10 lines</span> of<br>TypeScript.</h1>
 
     <div class="install">
-      <span class="cmd"><span class="dollar">$</span> npx <span class="pkg">create-aura3d@4.3.5</span> my-scene --template product-viewer</span>
+      <span class="cmd"><span class="dollar">$</span> npx <span class="pkg">create-aura3d@latest</span> my-scene --template product-viewer</span>
     </div>
 
     <div class="meta">
