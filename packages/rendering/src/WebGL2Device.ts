@@ -57,6 +57,7 @@ import { WebGL2DrawCallBinder } from "./webgl2/MultiDraw";
 import { AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
 import { WebGL2ReadbackProbe } from "./webgl2/Probe";
 import { WebGL2LegacyPostPipeline } from "./webgl2/LegacyPost";
+import { DEFAULT_BLOOM_FUSION, type BloomFusionConfig } from "./webgl2/BloomFusion";
 import { cubeFaceTarget, rgba8TextureInternalFormat, textureUploadFormat, resolveRenderTargetFormat, resolveCompressedTextureFormat, magFilter, minFilter, addressMode } from "./webgl2/TextureFormats";
 
 export interface TextureFilterAnisotropicExtension {
@@ -379,6 +380,8 @@ export class WebGL2Device implements RenderDevice {
    * keeps the original pass sequence.
    */
   bloomFusedPasses = false;
+  /** Which fusions run when `bloomFusedPasses` is on (see `webgl2/BloomFusion.ts`). */
+  bloomFusion: BloomFusionConfig = DEFAULT_BLOOM_FUSION;
 
   static create(options: WebGL2DeviceOptions): WebGL2Device {
     const gl = options.canvas.getContext("webgl2", {
@@ -695,9 +698,8 @@ export class WebGL2Device implements RenderDevice {
    */
   invalidateGpuObjects(): void {
     this.host.drawBinder.invalidateGpuObjects();
+    // Also resets the sampler registry's unit shadow (registered dependent of the state cache).
     this.host.stateCache.invalidate();
-    this.host.samplers.activeTextureUnitIndex = -1;
-    this.host.samplers.textureUnitBindings.clear();
   }
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {

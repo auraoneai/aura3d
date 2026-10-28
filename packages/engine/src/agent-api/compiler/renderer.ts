@@ -120,7 +120,7 @@ export async function createProductionRuntimeSceneRenderer(
     qrFlags: flags
   });
   markTiming("a3d:mount:renderer-create:resolved");
-  // quality auto / cinematic: allow look-neutral bloom pass fusion on the WebGL2 device (`production` never does).
+  // quality auto / cinematic: allow look-neutral bloom pass fusion (`production` never does).
   if (isFusedBloomPasses(canvas)) (productionRenderer.device as unknown as { bloomFusedPasses?: boolean }).bloomFusedPasses = true;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.

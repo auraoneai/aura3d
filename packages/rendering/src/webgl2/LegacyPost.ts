@@ -117,6 +117,9 @@ export const BLOOM_FUSED_MAX_MIPS = 5;
 /** Pass fusion: a mip blurs in one 2-D pass when (2r+1)^2 * width * height stays at or under this many texel fetches. */
 export const BLOOM_FUSED_BLUR_TAP_BUDGET = 7_000_000;
 
+/** Texture units the fullscreen presentation snapshot saves and restores: 0..4 (the fused bloom mip sum samples five). */
+export const PRESENTATION_TEXTURE_UNITS = BLOOM_FUSED_MAX_MIPS;
+
 export interface WebGL2BloomPyramidResources {
   readonly plan: BloomPyramidPlan;
   readonly hdr: boolean;
@@ -134,6 +137,8 @@ export interface WebGL2FullscreenPresentationStateSnapshot {
   readonly textureUnit0: WebGL2TextureUnit0Snapshot;
   readonly textureUnit1: WebGL2TextureUnitBindingSnapshot;
   readonly textureUnit2: WebGL2TextureUnitBindingSnapshot;
+  /** Units 3 and up that post passes bind (the fused bloom mip sum samples units 0..4), restored on exit. */
+  readonly extraTextureUnits: readonly { readonly unit: number; readonly binding: WebGL2TextureUnitBindingSnapshot }[];
   readonly vertexArray: WebGLVertexArrayObject | null;
   readonly viewport: Int32Array | readonly number[];
   readonly colorMask: readonly boolean[];
@@ -154,6 +159,7 @@ export class WebGL2LegacyPostPipeline {
   bloomBlur2dProgram: WebGLProgram | null = null;
   bloomFusedAccumulateProgram: WebGLProgram | null = null;
   bloomFusedCompositeProgram: WebGLProgram | null = null;
+  bloomPrefilterDownsampleProgram: WebGLProgram | null = null;
   /** True when the last `executeNativeBloomPyramidPasses` returned the level-0 accumulator (not a full-resolution copy). */
   lastPyramidFused = false;
 
@@ -1030,11 +1036,13 @@ export class WebGL2LegacyPostPipeline {
     // Pass fusion (hdr-msaa path under quality auto/cinematic; `production` never sets the device flag): small mips blur in one
     // 2-D pass, the mip sum is one pass, and the final full-resolution upsample is folded into the composite.
     const fused = hdr && this.host.device.bloomFusedPasses === true && mipCount <= BLOOM_FUSED_MAX_MIPS;
-    this.lastPyramidFused = fused;
+    const fusion = this.host.device.bloomFusion;
+    const fuseAccumulate = fused && fusion.accumulate;
+    this.lastPyramidFused = fuseAccumulate;
     // Every level settles in slot 0 after the two-pass vertical blur; a single-pass 2-D blur settles in slot 1.
     const settledSlot: (0 | 1)[] = [];
     const blurredSlot = (level: number): 0 | 1 => settledSlot[level] ?? 0;
-    const blur2dProgram = fused ? this.ensureBloomBlur2dProgram() : null;
+    const blur2dProgram = fused && fusion.blur2dFromLevel < mipCount ? this.ensureBloomBlur2dProgram() : null;
 
     const drawDownsample = (
       fromTexture: WebGLTexture,
@@ -1109,7 +1117,7 @@ export class WebGL2LegacyPostPipeline {
     // 2-D pass (slot 0 into slot 1) when fusion is on and the tap count stays under the budget.
     const blurLevel = (level: number, size: { width: number; height: number }, radius: number): void => {
       const taps = (2 * radius + 1) * (2 * radius + 1) * size.width * size.height;
-      if (blur2dProgram && radius <= 24 && taps <= BLOOM_FUSED_BLUR_TAP_BUDGET) {
+      if (blur2dProgram && level >= fusion.blur2dFromLevel && radius <= 24 && taps <= BLOOM_FUSED_BLUR_TAP_BUDGET) {
         this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, mipFramebuffer(level, 1));
         this.host.gl.viewport(0, 0, size.width, size.height);
         this.host.gl.useProgram(blur2dProgram);
@@ -1130,24 +1138,41 @@ export class WebGL2LegacyPostPipeline {
     // Downsampling the complete scene first averaged narrow emissive sources
     // below the authored threshold, so balanced/cinematic bloom could execute
     // all native passes yet remain pixel-identical to disabled output.
-    this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, fullResStaging.framebufferA);
-    this.host.gl.viewport(0, 0, sourceWidth, sourceHeight);
-    this.host.gl.useProgram(brightProgram);
-    this.host.gl.bindVertexArray(vertexArray);
-    this.bindFullscreenTexture(0, sourceTexture);
-    if (brightLut) this.bindFullscreenTexture(1, brightLut);
-    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_source"), 0);
-    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
-    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
-    this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
-    this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
-    this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_excess"), options.excess === true ? 1 : 0);
-    this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
-
     // Level 0 downsamples the extracted highlight field, then blurs H into
     // slot 1 and V back into slot 0. The result therefore settles in slot 0.
     const level0 = mipSize(0);
-    drawDownsample(fullResStaging.textureA, sourceWidth, sourceHeight, mipFramebuffer(0, 0), level0.width, level0.height);
+    // Extract + level-0 downsample in one pass when the source is exactly 2:1: each destination texel averages the four
+    // source texels the unfused box downsample reads (its taps land on texel centres), extracting each first, so the
+    // result matches the two-pass chain without the full-resolution extract target or its pass.
+    const extractFolded = fused && fusion.extract && level0.width * 2 === sourceWidth && level0.height * 2 === sourceHeight;
+    if (extractFolded) {
+      const prefilter = this.ensureBloomPrefilterDownsampleProgram();
+      this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, mipFramebuffer(0, 0));
+      this.host.gl.viewport(0, 0, level0.width, level0.height);
+      this.host.gl.useProgram(prefilter);
+      this.host.gl.bindVertexArray(vertexArray);
+      this.bindFullscreenTexture(0, sourceTexture);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_source"), 0);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(prefilter, "u_threshold"), options.threshold);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(prefilter, "u_softKnee"), options.softKnee);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(prefilter, "u_excess"), options.excess === true ? 1 : 0);
+      this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
+    } else {
+      this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, fullResStaging.framebufferA);
+      this.host.gl.viewport(0, 0, sourceWidth, sourceHeight);
+      this.host.gl.useProgram(brightProgram);
+      this.host.gl.bindVertexArray(vertexArray);
+      this.bindFullscreenTexture(0, sourceTexture);
+      if (brightLut) this.bindFullscreenTexture(1, brightLut);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_source"), 0);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_hdr"), hdr ? 1 : 0);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_threshold"), options.threshold);
+      this.host.gl.uniform1f(this.host.gl.getUniformLocation(brightProgram, "u_softKnee"), options.softKnee);
+      this.host.gl.uniform1i(this.host.gl.getUniformLocation(brightProgram, "u_excess"), options.excess === true ? 1 : 0);
+      this.host.gl.drawArrays(this.host.gl.TRIANGLES, 0, 3);
+      drawDownsample(fullResStaging.textureA, sourceWidth, sourceHeight, mipFramebuffer(0, 0), level0.width, level0.height);
+    }
     blurLevel(0, level0, blurRadii[0]!);
 
     for (let level = 1; level < mipCount; level += 1) {
@@ -1158,7 +1183,7 @@ export class WebGL2LegacyPostPipeline {
       blurLevel(level, size, blurRadii[level]!);
     }
 
-    if (fused) {
+    if (fuseAccumulate) {
       // Weighted mip sum in one pass (smallest to largest, as the sequential passes accumulate), left at level-0 size.
       const fusedWeights = v2Response ? v2Response.weights : plan.weights;
       const fusedProgram = this.ensureBloomFusedAccumulateProgram();
@@ -1671,6 +1696,10 @@ export class WebGL2LegacyPostPipeline {
     const textureUnit0 = this.host.lifecycle.captureTextureUnit0();
     const textureUnit1 = this.host.lifecycle.captureTextureUnitBinding(1);
     const textureUnit2 = this.host.lifecycle.captureTextureUnitBinding(2);
+    const extraTextureUnits: { unit: number; binding: WebGL2TextureUnitBindingSnapshot }[] = [];
+    for (let unit = 3; unit < PRESENTATION_TEXTURE_UNITS; unit += 1) {
+      extraTextureUnits.push({ unit, binding: this.host.lifecycle.captureTextureUnitBinding(unit) });
+    }
     this.host.gl.activeTexture(textureUnit0.activeTexture);
     const snapshot: WebGL2FullscreenPresentationStateSnapshot = {
       framebuffer: this.host.gl.getParameter(this.host.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null,
@@ -1678,6 +1707,7 @@ export class WebGL2LegacyPostPipeline {
       textureUnit0,
       textureUnit1,
       textureUnit2,
+      extraTextureUnits,
       vertexArray: this.host.gl.getParameter(this.host.gl.VERTEX_ARRAY_BINDING) as WebGLVertexArrayObject | null,
       viewport: this.host.gl.getParameter(this.host.gl.VIEWPORT) as Int32Array | readonly number[],
       colorMask: this.host.gl.getParameter(this.host.gl.COLOR_WRITEMASK) as readonly boolean[],
@@ -1703,6 +1733,10 @@ export class WebGL2LegacyPostPipeline {
 
   restoreFullscreenPresentationState(snapshot: WebGL2FullscreenPresentationStateSnapshot, fallbackWidth: number, fallbackHeight: number): void {
     this.host.gl.bindVertexArray(snapshot.vertexArray);
+    for (let index = snapshot.extraTextureUnits.length - 1; index >= 0; index -= 1) {
+      const extra = snapshot.extraTextureUnits[index]!;
+      this.host.lifecycle.restoreTextureUnitBinding(extra.unit, extra.binding);
+    }
     this.host.lifecycle.restoreTextureUnitBinding(2, snapshot.textureUnit2);
     this.host.lifecycle.restoreTextureUnitBinding(1, snapshot.textureUnit1);
     this.host.lifecycle.restoreTextureUnit0(snapshot.textureUnit0);
@@ -1992,6 +2026,45 @@ void main() {
 }
 `, "webgl2-bloom-fused-composite");
     return this.bloomFusedCompositeProgram;
+  }
+
+  /** Bright extract (HDR) + level-0 box downsample in one pass over an exactly 2:1 source; see `executeNativeBloomPyramidPasses`. */
+  ensureBloomPrefilterDownsampleProgram(): WebGLProgram {
+    if (this.bloomPrefilterDownsampleProgram) return this.bloomPrefilterDownsampleProgram;
+    this.bloomPrefilterDownsampleProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform float u_threshold;
+uniform float u_softKnee;
+uniform int u_excess;
+out vec4 outColor;
+vec4 a3dFinite(vec4 c) { return (any(isnan(c)) || any(isinf(c))) ? vec4(0.0) : c; }
+vec4 extractTexel(ivec2 pixel) {
+  vec4 source = texelFetch(u_source, pixel, 0);
+  float luma = dot(source.rgb, vec3(0.2126, 0.7152, 0.0722));
+  if (u_excess == 1) {
+    float knee = max(u_softKnee, 0.0);
+    float soft = clamp(luma - u_threshold + knee, 0.0, 2.0 * knee);
+    soft = soft * soft / (4.0 * knee + 1e-5);
+    float excessWeight = max(soft, luma - u_threshold) / max(luma, 1e-5);
+    return vec4(source.rgb * excessWeight, source.a);
+  }
+  float kneeLow = max(u_threshold - u_softKnee, 0.0);
+  float kneeHigh = min(u_threshold + u_softKnee, 1.0);
+  float weight = u_softKnee <= 0.0
+    ? (luma >= u_threshold ? 1.0 : 0.0)
+    : smoothstep(kneeLow, kneeHigh, luma);
+  return source * weight;
+}
+void main() {
+  ivec2 base = ivec2(gl_FragCoord.xy) * 2;
+  vec4 sum = a3dFinite(extractTexel(base)) + a3dFinite(extractTexel(base + ivec2(1, 0)))
+    + a3dFinite(extractTexel(base + ivec2(0, 1))) + a3dFinite(extractTexel(base + ivec2(1, 1)));
+  outColor = sum * 0.25;
+}
+`, "webgl2-bloom-prefilter-downsample");
+    return this.bloomPrefilterDownsampleProgram;
   }
 
   ensureBloomAccumulateProgram(): WebGLProgram {

@@ -45,7 +45,16 @@ function prd02SamplerEnabled(): boolean {
 }
 
 export class WebGL2SamplerRegistry {
-  constructor(readonly host: WebGL2DeviceHost) {}
+  constructor(readonly host: WebGL2DeviceHost) {
+    // The unit shadow below mirrors GL state, so it is forgotten whenever the GL state cache is. (`?.`: partial test hosts.)
+    host.stateCache?.onInvalidate?.(() => this.resetUnitShadow());
+  }
+
+  /** Forget which unit is active and which texture each unit holds (they are re-issued on next use). */
+  resetUnitShadow(): void {
+    this.activeTextureUnitIndex = -1;
+    this.textureUnitBindings.clear();
+  }
 
   activeTextureUnitIndex = -1;
 

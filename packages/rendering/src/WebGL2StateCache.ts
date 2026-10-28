@@ -90,7 +90,19 @@ export class WebGL2StateCache {
 
   constructor(readonly descriptor: WebGL2StateCacheDescriptor) {}
 
+  /**
+   * Other GL state shadows that must be forgotten together with this one (the sampler registry's active-unit and
+   * per-unit texture bindings). `invalidate()` is the single entry point: every site that leaves GL state behind calls
+   * it, so a dependent registered here can never survive an invalidation with stale entries.
+   */
+  private readonly dependents: Array<() => void> = [];
+
+  onInvalidate(reset: () => void): void {
+    this.dependents.push(reset);
+  }
+
   invalidate(): void {
+    for (const reset of this.dependents) reset();
     this.currentProgram = UNSET;
     this.currentVertexArray = UNSET;
     this.currentArrayBuffer = UNSET;

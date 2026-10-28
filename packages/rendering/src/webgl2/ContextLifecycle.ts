@@ -237,8 +237,6 @@ export class WebGL2ContextLifecycle {
     this.host.counters.drawCalls = 0;
     this.host.counters.nativeEnvironmentBindings = 0;
     this.host.counters.nativeShadowMapBindings = 0;
-    this.host.samplers.activeTextureUnitIndex = -1;
-    this.host.samplers.textureUnitBindings.clear();
     this.host.stateCache.invalidate();
     this.viewportWidth = width;
     this.viewportHeight = height;
