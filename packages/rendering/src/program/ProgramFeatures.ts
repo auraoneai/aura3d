@@ -10,6 +10,13 @@
 
 import type { ProgramFeatures, TextureSlotFeature } from "../contracts/program";
 
+/**
+ * Feature bit (in `ProgramFeatures.features`): this forward program writes straight to the canvas (the direct render
+ * path: no post chain, no OutputPass), so it must encode its own output. Set by `ForwardPass` and the warm-up exactly
+ * when the frame's output colour space is `srgb`; absent on every HDR/post-chain program, which stay byte-identical.
+ */
+export const PROGRAM_OUTPUT_SRGB_FEATURE = "a3d.output.srgb";
+
 export const DEFAULT_SHADOW_RECEIVE: ProgramFeatures["shadows"] = {
   cascades: 0,
   pcfTaps: 1,

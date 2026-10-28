@@ -55,11 +55,43 @@ import { SHADOW_FORWARD_CHUNK_GLSL } from "./chunks/shadow_forward.glsl";
 import { INDIRECT_DEFAULT_CHUNK_GLSL } from "./chunks/indirect_default.glsl";
 import { FOG_DEFAULT_CHUNK_GLSL } from "./chunks/fog_default.glsl";
 import { DEPTH_CHUNK_GLSL, DISTANCE_CHUNK_PARS_GLSL } from "./chunks/depth.glsl";
-import { normalizeProgramFeatures, totalLightCount, MAP_DEFINES } from "./ProgramFeatures";
+import { normalizeProgramFeatures, totalLightCount, MAP_DEFINES, PROGRAM_OUTPUT_SRGB_FEATURE } from "./ProgramFeatures";
 import { programKey } from "./ProgramKey";
 import { PRD02_IBL_FEATURE } from "../contracts/environment";
 
 export const GENERATED_PROGRAM_MARKER = "a3d-generated-program";
+
+/**
+ * The encode the HDR chain applies at presentation, for programs that draw to the canvas themselves: r185
+ * ACESFilmicToneMapping (exposure 1, as `OutputPass` / the legacy tone pass) followed by the sRGB OETF. The operator body
+ * is the one in `output/ToneMappingOperators.glsl.ts`.
+ */
+export const OUTPUT_SRGB_CHUNK_GLSL = `vec3 a3dRRTAndODTFit(vec3 v) {
+  vec3 a = v * (v + 0.0245786) - 0.000090537;
+  vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+  return a / b;
+}
+vec3 a3dAcesFilmic(vec3 color) {
+  const mat3 ACESInputMat = mat3(
+    vec3(0.59719, 0.07600, 0.02840),
+    vec3(0.35458, 0.90834, 0.13383),
+    vec3(0.04823, 0.01566, 0.83777)
+  );
+  const mat3 ACESOutputMat = mat3(
+    vec3(1.60475, -0.10208, -0.00327),
+    vec3(-0.53108, 1.10813, -0.07276),
+    vec3(-0.07367, -0.00605, 1.07602)
+  );
+  color /= 0.6;
+  color = ACESInputMat * color;
+  color = a3dRRTAndODTFit(color);
+  color = ACESOutputMat * color;
+  return clamp(color, 0.0, 1.0);
+}
+vec3 a3dEncodeForCanvas(vec3 linear) {
+  vec3 c = clamp(a3dAcesFilmic(max(linear, vec3(0.0))), 0.0, 1.0);
+  return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), c));
+}`;
 
 export interface ProgramDegradation {
   readonly code: "extension-lobe-pending" | "program-compile-failed";
@@ -507,6 +539,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
   const endHooks = hookSplice(contributions, "fragment:end", state);
 
   const lit = f.lighting === "lit";
+  const outputSrgb = f.features[PROGRAM_OUTPUT_SRGB_FEATURE] === true;
   const withBrdf = lit || state.builtins.has("brdf");
   const body: string[] = [];
   body.push("void main() {");
@@ -600,6 +633,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     body.push("  a3dColor = a3dApplyFog(a3dColor, a3dDepth, v_worldPosition.y);");
   }
   if (endHooks.length > 0) body.push(...endHooks.map((s) => indent(s)));
+  if (outputSrgb) body.push("  a3dColor = a3dEncodeForCanvas(a3dColor);");
   body.push("  outColor = vec4(a3dColor, a3dAlpha);");
   body.push("#ifdef BACKGROUND_COVERAGE\n  outCoverage = vec4(1.0, 1.0, 1.0, 1.0);\n#endif");
   body.push("}");
@@ -618,6 +652,7 @@ function forwardFragmentSource(f: ProgramFeatures, contributions: readonly Contr
     ...(lit ? [LIGHTS_LEGACY_CHUNK_GLSL, INDIRECT_DEFAULT_CHUNK_GLSL] : []),
     ...(forwardShadowReceive(f) ? [SHADOW_FORWARD_CHUNK_GLSL] : []),
     ...(f.fog !== "none" ? [FOG_DEFAULT_CHUNK_GLSL] : []),
+    ...(outputSrgb ? [OUTPUT_SRGB_CHUNK_GLSL] : []),
     // Lobe pars + feature declarations + every call chunk's requires, in
     // requires-first order (T0-05).
     ...state.decls,
