@@ -2,16 +2,10 @@ import { camera, createAuraApp, lights, material, primitives, scene } from "@aur
 import type { SceneHandle } from "../../shared/glue";
 
 export async function start(canvas: HTMLCanvasElement): Promise<SceneHandle> {
-  const app = createAuraApp(canvas, {
-    autoStart: false,
-    resize: false,
-    pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    scene: scene()
-      .camera(camera.perspective({ fov: 50, near: 0.1, far: 100, position: [2, 2, 4], target: [0, 0.5, 0] }))
-      .add(lights.ambient({ color: "#ffffff", intensity: 1 }))
-      .add(primitives.box({ name: "cube", size: [1, 1, 1], material: material.pbr({ color: "#d86a3a" }) }).runtime({ id: "cube" }))
-  });
+  const app = createAuraApp(canvas, { autoStart: false, scene: scene()
+    .camera(camera.perspective({ fov: 50, position: [2, 2, 4], target: [0, 0.5, 0] }))
+    .add(lights.ambient({ intensity: 1 }))
+    .add(primitives.box({ material: material.pbr({ color: "#d86a3a" }) }).runtime({ id: "cube" })) });
   await app.ready();
   const cube = app.nodes.require("cube");
   let yaw = 0;

@@ -16,7 +16,6 @@ export async function start(canvas: HTMLCanvasElement): Promise<SceneHandle> {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     output: { toneMapping: "aces" },
     scene: coinNodes.reduce((world, coin) => world.add(coin), scene()
       .background("#0d2230")

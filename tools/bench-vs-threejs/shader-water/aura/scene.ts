@@ -1,13 +1,12 @@
-import { camera, createAuraApp, effects, geometry, material, primitives, scene, texture } from "@aura3d/engine";
+import { camera, createAuraApp, effects, material, primitives, scene, texture } from "@aura3d/engine";
 import { paintNoise } from "../../shared/noise-canvas";
 import type { SceneHandle } from "../../shared/glue";
 
 const WATER_VERTEX = /* glsl */ `
 out vec3 vWorld;
 void main() {
-  vec3 p = position;
-  p.y += sin(p.x * 0.7 + waterTime * 1.2) * 0.18 + sin(p.z * 0.9 - waterTime * 0.9) * 0.14;
-  vWorld = (modelMatrix * vec4(p, 1.0)).xyz;
+  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+  vWorld.y += sin(vWorld.x * 0.7 + waterTime * 1.2) * 0.18 + sin(vWorld.z * 0.9 - waterTime * 0.9) * 0.14;
   gl_Position = projectionMatrix * viewMatrix * vec4(vWorld, 1.0);
 }`;
 
@@ -56,35 +55,14 @@ void main() {
   outColor = c;
 }`;
 
-function waterGrid(size: number, segments: number) {
-  const n = segments + 1;
-  const positions = new Float32Array(n * n * 3), normals = new Float32Array(n * n * 3), uvs = new Float32Array(n * n * 2);
-  const indices = new Uint32Array(segments * segments * 6);
-  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
-    const v = j * n + i;
-    positions.set([(i / segments - 0.5) * size, 0, (j / segments - 0.5) * size], v * 3);
-    normals.set([0, 1, 0], v * 3);
-    uvs.set([i / segments, j / segments], v * 2);
-  }
-  for (let j = 0, k = 0; j < segments; j++) for (let i = 0; i < segments; i++, k += 6) {
-    const a = j * n + i;
-    indices.set([a, a + n, a + 1, a + 1, a + n, a + n + 1], k);
-  }
-  return geometry.dynamic({ positions, normals, uvs, indices });
-}
-
 export async function start(canvas: HTMLCanvasElement): Promise<SceneHandle> {
   const noiseMap = texture.canvas({ canvas: paintNoise(), colorSpace: "linear" });
   const app = createAuraApp(canvas, {
     autoStart: false,
-    resize: false,
-    pixelRatio: 1,
-    renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
-    output: { toneMapping: "aces" },
     scene: scene()
-      .camera(camera.perspective({ fov: 55, near: 0.1, far: 1000, position: [0, 2.2, 9], target: [0, 1, -10] }))
-      .add(geometry.custom(waterGrid(80, 96), { name: "water", material: material.custom({ glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT }, uniforms: { waterTime: { type: "f32", value: 0 }, noiseMap: { type: "texture2d", value: noiseMap } } }) }).runtime({ id: "water" }))
-      .add(primitives.sphere({ name: "sky", size: 600, castShadow: false, material: material.custom({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, side: "back", depthWrite: false }) }))
+      .camera(camera.perspective({ fov: 55, far: 1000, position: [0, 2.2, 9], target: [0, 1, -10] }))
+      .add(primitives.plane({ size: [80, 1, 80], params: { widthSegments: 96, heightSegments: 96 }, material: material.custom({ glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT }, uniforms: { waterTime: { type: "f32", value: 0 }, noiseMap: { type: "texture2d", value: noiseMap } } }) }).runtime({ id: "water" }))
+      .add(primitives.sphere({ size: 600, castShadow: false, material: material.custom({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, side: "back", depthWrite: false }) }))
   });
   await app.ready();
   app.post?.addPostPass?.(effects.shaderPass({ name: "grade", order: "before-tonemap", glsl: GRADE_GLSL, uniforms: { u_vignette: 0.6 } }));
