@@ -165,7 +165,8 @@ describe("looks.preset v0 expansion (T1.2)", () => {
     const night = presetGroup("night-city");
     expect(night.children.some((n) => n.kind === "environment" && (n as AuraEnvironmentNode).environment === "hdri")).toBe(false);
     // A scene lit only by its authored lights is lit by those alone (three.js r185 convention), so the no-HDRI looks say so.
-    expect(night.children.some((n) => n.kind === "environment" && (n as AuraEnvironmentNode).environment === "preset")).toBe(true);
+    // environments.studio()/nightCinematic() emit `environment: "preset"`, a value AuraEnvironmentNode's union does not list.
+    expect(night.children.some((n) => n.kind === "environment" && (n as { environment?: string }).environment === "preset")).toBe(true);
     const studio = presetGroup("product-studio");
     expect(studio.children.some((n) => n.kind === "effect" && n.effect === "fog")).toBe(false);
     expect(studio.children.some((n) => n.kind === "environment" && (n as AuraEnvironmentNode).environment === "hdri")).toBe(true);
