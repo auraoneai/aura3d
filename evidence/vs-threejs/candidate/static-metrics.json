@@ -1,0 +1,206 @@
+{
+  "tokenizer": "gpt-tokenizer o200k_base (OpenAI BPE; a proxy: Claude's tokenizer is not public)",
+  "loc": "non-blank, non-comment lines of the scene.ts file (shared neutral glue excluded)",
+  "apps": {
+    "baseline/three": {
+      "scene": {
+        "loc": 15,
+        "chars": 724,
+        "words": 81,
+        "tokens": 210,
+        "importModules": [
+          "three"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 8
+      },
+      "extraFiles": {}
+    },
+    "baseline/aura": {
+      "scene": {
+        "loc": 12,
+        "chars": 691,
+        "words": 85,
+        "tokens": 208,
+        "importModules": [
+          "@aura3d/engine"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 6
+      },
+      "extraFiles": {
+        "vite.config.ts": 1,
+        "shared/aura-vite.ts": 10
+      }
+    },
+    "pbr-viewer/three": {
+      "scene": {
+        "loc": 49,
+        "chars": 2629,
+        "words": 246,
+        "tokens": 740,
+        "importModules": [
+          "three",
+          "three/examples/jsm/controls/OrbitControls.js",
+          "three/examples/jsm/loaders/GLTFLoader.js",
+          "three/examples/jsm/loaders/RGBELoader.js",
+          "three/examples/jsm/postprocessing/EffectComposer.js",
+          "three/examples/jsm/postprocessing/OutputPass.js",
+          "three/examples/jsm/postprocessing/RenderPass.js",
+          "three/examples/jsm/postprocessing/UnrealBloomPass.js"
+        ],
+        "distinctModules": 8,
+        "distinctSymbols": 21
+      },
+      "extraFiles": {}
+    },
+    "pbr-viewer/aura": {
+      "scene": {
+        "loc": 23,
+        "chars": 1428,
+        "words": 167,
+        "tokens": 452,
+        "importModules": [
+          "@aura3d/engine"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 11
+      },
+      "extraFiles": {
+        "assets.generated.ts": 1,
+        "vite.config.ts": 1,
+        "shared/aura-vite.ts": 10
+      }
+    },
+    "forest/three": {
+      "scene": {
+        "loc": 71,
+        "chars": 3411,
+        "words": 468,
+        "tokens": 1213,
+        "importModules": [
+          "three"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 20
+      },
+      "extraFiles": {}
+    },
+    "forest/aura": {
+      "scene": {
+        "loc": 48,
+        "chars": 2787,
+        "words": 381,
+        "tokens": 986,
+        "importModules": [
+          "@aura3d/engine"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 9
+      },
+      "extraFiles": {
+        "vite.config.ts": 1,
+        "shared/aura-vite.ts": 10
+      }
+    },
+    "skinned-character/three": {
+      "scene": {
+        "loc": 62,
+        "chars": 2851,
+        "words": 303,
+        "tokens": 846,
+        "importModules": [
+          "three",
+          "three/examples/jsm/loaders/GLTFLoader.js"
+        ],
+        "distinctModules": 2,
+        "distinctSymbols": 17
+      },
+      "extraFiles": {}
+    },
+    "skinned-character/aura": {
+      "scene": {
+        "loc": 44,
+        "chars": 2331,
+        "words": 307,
+        "tokens": 768,
+        "importModules": [
+          "@aura3d/engine"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 8
+      },
+      "extraFiles": {
+        "assets.generated.ts": 1,
+        "vite.config.ts": 1,
+        "shared/aura-vite.ts": 10
+      }
+    },
+    "game-loop/three": {
+      "scene": {
+        "loc": 82,
+        "chars": 3746,
+        "words": 463,
+        "tokens": 1178,
+        "importModules": [
+          "three"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 14
+      },
+      "extraFiles": {}
+    },
+    "game-loop/aura": {
+      "scene": {
+        "loc": 60,
+        "chars": 3553,
+        "words": 429,
+        "tokens": 1112,
+        "importModules": [
+          "@aura3d/engine"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 9
+      },
+      "extraFiles": {
+        "vite.config.ts": 1,
+        "shared/aura-vite.ts": 10
+      }
+    },
+    "shader-water/three": {
+      "scene": {
+        "loc": 86,
+        "chars": 3969,
+        "words": 509,
+        "tokens": 1386,
+        "importModules": [
+          "three",
+          "three/examples/jsm/postprocessing/EffectComposer.js",
+          "three/examples/jsm/postprocessing/OutputPass.js",
+          "three/examples/jsm/postprocessing/RenderPass.js",
+          "three/examples/jsm/postprocessing/ShaderPass.js"
+        ],
+        "distinctModules": 5,
+        "distinctSymbols": 15
+      },
+      "extraFiles": {}
+    },
+    "shader-water/aura": {
+      "scene": {
+        "loc": 66,
+        "chars": 3209,
+        "words": 451,
+        "tokens": 1211,
+        "importModules": [
+          "@aura3d/engine"
+        ],
+        "distinctModules": 1,
+        "distinctSymbols": 7
+      },
+      "extraFiles": {
+        "vite.config.ts": 1,
+        "shared/aura-vite.ts": 10
+      }
+    }
+  }
+}

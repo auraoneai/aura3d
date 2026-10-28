@@ -20,19 +20,22 @@ const run = (cmd, args, cwd) => {
 const walk = (dir) => readdirSync(dir).flatMap((n) => { const p = join(dir, n); return statSync(p).isDirectory() ? walk(p) : [p]; });
 const sha256 = (file) => createHash("sha256").update(readFileSync(file)).digest("hex");
 const benchRoot = dirname(root);
+// Candidate mode (harness/run-candidate.sh stages tools/bench-vs-threejs/candidate.json): the Aura3D app is built from the workspace sources
+// (shared/aura-vite-workspace.ts) instead of the published package, and is not type-checked (no published .d.ts to check against).
+const CANDIDATE = existsSync(join(benchRoot, "candidate.json"));
 
 rmSync(work, { recursive: true, force: true });
 mkdirSync(work, { recursive: true });
 writeFileSync(join(work, "package.json"), JSON.stringify({
   name: "fullgame-work", private: true, type: "module",
-  dependencies: { "@aura3d/engine": AURA, three: THREE },
+  dependencies: CANDIDATE ? { three: THREE } : { "@aura3d/engine": AURA, three: THREE },
   devDependencies: { vite: VITE, typescript: "^5.8.3", "@types/three": THREE }
 }, null, 2));
 const install = run("npm", ["install", "--no-audit", "--no-fund"], work);
 if (!install.ok) throw new Error(`npm install failed\n${install.out}`);
 const tokenizerInstall = run("npm", ["install", "--no-audit", "--no-fund", "--no-save", "gpt-tokenizer"], work);
 const version = (name) => JSON.parse(readFileSync(join(work, "node_modules", name, "package.json"), "utf8")).version;
-const result = { installed: { aura: version("@aura3d/engine"), three: version("three"), vite: version("vite"), typescript: version("typescript") }, tokenizerInstalled: tokenizerInstall.ok, apps: {} };
+const result = { candidate: CANDIDATE, installed: { aura: CANDIDATE ? "workspace sources (vite alias build)" : version("@aura3d/engine"), three: version("three"), vite: version("vite"), typescript: version("typescript") }, tokenizerInstalled: tokenizerInstall.ok, apps: {} };
 
 cpSync(join(benchRoot, "shared"), join(work, "apps", "shared"), { recursive: true });
 result.coinSimSha256 = { repo: sha256(join(benchRoot, "shared", "coin-sim.ts")), staged: sha256(join(work, "apps", "shared", "coin-sim.ts")) };
@@ -43,8 +46,17 @@ for (const app of ["aura", "three"]) {
   if (app === "aura") {
     mkdirSync(join(dir, "public", "hdri"), { recursive: true });
     cpSync(join(benchRoot, "..", "..", "public", "hdri", "autumn_field_puresky_1k.hdr"), join(dir, "public", "hdri", "autumn_field_puresky_1k.hdr"));
+    if (CANDIDATE) {
+      const text = readFileSync(join(benchRoot, "..", "..", "vite.aliases.generated.ts"), "utf8");
+      const pairs = [...text.matchAll(/\[\s*"([^"]+)"\s*,\s*"([^"]+)"\s*\]/g)].map((m) => [m[1], m[2]]);
+      if (pairs.length < 50) throw new Error(`candidate mode: parsed only ${pairs.length} alias entries`);
+      writeFileSync(join(work, "bench-aliases.json"), JSON.stringify(pairs));
+      process.env.BENCH_ALIASES = join(work, "bench-aliases.json");
+      process.env.BENCH_AURA_SOURCE = join(benchRoot, "..", "..");
+      writeFileSync(join(dir, "vite.config.ts"), 'export { default } from "../../shared/aura-vite-workspace";\n');
+    }
   }
-  const typecheck = run(join(work, "node_modules/.bin/tsc"), ["-p", dir], work);
+  const typecheck = CANDIDATE && app === "aura" ? { ok: true, out: "skipped in candidate mode (workspace sources, no published .d.ts)" } : run(join(work, "node_modules/.bin/tsc"), ["-p", dir], work);
   const dist = join(dir, "dist");
   const t0 = Date.now();
   const build = run(join(work, "node_modules/.bin/vite"), ["build", dir, "--outDir", dist, "--emptyOutDir", "--logLevel", "warn"], work);

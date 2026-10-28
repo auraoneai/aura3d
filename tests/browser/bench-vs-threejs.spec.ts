@@ -14,7 +14,10 @@ import { test, type Browser, type BrowserContext, type Page } from "@playwright/
  */
 const WORK = process.env.BENCH_WORK ?? "/tmp/bench";
 const ALL_SCENES = ["baseline", "pbr-viewer", "forest", "skinned-character", "game-loop", "shader-water"] as const;
-const LIBS: readonly string[] = ["three", "aura"];
+/** Candidate runs (harness/run-candidate.sh stages tools/bench-vs-threejs/candidate.json) measure the workspace build as two arms; release runs measure the published package as `aura`. */
+const CANDIDATE = existsSync("/repo/tools/bench-vs-threejs/candidate.json");
+const AURA_ARMS: readonly string[] = CANDIDATE ? ["aura-auto", "aura-production"] : ["aura"];
+const LIBS: readonly string[] = ["three", ...AURA_ARMS];
 const MEASURE_FRAMES = Number(process.env.BENCH_FRAMES ?? 60);
 const COLD_LOADS = 3;
 /** The forest gets 5 minutes to produce a first frame (PRD target P6); a timeout is recorded as a failed result, not a crashed group (group H digs into why). */
@@ -207,7 +210,7 @@ async function runGroup(browser: Browser, scenes: readonly string[], libs: reado
     }
 
     // Cross-library correctness: luma-histogram JSD and mean luma delta at matched frames.
-    const t = captures["three"], a = captures["aura"];
+    const t = captures["three"], a = captures[AURA_ARMS[0]!];
     const correctness = !t || !a ? null : {
       jsdFrame25: jsd(histogram(t.a.luma), histogram(a.a.luma)),
       jsdFrame85: jsd(histogram(t.b.luma), histogram(a.b.luma)),
@@ -372,8 +375,8 @@ const GL_TIMING_HOOK = `(() => {
 async function forestStall(browser: Browser): Promise<void> {
   const capMs = Number(process.env.BENCH_FOREST_CAP_MS ?? 600_000);
   const work = process.env.BENCH_FOREST_WORK ?? "/tmp/bench-forest";
-  execFileSync("node", ["tools/bench-vs-threejs/harness/build-all.mjs", "/repo/tools/bench-vs-threejs", work, "/repo/fixtures", "forest", "aura"], { stdio: "inherit", timeout: 900_000, env: { ...process.env, BENCH_MINIFY: "false" } });
-  const { server, origin } = await serve(join(work, "dist", "forest", "aura"));
+  execFileSync("node", ["tools/bench-vs-threejs/harness/build-all.mjs", "/repo/tools/bench-vs-threejs", work, "/repo/fixtures", "forest", AURA_ARMS[0]!], { stdio: "inherit", timeout: 900_000, env: { ...process.env, BENCH_MINIFY: "false" } });
+  const { server, origin } = await serve(join(work, "dist", "forest", AURA_ARMS[0]!));
   const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1 });
   await context.addInitScript(GL_HOOK);
   await context.addInitScript(GL_TIMING_HOOK);
@@ -432,7 +435,7 @@ test.describe("aura3d vs three.js benchmark", () => {
   test("group C: skinned-character", async ({ browser }) => runGroup(browser, ["skinned-character"]));
   test("group D: shader-water", async ({ browser }) => runGroup(browser, ["shader-water"]));
   test("group E: three.js with 4x MSAA (equalised antialiasing), all scenes", async ({ browser }) => runGroup(browser, ALL_SCENES, ["three-msaa"]));
-  test("group F: pbr-viewer, all three variants (exposure re-tuned after the first pass)", async ({ browser }) => runGroup(browser, ["pbr-viewer"], ["three", "aura", "three-msaa"]));
-  test("group G: CPU profiles (first frame and 60 steady frames), baseline cube and pbr-viewer", async ({ browser }) => profileGroup(browser, [["baseline", "aura"], ["baseline", "three-msaa"], ["pbr-viewer", "aura"]]));
+  test("group F: pbr-viewer, all three variants (exposure re-tuned after the first pass)", async ({ browser }) => runGroup(browser, ["pbr-viewer"], ["three", AURA_ARMS[0]!, "three-msaa"]));
+  test("group G: CPU profiles (first frame and 60 steady frames), baseline cube and pbr-viewer", async ({ browser }) => profileGroup(browser, [["baseline", AURA_ARMS[0]!], ["baseline", "three-msaa"], ["pbr-viewer", AURA_ARMS[0]!]]));
   test("group H: forest stall hunt, Aura3D, 10-minute cap", async ({ browser }) => forestStall(browser));
 });

@@ -18,7 +18,14 @@ const THREE_VERSION = process.env.BENCH_THREE_VERSION ?? "0.185.1";
 const VITE_VERSION = "7.3.2";
 const ALL_SCENES = ["baseline", "pbr-viewer", "forest", "skinned-character", "game-loop", "shader-water"];
 const SCENES = sceneArg ? sceneArg.split(",") : ALL_SCENES;
-const LIBS = libArg ? libArg.split(",") : ["three", "aura"];
+// Candidate mode (harness/run-candidate.sh writes tools/bench-vs-threejs/candidate.json): the Aura3D arms are built from the workspace
+// sources (shared/aura-vite-workspace.ts + the repo's generated alias table) instead of an npm install. `aura-auto` is the scene source as
+// written; `aura-production` is the same source with `quality: "production"` injected at build time.
+const CANDIDATE = existsSync(join(benchRoot, "candidate.json"));
+const REPO_ROOT = join(benchRoot, "..", "..");
+const AURA_LIBS = CANDIDATE ? ["aura-auto", "aura-production"] : ["aura"];
+const LIBS = libArg ? libArg.split(",") : ["three", ...AURA_LIBS];
+const isAuraLib = (lib) => lib === "aura" || lib.startsWith("aura-");
 const ASSETS = {
   "pbr-viewer": { "model.glb": "threejs-parity/assets/physics/cesium-milk-truck.glb", "env.hdr": "environment-corpus/hdri/studio_small_08_1k.hdr" },
   "skinned-character": { "model.glb": "threejs-parity/assets/character/soldier.glb" }
@@ -32,12 +39,23 @@ const run = (cmd, args, cwd) => {
 
 rmSync(join(work, "apps"), { recursive: true, force: true });
 mkdirSync(work, { recursive: true });
-writeFileSync(join(work, "package.json"), JSON.stringify({ name: "bench-work", private: true, type: "module", dependencies: { "@aura3d/engine": AURA_VERSION, "@aura3d/assets": AURA_VERSION, three: THREE_VERSION }, devDependencies: { vite: VITE_VERSION } }, null, 2));
-if (!existsSync(join(work, "node_modules", "@aura3d", "assets")) || !existsSync(join(work, "node_modules", ".bin", "vite"))) run("npm", ["install", "--no-audit", "--no-fund", "--ignore-scripts"], work);
+const auraDeps = CANDIDATE ? {} : { "@aura3d/engine": AURA_VERSION, "@aura3d/assets": AURA_VERSION };
+writeFileSync(join(work, "package.json"), JSON.stringify({ name: "bench-work", private: true, type: "module", dependencies: { ...auraDeps, three: THREE_VERSION }, devDependencies: { vite: VITE_VERSION } }, null, 2));
+if (!existsSync(join(work, "node_modules", ".bin", "vite")) || (!CANDIDATE && !existsSync(join(work, "node_modules", "@aura3d", "assets")))) run("npm", ["install", "--no-audit", "--no-fund", "--ignore-scripts"], work);
+if (CANDIDATE) {
+  // vite.aliases.generated.ts is `export const aliasEntries = [["@aura3d/x", "./packages/x/src/index.ts"], ...] as const;`
+  const text = readFileSync(join(REPO_ROOT, "vite.aliases.generated.ts"), "utf8");
+  const pairs = [...text.matchAll(/\[\s*"([^"]+)"\s*,\s*"([^"]+)"\s*\]/g)].map((m) => [m[1], m[2]]);
+  if (pairs.length < 50) throw new Error(`candidate mode: parsed only ${pairs.length} alias entries from vite.aliases.generated.ts`);
+  writeFileSync(join(work, "bench-aliases.json"), JSON.stringify(pairs));
+  process.env.BENCH_ALIASES = join(work, "bench-aliases.json");
+  process.env.BENCH_AURA_SOURCE = REPO_ROOT;
+}
+const readPkg = (p) => JSON.parse(readFileSync(p, "utf8")).version;
 const installed = {
-  vite: JSON.parse(readFileSync(join(work, "node_modules/vite/package.json"), "utf8")).version,
-  aura: JSON.parse(readFileSync(join(work, "node_modules/@aura3d/engine/package.json"), "utf8")).version,
-  three: JSON.parse(readFileSync(join(work, "node_modules/three/package.json"), "utf8")).version
+  vite: readPkg(join(work, "node_modules/vite/package.json")),
+  aura: CANDIDATE ? `workspace ${readPkg(join(REPO_ROOT, "packages/engine/package.json"))} (sources, vite alias build)` : readPkg(join(work, "node_modules/@aura3d/engine/package.json")),
+  three: readPkg(join(work, "node_modules/three/package.json"))
 };
 
 cpSync(join(benchRoot, "shared"), join(work, "apps", "shared"), { recursive: true });
@@ -47,7 +65,17 @@ const results = { installed, apps: {} };
 for (const scene of SCENES) {
   for (const lib of LIBS) {
     const dir = join(work, "apps", scene, lib);
-    cpSync(join(benchRoot, scene, lib), dir, { recursive: true });
+    cpSync(join(benchRoot, scene, isAuraLib(lib) ? "aura" : lib), dir, { recursive: true });
+    if (CANDIDATE && isAuraLib(lib)) {
+      writeFileSync(join(dir, "vite.config.ts"), 'export { default } from "../../shared/aura-vite-workspace";\n');
+      if (lib === "aura-production") {
+        const file = join(dir, "scene.ts");
+        const source = readFileSync(file, "utf8");
+        const patched = source.replace(/createAuraApp\(canvas, \{/, 'createAuraApp(canvas, { quality: "production",');
+        if (patched === source) throw new Error(`${scene}: no createAuraApp(canvas, { found to inject quality`);
+        writeFileSync(file, patched);
+      }
+    }
     const pub = join(dir, "public");
     mkdirSync(pub, { recursive: true });
     const hashes = {};
@@ -55,7 +83,7 @@ for (const scene of SCENES) {
       cpSync(join(fixtures, rel), join(pub, name));
       hashes[name] = sha256(join(pub, name));
     }
-    if (lib === "aura" && existsSync(join(dir, "assets.generated.ts"))) {
+    if (isAuraLib(lib) && existsSync(join(dir, "assets.generated.ts"))) {
       const key = scene === "pbr-viewer" ? "truck" : "soldier";
       writeFileSync(join(dir, "assets.generated.ts"), `export const SHA256 = { ${key}: "${hashes["model.glb"]}" } as const;\n`);
     }
