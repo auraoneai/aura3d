@@ -3,7 +3,7 @@
 import type { AuraPrimitiveOptions, AuraPrimitiveNode } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
-import { assertKnownOptionKeys } from "./optionDiagnostics.js";
+import { ignoredOptionsNote } from "./optionDiagnostics.js";
 import { geometry } from "./geometry.js";
 import { instances } from "./instances.js";
 import { material } from "./material.js";
@@ -64,7 +64,7 @@ const PRIMITIVE_OPTION_KEYS: readonly string[] = [
 ];
 
 export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions = {}): AuraNodeBuilder<AuraPrimitiveNode> {
-  assertKnownOptionKeys(`primitives.${primitiveName}`, options, PRIMITIVE_OPTION_KEYS);
+  const ignored = ignoredOptionsNote(`primitives.${primitiveName}`, options, PRIMITIVE_OPTION_KEYS);
   assertUnitPrimitiveParams(primitiveName, options.params);
   return new AuraNodeBuilder({
     kind: "primitive",
@@ -82,6 +82,7 @@ export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options
     ...(options.frustumCulled !== undefined ? { frustumCulled: options.frustumCulled } : {}),
     ...(options.layers !== undefined ? { layers: options.layers } : {}),
     ...(options.userData !== undefined ? { userData: options.userData } : {}),
+    ...ignored,
     material: options.material,
     size: options.size,
     castShadow: options.castShadow ?? (primitiveName !== "plane" && options.material?.emissive === undefined),

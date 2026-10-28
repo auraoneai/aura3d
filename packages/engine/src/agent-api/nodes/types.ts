@@ -823,6 +823,8 @@ export interface AuraModelNode extends AuraTransformSpec {
 export interface AuraPrimitiveNode extends AuraTransformSpec {
   readonly kind: "primitive";
   readonly primitive: AuraBuiltinPrimitive | "custom";
+  /** `OPTION_IGNORED` notes for options the builder does not read; the compiler reports each as an `option-ignored` degradation. */
+  readonly ignoredOptions?: readonly string[];
   readonly name?: string;
   readonly material?: AuraMaterialSpec;
   readonly size?: number | AuraVec3;
@@ -1371,6 +1373,14 @@ export interface AuraInteractionNode {
   readonly kind: "interaction";
   readonly mode: "orbit" | "pointer" | "keyboard" | "drag-vector" | "click-impulse" | "hover";
   readonly target?: string;
+  /** `interactions.orbit({ target: [x, y, z] })`: world point the orbit camera pivots around (applied by `scene().toJSON()`). */
+  readonly targetPoint?: AuraVec3;
+  /** `interactions.orbit({ position })`: world-space eye of the orbit camera. */
+  readonly orbitPosition?: AuraVec3;
+  /** `interactions.orbit({ autoRotate })`: orbit speed in radians per second around the pivot. */
+  readonly autoRotate?: number;
+  /** `OPTION_IGNORED` notes for options the builder does not read; the compiler reports each as an `option-ignored` degradation. */
+  readonly ignoredOptions?: readonly string[];
   readonly vector?: AuraVec3;
   readonly impulse?: number;
   readonly selected?: string;
@@ -1491,6 +1501,8 @@ export interface AuraCameraSpec {
    */
   readonly layers?: number;
   readonly distance?: number;
+  /** Orbit mode: orbit speed in radians per second around the target (set by `interactions.orbit({ autoRotate })`). */
+  readonly autoRotate?: number;
   readonly from?: AuraVec3;
   readonly to?: AuraVec3;
   readonly seconds?: number;

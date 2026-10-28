@@ -44,6 +44,15 @@ function add3(left: AuraVec3, right: AuraVec3): AuraVec3 {
   return [left[0] + right[0], left[1] + right[1], left[2] + right[2]];
 }
 
+/** Rotates `eye` about the vertical axis through `target` by `angle` radians (orbit `autoRotate`). */
+function orbitAround(eye: AuraVec3, target: AuraVec3, angle: number): AuraVec3 {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const dx = eye[0] - target[0];
+  const dz = eye[2] - target[2];
+  return [target[0] + dx * cos + dz * sin, eye[1], target[2] - dx * sin + dz * cos];
+}
+
 function resolveRuntimeCameraTarget(cameraSpec: AuraCameraSpec, runtimeNodes: AuraRuntimeNodeRegistry | undefined): RuntimeCameraTarget | undefined {
   return findRuntimeCameraTarget(cameraSpec, runtimeNodes);
 }
@@ -80,6 +89,7 @@ function resolveCameraEye(snapshot: AuraSceneSnapshot, cameraSpec: AuraCameraSpe
   if (cameraSpec.mode === "orbit") {
     const distance = cameraSpec.distance ?? 4;
     eye = cameraSpec.position ?? [target[0] + distance * 0.62, target[1] + distance * 0.42, target[2] + distance * 0.78];
+    if (cameraSpec.autoRotate) eye = orbitAround(eye, target, cameraSpec.autoRotate * (cameraSpec.captureTime ?? time / 1000));
   }
   if (cameraSpec.mode === "follow") {
     const distance = cameraSpec.distance ?? 4;

@@ -4,8 +4,11 @@
 //  1. Documented options: every option key in a `docs/api/*.md` or `docs/agents/recipes.md` code block that calls a
 //     covered builder has a coverage row, and that row is not on the diagnostic-only (declared-but-not-consumed) list.
 //  2. Guard: every covered primitive / instance / interaction option is accepted, reaches the node, and an option the
-//     builder does not read raises `OPTION_IGNORED` naming the valid keys.
-//  3. Spot checks for the two silent no-ops found in the 4.1.2 benchmark: plane segments subdivide, `orbit` is typed.
+//  2. Guard: every covered primitive / instance / interaction option is read, and an option the builder does not
+//     read is reported on the node (`OPTION_IGNORED ... Valid options: ...`) and surfaced by the compiler as an
+//     `option-ignored` degradation, not thrown, so an existing app that passes a stray key keeps mounting.
+//  3. Spot checks for the two silent no-ops found in the 4.1.2 benchmark: plane segments subdivide, `orbit` is typed
+//     and its point / position / autoRotate configure the orbit camera on every camera path.
 //
 // The compile-level proof that each covered option changes the compiled scene is `tests/qr/prd15/compiler/optionCoverage.test.ts`.
 import { readFileSync, readdirSync } from "node:fs";
@@ -21,6 +24,11 @@ import { interactions } from "../../../packages/engine/src/agent-api/nodes/inter
 import { qrPrimitiveGeometryOptions } from "../../../packages/engine/src/agent-api/compiler/geometry";
 import { qrPrimitiveMeshFor } from "../../../packages/engine/src/agent-api/compiler/primitives";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
+import { compileScene } from "@aura3d/engine/contracts";
+import { scene } from "../../../packages/engine/src/agent-api/nodes/scene";
+import { camera } from "../../../packages/engine/src/agent-api/nodes/camera";
+import { resolveCameraFrame } from "../../../packages/engine/src/agent-api/compiler/camera";
+import { createFromSpecRig } from "../../../packages/engine/src/agent-api/camera/rigs/fromSpec";
 import type { AuraPrimitiveNode } from "../../../packages/engine/src/agent-api/nodes/types";
 
 const root = process.cwd();
@@ -157,23 +165,41 @@ describe("builders accept every covered option and reject the rest (decision 5)"
     expect(guarded.length).toBeGreaterThan(150);
   });
 
-  it("every covered option is accepted", () => {
-    const rejected: string[] = [];
+  it("every covered option is read: the node carries no ignored-option note", () => {
+    const noted: string[] = [];
     for (const row of guarded) {
-      try { invoke(row, { [row.field]: row.probeValueA }); } catch (error) { rejected.push(`${row.builder}.${row.field}: ${(error as Error).message}`); }
+      const node = invoke(row, { [row.field]: row.probeValueA }).toJSON() as { ignoredOptions?: readonly string[] };
+      if (node.ignoredOptions) noted.push(`${row.builder}.${row.field}: ${node.ignoredOptions.join(" | ")}`);
     }
-    expect(rejected).toEqual([]);
+    expect(noted).toEqual([]);
   });
 
-  it("an option the builder does not read raises OPTION_IGNORED naming the valid keys", () => {
+  it("an option the builder does not read is reported (not thrown) with the valid keys", () => {
     for (const builder of new Set(guarded.map((row) => row.builder))) {
       const row = guarded.find((candidate) => candidate.builder === builder)!;
-      let thrown: { code?: string; message: string } | undefined;
-      try { invoke(row, { notAnOption: 1 }); } catch (error) { thrown = error as { code?: string; message: string }; }
-      expect(thrown?.code, `${builder} must reject an unknown option`).toBe("OPTION_IGNORED");
-      expect(thrown?.message).toContain('"notAnOption"');
-      expect(thrown?.message).toContain(row.field);
+      const node = invoke(row, { notAnOption: 1 }).toJSON() as { ignoredOptions?: readonly string[] };
+      expect(node.ignoredOptions, `${builder} must report an unknown option`).toHaveLength(1);
+      expect(node.ignoredOptions![0]).toMatch(/^OPTION_IGNORED /);
+      expect(node.ignoredOptions![0]).toContain('"notAnOption"');
+      expect(node.ignoredOptions![0]).toContain(`Valid options: `);
+      expect(node.ignoredOptions![0]).toContain(row.field);
     }
+  });
+
+  it("the compiler turns the note into an option-ignored degradation instead of failing the mount", async () => {
+    const degraded: { code: string; message: string }[] = [];
+    const node = primitives.plane({ segments: 8 } as never);
+    const snapshot = scene().add(node).toJSON();
+    const compiled = await compileScene(snapshot, {
+      renderer: undefined, assets: undefined, quality: { tier: "high" } as never, strict: false,
+      flags: resolveQrFlags({ options: ["compiler"] }), degrade: (entry: { code: string; message: string }) => { degraded.push(entry); },
+      canvas: { width: 800, height: 600 } as unknown as HTMLCanvasElement,
+      environmentLighting: () => ({}), collectedLights: [], runtimeWarnings: new Set<string>()
+    } as never);
+    expect(compiled).toBeTruthy();
+    expect(degraded).toHaveLength(1);
+    expect(degraded[0]).toMatchObject({ code: "option-ignored" });
+    expect(degraded[0]!.message).toMatch(/^OPTION_IGNORED primitives\.plane: option "segments" is not read[\s\S]*Valid options: name, position/);
   });
 
   it("primitive transform extras and params reach the node (they used to be dropped)", () => {
@@ -203,16 +229,69 @@ describe("WP-S.2 spot checks", () => {
 
   it("plane rejects a shape key that has no effect, naming the supported params", () => {
     expect(() => primitives.plane({ params: { radius: 2 } as never })).toThrow(/Supported params: widthSegments, heightSegments/);
-    expect(() => primitives.plane({ segments: 8 } as never)).toThrow(/OPTION_IGNORED|"segments"/);
   });
 
-  it("orbit takes a node name through typed overloads and rejects what it ignores", () => {
+  it("orbit takes a node name or a world point through typed overloads", () => {
     expect(interactions.orbit().toJSON()).toMatchObject({ kind: "interaction", mode: "orbit" });
     expect(interactions.orbit({ target: "cube" }).toJSON()).toMatchObject({ target: "cube" });
     expect(interactions.orbit("cube").toJSON()).toMatchObject({ target: "cube" });
-    // @ts-expect-error `position` / `autoRotate` are camera options; orbit used to need `as never` and then ignore them.
-    expect(() => interactions.orbit({ position: [1, 2, 3], autoRotate: true })).toThrow(/"position", "autoRotate" are not read[\s\S]*Valid options: target/);
-    // @ts-expect-error a world point belongs on camera.orbit({ target }).
-    expect(() => interactions.orbit([0, 1, 0])).toThrow(/camera\.orbit/);
+    expect(interactions.orbit([0, 1, 0]).toJSON()).toMatchObject({ targetPoint: [0, 1, 0] });
+    expect(interactions.orbit({ target: [0, 1, 0], position: [1, 2, 3], autoRotate: true }).toJSON()).toMatchObject({
+      targetPoint: [0, 1, 0], orbitPosition: [1, 2, 3], autoRotate: 0.5
+    });
+    expect((interactions.orbit({ target: "cube" }).toJSON() as { ignoredOptions?: unknown }).ignoredOptions).toBeUndefined();
+    // Unknown keys are reported, not dropped.
+    expect((interactions.orbit({ speed: 2 } as never).toJSON() as { ignoredOptions?: string[] }).ignoredOptions?.[0]).toMatch(/"speed"[\s\S]*Valid options: target, position, autoRotate/);
+  });
+
+  describe("interactions.orbit configures the orbit camera", () => {
+    const base = camera.orbit({ target: [0, 0.8, 0], position: [3, 2, 3], distance: 4 });
+    const frameOf = (spec: ReturnType<typeof camera.orbit>, nodes: unknown[], timeMs = 0) => {
+      const builder = scene().camera(spec);
+      for (const node of nodes) builder.add(node as never);
+      const snapshot = builder.toJSON();
+      return { spec: snapshot.camera, frame: resolveCameraFrame(snapshot, snapshot.camera, timeMs) };
+    };
+
+    it("a world point becomes the pivot and the eye keeps its offset", () => {
+      const { frame } = frameOf(base, [interactions.orbit([1, 0, 2])]);
+      expect(frame.target).toEqual([1, 0, 2]);
+      expect(frame.eye).toEqual([4, 1.2, 5]);
+    });
+
+    it("position pins the eye", () => {
+      const { frame } = frameOf(base, [interactions.orbit({ target: [1, 0, 2], position: [9, 9, 9] })]);
+      expect(frame.target).toEqual([1, 0, 2]);
+      expect(frame.eye).toEqual([9, 9, 9]);
+    });
+
+    it("autoRotate turns the eye around the pivot at radians per second, keeping its radius and height", () => {
+      const rotating = [interactions.orbit({ autoRotate: Math.PI / 2 })];
+      const start = frameOf(base, rotating, 0).frame;
+      const quarter = frameOf(base, rotating, 1000).frame;
+      const radius = (eye: readonly number[], target: readonly number[]) => Math.hypot(eye[0]! - target[0]!, eye[2]! - target[2]!);
+      expect(start.eye).toEqual([3, 2, 3]);
+      expect(quarter.eye[0]).toBeCloseTo(3, 6);
+      expect(quarter.eye[2]).toBeCloseTo(-3, 6);
+      expect(quarter.eye[1]).toBe(2);
+      expect(radius(quarter.eye, quarter.target)).toBeCloseTo(radius(start.eye, start.target), 6);
+    });
+
+    it("the camera rig path produces the same pose as resolveCameraFrame", () => {
+      const { spec, frame } = frameOf(base, [interactions.orbit({ target: [1, 0, 2], autoRotate: 1 })], 2500);
+      const rig = createFromSpecRig(spec as never);
+      expect(rig.continuous).toBe(true);
+      const pose = rig.update({ time: 2500, subject: () => undefined } as never);
+      for (let axis = 0; axis < 3; axis += 1) {
+        expect(pose.position[axis]).toBeCloseTo(frame.eye[axis]!, 9);
+        expect(pose.target[axis]).toBeCloseTo(frame.target[axis]!, 9);
+      }
+    });
+
+    it("leaves non-orbit cameras and scenes without an orbit interaction untouched", () => {
+      const perspective = camera.perspective({ position: [0, 1, 4], target: [0, 1, 0] });
+      expect(frameOf(perspective as never, [interactions.orbit([5, 5, 5])]).spec).toBe(perspective);
+      expect(frameOf(base, [interactions.orbit("cube")]).spec).toBe(base);
+    });
   });
 });

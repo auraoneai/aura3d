@@ -5,6 +5,7 @@ import { applyOverrideMaterial, assertAuraOverrideMaterial } from "./overrideMat
 import { AURA_NORMALIZED_MODEL_MAX_DIMENSION, boundsFromAsset, boundsHeight, boundsMaxDimension, boundsSize } from "../SceneGroundingUtils.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { camera } from "./camera.js";
+import { applyOrbitInteraction } from "./orbitInteraction.js";
 import { isPositiveFinite, lowerLookNode } from "../sceneMath.js";
 import { physics } from "./physics.js";
 import { resolveCameraClipping } from "../RootRuntimeSupport.js";
@@ -148,7 +149,7 @@ export class AuraSceneBuilder {
       background: this.backgroundExplicit ? this.backgroundColor : (looksFlagOn() ? lookBackdrop(this.nodes) : undefined) ?? this.backgroundColor,
       ...(this.backgroundImageSpec ? { backgroundImage: this.backgroundImageSpec } : {}),
       ...(this.backgroundToneMapped ? {} : { backgroundToneMapped: false as const }),
-      camera: this.cameraSpec,
+      camera: applyOrbitInteraction(this.cameraSpec, this.nodes),
       timeline: this.timelineSpec,
       physics: this.physicsController?.snapshot(),
       ...(this.overrideMaterialSpec ? { overrideMaterial: this.overrideMaterialSpec } : {}),
