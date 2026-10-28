@@ -15,7 +15,8 @@ interface FrameCostApi {
   mountMs: number;
   errors: string[];
   renderPath: unknown;
-  measure(frames: number): { cpuMs: number[]; totalMs: number[] };
+  /** `warmup` frames run first and are not measured (default 10; the gate figure uses the default). */
+  measure(frames: number, warmup?: number): { cpuMs: number[]; totalMs: number[] };
   /** Advance and draw exactly one frame (no warm-up). */
   stepOnce(): void;
   drawCalls(): number;
@@ -121,8 +122,8 @@ async function main(): Promise<void> {
       mountMs: firstFrameMs - mountStart,
       errors,
       renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath,
-      measure(frames) {
-        for (let i = 0; i < 10; i += 1) { frame(); finish(); }
+      measure(frames, warmup = 10) {
+        for (let i = 0; i < warmup; i += 1) { frame(); finish(); }
         const cpuMs: number[] = [];
         const totalMs: number[] = [];
         for (let i = 0; i < frames; i += 1) {

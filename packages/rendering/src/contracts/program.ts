@@ -4,6 +4,7 @@
  */
 
 import type { RegistryEntry, ContractSlot, QrFlags, PrdId } from "./core";
+import { StructuralMemo } from "./structuralMemo";
 import type { RenderItem } from "./renderItem";
 import type { AuraQualityTierSettings } from "./quality";
 import type { UniformValue, RenderDevice, RenderShaderProgram } from "../RenderDevice";
@@ -50,8 +51,15 @@ function stableSerialize(value: unknown): string {
   return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableSerialize(v)}`).join(",")}}`;
 }
 
+/**
+ * Program keys are asked for several times per draw per frame (warm-up, `acquire`, the draw's own lookup) with records that
+ * are rebuilt each time but identical from frame to frame. Serialising one costs ~15 us; comparing it with a recent record
+ * costs ~1 us. A small ring of recent (record snapshot, key) pairs turns the steady state into compares only.
+ */
+const keyMemo = new StructuralMemo<string>(24);
+
 export function computeProgramKey(features: ProgramFeatures): string {
-  return stableSerialize(features);
+  return keyMemo.resolve(features, () => stableSerialize(features));
 }
 
 export interface ShaderChunk {

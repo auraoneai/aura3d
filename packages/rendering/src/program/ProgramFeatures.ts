@@ -53,12 +53,12 @@ export const DEFAULT_PROGRAM_FEATURES: ProgramFeatures = {
   features: {}
 };
 
+/** Removes `undefined` leaves in place. Only called on objects `normalizeProgramFeatures` has just spread into a fresh copy. */
 function dropUndefined<T extends Record<string, unknown>>(value: T): T {
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(value)) {
-    if (v !== undefined) out[k] = v;
+  for (const k in value) {
+    if (value[k] === undefined) delete value[k];
   }
-  return out as T;
+  return value;
 }
 
 /** Fill every ProgramFeatures field with canonical defaults; strips undefined leaves. */

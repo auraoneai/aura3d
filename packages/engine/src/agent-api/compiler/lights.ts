@@ -3,6 +3,7 @@
 import type { AuraColor, AuraLightNode, AuraSceneSnapshot, AuraVec3, ProductionRuntimeLightDescriptor } from "../nodes/types.js";
 import type { AuraDirectionalShadowOptions, AuraLightingModel, AuraLocalShadowOptions } from "../../contracts/lighting.js";
 import { resolveQrFlags } from "../../contracts/flags.js";
+import { parseHrefCached } from "../../contracts/urlCache.js";
 import { colorToLinearRgb, multiplyRgb } from "../colorUtils.js";
 import { clampNumber, normalizedDirection, productionRuntimeLightDirection, quaternionFromForwardDirection } from "../compiler/observations.js";
 import { normalize3 } from "../sceneMath.js";
@@ -363,7 +364,7 @@ export function readLightingModelFromUrl(url?: URL | string): { readonly model: 
     ? (typeof url === "string" ? url : url.href)
     : (typeof location !== "undefined" ? location.href : undefined);
   if (!href) return { model: null, disabled: false };
-  const params = new URL(href, "http://localhost/").searchParams;
+  const params = parseHrefCached(href).searchParams;
   const kill = params.get("a3dLighting");
   if (kill !== null && (kill === "0" || kill === "off" || kill === "false" || kill === "")) {
     return { model: null, disabled: true };
@@ -402,7 +403,7 @@ export function readLightingKillSwitches(url?: URL | string): Prd02LightingKillS
     ? (typeof url === "string" ? url : url.href)
     : (typeof location !== "undefined" ? location.href : undefined);
   if (!href) return KILL_SWITCH_DEFAULT;
-  const raw = new URL(href, "http://localhost/").searchParams.get("a3dLighting");
+  const raw = parseHrefCached(href).searchParams.get("a3dLighting");
   if (!raw || raw === "0" || raw === "off" || raw === "false") return KILL_SWITCH_DEFAULT;
   const out = { ...KILL_SWITCH_DEFAULT } as Record<keyof Prd02LightingKillSwitches, unknown>;
   for (const pair of raw.split(",")) {
@@ -434,11 +435,19 @@ export function readLightingKillSwitches(url?: URL | string): Prd02LightingKillS
 export function prd02LightingOn(flags?: { on(name: string): boolean }, url?: URL | string): boolean {
   if (readLightingModelFromUrl(url).disabled) return false;
   if (flags) return flags.on("A3D_QR_LIGHTING");
-  return resolveQrFlags({
-    url: typeof location !== "undefined" ? location.href : undefined,
-    env: typeof process !== "undefined" ? process.env : {}
-  }).on("A3D_QR_LIGHTING");
+  const href = typeof location !== "undefined" ? location.href : undefined;
+  // With no `process` (a browser) the ambient resolution is a pure function of the page URL, and it ran on every frame.
+  // With `process.env` present the environment can change between calls, so it is resolved each time.
+  if (typeof process === "undefined") {
+    if (ambientLightingMemo === undefined || ambientLightingMemo.href !== href) {
+      ambientLightingMemo = { href, on: resolveQrFlags({ url: href, env: {} }).on("A3D_QR_LIGHTING") };
+    }
+    return ambientLightingMemo.on;
+  }
+  return resolveQrFlags({ url: href, env: process.env }).on("A3D_QR_LIGHTING");
 }
+
+let ambientLightingMemo: { readonly href: string | undefined; readonly on: boolean } | undefined;
 
 /** C-10: model defaults "physical" under the flag, "legacy-3.0" otherwise;
  *  `?aura-lighting=legacy-3.0` and `options.lighting.model` override. */

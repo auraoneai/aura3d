@@ -62,7 +62,8 @@ export class WebGL2SamplerRegistry {
 
   readonly textureSamplerParameterCache = new WeakMap<WebGLTexture, Map<GLenum, GLenum | number>>();
 
-  readonly textureUnitBindings = new Map<string, WebGLTexture>();
+  /** Texture held by each (unit, target), keyed `unit * 0x10000 + target` (no per-call string key). */
+  readonly textureUnitBindings = new Map<number, WebGLTexture>();
 
   uploadTextureUniform(location: WebGLUniformLocation, binding: TextureBinding, textureUnit: number, uniformType?: string): void {
     const validation = binding.validate();
@@ -106,7 +107,7 @@ export class WebGL2SamplerRegistry {
   }
 
   bindTextureForUnit(textureUnit: number, target: GLenum, handle: WebGLTexture): void {
-    const key = `${textureUnit}:${target}`;
+    const key = textureUnit * 0x10000 + target;
     if (this.textureUnitBindings.get(key) === handle) return;
     this.host.stateCache.bindTexture(target, handle, () => this.host.gl.bindTexture(target, handle));
     this.textureUnitBindings.set(key, handle);
@@ -185,7 +186,24 @@ export class WebGL2SamplerRegistry {
     return handle;
   }
 
+  /**
+   * Sampler keys per (sampler, target kind, C-12, single-resident-level): a `Sampler` is immutable, so the joined string is
+   * built once instead of an array and a join for every texture of every draw of every frame.
+   */
+  private readonly samplerKeyMemo = new WeakMap<Sampler, string[]>();
+
   samplerKey(sampler: Sampler, target: GLenum, c12: boolean = prd02SamplerEnabled(), residentLevels?: number): string {
+    const kind = target === this.host.gl.TEXTURE_CUBE_MAP ? 0 : target === this.host.gl.TEXTURE_2D_ARRAY ? 1 : 2;
+    const slot = kind + (c12 ? 3 : 0) + (residentLevels === 1 ? 6 : 0);
+    let memo = this.samplerKeyMemo.get(sampler);
+    if (memo === undefined) {
+      memo = [];
+      this.samplerKeyMemo.set(sampler, memo);
+    }
+    return memo[slot] ??= this.buildSamplerKey(sampler, target, c12, residentLevels);
+  }
+
+  private buildSamplerKey(sampler: Sampler, target: GLenum, c12: boolean, residentLevels?: number): string {
     const key = [
       sampler.minFilter,
       sampler.magFilter,

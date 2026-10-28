@@ -201,7 +201,8 @@ export async function startProductionRender(
      * time passing on its own.
      */
     const renderTime = resolveRootRenderTime(time, explicit, isPaused, pausedRenderTime);
-    if (submittedDrawCalls === undefined) {
+    // The authored-size check allocates its `synced` argument; nothing to do (and nothing to allocate) while the canvas still matches.
+    if (submittedDrawCalls === undefined && (canvas.width !== syncedWidth || canvas.height !== syncedHeight)) {
       const authored = authoredBackingResize(options.resize !== false, canvas, { width: syncedWidth, height: syncedHeight });
       if (authored) {
         renderer.resize?.(authored.width, authored.height);
@@ -217,7 +218,11 @@ export async function startProductionRender(
     diagnosticsState.backend = renderer.backend;
     diagnosticsState.fps = diagnosticsState.fps || 60;
     diagnosticsState.drawCalls = drawCalls;
-    diagnosticsState.renderSize = [canvas.width, canvas.height];
+    // Same size as last frame: keep the existing tuple instead of allocating a new one every frame.
+    const previousSize = diagnosticsState.renderSize;
+    if (previousSize === undefined || previousSize[0] !== canvas.width || previousSize[1] !== canvas.height) {
+      diagnosticsState.renderSize = [canvas.width, canvas.height];
+    }
     // Recomputed on first read, not per frame (see bindLazyFrameDiagnostics).
     lazyFrameDiagnostics.invalidate();
     updateRouteDiagnostics(diagnosticsState);
