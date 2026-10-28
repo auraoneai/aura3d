@@ -57,6 +57,10 @@ node tools/bench-vs-threejs/harness/report.mjs results.json static-metrics.json 
 
 Four tests sit on four separate lines so that groups run on separate runners in parallel (`<spec>:<line>` selects one). Inside the container `harness/build-all.mjs` stages the apps, runs `npm install` for `@aura3d/engine@4.1.2`, `@aura3d/assets@4.1.2`, `three@0.185.1` and `vite@7.3.2`, and builds each app. Results leave the container as base64 chunks in the run log (`az acr run` cannot return artifacts).
 
+## Re-run at a newer Aura3D version (4.3.7 results)
+
+`harness/build-all.mjs` installs `@aura3d/engine`/`@aura3d/assets` at `BENCH_AURA_VERSION` (default 4.3.7; the 4.1.2 tables in `RESULTS.md` were taken with 4.1.2) and three.js at `BENCH_THREE_VERSION`. `harness/run-4.3.7.sh` runs every group on the remote runner in parallel and prints the extract and report commands. Two groups beyond the original A to F: **G** takes V8 CPU profiles (first-frame path and 60 steady frames) of the one-cube and PBR scenes on unminified builds (`BENCH_MINIFY=false`), and **H** runs the Aura3D forest under a 10-minute cap with a GL call timing hook to attribute a stall; both write `aux-*.json` next to `results.json`. Results: `evidence/vs-threejs/RESULTS-4.3.7.md` and `evidence/vs-threejs/4.3.7/`. Each app result carries `wallMs`; the Aura3D arm key is `aura`, three.js arms are `three` and `three-msaa`.
+
 ## Build failures found while setting this up
 
 With a stock Vite config, `vite build` of an app that imports `@aura3d/engine` fails against the published 4.1.2 packages (`"readFileSync" is not exported by "__vite-browser-external"`, from `dist/assets/threejs-compatibility/ThreeCompatAssetRegistry.js`). The shipped `mini-game` template fails the same way on a fresh `npm install`, and its `package-lock.json` is out of sync with its `package.json` (`npm ci` fails). `shared/aura-vite.ts` is the workaround used here: a 10-line plugin that stubs Node built-ins, plus the `@aura3d/assets/vite` decoder plugin.

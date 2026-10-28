@@ -34,7 +34,7 @@ const row = (label, t, a, fmt, tol, lowerLabel = "") => {
   return [label, fmt(t), fmt(a), v + lowerLabel];
 };
 
-out.push("# Aura3D 4.1.2 vs three.js 0.185.1: measured results", "");
+out.push(`# Aura3D ${R.installed?.aura ?? "?"} vs three.js ${R.installed?.three ?? "?"}: measured results`, "");
 out.push(`Generated ${new Date().toISOString()} from \`results.json\` (run groups on separate remote runners) and \`static-metrics.json\`. Method: \`tools/bench-vs-threejs/README.md\`.`, "");
 out.push("**Read this first.** All timings come from a CPU-only remote runner with **software WebGL2 (SwiftShader), not a GPU**. They compare CPU/driver cost under identical conditions; they are not GPU performance numbers and say nothing about an Apple M-series or desktop GPU. Rows are marked `tie` within 5%. Lower is better in every numeric row. Verdicts are per row and are not averaged into a score.", "");
 if (R.env) out.push(`Runner: ${R.env.renderer} (vendor ${R.env.vendor}), ${R.env.hardwareConcurrency} logical CPUs reported by the browser. Libraries as installed in the container: @aura3d/engine ${R.installed?.aura}, three ${R.installed?.three}, vite ${R.installed?.vite}.`, "");

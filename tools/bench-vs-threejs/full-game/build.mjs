@@ -10,7 +10,7 @@ import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
 const [root, work] = process.argv.slice(2);
 if (!root || !work) throw new Error("usage: build.mjs <fullGameRoot> <workDir>");
-const AURA = process.env.FULLGAME_AURA_VERSION ?? "4.3.6";
+const AURA = process.env.FULLGAME_AURA_VERSION ?? "4.3.7";
 const THREE = "0.185.1";
 const VITE = "7.3.2";
 const run = (cmd, args, cwd) => {

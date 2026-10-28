@@ -1,0 +1,430 @@
+{
+  "scene": "pbr-viewer",
+  "lib": "aura",
+  "minified": false,
+  "firstFrame": {
+    "firstFrameMs": 3384.2999999999884,
+    "domContentLoadedMs": 191.10000000000582,
+    "lastJsResponseEndMs": 883.1000000000058,
+    "jsRequests": 31,
+    "allRequests": 33,
+    "afterLastJsMs": 2501.1999999999825,
+    "profile": {
+      "totalMs": 3402,
+      "busyMs": 3222,
+      "special": {
+        "idleMs": 180,
+        "programMs": 150,
+        "gcMs": 35
+      },
+      "topSelf": [
+        {
+          "fn": "finish @ index-HA5jJDrZ.js:70",
+          "ms": 1293.3,
+          "pct": 40.1
+        },
+        {
+          "fn": "compileShader @ ComputeContext-CUMky0wE.js:12851",
+          "ms": 283.81,
+          "pct": 8.8
+        },
+        {
+          "fn": "floatToHalf @ Rgb9e5Cube-CWgp9jN0.js:172",
+          "ms": 254.79,
+          "pct": 7.9
+        },
+        {
+          "fn": "(program) @ native:0",
+          "ms": 150.39,
+          "pct": 4.7
+        },
+        {
+          "fn": "finalizeLinkedProgram @ ComputeContext-CUMky0wE.js:12166",
+          "ms": 72.29,
+          "pct": 2.2
+        },
+        {
+          "fn": "halfToFloat @ Rgb9e5Cube-CWgp9jN0.js:446",
+          "ms": 69.68,
+          "pct": 2.2
+        },
+        {
+          "fn": "prepareFullscreenPresentation @ ComputeContext-CUMky0wE.js:14227",
+          "ms": 58.56,
+          "pct": 1.8
+        },
+        {
+          "fn": "probeToEquirectTexture @ Rgb9e5Cube-CWgp9jN0.js:479",
+          "ms": 43.39,
+          "pct": 1.3
+        },
+        {
+          "fn": "moduloNumber @ TexturedPBRMaterial-B7x74HW3.js:3850",
+          "ms": 40.36,
+          "pct": 1.3
+        },
+        {
+          "fn": "samplePyramidTrilinearInto @ TexturedPBRMaterial-B7x74HW3.js:3724",
+          "ms": 36.22,
+          "pct": 1.1
+        },
+        {
+          "fn": "getTextureHandle @ ComputeContext-CUMky0wE.js:10489",
+          "ms": 34.91,
+          "pct": 1.1
+        },
+        {
+          "fn": "(garbage collector) @ native:0",
+          "ms": 34.79,
+          "pct": 1.1
+        },
+        {
+          "fn": "faceToHalf @ Rgb9e5Cube-CWgp9jN0.js:186",
+          "ms": 34.46,
+          "pct": 1.1
+        },
+        {
+          "fn": "(anonymous) @ Rgb9e5Cube-CWgp9jN0.js:483",
+          "ms": 33.16,
+          "pct": 1
+        },
+        {
+          "fn": "prefilterLevelData @ TexturedPBRMaterial-B7x74HW3.js:3590",
+          "ms": 31.94,
+          "pct": 1
+        }
+      ],
+      "topInclusive": [
+        {
+          "fn": "(root) @ native:0",
+          "ms": 3222.43,
+          "pct": 100
+        },
+        {
+          "fn": "runBench @ index-HA5jJDrZ.js:57",
+          "ms": 1621.14,
+          "pct": 50.3
+        },
+        {
+          "fn": "finish @ index-HA5jJDrZ.js:70",
+          "ms": 1293.3,
+          "pct": 40.1
+        },
+        {
+          "fn": "renderFrame @ index-HA5jJDrZ.js:20498",
+          "ms": 976.23,
+          "pct": 30.3
+        },
+        {
+          "fn": "render @ index-HA5jJDrZ.js:20233",
+          "ms": 974.71,
+          "pct": 30.2
+        },
+        {
+          "fn": "(anonymous) @ ComputeContext-CUMky0wE.js:30243",
+          "ms": 972.46,
+          "pct": 30.2
+        },
+        {
+          "fn": "adoptExplicitTargetSize @ ComputeContext-CUMky0wE.js:30194",
+          "ms": 972.46,
+          "pct": 30.2
+        },
+        {
+          "fn": "withRendererQrFlags @ FrameGraph-ClGvZX1I.js:3508",
+          "ms": 972.46,
+          "pct": 30.2
+        },
+        {
+          "fn": "render @ ComputeContext-CUMky0wE.js:30226",
+          "ms": 972.46,
+          "pct": 30.2
+        },
+        {
+          "fn": "renderFrame @ ComputeContext-CUMky0wE.js:30276",
+          "ms": 971.57,
+          "pct": 30.2
+        },
+        {
+          "fn": "startProductionRender @ index-HA5jJDrZ.js:20399",
+          "ms": 721.18,
+          "pct": 22.4
+        },
+        {
+          "fn": "execute @ ComputeContext-CUMky0wE.js:29630",
+          "ms": 355.61,
+          "pct": 11
+        },
+        {
+          "fn": "execute @ ForwardPass-DHWSASrc.js:6503",
+          "ms": 354.08,
+          "pct": 11
+        },
+        {
+          "fn": "drawItem @ ForwardPass-DHWSASrc.js:6539",
+          "ms": 350.04,
+          "pct": 10.9
+        },
+        {
+          "fn": "acquire @ ComputeContext-CUMky0wE.js:1368",
+          "ms": 343.39,
+          "pct": 10.7
+        }
+      ],
+      "byFile": [
+        {
+          "fn": "index-HA5jJDrZ.js",
+          "ms": 1350.4,
+          "pct": 41.9
+        },
+        {
+          "fn": "ComputeContext-CUMky0wE.js",
+          "ms": 670.53,
+          "pct": 20.8
+        },
+        {
+          "fn": "Rgb9e5Cube-CWgp9jN0.js",
+          "ms": 459.87,
+          "pct": 14.3
+        },
+        {
+          "fn": "TexturedPBRMaterial-B7x74HW3.js",
+          "ms": 326.72,
+          "pct": 10.1
+        },
+        {
+          "fn": "native",
+          "ms": 209.8,
+          "pct": 6.5
+        },
+        {
+          "fn": "GLTFSharedTextureCache-dTjnFqCj.js",
+          "ms": 74.95,
+          "pct": 2.3
+        },
+        {
+          "fn": "ForwardPass-DHWSASrc.js",
+          "ms": 39.24,
+          "pct": 1.2
+        },
+        {
+          "fn": "SphericalHarmonics-BTP6w6ZJ.js",
+          "ms": 23.7,
+          "pct": 0.7
+        }
+      ],
+      "sampleCount": 9259
+    }
+  },
+  "steady": {
+    "frames": 60,
+    "wallMsPerFrame": 455.45166666666626,
+    "cpuInsideFrameMsPerFrame": 8.763333333332168,
+    "profile": {
+      "totalMs": 27359,
+      "busyMs": 27359,
+      "special": {
+        "idleMs": 0,
+        "programMs": 12,
+        "gcMs": 22
+      },
+      "topSelf": [
+        {
+          "fn": "readPixels @ native:0",
+          "ms": 26860.78,
+          "pct": 98.2
+        },
+        {
+          "fn": "getError @ native:0",
+          "ms": 50.98,
+          "pct": 0.2
+        },
+        {
+          "fn": "getParameter @ native:0",
+          "ms": 38.72,
+          "pct": 0.1
+        },
+        {
+          "fn": "(garbage collector) @ native:0",
+          "ms": 21.83,
+          "pct": 0.1
+        },
+        {
+          "fn": "hasName @ index-HA5jJDrZ.js:6517",
+          "ms": 19.41,
+          "pct": 0.1
+        },
+        {
+          "fn": "uniformValueDiagnostics @ ForwardPass-DHWSASrc.js:3060",
+          "ms": 15.62,
+          "pct": 0.1
+        },
+        {
+          "fn": "select @ index-HA5jJDrZ.js:18951",
+          "ms": 14.4,
+          "pct": 0.1
+        },
+        {
+          "fn": "(program) @ native:0",
+          "ms": 12.27,
+          "pct": 0
+        },
+        {
+          "fn": "atob @ native:0",
+          "ms": 9.97,
+          "pct": 0
+        },
+        {
+          "fn": "executePostGraphWebGL2 @ ComputeContext-CUMky0wE.js:15311",
+          "ms": 9.75,
+          "pct": 0
+        },
+        {
+          "fn": "stableSerialize @ program-CeT_sToi.js:3173",
+          "ms": 8.81,
+          "pct": 0
+        },
+        {
+          "fn": "(anonymous) @ neutralEmbeddedLoader-D2uOHnAP.js:21",
+          "ms": 8.57,
+          "pct": 0
+        },
+        {
+          "fn": "bindGenerated @ ForwardPass-DHWSASrc.js:3003",
+          "ms": 8.31,
+          "pct": 0
+        },
+        {
+          "fn": "drawItem @ ForwardPass-DHWSASrc.js:6539",
+          "ms": 7.65,
+          "pct": 0
+        },
+        {
+          "fn": "buildDiagnostics @ index-HA5jJDrZ.js:20133",
+          "ms": 6.59,
+          "pct": 0
+        }
+      ],
+      "topInclusive": [
+        {
+          "fn": "(root) @ native:0",
+          "ms": 27358.66,
+          "pct": 100
+        },
+        {
+          "fn": "(anonymous) @ native:1",
+          "ms": 27301.81,
+          "pct": 99.8
+        },
+        {
+          "fn": "evaluate @ native:296",
+          "ms": 27301.81,
+          "pct": 99.8
+        },
+        {
+          "fn": "readPixels @ native:0",
+          "ms": 26860.78,
+          "pct": 98.2
+        },
+        {
+          "fn": "finish @ index-HA5jJDrZ.js:70",
+          "ms": 26860.78,
+          "pct": 98.2
+        },
+        {
+          "fn": "frameRaw @ index-HA5jJDrZ.js:89",
+          "ms": 429.8,
+          "pct": 1.6
+        },
+        {
+          "fn": "step @ index-HA5jJDrZ.js:24025",
+          "ms": 429.5,
+          "pct": 1.6
+        },
+        {
+          "fn": "frame @ index-HA5jJDrZ.js:43236",
+          "ms": 429.5,
+          "pct": 1.6
+        },
+        {
+          "fn": "render @ index-HA5jJDrZ.js:20621",
+          "ms": 419.66,
+          "pct": 1.5
+        },
+        {
+          "fn": "renderFrame @ index-HA5jJDrZ.js:20498",
+          "ms": 419.36,
+          "pct": 1.5
+        },
+        {
+          "fn": "render @ index-HA5jJDrZ.js:20233",
+          "ms": 354.17,
+          "pct": 1.3
+        },
+        {
+          "fn": "render @ ComputeContext-CUMky0wE.js:30226",
+          "ms": 353.28,
+          "pct": 1.3
+        },
+        {
+          "fn": "withRendererQrFlags @ FrameGraph-ClGvZX1I.js:3508",
+          "ms": 352.96,
+          "pct": 1.3
+        },
+        {
+          "fn": "(anonymous) @ ComputeContext-CUMky0wE.js:30243",
+          "ms": 352.62,
+          "pct": 1.3
+        },
+        {
+          "fn": "adoptExplicitTargetSize @ ComputeContext-CUMky0wE.js:30194",
+          "ms": 352.62,
+          "pct": 1.3
+        }
+      ],
+      "byFile": [
+        {
+          "fn": "native",
+          "ms": 27042.45,
+          "pct": 98.8
+        },
+        {
+          "fn": "index-HA5jJDrZ.js",
+          "ms": 86.91,
+          "pct": 0.3
+        },
+        {
+          "fn": "ComputeContext-CUMky0wE.js",
+          "ms": 86.18,
+          "pct": 0.3
+        },
+        {
+          "fn": "ForwardPass-DHWSASrc.js",
+          "ms": 72.5,
+          "pct": 0.3
+        },
+        {
+          "fn": "program-CeT_sToi.js",
+          "ms": 35.48,
+          "pct": 0.1
+        },
+        {
+          "fn": "neutralEmbeddedLoader-D2uOHnAP.js",
+          "ms": 11.35,
+          "pct": 0
+        },
+        {
+          "fn": "FrameGraph-ClGvZX1I.js",
+          "ms": 11.11,
+          "pct": 0
+        },
+        {
+          "fn": "core-BD3D19-u.js",
+          "ms": 6.36,
+          "pct": 0
+        }
+      ],
+      "sampleCount": 88057
+    }
+  }
+}
