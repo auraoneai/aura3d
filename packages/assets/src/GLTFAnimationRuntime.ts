@@ -1210,14 +1210,20 @@ export class GLTFSceneAnimationRuntime {
         ...(options.retarget !== undefined ? { retarget: options.retarget } : {})
       };
       const worker = options.worker === false ? undefined : createRetargetWorker();
-      baked = worker !== undefined
-        ? await bakeClipsInWorker(worker, {
-            sourceSkeleton,
-            targetSkeleton: pose.binding,
-            clips: sourceClips,
-            options: bakeOptions
-          })
-        : bakeRetargetedClipMap({ skeleton: sourceSkeleton, clips: sourceClips }, pose.binding, bakeOptions);
+      const bakeInProcess = () => bakeRetargetedClipMap({ skeleton: sourceSkeleton, clips: sourceClips }, pose.binding, bakeOptions);
+      if (worker === undefined) {
+        baked = bakeInProcess();
+      } else {
+        // A host that cannot serve the worker module (a dev server, a locked-down CSP) reports it
+        // through `onerror` after construction succeeded. The bake is pure, so retry it in-process
+        // rather than failing the caller's whole retarget.
+        baked = await bakeClipsInWorker(worker, {
+          sourceSkeleton,
+          targetSkeleton: pose.binding,
+          clips: sourceClips,
+          options: bakeOptions
+        }).catch(bakeInProcess);
+      }
       if (options.cache !== false) void writeRetargetCache(key, baked);
     }
     const names: string[] = [];

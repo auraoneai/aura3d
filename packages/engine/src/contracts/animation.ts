@@ -42,10 +42,12 @@ export interface AuraActorAnimationApi {
   readonly springBones: { add(spec: unknown): () => void; clear(): void };
   /**
    * T3.8 (PRD-06 §7.2) — retarget-bake another skeleton's compiled clips onto
-   * this actor's skeleton and register them by clip name. `source` is either a
-   * `{skeleton, clips}` pair or another actor's animation runtime (its
+   * this actor's skeleton and register them by clip name. `source` is a loaded
+   * model node (its runtime-node handle or its id, the form a route can reach),
+   * a `{skeleton, clips}` pair, or another actor's animation runtime (its
    * `skeletons()`/`compiledClips()`); `map` is a prebuilt
-   * `HumanoidRetargetingMap` (CCR-06-4 type pending). Worker + IndexedDB cache
+   * `HumanoidRetargetingMap` (CCR-06-4 type pending); without it both rigs are
+   * inferred from bone names. Worker + IndexedDB cache
    * are on by default. Returns the registered clip names.
    */
   addClipsFrom(source: unknown, options?: { map?: unknown; hipsScale?: "leg-length" | number; fingers?: boolean }): Promise<readonly string[]>;

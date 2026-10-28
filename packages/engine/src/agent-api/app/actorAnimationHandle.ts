@@ -17,6 +17,7 @@ import {
   type Prd06SpringBonesSpec
 } from "../../production-runtime/actor/TypedGLBActorAnimation.js";
 import { createBoneMask, type AuraHumanoidBoneMap } from "@aura3d/animation/lanes";
+import { toPoseBoneMaskSpec } from "../animationMask.js";
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
@@ -67,6 +68,9 @@ export function qrAnimationFlags(): QrFlags {
   });
   return lazyQrAnimationFlags;
 }
+
+/** Error code `addClipsFrom` rejects with when a node-handle source has no loaded actor. */
+export const ANIMATION_RETARGET_SOURCE_NOT_LOADED = "ANIMATION_RETARGET_SOURCE_NOT_LOADED";
 
 /** Warning code emitted through `runtimeWarnings` for a rejected empty pose (T0.2). */
 export const ANIMATION_EMPTY_POSE = "ANIMATION_EMPTY_POSE";
@@ -492,7 +496,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     if (mixer === undefined) return super.playLayer(layer, clip, options);
     const runtime = this.actor!.animation;
     const mask = options?.mask !== undefined && typeof runtime.skeletonJointNames === "function"
-      ? createBoneMask(options.mask, { jointNames: runtime.skeletonJointNames() })
+      ? createBoneMask(toPoseBoneMaskSpec(options.mask), { jointNames: runtime.skeletonJointNames() })
       : undefined;
     const additiveWanted = options?.blendMode === "additive";
     const clipName = additiveWanted && typeof runtime.ensureAdditiveClip === "function"
@@ -637,6 +641,25 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     const runtime = actor?.animation;
     if (!qrAnimationFlags().on("A3D_QR_ANIMATION") || runtime === undefined || typeof runtime.addClipsFrom !== "function") {
       return Promise.resolve([]);
+    }
+    // Root reach: a route only holds runtime-node handles, never the loaded actor's
+    // animation runtime. A handle (or its id) names a loaded model node; its actor
+    // runtime is the retarget source. A node that has not loaded yet is a caller error,
+    // never a silent empty bake.
+    const sourceNodeId = typeof source === "string"
+      ? source
+      : source !== null && typeof source === "object" && typeof (source as { id?: unknown }).id === "string"
+        && (source as { kind?: unknown }).kind === "model"
+        ? (source as { id: string }).id
+        : undefined;
+    if (sourceNodeId !== undefined) {
+      const sourceRuntime = prd06AnimationActors.get(sourceNodeId)?.animation;
+      if (sourceRuntime === undefined) {
+        return Promise.reject(new Error(
+          `${ANIMATION_RETARGET_SOURCE_NOT_LOADED}: model node "${sourceNodeId}" has no loaded actor animation runtime. Await app.ready() (and step once) before addClipsFrom.`
+        ));
+      }
+      source = sourceRuntime;
     }
     return runtime.addClipsFrom(source as Parameters<typeof runtime.addClipsFrom>[0], {
       ...(options?.map !== undefined ? { map: options.map as AuraHumanoidBoneMap } : {}),

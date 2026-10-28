@@ -1,0 +1,116 @@
+{
+  "capability": "physics-root-collision",
+  "version": "4.3.7",
+  "gitSha": "b1d96378e4a9ab0ae4fa4a8e95379e2de988e3a6",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "scene": "box, sphere, capsule, size-derived capsule and a ball-on-crate stack falling onto a static ground via createAuraApp physics",
+  "frames": [
+    {
+      "file": "evidence/receipts/physics-root-collision/frames/4.3.7-start.png",
+      "sha256": "586e89aa93f115054fbb6c1e6df0144d1550a14039f801056a9d1a6727dde343",
+      "meanLuma": 188.6104424689857,
+      "nonBlackRatio": 1,
+      "label": "Six dynamic bodies released above a static ground"
+    },
+    {
+      "file": "evidence/receipts/physics-root-collision/frames/4.3.7-falling.png",
+      "sha256": "138fb98d61fa1aa95166acfe91c038c9bbb2f483123f8d8f9e8cd095b5160ec7",
+      "meanLuma": 188.49921212949246,
+      "nonBlackRatio": 1,
+      "label": "Mid-fall"
+    },
+    {
+      "file": "evidence/receipts/physics-root-collision/frames/4.3.7-rest.png",
+      "sha256": "2a495c044cf087c14875eed55ecacac57b23d9407a579b1a7145ed56259f1852",
+      "meanLuma": 188.2888573301045,
+      "nonBlackRatio": 1,
+      "label": "At rest: box, sphere, capsules on the ground; ball on the crate"
+    }
+  ],
+  "tests": [
+    "tests/browser/physics-root-receipts.spec.ts",
+    "tests/unit/agent-api/physics-root-collision.test.ts"
+  ],
+  "date": "2026-10-28T02:34:48.744Z",
+  "measurements": {
+    "bodies": {
+      "box": {
+        "y": 0.3999,
+        "expectedY": 0.4,
+        "restError": 0.0001,
+        "speed": 0,
+        "nodeY": 0.3999,
+        "x": -3.994
+      },
+      "sphere": {
+        "y": 0.3499,
+        "expectedY": 0.35,
+        "restError": 0.0001,
+        "speed": 0,
+        "nodeY": 0.3499,
+        "x": -2.6
+      },
+      "capsule": {
+        "y": 0.8,
+        "expectedY": 0.8,
+        "restError": 0,
+        "speed": 0,
+        "nodeY": 0.8,
+        "x": -1.1
+      },
+      "capsuleFromSize": {
+        "y": 0.8,
+        "expectedY": 0.8,
+        "restError": 0,
+        "speed": 0,
+        "nodeY": 0.8,
+        "x": 0.5
+      },
+      "lowerCrate": {
+        "y": 0.4999,
+        "expectedY": 0.5,
+        "restError": 0.0001,
+        "speed": 0,
+        "nodeY": 0.4999,
+        "x": 2.608
+      },
+      "upperBall": {
+        "y": 1.2993,
+        "expectedY": 1.3,
+        "restError": 0.0007,
+        "speed": 0.0121,
+        "nodeY": 1.2993,
+        "x": 2.55
+      }
+    },
+    "worstRestError": 0.0007,
+    "worstNodeDrift": 0,
+    "fastestBodySpeed": 0.0121,
+    "depthDrift": {
+      "box": 0.004,
+      "sphere": 0,
+      "capsule": 0,
+      "capsuleFromSize": 0,
+      "lowerCrate": 0.006,
+      "upperBall": 0.04
+    },
+    "collidedWithGround": [
+      "box",
+      "capsule",
+      "capsuleFromSize",
+      "lowerCrate",
+      "sphere"
+    ],
+    "collidingPairs": [
+      "box|ground",
+      "capsuleFromSize|ground",
+      "capsule|ground",
+      "ground|lowerCrate",
+      "ground|sphere",
+      "lowerCrate|upperBall"
+    ],
+    "backend": "rapier",
+    "changedPixelsStartVsFalling": 7256,
+    "changedPixelsStartVsRest": 7088
+  }
+}

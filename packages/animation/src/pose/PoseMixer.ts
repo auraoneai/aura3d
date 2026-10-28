@@ -536,6 +536,9 @@ export class PoseMixer {
     }
     const action = this.clipAction(clipName, options);
     action.play();
+    // `play()` registers the action with the base layer; a layer action must be evaluated only
+    // through its layer (and its mask), or the clip also drives every bone at full weight.
+    this.deactivate(action);
     layer.actions.push(action);
     return action;
   }
