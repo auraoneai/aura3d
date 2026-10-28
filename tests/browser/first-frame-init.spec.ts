@@ -140,6 +140,42 @@ function selfTimes(profile: CpuProfile): { byFunction: { fn: string; selfMs: num
   return { byFunction: top(fn, "fn", 30) as { fn: string; selfMs: number }[], byFile: top(file, "file", 14) as { file: string; selfMs: number }[], busyMs: Math.round(busy) };
 }
 
+/** Inclusive time per function and a pruned call tree (ms, % of non-idle time): shows which phase of the first frame the CPU goes to. */
+function inclusiveReport(profile: CpuProfile, limit = 60, treeMinPct = 1.2, treeDepth = 22): { inclusive: { fn: string; ms: number }[]; tree: string[] } {
+  const byId = new Map(profile.nodes.map((n) => [n.id, n]));
+  const parent = new Map<number, number>();
+  for (const n of profile.nodes) for (const c of n.children ?? []) parent.set(c, n.id);
+  const label = (n: ProfileNode): string => `${n.callFrame.functionName || "(anonymous)"}:${n.callFrame.lineNumber + 1}`;
+  const inclusive = new Map<string, number>();
+  const nodeTotal = new Map<number, number>();
+  let busy = 0;
+  profile.samples.forEach((id, i) => {
+    const dt = (profile.timeDeltas[i] ?? 0) / 1000;
+    const leaf = byId.get(id);
+    if (!leaf || leaf.callFrame.functionName === "(idle)") return;
+    busy += dt;
+    const seen = new Set<string>();
+    for (let cur: number | undefined = id; cur !== undefined; cur = parent.get(cur)) {
+      const node = byId.get(cur)!;
+      nodeTotal.set(cur, (nodeTotal.get(cur) ?? 0) + dt);
+      const key = label(node);
+      if (!seen.has(key)) { seen.add(key); inclusive.set(key, (inclusive.get(key) ?? 0) + dt); }
+    }
+  });
+  const pct = (ms: number): number => Math.round((ms / Math.max(busy, 1)) * 1000) / 10;
+  const tree: string[] = [];
+  const walk = (id: number, depth: number): void => {
+    const node = byId.get(id)!;
+    const total = nodeTotal.get(id) ?? 0;
+    if (pct(total) < treeMinPct || depth > treeDepth) return;
+    tree.push(`${"  ".repeat(depth)}${Math.round(total * 10) / 10}ms ${label(node)}`);
+    for (const child of [...(node.children ?? [])].sort((a, b) => (nodeTotal.get(b) ?? 0) - (nodeTotal.get(a) ?? 0))) walk(child, depth + 1);
+  };
+  const root = profile.nodes.find((n) => !parent.has(n.id));
+  if (root) walk(root.id, 0);
+  return { inclusive: [...inclusive.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([fn, ms]) => ({ fn, ms: Math.round(ms * 10) / 10 })), tree };
+}
+
 test.describe("first frame init: CPU profile (unminified dev-server modules)", () => {
   test.setTimeout(10 * 60_000);
   let server: ExampleDevServer;
@@ -163,6 +199,9 @@ test.describe("first frame init: CPU profile (unminified dev-server modules)", (
     const report = { ...meta, ...selfTimes(profile) };
     results["cube/profile"] = report;
     console.log(`FIRST_FRAME_PROFILE ${JSON.stringify(report)}`);
+    const inc = inclusiveReport(profile);
+    console.log(`FIRST_FRAME_PROFILE_INCLUSIVE ${JSON.stringify(inc.inclusive)}`);
+    for (const line of inc.tree) console.log(`FIRST_FRAME_PROFILE_TREE ${line}`);
     await context.close();
   });
 });

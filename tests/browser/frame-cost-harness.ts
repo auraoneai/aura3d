@@ -161,6 +161,7 @@ async function main(): Promise<void> {
     });
     window.__FC__ = { app, canvas, makeScene: (name) => buildScene(name) };
     await app.ready();
+    performance.mark("a3d:harness:ready");
     let cube = app.nodes.require("cube");
     const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
     const sink = new Uint8Array(4);
@@ -174,6 +175,7 @@ async function main(): Promise<void> {
       app.step(1 / 60);
     };
     frame();
+    performance.mark("a3d:harness:frame-submitted");
     finish();
     const firstFrameMs = performance.now();
     // WP-8: what the very first frame looked like, read in the task that drew it (the drawing buffer is only guaranteed until
