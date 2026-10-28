@@ -57,6 +57,8 @@ interface Load {
   firstFrame: Stats;
   settled: Stats;
   settledSnapshotSha256: string;
+  /** `a3d:` marks present once the page had settled (the deferred default probe has landed by then). */
+  marksSettled: string[];
   probeAtFirstFrame: Record<string, unknown>;
   gl: Record<string, { calls: number; ms: number }>;
   errors: string[];
@@ -121,7 +123,8 @@ test.describe("first frame init (software WebGL2)", () => {
         // Same frame count on every build: 30 more frames from here, then a full read.
         const shot = api.snapshot(30);
         const settled = api.frameStats();
-        return { ...first, settled, shotBase64: shot.rgbaBase64, glEvents: (window as unknown as { __FF_GL__: [string, number, number][] }).__FF_GL__ };
+        const marksSettled = performance.getEntriesByType("mark").map((m) => m.name).filter((n) => n.startsWith("a3d:"));
+        return { ...first, settled, marksSettled, shotBase64: shot.rgbaBase64, glEvents: (window as unknown as { __FF_GL__: [string, number, number][] }).__FF_GL__ };
       });
       const sha = createHash("sha256").update(load.shotBase64).digest("hex");
       const { shotBase64: _omit, glEvents, ...rest } = load;
@@ -144,7 +147,19 @@ test.describe("first frame init (software WebGL2)", () => {
       expect([...l.errors, ...l.console], "console warnings/errors and page errors").toEqual([]);
       expect(l.firstFrame.nonBlack, "first frame is not black").toBeGreaterThan(l.firstFrame.width * l.firstFrame.height * 0.5);
       expect(l.firstFrame.litPixels, "first frame draws the cube").toBeGreaterThan(1000);
+      // No flash of unlit: the cube drawn before the baked default probe lands is lit like the settled cube (the cube turns
+      // between the two reads, so compare mean colour of the cube pixels, not pixels; 8/255 per channel).
+      for (let c = 0; c < 3; c += 1) {
+        expect(Math.abs(l.firstFrame.litMeanRgb[c]! - l.settled.litMeanRgb[c]!), `first-frame cube colour, channel ${c}`).toBeLessThanOrEqual(8);
+      }
+      expect(l.firstFrame.litMeanRgb[0], "the cube is not drawn dark").toBeGreaterThan(60);
+      // The baked default probe is decoded after the first frame, not before it, and does land.
+      expect(l.marks["a3d:env:upgrade:ready"], "baked default probe not built before the first frame").toBeUndefined();
+      expect(l.marksSettled, "baked default probe lands after the first frame").toContain("a3d:env:upgrade:ready");
     }
+    // Deterministic: the first frame and the settled frames are the same on every cold load.
+    expect(new Set(loads.map((l) => l.settledSnapshotSha256)).size, "settled frame is identical across cold loads").toBe(1);
+    expect(new Set(loads.map((l) => JSON.stringify(l.firstFrame))).size, "first frame is identical across cold loads").toBe(1);
   });
 });
 
