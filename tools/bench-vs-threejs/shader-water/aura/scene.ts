@@ -62,7 +62,7 @@ export async function start(canvas: HTMLCanvasElement): Promise<SceneHandle> {
     scene: scene()
       .camera(camera.perspective({ fov: 55, far: 1000, position: [0, 2.2, 9], target: [0, 1, -10] }))
       .add(primitives.plane({ size: [80, 1, 80], params: { widthSegments: 96, heightSegments: 96 }, material: material.custom({ glsl: { vertex: WATER_VERTEX, fragment: WATER_FRAGMENT }, uniforms: { waterTime: { type: "f32", value: 0 }, noiseMap: { type: "texture2d", value: noiseMap } } }) }).runtime({ id: "water" }))
-      .add(primitives.sphere({ size: 600, castShadow: false, material: material.custom({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, side: "back", depthWrite: false }) }))
+      .add(primitives.sphere({ size: 600, params: { widthSegments: 32, heightSegments: 16 }, castShadow: false, material: material.custom({ glsl: { vertex: SKY_VERTEX, fragment: SKY_FRAGMENT }, side: "back", depthWrite: false }) }))
   });
   await app.ready();
   app.post?.addPostPass?.(effects.shaderPass({ name: "grade", order: "before-tonemap", glsl: GRADE_GLSL, uniforms: { u_vignette: 0.6 } }));

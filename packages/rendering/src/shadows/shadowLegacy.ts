@@ -23,3 +23,24 @@ export function shadowFitMode(): ShadowFitMode {
 }
 
 export const shadowFitLegacy = (): boolean => shadowFitMode() === "legacy";
+
+/**
+ * Dense instanced casters (one node with at least this many instances) draw their depth through a per-instance attribute buffer even
+ * in the default (legacy) fit: one draw per node per cascade instead of ceil(n / 64). Same per-node threshold as the engine's
+ * instanced shadow proxies, so the scenes it touches are the ones already audited for them (the forest benchmark: 8,000 / 8,000 /
+ * 2,000 instances, 282 depth draws per cascade become 3). Nodes below it keep the 4.2.0 uniform-array batches exactly.
+ */
+export const DENSE_DEPTH_INSTANCE_MIN = 1024;
+
+/** `globalThis.__A3D_DENSE_DEPTH_DRAWS__ = "off"` (or `?densedepth=off`) restores uniform-array batches for dense casters. */
+export function denseDepthDrawsEnabled(): boolean {
+  const g = globalThis as { __A3D_DENSE_DEPTH_DRAWS__?: string; location?: { search?: string } };
+  let value = g.__A3D_DENSE_DEPTH_DRAWS__;
+  try {
+    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("densedepth") : null;
+    if (q === "off" || q === "on") value = q;
+  } catch {
+    // no location (node, workers): fall through to the global
+  }
+  return value !== "off";
+}
