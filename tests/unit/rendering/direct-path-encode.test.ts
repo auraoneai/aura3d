@@ -23,7 +23,7 @@ const FLAGS = resolveQrFlags({ env: { A3D_QR_CORE: "v2" } });
 const LIT_ONE_SUN = { lighting: "lit" as const, lights: { dir: 1, point: 0, spot: 0, rect: 0, clustered: false, hemisphere: false } };
 
 function source(extra: Record<string, boolean>): string {
-  const program = generateProgramImpl(normalizeProgramFeatures({ ...LIT_ONE_SUN, features: extra }), { flags: FLAGS });
+  const program = generateProgramImpl(normalizeProgramFeatures({ ...LIT_ONE_SUN, features: extra } as never), { flags: FLAGS });
   return program.fragment ?? (program as unknown as { fragmentSource: string }).fragmentSource;
 }
 

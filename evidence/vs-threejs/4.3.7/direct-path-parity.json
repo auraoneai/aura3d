@@ -1,0 +1,22 @@
+{
+  "schema": "aura3d-evidence/direct-path-parity/1",
+  "date": "2026-10-28",
+  "gitBranch": "beat3js/p1",
+  "runner": "Azure ACR task, software WebGL2 (SwiftShader), 640x360, devicePixelRatio 1; specs tests/browser/direct-path-parity.spec.ts (run id p1-parity-b), exposure-calibration.spec.ts and post-luma.spec.ts (run id p1-parity-a)",
+  "bug": "The direct path (quality auto, no post, no output option) wrote linear colour: the calibration plane read 18/255 where the HDR chain and three.js read 67; daylight post-luma read 79.1 against 128.4.",
+  "fix": "Generated forward programs carry the feature bit a3d.output.srgb when the frame outputs sRGB and then apply the r185 ACESFilmic operator (text-identical body to the OutputPass) and the sRGB OETF before writing outColor. Programs for HDR/post frames are byte-identical. Transparent materials and hdri environments keep the HDR path.",
+  "frameParity_directVsProduction": {
+    "tolerance": { "meanAbsDiff": 2, "interiorMax": 6, "silhouetteFractionOver6": 0.005, "silhouetteMax": 64, "scale": "0..255 per channel" },
+    "scenes": [
+      { "scene": "cube", "meanAbsDiff": 0.006, "interiorMax": 0, "silhouetteMax": 16, "pixelsOver6": 286, "fractionOver6": 0.0012 },
+      { "scene": "lit (hemisphere + sun, rough/metal/emissive)", "meanAbsDiff": 0.012, "interiorMax": 1, "silhouetteMax": 20, "pixelsOver6": 252, "fractionOver6": 0.0011 },
+      { "scene": "fog (lit + forward fog)", "meanAbsDiff": 0.025, "interiorMax": 1, "silhouetteMax": 16, "pixelsOver6": 306, "fractionOver6": 0.0013 },
+      { "scene": "pbr (studio light, shadow, 6 PBR balls)", "meanAbsDiff": 0.042, "interiorMax": 2, "silhouetteMax": 48, "pixelsOver6": 693, "fractionOver6": 0.003 },
+      { "scene": "skinned-character (bench scene)", "meanAbsDiff": 0, "interiorMax": 0, "silhouetteMax": 0, "pixelsOver6": 0, "note": "identical frames: this scene takes the HDR path under auto" }
+    ],
+    "silhouetteNote": "Every pixel more than 6/255 off is a silhouette pixel: the canvas MSAA resolves in display space on the direct path (as three.js does on its default framebuffer) and in linear light on the HDR chain, so hard edges between very different colours differ by up to 48/255 (0.1% to 0.3% of the frame). Interior pixels agree within 2/255."
+  },
+  "exposureCalibration": "tests/browser/exposure-calibration.spec.ts passes with the default-route (dflt) capture equal to the aces capture on every case (dir-1-grey 67 vs expected 67.3).",
+  "postLuma": "tests/browser/post-luma.spec.ts passes; daylight none = bloom = 128.379 (was 79.1 on the direct path).",
+  "frameCost_cube_auto": { "totalMsMedian": 6.5, "cpuMsMedian": 1.5, "mountMs": 500, "drawCalls": 1, "before_encode_fix": { "totalMsMedian": 6.1, "cpuMsMedian": 1.4, "mountMs": 422 } }
+}
