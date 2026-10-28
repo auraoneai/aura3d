@@ -69,21 +69,51 @@ describe("oversize casters", () => {
 });
 
 describe("instanced depth draws", () => {
-  const instanced = (n: number) => ({ instanceTransforms: new Float32Array(16 * n) }) as never;
-  it("use the uniform array (4.2.0) by default and the attribute buffer only in current mode", () => {
-    expect(depthUsesInstanceAttributes(instanced(2000))).toBe(false);
+  const instanced = (n: number, shadowGeometry?: unknown, drawRange?: unknown) => ({ instanceTransforms: new Float32Array(16 * n), ...(shadowGeometry ? { shadowGeometry } : {}), ...(drawRange ? { drawRange } : {}) }) as never;
+  const proxy = { proxy: true };
+  it("use the uniform array (4.2.0) by default below the dense threshold and the attribute buffer in current mode", () => {
+    expect(depthUsesInstanceAttributes(instanced(500))).toBe(false);
     (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
-    expect(depthUsesInstanceAttributes(instanced(2000))).toBe(true);
+    expect(depthUsesInstanceAttributes(instanced(500))).toBe(true);
     expect(depthUsesInstanceAttributes(instanced(40))).toBe(false);
   });
 
-  it("the legacy caster variant carries no instance-attribute feature, so its program key and source equal 4.2.0's", () => {
+  it("dense nodes with a shadow proxy (1,024+ instances) use the attribute buffer in the default fit too, unless switched off", () => {
+    const g = globalThis as { __A3D_DENSE_DEPTH_DRAWS__?: string };
+    try {
+      expect(depthUsesInstanceAttributes(instanced(1023, proxy))).toBe(false);
+      expect(depthUsesInstanceAttributes(instanced(1024, proxy))).toBe(true);
+      expect(depthUsesInstanceAttributes(instanced(8000, proxy))).toBe(true);
+      g.__A3D_DENSE_DEPTH_DRAWS__ = "off";
+      expect(depthUsesInstanceAttributes(instanced(8000, proxy))).toBe(false);
+    } finally {
+      delete g.__A3D_DENSE_DEPTH_DRAWS__;
+    }
+  });
+
+  it("dense casters WITHOUT a shadow proxy (GLB or model instancing, custom geometry, boxes, non-core paths) or with a draw range keep the 4.2.0 uniform array", () => {
+    expect(depthUsesInstanceAttributes(instanced(2000))).toBe(false);
+    expect(depthUsesInstanceAttributes(instanced(8000))).toBe(false);
+    expect(depthUsesInstanceAttributes(instanced(2000, proxy, { start: 0, count: 6 }))).toBe(false);
+    // current mode is unchanged: every node above 64 instances
+    (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
+    expect(depthUsesInstanceAttributes(instanced(2000))).toBe(true);
+  });
+
+  it("the legacy caster variant of a sub-dense node carries no instance-attribute feature, so its program key and source equal 4.2.0's", () => {
     const features = prd02DepthFeatures();
-    const item = { ...box([0, 0, 0], [1, 1, 1]), instanceTransforms: new Float32Array(16 * 2000) } as never;
+    const item = { ...box([0, 0, 0], [1, 1, 1]), instanceTransforms: new Float32Array(16 * 500) } as never;
     const legacy = resolvePrd02ShadowCasterVariant(item, {} as never, {} as never, features);
     expect(legacy.features["prd02.depthInstanceAttr"]).toBeUndefined();
     (globalThis as { __A3D_SHADOW_FIT__?: string }).__A3D_SHADOW_FIT__ = "current";
     const current = resolvePrd02ShadowCasterVariant(item, {} as never, {} as never, features);
     expect(current.features["prd02.depthInstanceAttr"]).toBe(1);
+  });
+
+  it("a dense caster's variant carries the instance-attribute feature in the default fit only when it has a shadow proxy", () => {
+    const features = prd02DepthFeatures();
+    const dense = { ...box([0, 0, 0], [1, 1, 1]), instanceTransforms: new Float32Array(16 * 2000) };
+    expect(resolvePrd02ShadowCasterVariant({ ...dense, shadowGeometry: {} } as never, {} as never, {} as never, features).features["prd02.depthInstanceAttr"]).toBe(1);
+    expect(resolvePrd02ShadowCasterVariant(dense as never, {} as never, {} as never, features).features["prd02.depthInstanceAttr"]).toBeUndefined();
   });
 });

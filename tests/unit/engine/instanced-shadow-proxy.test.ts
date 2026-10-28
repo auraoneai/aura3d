@@ -56,6 +56,13 @@ describe("resource shadowGeometry", () => {
     expect(createProductionPrimitiveResources(instancedNode("box", 2000), options)[0]!.shadowGeometry).toBeUndefined();
   });
 
+  it("the forest benchmark's three nodes (8,000 cylinders, 8,000 cones, 2,000 spheres) all get a proxy, so all take the dense depth path; boxes never do", () => {
+    for (const [primitive, count] of [["cylinder", 8000], ["cone", 8000], ["sphere", 2000]] as const) {
+      expect(createProductionPrimitiveResources(instancedNode(primitive, count), core())[0]!.shadowGeometry, primitive).toBeDefined();
+    }
+    expect(createProductionPrimitiveResources(instancedNode("box", 8000), core())[0]!.shadowGeometry).toBeUndefined();
+  });
+
   it("eligibility starts at exactly INSTANCED_SHADOW_PROXY_MIN_INSTANCES instances", () => {
     const options = core();
     expect(INSTANCED_SHADOW_PROXY_MIN_INSTANCES).toBe(1024);

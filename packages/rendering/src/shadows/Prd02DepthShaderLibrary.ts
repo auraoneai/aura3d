@@ -28,7 +28,7 @@ import type { Material } from "../Material";
 import type { ShaderLibrary } from "../ShaderLibraryCore";
 import type { RenderDevice, RenderShaderProgram } from "../RenderDevice";
 import { shadowCasterVariantId } from "../contracts/shadows";
-import { shadowFitLegacy } from "./shadowLegacy";
+import { DENSE_DEPTH_INSTANCE_MIN, denseDepthDrawsEnabled, shadowFitLegacy } from "./shadowLegacy";
 
 export const PRD02_DEPTH_SHADER_NAME = "aura3d/prd02-depth";
 export const PRD02_DEPTH_SHADER_MARKER = "@aura3d-shader:prd02-depth";
@@ -37,10 +37,21 @@ export const PRD02_DEPTH_MAX_INSTANCES = 64;
 
 /**
  * Instances beyond the uniform array ride a per-instance vertex-attribute buffer (one draw instead of ceil(n / 64) per cascade).
- * Part of the 4.3.0 shadow behaviour: off in legacy mode (the default), which draws uniform-array batches exactly as 4.2.0 did.
+ * The 4.3.0 shadow behaviour (`__A3D_SHADOW_FIT__ = "current"`) uses it for every node above 64 instances. In the default (legacy)
+ * fit only nodes that the engine has already given an instanced shadow proxy (`shadowGeometry`: builtin primitive, authored by
+ * params not geometry, qr core path, castShadow, 1,024+ instances, proxy strictly cheaper; see `qrPrimitiveShadowGeometryFor`) use
+ * it. Every other instanced caster (GLB or model instancing, custom geometry, boxes, non-core paths, static-batch chunks, nodes with
+ * a draw range) keeps the 4.2.0 uniform-array batches exactly.
  */
-export function depthUsesInstanceAttributes(item: { readonly instanceTransforms?: ArrayLike<number> | undefined }): boolean {
-  return !shadowFitLegacy() && (item.instanceTransforms?.length ?? 0) / 16 > PRD02_DEPTH_MAX_INSTANCES;
+export function depthUsesInstanceAttributes(item: {
+  readonly instanceTransforms?: ArrayLike<number> | undefined;
+  readonly shadowGeometry?: unknown;
+  readonly drawRange?: unknown;
+}): boolean {
+  const count = (item.instanceTransforms?.length ?? 0) / 16;
+  if (count <= PRD02_DEPTH_MAX_INSTANCES) return false;
+  if (!shadowFitLegacy()) return true;
+  return count >= DENSE_DEPTH_INSTANCE_MIN && item.shadowGeometry !== undefined && item.drawRange === undefined && denseDepthDrawsEnabled();
 }
 
 export function registerPrd02DepthShader(library: ShaderLibrary): void {
