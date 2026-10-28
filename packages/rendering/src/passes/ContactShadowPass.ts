@@ -33,8 +33,15 @@ export interface ContactShadowPassInput {
   readonly camera: {
     readonly viewMatrix: Float32Array;
     readonly projectionMatrix: Float32Array;
+    /**
+     * The combined matrix the forward pass rasterizes with. The production renderer's frame camera carries only this
+     * (its separate view/projection come through as identity), so the pass works from it when present and falls back
+     * to `projectionMatrix * viewMatrix` otherwise.
+     */
+    readonly viewProjectionMatrix?: Float32Array;
     readonly near: number;
     readonly far: number;
+    readonly orthographic?: boolean;
   };
   /** C-07-IN-2: real scene depth when the C-01 prepass is provided. */
   readonly sceneDepth?: {
@@ -46,6 +53,12 @@ export interface ContactShadowPassInput {
   readonly casters?: readonly RenderItem[];
   readonly depthPassOptions?: Omit<DepthPassOptions, "casters" | "viewProjectionMatrix">;
   readonly options?: ContactShadowOptions;
+}
+
+export interface ContactShadowProbe {
+  readonly mask: { readonly width: number; readonly height: number; readonly min: number; readonly mean: number; readonly fractionBelow098: number } | null;
+  readonly depth: { readonly width: number; readonly height: number; readonly coveredFraction: number; readonly min: number | null; readonly max: number | null } | null;
+  readonly error?: string;
 }
 
 const MASK_LABEL = "a3d.prd02.contactShadowMask";
@@ -79,24 +92,81 @@ export class ContactShadowPass extends BaseRenderPass {
   private ownDepth: RenderTarget | null = null;
   private program: RenderShaderProgram | null = null;
   private triBuffer: RenderBuffer | null = null;
-  private readonly depthPass: DepthPass | null;
+  private depthPass: DepthPass | null = null;
   private lastMask: Texture | null = null;
   private lastDepthSource: "scene" | "self" | "none" = "none";
   private executed = false;
 
-  constructor(private readonly input: ContactShadowPassInput) {
+  constructor(private input: ContactShadowPassInput) {
     super("prd02-contact-shadows", [MASK_LABEL], [MASK_LABEL]);
+    this.configure(input);
+  }
+
+  /**
+   * Re-point the pass at this frame's camera, light and casters while keeping its
+   * render targets and program (WP-4: the contributor reuses one pass per device
+   * instead of allocating a mask and depth target every frame).
+   */
+  configure(input: ContactShadowPassInput): void {
+    this.input = input;
     if (!input.sceneDepth?.available && input.casters?.length) {
       this.depthPass = new DepthPass({
         casters: input.casters,
-        viewProjectionMatrix: multiplyMat4(
-          input.camera.projectionMatrix as unknown as Mat4,
-          input.camera.viewMatrix as unknown as Mat4),
+        viewProjectionMatrix: cameraViewProjection(input.camera),
         ...(input.depthPassOptions ?? {}),
       });
     } else {
       this.depthPass = null;
     }
+  }
+
+  /**
+   * Diagnostics-only readback of the mask and the pass's own depth target (opt-in from the contributor via
+   * `globalThis.__A3D_CONTACT_PROBE__`; never on in production). It exists so a remote GPU run can tell "the mask is all
+   * ones", "the depth pass drew nothing" and "the consumer never sampled it" apart, which pixel deltas alone cannot.
+   */
+  probe(device: RenderDevice): ContactShadowProbe {
+    const previous = device.getRenderTarget?.() ?? null;
+    let mask: ContactShadowProbe["mask"] = null;
+    let depth: ContactShadowProbe["depth"] = null;
+    try {
+      if (this.mask && this.executed) {
+        device.setRenderTarget(this.mask);
+        const pixels = device.readPixels(0, 0, this.mask.width, this.mask.height);
+        let min = 255;
+        let sum = 0;
+        let below = 0;
+        const n = this.mask.width * this.mask.height;
+        for (let i = 0; i < n; i += 1) {
+          const r = pixels[i * 4]!;
+          if (r < min) min = r;
+          sum += r;
+          if (r < 250) below += 1;
+        }
+        mask = { width: this.mask.width, height: this.mask.height, min: min / 255, mean: sum / n / 255, fractionBelow098: below / n };
+      }
+      if (this.ownDepth && device.readDepthPixels) {
+        device.setRenderTarget(this.ownDepth);
+        const values = device.readDepthPixels(0, 0, this.ownDepth.width, this.ownDepth.height);
+        let min = 1;
+        let max = 0;
+        let covered = 0;
+        for (let i = 0; i < values.length; i += 1) {
+          const v = values[i]!;
+          if (v < 0.9999) {
+            covered += 1;
+            if (v < min) min = v;
+            if (v > max) max = v;
+          }
+        }
+        depth = { width: this.ownDepth.width, height: this.ownDepth.height, coveredFraction: covered / values.length, min: covered ? min : null, max: covered ? max : null };
+      }
+    } catch (error) {
+      return { mask, depth, error: error instanceof Error ? error.message : String(error) };
+    } finally {
+      device.setRenderTarget(previous);
+    }
+    return { mask, depth };
   }
 
   maskTexture(): Texture | null { return this.lastMask; }
@@ -148,8 +218,8 @@ export class ContactShadowPass extends BaseRenderPass {
       "vertex", 24, new Float32Array([-1, -1, 3, -1, -1, 3]));
     const o = this.input.options ?? {};
     const steps = Math.min(16, Math.max(1, o.steps ?? 12));
-    const viewSun = normalize3(transformDirection(
-      this.input.camera.viewMatrix, this.input.sunDirection));
+    const viewProjection = cameraViewProjection(this.input.camera);
+    const sun = normalize3([this.input.sunDirection[0], this.input.sunDirection[1], this.input.sunDirection[2]]);
     device.setRenderTarget(this.mask);
     device.draw({
       label: "prd02-contact-shadow-mask",
@@ -165,11 +235,11 @@ export class ContactShadowPass extends BaseRenderPass {
           texture: depthTex,
           sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
         })],
-        ["u_prd02ContactInvProj", invertMat4(this.input.camera.projectionMatrix as unknown as Mat4)],
-        ["u_prd02ContactProj", this.input.camera.projectionMatrix],
-        ["u_prd02ContactSun", viewSun],
+        ["u_prd02ContactInvViewProj", invertMat4(viewProjection)],
+        ["u_prd02ContactViewProj", viewProjection],
+        ["u_prd02ContactSun", sun],
         ["u_prd02ContactParams", [o.length ?? 0.25, o.thickness ?? 0.05, steps, 0.9]],
-        ["u_prd02ContactNearFar", [this.input.camera.near, this.input.camera.far]],
+        ["u_prd02ContactNearFar", [this.input.camera.near, this.input.camera.far, this.input.camera.orthographic ? 1 : 0]],
       ]),
     });
     this.lastMask = this.mask.colorTexture;
@@ -178,12 +248,10 @@ export class ContactShadowPass extends BaseRenderPass {
   }
 }
 
-function transformDirection(m: Float32Array, d: readonly [number, number, number]): [number, number, number] {
-  return [
-    m[0] * d[0] + m[4] * d[1] + m[8] * d[2],
-    m[1] * d[0] + m[5] * d[1] + m[9] * d[2],
-    m[2] * d[0] + m[6] * d[1] + m[10] * d[2],
-  ];
+function cameraViewProjection(camera: ContactShadowPassInput["camera"]): Mat4 {
+  return (camera.viewProjectionMatrix ?? multiplyMat4(
+    camera.projectionMatrix as unknown as Mat4,
+    camera.viewMatrix as unknown as Mat4)) as unknown as Mat4;
 }
 
 function normalize3(v: [number, number, number]): [number, number, number] {

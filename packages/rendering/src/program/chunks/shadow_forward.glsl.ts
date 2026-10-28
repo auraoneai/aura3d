@@ -19,6 +19,8 @@
  * the receiver along its normal before the lookup; 0 keeps the legacy result.
  */
 
+import { CONTACT_SHADOW_MASK_GLSL } from "../../shaders/chunks/contact_shadow_mask.glsl";
+
 export const SHADOW_FORWARD_FACTOR_GLSL = /* glsl */ `float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection) {
   if (u_shadowMapEnabled < 0.5) return 1.0;
   vec4 lightPosition = u_shadowMapMatrix * vec4(worldPosition, 1.0);
@@ -50,6 +52,7 @@ export const SHADOW_FORWARD_FACTOR_GLSL = /* glsl */ `float a3dForwardShadowFact
 }`;
 
 export const SHADOW_FORWARD_CHUNK_GLSL = /* glsl */ `
+${CONTACT_SHADOW_MASK_GLSL}
 uniform sampler2D u_shadowMapTexture;
 uniform float u_shadowMapEnabled;
 uniform mat4 u_shadowMapMatrix;
@@ -69,6 +72,7 @@ ${SHADOW_FORWARD_FACTOR_GLSL}
 float a3dForwardLightShadow(float kind, float castsShadow, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
   if (castsShadow < 0.5 || (kind > 0.5 && kind < 1.5) || kind > 2.5) return 1.0;
   vec3 offsetPosition = worldPosition + normalize(normal) * u_shadowMapNormalBias;
-  return a3dForwardShadowFactor(offsetPosition, normal, lightDirection);
+  // WP-4: the contact-shadow mask rides the shadow-casting light's visibility only.
+  return a3dForwardShadowFactor(offsetPosition, normal, lightDirection) * a3dContactShadowMaskFactor();
 }
 `;

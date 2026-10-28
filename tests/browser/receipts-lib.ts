@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import type { Page } from "@playwright/test";
-import type { FrameComparison, FrameResult, KitRunResult } from "./receipts-harness";
+import type { ContactMaskComparison, ContactMaskFrame, ContactMaskVariant, FrameComparison, FrameResult, KitRunResult } from "./receipts-harness";
 
 /**
  * Shared Node-side helpers for the pixel-receipt specs (PRD beat-three.js §3.5).
@@ -39,6 +39,8 @@ interface ReceiptsWindow {
     renderEffect(id: string): Promise<FrameResult>;
     renderKit(id: string): Promise<KitRunResult>;
     compare(a: string, b: string): FrameComparison;
+    renderContactMask(id: ContactMaskVariant): Promise<ContactMaskFrame>;
+    compareContactMask(a: string, b: string): ContactMaskComparison;
     effectVariants: readonly string[];
     kitIds: readonly string[];
   };
@@ -82,6 +84,14 @@ export function renderEffect(page: Page, id: string): Promise<FrameResult> {
 
 export function renderKit(page: Page, id: string): Promise<KitRunResult> {
   return page.evaluate((kit) => (window as unknown as ReceiptsWindow).__AURA3D_RECEIPTS__!.renderKit(kit), id);
+}
+
+export function renderContactMask(page: Page, id: ContactMaskVariant): Promise<ContactMaskFrame> {
+  return page.evaluate((variant) => (window as unknown as ReceiptsWindow).__AURA3D_RECEIPTS__!.renderContactMask(variant), id);
+}
+
+export function compareContactMask(page: Page, a: ContactMaskVariant, b: ContactMaskVariant): Promise<ContactMaskComparison> {
+  return page.evaluate(([first, second]) => (window as unknown as ReceiptsWindow).__AURA3D_RECEIPTS__!.compareContactMask(first!, second!), [a, b] as const);
 }
 
 export function compareFrames(page: Page, a: string, b: string): Promise<FrameComparison> {
