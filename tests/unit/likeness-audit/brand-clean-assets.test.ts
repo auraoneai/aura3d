@@ -30,7 +30,8 @@ const TS_MANIFESTS = [
 function entry(text: string, key: string): { url: string; hash: string; sizeBytes?: number } | undefined {
   const m = new RegExp(`^\\s*"?${key}"?: \\{`, "m").exec(text);
   if (!m) return undefined;
-  const block = text.slice(m.index, m.index + 700);
+  const close = text.indexOf("\n  }", m.index);
+  const block = text.slice(m.index, close > m.index ? Math.min(close, m.index + 700) : m.index + 700);
   const size = /sizeBytes: (\d+)/.exec(block);
   return { url: /url: "([^"]+)"/.exec(block)![1]!, hash: /hash: "([^"]+)"/.exec(block)![1]!, sizeBytes: size ? Number(size[1]) : undefined };
 }
