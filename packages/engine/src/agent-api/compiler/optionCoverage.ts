@@ -290,4 +290,34 @@ OPTION_COVERAGE_ROWS.push({ builder: "primitives.torus", field: "lookAt", probeV
 OPTION_COVERAGE_ROWS.push({ builder: "text3D", field: "letterSpacing", probeValueA: 1, probeValueB: 2, ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "position", probeValueA: [0,0,0], probeValueB: [1,1,1], ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "name", probeValueA: "probe-a", probeValueB: "probe-b", ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "rotation", probeValueA: [0,0,0], probeValueB: [1,1,1], ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "scale", probeValueA: 1, probeValueB: [1,1,1], ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "lookAt", probeValueA: [0,0,0], probeValueB: [1,1,1], ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "rotationOrder", probeValueA: "XYZ", probeValueB: "ZYX", ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "quaternion", probeValueA: [0,0,0,1], probeValueB: [0,0,0.5,1], ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "material", probeValueA: {"__probeA":1}, probeValueB: {"__probeB":2}, ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "castShadow", probeValueA: false, probeValueB: true, ownerPrd: 15, beforeOptions: ["string"] });
 OPTION_COVERAGE_ROWS.push({ builder: "text3D", field: "receiveShadow", probeValueA: false, probeValueB: true, ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "physics", probeValueA: {"__probeA":1}, probeValueB: {"__probeB":2}, ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "instances", probeValueA: [{"__probeA":1}], probeValueB: [{"__probeB":2},{"__probeB":2}], ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "instanceColors", probeValueA: ["probe-a"], probeValueB: ["probe-b","probe-b"], ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "lod", probeValueA: {"__probeA":1}, probeValueB: {"__probeB":2}, ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "backend", probeValueA: "extruded-mesh", probeValueB: "sdf", ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "sdfStyle", probeValueA: {"__probeA":1}, probeValueB: {"__probeB":2}, ownerPrd: 15, beforeOptions: ["string"] }, { builder: "text3D", field: "sdfOcclusion", probeValueA: "hide", probeValueB: "show", ownerPrd: 15, beforeOptions: ["string"] });
 
+// Beat-three.js WP-S.1 (hand-written, not scaffolded): options the scaffold missed. The primitive builder used to drop
+// the transform extras (`renderOrder`, `frustumCulled`, `layers`, `userData`) and `params` was never probed, so documented
+// `params: { radialSegments }` and the plane `widthSegments` had no coverage row. Each now changes the compiled input.
+const UNIT_KIND_PARAM_PROBE: Readonly<Record<string, { readonly key: string; readonly a: number; readonly b: number }>> = {
+  box: { key: "widthSegments", a: 2, b: 4 },
+  sphere: { key: "widthSegments", a: 8, b: 16 },
+  plane: { key: "widthSegments", a: 2, b: 4 },
+  cylinder: { key: "radialSegments", a: 8, b: 12 },
+  capsule: { key: "radialSegments", a: 8, b: 12 },
+  torus: { key: "radialSegments", a: 8, b: 12 }
+};
+for (const [kind, probe] of Object.entries(UNIT_KIND_PARAM_PROBE)) {
+  for (const builder of [`primitives.${kind}`, `instances.${kind}`]) {
+    OPTION_COVERAGE_ROWS.push(
+      { builder, field: "params", probeValueA: { [probe.key]: probe.a }, probeValueB: { [probe.key]: probe.b }, ownerPrd: 15 },
+      { builder, field: "renderOrder", probeValueA: 1, probeValueB: 2, ownerPrd: 15 },
+      { builder, field: "frustumCulled", probeValueA: false, probeValueB: true, ownerPrd: 15 },
+      { builder, field: "layers", probeValueA: 1, probeValueB: 2, ownerPrd: 15 },
+      { builder, field: "userData", probeValueA: { probe: "a" }, probeValueB: { probe: "b" }, ownerPrd: 15 }
+    );
+  }
+}
+OPTION_COVERAGE_ROWS.push(
+  { builder: "primitive", field: "renderOrder", probeValueA: 1, probeValueB: 2, ownerPrd: 15, beforeOptions: ["AuraBuiltinPrimitive | \"custom\""] },
+  { builder: "primitive", field: "frustumCulled", probeValueA: false, probeValueB: true, ownerPrd: 15, beforeOptions: ["AuraBuiltinPrimitive | \"custom\""] },
+  { builder: "primitive", field: "layers", probeValueA: 1, probeValueB: 2, ownerPrd: 15, beforeOptions: ["AuraBuiltinPrimitive | \"custom\""] },
+  { builder: "primitive", field: "userData", probeValueA: { probe: "a" }, probeValueB: { probe: "b" }, ownerPrd: 15, beforeOptions: ["AuraBuiltinPrimitive | \"custom\""] },
+  { builder: "primitive", field: "params", probeValueA: { widthSegments: 2 }, probeValueB: { widthSegments: 4 }, ownerPrd: 15, beforeOptions: ["AuraBuiltinPrimitive | \"custom\""] }
+);
+
 registerOptionCoverage(OPTION_COVERAGE_ROWS);

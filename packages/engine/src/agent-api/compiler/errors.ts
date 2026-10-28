@@ -44,6 +44,9 @@ export class AuraRuntimeError extends Error {
     | "tsl-requires-glsl-backend"
     // CCR-03-8 (additive): PRD-03 §7.1 — v2 post-bridge field rejection.
     | "POST_FIELD_UNSUPPORTED"
+    // Beat-three.js WP-S.1 (decision 5): a builder was given an option it does
+    // not read. Raised instead of dropping the option; the message names the valid keys.
+    | "OPTION_IGNORED"
     // T4.1 (PRD-15): strict degrade() throws the C-36 degradation codes,
     // including "renderer-mount-failed" from the T4.2 mount path.
     | import("../../contracts/compiler.js").AuraDegradationCode;

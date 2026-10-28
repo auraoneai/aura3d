@@ -2613,6 +2613,22 @@ export type AuraUniformValue = number | boolean | readonly number[] | AuraVec3 |
  * `createAuraApp` mounts WebGL2 (PRD C2); `wgsl` is optional and runs only on
  * the WebGPU backend. A WGSL-only spec must fail `validate` (binding rule
  * 1.4.2). `patch` (SH-09) replaces named shader chunks and salts the cache key.
+ *
+ * Names the generated GLSL prelude provides, so you declare none of them
+ * (a name you declare yourself wins over the alias):
+ * - both stages: `uTime` (float seconds), `uResolution` (vec2), `modelMatrix`,
+ *   `viewMatrix`, `projectionMatrix`, `modelViewMatrix`,
+ *   `modelViewProjectionMatrix` (mat4), `normalMatrix` (mat3),
+ *   `cameraPosition` (vec3). The `u_`-prefixed forms (`u_time`,
+ *   `u_modelViewProjection`, ...) are the underlying uniforms.
+ * - vertex stage only, and only declared when the source uses them:
+ *   `position` (vec3), `normal` (vec3), `uv` (vec2). The default vertex stage
+ *   is `gl_Position = u_modelViewProjection * vec4(position, 1.0);`.
+ * - every key of `uniforms` becomes a uniform of that name (`foo` lowers to
+ *   `u_foo` with a `#define foo u_foo`); names above are reserved and rejected.
+ *
+ * Not provided: the fragment output. Declare it yourself (the examples use
+ * `out vec4 outColor;`) and write to it. `#version 300 es` is added for you.
  */
 export interface AuraCustomMaterialSpec {
   readonly glsl: { readonly vertex?: string; readonly fragment: string };

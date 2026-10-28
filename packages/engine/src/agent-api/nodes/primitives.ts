@@ -3,6 +3,7 @@
 import type { AuraPrimitiveOptions, AuraPrimitiveNode } from "./types.js";
 import { AuraNodeBuilder } from "./builder.js";
 import { AuraRuntimeError } from "../compiler/errors.js";
+import { assertKnownOptionKeys } from "./optionDiagnostics.js";
 import { geometry } from "./geometry.js";
 import { instances } from "./instances.js";
 import { material } from "./material.js";
@@ -49,7 +50,21 @@ export function assertUnitPrimitiveParams(primitiveName: string, params: unknown
   );
 }
 
+/**
+ * Every top-level option `primitive()` reads: `AuraPrimitiveOptions` plus the
+ * `transforms` / `colors` pair `instancedPrimitive` spreads in. Anything else
+ * (for example `segments`, `radius`, `color`) used to be dropped silently.
+ */
+const PRIMITIVE_OPTION_KEYS: readonly string[] = [
+  "name", "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion",
+  "renderOrder", "frustumCulled", "layers", "userData",
+  "material", "size", "castShadow", "receiveShadow", "physics",
+  "instances", "instanceColors", "geometry", "text3D", "lod", "params",
+  "transforms", "colors"
+];
+
 export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions = {}): AuraNodeBuilder<AuraPrimitiveNode> {
+  assertKnownOptionKeys(`primitives.${primitiveName}`, options, PRIMITIVE_OPTION_KEYS);
   assertUnitPrimitiveParams(primitiveName, options.params);
   return new AuraNodeBuilder({
     kind: "primitive",
@@ -59,6 +74,14 @@ export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options
     rotation: options.rotation,
     scale: options.scale,
     lookAt: options.lookAt,
+    // Transform extras: the compiler reads these off the node (renderInput.ts, sceneGraph.ts)
+    // but the builder used to drop them. Spread only when set so node JSON is unchanged otherwise.
+    ...(options.rotationOrder !== undefined ? { rotationOrder: options.rotationOrder } : {}),
+    ...(options.quaternion !== undefined ? { quaternion: options.quaternion } : {}),
+    ...(options.renderOrder !== undefined ? { renderOrder: options.renderOrder } : {}),
+    ...(options.frustumCulled !== undefined ? { frustumCulled: options.frustumCulled } : {}),
+    ...(options.layers !== undefined ? { layers: options.layers } : {}),
+    ...(options.userData !== undefined ? { userData: options.userData } : {}),
     material: options.material,
     size: options.size,
     castShadow: options.castShadow ?? (primitiveName !== "plane" && options.material?.emissive === undefined),

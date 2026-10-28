@@ -41,8 +41,9 @@ export function distanceLod(options: Omit<AuraPrimitiveOptions, "lod" | "geometr
   selectAuraRootLodLevel(0, options.levels, undefined, options.hysteresis ?? 0);
   const first = options.levels[0]!;
   if (!first.primitive && !first.geometry) throw new Error("Every Aura3D LOD level requires a primitive or custom geometry.");
+  const { levels: _levels, hysteresis: _hysteresis, ...primitiveOptions } = options;
   return primitive(first.geometry ? "custom" : first.primitive!, {
-    ...options,
+    ...primitiveOptions,
     geometry: first.geometry,
     material: first.material ?? options.material,
     lod: { levels: options.levels, hysteresis: options.hysteresis }

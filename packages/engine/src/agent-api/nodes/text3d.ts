@@ -17,10 +17,20 @@ export function rootSdfFontAtlas(): SdfFontAtlas {
   return cachedSdfFontAtlas;
 }
 
+/** Options `text3D` consumes itself (geometry, layout, backend); `primitive()` does not read them and rejects them. */
+const TEXT_ONLY_OPTION_KEYS = ["depth", "letterSpacing", "backend", "sdfStyle", "sdfOcclusion"] as const;
+
+function withoutTextOnlyKeys<T extends object>(options: T): Omit<T, typeof TEXT_ONLY_OPTION_KEYS[number]> {
+  const rest: Record<string, unknown> = { ...(options as Record<string, unknown>) };
+  for (const key of TEXT_ONLY_OPTION_KEYS) delete rest[key];
+  return rest as Omit<T, typeof TEXT_ONLY_OPTION_KEYS[number]>;
+}
+
 export function text3D(text: string, options: AuraText3DOptions & Omit<AuraPrimitiveOptions, "geometry" | "text3D"> & { readonly backend?: "extruded-mesh" | "sdf"; readonly sdfStyle?: SdfTextStyle; readonly sdfOcclusion?: SdfTextOcclusionPolicy } = {}): AuraNodeBuilder<AuraPrimitiveNode> {
   const built = createAuraText3DGeometry(text, options);
+  const primitiveOptions = withoutTextOnlyKeys(options);
   if ((options.backend ?? "extruded-mesh") === "extruded-mesh") {
-    return primitive("custom", { ...options, geometry: built.geometry, text3D: { text: built.text, glyphCount: built.glyphCount, unsupportedCharacters: built.unsupportedCharacters, method: built.method } });
+    return primitive("custom", { ...primitiveOptions, geometry: built.geometry, text3D: { text: built.text, glyphCount: built.glyphCount, unsupportedCharacters: built.unsupportedCharacters, method: built.method } });
   }
   // G1 SDF backend (muse3jsparity-PRD): the layout validates fail-loud and is
   // recorded on the descriptor with the full author intent (size, spacing,
@@ -28,7 +38,7 @@ export function text3D(text: string, options: AuraText3DOptions & Omit<AuraPrimi
   // at mount. The extruded mesh stays as the diagnosed fallback geometry.
   const layout = layoutSdfText(text, rootSdfFontAtlas(), { size: options.size ?? 1, letterSpacing: options.letterSpacing, style: options.sdfStyle });
   return primitive("custom", {
-    ...options,
+    ...primitiveOptions,
     geometry: built.geometry,
     text3D: {
       text: built.text,
