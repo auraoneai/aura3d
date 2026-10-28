@@ -19,6 +19,7 @@ import { QUALITY_TIERS, type AuraQualityTier } from "../contracts/quality.js";
 import { decodeHdrEquirect, hdrImageToRgba32f } from "./HdrEquirect.js";
 import { readRgb9e5Cube } from "./Rgb9e5Cube.js";
 import { buildNeutralFloorProbe, buildProbeFromLevels } from "./probeBuild.js";
+import { whenFirstFramePresented } from "./FirstFrameGate.js";
 
 export interface EnvironmentCacheKey {
   readonly url?: string;
@@ -212,7 +213,11 @@ export function defaultProbeLoader(factory: EnvironmentProbeFactory | (() => Env
   return async (key) => {
     if (key.preset === "neutral") {
       // Default environment: embedded, so a published-package app needs no /aura-environments fetch or copied file.
-      const { loadEmbeddedNeutralProbe } = await import("./neutralEmbeddedLoader.js");
+      // The chunk is requested at once (network, no CPU), but decoding it is tens of ms of main-thread work that the first
+      // frame does not need: that frame is lit by the synchronous analytic floor, and the baked cube is built after it.
+      const loaderModule = import("./neutralEmbeddedLoader.js");
+      await whenFirstFramePresented();
+      const { loadEmbeddedNeutralProbe } = await loaderModule;
       return loadEmbeddedNeutralProbe();
     }
     if (key.preset) {
