@@ -43,7 +43,13 @@ test.describe("forest 10k", () => {
     const consoleIssues: string[] = [];
     try {
       const page = await context.newPage();
-      page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") consoleIssues.push(`${m.type()}: ${m.text().slice(0, 300)}`); });
+      // The probe page syncs each frame with readPixels, which Chromium reports once as a "GPU stall due to ReadPixels" driver message.
+      // That is the harness, not the engine, so it is not a console issue for Q2.
+      page.on("console", (m) => {
+        if (m.type() !== "error" && m.type() !== "warning") return;
+        if (/GL Driver Message .*ReadPixels/.test(m.text())) return;
+        consoleIssues.push(`${m.type()}: ${m.text().slice(0, 300)}`);
+      });
       page.on("pageerror", (e) => consoleIssues.push(`pageerror: ${String(e.message).slice(0, 300)}`));
 
       const t0 = Date.now();

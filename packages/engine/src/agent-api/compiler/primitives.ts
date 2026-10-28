@@ -35,8 +35,10 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
   if (!levels?.length) {
     if (sdfResource) return [sdfResource];
     const qrGeometry = qrPrimitiveGeometryFor(node, qr);
+    const shadowGeometry = qrPrimitiveShadowGeometryFor(node, qr);
     const fallback = {
       geometry: qrGeometry?.geometry ?? createProductionPrimitiveGeometry(node),
+      ...(shadowGeometry ? { shadowGeometry } : {}),
       material: createProductionPrimitiveMaterial(node),
       bounds: qrGeometry?.bounds ?? primitiveGeometryBounds(node),
       name: node.name ?? node.primitive,
@@ -299,7 +301,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, instancedShadowSegmentScale, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
 /**
@@ -492,7 +494,7 @@ export function qrPrimitiveMeshFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeome
 
 /** Q-15-2: flag-on geometry + bounds, pooled per mount when `qr.pool` is set (#545). */
 /** Dense instanced nodes shrink their default tessellation (see `instancedDefaultSegmentScale`); explicit segment params are unaffected. */
-function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions): QrPrimitiveGeometryOptions {
+function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions, purpose: "view" | "shadow" = "view"): QrPrimitiveGeometryOptions {
   const count = node.instances?.length;
   if (count === undefined || count <= 64 || node.primitive === "custom") return qr;
   let fullTriangles = 0;
@@ -502,8 +504,28 @@ function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeome
   } catch {
     return qr;
   }
-  const scale = instancedDefaultSegmentScale(count, fullTriangles);
+  const scale = purpose === "shadow" ? instancedShadowSegmentScale(count, fullTriangles, node.primitive) : instancedDefaultSegmentScale(count, fullTriangles);
   return scale === 1 ? qr : { ...qr, defaultSegmentScale: scale };
+}
+
+/**
+ * Coarser stand-in geometry for the shadow depth passes of a dense instanced, shadow-casting node (see `RenderItem.shadowGeometry`).
+ * Undefined unless it is strictly coarser than the camera geometry, so nodes that already fit the camera budget keep one geometry.
+ */
+export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): Geometry | undefined {
+  if (!mountQr?.core || node.geometry || node.primitive === "custom" || !node.castShadow) return undefined;
+  const count = node.instances?.length;
+  if (count === undefined || count <= 64) return undefined;
+  const viewScale = withInstancedTessellation(node, mountQr).defaultSegmentScale ?? 1;
+  const qr = withInstancedTessellation(node, mountQr, "shadow");
+  if ((qr.defaultSegmentScale ?? 1) >= viewScale) return undefined;
+  const size = primitiveSize(node);
+  const primitive = qrBuiltinPrimitive(node.primitive);
+  if (!qr.pool || !qrPrimitiveParamsPoolable(node.params)) {
+    return createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params));
+  }
+  return qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr, node.params), () =>
+    createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params)));
 }
 
 export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {

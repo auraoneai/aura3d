@@ -627,6 +627,8 @@ export interface ProductionRuntimePrimitiveEntry {
 
 export interface ProductionRuntimePrimitiveResource {
   readonly geometry: Geometry;
+  /** Coarser geometry for shadow depth passes; present only on dense instanced shadow casters (see `RenderItem.shadowGeometry`). */
+  readonly shadowGeometry?: Geometry;
   /** SH-02 (L1): `PortableShaderMaterial` when `node.material` is a `material.custom` spec. */
   readonly material: PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial;
   readonly bounds: GltfBounds;

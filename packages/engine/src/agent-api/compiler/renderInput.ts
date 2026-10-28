@@ -352,6 +352,7 @@ export function createProductionRuntimeRendererInput(
     }
     items.push({
       geometry: resource.geometry,
+      ...(resource.shadowGeometry ? { shadowGeometry: resource.shadowGeometry } : {}),
       material: resource.texturedMaterial ?? resource.material,
       modelMatrix: prd01ModelMatrixCache?.modelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time) ?? createModelMatrix(instancedPrimitiveModelNode(currentState.node), resource.bounds, false, time),
       label: `primitive-${primitiveIndex}:${resource.name}:${currentState.node.name ?? currentState.node.primitive}`,

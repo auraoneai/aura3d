@@ -44,6 +44,12 @@ export interface RenderItem {
   readonly instanceColors?: Float32Array | readonly number[];
   readonly instanceAttributes?: readonly RenderItemInstanceAttribute[];
   readonly boundingBoxCenter?: readonly [number, number, number];
+  /**
+   * Coarser stand-in for the shadow depth passes (same vertex format as `geometry`). A dense instanced node is drawn once per cascade
+   * as well as once for the camera, and a shadow silhouette needs far fewer triangles than the lit surface. Ignored when the item
+   * carries a `drawRange`; absent means the depth pass draws `geometry`.
+   */
+  readonly shadowGeometry?: Geometry;
   /** Exclude supporting/decorative geometry from renderer-owned shadow depth passes. */
   readonly castShadow?: boolean;
   // PR 0a additions:

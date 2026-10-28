@@ -249,9 +249,10 @@ export class CompiledSceneImpl implements CompiledScene {
     const keepPrimitive: ProductionRuntimePrimitiveEntry[] = [];
     for (const entry of this.primitiveEntries) {
       if (targetSet.has(entry.node)) {
-        for (const { geometry, material, texturedMaterial, textureDisposer } of entry.resources) {
+        for (const { geometry, shadowGeometry, material, texturedMaterial, textureDisposer } of entry.resources) {
           textureDisposer?.();
           geometry.dispose();
+          shadowGeometry?.dispose();
           material.dispose();
           texturedMaterial?.dispose();
         }
@@ -282,9 +283,10 @@ export class CompiledSceneImpl implements CompiledScene {
     this.environmentProbe = null;
     for (const actor of this.actors) actor.dispose();
     for (const { resources } of this.primitiveEntries) {
-      for (const { geometry, material, texturedMaterial, textureDisposer } of resources) {
+      for (const { geometry, shadowGeometry, material, texturedMaterial, textureDisposer } of resources) {
         textureDisposer?.();
         geometry.dispose();
+        shadowGeometry?.dispose();
         material.dispose();
         texturedMaterial?.dispose();
       }

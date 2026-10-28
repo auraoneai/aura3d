@@ -71,7 +71,8 @@ export class DepthPass extends BaseRenderPass {
     }
   }
 
-  private drawCaster(device: RenderDevice, caster: RenderItem): void {
+  private drawCaster(device: RenderDevice, source: RenderItem): void {
+    const caster = source.shadowGeometry !== undefined && source.drawRange === undefined ? { ...source, geometry: source.shadowGeometry } : source;
     const vertexBuffer = caster.geometry.vertexBuffer.upload(device);
     const indexBuffer = caster.geometry.indexBuffer?.upload(device);
     const drawRange = resolveDepthDrawRange(caster.geometry, caster.drawRange);
