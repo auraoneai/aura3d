@@ -64,11 +64,10 @@ COPY assets/ ./assets/
 # Repo public/ mirrors at the origin root in the dev server — the engine
 # lazily fetches /aura-environments/*.manifest.json for the baked presets.
 COPY public/ ./public/
-COPY tools/naming-taxonomy/ ./tools/naming-taxonomy/
-COPY tools/remote-acr/ ./tools/remote-acr/
-COPY tools/crayon-capture/ ./tools/crayon-capture/
-COPY tools/bench-vs-threejs/ ./tools/bench-vs-threejs/
-COPY tools/agent-eval/ ./tools/agent-eval/
+# Whole tools/ tree (about 11 MB): the visual specs import many tool modules
+# (production-runtime-report-bridge, muse3jsparity-readiness, showcase-library,
+# external-parity-*), and a single unresolved import aborts a whole Playwright run.
+COPY tools/ ./tools/
 COPY playwright.config.ts tsconfig.base.json index.html favicon.svg vite.config.ts vite.aliases.generated.ts tsconfig.paths.generated.json ./
 
 # Fail the build, not the run, if the runner script failed to land.
