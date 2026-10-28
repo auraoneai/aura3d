@@ -207,3 +207,47 @@ test.describe("frame cost: CPU profiles (unminified dev-server modules, direct p
     await context.close();
   });
 });
+
+/** Every WebGL2 call of one steady frame, by name: the native cost behind "(program)" in the CPU profile is proportional to this. */
+const GL_CENSUS_HOOK = `(() => {
+  const counts = {};
+  window.__GL_CENSUS__ = { counts, on: false };
+  const proto = WebGL2RenderingContext.prototype;
+  for (const name of Object.getOwnPropertyNames(proto)) {
+    let fn;
+    try { fn = proto[name]; } catch { continue; }
+    if (typeof fn !== "function" || name === "constructor") continue;
+    proto[name] = function (...a) {
+      if (window.__GL_CENSUS__.on) counts[name] = (counts[name] || 0) + 1;
+      return fn.apply(this, a);
+    };
+  }
+})();`;
+
+test.describe("frame cost: GL call census (direct path)", () => {
+  test.setTimeout(10 * 60_000);
+  let server: ExampleDevServer;
+  test.beforeAll(async () => { server = await startExampleDevServer(); });
+  test.afterAll(async () => { await server.close(); });
+
+  test("cube: GL calls in one steady frame", async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1 });
+    const page = await context.newPage();
+    await page.addInitScript(GL_CENSUS_HOOK);
+    await page.goto(`${server.origin}/tests/browser/frame-cost-harness.html?scene=cube&quality=auto`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(() => Boolean((window as unknown as { __FRAME_COST__?: unknown }).__FRAME_COST__), undefined, { timeout: 120_000 });
+    const census = await page.evaluate(() => {
+      const api = (window as unknown as { __FRAME_COST__: { stepOnce(): void } }).__FRAME_COST__;
+      const state = (window as unknown as { __GL_CENSUS__: { counts: Record<string, number>; on: boolean } }).__GL_CENSUS__;
+      for (let i = 0; i < 60; i += 1) api.stepOnce();
+      for (const key of Object.keys(state.counts)) delete state.counts[key];
+      state.on = true;
+      api.stepOnce();
+      state.on = false;
+      return { ...state.counts };
+    });
+    const total = Object.values(census).reduce((a, b) => a + b, 0);
+    console.log(`GL_CENSUS ${JSON.stringify({ total, calls: Object.entries(census).sort((a, b) => b[1] - a[1]) })}`);
+    await context.close();
+  });
+});
