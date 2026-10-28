@@ -235,6 +235,7 @@ test.describe("aura3d per-frame cost probe", () => {
   test("forest mid", async ({ browser }) => { for (const c of [cfg("forest-n2500", "scene=forest&trees=2000&rocks=500", 4), cfg("forest-n5000", "scene=forest&trees=4000&rocks=1000", 3)]) await runConfig(browser, c); });
   test("forest full", async ({ browser }) => { await runConfig(browser, cfg("forest-n10000", "scene=forest&trees=8000&rocks=2000", 2, M, 1_500_000)); });
   test("forest full ablate", async ({ browser }) => { for (const c of [cfg("forest-n10000-noshadow", "scene=forest&trees=8000&rocks=2000&shadow=0", 3, ["plain", "counts"], 900_000), cfg("forest-n10000-nofog", "scene=forest&trees=8000&rocks=2000&fog=0", 3, ["plain"], 900_000), cfg("forest-n10000-plain", "scene=forest&trees=8000&rocks=2000&shadow=0&fog=0", 3, ["plain"], 900_000)]) await runConfig(browser, c); });
+  test("forest full ablate env", async ({ browser }) => { for (const c of [cfg("forest-n10000-envnone", "scene=forest&trees=8000&rocks=2000&env=none", 3, ["plain", "segments"], 900_000), cfg("forest-n10000-envnone-noshadow", "scene=forest&trees=8000&rocks=2000&env=none&shadow=0", 3, ["plain"], 900_000)]) await runConfig(browser, c); });
   test("forest ablate", async ({ browser }) => { for (const c of [cfg("forest-n2500-noshadow", "scene=forest&trees=2000&rocks=500&shadow=0", 4), cfg("forest-n2500-nofog", "scene=forest&trees=2000&rocks=500&fog=0", 4), cfg("forest-n2500-plain", "scene=forest&trees=2000&rocks=500&shadow=0&fog=0", 4)]) await runConfig(browser, c); });
 });
 

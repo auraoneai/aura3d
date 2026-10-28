@@ -252,12 +252,12 @@ export function instancedDefaultSegmentScale(
 /** Triangles one instanced node may put into each shadow depth pass (the camera pass keeps `INSTANCED_NODE_TRIANGLE_BUDGET`). */
 export const INSTANCED_SHADOW_TRIANGLE_BUDGET = 65_536;
 /**
- * Shadow-proxy tessellation floors. A shadow silhouette is judged at the shadow-map texel, not at the camera's pixel, so round bodies
- * (sphere, capsule, torus) may go to an eighth of their default segments; prismatic ones (cylinder, cone, ...) keep a quarter so a trunk or a
- * canopy still casts a round-ish shadow.
+ * Shadow-proxy tessellation floors. A shadow silhouette is judged at the shadow-map texel, not at the camera's pixel, so round and thin
+ * bodies (sphere, capsule, torus, cylinder: a trunk is a handful of texels wide) may go to an eighth of their default segments; the rest
+ * (cone, ...) keep a quarter so a canopy still casts a round-ish shadow.
  */
 export function instancedShadowSegmentScale(instanceCount: number | undefined, fullTrianglesPerInstance: number, primitive: string): number {
-  const round = primitive === "sphere" || primitive === "capsule" || primitive === "torus";
+  const round = primitive === "sphere" || primitive === "capsule" || primitive === "torus" || primitive === "cylinder";
   return instancedDefaultSegmentScale(instanceCount, fullTrianglesPerInstance, {
     budget: INSTANCED_SHADOW_TRIANGLE_BUDGET,
     minScale: round ? 0.125 : INSTANCED_MIN_SEGMENT_SCALE

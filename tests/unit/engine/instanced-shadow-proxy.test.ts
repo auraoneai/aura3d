@@ -34,9 +34,10 @@ describe("instancedShadowSegmentScale", () => {
     }
   });
 
-  it("lets round bodies go to an eighth and keeps prismatic bodies at a quarter", () => {
+  it("lets round and thin bodies go to an eighth and keeps cones and the rest at a quarter", () => {
     expect(instancedShadowSegmentScale(100_000, 3968, "sphere")).toBe(0.125);
-    expect(instancedShadowSegmentScale(100_000, 3968, "cylinder")).toBe(0.25);
+    expect(instancedShadowSegmentScale(100_000, 192, "cylinder")).toBe(0.125);
+    expect(instancedShadowSegmentScale(100_000, 64, "cone")).toBe(0.25);
   });
 });
 
