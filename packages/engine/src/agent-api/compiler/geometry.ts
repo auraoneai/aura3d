@@ -252,6 +252,12 @@ export function instancedDefaultSegmentScale(
 /** Triangles one instanced node may put into each shadow depth pass (the camera pass keeps `INSTANCED_NODE_TRIANGLE_BUDGET`). */
 export const INSTANCED_SHADOW_TRIANGLE_BUDGET = 65_536;
 /**
+ * A node gets a shadow proxy only from this many instances. Shadow proxies change the silhouette a caster throws (a trunk's round shadow
+ * becomes a hexagon), which is only an acceptable trade when thousands of copies are drawn into every cascade; below this the full camera
+ * geometry casts the shadow exactly as before. Scenes that authored fewer instances, or set `shadowproxy=off`, are untouched.
+ */
+export const INSTANCED_SHADOW_PROXY_MIN_INSTANCES = 1024;
+/**
  * Shadow-proxy tessellation floors. A shadow silhouette is judged at the shadow-map texel, not at the camera's pixel, so round and thin
  * bodies (sphere, capsule, torus, cylinder: a trunk is a handful of texels wide) may go to an eighth of their default segments; the rest
  * (cone, ...) keep a quarter so a canopy still casts a round-ish shadow.

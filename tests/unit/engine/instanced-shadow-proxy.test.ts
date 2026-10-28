@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { Geometry, MockRenderDevice } from "../../../packages/rendering/src";
 import { DepthPass } from "../../../packages/rendering/src/DepthPass";
-import { qrPrimitiveGeometryOptions, instancedShadowSegmentScale, instancedDefaultSegmentScale, QrPrimitiveGeometryPool } from "../../../packages/engine/src/agent-api/compiler/geometry";
+import { qrPrimitiveGeometryOptions, instancedShadowSegmentScale, instancedDefaultSegmentScale, INSTANCED_SHADOW_PROXY_MIN_INSTANCES, QrPrimitiveGeometryPool } from "../../../packages/engine/src/agent-api/compiler/geometry";
 import { createProductionPrimitiveResources } from "../../../packages/engine/src/agent-api/compiler/primitives";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import type { AuraPrimitiveNode } from "../../../packages/engine/src/agent-api/nodes/types";
@@ -54,6 +54,30 @@ describe("resource shadowGeometry", () => {
     expect(createProductionPrimitiveResources(instancedNode("sphere", 40), options)[0]!.shadowGeometry).toBeUndefined();
     expect(createProductionPrimitiveResources(instancedNode("sphere", 2000, false), options)[0]!.shadowGeometry).toBeUndefined();
     expect(createProductionPrimitiveResources(instancedNode("box", 2000), options)[0]!.shadowGeometry).toBeUndefined();
+  });
+
+  it("eligibility starts at exactly INSTANCED_SHADOW_PROXY_MIN_INSTANCES instances", () => {
+    const options = core();
+    expect(INSTANCED_SHADOW_PROXY_MIN_INSTANCES).toBe(1024);
+    expect(createProductionPrimitiveResources(instancedNode("sphere", INSTANCED_SHADOW_PROXY_MIN_INSTANCES - 1), options)[0]!.shadowGeometry).toBeUndefined();
+    expect(createProductionPrimitiveResources(instancedNode("sphere", INSTANCED_SHADOW_PROXY_MIN_INSTANCES), options)[0]!.shadowGeometry).toBeDefined();
+  });
+
+  it("a page can opt out with __A3D_SHADOW_PROXY__ = 'off', and every proxy is recorded for audits", () => {
+    const g = globalThis as { __A3D_SHADOW_PROXY__?: string; __A3D_SHADOW_PROXIES__?: unknown[] };
+    g.__A3D_SHADOW_PROXIES__ = [];
+    try {
+      g.__A3D_SHADOW_PROXY__ = "off";
+      expect(createProductionPrimitiveResources(instancedNode("sphere", 2000), core())[0]!.shadowGeometry).toBeUndefined();
+      expect(g.__A3D_SHADOW_PROXIES__).toEqual([]);
+      delete g.__A3D_SHADOW_PROXY__;
+      expect(createProductionPrimitiveResources(instancedNode("sphere", 2000), core())[0]!.shadowGeometry).toBeDefined();
+      expect(g.__A3D_SHADOW_PROXIES__).toHaveLength(1);
+      expect(g.__A3D_SHADOW_PROXIES__![0]).toMatchObject({ primitive: "sphere", instances: 2000 });
+    } finally {
+      delete g.__A3D_SHADOW_PROXY__;
+      delete g.__A3D_SHADOW_PROXIES__;
+    }
   });
 
   it("disposing the proxy leaves the camera geometry's shared buffers intact", () => {
