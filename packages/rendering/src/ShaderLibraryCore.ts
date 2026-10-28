@@ -448,6 +448,7 @@ in vec3 v_worldPosition;
 in vec4 v_vertexColor;
 out vec4 outColor;
 #include <environment_fog_common>
+#include <contact_shadow_mask>
 vec2 a3dEnvironmentEquirectUv(vec3 direction, float rotation) {
   vec3 d = normalize(direction);
   float u = atan(d.z, d.x) / 6.28318530718 + 0.5 + rotation;
@@ -753,7 +754,7 @@ void main() {
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection), step(0.5, spotShadowLayer.z));
+    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z));
     shaded += a3dPbrDirectLight(
       normal,
       viewDirection,

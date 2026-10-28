@@ -86,17 +86,9 @@ const cases: readonly EffectCase[] = [
       edgeEnergyReduced: on.metrics.edgeEnergy <= off.metrics.edgeEnergy * 0.95,
       changedPixelFractionAtLeast2pc: delta.changedPixelFraction >= 0.02
     })
-  },
-  {
-    capability: "effects-contact-shadows",
-    variant: "fx-contact-shadows",
-    describe: "effects.contactShadows darkens the floor under the subject",
-    checks: (off, on, delta) => ({
-      darkensFrame: delta.meanLumaDelta < 0,
-      darkensFloorUnderSubject: on.metrics.lowerCenterLuma < off.metrics.lowerCenterLuma,
-      changedPixelFractionAtLeast0p3pc: delta.changedPixelFraction >= 0.003
-    })
   }
+  // effects-contact-shadows moved to tests/browser/contact-shadow-mask.spec.ts (PRD-2 WP-4): the effect is a real
+  // screen-space mask sampled by forward lighting, no longer the SSAO lowering this on/off pair used to measure.
 ];
 
 test.describe("effect pixel receipts", () => {

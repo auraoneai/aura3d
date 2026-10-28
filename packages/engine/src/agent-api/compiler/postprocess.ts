@@ -14,7 +14,6 @@ import {
   createRootPostPipeline,
   recordSubmittedPostprocess,
   validatePostEffectNode,
-  contactShadowsAsOcclusion,
   type PostFieldDiagnostic
 } from "../postBridge.js";
 
@@ -68,10 +67,11 @@ export function createProductionRuntimePostprocess(
   const authoredAmbientOcclusion = nodes.find(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "ambient-occlusion"
   );
-  // `effects.contactShadows()` alone renders nothing (its mask has no shading consumer), so it lowers to this pass.
+  // `effects.contactShadows()` is not an SSAO request: it produces a screen-space mask that forward lighting samples
+  // (packages/rendering `prd02.contactShadows`), so it no longer lowers to this pass.
   const authoredContactOcclusion = nodes.find(
     (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "contact-occlusion"
-  ) ?? nodes.map(contactShadowsAsOcclusion).find((node): node is AuraEffectNode => node !== undefined);
+  );
   const authoredOcclusion = authoredAmbientOcclusion ?? authoredContactOcclusion;
   // The renderer owns temporal GPU inputs. Root checks actual drawable
   // geometry before requesting them; unsupported scenes retain ordinary output.

@@ -1,3 +1,4 @@
+import { CONTACT_SHADOW_MASK_CHUNK_ID, CONTACT_SHADOW_MASK_GLSL } from "./shaders/chunks/contact_shadow_mask.glsl";
 export interface ShaderChunk {
   readonly name: string;
   readonly source: string;
@@ -573,6 +574,8 @@ mat4 a3dSkinMatrix8(vec4 joints0, vec4 weights0, vec4 joints1, vec4 weights1) {
 }
 `
   }
+,
+  { name: CONTACT_SHADOW_MASK_CHUNK_ID, source: CONTACT_SHADOW_MASK_GLSL }
 ];
 
 export function validateShaderChunks(chunks: readonly ShaderChunk[] = SHADER_CHUNKS): void {
