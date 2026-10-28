@@ -2056,9 +2056,6 @@ footer {
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 1080px) {
   .visual-proof-head, .comparison-callout { grid-template-columns: 1fr; gap: 24px; }
-  .visual-proof-grid { grid-template-columns: 1fr; }
-  .visual-proof-card-wide { grid-column: auto; }
-  .visual-proof-card-wide .visual-proof-stage { aspect-ratio: 16 / 10; }
   .verdict-grid { grid-template-columns: 1fr 1fr; }
   .verdict-grid article { border-bottom: 1px solid var(--line); }
   .compare-feature-grid { grid-template-columns: 1fr 1fr; }
@@ -2497,9 +2494,15 @@ footer {
 }
 
 @media (max-width: 720px) {
+  .visual-proof-grid { grid-template-columns: 1fr; }
+  .visual-proof-card-wide { grid-column: auto; }
   .visual-proof-stage,
   .visual-proof-card-wide .visual-proof-stage {
     aspect-ratio: 4 / 5;
+  }
+  .visual-proof-stage:has(> .visual-proof-poster),
+  .visual-proof-card-wide .visual-proof-stage:has(> .visual-proof-poster) {
+    aspect-ratio: 16 / 10;
   }
 
   .example-poster {
