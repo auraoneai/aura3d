@@ -34,7 +34,7 @@ The matched three.js app loads the same GLB and HDRI and sets up a PMREM environ
 
 Counting rule: non-blank, non-comment lines, imports included, the same rule as `tools/bench-vs-threejs/harness/static-metrics.mjs`. Evidence and frames: [`evidence/vs-threejs/tagline-check/`](../evidence/vs-threejs/tagline-check/README.md) and [run 2](../evidence/vs-threejs/tagline-check/run2/README.md). The three.js apps were written to match the look's documented values; they are not pixel-matched to the Aura3D frame. Software WebGL2 on a CPU runner.
 
-Beyond the hero, the five-scene benchmark has a PBR viewer with HDR lighting, shadow, bloom and orbit controls in 24 lines instead of 49, with 1 import instead of 8. Across the benchmark, Aura3D scene code is up to 51% shorter in 4 of 5 scenes ([`RESULTS.md`](../evidence/vs-threejs/RESULTS.md) sections 1 and 3). Aura3D benchmark, five scenes.
+Beyond the hero, the five-scene benchmark has a PBR viewer with HDR lighting, shadow, bloom and orbit controls in 24 lines instead of 49, with 1 import instead of 8. Across the benchmark (five small scenes, one author, lines of scene code), Aura3D scene code is up to 51% shorter in 4 of 5 scenes ([`RESULTS.md`](../evidence/vs-threejs/RESULTS.md) sections 1 and 3). Aura3D benchmark, five scenes.
 
 ## Where Aura3D wins
 

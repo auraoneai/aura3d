@@ -25,7 +25,7 @@ The source is the five-scene benchmark: a GLB with HDR environment lighting, a s
 | What you need | With Aura3D | With three.js | Source |
 |---|---|---|---|
 | A good-looking scene on first run | `looks.preset(id)` supplies HDRI lighting, a shadow-casting key light, background, grade and post effects in one call. 15 genre looks | No environment, tone mapping or shadows by default. PBR metals render dark until you wire an environment | `packages/engine/src/agent-api/looks/lookPresets.ts`; `RESULTS.md` §11 |
-| Scene code | Shorter in 4 of 5 benchmark scenes, 26% to 51% fewer lines: viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82 | Longer | `RESULTS.md` §1 |
+| Scene code | Shorter in 4 of 5 benchmark scenes, 26% to 51% fewer lines of scene code (five small scenes, one author): viewer 24 vs 49, forest 49 vs 71, skinned character 45 vs 62, game loop 61 vs 82 | Longer | `RESULTS.md` §1 |
 | Imports and concepts | 1 import module; fewer API symbols in every benchmark scene | Up to 8 modules (core plus addons) | `RESULTS.md` §3 |
 | Bloom, shadows, custom post pass | One call each: `effects.bloom()`, `shadow: true`, `effects.shaderPass()` | `EffectComposer` plus 3 or 4 addon passes; shadow flags on every mesh | `RESULTS.md` §11 |
 | 10,000 instances with per-instance colour | Declarative `instances.*({ transforms, colors })` | Hand-written `InstancedMesh` matrix code | `RESULTS.md` §11 |
@@ -64,7 +64,7 @@ Use these as written. The sourced numbers carry the small print shown.
 |---|---|---|---|---|
 | 1 | "A lit 3D product in 10 lines of TypeScript." | safe | none | `tools/bench-vs-threejs/tagline/aura-variants/hero.ts`; `tagline-check/run2/` |
 | 2 | "Half the code of three.js for a lit 3D product viewer: 24 lines vs 49, one import vs eight." | needs-qualifier | "Aura3D benchmark, five scenes." | `RESULTS.md` §1, §3 |
-| 3 | "Up to 51% less scene code than three.js." | needs-qualifier | "4 of 5 benchmark scenes." | `RESULTS.md` §1 |
+| 3 | "Up to 51% less scene code than three.js, in 4 of 5 benchmark scenes (five small scenes, one author, lines of scene code)." | needs-qualifier | The qualifier is part of the claim: "4 of 5 benchmark scenes", "five small scenes, one author", "lines of scene code". | `RESULTS.md` §1 |
 | 4 | "Every model typed, hashed and licensed. In production, unverified assets don't draw." | safe | none | `claims-and-boundaries.md` §6 |
 | 5 | "Find, license, optimize, type and check your 3D assets with one CLI." | safe | none | `cli-help.ts` |
 | 6 | "Game batteries included: HUD, touch, audio, fixed-step loop, seeded replay and a safety net, in one install." | safe | none | `root-exports.md`, `game-kit.md` |
