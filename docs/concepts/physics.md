@@ -187,6 +187,36 @@ an actionable message rather than silently substituting a box.
 `mesh` and `heightfield` are static-only: a concave triangle soup has no well-defined inertia
 tensor, and treating one as dynamic produces a body that falls through thin geometry.
 
+## Collision matrix
+
+Box, sphere and capsule bodies collide with a static plane or box, and with each other, and come to rest where
+their shape says they should (`tests/unit/agent-api/physics-root-collision.test.ts`). The remote pixel receipt
+`evidence/receipts/physics-root-collision/<version>.json` (`tests/browser/physics-root-receipts.spec.ts`) drops six
+bodies onto a static ground through `createAuraApp` and records each body's rest height, its speed, whether the
+visible node followed its body, and which pairs collided.
+
+A capsule's `halfHeight` is the half-length of its cylindrical section, so it rests `radius + halfHeight` above a
+floor. A capsule or cylinder primitive whose physics spec names no shape or size gets a collider that spans the
+visible `size` (`[diameter, total height, diameter]`), not a default one:
+
+```ts
+import { createAuraApp, material, primitives, scene } from "@aura3d/engine";
+
+const app = createAuraApp("#stage", {
+  scene: scene()
+    .add(primitives.box({ name: "ground", size: [14, 0.5, 8] }).position(0, -0.25, 0)
+      .physics({ type: "static", shape: "box", halfExtents: [7, 0.25, 4] }))
+    .add(primitives.capsule({ name: "post", size: [0.5, 1.6, 0.5], material: material.pbr({ color: "#ffca28" }) })
+      .position(0, 3, 0)
+      .physics({ type: "dynamic", mass: 1 }))
+});
+
+// After it settles, the post's centre is half its 1.6 m height above the ground.
+const rest = app.physics.bodies.require("post").position()[1];
+```
+
+Not covered by the receipt: mesh and heightfield colliders, joints, vehicles, and any claim about solver parity with another engine.
+
 ## Bundler targets and top-level await
 
 The default build initialises the Rapier solver with a top-level `await`, so `app.physics` and `new PhysicsWorld()` are live
