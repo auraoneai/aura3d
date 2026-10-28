@@ -1,4 +1,3 @@
-import { camera, createAuraApp, lights, material, primitives, scene } from "../../packages/engine/src";
 import { vi } from "vitest";
 
 interface FakeProgram { id: number; shaders: { source: string }[]; attrs: string[]; uniforms: string[] }
@@ -8,8 +7,12 @@ interface FakeProgram { id: number; shaders: { source: string }[]; attrs: string
  * reflection, capability parameters, no extensions) for the direct render path to mount and draw. Unknown `createX`
  * methods return an opaque handle; unknown constants get distinct numbers.
  */
-export function makeFakeGl(): { gl: WebGL2RenderingContext; calls: Record<string, number> } {
+export function makeFakeGl(): { gl: WebGL2RenderingContext; calls: Record<string, number>; programSources: string[]; raiseError(code: number): void; errorPending(): boolean } {
   let next = 1;
+  /** Linked program sources, in link order: what a stale program key would get wrong. */
+  const programSources: string[] = [];
+  /** Error code returned (once) by the next `getError()`, like a real context's error queue. */
+  let pendingError = 0;
   const calls: Record<string, number> = {};
   const consts = new Map<string, number>();
   const constant = (name: string): number => {
@@ -36,6 +39,7 @@ export function makeFakeGl(): { gl: WebGL2RenderingContext; calls: Record<string
     attachShader(p: FakeProgram, s: { source: string }) { p.shaders.push(s); },
     linkProgram(p: FakeProgram) {
       const src = p.shaders.map((s) => s.source).join("\n");
+      programSources.push(src);
       p.attrs = [...new Set([...src.matchAll(/\b(?:in|attribute)\s+\w+\s+(\w+)\s*;/g)].map((m) => m[1]!))];
       p.uniforms = [...new Set([...src.matchAll(/\buniform\s+(?:highp\s+|mediump\s+|lowp\s+)?\w+\s+(\w+)(?:\[\d+\])?\s*;/g)].map((m) => m[1]!))];
     },
@@ -51,7 +55,7 @@ export function makeFakeGl(): { gl: WebGL2RenderingContext; calls: Record<string
     getActiveUniform(p: FakeProgram, i: number) { return p.uniforms[i] ? { name: p.uniforms[i], type: constant("FLOAT"), size: 1 } : null; },
     getUniformLocation(p: FakeProgram, n: string) { const name = n.replace(/\[0\]$/, ""); return p.uniforms.includes(name) ? { name } : null; },
     isEnabled() { return false; },
-    getError() { return 0; },
+    getError() { const code = pendingError; pendingError = 0; return code; },
     checkFramebufferStatus() { return constant("FRAMEBUFFER_COMPLETE"); },
     isContextLost() { return false; },
     getShaderPrecisionFormat() { return { rangeMin: 127, rangeMax: 127, precision: 23 }; },
@@ -78,13 +82,36 @@ export function makeFakeGl(): { gl: WebGL2RenderingContext; calls: Record<string
       return count(prop);
     }
   });
-  return { gl: gl as unknown as WebGL2RenderingContext, calls };
+  return { gl: gl as unknown as WebGL2RenderingContext, calls, programSources, raiseError(code: number) { pendingError = code; }, errorPending: () => pendingError !== 0 };
 }
 
 
-/** Mounts the benchmark cube scene (same as tests/browser/frame-cost-harness.ts) on a fake canvas/context. Call `vi.unstubAllGlobals()` when done. */
-export async function mountFakeCube(quality: "auto" | "production" = "auto") {
-  const { gl, calls } = makeFakeGl();
+type EngineModule = typeof import("../../packages/engine/src");
+type AuraScene = ReturnType<EngineModule["scene"]>;
+
+export interface FakeSceneOptions {
+  readonly quality?: "auto" | "production";
+  /** Builds the scene from the engine module the app is created with. Defaults to the benchmark cube. */
+  readonly build?: (engine: EngineModule) => AuraScene;
+  /** Runtime id of a node to rotate every frame (the cube scene's "cube"); none for other scenes. */
+  readonly rotate?: string;
+  /** Re-evaluate the engine (and with it every module-level memo and registry cache) before mounting: a cold process. */
+  readonly freshModules?: boolean;
+}
+
+const cubeScene = ({ camera, lights, material, primitives, scene }: EngineModule): AuraScene => scene()
+  .camera(camera.perspective({ fov: 50, near: 0.1, far: 100, position: [2, 2, 4], target: [0, 0.5, 0] }))
+  .add(lights.ambient({ color: "#ffffff", intensity: 1 }))
+  .add(primitives.box({ name: "cube", size: [1, 1, 1], material: material.pbr({ color: "#d86a3a" }) }).runtime({ id: "cube" }));
+
+/** The benchmark cube on a fake context (see `mountFakeScene`). */
+export function mountFakeCube(quality: "auto" | "production" = "auto") {
+  return mountFakeScene({ quality });
+}
+
+/** Mounts a scene (default: the benchmark cube, same as tests/browser/frame-cost-harness.ts) on a fake canvas/context. Call `vi.unstubAllGlobals()` when done. */
+export async function mountFakeScene(options: FakeSceneOptions = {}) {
+  const { gl, calls, programSources, raiseError, errorPending } = makeFakeGl();
   class FakeCanvas {
     width = 640; height = 360; style = {}; parentElement = null; clientWidth = 640; clientHeight = 360; dataset = {};
     getBoundingClientRect() { return { width: 640, height: 360, left: 0, top: 0, right: 640, bottom: 360 }; }
@@ -94,17 +121,17 @@ export async function mountFakeCube(quality: "auto" | "production" = "auto") {
   vi.stubGlobal("HTMLCanvasElement", FakeCanvas);
   vi.stubGlobal("WebGL2RenderingContext", class {});
   vi.stubGlobal("window", { innerWidth: 640, innerHeight: 360, devicePixelRatio: 1, addEventListener() {}, removeEventListener() {}, location: { href: "http://localhost/" } });
-  const app = createAuraApp(new FakeCanvas() as unknown as HTMLCanvasElement, {
-    autoStart: false, resize: false, pixelRatio: 1, quality,
-    scene: scene()
-      .camera(camera.perspective({ fov: 50, near: 0.1, far: 100, position: [2, 2, 4], target: [0, 0.5, 0] }))
-      .add(lights.ambient({ color: "#ffffff", intensity: 1 }))
-      .add(primitives.box({ name: "cube", size: [1, 1, 1], material: material.pbr({ color: "#d86a3a" }) }).runtime({ id: "cube" }))
+  if (options.freshModules) vi.resetModules();
+  const engine: EngineModule = await import("../../packages/engine/src");
+  const rotateId = options.rotate ?? (options.build ? undefined : "cube");
+  const app = engine.createAuraApp(new FakeCanvas() as unknown as HTMLCanvasElement, {
+    autoStart: false, resize: false, pixelRatio: 1, quality: options.quality ?? "auto",
+    scene: (options.build ?? cubeScene)(engine)
   });
   await app.ready();
-  const cube = app.nodes.require("cube");
+  const node = rotateId ? app.nodes.require(rotateId) : undefined;
   let yaw = 0;
-  /** One harness frame: rotate the cube, then step. */
-  const frame = (): void => { yaw += 1 / 60; cube.setRotation(0, yaw, 0); app.step(1 / 60); };
-  return { app, calls, frame };
+  /** One harness frame: rotate the node (when the scene has one), then step. */
+  const frame = (): void => { yaw += 1 / 60; node?.setRotation(0, yaw, 0); app.step(1 / 60); };
+  return { app, calls, programSources, raiseError, errorPending, frame, engine };
 }

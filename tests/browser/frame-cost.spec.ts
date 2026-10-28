@@ -1,4 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
@@ -17,7 +18,7 @@ const GATE = process.env.FRAME_COST_GATE !== "0";
 const FRAMES = Number(process.env.FRAME_COST_FRAMES ?? 60);
 /** Frames in the steady-state CPU profile: a sampled profile of a ~1 ms frame needs hundreds of frames to be more than noise. */
 const PROFILE_FRAMES = Number(process.env.FRAME_COST_PROFILE_FRAMES ?? 400);
-const COLD_LOADS = Number(process.env.FRAME_COST_COLD_LOADS ?? 3);
+const COLD_LOADS = Number(process.env.FRAME_COST_COLD_LOADS ?? 5);
 const REPORT = "tests/reports/frame-cost/frame-cost.json";
 const results: Record<string, unknown> = {};
 
@@ -121,10 +122,14 @@ test.describe("frame cost (software WebGL2)", () => {
         firstFrameMsMedian: median(firstFrames),
         mountMsMedian: median(mounts),
         totalMsMedian: median(run.totalMs),
+        // `cpuMsMedian` / `cpuMsSettledMedian` are the median of the 60 measured frames of the LAST cold load only (the P2
+        // gate figure, unchanged). The `...OfLoads` fields are the true median across the per-load medians below.
         cpuMsMedian: median(run.cpuMs),
         cpuMsSettledMedian: median(run.cpuSteadyMs),
+        cpuMsMedianOfLoads: median(cpuMedians),
+        cpuMsSettledMedianOfLoads: median(cpuSettledMedians),
         // One entry per cold load. The runner is shared and its load varies by tens of percent between runs, so the lowest
-        // median across loads is the least-contended estimate of the cost; the gate figure above stays the last load's median.
+        // median across loads is the least-contended estimate of the cost.
         cpuMsMediansPerLoad: cpuMedians,
         cpuMsSettledMediansPerLoad: cpuSettledMedians,
         cpuMsMinMedian: Math.min(...cpuMedians),
@@ -297,13 +302,36 @@ test.describe("frame cost: JS vs GL-call split (cube, direct path)", () => {
       const real = api.measure(frames, 100).cpuMs;
       const proto = WebGL2RenderingContext.prototype as unknown as Record<string, unknown>;
       const stubbed = /^(draw|uniform|bindBuffer|bindBufferBase|bindTexture|bindSampler|bindVertexArray|bindFramebuffer|enable|disable|depth|colorMask|cullFace|clear|viewport|scissor|useProgram|activeTexture|bufferSubData|blend|stencil|polygonOffset)/;
-      let count = 0;
+      const originals = new Map<string, unknown>();
       for (const name of Object.getOwnPropertyNames(proto)) {
         const descriptor = Object.getOwnPropertyDescriptor(proto, name);
-        if (typeof descriptor?.value === "function" && stubbed.test(name) && !/^(getUniform|clearBuffer)/.test(name)) { proto[name] = function () { return undefined; }; count += 1; }
+        if (typeof descriptor?.value === "function" && stubbed.test(name) && !/^(getUniform|clearBuffer)/.test(name)) originals.set(name, descriptor.value);
       }
+      const setStubbed = (on: boolean): void => {
+        for (const [name, original] of originals) proto[name] = on ? function () { return undefined; } : original;
+      };
+      // The first pair is the old single comparison (real, then stubbed), which favours the second measurement: the JIT is
+      // warmer by then. The remaining rounds alternate real and stubbed on the same page so drift and tier-up cancel; the
+      // summary medians use rounds 2.. only.
+      setStubbed(true);
       const none = api.measure(frames, 100).cpuMs;
-      return { stubbedMethods: count, realMedian: med(real), realMean: mean(real), stubbedMedian: med(none), stubbedMean: mean(none) };
+      const rounds: { real: number; stubbed: number }[] = [{ real: med(real), stubbed: med(none) }];
+      for (let round = 0; round < 4; round += 1) {
+        setStubbed(false);
+        const realRound = api.measure(frames, 20).cpuMs;
+        setStubbed(true);
+        const stubbedRound = api.measure(frames, 20).cpuMs;
+        rounds.push({ real: med(realRound), stubbed: med(stubbedRound) });
+      }
+      setStubbed(false);
+      const later = rounds.slice(1);
+      return {
+        stubbedMethods: originals.size,
+        realMedian: med(real), realMean: mean(real), stubbedMedian: med(none), stubbedMean: mean(none),
+        rounds,
+        interleavedRealMedian: med(later.map((r) => r.real)),
+        interleavedStubbedMedian: med(later.map((r) => r.stubbed))
+      };
     }, FRAMES * 3);
     results["cube/auto/glSplit"] = split;
     console.log(`FRAME_COST_GL_SPLIT ${JSON.stringify(split)}`);
@@ -360,4 +388,91 @@ test.describe("frame cost: GL call census (direct path)", () => {
     console.log(`GL_TRACE ${JSON.stringify(census.trace)}`);
     await context.close();
   });
+});
+
+/** Mean absolute channel difference (0..255) between two RGBA frames over all pixels, and over "interior" pixels only. */
+function compareFrames(a: Buffer, b: Buffer, width: number, height: number): { mean: number; interior: number; max: number; edgePixels: number; differingPixels: number } {
+  const edge = new Uint8Array(width * height);
+  const channelGap = (x0: number, y0: number, x1: number, y1: number): number => {
+    let gap = 0;
+    for (const img of [a, b]) for (let c = 0; c < 3; c += 1) gap = Math.max(gap, Math.abs(img[(y0 * width + x0) * 4 + c]! - img[(y1 * width + x1) * 4 + c]!));
+    return gap;
+  };
+  // An edge pixel: a neighbour (right or below) in either frame differs by more than 24/255 in any channel. The pair and the
+  // pixels within 2-3 px of it are excluded from "interior", so the MSAA-versus-single-sample silhouette difference is not counted.
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const steep = (x + 1 < width && channelGap(x, y, x + 1, y) > 24) || (y + 1 < height && channelGap(x, y, x, y + 1) > 24);
+      if (!steep) continue;
+      for (let dy = -2; dy <= 3; dy += 1) {
+        for (let dx = -2; dx <= 3; dx += 1) {
+          const px = x + dx;
+          const py = y + dy;
+          if (px >= 0 && py >= 0 && px < width && py < height) edge[py * width + px] = 1;
+        }
+      }
+    }
+  }
+  let total = 0; let interiorTotal = 0; let interiorCount = 0; let max = 0; let differing = 0; let edgePixels = 0;
+  for (let p = 0; p < width * height; p += 1) {
+    let sum = 0;
+    for (let c = 0; c < 3; c += 1) {
+      const d = Math.abs(a[p * 4 + c]! - b[p * 4 + c]!);
+      sum += d;
+      if (d > max) max = d;
+    }
+    total += sum / 3;
+    if (sum > 0) differing += 1;
+    if (edge[p]) edgePixels += 1; else { interiorTotal += sum / 3; interiorCount += 1; }
+  }
+  const r = (v: number): number => Math.round(v * 1000) / 1000;
+  return { mean: r(total / (width * height)), interior: r(interiorTotal / Math.max(1, interiorCount)), max, edgePixels, differingPixels: differing };
+}
+
+test.describe("frame pixels: auto vs production, and per-build hashes", () => {
+  test.setTimeout(10 * 60_000);
+  let server: ExampleDevServer;
+  test.beforeAll(async () => { server = await startExampleDevServer(); });
+  test.afterAll(async () => { await server.close(); });
+
+  /**
+   * One frame of the same scene at `quality: "auto"` (direct path) and `quality: "production"` (HDR multisampled path), after the
+   * same number of frames (same cube yaw). Prints a sha256 of each frame: running this spec on two builds and comparing the
+   * hashes shows whether the output changed byte for byte (production is the one that must not change; the auto hash is reported
+   * for the same comparison on the direct path). The auto-versus-production mean and interior difference is gated at 2/255 for the cube.
+   */
+  for (const sceneName of ["cube", "lit"] as const) {
+    test(`${sceneName}: auto vs production frames`, async ({ browser }) => {
+      const grab = async (quality: "auto" | "production") => {
+        const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1 });
+        const page = await context.newPage();
+        const problems: string[] = [];
+        page.on("pageerror", (error) => problems.push(`pageerror: ${error.message}`));
+        await page.goto(`${server.origin}/tests/browser/frame-cost-harness.html?scene=${sceneName}&quality=${quality}`, { waitUntil: "domcontentloaded" });
+        await page.waitForFunction(() => Boolean((window as unknown as { __FRAME_COST__?: unknown }).__FRAME_COST__), undefined, { timeout: 120_000 });
+        const shot = await page.evaluate(() => (window as unknown as { __FRAME_COST__: { snapshot(n: number): { width: number; height: number; rgbaBase64: string } } }).__FRAME_COST__.snapshot(20));
+        await context.close();
+        expect(problems).toEqual([]);
+        return { ...shot, rgba: Buffer.from(shot.rgbaBase64, "base64") };
+      };
+      const auto = await grab("auto");
+      const production = await grab("production");
+      expect(auto.rgba.length).toBe(auto.width * auto.height * 4);
+      expect(production.rgba.length).toBe(auto.rgba.length);
+      const sha = (buf: Buffer): string => createHash("sha256").update(buf).digest("hex");
+      const diff = compareFrames(auto.rgba, production.rgba, auto.width, auto.height);
+      const summary = { scene: sceneName, width: auto.width, height: auto.height, autoSha256: sha(auto.rgba), productionSha256: sha(production.rgba), autoVsProduction: diff };
+      results[`${sceneName}/pixels`] = summary;
+      console.log(`FRAME_PIXELS ${JSON.stringify(summary)}`);
+      // A blank frame would trivially "match": the frame must contain more than one colour.
+      const first = auto.rgba.subarray(0, 3).toString("hex");
+      let varied = false;
+      for (let p = 1; p < auto.width * auto.height && !varied; p += 1) varied = auto.rgba.subarray(p * 4, p * 4 + 3).toString("hex") !== first;
+      expect(varied, "auto frame is not a single flat colour").toBe(true);
+      if (GATE && sceneName === "cube") {
+        expect(diff.mean, "auto vs production mean abs difference (/255)").toBeLessThanOrEqual(2);
+        expect(diff.interior, "auto vs production interior abs difference (/255)").toBeLessThanOrEqual(2);
+      }
+    });
+  }
 });

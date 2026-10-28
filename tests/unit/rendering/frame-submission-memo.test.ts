@@ -1,10 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { computeProgramKey, type ProgramFeatures } from "../../../packages/rendering/src/contracts/program";
 import { createRegistry, type QrFlags, type RegistryEntry } from "../../../packages/rendering/src/contracts/core";
 import { withCoreOutputOff } from "../../../packages/rendering/src/renderer/coreOutputPostRoute";
 import { normalizeProgramFeatures } from "../../../packages/rendering/src/program/ProgramFeatures";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 import { parseHrefCached } from "../../../packages/engine/src/contracts/urlCache";
+import { prd02LightingOn } from "../../../packages/engine/src/agent-api/compiler/lights";
 
 /** Reference serialiser: the pre-memo implementation of `computeProgramKey`, kept here so the memo is checked against it. */
 function referenceKey(value: unknown): string {
@@ -129,5 +130,61 @@ describe("per-frame flag derivations", () => {
     // The URL option of resolveQrFlags goes through the same cache and still honours the list.
     expect(resolveQrFlags({ url: "http://localhost/?a3d-qr=lighting" }).on("A3D_QR_LIGHTING")).toBe(true);
     expect(resolveQrFlags({ url: "http://localhost/?a3d-qr=-lighting" }).on("A3D_QR_LIGHTING")).toBe(false);
+  });
+});
+
+describe("prd02LightingOn ambient resolution (the browser-only memo)", () => {
+  afterEach(() => { vi.unstubAllGlobals(); });
+
+  /** Runs `read` with `process` undefined, as in a browser, and restores the globals before returning so assertion output can use `process`. */
+  function inBrowser<T>(hrefs: readonly string[], read: () => T): T[] {
+    const out: T[] = [];
+    try {
+      vi.stubGlobal("process", undefined);
+      for (const href of hrefs) {
+        vi.stubGlobal("location", { href });
+        out.push(read());
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    return out;
+  }
+
+  it("follows a changed location.href and a revisit of an earlier one, instead of returning the first answer forever", () => {
+    const on = "http://localhost/?a3d-qr=lighting";
+    const off = "http://localhost/?a3d-qr=-lighting";
+    const answers = inBrowser([on, on, off, off, on, "http://localhost/"], () => prd02LightingOn());
+    const defaultAnswer = resolveQrFlags({ url: "http://localhost/", env: {} }).on("A3D_QR_LIGHTING");
+    expect(answers).toEqual([true, true, false, false, true, defaultAnswer]);
+  });
+
+  it("still reads process.env on every call when a process exists (node), because the environment can change", () => {
+    const saved = process.env;
+    try {
+      process.env = {} as NodeJS.ProcessEnv;
+      vi.stubGlobal("location", { href: "http://localhost/" });
+      const before = prd02LightingOn();
+      process.env = { A3D_QR_LIGHTING: before ? "0" : "1" } as NodeJS.ProcessEnv;
+      const after = prd02LightingOn();
+      expect(after).toBe(!before);
+    } finally {
+      process.env = saved;
+    }
+  });
+});
+
+describe("Registry.active() list is read-only", () => {
+  it("is the typed readonly contract, enforced: the cached list is frozen, so a caller that sorted or pushed would throw rather than corrupt later frames", () => {
+    const registry = createRegistry<RegistryEntry>("test-frozen");
+    registry.register({ id: "one", owner: "prd01", flag: "A3D_QR_CORE" });
+    const values = Object.freeze({ A3D_QR_CORE: true });
+    const flags = { values, on: (name: string) => (values as Record<string, boolean>)[name] === true } as unknown as QrFlags;
+    const list = registry.active(flags);
+    expect(Object.isFrozen(list)).toBe(true);
+    expect(() => (list as RegistryEntry[]).push({ id: "x", owner: "prd01", flag: "A3D_QR_CORE" })).toThrow(TypeError);
+    // A caller that needs its own ordering copies, as every in-repo caller does.
+    expect([...list].sort((a, b) => b.id.localeCompare(a.id)).map((entry) => entry.id)).toEqual(["one"]);
+    expect(registry.active(flags).map((entry) => entry.id)).toEqual(["one"]);
   });
 });

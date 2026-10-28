@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import v8 from "node:v8";
-import { mountFakeCube } from "../../support/fakeWebGl2";
+import { mountFakeCube, mountFakeScene } from "../../support/fakeWebGl2";
+import { WebGL2ContextLifecycle } from "../../../packages/rendering/src/webgl2/ContextLifecycle";
 
 /**
  * Per-frame submission budget for the benchmark cube (direct path, `quality: "auto"`, one PBR box, ambient light), run on a
@@ -30,7 +31,7 @@ async function withEmptyEnv<T>(run: () => Promise<T>): Promise<T> {
   try { return await run(); } finally { process.env = saved; }
 }
 
-describe("frame submission budget (cube, direct path, fake WebGL2)", () => {
+describe("frame submission budget (cube, direct path, fake WebGL2)", { timeout: 120_000 }, () => {
   it("issues a small, fixed set of GL calls per steady frame and creates no GPU objects", async () => {
     await withEmptyEnv(async () => {
       const { frame, calls } = await mountFakeCube("auto");
@@ -74,15 +75,55 @@ describe("frame submission budget (cube, direct path, fake WebGL2)", () => {
     });
   });
 
-  it("issues the same calls from a cold start as from a second identical app (no stale memoised program or flags)", async () => {
+  it("a different scene mounted after the cube compiles the same programs and issues the same calls as in a cold process (no stale memoised key, flags or registry list)", async () => {
     await withEmptyEnv(async () => {
-      const first = await mountFakeCube("auto");
-      for (let i = 0; i < 30; i += 1) first.frame();
-      const firstCalls = JSON.stringify(first.calls);
+      const lit = (engine: Awaited<ReturnType<typeof mountFakeScene>>["engine"]) => {
+        const { camera, lights, material, primitives, scene } = engine;
+        return scene()
+          .background("#1a2030")
+          .camera(camera.perspective({ fov: 50, near: 0.1, far: 100, position: [2, 2, 4], target: [0, 0.5, 0] }))
+          .add(lights.hemisphere({ skyColor: "#cfe3ff", groundColor: "#3a2f28", intensity: 0.8 }))
+          .add(lights.directional({ position: [4, 6, 3], intensity: 2.4, color: "#fff2dd" }))
+          .add(primitives.plane({ name: "floor", size: 10, material: material.pbr({ color: "#7a8a6a", roughness: 0.95 }) }).rotate(-Math.PI / 2, 0, 0))
+          .add(primitives.sphere({ name: "ball", material: material.pbr({ color: "#4aa3df", metallic: 0.8, roughness: 0.25, emissive: "#301800" }) }).position(0.4, 0.5, 0.6));
+      };
+      const run = async (fresh: boolean, warmFirst: boolean) => {
+        if (warmFirst) {
+          const cube = await mountFakeScene({ freshModules: true });
+          for (let i = 0; i < 40; i += 1) cube.frame();
+          vi.unstubAllGlobals();
+        }
+        const mounted = await mountFakeScene({ build: lit, freshModules: fresh });
+        for (let i = 0; i < 40; i += 1) mounted.frame();
+        vi.unstubAllGlobals();
+        return mounted;
+      };
+      const cold = await run(true, false);
+      const warm = await run(false, true);
+      // Non-vacuous: the scene needs programs the cube's single program cannot serve.
+      const cubeOnly = await mountFakeScene({ freshModules: true });
+      for (let i = 0; i < 40; i += 1) cubeOnly.frame();
       vi.unstubAllGlobals();
-      const second = await mountFakeCube("auto");
-      for (let i = 0; i < 30; i += 1) second.frame();
-      expect(JSON.stringify(second.calls)).toBe(firstCalls);
+      expect(cold.programSources.length).toBeGreaterThan(0);
+      expect(cold.programSources).not.toEqual(cubeOnly.programSources);
+      expect(warm.programSources).toEqual(cold.programSources);
+      expect(warm.calls).toEqual(cold.calls);
+    });
+  });
+
+  it("reads a GL error raised in a steady frame within one sample interval (the sampled getError never hides it)", async () => {
+    await withEmptyEnv(async () => {
+      const { frame, raiseError, errorPending } = await mountFakeCube("auto");
+      for (let i = 0; i < SETTLE_FRAMES; i += 1) frame();
+      expect(errorPending()).toBe(false);
+      raiseError(0x502);
+      let readAfter = -1;
+      for (let i = 1; i <= WebGL2ContextLifecycle.ERROR_SAMPLE_INTERVAL && readAfter < 0; i += 1) {
+        frame();
+        if (!errorPending()) readAfter = i;
+      }
+      // The fake's queue empties only when the engine calls getError(), so this is the read the policy promises.
+      expect(readAfter, "frames until the engine read the raised error").toBeGreaterThan(0);
     });
   });
 });

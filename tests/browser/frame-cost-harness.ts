@@ -19,6 +19,8 @@ interface FrameCostApi {
   measure(frames: number, warmup?: number): { cpuMs: number[]; totalMs: number[] };
   /** Advance and draw exactly one frame (no warm-up). */
   stepOnce(): void;
+  /** Advance `frames` frames, then read the whole drawing buffer back (RGBA, row 0 = bottom) as base64. Same yaw for the same `frames` on any build. */
+  snapshot(frames: number): { width: number; height: number; rgbaBase64: string };
   drawCalls(): number;
 }
 declare global { interface Window { __FRAME_COST__?: FrameCostApi } }
@@ -138,11 +140,22 @@ async function main(): Promise<void> {
         return { cpuMs, totalMs };
       },
       stepOnce() { frame(); finish(); },
+      snapshot(frames) {
+        for (let i = 0; i < frames; i += 1) frame();
+        const width = gl.drawingBufferWidth;
+        const height = gl.drawingBufferHeight;
+        const pixels = new Uint8Array(width * height * 4);
+        // Read in the task that rendered: the drawing buffer is only guaranteed until the page composites.
+        gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        let binary = "";
+        for (let i = 0; i < pixels.length; i += 0x8000) binary += String.fromCharCode(...pixels.subarray(i, i + 0x8000));
+        return { width, height, rgbaBase64: btoa(binary) };
+      },
       drawCalls: () => app.diagnostics().drawCalls
     };
   } catch (error) {
     errors.push(`start failed: ${(error as Error)?.stack ?? error}`);
-    window.__FRAME_COST__ = { ready: false, scene: sceneName, quality, firstFrameMs: -1, mountMs: -1, errors, renderPath: null, measure: () => ({ cpuMs: [], totalMs: [] }), stepOnce: () => undefined, drawCalls: () => 0 };
+    window.__FRAME_COST__ = { ready: false, scene: sceneName, quality, firstFrameMs: -1, mountMs: -1, errors, renderPath: null, measure: () => ({ cpuMs: [], totalMs: [] }), stepOnce: () => undefined, snapshot: () => ({ width: 0, height: 0, rgbaBase64: "" }), drawCalls: () => 0 };
   }
 }
 
