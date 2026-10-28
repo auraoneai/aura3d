@@ -1,0 +1,75 @@
+# Aura Diamond 3D (`aura-diamond-3d`): upgrading to Aura3D 4.5.0
+
+**Verdict:** Recommended changes (visual review only). Nothing breaks and no code edit is required. Skyline and Lunar Park swap their implicit category environment fill for an explicit procedural night fill, which shifts tint and may change brightness slightly in either direction. Contact shadows are now a real screen-space mask that darkens only the sun's direct light, so the ground contact areas need a look-over. A small `exposureEv` retune is only needed if the on-screen comparison shows a problem.
+
+## What this game uses
+
+- Package pin: `apps/showcase-aura-diamond-3d/package.json` is already `4.5.0` (`@aura3d/engine: workspace:*`). `main.ts` also imports `@aura3d/debug` (`main.ts:51`), which is not in that package's `dependencies`; this predates 4.5.0 and is only noted here.
+- Entry: `src/main.ts` (4156 lines), plus `src/batter-pose.ts` (grip/pose math from `@aura3d/engine/game`), `src/contact.ts`, `src/aura-assets.route.ts` (typed `assets.*`). Shared CSS only: `../showcase-port-shared/quickbar.css`. `showcase-port-shared/diag.ts` is not imported by this game.
+- One `createAuraApp("#app", {...})` call at `main.ts:999-1003`: `scene`, `qualityRebuild: { flags: ["game","animation"] }`, `renderer: { quality: "high" }`. No top-level `quality`, `output` or `preserveDrawingBuffer`. `renderer.quality: "high"` is the renderer tier (`rendererOptions.ts:195`), separate from the top-level pipeline `quality` option (`renderPath.ts:138-150`), so the pipeline `quality` stays at the 4.5.0 default `"auto"`.
+- Six ballparks built by `buildParkScene` (`main.ts:956-989`) and swapped with `app.setScene(...)` in `setPark` (`main.ts:1768-1772`). Look presets per park (`main.ts:190, 209, 228, 247, 266, 285`): sandlot `golden-hour`, skyline `night-city`, canyon `overcast`, ivy `outdoor-day`, dome `interior-industrial`, lunar `polar-night`. Each is `looks.preset(park.look, { fogDensityScale: 0, exposureEv: 0.10..0.16 })` (`main.ts:959-966, 977`).
+- Scene effects: `effects.contactShadows({ intensity: 0.75, length: 0.3 })` (`main.ts:979`), `effects.vignette` (`main.ts:980`), `effects.lightCone` per floodlight (`main.ts:727`), `effects.trail` (`main.ts:929`), three `effects.particles` fountains (`main.ts:948-950`). Every look preset also expands to colorGrade, ambient occlusion and bloom nodes (`V0_EFFECTS` in `packages/engine/src/agent-api/looks/lookPresets.ts:60`, emitted in `looks.ts:333-349`).
+- Lights: `lights.spot` floodlights (`main.ts:726`) plus the look's own shadow-casting directional key light (`looks.ts:303-311`, `shadow: true` at line 310). No `environments.*` node and no `output.exposure` is authored by the game; environments come only from the look presets. There are no ambient or hemisphere lights.
+- Transparent material: `ball-shadow` cylinder with `opacity: 0.28` (`main.ts:928`).
+- Primitives only with `name`, `size`, `material` (all valid options, `main.ts:537-946`). Many `model(...)` nodes with `.animate({ clip, loop, speed })` (`main.ts:704, 850, 882`) and runtime clip switching through `handle.setAnimation` / `crossFadeTo` / `play` (`main.ts:1090-1107`).
+- Not used: `instances.*` (imported at `main.ts:28` but never called), `interactions.*`, physics, `playLayer`, masks, `addClipsFrom`, `Clock`, `AnimationClip`, `ShapeGeometry`, `SphericalHarmonics3`, scene kits, custom shaders, transmission, and canvas read-back in `src/` (no `readPixels`, `toDataURL`, `toBlob`, `drawImage`). One read-back does exist in a dependency: `installBlackFrameGuard()` from `@aura3d/debug` draws the canvas to a probe canvas (`packages/debug/src/safety/blackFrame.ts:244-245`). See "Changes that do not affect this game".
+- Debug/QA: `installBlackFrameGuard()` (`main.ts:51, 59`), `installGameBeacon` (`main.ts:55`), `?park=`/`?mode=` URL params (`main.ts:3934-3936, 4138-4141`), `data-ready` on the canvas (`main.ts:3957`).
+
+## What changes for this game in 4.5.0
+
+### 1. Skyline and Lunar Park: implicit category fill replaced by an explicit night fill (change 3)
+
+- What happens now: `night-city` (Skyline) and `polar-night` (Lunar Park) have no HDRI (`lookPresets.ts:165, 183`, `hdri: null`). In 4.5.0 `looks.preset` pushes a procedural environment for them (`environments.nightCinematic`, intensity 1.0, `looks.ts:299-302`, data in `lookPresets.ts:157-190`).
+- What it replaces: in 4.3.7 these two scenes had no environment node, so the compiler's category fallback applied (`compiler/environment.ts`, after the authored-environment branch). The scene contains a `scoreboard-rig` node (`main.ts:712`), so the category is most likely `game`, which uses the `gameplay` preset (teal, `environmentMapIntensity` 0.46, `hdrExposure` 0.9; `packages/rendering/src/ExternalParityRenderPreset.ts:636`). If the `ring` plus bloom test in `resolveRendererSceneCategory` (`rendererDiagnostics.ts:293`) matches first, it is `neon`, which uses `studio` (0.5). 4.5.0 uses `nightCinematic`, which maps to the `evening` preset (blue/orange, 0.44, `hdrExposure` 0.84; `ExternalParityRenderPreset.ts:617`). Expect a tint shift (cooler, warmer horizon) and roughly equal or marginally lower fill, not a clear brightening. The category was derived by reading the code and has not been confirmed on screen.
+- Why the "authored lights and no environment renders darker" change does not hit this game: all six looks emit an environment node (an HDRI for the other four, the new fill for these two), so the authored-lights-only branch (`compiler/environment.ts`, `implicitFill === false` branch) is never reached. There is no hemisphere light, so that change does not apply either. The game authors no `output.exposure`, and the `exposureEv` values only feed the look's colorGrade node (`looks.ts:333-341`).
+- Caveat: this describes the `v0` look expansion, which is what `looks.preset` produces unless every look-contract flag is on (`looks.ts:373-383`). With the `v1-contracts` expansion it returns a `look` node and the fill comes from a different path that was not checked here.
+- What to do: capture before/after and compare. Only if Skyline or Lunar now looks clearly off (too dark or too flat), adjust the override at `main.ts:961` and `main.ts:965`, for example by raising `exposureEv` slightly or leaving it as is. Do not lower it blindly: it is already a small positive value (0.12 and 0.16) and 4.5.0 is not expected to brighten these parks.
+- How to check: `?park=skyline&capture=1` and `?park=lunar&capture=1` screenshots against the 4.3.7 build (`main` branch), then `node tools/game-checks/run.mjs aura-diamond-3d`. `?capture=1` only keeps the drawing buffer readable for screenshots; it does not change the render path.
+
+### 2. Contact shadows are now a real screen-space mask (change 8)
+
+- What happens now: `effects.contactShadows({ intensity: 0.75, length: 0.3 })` at `main.ts:979` produces a screen-space mask that forward lighting samples in 4.5.0 (`packages/rendering/src/forward/contactShadowMaskStore.ts`, `packages/rendering/src/program/chunks/shadow_forward.glsl.ts:75`). The mask multiplies only the shadow-casting directional light's direct visibility; it never touches ambient, environment, spot or point light (`contactShadowMaskStore.ts:8-11`). So the floodlight spots (`main.ts:726`) are unaffected, and the night parks (key light intensity 0.5-0.7) will show a weaker effect than the day parks. Feet, bases, bat and ball contact areas lit by the sun can look darker or more defined than before.
+- Requirement: a shadow-casting directional light. Every look preset adds one (`looks.ts:303-311`), so the effect should be available in all six parks. If it is not, 4.5.0 reports `diagnostics.unavailable` and one `console.warn` ("effects.contactShadows() has no visible effect: the scene has no shadow-casting directional light", `packages/rendering/src/passes/Prd02ContactShadowsContributor.ts:296-305`).
+- What to do: no code change needed. If the ground looks too dark, reduce `intensity` (valid option, `packages/engine/src/agent-api/nodes/effects.lighting.ts:9-15`), for example `effects.contactShadows({ intensity: 0.5, length: 0.3 })`.
+- How to check: console has no contact-shadow warning in each park (`setPark` rebuilds the scene, so switch through all six); compare a close-up of the batter's box.
+
+### 3. Render path stays on HDR; bloom fusion (changes 1 and 7)
+
+- What happens now: the scene carries post effects (look bloom/colorGrade/AO, `vignette`, `contactShadows`, `lightCone`, `trail`, `particles`) and a transparent material, and five of its six looks emit an `hdri` environment node, so `renderPathBlockers` (`packages/engine/src/agent-api/app/renderPath.ts:103-136`) keeps the HDR chain. Any one of these effects is enough to block the direct path. The game does not move to the direct path and the silhouette-edge difference (canvas MSAA) does not apply. Bloom fusion is allowed on `auto`; the default `renderer.bloomFusion` is `"separable"` (`app/rendererOptions.ts:256-264`), so the expected difference is within 1/255.
+- What to do: nothing. To confirm, read the report in the console after boot.
+- How to check: `app.diagnostics().renderPath` should report `path: "hdr-msaa"` and `quality: "auto"` (fields `path`, `quality`, `reason`, `bloomFusion`; `renderPath.ts:20, 172`). The game does not expose `app` globally (`auraApp` is local to `boot()` at `main.ts:997`), so add a temporary `console.log(app.diagnostics().renderPath)` after `main.ts:1005`. Remove it afterwards.
+- Optional: for a bit-identical comparison against 4.3.7, load the page with `?aura3d-render=production` (URL override, `renderPath.ts:138-143`), or set `quality: "production"` in the `createAuraApp` options at `main.ts:999`. This restores the 4.3.7 pipeline byte-for-byte. It is not needed for normal use.
+
+### 4. Ambient occlusion on devices without float linear filtering (change 9)
+
+- What happens now: the look presets include `ambientOcclusion` (and bloom). On devices lacking float linear filtering (`OES_texture_float_linear`) the AO target is now point-sampled, so AO becomes visible where it did nothing before. Those devices will look slightly darker in crevices (stands, dugouts, base bags).
+- What to do: no code change. Be aware that a baseline screenshot taken on a device without float filtering will differ from one taken on a device that has it.
+- How to check: compare the same park on a device with and without `OES_texture_float_linear` (check `gl.getSupportedExtensions()` in the browser console). There is no engine diagnostic field for this that was verified; the effect is capability-based, so it only shows up on such hardware.
+
+### 5. Per-frame cost and shadow cascade skipping (changes 6 partial, 13)
+
+- What happens now: `getError` is sampled instead of called every frame (default `sampled`, `packages/rendering/src/WebGL2Device.ts:117-119`), which lowers per-frame CPU cost slightly. Shadow cascades that no receiver selects are skipped on `auto`/`cinematic` (this game is `auto`), which can reduce shadow draws in the stadium. The instancing parts of change 6 do not apply (no `instances.*`).
+- What to do: nothing. Re-measure draw calls only if you track a budget.
+- How to check: compare `app.diagnostics()` draw-call counts in 4.3.7 and 4.5.0 on `?park=dome`; `node tools/game-checks/run.mjs aura-diamond-3d`.
+
+## Changes that do not affect this game
+
+- Change 2, `preserveDrawingBuffer` default false: the game's own `src/` reads no pixels (no `readPixels`/`toDataURL`/`toBlob`/`drawImage`, no `app.capture`/`screenshot`). `installBlackFrameGuard` does read the canvas (`packages/debug/src/safety/blackFrame.ts:244-245`), but only from a microtask queued right after the draw (`packages/debug/src/safety/frameTap.ts:1-8`; `blackFrame.ts:221-222`), so it still sees the finished frame with the buffer not preserved. Only external tooling is affected: `tools/filmstrip/capture-films.mjs` comments that its `toDataURL` path relied on a preserved buffer (lines 9, 122, 171), so add `?capture=1` there if it ever falls back from CDP capture.
+- Change 4, OPTION_IGNORED: every `primitives.*` call passes only `name`, `size`, `material` (all in `PRIMITIVE_OPTION_KEYS`, `packages/engine/src/agent-api/nodes/primitives.ts:57-65`). No `instances.*` or `interactions.*` calls. The `size: [...] as any` on torus/plane are in-range for `size`. Check `app.diagnostics()` for `option-ignored` once to confirm; none is expected.
+- Change 5, `interactions.orbit` options: no `interactions.*` and no `camera.orbit` (camera is `camera.perspective`, `main.ts:981`).
+- Change 6, instancing, shadow proxy, dense depth batching, cascade cap: no `instances.*` calls.
+- Change 10, animation/physics: no `playLayer`, masks, `addClipsFrom`, retarget or `physics`. Clip playback goes through `.animate({clip})` and `setAnimation`/`crossFadeTo`/`play` (`main.ts:1090-1107`), none of which changed per the task notes.
+- Change 11, math/animation fixes: no `Clock`, `AnimationClip`, `ShapeGeometry`, `SphericalHarmonics3` or `@aura3d/math/three` in `src/`. The game does its own timing.
+- Change 12, scene kits: no `sceneKits.*`; the built-in humanoid GLB is not used (the athlete is `assets.diamondAthlete`).
+- Change 14, package pins: already `4.5.0` in `package.json`.
+
+## Checklist
+
+- [ ] Add a temporary `console.log(app.diagnostics().renderPath)` after `main.ts:1005`; expect `path: "hdr-msaa"`, `quality: "auto"`, then remove it.
+- [ ] Open `?park=skyline&capture=1` and `?park=lunar&capture=1` in 4.3.7 and 4.5.0 and compare brightness and tint of the shadows and stands; only retune `exposureEv` at `main.ts:961` / `main.ts:965` if the 4.5.0 result is clearly off (do not lower it by default).
+- [ ] Open the other four parks (`sandlot`, `canyon`, `ivy`, `dome`) and confirm no darkening beyond contact-shadow definition.
+- [ ] Switch through all six parks with `setPark` and confirm no contact-shadow `console.warn` and no `option-ignored` entry in `app.diagnostics()`.
+- [ ] Review the contact-shadow look near the plate and bases in a day park (sandlot, ivy); lower `effects.contactShadows` `intensity` at `main.ts:979` if too heavy.
+- [ ] Run `node tools/game-checks/run.mjs aura-diamond-3d`.
+- [ ] Run the existing unit tests under `tests/unit/aura-diamond/` (`contact`, `batter-pose`, `batter-grip`, `drawn-grip`) on the remote runner (`tools/remote-acr/run.sh`), not locally.
+- [ ] Re-capture any stored baseline screenshots for Skyline and Lunar Park (`apps/showcase-aura-diamond-3d/route-health.json` records `mode: "production"` for the renderer; update that note only if you switch to `quality: "production"`).
