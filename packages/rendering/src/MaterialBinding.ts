@@ -188,8 +188,11 @@ function uniformValueDiagnostics(name: string, value: unknown): readonly string[
     return Number.isFinite(value) ? [] : [`Unsupported uniform value for ${name}: non-finite number`];
   }
   if (ArrayBuffer.isView(value)) {
-    const values = Array.from(value as Float32Array | Int32Array | Uint32Array);
-    return values.every(Number.isFinite) ? [] : [`Unsupported uniform value for ${name}: typed array contains non-finite values`];
+    const view = value as unknown as ArrayLike<number>;
+    for (let index = 0; index < view.length; index += 1) {
+      if (!Number.isFinite(view[index])) return [`Unsupported uniform value for ${name}: typed array contains non-finite values`];
+    }
+    return [];
   }
   if (Array.isArray(value)) {
     return value.every((entry) => typeof entry === "number" && Number.isFinite(entry))

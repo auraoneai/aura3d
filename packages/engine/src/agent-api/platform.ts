@@ -6,6 +6,22 @@ export function devicePixelRatioSafe(): number {
   return typeof window === "undefined" ? 1 : Math.min(2, Math.max(1, window.devicePixelRatio || 1));
 }
 
+const mediaQueries = new Map<string, MediaQueryList>();
+
+/**
+ * `matchMedia(query).matches` without creating a new MediaQueryList per call (a native call that showed up
+ * every frame in the cube profile). A MediaQueryList is live, so `.matches` still follows changes.
+ */
+export function mediaMatches(query: string): boolean {
+  if (typeof matchMedia !== "function") return false;
+  let list = mediaQueries.get(query);
+  if (list === undefined) {
+    list = matchMedia(query);
+    mediaQueries.set(query, list);
+  }
+  return list.matches;
+}
+
 export function performanceNow(): number {
   return typeof globalThis.performance === "undefined" ? Date.now() : globalThis.performance.now();
 }

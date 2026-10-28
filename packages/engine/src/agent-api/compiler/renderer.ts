@@ -104,7 +104,10 @@ export async function createProductionRuntimeSceneRenderer(
     // Only set when asked: the device default (false) is what a plain app needs.
     ...(canvasContext?.preserveDrawingBuffer === true ? { preserveDrawingBuffer: true } : {}),
     requiredFeatures: ["basic-rendering", "pixel-readback", "render-targets", "hdr-image-based-lighting"],
-    ...(getRootRenderSource(canvas) ? { errorCheckMode: "frame" as const } : {}),
+    // Evidence/QA runs (a render source), strict apps and `?diag=1` read the GL error every frame; everything else samples it.
+    ...(getRootRenderSource(canvas) || degradation?.strict === true || (typeof location !== "undefined" && /[?&]diag=1(&|$)/.test(location.search))
+      ? { errorCheckMode: "frame" as const }
+      : {}),
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
     // Direct path: nothing tone-maps the clear (the canvas is written as-is), so the authored display colour is the clear.

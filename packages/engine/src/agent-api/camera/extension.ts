@@ -32,6 +32,7 @@ import type {
   AuraTraumaLayer
 } from "../../contracts/camera.js";
 import { stubCameraRigFactories } from "../../contracts/camera.js";
+import { mediaMatches } from "../platform.js";
 import type { AuraApp, AuraVec3 } from "../index.js";
 import { createCameraController, type AuraCameraControllerImpl } from "./CameraController.js";
 import { cameraProbeBudgetForTier, createCameraProbe, type AuraBudgetedCameraProbe } from "./Probe.js";
@@ -368,10 +369,7 @@ export function createAuraCameraController(
     onCut: () => (app as { cutCamera?: () => void }).cutCamera?.(),
     reducedMotion: () => {
       try {
-        return (
-          typeof matchMedia === "function" &&
-          matchMedia("(prefers-reduced-motion: reduce)").matches
-        );
+        return mediaMatches("(prefers-reduced-motion: reduce)");
       } catch {
         return false;
       }

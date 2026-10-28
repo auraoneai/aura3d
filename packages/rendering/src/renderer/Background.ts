@@ -169,6 +169,15 @@ const prd02ProbeEquirects = new WeakMap<EnvironmentProbe, Texture>();
  * environment-lighting path samples a *linear HDR* mipped equirect — no
  * Reinhard, no RGBA8 (E5 fix). The legacy procedural map is dropped.
  */
+/** Last result per probe: the lighting object only changes when the probe, its intensities or its ambient term do. */
+const prd02LightingMemo = new WeakMap<EnvironmentProbe, {
+  readonly diffuse: number;
+  readonly specular: number;
+  readonly ambient: readonly [number, number, number, number] | null;
+  readonly withProbe: boolean;
+  readonly result: EnvironmentLightingOptions;
+}>();
+
 export function resolvePrd02EnvironmentLighting(source: RenderSource): EnvironmentLightingOptions | undefined {
   const probe = (source as RenderSourceWithProbe).environmentProbe;
   if (!probe) return undefined;
@@ -181,7 +190,20 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
   const diffuse = meta.environmentProbeDiffuseIntensity ?? 1;
   const specular = meta.environmentProbeSpecularIntensity ?? 1;
   const ambient = meta.environmentProbeAmbient ?? null;
-  return {
+  const withProbe = rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING");
+  const memo = prd02LightingMemo.get(probe);
+  if (memo
+    && memo.diffuse === diffuse
+    && memo.specular === specular
+    && memo.withProbe === withProbe
+    && (memo.ambient === null
+      ? ambient === null
+      : ambient !== null
+        && memo.ambient[0] === ambient.color[0] && memo.ambient[1] === ambient.color[1] && memo.ambient[2] === ambient.color[2]
+        && memo.ambient[3] === ambient.intensity)) {
+    return { ...memo.result };
+  }
+  const result: EnvironmentLightingOptions = {
     color: ambient?.color ?? [1, 1, 1],
     intensity: ambient?.intensity ?? 0,
     environmentMapTexture: new TextureBinding({
@@ -205,10 +227,18 @@ export function resolvePrd02EnvironmentLighting(source: RenderSource): Environme
     // E3 stage-2b: carry the probe itself (cube + SH9) to ForwardPass for
     // the PRD-02 IBL pack. Attached only under the conjunction so the
     // LIGHTING-only lighting object stays byte-identical.
-    ...(rendererQrFlags().on("A3D_QR_COMPILER") && rendererQrFlags().on("A3D_QR_LIGHTING")
+    ...(withProbe
       ? { environmentProbe: probe }
       : {})
   };
+  prd02LightingMemo.set(probe, {
+    diffuse,
+    specular,
+    withProbe,
+    ambient: ambient ? [ambient.color[0], ambient.color[1], ambient.color[2], ambient.intensity] : null,
+    result
+  });
+  return { ...result };
 }
 
 export function collectEnvironmentFog(source: RenderSource | Iterable<RenderItem> | Scene): ForwardEnvironmentFogOptions | false | undefined {

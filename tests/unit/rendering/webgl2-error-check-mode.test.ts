@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { WebGL2ContextLifecycle } from "../../../packages/rendering/src/webgl2/ContextLifecycle";
 
 /**
  * `gl.getError()` forces a synchronous CPU/GPU sync. In `strict` mode the WebGL2
@@ -26,20 +27,22 @@ describe("WebGL2 error-check mode default", () => {
     .map((path) => readFileSync(resolve(path), "utf8"))
     .join("\n");
 
-  it("defaults to frame-level checking rather than per-operation strict checking", () => {
-    expect(deviceSource).toContain('options.errorCheckMode ?? "frame"');
+  it("defaults to sampled frame-level checking, never per-operation strict checking", () => {
+    expect(deviceSource).toContain('options.errorCheckMode ?? "sampled"');
     expect(deviceSource).not.toContain('options.errorCheckMode ?? "strict"');
+    expect(deviceSource).not.toContain('options.errorCheckMode ?? "frame"');
   });
 
   it("keeps strict mode available as an explicit opt-in", () => {
-    expect(deviceSource).toContain('export type WebGL2ErrorCheckMode = "strict" | "frame";');
+    expect(deviceSource).toContain('export type WebGL2ErrorCheckMode = "strict" | "frame" | "sampled";');
     // The per-operation checks must remain, guarded by the strict mode.
     expect(deviceSource.match(/errorCheckMode === "strict"/g)?.length ?? 0).toBeGreaterThanOrEqual(4);
   });
 
   it("still reads a frame-level error so real WebGL failures surface", () => {
-    // endFrame records the error once per frame into lastError.
+    // endFrame records the error into lastError whenever the mode's policy asks for a read.
     expect(deviceSource).toContain("this.lastError = this.readError();");
+    expect(deviceSource).toContain("if (this.shouldReadFrameError()) this.lastError = this.readError();");
   });
 
   it("starts a replacement device with a clean error boundary after context restoration", () => {

@@ -12,6 +12,7 @@
  * extension uses — so the impulse decays once per presented frame.
  */
 import type { AuraApp } from "../index.js";
+import { mediaMatches } from "../platform.js";
 import type { AuraScreenFeelUniforms } from "../../contracts/time.js";
 import { SCREEN_FEEL_BLACKBOARD_KEY } from "../../contracts/time.js";
 import type { FrameContributor, RenderItem } from "@aura3d/rendering/contracts";
@@ -163,7 +164,7 @@ export function createAuraFeelBus(app: AuraApp, options: AuraFeelExtensionOption
       options.reducedMotion ??
       (() => {
         try {
-          return typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+          return mediaMatches("(prefers-reduced-motion: reduce)");
         } catch {
           return false;
         }
