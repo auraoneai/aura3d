@@ -4,6 +4,8 @@ import { LightUniforms } from "./LightUniforms";
 import { Material, type RenderState } from "./Material";
 import { MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 import { MaterialInstance } from "./MaterialInstance";
+import { PortableShaderMaterial } from "./PortableShaderMaterial";
+import { cullInstancesToFrustum, MIN_CULLED_INSTANCES, type InstanceFrustumCullResult } from "./renderer/InstanceFrustumCull";
 import { type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { RenderPipeline } from "./RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
@@ -365,7 +367,8 @@ export class ForwardPass extends BaseRenderPass {
     }
   }
 
-  private drawItem(device: RenderDevice, item: RenderItem): void {
+  private drawItem(device: RenderDevice, sourceItem: RenderItem): void {
+    let item = sourceItem;
     // An instanced item with zero instances draws nothing (never a contract throw that blanks the frame).
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
     // threejs-parity L7/SG-09: three's Object3D.onBeforeRender fires
@@ -399,6 +402,12 @@ export class ForwardPass extends BaseRenderPass {
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
     let generated = this.lastProgramFeatures !== undefined;
+    // Large instanced draws: submit only the instances whose bounding sphere meets this pass's view frustum.
+    const culled = this.cullInstancesToView(item, baseMaterial);
+    if (culled !== null) {
+      if (culled.count === 0) return;
+      item = { ...item, instanceTransforms: culled.transforms, ...(culled.colors ? { instanceColors: culled.colors } : {}) };
+    }
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
@@ -522,6 +531,23 @@ export class ForwardPass extends BaseRenderPass {
         geometry.dispose();
       }
     }
+  }
+
+  /**
+   * Per-instance frustum culling for large instanced items (see renderer/InstanceFrustumCull.ts). Only the main camera of this pass is used,
+   * and only for plain meshes: skinned/morphed/custom-attribute items, custom shader materials (vertex displacement) and items that opt out
+   * with `frustumCulled: false` always draw every instance.
+   */
+  private cullInstancesToView(item: RenderItem, baseMaterial: Material): InstanceFrustumCullResult | null {
+    const transforms = item.instanceTransforms;
+    const viewProjection = this.options.cameraViewProjectionMatrix;
+    if (!(transforms instanceof Float32Array) || viewProjection === undefined || viewProjection.length < 16) return null;
+    if (transforms.length < MIN_CULLED_INSTANCES * 16) return null;
+    if (item.frustumCulled === false || item.skinning || item.morphTargets || item.morphWeights || item.instanceAttributes || item.drawRange) return null;
+    if (baseMaterial instanceof PortableShaderMaterial) return null;
+    const colors = item.instanceColors;
+    if (colors !== undefined && !(colors instanceof Float32Array)) return null;
+    return cullInstancesToFrustum({ viewProjection, modelMatrix: item.modelMatrix, bounds: item.geometry.bounds, transforms, ...(colors ? { colors } : {}) });
   }
 
   /**
@@ -1198,13 +1224,30 @@ function renderStateForItem(renderState: RenderState, item: RenderItem): RenderS
 
 function instancedItemNeedsPerInstanceCullState(item: RenderItem): boolean {
   const source = validateInstanceTransformSource(item);
-  const baseModel = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
-  const handedness = new Set<boolean>();
+  const base = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
+  // Allocation-free: a 10,000-instance draw runs this every pass. Only the upper 3x3 of
+  // `base * instance` feeds the handedness test, so build it from scalars (same sums as
+  // `multiplyMat4`, rows 0..2 / columns 0..2) instead of two arrays per instance.
   for (let offset = 0; offset < source.length; offset += 16) {
-    const instanceMatrix = mat4FromArrayLike(source, offset);
-    handedness.add(hasNegativeHandedness(multiplyMat4(baseModel, instanceMatrix)));
+    if (instanceProductHasNegativeHandedness(base, source, offset)) return true;
   }
-  return handedness.has(true);
+  return false;
+}
+
+function instanceProductHasNegativeHandedness(base: Mat4, source: ArrayLike<number>, offset: number): boolean {
+  const o = offset;
+  const c00 = base[0 * 4 + 0] * source[o]! + base[1 * 4 + 0] * source[o + 1]! + base[2 * 4 + 0] * source[o + 2]! + base[3 * 4 + 0] * source[o + 3]!;
+  const c01 = base[0 * 4 + 1] * source[o]! + base[1 * 4 + 1] * source[o + 1]! + base[2 * 4 + 1] * source[o + 2]! + base[3 * 4 + 1] * source[o + 3]!;
+  const c02 = base[0 * 4 + 2] * source[o]! + base[1 * 4 + 2] * source[o + 1]! + base[2 * 4 + 2] * source[o + 2]! + base[3 * 4 + 2] * source[o + 3]!;
+  const c10 = base[0 * 4 + 0] * source[o + 4]! + base[1 * 4 + 0] * source[o + 5]! + base[2 * 4 + 0] * source[o + 6]! + base[3 * 4 + 0] * source[o + 7]!;
+  const c11 = base[0 * 4 + 1] * source[o + 4]! + base[1 * 4 + 1] * source[o + 5]! + base[2 * 4 + 1] * source[o + 6]! + base[3 * 4 + 1] * source[o + 7]!;
+  const c12 = base[0 * 4 + 2] * source[o + 4]! + base[1 * 4 + 2] * source[o + 5]! + base[2 * 4 + 2] * source[o + 6]! + base[3 * 4 + 2] * source[o + 7]!;
+  const c20 = base[0 * 4 + 0] * source[o + 8]! + base[1 * 4 + 0] * source[o + 9]! + base[2 * 4 + 0] * source[o + 10]! + base[3 * 4 + 0] * source[o + 11]!;
+  const c21 = base[0 * 4 + 1] * source[o + 8]! + base[1 * 4 + 1] * source[o + 9]! + base[2 * 4 + 1] * source[o + 10]! + base[3 * 4 + 1] * source[o + 11]!;
+  const c22 = base[0 * 4 + 2] * source[o + 8]! + base[1 * 4 + 2] * source[o + 9]! + base[2 * 4 + 2] * source[o + 10]! + base[3 * 4 + 2] * source[o + 11]!;
+  // Column-major: matrix[0..2] = c00,c01,c02; [4..6] = c10,c11,c12; [8..10] = c20,c21,c22 (see hasNegativeHandedness).
+  const determinant = c00 * (c11 * c22 - c21 * c12) - c10 * (c01 * c22 - c21 * c02) + c20 * (c01 * c12 - c11 * c02);
+  return Number.isFinite(determinant) && determinant < -1e-8;
 }
 
 function expandInstancedRenderItem(item: RenderItem): readonly RenderItem[] {

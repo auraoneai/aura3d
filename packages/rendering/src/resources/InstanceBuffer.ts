@@ -11,6 +11,14 @@ import { type RenderBuffer, type RenderDevice } from "../RenderDevice";
 import type { InstanceBufferLike } from "../contracts/geometry";
 
 const MIN_CAPACITY = 16;
+/** True when the first `length` scalars of `stored` already equal `incoming` (stops at the first difference). */
+const sameScalars = (stored: Float32Array, incoming: Float32Array, length: number): boolean => {
+  if (incoming.length < length || stored.length < length) return false;
+  for (let i = 0; i < length; i += 1) {
+    if (stored[i] !== incoming[i]) return false;
+  }
+  return true;
+};
 const pow2Ceil = (value: number): number => 2 ** Math.ceil(Math.log2(Math.max(1, value)));
 
 export class InstanceBuffer implements InstanceBufferLike {
@@ -21,6 +29,9 @@ export class InstanceBuffer implements InstanceBufferLike {
   private allocated: number;
   public count = 0;
   public version = 0;
+  // A (re)allocated device buffer holds no data yet, so the next write must upload even if the CPU copy matches.
+  private matricesNeedUpload = true;
+  private colorsNeedUpload = true;
 
   constructor(
     private readonly device: RenderDevice,
@@ -47,6 +58,7 @@ export class InstanceBuffer implements InstanceBufferLike {
     this.matrices = matrices;
     const oldMatrix = this.matrixBuffer;
     this.matrixBuffer = this.device.createBuffer("vertex", matrices.byteLength);
+    this.matricesNeedUpload = true;
     // Dispose of the old buffer first so device-side VAOs referencing it are
     // evicted (PRD §7.1) before a same-content buffer takes its place.
     oldMatrix.dispose();
@@ -63,6 +75,7 @@ export class InstanceBuffer implements InstanceBufferLike {
     this.colors = colors;
     const oldColors = this.colorBuffer;
     this.colorBuffer = this.device.createBuffer("vertex", colors.byteLength);
+    this.colorsNeedUpload = true;
     oldColors.dispose();
   }
 
@@ -70,8 +83,12 @@ export class InstanceBuffer implements InstanceBufferLike {
     const n = count ?? Math.floor(m.length / 16);
     if (n > this.capacity) throw new Error(`INSTANCE_CAPACITY_EXCEEDED:${n}>${this.capacity}`);
     this.ensureAllocated(n, false);
+    // Static instance sets (forests, props) are re-submitted every frame by the forward pass; skip the copy,
+    // the GPU upload and the version bump when the contents did not change.
+    if (!this.matricesNeedUpload && n === this.count && sameScalars(this.matrices, m, n * 16)) return;
     this.matrices.set(m.subarray(0, n * 16));
     this.device.updateBuffer(this.matrixBuffer, 0, this.matrices.subarray(0, n * 16));
+    this.matricesNeedUpload = false;
     this.count = n;
     this.version += 1;
   }
@@ -82,8 +99,10 @@ export class InstanceBuffer implements InstanceBufferLike {
     if (n > this.capacity) throw new Error(`INSTANCE_CAPACITY_EXCEEDED:${n}>${this.capacity}`);
     this.ensureAllocated(n, true);
     if (this.colors.length < n * 4) this.growColors(n);
+    if (!this.colorsNeedUpload && sameScalars(this.colors, c, n * 4)) return;
     this.colors.set(c.subarray(0, n * 4));
     this.device.updateBuffer(this.colorBuffer, 0, this.colors.subarray(0, n * 4));
+    this.colorsNeedUpload = false;
     this.version += 1;
   }
 

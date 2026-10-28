@@ -130,6 +130,10 @@ export interface AuraRuntimeNodeSnapshot {
   readonly morphTargets?: RuntimeNodeMorphTargetWeights;
   readonly bounds?: AuraRuntimeNodeBounds;
   readonly effects?: readonly AuraRuntimeNodeEffectAttachment[];
+  /** Dense per-instance column-major mat4s written by `setInstanceMatrices` (instanced primitive nodes only). */
+  readonly instanceMatrices?: Float32Array;
+  /** Dense per-instance linear RGBA written by `setInstanceMatrices`. */
+  readonly instanceRgba?: Float32Array;
 }
 
 export interface AuraRuntimeNodeHandle {
@@ -150,6 +154,13 @@ export interface AuraRuntimeNodeHandle {
   setVisible(visible: boolean): this;
   setMaterial(material: AuraMaterialSpec): this;
   setInstances(transforms: readonly AuraTransformSpec[], colors?: readonly AuraColor[]): this;
+  /**
+   * Dense per-frame instance write: `matrices` holds `count` column-major mat4s (T·R·S per instance, without the
+   * node `size`, which the compiler folds in), `rgba` optionally holds `count` linear RGBA colors. The arrays are
+   * copied into node-owned storage that is reused while `count` stays the same, so a steady-state call allocates
+   * nothing and no per-instance object is built. `count` may not exceed the declared instance capacity.
+   */
+  setInstanceMatrices(matrices: Float32Array, count: number, rgba?: Float32Array): this;
   play(clip: string, options?: Omit<AuraAnimationSpec, "clip">): this;
   setAnimation(animation: AuraAnimationSpec | undefined): this;
   setAnimationBinding(binding: AuraRuntimeNodeAnimationBindingMetadata | undefined): this;
@@ -636,6 +647,8 @@ export interface ProductionRuntimePrimitiveEntry {
 
 export interface ProductionRuntimePrimitiveResource {
   readonly geometry: Geometry;
+  /** Coarser geometry for shadow depth passes; present only on dense instanced shadow casters (see `RenderItem.shadowGeometry`). */
+  readonly shadowGeometry?: Geometry;
   /** SH-02 (L1): `PortableShaderMaterial` when `node.material` is a `material.custom` spec. */
   readonly material: PBRMaterial | InstancedPBRMaterial | PortableShaderMaterial;
   readonly bounds: GltfBounds;

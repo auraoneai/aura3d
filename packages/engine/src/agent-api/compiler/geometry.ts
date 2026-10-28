@@ -235,14 +235,33 @@ const INSTANCED_MIN_SEGMENT_SCALE = 0.25;
  * default segment counts halve (x0.5, then x0.25; never below x0.25, so a sphere keeps at least 16x8) until the budget
  * fits or the floor is hit. Authored `params.*Segments` always win, and a node of up to 64 instances is never touched.
  */
-export function instancedDefaultSegmentScale(instanceCount: number | undefined, fullTrianglesPerInstance: number): number {
+export function instancedDefaultSegmentScale(
+  instanceCount: number | undefined,
+  fullTrianglesPerInstance: number,
+  limits: { readonly budget: number; readonly minScale: number } = { budget: INSTANCED_NODE_TRIANGLE_BUDGET, minScale: INSTANCED_MIN_SEGMENT_SCALE }
+): number {
   if (instanceCount === undefined || instanceCount <= INSTANCED_FULL_DETAIL_MAX_INSTANCES || !(fullTrianglesPerInstance > 0)) return 1;
   const demand = instanceCount * fullTrianglesPerInstance;
-  if (demand <= INSTANCED_NODE_TRIANGLE_BUDGET) return 1;
-  const raw = Math.sqrt(INSTANCED_NODE_TRIANGLE_BUDGET / demand);
+  if (demand <= limits.budget) return 1;
+  const raw = Math.sqrt(limits.budget / demand);
   let scale = 1;
-  while (scale > INSTANCED_MIN_SEGMENT_SCALE && scale > raw) scale /= 2;
-  return Math.max(INSTANCED_MIN_SEGMENT_SCALE, scale);
+  while (scale > limits.minScale && scale > raw) scale /= 2;
+  return Math.max(limits.minScale, scale);
+}
+
+/** Triangles one instanced node may put into each shadow depth pass (the camera pass keeps `INSTANCED_NODE_TRIANGLE_BUDGET`). */
+export const INSTANCED_SHADOW_TRIANGLE_BUDGET = 65_536;
+/**
+ * Shadow-proxy tessellation floors. A shadow silhouette is judged at the shadow-map texel, not at the camera's pixel, so round and thin
+ * bodies (sphere, capsule, torus, cylinder: a trunk is a handful of texels wide) may go to an eighth of their default segments; the rest
+ * (cone, ...) keep a quarter so a canopy still casts a round-ish shadow.
+ */
+export function instancedShadowSegmentScale(instanceCount: number | undefined, fullTrianglesPerInstance: number, primitive: string): number {
+  const round = primitive === "sphere" || primitive === "capsule" || primitive === "torus" || primitive === "cylinder";
+  return instancedDefaultSegmentScale(instanceCount, fullTrianglesPerInstance, {
+    budget: INSTANCED_SHADOW_TRIANGLE_BUDGET,
+    minScale: round ? 0.125 : INSTANCED_MIN_SEGMENT_SCALE
+  });
 }
 
 /**

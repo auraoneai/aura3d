@@ -40,6 +40,7 @@ function forestScene() {
     .add(lights.hemisphere({ skyColor: "#dce8f2", groundColor: "#4d6358", intensity: 1.1 }))
     .add(lights.directional({ color: "#fff4e0", intensity: 2.4, position: [30, 50, 20], shadow }));
   if (fog) s = s.add(effects.fog({ color: "#aab8c4", density: 0.012 }));
+  if (envNone) s = s.add(environments.none());
   s = s.add(primitives.plane({ name: "ground", size: [400, 1, 400], material: material.pbr({ color: "#566b4a", roughness: 1 }) }));
   if (trees > 0) {
     s = s.add(instances.cylinder({ name: "trunks", size: [0.36, 1.2, 0.36], transforms: trunks, castShadow: shadow, material: material.pbr({ color: "#6b4a32", roughness: 0.95 }) }));

@@ -480,9 +480,10 @@ export async function createProductionRuntimeSceneRenderer(
         }
         for (const { actor } of actorEntries) actor.dispose();
         for (const { resources } of primitiveEntries) {
-          for (const { geometry, material, texturedMaterial, textureDisposer } of resources) {
+          for (const { geometry, shadowGeometry, material, texturedMaterial, textureDisposer } of resources) {
             textureDisposer?.();
             geometry.dispose();
+            shadowGeometry?.dispose();
             material.dispose();
             texturedMaterial?.dispose();
           }

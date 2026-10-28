@@ -35,8 +35,10 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
   if (!levels?.length) {
     if (sdfResource) return [sdfResource];
     const qrGeometry = qrPrimitiveGeometryFor(node, qr);
+    const shadowGeometry = qrPrimitiveShadowGeometryFor(node, qr);
     const fallback = {
       geometry: qrGeometry?.geometry ?? createProductionPrimitiveGeometry(node),
+      ...(shadowGeometry ? { shadowGeometry } : {}),
       material: createProductionPrimitiveMaterial(node),
       bounds: qrGeometry?.bounds ?? primitiveGeometryBounds(node),
       name: node.name ?? node.primitive,
@@ -128,6 +130,24 @@ export function createProductionInstanceTransforms(transforms: readonly AuraTran
   return matrices;
 }
 
+/**
+ * Dense counterpart of `createProductionInstanceTransforms` for matrices written by `handle.setInstanceMatrices`.
+ * The spec path builds T·R·S(scale ⊙ size) per instance; a dense matrix already is T·R·S(scale), so folding the node
+ * `size` in is a scale of its three basis columns. `out` is reused across frames while the count is unchanged.
+ */
+export function createProductionInstanceTransformsFromMatrices(matrices: Float32Array, node: AuraPrimitiveNode, out?: Float32Array): Float32Array {
+  const size = primitiveSize(node);
+  const target = out !== undefined && out.length === matrices.length ? out : new Float32Array(matrices.length);
+  const sx = size[0], sy = size[1], sz = size[2];
+  for (let o = 0; o < matrices.length; o += 16) {
+    target[o] = matrices[o]! * sx; target[o + 1] = matrices[o + 1]! * sx; target[o + 2] = matrices[o + 2]! * sx; target[o + 3] = matrices[o + 3]!;
+    target[o + 4] = matrices[o + 4]! * sy; target[o + 5] = matrices[o + 5]! * sy; target[o + 6] = matrices[o + 6]! * sy; target[o + 7] = matrices[o + 7]!;
+    target[o + 8] = matrices[o + 8]! * sz; target[o + 9] = matrices[o + 9]! * sz; target[o + 10] = matrices[o + 10]! * sz; target[o + 11] = matrices[o + 11]!;
+    target[o + 12] = matrices[o + 12]!; target[o + 13] = matrices[o + 13]!; target[o + 14] = matrices[o + 14]!; target[o + 15] = matrices[o + 15]!;
+  }
+  return target;
+}
+
 export function createProductionInstanceColors(colors: readonly AuraColor[] | undefined, count: number): Float32Array | undefined {
   if (!colors) return undefined;
   if (colors.length !== count) throw new Error("Aura3D instance color count must match instance transform count.");
@@ -158,6 +178,8 @@ export function resolveProductionPrimitiveRuntimeState(
     readonly material?: AuraPrimitiveNode["material"];
     readonly instances?: AuraPrimitiveNode["instances"];
     readonly instanceColors?: AuraPrimitiveNode["instanceColors"];
+    readonly instanceMatrices?: Float32Array;
+    readonly instanceRgba?: Float32Array;
   }) | undefined;
   // parity:L1 (SH-02): staged `handle.setUniform` writes land on the compiled
   // portable material here — `setParameter` updates uniform state only, never
@@ -185,8 +207,10 @@ export function resolveProductionPrimitiveRuntimeState(
     animation: runtimeSnapshot.animation ?? entry.node.animation,
     ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
     ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {}),
+    ...(runtimeSnapshot.instanceMatrices ? { instanceMatrices: runtimeSnapshot.instanceMatrices } : {}),
+    ...(runtimeSnapshot.instanceRgba ? { instanceRgba: runtimeSnapshot.instanceRgba } : {}),
     ...(runtimeHandle?.__parityL2Geometry !== undefined ? { geometry: runtimeHandle.__parityL2Geometry } : {})
-  } as AuraPrimitiveNode & { __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[] };
+  } as AuraPrimitiveNode & { __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[]; instanceMatrices?: Float32Array; instanceRgba?: Float32Array };
   if (pendingAttributes && pendingAttributes.length > 0) {
     resolvedNode.__parityL2AttributeUpdates = pendingAttributes;
   }
@@ -277,7 +301,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, instancedShadowSegmentScale, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
 /**
@@ -470,7 +494,7 @@ export function qrPrimitiveMeshFor(node: AuraPrimitiveNode, qr: QrPrimitiveGeome
 
 /** Q-15-2: flag-on geometry + bounds, pooled per mount when `qr.pool` is set (#545). */
 /** Dense instanced nodes shrink their default tessellation (see `instancedDefaultSegmentScale`); explicit segment params are unaffected. */
-function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions): QrPrimitiveGeometryOptions {
+function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeometryOptions, purpose: "view" | "shadow" = "view"): QrPrimitiveGeometryOptions {
   const count = node.instances?.length;
   if (count === undefined || count <= 64 || node.primitive === "custom") return qr;
   let fullTriangles = 0;
@@ -480,8 +504,28 @@ function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeome
   } catch {
     return qr;
   }
-  const scale = instancedDefaultSegmentScale(count, fullTriangles);
+  const scale = purpose === "shadow" ? instancedShadowSegmentScale(count, fullTriangles, node.primitive) : instancedDefaultSegmentScale(count, fullTriangles);
   return scale === 1 ? qr : { ...qr, defaultSegmentScale: scale };
+}
+
+/**
+ * Coarser stand-in geometry for the shadow depth passes of a dense instanced, shadow-casting node (see `RenderItem.shadowGeometry`).
+ * Undefined unless it is strictly coarser than the camera geometry, so nodes that already fit the camera budget keep one geometry.
+ */
+export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): Geometry | undefined {
+  if (!mountQr?.core || node.geometry || node.primitive === "custom" || !node.castShadow) return undefined;
+  const count = node.instances?.length;
+  if (count === undefined || count <= 64) return undefined;
+  const viewScale = withInstancedTessellation(node, mountQr).defaultSegmentScale ?? 1;
+  const qr = withInstancedTessellation(node, mountQr, "shadow");
+  if ((qr.defaultSegmentScale ?? 1) >= viewScale) return undefined;
+  const size = primitiveSize(node);
+  const primitive = qrBuiltinPrimitive(node.primitive);
+  if (!qr.pool || !qrPrimitiveParamsPoolable(node.params)) {
+    return createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params));
+  }
+  return qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr, node.params), () =>
+    createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params)));
 }
 
 export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
