@@ -99,6 +99,13 @@ function clockRun(L) {
     c.start();
     nowMs = 2700;
     out.push(c.running ? 1 : 0, c.getDelta(), c.getElapsedTime());
+    const manual = new L.Clock(false);
+    out.push(manual.running ? 1 : 0);
+    nowMs = 2800;
+    out.push(manual.getDelta(), manual.running ? 1 : 0);
+    manual.start();
+    nowMs = 3000;
+    out.push(manual.getDelta(), manual.getElapsedTime());
     return out;
   } finally {
     performance.now = real;

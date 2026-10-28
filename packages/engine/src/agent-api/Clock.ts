@@ -26,8 +26,12 @@ export class Clock {
   private readonly autoStart: boolean;
   private lastNow: number | undefined;
   private runningFlag = false;
+  /** Loop time at the last start(); three resets elapsedTime to 0 on every start(). */
+  private baseTime = 0;
 
-  constructor(options: AuraClockOptions = {}) {
+  /** `new Clock(false)` is three's `autoStart` argument; the options object is the Aura form. */
+  constructor(options: AuraClockOptions | boolean = {}) {
+    if (typeof options === "boolean") options = { autoStart: options };
     this.now = options.now ?? (() => (typeof performance === "undefined" ? Date.now() : performance.now()));
     this.autoStart = options.autoStart !== false;
     this.loop = createFrameLoop({ useRaf: false, autoStart: false, fixedDt: 0, now: this.now });
@@ -40,10 +44,11 @@ export class Clock {
 
   /** three's `clock.elapsedTime` (seconds accumulated since start). */
   get elapsedTime(): number {
-    return this.loop.snapshot().time;
+    return this.loop.snapshot().time - this.baseTime;
   }
 
   start(): void {
+    this.baseTime = this.loop.snapshot().time;
     this.runningFlag = true;
     this.loop.start();
     // `lastNow` marks the resume instant so the stopped interval never leaks
@@ -77,6 +82,6 @@ export class Clock {
   /** Total seconds since `start()`; pulling a pending delta first keeps the two reads consistent. */
   getElapsedTime(): number {
     this.getDelta();
-    return this.loop.snapshot().time;
+    return this.elapsedTime;
   }
 }

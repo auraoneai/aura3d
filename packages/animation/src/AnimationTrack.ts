@@ -54,7 +54,9 @@ export class AnimationTrack<T extends AnimationValue = AnimationValue> {
       const b = this.keyframes[index + 1]!;
       if (time >= a.time && time <= b.time) {
         if (a.interpolation === "step" || b.time === a.time) {
-          return cloneAnimationValue(a.value);
+          // Discrete tracks hold a key's value from its own time onward (three's DiscreteInterpolant):
+          // exactly at the next key's time the next key's value applies.
+          return cloneAnimationValue(a.interpolation === "step" && b.time !== a.time && time >= b.time ? b.value : a.value);
         }
         const t = (time - a.time) / (b.time - a.time);
         if (a.interpolation === "cubicspline") {

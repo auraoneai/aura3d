@@ -138,6 +138,10 @@ describe("migrate-three fidelity (PRD beat-three.js contract 3.6)", () => {
     expect(gaps).toEqual([]);
   });
 
+  it("math value types stay immutable where three mutates (documented blocker for exact Vector/Matrix/Quaternion rows)", () => {
+    expect(firstDivergence("MutationSemantics")).toMatch(/value\[0\]/);
+  });
+
   it("no pending rows remain (M1)", () => {
     expect(THREE_TO_A3D_MAPPINGS.filter((row) => row.mapping === "pending").map((row) => row.construct)).toEqual([]);
   });

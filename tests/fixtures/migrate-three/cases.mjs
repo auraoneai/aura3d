@@ -32,6 +32,18 @@ const sampleCurve = (curve, dims) => {
 export const TOLERANCE = 1e-5;
 
 export const cases = {
+  // Evidence, not a mapping row: three's math classes MUTATE and return `this`; Aura's are immutable value
+  // types whose methods return new instances. Statement-form three code (`v.add(w);`) therefore does
+  // nothing on Aura's classes. The fidelity test asserts this divergence so it is revisited if that changes.
+  MutationSemantics: (L) => {
+    const v = new L.Vector3(1, 2, 3);
+    v.add(new L.Vector3(1, 1, 1));
+    v.multiplyScalar(2);
+    const q = new L.Vector3(3, 0, 4);
+    q.normalize();
+    return [...v3(v), ...v3(q)];
+  },
+
   // ── Math classes ────────────────────────────────────────────────────
   Vector2: (L) => {
     const a = new L.Vector2(1.5, -2.25);

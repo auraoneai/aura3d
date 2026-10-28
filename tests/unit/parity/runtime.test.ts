@@ -74,7 +74,8 @@ describe("parity L7 — Clock (SR-06)", () => {
     clock.start();
     now += 100;
     expect(clock.getDelta()).toBeCloseTo(0.1, 6);
-    expect(clock.getElapsedTime()).toBeCloseTo(0.85, 6);
+    // three's start() resets elapsedTime to 0 (verified against r185 in migrate-three goldens).
+    expect(clock.getElapsedTime()).toBeCloseTo(0.1, 6);
 
     // autoStart: false — reads stay inert until start().
     const manual = new Clock({ now: () => now, autoStart: false });

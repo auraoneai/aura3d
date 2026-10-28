@@ -314,7 +314,7 @@ export function isClockWise(pts: readonly { x: number; y: number }[]): boolean {
   return shapeArea(pts) < 0;
 }
 
-function removeDupEndPts(points: { x: number; y: number }[]): void {
+export function removeDupEndPts(points: { x: number; y: number }[]): void {
   const l = points.length;
   // three uses Vector2.equals — exact coordinate equality.
   if (l > 2 && points[l - 1]!.x === points[0]!.x && points[l - 1]!.y === points[0]!.y) {
@@ -335,7 +335,8 @@ export function triangulateShape(contour: readonly { x: number; y: number }[], h
   removeDupEndPts(c);
   for (const p of c) vertices.push(p.x, p.y);
 
-  let holeIndex = contour.length;
+  // three mutates `contour` in place (so holeIndex is the post-strip length); this copy strips first, then counts.
+  let holeIndex = c.length;
   const hs = holes.map((hole) => [...hole]);
   hs.forEach(removeDupEndPts);
   for (const hole of hs) {

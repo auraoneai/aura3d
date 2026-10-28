@@ -8,7 +8,7 @@
  */
 
 import { Vector2 } from "@aura3d/math";
-import { isClockWise, resolveShape2D, triangulateShape } from "./Support";
+import { isClockWise, removeDupEndPts, resolveShape2D, triangulateShape } from "./Support";
 import type { ParityMesh } from "./Support";
 
 export interface ShapeParityParams {
@@ -26,7 +26,7 @@ export function shapeParityMesh(params: ShapeParityParams): ParityMesh {
   const uvs: number[] = [];
 
   const indexOffset = vertices.length / 3;
-  let shapeVertices: Vector2[] = resolved.shape;
+  let shapeVertices: Vector2[] = [...resolved.shape];
   const shapeHoles: Vector2[][] = resolved.holes.map((hole) => [...hole]);
 
   if (isClockWise(shapeVertices) === false) {
@@ -37,6 +37,11 @@ export function shapeParityMesh(params: ShapeParityParams): ParityMesh {
       shapeHoles[i] = shapeHoles[i]!.reverse();
     }
   }
+
+  // three's ShapeUtils.triangulateShape strips a repeated closing point from the arrays it is given, so
+  // the vertices emitted below exclude it too.
+  removeDupEndPts(shapeVertices);
+  for (const hole of shapeHoles) removeDupEndPts(hole);
 
   const faces = triangulateShape(shapeVertices, shapeHoles);
 

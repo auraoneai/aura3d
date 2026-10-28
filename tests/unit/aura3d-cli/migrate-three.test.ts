@@ -53,7 +53,7 @@ describe("aura3d migrate three", () => {
     TransformControls: { source: `new TransformControls(camera, el)`, expectContains: ["new TransformControls({})", "TransformControlsOptions", "@aura3d/engine/controls"], mapping: "approximate" },
     PositionalAudio: { source: `new THREE.PositionalAudio(listener)`, expectContains: ["a3d: PositionalAudio → PositionalEmitter", "PositionalEmitterOptions", "@aura3d/engine/audio"], mapping: "approximate" },
     SkinnedMesh: { source: `new THREE.SkinnedMesh(geo, mat)`, expectContains: ["a3d: SkinnedMesh → model"], mapping: "approximate" },
-    Clock: { source: `const c = new THREE.Clock();`, expectContains: ["a3d: Clock → Clock", "SR-06"], mapping: "approximate" },
+    Clock: { source: `const c = new THREE.Clock();`, expectContains: ["a3d: Clock → Clock", "SR-06"], mapping: "exact" },
     Vector2: { source: `new THREE.Vector2(1, 2)`, expectContains: ["new Vector2(1, 2)", "@aura3d/engine/math"], mapping: "approximate" },
     Matrix4: { source: `new THREE.Matrix4()`, expectContains: ["new Matrix4()", "@aura3d/engine/math"], mapping: "approximate" },
     WebGPURenderer: { source: `new THREE.WebGPURenderer()`, expectContains: ["createAuraApp({ resize: true })"], mapping: "approximate" },

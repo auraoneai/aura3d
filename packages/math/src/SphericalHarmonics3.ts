@@ -63,12 +63,15 @@ export class SphericalHarmonics3 {
       .addScaled(coeff[8]!, 0.429043 * (x * x - y * y)); // ( π / 4 ) * 0.546274
   }
 
-  /** nine basis function values at unit `normal` (three `getBasisAt`). */
-  static getBasisAt(normal: Vector3): number[] {
+  /**
+   * nine basis function values at unit `normal` (three `getBasisAt(normal, shBasis)`):
+   * fills and returns `target` when given (three's out-parameter form), otherwise a new array.
+   */
+  static getBasisAt(normal: Vector3, target?: number[]): number[] {
     const x = normal.x;
     const y = normal.y;
     const z = normal.z;
-    const shBasis = new Array<number>(9);
+    const shBasis = target ?? new Array<number>(9);
     // band 0
     shBasis[0] = 0.282095;
     // band 1
@@ -84,8 +87,8 @@ export class SphericalHarmonics3 {
     return shBasis;
   }
 
-  getBasisAt(normal: Vector3): number[] {
-    return SphericalHarmonics3.getBasisAt(normal);
+  getBasisAt(normal: Vector3, target?: number[]): number[] {
+    return SphericalHarmonics3.getBasisAt(normal, target);
   }
 
   add(sh: SphericalHarmonics3): SphericalHarmonics3 {
