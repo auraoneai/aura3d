@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-teleoperator",
-  "version": "4.3.7",
+  "version": "4.5.0",
   "private": true,
   "type": "module",
   "description": "Aura3D 4.0.2 1:1 3D port of Teleoperator (teleoperator.mindblown.ai) — remote-pilot Waymo Jaguar I-PACE, Tesla Cybercab, Cybertruck FSD, Corvette ZR1X, and SpaceX Roadster across San Francisco with L5 self-driving, kerb pickup/dropoff beacons, and multiplayer peer nameplates.",

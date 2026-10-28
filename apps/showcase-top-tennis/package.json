@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-top-tennis",
-  "version": "4.3.7",
+  "version": "4.5.0",
   "private": true,
   "type": "module",
   "description": "Aura3D 1:1 3D port of Top Tennis (toptennisgame.com) — deterministic ball flight, 2-bone IK articulated athletes, 6 courts, singles matches, smash practice, and 32-player tour.",

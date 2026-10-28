@@ -1,6 +1,6 @@
 # Build a game with Aura3D
 
-Version: 4.3.7 (kits: 4.1.0 and later). One page, one path: a complete, mobile-friendly, testable browser game from the library kits, with nothing for you to invent. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
+Version: 4.5.0 (kits: 4.1.0 and later). One page, one path: a complete, mobile-friendly, testable browser game from the library kits, with nothing for you to invent. Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first.
 
 Every snippet below is a file in `docs/agents/samples/coin-dash/`, type-checked against the repository source (`tsc -p docs/agents/samples/coin-dash/tsconfig.json`, strict, `@aura3d/engine`, `@aura3d/engine/game`, `@aura3d/debug`). It has not been run in a browser from this page: run the verification steps in section 8 before you claim anything about it.
 
