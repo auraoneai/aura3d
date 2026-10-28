@@ -42,6 +42,7 @@ export class WebGL2ContextLifecycle {
       this.contextRestoredListener = (() => {
         this.host.contextLost = false;
         this.lastError = null;
+        this.framesEnded = 0;
         // PRD 11 Phase 5: registered restore hooks (GPU object invalidation,
         // C-29 ResourceRegistry.rebuild, C-02 precompile) must resolve BEFORE
         // onDeviceRestored listeners fire (C-29 semantics). With no hooks the
@@ -281,7 +282,35 @@ export class WebGL2ContextLifecycle {
   endFrame(): void {
     this.assertFrame();
     this.frameActive = false;
-    this.lastError = this.readError();
+    if (this.shouldReadFrameError()) this.lastError = this.readError();
+  }
+
+  /** Frames after creation/restore in which the `sampled` mode reads the error every frame. */
+  static readonly ERROR_WARMUP_FRAMES = 30;
+  /** After warm-up, `sampled` mode reads the error on every Nth frame. */
+  static readonly ERROR_SAMPLE_INTERVAL = 60;
+  private framesEnded = 0;
+  private lastEventSignature = -1;
+
+  /**
+   * `gl.getError()` is a synchronous round trip to the GPU process (about 1 ms per frame on the software
+   * rasteriser, 0.1 to 0.3 ms on hardware). `frame` and `strict` read it every frame; `sampled` reads it
+   * when something that can fail happened (the first frames, a resource or program created or released, a
+   * pending error) and otherwise every ERROR_SAMPLE_INTERVAL frames, so a persistent GL fault is still
+   * caught within a second at 60 fps.
+   */
+  private shouldReadFrameError(): boolean {
+    this.framesEnded += 1;
+    const counters = this.host.counters;
+    const signature = this.host.renderTargets.size + this.host.buffers.size + this.host.shaders.size
+      + counters.programCompiles + counters.shaderProgramCreateCount + counters.shadowRenderTargetsAllocated + counters.releasedTextureHandles;
+    const changed = signature !== this.lastEventSignature;
+    this.lastEventSignature = signature;
+    if (this.host.errorCheckMode !== "sampled") return true;
+    return changed
+      || this.lastError !== null
+      || this.framesEnded <= WebGL2ContextLifecycle.ERROR_WARMUP_FRAMES
+      || this.framesEnded % WebGL2ContextLifecycle.ERROR_SAMPLE_INTERVAL === 0;
   }
 
   captureTextureUnit0(): WebGL2TextureUnit0Snapshot {

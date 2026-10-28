@@ -3,6 +3,7 @@
 import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
 import { resolveProductionRuntimeShadowTuning } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
+import { mediaMatches } from "../platform.js";
 import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
 import { createSpotShadowProjection, selectSpotShadowAtlasTier, type CollectedLight, type RendererShadowOptions } from "@aura3d/rendering";
 import { collectPrd02Lights, prd02LightingOn, readLightingKillSwitches, resolveLightingTier, selectShadowedLights, type Prd02LightingKillSwitches } from "./lights.js";
@@ -200,7 +201,7 @@ export function resolveShadowSystemConfig(
  */
 export function prd02ResolveTier(requested: AuraQualityTier | "auto" | undefined): AuraQualityTier {
   if (requested && requested !== "auto") return requested;
-  const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+  const coarse = mediaMatches("(pointer: coarse)");
   return resolveLightingTier(undefined, { quality: { tier: coarse ? "medium" : "high" } });
 }
 

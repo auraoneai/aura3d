@@ -112,7 +112,13 @@ export interface WebGL2DeviceOptions {
   readonly errorCheckMode?: WebGL2ErrorCheckMode;
 }
 
-export type WebGL2ErrorCheckMode = "strict" | "frame";
+/**
+ * `strict`: `gl.getError()` after every uniform upload, vertex-format bind and draw (debugging only).
+ * `frame`: one `getError` per frame.
+ * `sampled` (default): `getError` on the first 30 frames after the device is created or restored, on any frame in which a
+ * GPU resource or program was created or released, every 60th frame, and on every frame while an error is outstanding.
+ */
+export type WebGL2ErrorCheckMode = "strict" | "frame" | "sampled";
 
 export class WebGL2Buffer implements RenderBuffer {
   public disposed = false;
@@ -388,7 +394,7 @@ export class WebGL2Device implements RenderDevice {
     // reports real WebGL errors (read once in `endFrame` and surfaced through
     // `lastError`); callers that need per-operation attribution can still opt into
     // `strict` explicitly.
-    return new WebGL2Device(gl as WebGL2RenderingContext, options.canvas, options.errorCheckMode ?? "frame");
+    return new WebGL2Device(gl as WebGL2RenderingContext, options.canvas, options.errorCheckMode ?? "sampled");
   }
 
   private constructor(
