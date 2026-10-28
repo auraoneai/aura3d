@@ -1,0 +1,61 @@
+{
+  "capability": "effects-color-grade",
+  "version": "4.5.0",
+  "gitSha": "55481c5901ae916fe95b15d046a5c420d36f601a",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/receipts-harness.ts effectScene(): typed GLB subject, floor, reference bar, far colour block, one directional light; fx-card-contrast: tests/browser/receipts-harness.ts cardScene(): eleven evenly lit grey tiles (24..240) on a mid-grey field; off frame = identity colour grade",
+  "frames": [
+    {
+      "file": "evidence/receipts/_shared/4.5.0/fx-baseline.png",
+      "sha256": "077cb3ed3023a124faf94e3dd40fa0e4d0d9556f0ce24a31055328f653f3aabd",
+      "meanLuma": 86.5849,
+      "nonBlackRatio": 0.9852,
+      "label": "effect off (baseline)"
+    },
+    {
+      "file": "evidence/receipts/effects-color-grade/4.5.0/fx-color-grade-desaturate.png",
+      "sha256": "c83a176b32dd2867103a6f3c3ca752669c09ca594199c5c102f009f2699f788b",
+      "meanLuma": 86.6432,
+      "nonBlackRatio": 0.6816,
+      "label": "effect on (fx-color-grade-desaturate)"
+    },
+    {
+      "file": "evidence/receipts/effects-color-grade/4.5.0/fx-card-off.png",
+      "sha256": "4809e3254c67ab6846cc1d8b95392380ca778deb41ebcb965b1e61989268882d",
+      "meanLuma": 125.4,
+      "nonBlackRatio": 1,
+      "label": "effect off (fx-card-off)"
+    },
+    {
+      "file": "evidence/receipts/effects-color-grade/4.5.0/fx-card-contrast.png",
+      "sha256": "9de502bb1a43e6a7f98f857f95b127f0ab542e4d1fca079b195ec11843c93c06",
+      "meanLuma": 129.0608,
+      "nonBlackRatio": 0.8138,
+      "label": "effect on (fx-card-contrast)"
+    }
+  ],
+  "tests": [
+    "tests/browser/effects-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T14:11:06.375Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "baselineHasChroma": true,
+    "chromaCollapsed": true,
+    "changedPixelFractionAtLeast2pc": true,
+    "fx-card-contrast:noRuntimeErrors": true,
+    "fx-card-contrast:drew": true,
+    "fx-card-contrast:offFrameSameChain": true,
+    "fx-card-contrast:lumaSpreadIncreased": true,
+    "fx-card-contrast:changedPixelFractionAtLeast5pc": true,
+    "changedPixelFraction": 0.6582,
+    "meanAbsoluteChannelDelta": 5.6485,
+    "meanLumaDelta": 0.0582,
+    "actualPasses": "tone-mapping,color-grade",
+    "contrastChangedPixelFraction": 0.699,
+    "contrastMeanAbsoluteChannelDelta": 21.861,
+    "contrastLumaStdOff": 56.929,
+    "contrastLumaStdOn": 83.4319
+  }
+}

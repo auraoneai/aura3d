@@ -1,7 +1,7 @@
 {
   "capability": "effects-depth-of-field",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "55481c5901ae916fe95b15d046a5c420d36f601a",
   "renderer": "swiftshader",
   "scene": "tests/browser/receipts-harness.ts effectScene(): typed GLB subject, floor, reference bar, far colour block, one directional light",
   "frames": [
@@ -14,24 +14,24 @@
     },
     {
       "file": "evidence/receipts/effects-depth-of-field/4.5.0/fx-depth-of-field.png",
-      "sha256": "166042f62bd63494059f121b264c1fe41e75556c44552ed3b30a3ebba98ffa5e",
-      "meanLuma": 87.1807,
-      "nonBlackRatio": 0.995,
+      "sha256": "3fd57d6a66563ace5a10ecdd5941cf2c12056bc7782fe5bfabf7214c0af4ae87",
+      "meanLuma": 86.9261,
+      "nonBlackRatio": 0.9931,
       "label": "effect on (fx-depth-of-field)"
     }
   ],
   "tests": [
     "tests/browser/effects-receipts.spec.ts"
   ],
-  "date": "2026-10-28T12:51:19.254Z",
+  "date": "2026-10-28T14:11:20.562Z",
   "checks": {
     "noRuntimeErrors": true,
     "drew": true,
     "edgeEnergyReduced": true,
     "changedPixelFractionAtLeast2pc": true,
-    "changedPixelFraction": 0.0727,
-    "meanAbsoluteChannelDelta": 1.8504,
-    "meanLumaDelta": 0.5958,
+    "changedPixelFraction": 0.0507,
+    "meanAbsoluteChannelDelta": 1.2059,
+    "meanLumaDelta": 0.3412,
     "actualPasses": "tone-mapping,depth-of-field"
   }
 }
