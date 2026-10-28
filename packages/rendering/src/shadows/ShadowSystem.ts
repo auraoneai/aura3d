@@ -26,7 +26,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality";
 import { shadowFitLegacy } from "./shadowLegacy";
 import { fitDirectionalCascades, isOversizeShadowCaster, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
-import { unusedCascadeIndices } from "./CascadeUse";
+import { unusedCascadeIndices, type CascadeUseCamera } from "./CascadeUse";
 import {
   activeDepthFeatures,
   depthDeformIncompatibility,
@@ -81,7 +81,8 @@ export interface ShadowSystemFrame {
    */
   readonly cascadeUse?: {
     readonly receivers: readonly RenderItem[];
-    readonly eye: readonly [number, number, number];
+    /** What the forward pass gets as `cameraViewMatrix` / `cameraPosition` (see `CascadeUseCamera`). */
+    readonly camera: CascadeUseCamera;
   };
 }
 
@@ -186,9 +187,8 @@ export class Prd02ShadowSystem {
     }
     this.lastVariants = [...variantKeys.keys()].sort();
 
-    const viewProjection = "viewProjectionMatrix" in camera ? camera.viewProjectionMatrix : undefined;
-    const skip = frame.cascadeUse && viewProjection
-      ? unusedCascadeIndices(this.lastFits, frame.cascadeUse.receivers, viewProjection, frame.cascadeUse.eye)
+    const skip = frame.cascadeUse
+      ? unusedCascadeIndices(this.lastFits, frame.cascadeUse.receivers, frame.cascadeUse.camera)
       : undefined;
     this.lastSkippedCascades = skip ? [...skip].sort() : [];
     this.renderCascades(casters, resolve, skip);

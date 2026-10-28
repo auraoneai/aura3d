@@ -1137,7 +1137,7 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -1147,7 +1147,7 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
           receivers: items
         });
       frameHooks.addPasses(this.graph, "shadows", items);
@@ -1533,7 +1533,7 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
           receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
@@ -1543,13 +1543,10 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition),
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
           receivers: items
         });
       frameHooks.addPasses(this.graph, "shadows", items);
-      // C-02/T0-06 sync-path warm, keyed on the shadow map this frame actually draws with (warming before it existed compiled no-shadow
-      // variants nothing draws: 2 dead programs on a one-material scene, 4 with a skinned model).
-      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection);
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
         cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],

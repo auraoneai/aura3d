@@ -24,16 +24,18 @@ function receiveShadowDisabled(item: RenderItem): boolean {
   return rendererQrFlags().on("A3D_QR_LIGHTING") && item.receiveShadow === false;
 }
 
-export function selectForwardShadowMap(
-  shadowMap: ForwardShadowMapOptions | undefined,
-  item: RenderItem,
-  cameraViewMatrix?: Float32Array | readonly number[],
-  cameraPosition?: readonly [number, number, number]
-): ForwardShadowMapOptions | undefined {
-  const cascades = shadowMap?.cascades;
-  if (!shadowMap || !cascades || cascades.length === 0) return shadowMap;
-  const center = renderItemWorldCenter(item);
-  const depth = cameraViewMatrix && cameraViewMatrix.length >= 16
+/**
+ * The depth `selectForwardShadowMap` compares against each cascade's far split: view-space depth when the draw has a view matrix, distance to
+ * the eye otherwise, and the first cascade's near when it has neither. Exported so the cascade-skip logic (`shadows/CascadeUse.ts`) evaluates
+ * the exact same expression the forward draw does.
+ */
+export function forwardCascadeSelectionDepth(
+  center: readonly [number, number, number],
+  cameraViewMatrix: Float32Array | readonly number[] | undefined,
+  cameraPosition: readonly [number, number, number] | undefined,
+  fallbackNear: number
+): number {
+  return cameraViewMatrix && cameraViewMatrix.length >= 16
     ? Math.max(0, -(
         cameraViewMatrix[2]! * center[0]
         + cameraViewMatrix[6]! * center[1]
@@ -42,7 +44,18 @@ export function selectForwardShadowMap(
       ))
     : cameraPosition
       ? Math.hypot(center[0] - cameraPosition[0], center[1] - cameraPosition[1], center[2] - cameraPosition[2])
-      : cascades[0]!.near;
+      : fallbackNear;
+}
+
+export function selectForwardShadowMap(
+  shadowMap: ForwardShadowMapOptions | undefined,
+  item: RenderItem,
+  cameraViewMatrix?: Float32Array | readonly number[],
+  cameraPosition?: readonly [number, number, number]
+): ForwardShadowMapOptions | undefined {
+  const cascades = shadowMap?.cascades;
+  if (!shadowMap || !cascades || cascades.length === 0) return shadowMap;
+  const depth = forwardCascadeSelectionDepth(renderItemWorldCenter(item), cameraViewMatrix, cameraPosition, cascades[0]!.near);
   const selected = cascades.find((cascade) => depth <= cascade.far) ?? cascades[cascades.length - 1]!;
   return selected.shadowMap;
 }

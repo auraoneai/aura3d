@@ -272,8 +272,12 @@ export interface Prd02BridgeFrameCamera {
   readonly viewProjectionMatrix: Float32Array | readonly number[];
   readonly near?: number;
   readonly far?: number;
-  /** World-space eye, when the renderer knows it (lets the bridge skip cascades no receiver selects). */
+  /**
+   * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
+   * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
+   */
   readonly eye?: readonly [number, number, number];
+  readonly viewMatrix?: Float32Array | readonly number[];
 }
 
 /**
@@ -282,12 +286,13 @@ export interface Prd02BridgeFrameCamera {
  */
 export function shadowFrameCamera(
   viewProjection: Float32Array | readonly number[] | undefined,
-  eye: readonly [number, number, number] | undefined
+  eye: readonly [number, number, number] | undefined,
+  viewMatrix?: Float32Array | readonly number[]
 ): Prd02BridgeFrameCamera | undefined {
   if (!viewProjection || viewProjection.length < 16) return undefined;
   const range = eye ? clipRangeFromViewProjection(viewProjection, eye) : null;
-  const withEye = eye ? { eye } : {};
-  return range ? { viewProjectionMatrix: viewProjection, near: range.near, far: range.far, ...withEye } : { viewProjectionMatrix: viewProjection, ...withEye };
+  const extra = { ...(eye ? { eye } : {}), ...(viewMatrix ? { viewMatrix } : {}) };
+  return range ? { viewProjectionMatrix: viewProjection, near: range.near, far: range.far, ...extra } : { viewProjectionMatrix: viewProjection, ...extra };
 }
 
 /**
@@ -323,9 +328,10 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   const near = camera.near ?? 0.1;
   // Only the legacy per-item cascade selection is known to skip safely: a receiver on the lookup chunk picks per fragment.
   const eye = input.frameCamera?.eye;
+  const viewMatrix = input.frameCamera?.viewMatrix;
   const cascadeUse = (input.device as { skipUnusedShadowCascades?: boolean }).skipUnusedShadowCascades === true
-    && eye !== undefined && input.receivers !== undefined && !prd02LookupConsumerExists(input.receivers)
-    ? { receivers: input.receivers, eye }
+    && (eye !== undefined || viewMatrix !== undefined) && input.receivers !== undefined && !prd02LookupConsumerExists(input.receivers)
+    ? { receivers: input.receivers, camera: { ...(eye ? { eye } : {}), ...(viewMatrix ? { viewMatrix } : {}) } }
     : undefined;
   // The fitter lerps between the VP's near/far corners, so it gets the
   // camera's real clip range; `config.maxDistance` caps the cascade splits.
