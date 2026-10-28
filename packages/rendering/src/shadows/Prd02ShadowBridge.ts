@@ -24,6 +24,7 @@ import type { CollectedLight } from "../LightCollector";
 import type { RenderDevice } from "../RenderDevice";
 import { Sampler } from "../Sampler";
 import { createShadowFilterKernel } from "../ShadowMap";
+import { isShadowPcfTapTier } from "./ShadowFilterTier";
 import { TextureBinding } from "../TextureBinding";
 import type { QrFlags } from "../contracts/core";
 import type { AuraQualityTierSettings } from "../contracts/quality";
@@ -58,6 +59,7 @@ interface Prd02ShadowsConfigLike {
   readonly strength?: number;
   readonly bias?: number;
   readonly normalBias?: number;
+  readonly pcfTapTier?: number;
 }
 
 interface ShadowOptionsLike {
@@ -113,7 +115,8 @@ export function prd02ShadowConfig(
     filter,
     strength: compiled?.strength ?? options?.strength ?? 1,
     bias: compiled?.bias ?? options?.bias ?? 0,
-    normalBias: compiled?.normalBias ?? DEFAULT_NORMAL_BIAS_TEXELS
+    normalBias: compiled?.normalBias ?? DEFAULT_NORMAL_BIAS_TEXELS,
+    ...(isShadowPcfTapTier(compiled?.pcfTapTier) ? { pcfTapTier: compiled.pcfTapTier } : {})
   };
 }
 
@@ -361,6 +364,7 @@ function bridgeShadowMap(
     texelSize: [texel, texel],
     filterKernel: config.filter === "hard"
       ? createShadowFilterKernel({ filter: "none" })
-      : createShadowFilterKernel({ filter: "pcf", pcfRadius: 1, pcfSamples: 9 })
+      : createShadowFilterKernel({ filter: "pcf", pcfRadius: 1, pcfSamples: 9 }),
+    ...(config.pcfTapTier === undefined ? {} : { pcfTapTier: config.pcfTapTier })
   };
 }

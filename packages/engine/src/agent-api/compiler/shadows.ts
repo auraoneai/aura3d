@@ -5,7 +5,7 @@ import { resolveProductionRuntimeShadowTuning } from "../compiler/observations.j
 import { groups } from "../nodes/groups.js";
 import { mediaMatches } from "../platform.js";
 import { resolveRendererSceneCategory } from "../rendererDiagnostics.js";
-import { createSpotShadowProjection, selectSpotShadowAtlasTier, type CollectedLight, type RendererShadowOptions } from "@aura3d/rendering";
+import { createSpotShadowProjection, resolveShadowPcfTapTier, selectSpotShadowAtlasTier, type CollectedLight, type RendererShadowOptions, type ShadowPcfTapTier, type ShadowPcfTapTierDecision } from "@aura3d/rendering";
 import { collectPrd02Lights, prd02LightingOn, readLightingKillSwitches, resolveLightingTier, selectShadowedLights, type Prd02LightingKillSwitches } from "./lights.js";
 
 /** PRD-02 flag path returns a RendererShadowOptions-shaped view of the
@@ -131,6 +131,10 @@ export interface ShadowSystemConfig {
   /** World-space normal offset = 1.5 × texel world size. */
   readonly normalBias: number;
   readonly sceneRadius: number;
+  /** PCF tap-count cap (PRD-2 WP-3): 32 keeps the authored kernel, 16 / 8 reduce it. Undefined = `resolveShadowPcfTapTier` default. */
+  readonly pcfTapTier?: ShadowPcfTapTier;
+  /** Why `pcfTapTier` was chosen (diagnostics). */
+  readonly pcfTapReason?: ShadowPcfTapTierDecision["reason"];
 }
 
 const FILTER_BY_TIER: Readonly<Record<"pcf2" | "pcf3" | "pcf5", ShadowSystemConfig["filter"]>> = {
@@ -157,6 +161,40 @@ export function denseShadowBudgetEnabled(): boolean {
     // no location (node, workers): fall through to the global
   }
   return value !== "off";
+}
+
+/**
+ * Explicit PCF tap tier from `globalThis.__A3D_SHADOW_TAPS__` or `?shadowtaps=32|16|8` (URL wins); anything else is ignored.
+ * Overrides the quality-tier and dense-scene defaults, for A/B runs and authors who want a fixed tier.
+ */
+export function shadowTapTierOverride(): ShadowPcfTapTier | undefined {
+  const g = globalThis as { __A3D_SHADOW_TAPS__?: unknown; location?: { search?: string } };
+  let value: unknown = g.__A3D_SHADOW_TAPS__;
+  try {
+    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("shadowtaps") : null;
+    if (q !== null) value = q;
+  } catch {
+    // no location (node, workers): fall through to the global
+  }
+  const n = typeof value === "string" ? Number(value) : value;
+  return n === 32 || n === 16 || n === 8 ? n : undefined;
+}
+
+/**
+ * Opt-in for the dense-scene PCF default (8 taps from DENSE_SHADOW_CASTER_INSTANCES casters): `globalThis.__A3D_DENSE_SHADOW_TAPS__ = "on"`
+ * or `?densetaps=on` (URL wins). Off by default: the 8-tap kernel moved the 18,000-instance forest by 2% (inside run-to-run noise) and
+ * changed pixels by up to 9/255 in the interior (evidence/forest-10k/shadow-tier/README.md), so it stays opt-in until a scene needs it.
+ */
+export function denseShadowTapTierEnabled(): boolean {
+  const g = globalThis as { __A3D_DENSE_SHADOW_TAPS__?: string; location?: { search?: string } };
+  let value = g.__A3D_DENSE_SHADOW_TAPS__;
+  try {
+    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("densetaps") : null;
+    if (q === "on" || q === "off") value = q;
+  } catch {
+    // no location (node, workers): fall through to the global
+  }
+  return value === "on";
 }
 
 /** Total instances across shadow-casting instanced primitive nodes (nodes parked at y <= -50 excluded, like the scene radius). */
@@ -205,7 +243,9 @@ export function resolveShadowSystemConfig(
   const radius = sceneShadowRadius(snapshot);
   const sunOptions = descriptors.find((d) => d.shadowRequested && !d.shadowDisabled)?.shadowOptions;
   const cascadesOpt = sunOptions?.cascades;
-  const casterInstances = (cascadesOpt === undefined || cascadesOpt === "auto") && denseShadowBudgetEnabled() ? shadowCastingInstanceCount(snapshot) : 0;
+  const denseBudget = denseShadowBudgetEnabled();
+  const allCasterInstances = denseBudget ? shadowCastingInstanceCount(snapshot) : 0;
+  const casterInstances = (cascadesOpt === undefined || cascadesOpt === "auto") && denseBudget ? allCasterInstances : 0;
   const dense = casterInstances >= DENSE_INSTANCED_CASTER_CASCADE_CAP_INSTANCES && settings.shadow.cascades > 2 && radius > 15;
   // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): this page's cascade count was capped by the dense-instance budget.
   if (dense) (globalThis as { __A3D_DENSE_SHADOW_CAP__?: unknown }).__A3D_DENSE_SHADOW_CAP__ = { instances: casterInstances, tierCascades: settings.shadow.cascades, cascades: 2 };
@@ -213,6 +253,9 @@ export function resolveShadowSystemConfig(
     ? (radius <= 15 ? 1 : (dense ? (Math.min(settings.shadow.cascades, 2) as 1 | 2 | 3 | 4) : settings.shadow.cascades))
     : (cascadesOpt as 1 | 2 | 3 | 4);
   const mapSize = (sunOptions?.mapSize ?? settings.shadow.mapSize) as 1024 | 2048 | 4096;
+  const tapTier = resolveShadowPcfTapTier({ quality: tier, casterInstances: allCasterInstances, requested: shadowTapTierOverride(), denseDefault: denseShadowTapTierEnabled() });
+  // Evidence for audits and the remote A/B (tests/browser/shadow-filter-tier-ab.spec.ts): the tap tier this page resolved.
+  (globalThis as { __A3D_SHADOW_TAP_TIER__?: unknown }).__A3D_SHADOW_TAP_TIER__ = { tier: tapTier.tier, reason: tapTier.reason, casterInstances: allCasterInstances, quality: tier };
   const texelWorld = (radius * 2) / mapSize;
   const enabled = descriptors.some((d) => d.shadowRequested && !d.shadowDisabled);
   return {
@@ -226,7 +269,9 @@ export function resolveShadowSystemConfig(
     strength: 1.0,
     bias: sunOptions?.bias ?? 0,
     normalBias: sunOptions?.normalBias ?? 1.5 * texelWorld,
-    sceneRadius: radius
+    sceneRadius: radius,
+    pcfTapTier: tapTier.tier,
+    pcfTapReason: tapTier.reason
   };
 }
 

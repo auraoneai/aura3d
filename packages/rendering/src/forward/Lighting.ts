@@ -1,6 +1,7 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from ForwardPass.ts; 0 changed logic lines.
 
 import type { ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
+import { applyShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
 import { MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
 import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
 import { MAX_DIRECT_LIGHTS, recordAuraLightsCounters } from "../LightUniforms.js";
@@ -125,7 +126,7 @@ export function applyForwardShadowMapUniforms(
       texelSize: Array.from(texelSize)
     });
   }
-  const filterKernel = shadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
+  const filterKernel = applyShadowPcfTapTier(shadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL, shadowMap.pcfTapTier);
   const pcfSamples = packForwardShadowPcfSamples(filterKernel, item.label);
   const shadowed = !receiveShadowDisabled(item);
   uniforms.set("u_shadowMapTexture", shadowMap.texture);
