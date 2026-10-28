@@ -104,28 +104,6 @@
       <h1 class="home-h1" id="hero-title">A lit 3D product in 10 lines of TypeScript.</h1>
       <p class="home-hero-lede">Aura3D is the TypeScript engine for agent-written browser 3D that ships the whole stack: lighting looks, typed and licensed assets, Rapier physics, Recast navigation, a game kit and deploy checks. The three.js version of the same scene is 38 lines before orbit controls.</p>
 
-      <div class="code-panel code-panel-aura hero-code">
-        <div class="code-panel-head">
-          <span class="code-file">main.ts</span>
-          <span class="code-count">10 lines</span>
-          <button class="code-copy" type="button" data-copy-target="#hero-code-snippet" aria-label="Copy the hero scene code">
-            <span data-copy-label>Copy</span>
-          </button>
-        </div>
-        <pre class="code-body" id="hero-code-snippet" tabindex="0" role="group" aria-label="Aura3D scene in 10 lines of TypeScript"><code><span class="k">import</span> { camera, createAuraApp, interactions, looks, model, scene } <span class="k">from</span> <span class="s">&quot;@aura3d/engine&quot;</span>;
-<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">&quot;./aura-assets&quot;</span>;
-
-<span class="f">createAuraApp</span>(<span class="s">&quot;#app&quot;</span>, {
-  scene: <span class="f">scene</span>()
-    .<span class="f">add</span>(looks.<span class="f">preset</span>(<span class="s">&quot;product-studio&quot;</span>))
-    .<span class="f">add</span>(<span class="f">model</span>(assets.product, { name: <span class="s">&quot;product&quot;</span>, targetHeight: <span class="n">1.6</span>, castShadow: <span class="k">true</span> }))
-    .<span class="f">add</span>(interactions.<span class="f">orbit</span>({ target: <span class="s">&quot;product&quot;</span> }))
-    .<span class="f">camera</span>(camera.<span class="f">frameAsset</span>(assets.product, { targetHeight: <span class="n">1.6</span> })),
-  ...looks.<span class="f">appOptions</span>(<span class="s">&quot;product-studio&quot;</span>)
-});</code></pre>
-      </div>
-      <p class="hero-code-note">Line counts include imports and skip blank and comment lines. The three.js version is in <code>tools/bench-vs-threejs/tagline/</code> in the Aura3D repo.</p>
-
       <div class="install-bar">
         <span class="install-dollar" aria-hidden="true">$</span>
         <code class="install-code">npx create-aura3d@4.3.7 my-scene --template product-viewer</code>
@@ -165,6 +143,30 @@
       </div>
       <figcaption class="home-hero-caption">Poster first. The live game starts only when you press Play.</figcaption>
     </figure>
+
+    <div class="home-hero-code">
+      <div class="code-panel code-panel-aura hero-code">
+        <div class="code-panel-head">
+          <span class="code-file">main.ts</span>
+          <span class="code-count">10 lines</span>
+          <button class="code-copy" type="button" data-copy-target="#hero-code-snippet" aria-label="Copy the hero scene code">
+            <span data-copy-label>Copy</span>
+          </button>
+        </div>
+        <pre class="code-body" id="hero-code-snippet" tabindex="0" role="group" aria-label="Aura3D scene in 10 lines of TypeScript"><code><span class="k">import</span> { camera, createAuraApp, interactions, looks, model, scene } <span class="k">from</span> <span class="s">&quot;@aura3d/engine&quot;</span>;
+<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">&quot;./aura-assets&quot;</span>;
+
+<span class="f">createAuraApp</span>(<span class="s">&quot;#app&quot;</span>, {
+  scene: <span class="f">scene</span>()
+    .<span class="f">add</span>(looks.<span class="f">preset</span>(<span class="s">&quot;product-studio&quot;</span>))
+    .<span class="f">add</span>(<span class="f">model</span>(assets.product, { name: <span class="s">&quot;product&quot;</span>, targetHeight: <span class="n">1.6</span>, castShadow: <span class="k">true</span> }))
+    .<span class="f">add</span>(interactions.<span class="f">orbit</span>({ target: <span class="s">&quot;product&quot;</span> }))
+    .<span class="f">camera</span>(camera.<span class="f">frameAsset</span>(assets.product, { targetHeight: <span class="n">1.6</span> })),
+  ...looks.<span class="f">appOptions</span>(<span class="s">&quot;product-studio&quot;</span>)
+});</code></pre>
+      </div>
+      <p class="hero-code-note">Line counts include imports and skip blank and comment lines. The three.js version is in <code>tools/bench-vs-threejs/tagline/</code> in the Aura3D repo.</p>
+    </div>
   </div>
 </section>
 

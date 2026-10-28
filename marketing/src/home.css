@@ -376,7 +376,8 @@
 .home .home-btn-text:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .home .hero-code { margin-bottom: 8px; }
-.home .hero-code .code-body { font-size: 12.5px; white-space: pre-wrap; overflow-wrap: break-word; overflow-x: visible; }
+.home .hero-code .code-body { font-size: 12.5px; }
+.home .home-hero-code { grid-column: 1 / -1; width: 100%; max-width: 860px; min-width: 0; }
 .home .hero-code-note {
   max-width: 62ch;
   margin: 0 0 24px;
@@ -799,7 +800,7 @@
 .home .code-compare-equal .code-panel,
 .home .code-compare-equal .code-collapse { height: 480px; }
 .home .code-compare-equal .code-collapse { min-width: 0; display: block; }
-.home .code-compare-equal .code-collapse .code-panel { height: 100%; }
+.home .code-compare-equal .code-collapse .code-panel { height: 480px; }
 .home .code-compare-equal .code-body { flex: 1 1 auto; overflow: auto; }
 .home .code-collapse-toggle { display: none; }
 .home .code-panel {
@@ -1430,6 +1431,7 @@
   }
   .home .home-hero-media { order: 1; position: static; }
   .home .home-hero-copy { order: 2; }
+  .home .home-hero-code { order: 3; max-width: none; }
   .home .sdk-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .home .pillar-grid { grid-template-columns: minmax(0, 1fr); }
   .home .pillar,
