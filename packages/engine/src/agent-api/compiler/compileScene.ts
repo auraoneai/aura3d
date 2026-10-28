@@ -31,6 +31,7 @@ import type {
   CompilerImpl
 } from "../../contracts/compiler.js";
 import { groups } from "../nodes/groups.js";
+import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
 import { isRenderableModelNode } from "./observations.js";
 import { createAssetProvenance } from "../diagnostics.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
@@ -359,6 +360,10 @@ async function compileSceneReal(snapshot: AuraSceneSnapshot, ctx: SceneCompileCo
 
   const handledNodes: { node: AuraSceneNode; handler: AnyNodeHandler }[] = [];
   const contributions = createContributions();
+  // Beat-three.js WP-S.1: options a builder was given but does not read. Non-throwing (strict mode throws via degrade).
+  for (const { node, message } of ignoredOptionMessages(flattened)) {
+    recordDegrade({ code: "option-ignored", nodeId: runtimeIdOf(node), message });
+  }
   for (const node of flattened) {
     const kind = String((node as { kind?: string }).kind ?? "");
     if (!isKnownNodeKind(kind)) {

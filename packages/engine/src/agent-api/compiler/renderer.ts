@@ -5,6 +5,7 @@ import { colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba } from 
 import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
+import { ignoredOptionMessages } from "../nodes/optionDiagnostics.js";
 import { createRendererDiagnosticReport } from "../rendererDiagnostics.js";
 import { clamp01, createViewProjection } from "../sceneMath.js";
 import { resolveCameraFrame } from "./camera.js";
@@ -331,7 +332,7 @@ export async function createProductionRuntimeSceneRenderer(
           ...latestFeatures
             .filter((feature) => feature.state !== "supported")
             .map((feature) => `Production runtime feature ${feature.id} is ${feature.state}: ${feature.detail}`),
-          ...new Set([...skippedInlineModelWarnings, ...runtimeWarnings]),
+          ...new Set([...skippedInlineModelWarnings, ...(flagsOn ? [] : ignoredOptionMessages(flattened).map((entry) => entry.message)), ...runtimeWarnings]),
           ...textureUpgradeWarnings,
           ...streamingWarnings,
           ...hdriWarnings

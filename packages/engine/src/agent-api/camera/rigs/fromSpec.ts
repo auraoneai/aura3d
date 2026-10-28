@@ -41,6 +41,8 @@ export interface LegacyCameraSpec {
   readonly near?: number;
   readonly far?: number;
   readonly distance?: number;
+  /** Orbit mode: orbit speed in radians per second around the target. */
+  readonly autoRotate?: number;
   readonly from?: AuraVec3;
   readonly to?: AuraVec3;
   readonly seconds?: number;
@@ -93,6 +95,15 @@ function add3(l: AuraVec3, r: AuraVec3): AuraVec3 {
   return [l[0] + r[0], l[1] + r[1], l[2] + r[2]];
 }
 
+/** Rotates `eye` about the vertical axis through `target` by `angle` radians (orbit `autoRotate`; mirrors compiler/camera.ts). */
+function orbitAround(eye: AuraVec3, target: AuraVec3, angle: number): AuraVec3 {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const dx = eye[0] - target[0];
+  const dz = eye[2] - target[2];
+  return [target[0] + dx * cos + dz * sin, eye[1], target[2] - dx * sin + dz * cos];
+}
+
 /** resolveCameraTarget — runtime target, then scene-node, then spec.target. */
 function resolveTarget(spec: LegacyCameraSpec, ctx: AuraCameraRigContext, deps: LegacySpecRigDeps): AuraVec3 {
   const runtime = deps.runtimeTarget?.(ctx);
@@ -123,6 +134,7 @@ function resolveEye(
   if (spec.mode === "orbit") {
     const distance = spec.distance ?? 4;
     eye = spec.position ?? [target[0] + distance * 0.62, target[1] + distance * 0.42, target[2] + distance * 0.78];
+    if (spec.autoRotate) eye = orbitAround(eye, target, spec.autoRotate * (spec.captureTime ?? timeMs / 1000));
   }
   if (spec.mode === "follow") {
     const distance = spec.distance ?? 4;
@@ -176,7 +188,7 @@ export class LegacySpecRig implements AuraCameraRig {
    * position/target spec is a fixed pose and may idle out once settled.
    */
   get continuous(): boolean {
-    return Boolean(this.spec.targetNode) || this.spec.mode === "follow";
+    return Boolean(this.spec.targetNode) || this.spec.mode === "follow" || (this.spec.mode === "orbit" && Boolean(this.spec.autoRotate));
   }
 
   private depsFor(ctx: AuraCameraRigContext): LegacySpecRigDeps {
