@@ -540,16 +540,29 @@ function quatToEuler(rotation: readonly [number, number, number, number]): AuraV
   return [roll, pitch, yaw];
 }
 
+/**
+ * Collider for a capsule (or cylinder, approximated by a capsule) primitive whose
+ * physics spec names no dimensions. The primitive's `size` is [diameter, total height,
+ * diameter], so the collider must span exactly that: radius is half the diameter and the
+ * cylindrical half-height is the total half-height minus one cap radius. A short, wide
+ * body clamps its radius to half its height and degenerates to a sphere.
+ */
+function derivedCapsule(size: AuraVec3, scale: AuraVec3): PhysicsShape {
+  const halfTotal = Math.max(0.02, size[1] * scale[1] * 0.5);
+  const radius = Math.min(Math.max(size[0] * scale[0], size[2] * scale[2]) * 0.5, halfTotal);
+  return PhysicsShapeFactory.capsule(Math.max(0.01, radius), Math.max(0, halfTotal - radius));
+}
+
 export function resolveNodePhysicsShape(node: AuraModelNode | AuraPrimitiveNode, spec: AuraNodePhysicsSpec): PhysicsShape {
   if (typeof spec.shape === "object" || spec.halfExtents || spec.radius || spec.halfHeight || spec.shape) return resolveAgentPhysicsShape(spec);
   if (node.kind === "primitive") {
     const size = primitiveSize(node);
     const scale = scaleToVec3(node.scale);
     if (node.primitive === "sphere") return PhysicsShapeFactory.sphere(Math.max(size[0] * scale[0], size[1] * scale[1], size[2] * scale[2]) * 0.5);
-    if (node.primitive === "capsule") return PhysicsShapeFactory.capsule(Math.max(size[0] * scale[0], size[2] * scale[2]) * 0.25, Math.max(0.1, size[1] * scale[1] * 0.5));
+    if (node.primitive === "capsule") return derivedCapsule(size, scale);
     if (node.primitive === "torus") return PhysicsShapeFactory.sphere(Math.max(size[0] * scale[0], size[1] * scale[1], size[2] * scale[2]) * 0.5);
     if (node.primitive === "plane") return PhysicsShapeFactory.plane();
-    if (node.primitive === "cylinder") return PhysicsShapeFactory.capsule(Math.max(size[0] * scale[0], size[2] * scale[2]) * 0.25, Math.max(0.1, size[1] * scale[1] * 0.5));
+    if (node.primitive === "cylinder") return derivedCapsule(size, scale);
     return PhysicsShapeFactory.box(Math.max(0.02, size[0] * scale[0] * 0.5), Math.max(0.02, size[1] * scale[1] * 0.5), Math.max(0.02, size[2] * scale[2] * 0.5));
   }
   const bounds = node.asset.bounds ?? [1, 1, 1] as const;
