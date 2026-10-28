@@ -15,6 +15,7 @@ import { ShaderModule } from "./ShaderModule";
 import { formatShaderFailure, isShaderFailureError, reportShaderFailure, resolveShaderFailureMode, type ShaderFailureMode } from "./ShaderFailures";
 import { createLeanCoreShaderLibrary, type ShaderLibrary } from "./ShaderLibraryCore";
 import { type ShadowFilterKernel } from "./ShadowMap";
+import type { ShadowPcfTapTier } from "./shadows/ShadowFilterTier";
 import type { ForwardSpotShadowMapOptions } from "./shadows/SpotShadowMaps";
 import { TextureBinding } from "./TextureBinding";
 import { UnlitMaterial } from "./UnlitMaterial";
@@ -238,6 +239,11 @@ export interface ForwardShadowMapOptions {
   readonly normalBias?: number;
   readonly texelSize?: readonly [number, number];
   readonly filterKernel?: ShadowFilterKernel;
+  /**
+   * PCF tap-count cap (32 / 16 / 8). A kernel with more taps is reduced to this many at upload; a kernel
+   * within the cap, and an unset tier, are used as authored (PRD-2 WP-3, `shadows/ShadowFilterTier.ts`).
+   */
+  readonly pcfTapTier?: ShadowPcfTapTier;
   readonly pointLight?: ForwardPointShadowMapOptions;
   /**
    * B1 spot shadow path (muse3jsparity-PRD): perspective spot shadow uniforms.

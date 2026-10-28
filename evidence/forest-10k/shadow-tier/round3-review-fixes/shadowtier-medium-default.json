@@ -1,0 +1,1 @@
+{"kind":"medium-default","generatedUtc":"2026-10-28T07:09:11.408Z","result":{"route":"forest (coarse pointer)","tiers":{"pinned32":{"tier":32,"reason":"explicit","casterInstances":18000,"quality":"medium"},"default":{"tier":32,"reason":"default","casterInstances":18000,"quality":"medium"}},"defaultVs32":{"meanAbs":0,"interiorMax":0,"over6Share":0,"edgeMax":0},"errors":[]}}

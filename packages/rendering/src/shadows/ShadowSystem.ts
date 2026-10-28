@@ -13,6 +13,7 @@
  * pass multiplies world positions by before comparing.
  */
 
+import type { ShadowPcfTapTier } from "./ShadowFilterTier";
 import { DepthPass } from "../DepthPass";
 import type { RenderDevice, RenderTarget, RenderTargetDescriptor } from "../RenderDevice";
 import type { Texture } from "../Texture";
@@ -48,6 +49,8 @@ export interface ShadowSystemConfigInput {
   readonly strength: number;
   readonly bias: number;
   readonly normalBias: number;
+  /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
+  readonly pcfTapTier?: ShadowPcfTapTier;
 }
 
 export interface ShadowSystemSun {

@@ -1,6 +1,7 @@
 // PR 0b-2 carve-out (CONTRACTS.md §3.3) — verbatim move from ForwardPass.ts; 0 changed logic lines.
 
 import type { ForwardPointShadowMapOptions, ForwardShadowMapOptions } from "../ForwardPass.js";
+import { applyShadowPcfTapTier, type ShadowPcfTapTier } from "../shadows/ShadowFilterTier.js";
 import { MAX_FORWARD_SHADOW_PCF_SAMPLES, identityMatrix, isFiniteArrayLike, toMat4Uniform } from "../ForwardPass.js";
 import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "../ClusteredForwardLighting.js";
 import { MAX_DIRECT_LIGHTS, recordAuraLightsCounters } from "../LightUniforms.js";
@@ -65,8 +66,8 @@ export function applyForwardShadowMapUniforms(
   if (!requiredUniforms.every((uniform) => shader.reflection.uniforms.has(uniform))) {
     return;
   }
-  applyForwardPointShadowMapUniforms(shadowMap?.pointLight, item, shader, uniforms);
-  applyForwardSpotShadowMapUniforms(shadowMap?.spotLight, item, shader, uniforms);
+  applyForwardPointShadowMapUniforms(shadowMap?.pointLight, item, shader, uniforms, shadowMap?.pcfTapTier);
+  applyForwardSpotShadowMapUniforms(shadowMap?.spotLight, item, shader, uniforms, shadowMap?.pcfTapTier);
   if (!shadowMap) {
     uniforms.set("u_shadowMapTexture", new TextureBinding({ name: "u_shadowMapTexture", required: false }));
     uniforms.set("u_shadowMapEnabled", 0);
@@ -125,7 +126,7 @@ export function applyForwardShadowMapUniforms(
       texelSize: Array.from(texelSize)
     });
   }
-  const filterKernel = shadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
+  const filterKernel = applyShadowPcfTapTier(shadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL, shadowMap.pcfTapTier);
   const pcfSamples = packForwardShadowPcfSamples(filterKernel, item.label);
   const shadowed = !receiveShadowDisabled(item);
   uniforms.set("u_shadowMapTexture", shadowMap.texture);
@@ -144,7 +145,8 @@ export function applyForwardPointShadowMapUniforms(
   pointShadowMap: ForwardPointShadowMapOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  pcfTapTier?: ShadowPcfTapTier
 ): void {
   const requiredUniforms = [
     "u_pointShadowMapTexture",
@@ -231,7 +233,7 @@ export function applyForwardPointShadowMapUniforms(
       texelSize: Array.from(texelSize)
     });
   }
-  const filterKernel = pointShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
+  const filterKernel = applyShadowPcfTapTier(pointShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL, pcfTapTier);
   const pointShadowed = !receiveShadowDisabled(item);
   uniforms.set("u_pointShadowMapTexture", pointShadowMap.texture);
   uniforms.set("u_pointShadowMapEnabled", pointShadowed ? 1 : 0);
@@ -251,7 +253,8 @@ export function applyForwardSpotShadowMapUniforms(
   spotShadowMap: ForwardSpotShadowMapOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  pcfTapTier?: ShadowPcfTapTier
 ): void {
   const requiredUniforms = [
     "u_spotShadowMapTexture",
@@ -356,7 +359,7 @@ export function applyForwardSpotShadowMapUniforms(
       texelSize: Array.from(texelSize)
     });
   }
-  const filterKernel = spotShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL;
+  const filterKernel = applyShadowPcfTapTier(spotShadowMap.filterKernel ?? DEFAULT_FORWARD_SHADOW_FILTER_KERNEL, pcfTapTier);
   const spotShadowed = !receiveShadowDisabled(item);
   uniforms.set("u_spotShadowMapTexture", spotShadowMap.texture);
   uniforms.set("u_spotShadowMapEnabled", spotShadowed ? 1 : 0);

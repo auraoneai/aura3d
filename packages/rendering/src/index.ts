@@ -871,6 +871,8 @@ export { CLUSTER_TILE_SIZE, MAX_LIGHTS_PER_CLUSTER, createClusteredForwardLighti
 export type { ClusteredForwardFallbackPolicy, ClusteredForwardLightingDiagnostics, ClusteredForwardLightingOptions, ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 export { DepthMaterial, DepthPass } from "./DepthPass";
 export type { DepthPassOptions } from "./DepthPass";
+export { DENSE_SHADOW_CASTER_INSTANCES, QUALITY_TIER_SHADOW_PCF_TAPS, SHADOW_PCF_TAP_TIERS, applyShadowPcfTapTier, isShadowPcfTapTier, resolveShadowPcfTapTier } from "./shadows/ShadowFilterTier";
+export type { ShadowPcfTapTier, ShadowPcfTapTierDecision, ShadowPcfTapTierReason } from "./shadows/ShadowFilterTier";
 export { ShadowMap, computeShadowDepthBias, createPoissonDiskShadowKernel, createShadowAtlasLayout, createShadowFilterKernel } from "./ShadowMap";
 export type {
   ShadowAtlasAllocation,
