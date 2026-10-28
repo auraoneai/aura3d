@@ -10,7 +10,7 @@ import { camera } from "../nodes/camera.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
-import { resolveAppRenderPath, setDirectRenderPath, wantsPreservedDrawingBuffer } from "./renderPath.js";
+import { resolveAppRenderPath, setDirectRenderPath, setFusedBloomPasses, wantsPreservedDrawingBuffer } from "./renderPath.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
@@ -85,6 +85,7 @@ export async function startProductionRender(
   const renderPath = resolveAppRenderPath(snapshot, options, qrFlags);
   diagnosticsState.renderPath = renderPath.report;
   setDirectRenderPath(canvas, renderPath.direct);
+  setFusedBloomPasses(canvas, renderPath.report.quality === "auto" || renderPath.report.quality === "cinematic");
   const renderer = await createProductionSceneRenderer(
     canvas,
     snapshot,

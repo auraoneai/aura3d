@@ -2,7 +2,7 @@
 
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
 import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
-import { isDirectRenderPath } from "../app/renderPath.js";
+import { isDirectRenderPath, isFusedBloomPasses } from "../app/renderPath.js";
 import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
@@ -120,6 +120,8 @@ export async function createProductionRuntimeSceneRenderer(
     qrFlags: flags
   });
   markTiming("a3d:mount:renderer-create:resolved");
+  // quality auto / cinematic: allow look-neutral bloom pass fusion on the WebGL2 device (`production` never does).
+  if (isFusedBloomPasses(canvas)) (productionRenderer.device as unknown as { bloomFusedPasses?: boolean }).bloomFusedPasses = true;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
   let disposeHdriEnvironment: (() => void) | null = null;
