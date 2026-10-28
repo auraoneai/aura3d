@@ -1997,9 +1997,13 @@ function validateQuantizedAttributeComponentType(
 export interface SkinWeightNormalizationStats {
   degenerate: number;
   rescaled: number;
+  /** Vertices whose weight sum was within `SKIN_WEIGHT_QUANTIZATION_TOLERANCE` of 1 (quantization noise); rescaled silently. */
+  withinTolerance?: number;
 }
 
 const SKIN_WEIGHT_DEGENERATE_EPSILON = 1e-6;
+/** Sums this close to 1 come from 8/16-bit weight quantization on unmodified assets, not authoring errors. */
+const SKIN_WEIGHT_QUANTIZATION_TOLERANCE = 1e-3;
 
 /**
  * Normalize a single vertex's 4 skin weights so they sum to 1.
@@ -2033,7 +2037,10 @@ export function normalizeSkinWeights(
   if (Math.abs(sum - 1) <= 1e-5) {
     return sanitized as readonly [number, number, number, number];
   }
-  if (stats) stats.rescaled += 1;
+  if (stats) {
+    if (Math.abs(sum - 1) <= SKIN_WEIGHT_QUANTIZATION_TOLERANCE) stats.withinTolerance = (stats.withinTolerance ?? 0) + 1;
+    else stats.rescaled += 1;
+  }
   return [
     sanitized[0] / sum,
     sanitized[1] / sum,
@@ -2047,7 +2054,13 @@ function reportSkinWeightNormalization(
   primitiveIndex: number,
   stats: SkinWeightNormalizationStats
 ): void {
-  if (stats.degenerate === 0 && stats.rescaled === 0) return;
+  if (stats.degenerate === 0 && stats.rescaled === 0) {
+    // Quantization noise only (sum within 1e-3 of 1): debug level, never a console warning.
+    if ((stats.withinTolerance ?? 0) > 0 && typeof console !== "undefined" && typeof console.debug === "function") {
+      console.debug(`glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0: ${stats.withinTolerance} vertex(es) within 1e-3 of sum 1 renormalized`);
+    }
+    return;
+  }
   if (typeof console === "undefined" || typeof console.warn !== "function") return;
   console.warn(
     `glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0 normalized: ` +

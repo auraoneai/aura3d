@@ -243,9 +243,19 @@ export function createProductionRuntimePostprocessObservation(
   };
 }
 
+export interface ProductionRuntimeCollectedLightsOptions {
+  /**
+   * A hemisphere light is non-punctual irradiance: it reaches the renderer through the environment path
+   * (`createProductionRuntimeEnvironment`), never as a direct light. Left unset the legacy descriptor
+   * builder below keeps turning it into a rect spot proxy, which the flag-off goldens pin.
+   */
+  readonly hemisphereAsEnvironment?: boolean;
+}
+
 export function createProductionRuntimeCollectedLights(
   snapshot: AuraSceneSnapshot,
-  flags?: { on(name: string): boolean }
+  flags?: { on(name: string): boolean },
+  options?: ProductionRuntimeCollectedLightsOptions
 ): readonly CollectedLight[] {
   // E3 stage 1: physical (PRD-02 §6.3) descriptors reach the root renderer
   // only when BOTH lanes are on. A3D_QR_LIGHTING is default-on while
@@ -261,7 +271,7 @@ export function createProductionRuntimeCollectedLights(
     );
   }
   const authoredLights = groups.flatten(snapshot.nodes).filter((node): node is AuraLightNode => node.kind === "light");
-  const descriptors = authoredLights.flatMap((node, index) => createProductionRuntimeLightDescriptors(node, index));
+  const descriptors = authoredLights.flatMap((node, index) => createProductionRuntimeLightDescriptors(node, index, options));
   if (descriptors.length === 0) return createProductionRuntimeFallbackLights(flags);
 
   const shadowCasterIndex = resolveProductionShadowCasterIndex(descriptors);
@@ -306,7 +316,8 @@ export function resolveProductionShadowCasterIndex(
 
 function createProductionRuntimeLightDescriptors(
   node: AuraLightNode,
-  authoredIndex: number
+  authoredIndex: number,
+  options?: ProductionRuntimeCollectedLightsOptions
 ): readonly ProductionRuntimeLightDescriptor[] {
   const name = node.name?.trim() || `aura-authored-${node.light}-${authoredIndex + 1}`;
   const color = colorToLinearRgb(node.color ?? "#ffffff");
@@ -319,9 +330,10 @@ function createProductionRuntimeLightDescriptors(
     // environment-lighting intent and does not masquerade as a directional light.
     return [];
   }
-  if (node.light === "probe") {
+  if (node.light === "probe" || (node.light === "hemisphere" && options?.hemisphereAsEnvironment === true)) {
     // threejs-parity AD-16: LightProbe is non-punctual irradiance — it rides
     // the hemisphere channel (collectPrd02Lights), not a direct descriptor.
+    // A hemisphere light is the same kind of light (see hemisphereAsEnvironment).
     return [];
   }
   if (node.light === "directional") {

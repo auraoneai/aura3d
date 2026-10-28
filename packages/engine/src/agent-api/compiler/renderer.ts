@@ -136,7 +136,7 @@ export async function createProductionRuntimeSceneRenderer(
     }).catch((error) => {
       textureUpgradeWarnings.add(`custom material texture pass failed (${error instanceof Error ? error.message : String(error)}); white fallback retained`);
     });
-    const productionEnvironment = createProductionRuntimeEnvironment(snapshot, flags);
+    const productionEnvironment = createProductionRuntimeEnvironment(snapshot, flags, { implicitFill: false });
     // B3 HDRI upgrade: fire-and-forget after mount. First frames render the
     // studio procedural fallback; the HDR chain swaps the lighting object the
     // render closure reads every frame. Outcomes land in hdriWarnings, which
@@ -172,7 +172,7 @@ export async function createProductionRuntimeSceneRenderer(
           hdriWarnings.add(`HDRI upgrade failed for ${hdriUrl} (${error instanceof Error ? error.message : String(error)}); studio procedural fallback retained`);
         });
     }
-    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags);
+    const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true });
     // threejs-parity L7/SG-10: `scene().background({ texture | cube })` —
     // async decode like the C1/B3 upgrades; feeds `source.environmentBackground`
     // without ever touching `environmentLighting` (no implicit IBL).

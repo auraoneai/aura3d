@@ -31,9 +31,56 @@ function markLegacyFallbackEnvironment<T extends object>(lighting: T): T {
   return lighting;
 }
 
+/**
+ * Exposure convention (beat-three.js PRD 3.2, Q1). A scene that authors its own
+ * lights and no environment is lit by exactly those lights, the way three.js
+ * r185 lights it: a directional light of intensity I on a Lambert surface of
+ * albedo A gives A * I / PI, ambient gives A * I / PI, and a hemisphere light
+ * gives A * mean(ground, sky) * I / PI (the horizontal-normal value). Before this the scene
+ * category's implicit studio/daylight environment was added on top and lifted
+ * the same nominal lights roughly 2x to 6x (skinned character mean luma
+ * three 144 vs Aura3D 192.5). `implicitFill: true` restores the old fill.
+ * Left false by direct callers so the flag-off legacy goldens stay byte-equal;
+ * the renderer passes the default (explicit lights only) at mount.
+ */
+export interface ProductionRuntimeEnvironmentOptions {
+  readonly implicitFill?: boolean;
+}
+
+function explicitLightFillFree(snapshot: AuraSceneSnapshot, nodes: ReturnType<typeof groups.flatten>): EnvironmentLightingOptions | null {
+  const lightNodes = nodes.filter((node): node is AuraLightNode => node.kind === "light");
+  const lit = lightNodes.filter((node) => node.light !== "probe" && (node.intensity ?? 1) >= 0);
+  if (lit.length === 0 || lit.length !== lightNodes.length) return null;
+  void snapshot;
+  // Total uniform irradiance in linear light. A hemisphere light enters as the mean of its sky and ground
+  // colours, which is three's value on a horizontal normal; up- and down-facing surfaces differ from three by
+  // half the sky/ground gap (see the CHANGELOG note).
+  const total: [number, number, number] = [0, 0, 0];
+  for (const light of lit) {
+    if (light.light === "ambient" && (light.intensity ?? 0) > 0) {
+      const linear = colorToLinearRgb(light.color ?? "#ffffff");
+      for (let i = 0; i < 3; i += 1) total[i]! += linear[i]! * (light.intensity ?? 0);
+    } else if (light.light === "hemisphere" && (light.intensity ?? 1) > 0) {
+      const intensity = light.intensity ?? 1;
+      const sky = colorToLinearRgb(light.color ?? "#bcd7ff");
+      const ground = colorToLinearRgb((light as { groundColor?: AuraColor }).groundColor ?? "#352f28");
+      for (let i = 0; i < 3; i += 1) total[i]! += ((sky[i]! + ground[i]!) / 2) * intensity;
+    }
+  }
+  // The renderer validates the environment colour into [0, 1]; the magnitude rides in the scalar.
+  const peak = Math.max(1, ...total);
+  return {
+    color: [total[0] / peak, total[1] / peak, total[2] / peak],
+    intensity: peak,
+    environmentMapIntensity: 0,
+    environmentMapSpecularIntensity: 0
+  };
+}
+
 export function createProductionRuntimeEnvironment(
   snapshot: AuraSceneSnapshot,
-  flags?: { on(name: string): boolean }
+  flags?: { on(name: string): boolean },
+  options?: ProductionRuntimeEnvironmentOptions
 ): {
   readonly preset: string;
   readonly intensity: number;
@@ -122,6 +169,17 @@ export function createProductionRuntimeEnvironment(
       }
     };
   }
+  if (options?.implicitFill === false) {
+    const explicit = explicitLightFillFree(snapshot, nodes);
+    if (explicit) {
+      return {
+        preset: "authored-lights",
+        intensity: explicit.intensity ?? 0,
+        evidence: "production bridge lights the scene with its authored lights only (three.js r185 convention, no implicit environment); add an environments.* node to restore the studio fill",
+        lighting: explicit
+      };
+    }
+  }
   const ambientLights = nodes.filter((node): node is AuraLightNode => node.kind === "light" && node.light === "ambient" && node.intensity > 0);
   if (ambientLights.length > 0) {
     const intensity = ambientLights.reduce((total, light) => total + light.intensity, 0);
@@ -188,19 +246,42 @@ export function createProductionRuntimeEnvironment(
  *  (F-02-01). Returns null when no ambient light contributes. Colors blend
  *  in linear space (same weighting as the legacy authored-ambient branch)
  *  and are emitted back as an sRGB hex `AuraColor`. */
-export function prd02AmbientTerm(snapshot: AuraSceneSnapshot): { readonly color: AuraColor; readonly intensity: number } | null {
-  const ambientLights = groups.flatten(snapshot.nodes).filter(
+export function prd02AmbientTerm(
+  snapshot: AuraSceneSnapshot,
+  options?: { readonly includeHemisphere?: boolean }
+): { readonly color: AuraColor; readonly intensity: number } | null {
+  const nodes = groups.flatten(snapshot.nodes);
+  const ambientLights = nodes.filter(
     (node): node is AuraLightNode => node.kind === "light" && node.light === "ambient" && (node.intensity ?? 0) > 0
   );
-  if (ambientLights.length === 0) return null;
-  const intensity = ambientLights.reduce((total, light) => total + (light.intensity ?? 0), 0);
-  const color = ambientLights.reduce<readonly [number, number, number]>((sum, light) => {
-    const linear = colorToLinearRgb(light.color ?? "#ffffff");
-    const weight = (light.intensity ?? 0) / intensity;
-    return [sum[0] + linear[0] * weight, sum[1] + linear[1] * weight, sum[2] + linear[2] * weight];
-  }, [0, 0, 0]);
+  const hemispheres = options?.includeHemisphere === true
+    ? nodes.filter((node): node is AuraLightNode => node.kind === "light" && node.light === "hemisphere" && (node.intensity ?? 1) > 0)
+    : [];
+  if (ambientLights.length === 0 && hemispheres.length === 0) return null;
   const hex = (v: number) => Math.round(linearToSrgbChannel(v) * 255).toString(16).padStart(2, "0");
-  return { color: `#${hex(color[0])}${hex(color[1])}${hex(color[2])}`, intensity };
+  if (hemispheres.length === 0) {
+    const intensity = ambientLights.reduce((total, light) => total + (light.intensity ?? 0), 0);
+    const color = ambientLights.reduce<readonly [number, number, number]>((sum, light) => {
+      const linear = colorToLinearRgb(light.color ?? "#ffffff");
+      const weight = (light.intensity ?? 0) / intensity;
+      return [sum[0] + linear[0] * weight, sum[1] + linear[1] * weight, sum[2] + linear[2] * weight];
+    }, [0, 0, 0]);
+    return { color: `#${hex(color[0])}${hex(color[1])}${hex(color[2])}`, intensity };
+  }
+  // A hemisphere light is uniform irradiance here: the mean of its sky and ground colours (three's value on a
+  // horizontal normal). Summed with the ambient lights in linear light; the magnitude rides in the intensity.
+  const total: [number, number, number] = [0, 0, 0];
+  for (const light of ambientLights) {
+    const linear = colorToLinearRgb(light.color ?? "#ffffff");
+    for (let i = 0; i < 3; i += 1) total[i]! += linear[i]! * (light.intensity ?? 0);
+  }
+  for (const light of hemispheres) {
+    const sky = colorToLinearRgb(light.color ?? "#bcd7ff");
+    const ground = colorToLinearRgb((light as { groundColor?: AuraColor }).groundColor ?? "#352f28");
+    for (let i = 0; i < 3; i += 1) total[i]! += ((sky[i]! + ground[i]!) / 2) * (light.intensity ?? 1);
+  }
+  const peak = Math.max(...total, 1e-9);
+  return { color: `#${hex(total[0] / peak)}${hex(total[1] / peak)}${hex(total[2] / peak)}`, intensity: peak };
 }
 
 /** §11 alias → preset name: every legacy environment kind except
@@ -474,7 +555,7 @@ export function registerPrd02EnvironmentSources(): void {
         specularIntensity: 1,
         rotation: 0,
         background: false,
-        ambient: prd02AmbientTerm(snapshot)
+        ambient: prd02AmbientTerm(snapshot, { includeHemisphere: true })
       };
     }
   });

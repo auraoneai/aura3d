@@ -4,6 +4,13 @@ Version: 4.3.7
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
+<!-- BEAT-THREEJS-LANE-Q:BEGIN (exposure + warnings; merge into the 4.5.0 section at release, then delete these markers) -->
+## Unreleased: exposure parity (lane Q, goes into 4.5.0)
+
+- **Visual change: a scene that authors its own lights and no environment is now lit by those lights only (engine).** A directional light of intensity I on a Lambert surface of albedo A gives `A * I / PI`, ambient gives `A * I / PI`, and a hemisphere light gives `A * mean(ground, sky) * I / PI` (three.js r185's value on a horizontal normal; up- and down-facing surfaces differ by half the sky/ground gap). Before this, the scene category's implicit studio/daylight environment was stacked on top of the authored lights, which made the same nominal lights 2x to 13x brighter in linear light (measured on software WebGL2: one grey plane, directional intensity 1 gave linear 0.434 against three.js 0.069; the skinned-character bench scene read mean luma 192.5 against three.js 144.0). Scenes with an `environments.*` node, scenes with no lights at all, and scenes with a light probe are unchanged. To get the old fill back, add `environments.studio()` (or any `environments.*`); to brighten or darken the whole frame, set `output: { exposure }` on `createAuraApp`. Hemisphere lights now contribute in this mode (they were dropped before).
+- **`WEIGHTS_0` rescaling of quantization noise no longer logs a console warning (assets).** Skin weights whose sum is within 1e-3 of 1 (8/16-bit rounding on unmodified assets) are renormalized silently with one `console.debug` line per primitive; real defects (degenerate or badly scaled weights) still warn.
+<!-- BEAT-THREEJS-LANE-Q:END -->
+
 ## 4.3.7 (2026-10-28)
 
 A CLI feature release. `@aura3d/cli` gains a browser pass for `check-deploy`; the engine and the other packages carry no runtime change from 4.3.6 (their version, README and doc-path updates only).

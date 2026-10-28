@@ -62,7 +62,7 @@ describe("createAuraApp production bridge boundary", () => {
     expect(runtimeRenderer).toContain("productionRenderer.render(");
     expect(runtimeRenderer).toContain("productionRenderer.renderAsync(");
     expect(runtimeRenderer).toContain("rendererInteractiveFeatureReport");
-    expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot, flags)");
+    expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot, flags, { hemisphereAsEnvironment: true })");
     expect(runtimeRenderer).toContain("productionRuntimeLights");
     expect(runtimeRenderer).toContain("productionRenderer.resize");
     expect(runtimeRenderer).toContain("productionRenderer.onDeviceLost");
