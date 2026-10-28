@@ -1,7 +1,8 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
-import { colorToAcesInputClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
+import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
+import { isDirectRenderPath } from "../app/renderPath.js";
 import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
@@ -105,7 +106,8 @@ export async function createProductionRuntimeSceneRenderer(
     ...(getRootRenderSource(canvas) ? { errorCheckMode: "frame" as const } : {}),
     // Background colors are display intent. Pre-invert the renderer's coupled
     // matrix-fitted ACES transform so presentation preserves that authored color.
-    clearColor: colorToAcesInputClearColor(snapshot.background),
+    // Direct path: nothing tone-maps the clear (the canvas is written as-is), so the authored display colour is the clear.
+    clearColor: isDirectRenderPath(canvas) ? colorToClearColor(snapshot.background) : colorToAcesInputClearColor(snapshot.background),
     // C-05 (A3D_QR_CORE_OUTPUT): the HDR target clears to the linear
     // background; alpha carries `background(c, { toneMapped })` coverage.
     outputClearColor: outputClearColor(snapshot),

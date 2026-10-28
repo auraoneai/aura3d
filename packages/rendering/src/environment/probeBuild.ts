@@ -66,15 +66,26 @@ export class Prd02EnvironmentProbe implements EnvironmentProbe {
   }
 }
 
-/** IEEE-754 binary16 encode for rgba16f upload (clamps negatives/∞ to the HDR range). */
-function floatToHalf(value: number): number {
-  const v = Math.max(0, value);
-  if (Number.isNaN(v)) return 0x7e00;
-  if (!Number.isFinite(v) || v >= 65504) return 0x7bff;
-  if (v === 0) return 0;
-  if (v < 2 ** -14) return Math.round(v / 2 ** -24);
-  const exponent = Math.floor(Math.log2(v));
-  const mantissa = Math.round((v / 2 ** exponent - 1) * 1024);
+const halfScratch = new Float32Array(1);
+const halfScratchBits = new Uint32Array(halfScratch.buffer);
+
+/**
+ * IEEE-754 binary16 encode for rgba16f upload (clamps negatives/∞ to the HDR range).
+ *
+ * Bit-for-bit the same result as the earlier `Math.log2` / `Math.round` version (including its rounding of a
+ * mantissa that carries into the next binade down rather than up), but reads the exponent and mantissa from
+ * the float32 bits: that version dominated the first frame (about 250 ms of CPU for the default room probe).
+ * Inputs are always float32 face data, so the double → float32 store below is exact.
+ */
+export function floatToHalf(value: number): number {
+  if (value !== value) return 0x7e00;
+  if (value <= 0) return 0;
+  if (value >= 65504) return 0x7bff;
+  if (value < 6.103515625e-5) return Math.round(value / 5.960464477539063e-8);
+  halfScratch[0] = value;
+  const bits = halfScratchBits[0]!;
+  const exponent = (bits >>> 23) - 127;
+  const mantissa = ((bits & 0x7fffff) + 4096) >>> 13;
   return ((exponent + 15) << 10) | (mantissa & 0x03ff);
 }
 
@@ -356,14 +367,25 @@ export function cubeFaceViewProjection(
 }
 
 
-/** IEEE-754 binary16 decode (rgba16f readback → Float32). */
-function halfToFloat(h: number): number {
-  const sign = h & 0x8000 ? -1 : 1;
-  const exp = (h >> 10) & 0x1f;
-  const mantissa = h & 0x03ff;
-  if (exp === 0) return sign * mantissa * 2 ** -24;
-  if (exp === 0x1f) return mantissa !== 0 ? Number.NaN : sign * Number.POSITIVE_INFINITY;
-  return sign * (1 + mantissa / 1024) * 2 ** (exp - 15);
+let halfDecodeTable: Float32Array | null = null;
+
+/** IEEE-754 binary16 decode (rgba16f readback → Float32); table-driven, exact (every half is a float32). */
+export function halfToFloat(h: number): number {
+  if (halfDecodeTable === null) {
+    const table = new Float32Array(65536);
+    for (let bits = 0; bits < 65536; bits += 1) {
+      const sign = bits & 0x8000 ? -1 : 1;
+      const exp = (bits >> 10) & 0x1f;
+      const mantissa = bits & 0x03ff;
+      table[bits] = exp === 0
+        ? sign * mantissa * 2 ** -24
+        : exp === 0x1f
+          ? (mantissa !== 0 ? Number.NaN : sign * Number.POSITIVE_INFINITY)
+          : sign * (1 + mantissa / 1024) * 2 ** (exp - 15);
+    }
+    halfDecodeTable = table;
+  }
+  return halfDecodeTable[h & 0xffff]!;
 }
 
 /** 2× box-filter downsample of an RGBA32F image (mip chain, linear HDR). */

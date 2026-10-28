@@ -53,7 +53,10 @@ const median = (xs: number[]): number => {
 async function load(page: Page, origin: string, scene: string, quality: string): Promise<Run> {
   const consoleProblems: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "warning" || message.type() === "error") consoleProblems.push(`${message.type()}: ${message.text()}`);
+    // "GPU stall due to ReadPixels" is Chromium's note on the harness's own blocking readPixels (the gl.finish stand-in), not the app.
+    if ((message.type() === "warning" || message.type() === "error") && !/GPU stall due to ReadPixels/.test(message.text())) {
+      consoleProblems.push(`${message.type()}: ${message.text()}`);
+    }
   });
   page.on("pageerror", (error) => consoleProblems.push(`pageerror: ${error.message}`));
   await page.addInitScript(GL_HOOK);
@@ -89,6 +92,7 @@ test.describe("frame cost (software WebGL2)", () => {
   for (const scene of ["cube", "pbr"] as const) {
     test(`${scene}: auto quality`, async ({ browser }) => {
       const firstFrames: number[] = [];
+      const problems: string[] = [];
       let last: Run | undefined;
       for (let i = 0; i < COLD_LOADS; i += 1) {
         const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1 });
@@ -97,8 +101,7 @@ test.describe("frame cost (software WebGL2)", () => {
         firstFrames.push(last.firstFrameMs);
         await context.close();
         // Q2: nothing on the console, and no page errors, on any cold load.
-        expect(last.errors, `${scene} page errors`).toEqual([]);
-        expect(last.console, `${scene} console warnings/errors`).toEqual([]);
+        problems.push(...last.errors.map((m) => `page error: ${m}`), ...last.console);
       }
       const run = last!;
       const summary = {
@@ -110,10 +113,12 @@ test.describe("frame cost (software WebGL2)", () => {
         cpuMsMedian: median(run.cpuMs),
         drawCalls: run.draws,
         blits: run.blits,
-        msaaTargets: run.msaa
+        msaaTargets: run.msaa,
+        consoleProblems: problems
       };
       results[`${scene}/auto`] = summary;
       console.log(`FRAME_COST ${JSON.stringify(summary)}`);
+      expect(problems, `${scene} console warnings/errors and page errors (Q2)`).toEqual([]);
       if (scene === "cube") expect((run.renderPath as { path?: string } | null)?.path).toBe("direct");
       if (!GATE) return;
       if (scene === "cube") {
@@ -142,9 +147,9 @@ test.describe("frame cost (software WebGL2)", () => {
       blits: run.blits,
       msaaTargets: run.msaa
     };
-    results["cube/production"] = summary;
-    console.log(`FRAME_COST ${JSON.stringify(summary)}`);
+    results["cube/production"] = { ...summary, consoleProblems: [...run.errors, ...run.console] };
+    console.log(`FRAME_COST ${JSON.stringify(results["cube/production"])}`);
     expect((run.renderPath as { path?: string } | null)?.path).toBe("hdr-msaa");
-    expect(run.console, "console warnings/errors").toEqual([]);
+    expect([...run.errors, ...run.console], "console warnings/errors and page errors").toEqual([]);
   });
 });

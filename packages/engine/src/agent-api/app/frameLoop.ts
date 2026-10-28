@@ -10,7 +10,7 @@ import { camera } from "../nodes/camera.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
-import { resolveAppRenderPath, wantsPreservedDrawingBuffer } from "./renderPath.js";
+import { resolveAppRenderPath, setDirectRenderPath, wantsPreservedDrawingBuffer } from "./renderPath.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
@@ -84,6 +84,7 @@ export async function startProductionRender(
   // HDR-target route off for this renderer only; the app's own flags are untouched.
   const renderPath = resolveAppRenderPath(snapshot, options, qrFlags);
   diagnosticsState.renderPath = renderPath.report;
+  setDirectRenderPath(canvas, renderPath.direct);
   const renderer = await createProductionSceneRenderer(
     canvas,
     snapshot,

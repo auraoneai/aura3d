@@ -19,6 +19,7 @@ import { resolveActorBoneAttachments } from "../app/actorAnimationHandle.js";
 import { createProductionRuntimeEnvironmentFog } from "./fog.js";
 import { lodLevelVisible } from "../lodMarkers.js";
 import { createProductionRuntimePostprocess } from "./postprocess.js";
+import { isDirectRenderPath } from "../app/renderPath.js";
 import { authoredPostContextFor } from "../postBridge.js";
 import { createProductionInstanceColors, createProductionInstanceTransforms, createProductionModelInstanceTransforms, resolveProductionPrimitiveRuntimeState, selectProductionPrimitiveResource } from "./primitives.js";
 import { createProductionRuntimeShadowOptions } from "./shadows.js";
@@ -360,7 +361,9 @@ export function createProductionRuntimeRendererInput(
     productionFrameTimes.set(canvas, time);
     return createProductionRuntimePostprocess(snapshot, collectedLights, canvas.width, canvas.height, !unsupportedTemporal, { canvas, frameTime });
   };
-  const builtPostprocess = (postFlagOn ? undefined : injectedPostprocess) ?? buildPostprocess();
+  // Direct path (quality "auto", no authored post/HDR/transmission): no postprocess object at all, so the
+  // renderer draws straight into the canvas instead of an HDR target plus a tone-mapping present pass.
+  const builtPostprocess = isDirectRenderPath(canvas) ? undefined : (postFlagOn ? undefined : injectedPostprocess) ?? buildPostprocess();
   const source: RenderSource = {
     ...(compatibility?.source ?? {}),
     collectRenderItems: () => items,

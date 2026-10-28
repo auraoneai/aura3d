@@ -38,7 +38,7 @@ function buildScene() {
     .camera(view)
     .add(lights.studio())
     .add(lights.directional({ position: [3, 5, 2], intensity: 2.2, shadow: true }))
-    .add(primitives.plane({ name: "floor", size: [8, 8], material: material.pbr({ color: "#3a3f4a", roughness: 0.9 }) }).rotation(-Math.PI / 2, 0, 0))
+    .add(primitives.plane({ name: "floor", size: [8, 8], material: material.pbr({ color: "#3a3f4a", roughness: 0.9 }) }).rotate(-Math.PI / 2, 0, 0))
     .add(primitives.box({ name: "cube", size: [1, 1, 1], material: material.pbr({ color: "#d86a3a" }) }).position(0, 0.5, 0).runtime({ id: "cube" }));
   for (let i = 0; i < 6; i += 1) {
     grid.add(primitives.sphere({ name: `ball-${i}`, material: material.pbr({ color: "#4aa3df", metallic: i / 5, roughness: 0.15 + (i / 5) * 0.6 }) }).position(-2.5 + i, 0.3, 1.8).scale(0.6));

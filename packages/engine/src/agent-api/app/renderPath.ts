@@ -16,6 +16,24 @@ export interface AppRenderPath {
   readonly report: AuraRenderPathReport;
   /** Flags to hand the renderer; the app's own flags unchanged on the HDR path. */
   readonly flags: QrFlags;
+  /**
+   * True when this mount chose the direct path over the HDR one: the source then carries no
+   * postprocess at all (no default tone-mapping chain), so the forward pass renders straight into
+   * the canvas framebuffer and encodes in-shader.
+   */
+  readonly direct: boolean;
+}
+
+const directPathCanvases = new WeakSet<object>();
+
+/** Record (per canvas, per mount) that the direct path was chosen; read by the render-input and clear-colour code. */
+export function setDirectRenderPath(canvas: object, direct: boolean): void {
+  if (direct) directPathCanvases.add(canvas);
+  else directPathCanvases.delete(canvas);
+}
+
+export function isDirectRenderPath(canvas: object | undefined): boolean {
+  return canvas !== undefined && directPathCanvases.has(canvas);
 }
 
 /** Effects the forward pass draws itself; every other effect is a post pass or a frame contributor that reads the HDR target. */
@@ -70,17 +88,19 @@ export function resolveAppRenderPath(snapshot: AuraSceneSnapshot, options: AuraC
   if (!qrCoreOutputOn(flags)) {
     const explicit = flags.values.A3D_QR_CORE_OUTPUT !== undefined;
     return {
-      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off" : "A3D_QR_CORE is off: legacy single-pass LDR route" },
-      flags
+      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off: legacy LDR route" : "A3D_QR_CORE is off: legacy LDR route (its own post chain is kept)" },
+      flags,
+      direct: false
     };
   }
   if (flags.values.A3D_QR_CORE_OUTPUT !== undefined) {
-    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly" }, flags };
+    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly" }, flags, direct: false };
   }
   const decision = resolveRenderPath({ quality, blockers: quality === "auto" ? renderPathBlockers(snapshot, options) : [] });
   return {
     report: { path: decision.path, quality: decision.quality, reason: decision.reason },
-    flags: decision.path === "direct" ? withDirectPath(flags) : flags
+    flags: decision.path === "direct" ? withDirectPath(flags) : flags,
+    direct: decision.path === "direct"
   };
 }
 
