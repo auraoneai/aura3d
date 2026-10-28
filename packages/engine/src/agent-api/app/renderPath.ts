@@ -32,6 +32,18 @@ export function setDirectRenderPath(canvas: object, direct: boolean): void {
   else directPathCanvases.delete(canvas);
 }
 
+const fusedBloomCanvases = new WeakSet<object>();
+
+/** Record (per canvas, per mount) that look-neutral bloom pass fusion is allowed: quality `auto` or `cinematic`, never `production`. */
+export function setFusedBloomPasses(canvas: object, enabled: boolean): void {
+  if (enabled) fusedBloomCanvases.add(canvas);
+  else fusedBloomCanvases.delete(canvas);
+}
+
+export function isFusedBloomPasses(canvas: object | undefined): boolean {
+  return canvas !== undefined && fusedBloomCanvases.has(canvas);
+}
+
 export function isDirectRenderPath(canvas: object | undefined): boolean {
   return canvas !== undefined && directPathCanvases.has(canvas);
 }

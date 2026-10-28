@@ -373,6 +373,12 @@ export class WebGL2Device implements RenderDevice {
   private readonly host: WebGL2DeviceHost;
   /** C-28: device capability probe, filled from extension detection in the ctor. */
   readonly probe: DeviceProbe;
+  /**
+   * Look-neutral bloom pass fusion (single-pass 2-D blur for small mips, one-pass mip sum, upsample folded into the
+   * composite). Off by default; the engine turns it on for `quality: "auto"` / `"cinematic"` only, so `"production"`
+   * keeps the original pass sequence.
+   */
+  bloomFusedPasses = false;
 
   static create(options: WebGL2DeviceOptions): WebGL2Device {
     const gl = options.canvas.getContext("webgl2", {

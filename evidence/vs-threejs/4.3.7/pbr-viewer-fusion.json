@@ -1,0 +1,23 @@
+{
+  "schema": "aura3d-evidence/pbr-viewer-bloom-fusion/1",
+  "date": "2026-10-28",
+  "gitBranch": "beat3js/p1",
+  "runner": "Azure ACR task, software WebGL2 (SwiftShader), 640x360, devicePixelRatio 1; spec tests/browser/frame-cost-pbr-viewer.spec.ts (run id p1-fusion-a)",
+  "scene": "tools/bench-vs-threejs/pbr-viewer/aura rebuilt against the in-repo sources (milk truck GLB, HDRI, shadowed directional light, cinematic-tier bloom, ACES output)",
+  "change": "Look-neutral bloom pass fusion, enabled per device only for quality auto/cinematic: single-pass 2-D Gaussian for mips 1-4 (taps <= 7M), one-pass weighted mip sum, final full-resolution upsample folded into the composite. quality production keeps the original pass sequence.",
+  "drawCalls": {
+    "production": { "total": 33, "byViewport": { "2048x2048": 4, "640x360": 9, "320x180": 8, "160x90": 3, "80x45": 3, "40x23": 3, "20x12": 3 } },
+    "auto": { "total": 24, "byViewport": { "2048x2048": 4, "640x360": 8, "320x180": 4, "160x90": 2, "80x45": 2, "40x23": 2, "20x12": 2 } },
+    "target": 25
+  },
+  "frameDiff_autoVsProduction": {
+    "tolerance": { "meanAbsDiff": 2, "maxPixelDiff": 6, "scale": "0..255 per channel" },
+    "meanAbsDiff": 0.001,
+    "maxDiff": 1,
+    "pixelsOver6": 0,
+    "pixelsWithDiff1": 1006,
+    "pixelsWithDiff0": 229394,
+    "pixels": 230400
+  },
+  "notQuantifiedHere": "Real-GPU cost of the 2-D blur for mips 1-4 (6.3M, 3.0M, 1.3M, 0.5M texel fetches per frame); owner-run receipts decide P7."
+}

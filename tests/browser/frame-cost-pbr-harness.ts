@@ -5,7 +5,14 @@ import { camera, createAuraApp, defineModelAssets, effects, environments, intera
  * bloom, ACES output, orbit), built against the in-repo sources instead of the published package, so draw calls can be
  * measured for the working tree. Query: `?sha=<sha256 of the GLB>&quality=auto|production`.
  */
-interface PbrHarnessApi { ready: boolean; errors: string[]; renderPath: unknown; stepOnce(): void }
+interface PbrHarnessApi {
+  ready: boolean;
+  errors: string[];
+  renderPath: unknown;
+  stepOnce(): void;
+  /** Wait until the HDRI environment has settled, render `frames` more frames, and return the canvas as base64 RGBA (640x360). */
+  settledPixels(frames: number): Promise<string>;
+}
 declare global { interface Window { __PBR__?: PbrHarnessApi } }
 
 const params = new URLSearchParams(location.search);
@@ -46,10 +53,30 @@ async function main(): Promise<void> {
     const sink = new Uint8Array(4);
     const stepOnce = (): void => { app.step(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, sink); };
     stepOnce();
-    window.__PBR__ = { ready: true, errors, renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath, stepOnce };
+    const settledPixels = async (frames: number): Promise<string> => {
+      // Both qualities must be compared on the same lighting: wait for the HDRI chain, then render a fixed number of frames.
+      for (let i = 0; i < 600; i += 1) {
+        const status = (app.diagnostics() as { renderer?: { environment?: { hdriStatus?: string } } }).renderer?.environment?.hdriStatus;
+        if (status === "ready" || status === "none" || status === "fallback") break;
+        stepOnce();
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      for (let i = 0; i < frames; i += 1) stepOnce();
+      const bitmap = (await (app as unknown as { capture(options: { type: "image-bitmap" }): Promise<ImageBitmap> }).capture({ type: "image-bitmap" }));
+      const scratch = document.createElement("canvas");
+      scratch.width = bitmap.width;
+      scratch.height = bitmap.height;
+      const context = scratch.getContext("2d", { willReadFrequently: true })!;
+      context.drawImage(bitmap, 0, 0);
+      const data = context.getImageData(0, 0, scratch.width, scratch.height).data;
+      let binary = "";
+      for (let i = 0; i < data.length; i += 0x8000) binary += String.fromCharCode(...data.subarray(i, i + 0x8000));
+      return btoa(binary);
+    };
+    window.__PBR__ = { ready: true, errors, renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath, stepOnce, settledPixels };
   } catch (error) {
     errors.push(`start failed: ${(error as Error)?.stack ?? error}`);
-    window.__PBR__ = { ready: false, errors, renderPath: null, stepOnce: () => undefined };
+    window.__PBR__ = { ready: false, errors, renderPath: null, stepOnce: () => undefined, settledPixels: async () => "" };
   }
 }
 
