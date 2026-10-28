@@ -28,7 +28,7 @@ describe("computeProgramKey memo", () => {
       expect(computeProgramKey(base)).toBe(referenceKey(base));
       // A rebuilt record with the keys in another order keys the same (the canonical form sorts).
       const reordered = JSON.parse(JSON.stringify({ ...base, features: { z: 1, a: 2 } })) as ProgramFeatures;
-      const shuffled = { features: reordered.features, ...reordered } as ProgramFeatures;
+      const shuffled = Object.fromEntries(Object.entries(reordered).reverse()) as unknown as ProgramFeatures;
       expect(computeProgramKey(shuffled)).toBe(referenceKey(shuffled));
     }
     const withUndefined = { ...base, skinning: undefined } as ProgramFeatures;
