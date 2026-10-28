@@ -37,7 +37,7 @@ interface NewCall {
  * is captured whole instead of being skipped. Regex literals are not
  * recognised (a paren inside one would unbalance the scan).
  */
-function matchingParen(source: string, open: number): number {
+export function matchingParen(source: string, open: number): number {
   let depth = 0;
   for (let i = open; i < source.length; i++) {
     const ch = source[i];

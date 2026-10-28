@@ -19,7 +19,7 @@
  */
 
 import { threeMappingFor, type ThreeMapping } from "./mappings.js";
-import { parseThreeSource, type ThreeConstruct } from "./parse.js";
+import { matchingParen, parseThreeSource, type ThreeConstruct } from "./parse.js";
 
 export interface MigrateRow {
   readonly construct: string;
@@ -442,6 +442,78 @@ function controlsCtor(name: string, args: string): EmitArgsResult | null {
   };
 }
 
+// ── Mutable math classes vs option-field primitives ───────────────────────────
+// `@aura3d/math/three` Color/Euler/Vector3 are classes, but Aura3D option fields take "#rrggbb" strings and
+// [x, y, z] tuples. The class is right at a standalone site (`const c = new THREE.Color(...); c.setHex(...)`);
+// the primitive is right where the value is consumed as an option.
+
+/** Constructs whose emitted form lives in `@aura3d/math/three`; they take the classes as arguments. */
+const MATH_THREE_CONSTRUCTS: ReadonlySet<string> = new Set([
+  "Vector2", "Vector3", "Vector4", "Quaternion", "Euler", "Matrix3", "Matrix4", "Box3", "Sphere", "Plane", "Ray", "Frustum", "Color", "Triangle"
+]);
+const PRIMITIVE_CLASS_OPEN = /\bnew\s+(?:THREE\.)?(Color|Euler|Vector3)\s*\(/;
+
+function colorPrimitive(args: string): string {
+  const trimmed = args.trim();
+  if (trimmed === "") return '"#ffffff"';
+  const literal = hex(trimmed);
+  if (literal) return literal;
+  // Non-literal (a variable, an r/g/b triple, an HSL string): let the class do the conversion.
+  return `\`#\${new Color(${trimmed}).getHexString()}\``;
+}
+
+function eulerPrimitive(args: string): string {
+  const parts = splitArgs(args);
+  const order = parts.length > 3 ? parts[3] : undefined;
+  const xyz = `[${[0, 1, 2].map((i) => parts[i] ?? "0").join(", ")}]`;
+  if (order === undefined || /^['"]XYZ['"]$/.test(order)) return xyz;
+  return `${xyz} /* a3d: Euler order ${order} dropped — node rotation is XYZ; compose a quaternion for other orders */`;
+}
+
+function vector3Primitive(args: string): string {
+  const parts = splitArgs(args);
+  return `[${[0, 1, 2].map((i) => parts[i] ?? "0").join(", ")}]`;
+}
+
+function primitiveFor(name: string, args: string): string {
+  if (name === "Color") return colorPrimitive(args);
+  if (name === "Euler") return eulerPrimitive(args);
+  return vector3Primitive(args);
+}
+
+/** Rewrites every `new (THREE.)Color/Euler/Vector3(...)` in `text` to its option-field primitive, innermost first. */
+function inlineMathPrimitives(text: string): string {
+  const m = PRIMITIVE_CLASS_OPEN.exec(text);
+  if (!m) return text;
+  const open = m.index + m[0].length - 1;
+  const close = matchingParen(text, open);
+  if (close < 0) return text;
+  const inner = inlineMathPrimitives(text.slice(open + 1, close));
+  return text.slice(0, m.index) + primitiveFor(m[1] ?? "", inner) + inlineMathPrimitives(text.slice(close + 1));
+}
+
+/** A block comment may not contain another one: drop complete nested comments, break any stray terminator. */
+function commentSafe(text: string): string {
+  return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\*\//g, "* /").replace(/\s{2,}/g, " ").trim();
+}
+
+// Option sites that are visible without the surrounding construct: `scene.background = new THREE.Color(...)` and
+// object-literal keys. `const color = new THREE.Color(...)` has neither a leading `.` nor a `:` after the name,
+// so a variable keeps the class.
+const PRIMITIVE_CONTEXT_KEYS: Readonly<Record<string, { readonly assign: string; readonly key: string }>> = {
+  Color: { assign: "background|color|emissive|specular|sheenColor|groundColor", key: "background|color|emissive|specularColor|sheenColor|groundColor" },
+  Vector3: { assign: "(?!)", key: "position|scale|target|direction|center|size|offset" },
+  Euler: { assign: "(?!)", key: "rotation|euler" }
+};
+
+function primitiveOptionContexts(source: string, construct: string, needle: string): string[] {
+  const keys = PRIMITIVE_CONTEXT_KEYS[construct];
+  if (!keys) return [];
+  const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(?:\\.(?:${keys.assign})\\s*=(?!=)|\\b(?:${keys.key})\\s*:)\\s*${escaped}`, "g");
+  return [...source.matchAll(re)].map((m) => m[0]);
+}
+
 const EMIT_ARGS: Readonly<Record<string, EmitArgs>> = {
   PerspectiveCamera: (args) => mapPerspectiveCamera(args, "camera.perspective"),
   OrthographicCamera: (args) => mapOrthographicCamera(args, "camera.orthographic"),
@@ -477,11 +549,17 @@ const EMIT_ARGS: Readonly<Record<string, EmitArgs>> = {
   Scene: (args) => (args.trim() === "" ? { call: "scene()" } : null),
   Group: (args) => (args.trim() === "" ? { call: "group()" } : null),
   RoomEnvironment: () => ({ call: "environments.neutral()" }),
-  Color: (args) => {
-    const mapped = hex(args.trim());
-    return mapped ? { call: mapped } : null;
-  },
+  // The math classes below come from `@aura3d/math/three`: mutable, three-compatible, same constructor arguments,
+  // so the source arguments pass through verbatim at standalone sites (`const c = new THREE.Color(...)`).
+  // Color, Euler and Vector3 are classes now, but Aura3D option fields (scene.background, light and fog colour,
+  // node position/rotation) take a hex string or a tuple. Where the codemod can see an option site (an argument of a
+  // construct it rewrites, or `.background =` / `color:` style keys) it emits the primitive instead; see
+  // `inlineMathPrimitives` and `primitiveOptionContexts`. Any other site keeps the class and says how to cross over.
+  Color: (args) => ({ call: `new Color(${args})`, comment: "a3d: mutable Color class; Aura3D options take a hex string, pass `#${c.getHexString()}`" }),
+  Euler: (args) => ({ call: `new Euler(${args})`, comment: "a3d: mutable Euler class; node rotation takes [x, y, z], pass [e.x, e.y, e.z]" }),
   Vector2: (args) => ({ call: `new Vector2(${args})` }),
+  Vector3: (args) => ({ call: `new Vector3(${args})`, comment: "a3d: mutable Vector3 class; node specs take [x, y, z], pass v.toArray()" }),
+  Triangle: (args) => ({ call: `new Triangle(${args})` }),
   Vector4: (args) => ({ call: `new Vector4(${args})` }),
   Quaternion: (args) => ({ call: `new Quaternion(${args})`, comment: args.trim() === "" ? undefined : undefined }),
   Matrix3: (args) => ({ call: `new Matrix3(${args})` }),
@@ -565,10 +643,16 @@ export function emitMigratedSource(source: string): MigrateResult {
         const replacement = emitCall(mapping, c);
         const needle = `new THREE.${c.construct}(${c.rawArgs ?? c.args})`;
         const needleBare = `new ${c.construct}(${c.rawArgs ?? c.args})`;
-        if (source.includes(needle)) {
-          rewrites.push({ match: needle, replacement });
-        } else if (source.includes(needleBare)) {
-          rewrites.push({ match: needleBare, replacement });
+        const used = source.includes(needle) ? needle : source.includes(needleBare) ? needleBare : undefined;
+        if (used) {
+          // An option site the codemod can see (`.background =`, `color:` ...) takes the primitive, not the class.
+          if (PRIMITIVE_CONTEXT_KEYS[c.construct]) {
+            const primitive = primitiveFor(c.construct, inlineMathPrimitives(c.args));
+            for (const site of primitiveOptionContexts(source, c.construct, used)) {
+              rewrites.push({ match: site, replacement: site.slice(0, site.length - used.length) + primitive });
+            }
+          }
+          rewrites.push({ match: used, replacement });
         }
         if (c.construct === "WebGLRenderer" || c.construct === "WebGPURenderer") sawRenderer = true;
       }
@@ -628,6 +712,16 @@ export function emitMigratedSource(source: string): MigrateResult {
   // inside its args can mangle the needle.
   for (const { match, replacement } of [...rewrites].sort((a, b) => b.match.length - a.match.length)) {
     code = code.replaceAll(match, replacement);
+  }
+
+  // Color/Euler/Vector3 only need their `@aura3d/math/three` import where the class form survived; a file whose
+  // every use became an option primitive must not import an unused name.
+  const mathThreeImports = neededImports.get("@aura3d/math/three");
+  if (mathThreeImports) {
+    for (const name of ["Color", "Euler", "Vector3"]) {
+      if (mathThreeImports.has(name) && !new RegExp(`\\bnew\\s+${name}\\s*\\(`).test(code)) mathThreeImports.delete(name);
+    }
+    if (mathThreeImports.size === 0) neededImports.delete("@aura3d/math/three");
   }
 
   // three/app method folds — only when a renderer construct was seen so
@@ -743,39 +837,27 @@ function rowFor(c: ThreeConstruct, mapping: ThreeMapping | undefined): MigrateRo
 }
 
 function emitCall(mapping: ThreeMapping, c: ThreeConstruct): string {
-  const args = c.args;
+  // Arguments of a construct that is not itself a `@aura3d/math/three` class are option values: a nested
+  // Color/Euler/Vector3 becomes the hex string or tuple that option takes, never a class instance.
+  const args = MATH_THREE_CONSTRUCTS.has(mapping.construct) ? c.args : inlineMathPrimitives(c.args);
   const emitter = EMIT_ARGS[mapping.construct];
   if (emitter) {
     const out = emitter(args);
     if (out) {
-      return `${out.call}${out.comment ? ` /* ${out.comment} */` : ""}`;
+      return `${out.call}${out.comment ? ` /* ${commentSafe(out.comment)} */` : ""}`;
     }
   }
   // Covered constructs get `a3d:` guidance, not `TODO(a3d-migrate)` — the
   // TODO marker is reserved for pending/unmapped rows.
-  const todo = ` /* a3d: ${c.construct} — ${args ? `map args (${args}); ` : ""}${mapping.note} */`;
+  const todo = ` /* ${commentSafe(`a3d: ${c.construct} — ${args ? `map args (${args}); ` : ""}${mapping.note}`)} */`;
   if (args.trim() === "" && mapping.emit !== "new") {
     // no args to mis-map — emit the clean factory plus a short guidance note
     return `${mapping.target}() /* a3d: ${mapping.note} */`;
   }
   if (mapping.emit === "new") {
-    return `new ${mapping.target}()${args ? ` /* a3d: original args (${args}) — ${mapping.note} */` : ` /* a3d: ${mapping.note} */`}`;
+    return `new ${mapping.target}()${args ? ` /* ${commentSafe(`a3d: original args (${args}) — ${mapping.note}`)} */` : ` /* a3d: ${mapping.note} */`}`;
   }
-  switch (mapping.construct) {
-    case "Euler": {
-      // Euler emits a tuple literal, valid as an expression.
-      const xyz = /,\s*['"]?XYZ['"]?\s*$/.test(args)
-        ? args.replace(/,\s*['"]?XYZ['"]?\s*$/, "").trim()
-        : args;
-      return `[${xyz}]${args && xyz !== args ? "" : todo}`;
-    }
-    case "Vector3":
-      return `[${args}]${args.trim() === "" ? " /* a3d: AuraVec3 */" : ""}`;
-    case "Color":
-      return `(${args}) /* a3d: ${mapping.target} */`;
-    default:
-      return `${mapping.target}()${todo}`;
-  }
+  return `${mapping.target}()${todo}`;
 }
 
 function pushComment(map: Map<number, string[]>, line: number, text: string): void {

@@ -27,6 +27,7 @@ export const aliasEntries = [
   ["@aura3d/assets/gltf-runtime", "./packages/assets/src/gltf-runtime.ts"],
   ["@aura3d/cli", "./packages/aura3d-cli/src/index.ts"],
   ["@aura3d/react", "./packages/react/src/index.ts"],
+  ["@aura3d/math/three", "./packages/math/src/three/index.ts"],
   ["@aura3d/math", "./packages/math/src/index.ts"],
   ["@aura3d/core", "./packages/core/src/index.ts"],
   ["@aura3d/scene", "./packages/scene/src/index.ts"],

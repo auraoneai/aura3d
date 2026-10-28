@@ -33,10 +33,10 @@ describe("aura3d migrate three", () => {
     "RGBELoader.load": { source: `const loader = new THREE.RGBELoader();\nloader.load("env.hdr");`, expectContains: ["a3d: RGBELoader.load → environments.hdri"], mapping: "approximate" },
     OrbitControls: { source: `new THREE.OrbitControls(camera, renderer.domElement)`, expectContains: ["camera.orbit({})"], mapping: "approximate" },
     InstancedMesh: { source: `new THREE.InstancedMesh(geo, mat, 100)`, expectContains: ["instances.box({ transforms: [] })", "100 instances"], mapping: "approximate" },
-    "Euler XYZ order": { source: `const e = new THREE.Euler(0.1, 0.2, 0.3, "XYZ");`, expectContains: ["[0.1, 0.2, 0.3]"], mapping: "approximate" },
+    "Euler XYZ order": { source: `const e = new THREE.Euler(0.1, 0.2, 0.3, "XYZ");`, expectContains: [`new Euler(0.1, 0.2, 0.3, "XYZ")`, `from "@aura3d/math/three"`, "[e.x, e.y, e.z]"], mapping: "exact" },
     WebGLRenderer: { source: `const r = new THREE.WebGLRenderer({ antialias: true });`, expectContains: ["createAuraApp({ resize: true })"], mapping: "approximate" },
     Fog: { source: `scene.fog = new THREE.Fog(0x87ceeb, 20, 120);`, expectContains: [`effects.fog({ color: "#87ceeb" })`, "near 20/far 120"], mapping: "approximate" },
-    Color: { source: `const c = new THREE.Color(0x334455);`, expectContains: [`"#334455"`], mapping: "approximate" },
+    Color: { source: `const c = new THREE.Color(0x334455);`, expectContains: ["new Color(0x334455)", `from "@aura3d/math/three"`, "getHexString()"], mapping: "exact" },
 
     // ── L10: newly honest rows (real GPU-backed public targets) ──────────
     PMREMGenerator: { source: `const p = new THREE.PMREMGenerator(renderer);`, expectContains: ["a3d: PMREMGenerator → environments.capture", "SH-07"], mapping: "approximate" },
@@ -54,8 +54,8 @@ describe("aura3d migrate three", () => {
     PositionalAudio: { source: `new THREE.PositionalAudio(listener)`, expectContains: ["a3d: PositionalAudio → PositionalEmitter", "PositionalEmitterOptions", "@aura3d/engine/audio"], mapping: "approximate" },
     SkinnedMesh: { source: `new THREE.SkinnedMesh(geo, mat)`, expectContains: ["a3d: SkinnedMesh → model"], mapping: "approximate" },
     Clock: { source: `const c = new THREE.Clock();`, expectContains: ["a3d: Clock → Clock", "SR-06"], mapping: "exact" },
-    Vector2: { source: `new THREE.Vector2(1, 2)`, expectContains: ["new Vector2(1, 2)", "@aura3d/engine/math"], mapping: "approximate" },
-    Matrix4: { source: `new THREE.Matrix4()`, expectContains: ["new Matrix4()", "@aura3d/engine/math"], mapping: "approximate" },
+    Vector2: { source: `new THREE.Vector2(1, 2)`, expectContains: ["new Vector2(1, 2)", `from "@aura3d/math/three"`], mapping: "exact" },
+    Matrix4: { source: `new THREE.Matrix4()`, expectContains: ["new Matrix4()", `from "@aura3d/math/three"`], mapping: "exact" },
     WebGPURenderer: { source: `new THREE.WebGPURenderer()`, expectContains: ["createAuraApp({ resize: true })"], mapping: "approximate" },
 
     // ── L10: graduated pending rows — targets now public, a3d guidance ──
@@ -180,7 +180,7 @@ renderer.render(world, cam);
     // rewritten imports
     expect(code).toContain(`from "@aura3d/engine"`);
     expect(code).toContain(`from "@aura3d/engine/controls"`);
-    expect(code).toContain(`from "@aura3d/engine/math"`);
+    expect(code).toContain(`from "@aura3d/math/three"`);
 
     // app + scene + camera + controls
     expect(code).toContain("createAuraApp({ resize: true })");

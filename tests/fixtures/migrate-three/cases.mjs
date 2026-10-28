@@ -7,6 +7,7 @@
 // module, with the same constructor names as three.
 //
 // Cases return a flat array of numbers. Keep inputs deterministic.
+import { mathMethodCases } from "./cases.math.mjs";
 
 const v2 = (v) => [v.x, v.y];
 const v3 = (v) => [v.x, v.y, v.z];
@@ -53,6 +54,30 @@ export const cases = {
       a.dot(b), a.length(), a.distanceTo(b), a.angle(), ...v2(a.clone().normalize()),
       ...v2(a.clone().lerp(b, 0.3)), ...v2(a.clone().rotateAround(new L.Vector2(1, 1), 0.7)),
       ...v2(a.clone().clamp(new L.Vector2(0, 0), new L.Vector2(1, 1))),
+    ];
+  },
+  Vector3: (L) => {
+    const a = new L.Vector3(1.5, -2.25, 3);
+    const b = new L.Vector3(-0.5, 4, 2);
+    const q = new L.Quaternion().setFromAxisAngle(new L.Vector3(0, 1, 0), 0.9);
+    const mat = new L.Matrix4().makeRotationY(0.4).setPosition(1, 2, 3);
+    return [
+      ...v3(a.clone().add(b)), ...v3(a.clone().sub(b)), ...v3(a.clone().multiplyScalar(2.5)), a.dot(b), a.length(), a.distanceTo(b),
+      ...v3(a.clone().cross(b)), ...v3(a.clone().normalize()), ...v3(a.clone().lerp(b, 0.3)), ...v3(a.clone().applyQuaternion(q)),
+      ...v3(a.clone().applyMatrix4(mat)), ...v3(a.clone().applyAxisAngle(new L.Vector3(0, 0, 1), 0.5)), ...v3(a.clone().reflect(new L.Vector3(0, 1, 0))),
+      ...v3(a.clone().projectOnVector(b)), a.angleTo(b), ...v3(a.clone().clamp(new L.Vector3(0, 0, 0), new L.Vector3(1, 1, 1))),
+      ...v3(new L.Vector3().setFromSphericalCoords(2, 0.7, -1.1)), ...v3(a.clone().transformDirection(mat)),
+    ];
+  },
+  Color: (L) => {
+    const c = new L.Color(0.2, 0.5, 0.8);
+    const hsl = { h: 0, s: 0, l: 0 };
+    c.getHSL(hsl);
+    const rgb = (o) => [o.r, o.g, o.b];
+    return [
+      ...rgb(c), c.getHex(), hsl.h, hsl.s, hsl.l, ...rgb(new L.Color().setHex(0xff8040)), ...rgb(new L.Color().setHSL(0.3, 0.5, 0.4)),
+      ...rgb(new L.Color("tomato")), ...rgb(c.clone().lerp(new L.Color(0.9, 0.1, 0.4), 0.25)),
+      ...rgb(c.clone().multiplyScalar(0.5).add(new L.Color(0.1, 0.1, 0.1))), ...rgb(c.clone().convertLinearToSRGB()), c.getHexString().length, c.getStyle().length,
     ];
   },
   Vector4: (L) => {
@@ -134,7 +159,11 @@ export const cases = {
   Plane: (L) => {
     const p = new L.Plane().setFromNormalAndCoplanarPoint(new L.Vector3(0, 1, 0).normalize(), new L.Vector3(0, 2, 0));
     const q = new L.Plane().setFromCoplanarPoints(new L.Vector3(0, 0, 0), new L.Vector3(1, 0, 0), new L.Vector3(0, 0, 1));
-    const ln = new L.Line3(new L.Vector3(0, 0, 0), new L.Vector3(0, 5, 0));
+    // A plain line (start, end, delta(target)) instead of Line3: Plane.intersectLine reads only those, and the
+    // mutable math layer deliberately has no Line3 (the immutable Line3 row stays on @aura3d/engine/math).
+    const lineStart = new L.Vector3(0, 0, 0);
+    const lineEnd = new L.Vector3(0, 5, 0);
+    const ln = { start: lineStart, end: lineEnd, delta: (target) => target.subVectors(lineEnd, lineStart) };
     const hit = p.intersectLine(ln, new L.Vector3());
     return [
       ...v3(p.normal), p.constant, ...v3(q.normal), q.constant, p.distanceToPoint(new L.Vector3(3, 7, 1)),
@@ -277,4 +306,7 @@ export const cases = {
     const ex = s.extractPoints(4);
     return [...ex.shape.flatMap(v2), ex.holes.length, ...ex.holes[0].flatMap(v2), s.getPoints(4).length];
   },
+
+  // Method-level math fixtures (cases.math.mjs): one case per public method, run against the mutable compat layer.
+  ...mathMethodCases,
 };
