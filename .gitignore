@@ -319,6 +319,9 @@ test-data/
 *.gif
 *.csv
 
+# Pixel receipts bind frames by sha256 (tools/receipts/check.mjs), so the PNGs are tracked.
+!evidence/receipts/**/*.png
+
 # GLB sidecar textures are runtime source dependencies and must travel with snapshots.
 !public/aura-assets/Textures/
 !public/aura-assets/Textures/*.png

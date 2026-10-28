@@ -70,7 +70,7 @@ export function validateReceipt(receipt, { repoRoot = REPO_ROOT, minor, slug } =
   }
   if (typeof receipt.gitSha === "string" && !GIT_SHA.test(receipt.gitSha)) problems.push("gitSha is not a 7 to 40 character hex string");
   if (typeof receipt.date === "string" && Number.isNaN(Date.parse(receipt.date))) problems.push("date is not parseable");
-  if (typeof receipt.capability === "string" && slug && capabilitySlug(receipt.capability) !== slug) {
+  if (typeof receipt.capability === "string" && slug && capabilitySlug(receipt.capability) !== capabilitySlug(slug)) {
     problems.push(`capability "${receipt.capability}" does not match its directory "${slug}"`);
   }
   if (!Array.isArray(receipt.frames) || receipt.frames.length === 0) {
