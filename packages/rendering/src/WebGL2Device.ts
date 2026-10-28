@@ -115,7 +115,7 @@ export interface WebGL2DeviceOptions {
 /**
  * `strict`: `gl.getError()` after every uniform upload, vertex-format bind and draw (debugging only).
  * `frame`: one `getError` per frame.
- * `sampled` (default): `getError` on the first frames after the device is created or restored, on any frame in which a
+ * `sampled` (default): `getError` on the first 30 frames after the device is created or restored, on any frame in which a
  * GPU resource or program was created or released, every 60th frame, and on every frame while an error is outstanding.
  */
 export type WebGL2ErrorCheckMode = "strict" | "frame" | "sampled";

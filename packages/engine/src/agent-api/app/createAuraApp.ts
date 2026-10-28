@@ -874,6 +874,16 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       );
     },
     screenshot() {
+      /*
+       * `toDataURL` reads the drawing buffer, which the browser clears after presenting a frame unless
+       * the context was created with `preserveDrawingBuffer` (capture/evidence runs only). Called in a
+       * later task than the one that rendered, it returned a blank PNG (measured: 0 non-background
+       * pixels on both render paths). Re-render the current state synchronously first so the buffer is
+       * populated in this task. Rendering uses the app's simulated clock, the same as `step()`.
+       */
+      if (productionController && !disposed && !productionController.busy?.()) {
+        productionController.render(runtimeTime * 1000);
+      }
       return captureAuraScreenshot(canvas);
     },
     dispose() {

@@ -14,7 +14,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const REPORT = "tests/reports/render-path-edge-cases/report.json";
 const findings: Record<string, unknown> = {};
 const NOISE = /GPU stall due to ReadPixels/;
-const CONTEXT_LOSS_NOISE = /context lost|CONTEXT_LOST|lost context|context restored|restoreContext|loseContext/i;
+const CONTEXT_LOSS_NOISE = /context lost|CONTEXT_LOST|lost context|context restored|restoreContext|loseContext|does not belong to this context/i;
 
 interface PageHandle { page: Page; problems: string[]; contextNoise: string[] }
 
@@ -80,6 +80,15 @@ async function plainCanvasPixels(page: Page): Promise<{ width: number; height: n
   })()`) as Promise<{ width: number; height: number; nonBackground: number }>;
 }
 
+/** `app.screenshot()` in a later task than the one that rendered: it re-renders synchronously so the buffer is populated. */
+async function appScreenshotPixels(page: Page): Promise<{ width: number; height: number; nonBackground: number }> {
+  return page.evaluate(`(async () => {
+    const count = ${COUNT_NON_BACKGROUND};
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    return count(window.__FC__.app.screenshot().dataUrl);
+  })()`) as Promise<{ width: number; height: number; nonBackground: number }>;
+}
+
 async function compositorPixels(page: Page): Promise<{ width: number; height: number; nonBackground: number }> {
   const png = (await page.screenshot({ type: "png" })).toString("base64");
   return page.evaluate(`(async () => { const count = ${COUNT_NON_BACKGROUND}; return count("data:image/png;base64,${png}"); })()`) as Promise<{ width: number; height: number; nonBackground: number }>;
@@ -112,10 +121,13 @@ test.describe("render path edge cases (software WebGL2)", () => {
       // Raw canvas readback in a later task: only guaranteed with a preserved buffer.
       await step(page);
       const viaPlainCanvas = await plainCanvasPixels(page);
-      findings[`capture/${quality}`] = { path: await renderPath(page), viaCapture, viaCompositor, viaPlainCanvas, problems: watched.problems };
-      console.log(`EDGE_CASE ${JSON.stringify({ test: `capture/${quality}`, viaCapture, viaCompositor, viaPlainCanvas })}`);
+      await step(page);
+      const viaAppScreenshot = await appScreenshotPixels(page);
+      findings[`capture/${quality}`] = { path: await renderPath(page), viaCapture, viaCompositor, viaPlainCanvas, viaAppScreenshot, problems: watched.problems };
+      console.log(`EDGE_CASE ${JSON.stringify({ test: `capture/${quality}`, viaCapture, viaCompositor, viaPlainCanvas, viaAppScreenshot })}`);
       expect(viaCapture.nonBackground, "app.capture() (QA hooks, look capture)").toBeGreaterThan(500);
       expect(viaCompositor.nonBackground, "compositor screenshot (check-deploy --browser, thumbnails)").toBeGreaterThan(500);
+      expect(viaAppScreenshot.nonBackground, "app.screenshot() in a later task").toBeGreaterThan(500);
       expect(watched.problems).toEqual([]);
       await context.close();
     });

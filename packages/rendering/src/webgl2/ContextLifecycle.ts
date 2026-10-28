@@ -286,7 +286,7 @@ export class WebGL2ContextLifecycle {
   }
 
   /** Frames after creation/restore in which the `sampled` mode reads the error every frame. */
-  static readonly ERROR_WARMUP_FRAMES = 120;
+  static readonly ERROR_WARMUP_FRAMES = 30;
   /** After warm-up, `sampled` mode reads the error on every Nth frame. */
   static readonly ERROR_SAMPLE_INTERVAL = 60;
   private framesEnded = 0;
