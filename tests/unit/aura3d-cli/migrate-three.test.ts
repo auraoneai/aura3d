@@ -53,7 +53,7 @@ describe("aura3d migrate three", () => {
     TransformControls: { source: `new TransformControls(camera, el)`, expectContains: ["new TransformControls({})", "TransformControlsOptions", "@aura3d/engine/controls"], mapping: "approximate" },
     PositionalAudio: { source: `new THREE.PositionalAudio(listener)`, expectContains: ["a3d: PositionalAudio → PositionalEmitter", "PositionalEmitterOptions", "@aura3d/engine/audio"], mapping: "approximate" },
     SkinnedMesh: { source: `new THREE.SkinnedMesh(geo, mat)`, expectContains: ["a3d: SkinnedMesh → model"], mapping: "approximate" },
-    Clock: { source: `const c = new THREE.Clock();`, expectContains: ["a3d: Clock → Clock", "SR-06"], mapping: "exact" },
+    Clock: { source: `const c = new THREE.Clock();`, expectContains: ["a3d: Clock → Clock", "SR-06"], mapping: "approximate" },
     Vector2: { source: `new THREE.Vector2(1, 2)`, expectContains: ["new Vector2(1, 2)", "@aura3d/engine/math"], mapping: "approximate" },
     Matrix4: { source: `new THREE.Matrix4()`, expectContains: ["new Matrix4()", "@aura3d/engine/math"], mapping: "approximate" },
     WebGPURenderer: { source: `new THREE.WebGPURenderer()`, expectContains: ["createAuraApp({ resize: true })"], mapping: "approximate" },
@@ -66,8 +66,8 @@ describe("aura3d migrate three", () => {
     Line: { source: `new THREE.Line(geo, mat)`, expectContains: ["a3d: Line → lines.line", "SG-06"], mapping: "approximate" },
     Points: { source: `new THREE.Points(geo, mat)`, expectContains: ["a3d: Points → points", "SG-07"], mapping: "approximate" },
     Sprite: { source: `new THREE.Sprite(mat)`, expectContains: ["a3d: Sprite → sprites", "SG-08"], mapping: "approximate" },
-    ConeGeometry: { source: `new THREE.ConeGeometry(1, 2)`, expectContains: ["a3d: ConeGeometry → primitives.cone", "SG-03"], mapping: "approximate" },
-    TubeGeometry: { source: `new THREE.TubeGeometry(curve, 20, 0.5)`, expectContains: ["a3d: TubeGeometry → primitives.tube", "SG-03"], mapping: "approximate" },
+    ConeGeometry: { source: `new THREE.ConeGeometry(1, 2)`, expectContains: ["a3d: ConeGeometry → primitives.cone", "SG-03"], mapping: "exact" },
+    TubeGeometry: { source: `new THREE.TubeGeometry(curve, 20, 0.5)`, expectContains: ["a3d: TubeGeometry → primitives.tube", "SG-03"], mapping: "exact" },
     Raycaster: { source: `new THREE.Raycaster()`, expectContains: ["a3d: Raycaster → raycast", "SR-03"], mapping: "approximate" },
     CubeCamera: { source: `new THREE.CubeCamera(0.1, 100, rt)`, expectContains: ["a3d: CubeCamera → cameras.cube", "SC-01"], mapping: "approximate" },
     WebGLRenderTarget: { source: `new THREE.WebGLRenderTarget(512, 512)`, expectContains: ["a3d: WebGLRenderTarget → RenderTarget", "SH-06"], mapping: "approximate" },
@@ -83,7 +83,8 @@ describe("aura3d migrate three", () => {
     NodeMaterial: { source: `new THREE.NodeMaterial()`, expectContains: ["a3d: NodeMaterial → material.node", "SH-01", "normalNode"], mapping: "approximate" },
     MeshBasicNodeMaterial: { source: `new THREE.MeshBasicNodeMaterial()`, expectContains: ["a3d: MeshBasicNodeMaterial → material.node", "unlit"], mapping: "approximate" },
     MeshStandardNodeMaterial: { source: `new THREE.MeshStandardNodeMaterial()`, expectContains: ["a3d: MeshStandardNodeMaterial → material.node", "scene-light"], mapping: "approximate" },
-    Layers: { source: `const l = new THREE.Layers();`, expectContains: ["parityPending Layers → layers", "not yet public"], mapping: "pending" },
+    Layers: { source: `const l = new THREE.Layers();`, expectContains: ["a3d: Layers → layers", "camera-side layer mask is not yet public"], mapping: "approximate" },
+    PlaneHelper: { source: `new THREE.PlaneHelper(plane)`, expectContains: ["a3d: PlaneHelper —", "draw it by hand"], mapping: "none" },
 
     // ── L10: deliberate exclusions (AD-04 loaders, AD-05 exporters) ──────
     FBXLoader: { source: `new THREE.FBXLoader()`, expectContains: ["a3d: FBXLoader — excluded (AD-04)"], mapping: "none" },
@@ -123,13 +124,13 @@ describe("aura3d migrate three", () => {
     expect(code).not.toMatch(/^import \{ UnrealBloomPass \} from/m);
   });
 
-  it("report carries {construct,line,mapping,note} rows and counts incl. pending", () => {
+  it("report carries {construct,line,mapping,note} rows and counts", () => {
     const { rows } = emitMigratedSource(`import * as THREE from "three";\nnew THREE.Scene();\nnew THREE.CSS3DRenderer()\nnew THREE.PlaneHelper(plane)`);
     const report = buildMigrateReport(rows);
-    expect(report.counts.none).toBe(1);
-    expect(report.counts.pending).toBe(1);
+    expect(report.counts.none).toBe(2);
+    expect(report.counts.pending).toBe(0);
     expect(report.rows.some((r) => r.construct === "CSS3DRenderer" && r.line === 3)).toBe(true);
-    expect(report.rows.some((r) => r.construct === "PlaneHelper" && r.mapping === "pending")).toBe(true);
+    expect(report.rows.some((r) => r.construct === "PlaneHelper" && r.mapping === "none")).toBe(true);
   });
 
   // ── Golden: a Crayon-style module shaped like Strange Orbit ────────────
