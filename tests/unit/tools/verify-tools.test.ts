@@ -21,7 +21,7 @@ function fixtureRoot(): string {
   return mkdtempSync(join(tmpdir(), "a3d-tools-"));
 }
 
-function writePackage(root: string, name: string, source: string): void {
+function writePackage(root: string, name: string, source: string, extraExports: Record<string, unknown> = {}): void {
   const dir = join(root, "packages", name);
   mkdirSync(join(dir, "src"), { recursive: true });
   writeFileSync(join(dir, "src", "index.ts"), source);
@@ -30,7 +30,7 @@ function writePackage(root: string, name: string, source: string): void {
     type: "module",
     main: "./dist/index.js",
     types: "./dist/index.d.ts",
-    exports: { ".": { types: "./dist/index.d.ts", import: "./dist/index.js" } }
+    exports: { ".": { types: "./dist/index.d.ts", import: "./dist/index.js" }, ...extraExports }
   }));
 }
 
@@ -61,7 +61,8 @@ describe("verification tools", () => {
 
   it("export verifier detects missing barrels and root exports", () => {
     const root = fixtureRoot();
-    writePackage(root, "math", "export const x = 1;\n");
+    // @aura3d/math must ship the approved ./three subpath (mutable three-compatible classes, beat-three.js part 2 WP-2).
+    writePackage(root, "math", "export const x = 1;\n", { "./three": { types: "./dist/three/index.d.ts", import: "./dist/three/index.js" } });
     writeFileSync(join(root, "package.json"), JSON.stringify({ name: "@aura3d/engine", exports: { ".": "./dist/index.js", "./math": "./dist/math/index.js" } }));
     expect(verifyExports(root).ok).toBe(true);
 

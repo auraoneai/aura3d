@@ -36,7 +36,7 @@ describe("aura3d migrate three", () => {
     "Euler XYZ order": { source: `const e = new THREE.Euler(0.1, 0.2, 0.3, "XYZ");`, expectContains: [`new Euler(0.1, 0.2, 0.3, "XYZ")`, `from "@aura3d/math/three"`, "[e.x, e.y, e.z]"], mapping: "exact" },
     WebGLRenderer: { source: `const r = new THREE.WebGLRenderer({ antialias: true });`, expectContains: ["createAuraApp({ resize: true })"], mapping: "approximate" },
     Fog: { source: `scene.fog = new THREE.Fog(0x87ceeb, 20, 120);`, expectContains: [`effects.fog({ color: "#87ceeb" })`, "near 20/far 120"], mapping: "approximate" },
-    Color: { source: `const c = new THREE.Color(0x334455);`, expectContains: ["new Color(0x334455)", `from "@aura3d/math/three"`, "color.getStyle()"], mapping: "exact" },
+    Color: { source: `const c = new THREE.Color(0x334455);`, expectContains: ["new Color(0x334455)", `from "@aura3d/math/three"`, "getHexString()"], mapping: "exact" },
 
     // ── L10: newly honest rows (real GPU-backed public targets) ──────────
     PMREMGenerator: { source: `const p = new THREE.PMREMGenerator(renderer);`, expectContains: ["a3d: PMREMGenerator → environments.capture", "SH-07"], mapping: "approximate" },
