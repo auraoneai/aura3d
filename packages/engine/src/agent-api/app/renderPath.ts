@@ -1,6 +1,6 @@
 // beat-three.js L-P1: pick the render path for one mount (direct canvas MSAA vs HDR multisampled target).
 
-import { isQualityMode, qrCoreOutputOn, resolveRenderPath, withDirectPath, type AuraQualityMode, type RenderPathDecision } from "@aura3d/rendering";
+import { isQualityMode, qrCoreOutputOn, resolveBloomFusionConfig, resolveRenderPath, withDirectPath, type AuraQualityMode, type BloomFusionConfig, type RenderPathDecision } from "@aura3d/rendering";
 import type { AuraBloomFusion, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraCreateAppOptions, AuraSceneSnapshot } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
@@ -11,18 +11,30 @@ export interface AuraRenderPathReport {
   readonly path: RenderPathDecision["path"];
   readonly quality: AuraQualityMode;
   readonly reason: string;
-  /** Bloom pass fusion in effect: the selected mode under quality `auto`/`cinematic`, `"off"` otherwise (`production` never fuses). */
+  /**
+   * Bloom pass fusion mode that applies to this mount. `"off"` whenever no fused bloom pass can be issued: quality `production` or
+   * `safe-basic`, the direct path (no post chain), the legacy LDR route (not HDR, so the pyramid never fuses), or a scene with no
+   * bloom effect. Otherwise the selected mode. The pyramid itself additionally needs a five-mip-or-fewer plan, which depends on the
+   * canvas size and is only known at render time.
+   */
   readonly bloomFusion: AuraBloomFusion | "off";
 }
 
-/** Fusion is allowed only under quality `auto` or `cinematic`; this is the single predicate the mount and the report share. */
+/** Fusion is allowed only under quality `auto` or `cinematic`; the mount (`applyRenderPathToCanvas`) and the report both use this. */
 export function bloomFusionAllowed(quality: AuraQualityMode): boolean {
   return quality === "auto" || quality === "cinematic";
 }
 
-function reportedBloomFusion(quality: AuraQualityMode, options: AuraCreateAppOptions): AuraBloomFusion | "off" {
+/**
+ * The bloom fusion mode to report. The pyramid fuses only on the HDR route (`hdr-msaa`) and only when the scene has a bloom
+ * effect (the only source of a bloom pass), so every other combination reports `"off"`. The option is validated first so a
+ * typo throws whatever the quality.
+ */
+function reportedBloomFusion(quality: AuraQualityMode, path: RenderPathDecision["path"], legacyLdrRoute: boolean, snapshot: AuraSceneSnapshot, options: AuraCreateAppOptions): AuraBloomFusion | "off" {
   const mode = parseBloomFusionOption(options.renderer);
-  return bloomFusionAllowed(quality) ? mode : "off";
+  if (!bloomFusionAllowed(quality) || path !== "hdr-msaa" || legacyLdrRoute) return "off";
+  const hasBloom = groups.flatten(snapshot.nodes).some((node) => node.kind === "effect" && node.effect === "bloom");
+  return hasBloom ? mode : "off";
 }
 
 export interface AppRenderPath {
@@ -55,6 +67,28 @@ export function setFusedBloomPasses(canvas: object, enabled: boolean): void {
 
 export function isFusedBloomPasses(canvas: object | undefined): boolean {
   return canvas !== undefined && fusedBloomCanvases.has(canvas);
+}
+
+/** Record this mount's route on the canvas: whether it is direct, and whether bloom pass fusion is allowed (one predicate: `bloomFusionAllowed`). */
+export function applyRenderPathToCanvas(canvas: object, renderPath: Pick<AppRenderPath, "direct" | "report">): void {
+  setDirectRenderPath(canvas, renderPath.direct);
+  setFusedBloomPasses(canvas, bloomFusionAllowed(renderPath.report.quality));
+}
+
+/** The device fields the fused bloom pyramid reads. */
+export interface BloomFusionDevice {
+  bloomFusedPasses?: boolean;
+  bloomFusion?: BloomFusionConfig;
+}
+
+/**
+ * Configure a freshly created render device for this canvas's route: fused bloom passes plus the selected mode when the mount
+ * allowed fusion (`auto` / `cinematic`), nothing at all otherwise so `production` keeps the original pass sequence.
+ */
+export function configureBloomFusionDevice(device: BloomFusionDevice, canvas: object | undefined, rendererOptions: AuraCreateAppOptions["renderer"]): void {
+  if (!isFusedBloomPasses(canvas)) return;
+  device.bloomFusedPasses = true;
+  device.bloomFusion = resolveBloomFusionConfig(parseBloomFusionOption(rendererOptions));
 }
 
 export function isDirectRenderPath(canvas: object | undefined): boolean {
@@ -123,17 +157,17 @@ export function resolveAppRenderPath(snapshot: AuraSceneSnapshot, options: AuraC
   if (!qrCoreOutputOn(flags)) {
     const explicit = flags.values.A3D_QR_CORE_OUTPUT !== undefined;
     return {
-      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off: legacy LDR route" : "A3D_QR_CORE is off: legacy LDR route (its own post chain is kept)", bloomFusion: reportedBloomFusion(quality, options) },
+      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off: legacy LDR route" : "A3D_QR_CORE is off: legacy LDR route (its own post chain is kept)", bloomFusion: reportedBloomFusion(quality, "direct", true, snapshot, options) },
       flags,
       direct: false
     };
   }
   if (flags.values.A3D_QR_CORE_OUTPUT !== undefined) {
-    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly", bloomFusion: reportedBloomFusion(quality, options) }, flags, direct: false };
+    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly", bloomFusion: reportedBloomFusion(quality, "hdr-msaa", false, snapshot, options) }, flags, direct: false };
   }
   const decision = resolveRenderPath({ quality, blockers: quality === "auto" ? renderPathBlockers(snapshot, options) : [] });
   return {
-    report: { path: decision.path, quality: decision.quality, reason: decision.reason, bloomFusion: reportedBloomFusion(decision.quality, options) },
+    report: { path: decision.path, quality: decision.quality, reason: decision.reason, bloomFusion: reportedBloomFusion(decision.quality, decision.path, false, snapshot, options) },
     flags: decision.path === "direct" ? withDirectPath(flags) : flags,
     direct: decision.path === "direct"
   };

@@ -14,9 +14,11 @@ export type AuraFeatureLevel = "off" | "low" | "medium" | "high";
  * - `"separable"` (default): the draw-removing fusions that add no fill. The bright extract is folded into the level-0
  *   downsample, the five-mip sum is one pass, and the last full-resolution upsample is folded into the composite. Mips 0..2
  *   keep their separable H+V blur; the two smallest mips (3 and 4, about 1.8M texel fetches at 640x360) blur in one 2-D pass.
- *   Measured on the PBR viewer (software WebGL2, 640x360): 25 draws, frame time -7.1% / +3.1% / -3.3% against production
- *   (evidence/vs-threejs/4.3.7/bloom-fusion-variants.json). Without the 2-D pass on mips 3 and 4 the same viewer has 27 draws.
- * - `"fused-2d"`: mips 1..4 blur in one 2-D pass each (23 draws). The extra fill made the PBR viewer +46% to +52% slower on a
+ *   Measured on the PBR viewer (software WebGL2, 640x360): 25 draws; frame time at parity with production within runner noise
+ *   (fastest rep 0.98 to 0.99 of production in three runs, median of reps 0.97 / 1.02 / 0.97; rep-to-rep spread is up to 25%, so
+ *   a strict "<= production" is not established; evidence/vs-threejs/bloom-fusion-cost.json). Without the 2-D pass on mips 3
+ *   and 4 the same viewer has 27 draws. At 1440x900 the 90x57 mip exceeds the tap budget and the viewer has 26 draws.
+ * - `"fused-2d"`: mips 1..4 blur in one 2-D pass each (23 draws). The extra fill made the PBR viewer +53% to +56% slower (median of reps, three runs) on a
  *   software rasteriser, so it is opt-in until an owner-run real-GPU receipt exists.
  *
  * A 2-D pass is only taken while (2r+1)^2 * width * height stays within the tap budget, so large canvases fall back to the

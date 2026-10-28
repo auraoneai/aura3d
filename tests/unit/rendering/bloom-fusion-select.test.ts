@@ -14,7 +14,7 @@ import {
 import { resolveBloomPyramidPlan, resolveBloomPyramidV2Response } from "../../../packages/rendering/src/postprocess/NativeBloomPyramid";
 import { BLOOM_FUSIONS, DEFAULT_BLOOM_FUSION_MODE, isBloomFusion } from "../../../packages/rendering/src/contracts/quality";
 import { parseBloomFusionOption } from "../../../packages/engine/src/agent-api/app/rendererOptions";
-import { bloomFusionAllowed, resolveAppRenderPath } from "../../../packages/engine/src/agent-api/app/renderPath";
+import { applyRenderPathToCanvas, bloomFusionAllowed, configureBloomFusionDevice, isDirectRenderPath, isFusedBloomPasses, resolveAppRenderPath, type BloomFusionDevice } from "../../../packages/engine/src/agent-api/app/renderPath";
 import { effects, lights, material, primitives, scene } from "@aura3d/engine";
 import { resolveQrFlags } from "../../../packages/engine/src/contracts/flags";
 
@@ -83,14 +83,6 @@ function pyramidDraws(width: number, height: number, mode: "unfused" | "separabl
   };
 }
 
-/** Expected 2-D mips straight from the shared predicate (what the pass code asks), so a drift in either shows. */
-function expected2dLevels(width: number, height: number, mode: "separable" | "fused-2d"): number[] {
-  const plan = resolveBloomPyramidPlan(width, height, "cinematic", true);
-  const radii = resolveBloomPyramidV2Response(plan, 0.6).blurRadii;
-  const fusion = resolveBloomFusionConfig(mode);
-  return plan.mips.map((mip, level) => (bloomLevelBlursIn2d(fusion, level, mip, radii[level]!) ? level : -1)).filter((level) => level >= 0);
-}
-
 describe("AuraBloomFusion selection", () => {
   it("names two modes and defaults to separable", () => {
     expect(BLOOM_FUSIONS).toEqual(["separable", "fused-2d"]);
@@ -148,16 +140,90 @@ describe("renderPath.bloomFusion in diagnostics", () => {
     expect(resolveAppRenderPath(s, { scene: s, quality: "safe-basic" }, flags()).report.bloomFusion).toBe("off");
   });
 
-  it("bloom disabled: the mode is still reported but nothing selects it into a pass (the direct path has no post chain)", () => {
-    const s = plain();
-    const direct = resolveAppRenderPath(s, { scene: s, renderer: { bloomFusion: "fused-2d" } }, flags());
-    expect(direct.report).toMatchObject({ path: "direct", quality: "auto", bloomFusion: "fused-2d" });
+  it("reports off wherever no fused bloom pass can run, whatever the option says", () => {
+    const fused = { renderer: { bloomFusion: "fused-2d" as const } };
+    // No bloom effect, direct path (no post chain at all).
+    const p = plain();
+    const direct = resolveAppRenderPath(p, { scene: p, ...fused }, flags());
+    expect(direct.report).toMatchObject({ path: "direct", quality: "auto", bloomFusion: "off" });
     expect(direct.direct).toBe(true);
+    // No bloom effect on the HDR route (another effect forces the HDR target): still no bloom pass.
+    const graded = scene().add(primitives.box({ material: material.pbr({ color: "#ffffff" }) })).add(lights.studio()).add(effects.colorGrade({})).toJSON();
+    expect(resolveAppRenderPath(graded, { scene: graded, ...fused }, flags()).report).toMatchObject({ path: "hdr-msaa", bloomFusion: "off" });
+    // Same scene with bloom added: the mode applies.
+    const withBloom = scene().add(primitives.box({ material: material.pbr({ color: "#ffffff" }) })).add(lights.studio()).add(effects.colorGrade({})).add(effects.bloom({ intensity: 0.4 })).toJSON();
+    expect(resolveAppRenderPath(withBloom, { scene: withBloom, ...fused }, flags()).report).toMatchObject({ path: "hdr-msaa", bloomFusion: "fused-2d" });
+    // Legacy LDR route (A3D_QR_CORE off) is not HDR: the pyramid never fuses even with a bloom effect.
+    const b = bloomed();
+    const legacy = resolveAppRenderPath(b, { scene: b, ...fused }, resolveQrFlags({ url: "http://localhost/?a3d-qr=-core" }));
+    expect(legacy.report.reason).toContain("legacy LDR route");
+    expect(legacy.report.bloomFusion).toBe("off");
+    // Explicit A3D_QR_CORE_OUTPUT keeps the HDR route; with a bloom effect the mode applies, without one it does not.
+    const explicit = resolveQrFlags({ options: { A3D_QR_CORE_OUTPUT: true } });
+    expect(resolveAppRenderPath(b, { scene: b, ...fused }, explicit).report).toMatchObject({ path: "hdr-msaa", bloomFusion: "fused-2d" });
+    expect(resolveAppRenderPath(p, { scene: p, ...fused }, explicit).report).toMatchObject({ path: "hdr-msaa", bloomFusion: "off" });
   });
 
   it("an invalid mode throws at mount rather than silently running the default", () => {
     const s = bloomed();
     expect(() => resolveAppRenderPath(s, { scene: s, renderer: { bloomFusion: "nope" as never } }, flags())).toThrow("QUALITY_OPTION_INVALID");
+  });
+});
+
+describe("engine wiring: the canvas route and the device configuration", () => {
+  const bloomed = () => scene().add(primitives.box({ material: material.pbr({ color: "#ffffff" }) })).add(lights.studio()).add(effects.bloom({ intensity: 0.4 })).toJSON();
+  const mount = (options: Record<string, unknown>) => {
+    const s = bloomed();
+    const canvas = {};
+    const route = resolveAppRenderPath(s, { scene: s, ...options } as never, resolveQrFlags({}));
+    applyRenderPathToCanvas(canvas, route);
+    const device: BloomFusionDevice = {};
+    configureBloomFusionDevice(device, canvas, (options as { renderer?: never }).renderer);
+    return { canvas, device, route };
+  };
+
+  it("production never gets the fused flag or a fusion config, even when the option asks for fused-2d", () => {
+    for (const quality of ["production", "safe-basic"]) {
+      const { canvas, device } = mount({ quality, renderer: { bloomFusion: "fused-2d" } });
+      expect(isFusedBloomPasses(canvas)).toBe(false);
+      expect(device).toEqual({});
+      expect(device.bloomFusedPasses).toBeUndefined();
+    }
+  });
+
+  it("auto and cinematic set the fused flag and the selected config on the device (separable default, fused-2d opt-in)", () => {
+    for (const quality of ["auto", "cinematic"]) {
+      const sep = mount({ quality });
+      expect(isFusedBloomPasses(sep.canvas)).toBe(true);
+      expect(sep.device).toEqual({ bloomFusedPasses: true, bloomFusion: SEPARABLE_BLOOM_FUSION });
+      const fused = mount({ quality, renderer: { bloomFusion: "fused-2d" } });
+      expect(fused.device).toEqual({ bloomFusedPasses: true, bloomFusion: FUSED_2D_BLOOM_FUSION });
+    }
+  });
+
+  it("a re-mount re-decides: auto then production on the same canvas clears the fused flag", () => {
+    const s = bloomed();
+    const canvas = {};
+    applyRenderPathToCanvas(canvas, resolveAppRenderPath(s, { scene: s }, resolveQrFlags({})));
+    expect(isFusedBloomPasses(canvas)).toBe(true);
+    applyRenderPathToCanvas(canvas, resolveAppRenderPath(s, { scene: s, quality: "production" }, resolveQrFlags({})));
+    expect(isFusedBloomPasses(canvas)).toBe(false);
+    expect(isDirectRenderPath(canvas)).toBe(false);
+    const device: BloomFusionDevice = {};
+    configureBloomFusionDevice(device, canvas, undefined);
+    expect(device).toEqual({});
+  });
+
+  it("the canvas fusion flag and the report use the same predicate", () => {
+    const s = bloomed();
+    for (const quality of ["auto", "production", "safe-basic", "cinematic"] as const) {
+      const canvas = {};
+      const route = resolveAppRenderPath(s, { scene: s, quality }, resolveQrFlags({}));
+      applyRenderPathToCanvas(canvas, route);
+      expect(isFusedBloomPasses(canvas), quality).toBe(bloomFusionAllowed(quality));
+      // With a bloom effect on the HDR route the report is non-off exactly when the canvas flag is set.
+      if (route.report.path === "hdr-msaa") expect(route.report.bloomFusion !== "off", quality).toBe(isFusedBloomPasses(canvas));
+    }
   });
 });
 
@@ -180,18 +246,39 @@ describe("draws per mode, from the real pyramid pass code", () => {
     expect(rest + fused2d.total).toBe(23);
   });
 
-  it("the 2-D passes taken match the shared predicate at 640x360, 390x844 and 1440x900", () => {
+  it("2-D passes taken (mip sizes) per canvas and mode are pinned literally, and every one fits the tap budget", () => {
+    const pinned: Record<string, readonly string[]> = {
+      "640x360 separable": ["40x23", "20x12"],
+      "640x360 fused-2d": ["160x90", "80x45", "40x23", "20x12"],
+      "390x844 separable": ["25x53", "13x27"],
+      "390x844 fused-2d": ["49x106", "25x53", "13x27"],
+      "1440x900 separable": ["45x29"],
+      "1440x900 fused-2d": ["45x29"]
+    };
     for (const [width, height] of [[640, 360], [390, 844], [1440, 900]] as const) {
       for (const mode of ["separable", "fused-2d"] as const) {
         const run = pyramidDraws(width, height, mode);
-        const levels = expected2dLevels(width, height, mode);
-        expect(run.blur2d, `${width}x${height} ${mode}`).toEqual(levels.map((level) => `${run.plan.mips[level]!.width}x${run.plan.mips[level]!.height}`));
-        for (const level of levels) {
+        expect(run.blur2d, `${width}x${height} ${mode}`).toEqual(pinned[`${width}x${height} ${mode}`]);
+        for (const size of run.blur2d) {
+          const level = run.plan.mips.findIndex((mip) => `${mip.width}x${mip.height}` === size);
           const taps = (2 * run.radii[level]! + 1) ** 2 * run.plan.mips[level]!.width * run.plan.mips[level]!.height;
-          expect(taps).toBeLessThanOrEqual(BLOOM_FUSED_BLUR_TAP_BUDGET);
+          expect(taps, `${width}x${height} ${mode} ${size}`).toBeLessThanOrEqual(BLOOM_FUSED_BLUR_TAP_BUDGET);
         }
       }
     }
+  });
+
+  it("the predicate: budget boundary, radius cap and level gate are exact", () => {
+    const fusion = SEPARABLE_BLOOM_FUSION;
+    // 90x57 at radius 18 is 1369 * 5130 = 7,022,970 fetches: 22,970 over the 7,000,000 budget, so it stays separable.
+    expect((2 * 18 + 1) ** 2 * 90 * 57).toBe(7_022_970);
+    expect(bloomLevelBlursIn2d(fusion, 3, { width: 90, height: 57 }, 18)).toBe(false);
+    expect(bloomLevelBlursIn2d(fusion, 3, { width: 90, height: 56 }, 18)).toBe(true);
+    expect(bloomLevelBlursIn2d(fusion, 2, { width: 8, height: 8 }, 2)).toBe(false);
+    expect(bloomLevelBlursIn2d(fusion, 3, { width: 4, height: 4 }, 25)).toBe(false);
+    expect(bloomLevelBlursIn2d(fusion, 3, { width: 4, height: 4 }, 24)).toBe(true);
+    expect(bloomLevelBlursIn2d(FUSED_2D_BLOOM_FUSION, 1, { width: 8, height: 8 }, 2)).toBe(true);
+    expect(bloomLevelBlursIn2d(FUSED_2D_BLOOM_FUSION, 0, { width: 8, height: 8 }, 2)).toBe(false);
   });
 
   it("resize: exact pyramid draws at 640x360, 390x844 and 1440x900; fused-2d falls back per mip where a 2-D pass would exceed the tap budget", () => {

@@ -2,7 +2,7 @@
 
 import type { AuraBackend, AuraCreateAppRendererOptions, AuraLightNode, AuraModelNode, AuraRendererDiagnosticReport, AuraRuntimeNodeRegistry, AuraSceneSnapshot, AuraVec3, ProductionRuntimeActorEntry, ProductionRuntimePrimitiveEntry, WebGLSceneRenderer } from "../nodes/types.js";
 import { colorToAcesInputClearColor, colorToClearColor, colorToLinearRgb, colorToLinearRgba } from "../colorUtils.js";
-import { isDirectRenderPath, isFusedBloomPasses } from "../app/renderPath.js";
+import { configureBloomFusionDevice, isDirectRenderPath, type BloomFusionDevice } from "../app/renderPath.js";
 import { createAssetProvenance, formatSkippedInlineModelWarning } from "../diagnostics.js";
 import { groups } from "../nodes/groups.js";
 import { primitive } from "../nodes/primitives.js";
@@ -13,9 +13,9 @@ import { resolveCameraFrame } from "./camera.js";
 import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, isRenderableModelNode } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
-import { Renderer, resolveBloomFusionConfig, webGL2MaxTextureSize, type BloomFusionConfig, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import { Renderer, webGL2MaxTextureSize, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
-import { normalizeTextureBudgetBytes, parseBloomFusionOption } from "../app/rendererOptions.js";
+import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { createProductionRuntimeEnvironment } from "./environment.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
@@ -121,11 +121,7 @@ export async function createProductionRuntimeSceneRenderer(
   });
   markTiming("a3d:mount:renderer-create:resolved");
   // quality auto / cinematic: allow look-neutral bloom pass fusion (`production` never does).
-  if (isFusedBloomPasses(canvas)) {
-    const fusedDevice = productionRenderer.device as unknown as { bloomFusedPasses?: boolean; bloomFusion?: BloomFusionConfig };
-    fusedDevice.bloomFusedPasses = true;
-    fusedDevice.bloomFusion = resolveBloomFusionConfig(parseBloomFusionOption(rendererOptions));
-  }
+  configureBloomFusionDevice(productionRenderer.device as unknown as BloomFusionDevice, canvas, rendererOptions);
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
   let disposeHdriEnvironment: (() => void) | null = null;

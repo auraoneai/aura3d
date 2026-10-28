@@ -2517,7 +2517,7 @@ export interface AuraDiagnostics {
     readonly path: "direct" | "hdr-msaa";
     readonly quality: "auto" | "production" | "safe-basic" | "cinematic";
     readonly reason: string;
-    /** Bloom pass fusion in effect: `"separable"` (default) or `"fused-2d"` under quality `auto`/`cinematic`; `"off"` otherwise (`production` never fuses). */
+    /** Bloom pass fusion mode that applies to this mount: `"separable"` (default) or `"fused-2d"` when a fused bloom pass can run (quality `auto`/`cinematic`, HDR route, scene has a bloom effect); `"off"` otherwise (`production`, the direct path, the legacy LDR route, or no bloom effect). */
     readonly bloomFusion?: import("@aura3d/rendering/contracts").AuraBloomFusion | "off";
   };
   readonly warnings: readonly string[];
