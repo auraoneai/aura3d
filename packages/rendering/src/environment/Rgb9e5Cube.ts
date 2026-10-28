@@ -28,6 +28,9 @@ export interface Rgb9e5Cube {
 
 const align4 = (n: number): number => (n + 3) & ~3;
 
+/** 2^(e − 15 − 9) for each 5-bit shared exponent. */
+const RGB9E5_SCALE: readonly number[] = Array.from({ length: 32 }, (_, e) => Math.pow(2, e - 15 - 9));
+
 export function readRgb9e5Cube(bytes: Uint8Array): Rgb9e5Cube {
   if (bytes.byteLength < KTX2_HEADER_BYTES) throw new Rgb9e5CubeError("ENV_KTX2_TRUNCATED", `need ${KTX2_HEADER_BYTES} header bytes, got ${bytes.byteLength}`);
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -74,9 +77,14 @@ export function readRgb9e5Cube(bytes: Uint8Array): Rgb9e5Cube {
       const start = levelOffset + face * faceBytes;
       const packed = new Uint32Array(bytes.buffer, bytes.byteOffset + start, size * size);
       const rgba = new Float32Array(size * size * 4);
+      // Same arithmetic as `unpackRgb9e5` (mantissa × 2^(e−24)) with the 32 possible scales precomputed and no per-texel allocation.
       for (let t = 0; t < packed.length; t += 1) {
-        const [r, g, b] = unpackRgb9e5(packed[t]!);
-        rgba[t * 4] = r; rgba[t * 4 + 1] = g; rgba[t * 4 + 2] = b; rgba[t * 4 + 3] = 1;
+        const word = packed[t]!;
+        const scale = RGB9E5_SCALE[(word >>> 27) & 0x1f]!;
+        rgba[t * 4] = (word & 0x1ff) * scale;
+        rgba[t * 4 + 1] = ((word >>> 9) & 0x1ff) * scale;
+        rgba[t * 4 + 2] = ((word >>> 18) & 0x1ff) * scale;
+        rgba[t * 4 + 3] = 1;
       }
       levelFaces.push(rgba);
     }

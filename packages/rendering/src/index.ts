@@ -1388,3 +1388,6 @@ export type { OctreeNode } from "./performance/Octree.js";
 export { COMPUTE_BUFFER_USAGE, ComputeBuffer, ComputeContext, ComputeError, ComputeLimits, ComputePipeline, createComputeContext } from "./compute/index.js";
 export type { ComputeBindingSpec, ComputeBindingType, ComputeBufferSpec, ComputeBufferUsage, ComputeDispatchInput, ComputeDispatchResult, ComputeErrorCode, ComputeGPUBufferLike, ComputeGPUDeviceLike, ComputePipelineSpec, ComputeWorkgroups, ComputeWorkgroupSize } from "./compute/index.js";
 export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalRay, ProjectedDecalRaycastHit, ProjectedDecalRaycastResult, ProjectedDecalShape } from "./production-runtime/geometry/ProjectedDecalGeometry.js";
+// beat-three.js L-P1: direct (single-pass canvas MSAA) vs HDR multisampled render path.
+export { QUALITY_MODES, isQualityMode, resolveRenderPath, withDirectPath } from "./quality/DirectPath.js";
+export type { AuraQualityMode, AuraRenderPath, RenderPathDecision, RenderPathInput } from "./quality/DirectPath.js";

@@ -496,6 +496,10 @@ export class Renderer {
   get postSkipped(): CoreOutputPostSkipped | null {
     return this.lastPostSkipped;
   }
+  /** False when this renderer's flags pin the HDR-target/OutputPass route off (the direct canvas path). */
+  get outputPathActive(): boolean {
+    return qrCoreOutputOn(rendererQrFlags(this.device));
+  }
   private resolutionGovernor?: ResolutionGovernor;
   private renderScaleCeiling = 1;
   private readonly unsubscribeDprWatch?: () => void;

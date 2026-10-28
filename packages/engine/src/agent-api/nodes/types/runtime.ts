@@ -459,6 +459,20 @@ export interface AuraCreateAppOptions {
    * changes use {@link AuraApp.setPerformanceQuality} between completed frames.
    */
   readonly performanceQuality?: AuraPerformanceQuality;
+  /**
+   * Render pipeline selection. Default `"auto"`: scenes that author no
+   * post-processing, HDR output control, transmission or custom shaders render in
+   * one pass into the canvas's own MSAA framebuffer (`diagnostics().renderPath`
+   * reports `"direct"` and why); everything else uses the HDR multisampled target.
+   * `"production"` and `"cinematic"` always use the HDR target; `"safe-basic"` always
+   * renders direct.
+   */
+  readonly quality?: import("@aura3d/rendering").AuraQualityMode;
+  /**
+   * Keep the WebGL drawing buffer after presentation. Default false, except in
+   * capture/evidence runs (`?capture=1`, `?qa=1`), where it is true.
+   */
+  readonly preserveDrawingBuffer?: boolean;
   readonly autoStart?: boolean;
   readonly resize?: boolean;
   // C-38 additions (PR 0a, all optional)
