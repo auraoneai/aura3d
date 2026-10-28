@@ -15,6 +15,15 @@ interface FrameCostApi {
   mountMs: number;
   errors: string[];
   renderPath: unknown;
+  /** Pixel statistics of the very first frame (WP-8): mean RGB over the whole buffer, and over the pixels that are not the clear colour. */
+  firstFrame?: FrameStats;
+  /** Probe state read right after the first frame was drawn (WP-8). */
+  firstFrameProbe?: Record<string, unknown>;
+  /** `a3d:` performance marks, in ms relative to the start of main() (WP-8). */
+  marks?: Record<string, number>;
+  probeSnapshot?(): Record<string, unknown>;
+  /** Pixel statistics of the current drawing buffer (WP-8). */
+  frameStats?(): FrameStats;
   /** `warmup` frames run first and are not measured (default 10; the gate figure uses the default). */
   measure(frames: number, warmup?: number): { cpuMs: number[]; totalMs: number[] };
   /** Advance and draw exactly one frame (no warm-up). */
@@ -24,6 +33,57 @@ interface FrameCostApi {
   drawCalls(): number;
 }
 declare global { interface Window { __FRAME_COST__?: FrameCostApi } }
+
+interface FrameStats { width: number; height: number; meanRgb: [number, number, number]; nonBlack: number; lumaMean: number; litMeanRgb: [number, number, number]; litPixels: number }
+
+/** Statistics over the whole drawing buffer. "Lit" pixels are those that differ from the buffer's corner pixel (the clear colour). */
+function readFirstFrame(gl: WebGL2RenderingContext): FrameStats {
+  const width = gl.drawingBufferWidth;
+  const height = gl.drawingBufferHeight;
+  const px = new Uint8Array(width * height * 4);
+  gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  const bg = [px[0]!, px[1]!, px[2]!];
+  const sum = [0, 0, 0];
+  const litSum = [0, 0, 0];
+  let lit = 0;
+  let nonBlack = 0;
+  for (let i = 0; i < px.length; i += 4) {
+    const differs = px[i] !== bg[0] || px[i + 1] !== bg[1] || px[i + 2] !== bg[2];
+    for (let c = 0; c < 3; c += 1) {
+      sum[c]! += px[i + c]!;
+      if (differs) litSum[c]! += px[i + c]!;
+    }
+    if (px[i] || px[i + 1] || px[i + 2]) nonBlack += 1;
+    if (differs) lit += 1;
+  }
+  const n = width * height;
+  const mean = sum.map((s) => s / n) as [number, number, number];
+  return {
+    width,
+    height,
+    meanRgb: mean,
+    nonBlack,
+    lumaMean: 0.2126 * mean[0] + 0.7152 * mean[1] + 0.0722 * mean[2],
+    litMeanRgb: litSum.map((s) => (lit ? s / lit : 0)) as [number, number, number],
+    litPixels: lit
+  };
+}
+
+function probeSnapshot(app: ReturnType<typeof createAuraApp>): Record<string, unknown> {
+  const d = app.diagnostics() as unknown as Record<string, unknown>;
+  const pick = (o: unknown, keys: string[]): Record<string, unknown> => {
+    const out: Record<string, unknown> = {};
+    if (o && typeof o === "object") for (const k of keys) if (k in (o as object)) out[k] = (o as Record<string, unknown>)[k];
+    return out;
+  };
+  return { ...pick(d, ["hdriStatus", "iblPixelBacked", "environmentProbeStatus"]), ...pick(d.environment, ["hdriStatus", "iblPixelBacked", "probe", "probeStatus", "status", "source"]) };
+}
+
+function a3dMarks(origin: number): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const entry of performance.getEntriesByType("mark")) if (entry.name.startsWith("a3d:")) out[entry.name] = Math.round((entry.startTime - origin) * 10) / 10;
+  return out;
+}
 
 const WIDTH = 640;
 const HEIGHT = 360;
@@ -116,12 +176,21 @@ async function main(): Promise<void> {
     frame();
     finish();
     const firstFrameMs = performance.now();
+    // WP-8: what the very first frame looked like, read in the task that drew it (the drawing buffer is only guaranteed until
+    // the page composites), and which environment probe it was lit with.
+    const firstFrame = readFirstFrame(gl);
+    const firstFrameProbe = probeSnapshot(app);
     window.__FRAME_COST__ = {
       ready: true,
       scene: sceneName,
       quality,
       firstFrameMs,
       mountMs: firstFrameMs - mountStart,
+      firstFrame,
+      firstFrameProbe,
+      marks: a3dMarks(mountStart),
+      probeSnapshot: () => probeSnapshot(app),
+      frameStats: () => readFirstFrame(gl),
       errors,
       renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath,
       measure(frames, warmup = 10) {

@@ -406,6 +406,7 @@ import type { RenderDevice } from "../../../../rendering/src/RenderDevice.js";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
 import type { EnvironmentCaptureRequest } from "@aura3d/rendering/contracts";
 import { readLightingKillSwitches } from "./lights.js";
+import { markTiming } from "../platform.js";
 
 export interface Prd02EnvironmentBindOptions {
   readonly device: RenderDevice;
@@ -476,7 +477,9 @@ export function bindPrd02EnvironmentProbe(
   // A failure (including the C-09 stub still pending) keeps the floor and is
   // handled here, so no frame ever sees an unhandled rejection.
   const upgrade = (acquired: Promise<EnvironmentProbe>): Promise<EnvironmentProbe> => {
+    markTiming("a3d:env:upgrade:start");
     const pending = acquired.then((probe) => {
+      markTiming("a3d:env:upgrade:ready");
       options.onUpgrade?.(probe);
       return probe;
     });
