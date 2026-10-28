@@ -11,12 +11,12 @@ import { emitFile, gitSha, logMetrics, openHarness, receiptRenderer, renderConta
  * moved phases, so the claim needs pixels, not GLSL string checks. The frames below have no contactShadows node at all
  * (production quality profile, the renderer's default output route). Their PNG hashes are compared with hashes recorded
  * from the build before WP-4 (git 3708b67ac, `docs: tidy part 2 PRD references`) by running THIS spec there:
- * when `evidence/receipts/effects-contact-shadows/absent-baseline.json` does not exist the spec records it instead of
+ * when `tests/browser/contact-shadow-absent-baseline.json` does not exist the spec records it instead of
  * comparing, which is how the baseline was produced on the pre-WP-4 tree. The renderer must match too, because
  * SwiftShader and a real GPU do not produce the same bytes.
  */
 
-const BASELINE_PATH = "evidence/receipts/effects-contact-shadows/absent-baseline.json";
+const BASELINE_PATH = "tests/browser/contact-shadow-absent-baseline.json";
 const IDS: readonly ContactMaskVariant[] = ["cm-absent-nocast", "cm-absent-shadowed", "cm-absent-spot"];
 
 interface Baseline {
