@@ -36,13 +36,13 @@ test("normalizeSkinWeights clamps negative and non-finite components to zero", (
   assert.deepEqual(normalizeSkinWeights([1, -1, Number.NaN, Number.POSITIVE_INFINITY]), [1, 0, 0, 0]);
 });
 
-test("normalizeSkinWeights counts quantization-noise sums (within 1e-3 of 1) apart from real rescales", () => {
+test("normalizeSkinWeights counts quantization-noise sums (within 5% of 1) apart from real rescales", () => {
   const stats: { degenerate: number; rescaled: number; withinTolerance?: number } = { degenerate: 0, rescaled: 0 };
-  const result = normalizeSkinWeights([0.6003, 0.4, 0, 0], stats);
+  const result = normalizeSkinWeights([0.62, 0.4, 0, 0], stats);
   assert.ok(Math.abs(result[0] + result[1] + result[2] + result[3] - 1) < 1e-9);
   assert.equal(stats.rescaled, 0);
   assert.equal(stats.withinTolerance, 1);
-  normalizeSkinWeights([0.7, 0.4, 0, 0], stats);
+  normalizeSkinWeights([0.8, 0.4, 0, 0], stats);
   assert.equal(stats.rescaled, 1);
   assert.equal(stats.withinTolerance, 1);
 });

@@ -73,6 +73,8 @@ export interface ExposureCase {
   readonly intensity: number;
   readonly albedo: string;
   readonly lightColor?: string;
+  /** Adds an inert bloom so the frame takes the HDR post path instead of the direct path (same lights, same expected output). */
+  readonly post?: boolean;
 }
 
 /** Five light/albedo pairs plus zero-light and ambient/hemisphere probes. Linear outputs all stay below 1. */
@@ -82,6 +84,8 @@ export const EXPOSURE_CASES: readonly ExposureCase[] = [
   { id: "dir-3-white", light: "directional", intensity: 3, albedo: "#ffffff" },
   { id: "dir-0.5-blue", light: "directional", intensity: 0.5, albedo: "#4488cc" },
   { id: "dir-2-green", light: "directional", intensity: 2, albedo: "#6f8a5a" },
+  { id: "dir-1-grey+hdrpath", light: "directional", intensity: 1, albedo: "#808080", post: true },
+  { id: "dir-2.2-warm+hdrpath", light: "directional", intensity: 2.2, albedo: "#cc8844", lightColor: "#fff4e0", post: true },
   { id: "none-grey", light: "none", intensity: 0, albedo: "#808080" },
   { id: "amb-1-grey", light: "ambient", intensity: 1, albedo: "#808080" },
   { id: "hemi-1.3-sky", light: "hemisphere", intensity: 1.3, albedo: "#808080", lightColor: "#dce8f2" },
