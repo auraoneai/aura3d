@@ -1,7 +1,7 @@
 {
   "capability": "physics-root-collision",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
   "scene": "box, sphere, capsule, size-derived capsule and a ball-on-crate stack falling onto a static ground via createAuraApp physics",
   "frames": [
@@ -31,7 +31,7 @@
     "tests/browser/physics-root-receipts.spec.ts",
     "tests/unit/agent-api/physics-root-collision.test.ts"
   ],
-  "date": "2026-10-28T12:52:05.541Z",
+  "date": "2026-10-28T20:38:33.814Z",
   "measurements": {
     "bodies": {
       "box": {

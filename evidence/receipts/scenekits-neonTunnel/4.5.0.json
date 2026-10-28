@@ -1,21 +1,21 @@
 {
   "capability": "scenekits-neonTunnel",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "swiftshader",
   "scene": "sceneKits.neonTunnel() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
   "frames": [
     {
       "file": "evidence/receipts/scenekits-neonTunnel/4.5.0/t0.png",
-      "sha256": "62fe7201a5790d40c887477398f3d9d12f9c0110b19c22aa6495b169dfca56fa",
-      "meanLuma": 176.8382,
+      "sha256": "00bf9b22578630a43d7e0c5fe7ad34e87fedb9b2f254480cb89011a4f68434e0",
+      "meanLuma": 176.5493,
       "nonBlackRatio": 1,
       "label": "frame 0"
     },
     {
       "file": "evidence/receipts/scenekits-neonTunnel/4.5.0/t90.png",
-      "sha256": "936893a409321c0180b9474366c7ef94d9c9dff9378cb0eae101a8bd92e22424",
-      "meanLuma": 186.4403,
+      "sha256": "0eabb5bacdf2758b68909bd08c54b96e1a5bb2751ea34d5cff8c593aa099b861",
+      "meanLuma": 156.8623,
       "nonBlackRatio": 1,
       "label": "frame after 90 fixed steps (1.5 s)"
     }
@@ -23,7 +23,7 @@
   "tests": [
     "tests/browser/scenekits-receipts.spec.ts"
   ],
-  "date": "2026-10-28T12:56:34.954Z",
+  "date": "2026-10-28T20:43:33.905Z",
   "checks": {
     "noRuntimeErrors": true,
     "drew": true,
@@ -32,8 +32,8 @@
     "lumaSpreadAtLeast3": true,
     "atLeast6ColourBuckets": true,
     "framesDifferOverTime": true,
-    "drawCalls": 15,
-    "motionChangedPixelFraction": 0.9864,
+    "drawCalls": 51,
+    "motionChangedPixelFraction": 0.9379,
     "kitNodeCount": 147,
     "kitStructuralScore": 5
   }

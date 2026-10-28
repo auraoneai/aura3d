@@ -1,7 +1,7 @@
 {
   "capability": "animation-layers",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
   "scene": "Soldier: Idle base + Run on an upper-body masked layer, then stopLayer",
   "frames": [
@@ -31,7 +31,7 @@
     "tests/browser/animation-root-receipts.spec.ts",
     "tests/unit/animation/animation-root-retarget.test.ts"
   ],
-  "date": "2026-10-28T12:50:11.112Z",
+  "date": "2026-10-28T20:36:46.461Z",
   "measurements": {
     "handRangeIdle": 0.016,
     "handRangeWithLayer": 0.4646,

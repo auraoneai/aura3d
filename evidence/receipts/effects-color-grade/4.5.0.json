@@ -1,7 +1,7 @@
 {
   "capability": "effects-color-grade",
   "version": "4.5.0",
-  "gitSha": "55481c5901ae916fe95b15d046a5c420d36f601a",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "swiftshader",
   "scene": "tests/browser/receipts-harness.ts effectScene(): typed GLB subject, floor, reference bar, far colour block, one directional light; fx-card-contrast: tests/browser/receipts-harness.ts cardScene(): eleven evenly lit grey tiles (24..240) on a mid-grey field; off frame = identity colour grade",
   "frames": [
@@ -37,7 +37,7 @@
   "tests": [
     "tests/browser/effects-receipts.spec.ts"
   ],
-  "date": "2026-10-28T14:11:06.375Z",
+  "date": "2026-10-28T20:37:48.431Z",
   "checks": {
     "noRuntimeErrors": true,
     "drew": true,

@@ -1,7 +1,7 @@
 {
   "capability": "scenekits-cityBlock",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "swiftshader",
   "scene": "sceneKits.cityBlock() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
   "frames": [
@@ -23,7 +23,7 @@
   "tests": [
     "tests/browser/scenekits-receipts.spec.ts"
   ],
-  "date": "2026-10-28T12:59:24.510Z",
+  "date": "2026-10-28T20:46:51.647Z",
   "checks": {
     "noRuntimeErrors": true,
     "drew": true,

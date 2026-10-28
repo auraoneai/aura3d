@@ -1,21 +1,21 @@
 {
   "capability": "scenekits-physicsPlayground",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "swiftshader",
   "scene": "sceneKits.physicsPlayground() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
   "frames": [
     {
       "file": "evidence/receipts/scenekits-physicsPlayground/4.5.0/t0.png",
-      "sha256": "18695dda88f5c9fdfecdcc61bed6e512fc0e9714833b16d4dc93b34b8499a395",
-      "meanLuma": 187.1098,
+      "sha256": "62ee2280a4793b036a65f9cdacd6adc27a1d0b3f1ce1ec2a40592c37d07680ac",
+      "meanLuma": 188.9155,
       "nonBlackRatio": 1,
       "label": "frame 0"
     },
     {
       "file": "evidence/receipts/scenekits-physicsPlayground/4.5.0/t90.png",
-      "sha256": "a10e538653f2c7cb52d599329991c8ea98fd36760f91e77416fc17d0953900cb",
-      "meanLuma": 168.8441,
+      "sha256": "3c4bc29416aef5b3f94590c477a6c2ba241318d6a5c1f8599c89206d60fb92dc",
+      "meanLuma": 170.4971,
       "nonBlackRatio": 1,
       "label": "frame after 90 fixed steps (1.5 s)"
     }
@@ -23,7 +23,7 @@
   "tests": [
     "tests/browser/scenekits-receipts.spec.ts"
   ],
-  "date": "2026-10-28T12:52:57.699Z",
+  "date": "2026-10-28T20:39:20.808Z",
   "checks": {
     "noRuntimeErrors": true,
     "drew": true,
@@ -33,7 +33,7 @@
     "atLeast6ColourBuckets": true,
     "framesDifferOverTime": true,
     "drawCalls": 70,
-    "motionChangedPixelFraction": 0.999,
+    "motionChangedPixelFraction": 0.9987,
     "kitNodeCount": 75
   }
 }

@@ -1,21 +1,21 @@
 {
   "capability": "scenekits-solarSystem",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "swiftshader",
   "scene": "sceneKits.solarSystem() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
   "frames": [
     {
       "file": "evidence/receipts/scenekits-solarSystem/4.5.0/t0.png",
-      "sha256": "4a8b6a09fa98cf09cf448d9b2f3c2b6a9f5ed8973d99f214db851e23bf1d0c96",
-      "meanLuma": 228.9725,
+      "sha256": "a7284854da9d981c803c28396b83dcd81354ceb816a22e7579859b445c9a3159",
+      "meanLuma": 228.9729,
       "nonBlackRatio": 1,
       "label": "frame 0"
     },
     {
       "file": "evidence/receipts/scenekits-solarSystem/4.5.0/t90.png",
-      "sha256": "e1c28445ad74c71d07d12f9504bffa83989fa8a581caeccf89351c352270f367",
-      "meanLuma": 213.5491,
+      "sha256": "eafba0e7610175167b182500f660e91063cb79cc4286b1604ec836fc21a027ad",
+      "meanLuma": 213.5399,
       "nonBlackRatio": 1,
       "label": "frame after 90 fixed steps (1.5 s)"
     }
@@ -23,7 +23,7 @@
   "tests": [
     "tests/browser/scenekits-receipts.spec.ts"
   ],
-  "date": "2026-10-28T12:54:56.105Z",
+  "date": "2026-10-28T20:41:38.606Z",
   "checks": {
     "noRuntimeErrors": true,
     "drew": true,
@@ -33,7 +33,7 @@
     "atLeast6ColourBuckets": true,
     "framesDifferOverTime": true,
     "drawCalls": 143,
-    "motionChangedPixelFraction": 0.9974,
+    "motionChangedPixelFraction": 0.9982,
     "kitNodeCount": 152,
     "kitStructuralScore": 5
   }

@@ -1,21 +1,21 @@
 {
   "capability": "scenekits-humanoidWalk",
   "version": "4.5.0",
-  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
   "renderer": "swiftshader",
   "scene": "sceneKits.humanoidWalk() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
   "frames": [
     {
       "file": "evidence/receipts/scenekits-humanoidWalk/4.5.0/t0.png",
-      "sha256": "8ebc8d69a06761b2c39468500db3e8bc4b899849a4d29c65b00c6bb210a905d8",
-      "meanLuma": 185.2123,
+      "sha256": "60503e953ee31bf8e38bae1e4ece93e65248dc81264df133f7a3c63f8ab4b397",
+      "meanLuma": 186.8474,
       "nonBlackRatio": 1,
       "label": "frame 0"
     },
     {
       "file": "evidence/receipts/scenekits-humanoidWalk/4.5.0/t90.png",
-      "sha256": "ee24d71f3f2a8af511e65fcdd71b72b595186e0e34d1f5a7203d081341741540",
-      "meanLuma": 167.3377,
+      "sha256": "e56f6104656f32ab21ad878e475b02267dde22e40b07976d799d13936607b722",
+      "meanLuma": 169.3108,
       "nonBlackRatio": 1,
       "label": "frame after 90 fixed steps (1.5 s)"
     }
@@ -23,7 +23,7 @@
   "tests": [
     "tests/browser/scenekits-receipts.spec.ts"
   ],
-  "date": "2026-10-28T13:00:13.068Z",
+  "date": "2026-10-28T20:47:33.797Z",
   "checks": {
     "noRuntimeErrors": true,
     "drew": true,
@@ -33,7 +33,7 @@
     "atLeast6ColourBuckets": true,
     "framesDifferOverTime": true,
     "drawCalls": 8,
-    "motionChangedPixelFraction": 0.9961,
+    "motionChangedPixelFraction": 0.9962,
     "kitNodeCount": 11,
     "kitStructuralScore": 5
   }

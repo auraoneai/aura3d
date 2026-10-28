@@ -1,0 +1,132 @@
+{
+  "capability": "effects-contact-shadows",
+  "version": "4.5.0",
+  "gitSha": "2147f500b7e0508c91c3022ab871057c831ce2d6",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/receipts-harness.ts contactMaskScene(): grey PBR floor, 0.9 m box subject on it, a small far-away shadow-anchor box; nocast/shadowed = one shadow-casting directional key light (2.6, 4.2, 2.4), nocast = subject outside the shadow map, shadowed = subject casts; spot = one shadow-casting spot light and no sun; the contactShadows node is present in every frame (intensity 0 vs 1)",
+  "frames": [
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-nocast-off.png",
+      "sha256": "2d542521ac7e3a407168b34cc9b9bfd879a6a4fa5fbd4d014dd3133fea28256c",
+      "meanLuma": 79.8643,
+      "nonBlackRatio": 0.999,
+      "label": "effect at intensity 0, subject outside the shadow map"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-nocast-on.png",
+      "sha256": "15eedb78514f150e110196fb2cf36f909f9565f499a1517e3026f4ce5b101de4",
+      "meanLuma": 79.6201,
+      "nonBlackRatio": 0.999,
+      "label": "effect on, subject outside the shadow map (mask only)"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-shadowed-off.png",
+      "sha256": "1e4e9d43ed3e097b7b44df1cdcd3af00ac28fd7018e0db05a6a582cc4225b68c",
+      "meanLuma": 78.4604,
+      "nonBlackRatio": 0.9883,
+      "label": "effect at intensity 0, subject casts a shadow-map shadow"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-shadowed-on.png",
+      "sha256": "e8275a0177bf95c1e06cee7ff59e1c7a5e2cf1ae1bc77be67b93b2dea761857c",
+      "meanLuma": 78.4245,
+      "nonBlackRatio": 0.9883,
+      "label": "effect on, subject casts a shadow-map shadow"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-spot-off.png",
+      "sha256": "2aab0a0b80ac6a1564526e07ad2f9fbf30807cd96ea105297df558509e674997",
+      "meanLuma": 45.9319,
+      "nonBlackRatio": 0.9971,
+      "label": "effect at intensity 0, shadow-casting spot light and no sun"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-spot-on.png",
+      "sha256": "2aab0a0b80ac6a1564526e07ad2f9fbf30807cd96ea105297df558509e674997",
+      "meanLuma": 45.9319,
+      "nonBlackRatio": 0.9971,
+      "label": "effect on, shadow-casting spot light and no sun (must equal the off frame)"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-ortho-off.png",
+      "sha256": "8a384e62c67eaced11e5712bc6f4270bb9ae3f1808512f236f5f7c8ade605a81",
+      "meanLuma": 91.5443,
+      "nonBlackRatio": 0.9999,
+      "label": "orthographic camera, effect at intensity 0, subject outside the shadow map"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.5.0/cm-ortho-on.png",
+      "sha256": "368d1fd72bc728d7fa706ba1c0e8dc77cec9842782a031bdbae35e2fa6583ef9",
+      "meanLuma": 91.4207,
+      "nonBlackRatio": 0.9999,
+      "label": "orthographic camera, effect on, subject outside the shadow map"
+    }
+  ],
+  "tests": [
+    "tests/browser/contact-shadow-mask.spec.ts",
+    "tests/browser/contact-shadow-absent.spec.ts",
+    "tests/unit/rendering/contact-shadow-mask.test.ts"
+  ],
+  "date": "2026-10-28T20:37:17.166Z",
+  "checks": {
+    "passed": true,
+    "nocastNearDarkens": true,
+    "nocastFarUntouched": true,
+    "nocastNoBrightening": true,
+    "shadowedReachesShading": true,
+    "shadowedFarUntouched": true,
+    "shadowedNoBrightening": true,
+    "orthoDarkensABand": true,
+    "spotUnchanged": true,
+    "spotReportsNoSun": true,
+    "maskPassRan": true,
+    "noSsaoStandIn": true,
+    "maskDepthSource": "self",
+    "ssaoLoweringUsed": false,
+    "nocastNearFloorLumaDelta": -24.9805,
+    "nocastNearFloorChangedFraction": 0.4811,
+    "nocastFarFloorLumaDelta": 0,
+    "nocastFarFloorChangedFraction": 0,
+    "nocastBrightenedFraction": 0,
+    "nocastWholeFrameLumaDelta": -0.2442,
+    "nocastChangedPixelFraction": 0.0051,
+    "shadowedNearFloorLumaDelta": -0.4213,
+    "shadowedNearFloorChangedFraction": 0.0274,
+    "shadowedFarFloorLumaDelta": 0,
+    "shadowedBrightenedFraction": 0,
+    "shadowedChangedPixelFraction": 0.0008,
+    "shadowedWholeFrameLumaDelta": -0.0359,
+    "spotChangedPixelFraction": 0,
+    "orthoChangedPixelFraction": 0.0028,
+    "orthoWholeFrameLumaDelta": -0.1236,
+    "spotUnavailableReason": "no-shadow-casting-directional-light",
+    "nocastOnForwardDraws": 3,
+    "nocastOnDrawsWithMaskSampler": 3,
+    "nocastOnDrawsThatBoundMask": 3,
+    "nocastOnMaskMin": 0.0392156862745098,
+    "nocastOnMaskMean": 0.9970992810457516,
+    "nocastOnMaskFractionBelow098": 0.0055,
+    "nocastOnDepthCoveredFraction": 1,
+    "shadowedOnForwardDraws": 3,
+    "shadowedOnDrawsWithMaskSampler": 3,
+    "shadowedOnDrawsThatBoundMask": 3,
+    "shadowedOnMaskMin": 0.0392156862745098,
+    "shadowedOnMaskMean": 0.9970992810457516,
+    "shadowedOnMaskFractionBelow098": 0.0055,
+    "shadowedOnDepthCoveredFraction": 1,
+    "orthoOnForwardDraws": 2,
+    "orthoOnDrawsWithMaskSampler": 2,
+    "orthoOnDrawsThatBoundMask": 2,
+    "orthoOnMaskMin": 0.050980392156862744,
+    "orthoOnMaskMean": 0.9987162091503268,
+    "orthoOnMaskFractionBelow098": 0.0027333333333333333,
+    "orthoOnDepthCoveredFraction": 1,
+    "thresholdNocastNearDarkenAtLeast": 1,
+    "thresholdShadowedNearDarkenAtLeast": 0.1,
+    "thresholdShadowedWholeChangedFractionAtLeast": 0.0003,
+    "thresholdFarDeltaAtMost": 0.25,
+    "directLightOnlyBasis": "spot pair measured above: with a shadow-casting spot and no sun the on and off frames are pixel-identical; the shader applies the factor only when the light kind is directional (kind 0), asserted in tests/unit/rendering/contact-shadow-mask.test.ts",
+    "realisticEffectSize": "In the shadowed scene the shadow map already removes the sun's light where the mask looks, so the mask's own contribution there is small (see shadowedNearFloorLumaDelta and shadowedChangedPixelFraction); the large near-base delta exists only in the nocast isolating scene.",
+    "knownLimits": "needs a shadow-casting directional light; without one the effect reports unavailable and renders nothing; the 9 textured-PBR glTF extension variants (clearcoat, transmission and similar) do not sample the mask; a blocker deeper than twice the march length (default 0.25 m, 0.5 m in these scenes) is ignored by design, so thick casters shade only the band within that distance of the receiver; measured on software WebGL2 (SwiftShader) only"
+  }
+}
