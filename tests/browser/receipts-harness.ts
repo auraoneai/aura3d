@@ -79,13 +79,35 @@ export interface FrameComparison {
 }
 
 /** WP-4 contact-shadow mask scenes: same floor, subject and light; only the effect node differs. */
-export type ContactMaskVariant = "cm-nocast-off" | "cm-nocast-on" | "cm-shadowed-off" | "cm-shadowed-on";
+export type ContactMaskVariant =
+  | "cm-nocast-off" | "cm-nocast-on" | "cm-shadowed-off" | "cm-shadowed-on"
+  // A shadow-casting SPOT light and no sun: the mask has no direction to march along and must change nothing.
+  | "cm-spot-off" | "cm-spot-on"
+  // Orthographic camera, shadow-casting sun, subject outside the shadow map (the isolating scene viewed orthographically).
+  | "cm-ortho-off" | "cm-ortho-on"
+  // No contactShadows node at all (the "effect absent" path). Compared against the pre-WP-4 build by hash.
+  | "cm-absent-nocast" | "cm-absent-shadowed" | "cm-absent-spot";
 
 export interface ContactMaskFrame extends FrameResult {
   /** `app.diagnostics().shadows.contactShadows` (the pass that produced the mask), or null. */
-  readonly contactShadows: { readonly passExecuted: boolean; readonly depthSource: string } | null;
+  readonly contactShadows: {
+    readonly passExecuted: boolean;
+    readonly depthSource: string;
+    /** Why a requested mask could not be shown (no sun, or no drawn program samples it). */
+    readonly unavailable?: string;
+    readonly probe?: ContactMaskProbe;
+  } | null;
   /** True when the submitted postprocess contains an `ssao` pass (the retired lowering). */
   readonly ssaoRequested: boolean;
+}
+
+/** `__A3D_CONTACT_PROBE__` readback from the contributor (GPU diagnostics runs only). */
+export interface ContactMaskProbe {
+  readonly mask?: { readonly width: number; readonly height: number; readonly min: number; readonly mean: number; readonly fractionBelow098: number } | null;
+  readonly depth?: { readonly coveredFraction: number } | null;
+  readonly publishedToShading?: boolean;
+  readonly drawCounters?: { readonly calls: number; readonly reflectingDraws: number; readonly maskedDraws: number };
+  readonly error?: string;
 }
 
 export interface ContactRegionStat {
@@ -264,15 +286,41 @@ const CONTACT_REGIONS: Readonly<Record<string, readonly [number, number, number,
   farFloor: [0.9, 1.3, 0.6, 1.2]
 };
 
-function contactMaskScene(id: ContactMaskVariant) {
-  const withEffect = id.endsWith("-on");
+interface ContactMaskSceneSpec {
+  /** `sun`: one shadow-casting directional light. `spot`: one shadow-casting spot light, no sun. */
+  readonly light: "sun" | "spot";
+  readonly subjectCastsShadow: boolean;
+  /** `none`: no contactShadows node. Otherwise the node's intensity (0 keeps the post route but feeds no mask). */
+  readonly effect: "none" | 0 | 1;
+  /** Orthographic main camera (the view-depth branch of the mask producer). */
+  readonly orthographic?: true;
+}
+
+function contactMaskSpec(id: ContactMaskVariant): ContactMaskSceneSpec {
+  switch (id) {
+    case "cm-nocast-off": return { light: "sun", subjectCastsShadow: false, effect: 0 };
+    case "cm-nocast-on": return { light: "sun", subjectCastsShadow: false, effect: 1 };
+    case "cm-shadowed-off": return { light: "sun", subjectCastsShadow: true, effect: 0 };
+    case "cm-shadowed-on": return { light: "sun", subjectCastsShadow: true, effect: 1 };
+    case "cm-spot-off": return { light: "spot", subjectCastsShadow: true, effect: 0 };
+    case "cm-spot-on": return { light: "spot", subjectCastsShadow: true, effect: 1 };
+    case "cm-ortho-off": return { light: "sun", subjectCastsShadow: false, effect: 0, orthographic: true };
+    case "cm-ortho-on": return { light: "sun", subjectCastsShadow: false, effect: 1, orthographic: true };
+    case "cm-absent-nocast": return { light: "sun", subjectCastsShadow: false, effect: "none" };
+    case "cm-absent-shadowed": return { light: "sun", subjectCastsShadow: true, effect: "none" };
+    case "cm-absent-spot": return { light: "spot", subjectCastsShadow: true, effect: "none" };
+  }
+}
+
+function contactMaskScene(spec: ContactMaskSceneSpec) {
   // nocast: the subject is not a shadow-map caster (only the far anchor is), so the shadow map cannot darken the floor
   // near the subject and any on/off delta there is attributable to the mask. shadowed: the subject casts a normal
   // shadow-map shadow.
-  const subjectCastsShadow = id.startsWith("cm-shadowed");
   const builder = scene()
     .background("#05070d")
-    .camera(camera.perspective({ position: [...CONTACT_CAMERA.position], target: [...CONTACT_CAMERA.target], fov: CONTACT_CAMERA.fovDegrees }))
+    .camera(spec.orthographic
+      ? camera.orthographic({ position: [...CONTACT_CAMERA.position], target: [...CONTACT_CAMERA.target], orthographicSize: 2.2 })
+      : camera.perspective({ position: [...CONTACT_CAMERA.position], target: [...CONTACT_CAMERA.target], fov: CONTACT_CAMERA.fovDegrees }))
     .add(primitives.plane({
       name: "contact floor",
       material: material.pbr({ color: "#9aa2ae", roughness: 0.82, metallic: 0 })
@@ -280,7 +328,7 @@ function contactMaskScene(id: ContactMaskVariant) {
     .add(primitives.box({
       name: "contact subject",
       material: material.pbr({ color: "#d9534f", roughness: 0.5, metallic: 0 }),
-      castShadow: subjectCastsShadow
+      castShadow: spec.subjectCastsShadow
     }).position(0, 0.45, 0).scale([0.9, 0.9, 0.9]))
     // Shadow anchor: a small caster far from every measured region. A shadow map is only built (and the shadow-receive
     // shader chunk, which carries the mask, only compiled in) when something casts, so the "nocast" frames need one.
@@ -288,30 +336,35 @@ function contactMaskScene(id: ContactMaskVariant) {
       name: "contact shadow anchor",
       material: material.pbr({ color: "#4a6fa5", roughness: 0.6, metallic: 0 }),
       castShadow: true
-    }).position(3.6, 0.15, -3.6).scale([0.3, 0.3, 0.3]))
-    // The contact mask follows the shadow-casting sun, so the key light casts (the subject may still opt out of the map).
-    .add(lights.directional({ name: "contact key", position: [2.6, 4.2, 2.4], intensity: 2, shadow: true }));
+    }).position(3.6, 0.15, -3.6).scale([0.3, 0.3, 0.3]));
+  // The contact mask follows the shadow-casting sun, so the key light casts (the subject may still opt out of the map).
+  if (spec.light === "sun") {
+    builder.add(lights.directional({ name: "contact key", position: [2.6, 4.2, 2.4], intensity: 2, shadow: true }));
+  } else {
+    builder.add(lights.spot({ name: "contact spot", position: [2.6, 4.2, 2.4], target: [0, 0, 0], angle: 0.9, penumbra: 0.3, distance: 30, intensity: 30, shadow: true }));
+  }
   // "off" keeps the effect node at intensity 0: the frame takes the same post route (tone-mapping chain) and the
   // mask pass runs, but no mask reaches shading, so the on/off delta is the mask alone and not a route change.
-  builder.add(effects.contactShadows({ intensity: withEffect ? 1 : 0, length: 0.5 }));
+  if (spec.effect !== "none") builder.add(effects.contactShadows({ intensity: spec.effect, length: 0.5 }));
   return builder;
 }
 
 async function renderContactMask(id: ContactMaskVariant): Promise<ContactMaskFrame> {
   // GPU diagnostics: ask the contact-shadow contributor to read back its mask and depth targets (see ContactShadowPass.probe).
   (globalThis as { __A3D_CONTACT_PROBE__?: boolean }).__A3D_CONTACT_PROBE__ = true;
+  const spec = contactMaskSpec(id);
   const app = createAuraApp(stage(), {
     pixelRatio: 1,
     resize: false,
     renderer: { qualityProfile: "production" },
-    scene: contactMaskScene(id)
+    scene: contactMaskScene(spec)
   });
   try {
     await waitForDraw(app, id);
     await settle(app, 1);
     const frame = await capture(app, id);
     const diagnostics = app.diagnostics() as unknown as {
-      readonly shadows?: { readonly contactShadows?: { readonly passExecuted: boolean; readonly depthSource: string } | null } | null;
+      readonly shadows?: { readonly contactShadows?: ContactMaskFrame["contactShadows"] } | null;
     };
     return {
       ...frame,

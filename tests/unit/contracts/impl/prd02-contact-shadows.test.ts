@@ -124,7 +124,7 @@ describe("prd02.contactShadows contributor", () => {
   it("publishes the mask on the blackboard and records C-31 diagnostics", () => {
     const contributor = createPrd02ContactShadowsContributor();
     expect(contributor.id).toBe("prd02.contactShadows");
-    expect(contributor.phases).toContain("shadows");
+    expect(contributor.phases).toContain("after-opaque");
     const light = new DirectionalLight("sun");
     light.castsShadow = true;
     light.transform.updateWorld(undefined, true);
@@ -132,7 +132,7 @@ describe("prd02.contactShadows contributor", () => {
       tier: QUALITY_TIERS.ultra,
       source: { renderItems: [item], collectedLights: [light] } as never
     });
-    const passes = contributor.passes!("shadows", ctx);
+    const passes = contributor.passes!("after-opaque", ctx);
     expect(passes.length).toBe(1);
     const device = ctx.device as MockRenderDevice;
     device.beginFrame(512, 512);
@@ -145,6 +145,6 @@ describe("prd02.contactShadows contributor", () => {
   it("produces no pass when no request resolves", () => {
     const contributor = createPrd02ContactShadowsContributor();
     const ctx = ctxFor();
-    expect(contributor.passes!("shadows", ctx)).toHaveLength(0);
+    expect(contributor.passes!("after-opaque", ctx)).toHaveLength(0);
   });
 });

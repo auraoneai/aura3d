@@ -754,7 +754,7 @@ void main() {
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(), step(0.5, spotShadowLayer.z));
+    float directLightIntensity = colorIntensity.a * attenuation * mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z));
     shaded += a3dPbrDirectLight(
       normal,
       viewDirection,

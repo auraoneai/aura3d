@@ -469,7 +469,7 @@ void main() {
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection);
+    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection);
     shaded += a3dPbrDirectLight(normal, viewDirection, lightDirection, colorIntensity.rgb, colorIntensity.a * attenuation * shadowFactor, base, u_metallic, u_roughness, 1.0, vec3(1.0));
   }
   float alpha = u_baseColor.a * v_instanceColor.a;
@@ -1045,7 +1045,7 @@ void main() {
       viewDirection,
       lightDirection,
       colorIntensity.rgb,
-      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
+      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
       materialBase,
       metallic,
       roughness,
@@ -1577,7 +1577,7 @@ void main() {
       viewDirection,
       lightDirection,
       colorIntensity.rgb,
-      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
+      colorIntensity.a * attenuation * a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, normal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, normal, lightDirection),
       materialBase,
       metallic,
       roughness,
@@ -2057,7 +2057,7 @@ void main() {
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, mappedNormal, lightDirection) * a3dContactShadowMaskFactor(), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
+    float shadowFactor = a3dResolveSpotShadowOverride(mix(1.0, kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dForwardShadowFactor(v_worldPosition, mappedNormal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z)), kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
     shaded += a3dPbrDirectLight(mappedNormal, viewDirection, lightDirection, colorIntensity.rgb, colorIntensity.a * attenuation * shadowFactor, materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor);
   }
   float alpha = u_baseColor.a * v_vertexColor.a;
@@ -2445,7 +2445,7 @@ out vec4 outColor;
 #ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
 #include <contact_shadow_mask>
 #else
-float a3dContactShadowMaskFactor() { return 1.0; }
+float a3dContactShadowMaskFactor(float kind) { return 1.0; }
 #endif
 vec2 a3dTexturedPbrSelectUv(float texCoord) {
   return texCoord > 0.5 ? v_uv1 : v_uv;
@@ -3209,7 +3209,7 @@ void main() {
       float inner = cos(spotShadowLayer.x * max(1.0 - spotShadowLayer.y, 0.001));
       attenuation *= smoothstep(outer, inner, cone);
     }
-    float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? a3dTexturedPbrPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dTexturedPbrShadowFactor(v_worldPosition, mappedNormal, lightDirection) * a3dContactShadowMaskFactor(), step(0.5, spotShadowLayer.z));
+    float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? a3dTexturedPbrPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : a3dTexturedPbrShadowFactor(v_worldPosition, mappedNormal, lightDirection) * a3dContactShadowMaskFactor(kind), step(0.5, spotShadowLayer.z));
 #ifndef A3D_PBR_NO_SPOT_SHADOW
     shadowFactor = a3dTexturedPbrResolveSpotShadowOverride(shadowFactor, kind, spotShadowLayer.z, v_worldPosition, mappedNormal, lightDirection);
 #endif

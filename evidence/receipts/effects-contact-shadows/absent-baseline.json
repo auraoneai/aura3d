@@ -1,0 +1,28 @@
+{
+  "recordedAtGitSha": "3708b67ac",
+  "note": "Frames with no contactShadows node (production quality profile, software WebGL2), recorded by tests/browser/contact-shadow-absent.spec.ts on the pre-WP-4 tree 3708b67ac via tools/remote-acr/run.sh (run wp4-base1). Later builds must reproduce these hashes.",
+  "renderer": "swiftshader",
+  "frames": {
+    "cm-absent-nocast": {
+      "sha256": "05c342775fb2588273a7bc6673ca13f38de82bec8ffa7dfdb0bf835ad4d08833",
+      "meanLuma": 79.8441,
+      "drawCalls": 4,
+      "actualPasses": [],
+      "contactPassExecuted": false
+    },
+    "cm-absent-shadowed": {
+      "sha256": "173ef0611c69914eb9857fbfc8dcff31d1a6c95842b41fc79ec4b52dbbb4cace",
+      "meanLuma": 78.442,
+      "drawCalls": 5,
+      "actualPasses": [],
+      "contactPassExecuted": false
+    },
+    "cm-absent-spot": {
+      "sha256": "bf03f5ba96ca718410651175f724322154f966f36c384aadd68fd1b951093d01",
+      "meanLuma": 45.9261,
+      "drawCalls": 3,
+      "actualPasses": [],
+      "contactPassExecuted": false
+    }
+  }
+}

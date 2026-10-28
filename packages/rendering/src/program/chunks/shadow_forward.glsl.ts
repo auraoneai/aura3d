@@ -72,7 +72,7 @@ ${SHADOW_FORWARD_FACTOR_GLSL}
 float a3dForwardLightShadow(float kind, float castsShadow, vec3 worldPosition, vec3 normal, vec3 lightDirection) {
   if (castsShadow < 0.5 || (kind > 0.5 && kind < 1.5) || kind > 2.5) return 1.0;
   vec3 offsetPosition = worldPosition + normalize(normal) * u_shadowMapNormalBias;
-  // WP-4: the contact-shadow mask rides the shadow-casting light's visibility only.
-  return a3dForwardShadowFactor(offsetPosition, normal, lightDirection) * a3dContactShadowMaskFactor();
+  // WP-4: the contact-shadow mask rides the shadow-casting directional light's visibility only (kind 0).
+  return a3dForwardShadowFactor(offsetPosition, normal, lightDirection) * a3dContactShadowMaskFactor(kind);
 }
 `;

@@ -11,7 +11,7 @@ import { TextureBinding } from "../TextureBinding.js";
 import type { RenderItem } from "../contracts/renderItem.js";
 import type { ForwardSpotShadowMapOptions } from "../shadows/SpotShadowMaps.js";
 import { rendererQrFlags } from "../renderer/FrameGraph.js";
-import { applyContactShadowMaskUniforms } from "./contactShadowMaskStore.js";
+import { applyContactShadowMaskUniforms, type ContactShadowMaskScope } from "./contactShadowMaskStore.js";
 
 /** PRD-02 §6.3: flag-on default is full-strength shadowing (1.0), not 0.65. */
 export function prd02ShadowStrengthDefault(): number {
@@ -50,9 +50,10 @@ export function applyForwardShadowMapUniforms(
   shadowMap: ForwardShadowMapOptions | undefined,
   item: RenderItem,
   shader: RenderShaderProgram,
-  uniforms: Map<string, UniformValue>
+  uniforms: Map<string, UniformValue>,
+  contactMaskScope?: ContactShadowMaskScope
 ): void {
-  applyContactShadowMaskUniforms(item, shader, uniforms);
+  applyContactShadowMaskUniforms(item, shader, uniforms, contactMaskScope);
   const requiredUniforms = [
     "u_shadowMapTexture",
     "u_shadowMapEnabled",

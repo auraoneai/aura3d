@@ -42,6 +42,7 @@ import { dfgLutBinding, dfgLutTexture } from "./program/DFGLut";
 
 // PR 0b-2 re-imports for moved carve-out modules (CONTRACTS.md §3.3).
 import { SkinningPaletteUploadManager, applyGpuMorphUniforms, resolveRenderGeometry } from "./forward/Deform.js";
+import type { ContactShadowMaskScope } from "./forward/contactShadowMaskStore.js";
 import { FORWARD_DIRECT_LIGHT_CAPACITY, applyClusteredLightingUniforms, applyForwardShadowMapUniforms, resolveForwardClusteredLighting, selectForwardShadowMap } from "./forward/Lighting.js";
 import { flushMultiDrawQueue, submitDraw } from "./forward/DrawSubmit.js";
 import { bindVelocityUniforms } from "./forward/Velocity.js";
@@ -310,6 +311,8 @@ export class ForwardPass extends BaseRenderPass {
   // execute() because drawItem() does not carry the pass context.
   private frameWidth = 0;
   private frameHeight = 0;
+  // WP-4: which view this pass renders, so the contact-shadow mask binds only to the main camera's draws (one object per frame).
+  private contactMaskScope: ContactShadowMaskScope | undefined;
 
   constructor(private readonly options: ForwardPassOptions) {
     super(
@@ -324,6 +327,7 @@ export class ForwardPass extends BaseRenderPass {
     this.skinningPaletteUploads.beginFrame();
     this.frameWidth = context.width;
     this.frameHeight = context.height;
+    this.contactMaskScope = { device: context.device, width: context.width, height: context.height, cameraPosition: this.options.cameraPosition };
     this.beginFramePools(context.device);
     this.clusteredLighting = resolveForwardClusteredLighting(this.options.lights, context.width, context.height, this.options.cameraViewProjectionMatrix);
     const flags = rendererQrFlags(context.device);
@@ -479,7 +483,8 @@ export class ForwardPass extends BaseRenderPass {
       selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition),
       item,
       shader,
-      uniforms
+      uniforms,
+      this.contactMaskScope
     );
     applyOutputColorSpaceUniform(this.options.outputColorSpace ?? "srgb", item, shader, uniforms);
     applyCameraUniforms(this.options.cameraPosition, item, shader, uniforms);
