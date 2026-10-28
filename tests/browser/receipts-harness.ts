@@ -225,7 +225,7 @@ function effectScene(id: EffectVariantId) {
     return occlusionRoom(effects.ambientOcclusion({ name: "room ambient occlusion", intensity: id === "fx-ao-room" ? 1 : 0, radius: 0.6 }));
   }
   if (id === "fx-contact-room-off" || id === "fx-contact-room") {
-    return occlusionRoom(effects.contactShadows({ name: "room contact shadows", intensity: id === "fx-contact-room" ? 1 : 0, length: 1.5 }));
+    return occlusionRoom(effects.contactShadows({ name: "room contact shadows", intensity: id === "fx-contact-room" ? 1 : 0, length: 0.5 }));
   }
   if (id === "fx-card-off" || id === "fx-card-contrast") return cardScene(id);
   // One shared body for every variant: a typed GLB subject (keeps the production bridge
