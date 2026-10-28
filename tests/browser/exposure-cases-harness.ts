@@ -2,7 +2,8 @@
 //   bench:<scene>:<lib>   the bench scene source, unmodified (baseline | forest, aura | three)
 //   cube:<...>            Aura3D one-cube scene with the default background / tone map toggled
 //   pbr:<lib>:<sun>:<env>:<bloom>           PBR viewer with explicit nominal sun and environment intensities
-//   forest:<lib>:<colors>:<shadows>:<fog>   forest with the canopy and rock colour reading and the shadow / fog terms toggled
+//   forest:<lib>:<colors>:<shadows>:<fog>[:ground|:trunks|:canopies|:rocks][:cone7][:r09][:meshdims][:rough1][:plain][:sun0|:hemi0]   forest with the canopy and rock colour reading and the shadow / fog terms toggled;
+//                                          ground = flat plane only, trunks / canopies / rocks = only that instanced node, sun0 / hemi0 = that light off, cone7 = Aura3D canopies with 7 radial segments like the three bench (Aura3D defaults to 32), r09 = Aura3D canopy size [0.9, 2.2, 0.9] (the cone mesh has radius 1, so the bench's [1.8, 2.2, 1.8] is radius 1.8 against three's 0.9), meshdims = Aura3D canopies built to three's dimensions in the mesh (params radius 0.9, height 2.2, 7 segments) with size [1, 1, 1], so the cone normals are the true ones, rough1 = canopy roughness 1 (bench 0.85), plain = canopies one flat colour instead of per-instance colours
 // The scene bodies mirror tools/bench-vs-threejs/<scene>/{aura,three}/scene.ts line for line except for the named toggles.
 // Output is `window.__BENCH__` from the bench glue (mean luma of the 640x360 frame) plus `window.__VARIANT__`.
 import * as THREE from "three";
@@ -124,7 +125,8 @@ async function pbrThree(canvas: HTMLCanvasElement, sunI: number, env: number, bl
   return { frame(dt) { composer.render(dt); } };
 }
 
-interface ForestOpts { colors: "css" | "linear"; shadows: boolean; fog: boolean }
+/** `parts` is the set of instanced nodes kept (trunks, canopies, rocks; empty = flat ground only); `sun` and `hemi` scale the nominal 2.4 and 1.1, so a term can be switched off alone. */
+interface ForestOpts { colors: "css" | "linear"; shadows: boolean; fog: boolean; parts: ReadonlySet<string>; cone7: boolean; r09: boolean; meshdims: boolean; rough1: boolean; plain: boolean; sun: number; hemi: number }
 
 async function forestAura(canvas: HTMLCanvasElement, o: ForestOpts): Promise<SceneHandle> {
   const rng = createCountedRng(7);
@@ -152,13 +154,15 @@ async function forestAura(canvas: HTMLCanvasElement, o: ForestOpts): Promise<Sce
   let sc = scene()
     .background("#aab8c4")
     .camera(camera.perspective({ fov: 50, near: 0.1, far: 400, position: [0, 9, 34], target: [0, 3, 0] }))
-    .add(lights.hemisphere({ skyColor: "#dce8f2", groundColor: "#4d6358", intensity: 1.1 }))
-    .add(lights.directional({ color: "#fff4e0", intensity: 2.4, position: [30, 50, 20], shadow: o.shadows }));
+    .add(lights.hemisphere({ skyColor: "#dce8f2", groundColor: "#4d6358", intensity: 1.1 * o.hemi }))
+    .add(lights.directional({ color: "#fff4e0", intensity: 2.4 * o.sun, position: [30, 50, 20], shadow: o.shadows }));
   if (o.fog) sc = sc.add(effects.fog({ color: "#aab8c4", density: 0.012 }));
-  sc = sc
-    .add(primitives.plane({ name: "ground", size: [400, 1, 400], material: material.pbr({ color: "#566b4a", roughness: 1 }) }))
-    .add(instances.cylinder({ name: "trunks", size: [0.36, 1.2, 0.36], transforms: trunks, castShadow: o.shadows, material: material.pbr({ color: "#6b4a32", roughness: 0.95 }) }))
-    .add(instances.cone({ name: "canopies", size: [1.8, 2.2, 1.8], transforms: canopies, colors: canopyColors, castShadow: o.shadows, material: material.pbr({ color: "#ffffff", roughness: 0.85 }) }))
+  sc = sc.add(primitives.plane({ name: "ground", size: [400, 1, 400], material: material.pbr({ color: "#566b4a", roughness: 1 }) }));
+  if (o.parts.has("trunks")) sc = sc
+    .add(instances.cylinder({ name: "trunks", size: [0.36, 1.2, 0.36], transforms: trunks, castShadow: o.shadows, material: material.pbr({ color: "#6b4a32", roughness: 0.95 }) }));
+  if (o.parts.has("canopies")) sc = sc
+    .add(instances.cone({ name: "canopies", size: o.meshdims ? [1, 1, 1] : o.r09 ? [0.9, 2.2, 0.9] : [1.8, 2.2, 1.8], transforms: canopies, ...(o.plain ? {} : { colors: canopyColors }), castShadow: o.shadows, ...(o.meshdims ? { params: { radius: 0.9, height: 2.2, radialSegments: 7 } } : o.cone7 ? { params: { radialSegments: 7 } } : {}), material: material.pbr({ color: o.plain ? toHex(hslToRgb(110 / 360, 0.45, 0.26)) : "#ffffff", roughness: o.rough1 ? 1 : 0.85 }) }));
+  if (o.parts.has("rocks")) sc = sc
     .add(instances.sphere({ name: "rocks", size: [1, 1, 1], transforms: rocks, colors: rockColors, castShadow: o.shadows, material: material.pbr({ color: "#ffffff", roughness: 0.9 }) }));
   const app = createAuraApp(canvas, { autoStart: false, resize: false, pixelRatio: 1, output: { toneMapping: "aces" }, scene: sc });
   await app.ready();
@@ -185,8 +189,8 @@ async function forestThree(canvas: HTMLCanvasElement, o: ForestOpts): Promise<Sc
   const cam = new THREE.PerspectiveCamera(50, 640 / 360, 0.1, 400);
   cam.position.set(0, 9, 34);
   cam.lookAt(0, 3, 0);
-  sc.add(new THREE.HemisphereLight("#dce8f2", "#4d6358", 1.1));
-  const sun = new THREE.DirectionalLight("#fff4e0", 2.4);
+  sc.add(new THREE.HemisphereLight("#dce8f2", "#4d6358", 1.1 * o.hemi));
+  const sun = new THREE.DirectionalLight("#fff4e0", 2.4 * o.sun);
   sun.position.set(30, 50, 20);
   sun.castShadow = o.shadows;
   sun.shadow.mapSize.set(2048, 2048);
@@ -198,9 +202,9 @@ async function forestThree(canvas: HTMLCanvasElement, o: ForestOpts): Promise<Sc
   sc.add(ground);
   const TREES = 8000, ROCKS = 2000;
   const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.18, 0.18, 1.2, 6), new THREE.MeshStandardMaterial({ color: "#6b4a32", roughness: 0.95 }), TREES);
-  const canopies = new THREE.InstancedMesh(new THREE.ConeGeometry(0.9, 2.2, 7), new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.85 }), TREES);
+  const canopies = new THREE.InstancedMesh(new THREE.ConeGeometry(0.9, 2.2, 7), new THREE.MeshStandardMaterial({ color: o.plain ? new THREE.Color().setHSL(110 / 360, 0.45, 0.26, THREE.LinearSRGBColorSpace) : "#ffffff", roughness: o.rough1 ? 1 : 0.85 }), TREES);
   const rocks = new THREE.InstancedMesh(new THREE.SphereGeometry(0.5, 10, 8), new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.9 }), ROCKS);
-  for (const mesh of [trunks, canopies, rocks]) { mesh.castShadow = o.shadows; mesh.receiveShadow = true; sc.add(mesh); }
+  for (const [name, mesh] of [["trunks", trunks], ["canopies", canopies], ["rocks", rocks]] as const) { mesh.castShadow = o.shadows; mesh.receiveShadow = true; sc.add(mesh); if (!o.parts.has(name)) mesh.count = 0; }
   const rng = mulberry32(7);
   const m = new THREE.Matrix4();
   const q = new THREE.Quaternion();
@@ -216,7 +220,8 @@ async function forestThree(canvas: HTMLCanvasElement, o: ForestOpts): Promise<Sc
     const x = (rng() - 0.5) * 160, z = (rng() - 0.5) * 160, s = 0.7 + rng() * 0.9, yaw = rng() * Math.PI * 2;
     put(trunks, i, x, 0.6 * s, z, s, yaw);
     put(canopies, i, x, 2.1 * s, z, s, yaw);
-    canopies.setColorAt(i, tint.setHSL(0.27 + rng() * 0.08, 0.45, 0.2 + rng() * 0.12, space));
+    tint.setHSL(0.27 + rng() * 0.08, 0.45, 0.2 + rng() * 0.12, space);
+    if (!o.plain) canopies.setColorAt(i, tint);
   }
   for (let i = 0; i < ROCKS; i++) {
     const s = 0.3 + rng() * 0.8;
@@ -268,7 +273,8 @@ async function start(canvas: HTMLCanvasElement): Promise<SceneHandle> {
       return a === "aura" ? pbrAura(canvas, Number(b), Number(c), d === "bloom", groundRough, rest.slice(4).includes("ref")) : pbrThree(canvas, Number(b), Number(c), d === "bloom", groundRough);
     }
     case "forest": {
-      const o: ForestOpts = { colors: b as ForestOpts["colors"], shadows: c !== "noshadow", fog: d !== "nofog" };
+      const flags = rest.slice(4);
+      const o: ForestOpts = { colors: b as ForestOpts["colors"], shadows: c !== "noshadow", fog: d !== "nofog", parts: new Set(flags.includes("ground") ? [] : ["trunks", "canopies", "rocks"].filter((n) => !flags.some((f) => ["trunks", "canopies", "rocks"].includes(f)) || flags.includes(n))), cone7: flags.includes("cone7"), r09: flags.includes("r09"), meshdims: flags.includes("meshdims"), rough1: flags.includes("rough1"), plain: flags.includes("plain"), sun: flags.includes("sun0") ? 0 : 1, hemi: flags.includes("hemi0") ? 0 : 1 };
       return a === "aura" ? forestAura(canvas, o) : forestThree(canvas, o);
     }
     default:

@@ -1,16 +1,26 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 /**
  * PRD-2 WP-6 exposure attribution. Mounts the bench scenes (cube, PBR viewer, forest) for both libraries, as written and with one term
- * changed at a time, and prints mean luma (640x360, software WebGL2) per variant. Nothing is asserted: the rows are the evidence for
- * evidence/exposure-parity/README.md, and the CPU model is tests/unit/rendering/exposure-cases.test.ts.
+ * changed at a time, and measures mean luma plus four region lumas (640x360, software WebGL2) per variant. Every variant is checked
+ * against its row in evidence/exposure-parity/wp6/cases.json (the committed evidence the README quotes), so a drift in the engine's
+ * exposure shows up here as a failure. The CPU model is tests/unit/rendering/exposure-cases.test.ts, which reads the same file.
  *
  * EXPOSURE_CASES_ONLY=<comma list of variant ids> narrows a run; EXPOSURE_CASES_GROUP=cube|pbr|forest picks a group.
+ * EXPOSURE_CASES_RECORD=1 skips the comparison (used to produce new rows; the EXPOSURE_CASE log lines are the rows).
  */
+interface RecordedRow { id: string; meanLuma: number; regionsLuma: Record<string, number> | null; hdriStatus: string | null; preset: string | null }
+const recorded = new Map<string, RecordedRow>((JSON.parse(readFileSync(new URL("../../evidence/exposure-parity/wp6/cases.json", import.meta.url), "utf8")) as { rows: RecordedRow[] }).rows.map((r) => [r.id, r]));
+const recording = process.env.EXPOSURE_CASES_RECORD === "1";
+/**
+ * Software GL reproduced the rows exactly in six of seven runs. The one exception is pbr:aura:1.1:0.7:bloom (bare-texture HDRI, neutral room, bloom), whose ground strip read 87.8 against 79.6 once
+ * (row.observedAlso in cases.json); region slack is therefore 15%.
+ */
+const withinLuma = (got: number, want: number, rel: number, abs: number): boolean => Math.abs(got - want) <= Math.max(abs, rel * Math.abs(want));
 const reportDir = process.env.EXPOSURE_REPORT_DIR ?? "tests/reports/exposure-cases";
 const GLB = readFileSync(new URL("../../fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb", import.meta.url));
 const HDR = readFileSync(new URL("../../fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", import.meta.url));
@@ -42,6 +52,25 @@ const variants: Variant[] = [
   // Forest: forest:<lib>:<colour reading>:<shadow|noshadow>:<fog|nofog>. "css" reads hsl() numbers as sRGB, "linear" as three's linear working space.
   ...["bench:forest:aura", "bench:forest:three", "forest:aura:linear:shadow:fog", "forest:three:css:shadow:fog", "forest:aura:css:shadow:fog", "forest:three:linear:shadow:fog",
     "forest:aura:linear:noshadow:fog", "forest:three:linear:noshadow:fog", "forest:aura:linear:shadow:nofog", "forest:three:linear:shadow:nofog"]
+    .map((id) => ({ id, frames: 4, group: "forest" as const })),
+  // Forest ground only (no trees or rocks, no shadows, no fog): isolates the lights from the canopy colours. :sun0 = hemisphere only, :hemi0 = sun only.
+  ...["aura", "three"].flatMap((lib) => ["", ":sun0", ":hemi0"].map((t) => `forest:${lib}:linear:noshadow:nofog:ground${t}`))
+    .map((id) => ({ id, frames: 4, group: "forest" as const })),
+  // Forest with one instanced node kept (ground always on): separates the canopies, trunks and rocks from the flat ground.
+  ...["aura", "three"].flatMap((lib) => ["trunks", "canopies", "rocks"].map((part) => `forest:${lib}:linear:noshadow:nofog:${part}`))
+    .map((id) => ({ id, frames: 4, group: "forest" as const })),
+  // The three bench's canopy cone has 7 radial segments, the Aura default is 32: the same canopies with 7 segments in Aura3D.
+  ...["forest:aura:linear:noshadow:nofog:canopies:cone7", "forest:aura:linear:shadow:fog:cone7", "forest:aura:css:shadow:fog:cone7"]
+    .map((id) => ({ id, frames: 4, group: "forest" as const })),
+  // Canopies only: roughness 1 (the bench uses 0.85) and one flat colour instead of per-instance colours, in both libraries.
+  ...["aura", "three"].flatMap((lib) => ["rough1", "plain", "rough1:plain"].map((t) => `forest:${lib}:linear:noshadow:nofog:canopies:${t}`))
+    .map((id) => ({ id, frames: 4, group: "forest" as const })),
+  // The Aura cone mesh has radius 1, so the bench's size [1.8, 2.2, 1.8] is a canopy of radius 1.8; three's cone has radius 0.9. r09 = size [0.9, 2.2, 0.9].
+  ...["forest:aura:linear:noshadow:nofog:canopies:r09:cone7", "forest:aura:linear:shadow:fog:r09:cone7", "forest:aura:css:shadow:fog:r09:cone7", "forest:aura:linear:noshadow:nofog:r09:cone7", "forest:aura:linear:noshadow:nofog", "forest:three:linear:noshadow:nofog"]
+    .map((id) => ({ id, frames: 4, group: "forest" as const })),
+  // Canopies with the cone's true dimensions in the mesh (size [1, 1, 1]): the vertex normals are then the true ones, whereas size
+  // folds into the geometry matrix only for positions.
+  ...["forest:aura:linear:noshadow:nofog:canopies:meshdims", "forest:aura:linear:noshadow:nofog:meshdims", "forest:aura:linear:shadow:fog:meshdims", "forest:aura:css:shadow:fog:meshdims"]
     .map((id) => ({ id, frames: 4, group: "forest" as const }))
 ];
 
@@ -58,7 +87,7 @@ test.describe("exposure attribution (WP-6)", () => {
     if (group && v.group !== group) continue;
     test(v.id, async ({ page }) => {
       const problems: string[] = [];
-      page.on("console", (m) => { if ((m.type() === "warning" || m.type() === "error") && !/GPU stall due to ReadPixels/.test(m.text())) problems.push(`${m.type()}: ${m.text().slice(0, 200)}`); });
+      page.on("console", (m) => { if ((m.type() === "warning" || m.type() === "error") && !/GPU stall due to ReadPixels|RGBELoader has been deprecated/.test(m.text())) problems.push(`${m.type()}: ${m.text().slice(0, 200)}`); });
       page.on("pageerror", (e) => problems.push(`pageerror: ${e.message.slice(0, 200)}`));
       await page.route("**/model.glb", (route) => route.fulfill({ status: 200, contentType: "model/gltf-binary", body: GLB }));
       await page.route("**/env.hdr", (route) => route.fulfill({ status: 200, contentType: "application/octet-stream", body: v.id.includes(":uniform") ? UNIFORM_HDR : HDR }));
@@ -91,6 +120,19 @@ test.describe("exposure attribution (WP-6)", () => {
       const safe = v.id.replace(/[^A-Za-z0-9._-]+/g, "_");
       if (result.jpeg) writeFileSync(resolve(reportDir, `${safe}.jpg`), Buffer.from(result.jpeg.replace(/^data:image\/jpeg;base64,/, ""), "base64"));
       console.log(`EXPOSURE_CASE ${JSON.stringify({ id: v.id, mean: result.mean, std: result.std, regions: result.regions, state: result.state, problems, errors: result.errors })}`);
+      expect(result.errors, "scene errors").toEqual([]);
+      expect(problems, "console warnings and errors").toEqual([]);
+      if (!recording) {
+        const row = recorded.get(v.id);
+        expect(row, `no recorded row for ${v.id} in evidence/exposure-parity/wp6/cases.json`).toBeDefined();
+        expect(withinLuma(result.mean, row!.meanLuma, 0.06, 1.5), `mean luma ${result.mean} vs recorded ${row!.meanLuma}`).toBe(true);
+        for (const [name, want] of Object.entries(row!.regionsLuma ?? {})) {
+          const got = result.regions?.[name] ?? -1;
+          expect(withinLuma(got, want, 0.15, 3), `${name} region luma ${got} vs recorded ${want}`).toBe(true);
+        }
+        const env = (result.state as { environment?: { hdriStatus?: string } } | null)?.environment;
+        if (row!.hdriStatus !== null) expect(env?.hdriStatus).toBe(row!.hdriStatus);
+      }
       // The remote artifact upload is not always available; the frame also travels in the log so it can be decoded locally.
       if (result.jpeg) console.log(`EXPOSURE_CASE_FRAME ${v.id} ${result.jpeg.replace(/^data:image\/jpeg;base64,/, "")}`);
     });

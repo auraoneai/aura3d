@@ -1,5 +1,5 @@
 {
- "source": "tests/browser/exposure-cases.spec.ts, remote run wp6-attr-4 (software WebGL2, 640x360, ACES)",
+ "source": "tests/browser/exposure-cases.spec.ts on the remote runner (software WebGL2, 640x360, ACES); per-row \"run\" names the run: wp6-attr-4 (first 45 variants), then wp6fix-N (see README)",
  "rows": [
   {
    "id": "bench:baseline:aura",
@@ -15,7 +15,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "bench:baseline:three",
@@ -31,7 +32,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "cube:three-aces",
@@ -47,7 +49,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "cube:#000000:default",
@@ -63,7 +66,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "cube:#000000:none",
@@ -79,7 +83,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "cube:default:none",
@@ -95,7 +100,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:2.5:1:bloom",
@@ -111,7 +117,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:1.1:0.7:bloom",
@@ -129,7 +136,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:1.1:0.7:bloom",
@@ -145,7 +153,19 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4",
+   "observedAlso": {
+    "run": "wp6fix-9",
+    "meanLuma": 84.632,
+    "regionsLuma": {
+     "centre": 162.44,
+     "top": 33.16,
+     "bottom": 87.78,
+     "corner": 31
+    },
+    "note": "one run in seven read this way (the others reproduce the row exactly); this variant is the bare-texture HDRI that falls through to the neutral room, with bloom. Cause not investigated."
+   }
   },
   {
    "id": "pbr:aura:1.1:0.7:nobloom",
@@ -161,7 +181,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:1.1:0.7:nobloom",
@@ -179,7 +200,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom",
@@ -195,7 +217,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:0:0.7:nobloom",
@@ -213,7 +236,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:1.1:0:nobloom",
@@ -229,7 +253,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:1.1:0:nobloom",
@@ -247,7 +272,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:2.5:1:nobloom",
@@ -263,7 +289,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:1:nobloom",
@@ -279,7 +306,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:2.5:0:nobloom",
@@ -295,7 +323,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom:uniform",
@@ -311,7 +340,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:0:0.7:nobloom:uniform",
@@ -329,7 +359,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:1:nobloom:uniform",
@@ -345,7 +376,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:0:1:nobloom:uniform",
@@ -363,7 +395,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom:g1",
@@ -379,7 +412,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:0:0.7:nobloom:g1",
@@ -397,7 +431,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom:g0.5",
@@ -413,7 +448,8 @@
    "iblPixelBacked": false,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:three:0:0.7:nobloom:g0.5",
@@ -431,7 +467,8 @@
    "consoleProblems": [
     "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
    ],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:2.5:1:bloom:ref",
@@ -447,7 +484,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:1.1:0.7:bloom:ref",
@@ -463,7 +501,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:1.1:0.7:nobloom:ref",
@@ -479,7 +518,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom:ref",
@@ -495,7 +535,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:1:nobloom:ref",
@@ -511,7 +552,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:1.1:0:nobloom:ref",
@@ -527,7 +569,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom:uniform:ref",
@@ -543,7 +586,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom:g1:ref",
@@ -559,7 +603,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "pbr:aura:0:0.7:nobloom:g0.5:ref",
@@ -575,7 +620,8 @@
    "iblPixelBacked": true,
    "preset": "hdri",
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "bench:forest:aura",
@@ -591,7 +637,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "bench:forest:three",
@@ -607,7 +654,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:aura:linear:shadow:fog",
@@ -623,7 +671,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:three:css:shadow:fog",
@@ -639,7 +688,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:aura:css:shadow:fog",
@@ -655,7 +705,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:three:linear:shadow:fog",
@@ -671,7 +722,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:aura:linear:noshadow:fog",
@@ -687,7 +739,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:three:linear:noshadow:fog",
@@ -703,7 +756,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:aura:linear:shadow:nofog",
@@ -719,7 +773,8 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
   },
   {
    "id": "forest:three:linear:shadow:nofog",
@@ -735,7 +790,535 @@
    "iblPixelBacked": null,
    "preset": null,
    "consoleProblems": [],
-   "errors": []
+   "errors": [],
+   "run": "wp6-attr-4"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:ground",
+   "meanLuma": 123.725,
+   "std": 47.341,
+   "regionsLuma": {
+    "centre": 102.6,
+    "top": 188,
+    "bottom": 88,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-3"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:ground:sun0",
+   "meanLuma": 80.042,
+   "std": 79.798,
+   "regionsLuma": {
+    "centre": 43.19,
+    "top": 188,
+    "bottom": 21,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-3"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:ground:hemi0",
+   "meanLuma": 115.108,
+   "std": 53.841,
+   "regionsLuma": {
+    "centre": 90.85,
+    "top": 188,
+    "bottom": 74.05,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-3"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:ground",
+   "meanLuma": 127.428,
+   "std": 40.372,
+   "regionsLuma": {
+    "centre": 109.19,
+    "top": 182,
+    "bottom": 96.38,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-3"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:ground:sun0",
+   "meanLuma": 88.123,
+   "std": 69.286,
+   "regionsLuma": {
+    "centre": 56.27,
+    "top": 182,
+    "bottom": 37,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-3"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:ground:hemi0",
+   "meanLuma": 113.018,
+   "std": 50.974,
+   "regionsLuma": {
+    "centre": 90.04,
+    "top": 182,
+    "bottom": 74.06,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-3"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:trunks",
+   "meanLuma": 106.636,
+   "std": 64.384,
+   "regionsLuma": {
+    "centre": 75.99,
+    "top": 188,
+    "bottom": 76.43,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-4"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:canopies",
+   "meanLuma": 154.812,
+   "std": 29.55,
+   "regionsLuma": {
+    "centre": 145.97,
+    "top": 188,
+    "bottom": 132.78,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-4"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:rocks",
+   "meanLuma": 126.27,
+   "std": 47.418,
+   "regionsLuma": {
+    "centre": 106.6,
+    "top": 188,
+    "bottom": 90.29,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-4"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:trunks",
+   "meanLuma": 108.966,
+   "std": 60.352,
+   "regionsLuma": {
+    "centre": 80.36,
+    "top": 182,
+    "bottom": 84.34,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-4"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:canopies",
+   "meanLuma": 146.368,
+   "std": 34.963,
+   "regionsLuma": {
+    "centre": 138.4,
+    "top": 182,
+    "bottom": 118.8,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-4"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:rocks",
+   "meanLuma": 129.544,
+   "std": 41.342,
+   "regionsLuma": {
+    "centre": 112.47,
+    "top": 182,
+    "bottom": 98.39,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-4"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:canopies:cone7",
+   "meanLuma": 156.534,
+   "std": 27.723,
+   "regionsLuma": {
+    "centre": 148.44,
+    "top": 188,
+    "bottom": 135.02,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-5"
+  },
+  {
+   "id": "forest:aura:linear:shadow:fog:cone7",
+   "meanLuma": 160.452,
+   "std": 27.881,
+   "regionsLuma": {
+    "centre": 158.96,
+    "top": 188,
+    "bottom": 133.31,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-5"
+  },
+  {
+   "id": "forest:aura:css:shadow:fog:cone7",
+   "meanLuma": 119.967,
+   "std": 57.681,
+   "regionsLuma": {
+    "centre": 113.81,
+    "top": 188,
+    "bottom": 57.04,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-5"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:canopies:rough1",
+   "meanLuma": 154.812,
+   "std": 29.55,
+   "regionsLuma": {
+    "centre": 145.97,
+    "top": 188,
+    "bottom": 132.78,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-6"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:canopies:plain",
+   "meanLuma": 156.409,
+   "std": 26.715,
+   "regionsLuma": {
+    "centre": 146.9,
+    "top": 188,
+    "bottom": 137.81,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-6"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:canopies:rough1:plain",
+   "meanLuma": 156.409,
+   "std": 26.715,
+   "regionsLuma": {
+    "centre": 146.9,
+    "top": 188,
+    "bottom": 137.81,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-6"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:canopies:rough1",
+   "meanLuma": 146.055,
+   "std": 35.024,
+   "regionsLuma": {
+    "centre": 138.0,
+    "top": 182,
+    "bottom": 118.36,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-6"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:canopies:plain",
+   "meanLuma": 147.527,
+   "std": 33.335,
+   "regionsLuma": {
+    "centre": 139.73,
+    "top": 182,
+    "bottom": 123.61,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-6"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog:canopies:rough1:plain",
+   "meanLuma": 147.227,
+   "std": 33.388,
+   "regionsLuma": {
+    "centre": 139.35,
+    "top": 182,
+    "bottom": 123.22,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-6"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:canopies:r09:cone7",
+   "meanLuma": 156.686,
+   "std": 27.719,
+   "regionsLuma": {
+    "centre": 149.53,
+    "top": 188,
+    "bottom": 128.95,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-7"
+  },
+  {
+   "id": "forest:aura:linear:shadow:fog:r09:cone7",
+   "meanLuma": 156.143,
+   "std": 35.769,
+   "regionsLuma": {
+    "centre": 157.54,
+    "top": 188,
+    "bottom": 116.19,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-7"
+  },
+  {
+   "id": "forest:aura:css:shadow:fog:r09:cone7",
+   "meanLuma": 120.664,
+   "std": 57.985,
+   "regionsLuma": {
+    "centre": 116.43,
+    "top": 188,
+    "bottom": 55.57,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-7"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:r09:cone7",
+   "meanLuma": 156.362,
+   "std": 29.02,
+   "regionsLuma": {
+    "centre": 149.28,
+    "top": 188,
+    "bottom": 128.04,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-7"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog",
+   "meanLuma": 154.811,
+   "std": 29.553,
+   "regionsLuma": {
+    "centre": 145.97,
+    "top": 188,
+    "bottom": 132.77,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-7"
+  },
+  {
+   "id": "forest:three:linear:noshadow:nofog",
+   "meanLuma": 145.976,
+   "std": 36.07,
+   "regionsLuma": {
+    "centre": 138.07,
+    "top": 182,
+    "bottom": 117.72,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-7"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:canopies:meshdims",
+   "meanLuma": 142.921,
+   "std": 40.33,
+   "regionsLuma": {
+    "centre": 132.09,
+    "top": 188,
+    "bottom": 110.15,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-8"
+  },
+  {
+   "id": "forest:aura:linear:noshadow:nofog:meshdims",
+   "meanLuma": 142.592,
+   "std": 41.15,
+   "regionsLuma": {
+    "centre": 131.83,
+    "top": 188,
+    "bottom": 109.23,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-8"
+  },
+  {
+   "id": "forest:aura:linear:shadow:fog:meshdims",
+   "meanLuma": 148.798,
+   "std": 40.763,
+   "regionsLuma": {
+    "centre": 149.02,
+    "top": 188,
+    "bottom": 104.45,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-8"
+  },
+  {
+   "id": "forest:aura:css:shadow:fog:meshdims",
+   "meanLuma": 116.976,
+   "std": 60.924,
+   "regionsLuma": {
+    "centre": 112.2,
+    "top": 188,
+    "bottom": 49.89,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": [],
+   "run": "wp6fix-8"
   }
  ]
 }

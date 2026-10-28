@@ -135,6 +135,9 @@ mkdir -p "$CTX/tools/bench-vs-threejs"
 # The Dockerfile COPYs tools/agent-eval unconditionally (cold-start authoring trial scorer; staged batches arrive via EXTRA_DIRS).
 mkdir -p "$CTX/tools/agent-eval"
 [ -d tools/agent-eval ] && rsync -a --exclude node_modules --exclude _stage tools/agent-eval "$CTX/tools/"
+# The Dockerfile COPYs evidence/exposure-parity/wp6 unconditionally: tests/browser/exposure-cases.spec.ts checks every run against the recorded rows there.
+mkdir -p "$CTX/evidence/exposure-parity/wp6"
+[ -d evidence/exposure-parity/wp6 ] && rsync -a evidence/exposure-parity/wp6/ "$CTX/evidence/exposure-parity/wp6/"
 
 du -sh "$CTX" | awk '{print "   context size: "$1}'
 
