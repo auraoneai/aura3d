@@ -1,8 +1,9 @@
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { createServer, type Server } from "node:http";
 import { extname, join, normalize } from "node:path";
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * PRD-2 WP-7: structure of one steady frame of the skinned-character and game-loop bench scenes (draw order, framebuffer,
@@ -14,6 +15,16 @@ import { test } from "@playwright/test";
  * Needs tools/bench-vs-threejs/candidate.json (run-wp7.sh stages it) so the Aura3D arms are built from workspace sources:
  * `aura-auto` (scene as written) and `aura-production` (same source with quality: "production").
  * Output leaves the container as base64 chunks between WP7_JSON_BEGIN/END (decode with tools/bench-vs-threejs/harness/wp7-extract.mjs).
+ *
+ * Every arm records the md5 of its matched-frame JPEG and the sha256 of its luma plane, and `aura-auto` records its luma difference against
+ * `aura-production` of the same run, so the pixel claims can be checked from the committed JSON without the stripped luma planes.
+ *
+ * The spec asserts the WP-7 acceptance numbers (after the output is written, so a failing run still emits its evidence):
+ *   game loop `aura-auto`: draws <= 25, programs <= 4; skinned character `aura-auto`: programs <= 5;
+ *   `aura-auto` vs `aura-production` frame: mean <= 2/255 and interior max <= 2/255;
+ *   `aura-production` luma sha256 equal to wp7-production-baseline.json (the pixels of the code before WP-7).
+ * Record mode (WP7_RECORD=1 on the harness, staged as a marker file like WP7_NOMINIFY) skips the assertions and only records; used to capture the
+ * baseline from the pre-WP-7 code.
  */
 const WORK = process.env.WP7_WORK ?? "/tmp/wp7";
 const SCENES = (process.env.WP7_SCENES ?? "game-loop,skinned-character").split(",");
@@ -122,6 +133,27 @@ function summariseProfile(profile: CpuProfile, top = 30) {
   return { totalMs: Math.round(total), busyMs: Math.round(total - idle), topSelf: rank(self), topInclusive: rank(inclusive) };
 }
 
+const RECORD_ONLY = process.env.WP7_RECORD === "1" || existsSync("/repo/tools/bench-vs-threejs/wp7-record");
+const sha256 = (bytes: Uint8Array): string => createHash("sha256").update(bytes).digest("hex");
+const md5 = (bytes: Uint8Array): string => createHash("md5").update(bytes).digest("hex");
+const FRAME_W = 640, FRAME_H = 360;
+
+/** Mean/max abs luma difference over all pixels, and over the interior (3x3 neighbourhood flat in BOTH frames: max-min <= 8). */
+function diffLuma(a: Uint8Array, b: Uint8Array) {
+  let sum = 0, max = 0, n = 0, isum = 0, imax = 0, inn = 0;
+  const flat = (buf: Uint8Array, x: number, y: number): boolean => {
+    let lo = 255, hi = 0;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const v = buf[(y + dy) * FRAME_W + x + dx]!; if (v < lo) lo = v; if (v > hi) hi = v; }
+    return hi - lo <= 8;
+  };
+  for (let y = 1; y < FRAME_H - 1; y++) for (let x = 1; x < FRAME_W - 1; x++) {
+    const d = Math.abs(a[y * FRAME_W + x]! - b[y * FRAME_W + x]!);
+    sum += d; n++; if (d > max) max = d;
+    if (flat(a, x, y) && flat(b, x, y)) { isum += d; inn++; if (d > imax) imax = d; }
+  }
+  return { mean: sum / n, max, interiorMean: inn ? isum / inn : 0, interiorMax: imax, interiorShare: inn / n };
+}
+
 const median = (xs: number[]): number => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)] ?? 0;
 
 type Win = Window & {
@@ -134,6 +166,7 @@ test("wp7 frame structure (software WebGL2)", async ({ browser }) => {
   execFileSync("node", ["tools/bench-vs-threejs/harness/build-all.mjs", "/repo/tools/bench-vs-threejs", WORK, "/repo/fixtures", SCENES.join(","), LIBS.join(",")], { stdio: "inherit", timeout: 900_000, env: { ...process.env, ...(NOMINIFY ? { BENCH_MINIFY: "false" } : {}) } });
   const out: Record<string, unknown> = {};
   const frames: Record<string, string> = {};
+  const lumas = new Map<string, Uint8Array>();
   for (const scene of SCENES) {
     for (const lib of LIBS) {
       const { server, origin } = await serve(join(WORK, "dist", scene, lib));
@@ -159,6 +192,7 @@ test("wp7 frame structure (software WebGL2)", async ({ browser }) => {
         // Matched capture (frame 25 after load, same as the bench) for the tolerance check, then steady timing.
         const cap = await page.evaluate(([step, n]) => { const w = window as Win; for (let i = 0; i < n!; i++) w.__BENCH__!.frame(step!); const c = w.__BENCH__!.capture(step!); return { luma: c.luma, mean: c.mean, jpeg: c.jpeg }; }, [dt, 19] as const);
         frames[`${scene}-${lib}`] = cap.jpeg;
+        lumas.set(`${scene}/${lib}`, Uint8Array.from(cap.luma));
         // GL-call time and call counts over 60 frames (JS frame time without readPixels sync).
         const glTime = await page.evaluate(([n, step]) => {
           const w = window as Win & { __BENCH__: { frameRaw(dt: number): void; sync(): void } };
@@ -187,13 +221,19 @@ test("wp7 frame structure (software WebGL2)", async ({ browser }) => {
           const t = await page.evaluate(([n, step]) => (window as Win).__BENCH__!.measure(n!, step!), [MEASURE_FRAMES, dt] as const);
           runs.push({ cpuMs: median(t.cpuMs), totalMs: median(t.totalMs) });
         }
-        out[`${scene}/${lib}`] = { structure, glTime, profile, lumaMean: cap.mean, lumaSample: cap.luma.length, timing: { runs, cpuMsMedian: median(runs.map((r) => r.cpuMs)), totalMsMedian: median(runs.map((r) => r.totalMs)) }, console: problems };
+        const jpegBytes = Buffer.from(cap.jpeg.split(",")[1]!, "base64");
+        out[`${scene}/${lib}`] = { structure, glTime, profile, lumaMean: cap.mean, lumaSample: cap.luma.length, jpegMd5: md5(jpegBytes), lumaSha256: sha256(lumas.get(`${scene}/${lib}`)!), timing: { runs, cpuMsMedian: median(runs.map((r) => r.cpuMs)), totalMsMedian: median(runs.map((r) => r.totalMs)) }, console: problems };
         // Luma plane for pixel-level comparison between arms.
         (out[`${scene}/${lib}`] as Record<string, unknown>).luma = Buffer.from(Uint8Array.from(cap.luma)).toString("base64");
         await context.close();
       } finally { server.close(); }
       console.log(`WP7_DONE ${scene}/${lib}`);
     }
+  }
+  // Luma difference of each aura-auto frame against aura-production of the same run, kept in the evidence JSON.
+  for (const scene of SCENES) {
+    const auto = lumas.get(`${scene}/aura-auto`), production = lumas.get(`${scene}/aura-production`);
+    if (auto && production) (out[`${scene}/aura-auto`] as Record<string, unknown>).vsProduction = diffLuma(auto, production);
   }
   mkdirSync("tests/reports/wp7", { recursive: true });
   writeFileSync("tests/reports/wp7/wp7.json", JSON.stringify(out));
@@ -205,5 +245,26 @@ test("wp7 frame structure (software WebGL2)", async ({ browser }) => {
     emitChunks(`WP7_FRAME:${name}`, dataUrl.split(",")[1]!);
     console.log(`WP7_FRAME_END ${name}`);
   }
-  void readFileSync;
+  if (RECORD_ONLY) return;
+  const arm = (scene: string, lib: string) => out[`${scene}/${lib}`] as { structure: { frame: Array<{ k: string }>; programs: Record<string, unknown> }; lumaSha256: string; vsProduction?: ReturnType<typeof diffLuma>; console: string[] } | undefined;
+  const drawsOf = (a: NonNullable<ReturnType<typeof arm>>): number => a.structure.frame.filter((e) => e.k === "draw").length;
+  const programsOf = (a: NonNullable<ReturnType<typeof arm>>): number => Object.keys(a.structure.programs).length;
+  const baseline = JSON.parse(readFileSync("tests/browser/wp7-production-baseline.json", "utf8")) as { lumaSha256: Record<string, string> };
+  for (const scene of SCENES) {
+    const auto = arm(scene, "aura-auto"), production = arm(scene, "aura-production");
+    if (auto) {
+      if (scene === "game-loop") {
+        expect.soft(drawsOf(auto), `${scene} aura-auto draws`).toBeLessThanOrEqual(25);
+        expect.soft(programsOf(auto), `${scene} aura-auto programs`).toBeLessThanOrEqual(4);
+      }
+      if (scene === "skinned-character") expect.soft(programsOf(auto), `${scene} aura-auto programs`).toBeLessThanOrEqual(5);
+      if (auto.vsProduction) {
+        expect.soft(auto.vsProduction.mean, `${scene} auto vs production mean luma difference`).toBeLessThanOrEqual(2);
+        expect.soft(auto.vsProduction.interiorMax, `${scene} auto vs production interior max luma difference`).toBeLessThanOrEqual(2);
+      }
+    }
+    if (production) {
+      expect.soft(production.lumaSha256, `${scene} aura-production luma plane vs the pre-WP-7 baseline`).toBe(baseline.lumaSha256[scene]);
+    }
+  }
 });

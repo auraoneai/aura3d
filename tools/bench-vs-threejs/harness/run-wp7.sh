@@ -12,8 +12,11 @@ RUN_ID="${1:?run id}"
 OUT="${2:-evidence/vs-threejs/wp7/$RUN_ID}"
 MARKER=tools/bench-vs-threejs/candidate.json
 NOMIN=tools/bench-vs-threejs/wp7-nominify
-trap 'rm -f "$MARKER" "$NOMIN"' EXIT INT TERM
+RECORD=tools/bench-vs-threejs/wp7-record
+trap 'rm -f "$MARKER" "$NOMIN" "$RECORD"' EXIT INT TERM
 [ "${WP7_NOMINIFY:-0}" = 1 ] && touch "$NOMIN"
+# WP7_RECORD=1: record only, no acceptance assertions (captures the pre-WP-7 baseline).
+[ "${WP7_RECORD:-0}" = 1 ] && touch "$RECORD"
 printf '{ "candidate": true, "gitSha": "%s" }\n' "$(git rev-parse HEAD)" > "$MARKER"
 RUN_ID="$RUN_ID" KEEP_IMAGE=0 SPECS="tests/browser/wp7-frame-structure.spec.ts" tools/remote-acr/run.sh > "/tmp/${RUN_ID}.out" 2>&1 || true
 tail -5 "/tmp/${RUN_ID}.out"

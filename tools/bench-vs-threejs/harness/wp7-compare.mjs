@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* One line per arm (draws, programs, CPU and total frame time, luma) for each wp7.json, plus the luma difference of each aura arm against
    `aura-production` of the SAME file and against `aura-production` of the first file.
+   Committed files have no luma planes; for those the stored `vsProduction` (computed in the spec from the planes), `jpegMd5` and `lumaSha256` are printed instead.
    Usage: node wp7-compare.mjs <wp7.json> [more wp7.json ...] */
 import { readFileSync } from "node:fs";
 
@@ -31,11 +32,16 @@ for (const f of files) {
     const draws = r.structure.frame.filter((e) => e.k === "draw").length;
     const progs = Object.keys(r.structure.programs).length;
     const t = r.timing;
-    console.log(`${arm.padEnd(34)} draws=${String(draws).padStart(3)} programs=${progs} cpu=${t.cpuMsMedian.toFixed(2)}ms total=${t.totalMsMedian.toFixed(1)}ms (runs ${t.runs.map((x) => x.totalMs.toFixed(0)).join("/")}) luma=${r.lumaMean.toFixed(2)} console=${r.console.length}`);
+    console.log(`${arm.padEnd(34)} draws=${String(draws).padStart(3)} programs=${progs} cpu=${t.cpuMsMedian.toFixed(2)}ms total=${t.totalMsMedian.toFixed(1)}ms (runs ${t.runs.map((x) => x.totalMs.toFixed(0)).join("/")}) luma=${r.lumaMean.toFixed(2)} console=${r.console.length}${r.lumaSha256 ? ` lumaSha256=${r.lumaSha256.slice(0, 12)} jpegMd5=${r.jpegMd5.slice(0, 12)}` : ""}`);
   }
   for (const [arm, r] of Object.entries(data)) {
     if (!arm.includes("aura-auto")) continue;
     const scene = arm.split("/")[0];
+    if (!r.luma) {
+      const d = r.vsProduction;
+      if (d) console.log(`  ${arm} vs same-file production (stored): mean=${d.mean.toFixed(3)} max=${d.max} interiorMean=${d.interiorMean.toFixed(3)} interiorMax=${d.interiorMax} (interior ${(d.interiorShare * 100).toFixed(1)}% of px)`);
+      continue;
+    }
     for (const [label, ref] of [["same-file production", data[`${scene}/aura-production`]], ["first-file production", first[`${scene}/aura-production`]]]) {
       if (!ref) continue;
       const d = diff(luma(r), luma(ref));
