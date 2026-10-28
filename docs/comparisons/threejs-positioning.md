@@ -79,11 +79,10 @@ Claims to keep off the site (they don't hold today): "check-deploy catches faile
 
 Each of these turns into a bigger headline once it is done.
 
-1. **A darker studio hero frame.** The 10-line hero renders on the light studio backdrop in every Aura3D variant, including the shipped template; the `product-studio` look's `#2b2f36` background value does not show above the horizon (`evidence/vs-threejs/tagline-check/run2/README.md`). Fixing that gives a more premium hero frame without an extra floor line.
-2. **"Ship-check catches broken requests and console errors."** The homepage (`marketing/index.html` lines 108 and 716 to 717) already says this about `check-deploy`, but today the command checks the build output and asset manifest only. Adding a browser pass that loads each route and fails on 4xx/5xx responses and console errors makes that copy true. Until then, change those lines to "checks every shipped asset's hash, licence and typed reference".
-3. **"A whole game in a fraction of the code."** Compare one complete game (HUD, audio, touch, replay) line for line against three.js plus the usual libraries. This is where Aura3D's built-in kits should show the widest gap.
-4. **"AI agents ship a game faster on Aura3D."** Run the cold-start trial on a full-game task with 4.3.5. The game kits should matter most there.
-5. **Real-device showcase numbers.** Capture the 25 games on real GPUs (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) for showcase performance and screenshots.
+1. **Done in 4.3.7: `check-deploy --browser`.** It loads each route in headless Chromium and fails on HTTP errors, failed requests, uncaught errors and console errors, so the homepage can say what it says (the plain `check-deploy` stays the static asset check).
+2. **"A whole game in a fraction of the code."** Compare one complete game (HUD, audio, touch, replay) line for line against three.js plus the usual libraries. This is where Aura3D's built-in kits should show the widest gap.
+3. **"AI agents ship a game faster on Aura3D."** Run the cold-start trial on a full-game task with 4.3.5. The game kits should matter most there.
+4. **Real-device showcase numbers.** Capture the 25 games on real GPUs (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) for showcase performance and screenshots.
 
 ## Reproduce the new tagline numbers
 

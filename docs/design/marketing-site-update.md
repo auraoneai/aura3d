@@ -249,13 +249,15 @@ Files: `marketing/index.html`, `marketing/src/home.css`, `marketing/src/styles.c
 
 ## 9. Engineering follow-ups that unlock stronger copy
 
-| Change | Copy it unlocks |
-|---|---|
-| A browser pass in `check-deploy` (load each route, fail on 4xx/5xx and console errors) | "check-deploy catches broken requests and console errors before you ship" |
-| Make the `product-studio` look show its `#2b2f36` backdrop above the horizon (every Aura3D variant in `tagline-check/run2` shows a light backdrop instead) | A darker, more premium hero frame without the extra floor line |
-| A full-game line-count comparison (HUD, audio, touch, replay) against three.js plus the usual libraries | "A whole game in a fraction of the code" |
-| A cold-start agent trial on a full-game task at 4.3.5 | An agent-speed headline for games |
-| Real-GPU captures of the 25 games (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) | Performance and screenshot proof on real devices |
+Status recorded 2026-10-27, after the 4.3.6 release.
+
+| Change | Status | Copy it unlocks |
+|---|---|---|
+| A browser pass in `check-deploy` (load each route, fail on 4xx/5xx and console errors) | Implemented and tested remotely (`packages/aura3d-cli/src/deploy-browser-check.ts`, `--browser`); not yet released. Ships in 4.3.7 (see `docs/prds/agent-first-authoring/PRD-agent-first-game-authoring.md`, WP-0). | "check-deploy --browser catches broken requests and console errors before you ship", after 4.3.7 is published |
+| Make the `product-studio` look show its `#2b2f36` backdrop above the horizon | Closed, not a defect: the look uses an HDRI backdrop by design. The three.js comparison apps use a solid `#2b2f36`, so the backdrops differ; line counts are unchanged. See `evidence/vs-threejs/tagline-check/README.md`. | None needed |
+| A full-game line-count comparison (HUD, audio, touch, replay) against three.js | Done: 271 authored lines on Aura3D against 373 on three.js (about a quarter fewer; one author, one game, software GL). `evidence/vs-threejs/full-game/README.md`. Does not support "a fraction of the code". | "About a quarter less code for a complete game, in our benchmark", only after it is committed and released |
+| A cold-start agent trial on a full-game task | Done: `evidence/agent-eval/fullgame-436/`. Aura3D agents needed more turns and tokens than three.js agents, so no agent-speed claim is made. The follow-up work is in the agent-first authoring PRD. | No claim; internal evidence only |
+| Real-GPU captures of the 25 games (`REAL_GPU_HEADLESS=false tools/real-gpu/run.sh all`) | Blocked on the owner's Mac GPU (or a GPU quota grant). | Performance and screenshot proof on real devices, once captured |
 
 ## 10. Refresh `README.md` and the docs so they sell Aura3D over three.js
 
