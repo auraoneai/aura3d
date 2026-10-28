@@ -70,13 +70,15 @@ export function createAssetProvenance(asset: AuraAssetRef): AuraAssetProvenance 
     asset.metadata?.outputPath,
     asset.metadata?.provenance?.outputPath
   ];
+  // Engine-bundled assets (`builtInCharacterAssets`) are hash-addressed and served from the package itself.
+  const isEngineBuiltIn = asset.metadata?.provenance?.builtIn === true;
   const hasDurableManifestProvenance = asset.kind === "aura-asset-ref"
     && asset.id !== "unsafe"
     && typeof resolvedHash === "string"
     && resolvedHash.length > 0
-    && manifestPaths.some((value) =>
+    && (isEngineBuiltIn || manifestPaths.some((value) =>
       typeof value === "string" && value.replaceAll("\\", "/").startsWith("public/aura-assets/")
-    );
+    ));
   const trustedManifestAsset = !remote || hasDurableManifestProvenance;
   return {
     source: asset.id === "unsafe" || !trustedManifestAsset

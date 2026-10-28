@@ -1,0 +1,39 @@
+{
+  "capability": "scenekits-productViewer",
+  "version": "4.3.7",
+  "gitSha": "ac6488132776f1076d8b004cf36f533f19b07f62",
+  "renderer": "swiftshader",
+  "scene": "sceneKits.productViewer() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
+  "frames": [
+    {
+      "file": "evidence/receipts/scenekits-productViewer/4.3.7/t0.png",
+      "sha256": "5398c8622b767491dbc9c18d1c5a5a96bb65caf38909da2aab226596662261a2",
+      "meanLuma": 230.7048,
+      "nonBlackRatio": 1,
+      "label": "frame 0"
+    },
+    {
+      "file": "evidence/receipts/scenekits-productViewer/4.3.7/t90.png",
+      "sha256": "0b423dcc623a266efb28643a5c008092dc284501577676e24f8505edeb97786c",
+      "meanLuma": 214.785,
+      "nonBlackRatio": 0.9994,
+      "label": "frame after 90 fixed steps (1.5 s)"
+    }
+  ],
+  "tests": [
+    "tests/browser/scenekits-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T02:44:53.778Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "noKitProblems": true,
+    "nonBlackRatioAtLeast2pc": true,
+    "lumaSpreadAtLeast3": true,
+    "atLeast6ColourBuckets": true,
+    "drawCalls": 13,
+    "motionChangedPixelFraction": 0.8862,
+    "kitNodeCount": 15,
+    "kitStructuralScore": 5
+  }
+}

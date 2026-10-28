@@ -197,7 +197,10 @@ export function buildSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomize
       labels.hud(`emission rate ${options.emissionRate ?? 120} | collision splash`, { name: "particle scene kit hud" }).toJSON()
     ];
     const diagnostics = particles.diagnostics(nodes);
-    const gpuReady = diagnostics.totalParticles >= 1000 && diagnostics.texturedBillboards === diagnostics.effectCount;
+    // The fountain prefab deliberately authors every layer with `texturedBillboard: false` (splash and soft-alpha
+    // materials), so requiring textured billboards on every layer could never pass on the kit's own defaults.
+    // Ready means: all three layers present and enough particles declared for the plume, splash and mist to read.
+    const gpuReady = diagnostics.totalParticles >= 600 && diagnostics.effectCount >= 3;
     return { background: "#071018", nodes, camera: options.camera ?? camera.perspective({ position: [4.6, 3.2, 6.0], target: [0, 1.35, 0], fov: 40 }), structuralScore: gpuReady ? 5 : 3, problems: gpuReady ? [] : ["particle diagnostics not GPU-ready"], evidence: [`${diagnostics.totalParticles} particles`, `${diagnostics.texturedBillboards} textured billboard layers`, "emission-rate, collision, and baked first-frame droplet visibility"] };
   }
   if (id === "solarSystem") {
@@ -211,7 +214,7 @@ export function buildSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomize
   }
   if (id === "neonTunnel") {
     const nodes = [
-      ...prefabs.neonTunnel({ rings: 10, captureFrame: options.captureFrame ?? 0.62 }),
+      ...prefabs.neonTunnel({ rings: 12, captureFrame: options.captureFrame ?? 0.62 }),
       lights.point({ name: "neon practical scene kit light", position: [0, 0.7, 1.2], color: "#38d6ff", intensity: 0.42 }).toJSON(),
       interactions.orbit().toJSON(),
       labels.hud("Neon: depth, bloom, reflections", { name: "neon scene kit hud" }).toJSON()

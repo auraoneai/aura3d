@@ -1,0 +1,38 @@
+{
+  "capability": "scenekits-miniGolf",
+  "version": "4.3.7",
+  "gitSha": "ac6488132776f1076d8b004cf36f533f19b07f62",
+  "renderer": "swiftshader",
+  "scene": "sceneKits.miniGolf() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
+  "frames": [
+    {
+      "file": "evidence/receipts/scenekits-miniGolf/4.3.7/t0.png",
+      "sha256": "793b6855aca4fe2d2627d98bb95b424da94d6206eb6e40761a0fb74f8f6e65d8",
+      "meanLuma": 215.4476,
+      "nonBlackRatio": 1,
+      "label": "frame 0"
+    },
+    {
+      "file": "evidence/receipts/scenekits-miniGolf/4.3.7/t90.png",
+      "sha256": "83fd6c2c673ec4e7d94660aa9bed4e79d7c7e00dbe80c8aeb74b5225ca2e4da5",
+      "meanLuma": 195.0681,
+      "nonBlackRatio": 1,
+      "label": "frame after 90 fixed steps (1.5 s)"
+    }
+  ],
+  "tests": [
+    "tests/browser/scenekits-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T02:40:30.611Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "noKitProblems": true,
+    "nonBlackRatioAtLeast2pc": true,
+    "lumaSpreadAtLeast3": true,
+    "atLeast6ColourBuckets": true,
+    "drawCalls": 39,
+    "motionChangedPixelFraction": 0.9979,
+    "kitNodeCount": 50
+  }
+}

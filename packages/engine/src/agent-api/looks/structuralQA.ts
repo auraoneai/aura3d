@@ -381,14 +381,10 @@ export function validateSolarVisualQA(nodes: readonly AuraSceneNode[]): Deprecat
   const leaderLines = names.filter((name) => name.includes("attached label leader line")).length;
   const stars = names.filter((name) => name.includes("background star")).length;
   const dust = names.filter((name) => name.includes("solar dust depth mote")).length;
-  const hasSunShader = flattened.some((node) =>
-    node.kind === "primitive" && node.material?.shader === "solar-sun" && String(node.name ?? "").includes("sun shader core")
-  );
-  const hasSunCorona = flattened.some((node) =>
-    node.kind === "primitive" && node.material?.shader === "solar-corona" && String(node.name ?? "").includes("sun corona shader")
-  ) && flattened.some((node) =>
-    node.kind === "primitive" && node.material?.shader === "solar-corona" && String(node.name ?? "").includes("solar glow halo shader")
-  );
+  // Keyed on the shader tag, not node names: the prefab names its sun nodes "glowing labeled sun" and
+  // "transparent golden sun corona", so a name match on "sun shader core" could never be satisfied.
+  const hasSunShader = flattened.some((node) => node.kind === "primitive" && node.material?.shader === "solar-sun");
+  const hasSunCorona = flattened.filter((node) => node.kind === "primitive" && node.material?.shader === "solar-corona").length >= 2;
   const hasBloom = flattened.some((node) => node.kind === "effect" && node.effect === "bloom");
   const orbitAnimatedNodes = flattened.filter((node): node is AuraModelNode | AuraPrimitiveNode | AuraGroupNode | AuraLabelNode =>
     (node.kind === "model" || node.kind === "primitive" || node.kind === "group" || node.kind === "label") && node.animation?.clip === "orbit"

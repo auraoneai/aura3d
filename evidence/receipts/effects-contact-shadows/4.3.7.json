@@ -1,0 +1,38 @@
+{
+  "capability": "effects-contact-shadows",
+  "version": "4.3.7",
+  "gitSha": "ac6488132776f1076d8b004cf36f533f19b07f62",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/receipts-harness.ts effectScene(): typed GLB subject, floor, reference bar, far colour block, one directional light",
+  "frames": [
+    {
+      "file": "evidence/receipts/_shared/4.3.7/fx-baseline.png",
+      "sha256": "c5d9b420be0372eb7ffcd07f1085814ded0a847493712aadb77a34b2406d6b5d",
+      "meanLuma": 149.8495,
+      "nonBlackRatio": 1,
+      "label": "effect off (baseline)"
+    },
+    {
+      "file": "evidence/receipts/effects-contact-shadows/4.3.7/fx-contact-shadows.png",
+      "sha256": "f03ebf8711931fd53d663e682d900354a5994dd121e69e11d12118ca49aedfc3",
+      "meanLuma": 144.2606,
+      "nonBlackRatio": 1,
+      "label": "effect on (fx-contact-shadows)"
+    }
+  ],
+  "tests": [
+    "tests/browser/effects-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T02:34:47.424Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "darkensFrame": true,
+    "darkensFloorUnderSubject": true,
+    "changedPixelFractionAtLeast0p3pc": true,
+    "changedPixelFraction": 0.6906,
+    "meanAbsoluteChannelDelta": 5.4539,
+    "meanLumaDelta": -5.5889,
+    "actualPasses": "tone-mapping,ssao"
+  }
+}
