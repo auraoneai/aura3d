@@ -4,6 +4,8 @@ import { LightUniforms } from "./LightUniforms";
 import { Material, type RenderState } from "./Material";
 import { MaterialBinding, MaterialBindingError } from "./MaterialBinding";
 import { MaterialInstance } from "./MaterialInstance";
+import { PortableShaderMaterial } from "./PortableShaderMaterial";
+import { cullInstancesToFrustum, MIN_CULLED_INSTANCES, type InstanceFrustumCullResult } from "./renderer/InstanceFrustumCull";
 import { type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { RenderPipeline } from "./RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
@@ -365,7 +367,8 @@ export class ForwardPass extends BaseRenderPass {
     }
   }
 
-  private drawItem(device: RenderDevice, item: RenderItem): void {
+  private drawItem(device: RenderDevice, sourceItem: RenderItem): void {
+    let item = sourceItem;
     // An instanced item with zero instances draws nothing (never a contract throw that blanks the frame).
     if (item.instanceTransforms !== undefined && item.instanceTransforms.length === 0) return;
     // threejs-parity L7/SG-09: three's Object3D.onBeforeRender fires
@@ -399,6 +402,12 @@ export class ForwardPass extends BaseRenderPass {
     // Generated iff getShader resolved a generated program for this draw (a
     // compile-failed fallback or an unskinnable skinned item is a legacy draw).
     let generated = this.lastProgramFeatures !== undefined;
+    // Large instanced draws: submit only the instances whose bounding sphere meets this pass's view frustum.
+    const culled = this.cullInstancesToView(item, baseMaterial);
+    if (culled !== null) {
+      if (culled.count === 0) return;
+      item = { ...item, instanceTransforms: culled.transforms, ...(culled.colors ? { instanceColors: culled.colors } : {}) };
+    }
     if (item.instanceTransforms && baseMaterial.renderState.cullMode !== "none" && instancedItemNeedsPerInstanceCullState(item)) {
       for (const expanded of expandInstancedRenderItem(item)) {
         this.drawItem(device, expanded);
@@ -522,6 +531,23 @@ export class ForwardPass extends BaseRenderPass {
         geometry.dispose();
       }
     }
+  }
+
+  /**
+   * Per-instance frustum culling for large instanced items (see renderer/InstanceFrustumCull.ts). Only the main camera of this pass is used,
+   * and only for plain meshes: skinned/morphed/custom-attribute items, custom shader materials (vertex displacement) and items that opt out
+   * with `frustumCulled: false` always draw every instance.
+   */
+  private cullInstancesToView(item: RenderItem, baseMaterial: Material): InstanceFrustumCullResult | null {
+    const transforms = item.instanceTransforms;
+    const viewProjection = this.options.cameraViewProjectionMatrix;
+    if (!(transforms instanceof Float32Array) || viewProjection === undefined || viewProjection.length < 16) return null;
+    if (transforms.length < MIN_CULLED_INSTANCES * 16) return null;
+    if (item.frustumCulled === false || item.skinning || item.morphTargets || item.morphWeights || item.instanceAttributes || item.drawRange) return null;
+    if (baseMaterial instanceof PortableShaderMaterial) return null;
+    const colors = item.instanceColors;
+    if (colors !== undefined && !(colors instanceof Float32Array)) return null;
+    return cullInstancesToFrustum({ viewProjection, modelMatrix: item.modelMatrix, bounds: item.geometry.bounds, transforms, ...(colors ? { colors } : {}) });
   }
 
   /**
