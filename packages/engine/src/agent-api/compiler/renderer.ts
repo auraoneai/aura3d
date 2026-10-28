@@ -13,9 +13,9 @@ import { resolveCameraFrame } from "./camera.js";
 import { createProductionRuntimeCollectedLights, createProductionRuntimePostprocessObservation, createProductionRuntimeShadowObservation, createProductionTexturesObservation, countContributorContentNodes, isRenderableModelNode } from "./observations.js";
 import { createProductionTextObservation } from "./text.js";
 import { getRootPerformanceQuality, getRootRenderSource } from "../RootRuntimeSupport.js";
-import { Renderer, webGL2MaxTextureSize, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import { Renderer, resolveBloomFusionConfig, webGL2MaxTextureSize, type BloomFusionConfig, type RenderBackendKind, type ProductionRendererFeature, type ProductionRendererInput, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
-import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
+import { normalizeTextureBudgetBytes, parseBloomFusionOption } from "../app/rendererOptions.js";
 import { createProductionRuntimeEnvironment } from "./environment.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
@@ -121,7 +121,11 @@ export async function createProductionRuntimeSceneRenderer(
   });
   markTiming("a3d:mount:renderer-create:resolved");
   // quality auto / cinematic: allow look-neutral bloom pass fusion (`production` never does).
-  if (isFusedBloomPasses(canvas)) (productionRenderer.device as unknown as { bloomFusedPasses?: boolean }).bloomFusedPasses = true;
+  if (isFusedBloomPasses(canvas)) {
+    const fusedDevice = productionRenderer.device as unknown as { bloomFusedPasses?: boolean; bloomFusion?: BloomFusionConfig };
+    fusedDevice.bloomFusedPasses = true;
+    fusedDevice.bloomFusion = resolveBloomFusionConfig(parseBloomFusionOption(rendererOptions));
+  }
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
   let disposeHdriEnvironment: (() => void) | null = null;

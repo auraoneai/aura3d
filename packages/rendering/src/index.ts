@@ -1393,3 +1393,6 @@ export type { ProjectedDecalBasis, ProjectedDecalGeometryResult, ProjectedDecalR
 // beat-three.js L-P1: direct (single-pass canvas MSAA) vs HDR multisampled render path.
 export { QUALITY_MODES, isQualityMode, resolveRenderPath, withDirectPath } from "./quality/DirectPath.js";
 export type { AuraQualityMode, AuraRenderPath, RenderPathDecision, RenderPathInput } from "./quality/DirectPath.js";
+// PRD beat-threejs-2 WP-1: bloom pass-fusion selection (`AuraBloomFusion` lives in contracts/quality).
+export { FUSED_2D_BLOOM_FUSION, SEPARABLE_BLOOM_FUSION, bloomLevelBlursIn2d, resolveBloomFusionConfig } from "./webgl2/BloomFusion.js";
+export type { BloomFusionConfig } from "./webgl2/BloomFusion.js";

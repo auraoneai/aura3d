@@ -1,15 +1,28 @@
 // beat-three.js L-P1: pick the render path for one mount (direct canvas MSAA vs HDR multisampled target).
 
 import { isQualityMode, qrCoreOutputOn, resolveRenderPath, withDirectPath, type AuraQualityMode, type RenderPathDecision } from "@aura3d/rendering";
-import type { QrFlags } from "@aura3d/rendering/contracts";
+import type { AuraBloomFusion, QrFlags } from "@aura3d/rendering/contracts";
 import type { AuraCreateAppOptions, AuraSceneSnapshot } from "../nodes/types.js";
 import { groups } from "../nodes/groups.js";
+import { parseBloomFusionOption } from "./rendererOptions.js";
 
 /** What `app.diagnostics().renderPath` reports. */
 export interface AuraRenderPathReport {
   readonly path: RenderPathDecision["path"];
   readonly quality: AuraQualityMode;
   readonly reason: string;
+  /** Bloom pass fusion in effect: the selected mode under quality `auto`/`cinematic`, `"off"` otherwise (`production` never fuses). */
+  readonly bloomFusion: AuraBloomFusion | "off";
+}
+
+/** Fusion is allowed only under quality `auto` or `cinematic`; this is the single predicate the mount and the report share. */
+export function bloomFusionAllowed(quality: AuraQualityMode): boolean {
+  return quality === "auto" || quality === "cinematic";
+}
+
+function reportedBloomFusion(quality: AuraQualityMode, options: AuraCreateAppOptions): AuraBloomFusion | "off" {
+  const mode = parseBloomFusionOption(options.renderer);
+  return bloomFusionAllowed(quality) ? mode : "off";
 }
 
 export interface AppRenderPath {
@@ -110,17 +123,17 @@ export function resolveAppRenderPath(snapshot: AuraSceneSnapshot, options: AuraC
   if (!qrCoreOutputOn(flags)) {
     const explicit = flags.values.A3D_QR_CORE_OUTPUT !== undefined;
     return {
-      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off: legacy LDR route" : "A3D_QR_CORE is off: legacy LDR route (its own post chain is kept)" },
+      report: { path: "direct", quality, reason: explicit ? "A3D_QR_CORE_OUTPUT is off: legacy LDR route" : "A3D_QR_CORE is off: legacy LDR route (its own post chain is kept)", bloomFusion: reportedBloomFusion(quality, options) },
       flags,
       direct: false
     };
   }
   if (flags.values.A3D_QR_CORE_OUTPUT !== undefined) {
-    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly" }, flags, direct: false };
+    return { report: { path: "hdr-msaa", quality, reason: "A3D_QR_CORE_OUTPUT is set explicitly", bloomFusion: reportedBloomFusion(quality, options) }, flags, direct: false };
   }
   const decision = resolveRenderPath({ quality, blockers: quality === "auto" ? renderPathBlockers(snapshot, options) : [] });
   return {
-    report: { path: decision.path, quality: decision.quality, reason: decision.reason },
+    report: { path: decision.path, quality: decision.quality, reason: decision.reason, bloomFusion: reportedBloomFusion(decision.quality, options) },
     flags: decision.path === "direct" ? withDirectPath(flags) : flags,
     direct: decision.path === "direct"
   };

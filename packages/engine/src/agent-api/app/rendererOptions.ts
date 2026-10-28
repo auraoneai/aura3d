@@ -1,6 +1,7 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
 import type { AuraCreateAppRendererOptions, AuraRendererQualityPreset, AuraRendererQualityProfile, AuraRendererQualityProfileId } from "../nodes/types.js";
+import { DEFAULT_BLOOM_FUSION_MODE, isBloomFusion, type AuraBloomFusion } from "@aura3d/rendering/contracts";
 
 /**
  * PRD 11 Phase 1 freeze (§6.2): thrown when a caller requests the frozen
@@ -249,4 +250,26 @@ export function parseQualityRendererOptions(
   }
 
   return { requested, requestedSource, overrides, adaptive, adaptiveSource, targetFrameRate, batching, warnings };
+}
+
+/**
+ * Bloom pass-fusion mode (PRD beat-threejs-2 contract 2.1): `renderer.bloomFusion` (`"separable"` default | `"fused-2d"`),
+ * overridden by `?aura3d-bloom-fusion=`. Invalid values throw so a typo never silently runs the default. The mode only
+ * takes effect under `quality: "auto"` / `"cinematic"`; `production` never fuses.
+ */
+export function parseBloomFusionOption(
+  renderer: Pick<AuraCreateAppRendererOptions, "bloomFusion"> | undefined,
+  search: string | null = typeof location !== "undefined" ? location.search : null
+): AuraBloomFusion {
+  let mode: unknown = renderer?.bloomFusion ?? DEFAULT_BLOOM_FUSION_MODE;
+  let where = "renderer.bloomFusion";
+  if (search) {
+    const fromUrl = new URLSearchParams(search).get("aura3d-bloom-fusion");
+    if (fromUrl !== null) {
+      mode = fromUrl;
+      where = "?aura3d-bloom-fusion";
+    }
+  }
+  if (!isBloomFusion(mode)) throw new Error(`QUALITY_OPTION_INVALID:${where}=${String(mode)} (expected separable|fused-2d)`);
+  return mode;
 }

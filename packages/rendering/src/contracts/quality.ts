@@ -6,6 +6,28 @@
 
 export type AuraQualityTier = "low" | "medium" | "high" | "ultra";
 export type AuraFeatureLevel = "off" | "low" | "medium" | "high";
+
+/**
+ * Bloom pass-fusion selection (PRD beat-threejs-2, contract 2.1). Applies only under `quality: "auto"` / `"cinematic"`;
+ * `quality: "production"` never fuses and keeps the original pass sequence.
+ *
+ * - `"separable"` (default): the draw-removing fusions that add no fill. The bright extract is folded into the level-0
+ *   downsample, the five-mip sum is one pass, and the last full-resolution upsample is folded into the composite. Mips 0..2
+ *   keep their separable H+V blur; the two smallest mips (3 and 4, about 1.8M texel fetches at 640x360) blur in one 2-D pass.
+ *   Measured on the PBR viewer (software WebGL2, 640x360): 25 draws, frame time -7.1% / +3.1% / -3.3% against production
+ *   (evidence/vs-threejs/4.3.7/bloom-fusion-variants.json). Without the 2-D pass on mips 3 and 4 the same viewer has 27 draws.
+ * - `"fused-2d"`: mips 1..4 blur in one 2-D pass each (23 draws). The extra fill made the PBR viewer +46% to +52% slower on a
+ *   software rasteriser, so it is opt-in until an owner-run real-GPU receipt exists.
+ *
+ * A 2-D pass is only taken while (2r+1)^2 * width * height stays within the tap budget, so large canvases fall back to the
+ * separable pair per mip in either mode.
+ */
+export type AuraBloomFusion = "separable" | "fused-2d";
+export const BLOOM_FUSIONS: readonly AuraBloomFusion[] = ["separable", "fused-2d"];
+export const DEFAULT_BLOOM_FUSION_MODE: AuraBloomFusion = "separable";
+export function isBloomFusion(value: unknown): value is AuraBloomFusion {
+  return value === "separable" || value === "fused-2d";
+}
 export interface AuraQualityTierSettings {
   readonly maxPixelRatio: number; readonly minRenderScale: number; readonly targetFrameMs: number;
   readonly msaaSamples: 0 | 4; readonly postAntiAlias: "fxaa" | "none" | "taa";

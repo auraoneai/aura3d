@@ -1175,6 +1175,12 @@ export interface AuraCreateAppRendererOptions {
    * over-budget telemetry instead of silent thrash. Default 256 MiB.
    */
   readonly textureBudgetBytes?: number;
+  /**
+   * Bloom pass fusion under `quality: "auto"` / `"cinematic"` (`production` never fuses). `"separable"` (default) keeps the
+   * draw-removing folds that add no fill; `"fused-2d"` blurs mips 1..4 in one 2-D pass each and is opt-in until a real-GPU
+   * receipt exists. `?aura3d-bloom-fusion=` overrides. Reported as `diagnostics().renderPath.bloomFusion`.
+   */
+  readonly bloomFusion?: import("@aura3d/rendering/contracts").AuraBloomFusion;
   // C-38 additions (PR 0a, all optional)
   readonly quality?: unknown /* C-27 AuraQualityOptions (prd11) */;
   readonly output?: import("../../contracts/output").AuraOutputOptions;
@@ -2507,7 +2513,13 @@ export interface AuraDiagnostics {
   readonly evidence?: AuraSceneEvidence;
   readonly renderer?: AuraRendererDiagnosticReport;
   /** Which pipeline the last mount took (`"direct"` canvas MSAA or `"hdr-msaa"` offscreen target) and why. */
-  readonly renderPath?: { readonly path: "direct" | "hdr-msaa"; readonly quality: "auto" | "production" | "safe-basic" | "cinematic"; readonly reason: string };
+  readonly renderPath?: {
+    readonly path: "direct" | "hdr-msaa";
+    readonly quality: "auto" | "production" | "safe-basic" | "cinematic";
+    readonly reason: string;
+    /** Bloom pass fusion in effect: `"separable"` (default) or `"fused-2d"` under quality `auto`/`cinematic`; `"off"` otherwise (`production` never fuses). */
+    readonly bloomFusion?: import("@aura3d/rendering/contracts").AuraBloomFusion | "off";
+  };
   readonly warnings: readonly string[];
   readonly errors: readonly string[];
   /**

@@ -3,14 +3,18 @@ import { camera, createAuraApp, defineModelAssets, effects, environments, intera
 /**
  * The tools/bench-vs-threejs/pbr-viewer/aura scene (Cesium milk truck, HDR environment, one shadowed directional light,
  * bloom, ACES output, orbit), built against the in-repo sources instead of the published package, so draw calls can be
- * measured for the working tree. Query: `?sha=<sha256 of the GLB>&quality=auto|production`.
+ * measured for the working tree. Query: `?sha=<sha256 of the GLB>&quality=auto|production`, plus optional
+ * `&bloomFusion=separable|fused-2d` (renderer.bloomFusion), `&w=<px>&h=<px>` (canvas size, default 640x360) and
+ * `&bloom=0` (scene without the bloom effect).
  */
 interface PbrHarnessApi {
   ready: boolean;
   errors: string[];
   renderPath: unknown;
   stepOnce(): void;
-  /** Wait until the HDRI environment has settled, render `frames` more frames, and return the canvas as base64 RGBA (640x360). */
+  /** `diagnostics().renderSize` now (the adaptive governor can lower it below the canvas size). */
+  renderSize(): readonly number[] | null;
+  /** Wait until the HDRI environment has settled, render `frames` more frames, and return the canvas as base64 RGBA (canvas size). */
   settledPixels(frames: number): Promise<string>;
   /** Wall time of `frames` steady frames (render + readPixels wait), in ms each. */
   measure(frames: number): number[];
@@ -24,31 +28,39 @@ window.addEventListener("unhandledrejection", (event) => errors.push(String((eve
 
 async function main(): Promise<void> {
   const canvas = document.createElement("canvas");
-  canvas.width = 640;
-  canvas.height = 360;
-  canvas.style.cssText = "width:640px;height:360px";
+  const width = Number(params.get("w") ?? 640);
+  const height = Number(params.get("h") ?? 360);
+  canvas.width = width;
+  canvas.height = height;
+  canvas.style.cssText = `width:${width}px;height:${height}px`;
   document.body.appendChild(canvas);
   try {
     const assets = defineModelAssets(
       { truck: { url: "/fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb", sha256: params.get("sha") ?? "" } },
       { license: "CC-BY 4.0, Cesium" }
     );
+    const viewerScene = scene()
+      .background("#1a1d24")
+      .camera(camera.orbit({ fov: 40, near: 0.1, far: 100, position: [4.5, 2.2, 5.5], target: [0, 0.8, 0] }))
+      .add(environments.hdri({ name: "env", intensity: 1, background: false, texture: { type: "texture", format: "hdr", url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr" } as never }))
+      .add(lights.directional({ color: "#fff4e0", intensity: 2.5, position: [5, 8, 4], shadow: true }))
+      .add(primitives.plane({ name: "ground", size: [30, 1, 30], material: material.pbr({ color: "#2b2f38", roughness: 0.9 }) }))
+      .add(model(assets.refs.truck, { name: "truck", targetHeight: 2, castShadow: true }));
+    if (params.get("bloom") !== "0") viewerScene.add(effects.bloom({ intensity: 0.35, threshold: 0.85, radius: 0.6 }));
+    viewerScene.add(interactions.orbit({ target: "truck" }));
     const app = createAuraApp(canvas, {
       autoStart: false,
       resize: false,
       pixelRatio: 1,
       quality: (params.get("quality") ?? "auto") as "auto",
-      renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
+      renderer: {
+        mode: "production",
+        qualityProfile: "production",
+        fallback: "safe-basic",
+        ...(params.get("bloomFusion") ? { bloomFusion: params.get("bloomFusion") as "separable" } : {})
+      },
       output: { toneMapping: "aces" },
-      scene: scene()
-        .background("#1a1d24")
-        .camera(camera.orbit({ fov: 40, near: 0.1, far: 100, position: [4.5, 2.2, 5.5], target: [0, 0.8, 0] }))
-        .add(environments.hdri({ name: "env", intensity: 1, background: false, texture: { type: "texture", format: "hdr", url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr" } as never }))
-        .add(lights.directional({ color: "#fff4e0", intensity: 2.5, position: [5, 8, 4], shadow: true }))
-        .add(primitives.plane({ name: "ground", size: [30, 1, 30], material: material.pbr({ color: "#2b2f38", roughness: 0.9 }) }))
-        .add(model(assets.refs.truck, { name: "truck", targetHeight: 2, castShadow: true }))
-        .add(effects.bloom({ intensity: 0.35, threshold: 0.85, radius: 0.6 }))
-        .add(interactions.orbit({ target: "truck" }))
+      scene: viewerScene
     });
     await app.ready();
     // Experiment knob (variant exploration): `?fusion=off` or `?fusion=acc=1,b2d=3,ext=1` sets the bloom fusion config on the device.
@@ -94,6 +106,7 @@ async function main(): Promise<void> {
       errors,
       renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath,
       stepOnce,
+      renderSize: () => ((app.diagnostics() as { renderSize?: readonly number[] }).renderSize ?? null),
       settledPixels,
       measure(frames) {
         for (let i = 0; i < 2; i += 1) stepOnce();
@@ -108,7 +121,7 @@ async function main(): Promise<void> {
     };
   } catch (error) {
     errors.push(`start failed: ${(error as Error)?.stack ?? error}`);
-    window.__PBR__ = { ready: false, errors, renderPath: null, stepOnce: () => undefined, settledPixels: async () => "", measure: () => [] };
+    window.__PBR__ = { ready: false, errors, renderPath: null, stepOnce: () => undefined, renderSize: () => null, settledPixels: async () => "", measure: () => [] };
   }
 }
 

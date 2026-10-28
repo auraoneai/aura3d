@@ -9,6 +9,7 @@ import { normalizeBloomQualityPreset, resolveBloomPyramidBlurRadii, resolveBloom
 import { BLOOM_BRIGHT_LUT_HEIGHT, BLOOM_BRIGHT_LUT_WIDTH, BLOOM_COMPOSITE_LUT_SIZE, OUTLINE_BLEND_LUT_WIDTH, OUTLINE_LIMB_RADIX, createBloomBrightThresholdLut, createBloomCompositeLut, createOutlineBlendLut, createOutlineGradientBound } from "../postprocess/NativeLdrEffectLuts";
 import type { WebGL2TextureUnit0Snapshot, WebGL2TextureUnitBindingSnapshot } from "./ContextLifecycle";
 import type { WebGL2DeviceHost } from "./DeviceHost";
+import { BLOOM_FUSED_BLUR_TAP_BUDGET, bloomLevelBlursIn2d } from "./BloomFusion";
 // PRD-03 Phase 1 — the r185 FXAA finalize (post/shaders/fxaa.glsl.ts). The
 // split is opt-in via `fxaa: { variant: "r185" }`; the legacy in-shader
 // `u_hasFxaa` taps stay the default path.
@@ -114,8 +115,7 @@ export interface WebGL2BloomPingPongResources {
 
 /** Pass fusion (auto/cinematic): the fused mip sum samples at most this many mips in one pass. */
 export const BLOOM_FUSED_MAX_MIPS = 5;
-/** Pass fusion: a mip blurs in one 2-D pass when (2r+1)^2 * width * height stays at or under this many texel fetches. */
-export const BLOOM_FUSED_BLUR_TAP_BUDGET = 7_000_000;
+export { BLOOM_FUSED_BLUR_TAP_BUDGET };
 
 /** Texture units the fullscreen presentation snapshot saves and restores: 0..4 (the fused bloom mip sum samples five). */
 export const PRESENTATION_TEXTURE_UNITS = BLOOM_FUSED_MAX_MIPS;
@@ -1116,8 +1116,7 @@ export class WebGL2LegacyPostPipeline {
     // Blur one mip that was just downsampled into slot 0. Two passes (H into slot 1, V back into slot 0) normally; a single
     // 2-D pass (slot 0 into slot 1) when fusion is on and the tap count stays under the budget.
     const blurLevel = (level: number, size: { width: number; height: number }, radius: number): void => {
-      const taps = (2 * radius + 1) * (2 * radius + 1) * size.width * size.height;
-      if (blur2dProgram && level >= fusion.blur2dFromLevel && radius <= 24 && taps <= BLOOM_FUSED_BLUR_TAP_BUDGET) {
+      if (blur2dProgram && bloomLevelBlursIn2d(fusion, level, size, radius)) {
         this.host.gl.bindFramebuffer(this.host.gl.FRAMEBUFFER, mipFramebuffer(level, 1));
         this.host.gl.viewport(0, 0, size.width, size.height);
         this.host.gl.useProgram(blur2dProgram);
