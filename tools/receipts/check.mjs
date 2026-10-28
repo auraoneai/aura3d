@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-// Receipt gate. A capability labelled `shipped` in docs/comparisons/aura3d-capability-audit.md must have a pixel
-// receipt for the current minor version at evidence/receipts/<capability-slug>/<version>.json.
+// Receipt gate. Every capability labelled `shipped` in docs/comparisons/aura3d-capability-audit.md names its proof
+// in the row's last column ("Proof"):
+//   pixel: <receipt-dir>[, <receipt-dir>]   needs a valid receipt for the current minor at
+//                                            evidence/receipts/<receipt-dir>/<version>.json
+//   api|cli|docs: <path>[, <path>]          needs every named test, gate or doc path to exist
+// A `shipped` row with no Proof, or whose proof is missing, fails the gate. Rows with any other label are not checked.
 //   node tools/receipts/check.mjs [--list] [--json] [--version X.Y.Z] [--audit PATH] [--receipts DIR]
-// --list prints the receipt slug each shipped row needs; exit code is 1 when a row has no valid receipt.
+// --list prints every shipped row with its proof; exit code is 1 when a required proof is missing or invalid.
+// Receipts from an older minor are history: the gate lists them under "regenerate" so a release knows what to re-run.
 //
 // Receipt schema (PRD beat-three.js section 3.5):
 //   { capability, version, gitSha, renderer: "swiftshader" | "<gpu string>", scene,
@@ -46,9 +51,27 @@ export function parseAuditRows(markdown) {
     if (cells.length < 3) continue;
     if (/^:?-{3,}:?$/.test(cells[0]) || /^capability$/i.test(cells[0])) continue;
     const label = cells[1].toLowerCase();
-    rows.push({ section, capability: cells[0].replace(/`/g, ""), label, shipped: label.startsWith("shipped"), slug: capabilitySlug(cells[0]) });
+    rows.push({
+      section,
+      capability: cells[0].replace(/`/g, ""),
+      label,
+      shipped: label.startsWith("shipped"),
+      slug: capabilitySlug(cells[0]),
+      ...parseProof(cells[4])
+    });
   }
   return rows;
+}
+
+const PROOF_KINDS = new Set(["pixel", "api", "cli", "docs"]);
+
+/** `pixel: a, b` -> `{ proofKind: "pixel", proofTargets: ["a", "b"] }`; anything else -> no proof. */
+export function parseProof(cell) {
+  const match = /^(pixel|api|cli|docs)\s*:\s*(.+)$/i.exec(String(cell ?? "").replace(/`/g, "").trim());
+  if (!match) return { proofKind: null, proofTargets: [] };
+  const kind = match[1].toLowerCase();
+  const targets = match[2].split(",").map((entry) => entry.trim()).filter(Boolean);
+  return { proofKind: PROOF_KINDS.has(kind) ? kind : null, proofTargets: targets };
 }
 
 const SHA256 = /^[0-9a-f]{64}$/;
@@ -128,7 +151,8 @@ export function checkReceipts({ repoRoot = REPO_ROOT, audit = DEFAULT_AUDIT, rec
   const shipped = rows.filter((row) => row.shipped);
   const loaded = loadReceipts(join(repoRoot, receipts));
 
-  const covered = new Map();
+  const covered = new Map(); // receipt directory slug -> current-minor receipt file
+  const newest = new Map(); // receipt directory slug -> highest version found, for the regenerate list
   const invalid = [];
   for (const entry of loaded) {
     const rel = entry.file.slice(repoRoot.length + 1);
@@ -143,25 +167,60 @@ export function checkReceipts({ repoRoot = REPO_ROOT, audit = DEFAULT_AUDIT, rec
       invalid.push({ file: rel, problems: [`file name ${entry.version}.json is not a semver version`] });
       continue;
     }
+    const key = capabilitySlug(entry.slug);
+    if (!newest.has(key) || compareVersions(entry.version, newest.get(key)) > 0) newest.set(key, entry.version);
     if (!inMinor) continue; // an older minor's receipt is history, not a failure
     const problems = validateReceipt(entry.receipt, { repoRoot, minor, slug: entry.slug });
     if (problems.length > 0) {
       invalid.push({ file: rel, problems });
       continue;
     }
-    for (const slug of [entry.slug, ...(entry.receipt.covers ?? [])]) covered.set(slug, rel);
+    for (const slug of [entry.slug, ...(entry.receipt.covers ?? [])]) covered.set(capabilitySlug(slug), rel);
   }
 
-  const missing = shipped.filter((row) => !covered.has(row.slug));
+  const missing = [];
+  const coveredRows = [];
+  const regenerate = new Map();
+  for (const row of shipped) {
+    const base = { capability: row.capability, slug: row.slug, section: row.section, kind: row.proofKind };
+    if (row.proofKind === null) {
+      missing.push({ ...base, reason: "no Proof cell (expected `pixel: <receipt-dir>` or `api|cli|docs: <path>`)" });
+      continue;
+    }
+    if (row.proofKind === "pixel") {
+      const dirs = row.proofTargets.length > 0 ? row.proofTargets : [row.slug];
+      const lacking = dirs.filter((dir) => !covered.has(capabilitySlug(dir)));
+      for (const dir of lacking) {
+        const latest = newest.get(capabilitySlug(dir));
+        if (latest) regenerate.set(dir, latest);
+      }
+      if (lacking.length > 0) missing.push({ ...base, reason: `no ${minor}.x receipt for ${lacking.join(", ")}` });
+      else coveredRows.push({ ...base, proof: dirs.map((dir) => covered.get(capabilitySlug(dir))) });
+      continue;
+    }
+    const absent = row.proofTargets.filter((target) => !existsSync(join(repoRoot, target)));
+    if (row.proofTargets.length === 0) missing.push({ ...base, reason: `${row.proofKind} proof names no path` });
+    else if (absent.length > 0) missing.push({ ...base, reason: `${row.proofKind} proof path does not exist: ${absent.join(", ")}` });
+    else coveredRows.push({ ...base, proof: row.proofTargets });
+  }
   return {
     version: resolvedVersion,
     minor,
     shippedRows: shipped.length,
-    covered: shipped.filter((row) => covered.has(row.slug)).map((row) => ({ capability: row.capability, slug: row.slug, receipt: covered.get(row.slug) })),
-    missing: missing.map((row) => ({ capability: row.capability, slug: row.slug, section: row.section })),
+    covered: coveredRows,
+    missing,
+    regenerate: [...regenerate].map(([slug, latest]) => ({ slug, latest, need: `${minor}.x` })),
     invalid,
     pass: missing.length === 0 && invalid.length === 0
   };
+}
+
+/** Numeric semver comparison; unparseable versions sort lowest. */
+function compareVersions(a, b) {
+  const parse = (value) => (/^(\d+)\.(\d+)\.(\d+)/.exec(String(value)) ?? [0, 0, 0, 0]).slice(1).map(Number);
+  const [x, y] = [parse(a), parse(b)];
+  for (let i = 0; i < 3; i += 1) if (x[i] !== y[i]) return x[i] - y[i];
+  return 0;
 }
 
 function main(argv) {
@@ -179,10 +238,13 @@ function main(argv) {
   if (options.json) {
     console.log(JSON.stringify(result, null, 2));
   } else {
-    console.log(`receipts: ${result.covered.length}/${result.shippedRows} shipped rows have a ${result.minor}.x receipt`);
-    if (options.list || !result.pass) {
-      for (const row of result.missing) console.log(`  missing  ${row.slug}  (${row.capability})`);
+    const pixel = result.covered.filter((row) => row.kind === "pixel").length;
+    console.log(`receipts: ${result.covered.length}/${result.shippedRows} shipped rows have their proof (${pixel} pixel rows backed by ${result.minor}.x receipts)`);
+    if (options.list) {
+      for (const row of result.covered) console.log(`  ok       ${row.kind}  ${row.capability}`);
     }
+    for (const row of result.missing) console.log(`  missing  ${row.slug}  (${row.capability}): ${row.reason}`);
+    for (const row of result.regenerate) console.log(`  regenerate  ${row.slug}: latest receipt is ${row.latest}, need ${row.need}`);
     for (const entry of result.invalid) console.log(`  invalid  ${entry.file}: ${entry.problems.join("; ")}`);
     console.log(result.pass ? "PASS" : "FAIL");
   }

@@ -3,19 +3,19 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { capabilitySlug, checkReceipts, minorOf, parseAuditRows, validateReceipt } from "../../../tools/receipts/check.mjs";
+import { capabilitySlug, checkReceipts, minorOf, parseAuditRows, parseProof, validateReceipt } from "../../../tools/receipts/check.mjs";
 import { classifyWebGpuEvidence, isSoftwareAdapter } from "../../../tools/receipts/webgpu-evidence.mjs";
 
 const AUDIT = `# Audit
 
 ## Engine API
 
-| Capability | Label | Code | Evidence |
-|---|---|---|---|
-| \`looks.preset(id)\` | shipped | a | b |
-| \`tsl\` (62 names), \`compute\` | experimental | a | b |
-| Other effects (AO) | partial | a | b |
-| \`check-deploy --dist\` | shipped (static checks) | a | b |
+| Capability | Label | Code | Evidence | Proof |
+|---|---|---|---|---|
+| \`looks.preset(id)\` | shipped | a | b | pixel: looks-preset |
+| \`tsl\` (62 names), \`compute\` | experimental | a | b | — |
+| Other effects (AO) | partial | a | b | — |
+| \`check-deploy --dist\` | shipped (static checks) | a | b | cli: tests/a.spec.ts |
 `;
 
 describe("receipt gate: audit parsing", () => {
@@ -34,10 +34,33 @@ describe("receipt gate: audit parsing", () => {
     ]);
   });
 
-  it("parses the real audit: shipped rows exist and every slug is unique", () => {
+  it("reads the Proof cell into a kind and its targets", () => {
+    expect(parseProof("pixel: a, b")).toEqual({ proofKind: "pixel", proofTargets: ["a", "b"] });
+    expect(parseProof("`cli`: tests/x.test.ts")).toEqual({ proofKind: "cli", proofTargets: ["tests/x.test.ts"] });
+    expect(parseProof("—")).toEqual({ proofKind: null, proofTargets: [] });
+    expect(parseProof(undefined)).toEqual({ proofKind: null, proofTargets: [] });
+    expect(parseProof("video: a")).toEqual({ proofKind: null, proofTargets: [] });
+  });
+
+  it("parses the real audit: shipped rows exist, every slug is unique, every shipped row names its proof", () => {
     const rows = parseAuditRows(readFileSync("docs/comparisons/aura3d-capability-audit.md", "utf8"));
-    expect(rows.filter((row: { shipped: boolean }) => row.shipped).length).toBeGreaterThan(20);
+    const shipped = rows.filter((row: { shipped: boolean }) => row.shipped);
+    expect(shipped.length).toBeGreaterThan(20);
     expect(new Set(rows.map((row: { slug: string }) => row.slug)).size).toBe(rows.length);
+    expect(shipped.filter((row: { proofKind: string | null }) => row.proofKind === null).map((row: { capability: string }) => row.capability)).toEqual([]);
+  });
+
+  it("holds on the real repo: proofs exist, receipts are valid, and any stale pixel receipt is named for regeneration", () => {
+    // `node tools/receipts/check.mjs` is the release gate (it fails until receipts are regenerated for a new minor).
+    // This unit test must not break the version bump itself, so it asserts structure, not the current minor.
+    const result = checkReceipts({});
+    expect(result.invalid).toEqual([]);
+    expect(result.missing.filter((row: { kind: string }) => row.kind !== "pixel")).toEqual([]);
+    const regenerating = new Set(result.regenerate.map((entry: { slug: string }) => entry.slug.toLowerCase()));
+    for (const row of result.missing as Array<{ reason: string }>) {
+      const dirs = row.reason.replace(/^no \S+ receipt for /, "").split(", ");
+      for (const dir of dirs) expect(regenerating.has(dir.toLowerCase())).toBe(true);
+    }
   });
 });
 
@@ -65,32 +88,53 @@ describe("receipt gate: checkReceipts", () => {
   }
   const missingSlugs = () => checkReceipts({ repoRoot: root }).missing.map((row: { slug: string }) => row.slug);
 
-  it("fails when shipped rows have no receipt and names them", () => {
+  it("fails when a pixel row has no receipt and names it; a cli row passes on its test path", () => {
     expect(checkReceipts({ repoRoot: root }).pass).toBe(false);
-    expect(missingSlugs()).toEqual(["looks-preset-id", "check-deploy-dist"]);
-  });
-
-  it("passes when every shipped row has a receipt in the current minor, any patch", () => {
-    receipt("looks-preset-id", "4.5.0");
-    receipt("check-deploy-dist", "4.5.1");
-    expect(checkReceipts({ repoRoot: root }).pass).toBe(true);
-  });
-
-  it("does not accept a receipt from an older minor", () => {
-    receipt("looks-preset-id", "4.4.0");
-    receipt("check-deploy-dist", "4.5.0");
     expect(missingSlugs()).toEqual(["looks-preset-id"]);
   });
 
-  it("lets one receipt cover several rows through `covers`", () => {
-    receipt("looks-preset-id", "4.5.0", { covers: ["check-deploy-dist"] });
+  it("fails a cli row whose named test does not exist, and a shipped row with no Proof", () => {
+    writeFileSync(join(root, "docs/comparisons/aura3d-capability-audit.md"), AUDIT.replace("cli: tests/a.spec.ts", "cli: tests/gone.test.ts").replace("pixel: looks-preset", "—"));
+    const result = checkReceipts({ repoRoot: root });
+    expect(result.missing.map((row: { reason: string }) => row.reason)).toEqual([
+      expect.stringContaining("no Proof cell"),
+      expect.stringContaining("tests/gone.test.ts")
+    ]);
+  });
+
+  it("passes when every pixel row has a receipt in the current minor, any patch", () => {
+    receipt("looks-preset", "4.5.0");
     expect(checkReceipts({ repoRoot: root }).pass).toBe(true);
   });
 
+  it("matches the receipt directory case-insensitively", () => {
+    receipt("Looks-Preset", "4.5.0");
+    expect(checkReceipts({ repoRoot: root }).pass).toBe(true);
+  });
+
+  it("does not accept a receipt from an older minor, and says which receipt to regenerate", () => {
+    receipt("looks-preset", "4.4.2");
+    receipt("looks-preset", "4.4.0");
+    const result = checkReceipts({ repoRoot: root });
+    expect(result.pass).toBe(false);
+    expect(result.regenerate).toEqual([{ slug: "looks-preset", latest: "4.4.2", need: "4.5.x" }]);
+  });
+
+  it("lets one receipt cover another row's directory through `covers`", () => {
+    writeFileSync(join(root, "docs/comparisons/aura3d-capability-audit.md"), AUDIT.replace("cli: tests/a.spec.ts", "pixel: other-dir"));
+    receipt("looks-preset", "4.5.0", { covers: ["other-dir"] });
+    expect(checkReceipts({ repoRoot: root }).pass).toBe(true);
+  });
+
+  it("requires every directory a pixel row names", () => {
+    writeFileSync(join(root, "docs/comparisons/aura3d-capability-audit.md"), AUDIT.replace("pixel: looks-preset", "pixel: looks-preset, second-dir"));
+    receipt("looks-preset", "4.5.0");
+    expect(checkReceipts({ repoRoot: root }).missing[0].reason).toContain("second-dir");
+  });
+
   it("rejects a receipt whose frame bytes changed", () => {
-    receipt("looks-preset-id", "4.5.0");
-    receipt("check-deploy-dist", "4.5.0");
-    writeFileSync(join(root, "evidence/frames/looks-preset-id.png"), "tampered");
+    receipt("looks-preset", "4.5.0");
+    writeFileSync(join(root, "evidence/frames/looks-preset.png"), "tampered");
     const result = checkReceipts({ repoRoot: root });
     expect(result.pass).toBe(false);
     expect(result.invalid[0].problems.join(" ")).toContain("sha256 does not match");

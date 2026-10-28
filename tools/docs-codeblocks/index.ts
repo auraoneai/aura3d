@@ -8,6 +8,7 @@ const docs = [
   "README.md",
   ...list("docs/agents/README.md", "docs/agents/agent-quickstart.md", "docs/agents/api-surface.md", "docs/agents/asset-workflow.md", "docs/agents/build-playbook.md", "docs/agents/deployment.md", "docs/agents/verification.md"),
   "docs/agents/genre-kits.md",
+  "docs/agents/effects-and-scene-kits.md",
   "docs/api/readme.md",
   "docs/api/app-api.md",
   "docs/concepts/physics.md",
@@ -79,7 +80,7 @@ function typecheckDocSnippets(docFile: string, scratchName: string): { readonly 
     noEmit: true,
     skipLibCheck: true,
     lib: ["lib.es2022.d.ts", "lib.dom.d.ts"],
-    paths: { "@aura3d/engine": ["./packages/engine/src/index.ts"] },
+    paths: { "@aura3d/engine": ["./packages/engine/src/index.ts"], "@aura3d/engine/physics": ["./packages/physics/src/index.ts"] },
     baseUrl: "."
   });
   const snippetSuffixes = written.map((file) => file.split(/[\\/]/).join("/"));
@@ -110,6 +111,8 @@ const physicsSnippetErrors = physicsCheck.errors;
 const physicsBlocks = { length: physicsCheck.count };
 // WP-K.8 (beat-three.js PRD): one compiling example per genre kit, boundary text beside it.
 const genreKitCheck = typecheckDocSnippets("docs/agents/genre-kits.md", "docs-codeblocks-typecheck-genre-kits");
+// Promotion rule (beat-three.js PRD decision 6): a promoted effect or scene kit needs a compiling documented example.
+const effectsKitsCheck = typecheckDocSnippets("docs/agents/effects-and-scene-kits.md", "docs-codeblocks-typecheck-effects-kits");
 
 const checks: ReleaseCheck[] = [
   {
@@ -140,6 +143,13 @@ const checks: ReleaseCheck[] = [
     detail: genreKitCheck.errors.length === 0
       ? `${genreKitCheck.count} genre kit examples compile against the public API (need one per kit: 5)`
       : genreKitCheck.errors.slice(0, 8).join("; ")
+  },
+  {
+    id: "docs-effects-scene-kit-snippets-compile",
+    pass: effectsKitsCheck.count >= 14 && effectsKitsCheck.errors.length === 0,
+    detail: effectsKitsCheck.errors.length === 0
+      ? `${effectsKitsCheck.count} effect and scene kit examples compile against the public API (need 14: 5 effects, 9 kits)`
+      : effectsKitsCheck.errors.slice(0, 8).join("; ")
   },
   {
     id: "docs-public-scaffold-command-present",
