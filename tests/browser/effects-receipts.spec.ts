@@ -43,6 +43,8 @@ interface EffectCase {
   readonly off?: string;
   /** Returns a map of named boolean checks; every check must be true for a receipt. */
   readonly checks: (off: FrameResult, on: FrameResult, delta: FrameComparison) => Readonly<Record<string, boolean>>;
+  /** Set when the case is known to miss its checks in this release; the test runs as test.fail and writes no receipt. */
+  readonly expectedFail?: string;
   /** Optional second on-variant of the same capability (its checks are prefixed with the variant id). */
   readonly extra?: {
     readonly variant: string;
@@ -113,6 +115,9 @@ const cases: readonly EffectCase[] = [
     off: "fx-contact-room-off",
     scene: ROOM_SCENE,
     describe: "effects.contactShadows darkens the floor and crate bases through the contact-occlusion pass",
+    // Known below threshold in 4.5.0 (mean luma about -1.2, no pixel past the change threshold); no receipt is
+    // claimed. test.fail() keeps measuring it and reports when it starts passing. See evidence/receipts/README.md.
+    expectedFail: "contact shadows lowered to reduced-strength GTAO change no pixel past the receipt threshold",
     checks: (off, on, delta) => ({
       offFrameSameChain: off.diagnostics.actualPasses.join(",") === on.diagnostics.actualPasses.join(","),
       darkensFrame: delta.meanLumaDelta < 0,
@@ -173,6 +178,7 @@ test.describe("effect pixel receipts", () => {
 
   for (const entry of cases) {
     test(`${entry.capability}: ${entry.describe}`, async () => {
+      if (entry.expectedFail !== undefined) test.fail(true, entry.expectedFail);
       const offVariant = entry.off ?? "fx-baseline";
       const off = await frameFor(offVariant);
       const on = await frameFor(entry.variant);

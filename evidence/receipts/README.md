@@ -85,3 +85,9 @@ The desaturate variant was unaffected and keeps the shared baseline.
 changed-pixel threshold, so `changedPixelFractionAtLeast0p3pc` fails and no 4.5.0 contact-shadow receipt is written. It is
 not a required row in the capability audit, the 4.3.7 receipt stays as history, and the threshold was left alone. Changing
 `length` from 0.5 to 1.5 did not change the frame.
+
+The 4.3.7 contact-shadow receipt is withdrawn as proof: like the 4.3.7 AO and colour-grade receipts it compared against the
+untonemapped direct-path baseline. Docs no longer cite it (`docs/agents/effects-and-scene-kits.md`,
+`docs/comparisons/aura3d-capability-audit.md`, `docs/rendering/postprocess.md`), and the spec case runs as `test.fail` so it
+keeps measuring and reports when the effect starts to pass. The real screen-space contact-shadow mask is built in the next
+minor (PRD-2 WP-4, branch `beat3js2/integration`).
