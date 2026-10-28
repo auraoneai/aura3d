@@ -106,9 +106,17 @@ function currentUrl(): URL | undefined {
  * Engine-side stub (CONTRACTS.md C-24): wraps `createGameApp` (index.ts:11818).
  * session/pause/resume/setTimeScale map onto `app.time`, `app.pause`,
  * `app.resume`; scene is set via `app.setScene`; dispose via `app.dispose`.
- * DOM and sound members raise `FEATURE_UNIMPLEMENTED` (`GAME_SHELL_NOT_IN_ENGINE`).
+ * DOM and sound members are inert, not throwing: `touch` is `null`, `sound` is
+ * `undefined`, `hud.banner/toast`, `shell.openMenu` and `juice.fire` do nothing.
  * Transitions are immediate cuts. It never deadlocks and real `app.ready()`
  * resolve is wired before `state` reaches "playing".
+ *
+ * Decision (beat-three.js PRD WP-K.7): this stays a headless stub, not forwarded
+ * to `@aura3d/engine/game`. `@aura3d/game` imports this function as the flag-off
+ * fallback of its C-24 contract slot, so engine importing game would be a cycle,
+ * and removing the root export would break that slot. The first call logs
+ * `CREATE_GAME_STUB` pointing at `@aura3d/engine/game`; the audit keeps the row
+ * `experimental`.
  */
 let stubWarned = false;
 

@@ -7,6 +7,7 @@ import { CREATE_AURA3D_TEMPLATES } from "../../packages/create-aura3d/src/index"
 const docs = [
   "README.md",
   ...list("docs/agents/README.md", "docs/agents/agent-quickstart.md", "docs/agents/api-surface.md", "docs/agents/asset-workflow.md", "docs/agents/build-playbook.md", "docs/agents/deployment.md", "docs/agents/verification.md"),
+  "docs/agents/genre-kits.md",
   "docs/api/readme.md",
   "docs/api/app-api.md",
   "docs/concepts/physics.md",
@@ -55,14 +56,15 @@ for (const block of blocks) {
  * Compiled as a single program against `@aura3d/engine`'s real declarations, so a rename in the
  * runtime breaks the docs in CI rather than silently in a reader's editor.
  */
-const physicsSnippetErrors: string[] = [];
-const physicsBlocks = blocks.filter((block) => block.file === "docs/concepts/physics.md" && block.lang === "ts");
-if (physicsBlocks.length > 0) {
-  const scratch = join("tests", "reports", "docs-codeblocks-typecheck");
+function typecheckDocSnippets(docFile: string, scratchName: string): { readonly count: number; readonly errors: string[] } {
+  const errors: string[] = [];
+  const docBlocks = blocks.filter((block) => block.file === docFile && block.lang === "ts");
+  if (docBlocks.length === 0) return { count: 0, errors };
+  const scratch = join("tests", "reports", scratchName);
   rmSync(scratch, { recursive: true, force: true });
   mkdirSync(scratch, { recursive: true });
   const written: string[] = [];
-  physicsBlocks.forEach((block, index) => {
+  docBlocks.forEach((block, index) => {
     const file = join(scratch, `snippet-${index}.ts`);
     // Each block is its own module. Snippets legitimately share identifier names across sections,
     // and concatenating them would produce redeclaration errors that say nothing about the docs.
@@ -98,9 +100,16 @@ if (physicsBlocks.length > 0) {
     // Unused locals are expected: a snippet that reads a value for illustration does not use it.
     if (diagnostic.code === 6133 || diagnostic.code === 6196) continue;
     const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, " ");
-    physicsSnippetErrors.push(`docs/concepts/physics.md snippet ${matchedIndex + 1}: ${message}`);
+    errors.push(`${docFile} snippet ${matchedIndex + 1}: ${message}`);
   }
+  return { count: docBlocks.length, errors };
 }
+
+const physicsCheck = typecheckDocSnippets("docs/concepts/physics.md", "docs-codeblocks-typecheck");
+const physicsSnippetErrors = physicsCheck.errors;
+const physicsBlocks = { length: physicsCheck.count };
+// WP-K.8 (beat-three.js PRD): one compiling example per genre kit, boundary text beside it.
+const genreKitCheck = typecheckDocSnippets("docs/agents/genre-kits.md", "docs-codeblocks-typecheck-genre-kits");
 
 const checks: ReleaseCheck[] = [
   {
@@ -124,6 +133,13 @@ const checks: ReleaseCheck[] = [
     detail: physicsSnippetErrors.length === 0
       ? `${physicsBlocks.length} physics concept snippets compile against the public API`
       : physicsSnippetErrors.slice(0, 8).join("; ")
+  },
+  {
+    id: "docs-genre-kit-snippets-compile",
+    pass: genreKitCheck.count >= 5 && genreKitCheck.errors.length === 0,
+    detail: genreKitCheck.errors.length === 0
+      ? `${genreKitCheck.count} genre kit examples compile against the public API (need one per kit: 5)`
+      : genreKitCheck.errors.slice(0, 8).join("; ")
   },
   {
     id: "docs-public-scaffold-command-present",

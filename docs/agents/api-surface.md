@@ -49,7 +49,7 @@ Members of each namespace (for example `effects.bloom`, `camera.orbit`, `ui.slid
 
 | Do not use | Use instead |
 |---|---|
-| `createGame` from `@aura3d/engine` | It is a root stub: DOM and sound members throw `FEATURE_UNIMPLEMENTED`. Import `createGame` from `@aura3d/engine/game` |
+| `createGame` from `@aura3d/engine` | It is a headless root stub (logs `CREATE_GAME_STUB` once; `touch` is `null`, `sound` is `undefined`, HUD and menus do nothing). Import `createGame` from `@aura3d/engine/game` |
 | `compilePromptPlan` | `compilePromptPlanV2` |
 | `collectAuraSceneEvidence`, `captureAuraAppScreenshot`, `createAssetCompatibilityReport` | `@aura3d/engine/devtools` |
 | `character.*` | `characters`, `AnimationController`, `prefabs.lowPolyHumanoid` |
