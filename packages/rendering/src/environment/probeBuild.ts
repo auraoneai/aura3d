@@ -388,25 +388,24 @@ export function halfToFloat(h: number): number {
   return halfDecodeTable[h & 0xffff]!;
 }
 
-/** 2× box-filter downsample of an RGBA32F image (mip chain, linear HDR). */
-function downsampleRgba(src: Float32Array, w: number, h: number): { data: Float32Array; width: number; height: number } {
+/** 2× box-filter downsample of an RGBA32F image (mip chain, linear HDR). Sums in the same order as a naive 2×2 loop. */
+export function downsampleRgba(src: Float32Array, w: number, h: number): { data: Float32Array; width: number; height: number } {
   const nw = Math.max(1, w >> 1);
   const nh = Math.max(1, h >> 1);
   const out = new Float32Array(nw * nh * 4);
   for (let y = 0; y < nh; y += 1) {
+    const sy0 = Math.min(h - 1, y * 2);
+    const sy1 = Math.min(h - 1, y * 2 + 1);
     for (let x = 0; x < nw; x += 1) {
+      const sx0 = Math.min(w - 1, x * 2);
+      const sx1 = Math.min(w - 1, x * 2 + 1);
+      const i00 = (sy0 * w + sx0) * 4;
+      const i01 = (sy0 * w + sx1) * 4;
+      const i10 = (sy1 * w + sx0) * 4;
+      const i11 = (sy1 * w + sx1) * 4;
+      const o = (y * nw + x) * 4;
       for (let c = 0; c < 4; c += 1) {
-        let sum = 0;
-        let count = 0;
-        for (let dy = 0; dy < 2; dy += 1) {
-          for (let dx = 0; dx < 2; dx += 1) {
-            const sx = Math.min(w - 1, x * 2 + dx);
-            const sy = Math.min(h - 1, y * 2 + dy);
-            sum += src[(sy * w + sx) * 4 + c]!;
-            count += 1;
-          }
-        }
-        out[(y * nw + x) * 4 + c] = sum / count;
+        out[o + c] = (src[i00 + c]! + src[i01 + c]! + src[i10 + c]! + src[i11 + c]!) / 4;
       }
     }
   }

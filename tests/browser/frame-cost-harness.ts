@@ -11,6 +11,8 @@ interface FrameCostApi {
   scene: string;
   quality: string;
   firstFrameMs: number;
+  /** createAuraApp() call to first frame finished: the engine-owned part of firstFrameMs (no dev-server module loading). */
+  mountMs: number;
   errors: string[];
   renderPath: unknown;
   measure(frames: number): { cpuMs: number[]; totalMs: number[] };
@@ -47,6 +49,7 @@ function buildScene() {
 }
 
 async function main(): Promise<void> {
+  const mountStart = performance.now();
   const errors: string[] = [];
   window.addEventListener("error", (event) => errors.push(String(event.message)));
   window.addEventListener("unhandledrejection", (event) => errors.push(String((event.reason as Error)?.message ?? event.reason)));
@@ -79,6 +82,7 @@ async function main(): Promise<void> {
       scene: sceneName,
       quality,
       firstFrameMs,
+      mountMs: firstFrameMs - mountStart,
       errors,
       renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath,
       measure(frames) {
@@ -101,7 +105,7 @@ async function main(): Promise<void> {
     };
   } catch (error) {
     errors.push(`start failed: ${(error as Error)?.stack ?? error}`);
-    window.__FRAME_COST__ = { ready: false, scene: sceneName, quality, firstFrameMs: -1, errors, renderPath: null, measure: () => ({ cpuMs: [], totalMs: [] }), stepOnce: () => undefined, drawCalls: () => 0 };
+    window.__FRAME_COST__ = { ready: false, scene: sceneName, quality, firstFrameMs: -1, mountMs: -1, errors, renderPath: null, measure: () => ({ cpuMs: [], totalMs: [] }), stepOnce: () => undefined, drawCalls: () => 0 };
   }
 }
 
