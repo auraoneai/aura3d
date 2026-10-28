@@ -178,6 +178,7 @@ export async function startProductionRender(
   resizeObserver?.observe(canvas.parentElement!);
   if (options.resize !== false && typeof window !== "undefined") window.addEventListener("resize", resizeRenderer);
 
+  let firstFrameEndMarked = false;
   const renderFrame = (time = performanceNow(), submittedDrawCalls?: number, explicit = false) => {
     if (disposed) return;
     // T0-12: first real frame — closes the mount-timing window the bench
@@ -251,6 +252,7 @@ export async function startProductionRender(
       });
     }
     overlay?.update();
+    if (lastTime !== 0 && !firstFrameEndMarked) { firstFrameEndMarked = true; markTiming("a3d:mount:first-renderFrame:end"); }
     if (!explicit && !isPaused() && (sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
       animationHandle = requestAnimationFrame(scheduleFrame);
     }

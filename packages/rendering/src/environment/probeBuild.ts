@@ -37,6 +37,12 @@ export class Prd02EnvironmentProbe implements EnvironmentProbe {
   public readonly shTexture: Texture | null;
   public readonly background: Texture | null;
   public readonly source: ProbeSource;
+  /**
+   * Set only on a probe whose every texel (all faces, all mips) is this one linear radiance: the analytic neutral floor.
+   * `probeToEquirectTexture` then fills its output directly instead of sampling the cube per equirect texel. The value is
+   * the float32 radiance the cube was encoded from, so the fill is bit-identical to the sampled result.
+   */
+  public readonly uniformRadiance: number | undefined;
   private disposed = false;
 
   constructor(args: {
@@ -47,6 +53,7 @@ export class Prd02EnvironmentProbe implements EnvironmentProbe {
     readonly shTexture: Texture | null;
     readonly background: Texture | null;
     readonly source: ProbeSource;
+    readonly uniformRadiance?: number;
   }) {
     this.specularCube = args.specularCube;
     this.mipCount = args.mipCount;
@@ -55,6 +62,7 @@ export class Prd02EnvironmentProbe implements EnvironmentProbe {
     this.shTexture = args.shTexture;
     this.background = args.background;
     this.source = args.source;
+    this.uniformRadiance = args.uniformRadiance;
   }
 
   dispose(): void {
@@ -93,6 +101,23 @@ export function floatToHalf(value: number): number {
 function faceToHalf(face: Float32Array): Uint16Array {
   const out = new Uint16Array(face.length);
   for (let i = 0; i < face.length; i += 1) out[i] = floatToHalf(face[i] ?? 0);
+  return out;
+}
+
+/**
+ * `texels` RGBA half-float texels of one linear radiance (alpha 1). Same bits as `faceToHalf` of a face filled with
+ * `radiance` and alpha 1, without encoding every channel of every texel.
+ */
+export function uniformRadianceHalf(texels: number, radiance: number): Uint16Array {
+  const out = new Uint16Array(texels * 4);
+  const rgb = floatToHalf(radiance);
+  const alpha = floatToHalf(1);
+  for (let i = 0; i < out.length; i += 4) {
+    out[i] = rgb;
+    out[i + 1] = rgb;
+    out[i + 2] = rgb;
+    out[i + 3] = alpha;
+  }
   return out;
 }
 
@@ -209,24 +234,31 @@ export function buildNeutralFloorProbe(
   faceSize: EnvironmentProbe["faceSize"],
   options: Prd02ProbeBuildOptions = {}
 ): Prd02EnvironmentProbe {
-  const face = new Float32Array(faceSize * faceSize * 4);
-  for (let i = 0; i < faceSize * faceSize; i += 1) {
-    face[i * 4] = NEUTRAL_FLOOR_RADIANCE;
-    face[i * 4 + 1] = NEUTRAL_FLOOR_RADIANCE;
-    face[i * 4 + 2] = NEUTRAL_FLOOR_RADIANCE;
-    face[i * 4 + 3] = 1;
-  }
-  const faces: Float32Array[] = [face, face, face, face, face, face];
-  return buildProbeFromLevels(
-    [{ faceSize, faces }],
+  // The floor is one constant radiance, so one encoded face is shared by all six (`Texture` copies what it is given).
+  // Same bits as encoding six identical float faces through `buildProbeFromLevels`, at a sixth of the work and without
+  // the 6 x faceSize^2 x 4 float allocation: this runs synchronously before the first frame.
+  const data = uniformRadianceHalf(faceSize * faceSize, NEUTRAL_FLOOR_RADIANCE);
+  const specularCube = new Texture({
+    width: faceSize,
+    height: faceSize,
+    format: "rgba16f",
+    label: options.label ?? "env-neutral-floor",
+    cubeFaces: CUBE_FACE_ORDER.map((face) => ({
+      face: face as TextureCubeFace,
+      mipLevels: [{ width: faceSize, height: faceSize, data }]
+    }))
+  });
+  const sh9 = options.sh9 ?? new Float32Array(NEUTRAL_FLOOR_SH9);
+  return new Prd02EnvironmentProbe({
+    specularCube,
+    mipCount: 1,
     faceSize,
-    {
-      ...options,
-      label: options.label ?? "env-neutral-floor",
-      source: options.source ?? "neutral",
-      sh9: options.sh9 ?? new Float32Array(NEUTRAL_FLOOR_SH9)
-    }
-  );
+    sh9,
+    shTexture: sh9ToTexture(sh9),
+    background: options.background ?? null,
+    source: options.source ?? "neutral",
+    uniformRadiance: Math.fround(NEUTRAL_FLOOR_RADIANCE)
+  });
 }
 
 /** Nearest 2× upsample of one square float RGBA face. */
@@ -424,6 +456,8 @@ export function probeToEquirectTexture(
 ): Texture {
   const width = options.width ?? probe.faceSize * 2;
   const height = options.height ?? probe.faceSize;
+  const uniform = (probe as { uniformRadiance?: number }).uniformRadiance;
+  if (uniform !== undefined) return uniformEquirectTexture(probe, uniform, width, height);
   const faceSize = probe.faceSize;
   const level0 = probe.specularCube.cubeFaces.map((face) => {
     const mip = face.mipLevels[0];
@@ -460,6 +494,31 @@ export function probeToEquirectTexture(
     equirect = next.data;
     w = next.width;
     h = next.height;
+  }
+  return new Texture({
+    width,
+    height,
+    format: "rgba16f",
+    colorSpace: "linear",
+    label: `prd02-equirect-${probe.source}`,
+    mipLevels
+  });
+}
+
+/**
+ * The equirect of a probe whose cube is one constant radiance. Sampling is nearest-texel and the half encode of a value
+ * that is already a half is the identity, and a 2x2 box mean of four equal halves is exact in float32, so every texel of
+ * every mip equals the half of the radiance: this is the sampled result, produced without the per-texel cube lookups.
+ */
+function uniformEquirectTexture(probe: EnvironmentProbe, radiance: number, width: number, height: number): Texture {
+  const mipLevels: { width: number; height: number; data: Uint16Array }[] = [];
+  let w = width;
+  let h = height;
+  for (;;) {
+    mipLevels.push({ width: w, height: h, data: uniformRadianceHalf(w * h, radiance) });
+    if (w <= 1 && h <= 1) break;
+    w = Math.max(1, w >> 1);
+    h = Math.max(1, h >> 1);
   }
   return new Texture({
     width,

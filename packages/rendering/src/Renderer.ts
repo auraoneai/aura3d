@@ -56,6 +56,7 @@ import { ensureSceneDepthCopyTarget, SceneDepthCopyPass } from "./renderer/Scene
 import { probeHdrTargetFormat, DEFAULT_TONE_MAPPING, type AuraToneMappingOperatorLike, type OutputOverlayUniforms } from "./contracts/output";
 import { resolveForwardClusteredLighting } from "./forward/Lighting";
 import { assertRendererFeatures, createRendererFeatureReport, type RendererFeature, type RendererFeatureReport } from "./RendererFeatureGates";
+import { armFirstFrameGate, notifyFirstFramePresented } from "./environment/FirstFrameGate";
 import { batchStaticRenderItems, type StaticBatchOptions, type StaticBatchInput } from "./SceneOptimization";
 import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type MeshConsolidationOptions } from "./MeshConsolidation";
 
@@ -510,6 +511,7 @@ export class Renderer {
   private probeGraph?: RenderGraph;
   constructor(device: RenderDevice, options: RendererOptions & { readonly shaderLibrary: ShaderLibrary }, temporalHistory: TemporalHistory) {
     this.device = device;
+    armFirstFrameGate();
     if (options.qrFlags) setRendererQrFlags(options.qrFlags, device);
     this.temporalHistory = temporalHistory;
     this.unsubscribeTemporalDeviceLoss = (device as RenderDevice & {onDeviceLost?: (listener: () => void) => () => void}).onDeviceLost?.(() => this.temporalHistory.dispose());
@@ -1347,6 +1349,7 @@ export class Renderer {
       }
     }
     this.submittedFrames += 1;
+    notifyFirstFramePresented();
     this.submittedShadowFrameId += 1;
     if (this.lastShadowEvidence) this.lastShadowEvidence = { ...this.lastShadowEvidence, submissionFrameId: this.submittedShadowFrameId };
     return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics, createPostprocessDiagnostics(postprocess, ownedTargets, this.width, this.height, {
@@ -1747,6 +1750,7 @@ export class Renderer {
       }
     }
     this.submittedFrames += 1;
+    notifyFirstFramePresented();
     this.submittedShadowFrameId += 1;
     if (this.lastShadowEvidence) this.lastShadowEvidence = { ...this.lastShadowEvidence, submissionFrameId: this.submittedShadowFrameId };
     return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics, createPostprocessDiagnostics(postprocess, ownedTargets, this.width, this.height, {
