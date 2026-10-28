@@ -55,7 +55,9 @@ async function capture(browser: Browser, origin: string, route: string, proxyOff
       return status === "ready" || status === "running";
     });
     return ready || published;
-  }, undefined, { timeout: 90_000 }).catch(() => { loaded = false; errors.push("never became ready"); });
+  }, undefined, { timeout: 30_000 }).catch(() => { errors.push("no ready signal (continuing: many apps publish none)"); });
+  // Apps that publish no ready flag still render: wait for a canvas, then settle.
+  await page.waitForSelector("canvas", { timeout: 45_000 }).catch(() => { loaded = false; errors.push("no canvas"); });
   await page.waitForTimeout(SETTLE_MS);
   const png = await page.screenshot({ fullPage: false }).catch(() => Buffer.alloc(0));
   const proxies = await page.evaluate(() => (window as unknown as { __A3D_SHADOW_PROXIES__?: unknown[] }).__A3D_SHADOW_PROXIES__ ?? []).catch(() => []);
@@ -87,39 +89,45 @@ async function diff(page: Page, a: Buffer, b: Buffer): Promise<{ meanAbs: number
   }, [a.toString("base64"), b.toString("base64")] as const);
 }
 
+async function auditRoutes(browser: Browser, routes: readonly string[], tag: string): Promise<void> {
+  const server = await startExampleDevServer();
+  const results: unknown[] = [];
+  try {
+    const scratch = await browser.newPage();
+    await scratch.goto("about:blank");
+    for (const route of routes) {
+      const off1 = await capture(browser, server.origin, route, true);
+      const off2 = await capture(browser, server.origin, route, true);
+      const on = await capture(browser, server.origin, route, false);
+      const noise = await diff(scratch, off1.png, off2.png);
+      const effect = await diff(scratch, off1.png, on.png);
+      const proxies = on.proxies;
+      const budgets = proxies.length + (on.denseCap ? 1 : 0);
+      const measurable = off1.loaded && on.loaded && off1.png.length > 0 && on.png.length > 0;
+      const affected = budgets > 0 && effect !== null && noise !== null && (effect.meanAbs > noise.meanAbs * 1.5 + 0.05 || effect.changedShare > noise.changedShare * 1.5 + 0.0005);
+      const verdict = !measurable ? "unmeasurable" : budgets === 0 ? "unaffected (no proxy, no cascade cap)" : affected ? "AFFECTED" : "budget applied, difference within noise";
+      const entry = { route, verdict, proxies, denseCap: on.denseCap, noise, effect, errors: [...off1.errors, ...on.errors].slice(0, 6), drawCalls: { off: off1.drawCalls, on: on.drawCalls } };
+      results.push(entry);
+      console.log(`SHADOWPROXY_AB ${JSON.stringify(entry)}`);
+    }
+  } finally {
+    await server.close();
+  }
+  const report = { generatedUtc: new Date().toISOString(), settleMs: SETTLE_MS, results };
+  mkdirSync(resolve("tests/reports/shadow-proxy-ab"), { recursive: true });
+  const json = JSON.stringify(report);
+  writeFileSync(resolve(`tests/reports/shadow-proxy-ab/${tag}.json`), json);
+  const b64 = Buffer.from(json).toString("base64");
+  const size = 3000, n = Math.ceil(b64.length / size);
+  for (let i = 0; i < n; i++) console.log(`PERFCOST_CHUNK shadow-proxy-ab-${tag} ${i} ${n} ${b64.slice(i * size, (i + 1) * size)}`);
+}
+
 test.describe("shadow proxy A/B", () => {
   test.setTimeout(3_300_000);
-
-  test("every dense-instance route: proxies on vs off", async ({ browser }) => {
-    const server = await startExampleDevServer();
-    const results: unknown[] = [];
-    try {
-      const scratch = await browser.newPage();
-      await scratch.goto("about:blank");
-      for (const route of ROUTES.length ? ROUTES : DEFAULT_ROUTES) {
-        const off1 = await capture(browser, server.origin, route, true);
-        const off2 = await capture(browser, server.origin, route, true);
-        const on = await capture(browser, server.origin, route, false);
-        const noise = await diff(scratch, off1.png, off2.png);
-        const effect = await diff(scratch, off1.png, on.png);
-        const proxies = on.proxies;
-        const budgets = proxies.length + (on.denseCap ? 1 : 0);
-        const measurable = off1.loaded && on.loaded && off1.png.length > 0 && on.png.length > 0;
-        const affected = budgets > 0 && effect !== null && noise !== null && (effect.meanAbs > noise.meanAbs * 1.5 + 0.05 || effect.changedShare > noise.changedShare * 1.5 + 0.0005);
-        const verdict = !measurable ? "unmeasurable" : budgets === 0 ? "unaffected (no proxy, no cascade cap)" : affected ? "AFFECTED" : "budget applied, difference within noise";
-        const entry = { route, verdict, proxies, denseCap: on.denseCap, noise, effect, errors: [...off1.errors, ...on.errors].slice(0, 6), drawCalls: { off: off1.drawCalls, on: on.drawCalls } };
-        results.push(entry);
-        console.log(`SHADOWPROXY_AB ${JSON.stringify(entry)}`);
-      }
-    } finally {
-      await server.close();
-    }
-    const report = { generatedUtc: new Date().toISOString(), settleMs: SETTLE_MS, results };
-    mkdirSync(resolve("tests/reports/shadow-proxy-ab"), { recursive: true });
-    const json = JSON.stringify(report);
-    writeFileSync(resolve("tests/reports/shadow-proxy-ab/report.json"), json);
-    const b64 = Buffer.from(json).toString("base64");
-    const size = 3000, n = Math.ceil(b64.length / size);
-    for (let i = 0; i < n; i++) console.log(`PERFCOST_CHUNK shadow-proxy-ab ${i} ${n} ${b64.slice(i * size, (i + 1) * size)}`);
-  });
+  // One test per line on purpose: tools/remote-acr/run.sh selects a group with `<spec>:<line>`, so groups run in parallel on separate runners.
+  test("group 1: drift-and-deliver, instanced-texture-probe, arena-shooter", async ({ browser }) => auditRoutes(browser, ["examples/drift-and-deliver-port", "examples/instanced-texture-probe", "templates/arena-shooter"], "g1"));
+  test("group 2: aura-links, cross-hop, vault-breakers", async ({ browser }) => auditRoutes(browser, ["apps/showcase-aura-links-3d", "apps/showcase-cross-hop", "apps/showcase-vault-breakers"], "g2"));
+  test("group 3: blockfall-reactor, dot-dash, aura-clash", async ({ browser }) => auditRoutes(browser, ["apps/showcase-blockfall-reactor", "apps/showcase-dot-dash-3d", "apps/aura-clash-showcase"], "g3"));
+  test("group 4: smart-city-control, rendering-large-scene", async ({ browser }) => auditRoutes(browser, ["apps/showcase-smart-city-control", "examples/rendering-large-scene"], "g4"));
+  test("custom routes (A3D_SHADOW_PROXY_AB_ROUTES) or all", async ({ browser }) => auditRoutes(browser, ROUTES.length ? ROUTES : DEFAULT_ROUTES, "all"));
 });
