@@ -1,0 +1,690 @@
+{
+  "generatedUtc": "2026-10-28T00:17:54.085Z",
+  "runs": {
+    "fullgame-1": {
+      "acrRunId": "ch38f",
+      "note": "3 failures: aura pause-key (double toggle bug in my code), aura teardown (canvas kept by app.dispose), three renders check read sim frame before first frame; no 4.3.6 HDRI staged"
+    },
+    "fullgame-2": {
+      "acrRunId": "ch38r",
+      "note": "1 failure: aura pause-key (double toggle with the kit P handler)"
+    },
+    "fullgame-3": {
+      "acrRunId": "ch38t",
+      "note": "final: 16/16 checks pass on both builds; results below are from this run"
+    }
+  },
+  "versions": {
+    "aura": "4.3.6",
+    "three": "0.185.1",
+    "vite": "7.3.2",
+    "typescript": "5.9.3"
+  },
+  "tokenizerInstalled": true,
+  "coinSimSha256": {
+    "repo": "7921bc755f9226dc1ac92c274484ab1a54763bdc5906eab8bce13cb29a9a57bc",
+    "staged": "7921bc755f9226dc1ac92c274484ab1a54763bdc5906eab8bce13cb29a9a57bc"
+  },
+  "count": {
+    "tokenizer": "gpt-tokenizer o200k_base (OpenAI BPE; a proxy: Claude's tokenizer is not public)",
+    "rule": "non-blank, non-comment lines of src/*.ts and src/*.css (shared/coin-sim.ts, index.html, tsconfig.json not counted)",
+    "apps": {
+      "aura": {
+        "files": {
+          "audio.ts": {
+            "loc": 20,
+            "tokens": 248
+          },
+          "game.ts": {
+            "loc": 122,
+            "tokens": 1219
+          },
+          "main.ts": {
+            "loc": 5,
+            "tokens": 55
+          },
+          "scene.ts": {
+            "loc": 19,
+            "tokens": 352
+          },
+          "screens.ts": {
+            "loc": 31,
+            "tokens": 318
+          },
+          "style.css": {
+            "loc": 74,
+            "tokens": 430
+          }
+        },
+        "concerns": {
+          "scene": {
+            "loc": 22,
+            "tokens": 357
+          },
+          "loop": {
+            "loc": 35,
+            "tokens": 388
+          },
+          "input-touch": {
+            "loc": 47,
+            "tokens": 389
+          },
+          "hud-screens": {
+            "loc": 76,
+            "tokens": 606
+          },
+          "audio": {
+            "loc": 19,
+            "tokens": 229
+          },
+          "replay-qa": {
+            "loc": 31,
+            "tokens": 289
+          },
+          "resize-teardown": {
+            "loc": 27,
+            "tokens": 156
+          },
+          "glue": {
+            "loc": 14,
+            "tokens": 208
+          }
+        },
+        "total": {
+          "loc": 271,
+          "tokens": 2622
+        },
+        "index.html": 12,
+        "tsconfig.json": 14
+      },
+      "three": {
+        "files": {
+          "audio.ts": {
+            "loc": 42,
+            "tokens": 480
+          },
+          "game.ts": {
+            "loc": 133,
+            "tokens": 1240
+          },
+          "main.ts": {
+            "loc": 5,
+            "tokens": 50
+          },
+          "scene.ts": {
+            "loc": 60,
+            "tokens": 691
+          },
+          "style.css": {
+            "loc": 78,
+            "tokens": 455
+          },
+          "touch.ts": {
+            "loc": 28,
+            "tokens": 278
+          },
+          "ui.ts": {
+            "loc": 27,
+            "tokens": 335
+          }
+        },
+        "concerns": {
+          "scene": {
+            "loc": 33,
+            "tokens": 507
+          },
+          "loop": {
+            "loc": 49,
+            "tokens": 437
+          },
+          "input-touch": {
+            "loc": 74,
+            "tokens": 686
+          },
+          "hud-screens": {
+            "loc": 64,
+            "tokens": 524
+          },
+          "audio": {
+            "loc": 42,
+            "tokens": 480
+          },
+          "replay-qa": {
+            "loc": 43,
+            "tokens": 405
+          },
+          "resize-teardown": {
+            "loc": 51,
+            "tokens": 298
+          },
+          "glue": {
+            "loc": 17,
+            "tokens": 192
+          }
+        },
+        "total": {
+          "loc": 373,
+          "tokens": 3529
+        },
+        "index.html": 12,
+        "tsconfig.json": 14
+      }
+    }
+  },
+  "build": {
+    "aura": {
+      "hasViteConfig": false,
+      "typecheckOk": true,
+      "buildOk": true,
+      "buildMs": 18345,
+      "bundle": {
+        "jsFiles": 39,
+        "raw": 3596528,
+        "gzip": 1129133,
+        "brotli": 959736
+      }
+    },
+    "three": {
+      "hasViteConfig": false,
+      "typecheckOk": true,
+      "buildOk": true,
+      "buildMs": 2975,
+      "bundle": {
+        "jsFiles": 1,
+        "raw": 516898,
+        "gzip": 131094,
+        "brotli": 108220
+      }
+    }
+  },
+  "checks": {
+    "aura": {
+      "renders-nonblack-frame": {
+        "pass": true
+      },
+      "touch-buttons-present": {
+        "pass": true
+      },
+      "touch-moves-player-right": {
+        "pass": true
+      },
+      "touch-moves-player-down": {
+        "pass": true
+      },
+      "touch-moves-player-left": {
+        "pass": true
+      },
+      "touch-moves-player-up": {
+        "pass": true
+      },
+      "pause-key-stops-clock-and-resume-continues": {
+        "pass": true
+      },
+      "pause-button-stops-clock-and-resume-continues": {
+        "pass": true
+      },
+      "results-screen-on-win": {
+        "pass": true
+      },
+      "results-screen-on-time-up": {
+        "pass": true
+      },
+      "audio-unlock-and-three-cues": {
+        "pass": true
+      },
+      "restart-key-resets": {
+        "pass": true
+      },
+      "restart-button-resets": {
+        "pass": true
+      },
+      "seeded-replay-hash": {
+        "pass": true
+      },
+      "resize-and-dpr": {
+        "pass": true
+      },
+      "teardown-and-remount-without-leaks": {
+        "pass": true
+      }
+    },
+    "three": {
+      "renders-nonblack-frame": {
+        "pass": true
+      },
+      "touch-buttons-present": {
+        "pass": true
+      },
+      "touch-moves-player-right": {
+        "pass": true
+      },
+      "touch-moves-player-down": {
+        "pass": true
+      },
+      "touch-moves-player-left": {
+        "pass": true
+      },
+      "touch-moves-player-up": {
+        "pass": true
+      },
+      "pause-key-stops-clock-and-resume-continues": {
+        "pass": true
+      },
+      "pause-button-stops-clock-and-resume-continues": {
+        "pass": true
+      },
+      "results-screen-on-win": {
+        "pass": true
+      },
+      "results-screen-on-time-up": {
+        "pass": true
+      },
+      "audio-unlock-and-three-cues": {
+        "pass": true
+      },
+      "restart-key-resets": {
+        "pass": true
+      },
+      "restart-button-resets": {
+        "pass": true
+      },
+      "seeded-replay-hash": {
+        "pass": true
+      },
+      "resize-and-dpr": {
+        "pass": true
+      },
+      "teardown-and-remount-without-leaks": {
+        "pass": true
+      }
+    }
+  },
+  "checkDetail": {
+    "aura": {
+      "results-screen-on-win": {
+        "status": "won",
+        "score": 80,
+        "visible": true,
+        "text": "YOU WIN - score 80"
+      },
+      "results-screen-on-time-up": {
+        "status": "lost",
+        "visible": true,
+        "text": "TIME UP - score 0"
+      },
+      "audio-unlock-and-three-cues": {
+        "contextsBeforeGesture": [
+          "running"
+        ],
+        "contextsAfterGesture": [
+          "running"
+        ],
+        "pickupAndWinOscillators": [
+          "triangle",
+          "sine"
+        ],
+        "loseOscillators": [
+          "sawtooth"
+        ],
+        "oscillatorsDuringReplay": [],
+        "replayHash": "playing:30:600:321a662f"
+      },
+      "seeded-replay-hash": {
+        "a600": "playing:30:600:321a662f",
+        "b600": "playing:30:600:321a662f",
+        "a1800": "lost:60:1800:9b693d58",
+        "b1800": "lost:60:1800:9b693d58",
+        "stateKeys": [
+          "hash",
+          "status",
+          "score",
+          "frame",
+          "timeLeft",
+          "px",
+          "pz",
+          "paused",
+          "coins"
+        ],
+        "seed": 42,
+        "expected": {
+          "h600": "playing:30:600:321a662f",
+          "h1800": "lost:60:1800:9b693d58"
+        }
+      },
+      "resize-and-dpr": {
+        "sizes": [
+          {
+            "viewport": [
+              1000,
+              500
+            ],
+            "canvas": {
+              "cssW": 1000,
+              "cssH": 500,
+              "w": 1000,
+              "h": 500,
+              "ratio": 1,
+              "dpr": 1,
+              "canvases": 1
+            },
+            "mean": 43.12,
+            "fits": true
+          },
+          {
+            "viewport": [
+              390,
+              844
+            ],
+            "canvas": {
+              "cssW": 390,
+              "cssH": 844,
+              "w": 390,
+              "h": 844,
+              "ratio": 1,
+              "dpr": 1,
+              "canvases": 1
+            },
+            "mean": 58.13,
+            "fits": true
+          },
+          {
+            "viewport": [
+              800,
+              600
+            ],
+            "canvas": {
+              "cssW": 800,
+              "cssH": 600,
+              "w": 800,
+              "h": 600,
+              "ratio": 1,
+              "dpr": 1,
+              "canvases": 1
+            },
+            "mean": 51.25,
+            "fits": true
+          }
+        ],
+        "dpr2": {
+          "cssW": 640,
+          "w": 1280,
+          "ratio": 2,
+          "dpr": 2
+        }
+      },
+      "teardown-and-remount-without-leaks": {
+        "initial": {
+          "listeners": 32,
+          "elements": 75,
+          "canvases": 1,
+          "glContexts": 3
+        },
+        "afterFirstRemount": {
+          "listeners": 32,
+          "elements": 75,
+          "canvases": 1,
+          "glContexts": 6
+        },
+        "afterFourRemounts": {
+          "listeners": 32,
+          "elements": 75,
+          "canvases": 1,
+          "glContexts": 15
+        },
+        "replayHashAfterRemount": "playing:30:600:321a662f",
+        "stillPlays": true
+      }
+    },
+    "three": {
+      "results-screen-on-win": {
+        "status": "won",
+        "score": 80,
+        "visible": true,
+        "text": "YOU WIN - score 80"
+      },
+      "results-screen-on-time-up": {
+        "status": "lost",
+        "visible": true,
+        "text": "TIME UP - score 0"
+      },
+      "audio-unlock-and-three-cues": {
+        "contextsBeforeGesture": [
+          "running"
+        ],
+        "contextsAfterGesture": [
+          "running"
+        ],
+        "pickupAndWinOscillators": [
+          "triangle",
+          "sine"
+        ],
+        "loseOscillators": [
+          "sawtooth"
+        ],
+        "oscillatorsDuringReplay": [],
+        "replayHash": "playing:30:600:321a662f"
+      },
+      "seeded-replay-hash": {
+        "a600": "playing:30:600:321a662f",
+        "b600": "playing:30:600:321a662f",
+        "a1800": "lost:60:1800:9b693d58",
+        "b1800": "lost:60:1800:9b693d58",
+        "stateKeys": [
+          "hash",
+          "status",
+          "score",
+          "frame",
+          "timeLeft",
+          "px",
+          "pz",
+          "paused",
+          "coins"
+        ],
+        "seed": 42,
+        "expected": {
+          "h600": "playing:30:600:321a662f",
+          "h1800": "lost:60:1800:9b693d58"
+        }
+      },
+      "resize-and-dpr": {
+        "sizes": [
+          {
+            "viewport": [
+              1000,
+              500
+            ],
+            "canvas": {
+              "cssW": 1000,
+              "cssH": 500,
+              "w": 1000,
+              "h": 500,
+              "ratio": 1,
+              "dpr": 1,
+              "canvases": 1
+            },
+            "mean": 22.68,
+            "fits": true
+          },
+          {
+            "viewport": [
+              390,
+              844
+            ],
+            "canvas": {
+              "cssW": 390,
+              "cssH": 844,
+              "w": 390,
+              "h": 844,
+              "ratio": 1,
+              "dpr": 1,
+              "canvases": 1
+            },
+            "mean": 31.63,
+            "fits": true
+          },
+          {
+            "viewport": [
+              800,
+              600
+            ],
+            "canvas": {
+              "cssW": 800,
+              "cssH": 600,
+              "w": 800,
+              "h": 600,
+              "ratio": 1,
+              "dpr": 1,
+              "canvases": 1
+            },
+            "mean": 27.06,
+            "fits": true
+          }
+        ],
+        "dpr2": {
+          "cssW": 640,
+          "w": 1280,
+          "ratio": 2,
+          "dpr": 2
+        }
+      },
+      "teardown-and-remount-without-leaks": {
+        "initial": {
+          "listeners": 19,
+          "elements": 24,
+          "canvases": 1,
+          "glContexts": 1
+        },
+        "afterFirstRemount": {
+          "listeners": 19,
+          "elements": 24,
+          "canvases": 1,
+          "glContexts": 2
+        },
+        "afterFourRemounts": {
+          "listeners": 19,
+          "elements": 24,
+          "canvases": 1,
+          "glContexts": 5
+        },
+        "replayHashAfterRemount": "playing:30:600:321a662f",
+        "stillPlays": true
+      }
+    }
+  },
+  "info": {
+    "aura": {
+      "bootMs": 1426,
+      "listenersAtBoot": 32,
+      "firstSimStepMs": 10551,
+      "firstSimStepWaitMs": 6472,
+      "mousePressOnTouchButtonDeltaPx": 0,
+      "cueEvidence": {
+        "win": [
+          "triangle",
+          "sine"
+        ],
+        "lose": [
+          "sawtooth"
+        ],
+        "replay": []
+      },
+      "resultsText": {
+        "win": "YOU WIN - score 80",
+        "lose": "TIME UP - score 0"
+      },
+      "replay": {
+        "a600": "playing:30:600:321a662f",
+        "b600": "playing:30:600:321a662f",
+        "a1800": "lost:60:1800:9b693d58",
+        "b1800": "lost:60:1800:9b693d58",
+        "stateKeys": [
+          "hash",
+          "status",
+          "score",
+          "frame",
+          "timeLeft",
+          "px",
+          "pz",
+          "paused",
+          "coins"
+        ],
+        "seed": 42,
+        "expected": {
+          "h600": "playing:30:600:321a662f",
+          "h1800": "lost:60:1800:9b693d58"
+        }
+      },
+      "dpr2": {
+        "cssW": 640,
+        "w": 1280,
+        "ratio": 2,
+        "dpr": 2
+      },
+      "wallMs": 396791
+    },
+    "three": {
+      "bootMs": 554,
+      "listenersAtBoot": 19,
+      "firstSimStepMs": 760,
+      "firstSimStepWaitMs": 134,
+      "mousePressOnTouchButtonDeltaPx": 9,
+      "cueEvidence": {
+        "win": [
+          "triangle",
+          "sine"
+        ],
+        "lose": [
+          "sawtooth"
+        ],
+        "replay": []
+      },
+      "resultsText": {
+        "win": "YOU WIN - score 80",
+        "lose": "TIME UP - score 0"
+      },
+      "replay": {
+        "a600": "playing:30:600:321a662f",
+        "b600": "playing:30:600:321a662f",
+        "a1800": "lost:60:1800:9b693d58",
+        "b1800": "lost:60:1800:9b693d58",
+        "stateKeys": [
+          "hash",
+          "status",
+          "score",
+          "frame",
+          "timeLeft",
+          "px",
+          "pz",
+          "paused",
+          "coins"
+        ],
+        "seed": 42,
+        "expected": {
+          "h600": "playing:30:600:321a662f",
+          "h1800": "lost:60:1800:9b693d58"
+        }
+      },
+      "dpr2": {
+        "cssW": 640,
+        "w": 1280,
+        "ratio": 2,
+        "dpr": 2
+      },
+      "wallMs": 43374
+    }
+  },
+  "console": {
+    "aura": {
+      "count": 4,
+      "failedRequests": []
+    },
+    "three": {
+      "count": 0,
+      "failedRequests": []
+    }
+  },
+  "comparison": {
+    "sameReplayHash600": true,
+    "sameReplayHash1800": true
+  }
+}

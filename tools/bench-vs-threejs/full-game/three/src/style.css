@@ -1,0 +1,94 @@
+/* @concern resize-teardown */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0d2230;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+/* @concern hud-screens */
+.screens {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font: 500 14px/1.4 sans-serif;
+  color: #fff;
+}
+
+#hud {
+  position: absolute;
+  left: 12px;
+  top: 8px;
+}
+
+.bar {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.screens button {
+  min-width: 72px;
+  min-height: 44px;
+  pointer-events: auto;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  text-align: center;
+  background: #000a;
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+/* @concern input-touch */
+.dpad {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows: repeat(2, 56px);
+  gap: 6px;
+  touch-action: none;
+}
+
+.dpad button {
+  font-size: 20px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  touch-action: none;
+}
+
+.dpad [data-dir="up"] {
+  grid-area: 1 / 2;
+}
+
+.dpad [data-dir="left"] {
+  grid-area: 2 / 1;
+}
+
+.dpad [data-dir="down"] {
+  grid-area: 2 / 2;
+}
+
+.dpad [data-dir="right"] {
+  grid-area: 2 / 3;
+}

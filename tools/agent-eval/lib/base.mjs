@@ -2,8 +2,9 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-export const DEFAULT_BASE_ROOT = "/tmp/agent-eval-base";
-export const AURA_VERSION = "4.1.2";
+// Both are overridable by environment so a newer published engine can be trialled without touching the 4.1.2 baseline setup.
+export const DEFAULT_BASE_ROOT = process.env.AGENT_EVAL_BASE_ROOT || "/tmp/agent-eval-base";
+export const AURA_VERSION = process.env.AGENT_EVAL_AURA_VERSION || "4.1.2";
 
 /** Published 4.1.2 reaches `node:fs` from the browser entry through one import; 4.1.3 fixes it in source (04b7726ef). */
 export const STOCK_BUILD_PATCH = {

@@ -1,0 +1,86 @@
+{
+  "args": {
+    "arm": "both",
+    "task": "6",
+    "runs": 3,
+    "seed": 20261024,
+    "concurrency": 3,
+    "model": "claude-sonnet-5.5",
+    "maxTurns": 40,
+    "dryRun": false,
+    "batch": "fullgame-436"
+  },
+  "plan": [
+    {
+      "task": 6,
+      "arm": "aura",
+      "idx": 1,
+      "order": 0,
+      "runId": "fullgame-436-t6-aura-r1",
+      "seed": 20261024000
+    },
+    {
+      "task": 6,
+      "arm": "three",
+      "idx": 1,
+      "order": 1,
+      "runId": "fullgame-436-t6-three-r1",
+      "seed": 20261024001
+    },
+    {
+      "task": 6,
+      "arm": "three",
+      "idx": 3,
+      "order": 2,
+      "runId": "fullgame-436-t6-three-r3",
+      "seed": 20261024002
+    },
+    {
+      "task": 6,
+      "arm": "three",
+      "idx": 2,
+      "order": 3,
+      "runId": "fullgame-436-t6-three-r2",
+      "seed": 20261024003
+    },
+    {
+      "task": 6,
+      "arm": "aura",
+      "idx": 3,
+      "order": 4,
+      "runId": "fullgame-436-t6-aura-r3",
+      "seed": 20261024004
+    },
+    {
+      "task": 6,
+      "arm": "aura",
+      "idx": 2,
+      "order": 5,
+      "runId": "fullgame-436-t6-aura-r2",
+      "seed": 20261024005
+    }
+  ],
+  "bases": {
+    "aura": {
+      "baseDir": "/tmp/agent-eval-base-436/aura",
+      "patch": "already",
+      "versions": {
+        "engine": "4.3.6",
+        "three": null,
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    },
+    "three": {
+      "baseDir": "/tmp/agent-eval-base-436/three",
+      "patch": "not-applicable",
+      "versions": {
+        "engine": null,
+        "three": "0.185.1",
+        "vite": "7.3.2",
+        "typescript": "5.9.3"
+      }
+    }
+  },
+  "note": "model sampling is not seedable through Prism; seeds fix plan order and run ids only"
+}

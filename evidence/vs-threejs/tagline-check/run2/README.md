@@ -16,5 +16,5 @@ Reference apps re-run unchanged: `aura-hello` 6 lines (small product, light back
 Findings:
 
 - `camera.frameAsset` plus `model(..., { targetHeight })` fixes the framing gap from run 1: 10 lines give a framed, shadowed, orbitable product.
-- The light backdrop is how the `product-studio` look renders in every Aura3D variant, including the shipped template; the look's `#2b2f36` background value does not show above the horizon. A floor plane gives the darker studio read.
+- The light backdrop is by design: `environments.hdri` draws its studio HDRI as the backdrop by default, and the `product-studio` look keeps that (a solid colour there would be the "solid void" the `look/solid-void` lint flags). It is the same in every Aura3D variant, including the shipped template. A floor plane gives the darker lower half. The solid `#2b2f36` in the three.js apps is the look's fallback colour, so the backdrops differ; the line counts do not change if the three.js apps show the same HDRI.
 - `looks.appOptions` made no visible difference at DPR 1 on this runner.

@@ -28,8 +28,8 @@ No failed requests in any app. Console: `aura-hello` logged only the harness's R
 
 ## What the frames show (coarse 16x9 luma grid, `results.json`)
 
-- `aura-hello` renders the product, but small (about one eighth of the frame width, centred) on a near-white backdrop (luma 205 to 226). The look's `#2b2f36` studio background is not what shows. The default camera does not frame the asset; the shipped template adds `camera.frameAsset(...)` and an orbit for that reason. So the 6-line hello world builds and draws, but it is not a presentable product shot.
-- `three-minimal` and `three-look` fill the frame with the product on the dark `#2b2f36` backdrop.
+- `aura-hello` renders the product, but small (about one eighth of the frame width, centred) on a near-white backdrop (luma 205 to 226). That is by design: `environments.hdri` draws its studio HDRI as the backdrop by default and the look does not turn that off (the `look/solid-void` lint and the quality floor in `llms.txt` forbid a solid void), so the backdrop is the light studio HDRI, not the look's `#2b2f36` fallback colour. The default camera does not frame the asset; the shipped template adds `camera.frameAsset(...)` and an orbit for that reason. So the 6-line hello world builds and draws, but it is not a presentable product shot.
+- `three-minimal` and `three-look` fill the frame with the product on a solid `#2b2f36` backdrop. That colour is the look's fallback `background` value, not what the Aura3D look draws, so the backdrops differ. Showing the same HDRI as the three.js background is one assignment (`scene.background = texture` instead of `new THREE.Color(...)`), so the line counts are unchanged either way.
 - `aura-cube` draws a small cube on a dark background, as designed (ambient light only).
 
 ## Caveats

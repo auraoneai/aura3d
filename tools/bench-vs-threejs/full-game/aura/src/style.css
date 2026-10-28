@@ -1,0 +1,90 @@
+/* @concern resize-teardown */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0d2230;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+/* @concern hud-screens */
+.screens {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font: 500 14px/1.4 sans-serif;
+  color: #fff;
+}
+
+.bar {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+}
+
+.screens button {
+  min-width: 72px;
+  min-height: 44px;
+  pointer-events: auto;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  text-align: center;
+  background: #000a;
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+/* @concern input-touch */
+.a3g-touch {
+  position: absolute;
+  inset: 0;
+}
+
+.a3g-tc {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.a3g-tc::after {
+  display: grid;
+  height: 100%;
+  place-content: center;
+  font: 600 20px sans-serif;
+  color: #fff;
+}
+
+.a3g-tc[data-control="left"]::after {
+  content: "\25C0";
+}
+
+.a3g-tc[data-control="right"]::after {
+  content: "\25B6";
+}
+
+.a3g-tc[data-control="jump"]::after {
+  content: "\25B2";
+}
+
+.a3g-tc[data-control="attack"]::after {
+  content: "\25BC";
+}

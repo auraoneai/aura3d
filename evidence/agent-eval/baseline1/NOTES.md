@@ -131,3 +131,25 @@ Both evalfix3 failures are the water task and both agents had opened `recipes.md
 1. `prd12-variants` ("covers every game"): the overlay lists 8 games and `games.json` lists 18, a data drift in the quality-rebuild capture tool; not touched.
 2. The first-try typecheck for the water task after the doc change.
 3. Real-GPU frames for the quantized environment on glossy metals close to the brightest light patch.
+
+
+## Full game task (fullgame-436)
+
+Task 6 (complete mobile arcade game "Dodge"), both arms, n=3 per arm, 40-turn budget unchanged, claude-sonnet-5.5 through Kiro Prism, software WebGL2 scoring on serverless ACR (3 shards). Aura3D arm: published `@aura3d/engine` 4.3.6 from the registry (stock-build patch already in the package), docs at the 4.3.6 release commit; three arm: `three@0.185.1`. 0 of 6 runs invalid, no reruns. Full table: `evidence/agent-eval/fullgame-436/REPORT.md`; metrics in `metrics.json`; raw runs archived outside git at `/tmp/fullgame-436-evidence.tgz` (ephemeral).
+
+| Median (min-max), n=3 | Aura3D 4.3.6 | three.js 0.185.1 |
+|---|---|---|
+| First-try typecheck / build / non-black render | 2 / 3 / 3 of 3 | 3 / 3 / 3 of 3 |
+| Final build / non-black render | 3 / 3 of 3 | 3 / 3 of 3 |
+| Probe checks passed (as scored) | 1.00 | 0.86 (see below) |
+| Agent turns | 32 (21-33) | 7 (7-7) |
+| Agent wall time, s | 296.5 (193-312) | 134.6 (134-144) |
+| Input tokens (cumulative) | 1.83 M | 0.11 M |
+| Output tokens | 14.2 k | 10.0 k |
+| Source lines | 527 | 494 |
+| Bundle raw KB | 3,428 | 510 |
+| Time to ready, ms (software GL) | 1,483 | 218 |
+
+Both arms shipped a complete, building, rendering, deterministic-replay game in every run. three.js took fewer turns, tokens and wall time and was 3 of 3 on first-try typecheck against 2 of 3. Aura3D agents opened 5 to 6 docs files and 4 to 12 package files; three.js agents opened none. No claim that the game kits make a whole game faster to ship than three.js is supported by this run.
+
+Caveats: n=3 per arm, one model, software GL; the model has seen far more three.js; llms.txt and AGENTS.md still carry owner-machine policy text. The pauseButton probe has a defect (`textContent ?? aria-label` never falls back, so icon-only buttons fail): all three three.js runs have `<button aria-label="Pause">` with a glyph, so their 0.86 probe fraction is understated and reads as 1.00 from source (not re-scored; the as-scored number is the one in the table). Harness change: `tools/agent-eval/lib/base.mjs` now takes `AGENT_EVAL_AURA_VERSION` and `AGENT_EVAL_BASE_ROOT` from the environment (defaults unchanged at 4.1.2 and `/tmp/agent-eval-base`); the old code pinned the Aura3D arm to 4.1.2 in both the run and the remote stage manifest. Spend: 5.13 M cumulative input and 71 k output tokens for the six runs, plus six judge calls (usage not recorded).

@@ -1,0 +1,587 @@
+[
+  {
+    "runId": "fullgame-436-t6-aura-r1",
+    "arm": "aura",
+    "task": 6,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 4,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "replayDeterministic": true,
+      "pauseButton": true,
+      "mobileNoHScroll": true
+    },
+    "probePassFraction": 1,
+    "turns": 32,
+    "agentWallSec": 312.2,
+    "tokensIn": 1834816,
+    "tokensOut": 15171,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 12,
+    "readCalls": 24,
+    "searchCalls": 18,
+    "writeCalls": 9,
+    "srcLines": 605,
+    "srcTokens": 6108,
+    "srcTokensEstimated": false,
+    "bundleRawKB": 3429.2,
+    "bundleGzipKB": 1073.9,
+    "readyMs": 1483,
+    "consoleErrors": 0,
+    "docsSha256": "0e37a9996773686718d78272a940e3f3b0473df963c67bfa1e76911c1628c559",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 185,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "game",
+          "pass": true,
+          "why": "A 3D scene with a player, pooled hazards and pickups runs on createFixedStepLoop at FIXED_DT. The sim uses createCountedRng with a seed from the URL or the default 1337. It starts with 3 lives, scores pickups, and ends the game at 0 lives. "
+        },
+        {
+          "id": "hud",
+          "pass": true,
+          "why": "The DOM HUD has #score, #lives-val and #best elements, updated in updateDom. Best is persisted in localStorage and shown as max(best, score)."
+        },
+        {
+          "id": "touch",
+          "pass": true,
+          "why": "Left and right pads use pointerdown, pointerup, pointercancel and lostpointercapture with pointer capture. They are 150px tall on mobile, and 110x96 on wide viewports, which is large. Arrow keys and A/D work too. The mobile probe found 6 bu"
+        },
+        {
+          "id": "sound",
+          "pass": true,
+          "why": "createCueBank defines procedural pickup, hit and over cues. bank.install unlocks audio on pointerdown, keydown and touchstart, so playback starts after a user gesture. The mute button and the M key call toggleMute and update the label."
+        },
+        {
+          "id": "pause",
+          "pass": true,
+          "why": "A pause button and the P key call togglePause. R and the overlay restart button call restart. The overlay shows Paused and Game over states with Resume, Play again and Restart buttons. The probe confirms pauseButton is true."
+        },
+        {
+          "id": "responsive",
+          "pass": true,
+          "why": "The probe at 390x844 reports noHorizontalScroll true, ready true and 6 buttons. The layout uses min(100vw, 640px), a stacked HUD and controls on narrow screens, and an overlay layout at 600px and wider."
+        },
+        {
+          "id": "replay",
+          "pass": true,
+          "why": "The probe reports replayDeterministic true: h1 and h2 are both d02b8467 with a log length of 4. The __EVAL__ hook exposes state, step, input, record, replay, reset and hash."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 62,
+        "rulesLines": 175,
+        "glueLines": 185,
+        "notes": "Rough estimates. Scene covers the materials, lights, camera, floor, rails, lane marks, player and the hazard and pickup pools. Rules covers the whole sim.ts (state machine, spawning, collisions, hashing, replay), event handling, best-score logic and the HUD and overlay update logic. Glue covers DOM "
+      }
+    }
+  },
+  {
+    "runId": "fullgame-436-t6-aura-r2",
+    "arm": "aura",
+    "task": 6,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "replayDeterministic": true,
+      "pauseButton": true,
+      "mobileNoHScroll": true
+    },
+    "probePassFraction": 1,
+    "turns": 33,
+    "agentWallSec": 296.5,
+    "tokensIn": 2009607,
+    "tokensOut": 14234,
+    "docsFilesOpened": 6,
+    "typesFilesOpened": 11,
+    "readCalls": 24,
+    "searchCalls": 20,
+    "writeCalls": 8,
+    "srcLines": 527,
+    "srcTokens": 5384,
+    "srcTokensEstimated": false,
+    "bundleRawKB": 3428.1,
+    "bundleGzipKB": 1073.5,
+    "readyMs": 1691,
+    "consoleErrors": 0,
+    "docsSha256": "0e37a9996773686718d78272a940e3f3b0473df963c67bfa1e76911c1628c559",
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 230,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "game",
+          "pass": true,
+          "why": "A 3D scene with a lane, player, and pooled hazards and pickups. The sim runs on createFixedStepLoop at 1/60 s, uses createCountedRng with a seed, starts with 3 lives, tracks score, and sets over at 0 lives. Probes show it rendered non-blank"
+        },
+        {
+          "id": "hud",
+          "pass": true,
+          "why": "The DOM HUD shows #hud-score, #hud-lives, and #hud-best. Best is persisted in localStorage and syncUi updates it."
+        },
+        {
+          "id": "touch",
+          "pass": true,
+          "why": "The left and right touch buttons use pointerdown, pointerup, pointercancel, and lostpointercapture with pointer capture. They are 120x84 on desktop and flex-fill on mobile. Arrow keys and A/D also work. The mobile probe found 6 buttons."
+        },
+        {
+          "id": "sound",
+          "pass": true,
+          "why": "createCueBank defines procedural cues for pickup, hit, and over, and bank.install(window) is called. A mute button and the M key both call toggleMute. I could not verify from the probes that the AudioContext is created only after a gesture,"
+        },
+        {
+          "id": "pause",
+          "pass": true,
+          "why": "There is a Pause button (#btn-pause, confirmed by the pauseButton probe) and the P key. R restarts, and the overlay shows Paused or Game Over with Resume and Restart buttons."
+        },
+        {
+          "id": "responsive",
+          "pass": true,
+          "why": "probes.mobile reports noHorizontalScroll true, ready true, and 6 buttons. A media query at max-width 639px gives a column layout with a 16:9 stage and a flexible touch pad."
+        },
+        {
+          "id": "replay",
+          "pass": true,
+          "why": "probes.replayDeterministic is true: h1 and h2 are both 99cee3ff with a log length of 4. The __EVAL__ hook provides record, replay, and reset, and the sim hash covers the RNG count."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 55,
+        "rulesLines": 190,
+        "glueLines": 230,
+        "notes": "Rough estimate. Scene is the world setup and createAuraApp. Rules are sim.ts minus the hash function, the cue definitions, and present(). Glue is input source tracking, keyboard and touch binding, HUD and overlay DOM sync, pause and reset plumbing, the __EVAL__ and replay hook, the FNV hash, the $ h"
+      }
+    }
+  },
+  {
+    "runId": "fullgame-436-t6-aura-r3",
+    "arm": "aura",
+    "task": 6,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": false,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 2,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "replayDeterministic": true,
+      "pauseButton": true,
+      "mobileNoHScroll": true
+    },
+    "probePassFraction": 1,
+    "turns": 21,
+    "agentWallSec": 192.7,
+    "tokensIn": 944114,
+    "tokensOut": 11782,
+    "docsFilesOpened": 5,
+    "typesFilesOpened": 4,
+    "readCalls": 12,
+    "searchCalls": 9,
+    "writeCalls": 8,
+    "srcLines": 488,
+    "srcTokens": 5241,
+    "srcTokensEstimated": false,
+    "bundleRawKB": 3421.3,
+    "bundleGzipKB": 1071,
+    "readyMs": 1252,
+    "consoleErrors": 0,
+    "docsSha256": "0e37a9996773686718d78272a940e3f3b0473df963c67bfa1e76911c1628c559",
+    "checklistPassFraction": 1,
+    "silentNoOps": 2,
+    "glueLines": 190,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "game",
+          "pass": true,
+          "why": "3D scene built with the engine (floor, player, hazard cones, pickup spheres). sim.ts runs a fixed step (FIXED_DT=1/60) with an accumulator, a seeded mulberry32 RNG, START_LIVES=3, score and an over state. Probes show the canvas is not blank"
+        },
+        {
+          "id": "hud",
+          "pass": true,
+          "why": "DOM HUD elements hud-score, hud-lives and hud-best are updated by refreshUi. Best is persisted to localStorage."
+        },
+        {
+          "id": "touch",
+          "pass": true,
+          "why": "Left and right pads use pointerdown, pointerup, pointercancel and lostpointercapture, with pointer capture and multi-pointer source tracking. The pads are large (120x84 on desktop, flex-filled with min-height 120px on mobile). Keyboard cont"
+        },
+        {
+          "id": "sound",
+          "pass": true,
+          "why": "audio.ts creates the AudioContext lazily in unlockAudio, which is called from keydown, pointerdown and click handlers. Sounds are procedural oscillators (pickup, hit, over). A mute toggle exists as a button and the M key, with a master gain"
+        },
+        {
+          "id": "pause",
+          "pass": true,
+          "why": "The pause button (probes.pauseButton true) and the P key both call togglePause. R and the Restart button call restartFromUi. A single overlay shows Paused and Game over states, with resume, restart and play-again buttons."
+        },
+        {
+          "id": "responsive",
+          "pass": true,
+          "why": "probes.mobile reports noHorizontalScroll true, 6 buttons present and ready true. A max-width 520px media query rearranges the layout so the controls sit below the stage."
+        },
+        {
+          "id": "replay",
+          "pass": true,
+          "why": "probes.replayDeterministic is true (h1 == h2 == 1cdc9679, logLength 4). The __EVAL__ hook provides record and replay, built on a pure seeded sim and a state hash."
+        }
+      ],
+      "silentNoOps": [
+        {
+          "where": "createAuraApp(\"#app\", { scene: builder, resize: false })",
+          "why": "The canvas is fixed at 640x360 and scaled by CSS, so the resize option is deliberately off. This is not a bug, but it means the renderer never adapts its drawing buffer to the device size on mobile. It is low severity and arguably not a tru"
+        },
+        {
+          "where": "environments.neutral({ intensity: 0.9, background: false }) and lights.directional({ shadow: true })",
+          "why": "Probes give no evidence that shadows render (maxInstances 0, no shadow-pass check). The shadow: true flag on the key light is unverified and may have no visible effect."
+        }
+      ],
+      "glue": {
+        "sceneLines": 32,
+        "rulesLines": 115,
+        "glueLines": 190,
+        "notes": "Approximate counts of non-blank, non-comment lines. Scene: the scene builder plus the 12-slot hazard/pickup loop, and syncScene node updates counted partly as glue. Rules: sim.ts (about 105 lines excluding the hash helper) plus the status, pause and restart logic. Glue: DOM bootstrapping (el(), elem"
+      }
+    }
+  },
+  {
+    "runId": "fullgame-436-t6-three-r1",
+    "arm": "three",
+    "task": 6,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "replayDeterministic": true,
+      "pauseButton": false,
+      "mobileNoHScroll": true
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 7,
+    "agentWallSec": 134.6,
+    "tokensIn": 105542,
+    "tokensOut": 10009,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 7,
+    "srcLines": 494,
+    "srcTokens": 5266,
+    "srcTokensEstimated": false,
+    "bundleRawKB": 510.3,
+    "bundleGzipKB": 129.8,
+    "readyMs": 222,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 230,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "game",
+          "pass": true,
+          "why": "Three.js 3D scene (floor, player, pooled hazards and pickups). The sim is a fixed 1/60 step with an accumulator. It uses a mulberry32 seeded RNG, START_LIVES=3, a score, and a game-over state."
+        },
+        {
+          "id": "hud",
+          "pass": true,
+          "why": "DOM HUD with #score, #lives (hearts) and #best, updated in updateDom. Best is persisted to localStorage."
+        },
+        {
+          "id": "touch",
+          "pass": true,
+          "why": "Left and right pads are 110px (min 120px high in portrait) and use pointerdown, pointerup, pointercancel and lostpointercapture with setPointerCapture. Keyboard controls are arrows and A/D. Probes show 6 buttons on mobile."
+        },
+        {
+          "id": "sound",
+          "pass": true,
+          "why": "Procedural oscillator and gain beeps for pickup, hit and gameover. The AudioContext is created or resumed in the keydown and pointerdown handlers, and play() requires a running context. The mute button toggles the muted flag and its icon."
+        },
+        {
+          "id": "pause",
+          "pass": true,
+          "why": "The source has a #pause button, the P key, the R key, and an overlay with Resume and Restart that shows on pause and on game over. probes.pauseButton is false, which looks like a detector miss because the button is icon-only (⏸) with an ari"
+        },
+        {
+          "id": "responsive",
+          "pass": true,
+          "why": "probes.mobile reports noHorizontalScroll true and ready true. A portrait media query makes the HUD and controls static and flexes the pads, and the canvas scales with max-width 100%."
+        },
+        {
+          "id": "replay",
+          "pass": true,
+          "why": "probes.replayDeterministic is true, with h1 equal to h2 (4c5197d0fcc21646) and logLength 4. The replay resets with the same seed and re-applies the logged inputs by frame."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 75,
+        "rulesLines": 150,
+        "glueLines": 230,
+        "notes": "Rough estimate. Scene is the three.js setup plus the pooled entity sync. Rules is game.ts: spawning, collisions, scoring, lives, and the state hash. Glue is the renderer and rAF loop with its fixed-step accumulator, keyboard and pointer input source-merging, DOM and overlay updates, localStorage, th"
+      }
+    }
+  },
+  {
+    "runId": "fullgame-436-t6-three-r2",
+    "arm": "three",
+    "task": 6,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "replayDeterministic": true,
+      "pauseButton": false,
+      "mobileNoHScroll": true
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 7,
+    "agentWallSec": 134.3,
+    "tokensIn": 106165,
+    "tokensOut": 10221,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 6,
+    "srcLines": 542,
+    "srcTokens": 5310,
+    "srcTokensEstimated": false,
+    "bundleRawKB": 510.7,
+    "bundleGzipKB": 129.8,
+    "readyMs": 175,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 280,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "game",
+          "pass": true,
+          "why": "A three.js scene is driven by a fixed-step sim (DT=1/60 accumulator in frame()) with a seeded mulberry32 RNG. It has 3 lives, score (+10 pickup, +1 dodged hazard) and a game-over state. Probes show 48 draws and an animated, non-blank frame."
+        },
+        {
+          "id": "hud",
+          "pass": true,
+          "why": "The DOM HUD has #score, #lives and #best. updateHud() refreshes them, and best is persisted in localStorage."
+        },
+        {
+          "id": "touch",
+          "pass": true,
+          "why": "The left and right pads use pointerdown/up/cancel with pointer capture and touch-action:none. They are 120x90 on desktop and flex-wide 150px tall in portrait. Keyboard works through arrows and A/D, plus P, R and M. The probe found 6 buttons"
+        },
+        {
+          "id": "sound",
+          "pass": true,
+          "why": "Oscillator/gain beeps are synthesized procedurally. The AudioContext is created or resumed in keydown, pointerdown and click handlers, so it starts after a user gesture. The mute button and the M key work, and beep() returns early when mute"
+        },
+        {
+          "id": "pause",
+          "pass": true,
+          "why": "The source has #btn-pause, the P key, R restart, and an overlay with Resume/Restart for pause and Play again for game over. The probe reported pauseButton:false, but nothing in the code points to a failure. The button has an id, an aria-lab"
+        },
+        {
+          "id": "responsive",
+          "pass": true,
+          "why": "Probes.mobile shows noHorizontalScroll true, ready true and 6 buttons. A CSS media query scales the canvas, and in portrait it moves the HUD and pads out of the canvas."
+        },
+        {
+          "id": "replay",
+          "pass": true,
+          "why": "replayDeterministic is true: h1 and h2 are both 2b6af4ff over a 4-event log. __EVAL__.record and replay are implemented over the deterministic sim."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 95,
+        "rulesLines": 165,
+        "glueLines": 280,
+        "notes": "Scene covers lights, camera, floor, player, mesh pools and syncScene. Rules are mostly sim.ts: stepping, spawn, collision, RNG, hash and replay. Glue is the manual renderer, camera and loop setup, the fixed-step accumulator, the audio helper (~50 lines), DOM HUD and overlay updates, keyboard and poi"
+      }
+    }
+  },
+  {
+    "runId": "fullgame-436-t6-three-r3",
+    "arm": "three",
+    "task": 6,
+    "valid": true,
+    "invalidReason": null,
+    "endReason": "finished",
+    "hitTurnCap": false,
+    "firstTryTypecheck": true,
+    "finalTypecheck": true,
+    "typechecked": true,
+    "editsToGreen": 0,
+    "firstTryBuild": true,
+    "firstTryRender": true,
+    "finalBuild": true,
+    "finalRender": true,
+    "readyTimeout": false,
+    "captureFailed": false,
+    "probeItems": {
+      "builds": true,
+      "rendersNonBlank": true,
+      "noPageErrors": true,
+      "hasState": true,
+      "replayDeterministic": true,
+      "pauseButton": false,
+      "mobileNoHScroll": true
+    },
+    "probePassFraction": 0.8571428571428571,
+    "turns": 7,
+    "agentWallSec": 144.4,
+    "tokensIn": 133199,
+    "tokensOut": 9973,
+    "docsFilesOpened": 0,
+    "typesFilesOpened": 0,
+    "readCalls": 3,
+    "searchCalls": 0,
+    "writeCalls": 5,
+    "srcLines": 489,
+    "srcTokens": 4805,
+    "srcTokensEstimated": false,
+    "bundleRawKB": 507.7,
+    "bundleGzipKB": 129.1,
+    "readyMs": 218,
+    "consoleErrors": 0,
+    "docsSha256": null,
+    "checklistPassFraction": 1,
+    "silentNoOps": 0,
+    "glueLines": 250,
+    "judged": true,
+    "judgeDetail": {
+      "checklist": [
+        {
+          "id": "game",
+          "pass": true,
+          "why": "A three.js scene with a fixed 1/60 step and an accumulator loop. mulberry32 RNG seeded per reset. Three lives with invulnerability frames after a hit. Score comes from pickups and survival time. The status goes to 'over' when lives hit 0. P"
+        },
+        {
+          "id": "hud",
+          "pass": true,
+          "why": "A DOM HUD shows score, lives (hearts) and best (persisted in localStorage). updateHud syncs the values each frame."
+        },
+        {
+          "id": "touch",
+          "pass": true,
+          "why": "Large left/right buttons (120x84, or 46% width and 28vh in portrait) use pointerdown, pointerup, pointercancel and lostpointercapture, with setPointerCapture and touch-action: none. Keyboard works via arrows and A/D, plus P, R and M. The mo"
+        },
+        {
+          "id": "sound",
+          "pass": true,
+          "why": "Procedural oscillator/gain beeps for pickup, hit and game over. The AudioContext is created or resumed in ensureAudio from pointerdown, keydown and button clicks, so it starts after a user gesture. A mute button and the M key toggle `muted`"
+        },
+        {
+          "id": "pause",
+          "pass": true,
+          "why": "The source has a #btn-pause button and the P key, both calling togglePause. R and the overlay Restart button restart the game. The overlay shows 'Paused' with Resume and Restart, or 'Game Over' with the score and best. The probe reported pa"
+        },
+        {
+          "id": "responsive",
+          "pass": true,
+          "why": "At 390x844 the probe shows no horizontal scroll, 6 buttons and a ready state. In portrait, CSS places the controls below the stage and scales the canvas with width: min(640px, 100vw)."
+        },
+        {
+          "id": "replay",
+          "pass": true,
+          "why": "replayDeterministic is true: both hashes are 8878b379 with a 4-event log. replay() resets with the same seed, re-applies the inputs at their recorded frames, and hashes the state."
+        }
+      ],
+      "silentNoOps": [],
+      "glue": {
+        "sceneLines": 65,
+        "rulesLines": 150,
+        "glueLines": 250,
+        "notes": "Approximate counts for src/main.ts only; index.html CSS and markup are excluded. Glue covers renderer, loop and accumulator setup, DOM lookups, pointer and keyboard wiring, HUD caching and diffing, WebAudio helper code, the hand-written mulberry32 RNG and FNV state hash, the eval hook, and type decl"
+      }
+    }
+  }
+]
