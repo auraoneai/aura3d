@@ -67,6 +67,25 @@ export function resolveRenderTargetFormat(gl: WebGL2RenderingContext, format: "r
     return { internalFormat: gl.RGBA32F, type: gl.FLOAT };
   }
 
+/**
+ * Sampling filter for a render target's colour texture. RGBA32F is only
+ * linear-filterable once `OES_texture_float_linear` is enabled; without it a
+ * LINEAR RGBA32F texture is texture-incomplete and every fetch of it
+ * (`texelFetch` included) returns zeros on a conformant implementation. The v2
+ * post chain stores view-space depth in RGBA32F targets, so under the old
+ * unconditional LINEAR the half-res depth read zero and GTAO occluded every
+ * pixel (a SwiftShader receipt frame went 31% darker with no crease structure).
+ * `getExtension` both probes and enables the extension; when it is absent the
+ * target is point-sampled, which is all the depth stages need.
+ */
+export function renderTargetSampleFilter(
+  gl: Pick<WebGL2RenderingContext, "LINEAR" | "NEAREST" | "getExtension">,
+  format: "rgba8" | "rgba16f" | "rgba32f"
+): GLenum {
+  if (format !== "rgba32f") return gl.LINEAR;
+  return gl.getExtension("OES_texture_float_linear") ? gl.LINEAR : gl.NEAREST;
+}
+
 export function resolveCompressedTextureFormat(gl: WebGL2RenderingContext, format: TextureCompressedFormat): { readonly internalFormat: GLenum } | null {
     switch (format) {
       case "bc1-rgba-unorm": {
