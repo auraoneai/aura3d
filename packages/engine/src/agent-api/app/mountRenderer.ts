@@ -17,13 +17,20 @@ export interface AuraSceneDegradationOptions {
   readonly onDegradation?: (degradation: AuraDegradation) => void;
 }
 
+/** WebGL context attributes the app chooses (beat-three.js L-P1). Absent keeps the device defaults. */
+export interface AuraCanvasContextOptions {
+  /** Keep the drawing buffer after presentation (capture/evidence runs). Default false. */
+  readonly preserveDrawingBuffer?: boolean;
+}
+
 export async function createProductionSceneRenderer(
   canvas: HTMLCanvasElement,
   snapshot: AuraSceneSnapshot,
   rendererOptions?: AuraCreateAppRendererOptions,
   runtimeNodes?: AuraRuntimeNodeRegistry,
   qrFlags?: QrFlags,
-  degradation?: AuraSceneDegradationOptions
+  degradation?: AuraSceneDegradationOptions,
+  canvasContext?: AuraCanvasContextOptions
 ): Promise<WebGLSceneRenderer> {
   const rendererSelection = normalizeCreateAppRendererOptions(rendererOptions);
   // 4.0 Live Fix E1: there is no fallback renderer. The former non-strict
@@ -48,7 +55,7 @@ export async function createProductionSceneRenderer(
   }
 
   try {
-    return await createProductionRuntimeSceneRenderer(canvas, snapshot, rendererOptions, runtimeNodes, qrFlags, degradation);
+    return await createProductionRuntimeSceneRenderer(canvas, snapshot, rendererOptions, runtimeNodes, qrFlags, degradation, canvasContext);
   } catch (error) {
     throw new AuraRuntimeError(
       "renderer-mount-failed",

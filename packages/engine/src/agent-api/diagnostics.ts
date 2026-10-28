@@ -110,6 +110,7 @@ export interface MutableDiagnostics {
   assets: AuraAssetLoadState[];
   evidence: AuraSceneEvidence;
   renderer: AuraRendererDiagnosticReport;
+  renderPath?: AuraDiagnostics["renderPath"];
   warnings: string[];
   errors: string[];
   /**
@@ -122,6 +123,64 @@ export interface MutableDiagnostics {
   labels?: readonly ProjectedLabel[];
   labelTelemetry?: LabelTelemetry;
   textBuckets?: TextBucketSummary;
+}
+
+export interface LazyFrameDiagnostics {
+  /** A frame completed: the next read of `renderer` / `evidence` recomputes them. */
+  invalidate(): void;
+  /** Materialize both as plain values and detach (the renderer is about to be disposed). */
+  freeze(): void;
+}
+
+/**
+ * Per-frame diagnostics without per-frame cost.
+ *
+ * `renderer` (a full diagnostics report) and `evidence` (a scene walk) used to be rebuilt after every
+ * rendered frame although they are only read by `app.diagnostics()`, the overlay and route markers.
+ * Here they are computed on first read after a frame and cached until the next frame, so a frame
+ * that nobody inspects pays nothing. While an async frame is pending the last value is served, the
+ * same "previous completed frame" the eager version exposed. Assigning to either property overrides
+ * the cached value until the next frame, so callers that write them keep working.
+ */
+export function bindLazyFrameDiagnostics(
+  state: MutableDiagnostics,
+  sources: {
+    readonly renderer: () => AuraRendererDiagnosticReport;
+    readonly evidence: () => AuraSceneEvidence;
+    readonly busy: () => boolean;
+  }
+): LazyFrameDiagnostics {
+  let rendererValue = state.renderer;
+  let evidenceValue = state.evidence;
+  let rendererFresh = true;
+  let evidenceFresh = true;
+  Object.defineProperty(state, "renderer", {
+    configurable: true,
+    enumerable: true,
+    get: () => {
+      if (!rendererFresh && !sources.busy()) { rendererValue = sources.renderer(); rendererFresh = true; }
+      return rendererValue;
+    },
+    set: (value: AuraRendererDiagnosticReport) => { rendererValue = value; rendererFresh = true; }
+  });
+  Object.defineProperty(state, "evidence", {
+    configurable: true,
+    enumerable: true,
+    get: () => {
+      if (!evidenceFresh && !sources.busy()) { evidenceValue = sources.evidence(); evidenceFresh = true; }
+      return evidenceValue;
+    },
+    set: (value: AuraSceneEvidence) => { evidenceValue = value; evidenceFresh = true; }
+  });
+  return {
+    invalidate() { rendererFresh = false; evidenceFresh = false; },
+    freeze() {
+      const finalRenderer = state.renderer;
+      const finalEvidence = state.evidence;
+      Object.defineProperty(state, "renderer", { configurable: true, enumerable: true, writable: true, value: finalRenderer });
+      Object.defineProperty(state, "evidence", { configurable: true, enumerable: true, writable: true, value: finalEvidence });
+    }
+  };
 }
 
 export function createInitialDiagnostics(snapshot: AuraSceneSnapshot, rendererOptions?: AuraCreateAppRendererOptions): MutableDiagnostics {
@@ -160,6 +219,7 @@ export function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics 
     assets: [...value.assets],
     evidence: value.evidence,
     renderer: value.renderer,
+    ...(value.renderPath ? { renderPath: value.renderPath } : {}),
     warnings: [...value.warnings],
     errors: shaderFailures.length > 0 ? [...value.errors, ...shaderFailures.map(formatShaderFailure)] : [...value.errors],
     ...(shaderFailures.length > 0 ? { shaderFailures } : {}),

@@ -44,7 +44,8 @@ export async function createProductionRuntimeSceneRenderer(
   rendererOptions?: AuraCreateAppRendererOptions,
   runtimeNodes?: AuraRuntimeNodeRegistry,
   qrFlags?: QrFlags,
-  degradation?: import("../app/mountRenderer.js").AuraSceneDegradationOptions
+  degradation?: import("../app/mountRenderer.js").AuraSceneDegradationOptions,
+  canvasContext?: import("../app/mountRenderer.js").AuraCanvasContextOptions
 ): Promise<WebGLSceneRenderer> {
   const flags = qrFlags ?? resolveQrFlags({});
   const flattened = groups.flatten(snapshot.nodes);
@@ -98,6 +99,8 @@ export async function createProductionRuntimeSceneRenderer(
     height: canvas.height,
     backend: (rendererOptions?.backend as RenderBackendKind | undefined) ?? "webgl2",
     antialias: true,
+    // Only set when asked: the device default (false) is what a plain app needs.
+    ...(canvasContext?.preserveDrawingBuffer === true ? { preserveDrawingBuffer: true } : {}),
     requiredFeatures: ["basic-rendering", "pixel-readback", "render-targets", "hdr-image-based-lighting"],
     ...(getRootRenderSource(canvas) ? { errorCheckMode: "frame" as const } : {}),
     // Background colors are display intent. Pre-invert the renderer's coupled

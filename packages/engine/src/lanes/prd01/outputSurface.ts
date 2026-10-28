@@ -56,6 +56,8 @@ interface Prd01OutputRenderer {
   setOutputOverlay(overlay: AuraOutputOverlay | null): void;
   readonly appliedOutput?: unknown;
   readonly postSkipped?: unknown;
+  /** False when the renderer took the direct canvas path (`quality: "auto"` on a plain scene): OutputPass never runs. */
+  readonly outputPathActive?: boolean;
 }
 
 function laneRenderer(app: AuraApp): Prd01OutputRenderer | undefined {
@@ -104,6 +106,17 @@ export function createPrd01OutputSurface(
   const requested: Record<string, unknown> = { ...(ctx.options.output ?? {}), ...readAura3dTonemapQuery() };
   const applied: Record<string, unknown> = {};
   const outputPath = qrCoreOutputOn(ctx.flags);
+  const directPathMessage = (what: string): string =>
+    `${what} has no effect: this app rendered on the direct path (quality "auto", no post-processing, HDR output or transmission authored). Pass \`output\` to createAuraApp or \`quality: "production"\` so the HDR output pass runs.`;
+  let warnedDirectPath = false;
+  const warnDirectPath = (what: string): void => {
+    if (warnedDirectPath) return;
+    warnedDirectPath = true;
+    const entry = { code: "OUTPUT_IGNORED_DIRECT_PATH", message: directPathMessage(what) };
+    emitted.push(entry);
+    for (const listener of listeners) listener(entry);
+    if (typeof console !== "undefined") console.warn(`[aura3d] ${entry.message}`);
+  };
   let pendingOutput: Partial<AuraOutputOptions> | null = outputPath ? { ...(requested as Partial<AuraOutputOptions>) } : null;
   const listeners = new Set<RendererErrorListener>();
   const emitted: { code: string; message: string }[] = [];
@@ -149,6 +162,10 @@ export function createPrd01OutputSurface(
     if (!renderer) return;
     const pending = pendingOutput;
     pendingOutput = null;
+    if (renderer.outputPathActive === false) {
+      if (Object.keys(pending).length > 0) warnDirectPath("app.setOutput() / output options");
+      return;
+    }
     renderer.setOutput(toRendererOutput(pending));
     Object.assign(applied, pending);
   };
@@ -181,6 +198,10 @@ export function createPrd01OutputSurface(
         pendingOutput = { ...(pendingOutput ?? {}), ...output };
         return;
       }
+      if (renderer.outputPathActive === false) {
+        warnDirectPath("app.setOutput()");
+        return;
+      }
       renderer.setOutput(toRendererOutput(output));
       Object.assign(applied, output);
     },
@@ -190,7 +211,9 @@ export function createPrd01OutputSurface(
       // A3D_QR_CORE_OUTPUT; DOM overlay remains the flag-off/other-backend fallback,
       // and is also used when OutputPass was bypassed by the scene's LegacyPost chain
       // (`renderer.postSkipped` truthy).
-      const renderer = outputPath ? laneRenderer(app) : undefined;
+      const outputRenderer = outputPath ? laneRenderer(app) : undefined;
+      // On the direct path OutputPass never runs, so the overlay takes the DOM fallback below.
+      const renderer = outputRenderer?.outputPathActive === false ? undefined : outputRenderer;
       if (renderer) {
         flushPendingOutput();
         renderer.setOutputOverlay({

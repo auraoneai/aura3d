@@ -2494,6 +2494,8 @@ export interface AuraDiagnostics {
   readonly assets: readonly AuraAssetLoadState[];
   readonly evidence?: AuraSceneEvidence;
   readonly renderer?: AuraRendererDiagnosticReport;
+  /** Which pipeline the last mount took (`"direct"` canvas MSAA or `"hdr-msaa"` offscreen target) and why. */
+  readonly renderPath?: { readonly path: "direct" | "hdr-msaa"; readonly quality: "auto" | "production" | "safe-basic" | "cinematic"; readonly reason: string };
   readonly warnings: readonly string[];
   readonly errors: readonly string[];
   /**

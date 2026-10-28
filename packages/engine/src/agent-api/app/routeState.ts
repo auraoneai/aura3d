@@ -23,9 +23,9 @@ export function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: Mutable
  */
 export function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void {
   if (typeof document !== "undefined" && document.body.dataset.aura3dReady !== undefined) {
+    // Backend and mode are constants of a mount and are written by markRouteState; reading them here
+    // would force the full renderer report to be rebuilt every frame.
     document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
-    document.body.dataset.aura3dRuntimeBackend = diagnostics.renderer.runtime.backend;
-    document.body.dataset.aura3dRendererMode = diagnostics.renderer.rendererMode;
   }
 }
 

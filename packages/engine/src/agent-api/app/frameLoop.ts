@@ -2,7 +2,7 @@
 
 import type { AuraLabelNode, AuraSceneSnapshot, AuraFrameInfo, AuraRuntimeNodeRegistry, AuraCreateAppOptions, WebGLRenderController } from "../nodes/types.js";
 import { createParentFit } from "./parentFit.js";
-import { rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
+import { bindLazyFrameDiagnostics, rethrowShaderFailure, type MutableDiagnostics } from "../diagnostics.js";
 import { AuraRuntimeError } from "./errors.js";
 import { DeferredFrameResources, getRootPerformanceBaseSize, getRootPerformanceQuality, hasRootRenderableContent, resolveRootRenderTime, setRootPerformanceQuality } from "../RootRuntimeSupport.js";
 import { animation } from "../nodes/animation.js";
@@ -10,6 +10,7 @@ import { camera } from "../nodes/camera.js";
 import { collectAuraSceneEvidence } from "../sceneEvidence.js";
 import { collectLabelTelemetry, summarizeTextBuckets } from "../LabelTelemetry.js";
 import { createProductionSceneRenderer } from "./mountRenderer.js";
+import { resolveAppRenderPath, wantsPreservedDrawingBuffer } from "./renderPath.js";
 import { appTierMaxPixelRatio, currentDevicePixelRatio, minimumBackingSize, resolveAppPixelRatio } from "./pixelRatio.js";
 import { resolveMountQuality } from "../compiler/renderer.js";
 import { devicePixelRatioSafe, markTiming, performanceNow } from "../platform.js";
@@ -79,7 +80,19 @@ export async function startProductionRender(
     }),
     options.animation?.mixer
   );
-  const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes, qrFlags, { strict: options.strict, onDegradation: options.onDegradation });
+  // beat-three.js L-P1: decided per mount (setScene re-mounts re-decide). `direct` pins the
+  // HDR-target route off for this renderer only; the app's own flags are untouched.
+  const renderPath = resolveAppRenderPath(snapshot, options, qrFlags);
+  diagnosticsState.renderPath = renderPath.report;
+  const renderer = await createProductionSceneRenderer(
+    canvas,
+    snapshot,
+    options.renderer,
+    runtimeNodes,
+    renderPath.flags,
+    { strict: options.strict, onDegradation: options.onDegradation },
+    { preserveDrawingBuffer: wantsPreservedDrawingBuffer(options) }
+  );
   if (isCancelled()) {
     renderer.dispose();
     return {
@@ -119,6 +132,11 @@ export async function startProductionRender(
   let lastTime = 0;
   let pendingFrames = 0;
   let frameTail: Promise<void> = Promise.resolve();
+  const lazyFrameDiagnostics = bindLazyFrameDiagnostics(diagnosticsState, {
+    renderer: () => renderer.diagnostics,
+    evidence: () => collectAuraSceneEvidence(snapshot),
+    busy: () => pendingFrames > 0
+  });
   const baseBackingSize = getRootPerformanceBaseSize(canvas);
   let syncedWidth = canvas.width;
   let syncedHeight = canvas.height;
@@ -126,6 +144,7 @@ export async function startProductionRender(
   const releaseResources = (): void => {
     if (resourcesReleased) return;
     resourcesReleased = true;
+    lazyFrameDiagnostics.freeze();
     labelLayer?.dispose();
     renderer.dispose();
   };
@@ -197,8 +216,8 @@ export async function startProductionRender(
     diagnosticsState.fps = diagnosticsState.fps || 60;
     diagnosticsState.drawCalls = drawCalls;
     diagnosticsState.renderSize = [canvas.width, canvas.height];
-    diagnosticsState.evidence = collectAuraSceneEvidence(snapshot);
-    diagnosticsState.renderer = renderer.diagnostics;
+    // Recomputed on first read, not per frame (see bindLazyFrameDiagnostics).
+    lazyFrameDiagnostics.invalidate();
     updateRouteDiagnostics(diagnosticsState);
     if (labelLayer) {
       // Reproject every frame against the renderer's own camera so labels track
