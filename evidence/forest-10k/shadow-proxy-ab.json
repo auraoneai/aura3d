@@ -1,0 +1,235 @@
+{
+ "rule": "shadow proxy: castShadow, builtin primitive, >= 1024 instances, strictly coarser; cascade cap: auto cascades, >= 8192 shadow-casting instances, tier cascades > 2",
+ "results": [
+  {
+   "route": "examples/instanced-texture-probe",
+   "verdict": "unaffected (no proxy, no cascade cap)",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": [
+    "no ready signal (continuing: many apps publish none)",
+    "no ready signal (continuing: many apps publish none)"
+   ]
+  },
+  {
+   "route": "apps/showcase-aura-links-3d",
+   "verdict": "unmeasurable",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": [
+    "no ready signal (continuing: many apps publish none)",
+    "no canvas",
+    "no ready signal (continuing: many apps publish none)"
+   ]
+  },
+  {
+   "route": "apps/showcase-cross-hop",
+   "verdict": "unmeasurable",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": [
+    "no ready signal (continuing: many apps publish none)",
+    "no canvas",
+    "no ready signal (continuing: many apps publish none)"
+   ]
+  },
+  {
+   "route": "apps/showcase-vault-breakers",
+   "verdict": "unaffected (no proxy, no cascade cap)",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": []
+  },
+  {
+   "route": "apps/showcase-blockfall-reactor",
+   "verdict": "unmeasurable",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": [
+    "pageerror: Failed to fetch dynamically imported module: http://127.0.0.1:34169/apps/showcase-blockfall-reactor/src/legacy/main.ts",
+    "no ready signal (continuing: many apps publish none)",
+    "no canvas"
+   ]
+  },
+  {
+   "route": "apps/showcase-dot-dash-3d",
+   "verdict": "unmeasurable",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": [
+    "no ready signal (continuing: many apps publish none)",
+    "no canvas",
+    "no ready signal (continuing: many apps publish none)"
+   ]
+  },
+  {
+   "route": "apps/aura-clash-showcase",
+   "verdict": "unaffected (no proxy, no cascade cap)",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0.0002779947916666666,
+    "changedShare": 0.00000390625
+   },
+   "effect": {
+    "meanAbs": 0.0002571614583333333,
+    "changedShare": 0.00000390625
+   },
+   "errors": []
+  },
+  {
+   "route": "apps/showcase-smart-city-control",
+   "verdict": "unaffected (no proxy, no cascade cap)",
+   "proxies": [],
+   "denseCap": null,
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": [
+    "no ready signal (continuing: many apps publish none)",
+    "no ready signal (continuing: many apps publish none)"
+   ]
+  },
+  {
+   "route": "examples/rendering-large-scene",
+   "verdict": "unaffected (no proxy built)",
+   "proxies": [],
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": []
+  },
+  {
+   "route": "examples/silt-and-signal-port",
+   "verdict": "unaffected (no proxy built)",
+   "proxies": [],
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": []
+  },
+  {
+   "route": "examples/roadster-hours-port",
+   "verdict": "unaffected (no proxy built)",
+   "proxies": [],
+   "noise": {
+    "meanAbs": 0.2997692057290967,
+    "changedShare": 0.005388671875
+   },
+   "effect": {
+    "meanAbs": 0.5736907552084084,
+    "changedShare": 0.0053984375
+   },
+   "errors": []
+  },
+  {
+   "route": "examples/ninja-runner-port",
+   "verdict": "unaffected (no proxy built)",
+   "proxies": [],
+   "noise": {
+    "meanAbs": 0.0011093749999999969,
+    "changedShare": 0.0000078125
+   },
+   "effect": {
+    "meanAbs": 0.0011243489583333292,
+    "changedShare": 0.0000078125
+   },
+   "errors": []
+  },
+  {
+   "route": "examples/drift-and-deliver-port",
+   "verdict": "unaffected (no proxy built)",
+   "proxies": [],
+   "noise": {
+    "meanAbs": 1.4392340494783986,
+    "changedShare": 0.0531201171875
+   },
+   "effect": {
+    "meanAbs": 0.19067252604175036,
+    "changedShare": 0.004986328125
+   },
+   "errors": []
+  },
+  {
+   "route": "templates/arena-shooter",
+   "verdict": "unmeasurable",
+   "proxies": [],
+   "noise": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "effect": {
+    "meanAbs": 0,
+    "changedShare": 0
+   },
+   "errors": [
+    "status 404",
+    "never became ready",
+    "status 404"
+   ]
+  }
+ ]
+}
