@@ -292,6 +292,8 @@ export class RendererShadowOrchestrator {
     readonly camera?: Camera;
     /** #1141: VP + eye of the frame's (possibly structural) camera, for the prd02 bridge. */
     readonly frameCamera?: Prd02BridgeFrameCamera;
+    /** Every visible item of the frame (shadow receivers); lets the sun cascades skip a cascade no item selects. */
+    readonly receivers?: readonly RenderItem[];
   }): ForwardShadowMapOptions | undefined {
     if (!options.shadowOptions || options.shadowOptions.enabled === false) {
       return undefined;
@@ -309,6 +311,7 @@ export class RendererShadowOrchestrator {
         items: options.items,
         camera: options.camera,
         ...(options.frameCamera ? { frameCamera: options.frameCamera } : {}),
+        ...(options.receivers ? { receivers: options.receivers } : {}),
         // PRD 11: the app's live C-27 tier sizes the bridged cascades (undefined → high).
         tier: prd11LiveQualityTier(rendererQrFlags(this.host.device))?.settings,
         flags: rendererQrFlags()

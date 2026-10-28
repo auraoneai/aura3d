@@ -1024,7 +1024,7 @@ export class Renderer {
     // C-02/T0-06: sync-path warm — kick generated-program compiles for the
     // exact draw feature records before the pass runs (bounded per frame).
     this.warmOutputSrgb = this.frameOutputsSrgb(source);
-    this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
+    // The warm itself runs after the shadow step below: with renderer-owned shadows the program key's shadow axis only exists once the map does.
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
     validateExplicitRenderTarget(explicitRenderTarget);
@@ -1137,7 +1137,8 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
+          receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -1146,9 +1147,13 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
+          receivers: items
         });
       frameHooks.addPasses(this.graph, "shadows", items);
+      // C-02/T0-06 sync-path warm, keyed on the shadow map this frame actually draws with (warming before it existed compiled no-shadow
+      // variants nothing draws: 2 dead programs on a one-material scene, 4 with a skinned model).
+      this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, rendererShadowMap, cameraViewProjection);
       this.lastShadowEvidence = rendererShadowMap ? {
         lightMatrix: Array.from(rendererShadowMap.lightMatrix),
         cascades: rendererShadowMap.cascades?.map(c => ({ index: c.index, near: c.near, far: c.far, lightMatrix: Array.from(c.shadowMap.lightMatrix) })) ?? [],
@@ -1528,7 +1533,8 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
+          receivers: items
         })) ?? explicitShadowMap ?? this.executeRendererShadowMap({
           shadowOptions,
           source,
@@ -1537,7 +1543,8 @@ export class Renderer {
           ownedTargets,
           ownedShadowPasses,
           camera: resolvedCamera?.camera,
-          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition)
+          frameCamera: shadowFrameCamera(cameraViewProjection, cameraPosition, resolvedCamera?.viewMatrix),
+          receivers: items
         });
       frameHooks.addPasses(this.graph, "shadows", items);
       this.lastShadowEvidence = rendererShadowMap ? {
@@ -1813,7 +1820,9 @@ export class Renderer {
       materials: [...records.values()],
       lights: [axes.lights],
       shadows: axes.shadows ? [axes.shadows] : [],
-      environments: [axes.environment]
+      environments: [axes.environment],
+      // Nothing draws a generated `pass: "depth"` program: shadow casters render through the PRD-02 depth shaders.
+      includeDepth: false
     };
   }
 
@@ -2032,6 +2041,8 @@ export class Renderer {
     readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly camera?: Camera;
     readonly frameCamera?: Prd02BridgeFrameCamera;
+    /** Every visible item of the frame (shadow receivers); lets the sun cascades skip a cascade no item selects. */
+    readonly receivers?: readonly RenderItem[];
   }): ForwardShadowMapOptions | undefined {
     return this.host.shadows.executeRendererShadowMap(options);
   }

@@ -258,6 +258,11 @@ export interface Prd02BridgeInput {
    * skipped and the flag path rendered no sun shadow map at all.
    */
   readonly frameCamera?: Prd02BridgeFrameCamera;
+  /**
+   * Every visible item of the frame. With `device.skipUnusedShadowCascades` (set for `quality: "auto"` and `"cinematic"`, never `"production"`)
+   * a cascade that none of them can select is not redrawn.
+   */
+  readonly receivers?: readonly RenderItem[];
   readonly flags: QrFlags;
   readonly tier?: AuraQualityTierSettings;
 }
@@ -267,6 +272,12 @@ export interface Prd02BridgeFrameCamera {
   readonly viewProjectionMatrix: Float32Array | readonly number[];
   readonly near?: number;
   readonly far?: number;
+  /**
+   * The `cameraPosition` and `resolvedCamera.viewMatrix` the forward pass will receive. Together they fix the depth the forward path measures to
+   * pick a cascade, which is what lets the bridge skip cascades no receiver selects (`shadows/CascadeUse.ts`).
+   */
+  readonly eye?: readonly [number, number, number];
+  readonly viewMatrix?: Float32Array | readonly number[];
 }
 
 /**
@@ -275,11 +286,13 @@ export interface Prd02BridgeFrameCamera {
  */
 export function shadowFrameCamera(
   viewProjection: Float32Array | readonly number[] | undefined,
-  eye: readonly [number, number, number] | undefined
+  eye: readonly [number, number, number] | undefined,
+  viewMatrix?: Float32Array | readonly number[]
 ): Prd02BridgeFrameCamera | undefined {
   if (!viewProjection || viewProjection.length < 16) return undefined;
   const range = eye ? clipRangeFromViewProjection(viewProjection, eye) : null;
-  return range ? { viewProjectionMatrix: viewProjection, near: range.near, far: range.far } : { viewProjectionMatrix: viewProjection };
+  const extra = { ...(eye ? { eye } : {}), ...(viewMatrix ? { viewMatrix } : {}) };
+  return range ? { viewProjectionMatrix: viewProjection, near: range.near, far: range.far, ...extra } : { viewProjectionMatrix: viewProjection, ...extra };
 }
 
 /**
@@ -313,6 +326,13 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
   bridgeReasons.set(input.device, "rendered");
   const system = shadowSystemForDevice(input.device, config);
   const near = camera.near ?? 0.1;
+  // Only the legacy per-item cascade selection is known to skip safely: a receiver on the lookup chunk picks per fragment.
+  const eye = input.frameCamera?.eye;
+  const viewMatrix = input.frameCamera?.viewMatrix;
+  const cascadeUse = (input.device as { skipUnusedShadowCascades?: boolean }).skipUnusedShadowCascades === true
+    && (eye !== undefined || viewMatrix !== undefined) && input.receivers !== undefined && !prd02LookupConsumerExists(input.receivers)
+    ? { receivers: input.receivers, camera: { ...(eye ? { eye } : {}), ...(viewMatrix ? { viewMatrix } : {}) } }
+    : undefined;
   // The fitter lerps between the VP's near/far corners, so it gets the
   // camera's real clip range; `config.maxDistance` caps the cascade splits.
   const uniforms = system.update({
@@ -322,7 +342,8 @@ export function executePrd02BridgedShadowMap(input: Prd02BridgeInput): ForwardSh
     // Local (spot/point) prd02 tiles need the lookup chunk; the bridge is sun-only.
     localLights: [],
     flags: input.flags,
-    tier
+    tier,
+    ...(cascadeUse ? { cascadeUse } : {})
   });
   const fits = system.cascadeFits();
   const maps = fits.map((fit) => {

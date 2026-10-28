@@ -26,6 +26,7 @@ import type { AuraQualityTierSettings } from "../contracts/quality";
 import { shadowFitLegacy } from "./shadowLegacy";
 import { fitDirectionalCascades, isOversizeShadowCaster, type CascadeFitterCamera, type DirectionalCascadeFit } from "./DirectionalCascadeFitter";
 import { planLocalShadowAtlas, type AtlasTile } from "./ShadowAtlas";
+import { unusedCascadeIndices, type CascadeUseCamera } from "./CascadeUse";
 import {
   activeDepthFeatures,
   depthDeformIncompatibility,
@@ -74,6 +75,15 @@ export interface ShadowSystemFrame {
   readonly localLights?: readonly ShadowSystemLocalLight[];
   readonly flags: QrFlags;
   readonly tier: AuraQualityTierSettings;
+  /**
+   * PRD-2 WP-7: the frame's receivers and eye. When present, a cascade no receiver can select (`unusedCascadeIndices`) gets its target
+   * allocated but is not redrawn: the legacy forward path never samples it, so no pixel changes. Absent: every cascade is rendered.
+   */
+  readonly cascadeUse?: {
+    readonly receivers: readonly RenderItem[];
+    /** What the forward pass gets as `cameraViewMatrix` / `cameraPosition` (see `CascadeUseCamera`). */
+    readonly camera: CascadeUseCamera;
+  };
 }
 
 /** ShadowFrameUniforms plus the extra bindings the PRD-02 forward path needs. */
@@ -99,6 +109,7 @@ export class Prd02ShadowSystem {
   private lastTiles: AtlasTile[] = [];
   private lastVariants: string[] = [];
   private lastDropped: string[] = [];
+  private lastSkippedCascades: number[] = [];
   private readonly shaderLibrary: ShaderLibrary;
   private depthFeatures: readonly DepthVariantFeature[];
   private precompiled = false;
@@ -176,7 +187,11 @@ export class Prd02ShadowSystem {
     }
     this.lastVariants = [...variantKeys.keys()].sort();
 
-    this.renderCascades(casters, resolve);
+    const skip = frame.cascadeUse
+      ? unusedCascadeIndices(this.lastFits, frame.cascadeUse.receivers, frame.cascadeUse.camera)
+      : undefined;
+    this.lastSkippedCascades = skip ? [...skip].sort() : [];
+    this.renderCascades(casters, resolve, skip);
     this.renderAtlas(casters, resolve);
     return this.frameUniforms();
   }
@@ -209,8 +224,10 @@ export class Prd02ShadowSystem {
     readonly localLights: number;
     readonly casterVariants: readonly string[];
     readonly droppedFeatures: readonly string[];
+    readonly skippedCascades: readonly number[];
   } {
     return {
+      skippedCascades: this.lastSkippedCascades,
       cascadeCount: this.lastFits.length,
       tiles: this.lastTiles.length,
       localLights: new Set(this.lastTiles.map((tile) => tile.lightIndex)).size,
@@ -304,12 +321,14 @@ export class Prd02ShadowSystem {
     };
   }
 
-  private renderCascades(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey): void {
+  private renderCascades(casters: readonly RenderItem[], resolve: (item: RenderItem) => ShadowCasterVariantKey, skip?: ReadonlySet<number>): void {
     if (casters.length === 0) return;
     const prevTarget = this.device.getRenderTarget?.() ?? null;
     try {
       for (const fit of this.lastFits) {
         const target = this.ensureCascadeTarget(fit.index);
+        // Allocated (the frame uniforms need its texture) but never sampled this frame: no clear, no casters.
+        if (skip?.has(fit.index)) continue;
         this.device.setRenderTarget(target);
         this.device.clearRenderTarget?.([1, 1, 1, 1]);
         new DepthPass(this.depthPassOptions(casters, resolve, fit.drawViewProjection))

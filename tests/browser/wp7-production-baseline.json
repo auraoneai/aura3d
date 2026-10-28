@@ -1,0 +1,7 @@
+{
+ "lumaSha256": {
+  "game-loop": "e24b880ab1ba5474bcb397408ed7e64c6fb3b5f17114075249edac1f52e7fbcb",
+  "skinned-character": "25bb05aa792cb36f4feb48bf015ce29decac6f30e9cd4a08892f98a30ca0a4fe"
+ },
+ "note": "sha256 of the 640x360 luma plane of the matched frame of aura-production, recorded from beat3js2/integration (the code before PRD-2 WP-7) with WP7_RECORD=1 (run wp7fix-base, evidence/vs-threejs/wp7/base2). Regenerate only when the Chromium/SwiftShader image changes."
+}

@@ -1,0 +1,3809 @@
+{
+ "game-loop/three-msaa": {
+  "structure": {
+   "frame": [
+    {
+     "k": "clear",
+     "mask": 17664,
+     "fb": 1,
+     "vp": "1024x1024"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 17664,
+     "fb": 0,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 6,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 192,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    }
+   ],
+   "programs": {
+    "1": {
+     "id": 1,
+     "stack": "at new WebGLProgram (/assets/index-hViGmOfd.js:18632:6) | at Object.acquireProgram (/assets/index-hViGmOfd.js:19222:17) | at getProgram (/assets/index-hViGmOfd.js:24989:32) | at setProgram (/assets/index-hViGmOfd.js:25149:19) | at WebGLRenderer.renderBufferDirect (/assets/index-hViGmOfd.js:24501:23) | at renderObject (/assets/index-hViGmOfd.js:20185:20) | at renderObject (/assets/index-hViGmOfd.js:20192:7) | at WebGLShadowMap.render (/assets/index-hViGmOfd.js:20077:9) | at WebGLRenderer.render (/assets/index-hViGmOfd.js:24733:17)",
+     "frameAt": 0,
+     "hash": "f516ae41",
+     "lens": [
+      14844,
+      12580
+     ],
+     "defines": [
+      "DEPTH_PACKING=3200",
+      "EPSILON=1e-6",
+      "FLIP_SIDED=#define",
+      "HIGH_PRECISION=#define",
+      "OPAQUE=vec4",
+      "PI2=6.283185307179586",
+      "PI=3.141592653589793",
+      "PI_HALF=1.5707963267948966",
+      "RECIPROCAL_PI2=0.15915494309189535",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADER_NAME=#define",
+      "SHADOWMAP_TYPE_PCF=uniform",
+      "USE_SHADOWMAP=#define",
+      "attribute=in",
+      "gl_FragColor=pc_fragColor",
+      "gl_FragDepthEXT=gl_FragDepth",
+      "inverseTransformDirection=transformDirectionByInverseViewMatrix",
+      "saturate(=a",
+      "texture2D=texture",
+      "texture2DGradEXT=textureGrad",
+      "texture2DLodEXT=textureLod",
+      "texture2DProj=textureProj",
+      "texture2DProjGradEXT=textureProjGrad",
+      "texture2DProjLodEXT=textureProjLod",
+      "textureCube=texture",
+      "textureCubeGradEXT=textureGrad",
+      "textureCubeLodEXT=textureLod",
+      "varying=in",
+      "varying=out",
+      "whiteComplement(=a"
+     ],
+     "uniforms": 3
+    },
+    "2": {
+     "id": 2,
+     "stack": "at new WebGLProgram (/assets/index-hViGmOfd.js:18632:6) | at Object.acquireProgram (/assets/index-hViGmOfd.js:19222:17) | at getProgram (/assets/index-hViGmOfd.js:24989:32) | at setProgram (/assets/index-hViGmOfd.js:25149:19) | at WebGLRenderer.renderBufferDirect (/assets/index-hViGmOfd.js:24501:23) | at renderObject (/assets/index-hViGmOfd.js:24954:15) | at renderObjects (/assets/index-hViGmOfd.js:24936:11) | at renderScene (/assets/index-hViGmOfd.js:24853:37) | at WebGLRenderer.render (/assets/index-hViGmOfd.js:24756:11)",
+     "frameAt": 0,
+     "hash": "220239ed",
+     "lens": [
+      19344,
+      77466
+     ],
+     "defines": [
+      "EPSILON=1e-6",
+      "HAS_NORMAL=#define",
+      "HIGH_PRECISION=#define",
+      "OPAQUE=vec4",
+      "PI2=6.283185307179586",
+      "PI=3.141592653589793",
+      "PI_HALF=1.5707963267948966",
+      "RECIPROCAL_PI2=0.15915494309189535",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "RE_Direct=RE_Direct_Physical",
+      "RE_Direct_RectArea=RE_Direct_RectArea_Physical",
+      "RE_IndirectDiffuse=RE_IndirectDiffuse_Physical",
+      "RE_IndirectSpecular=RE_IndirectSpecular_Physical",
+      "SHADER_NAME=#define",
+      "SHADOWMAP_TYPE_PCF=uniform",
+      "STANDARD=#ifdef",
+      "STANDARD=varying",
+      "TONE_MAPPING=#ifndef",
+      "USE_SHADOWMAP=#define",
+      "attribute=in",
+      "gl_FragColor=pc_fragColor",
+      "gl_FragDepthEXT=gl_FragDepth",
+      "inverseTransformDirection=transformDirectionByInverseViewMatrix",
+      "saturate(=a",
+      "texture2D=texture",
+      "texture2DGradEXT=textureGrad",
+      "texture2DLodEXT=textureLod",
+      "texture2DProj=textureProj",
+      "texture2DProjGradEXT=textureProjGrad",
+      "texture2DProjLodEXT=textureProjLod",
+      "textureCube=texture",
+      "textureCubeGradEXT=textureGrad",
+      "textureCubeLodEXT=textureLod",
+      "varying=in",
+      "varying=out",
+      "whiteComplement(=a"
+     ],
+     "uniforms": 27
+    }
+   },
+   "clears": 2,
+   "blits": 0
+  },
+  "glTime": {
+   "cpuMsPerFrame": 0.5333333333328483,
+   "byCall": {
+    "bindFramebuffer": {
+     "calls": 2,
+     "msPerFrame": 0.006666666667054718
+    },
+    "clear": {
+     "calls": 2,
+     "msPerFrame": 0.006666666667054718
+    },
+    "useProgram": {
+     "calls": 2,
+     "msPerFrame": 0.0016666666667636794
+    },
+    "uniformMatrix4fv": {
+     "calls": 32,
+     "msPerFrame": 0.03833333333362437
+    },
+    "bindVertexArray": {
+     "calls": 5,
+     "msPerFrame": 0.0066666666665696536
+    },
+    "drawElements": {
+     "calls": 19,
+     "msPerFrame": 0.021666666666957705
+    },
+    "uniform1i": {
+     "calls": 2,
+     "msPerFrame": 0.0016666666662786156
+    },
+    "readPixels": {
+     "calls": 1,
+     "msPerFrame": 23.036666666667347
+    }
+   }
+  },
+  "profile": null,
+  "lumaMean": 59.590883440900456,
+  "lumaSample": 230400,
+  "timing": {
+   "runs": [
+    {
+     "cpuMs": 0.5,
+     "totalMs": 24.10000000000582
+    },
+    {
+     "cpuMs": 0.5,
+     "totalMs": 26
+    },
+    {
+     "cpuMs": 0.39999999999417923,
+     "totalMs": 23.29999999998836
+    }
+   ],
+   "cpuMsMedian": 0.5,
+   "totalMsMedian": 24.10000000000582
+  },
+  "console": []
+ },
+ "game-loop/aura-auto": {
+  "structure": {
+   "frame": [
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 4,
+     "vp": "2048x2048"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 2,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 6,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "blit",
+     "fb": 1,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawArrays",
+     "fb": 0,
+     "prog": 4,
+     "vp": "640x360",
+     "count": 3,
+     "inst": 1,
+     "mode": 4,
+     "dm": 0,
+     "depth": 0,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    }
+   ],
+   "programs": {
+    "1": {
+     "id": 1,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at prd02DepthProgram (/assets/TexturedPBRMaterial-DYfeYXQe.js:2699:22) | at DepthPass.drawCasterVariant (/assets/TexturedPBRMaterial-DYfeYXQe.js:2821:20) | at DepthPass.drawCaster (/assets/TexturedPBRMaterial-DYfeYXQe.js:2816:10) | at DepthPass.execute (/assets/TexturedPBRMaterial-DYfeYXQe.js:2780:12) | at Prd02ShadowSystem.renderCascades (/assets/TexturedPBRMaterial-DYfeYXQe.js:4241:88) | at Prd02ShadowSystem.update (/assets/TexturedPBRMaterial-DYfeYXQe.js:4127:10) | at executePrd02BridgedShadowMap (/assets/TexturedPBRMaterial-DYfeYXQe.js:4431:27) | at RendererShadowOrchestrator.executeRendererShadowMap (/assets/DirectPath-BBDUPeFB.js:13419:14)",
+     "frameAt": 0,
+     "hash": "cae53886",
+     "lens": [
+      364,
+      267
+     ],
+     "defines": [
+      "A3D_DEPTH_ALPHA=0",
+      "A3D_DEPTH_INSTANCED=0",
+      "A3D_DEPTH_INSTANCE_ATTR=0",
+      "A3D_DEPTH_SKINNED=0"
+     ],
+     "uniforms": 1
+    },
+    "2": {
+     "id": 2,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at Renderer.warmGeneratedProgramsSync (/assets/DirectPath-BBDUPeFB.js:15341:71) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14730:12) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89) | at (/assets/DirectPath-BBDUPeFB.js:14558:20 | at withRendererQrFlags (/assets/FrameGraph-BJNs3lPF.js:3612:12) | at Renderer.render (/assets/DirectPath-BBDUPeFB.js:14556:14)",
+     "frameAt": 0,
+     "hash": "e5bc8f0b",
+     "lens": [
+      3633,
+      37580
+     ],
+     "defines": [
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_LOBE_EMISSIVE_STRENGTH=1",
+      "A3D_LOBE_SHEEN=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "DOUBLE_SIDED=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=3",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1"
+     ],
+     "uniforms": 53
+    },
+    "3": {
+     "id": 3,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at ForwardPass.getShader (/assets/SkinnedBounds-D7bUoCpX.js:6666:48) | at ForwardPass.drawItem (/assets/SkinnedBounds-D7bUoCpX.js:6430:23) | at ForwardPass.execute (/assets/SkinnedBounds-D7bUoCpX.js:6411:14) | at RenderGraph.execute (/assets/DirectPath-BBDUPeFB.js:13944:12) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14852:20) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89)",
+     "frameAt": 0,
+     "hash": "be8c91df",
+     "lens": [
+      3610,
+      37557
+     ],
+     "defines": [
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_LOBE_EMISSIVE_STRENGTH=1",
+      "A3D_LOBE_SHEEN=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=3",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1"
+     ],
+     "uniforms": 53
+    },
+    "4": {
+     "id": 4,
+     "stack": "at WebGL2LegacyPostPipeline.ensureLdrPostprocessProgram (/assets/DirectPath-BBDUPeFB.js:8682:18) | at WebGL2LegacyPostPipeline.drawNativeLdrStage (/assets/DirectPath-BBDUPeFB.js:7197:26) | at WebGL2LegacyPostPipeline.presentLdrPostprocess (/assets/DirectPath-BBDUPeFB.js:6869:14) | at executePostGraphWebGL2 (/assets/DirectPath-BBDUPeFB.js:9095:15) | at RendererPostprocessPipeline.tryExecutePostGraphV2 (/assets/DirectPath-BBDUPeFB.js:9453:5) | at RendererPostprocessPipeline.executePostprocessChain (/assets/DirectPath-BBDUPeFB.js:9490:14) | at RendererPostprocessPipeline.executePostprocess (/assets/DirectPath-BBDUPeFB.js:9468:12) | at Renderer.executePostprocess (/assets/DirectPath-BBDUPeFB.js:15489:27) | at (/assets/DirectPath-BBDUPeFB.js:14876:16",
+     "frameAt": 0,
+     "hash": "c1d54661",
+     "lens": [
+      222,
+      7259
+     ],
+     "defines": [
+      "LDR_FXAA=0",
+      "LDR_GRADE=0",
+      "LDR_IN_SRGB=0",
+      "LDR_OP=2",
+      "LDR_OUT_SRGB=1",
+      "LDR_SHARPEN=0",
+      "LDR_TONE=1",
+      "LDR_VIGNETTE=0"
+     ],
+     "uniforms": 3
+    }
+   },
+   "clears": 2,
+   "blits": 1
+  },
+  "glTime": {
+   "cpuMsPerFrame": 8.354999999999807,
+   "byCall": {
+    "getError": {
+     "calls": 1.0333333333333334,
+     "msPerFrame": 0.4750000000024253
+    },
+    "getParameter": {
+     "calls": 18,
+     "msPerFrame": 0.6583333333343034
+    },
+    "bindTexture": {
+     "calls": 11.033333333333333,
+     "msPerFrame": 0.016666666666181603
+    },
+    "texImage2D": {
+     "calls": 0.5,
+     "msPerFrame": 0.03833333333362437
+    },
+    "bindFramebuffer": {
+     "calls": 11,
+     "msPerFrame": 0.03500000000106714
+    },
+    "clear": {
+     "calls": 2,
+     "msPerFrame": 0.011666666666860693
+    },
+    "bindVertexArray": {
+     "calls": 10,
+     "msPerFrame": 0.021666666665502512
+    },
+    "bufferSubData": {
+     "calls": 1,
+     "msPerFrame": 0.02499999999902987
+    },
+    "useProgram": {
+     "calls": 6.016666666666667,
+     "msPerFrame": 0.016666666666666666
+    },
+    "getUniformLocation": {
+     "calls": 20,
+     "msPerFrame": 0.0199999999992239
+    },
+    "uniformMatrix4fv": {
+     "calls": 19.966666666666665,
+     "msPerFrame": 0.04166666666569654
+    },
+    "drawElements": {
+     "calls": 19,
+     "msPerFrame": 0.03499999999912688
+    },
+    "bindBufferBase": {
+     "calls": 1,
+     "msPerFrame": 0.005000000000291038
+    },
+    "uniform1i": {
+     "calls": 57,
+     "msPerFrame": 0.049999999998544806
+    },
+    "uniform4fv": {
+     "calls": 10,
+     "msPerFrame": 0.02999999999932091
+    },
+    "blitFramebuffer": {
+     "calls": 1,
+     "msPerFrame": 0.003333333333527359
+    },
+    "isEnabled": {
+     "calls": 6,
+     "msPerFrame": 0.0016666666667636794
+    },
+    "drawArrays": {
+     "calls": 1,
+     "msPerFrame": 0.0016666666662786156
+    },
+    "flush": {
+     "calls": 1,
+     "msPerFrame": 0.03500000000106714
+    },
+    "readPixels": {
+     "calls": 1,
+     "msPerFrame": 173.49666666666695
+    }
+   }
+  },
+  "profile": {
+   "totalMs": 25108,
+   "busyMs": 25105,
+   "topSelf": [
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 24395
+    },
+    {
+     "fn": "getParameter @ native:0",
+     "ms": 94.1
+    },
+    {
+     "fn": "getError @ native:0",
+     "ms": 35.39
+    },
+    {
+     "fn": "bindGenerated @ SkinnedBounds-D7bUoCpX.js:3028",
+     "ms": 32.74
+    },
+    {
+     "fn": "stableSerialize @ program-CPbMsBIM.js:3139",
+     "ms": 28.78
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 21.28
+    },
+    {
+     "fn": "now @ native:0",
+     "ms": 17.77
+    },
+    {
+     "fn": "(garbage collector) @ native:0",
+     "ms": 16.98
+    },
+    {
+     "fn": "uploadUniforms @ DirectPath-BBDUPeFB.js:4365",
+     "ms": 13.88
+    },
+    {
+     "fn": "updateRouteDiagnostics @ index-DGlkuurd.js:32023",
+     "ms": 9.44
+    },
+    {
+     "fn": "(anonymous) @ program-CPbMsBIM.js:3147",
+     "ms": 9.08
+    },
+    {
+     "fn": "presentLdrPostprocess @ DirectPath-BBDUPeFB.js:6615",
+     "ms": 8.64
+    },
+    {
+     "fn": "programFeaturesFor @ SkinnedBounds-D7bUoCpX.js:6695",
+     "ms": 8.42
+    },
+    {
+     "fn": "(anonymous) @ core-C96Cxwzj.js:50",
+     "ms": 8.39
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 8.39
+    },
+    {
+     "fn": "physicalFeatureSet @ program-CPbMsBIM.js:1115",
+     "ms": 7.89
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14558",
+     "ms": 7.44
+    },
+    {
+     "fn": "getParameter @ program-CPbMsBIM.js:675",
+     "ms": 7.16
+    },
+    {
+     "fn": "(anonymous) @ TexturedPBRMaterial-DYfeYXQe.js:3763",
+     "ms": 6.65
+    },
+    {
+     "fn": "(program) @ native:0",
+     "ms": 6.48
+    },
+    {
+     "fn": "uniform1i @ native:0",
+     "ms": 6.36
+    },
+    {
+     "fn": "uniformMatrix4fv @ native:0",
+     "ms": 6.16
+    },
+    {
+     "fn": "legacyPhysicalDescriptor @ program-CPbMsBIM.js:1192",
+     "ms": 5.78
+    },
+    {
+     "fn": "createProductionRuntimeRendererInput @ index-DGlkuurd.js:29658",
+     "ms": 5.67
+    },
+    {
+     "fn": "samplerKey @ DirectPath-BBDUPeFB.js:4226",
+     "ms": 5.66
+    },
+    {
+     "fn": "executePostGraphWebGL2 @ DirectPath-BBDUPeFB.js:9007",
+     "ms": 5.43
+    },
+    {
+     "fn": "resolveGpuTargetOwner @ FrameGraph-BJNs3lPF.js:138",
+     "ms": 5.04
+    },
+    {
+     "fn": "dropUndefined @ SkinnedBounds-D7bUoCpX.js:94",
+     "ms": 4.9
+    },
+    {
+     "fn": "applyForwardShadowMapUniforms @ SkinnedBounds-D7bUoCpX.js:5759",
+     "ms": 4.71
+    },
+    {
+     "fn": "applyLightUniforms @ SkinnedBounds-D7bUoCpX.js:6602",
+     "ms": 4.59
+    }
+   ],
+   "topInclusive": [
+    {
+     "fn": "(root) @ native:0",
+     "ms": 25105.07
+    },
+    {
+     "fn": "evaluate @ native:296",
+     "ms": 25080.76
+    },
+    {
+     "fn": "(anonymous) @ native:1",
+     "ms": 25080.76
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 24598.22
+    },
+    {
+     "fn": "finish @ index-DGlkuurd.js:72",
+     "ms": 24398.02
+    },
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 24395
+    },
+    {
+     "fn": "frameRaw @ index-DGlkuurd.js:91",
+     "ms": 681.7
+    },
+    {
+     "fn": "frame @ index-DGlkuurd.js:42890",
+     "ms": 679.46
+    },
+    {
+     "fn": "tick @ index-DGlkuurd.js:39329",
+     "ms": 678.84
+    },
+    {
+     "fn": "draw @ index-DGlkuurd.js:42860",
+     "ms": 677.92
+    },
+    {
+     "fn": "step @ index-DGlkuurd.js:39121",
+     "ms": 674.47
+    },
+    {
+     "fn": "render @ index-DGlkuurd.js:32274",
+     "ms": 622.26
+    },
+    {
+     "fn": "renderFrame @ index-DGlkuurd.js:32163",
+     "ms": 621.89
+    },
+    {
+     "fn": "render @ index-DGlkuurd.js:31887",
+     "ms": 611.8
+    },
+    {
+     "fn": "render @ DirectPath-BBDUPeFB.js:14539",
+     "ms": 609.31
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14558",
+     "ms": 609.1
+    },
+    {
+     "fn": "adoptExplicitTargetSize @ DirectPath-BBDUPeFB.js:14509",
+     "ms": 609.1
+    },
+    {
+     "fn": "withRendererQrFlags @ FrameGraph-BJNs3lPF.js:3606",
+     "ms": 609.1
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 600.76
+    },
+    {
+     "fn": "execute @ DirectPath-BBDUPeFB.js:13941",
+     "ms": 258.08
+    },
+    {
+     "fn": "execute @ SkinnedBounds-D7bUoCpX.js:6378",
+     "ms": 256.55
+    },
+    {
+     "fn": "drawItem @ SkinnedBounds-D7bUoCpX.js:6419",
+     "ms": 245.64
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14874",
+     "ms": 190.22
+    },
+    {
+     "fn": "scopePost @ DirectPath-BBDUPeFB.js:14305",
+     "ms": 190.22
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:15488",
+     "ms": 188.6
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:9465",
+     "ms": 188.4
+    },
+    {
+     "fn": "executePostprocessChain @ DirectPath-BBDUPeFB.js:9473",
+     "ms": 188.17
+    },
+    {
+     "fn": "tryExecutePostGraphV2 @ DirectPath-BBDUPeFB.js:9437",
+     "ms": 187.47
+    },
+    {
+     "fn": "executePostGraphWebGL2 @ DirectPath-BBDUPeFB.js:9007",
+     "ms": 185.58
+    },
+    {
+     "fn": "presentLdrPostprocess @ DirectPath-BBDUPeFB.js:6615",
+     "ms": 168.37
+    }
+   ]
+  },
+  "lumaMean": 54.426804258603184,
+  "lumaSample": 230400,
+  "timing": {
+   "runs": [
+    {
+     "cpuMs": 4.7999999999883585,
+     "totalMs": 167.89999999996508
+    },
+    {
+     "cpuMs": 4.600000000034925,
+     "totalMs": 165.59999999997672
+    },
+    {
+     "cpuMs": 5.199999999953434,
+     "totalMs": 174.20000000001164
+    }
+   ],
+   "cpuMsMedian": 4.7999999999883585,
+   "totalMsMedian": 167.89999999996508
+  },
+  "console": []
+ },
+ "game-loop/aura-production": {
+  "structure": {
+   "frame": [
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 3,
+     "vp": "2048x2048"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 4,
+     "vp": "2048x2048"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 4,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 5,
+     "vp": "2048x2048"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 5,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 2,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 36,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 6,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 576,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "blit",
+     "fb": 1,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawArrays",
+     "fb": 0,
+     "prog": 4,
+     "vp": "640x360",
+     "count": 3,
+     "inst": 1,
+     "mode": 4,
+     "dm": 0,
+     "depth": 0,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    }
+   ],
+   "programs": {
+    "1": {
+     "id": 1,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at prd02DepthProgram (/assets/TexturedPBRMaterial-DYfeYXQe.js:2699:22) | at DepthPass.drawCasterVariant (/assets/TexturedPBRMaterial-DYfeYXQe.js:2821:20) | at DepthPass.drawCaster (/assets/TexturedPBRMaterial-DYfeYXQe.js:2816:10) | at DepthPass.execute (/assets/TexturedPBRMaterial-DYfeYXQe.js:2780:12) | at Prd02ShadowSystem.renderCascades (/assets/TexturedPBRMaterial-DYfeYXQe.js:4241:88) | at Prd02ShadowSystem.update (/assets/TexturedPBRMaterial-DYfeYXQe.js:4127:10) | at executePrd02BridgedShadowMap (/assets/TexturedPBRMaterial-DYfeYXQe.js:4431:27) | at RendererShadowOrchestrator.executeRendererShadowMap (/assets/DirectPath-BBDUPeFB.js:13419:14)",
+     "frameAt": 0,
+     "hash": "cae53886",
+     "lens": [
+      364,
+      267
+     ],
+     "defines": [
+      "A3D_DEPTH_ALPHA=0",
+      "A3D_DEPTH_INSTANCED=0",
+      "A3D_DEPTH_INSTANCE_ATTR=0",
+      "A3D_DEPTH_SKINNED=0"
+     ],
+     "uniforms": 1
+    },
+    "2": {
+     "id": 2,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at Renderer.warmGeneratedProgramsSync (/assets/DirectPath-BBDUPeFB.js:15341:71) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14730:12) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89) | at (/assets/DirectPath-BBDUPeFB.js:14558:20 | at withRendererQrFlags (/assets/FrameGraph-BJNs3lPF.js:3612:12) | at Renderer.render (/assets/DirectPath-BBDUPeFB.js:14556:14)",
+     "frameAt": 0,
+     "hash": "e5bc8f0b",
+     "lens": [
+      3633,
+      37580
+     ],
+     "defines": [
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_LOBE_EMISSIVE_STRENGTH=1",
+      "A3D_LOBE_SHEEN=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "DOUBLE_SIDED=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=3",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1"
+     ],
+     "uniforms": 53
+    },
+    "3": {
+     "id": 3,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at ForwardPass.getShader (/assets/SkinnedBounds-D7bUoCpX.js:6666:48) | at ForwardPass.drawItem (/assets/SkinnedBounds-D7bUoCpX.js:6430:23) | at ForwardPass.execute (/assets/SkinnedBounds-D7bUoCpX.js:6411:14) | at RenderGraph.execute (/assets/DirectPath-BBDUPeFB.js:13944:12) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14852:20) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89)",
+     "frameAt": 0,
+     "hash": "be8c91df",
+     "lens": [
+      3610,
+      37557
+     ],
+     "defines": [
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_LOBE_EMISSIVE_STRENGTH=1",
+      "A3D_LOBE_SHEEN=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=3",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1"
+     ],
+     "uniforms": 53
+    },
+    "4": {
+     "id": 4,
+     "stack": "at WebGL2LegacyPostPipeline.ensureLdrPostprocessProgram (/assets/DirectPath-BBDUPeFB.js:8682:18) | at WebGL2LegacyPostPipeline.drawNativeLdrStage (/assets/DirectPath-BBDUPeFB.js:7197:26) | at WebGL2LegacyPostPipeline.presentLdrPostprocess (/assets/DirectPath-BBDUPeFB.js:6869:14) | at executePostGraphWebGL2 (/assets/DirectPath-BBDUPeFB.js:9095:15) | at RendererPostprocessPipeline.tryExecutePostGraphV2 (/assets/DirectPath-BBDUPeFB.js:9453:5) | at RendererPostprocessPipeline.executePostprocessChain (/assets/DirectPath-BBDUPeFB.js:9490:14) | at RendererPostprocessPipeline.executePostprocess (/assets/DirectPath-BBDUPeFB.js:9468:12) | at Renderer.executePostprocess (/assets/DirectPath-BBDUPeFB.js:15489:27) | at (/assets/DirectPath-BBDUPeFB.js:14876:16",
+     "frameAt": 0,
+     "hash": "c1d54661",
+     "lens": [
+      222,
+      7259
+     ],
+     "defines": [
+      "LDR_FXAA=0",
+      "LDR_GRADE=0",
+      "LDR_IN_SRGB=0",
+      "LDR_OP=2",
+      "LDR_OUT_SRGB=1",
+      "LDR_SHARPEN=0",
+      "LDR_TONE=1",
+      "LDR_VIGNETTE=0"
+     ],
+     "uniforms": 3
+    }
+   },
+   "clears": 4,
+   "blits": 1
+  },
+  "glTime": {
+   "cpuMsPerFrame": 7.940000000002328,
+   "byCall": {
+    "getError": {
+     "calls": 1.0333333333333334,
+     "msPerFrame": 0.34500000000504466
+    },
+    "getParameter": {
+     "calls": 18,
+     "msPerFrame": 0.6966666666655025
+    },
+    "bindTexture": {
+     "calls": 11.033333333333333,
+     "msPerFrame": 0.00999999999961195
+    },
+    "texImage2D": {
+     "calls": 0.5,
+     "msPerFrame": 0.011666666665890564
+    },
+    "bindFramebuffer": {
+     "calls": 13,
+     "msPerFrame": 0.04499999999631352
+    },
+    "clear": {
+     "calls": 4,
+     "msPerFrame": 0.014999999999417923
+    },
+    "bindVertexArray": {
+     "calls": 14,
+     "msPerFrame": 0.021666666669383026
+    },
+    "bufferSubData": {
+     "calls": 1,
+     "msPerFrame": 0.00999999999961195
+    },
+    "useProgram": {
+     "calls": 6.016666666666667,
+     "msPerFrame": 0.01833333333391541
+    },
+    "getUniformLocation": {
+     "calls": 20,
+     "msPerFrame": 0.025000000001940255
+    },
+    "uniformMatrix4fv": {
+     "calls": 37.96666666666667,
+     "msPerFrame": 0.11333333333701982
+    },
+    "drawElements": {
+     "calls": 37,
+     "msPerFrame": 0.05833333332945282
+    },
+    "bindBufferBase": {
+     "calls": 1,
+     "msPerFrame": 0.005000000000776102
+    },
+    "uniform1i": {
+     "calls": 57,
+     "msPerFrame": 0.043333333332945284
+    },
+    "uniform4fv": {
+     "calls": 10,
+     "msPerFrame": 0.02666666666821887
+    },
+    "blitFramebuffer": {
+     "calls": 1,
+     "msPerFrame": 0.003333333333527359
+    },
+    "isEnabled": {
+     "calls": 6,
+     "msPerFrame": 0.0033333333325572313
+    },
+    "drawArrays": {
+     "calls": 1,
+     "msPerFrame": 0.00666666666608459
+    },
+    "flush": {
+     "calls": 1,
+     "msPerFrame": 0.026666666665308487
+    },
+    "readPixels": {
+     "calls": 1,
+     "msPerFrame": 176.8383333333312
+    }
+   }
+  },
+  "profile": {
+   "totalMs": 24227,
+   "busyMs": 24227,
+   "topSelf": [
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 23507.4
+    },
+    {
+     "fn": "getParameter @ native:0",
+     "ms": 87.93
+    },
+    {
+     "fn": "getError @ native:0",
+     "ms": 35.66
+    },
+    {
+     "fn": "bindGenerated @ SkinnedBounds-D7bUoCpX.js:3028",
+     "ms": 32.72
+    },
+    {
+     "fn": "(garbage collector) @ native:0",
+     "ms": 23.04
+    },
+    {
+     "fn": "stableSerialize @ program-CPbMsBIM.js:3139",
+     "ms": 19.09
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 15.63
+    },
+    {
+     "fn": "resolveGpuTargetOwner @ FrameGraph-BJNs3lPF.js:138",
+     "ms": 15.05
+    },
+    {
+     "fn": "pack @ SkinnedBounds-D7bUoCpX.js:2051",
+     "ms": 13.76
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 12.65
+    },
+    {
+     "fn": "getParameter @ program-CPbMsBIM.js:675",
+     "ms": 12.43
+    },
+    {
+     "fn": "uploadUniforms @ DirectPath-BBDUPeFB.js:4365",
+     "ms": 10.54
+    },
+    {
+     "fn": "legacyPhysicalDescriptor @ program-CPbMsBIM.js:1192",
+     "ms": 8.85
+    },
+    {
+     "fn": "(anonymous) @ TexturedPBRMaterial-DYfeYXQe.js:3763",
+     "ms": 8.44
+    },
+    {
+     "fn": "programFeaturesFor @ SkinnedBounds-D7bUoCpX.js:6695",
+     "ms": 8.02
+    },
+    {
+     "fn": "dropUndefined @ SkinnedBounds-D7bUoCpX.js:94",
+     "ms": 7.9
+    },
+    {
+     "fn": "(program) @ native:0",
+     "ms": 7.82
+    },
+    {
+     "fn": "now @ native:0",
+     "ms": 6.8
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:3565",
+     "ms": 6.63
+    },
+    {
+     "fn": "shadowFitMode @ TexturedPBRMaterial-DYfeYXQe.js:2420",
+     "ms": 6.51
+    },
+    {
+     "fn": "physicalFeatureSet @ program-CPbMsBIM.js:1115",
+     "ms": 6.36
+    },
+    {
+     "fn": "getDiagnostics @ DirectPath-BBDUPeFB.js:6045",
+     "ms": 6.33
+    },
+    {
+     "fn": "runPhase @ FrameGraph-BJNs3lPF.js:3783",
+     "ms": 6.1
+    },
+    {
+     "fn": "uniformMatrix4fv @ native:0",
+     "ms": 6.01
+    },
+    {
+     "fn": "(anonymous) @ core-C96Cxwzj.js:50",
+     "ms": 5.88
+    },
+    {
+     "fn": "packForwardShadowPcfSamples @ SkinnedBounds-D7bUoCpX.js:6107",
+     "ms": 5.74
+    },
+    {
+     "fn": "createProductionRuntimeRendererInput @ index-DM4Y-SfG.js:29658",
+     "ms": 5.55
+    },
+    {
+     "fn": "convolveSH9Irradiance @ SphericalHarmonics-BHoxSkcW.js:349",
+     "ms": 5.46
+    },
+    {
+     "fn": "URLSearchParams @ native:0",
+     "ms": 5.35
+    },
+    {
+     "fn": "drawItem @ SkinnedBounds-D7bUoCpX.js:6419",
+     "ms": 5.34
+    }
+   ],
+   "topInclusive": [
+    {
+     "fn": "(root) @ native:0",
+     "ms": 24227.11
+    },
+    {
+     "fn": "evaluate @ native:296",
+     "ms": 24196.25
+    },
+    {
+     "fn": "(anonymous) @ native:1",
+     "ms": 24196.25
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 23682.33
+    },
+    {
+     "fn": "finish @ index-DM4Y-SfG.js:72",
+     "ms": 23511.29
+    },
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 23507.4
+    },
+    {
+     "fn": "frameRaw @ index-DM4Y-SfG.js:91",
+     "ms": 683.24
+    },
+    {
+     "fn": "frame @ index-DM4Y-SfG.js:42891",
+     "ms": 681.19
+    },
+    {
+     "fn": "tick @ index-DM4Y-SfG.js:39329",
+     "ms": 681
+    },
+    {
+     "fn": "draw @ index-DM4Y-SfG.js:42861",
+     "ms": 679.79
+    },
+    {
+     "fn": "step @ index-DM4Y-SfG.js:39121",
+     "ms": 677.16
+    },
+    {
+     "fn": "render @ index-DM4Y-SfG.js:32274",
+     "ms": 621.55
+    },
+    {
+     "fn": "renderFrame @ index-DM4Y-SfG.js:32163",
+     "ms": 621.17
+    },
+    {
+     "fn": "render @ index-DM4Y-SfG.js:31887",
+     "ms": 618.43
+    },
+    {
+     "fn": "render @ DirectPath-BBDUPeFB.js:14539",
+     "ms": 616.84
+    },
+    {
+     "fn": "withRendererQrFlags @ FrameGraph-BJNs3lPF.js:3606",
+     "ms": 616.44
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14558",
+     "ms": 616.24
+    },
+    {
+     "fn": "adoptExplicitTargetSize @ DirectPath-BBDUPeFB.js:14509",
+     "ms": 615.86
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 612.37
+    },
+    {
+     "fn": "execute @ DirectPath-BBDUPeFB.js:13941",
+     "ms": 241.32
+    },
+    {
+     "fn": "execute @ SkinnedBounds-D7bUoCpX.js:6378",
+     "ms": 237.28
+    },
+    {
+     "fn": "drawItem @ SkinnedBounds-D7bUoCpX.js:6419",
+     "ms": 226.49
+    },
+    {
+     "fn": "scopePost @ DirectPath-BBDUPeFB.js:14305",
+     "ms": 164.13
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14874",
+     "ms": 163.34
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:15488",
+     "ms": 161.42
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:9465",
+     "ms": 160.63
+    },
+    {
+     "fn": "executePostprocessChain @ DirectPath-BBDUPeFB.js:9473",
+     "ms": 160.43
+    },
+    {
+     "fn": "tryExecutePostGraphV2 @ DirectPath-BBDUPeFB.js:9437",
+     "ms": 159.43
+    },
+    {
+     "fn": "executePostGraphWebGL2 @ DirectPath-BBDUPeFB.js:9007",
+     "ms": 157.5
+    },
+    {
+     "fn": "presentLdrPostprocess @ DirectPath-BBDUPeFB.js:6615",
+     "ms": 144.75
+    }
+   ]
+  },
+  "lumaMean": 54.426804258603184,
+  "lumaSample": 230400,
+  "timing": {
+   "runs": [
+    {
+     "cpuMs": 5.100000000034925,
+     "totalMs": 175
+    },
+    {
+     "cpuMs": 5,
+     "totalMs": 168
+    },
+    {
+     "cpuMs": 5.2000000000116415,
+     "totalMs": 177.29999999998836
+    }
+   ],
+   "cpuMsMedian": 5.100000000034925,
+   "totalMsMedian": 175
+  },
+  "console": []
+ },
+ "skinned-character/three-msaa": {
+  "structure": {
+   "frame": [
+    {
+     "k": "clear",
+     "mask": 17664,
+     "fb": 1,
+     "vp": "1024x1024"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 33558,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 1,
+     "prog": 1,
+     "vp": "1024x1024",
+     "count": 570,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 17664,
+     "fb": 0,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 6,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 33558,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 0,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 570,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    }
+   ],
+   "programs": {
+    "1": {
+     "id": 1,
+     "stack": "at new WebGLProgram (/assets/index-CvMgsz6m.js:24054:6) | at Object.acquireProgram (/assets/index-CvMgsz6m.js:24644:17) | at getProgram (/assets/index-CvMgsz6m.js:30411:32) | at setProgram (/assets/index-CvMgsz6m.js:30571:19) | at WebGLRenderer.renderBufferDirect (/assets/index-CvMgsz6m.js:29923:23) | at renderObject (/assets/index-CvMgsz6m.js:25607:20) | at renderObject (/assets/index-CvMgsz6m.js:25614:7) | at renderObject (/assets/index-CvMgsz6m.js:25614:7) | at renderObject (/assets/index-CvMgsz6m.js:25614:7)",
+     "frameAt": 0,
+     "hash": "9bd12c9f",
+     "lens": [
+      14899,
+      12596
+     ],
+     "defines": [
+      "DEPTH_PACKING=3200",
+      "EPSILON=1e-6",
+      "FLIP_SIDED=#define",
+      "HAS_NORMAL=#define",
+      "HIGH_PRECISION=#define",
+      "MAP_UV=uv",
+      "OPAQUE=vec4",
+      "PI2=6.283185307179586",
+      "PI=3.141592653589793",
+      "PI_HALF=1.5707963267948966",
+      "RECIPROCAL_PI2=0.15915494309189535",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADER_NAME=#define",
+      "SHADOWMAP_TYPE_PCF=uniform",
+      "attribute=in",
+      "gl_FragColor=pc_fragColor",
+      "gl_FragDepthEXT=gl_FragDepth",
+      "inverseTransformDirection=transformDirectionByInverseViewMatrix",
+      "saturate(=a",
+      "texture2D=texture",
+      "texture2DGradEXT=textureGrad",
+      "texture2DLodEXT=textureLod",
+      "texture2DProj=textureProj",
+      "texture2DProjGradEXT=textureProjGrad",
+      "texture2DProjLodEXT=textureProjLod",
+      "textureCube=texture",
+      "textureCubeGradEXT=textureGrad",
+      "textureCubeLodEXT=textureLod",
+      "varying=in",
+      "varying=out",
+      "whiteComplement(=a"
+     ],
+     "uniforms": 8
+    },
+    "2": {
+     "id": 2,
+     "stack": "at new WebGLProgram (/assets/index-CvMgsz6m.js:24054:6) | at Object.acquireProgram (/assets/index-CvMgsz6m.js:24644:17) | at getProgram (/assets/index-CvMgsz6m.js:30411:32) | at setProgram (/assets/index-CvMgsz6m.js:30571:19) | at WebGLRenderer.renderBufferDirect (/assets/index-CvMgsz6m.js:29923:23) | at renderObject (/assets/index-CvMgsz6m.js:30376:15) | at renderObjects (/assets/index-CvMgsz6m.js:30358:11) | at renderScene (/assets/index-CvMgsz6m.js:30275:37) | at WebGLRenderer.render (/assets/index-CvMgsz6m.js:30178:11)",
+     "frameAt": 0,
+     "hash": "220239ed",
+     "lens": [
+      19344,
+      77466
+     ],
+     "defines": [
+      "EPSILON=1e-6",
+      "HAS_NORMAL=#define",
+      "HIGH_PRECISION=#define",
+      "OPAQUE=vec4",
+      "PI2=6.283185307179586",
+      "PI=3.141592653589793",
+      "PI_HALF=1.5707963267948966",
+      "RECIPROCAL_PI2=0.15915494309189535",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "RE_Direct=RE_Direct_Physical",
+      "RE_Direct_RectArea=RE_Direct_RectArea_Physical",
+      "RE_IndirectDiffuse=RE_IndirectDiffuse_Physical",
+      "RE_IndirectSpecular=RE_IndirectSpecular_Physical",
+      "SHADER_NAME=#define",
+      "SHADOWMAP_TYPE_PCF=uniform",
+      "STANDARD=#ifdef",
+      "STANDARD=varying",
+      "TONE_MAPPING=#ifndef",
+      "USE_SHADOWMAP=#define",
+      "attribute=in",
+      "gl_FragColor=pc_fragColor",
+      "gl_FragDepthEXT=gl_FragDepth",
+      "inverseTransformDirection=transformDirectionByInverseViewMatrix",
+      "saturate(=a",
+      "texture2D=texture",
+      "texture2DGradEXT=textureGrad",
+      "texture2DLodEXT=textureLod",
+      "texture2DProj=textureProj",
+      "texture2DProjGradEXT=textureProjGrad",
+      "texture2DProjLodEXT=textureProjLod",
+      "textureCube=texture",
+      "textureCubeGradEXT=textureGrad",
+      "textureCubeLodEXT=textureLod",
+      "varying=in",
+      "varying=out",
+      "whiteComplement(=a"
+     ],
+     "uniforms": 27
+    },
+    "3": {
+     "id": 3,
+     "stack": "at new WebGLProgram (/assets/index-CvMgsz6m.js:24054:6) | at Object.acquireProgram (/assets/index-CvMgsz6m.js:24644:17) | at getProgram (/assets/index-CvMgsz6m.js:30411:32) | at setProgram (/assets/index-CvMgsz6m.js:30571:19) | at WebGLRenderer.renderBufferDirect (/assets/index-CvMgsz6m.js:29923:23) | at renderObject (/assets/index-CvMgsz6m.js:30376:15) | at renderObjects (/assets/index-CvMgsz6m.js:30358:11) | at renderScene (/assets/index-CvMgsz6m.js:30275:37) | at WebGLRenderer.render (/assets/index-CvMgsz6m.js:30178:11)",
+     "frameAt": 0,
+     "hash": "590c46ef",
+     "lens": [
+      19495,
+      77554
+     ],
+     "defines": [
+      "EPSILON=1e-6",
+      "HAS_NORMAL=#define",
+      "HIGH_PRECISION=#define",
+      "MAP_UV=uv",
+      "NORMALMAP_UV=uv",
+      "OPAQUE=vec4",
+      "PI2=6.283185307179586",
+      "PI=3.141592653589793",
+      "PI_HALF=1.5707963267948966",
+      "RECIPROCAL_PI2=0.15915494309189535",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "RE_Direct=RE_Direct_Physical",
+      "RE_Direct_RectArea=RE_Direct_RectArea_Physical",
+      "RE_IndirectDiffuse=RE_IndirectDiffuse_Physical",
+      "RE_IndirectSpecular=RE_IndirectSpecular_Physical",
+      "SHADER_NAME=VanguardBodyMat",
+      "STANDARD=#define",
+      "STANDARD=#ifdef",
+      "STANDARD=varying",
+      "TONE_MAPPING=#ifndef",
+      "USE_NORMALMAP=#define",
+      "USE_SHADOWMAP=#define",
+      "attribute=in",
+      "gl_FragColor=pc_fragColor",
+      "gl_FragDepthEXT=gl_FragDepth",
+      "inverseTransformDirection=transformDirectionByInverseViewMatrix",
+      "saturate(=a",
+      "texture2D=texture",
+      "texture2DGradEXT=textureGrad",
+      "texture2DLodEXT=textureLod",
+      "texture2DProj=textureProj",
+      "texture2DProjGradEXT=textureProjGrad",
+      "texture2DProjLodEXT=textureProjLod",
+      "textureCube=texture",
+      "textureCubeGradEXT=textureGrad",
+      "textureCubeLodEXT=textureLod",
+      "varying=in",
+      "varying=out",
+      "whiteComplement(=a"
+     ],
+     "uniforms": 35
+    }
+   },
+   "clears": 2,
+   "blits": 0
+  },
+  "glTime": {
+   "cpuMsPerFrame": 0.9733333333346915,
+   "byCall": {
+    "bindTexture": {
+     "calls": 7,
+     "msPerFrame": 0.006666666667054718
+    },
+    "bindFramebuffer": {
+     "calls": 2,
+     "msPerFrame": 0.01666666666569654
+    },
+    "clear": {
+     "calls": 2,
+     "msPerFrame": 0.011666666664920437
+    },
+    "useProgram": {
+     "calls": 3,
+     "msPerFrame": 0.00666666666608459
+    },
+    "uniformMatrix4fv": {
+     "calls": 7,
+     "msPerFrame": 0.01333333333216918
+    },
+    "texSubImage2D": {
+     "calls": 2,
+     "msPerFrame": 0.020000000001164153
+    },
+    "bindVertexArray": {
+     "calls": 5,
+     "msPerFrame": 0.00666666666608459
+    },
+    "drawElements": {
+     "calls": 5,
+     "msPerFrame": 0.013333333331199052
+    },
+    "readPixels": {
+     "calls": 1,
+     "msPerFrame": 89.33666666666493
+    }
+   }
+  },
+  "profile": null,
+  "lumaMean": 143.77128841255694,
+  "lumaSample": 230400,
+  "timing": {
+   "runs": [
+    {
+     "cpuMs": 0.6000000000349246,
+     "totalMs": 73.20000000001164
+    },
+    {
+     "cpuMs": 0.6000000000349246,
+     "totalMs": 77.70000000001164
+    },
+    {
+     "cpuMs": 0.5999999999767169,
+     "totalMs": 77.90000000002328
+    }
+   ],
+   "cpuMsMedian": 0.6000000000349246,
+   "totalMsMedian": 77.70000000001164
+  },
+  "console": []
+ },
+ "skinned-character/aura-auto": {
+  "structure": {
+   "frame": [
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 3,
+     "vp": "2048x2048"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 33558,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 570,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 2,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 6,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 570,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 33558,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "blit",
+     "fb": 1,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawArrays",
+     "fb": 0,
+     "prog": 4,
+     "vp": "640x360",
+     "count": 3,
+     "inst": 1,
+     "mode": 4,
+     "dm": 0,
+     "depth": 0,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    }
+   ],
+   "programs": {
+    "1": {
+     "id": 1,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at prd02DepthProgram (/assets/TexturedPBRMaterial-DYfeYXQe.js:2699:22) | at DepthPass.drawCasterVariant (/assets/TexturedPBRMaterial-DYfeYXQe.js:2821:20) | at DepthPass.drawCaster (/assets/TexturedPBRMaterial-DYfeYXQe.js:2816:10) | at DepthPass.execute (/assets/TexturedPBRMaterial-DYfeYXQe.js:2780:12) | at Prd02ShadowSystem.renderCascades (/assets/TexturedPBRMaterial-DYfeYXQe.js:4241:88) | at Prd02ShadowSystem.update (/assets/TexturedPBRMaterial-DYfeYXQe.js:4127:10) | at executePrd02BridgedShadowMap (/assets/TexturedPBRMaterial-DYfeYXQe.js:4431:27) | at RendererShadowOrchestrator.executeRendererShadowMap (/assets/DirectPath-BBDUPeFB.js:13419:14)",
+     "frameAt": 0,
+     "hash": "2da4204b",
+     "lens": [
+      2776,
+      267
+     ],
+     "defines": [
+      "A3D_DEPTH_ALPHA=0",
+      "A3D_DEPTH_INSTANCED=0",
+      "A3D_DEPTH_INSTANCE_ATTR=0",
+      "A3D_DEPTH_SKINNED=1"
+     ],
+     "uniforms": 6
+    },
+    "2": {
+     "id": 2,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at Renderer.warmGeneratedProgramsSync (/assets/DirectPath-BBDUPeFB.js:15341:71) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14730:12) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89) | at (/assets/DirectPath-BBDUPeFB.js:14558:20 | at withRendererQrFlags (/assets/FrameGraph-BJNs3lPF.js:3612:12) | at Renderer.render (/assets/DirectPath-BBDUPeFB.js:14556:14)",
+     "frameAt": 0,
+     "hash": "77d391e5",
+     "lens": [
+      11628,
+      29938
+     ],
+     "defines": [
+      "A3D_DEFORM_ENTRY=1",
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NEED_UV0=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_PRD04_TANGENT_FRAME=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_SKINNING=4",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=1",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1",
+      "USE_BASE_COLOR_MAP=1",
+      "USE_NORMAL_MAP=1",
+      "USE_SKINNING=1"
+     ],
+     "uniforms": 49
+    },
+    "3": {
+     "id": 3,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at Renderer.warmGeneratedProgramsSync (/assets/DirectPath-BBDUPeFB.js:15341:71) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14730:12) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89) | at (/assets/DirectPath-BBDUPeFB.js:14558:20 | at withRendererQrFlags (/assets/FrameGraph-BJNs3lPF.js:3612:12) | at Renderer.render (/assets/DirectPath-BBDUPeFB.js:14556:14)",
+     "frameAt": 0,
+     "hash": "aed9750b",
+     "lens": [
+      3633,
+      37580
+     ],
+     "defines": [
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_LOBE_EMISSIVE_STRENGTH=1",
+      "A3D_LOBE_SHEEN=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "DOUBLE_SIDED=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=1",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1"
+     ],
+     "uniforms": 53
+    },
+    "4": {
+     "id": 4,
+     "stack": "at WebGL2LegacyPostPipeline.ensureLdrPostprocessProgram (/assets/DirectPath-BBDUPeFB.js:8682:18) | at WebGL2LegacyPostPipeline.drawNativeLdrStage (/assets/DirectPath-BBDUPeFB.js:7197:26) | at WebGL2LegacyPostPipeline.presentLdrPostprocess (/assets/DirectPath-BBDUPeFB.js:6869:14) | at executePostGraphWebGL2 (/assets/DirectPath-BBDUPeFB.js:9095:15) | at RendererPostprocessPipeline.tryExecutePostGraphV2 (/assets/DirectPath-BBDUPeFB.js:9453:5) | at RendererPostprocessPipeline.executePostprocessChain (/assets/DirectPath-BBDUPeFB.js:9490:14) | at RendererPostprocessPipeline.executePostprocess (/assets/DirectPath-BBDUPeFB.js:9468:12) | at Renderer.executePostprocess (/assets/DirectPath-BBDUPeFB.js:15489:27) | at (/assets/DirectPath-BBDUPeFB.js:14876:16",
+     "frameAt": 0,
+     "hash": "c1d54661",
+     "lens": [
+      222,
+      7259
+     ],
+     "defines": [
+      "LDR_FXAA=0",
+      "LDR_GRADE=0",
+      "LDR_IN_SRGB=0",
+      "LDR_OP=2",
+      "LDR_OUT_SRGB=1",
+      "LDR_SHARPEN=0",
+      "LDR_TONE=1",
+      "LDR_VIGNETTE=0"
+     ],
+     "uniforms": 3
+    }
+   },
+   "clears": 2,
+   "blits": 1
+  },
+  "glTime": {
+   "cpuMsPerFrame": 8.3900000000033,
+   "byCall": {
+    "getError": {
+     "calls": 1.0333333333333334,
+     "msPerFrame": 0.49333333333488555
+    },
+    "getParameter": {
+     "calls": 18,
+     "msPerFrame": 1.1233333333366318
+    },
+    "bindTexture": {
+     "calls": 27,
+     "msPerFrame": 0.023333333331781128
+    },
+    "bindFramebuffer": {
+     "calls": 11,
+     "msPerFrame": 0.07999999999786572
+    },
+    "clear": {
+     "calls": 2,
+     "msPerFrame": 0.0016666666672487433
+    },
+    "bindVertexArray": {
+     "calls": 8,
+     "msPerFrame": 0.03499999999864182
+    },
+    "bufferSubData": {
+     "calls": 1,
+     "msPerFrame": 0.00999999999961195
+    },
+    "useProgram": {
+     "calls": 6,
+     "msPerFrame": 0.02333333333275126
+    },
+    "getUniformLocation": {
+     "calls": 20,
+     "msPerFrame": 0.03499999999864182
+    },
+    "uniformMatrix4fv": {
+     "calls": 6,
+     "msPerFrame": 0.11833333333100503
+    },
+    "drawElements": {
+     "calls": 5,
+     "msPerFrame": 0.02666666666821887
+    },
+    "bindBufferBase": {
+     "calls": 1,
+     "msPerFrame": 0.00999999999961195
+    },
+    "uniform1i": {
+     "calls": 26,
+     "msPerFrame": 0.05333333332964685
+    },
+    "uniform4fv": {
+     "calls": 1,
+     "msPerFrame": 0.003333333333527359
+    },
+    "texSubImage2D": {
+     "calls": 2,
+     "msPerFrame": 0.02833333333255723
+    },
+    "blitFramebuffer": {
+     "calls": 1,
+     "msPerFrame": 0.008333333335273588
+    },
+    "isEnabled": {
+     "calls": 6,
+     "msPerFrame": 0.004999999999805975
+    },
+    "drawArrays": {
+     "calls": 1,
+     "msPerFrame": 0.003333333333527359
+    },
+    "flush": {
+     "calls": 1,
+     "msPerFrame": 0.02833333333643774
+    },
+    "readPixels": {
+     "calls": 1,
+     "msPerFrame": 312.24999999999903
+    }
+   }
+  },
+  "profile": {
+   "totalMs": 43481,
+   "busyMs": 43481,
+   "topSelf": [
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 42616.24
+    },
+    {
+     "fn": "getParameter @ native:0",
+     "ms": 96.93
+    },
+    {
+     "fn": "getError @ native:0",
+     "ms": 43.48
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 23.72
+    },
+    {
+     "fn": "(anonymous) @ probeBuild-CG7JPbGm.js:483",
+     "ms": 16.97
+    },
+    {
+     "fn": "stableSerialize @ program-CPbMsBIM.js:3139",
+     "ms": 16.46
+    },
+    {
+     "fn": "resolvePrd02EnvironmentLighting @ DirectPath-BBDUPeFB.js:637",
+     "ms": 15.91
+    },
+    {
+     "fn": "programKey$1 @ TexturedPBRMaterial-DYfeYXQe.js:2685",
+     "ms": 14.94
+    },
+    {
+     "fn": "drawItem @ SkinnedBounds-D7bUoCpX.js:6419",
+     "ms": 13.87
+    },
+    {
+     "fn": "(anonymous) @ program-CPbMsBIM.js:3147",
+     "ms": 11.19
+    },
+    {
+     "fn": "(garbage collector) @ native:0",
+     "ms": 11.05
+    },
+    {
+     "fn": "execute @ SkinnedBounds-D7bUoCpX.js:6378",
+     "ms": 10.71
+    },
+    {
+     "fn": "(program) @ native:0",
+     "ms": 10.3
+    },
+    {
+     "fn": "legacyPhysicalDescriptor @ program-CPbMsBIM.js:1192",
+     "ms": 9.74
+    },
+    {
+     "fn": "writeBone @ GLTFSharedTextureCache-D2LHySvF.js:7268",
+     "ms": 9.55
+    },
+    {
+     "fn": "multiply @ FrameGraph-BJNs3lPF.js:1815",
+     "ms": 9.54
+    },
+    {
+     "fn": "sampleCube @ SphericalHarmonics-BHoxSkcW.js:148",
+     "ms": 9.36
+    },
+    {
+     "fn": "bindShaderFeatureUniforms @ SkinnedBounds-D7bUoCpX.js:3640",
+     "ms": 9.21
+    },
+    {
+     "fn": "skinnedItemLocalBounds @ SkinnedBounds-D7bUoCpX.js:8153",
+     "ms": 9.2
+    },
+    {
+     "fn": "texSubImage2D @ native:0",
+     "ms": 9.1
+    },
+    {
+     "fn": "uploadTextureUniform @ DirectPath-BBDUPeFB.js:4125",
+     "ms": 8.83
+    },
+    {
+     "fn": "updateWorldTransform @ FrameGraph-BJNs3lPF.js:2887",
+     "ms": 8.74
+    },
+    {
+     "fn": "locateInterval @ RetargetWorker-D3cuMLgG.js:1621",
+     "ms": 8.42
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 8.16
+    },
+    {
+     "fn": "executePostGraphWebGL2 @ DirectPath-BBDUPeFB.js:9007",
+     "ms": 8.14
+    },
+    {
+     "fn": "update @ RetargetWorker-D3cuMLgG.js:2127",
+     "ms": 7.95
+    },
+    {
+     "fn": "getDiagnostics @ DirectPath-BBDUPeFB.js:6045",
+     "ms": 7.87
+    },
+    {
+     "fn": "bindGenerated @ SkinnedBounds-D7bUoCpX.js:3028",
+     "ms": 7.67
+    },
+    {
+     "fn": "faceToHalf @ probeBuild-CG7JPbGm.js:181",
+     "ms": 7.51
+    },
+    {
+     "fn": "programFeaturesFor @ SkinnedBounds-D7bUoCpX.js:6695",
+     "ms": 6.92
+    }
+   ],
+   "topInclusive": [
+    {
+     "fn": "(root) @ native:0",
+     "ms": 43481.02
+    },
+    {
+     "fn": "evaluate @ native:296",
+     "ms": 43459.68
+    },
+    {
+     "fn": "(anonymous) @ native:1",
+     "ms": 43459.68
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 42818.79
+    },
+    {
+     "fn": "finish @ index-BBGz12mm.js:72",
+     "ms": 42617.11
+    },
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 42616.24
+    },
+    {
+     "fn": "frameRaw @ index-BBGz12mm.js:91",
+     "ms": 842.13
+    },
+    {
+     "fn": "frame @ index-BBGz12mm.js:42663",
+     "ms": 839.38
+    },
+    {
+     "fn": "step @ index-BBGz12mm.js:39203",
+     "ms": 838.37
+    },
+    {
+     "fn": "render @ index-BBGz12mm.js:32274",
+     "ms": 693.97
+    },
+    {
+     "fn": "renderFrame @ index-BBGz12mm.js:32163",
+     "ms": 693.76
+    },
+    {
+     "fn": "render @ index-BBGz12mm.js:31887",
+     "ms": 689.27
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14558",
+     "ms": 686.61
+    },
+    {
+     "fn": "withRendererQrFlags @ FrameGraph-BJNs3lPF.js:3606",
+     "ms": 686.61
+    },
+    {
+     "fn": "render @ DirectPath-BBDUPeFB.js:14539",
+     "ms": 686.61
+    },
+    {
+     "fn": "adoptExplicitTargetSize @ DirectPath-BBDUPeFB.js:14509",
+     "ms": 686.21
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 681.99
+    },
+    {
+     "fn": "execute @ DirectPath-BBDUPeFB.js:13941",
+     "ms": 246.13
+    },
+    {
+     "fn": "execute @ SkinnedBounds-D7bUoCpX.js:6378",
+     "ms": 243.86
+    },
+    {
+     "fn": "drawItem @ SkinnedBounds-D7bUoCpX.js:6419",
+     "ms": 220.19
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14874",
+     "ms": 206.8
+    },
+    {
+     "fn": "scopePost @ DirectPath-BBDUPeFB.js:14305",
+     "ms": 206.8
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:15488",
+     "ms": 203.74
+    },
+    {
+     "fn": "executePostprocessChain @ DirectPath-BBDUPeFB.js:9473",
+     "ms": 203.49
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:9465",
+     "ms": 203.49
+    },
+    {
+     "fn": "tryExecutePostGraphV2 @ DirectPath-BBDUPeFB.js:9437",
+     "ms": 203.27
+    },
+    {
+     "fn": "executePostGraphWebGL2 @ DirectPath-BBDUPeFB.js:9007",
+     "ms": 199.93
+    },
+    {
+     "fn": "presentLdrPostprocess @ DirectPath-BBDUPeFB.js:6615",
+     "ms": 181.67
+    },
+    {
+     "fn": "advance @ index-BBGz12mm.js:39196",
+     "ms": 143.99
+    },
+    {
+     "fn": "update @ index-BBGz12mm.js:31884",
+     "ms": 130.84
+    }
+   ]
+  },
+  "lumaMean": 135.96350187535282,
+  "lumaSample": 230400,
+  "timing": {
+   "runs": [
+    {
+     "cpuMs": 4.7999999999883585,
+     "totalMs": 264.79999999998836
+    },
+    {
+     "cpuMs": 5,
+     "totalMs": 272.1000000000349
+    },
+    {
+     "cpuMs": 5.200000000069849,
+     "totalMs": 276.69999999995343
+    }
+   ],
+   "cpuMsMedian": 5,
+   "totalMsMedian": 272.1000000000349
+  },
+  "console": []
+ },
+ "skinned-character/aura-production": {
+  "structure": {
+   "frame": [
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 3,
+     "vp": "2048x2048"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 33558,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 3,
+     "prog": 1,
+     "vp": "2048x2048",
+     "count": 570,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "clear",
+     "mask": 16640,
+     "fb": 2,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 3,
+     "vp": "640x360",
+     "count": 6,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 570,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "draw",
+     "fn": "drawElements",
+     "fb": 2,
+     "prog": 2,
+     "vp": "640x360",
+     "count": 33558,
+     "inst": 1,
+     "mode": 4,
+     "dm": 1,
+     "depth": 1,
+     "blend": 0,
+     "cull": 1,
+     "cm": "1111"
+    },
+    {
+     "k": "blit",
+     "fb": 1,
+     "vp": "640x360"
+    },
+    {
+     "k": "draw",
+     "fn": "drawArrays",
+     "fb": 0,
+     "prog": 4,
+     "vp": "640x360",
+     "count": 3,
+     "inst": 1,
+     "mode": 4,
+     "dm": 0,
+     "depth": 0,
+     "blend": 0,
+     "cull": 0,
+     "cm": "1111"
+    }
+   ],
+   "programs": {
+    "1": {
+     "id": 1,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at prd02DepthProgram (/assets/TexturedPBRMaterial-DYfeYXQe.js:2699:22) | at DepthPass.drawCasterVariant (/assets/TexturedPBRMaterial-DYfeYXQe.js:2821:20) | at DepthPass.drawCaster (/assets/TexturedPBRMaterial-DYfeYXQe.js:2816:10) | at DepthPass.execute (/assets/TexturedPBRMaterial-DYfeYXQe.js:2780:12) | at Prd02ShadowSystem.renderCascades (/assets/TexturedPBRMaterial-DYfeYXQe.js:4241:88) | at Prd02ShadowSystem.update (/assets/TexturedPBRMaterial-DYfeYXQe.js:4127:10) | at executePrd02BridgedShadowMap (/assets/TexturedPBRMaterial-DYfeYXQe.js:4431:27) | at RendererShadowOrchestrator.executeRendererShadowMap (/assets/DirectPath-BBDUPeFB.js:13419:14)",
+     "frameAt": 0,
+     "hash": "2da4204b",
+     "lens": [
+      2776,
+      267
+     ],
+     "defines": [
+      "A3D_DEPTH_ALPHA=0",
+      "A3D_DEPTH_INSTANCED=0",
+      "A3D_DEPTH_INSTANCE_ATTR=0",
+      "A3D_DEPTH_SKINNED=1"
+     ],
+     "uniforms": 6
+    },
+    "2": {
+     "id": 2,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at Renderer.warmGeneratedProgramsSync (/assets/DirectPath-BBDUPeFB.js:15341:71) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14730:12) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89) | at (/assets/DirectPath-BBDUPeFB.js:14558:20 | at withRendererQrFlags (/assets/FrameGraph-BJNs3lPF.js:3612:12) | at Renderer.render (/assets/DirectPath-BBDUPeFB.js:14556:14)",
+     "frameAt": 0,
+     "hash": "77d391e5",
+     "lens": [
+      11628,
+      29938
+     ],
+     "defines": [
+      "A3D_DEFORM_ENTRY=1",
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NEED_UV0=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_PRD04_TANGENT_FRAME=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_SKINNING=4",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=1",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1",
+      "USE_BASE_COLOR_MAP=1",
+      "USE_NORMAL_MAP=1",
+      "USE_SKINNING=1"
+     ],
+     "uniforms": 49
+    },
+    "3": {
+     "id": 3,
+     "stack": "at WebGL2Device.createShaderProgram (/assets/DirectPath-BBDUPeFB.js:5476:13) | at ProgramCache.acquire (/assets/TexturedPBRMaterial-DYfeYXQe.js:1391:37) | at Renderer.warmGeneratedProgramsSync (/assets/DirectPath-BBDUPeFB.js:15341:71) | at Renderer.renderFrame (/assets/DirectPath-BBDUPeFB.js:14730:12) | at (/assets/DirectPath-BBDUPeFB.js:14558:109 | at Renderer.adoptExplicitTargetSize (/assets/DirectPath-BBDUPeFB.js:14511:89) | at (/assets/DirectPath-BBDUPeFB.js:14558:20 | at withRendererQrFlags (/assets/FrameGraph-BJNs3lPF.js:3612:12) | at Renderer.render (/assets/DirectPath-BBDUPeFB.js:14556:14)",
+     "frameAt": 0,
+     "hash": "aed9750b",
+     "lens": [
+      3633,
+      37580
+     ],
+     "defines": [
+      "A3D_ENV_SAMPLE=1",
+      "A3D_GENERATED_PROGRAM=1",
+      "A3D_INDIRECT_FRACTION=1",
+      "A3D_LIT=1",
+      "A3D_LOBE_EMISSIVE_STRENGTH=1",
+      "A3D_LOBE_SHEEN=1",
+      "A3D_NEED_NORMAL=1",
+      "A3D_NUM_DIRECT_LIGHTS=1",
+      "A3D_PRD02_IBL=1",
+      "A3D_SHADOW_FILTER=3",
+      "A3D_STAGE_FRAGMENT=1",
+      "A3D_STAGE_VERTEX=1",
+      "DOUBLE_SIDED=1",
+      "ENVMAP_TYPE_CUBE_UV=1",
+      "EPSILON=1e-6",
+      "NUM_DIR_LIGHTS=1",
+      "NUM_POINT_LIGHTS=0",
+      "NUM_RECT_LIGHTS=0",
+      "NUM_SHADOW_CASCADES=1",
+      "NUM_SPOT_LIGHTS=0",
+      "PI=3.141592653589793",
+      "RECIPROCAL_PI=0.3183098861837907",
+      "SHADOW_PCF_TAPS=4",
+      "SPECULAR_AA=1"
+     ],
+     "uniforms": 53
+    },
+    "4": {
+     "id": 4,
+     "stack": "at WebGL2LegacyPostPipeline.ensureLdrPostprocessProgram (/assets/DirectPath-BBDUPeFB.js:8682:18) | at WebGL2LegacyPostPipeline.drawNativeLdrStage (/assets/DirectPath-BBDUPeFB.js:7197:26) | at WebGL2LegacyPostPipeline.presentLdrPostprocess (/assets/DirectPath-BBDUPeFB.js:6869:14) | at executePostGraphWebGL2 (/assets/DirectPath-BBDUPeFB.js:9095:15) | at RendererPostprocessPipeline.tryExecutePostGraphV2 (/assets/DirectPath-BBDUPeFB.js:9453:5) | at RendererPostprocessPipeline.executePostprocessChain (/assets/DirectPath-BBDUPeFB.js:9490:14) | at RendererPostprocessPipeline.executePostprocess (/assets/DirectPath-BBDUPeFB.js:9468:12) | at Renderer.executePostprocess (/assets/DirectPath-BBDUPeFB.js:15489:27) | at (/assets/DirectPath-BBDUPeFB.js:14876:16",
+     "frameAt": 0,
+     "hash": "c1d54661",
+     "lens": [
+      222,
+      7259
+     ],
+     "defines": [
+      "LDR_FXAA=0",
+      "LDR_GRADE=0",
+      "LDR_IN_SRGB=0",
+      "LDR_OP=2",
+      "LDR_OUT_SRGB=1",
+      "LDR_SHARPEN=0",
+      "LDR_TONE=1",
+      "LDR_VIGNETTE=0"
+     ],
+     "uniforms": 3
+    }
+   },
+   "clears": 2,
+   "blits": 1
+  },
+  "glTime": {
+   "cpuMsPerFrame": 7.018333333331005,
+   "byCall": {
+    "getError": {
+     "calls": 1.0333333333333334,
+     "msPerFrame": 0.3383333333321692
+    },
+    "getParameter": {
+     "calls": 18,
+     "msPerFrame": 0.8399999999965075
+    },
+    "bindTexture": {
+     "calls": 27.016666666666666,
+     "msPerFrame": 0.024999999998059744
+    },
+    "texImage2D": {
+     "calls": 0.5,
+     "msPerFrame": 0.011666666665890564
+    },
+    "bindFramebuffer": {
+     "calls": 11,
+     "msPerFrame": 0.02666666666433836
+    },
+    "clear": {
+     "calls": 2,
+     "msPerFrame": 0.0033333333325572313
+    },
+    "bindVertexArray": {
+     "calls": 8,
+     "msPerFrame": 0.023333333333721385
+    },
+    "bufferSubData": {
+     "calls": 1,
+     "msPerFrame": 0.018333333336825793
+    },
+    "useProgram": {
+     "calls": 6,
+     "msPerFrame": 0.023333333329840875
+    },
+    "getUniformLocation": {
+     "calls": 20,
+     "msPerFrame": 0.023333333331781128
+    },
+    "uniformMatrix4fv": {
+     "calls": 6,
+     "msPerFrame": 0.061666666663950306
+    },
+    "drawElements": {
+     "calls": 5,
+     "msPerFrame": 0.01166666666783082
+    },
+    "bindBufferBase": {
+     "calls": 1,
+     "msPerFrame": 0.005000000000776102
+    },
+    "uniform1i": {
+     "calls": 26,
+     "msPerFrame": 0.030000000002716357
+    },
+    "uniform4fv": {
+     "calls": 1,
+     "msPerFrame": 0.0033333333325572313
+    },
+    "texSubImage2D": {
+     "calls": 2,
+     "msPerFrame": 0.03166666666705472
+    },
+    "blitFramebuffer": {
+     "calls": 1,
+     "msPerFrame": 0.004999999998835847
+    },
+    "isEnabled": {
+     "calls": 6,
+     "msPerFrame": 0.00999999999961195
+    },
+    "drawArrays": {
+     "calls": 1,
+     "msPerFrame": 0.0016666666662786156
+    },
+    "flush": {
+     "calls": 1,
+     "msPerFrame": 0.030000000002716357
+    },
+    "readPixels": {
+     "calls": 1,
+     "msPerFrame": 288.73500000000155
+    }
+   }
+  },
+  "profile": {
+   "totalMs": 40618,
+   "busyMs": 40616,
+   "topSelf": [
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 39903.58
+    },
+    {
+     "fn": "getParameter @ native:0",
+     "ms": 88.18
+    },
+    {
+     "fn": "getError @ native:0",
+     "ms": 36.33
+    },
+    {
+     "fn": "stableSerialize @ program-CPbMsBIM.js:3139",
+     "ms": 30.38
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 18.52
+    },
+    {
+     "fn": "physicalFeatureSet @ program-CPbMsBIM.js:1115",
+     "ms": 16.85
+    },
+    {
+     "fn": "(garbage collector) @ native:0",
+     "ms": 14.85
+    },
+    {
+     "fn": "applyPoseMixer @ GLTFSharedTextureCache-D2LHySvF.js:7246",
+     "ms": 13.43
+    },
+    {
+     "fn": "createProductionRuntimeRendererInput @ index-BsE5jcWn.js:29658",
+     "ms": 12.28
+    },
+    {
+     "fn": "applySampledTargets @ GLTFSharedTextureCache-D2LHySvF.js:8050",
+     "ms": 12.02
+    },
+    {
+     "fn": "frameRaw @ index-BsE5jcWn.js:91",
+     "ms": 10.55
+    },
+    {
+     "fn": "drawItem @ SkinnedBounds-D7bUoCpX.js:6419",
+     "ms": 10.31
+    },
+    {
+     "fn": "uploadUniforms @ DirectPath-BBDUPeFB.js:4365",
+     "ms": 10.03
+    },
+    {
+     "fn": "uniformMatrix4fv @ native:0",
+     "ms": 9.55
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 8.76
+    },
+    {
+     "fn": "flush @ native:0",
+     "ms": 8.13
+    },
+    {
+     "fn": "(program) @ native:0",
+     "ms": 7.89
+    },
+    {
+     "fn": "now @ native:0",
+     "ms": 7.61
+    },
+    {
+     "fn": "createProductionRuntimePostprocess @ index-BsE5jcWn.js:29118",
+     "ms": 7.54
+    },
+    {
+     "fn": "featuresForGeometry @ program-CPbMsBIM.js:568",
+     "ms": 7.38
+    },
+    {
+     "fn": "cloneUniformValue$1 @ program-CPbMsBIM.js:762",
+     "ms": 7.33
+    },
+    {
+     "fn": "skinnedItemLocalBounds @ SkinnedBounds-D7bUoCpX.js:8153",
+     "ms": 7.19
+    },
+    {
+     "fn": "getParameters @ program-CPbMsBIM.js:680",
+     "ms": 6.56
+    },
+    {
+     "fn": "get byteLength @ Texture-CTX0bR_4.js:145",
+     "ms": 6.29
+    },
+    {
+     "fn": "addPasses @ FrameGraph-BJNs3lPF.js:3736",
+     "ms": 5.81
+    },
+    {
+     "fn": "multiply @ FrameGraph-BJNs3lPF.js:1815",
+     "ms": 5.5
+    },
+    {
+     "fn": "legacyPhysicalDescriptor @ program-CPbMsBIM.js:1192",
+     "ms": 5.33
+    },
+    {
+     "fn": "v2PipelineNeedsDepth @ DirectPath-BBDUPeFB.js:9343",
+     "ms": 5.01
+    },
+    {
+     "fn": "stableLightKey @ SkinnedBounds-D7bUoCpX.js:2159",
+     "ms": 4.85
+    },
+    {
+     "fn": "getDiagnostics @ DirectPath-BBDUPeFB.js:6045",
+     "ms": 4.79
+    }
+   ],
+   "topInclusive": [
+    {
+     "fn": "(root) @ native:0",
+     "ms": 40615.64
+    },
+    {
+     "fn": "evaluate @ native:296",
+     "ms": 40592.72
+    },
+    {
+     "fn": "(anonymous) @ native:1",
+     "ms": 40592.72
+    },
+    {
+     "fn": "proto.<computed> @ native:41",
+     "ms": 40090.94
+    },
+    {
+     "fn": "finish @ index-BsE5jcWn.js:72",
+     "ms": 39904.98
+    },
+    {
+     "fn": "readPixels @ native:0",
+     "ms": 39903.58
+    },
+    {
+     "fn": "frameRaw @ index-BsE5jcWn.js:91",
+     "ms": 686.08
+    },
+    {
+     "fn": "frame @ index-BsE5jcWn.js:42664",
+     "ms": 675.54
+    },
+    {
+     "fn": "step @ index-BsE5jcWn.js:39203",
+     "ms": 675.14
+    },
+    {
+     "fn": "renderFrame @ index-BsE5jcWn.js:32163",
+     "ms": 540.9
+    },
+    {
+     "fn": "render @ index-BsE5jcWn.js:32274",
+     "ms": 540.9
+    },
+    {
+     "fn": "render @ index-BsE5jcWn.js:31887",
+     "ms": 535.02
+    },
+    {
+     "fn": "render @ DirectPath-BBDUPeFB.js:14539",
+     "ms": 533.1
+    },
+    {
+     "fn": "withRendererQrFlags @ FrameGraph-BJNs3lPF.js:3606",
+     "ms": 532.5
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14558",
+     "ms": 532.32
+    },
+    {
+     "fn": "adoptExplicitTargetSize @ DirectPath-BBDUPeFB.js:14509",
+     "ms": 532.32
+    },
+    {
+     "fn": "renderFrame @ DirectPath-BBDUPeFB.js:14595",
+     "ms": 530.23
+    },
+    {
+     "fn": "execute @ DirectPath-BBDUPeFB.js:13941",
+     "ms": 185.15
+    },
+    {
+     "fn": "execute @ SkinnedBounds-D7bUoCpX.js:6378",
+     "ms": 183.67
+    },
+    {
+     "fn": "scopePost @ DirectPath-BBDUPeFB.js:14305",
+     "ms": 181.19
+    },
+    {
+     "fn": "(anonymous) @ DirectPath-BBDUPeFB.js:14874",
+     "ms": 180.67
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:9465",
+     "ms": 179.05
+    },
+    {
+     "fn": "executePostprocess @ DirectPath-BBDUPeFB.js:15488",
+     "ms": 179.05
+    },
+    {
+     "fn": "executePostprocessChain @ DirectPath-BBDUPeFB.js:9473",
+     "ms": 178.61
+    },
+    {
+     "fn": "tryExecutePostGraphV2 @ DirectPath-BBDUPeFB.js:9437",
+     "ms": 177.37
+    },
+    {
+     "fn": "executePostGraphWebGL2 @ DirectPath-BBDUPeFB.js:9007",
+     "ms": 173.37
+    },
+    {
+     "fn": "drawItem @ SkinnedBounds-D7bUoCpX.js:6419",
+     "ms": 172.04
+    },
+    {
+     "fn": "presentLdrPostprocess @ DirectPath-BBDUPeFB.js:6615",
+     "ms": 166.34
+    },
+    {
+     "fn": "advance @ index-BsE5jcWn.js:39196",
+     "ms": 134.05
+    },
+    {
+     "fn": "update @ index-BsE5jcWn.js:32269",
+     "ms": 124.04
+    }
+   ]
+  },
+  "lumaMean": 135.96350187535282,
+  "lumaSample": 230400,
+  "timing": {
+   "runs": [
+    {
+     "cpuMs": 4.800000000046566,
+     "totalMs": 265.30000000004657
+    },
+    {
+     "cpuMs": 4.400000000023283,
+     "totalMs": 258.4000000000233
+    },
+    {
+     "cpuMs": 5.299999999930151,
+     "totalMs": 272.70000000006985
+    }
+   ],
+   "cpuMsMedian": 4.800000000046566,
+   "totalMsMedian": 265.30000000004657
+  },
+  "console": []
+ }
+}
