@@ -37,7 +37,7 @@ import {
 
 const SPEC = "tests/browser/contact-shadow-mask.spec.ts";
 const UNIT = "tests/unit/rendering/contact-shadow-mask.test.ts";
-const SCENE = "tests/browser/receipts-harness.ts contactMaskScene(): grey PBR floor, 0.9 m box subject on it, one directional key light (2.6, 4.2, 2.4); nocast = subject outside the shadow map, shadowed = subject casts; only the contactShadows node differs";
+const SCENE = "tests/browser/receipts-harness.ts contactMaskScene(): grey PBR floor, 0.9 m box subject on it, a small far-away shadow-anchor box, one shadow-casting directional key light (2.6, 4.2, 2.4); nocast = subject outside the shadow map, shadowed = subject casts; the contactShadows node is present in all four frames (intensity 0 vs 1)";
 
 const NEAR_DARKEN_AT_LEAST = 1; // mean luma (0..255) in the floor patch at the subject's base
 const NEAR_CHANGED_FRACTION_AT_LEAST = 0.05;
