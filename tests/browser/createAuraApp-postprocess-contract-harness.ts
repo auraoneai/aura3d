@@ -154,6 +154,11 @@ async function renderVariant(
   const app = createAuraApp(stage, {
     pixelRatio: options.pixelRatio ?? 1,
     resize: false,
+    // This contract asserts the HDR post chain (its tone-mapping pass, pixel-backed diagnostics) and reads
+    // the drawing buffer after the frame: pin both. The baseline (no effects) would otherwise take the
+    // direct render path under the default `quality: "auto"`, which has no post chain by design.
+    quality: "production",
+    preserveDrawingBuffer: true,
     renderer: rainVariant
       ? {  qualityProfile: "safe-basic" }
       : {  qualityProfile: "production" },

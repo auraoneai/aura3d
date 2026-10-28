@@ -385,6 +385,8 @@ app = createAuraApp("#aura-stage", {
   // bounding only its software-rendered backing target. Public route rendering
   // remains at full resolution.
   pixelRatio: compositionProbePixelRatio,
+  // The crowd and composition probes read this canvas with gl.readPixels; the default drawing buffer is cleared once presented.
+  preserveDrawingBuffer: new URLSearchParams(location.search).has("crowdProbe") || new URLSearchParams(location.search).has("compositionProbe"),
   renderer: {
     mode: "production",
     qualityProfile: "production"

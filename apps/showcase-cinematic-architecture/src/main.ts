@@ -248,6 +248,8 @@ const initialScene = buildArchitectureScene(controls);
 const app = createAuraApp("#aura-scene", {
   diagnostics: { overlay: false, assetPanel: false, performancePanel: false },
   pixelRatio: Math.min(1.45, window.devicePixelRatio || 1),
+  // The spotlight probe reads this canvas with gl.readPixels; the default drawing buffer is cleared once presented.
+  preserveDrawingBuffer: new URLSearchParams(location.search).has("spotlightProbe"),
   scene: initialScene
 });
 

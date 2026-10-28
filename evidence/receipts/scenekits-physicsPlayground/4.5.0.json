@@ -1,0 +1,39 @@
+{
+  "capability": "scenekits-physicsPlayground",
+  "version": "4.5.0",
+  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "renderer": "swiftshader",
+  "scene": "sceneKits.physicsPlayground() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
+  "frames": [
+    {
+      "file": "evidence/receipts/scenekits-physicsPlayground/4.5.0/t0.png",
+      "sha256": "18695dda88f5c9fdfecdcc61bed6e512fc0e9714833b16d4dc93b34b8499a395",
+      "meanLuma": 187.1098,
+      "nonBlackRatio": 1,
+      "label": "frame 0"
+    },
+    {
+      "file": "evidence/receipts/scenekits-physicsPlayground/4.5.0/t90.png",
+      "sha256": "a10e538653f2c7cb52d599329991c8ea98fd36760f91e77416fc17d0953900cb",
+      "meanLuma": 168.8441,
+      "nonBlackRatio": 1,
+      "label": "frame after 90 fixed steps (1.5 s)"
+    }
+  ],
+  "tests": [
+    "tests/browser/scenekits-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T12:52:57.699Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "noKitProblems": true,
+    "nonBlackRatioAtLeast2pc": true,
+    "lumaSpreadAtLeast3": true,
+    "atLeast6ColourBuckets": true,
+    "framesDifferOverTime": true,
+    "drawCalls": 70,
+    "motionChangedPixelFraction": 0.999,
+    "kitNodeCount": 75
+  }
+}

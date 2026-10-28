@@ -1,0 +1,40 @@
+{
+  "capability": "animation-root-motion",
+  "version": "4.5.0",
+  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "scene": "Three Soldiers playing Run: rootMotion apply, extract-only, and unspecified",
+  "frames": [
+    {
+      "file": "evidence/receipts/animation-root-motion/frames/4.5.0-start.png",
+      "sha256": "574954503531fc62b08cb236cf6c8bd875293ab05c883e47eb4ca1efd409e298",
+      "meanLuma": 141.50471245308174,
+      "nonBlackRatio": 0.994375,
+      "label": "Three Run clips at the start line"
+    },
+    {
+      "file": "evidence/receipts/animation-root-motion/frames/4.5.0-end.png",
+      "sha256": "3f874874d4f4d47d74461ef0330cfa8b36e9689b2fbc8c3b1002958ca586e4c6",
+      "meanLuma": 144.08094351557094,
+      "nonBlackRatio": 0.9972005208333333,
+      "label": "After 1.5 s: only the apply-mode node has travelled"
+    }
+  ],
+  "tests": [
+    "tests/browser/animation-root-receipts.spec.ts",
+    "tests/unit/animation/animation-root-retarget.test.ts"
+  ],
+  "date": "2026-10-28T12:50:11.155Z",
+  "measurements": {
+    "seconds": 1.5,
+    "appliedTravel": 5.4956,
+    "appliedDelta": [
+      5.4844,
+      0,
+      -0.3511
+    ],
+    "extractOnlyTravel": 0,
+    "noRootMotionTravel": 0,
+    "changedPixelsStartVsEnd": 5622
+  }
+}

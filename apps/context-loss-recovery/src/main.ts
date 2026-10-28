@@ -129,6 +129,8 @@ async function main(): Promise<void> {
     autoStart: false,
     pixelRatio: 1,
     resize: false,
+    // This route samples the canvas with drawImage after the frame; keep the drawing buffer.
+    preserveDrawingBuffer: true,
     renderer: { qualityProfile: "production" }
   });
 

@@ -1,0 +1,41 @@
+{
+  "capability": "effects-ambient-occlusion",
+  "version": "4.5.0",
+  "gitSha": "55481c5901ae916fe95b15d046a5c420d36f601a",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/receipts-harness.ts occlusionRoom(): floor, two walls in a concave corner, two crates resting against them, directional key plus hemisphere fill; off frame = same node at intensity 0",
+  "frames": [
+    {
+      "file": "evidence/receipts/effects-ambient-occlusion/4.5.0/fx-ao-room-off.png",
+      "sha256": "7726a713728c71555f172c7387ab3d3d5bc8ce6e5a3587d79b232cf4fd1da990",
+      "meanLuma": 150.8606,
+      "nonBlackRatio": 1,
+      "label": "effect off (fx-ao-room-off)"
+    },
+    {
+      "file": "evidence/receipts/effects-ambient-occlusion/4.5.0/fx-ao-room.png",
+      "sha256": "406815e41b0d3b306bd61f1a60871e649fcc3ef8e2ac668b8dae15e6d93fa543",
+      "meanLuma": 147.4739,
+      "nonBlackRatio": 1,
+      "label": "effect on (fx-ao-room)"
+    }
+  ],
+  "tests": [
+    "tests/browser/effects-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T14:10:55.239Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "aoRequested": true,
+    "v2ChainServedBothFrames": true,
+    "offFrameSameChain": true,
+    "changedPixelFractionAtLeast2pc": true,
+    "meanChannelDeltaAtLeast1": true,
+    "darkens": true,
+    "changedPixelFraction": 0.3143,
+    "meanAbsoluteChannelDelta": 3.3278,
+    "meanLumaDelta": -3.3867,
+    "actualPasses": "tone-mapping,ssao"
+  }
+}

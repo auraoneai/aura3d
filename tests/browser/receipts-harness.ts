@@ -9,6 +9,7 @@ import {
   scene,
   sceneKits
 } from "@aura3d/engine";
+import { postGraphV2LastOutcome, postV2ModulesReady } from "@aura3d/rendering";
 import { assets } from "../../src/aura-assets";
 
 /**
@@ -22,12 +23,16 @@ import { assets } from "../../src/aura-assets";
 
 export type EffectVariantId =
   | "fx-baseline"
-  | "fx-ambient-occlusion"
+  | "fx-ao-room-off"
+  | "fx-ao-room"
   | "fx-color-grade-desaturate"
   | "fx-color-grade-contrast"
+  | "fx-card-off"
+  | "fx-card-contrast"
   | "fx-vignette"
   | "fx-depth-of-field"
-  | "fx-contact-shadows";
+  | "fx-contact-room-off"
+  | "fx-contact-room";
 
 export type KitId =
   | "physicsPlayground"
@@ -67,6 +72,13 @@ export interface FrameResult {
     readonly actualPasses: readonly string[];
     readonly fallbackPasses: readonly string[];
     readonly ambientOcclusionPass: boolean;
+    /** What the post chain actually ran (not what was requested): pipeline, v2 outcome, executed stages, skip reasons. */
+    readonly post: {
+      readonly pipeline: string;
+      readonly v2Outcome: string | null;
+      readonly stagesRan: readonly string[];
+      readonly skipped: readonly string[];
+    };
   };
 }
 
@@ -158,12 +170,16 @@ declare global {
 const CHANGED_PIXEL_THRESHOLD = 12;
 const effectVariants: readonly EffectVariantId[] = [
   "fx-baseline",
-  "fx-ambient-occlusion",
+  "fx-ao-room-off",
+  "fx-ao-room",
   "fx-color-grade-desaturate",
   "fx-color-grade-contrast",
+  "fx-card-off",
+  "fx-card-contrast",
   "fx-vignette",
   "fx-depth-of-field",
-  "fx-contact-shadows"
+  "fx-contact-room-off",
+  "fx-contact-room"
 ];
 const kitIds: readonly KitId[] = [
   "physicsPlayground",
@@ -210,7 +226,61 @@ function stage(): HTMLElement {
   return element;
 }
 
+/**
+ * Occlusion test room: a floor, two walls forming a concave corner and two crates resting against them, all
+ * within about 3 m of the camera so a 0.6 m occlusion radius reaches a large part of the frame. A hemisphere fill
+ * supplies indirect light, which is the only light ambient occlusion attenuates (the GTAO apply scales the
+ * indirect fraction of a pixel, so a directional-only scene has nothing for it to darken). The off frame is the
+ * same scene with the same occlusion node at intensity 0, so both frames take the identical post chain and only
+ * the occlusion term differs.
+ */
+function occlusionRoom(occlusion: ReturnType<typeof effects.ambientOcclusion> | ReturnType<typeof effects.contactShadows>) {
+  const matte = (color: string) => material.pbr({ color, roughness: 0.9, metallic: 0 });
+  return scene()
+    .background("#05070d")
+    .camera(camera.perspective({ position: [1.7, 1.7, 3.1], target: [-0.3, 0.55, -0.6], fov: 50 }))
+    .add(primitives.plane({ name: "room floor", material: matte("#d6d9de") }).position(0, 0, 0).scale([6, 1, 6]))
+    .add(primitives.box({ name: "room back wall", material: matte("#d6d9de") }).position(0, 1.5, -1.6).scale([6, 3, 0.2]))
+    .add(primitives.box({ name: "room side wall", material: matte("#d6d9de") }).position(-1.7, 1.5, 0).scale([0.2, 3, 6]))
+    .add(primitives.box({ name: "room corner crate", material: matte("#e9ecef") }).position(-1.0, 0.4, -0.85).scale([0.8, 0.8, 0.8]))
+    .add(primitives.box({ name: "room second crate", material: matte("#e9ecef") }).position(-0.05, 0.25, -1.2).scale([0.5, 0.5, 0.5]))
+    .add(lights.directional({ name: "room key", position: [2.6, 4.2, 3.4], intensity: 1 }))
+    .add(lights.hemisphere({ name: "room fill", skyColor: "#dbe6f5", groundColor: "#8a8f98", intensity: 1 }))
+    .add(occlusion);
+}
+
+/**
+ * Greyscale step wedge: eleven evenly lit tiles from near-black to near-white on a mid-grey field, filling the
+ * frame. A contrast control must spread these apart around the display mid-grey; the off frame is the same scene
+ * with an identity colour grade so both frames take the same post chain.
+ */
+function cardScene(id: EffectVariantId) {
+  const builder = scene()
+    .background("#7f7f7f")
+    .camera(camera.perspective({ position: [0, 0, 6], target: [0, 0, 0], fov: 40 }))
+    .add(lights.directional({ name: "card key", position: [0, 0, 8], intensity: 2 }))
+    .add(lights.hemisphere({ name: "card fill", skyColor: "#ffffff", groundColor: "#ffffff", intensity: 0.6 }));
+  const tiles = 11;
+  for (let index = 0; index < tiles; index += 1) {
+    const grey = Math.round(24 + (index / (tiles - 1)) * 216);
+    const hex = grey.toString(16).padStart(2, "0");
+    builder.add(primitives.plane({
+      name: `card tile ${index}`,
+      material: material.pbr({ color: `#${hex}${hex}${hex}`, roughness: 1, metallic: 0 })
+    }).rotate(Math.PI / 2, 0, 0).position((index - (tiles - 1) / 2) * 0.58, 0, 0).scale([0.56, 1, 3.2]));
+  }
+  builder.add(effects.colorGrade(id === "fx-card-contrast" ? { name: "card grade contrast", contrast: 1.7 } : { name: "card grade identity" }));
+  return builder;
+}
+
 function effectScene(id: EffectVariantId) {
+  if (id === "fx-ao-room-off" || id === "fx-ao-room") {
+    return occlusionRoom(effects.ambientOcclusion({ name: "room ambient occlusion", intensity: id === "fx-ao-room" ? 1 : 0, radius: 0.6 }));
+  }
+  if (id === "fx-contact-room-off" || id === "fx-contact-room") {
+    return occlusionRoom(effects.contactShadows({ name: "room contact shadows", intensity: id === "fx-contact-room" ? 1 : 0, length: 0.5 }));
+  }
+  if (id === "fx-card-off" || id === "fx-card-contrast") return cardScene(id);
   // One shared body for every variant: a typed GLB subject (keeps the production bridge
   // eligible), a floor to ground against, a reference bar for blur/edges, fixed light and
   // camera. Only the effect node differs.
@@ -234,9 +304,6 @@ function effectScene(id: EffectVariantId) {
     .add(lights.directional({ name: "receipt key", position: [2.6, 4.2, 2.4], intensity: 2 }));
 
   switch (id) {
-    case "fx-ambient-occlusion":
-      builder.add(effects.ambientOcclusion({ name: "receipt ambient occlusion", intensity: 0.85, radius: 0.6 }));
-      break;
     case "fx-color-grade-desaturate":
       builder.add(effects.colorGrade({ name: "receipt grade desaturate", saturation: 0 }));
       break;
@@ -249,9 +316,6 @@ function effectScene(id: EffectVariantId) {
       break;
     case "fx-depth-of-field":
       builder.add(effects.depthOfField({ name: "receipt depth of field", focus: 0.02, aperture: 1, maxBlur: 8 }));
-      break;
-    case "fx-contact-shadows":
-      builder.add(effects.contactShadows({ intensity: 1, length: 0.5 }));
       break;
     default:
       break;
@@ -268,7 +332,10 @@ async function renderEffect(id: EffectVariantId): Promise<FrameResult> {
   });
   try {
     await waitForDraw(app, id);
-    await settle(app, 1);
+    // The v2 post stages load deferred; a frame captured before they resolve is served by the fused present
+    // only (no GTAO, no stage). Wait, then step so the captured frame is the steady-state chain.
+    await postV2ModulesReady();
+    await settle(app, 2);
     return await capture(app, id);
   } finally {
     app.dispose();
@@ -516,7 +583,13 @@ async function capture(app: AuraApp, key: string): Promise<FrameResult> {
       requestedPasses: [...(postprocess?.requestedPasses ?? [])],
       actualPasses: [...(postprocess?.actualPasses ?? [])],
       fallbackPasses: [...(postprocess?.fallbackPasses ?? [])],
-      ambientOcclusionPass: postprocess?.ambientOcclusionPass ?? false
+      ambientOcclusionPass: postprocess?.ambientOcclusionPass ?? false,
+      post: {
+        pipeline: String((diagnostics as { post?: { pipeline?: string } }).post?.pipeline ?? "none"),
+        v2Outcome: postGraphV2LastOutcome(),
+        stagesRan: [...((diagnostics as { post?: { stagesRan?: readonly string[] } }).post?.stagesRan ?? [])],
+        skipped: [...((diagnostics as { post?: { skipped?: readonly string[] } }).post?.skipped ?? [])]
+      }
     }
   };
 }

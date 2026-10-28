@@ -1,0 +1,80 @@
+{
+  "capability": "animation-layers",
+  "version": "4.5.0",
+  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "scene": "Soldier: Idle base + Run on an upper-body masked layer, then stopLayer",
+  "frames": [
+    {
+      "file": "evidence/receipts/animation-layers/frames/4.5.0-idle.png",
+      "sha256": "5c2dd05ef8939aa817a5d916ef0e66552ad1a2f9e0440791a7ed22d01cc2838f",
+      "meanLuma": 142.08633995568434,
+      "nonBlackRatio": 0.9928776041666667,
+      "label": "Idle only: arms at the sides"
+    },
+    {
+      "file": "evidence/receipts/animation-layers/frames/4.5.0-idle-plus-upper-run.png",
+      "sha256": "6cf7028ac4efe147d171ddbe86b10b28f89bd0865e4f6f016905e997d2a649ee",
+      "meanLuma": 142.11647485933048,
+      "nonBlackRatio": 0.9930208333333334,
+      "label": "Idle base + Run on the upper-body layer"
+    },
+    {
+      "file": "evidence/receipts/animation-layers/frames/4.5.0-layer-stopped.png",
+      "sha256": "05dd092eddc782f976ca0dac2e4a88f35f8e6b4b7a4d076a2fa272cdb162782b",
+      "meanLuma": 142.0853599713093,
+      "nonBlackRatio": 0.9929296875,
+      "label": "Upper-body layer stopped"
+    }
+  ],
+  "tests": [
+    "tests/browser/animation-root-receipts.spec.ts",
+    "tests/unit/animation/animation-root-retarget.test.ts"
+  ],
+  "date": "2026-10-28T12:50:11.112Z",
+  "measurements": {
+    "handRangeIdle": 0.016,
+    "handRangeWithLayer": 0.4646,
+    "handRangeAfterStop": 0.0159,
+    "footRangeIdle": 0,
+    "footRangeWithLayer": 0,
+    "footShiftWithLayer": 0,
+    "handShiftWithLayer": 0.3509,
+    "handIdleMean": [
+      0.2871,
+      0.9676,
+      0.1797
+    ],
+    "handLayerMean": [
+      0.2973,
+      1.2296,
+      -0.0536
+    ],
+    "footIdleMean": [
+      -0.092,
+      0.1307,
+      -0.2852
+    ],
+    "footLayerMean": [
+      -0.092,
+      0.1307,
+      -0.2852
+    ],
+    "activeActions": [
+      {
+        "clip": "Idle",
+        "layer": "",
+        "weight": 1,
+        "time": 0.36666663487752227
+      },
+      {
+        "clip": "Run",
+        "layer": "upper",
+        "weight": 1,
+        "time": 0.300000011920929
+      }
+    ],
+    "changedPixelsIdleVsLayer": 1732,
+    "changedPixelsIdleVsStopped": 107
+  }
+}

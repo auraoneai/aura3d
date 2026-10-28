@@ -1,0 +1,38 @@
+{
+  "capability": "effects-vignette",
+  "version": "4.5.0",
+  "gitSha": "55481c5901ae916fe95b15d046a5c420d36f601a",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/receipts-harness.ts effectScene(): typed GLB subject, floor, reference bar, far colour block, one directional light",
+  "frames": [
+    {
+      "file": "evidence/receipts/_shared/4.5.0/fx-baseline.png",
+      "sha256": "077cb3ed3023a124faf94e3dd40fa0e4d0d9556f0ce24a31055328f653f3aabd",
+      "meanLuma": 86.5849,
+      "nonBlackRatio": 0.9852,
+      "label": "effect off (baseline)"
+    },
+    {
+      "file": "evidence/receipts/effects-vignette/4.5.0/fx-vignette.png",
+      "sha256": "642859bca8b042bde9002fde4ba510cf4d5ae230c127c9455dee5122feabe05d",
+      "meanLuma": 64.8107,
+      "nonBlackRatio": 0.8512,
+      "label": "effect on (fx-vignette)"
+    }
+  ],
+  "tests": [
+    "tests/browser/effects-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T14:11:13.065Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "cornersDarker": true,
+    "centreNearlyUnchanged": true,
+    "changedPixelFractionAtLeast2pc": true,
+    "changedPixelFraction": 0.6756,
+    "meanAbsoluteChannelDelta": 22.3659,
+    "meanLumaDelta": -21.7743,
+    "actualPasses": "tone-mapping"
+  }
+}

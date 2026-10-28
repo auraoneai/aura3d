@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 4.3.7
+Version: 4.5.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
-## 4.5.0 (unreleased; the date is set at the release step)
+## 4.5.0 (2026-10-28)
 
 A release with two visual changes: the default render path and the exposure calibration. Read both before upgrading. All timings below are software WebGL2 on a remote runner; no real-GPU run has been made.
 
@@ -16,7 +16,7 @@ A release with two visual changes: the default render path and the exposure cali
 - **Instancing at scale (engine, rendering).** `setInstanceTransforms(typedArray)` is the per-frame path (about 0.3 ms of CPU for 18,000 instances), unchanged instance buffers skip the upload, and large instanced draws send only the instances inside the camera frustum. Dense shadow-casting instanced nodes (1,024 or more instances of a builtin primitive) use a coarser shadow stand-in, so their shadows are more faceted; opt out with `shadowproxy=off`. The 10,000-instance forest now completes on software GL in about 4 minutes (it did not finish before); it is still 3.3x to 3.9x the frame time of the same scene in three.js there.
 - **Animation layers, root motion, retargeting and two-bone IK work from the root with receipts (engine, animation).** Fixes found on the way: `playLayer` no longer activates its clip as a base action (masks leaked onto the whole body), `mask: { humanoid, exclude }` is honoured, `addClipsFrom` accepts a model node handle or id, and the retarget worker falls back to an in-process bake when it cannot start. See `docs/api/animation-root.md`.
 - **Root physics collision for box, sphere and capsule bodies has a receipt (engine).** A bare capsule or cylinder physics spec now gets a collider that spans the visible size; `physics: { bindNodes: true }` makes stepping `app.physics` move the visible nodes.
-- **Scene kits and effects have pixel receipts (engine).** Nine scene kits and the ambient-occlusion, colour-grade, vignette and depth-of-field effects have software-WebGL2 receipts. `effects.contactShadows` produced identical frames; it now drives the ambient-occlusion pass, so it darkens contact areas but is not a dedicated contact-shadow pass. Three kits reported problems against their own defaults (particle readiness gate, the solar-system sun check, neon-tunnel ring count) and are fixed; the built-in humanoid GLB is no longer rejected as an unsafe URL. See `docs/agents/effects-and-scene-kits.md`.
+- **Scene kits and effects have pixel receipts (engine).** Nine scene kits and the ambient-occlusion, colour-grade, vignette and depth-of-field effects have software-WebGL2 receipts. `effects.contactShadows` produced identical frames; it now drives the ambient-occlusion pass, so in this release it is an SSAO-backed approximation that darkens contact areas, not a dedicated contact-shadow pass. Three kits reported problems against their own defaults (particle readiness gate, the solar-system sun check, neon-tunnel ring count) and are fixed; the built-in humanoid GLB is no longer rejected as an unsafe URL. See `docs/agents/effects-and-scene-kits.md`.
 - **`@aura3d/react`: `AuraCanvas` renders its children and keeps its app across parent re-renders (react).** Before, `useAuraFrame`, `useAuraApp` and `<Model suspendOnLoad>` inside it never ran and the app was recreated on every parent render. The package stays experimental; mount, cleanup and StrictMode have not run in a browser.
 - **`aura3d migrate three`: fidelity is tested and reported (cli).** Every `exact` row names a fixture that runs against real three.js; 34 rows are exact (21 before), 164 approximate, 47 none and 0 pending (3 before). Fixed on the way: `Clock.start()` resets elapsed time, step tracks return the key's own value at its keyframe time, `ShapeGeometry` drops the repeated closing vertex, and `SphericalHarmonics3.getBasisAt(normal, target)` fills its target.
 - **Capability audit and gates (docs, tools).** The audit's `Proof` column names the receipt or test behind each `shipped` row, and `node tools/receipts/check.mjs` fails a missing proof and lists receipts to regenerate when the minor version moves. `tools/docs-codeblocks` typechecks the effect, scene-kit and genre-kit examples and now resolves `@aura3d/engine/physics`. The benchmark gate is `tools/bench-vs-threejs/gate.mjs`.

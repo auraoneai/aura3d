@@ -58,7 +58,7 @@ import { AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBloc
 import { WebGL2ReadbackProbe } from "./webgl2/Probe";
 import { WebGL2LegacyPostPipeline } from "./webgl2/LegacyPost";
 import { DEFAULT_BLOOM_FUSION, type BloomFusionConfig } from "./webgl2/BloomFusion";
-import { cubeFaceTarget, rgba8TextureInternalFormat, textureUploadFormat, resolveRenderTargetFormat, resolveCompressedTextureFormat, magFilter, minFilter, addressMode } from "./webgl2/TextureFormats";
+import { cubeFaceTarget, rgba8TextureInternalFormat, textureUploadFormat, resolveRenderTargetFormat, renderTargetSampleFilter, resolveCompressedTextureFormat, magFilter, minFilter, addressMode } from "./webgl2/TextureFormats";
 
 export interface TextureFilterAnisotropicExtension {
   readonly TEXTURE_MAX_ANISOTROPY_EXT: GLenum;
@@ -905,8 +905,9 @@ export class WebGL2Device implements RenderDevice {
     const previousFramebuffer = this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
     const previousRenderbuffer = this.gl.getParameter(this.gl.RENDERBUFFER_BINDING) as WebGLRenderbuffer | null;
     this.gl.bindTexture(this.gl.TEXTURE_2D, colorHandle);
-    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+    const colorFilter = renderTargetSampleFilter(this.gl, renderTargetColorFormat(descriptor));
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, colorFilter);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, colorFilter);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
     // A single `colorAttachments` entry is the attachment-0 format (CONTRACTS
@@ -1124,8 +1125,9 @@ export class WebGL2Device implements RenderDevice {
         new Texture({ width: descriptor.width, height: descriptor.height, format, label: colorAttachmentCount > 1 ? `${label}-color-${attachment}` : descriptor.label ?? "render-target-color", dimension, layers: dimension === "2d" ? undefined : layerCount, renderAttachment: true })
       );
       gl.bindTexture(textureTarget, handle);
-      gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(textureTarget, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      const colorFilter = renderTargetSampleFilter(gl, format);
+      gl.texParameteri(textureTarget, gl.TEXTURE_MIN_FILTER, colorFilter);
+      gl.texParameteri(textureTarget, gl.TEXTURE_MAG_FILTER, colorFilter);
       gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(textureTarget, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       if (dimension === "2d") {

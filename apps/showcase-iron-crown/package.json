@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-iron-crown",
-  "version": "4.3.7",
+  "version": "4.5.0",
   "private": true,
   "type": "module",
   "description": "IRON CROWN — 2.5D arena fighter on Aura3D: six bespoke Meshy-generated fighter rigs, six venues, best-of-three 60s rounds, cancel chains, throws/tech, meter specials, CPU AI, Combo Lab, Crown Ladder, Versus, Player Studio, touch + gamepad, full combat juice and runtime evidence.",

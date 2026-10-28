@@ -1591,6 +1591,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         ? Math.min(1, 320 / Math.max(1, window.innerWidth))
         : Math.min(window.devicePixelRatio || 1, 1.75),
     renderer: { qualityProfile: "production" },
+    // The spotlight, crowd and test-driver probes read this canvas with gl.readPixels after an awaited
+    // step; the default (false) drawing buffer is cleared once presented, so those probes opt in.
+    preserveDrawingBuffer: stageSpotlightProbeEnabled || testDriverEnabled || new URLSearchParams(location.search).has("crowdProbe"),
     scene: createRootStageScene()
   });
   await rootStageApp.ready();

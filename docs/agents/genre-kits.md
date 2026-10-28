@@ -1,6 +1,6 @@
 # Genre kits: what is a building block and what is per game
 
-Version: 4.3.7
+Version: 4.5.0
 
 The root `game.*` genre kits are tested simulation building blocks. They give you motion, scoring, lap and ball rules as pure, deterministic code you step with `dt`. They are not finished games. This page states the boundary for each kit and gives one example per kit that compiles against the public API (`tools/docs-codeblocks` typechecks every `ts` block here) and runs headless (`tests/unit/docs/genre-kit-examples.test.ts`).
 

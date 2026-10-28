@@ -1,0 +1,65 @@
+{
+  "capability": "animation-two-bone-ik",
+  "version": "4.5.0",
+  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+  "scene": "Soldier right arm: node.animation.ik.add two-bone, target A then B, then disposed",
+  "frames": [
+    {
+      "file": "evidence/receipts/animation-two-bone-ik/frames/4.5.0-ik-off.png",
+      "sha256": "e53572c6b5184a3a880191358fdc505dfa3576ca8edee16d82a5a1279942bd23",
+      "meanLuma": 142.80653565620634,
+      "nonBlackRatio": 0.9913411458333333,
+      "label": "Arm on the Idle pose, target ball floating ahead"
+    },
+    {
+      "file": "evidence/receipts/animation-two-bone-ik/frames/4.5.0-ik-target-a.png",
+      "sha256": "75e7289c99a4254e901399d68e2d50857eac6337a64bdaf442080d8ef5804ad4",
+      "meanLuma": 142.60718689578988,
+      "nonBlackRatio": 0.9895052083333333,
+      "label": "Two-bone IK: hand reaches target A"
+    },
+    {
+      "file": "evidence/receipts/animation-two-bone-ik/frames/4.5.0-ik-target-b.png",
+      "sha256": "1723529969b2dc5f50d9eaec38a427368b93233defe1efcf728409200462ac28",
+      "meanLuma": 142.71601168745713,
+      "nonBlackRatio": 0.9902604166666666,
+      "label": "Two-bone IK: hand follows target to B"
+    }
+  ],
+  "tests": [
+    "tests/browser/animation-root-receipts.spec.ts",
+    "tests/unit/animation/animation-root-retarget.test.ts"
+  ],
+  "date": "2026-10-28T12:50:11.247Z",
+  "measurements": {
+    "armReach": 0.4647,
+    "errorBeforeIk": 0.5616,
+    "errorTargetA": 0,
+    "errorTargetB": 0,
+    "handTravelAToB": 0.2701,
+    "errorAfterClear": 0.6921,
+    "targetA": [
+      0.351,
+      1.4927,
+      0.3703
+    ],
+    "targetB": [
+      0.1357,
+      1.6338,
+      0.2883
+    ],
+    "handA": [
+      0.351,
+      1.4927,
+      0.3703
+    ],
+    "handB": [
+      0.1357,
+      1.6338,
+      0.2883
+    ],
+    "changedPixelsOffVsA": 1389,
+    "changedPixelsAVsB": 1043
+  }
+}

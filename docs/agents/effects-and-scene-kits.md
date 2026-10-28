@@ -62,7 +62,7 @@ export const shallowFocus = scene()
 
 ### Contact shadows (SSAO-backed approximation)
 
-`effects.contactShadows` is lowered to the screen-space ambient occlusion pass: it darkens the floor under a subject (receipt `effects-contact-shadows`). It is not a dedicated contact-shadow pass, and the shadow mask the options describe is not read by shading. Say "contact darkening", not "contact shadows", in anything you publish.
+`effects.contactShadows` is lowered to the screen-space ambient occlusion pass at reduced strength. On the receipt room it lowers mean luma by about 1.2 but changes no pixel past the receipt threshold, so it has no current receipt (the 4.3.7 one compared against an untonemapped baseline and is withdrawn; see `evidence/receipts/README.md`). It is not a dedicated contact-shadow pass and the shadow mask the options describe is not read by shading. Do not publish it as contact shadows or as a visible effect.
 
 ```ts
 import { effects, lights, material, primitives, scene } from "@aura3d/engine";
