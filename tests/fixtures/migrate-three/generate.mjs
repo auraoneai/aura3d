@@ -26,7 +26,7 @@ const { RoundedBoxGeometry } = await import(addonUrl("geometries/RoundedBoxGeome
 const L = { ...THREE, Octree, Capsule };
 
 // Public prototype methods per class, so the test can require full method coverage for `exact` class rows.
-const METHOD_CLASSES = ["CatmullRomCurve3", "CubicBezierCurve3", "CubicBezierCurve", "QuadraticBezierCurve3", "QuadraticBezierCurve", "LineCurve3", "LineCurve", "SplineCurve", "EllipseCurve", "ArcCurve", "CurvePath", "Path", "Shape", "Ray", "Spherical", "Cylindrical", "Line3", "Triangle", "SphericalHarmonics3", "Box3", "Sphere", "Plane", "Frustum", "Euler", "Matrix3", "Matrix4", "Quaternion", "Vector2", "Vector3", "Vector4", "Clock"];
+const METHOD_CLASSES = ["CatmullRomCurve3", "CubicBezierCurve3", "CubicBezierCurve", "QuadraticBezierCurve3", "QuadraticBezierCurve", "LineCurve3", "LineCurve", "SplineCurve", "EllipseCurve", "ArcCurve", "CurvePath", "Path", "Shape", "Ray", "Spherical", "Cylindrical", "Line3", "Triangle", "SphericalHarmonics3", "Box3", "Sphere", "Plane", "Frustum", "Euler", "Matrix3", "Matrix4", "Quaternion", "Vector2", "Vector3", "Vector4", "Color", "Clock"];
 const IGNORED = new Set(["constructor", "fromBufferAttribute", "toArray", "fromArray", "random", "setFromBufferAttribute", "getComponent", "setComponent", "toJSON", "fromJSON", "_onChange", "_onChangeCallback"]);
 const methods = {};
 for (const name of [...METHOD_CLASSES, "Octree"]) {
@@ -34,7 +34,19 @@ for (const name of [...METHOD_CLASSES, "Octree"]) {
   methods[name] = Object.getOwnPropertyNames(proto).filter((k) => typeof Object.getOwnPropertyDescriptor(proto, k)?.value === "function" && !k.startsWith("is") && !IGNORED.has(k));
 }
 
-const goldens = { three: pkg.version, generatedBy: "tests/fixtures/migrate-three/generate.mjs", methods, values: {} };
+// Every prototype method and accessor (nothing excluded) of the classes the mutable math layer mirrors, plus their
+// static members, so the compat parity test can require a method-level case for each.
+const MATH_CLASSES = ["Vector2", "Vector3", "Vector4", "Matrix3", "Matrix4", "Quaternion", "Euler", "Color", "Box3", "Sphere", "Plane", "Ray", "Frustum", "Triangle"];
+const mathMembers = {};
+for (const name of MATH_CLASSES) {
+  const ctor = THREE[name];
+  const proto = ctor.prototype;
+  const instance = Object.getOwnPropertyNames(proto).filter((k) => k !== "constructor" && !k.startsWith("is"));
+  const statics = Object.getOwnPropertyNames(ctor).filter((k) => !["length", "name", "prototype"].includes(k));
+  mathMembers[name] = { instance, statics };
+}
+
+const goldens = { three: pkg.version, generatedBy: "tests/fixtures/migrate-three/generate.mjs", methods, mathMembers, values: {} };
 for (const [name, run] of Object.entries(cases)) {
   goldens.values[name] = run(L);
 }

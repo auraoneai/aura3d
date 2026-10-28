@@ -8,6 +8,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./three": {
+      "types": "./dist/three/index.d.ts",
+      "import": "./dist/three/index.js"
     }
   },
   "description": "Deterministic vectors, matrices, quaternions, colors, rays, bounds, frustums, transforms, interpolation, easing, and seeded random math for Aura3D.",

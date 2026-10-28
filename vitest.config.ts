@@ -29,6 +29,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@aura3d/math/three": new URL("./packages/math/src/three/index.ts", import.meta.url).pathname,
       "@aura3d/math": new URL("./packages/math/src/index.ts", import.meta.url).pathname,
       "@aura3d/core": new URL("./packages/core/src/index.ts", import.meta.url).pathname,
       "@aura3d/scene/math": new URL("./packages/scene/src/MathTypes.ts", import.meta.url).pathname,

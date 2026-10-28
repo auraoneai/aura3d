@@ -43,6 +43,10 @@ const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSub
     "./gltf-runtime": { types: "./dist/gltf-runtime.d.ts", import: "./dist/gltf-runtime.js" },
     "./vite": { types: "./dist/vite/auraDecoders.d.ts", import: "./dist/vite/auraDecoders.js" }
   },
+  "@aura3d/math": {
+    // Mutable three.js-compatible math classes (beat-three.js part 2, WP-2); the root entry stays the immutable classes.
+    "./three": { types: "./dist/three/index.d.ts", import: "./dist/three/index.js" }
+  },
   "@aura3d/physics": {
     "./solverless": { types: "./dist/solverless.d.ts", import: "./dist/solverless.js" },
     "./world": { types: "./dist/world.d.ts", import: "./dist/world.js" }

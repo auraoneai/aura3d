@@ -121,6 +121,9 @@
       "@aura3d/react": [
         "packages/react/src/index.ts"
       ],
+      "@aura3d/math/three": [
+        "packages/math/src/three/index.ts"
+      ],
       "@aura3d/math": [
         "packages/math/src/index.ts"
       ],

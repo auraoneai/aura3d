@@ -14,6 +14,12 @@ const manifest = JSON.parse(readFileSync(resolve(repo, "aura.exports.json"), "ut
   readonly entries: Readonly<Record<string, { readonly source: string }>>;
 };
 
+// Rows may also import from a subpath of a sibling workspace package (`@aura3d/math/three`, WP-2). Those resolve
+// through that package's own manifest rather than aura.exports.json.
+const packageSubpaths: Readonly<Record<string, { readonly manifest: string; readonly subpath: string; readonly source: string }>> = {
+  "@aura3d/math/three": { manifest: "packages/math/package.json", subpath: "./three", source: "packages/math/src/three/index.ts" }
+};
+
 const specifierToEntry = (specifier: string): string => {
   if (specifier === manifest.package) return ".";
   const prefix = `${manifest.package}/`;
@@ -25,6 +31,12 @@ describe("migrate-three mapping targets (L10-03)", () => {
   it("every engineImportFrom resolves to a published subpath in aura.exports.json", () => {
     const specifiers = new Set(THREE_TO_A3D_MAPPINGS.map((row) => row.engineImportFrom ?? manifest.package));
     for (const specifier of specifiers) {
+      const external = packageSubpaths[specifier];
+      if (external) {
+        const pkg = JSON.parse(readFileSync(resolve(repo, external.manifest), "utf8")) as { readonly exports: Record<string, unknown> };
+        expect(pkg.exports[external.subpath], `${specifier} missing from ${external.manifest}`).toBeDefined();
+        continue;
+      }
       expect(manifest.entries[specifierToEntry(specifier)], `${specifier} missing from aura.exports.json`).toBeDefined();
     }
   });
@@ -42,8 +54,8 @@ describe("migrate-three mapping targets (L10-03)", () => {
 
     const missing: string[] = [];
     for (const [specifier, names] of bySpecifier) {
-      const entry = manifest.entries[specifierToEntry(specifier)];
-      const mod = (await import(/* @vite-ignore */ resolve(repo, entry.source))) as Record<string, unknown>;
+      const source = packageSubpaths[specifier]?.source ?? manifest.entries[specifierToEntry(specifier)]!.source;
+      const mod = (await import(/* @vite-ignore */ resolve(repo, source))) as Record<string, unknown>;
       for (const name of names) {
         if (!(name in mod)) missing.push(`${specifier} → ${name}`);
       }

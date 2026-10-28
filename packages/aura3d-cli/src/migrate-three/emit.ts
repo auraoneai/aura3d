@@ -477,11 +477,15 @@ const EMIT_ARGS: Readonly<Record<string, EmitArgs>> = {
   Scene: (args) => (args.trim() === "" ? { call: "scene()" } : null),
   Group: (args) => (args.trim() === "" ? { call: "group()" } : null),
   RoomEnvironment: () => ({ call: "environments.neutral()" }),
-  Color: (args) => {
-    const mapped = hex(args.trim());
-    return mapped ? { call: mapped } : null;
-  },
+  // The math classes below come from `@aura3d/math/three`: mutable, three-compatible, same constructor arguments,
+  // so the source arguments pass through verbatim.
+  // Color, Euler and Vector3 are classes now, but Aura3D option fields (scene.background, light colour, node position/rotation)
+  // still take a hex string or an [x, y, z] tuple, so the call site says how to cross over.
+  Color: (args) => ({ call: `new Color(${args})`, comment: 'a3d: mutable Color class; Aura3D options take a hex string, pass color.getStyle()' }),
+  Euler: (args) => ({ call: `new Euler(${args})`, comment: "a3d: mutable Euler class; node rotation takes [x, y, z], pass [e.x, e.y, e.z]" }),
   Vector2: (args) => ({ call: `new Vector2(${args})` }),
+  Vector3: (args) => ({ call: `new Vector3(${args})`, comment: "a3d: mutable Vector3 class; node specs take [x, y, z], pass v.toArray()" }),
+  Triangle: (args) => ({ call: `new Triangle(${args})` }),
   Vector4: (args) => ({ call: `new Vector4(${args})` }),
   Quaternion: (args) => ({ call: `new Quaternion(${args})`, comment: args.trim() === "" ? undefined : undefined }),
   Matrix3: (args) => ({ call: `new Matrix3(${args})` }),
@@ -761,21 +765,7 @@ function emitCall(mapping: ThreeMapping, c: ThreeConstruct): string {
   if (mapping.emit === "new") {
     return `new ${mapping.target}()${args ? ` /* a3d: original args (${args}) — ${mapping.note} */` : ` /* a3d: ${mapping.note} */`}`;
   }
-  switch (mapping.construct) {
-    case "Euler": {
-      // Euler emits a tuple literal, valid as an expression.
-      const xyz = /,\s*['"]?XYZ['"]?\s*$/.test(args)
-        ? args.replace(/,\s*['"]?XYZ['"]?\s*$/, "").trim()
-        : args;
-      return `[${xyz}]${args && xyz !== args ? "" : todo}`;
-    }
-    case "Vector3":
-      return `[${args}]${args.trim() === "" ? " /* a3d: AuraVec3 */" : ""}`;
-    case "Color":
-      return `(${args}) /* a3d: ${mapping.target} */`;
-    default:
-      return `${mapping.target}()${todo}`;
-  }
+  return `${mapping.target}()${todo}`;
 }
 
 function pushComment(map: Map<number, string[]>, line: number, text: string): void {

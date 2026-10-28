@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import * as animation from "../../../packages/animation/src/index";
 import { Clock } from "../../../packages/engine/src/agent-api/Clock";
 import * as math from "../../../packages/math/src/index";
+import * as mathThree from "../../../packages/math/src/three/index";
 import { circleParityMesh } from "../../../packages/rendering/src/geometry/Circle";
 import { coneParityMesh } from "../../../packages/rendering/src/geometry/Cone";
 import { edgesParityMesh } from "../../../packages/rendering/src/geometry/Edges";
@@ -46,9 +47,15 @@ const parity = {
   ringParityMesh, boxParityMesh, roundedBoxParityMesh, shapeParityMesh, torusKnotParityMesh, tubeParityMesh, wireframeParityMesh,
 };
 const auraLib = math as unknown as Record<string, unknown>;
+// Rows that import from `@aura3d/math/three` (WP-2) run their fixture against the mutable compat layer; every other row
+// runs against the surface it names (the immutable `@aura3d/math` classes, the engine Clock, ...).
+const MATH_THREE = "@aura3d/math/three";
+const compatLib = mathThree as unknown as Record<string, unknown>;
+const libFor = (importFrom: string | undefined): Record<string, unknown> => (importFrom === MATH_THREE ? compatLib : auraLib);
+const rowLibByCase = new Map(THREE_TO_A3D_MAPPINGS.filter((row) => row.test).map((row) => [row.construct, libFor(row.engineImportFrom)]));
 const runAura = (name: string): readonly number[] | undefined => {
   const plain = (cases as Record<string, AuraCase>)[name];
-  if (plain) return plain(auraLib);
+  if (plain) return plain(rowLibByCase.get(name) ?? auraLib);
   const extra = (extraCases as Record<string, ExtraCase>)[name];
   if (extra) return extra.aura({ animation, engine: { Clock }, math, parity });
   return undefined;
@@ -127,9 +134,8 @@ describe("migrate-three fidelity (PRD beat-three.js contract 3.6)", () => {
       if (row.mapping !== "exact") continue;
       const wanted = goldens.methods[row.construct];
       if (!wanted) continue;
-      const proto = (row.construct === "Clock" ? Clock : (math as unknown as Record<string, { prototype: Record<string, unknown> }>)[row.construct])?.prototype as
-        | Record<string, unknown>
-        | undefined;
+      const classes = libFor(row.engineImportFrom) as Record<string, { prototype: Record<string, unknown> }>;
+      const proto = (row.construct === "Clock" ? Clock : classes[row.construct])?.prototype as Record<string, unknown> | undefined;
       const allowed = CURVE_FAMILY.has(row.construct) ? new Set(["copy"]) : new Set<string>();
       if (allowed.size > 0) expect(row.note, `${row.construct} note must disclose the missing copy()`).toContain("no copy()");
       const missing = wanted.filter((method) => !allowed.has(method) && typeof proto?.[method] !== "function");
@@ -138,8 +144,20 @@ describe("migrate-three fidelity (PRD beat-three.js contract 3.6)", () => {
     expect(gaps).toEqual([]);
   });
 
-  it("math value types stay immutable where three mutates (documented blocker for exact Vector/Matrix/Quaternion rows)", () => {
-    expect(firstDivergence("MutationSemantics")).toMatch(/value\[0\]/);
+  it("the immutable math value types still do not mutate where three does; the @aura3d/math/three rows are the ones that do", () => {
+    const statementForm = (cases as Record<string, AuraCase>).MutationSemantics!;
+    const golden = goldens.values.MutationSemantics!;
+    expect(statementForm(auraLib).some((value, i) => !closeTo(value, golden[i]!))).toBe(true);
+    expect(statementForm(compatLib).every((value, i) => closeTo(value, golden[i]!))).toBe(true);
+  });
+
+  it("every Vector/Matrix/Quaternion/Euler/Color/bounds row points at the mutable compat layer, not the immutable classes", () => {
+    const mutable = ["Vector2", "Vector3", "Vector4", "Matrix3", "Matrix4", "Quaternion", "Euler", "Color", "Box3", "Sphere", "Plane", "Ray", "Frustum", "Triangle"];
+    const wrong = mutable.filter((name) => {
+      const row = THREE_TO_A3D_MAPPINGS.find((r) => r.construct === name);
+      return !row || row.mapping !== "exact" || row.engineImportFrom !== MATH_THREE || row.emit !== "new";
+    });
+    expect(wrong).toEqual([]);
   });
 
   it("no pending rows remain (M1)", () => {
