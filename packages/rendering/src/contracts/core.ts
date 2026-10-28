@@ -96,6 +96,14 @@ export interface Registry<E extends RegistryEntry> {
 
 class RegistryImpl<E extends RegistryEntry> implements Registry<E> {
   private readonly entries = new Map<string, E>();
+  /** Bumped by every register/unregister so a memoised `active()` list never outlives a registry change. */
+  private version = 0;
+  /**
+   * `active(flags)` runs several times per frame (frame contributors, shader features, material lobes) and rebuilt, filtered
+   * and sorted the registry each time. Resolved `QrFlags` are immutable (their `values` map is frozen), so the list for one
+   * flags object only changes when the registry does. Flags objects without a frozen `values` map (test doubles) are never cached.
+   */
+  private readonly activeMemo = new WeakMap<QrFlags, { readonly version: number; readonly result: readonly E[] }>();
   constructor(public readonly name: string) {}
 
   register(entry: E): () => void {
@@ -103,17 +111,27 @@ class RegistryImpl<E extends RegistryEntry> implements Registry<E> {
       throw new Error(`REGISTRY_DUPLICATE:${entry.id}`);
     }
     this.entries.set(entry.id, entry);
+    this.version += 1;
     return () => {
       if (this.entries.get(entry.id) === entry) {
         this.entries.delete(entry.id);
+        this.version += 1;
       }
     };
   }
 
   active(flags: QrFlags): readonly E[] {
-    return [...this.entries.values()]
+    const values = (flags as { readonly values?: unknown }).values;
+    const cacheable = typeof values === "object" && values !== null && Object.isFrozen(values);
+    if (cacheable) {
+      const hit = this.activeMemo.get(flags);
+      if (hit !== undefined && hit.version === this.version) return hit.result;
+    }
+    const result = Object.freeze([...this.entries.values()]
       .filter((entry) => flags.on(entry.flag))
-      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
+    if (cacheable) this.activeMemo.set(flags, { version: this.version, result });
+    return result;
   }
 
   all(): readonly E[] {

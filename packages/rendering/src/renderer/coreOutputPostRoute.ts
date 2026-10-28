@@ -69,9 +69,18 @@ export function resolveCoreOutputPostRoute(
  * contributors (lane 07 vfx, transmission capture) pick the legacy `color`
  * resource the legacy-routed graph actually writes.
  */
+const coreOutputOffCache = new WeakMap<QrFlags, QrFlags>();
+
 export function withCoreOutputOff(flags: QrFlags): QrFlags {
-  return {
-    values: { ...flags.values, A3D_QR_CORE_OUTPUT: false },
+  // Asked for every frame of the direct path with the same app flags: one derived (frozen) object per input, so the
+  // registries' per-flags memo keeps hitting instead of seeing a new flags object each frame.
+  const cached = coreOutputOffCache.get(flags);
+  if (cached !== undefined) return cached;
+  const derived: QrFlags = {
+    values: Object.freeze({ ...flags.values, A3D_QR_CORE_OUTPUT: false }),
     on: (name) => (name === "A3D_QR_CORE_OUTPUT" ? false : flags.on(name))
   };
+  // Only a flags object whose own `values` are frozen is immutable, so only then is the derived one safe to reuse.
+  if (Object.isFrozen(flags.values)) coreOutputOffCache.set(flags, derived);
+  return derived;
 }

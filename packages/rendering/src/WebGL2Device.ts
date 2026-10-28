@@ -1466,32 +1466,70 @@ export class WebGL2Device implements RenderDevice {
 
   getDiagnostics(): RenderDeviceDiagnostics {
     this.host.textureRegistry.releaseDisposedTextureHandles();
-    const liveRenderTargets = [...this.renderTargets].filter((target) => !target.disposed);
-    const liveTextures = new Set<Texture>([
-      ...liveRenderTargets.map((target) => target.colorTexture),
-      ...[...this.host.textureRegistry.textures.keys()].filter((texture) => !texture.disposed)
-    ]);
-    const liveTextureList = [...liveTextures];
-    const compressedTextures = liveTextureList.filter((texture) => isCompressedTextureFormat(texture.format));
-    const fallbackTextures = liveTextureList.filter((texture) => this.host.textureRegistry.textureUploadModes.get(texture) === "fallback");
-    const stateCacheStats = this.stateCache.stats();
-    const bufferBytes = [...this.buffers].filter((buffer) => !buffer.disposed).reduce((total, buffer) => total + buffer.byteLength, 0);
-    const textureBytes = liveTextureList.reduce((total, texture) => total + texture.byteLength, 0);
+    // Single passes over the live sets (this runs at least twice a frame): no spread copies, no per-field filter chains.
+    const liveRenderTargets: WebGL2RenderTarget[] = [];
+    let disposedRenderTargets = 0;
+    let disposedRenderTargetTextures = 0;
+    let maxRenderTargetSampleCount = 1;
+    for (const target of this.renderTargets) {
+      if (target.disposed) disposedRenderTargets += 1;
+      else {
+        liveRenderTargets.push(target);
+        if (target.sampleCount > maxRenderTargetSampleCount) maxRenderTargetSampleCount = target.sampleCount;
+      }
+      if (target.colorTexture.disposed) disposedRenderTargetTextures += 1;
+    }
+    const liveTextures = new Set<Texture>();
+    for (const target of liveRenderTargets) liveTextures.add(target.colorTexture);
+    for (const texture of this.host.textureRegistry.textures.keys()) if (!texture.disposed) liveTextures.add(texture);
+    let compressedTextureCount = 0;
+    let compressedTextureBytes = 0;
+    let fallbackTextureCount = 0;
+    let fallbackTextureBytes = 0;
+    let textureBytes = 0;
+    for (const texture of liveTextures) {
+      textureBytes += texture.byteLength;
+      if (isCompressedTextureFormat(texture.format)) {
+        compressedTextureCount += 1;
+        compressedTextureBytes += texture.byteLength;
+      }
+      if (this.host.textureRegistry.textureUploadModes.get(texture) === "fallback") {
+        fallbackTextureCount += 1;
+        fallbackTextureBytes += texture.fallbackByteLength;
+      }
+    }
+    const stateCacheTotals = this.stateCache.totals();
+    let liveBuffers = 0;
+    let bufferBytes = 0;
+    let disposedBuffers = 0;
+    for (const buffer of this.buffers) {
+      if (buffer.disposed) disposedBuffers += 1;
+      else {
+        liveBuffers += 1;
+        bufferBytes += buffer.byteLength;
+      }
+    }
+    let liveShaders = 0;
+    let disposedShaders = 0;
+    for (const shader of this.shaders) {
+      if (shader.disposed) disposedShaders += 1;
+      else liveShaders += 1;
+    }
     const gpuTargetEntries = this.host.post.describeGpuTargetInventory(liveRenderTargets);
     return {
       drawCalls: this.host.counters.drawCalls,
-      buffers: [...this.buffers].filter((buffer) => !buffer.disposed).length,
-      shaders: [...this.shaders].filter((shader) => !shader.disposed).length,
+      buffers: liveBuffers,
+      shaders: liveShaders,
       renderTargets: liveRenderTargets.length,
-      maxRenderTargetSampleCount: Math.max(1, ...liveRenderTargets.map((target) => target.sampleCount)),
+      maxRenderTargetSampleCount,
       textures: liveTextures.size,
       bufferBytes,
       textureBytes,
       approximateGpuMemoryBytes: bufferBytes + textureBytes,
-      compressedTextures: compressedTextures.length,
-      compressedTextureBytes: compressedTextures.reduce((total, texture) => total + texture.byteLength, 0),
-      textureFallbacks: fallbackTextures.length,
-      textureFallbackBytes: fallbackTextures.reduce((total, texture) => total + texture.fallbackByteLength, 0),
+      compressedTextures: compressedTextureCount,
+      compressedTextureBytes,
+      textureFallbacks: fallbackTextureCount,
+      textureFallbackBytes: fallbackTextureBytes,
       nativeEnvironmentBindings: this.host.counters.nativeEnvironmentBindings,
       nativeShadowMapBindings: this.host.counters.nativeShadowMapBindings,
       shadowRenderTargetsAllocated: this.host.counters.shadowRenderTargetsAllocated,
@@ -1501,17 +1539,17 @@ export class WebGL2Device implements RenderDevice {
       nativeTemporalBindings: this.host.counters.nativeTemporalBindings,
       samplerAnisotropyUploads: this.host.counters.samplerAnisotropyUploadCount,
       maxTextureAnisotropy: this.maxTextureAnisotropy,
-      stateCacheIssued: stateCacheStats.issued,
-      stateCacheSkipped: stateCacheStats.skipped,
-      stateCacheProgramSwitches: stateCacheStats.byOperation.useProgram?.issued ?? 0,
-      stateCacheTextureBinds: stateCacheStats.byOperation.bindTexture?.issued ?? 0,
-      stateCacheBufferBinds: stateCacheStats.byOperation.bindBuffer?.issued ?? 0,
-      stateCacheVertexArrayBinds: stateCacheStats.byOperation.bindVertexArray?.issued ?? 0,
-      stateCacheSamplerBinds: stateCacheStats.byOperation.bindSampler?.issued ?? 0,
-      disposedBuffers: this.disposedBufferCount + [...this.buffers].filter((buffer) => buffer.disposed).length,
-      disposedShaders: [...this.shaders].filter((shader) => shader.disposed).length,
-      disposedRenderTargets: [...this.renderTargets].filter((target) => target.disposed).length,
-      disposedTextures: [...this.renderTargets].filter((target) => target.colorTexture.disposed).length + this.host.counters.releasedTextureHandles,
+      stateCacheIssued: stateCacheTotals.issued,
+      stateCacheSkipped: stateCacheTotals.skipped,
+      stateCacheProgramSwitches: this.stateCache.issuedCount("useProgram"),
+      stateCacheTextureBinds: this.stateCache.issuedCount("bindTexture"),
+      stateCacheBufferBinds: this.stateCache.issuedCount("bindBuffer"),
+      stateCacheVertexArrayBinds: this.stateCache.issuedCount("bindVertexArray"),
+      stateCacheSamplerBinds: this.stateCache.issuedCount("bindSampler"),
+      disposedBuffers: this.disposedBufferCount + disposedBuffers,
+      disposedShaders,
+      disposedRenderTargets,
+      disposedTextures: disposedRenderTargetTextures + this.host.counters.releasedTextureHandles,
       ...spreadGpuTargetInventory(gpuTargetEntries),
       programCompileCount: this.host.counters.programCompiles,
       readPixelsCalls: this.host.counters.readbacks,

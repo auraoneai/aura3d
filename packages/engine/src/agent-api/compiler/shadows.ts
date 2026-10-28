@@ -1,5 +1,6 @@
 // PR 0b-1 carve-out (CONTRACTS.md §3.2) — verbatim move from agent-api/index.ts; 0 changed logic lines.
 
+import { cachedSearchParams } from "../../contracts/urlCache.js";
 import type { AuraRendererRuntimeObservation, AuraSceneSnapshot, AuraVec3 } from "../nodes/types.js";
 import { resolveProductionRuntimeShadowTuning } from "../compiler/observations.js";
 import { groups } from "../nodes/groups.js";
@@ -155,7 +156,7 @@ export function denseShadowBudgetEnabled(): boolean {
   const g = globalThis as { __A3D_DENSE_SHADOWS__?: string; location?: { search?: string } };
   let value = g.__A3D_DENSE_SHADOWS__;
   try {
-    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("denseshadows") : null;
+    const q = typeof g.location?.search === "string" ? cachedSearchParams(g.location.search).get("denseshadows") : null;
     if (q === "on" || q === "off") value = q;
   } catch {
     // no location (node, workers): fall through to the global
@@ -171,7 +172,7 @@ export function shadowTapTierOverride(): ShadowPcfTapTier | undefined {
   const g = globalThis as { __A3D_SHADOW_TAPS__?: unknown; location?: { search?: string } };
   let value: unknown = g.__A3D_SHADOW_TAPS__;
   try {
-    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("shadowtaps") : null;
+    const q = typeof g.location?.search === "string" ? cachedSearchParams(g.location.search).get("shadowtaps") : null;
     if (q !== null) value = q;
   } catch {
     // no location (node, workers): fall through to the global
@@ -184,7 +185,7 @@ function readOptIn(globalKey: "__A3D_DENSE_SHADOW_TAPS__" | "__A3D_QUALITY_SHADO
   const g = globalThis as { location?: { search?: string } } & Partial<Record<typeof globalKey, string>>;
   let value = g[globalKey];
   try {
-    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get(param) : null;
+    const q = typeof g.location?.search === "string" ? cachedSearchParams(g.location.search).get(param) : null;
     if (q === "on" || q === "off") value = q;
   } catch {
     // no location (node, workers): fall through to the global

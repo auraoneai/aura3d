@@ -84,7 +84,13 @@ export class WebGL2StateCache {
   private currentBlendFunc: readonly [number, number, number, number] | null = null;
   private currentBlendEquation: readonly [number, number] | null = null;
   private readonly enabledCaps = new Map<number, boolean>();
-  private readonly textureBindings = new Map<string, unknown>();
+  /** Texture bindings keyed by `(activeUnit + 1) * 0x10000 + target` (no per-call string key). */
+  private readonly textureBindings = new Map<number, unknown>();
+  /** Buffer / framebuffer targets other than ARRAY, ELEMENT_ARRAY and FRAMEBUFFER, keyed by target. */
+  private readonly otherBufferBindings = new Map<number, unknown>();
+  private readonly otherFramebufferBindings = new Map<number, unknown>();
+  private totalIssued = 0;
+  private totalSkipped = 0;
   private readonly samplerBindings = new Map<number, unknown>();
   private readonly operationStats = new Map<Operation, OperationStats>();
 
@@ -123,11 +129,15 @@ export class WebGL2StateCache {
     this.currentBlendEquation = null;
     this.enabledCaps.clear();
     this.textureBindings.clear();
+    this.otherBufferBindings.clear();
+    this.otherFramebufferBindings.clear();
     this.samplerBindings.clear();
   }
 
   resetStats(): void {
     this.operationStats.clear();
+    this.totalIssued = 0;
+    this.totalSkipped = 0;
   }
 
   useProgram(program: unknown, apply: () => void): boolean {
@@ -144,22 +154,20 @@ export class WebGL2StateCache {
       if (this.currentElementArrayBuffer === buffer) return this.skip("bindBuffer");
       this.currentElementArrayBuffer = buffer;
     } else {
-      const key = `buffer:${target}`;
-      if (this.textureBindings.get(key) === buffer) return this.skip("bindBuffer");
-      this.textureBindings.set(key, buffer);
+      if (this.otherBufferBindings.get(target) === buffer) return this.skip("bindBuffer");
+      this.otherBufferBindings.set(target, buffer);
     }
     return this.issue("bindBuffer", apply);
   }
 
   bindFramebuffer(target: number, framebuffer: unknown, apply: () => void): boolean {
-    const key = `framebuffer:${target}`;
     if (target === FRAMEBUFFER_TARGET) {
       if (this.currentFramebuffer === framebuffer) return this.skip("bindFramebuffer");
       this.currentFramebuffer = framebuffer;
-    } else if (this.textureBindings.get(key) === framebuffer) {
+    } else if (this.otherFramebufferBindings.get(target) === framebuffer) {
       return this.skip("bindFramebuffer");
     } else {
-      this.textureBindings.set(key, framebuffer);
+      this.otherFramebufferBindings.set(target, framebuffer);
     }
     return this.issue("bindFramebuffer", apply);
   }
@@ -172,37 +180,36 @@ export class WebGL2StateCache {
   }
 
   viewport(x: number, y: number, width: number, height: number, apply: () => void): boolean {
-    const next = [x, y, width, height] as const;
-    if (this.currentViewport && tuple4Equals(this.currentViewport, next)) return this.skip("viewport");
-    this.currentViewport = next;
+    const current = this.currentViewport;
+    if (current && current[0] === x && current[1] === y && current[2] === width && current[3] === height) return this.skip("viewport");
+    this.currentViewport = [x, y, width, height];
     return this.issue("viewport", apply);
   }
 
   scissor(x: number, y: number, width: number, height: number, apply: () => void): boolean {
-    const next = [x, y, width, height] as const;
-    if (this.currentScissor && tuple4Equals(this.currentScissor, next)) return this.skip("scissor");
-    this.currentScissor = next;
+    const current = this.currentScissor;
+    if (current && current[0] === x && current[1] === y && current[2] === width && current[3] === height) return this.skip("scissor");
+    this.currentScissor = [x, y, width, height];
     return this.issue("scissor", apply);
   }
 
   colorMask(red: boolean, green: boolean, blue: boolean, alpha: boolean, apply: () => void): boolean {
-    const next = [red, green, blue, alpha] as const;
-    if (this.currentColorMask && boolTuple4Equals(this.currentColorMask, next)) return this.skip("colorMask");
-    this.currentColorMask = next;
+    const current = this.currentColorMask;
+    if (current && current[0] === red && current[1] === green && current[2] === blue && current[3] === alpha) return this.skip("colorMask");
+    this.currentColorMask = [red, green, blue, alpha];
     return this.issue("colorMask", apply);
   }
 
   polygonOffset(factor: number, units: number, apply: () => void): boolean {
-    const next = [factor, units] as const;
     if (this.currentPolygonOffset && this.currentPolygonOffset[0] === factor && this.currentPolygonOffset[1] === units) return this.skip("polygonOffset");
-    this.currentPolygonOffset = next;
+    this.currentPolygonOffset = [factor, units];
     return this.issue("polygonOffset", apply);
   }
 
   stencilFunc(func: number, reference: number, mask: number, apply: () => void): boolean {
-    const next = [func, reference, mask] as const;
-    if (this.currentStencilFunc && tuple3Equals(this.currentStencilFunc, next)) return this.skip("stencilFunc");
-    this.currentStencilFunc = next;
+    const current = this.currentStencilFunc;
+    if (current && current[0] === func && current[1] === reference && current[2] === mask) return this.skip("stencilFunc");
+    this.currentStencilFunc = [func, reference, mask];
     return this.issue("stencilFunc", apply);
   }
 
@@ -213,9 +220,9 @@ export class WebGL2StateCache {
   }
 
   stencilOp(fail: number, depthFail: number, depthPass: number, apply: () => void): boolean {
-    const next = [fail, depthFail, depthPass] as const;
-    if (this.currentStencilOp && tuple3Equals(this.currentStencilOp, next)) return this.skip("stencilOp");
-    this.currentStencilOp = next;
+    const current = this.currentStencilOp;
+    if (current && current[0] === fail && current[1] === depthFail && current[2] === depthPass) return this.skip("stencilOp");
+    this.currentStencilOp = [fail, depthFail, depthPass];
     return this.issue("stencilOp", apply);
   }
 
@@ -245,25 +252,24 @@ export class WebGL2StateCache {
 
   /** gl.blendFunc(src, dst) — identical factors for color and alpha. */
   blendFunc(src: number, dst: number, apply: () => void): boolean {
-    const next = [src, dst, src, dst] as const;
-    if (this.currentBlendFunc && next.every((value, i) => this.currentBlendFunc![i] === value)) return this.skip("blendFunc");
-    this.currentBlendFunc = next;
+    const current = this.currentBlendFunc;
+    if (current && current[0] === src && current[1] === dst && current[2] === src && current[3] === dst) return this.skip("blendFunc");
+    this.currentBlendFunc = [src, dst, src, dst];
     return this.issue("blendFunc", apply);
   }
 
   /** gl.blendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha) — C-04 dedupe. */
   blendFuncSeparate(srcRgb: number, dstRgb: number, srcAlpha: number, dstAlpha: number, apply: () => void): boolean {
-    const next = [srcRgb, dstRgb, srcAlpha, dstAlpha] as const;
-    if (this.currentBlendFunc && next.every((value, i) => this.currentBlendFunc![i] === value)) return this.skip("blendFunc");
-    this.currentBlendFunc = next;
+    const current = this.currentBlendFunc;
+    if (current && current[0] === srcRgb && current[1] === dstRgb && current[2] === srcAlpha && current[3] === dstAlpha) return this.skip("blendFunc");
+    this.currentBlendFunc = [srcRgb, dstRgb, srcAlpha, dstAlpha];
     return this.issue("blendFunc", apply);
   }
 
   /** gl.blendEquationSeparate(modeRGB, modeAlpha) — C-04 dedupe. */
   blendEquation(modeRgb: number, modeAlpha: number, apply: () => void): boolean {
-    const next = [modeRgb, modeAlpha] as const;
     if (this.currentBlendEquation && this.currentBlendEquation[0] === modeRgb && this.currentBlendEquation[1] === modeAlpha) return this.skip("blendEquation");
-    this.currentBlendEquation = next;
+    this.currentBlendEquation = [modeRgb, modeAlpha];
     return this.issue("blendEquation", apply);
   }
 
@@ -286,7 +292,7 @@ export class WebGL2StateCache {
   }
 
   bindTexture(target: number, texture: unknown, apply: () => void): boolean {
-    const key = `${this.currentActiveTextureUnit ?? -1}:${target}`;
+    const key = ((this.currentActiveTextureUnit ?? -1) + 1) * 0x10000 + target;
     if (this.textureBindings.get(key) === texture) return this.skip("bindTexture");
     this.textureBindings.set(key, texture);
     return this.issue("bindTexture", apply);
@@ -319,10 +325,29 @@ export class WebGL2StateCache {
       blendFunc: this.currentBlendFunc,
       blendEquation: this.currentBlendEquation,
       enabled: Object.fromEntries(this.enabledCaps.entries()),
-      textures: Object.fromEntries(this.textureBindings.entries()),
+      textures: this.textureSnapshot(),
       samplers: Object.fromEntries(this.samplerBindings.entries()),
       stats: this.stats()
     };
+  }
+
+  /** Texture/buffer/framebuffer binding shadow in the string-keyed shape the snapshot has always had. */
+  private textureSnapshot(): Readonly<Record<string, unknown>> {
+    const out: Record<string, unknown> = {};
+    for (const [key, texture] of this.textureBindings) out[`${Math.floor(key / 0x10000) - 1}:${key % 0x10000}`] = texture;
+    for (const [target, buffer] of this.otherBufferBindings) out[`buffer:${target}`] = buffer;
+    for (const [target, framebuffer] of this.otherFramebufferBindings) out[`framebuffer:${target}`] = framebuffer;
+    return out;
+  }
+
+  /** Total issued/skipped calls, without building the per-operation record `stats()` returns. */
+  totals(): { readonly issued: number; readonly skipped: number } {
+    return { issued: this.totalIssued, skipped: this.totalSkipped };
+  }
+
+  /** Issued count for one operation (0 if never seen), without allocating. */
+  issuedCount(operation: string): number {
+    return this.operationStats.get(operation as Operation)?.issued ?? 0;
   }
 
   stats(): WebGL2StateCacheStats {
@@ -339,12 +364,14 @@ export class WebGL2StateCache {
 
   private issue(operation: Operation, apply: () => void): true {
     this.statsFor(operation).issued += 1;
+    this.totalIssued += 1;
     apply();
     return true;
   }
 
   private skip(operation: Operation): false {
     this.statsFor(operation).skipped += 1;
+    this.totalSkipped += 1;
     return false;
   }
 
@@ -362,15 +389,3 @@ const UNSET = Symbol("unset-webgl-state");
 const ARRAY_BUFFER_TARGET = 0x8892;
 const ELEMENT_ARRAY_BUFFER_TARGET = 0x8893;
 const FRAMEBUFFER_TARGET = 0x8d40;
-
-function tuple4Equals(left: readonly [number, number, number, number], right: readonly [number, number, number, number]): boolean {
-  return left[0] === right[0] && left[1] === right[1] && left[2] === right[2] && left[3] === right[3];
-}
-
-function tuple3Equals(left: readonly [number, number, number], right: readonly [number, number, number]): boolean {
-  return left[0] === right[0] && left[1] === right[1] && left[2] === right[2];
-}
-
-function boolTuple4Equals(left: readonly [boolean, boolean, boolean, boolean], right: readonly [boolean, boolean, boolean, boolean]): boolean {
-  return left[0] === right[0] && left[1] === right[1] && left[2] === right[2] && left[3] === right[3];
-}

@@ -25,7 +25,11 @@ export function updateRouteDiagnostics(diagnostics: MutableDiagnostics): void {
   if (typeof document !== "undefined" && document.body.dataset.aura3dReady !== undefined) {
     // Backend and mode are constants of a mount and are written by markRouteState; reading them here
     // would force the full renderer report to be rebuilt every frame.
-    document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
+    // Written every frame, but the value is usually the same as last frame's: a DOM attribute write (mutation record,
+    // style invalidation) is only worth issuing when the number changed.
+    const drawCalls = String(diagnostics.drawCalls);
+    const dataset = document.body.dataset;
+    if (dataset.aura3dDrawCalls !== drawCalls) dataset.aura3dDrawCalls = drawCalls;
   }
 }
 

@@ -11,6 +11,7 @@
 
 import type { QrFlagName, QrFlagValue, QrFlags } from "@aura3d/rendering/contracts";
 import { QR_FLAG_STATES, REMOVED_QR_FLAGS } from "@aura3d/rendering/contracts/flags.state";
+import { parseHrefCached } from "./urlCache";
 
 export type QrFlagInput = "all" | "none" | (string & {}) | readonly string[] | Readonly<Partial<Record<QrFlagName, QrFlagValue>>>;
 
@@ -191,7 +192,7 @@ export function resolveQrFlags(input: { readonly options?: QrFlagInput; readonly
   // programmatic options > flags.state default-on. Runtime overrides must beat
   // values baked into app code, or `-x` / `none` can't measure a flag (#1232).
   if (input.url !== undefined) {
-    const url = typeof input.url === "string" ? new URL(input.url, "http://localhost/") : input.url;
+    const url = typeof input.url === "string" ? parseHrefCached(input.url) : input.url;
     const list = url.searchParams.get("a3d-qr");
     if (list !== null) applyList(values, list);
   }
