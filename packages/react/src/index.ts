@@ -6,7 +6,6 @@ import {
   isValidElement,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -240,37 +239,59 @@ export function eventInteractionNodes(target?: string) {
   ] as const;
 }
 
+let unstableMountKeys = 0;
+
+/**
+ * Identity of a built scene for remount decisions. React children are new objects on every parent
+ * render, so keying the mount effect on them would dispose and recreate the app (and its WebGL
+ * context) each time the parent re-renders. The serialized snapshot only changes when the scene does.
+ * A snapshot that cannot be serialized gets a fresh key each call, which is the old always-remount
+ * behaviour rather than a silently stale scene.
+ */
+export function sceneMountKey(builder: AuraSceneBuilder): string {
+  try {
+    return JSON.stringify(builder.toJSON());
+  } catch {
+    return `unserializable:${unstableMountKeys++}`;
+  }
+}
+
+function optionMountKey(value: unknown): string {
+  try {
+    return JSON.stringify(value) ?? "undefined";
+  } catch {
+    return `unserializable:${unstableMountKeys++}`;
+  }
+}
+
 export function AuraCanvas(props: AuraCanvasProps): ReactElement {
   const ref = useRef<HTMLCanvasElement | null>(null);
   const [app, setApp] = useState<AuraApp | undefined>(undefined);
-  const builtScene = useMemo(() => buildSceneFromChildren(props.children), [props.children]);
-  const handlers = useMemo<AuraCanvasEventHandlers>(
-    () => ({
-      ...(props.onPointerDown ? { onPointerDown: props.onPointerDown } : {}),
-      ...(props.onPointerMove ? { onPointerMove: props.onPointerMove } : {}),
-      ...(props.onPointerUp ? { onPointerUp: props.onPointerUp } : {}),
-      ...(props.onHover ? { onHover: props.onHover } : {})
-    }),
-    [props.onPointerDown, props.onPointerMove, props.onPointerUp, props.onHover]
-  );
+  const builtScene = buildSceneFromChildren(props.children);
+  const sceneKey = sceneMountKey(builtScene);
+  const diagnosticsKey = optionMountKey(props.diagnostics);
+  // Callbacks and options are read through a ref so inline arrow functions and object literals do not remount the app.
+  const latest = useRef({ props, builtScene });
+  latest.current = { props, builtScene };
   useEffect(() => {
     if (!ref.current) return undefined;
     const canvas = ref.current;
+    const { props: mountProps, builtScene: mountScene } = latest.current;
     const created = createAuraApp(canvas, {
-      scene: builtScene,
-      diagnostics: props.diagnostics,
-      pixelRatio: props.pixelRatio,
-      autoStart: props.autoStart,
-      resize: props.resize
+      scene: mountScene,
+      diagnostics: mountProps.diagnostics,
+      pixelRatio: mountProps.pixelRatio,
+      autoStart: mountProps.autoStart,
+      resize: mountProps.resize
     });
     setApp(created);
-    props.onReady?.(created);
-    const pointerDown = (event: PointerEvent): void => handlers.onPointerDown?.(event);
+    mountProps.onReady?.(created);
+    const pointerDown = (event: PointerEvent): void => latest.current.props.onPointerDown?.(event);
     const pointerMove = (event: PointerEvent): void => {
-      handlers.onPointerMove?.(event);
-      handlers.onHover?.(event);
+      latest.current.props.onPointerMove?.(event);
+      latest.current.props.onHover?.(event);
     };
-    const pointerUp = (event: PointerEvent): void => handlers.onPointerUp?.(event);
+    const pointerUp = (event: PointerEvent): void => latest.current.props.onPointerUp?.(event);
     canvas.addEventListener("pointerdown", pointerDown);
     canvas.addEventListener("pointermove", pointerMove);
     canvas.addEventListener("pointerup", pointerUp);
@@ -281,7 +302,10 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
       created.dispose();
       setApp(undefined);
     };
-  }, [builtScene, props.autoStart, props.diagnostics, props.onReady, props.pixelRatio, props.resize, handlers]);
+  }, [sceneKey, diagnosticsKey, props.autoStart, props.pixelRatio, props.resize]);
+  // Children render inside the provider: the declarative nodes (`Scene`, `Camera`, `Lights`, `Effect`) return null,
+  // `<Model suspendOnLoad>` suspends, and any other child (a component calling `useAuraFrame`/`useAuraApp`, a DOM
+  // overlay) now sees the mounted app. Before this, children were only read for the scene and never rendered.
   return createElement(
     AuraAppContext.Provider,
     { value: app },
@@ -294,7 +318,8 @@ export function AuraCanvas(props: AuraCanvasProps): ReactElement {
         display: "block",
         ...(props.style ?? {})
       }
-    })
+    }),
+    props.children
   );
 }
 

@@ -62,7 +62,7 @@ Value exports: 282 total, 240 live, 42 deprecated. Prefer live names. Deprecated
 | `createCountedRng` | function | Seeded replay-stable random stream with a `draws` counter and `reset(seed)`. |
 | `game` | namespace | Game runtime pieces: rules, loop, frame loop, input, input replay export and import. |
 | `createGameApp` | function | Create an app with a game runtime attached. |
-| `createGame` | function | Root stub: DOM and sound members throw `FEATURE_UNIMPLEMENTED`. Import the real kit from `@aura3d/engine/game` (docs/api/game-kit.md). |
+| `createGame` | function | Headless root stub: logs `CREATE_GAME_STUB` once; `touch` is `null`, `sound` is `undefined`, HUD and menus do nothing. Import the real kit from `@aura3d/engine/game` (docs/api/game-kit.md). |
 | `createGameAudio` | function | Game audio adapter over `createGameSoundEngine`. |
 | `bindGameTouchControls` | function | Bind on-screen controls to synthetic keyboard events. |
 | `createVehicleChassis` | function | Create a vehicle chassis. |

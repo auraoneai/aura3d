@@ -32,6 +32,23 @@ with typed assets, cameras, lights, effects, and product-viewer scene builders.
   `cameraControlsRecipe`, `environmentPresetRecipe`, `transformGizmoRecipe`.
 - `R3F_TO_AURA_MIGRATION_TABLE`: the R3F → AuraCanvas mapping for importers.
 
+## Status: experimental
+
+Audited in the beat-three.js PRD (WP-K.6). What is tested: scene building from
+children, the frame scheduler, asset resources, recipes and the migration table
+(`tests/unit/react-adapter/`), and the render tree of `AuraCanvas` (one canvas;
+children render inside the app provider; declarative nodes add no DOM). Fixed
+in that audit: children used to be read for the scene but never rendered, so
+`useAuraFrame`, `useAuraApp` and `<Model suspendOnLoad>` inside an
+`AuraCanvas` never ran; and the app was disposed and recreated whenever the
+parent re-rendered with inline children, handlers or an inline `onReady`.
+`AuraCanvas` now remounts only when the built scene, `diagnostics`,
+`pixelRatio`, `autoStart` or `resize` change.
+
+Not yet proven, so the package stays `experimental`: mount, dispose and listener
+cleanup in a real browser (needs a remote Playwright receipt), React StrictMode
+double-mount, and server rendering of a mounted scene.
+
 ## R3F migration note
 
 `R3F_TO_AURA_MIGRATION_TABLE` maps idiomatic R3F to the covered AuraCanvas

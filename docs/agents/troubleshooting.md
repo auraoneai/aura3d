@@ -47,7 +47,7 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
 
 **`compute-requires-webgpu`**, **`invalid-compute-spec`** - `compute.*` needs a bound WebGPU device and WGSL; GLSL input is rejected. **`invalid-tsl-graph`**, **`tsl-*`** - the TSL subset covers a limited set of node names; see `docs/api/root-exports.md` (`tsl` members).
 
-**`FEATURE_UNIMPLEMENTED` / `GAME_SHELL_NOT_IN_ENGINE`** - you called DOM or sound members of the root `createGame`, which is a stub.
+**`CREATE_GAME_STUB`** (console warning) - you imported `createGame` from `@aura3d/engine`, which is a headless stub: no HUD, touch, juice or sound, and `game.sound` is `undefined`.
 - Fix: `import { createGame } from "@aura3d/engine/game"` (`docs/api/game-kit.md`).
 
 ## 3. Diagnostics codes you will see in the console or `diagnostics().warnings`

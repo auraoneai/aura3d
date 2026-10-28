@@ -13,5 +13,5 @@ describe("root createGame stub", () => {
     const messages = warn.mock.calls.map((call) => String(call[0])).filter((m) => m.startsWith("CREATE_GAME_STUB"));
     expect(messages).toHaveLength(1);
     expect(messages[0]).toContain("@aura3d/engine/game");
-  });
+  }, 60_000); // cold import of the whole engine graph takes ~4 s alone and over 5 s when files run in parallel
 });
