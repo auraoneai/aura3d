@@ -117,6 +117,9 @@ export const BLOOM_FUSED_MAX_MIPS = 5;
 /** Pass fusion: a mip blurs in one 2-D pass when (2r+1)^2 * width * height stays at or under this many texel fetches. */
 export const BLOOM_FUSED_BLUR_TAP_BUDGET = 7_000_000;
 
+/** Texture units the fullscreen presentation snapshot saves and restores: 0..4 (the fused bloom mip sum samples five). */
+export const PRESENTATION_TEXTURE_UNITS = BLOOM_FUSED_MAX_MIPS;
+
 export interface WebGL2BloomPyramidResources {
   readonly plan: BloomPyramidPlan;
   readonly hdr: boolean;
@@ -134,6 +137,8 @@ export interface WebGL2FullscreenPresentationStateSnapshot {
   readonly textureUnit0: WebGL2TextureUnit0Snapshot;
   readonly textureUnit1: WebGL2TextureUnitBindingSnapshot;
   readonly textureUnit2: WebGL2TextureUnitBindingSnapshot;
+  /** Units 3 and up that post passes bind (the fused bloom mip sum samples units 0..4), restored on exit. */
+  readonly extraTextureUnits: readonly { readonly unit: number; readonly binding: WebGL2TextureUnitBindingSnapshot }[];
   readonly vertexArray: WebGLVertexArrayObject | null;
   readonly viewport: Int32Array | readonly number[];
   readonly colorMask: readonly boolean[];
@@ -1691,6 +1696,10 @@ export class WebGL2LegacyPostPipeline {
     const textureUnit0 = this.host.lifecycle.captureTextureUnit0();
     const textureUnit1 = this.host.lifecycle.captureTextureUnitBinding(1);
     const textureUnit2 = this.host.lifecycle.captureTextureUnitBinding(2);
+    const extraTextureUnits: { unit: number; binding: WebGL2TextureUnitBindingSnapshot }[] = [];
+    for (let unit = 3; unit < PRESENTATION_TEXTURE_UNITS; unit += 1) {
+      extraTextureUnits.push({ unit, binding: this.host.lifecycle.captureTextureUnitBinding(unit) });
+    }
     this.host.gl.activeTexture(textureUnit0.activeTexture);
     const snapshot: WebGL2FullscreenPresentationStateSnapshot = {
       framebuffer: this.host.gl.getParameter(this.host.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null,
@@ -1698,6 +1707,7 @@ export class WebGL2LegacyPostPipeline {
       textureUnit0,
       textureUnit1,
       textureUnit2,
+      extraTextureUnits,
       vertexArray: this.host.gl.getParameter(this.host.gl.VERTEX_ARRAY_BINDING) as WebGLVertexArrayObject | null,
       viewport: this.host.gl.getParameter(this.host.gl.VIEWPORT) as Int32Array | readonly number[],
       colorMask: this.host.gl.getParameter(this.host.gl.COLOR_WRITEMASK) as readonly boolean[],
@@ -1723,6 +1733,10 @@ export class WebGL2LegacyPostPipeline {
 
   restoreFullscreenPresentationState(snapshot: WebGL2FullscreenPresentationStateSnapshot, fallbackWidth: number, fallbackHeight: number): void {
     this.host.gl.bindVertexArray(snapshot.vertexArray);
+    for (let index = snapshot.extraTextureUnits.length - 1; index >= 0; index -= 1) {
+      const extra = snapshot.extraTextureUnits[index]!;
+      this.host.lifecycle.restoreTextureUnitBinding(extra.unit, extra.binding);
+    }
     this.host.lifecycle.restoreTextureUnitBinding(2, snapshot.textureUnit2);
     this.host.lifecycle.restoreTextureUnitBinding(1, snapshot.textureUnit1);
     this.host.lifecycle.restoreTextureUnit0(snapshot.textureUnit0);

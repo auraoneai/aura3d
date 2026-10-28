@@ -27,5 +27,10 @@
   "draws_default": { "2048x2048 (shadow)": 4, "640x360 mesh": 5, "640x360 fullscreen (composite, tone map)": 2, "320x180": 4, "160x90": 2, "80x45": 2, "40x23": 2, "20x12": 2, "total": 25 },
   "whyItIsFaster": "The bright extract (a full-resolution pass) is folded into the level-0 downsample, and the full-resolution upsample is folded into the composite, so two 640x360 passes disappear; that fill outweighs the 2-D blur on the two smallest mips.",
   "lookNeutral": "auto vs production, same frame: mean abs diff 0.001/255, max 1/255.",
-  "persistGlStateFinding": "Keeping the GL state shadow across frames on the HDR path (post chain on) changed frames: PBR viewer mean +5.17/255, max 41; skinned character interior max 9. It is therefore enabled only on the direct path, where nothing but the forward pass touches GL state."
+  "persistGlStateFinding": "Removed (2026-10-28). Keeping the GL state shadow across frames did not move frame time or CPU, and an adversarial review found its root cause of divergence: the sampler registry kept a second shadow (active unit, per-unit texture bindings) that stateCache.invalidate() did not clear, and the presentation snapshot restored only units 0-2 while the fused mip sum binds 0-4. Both are now fixed regardless: stateCache.invalidate() resets every registered dependent shadow (the sampler registry registers itself), and the snapshot saves and restores units 0-4. Guard: tests/unit/rendering/post-chain-texture-unit-shadow.test.ts.",
+  "afterShadowFix_8frames_x4reps": [
+    { "run": "p1-shadow-a", "production": 404, "default": 416.4, "vsProduction": "+3.1%", "draws": 25 },
+    { "run": "p1-shadow-b", "production": 399, "default": 386, "vsProduction": "-3.3%", "draws": 25 }
+  ],
+  "showcaseGame_heatsink": "auto vs production, 3 stepped frames (settle(30) then step), Math.random seeded, HDRI settled: mean 0.001/255, max 1/255, 0 pixels over 6/255 on every frame (runs p1-shadow-c and p1-shadow-d). The production-vs-production control was 0 in one run and 14-16/255 in the other: the route is not fully deterministic across loads, so the auto row is the meaningful one. Every fusion variant (off, acc only, ext only, b2d3 only, default) was also within 0.001/255. An earlier failing run (mean 13-24/255) captured before the HDRI chain finished; the spec now waits for hdriStatus to leave pending."
 }

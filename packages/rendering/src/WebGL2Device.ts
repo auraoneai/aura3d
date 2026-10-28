@@ -382,12 +382,6 @@ export class WebGL2Device implements RenderDevice {
   bloomFusedPasses = false;
   /** Which fusions run when `bloomFusedPasses` is on (see `webgl2/BloomFusion.ts`). */
   bloomFusion: BloomFusionConfig = DEFAULT_BLOOM_FUSION;
-  /**
-   * Keep the GL state shadow (program, VAO, framebuffer, viewport, enables, texture units) across frames instead of
-   * re-issuing it every `beginFrame`. Off by default; the engine turns it on for `quality: "auto"` / `"cinematic"`.
-   * Code that changes GL state outside the cache must call `stateCache.invalidate()` (all such sites already do).
-   */
-  persistGlState = false;
 
   static create(options: WebGL2DeviceOptions): WebGL2Device {
     const gl = options.canvas.getContext("webgl2", {
@@ -704,9 +698,8 @@ export class WebGL2Device implements RenderDevice {
    */
   invalidateGpuObjects(): void {
     this.host.drawBinder.invalidateGpuObjects();
+    // Also resets the sampler registry's unit shadow (registered dependent of the state cache).
     this.host.stateCache.invalidate();
-    this.host.samplers.activeTextureUnitIndex = -1;
-    this.host.samplers.textureUnitBindings.clear();
   }
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {
