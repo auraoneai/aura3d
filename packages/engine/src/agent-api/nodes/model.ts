@@ -65,7 +65,10 @@ export const builtInCharacterAssets = lazyNamespace(() => defineAuraAssets({
       // Exactly the clips authored in humanoid-fixture.glb (guarded by a GLB-parsing test); do not add names that are not in the binary.
       animations: ["Idle", "Run", "TPose", "Walk"],
       textures: ["embedded soldier/vanguard textures"],
-      license: "Aura3D bundled soldier fixture from the existing repository corpus"
+      license: "Aura3D bundled soldier fixture from the existing repository corpus",
+      // Bundled with the engine package and addressed by hash; served from the package origin, so its
+      // URL is http(s) in a browser. Marks it as trusted for the production bridge (see createAssetProvenance).
+      provenance: { builtIn: true }
     }
   }
 } as const));

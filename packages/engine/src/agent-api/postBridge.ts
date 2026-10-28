@@ -38,7 +38,7 @@ import {
 import type { BloomOptionsV2, PostTierResolution } from "@aura3d/rendering";
 import type { AuraCustomPostPass, AuraPostPassOrder, AuraPostSurface } from "../contracts/post.js";
 import type { AuraOutputOptions } from "../contracts/output.js";
-import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneSnapshot } from "./index.js";
+import { AuraRuntimeError, groups, type AuraApp, type AuraCreateAppOptions, type AuraEffectNode, type AuraSceneNode, type AuraSceneSnapshot } from "./index.js";
 import { expandPostPreset, presetCapabilityDegraded } from "./postPresets.js";
 
 /* ------------------------------------------------------------------------- */
@@ -99,6 +99,22 @@ let latest: SubmittedPostprocessRecord | null = null;
  */
 const canvasRecords = new WeakMap<HTMLCanvasElement, SubmittedPostprocessRecord>();
 let sequence = 0;
+
+/**
+ * `effects.contactShadows()` feeds the PRD-02 contact-shadow pass, whose mask no forward-shading stage samples yet,
+ * so on its own the node rendered nothing (identical frames in tests/browser/effects-receipts.spec.ts). It is lowered
+ * to the proven SSAO contact-occlusion pass so the request produces a grounding cue. Returns undefined for other nodes.
+ */
+export function contactShadowsAsOcclusion(node: AuraSceneNode | AuraEffectNode): AuraEffectNode | undefined {
+  if (node.kind !== "effect" || (node.effect as string) !== "contact-shadows") return undefined;
+  const request = (node as unknown as { readonly contactShadows?: { readonly length?: number; readonly intensity?: number } }).contactShadows;
+  return {
+    ...node,
+    effect: "contact-occlusion",
+    radius: request?.length ?? 0.25,
+    intensity: Math.max(0, Math.min(1, 0.36 * (request?.intensity ?? 1)))
+  } as AuraEffectNode;
+}
 
 export function recordSubmittedPostprocess(
   options: RendererPostProcessOptions,
@@ -791,8 +807,12 @@ export function createRootPostPipeline(
   // merge at runtime: the ambient-occlusion node drives S2, the extra AO
   // node is dropped and reported as `POST_DUPLICATE_STAGE` (a diagnostic, not
   // a mount failure).
-  const aoNodes = effectNodes.filter((node): node is AuraEffectNode =>
-    node.kind === "effect" && (node.effect === "ambient-occlusion" || node.effect === "contact-occlusion"));
+  const aoNodes = effectNodes.flatMap((node): AuraEffectNode[] => {
+    if (node.kind !== "effect") return [];
+    if (node.effect === "ambient-occlusion" || node.effect === "contact-occlusion") return [node];
+    const fallback = contactShadowsAsOcclusion(node);
+    return fallback ? [fallback] : [];
+  });
   const aoNode = aoNodes.find((node) => node.effect === "ambient-occlusion") ?? aoNodes[0];
   if (aoNodes.length > 1) {
     diagnostics.push({
