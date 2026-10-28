@@ -4,7 +4,7 @@
 // look preset stays fixed for every venue; venue identity comes from
 // re-tinting pitch/ground/hoarding/crowd materials and toggling dressing
 // (cage walls, mow stripes, the aurora dome), mirroring how
-// VENUE_PALETTES works in showcase-top-tennis-v2.
+// VENUE_PALETTES works in showcase-top-tennis.
 
 import type { ClubId, VenueId } from "./types";
 

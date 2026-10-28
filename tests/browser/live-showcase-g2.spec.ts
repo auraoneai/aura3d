@@ -7,7 +7,7 @@ import { expect, test, type Page } from "@playwright/test";
  * pixels change over time, no console/page errors, no failed responses. Results print as G2_JSON lines (remote runner).
  */
 const BASE = (process.env.LIVE_BASE ?? "https://aura3d.auraone.ai").replace(/\/$/, "");
-const ALL = ["bunker-zero", "cinematic-architecture", "cross-hop", "digital-twin-ops", "dot-dash-3d", "heatsink", "heatsink-v2"];
+const ALL = ["bunker-zero", "cinematic-architecture", "cross-hop", "digital-twin-ops", "dot-dash-3d", "heatsink"];
 const SLUGS_FILE = "tests/browser/live-slugs-g2.txt";
 const SLUGS = (process.env.LIVE_SLUGS ?? (existsSync(SLUGS_FILE) ? readFileSync(SLUGS_FILE, "utf8").replace(/\s+/g, ",") : ALL.join(",")))
   .split(",").map((x) => x.trim()).filter(Boolean);

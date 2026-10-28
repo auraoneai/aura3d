@@ -71,7 +71,7 @@ describe("Teleoperator vehicles are the generic generated set", () => {
       const block = typed.slice(start, typed.indexOf("\n  },\n", start));
       expect(block, `${key} typed url`).toContain(`url: "${String(e.url)}"`);
       expect(block, `${key} typed hash`).toContain(`hash: "sha256-${String(e.sha256)}"`);
-      for (const app of ["apps/showcase-teleoperator/src/main.ts", "apps/showcase-teleoperator-v2/src/main.ts"]) {
+      for (const app of ["apps/showcase-teleoperator/src/main.ts"]) {
         const src = readFileSync(join(root, app), "utf8");
         const local = new RegExp(`  ${key}: \\{[\\s\\S]*?url: "([^"]+)"[\\s\\S]*?hash: "([^"]+)"`).exec(src);
         if (!local) continue;

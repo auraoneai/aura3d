@@ -137,9 +137,9 @@ for (const [key, model] of Object.entries(MODEL_FOR_KEY)) {
   ts = ts.slice(0, start) + block + ts.slice(end);
 }
 
-// app-local definitions in the two Teleoperator apps
+// app-local definitions in the Teleoperator app
 const localEdits = [];
-for (const file of ["apps/showcase-teleoperator/src/main.ts", "apps/showcase-teleoperator-v2/src/main.ts"]) {
+for (const file of ["apps/showcase-teleoperator/src/main.ts"]) {
   const p = join(root, file);
   if (!existsSync(p)) continue;
   let src = readFileSync(p, "utf8");

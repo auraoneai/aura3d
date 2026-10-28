@@ -8,7 +8,7 @@ import { expect, test, type Page } from "@playwright/test";
  */
 const BASE_FILE = "tests/browser/live-base.txt";
 const BASE = (process.env.LIVE_BASE ?? (existsSync(BASE_FILE) ? readFileSync(BASE_FILE, "utf8").trim() : "https://aura3d.auraone.ai")).replace(/\/$/, "");
-const ROUTES = ["/apps/showcase-teleoperator/", "/apps/showcase-teleoperator-v2/"];
+const ROUTES = ["/apps/showcase-teleoperator/"];
 const BOOT_WAIT_MS = Number(process.env.LIVE_BOOT_WAIT_MS ?? 15000);
 const TAG = process.env.TELEO_TAG ?? "live";
 

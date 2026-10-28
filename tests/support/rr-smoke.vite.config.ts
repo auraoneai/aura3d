@@ -38,8 +38,7 @@ export default {
     chunkSizeWarningLimit: 4000,
     rollupOptions: {
       input: {
-        "showcase-roadster-rush": path.join(repoRoot, "apps/showcase-roadster-rush/index.html"),
-        "showcase-roadster-rush-v2": path.join(repoRoot, "apps/showcase-roadster-rush-v2/index.html")
+        "showcase-roadster-rush": path.join(repoRoot, "apps/showcase-roadster-rush/index.html")
       }
     }
   }

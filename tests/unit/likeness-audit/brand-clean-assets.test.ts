@@ -24,8 +24,7 @@ const REMOVED = [
 const TS_MANIFESTS = [
   "src/aura-assets.ts",
   "apps/showcase-aura-fc-3d/src/aura-assets-v2.ts",
-  "apps/showcase-teleoperator/src/main.ts",
-  "apps/showcase-teleoperator-v2/src/main.ts"
+  "apps/showcase-teleoperator/src/main.ts"
 ];
 
 function entry(text: string, key: string): { url: string; hash: string; sizeBytes?: number } | undefined {

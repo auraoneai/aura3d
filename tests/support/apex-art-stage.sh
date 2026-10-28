@@ -8,4 +8,4 @@ cp -R /tmp/apex-art/dist/. tests/support/apex-art-dist/
 for f in public/aura-assets/roadsterRush*.glb public/aura-assets/showcaseModernBuildingOne.*.glb; do
   case "$f" in *.????????.glb) cp "$f" tests/support/apex-art-dist/aura-assets/ ;; esac
 done
-cp apps/showcase-roadster-rush-v2/public/aura-assets/*.glb tests/support/apex-art-dist/aura-assets/
+cp public/aura-assets/apex-*.glb tests/support/apex-art-dist/aura-assets/

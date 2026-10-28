@@ -12,7 +12,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const MODE_FILE = "tests/browser/upgrade-g4-mode.txt";
 const MODE = (existsSync(MODE_FILE) ? readFileSync(MODE_FILE, "utf8").trim() : "dev").split(/\s+/)[0] || "dev";
 const APPS_FILE = "tests/browser/upgrade-g4-apps.txt";
-const ALL_APPS = ["top-tennis", "top-tennis-v2", "vault-breakers", "webgpu-particle-lab", "bean-brawl-race", "kart-havoc", "turbo-ball", "asset-audition", "data-galaxy", "material-asset-inspector", "product-configurator", "smart-city-control"];
+const ALL_APPS = ["top-tennis", "vault-breakers", "webgpu-particle-lab", "bean-brawl-race", "kart-havoc", "turbo-ball", "asset-audition", "data-galaxy", "material-asset-inspector", "product-configurator", "smart-city-control"];
 const APPS = (existsSync(APPS_FILE) ? readFileSync(APPS_FILE, "utf8").split(/\s+/).filter(Boolean) : ALL_APPS);
 const BOOT_WAIT_MS = 9000;
 

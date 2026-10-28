@@ -12,7 +12,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const MODE_FILE = "tests/browser/upgrade-g3-mode.txt";
 const MODE = (existsSync(MODE_FILE) ? readFileSync(MODE_FILE, "utf8").trim() : "live").split(/\s+/)[0] || "live";
 const APPS_FILE = "tests/browser/upgrade-g3-apps.txt";
-const ALL_APPS = ["iron-crown", "pips-big-leap", "roadster-rush", "roadster-rush-v2", "slingshot-siege", "teleoperator", "teleoperator-v2"];
+const ALL_APPS = ["iron-crown", "pips-big-leap", "roadster-rush", "slingshot-siege", "teleoperator"];
 const APPS = (existsSync(APPS_FILE) ? readFileSync(APPS_FILE, "utf8").split(/\s+/).filter(Boolean) : ALL_APPS);
 const BOOT_WAIT_MS = 9000;
 

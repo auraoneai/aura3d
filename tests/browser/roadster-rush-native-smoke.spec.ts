@@ -11,7 +11,7 @@ import { expect, test, type Page } from "@playwright/test";
  */
 
 const DIST = resolve("tests/support/rr-dist");
-const ROUTES = ["/apps/showcase-roadster-rush/", "/apps/showcase-roadster-rush-v2/"];
+const ROUTES = ["/apps/showcase-roadster-rush/"];
 const MIME: Record<string, string> = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".wasm": "application/wasm", ".svg": "image/svg+xml", ".glb": "model/gltf-binary", ".json": "application/json", ".hdr": "application/octet-stream", ".cjs": "text/javascript" };
 
 const MISSES: string[] = [];

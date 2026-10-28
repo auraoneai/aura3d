@@ -10,7 +10,7 @@
  *
  * Usage:
  *   node tools/dev-route-build.mjs <route> <outDir>
- *   node tools/dev-route-build.mjs showcase-top-tennis-v2 /tmp/a3d-ttv2-dist
+ *   node tools/dev-route-build.mjs showcase-top-tennis /tmp/a3d-tt-dist
  *
  * Exit code is the vite build exit code. This is a compile/import smoke
  * check only — it does not copy public/, aura-assets, route-health, or
