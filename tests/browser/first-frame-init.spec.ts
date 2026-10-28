@@ -20,6 +20,35 @@ const COLD_LOADS = Number(process.env.FIRST_FRAME_COLD_LOADS ?? 3);
 const REPORT = "tests/reports/first-frame-init/first-frame-init.json";
 const results: Record<string, unknown> = {};
 
+/** Times the GL calls that build shader programs (and the draws), with start times, so the share of the first frame spent compiling is measured, not inferred. */
+const GL_TIMING_HOOK = `(() => {
+  const events = [];
+  window.__FF_GL__ = events;
+  const proto = WebGL2RenderingContext.prototype;
+  for (const name of ["createShader", "compileShader", "linkProgram", "getProgramParameter", "getShaderParameter", "getProgramInfoLog", "useProgram", "drawElements", "drawArrays", "drawElementsInstanced", "texImage2D", "texStorage2D", "texSubImage2D", "readPixels", "getError"]) {
+    const orig = proto[name];
+    if (!orig) continue;
+    proto[name] = function (...a) {
+      const t = performance.now();
+      const r = orig.apply(this, a);
+      const d = performance.now() - t;
+      if (events.length < 4000) events.push([name, t, d]);
+      return r;
+    };
+  }
+})();`;
+
+function glSummary(events: [string, number, number][], untilMs: number): Record<string, { calls: number; ms: number }> {
+  const out: Record<string, { calls: number; ms: number }> = {};
+  for (const [name, t, d] of events) {
+    if (t > untilMs) continue;
+    const row = (out[name] ??= { calls: 0, ms: 0 });
+    row.calls += 1;
+    row.ms = Math.round((row.ms + d) * 100) / 100;
+  }
+  return out;
+}
+
 interface Stats { width: number; height: number; meanRgb: number[]; nonBlack: number; lumaMean: number; litMeanRgb: number[]; litPixels: number }
 interface Load {
   firstFrameMs: number;
@@ -29,6 +58,7 @@ interface Load {
   settled: Stats;
   settledSnapshotSha256: string;
   probeAtFirstFrame: Record<string, unknown>;
+  gl: Record<string, { calls: number; ms: number }>;
   errors: string[];
   console: string[];
 }
@@ -74,6 +104,7 @@ test.describe("first frame init (software WebGL2)", () => {
         if ((message.type() === "warning" || message.type() === "error") && !/GPU stall due to ReadPixels/.test(message.text())) consoleProblems.push(`${message.type()}: ${message.text()}`);
       });
       page.on("pageerror", (error) => consoleProblems.push(`pageerror: ${error.message}`));
+      await page.addInitScript(GL_TIMING_HOOK);
       await page.goto(`${server.origin}/tests/browser/frame-cost-harness.html?scene=cube&quality=auto`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => Boolean((window as unknown as { __FRAME_COST__?: unknown }).__FRAME_COST__), undefined, { timeout: 120_000 });
       const load = await page.evaluate(async () => {
@@ -90,11 +121,11 @@ test.describe("first frame init (software WebGL2)", () => {
         // Same frame count on every build: 30 more frames from here, then a full read.
         const shot = api.snapshot(30);
         const settled = api.frameStats();
-        return { ...first, settled, shotBase64: shot.rgbaBase64 };
+        return { ...first, settled, shotBase64: shot.rgbaBase64, glEvents: (window as unknown as { __FF_GL__: [string, number, number][] }).__FF_GL__ };
       });
       const sha = createHash("sha256").update(load.shotBase64).digest("hex");
-      const { shotBase64: _omit, ...rest } = load;
-      loads.push({ ...rest, settledSnapshotSha256: sha, console: consoleProblems });
+      const { shotBase64: _omit, glEvents, ...rest } = load;
+      loads.push({ ...rest, gl: glSummary(glEvents, load.firstFrameMs), settledSnapshotSha256: sha, console: consoleProblems });
       await context.close();
     }
     const summary = {
