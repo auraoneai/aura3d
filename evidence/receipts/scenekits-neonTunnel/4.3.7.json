@@ -1,0 +1,40 @@
+{
+  "capability": "scenekits-neonTunnel",
+  "version": "4.3.7",
+  "gitSha": "ac6488132776f1076d8b004cf36f533f19b07f62",
+  "renderer": "swiftshader",
+  "scene": "sceneKits.neonTunnel() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
+  "frames": [
+    {
+      "file": "evidence/receipts/scenekits-neonTunnel/4.3.7/t0.png",
+      "sha256": "ca9997c2f87153716e16bd47dd9af22a323f80a493f1351f374ed9fb66b98346",
+      "meanLuma": 198.9343,
+      "nonBlackRatio": 1,
+      "label": "frame 0"
+    },
+    {
+      "file": "evidence/receipts/scenekits-neonTunnel/4.3.7/t90.png",
+      "sha256": "52978d8cfd0aacbcf23dc317aba2eb987a00a68312c122bbd7cf8e11684e403b",
+      "meanLuma": 188.8368,
+      "nonBlackRatio": 1,
+      "label": "frame after 90 fixed steps (1.5 s)"
+    }
+  ],
+  "tests": [
+    "tests/browser/scenekits-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T02:39:12.402Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "noKitProblems": true,
+    "nonBlackRatioAtLeast2pc": true,
+    "lumaSpreadAtLeast3": true,
+    "atLeast6ColourBuckets": true,
+    "framesDifferOverTime": true,
+    "drawCalls": 119,
+    "motionChangedPixelFraction": 0.9737,
+    "kitNodeCount": 147,
+    "kitStructuralScore": 5
+  }
+}

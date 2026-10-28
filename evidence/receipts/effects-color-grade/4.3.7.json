@@ -1,0 +1,50 @@
+{
+  "capability": "effects-color-grade",
+  "version": "4.3.7",
+  "gitSha": "ac6488132776f1076d8b004cf36f533f19b07f62",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/receipts-harness.ts effectScene(): typed GLB subject, floor, reference bar, far colour block, one directional light",
+  "frames": [
+    {
+      "file": "evidence/receipts/_shared/4.3.7/fx-baseline.png",
+      "sha256": "c5d9b420be0372eb7ffcd07f1085814ded0a847493712aadb77a34b2406d6b5d",
+      "meanLuma": 149.8495,
+      "nonBlackRatio": 1,
+      "label": "effect off (baseline)"
+    },
+    {
+      "file": "evidence/receipts/effects-color-grade/4.3.7/fx-color-grade-desaturate.png",
+      "sha256": "eb8eb186dadb0501768929e51d049b58b4e8a8c19e357660b03fc1df110f640c",
+      "meanLuma": 149.74,
+      "nonBlackRatio": 0.6985,
+      "label": "effect on (fx-color-grade-desaturate)"
+    },
+    {
+      "file": "evidence/receipts/effects-color-grade/4.3.7/fx-color-grade-contrast.png",
+      "sha256": "ad37e1bd0f0cd34f56df9663c2395b75520f2394f90abc1a245388a1b6e22ee0",
+      "meanLuma": 171.5366,
+      "nonBlackRatio": 0.6932,
+      "label": "effect on (fx-color-grade-contrast)"
+    }
+  ],
+  "tests": [
+    "tests/browser/effects-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T02:34:28.995Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "baselineHasChroma": true,
+    "chromaCollapsed": true,
+    "changedPixelFractionAtLeast2pc": true,
+    "fx-color-grade-contrast:noRuntimeErrors": true,
+    "fx-color-grade-contrast:drew": true,
+    "fx-color-grade-contrast:lumaSpreadIncreased": true,
+    "fx-color-grade-contrast:changedPixelFractionAtLeast5pc": true,
+    "changedPixelFraction": 0.0383,
+    "meanAbsoluteChannelDelta": 3.9194,
+    "meanLumaDelta": -0.1095,
+    "actualPasses": "tone-mapping,color-grade",
+    "contrastChangedPixelFraction": 0.9989
+  }
+}

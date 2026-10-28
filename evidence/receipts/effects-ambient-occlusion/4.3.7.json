@@ -1,0 +1,40 @@
+{
+  "capability": "effects-ambient-occlusion",
+  "version": "4.3.7",
+  "gitSha": "ac6488132776f1076d8b004cf36f533f19b07f62",
+  "renderer": "swiftshader",
+  "scene": "tests/browser/receipts-harness.ts effectScene(): typed GLB subject, floor, reference bar, far colour block, one directional light",
+  "frames": [
+    {
+      "file": "evidence/receipts/_shared/4.3.7/fx-baseline.png",
+      "sha256": "c5d9b420be0372eb7ffcd07f1085814ded0a847493712aadb77a34b2406d6b5d",
+      "meanLuma": 149.8495,
+      "nonBlackRatio": 1,
+      "label": "effect off (baseline)"
+    },
+    {
+      "file": "evidence/receipts/effects-ambient-occlusion/4.3.7/fx-ambient-occlusion.png",
+      "sha256": "c6432c56ebd067feec0ca71b4419917d1b038f0ba78584d979ac54cdaba157d4",
+      "meanLuma": 118.5303,
+      "nonBlackRatio": 0.9986,
+      "label": "effect on (fx-ambient-occlusion)"
+    }
+  ],
+  "tests": [
+    "tests/browser/effects-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T02:34:18.414Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "ssaoPassRan": true,
+    "baselineHasNoSsao": true,
+    "changedPixelFractionAtLeast2pc": true,
+    "meanChannelDeltaAtLeast1": true,
+    "darkens": true,
+    "changedPixelFraction": 0.6961,
+    "meanAbsoluteChannelDelta": 30.7627,
+    "meanLumaDelta": -31.3192,
+    "actualPasses": "tone-mapping,ssao"
+  }
+}
