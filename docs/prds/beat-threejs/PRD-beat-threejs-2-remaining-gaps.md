@@ -32,7 +32,7 @@ Claim policy: unchanged from part 1. No public surface says Aura3D is faster, li
 - **Instance shadow proxies (part 1, lane P2):** `RenderItem.shadowGeometry` is used for nodes that cast shadows, are builtin primitives and have >= 1,024 instances; opt-out `shadowproxy=off` / `__A3D_SHADOW_PROXY__="off"`. Auto cascades cap at 2 for 8,192+ shadow-casting instances.
 - **Contact shadows:** `effects.contactShadows()` lowers to the SSAO contact-occlusion pass because its mask has no shading consumer (`packages/engine/src/agent-api/postBridge.ts` `contactShadowsAsOcclusion`, `compiler/postprocess.ts` lines 64 to 74). The capability audit therefore keeps it `partial`.
 - **Math classes** (`packages/math/src/{Vector2,Vector3,Matrix3,Matrix4,Quaternion,Euler,Color,Box3,Sphere,Plane,Ray,Frustum,...}.ts`) are immutable value types; three.js methods mutate and return `this`. `tests/fixtures/migrate-three/` has a `MutationSemantics` fixture proving `v.add(w);` is a no-op on Aura3D. `packages/math/package.json` exports only `"."`.
-- **Exposure:** Q1 (skinned character) passes at 144.0 vs 136.2, but cube luma is 12.8 vs 2.9, PBR viewer 91.1 vs 55.0 and forest 119.6 vs 148.2 (3.2 fixture in `tests/unit/rendering/exposure-parity.test.ts` covers directional, ambient and hemisphere only).
+- **Exposure:** Q1 (skinned character) passes at 144.0 vs 136.2, but cube luma is 12.8 vs 2.9, PBR viewer 91.1 vs 55.0 and forest 119.6 vs 148.2 (the part 1 fixture `tests/unit/rendering/exposure-parity.test.ts` covers directional, ambient and hemisphere only).
 - **Direct path:** `quality: "auto"` silhouettes differ from the HDR path by up to 48/255 on 0.1 to 0.3% of pixels (canvas MSAA resolves in display space, as three.js does); interior diff <= 2/255.
 - **Remaining row counts** (see `failing-rows-analysis.md`): G3 frame time 17, G4 CPU 6, G5 draws/triangles/programs 11, G2 first frame 10, G1 bundle 42 (companion).
 
@@ -171,7 +171,7 @@ Heavy and browser steps run on the remote runner; typecheck and unit tests may r
 - [ ] `npx tsc -p tsconfig.build.json` passes.
 - [ ] `node_modules/.bin/vitest run tests/unit/math/three-compat-parity.test.ts tests/unit/aura3d-cli/migrate-three-fidelity.test.ts tests/unit/rendering/bloom-fusion-select.test.ts tests/unit/rendering/shadow-filter-tier.test.ts tests/unit/rendering/frame-submission-budget.test.ts tests/unit/rendering/exposure-cases.test.ts` passes.
 - [ ] `node tools/receipts/check.mjs` exits 0 for the release minor.
-- [ ] `node tools/docs-codeblocks`, `tools/marketing-truth`, `tools/marketing-link-audit` and `node marketing/scripts/check-site.mjs` pass.
+- [ ] `tools/docs-codeblocks`, `tools/marketing-truth`, `tools/marketing-link-audit` and `node marketing/scripts/check-site.mjs` pass.
 
 ### Browser (remote, software WebGL2)
 - [ ] `SPECS="tests/browser/bloom-fusion-cost.spec.ts" tools/remote-acr/run.sh`: PBR viewer `auto` frame time <= `production`, draws <= 25.
