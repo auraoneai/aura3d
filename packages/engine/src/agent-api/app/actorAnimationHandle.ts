@@ -17,6 +17,7 @@ import {
   type Prd06SpringBonesSpec
 } from "../../production-runtime/actor/TypedGLBActorAnimation.js";
 import { createBoneMask, type AuraHumanoidBoneMap } from "@aura3d/animation/lanes";
+import { toPoseBoneMaskSpec } from "../animationMask.js";
 import type { GLTFSceneAnimationApplyResult } from "@aura3d/assets/gltf-runtime";
 import type { QrFlags } from "@aura3d/rendering/contracts";
 import { resolveQrFlags } from "../../contracts/flags.js";
@@ -495,7 +496,7 @@ class Prd06ActorAnimationApi extends StubActorAnimationApi {
     if (mixer === undefined) return super.playLayer(layer, clip, options);
     const runtime = this.actor!.animation;
     const mask = options?.mask !== undefined && typeof runtime.skeletonJointNames === "function"
-      ? createBoneMask(options.mask, { jointNames: runtime.skeletonJointNames() })
+      ? createBoneMask(toPoseBoneMaskSpec(options.mask), { jointNames: runtime.skeletonJointNames() })
       : undefined;
     const additiveWanted = options?.blendMode === "additive";
     const clipName = additiveWanted && typeof runtime.ensureAdditiveClip === "function"

@@ -149,7 +149,8 @@ async function layers(refs: Refs): Promise<CapabilityResult> {
     await warm(app, hero, "layers");
     hero.animation.attach({ socket: "mixamorig:RightHand", target: "mHand" });
     hero.animation.attach({ socket: "mixamorig:LeftFoot", target: "mFoot" });
-    app.step(DT);
+    // Let the markers reach their bones before any window is measured (they start at the origin).
+    for (let i = 0; i < 10; i += 1) app.step(DT);
 
     const idle = stepAndSample(app, 30, ["mHand", "mFoot"]);
     const frameIdle = captureCanvas(canvas, "idle", "Idle only: arms at the sides");

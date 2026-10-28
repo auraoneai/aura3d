@@ -6,6 +6,7 @@
 
 import type { AnimationPose } from "@aura3d/animation";
 import { createBoneMask } from "@aura3d/animation/lanes";
+import { toPoseBoneMaskSpec } from "../animationMask.js";
 import type { PoseAction } from "@aura3d/animation/lanes";
 import type { AuraAnimationSpec, AuraModelNode, AuraRuntimeNodeRegistry, ProductionRuntimeActorEntry } from "../nodes/types.js";
 import type { AuraRuntimeNodeAnimationBindingMetadata } from "../RuntimeNodeHandle.js";
@@ -94,7 +95,7 @@ const resolveClipNameOptionsForSpec = (spec: AuraAnimationSpec): { readonly fall
 type AnimationRuntimeWithMask = { skeletonJointNames?: () => readonly string[] };
 const animationMaskForRuntime = (runtime: AnimationRuntimeWithMask, spec: AuraAnimationSpec["mask"]): Float32Array | undefined => {
   if (spec === undefined || typeof runtime.skeletonJointNames !== "function") return undefined;
-  return createBoneMask(spec, { jointNames: runtime.skeletonJointNames() });
+  return createBoneMask(toPoseBoneMaskSpec(spec), { jointNames: runtime.skeletonJointNames() });
 };
 
 const recordClipApplyFailure = (nodeId: string | undefined, message: string, cause?: unknown): void => {
