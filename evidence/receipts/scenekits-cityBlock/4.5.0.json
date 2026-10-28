@@ -1,0 +1,39 @@
+{
+  "capability": "scenekits-cityBlock",
+  "version": "4.5.0",
+  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "renderer": "swiftshader",
+  "scene": "sceneKits.cityBlock() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
+  "frames": [
+    {
+      "file": "evidence/receipts/scenekits-cityBlock/4.5.0/t0.png",
+      "sha256": "3f05449e189a6182bccda5fe6aa725ea0eff9afe5b626f7d151cc9e906335675",
+      "meanLuma": 112.858,
+      "nonBlackRatio": 1,
+      "label": "frame 0"
+    },
+    {
+      "file": "evidence/receipts/scenekits-cityBlock/4.5.0/t90.png",
+      "sha256": "7bd172b0da926c5f5e58381b1e3ae421e0460be708de950a009fd6f76a49a2cd",
+      "meanLuma": 100.2889,
+      "nonBlackRatio": 1,
+      "label": "frame after 90 fixed steps (1.5 s)"
+    }
+  ],
+  "tests": [
+    "tests/browser/scenekits-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T12:59:24.510Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "noKitProblems": true,
+    "nonBlackRatioAtLeast2pc": true,
+    "lumaSpreadAtLeast3": true,
+    "atLeast6ColourBuckets": true,
+    "drawCalls": 393,
+    "motionChangedPixelFraction": 0.7473,
+    "kitNodeCount": 438,
+    "kitStructuralScore": 5
+  }
+}

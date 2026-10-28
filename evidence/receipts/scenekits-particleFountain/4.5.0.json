@@ -1,0 +1,40 @@
+{
+  "capability": "scenekits-particleFountain",
+  "version": "4.5.0",
+  "gitSha": "19d133584930e9c3013e9cb79b6d053204a5de84",
+  "renderer": "swiftshader",
+  "scene": "sceneKits.particleFountain() via createAuraApp(canvas, kit.toAppOptions()), 480x270, pixelRatio 1",
+  "frames": [
+    {
+      "file": "evidence/receipts/scenekits-particleFountain/4.5.0/t0.png",
+      "sha256": "4b414d820cf785396581ed2e8f5fdc3ba46fcd4f21b992f328db14e38475504d",
+      "meanLuma": 165.696,
+      "nonBlackRatio": 1,
+      "label": "frame 0"
+    },
+    {
+      "file": "evidence/receipts/scenekits-particleFountain/4.5.0/t90.png",
+      "sha256": "ceb1fb009e1ad80803ee8f995c8ca0052784ef7f4ea1e6fa6d19605220950712",
+      "meanLuma": 146.8463,
+      "nonBlackRatio": 1,
+      "label": "frame after 90 fixed steps (1.5 s)"
+    }
+  ],
+  "tests": [
+    "tests/browser/scenekits-receipts.spec.ts"
+  ],
+  "date": "2026-10-28T12:53:26.464Z",
+  "checks": {
+    "noRuntimeErrors": true,
+    "drew": true,
+    "noKitProblems": true,
+    "nonBlackRatioAtLeast2pc": true,
+    "lumaSpreadAtLeast3": true,
+    "atLeast6ColourBuckets": true,
+    "framesDifferOverTime": true,
+    "drawCalls": 10,
+    "motionChangedPixelFraction": 0.9974,
+    "kitNodeCount": 15,
+    "kitStructuralScore": 5
+  }
+}
