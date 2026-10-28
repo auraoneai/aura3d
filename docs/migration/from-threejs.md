@@ -2,7 +2,7 @@
 
 Version: 4.5.0
 
-Status: verified against `packages/aura3d-cli/src/migrate-three/mappings.ts` (245 rows: 21 exact, 174 approximate, 47 none, 3 pending) and against `tools/bench-vs-threejs` on current main, 2026-10-24.
+Status: verified against `packages/aura3d-cli/src/migrate-three/mappings.ts` (245 rows: 48 exact, 150 approximate, 47 none, 0 pending) and against `tools/bench-vs-threejs` on current main, 2026-10-24.
 
 ## What you get with Aura3D
 
@@ -77,14 +77,14 @@ Verdicts come straight from `mappings.ts`. `exact` means the target is a drop-in
 | 32 | `AnimationMixer` | `AnimationController` | approximate | Play clips by name with a crossfade option |
 | 33 | `LOD` | `groups.lod` | approximate | |
 | 34 | `Points` / `Sprite` / `Line` | `points` / `sprites` / `lines.*` | approximate | |
-| 35 | `Vector3` | `[x, y, z]` tuples (or math `Vector3`) | approximate | |
-| 36 | `Color` | `"#rrggbb"` strings | approximate | |
+| 35 | `Vector2`, `Vector3`, `Vector4`, `Matrix3`, `Matrix4`, `Quaternion`, `Euler`, `Box3`, `Sphere`, `Plane`, `Ray`, `Frustum`, `Triangle` | same names, from `@aura3d/math/three` | exact | Mutable and three.js-shaped (mutate in place, return `this`, target out-parameters, `null` on a miss); checked against three@0.185.1 goldens. At option sites the codemod still emits tuples |
+| 36 | `Color` | `Color` from `@aura3d/math/three`, or `"#rrggbb"` strings at option sites | exact | Linear-sRGB working space, as three.js |
 | 37 | `Clock` | `Clock` from `@aura3d/engine` | exact | For game loops prefer `createFixedStepLoop` |
 | 38 | `MathUtils`, `CatmullRomCurve3`, `Shape`, `Path` | same names, from `@aura3d/engine/math` | exact | |
 | 39 | `Raycaster` | `raycast` | approximate | |
 | 40 | `FBXLoader`, `STLLoader`, `PLYLoader`, `ColladaLoader` and other non-glTF loaders | none | none | glTF is the supported interchange format; convert first |
 
-Also `none`: `GlitchPass`, `HalftonePass`, `AfterimagePass`, `MaskPass`, `GPUComputationRenderer` and the exporters. `Layers` is `pending`.
+Also `none`: `GlitchPass`, `HalftonePass`, `AfterimagePass`, `MaskPass`, `GPUComputationRenderer` and the exporters. `Layers` is `approximate`: node specs take `layers` bitmasks.
 
 ## 4. What the codemod cannot do (measured)
 

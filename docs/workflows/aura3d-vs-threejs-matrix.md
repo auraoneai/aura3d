@@ -80,7 +80,7 @@ Status: v3, 2026-10-25 (4.2.0 candidate on `game-rework`; rows say which version
 | 39 | Project scaffolding | `create-vite` templates in the community | `create-aura3d` with game templates (mini-game, racing, falling-blocks, fighting, character-controller) | Aura3D better | `packages/create-aura3d/templates` | verified in code |
 | 40 | Deploy/route health checks | None | `check-deploy`, route-health, evidence collection (`collectAuraSceneEvidence`) | Aura3D only | CLI; `aura3d-evidence-review` skill | doc claim only |
 | 41 | Game test hooks, deterministic replay and a game beacon | None | `installQaHooks`, `createFixedStepLoop`, seeded replay with `createCountedRng` (draw counter), `installGameBeacon().publishEvidence` | Aura3D only | promoted QA kit; replay tests across the ports; `docs/api/game-cheatsheet.md` | verified in code |
-| 42 | Migration tooling | N/A | `aura3d migrate three` codemod: 245 rows (21 exact, 174 approximate, 47 none, 3 pending) | Aura3D only | `migrate-three/mappings.ts` | verified in code |
+| 42 | Migration tooling | N/A | `aura3d migrate three` codemod: 245 rows (48 exact, 150 approximate, 47 none, 0 pending) | Aura3D only | `migrate-three/mappings.ts` | verified in code |
 | 43 | Game kit (HUD, touch, juice, session) | None | `@aura3d/engine/game`: HUD widgets (including compass and canvas minimap), touch controls, juice, session, accessibility, audio cue bank, safety net, QA hooks; a worked sample in `docs/agents/build-a-game.md` | Aura3D better (convenience) | `docs/api/game-kit.md`; `docs/api/game-cheatsheet.md` | verified in code |
 | 44 | Examples and learning material | Huge official examples and manual | Fewer, agent-oriented docs | three.js better | `three/examples`; repo docs | verified in code |
 

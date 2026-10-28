@@ -12,7 +12,7 @@ Start with [docs/migration/from-threejs.md](../migration/from-threejs.md). It co
 
 ## What the codemod covers
 
-`aura3d migrate three` maps 245 three.js constructs: 21 exact, 174 approximate, 47 with no equivalent and 3 pending (counted from `packages/aura3d-cli/src/migrate-three/mappings.ts`). Its output is an annotated worklist that names the Aura3D API for each construct, not a finished port. It does not make Aura3D a drop-in for every three.js API, addon, shader chunk or loader; a migration note should name the specific API or workflow that was ported and point to code and tests.
+`aura3d migrate three` maps 245 three.js constructs: 48 exact, 150 approximate, 47 with no equivalent and 0 pending (counted from `packages/aura3d-cli/src/migrate-three/mappings.ts`). Its output is an annotated worklist that names the Aura3D API for each construct, not a finished port. It does not make Aura3D a drop-in for every three.js API, addon, shader chunk or loader; a migration note should name the specific API or workflow that was ported and point to code and tests.
 
 `@aura3d/engine` has no `three` dependency. Public Aura3D agent APIs, typed assets, templates, diagnostics, screenshots, runtime helpers and asset workflows run on Aura3D-owned runtime code.
 

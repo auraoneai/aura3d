@@ -60,17 +60,25 @@ export const shallowFocus = scene()
   .add(effects.depthOfField({ name: "dof", focus: 0.02, aperture: 1, maxBlur: 8 }));
 ```
 
-### Contact shadows (SSAO-backed approximation)
+### Contact shadows (screen-space mask)
 
-`effects.contactShadows` is lowered to the screen-space ambient occlusion pass at reduced strength. On the receipt room it lowers mean luma by about 1.2 but changes no pixel past the receipt threshold, so it has no current receipt (the 4.3.7 one compared against an untonemapped baseline and is withdrawn; see `evidence/receipts/README.md`). It is not a dedicated contact-shadow pass and the shadow mask the options describe is not read by shading. Do not publish it as contact shadows or as a visible effect.
+`effects.contactShadows` builds a screen-space mask from scene depth and the sun direction, and forward lighting multiplies it into the visibility of the shadow-casting directional light (an absent mask is exactly 1.0). It is not the ambient-occlusion pass; the 4.5.0-prep lowering to SSAO is gone. Receipt `evidence/receipts/effects-contact-shadows/<version>.json` (software WebGL2, 600x400): with the subject outside the shadow map the near-base floor darkens by about 25 luma (48% of that region changes) and the far floor is unchanged; where the shadow map already shadows the receiver the mask adds little (0.08% of the frame changes, about 0.4 luma near the base), so do not expect a second shadow there.
+
+Limits, all measured or asserted in the receipt and `tests/unit/rendering/contact-shadow-mask.test.ts`:
+
+- It needs a directional light with `shadow: true`, and a shadow map only exists when at least one node has `castShadow: true`. With a spot or point light only, or none, nothing renders, `app.diagnostics().shadows.contactShadows.unavailable` says why (`no-shadow-casting-directional-light`) and one warning is logged; the on and off frames are pixel-identical.
+- The nine textured-PBR glTF extension variants (clearcoat, transmission and similar) do not sample the mask.
+- A blocker deeper than twice the march length (`length`, default 0.25 m) is ignored, so thick casters darken only the band within that distance of the receiver.
+- Orthographic cameras are supported; the mask is built for the main view only.
+- Measured on software WebGL2 only; no real-GPU run exists.
 
 ```ts
 import { effects, lights, material, primitives, scene } from "@aura3d/engine";
 
 export const grounded = scene()
   .add(primitives.plane({ name: "floor", material: material.pbr({ color: "#9aa2ae" }) }).scale([9, 1, 9]))
-  .add(primitives.box({ name: "crate", material: material.pbr({ color: "#dfe6f2" }) }).position(0, 0.5, 0))
-  .add(lights.directional({ name: "key", position: [2.6, 4.2, 2.4], intensity: 2 }))
+  .add(primitives.box({ name: "crate", material: material.pbr({ color: "#dfe6f2" }), castShadow: true }).position(0, 0.5, 0))
+  .add(lights.directional({ name: "key", position: [2.6, 4.2, 2.4], intensity: 2, shadow: true }))
   .add(effects.contactShadows({ intensity: 1, length: 0.5 }));
 ```
 

@@ -72,7 +72,7 @@ What a team cannot rebuild by adding a library or two:
 
 ## Migrating from three.js
 
-`aura3d migrate three` classifies 245 three.js constructs (21 exact, 174 approximate, 47 none, 3 pending, counted from `packages/aura3d-cli/src/migrate-three/mappings.ts`) and writes an annotated worklist for the port. The codemod is a helper for porting, not a compatibility layer: the port itself is a rewrite against `@aura3d/engine`. The verified mapping for the 40 most common APIs, the steps and a measured before and after are in [`migration/from-threejs.md`](migration/from-threejs.md).
+`aura3d migrate three` classifies 245 three.js constructs (48 exact, 150 approximate, 47 none, 0 pending, counted from `packages/aura3d-cli/src/migrate-three/mappings.ts`) and writes an annotated worklist for the port. The codemod is a helper for porting, not a compatibility layer: the port itself is a rewrite against `@aura3d/engine`. The verified mapping for the 40 most common APIs, the steps and a measured before and after are in [`migration/from-threejs.md`](migration/from-threejs.md).
 
 ## What we measured and how
 
