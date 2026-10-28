@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
+import { resolve } from "node:path";
 import {
   addAsset,
   bindGameRouteEvidence,
@@ -29,6 +30,7 @@ import {
 } from "./cli-options.js";
 import { assetsAddHelp, mainHelp } from "./cli-help.js";
 import { writeRouteTypedAssets } from "./asset-route-typegen.js";
+import { runBrowserDeployCheck } from "./deploy-browser-check.js";
 import { runResolve, runSearch } from "./pull-bridge.js";
 import { LADDER_ROLES, printLadderReport, runResolveLadder, type LadderRole } from "./resolve-ladder.js";
 import { cliCommandFor, cliCommandNames } from "./contracts/commands.js";
@@ -410,7 +412,29 @@ async function main(): Promise<void> {
   } else if (command === "animation") {
     await runAnimationCommand(args[1]);
   } else if (command === "check-deploy") {
-    print(checkDeploy({ distDir: readOption("--dist"), ...readAssetValidationOptions() }));
+    const staticResult = checkDeploy({ distDir: readOption("--dist"), ...readAssetValidationOptions() });
+    if (!hasFlag("--browser")) {
+      print(staticResult);
+    } else {
+      // Runtime pass: open the built site in a headless browser and fail on HTTP errors, failed requests, uncaught errors and console errors.
+      const routes = args.flatMap((arg, index) => (arg === "--route" && args[index + 1] && !args[index + 1]!.startsWith("--") ? [args[index + 1]!] : []));
+      const timeout = readOption("--browser-timeout");
+      const settle = readOption("--browser-settle");
+      const browserResult = await runBrowserDeployCheck({
+        distDir: resolve(process.cwd(), readOption("--dist") ?? "dist"),
+        routes,
+        ...(timeout ? { timeoutMs: Number(timeout) } : {}),
+        ...(settle ? { settleMs: Number(settle) } : {})
+      }).catch((error: unknown) => ({ ok: false, failures: [String((error as Error).message ?? error)], warnings: [] as string[], routes: [] }));
+      const failures = [...staticResult.failures, ...browserResult.failures];
+      print({
+        ...staticResult,
+        ok: failures.length === 0,
+        failures,
+        warnings: [...staticResult.warnings, ...browserResult.warnings],
+        messages: failures.length === 0 ? [`${staticResult.messages.join(" ")} Browser pass: ${browserResult.routes.length} route(s) loaded with no HTTP errors, failed requests or console errors.`] : failures
+      });
+    }
   } else if (command === "init") {
     const agent = readOption("--agent") ?? "generic";
     if (!["claude", "cursor", "copilot", "generic", "all"].includes(agent)) throw new Error(`Unsupported agent target: ${agent}`);

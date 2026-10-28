@@ -71,6 +71,8 @@ export function scanText(source, { kind, canonical, deprecatedNames }) {
 
   // 4. Claims the product does not back.
   for (const m of text.matchAll(/check-deploy[^.]{0,140}(?:console errors|failed requests)/gi)) {
+    // `check-deploy --browser` does load routes and report both; the plain static check does not.
+    if (/--browser/.test(m[0])) continue;
     violations.push(`check-deploy claim it does not back (it is a static check): ...${context(m.index, m[0].length)}...`);
   }
   for (const m of text.matchAll(/where each one wins|where three\.js wins|three\.js wins|when to choose three\.js|wraps a three\.js|three\.js-compatible renderer/gi)) {

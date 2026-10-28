@@ -740,7 +740,7 @@ npx @aura3d/cli@4.3.6 assets add \
   <div class="wrap">
     <div class="section-head" data-reveal>
       <h2 class="home-h2" id="deploy-title">Check every asset before you ship.</h2>
-      <p class="section-lede"><code>aura3d check-deploy</code> fails the build when a hashed asset is missing, a stray file sneaks into <code>dist</code>, or a model fails validation. Add <code>--release</code> for licence and quality gates.</p>
+      <p class="section-lede"><code>aura3d check-deploy</code> fails the build when a hashed asset is missing, a stray file sneaks into <code>dist</code>, or a model fails validation. Add <code>--browser</code> to load every route in headless Chromium and fail on failed requests and console errors, or <code>--release</code> for licence and quality gates.</p>
     </div>
 
     <div class="verify-grid">
@@ -750,6 +750,8 @@ npx @aura3d/cli@4.3.6 assets add \
           <li><span class="check-icon" aria-hidden="true">✓</span><span>Typed imports resolve against the public API.</span></li>
           <li><span class="check-icon" aria-hidden="true">✓</span><span>Every shipped asset carries a hash and a typed reference.</span></li>
           <li><span class="check-icon" aria-hidden="true">✓</span><span>Unreferenced files in <code>dist</code> fail the check.</span></li>
+          <li><span class="check-icon" aria-hidden="true">✓</span><span><code>check-deploy --browser</code> flags failed requests when a route boots.</span></li>
+          <li><span class="check-icon" aria-hidden="true">✓</span><span><code>check-deploy --browser</code> reports console errors on the routes you ship.</span></li>
           <li><span class="check-icon" aria-hidden="true">✓</span><span><code>--release</code> adds licence and quality gates.</span></li>
           <li><span class="check-icon" aria-hidden="true">✓</span><span>Every template ships route-health and screenshot tests.</span></li>
         </ul>

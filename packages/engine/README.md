@@ -7,7 +7,7 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-browser%203D-3178c6.svg)](https://www.typescriptlang.org/)
 
-**The TypeScript 3D engine that ships the whole stack.** Aura3D is a browser 3D engine with its own renderer, plus the toolchain around it: typed and licensed assets, lighting looks, a game kit and deploy checks. It is built for AI coding agents as well as people. The current version is in [`CHANGELOG.md`](https://github.com/auraoneai/aura3d/blob/main/CHANGELOG.md).
+**The TypeScript 3D engine that ships the whole stack.** Aura3D is a browser 3D engine with its own renderer, plus the toolchain around it: typed and licensed assets, lighting looks, a game kit and deploy checks. It is built for agent-written browser 3D, and people who write it by hand use the same API. The current version is in [`CHANGELOG.md`](https://github.com/auraoneai/aura3d/blob/main/CHANGELOG.md).
 
 A lit, shadowed, framed product with orbit controls, in 10 lines:
 
@@ -49,7 +49,7 @@ Read [`llms.txt`](https://github.com/auraoneai/aura3d/blob/main/llms.txt) (one s
 - **Typed, provenance-checked assets.** `assets search`, `assets resolve`, `assets add`, `assets import-meshy`, `assets optimize`, `assets validate`. In production a model needs a same-origin URL, a sha256 and provenance, otherwise it draws nothing. Meshy generation goes through the CLI with admission records.
 - **Game kit.** `@aura3d/engine/game` (`createGame`: lifecycle, pause, results, DOM HUD, touch, juice, sound), `createFixedStepLoop`, `installQaHooks` and seeded replay, `createCueBank` audio synth, `defineModelAssets`, racket-sports and other genre kits.
 - **Safety net.** `installSafetyNet` from `@aura3d/debug`: `?diag=1` panel, quality switches and black-frame self-heal. Custom shader failures are reported, not silent.
-- **Checks.** `aura3d doctor`, `aura3d check-deploy`, route-health and screenshot evidence, the look-dev loop (`aura3d look capture`, `aura3d look lint`).
+- **Checks.** `aura3d doctor`, `aura3d check-deploy` (add `--browser` to load every route in headless Chromium and fail on failed requests and console errors), route-health and screenshot evidence, the look-dev loop (`aura3d look capture`, `aura3d look lint`).
 - **Migration.** `aura3d migrate three` is a codemod that records each approximation. It is not a drop-in claim.
 
 Kit documentation: [`docs/api/game-kit.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/game-kit.md), [`qa-kit.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/qa-kit.md), [`safety-net.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/safety-net.md), [`audio-synth.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/audio-synth.md), [`model-loader.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/model-loader.md), [`glsl-chunks.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/glsl-chunks.md), [`scatter-merge.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/scatter-merge.md), [`cli-asset-tools.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/cli-asset-tools.md), [`toon.md`](https://github.com/auraoneai/aura3d/blob/main/docs/api/toon.md).

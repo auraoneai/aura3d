@@ -3,10 +3,11 @@
 Bring real 3D assets into a browser app without losing types, provenance, or
 shipping confidence. Every model is typed, hashed and licensed: the CLI records
 its source, licence, author and sha256 in `aura.assets.json`, generates a typed
-`assets.<name>` key, and `check-deploy` statically checks the build output
-against that manifest (a static check of files, not a browser run), so a missing
-hashed asset or a stray file in `dist` fails before you ship. Add `--release`
-for licence and quality gates.
+`assets.<name>` key, and `check-deploy` checks the build output against that
+manifest, so a missing hashed asset or a stray file in `dist` fails before you
+ship. Add `--release` for licence and quality gates, or `--browser` to load every
+route in headless Chromium and fail on HTTP errors, failed requests, uncaught
+errors and console errors (it needs `playwright` in your project).
 
 `@aura3d/cli` is the Aura3D command center for GLB/glTF projects. It finds
 usable assets, copies local models into the right public path, records source
@@ -95,6 +96,7 @@ npx @aura3d/cli@latest assets bind-game-route-evidence --route my-race --categor
 npx @aura3d/cli@latest assets assemble-character --name hero --body heroBody --part hair=heroHair
 npx @aura3d/cli@latest migrate three ./src
 npx @aura3d/cli@latest check-deploy --dist dist
+npx @aura3d/cli@latest check-deploy --dist dist --browser --route / --route /play/
 npx @aura3d/cli@latest init --agent all
 ```
 

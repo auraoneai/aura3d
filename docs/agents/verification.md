@@ -14,7 +14,7 @@ npx @aura3d/cli@latest assets validate
 npx @aura3d/cli@latest check-deploy --dist dist
 ```
 
-`check-deploy` verifies the asset side only: every hashed asset exists in `dist` or its public path, no unreferenced files sit under the asset base path (schema 1.1), derived files (mobile, collision) are present, and the asset validation passes (`--release` adds the provenance and license gates). It does not prove a frame draws.
+`check-deploy` verifies the asset side only: every hashed asset exists in `dist` or its public path, no unreferenced files sit under the asset base path (schema 1.1), derived files (mobile, collision) are present, and the asset validation passes (`--release` adds the provenance and license gates). It does not prove a frame draws. Add `--browser` to also load each route in headless Chromium (needs `playwright` in the project) and fail on HTTP errors, failed requests, uncaught errors and console errors; it still checks that the page loads clean, not what the canvas shows, so keep the screenshot gate.
 
 In the Aura3D repository, the supporting checks are:
 

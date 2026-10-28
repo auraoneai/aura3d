@@ -21,9 +21,10 @@ npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot --public-path 
 - derived files the manifest points at (mobile, collision) exist, and are copied into `dist`;
 - with a schema 1.1 manifest, no file under the asset base path is unreferenced;
 - the asset validation passes (`--release` adds provenance, license and placeholder gates);
-- warnings for URLs that are not fingerprinted.
+- warnings for URLs that are not fingerprinted;
+- with `--browser`, every route (`/` by default, repeat `--route /path`) loads in headless Chromium with no HTTP error, failed request, uncaught error or console error (needs `playwright` in the project).
 
-It checks assets, not pixels. It does not prove the page draws; pair it with the browser gate in [verification.md](verification.md). It works for static hosting, Vite preview, Next.js public assets, Cloudflare Pages, Netlify, Vercel, S3, R2 and CDN paths.
+It checks assets and, with `--browser`, that the page loads clean; it does not check pixels. It does not prove the page draws; pair it with the browser gate in [verification.md](verification.md). It works for static hosting, Vite preview, Next.js public assets, Cloudflare Pages, Netlify, Vercel, S3, R2 and CDN paths.
 
 ## Shipping a game route
 

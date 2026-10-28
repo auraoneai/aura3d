@@ -90,6 +90,17 @@ aura3d assets repair-skin public/aura-assets/guard.glb --out guard.fixed.glb \
 - It does not turn a four-legged mesh on a humanoid skeleton into a walking quadruped. For that (the Bunker Zero hound) use `tools/skin-fixes/bounding-quadruped.ts`: rear half on Hips, front half on Chest, head on Head, with authored Idle_Loop and Walk_Loop clips.
 - After a repair, swap the file in with `tools/aura-fc/swap-asset.mjs <old.glb> <new.glb>` (content-hash rename and manifest and typed-table rewrite), then run `assets validate --asset <id>`; if it reports a hash mismatch, update the recorded `hash` it prints.
 
+## `check-deploy --browser`
+
+`aura3d check-deploy --dist dist --browser [--route /path ...] [--browser-timeout ms] [--browser-settle ms]` adds a runtime pass to the static asset check. It serves `dist` from a local static server (no single-page-app fallback, so a missing file is a real 404), opens each route in headless Chromium and fails on:
+
+- an HTTP status of 400 or more for the route or any request it makes (a missing `/favicon.ico` is a warning);
+- a request that did not complete;
+- an uncaught exception;
+- a `console.error`, or an app boot error reported as `data-aura3d-error` on `<body>`.
+
+Console warnings are listed as warnings. Routes default to `/`; repeat `--route` for more. Playwright is resolved from the project being checked (`playwright`, `@playwright/test` or `playwright-core`), and `npx playwright install chromium` provides the browser; without it the command stops with that instruction. It exits 1 on any failure, so it can gate a deploy. It checks that the page loads clean, not what the canvas shows, so keep the screenshot checks for that.
+
 ## `aura3d evidence judge`
 
 Blind A/B **model** judge over two folders of matched frames (a vision model reached through Kiro Prism, not a human). Promoted from the per-game judge scripts in `tools/crayon-capture/`.
