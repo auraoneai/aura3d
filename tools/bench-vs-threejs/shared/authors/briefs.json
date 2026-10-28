@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d.bench-authors.briefs/1",
+  "note": "One brief per bench scene, library-neutral ({{LIBRARY}} is swapped per arm). Scenes 2 to 5 reuse the agent-eval task text unchanged so the two trials stay comparable; baseline and pbr-viewer are new. The rendering contract from tools/agent-eval/tasks/00-contract.md is appended to every brief.",
+  "scenes": [
+    {
+      "id": "baseline",
+      "task": 9,
+      "reuse": null,
+      "text": "# Task 9: hello cube\n\nBuild a scene with {{LIBRARY}}.\n\nRequirements:\n1. One lit cube (a standard physically based or equivalent lit material, not unlit) on a dark-grey background.\n2. At least one light so the cube's faces are shaded differently.\n3. The cube rotates continuously by itself.\n4. The camera frames the whole cube, centred.\n\nKeep it as small as the library allows.\n",
+      "assets": []
+    },
+    {
+      "id": "pbr-viewer",
+      "task": 8,
+      "reuse": null,
+      "text": "# Task 8: PBR model viewer\n\nBuild a scene with {{LIBRARY}}.\n\nThe file `/assets/prop.glb` is a provided 3D model (a stylised robot).\n\nRequirements:\n1. Load `/assets/prop.glb` and show it, centred and scaled to fill most of the frame height.\n2. Image-based (environment) lighting from a procedural or built-in environment (no external HDR file), plus one directional light that casts a shadow on a ground plane.\n3. A mild bloom post-processing pass.\n4. The user can drag with the mouse to orbit the camera around the model.\n5. If the model fails to load, show a clear visible fallback and log the error instead of a black canvas.\n",
+      "assets": [{ "from": "fixtures/threejs-parity/assets/character/robot-expressive.glb", "to": "public/assets/prop.glb" }]
+    },
+    { "id": "forest", "task": 2, "reuse": "02-forest.md", "text": null, "assets": [] },
+    { "id": "skinned-character", "task": 3, "reuse": "03-skinned-character.md", "text": null, "assets": [] },
+    { "id": "game-loop", "task": 4, "reuse": "04-game-loop.md", "text": null, "assets": [] },
+    { "id": "shader-water", "task": 5, "reuse": "05-shader-water.md", "text": null, "assets": [] }
+  ]
+}

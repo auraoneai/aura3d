@@ -2,6 +2,8 @@
 
 Five canonical scenes (plus a hello-world baseline) built twice, once in three.js and once in Aura3D, each as a standalone Vite app, then built for production and measured in a browser on the remote runner. Results: `evidence/vs-threejs/results.json` (raw), `evidence/vs-threejs/RESULTS.md` (tables and verdicts), `evidence/vs-threejs/frames/` (captured frames).
 
+Runs from the 4.3.7 re-measure onward follow [`METHODOLOGY.md`](METHODOLOGY.md) (equal-work arms, three independent authors, a real-GPU column, and `gate.mjs`); the description below is the 4.1.2 method.
+
 **What this is not.** The runner is a CPU-only Azure Container Registry task with software WebGL2 (SwiftShader). Frame times here are software-rasteriser times, not GPU times. They show relative CPU/driver cost and draw submission, not what an M-series GPU or a desktop GPU would do. Nothing here is a hardware-GPU claim.
 
 ## Scenes
