@@ -78,3 +78,71 @@ Not caused by this change: the identical 140.3 / 194.3 = 0.722 (pastel 156.2 / 2
 ## Open: the direct render path does not encode to sRGB
 
 Found by the default-route check in `exposure-calibration.spec.ts` and confirmed by `post-luma.spec.ts`: with the probe left on `quality: "auto"`, the no-effects frame of the daylight scene reads 79.1 while the identical scene with an effect, or pinned to `quality: "production"` (`none` = `bloom` = 128.4), reads 128.4. With no `output` option, a scene without post takes the `quality: "auto"` direct path (`A3D_QR_CORE_OUTPUT` pinned off). Its mean luma is 18 for a case that reads 67 on the HDR path (and three.js reads 67): the generated forward program writes linear colour and nothing encodes it, so every no-post frame is about 3.7x too dark (linear 0.072 shows as byte 18). `dir-1-grey+hdrpath` (an inert bloom forcing the HDR path) matches three exactly. This is outside lane Q (`packages/rendering/src/quality/DirectPath.ts`, `ProgramGenerator.ts`), so it is recorded, not patched.
+
+## PRD-2 WP-6: attribution of the cube, PBR viewer and forest gaps
+
+Measured on the remote runner (`tests/browser/exposure-cases.spec.ts`, run `wp6-attr-4`, software WebGL2, 640x360, frame 24, bench glue luma). The spec mounts the bench scene sources as written and with one term changed at a time, for both libraries. Raw rows and frames: `evidence/exposure-parity/wp6/cases.json`, `evidence/exposure-parity/wp6/frames/`. CPU references: `tests/unit/rendering/exposure-cases.test.ts`. The harness reproduces the figures in `evidence/vs-threejs/RESULTS-candidate.md` (cube 12.75 / 2.88, forest 119.6 / 148.1; PBR viewer 89.4 / 55.0 against the recorded 91.1 / 55.0).
+
+**Result: no engine calibration was made.** Every gap traces to the bench sources or to a documented default, not to a light-unit defect in `forward/Lighting.ts`, `app/colorManagement.ts` or `compiler/environment.ts`. Because nothing was calibrated, `look capture` / `look judge` were not re-run (no look preset changed, nothing to compare). When the inputs are matched, all three scenes land within 10% of three.js (table at the end).
+
+### Cube: ambient 1 on #d86a3a (12.8 vs 2.9)
+
+The cube is lit correctly. Face radiance is A * 1 / PI, the three r185 value (unit test), and the neutral room probe adds nothing: the authored-lights knob is zero, so the bind zeroes the room.
+
+| Config | Aura3D | three.js |
+| --- | --- | --- |
+| bench as written | 12.75 | 2.88 |
+| Aura3D background black (default ACES) | 2.52 | 2.52 (three with `ACESFilmicToneMapping` switched on) |
+| Aura3D background black, `output.toneMapping: "none"` | 2.91 | 2.88 (+1.0%) |
+
+Causes: (1) `scene()` clears to `#070b12` (luma 10.7) where the three bench clears to black. Over the 96% of the frame the cube does not cover, that is 10.2 of the 12.75. (2) The three bench source leaves tone mapping at its default (none); Aura3D's default is ACES (r185 operator, `ProgramGenerator.OUTPUT_SRGB_CHUNK_GLSL`). On the face pixel ACES reads (132, 47, 20) against three's unmapped (128, 60, 31), 0.87x in luma. Decision: both are intentional defaults; the bench baseline should set the same background and operator in both sources. Not an engine bug.
+
+Unrelated observation, not investigated: with `output.toneMapping: "none"` and the default `#070b12` background the frame reads luma 29.3 (background pixels (21, 28, 38) against the authored (7, 11, 18)).
+
+### PBR viewer: HDRI + sun 2.5 (91.1 vs 55.0)
+
+Three separate causes, in order of size.
+
+1. **The bench Aura source never loads its HDRI.** It passes a bare `{ type, format, url }` object cast with `as never`. The engine reads only an `aura-asset-ref` (`defineAuraAssets`); without one `explicitEnvironmentResolution` returns `undefined`, the node falls through to the neutral room, and `hdriStatus` is `"none"`, `iblPixelBacked` false. The room binds at intensity 1 whatever the authored intensity is: environment 0.7 and 1 give identical frames (73.29 and 73.29 with the sun off). This is the intentional neutral room probe, reached by accident. It stays out of every claim; the only trace is a runtime warning in diagnostics, not the console. With a real asset ref the same scene reads 68.90 (`hdriStatus: ready`).
+2. **The nominal lights differ.** The Aura source authors sun 2.5 and environment 1, the three source sun 1.1 and `environmentIntensity` 0.7. The model predicts 1.73x on the ground (diffuse only); the ground strip measures 57.1 vs 36.4 (1.57x). With identical nominal lights (sun 1.1, environment 0.7, asset ref) the frame reads 51.22 against 55.03 (-6.9%) and the ground strip 34.4 against 36.4 (-5.5%).
+3. **Background and bloom.** The three bench draws through `EffectComposer` + `OutputPass`, which tone maps the `#1a1d24` background down to luma 11; Aura3D shows the authored colour (luma 29). Without bloom the frame is +17.6% for Aura3D, and the top strip (29 vs 11) accounts for it. Bloom then adds 12.0 luma in three (43.1 to 55.0) and 0.6 in Aura3D (50.7 to 51.2) at the authored `threshold` (1.0 in three, 0.85 here), `strength` / `intensity` 0.35 and `radius` 0.6. The bloom pass belongs to WP-1; no change here.
+
+Terms with the HDRI loaded (ground strip / centre, no bloom):
+
+| Term | Aura3D | three.js |
+| --- | --- | --- |
+| sun only (environment 0, sun 1.1) | 9.3 / 55.6 | 9.3 / 55.2 |
+| environment only (sun 0, 0.7) | 22.6 / 115.7 | 20.3 / 112.8 |
+| uniform environment (radiance 0.5, sun 0, 0.7) | 20.3 / 88.6 | 20.3 / 88.3 |
+| environment only, ground roughness 1 | 22.3 / 115.5 | 22.0 / 113.4 |
+| environment only, ground roughness 0.5 | 36.2 / 121.5 | 32.8 / 119.2 |
+
+The sun and shadow term, the environment unit and the SH9 irradiance (within 2.5% of a brute-force cosine integral of the same HDR, unit test) agree. The ground is up to 11% brighter in Aura3D under the HDRI at roughness 0.5 to 0.9; that is inside the tolerance and has no single cause here (specular lobe filtering is the candidate).
+
+### Forest: hemisphere 1.1 + sun 2.4 (119.6 vs 148.2)
+
+The lights are identical in both sources. The gap is the canopy and rock colours. The Aura source writes CSS `hsl(97..126 45% 20..32%)`, read as sRGB. The three source calls `tint.setHSL(h, s, l)` with no colour space, which reads the same numbers in three's linear working space, an albedo 3x or more brighter (unit test: luma ratio above 3 for the canopy, above 2.5 for the rocks). The 4.3.7 implicit fill had hidden this; removing it exposed it.
+
+| Colour reading | Aura3D | three.js |
+| --- | --- | --- |
+| as written (sRGB in Aura3D, linear in three) | 119.60 | 148.11 (-19.2%) |
+| linear in both | 159.97 | 148.11 (+8.0%) |
+| sRGB in both | 119.60 | 110.33 (+8.4%) |
+| linear, shadows off | 160.75 | 150.61 (+6.7%) |
+| linear, fog off | 153.86 | 143.32 (+7.4%) |
+
+Shadows and fog move both libraries by similar amounts (fog -6.1 / -4.8, shadows +0.8 / +2.5), so they are not the +8% residual, and it is not attributed. The hemisphere fold would push the other way: Aura3D lights a hemisphere light as the uniform mean of sky and ground, which is exact for horizontal normals and gives an up-facing normal 0.55x of three's ambient and a down-facing one 3.9x (pinned in the unit test). Real fix would be binding the `u_hemiSky` / `u_hemiGround` uniforms the IBL chunk already has; that needs `ForwardPass.ts` and `renderer/Background.ts`, both owned by other lanes, so it is recorded and not made.
+
+### Decisions and what stays out of claims
+
+- No change to `forward/Lighting.ts`, `app/colorManagement.ts` or `compiler/environment.ts`.
+- Bench-source follow-ups for the bench lane (not edited here, they change the published comparison): set the same background and operator in the baseline; give the PBR viewer's Aura source a real `defineAuraAssets` texture ref and the three source's nominal lights (or the reverse); read the forest colours the same way in both.
+- Claim boundary: the Q1 statement stays limited to the skinned character. The bench figures for the cube, PBR viewer and forest "as written" are not exposure claims, and neither is the neutral room probe. Matched-input figures are within 10%:
+
+| Scene | Matched input | Aura3D | three.js | Delta |
+| --- | --- | --- | --- | --- |
+| cube | black background, operator none | 2.91 | 2.88 | +1.0% |
+| PBR viewer | asset ref, sun 1.1, environment 0.7, bloom as authored | 51.22 | 55.03 | -6.9% |
+| forest | linear colour reading in both | 159.97 | 148.11 | +8.0% |
+
+Regression check on the unchanged engine (run `wp6-q1-1`, `exposure-calibration.spec.ts` and `exposure-skinned.spec.ts`, both passed): skinned character 136.2 against 144.0 (0.946, Q1 holds), console empty.

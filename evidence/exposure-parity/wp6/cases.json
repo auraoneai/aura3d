@@ -1,0 +1,741 @@
+{
+ "source": "tests/browser/exposure-cases.spec.ts, remote run wp6-attr-4 (software WebGL2, 640x360, ACES)",
+ "rows": [
+  {
+   "id": "bench:baseline:aura",
+   "meanLuma": 12.755,
+   "std": 10.307,
+   "regionsLuma": {
+    "centre": 21.4,
+    "top": 11,
+    "bottom": 11,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "bench:baseline:three",
+   "meanLuma": 2.877,
+   "std": 14.243,
+   "regionsLuma": {
+    "centre": 14.35,
+    "top": 0,
+    "bottom": 0,
+    "corner": 0
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "cube:three-aces",
+   "meanLuma": 2.525,
+   "std": 12.487,
+   "regionsLuma": {
+    "centre": 12.58,
+    "top": 0,
+    "bottom": 0,
+    "corner": 0
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "cube:#000000:default",
+   "meanLuma": 2.522,
+   "std": 12.442,
+   "regionsLuma": {
+    "centre": 12.56,
+    "top": 0,
+    "bottom": 0,
+    "corner": 0
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "cube:#000000:none",
+   "meanLuma": 2.909,
+   "std": 14.231,
+   "regionsLuma": {
+    "centre": 14.39,
+    "top": 0,
+    "bottom": 0,
+    "corner": 0
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "cube:default:none",
+   "meanLuma": 29.261,
+   "std": 8.975,
+   "regionsLuma": {
+    "centre": 36.06,
+    "top": 27,
+    "bottom": 27,
+    "corner": 27
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:2.5:1:bloom",
+   "meanLuma": 89.347,
+   "std": 54.173,
+   "regionsLuma": {
+    "centre": 168.49,
+    "top": 34.64,
+    "bottom": 89.36,
+    "corner": 31.0
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:1.1:0.7:bloom",
+   "meanLuma": 55.028,
+   "std": 54.119,
+   "regionsLuma": {
+    "centre": 143.21,
+    "top": 22.78,
+    "bottom": 36.39,
+    "corner": 16
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:1.1:0.7:bloom",
+   "meanLuma": 82.671,
+   "std": 52.993,
+   "regionsLuma": {
+    "centre": 160.78,
+    "top": 33.13,
+    "bottom": 79.64,
+    "corner": 31
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:1.1:0.7:nobloom",
+   "meanLuma": 77.808,
+   "std": 53.949,
+   "regionsLuma": {
+    "centre": 151.09,
+    "top": 29,
+    "bottom": 77.82,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:1.1:0.7:nobloom",
+   "meanLuma": 43.076,
+   "std": 53.352,
+   "regionsLuma": {
+    "centre": 122.44,
+    "top": 11,
+    "bottom": 32.12,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom",
+   "meanLuma": 73.294,
+   "std": 52.566,
+   "regionsLuma": {
+    "centre": 146.18,
+    "top": 29,
+    "bottom": 70.0,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:0:0.7:nobloom",
+   "meanLuma": 35.626,
+   "std": 51.171,
+   "regionsLuma": {
+    "centre": 112.8,
+    "top": 11,
+    "bottom": 20.25,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:1.1:0:nobloom",
+   "meanLuma": 25.061,
+   "std": 29.479,
+   "regionsLuma": {
+    "centre": 55.62,
+    "top": 29,
+    "bottom": 9.31,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:1.1:0:nobloom",
+   "meanLuma": 18.906,
+   "std": 29.974,
+   "regionsLuma": {
+    "centre": 55.19,
+    "top": 11,
+    "bottom": 9.31,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:2.5:1:nobloom",
+   "meanLuma": 83.041,
+   "std": 55.607,
+   "regionsLuma": {
+    "centre": 156.36,
+    "top": 29,
+    "bottom": 87.01,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:1:nobloom",
+   "meanLuma": 73.294,
+   "std": 52.566,
+   "regionsLuma": {
+    "centre": 146.18,
+    "top": 29,
+    "bottom": 70.0,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:2.5:0:nobloom",
+   "meanLuma": 39.234,
+   "std": 40.494,
+   "regionsLuma": {
+    "centre": 88.06,
+    "top": 29,
+    "bottom": 26.19,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom:uniform",
+   "meanLuma": 73.294,
+   "std": 52.566,
+   "regionsLuma": {
+    "centre": 146.18,
+    "top": 29,
+    "bottom": 70.0,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:0:0.7:nobloom:uniform",
+   "meanLuma": 31.478,
+   "std": 40.961,
+   "regionsLuma": {
+    "centre": 88.34,
+    "top": 11,
+    "bottom": 20.31,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:1:nobloom:uniform",
+   "meanLuma": 73.294,
+   "std": 52.566,
+   "regionsLuma": {
+    "centre": 146.18,
+    "top": 29,
+    "bottom": 70.0,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:0:1:nobloom:uniform",
+   "meanLuma": 39.333,
+   "std": 46.51,
+   "regionsLuma": {
+    "centre": 104.64,
+    "top": 11,
+    "bottom": 29.51,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom:g1",
+   "meanLuma": 71.621,
+   "std": 52.453,
+   "regionsLuma": {
+    "centre": 145.47,
+    "top": 29,
+    "bottom": 67.29,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:0:0.7:nobloom:g1",
+   "meanLuma": 36.793,
+   "std": 50.913,
+   "regionsLuma": {
+    "centre": 113.44,
+    "top": 11,
+    "bottom": 21.98,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom:g0.5",
+   "meanLuma": 90.664,
+   "std": 57.093,
+   "regionsLuma": {
+    "centre": 154.16,
+    "top": 29,
+    "bottom": 92.98,
+    "corner": 29
+   },
+   "hdriStatus": "none",
+   "iblPixelBacked": false,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:three:0:0.7:nobloom:g0.5",
+   "meanLuma": 51.906,
+   "std": 52.884,
+   "regionsLuma": {
+    "centre": 119.18,
+    "top": 11,
+    "bottom": 32.79,
+    "corner": 11
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [
+    "warning: RGBELoader has been deprecated. Please use HDRLoader instead."
+   ],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:2.5:1:bloom:ref",
+   "meanLuma": 68.897,
+   "std": 53.009,
+   "regionsLuma": {
+    "centre": 152.74,
+    "top": 32.26,
+    "bottom": 57.08,
+    "corner": 30
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:1.1:0.7:bloom:ref",
+   "meanLuma": 51.22,
+   "std": 50.425,
+   "regionsLuma": {
+    "centre": 126.03,
+    "top": 29.32,
+    "bottom": 34.42,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:1.1:0.7:nobloom:ref",
+   "meanLuma": 50.664,
+   "std": 50.453,
+   "regionsLuma": {
+    "centre": 124.7,
+    "top": 29,
+    "bottom": 34.17,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom:ref",
+   "meanLuma": 43.457,
+   "std": 49.203,
+   "regionsLuma": {
+    "centre": 115.73,
+    "top": 29,
+    "bottom": 22.62,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:1:nobloom:ref",
+   "meanLuma": 51.3,
+   "std": 52.2,
+   "regionsLuma": {
+    "centre": 130.61,
+    "top": 29,
+    "bottom": 32.44,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:1.1:0:nobloom:ref",
+   "meanLuma": 25.061,
+   "std": 29.479,
+   "regionsLuma": {
+    "centre": 55.62,
+    "top": 29,
+    "bottom": 9.31,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom:uniform:ref",
+   "meanLuma": 37.608,
+   "std": 38.509,
+   "regionsLuma": {
+    "centre": 88.6,
+    "top": 29,
+    "bottom": 20.3,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom:g1:ref",
+   "meanLuma": 43.116,
+   "std": 49.259,
+   "regionsLuma": {
+    "centre": 115.49,
+    "top": 29,
+    "bottom": 22.32,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "pbr:aura:0:0.7:nobloom:g0.5:ref",
+   "meanLuma": 58.167,
+   "std": 48.078,
+   "regionsLuma": {
+    "centre": 121.48,
+    "top": 29,
+    "bottom": 36.16,
+    "corner": 29
+   },
+   "hdriStatus": "ready",
+   "iblPixelBacked": true,
+   "preset": "hdri",
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "bench:forest:aura",
+   "meanLuma": 119.595,
+   "std": 57.918,
+   "regionsLuma": {
+    "centre": 113.16,
+    "top": 188,
+    "bottom": 56.87,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "bench:forest:three",
+   "meanLuma": 148.112,
+   "std": 37.866,
+   "regionsLuma": {
+    "centre": 146.6,
+    "top": 182,
+    "bottom": 111.38,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:aura:linear:shadow:fog",
+   "meanLuma": 159.974,
+   "std": 28.001,
+   "regionsLuma": {
+    "centre": 158.11,
+    "top": 188,
+    "bottom": 133.12,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:three:css:shadow:fog",
+   "meanLuma": 110.334,
+   "std": 58.701,
+   "regionsLuma": {
+    "centre": 97.78,
+    "top": 182,
+    "bottom": 54.09,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:aura:css:shadow:fog",
+   "meanLuma": 119.595,
+   "std": 57.918,
+   "regionsLuma": {
+    "centre": 113.16,
+    "top": 188,
+    "bottom": 56.87,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:three:linear:shadow:fog",
+   "meanLuma": 148.112,
+   "std": 37.866,
+   "regionsLuma": {
+    "centre": 146.6,
+    "top": 182,
+    "bottom": 111.38,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:aura:linear:noshadow:fog",
+   "meanLuma": 160.751,
+   "std": 26.632,
+   "regionsLuma": {
+    "centre": 158.86,
+    "top": 188,
+    "bottom": 134.7,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:three:linear:noshadow:fog",
+   "meanLuma": 150.606,
+   "std": 33.381,
+   "regionsLuma": {
+    "centre": 148.16,
+    "top": 182,
+    "bottom": 119.3,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:aura:linear:shadow:nofog",
+   "meanLuma": 153.856,
+   "std": 31.123,
+   "regionsLuma": {
+    "centre": 144.9,
+    "top": 188,
+    "bottom": 131.12,
+    "corner": 188
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  },
+  {
+   "id": "forest:three:linear:shadow:nofog",
+   "meanLuma": 143.322,
+   "std": 40.553,
+   "regionsLuma": {
+    "centre": 136.22,
+    "top": 182,
+    "bottom": 109.57,
+    "corner": 182
+   },
+   "hdriStatus": null,
+   "iblPixelBacked": null,
+   "preset": null,
+   "consoleProblems": [],
+   "errors": []
+  }
+ ]
+}
