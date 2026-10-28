@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BLOOM_FUSED_BLUR_TAP_BUDGET, BLOOM_FUSED_MAX_MIPS } from "../../../packages/rendering/src/webgl2/LegacyPost";
+import { DEFAULT_BLOOM_FUSION } from "../../../packages/rendering/src/webgl2/BloomFusion";
 import { resolveBloomPyramidPlan } from "../../../packages/rendering/src/postprocess/NativeBloomPyramid";
 
 /**
@@ -75,6 +76,10 @@ describe("bloom pass fusion", () => {
       for (let i = 0; i < a.length; i += 1) worst = Math.max(worst, Math.abs(a[i]! - b[i]!));
       expect(worst).toBeLessThan(1e-12);
     }
+  });
+
+  it("the default fusion config keeps 2-D blur to the two smallest mips (measured: <= production frame time, 25 draws)", () => {
+    expect(DEFAULT_BLOOM_FUSION).toEqual({ accumulate: true, blur2dFromLevel: 3, extract: true });
   });
 
   it("at 640x360 the four smallest mips blur in one pass and mip 0 stays separable", () => {

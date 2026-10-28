@@ -120,8 +120,14 @@ export async function createProductionRuntimeSceneRenderer(
     qrFlags: flags
   });
   markTiming("a3d:mount:renderer-create:resolved");
-  // quality auto / cinematic: allow look-neutral bloom pass fusion on the WebGL2 device (`production` never does).
-  if (isFusedBloomPasses(canvas)) (productionRenderer.device as unknown as { bloomFusedPasses?: boolean }).bloomFusedPasses = true;
+  // quality auto / cinematic: allow look-neutral bloom pass fusion (`production` never does). The GL state shadow also
+  // persists across frames, but only on the direct path: there nothing but the forward pass touches GL state. With the
+  // post chain on (HDR path) persisting it changed frames (mean +5/255 on the PBR viewer), so those mounts keep re-issuing it.
+  if (isFusedBloomPasses(canvas)) {
+    const device = productionRenderer.device as unknown as { bloomFusedPasses?: boolean; persistGlState?: boolean };
+    device.bloomFusedPasses = true;
+    if (isDirectRenderPath(canvas)) device.persistGlState = true;
+  }
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
   let disposeHdriEnvironment: (() => void) | null = null;

@@ -12,6 +12,8 @@ interface PbrHarnessApi {
   stepOnce(): void;
   /** Wait until the HDRI environment has settled, render `frames` more frames, and return the canvas as base64 RGBA (640x360). */
   settledPixels(frames: number): Promise<string>;
+  /** Wall time of `frames` steady frames (render + readPixels wait), in ms each. */
+  measure(frames: number): number[];
 }
 declare global { interface Window { __PBR__?: PbrHarnessApi } }
 
@@ -49,6 +51,20 @@ async function main(): Promise<void> {
         .add(interactions.orbit({ target: "truck" }))
     });
     await app.ready();
+    // Experiment knob (variant exploration): `?fusion=off` or `?fusion=acc=1,b2d=3,ext=1` sets the bloom fusion config on the device.
+    const fusionParam = params.get("fusion");
+    if (fusionParam !== null) {
+      const device = ((app as unknown as Record<symbol, { device?: Record<string, unknown> } | undefined>)[Symbol.for("a3d.prd01.renderer")])?.device;
+      if (device) {
+        if (fusionParam === "off") {
+          device.bloomFusedPasses = false;
+        } else {
+          const kv = Object.fromEntries(fusionParam.split(",").map((pair) => pair.split("=") as [string, string]));
+          device.bloomFusedPasses = true;
+          device.bloomFusion = { accumulate: kv.acc !== "0", blur2dFromLevel: Number(kv.b2d ?? 5), extract: kv.ext !== "0" };
+        }
+      }
+    }
     const gl = canvas.getContext("webgl2") as WebGL2RenderingContext;
     const sink = new Uint8Array(4);
     const stepOnce = (): void => { app.step(1 / 60); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, sink); };
@@ -73,10 +89,26 @@ async function main(): Promise<void> {
       for (let i = 0; i < data.length; i += 0x8000) binary += String.fromCharCode(...data.subarray(i, i + 0x8000));
       return btoa(binary);
     };
-    window.__PBR__ = { ready: true, errors, renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath, stepOnce, settledPixels };
+    window.__PBR__ = {
+      ready: true,
+      errors,
+      renderPath: (app.diagnostics() as { renderPath?: unknown }).renderPath,
+      stepOnce,
+      settledPixels,
+      measure(frames) {
+        for (let i = 0; i < 2; i += 1) stepOnce();
+        const totals: number[] = [];
+        for (let i = 0; i < frames; i += 1) {
+          const t0 = performance.now();
+          stepOnce();
+          totals.push(performance.now() - t0);
+        }
+        return totals;
+      }
+    };
   } catch (error) {
     errors.push(`start failed: ${(error as Error)?.stack ?? error}`);
-    window.__PBR__ = { ready: false, errors, renderPath: null, stepOnce: () => undefined, settledPixels: async () => "" };
+    window.__PBR__ = { ready: false, errors, renderPath: null, stepOnce: () => undefined, settledPixels: async () => "", measure: () => [] };
   }
 }
 

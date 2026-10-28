@@ -211,14 +211,19 @@ test.describe("frame cost: CPU profiles (unminified dev-server modules, direct p
 /** Every WebGL2 call of one steady frame, by name: the native cost behind "(program)" in the CPU profile is proportional to this. */
 const GL_CENSUS_HOOK = `(() => {
   const counts = {};
-  window.__GL_CENSUS__ = { counts, on: false };
+  const trace = [];
+  window.__GL_CENSUS__ = { counts, trace, on: false };
   const proto = WebGL2RenderingContext.prototype;
+  const describe = (v) => (v === null ? "null" : typeof v === "number" || typeof v === "boolean" ? String(v) : typeof v === "object" ? (v.constructor && v.constructor.name) || "object" : typeof v);
   for (const name of Object.getOwnPropertyNames(proto)) {
     let fn;
     try { fn = proto[name]; } catch { continue; }
     if (typeof fn !== "function" || name === "constructor") continue;
     proto[name] = function (...a) {
-      if (window.__GL_CENSUS__.on) counts[name] = (counts[name] || 0) + 1;
+      if (window.__GL_CENSUS__.on) {
+        counts[name] = (counts[name] || 0) + 1;
+        trace.push(name + "(" + a.slice(0, 4).map(describe).join(",") + ")");
+      }
       return fn.apply(this, a);
     };
   }
@@ -238,16 +243,18 @@ test.describe("frame cost: GL call census (direct path)", () => {
     await page.waitForFunction(() => Boolean((window as unknown as { __FRAME_COST__?: unknown }).__FRAME_COST__), undefined, { timeout: 120_000 });
     const census = await page.evaluate(() => {
       const api = (window as unknown as { __FRAME_COST__: { stepOnce(): void } }).__FRAME_COST__;
-      const state = (window as unknown as { __GL_CENSUS__: { counts: Record<string, number>; on: boolean } }).__GL_CENSUS__;
+      const state = (window as unknown as { __GL_CENSUS__: { counts: Record<string, number>; trace: string[]; on: boolean } }).__GL_CENSUS__;
       for (let i = 0; i < 60; i += 1) api.stepOnce();
       for (const key of Object.keys(state.counts)) delete state.counts[key];
+      state.trace.length = 0;
       state.on = true;
       api.stepOnce();
       state.on = false;
-      return { ...state.counts };
+      return { counts: { ...state.counts }, trace: [...state.trace] };
     });
-    const total = Object.values(census).reduce((a, b) => a + b, 0);
-    console.log(`GL_CENSUS ${JSON.stringify({ total, calls: Object.entries(census).sort((a, b) => b[1] - a[1]) })}`);
+    const total = Object.values(census.counts).reduce((a, b) => a + b, 0);
+    console.log(`GL_CENSUS ${JSON.stringify({ total, calls: Object.entries(census.counts).sort((a, b) => b[1] - a[1]) })}`);
+    console.log(`GL_TRACE ${JSON.stringify(census.trace)}`);
     await context.close();
   });
 });

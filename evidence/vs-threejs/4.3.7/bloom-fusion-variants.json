@@ -1,0 +1,31 @@
+{
+  "schema": "aura3d-evidence/bloom-fusion-variants/1",
+  "date": "2026-10-28",
+  "gitBranch": "beat3js/p1",
+  "runner": "Azure ACR task, software WebGL2 (SwiftShader), 640x360, dpr 1; spec tests/browser/bloom-fusion-variants.spec.ts",
+  "scene": "PBR viewer (milk truck, HDRI, shadowed sun, cinematic-tier bloom, ACES), rebuilt against the in-repo sources",
+  "decisionRule": "no software-GL frame-time regression against production (<= +5%) and draws <= 25",
+  "regression": "The first fusion (2-D blur for mips 1-4) cost 633 ms against 407 ms on the candidate bench: 11.1M texel fetches against 1.1M for the separable pairs, on a software rasteriser.",
+  "round1_5frames_x2reps": [
+    { "id": "production", "medianFrameMs": 413, "draws": 33 },
+    { "id": "auto-unfused", "medianFrameMs": 412.1, "draws": 33 },
+    { "id": "acc", "medianFrameMs": 428, "draws": 28, "note": "mip sum + upsample folded" },
+    { "id": "acc+ext", "medianFrameMs": 373.8, "draws": 27, "note": "+ bright extract folded into the level-0 downsample" },
+    { "id": "ext", "medianFrameMs": 385.9, "draws": 32 },
+    { "id": "acc+ext+b2d4", "medianFrameMs": 416.5, "draws": 26 },
+    { "id": "acc+ext+b2d3", "medianFrameMs": 396.7, "draws": 25 },
+    { "id": "acc+ext+b2d2", "medianFrameMs": 446.6, "draws": 24, "note": "+8% against production" },
+    { "id": "acc+ext+b2d1", "medianFrameMs": 601.7, "draws": 23, "note": "+46%: the previous shipped fusion" }
+  ],
+  "confirmation_8frames_x4reps": [
+    { "id": "production", "medianFrameMs": 421.2, "draws": 33 },
+    { "id": "acc+ext", "medianFrameMs": 400.2, "draws": 27, "vsProduction": "-5.0%" },
+    { "id": "acc+ext+b2d4", "medianFrameMs": 373.6, "draws": 26, "vsProduction": "-11.3%" },
+    { "id": "default(acc+ext+b2d3)", "medianFrameMs": 391.4, "draws": 25, "vsProduction": "-7.1%", "meanAbsDiff": 0.001, "maxDiff": 1 }
+  ],
+  "chosenDefault": { "accumulate": true, "extract": true, "blur2dFromLevel": 3, "note": "2-D blur only for the two smallest mips (1.3M + 0.5M texel fetches). Draws 25. Frame time -7.1% (confirmation) and about -2% in a second batch on a busier runner; never above production." },
+  "draws_default": { "2048x2048 (shadow)": 4, "640x360 mesh": 5, "640x360 fullscreen (composite, tone map)": 2, "320x180": 4, "160x90": 2, "80x45": 2, "40x23": 2, "20x12": 2, "total": 25 },
+  "whyItIsFaster": "The bright extract (a full-resolution pass) is folded into the level-0 downsample, and the full-resolution upsample is folded into the composite, so two 640x360 passes disappear; that fill outweighs the 2-D blur on the two smallest mips.",
+  "lookNeutral": "auto vs production, same frame: mean abs diff 0.001/255, max 1/255.",
+  "persistGlStateFinding": "Keeping the GL state shadow across frames on the HDR path (post chain on) changed frames: PBR viewer mean +5.17/255, max 41; skinned character interior max 9. It is therefore enabled only on the direct path, where nothing but the forward pass touches GL state."
+}

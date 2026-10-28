@@ -237,9 +237,14 @@ export class WebGL2ContextLifecycle {
     this.host.counters.drawCalls = 0;
     this.host.counters.nativeEnvironmentBindings = 0;
     this.host.counters.nativeShadowMapBindings = 0;
-    this.host.samplers.activeTextureUnitIndex = -1;
-    this.host.samplers.textureUnitBindings.clear();
-    this.host.stateCache.invalidate();
+    // Default: assume nothing about GL state between frames (other code may share the context) and re-issue it. With
+    // `persistGlState` (set by the engine for quality auto / cinematic, which own the canvas) the shadow state carries
+    // over: every raw-GL site invalidates it when it leaves the cached state behind, so an untouched cache is still true.
+    if (this.host.device?.persistGlState !== true) {
+      this.host.samplers.activeTextureUnitIndex = -1;
+      this.host.samplers.textureUnitBindings.clear();
+      this.host.stateCache.invalidate();
+    }
     this.viewportWidth = width;
     this.viewportHeight = height;
     const frameFramebuffer = this.host.activeRenderTarget?.framebuffer ?? this.externalFramebuffer;

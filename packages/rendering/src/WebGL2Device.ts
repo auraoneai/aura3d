@@ -57,6 +57,7 @@ import { WebGL2DrawCallBinder } from "./webgl2/MultiDraw";
 import { AURA_FRAME_BINDING, AURA_LIGHTS_BINDING } from "./resources/UniformBlock";
 import { WebGL2ReadbackProbe } from "./webgl2/Probe";
 import { WebGL2LegacyPostPipeline } from "./webgl2/LegacyPost";
+import { DEFAULT_BLOOM_FUSION, type BloomFusionConfig } from "./webgl2/BloomFusion";
 import { cubeFaceTarget, rgba8TextureInternalFormat, textureUploadFormat, resolveRenderTargetFormat, resolveCompressedTextureFormat, magFilter, minFilter, addressMode } from "./webgl2/TextureFormats";
 
 export interface TextureFilterAnisotropicExtension {
@@ -379,6 +380,14 @@ export class WebGL2Device implements RenderDevice {
    * keeps the original pass sequence.
    */
   bloomFusedPasses = false;
+  /** Which fusions run when `bloomFusedPasses` is on (see `webgl2/BloomFusion.ts`). */
+  bloomFusion: BloomFusionConfig = DEFAULT_BLOOM_FUSION;
+  /**
+   * Keep the GL state shadow (program, VAO, framebuffer, viewport, enables, texture units) across frames instead of
+   * re-issuing it every `beginFrame`. Off by default; the engine turns it on for `quality: "auto"` / `"cinematic"`.
+   * Code that changes GL state outside the cache must call `stateCache.invalidate()` (all such sites already do).
+   */
+  persistGlState = false;
 
   static create(options: WebGL2DeviceOptions): WebGL2Device {
     const gl = options.canvas.getContext("webgl2", {
