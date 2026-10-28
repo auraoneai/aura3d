@@ -376,7 +376,7 @@
 .home .home-btn-text:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .home .hero-code { margin-bottom: 8px; }
-.home .hero-code .code-body { font-size: 12.5px; }
+.home .hero-code .code-body { font-size: 12.5px; white-space: pre-wrap; overflow-wrap: break-word; overflow-x: visible; }
 .home .hero-code-note {
   max-width: 62ch;
   margin: 0 0 24px;
