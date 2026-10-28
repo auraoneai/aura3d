@@ -35,7 +35,7 @@ export function createProductionPrimitiveResources(node: AuraPrimitiveNode, qr?:
   if (!levels?.length) {
     if (sdfResource) return [sdfResource];
     const qrGeometry = qrPrimitiveGeometryFor(node, qr);
-    const shadowGeometry = qrPrimitiveShadowGeometryFor(node, qr);
+    const shadowGeometry = qrPrimitiveShadowGeometryFor(node, qr, qrGeometry?.geometry);
     const fallback = {
       geometry: qrGeometry?.geometry ?? createProductionPrimitiveGeometry(node),
       ...(shadowGeometry ? { shadowGeometry } : {}),
@@ -301,7 +301,7 @@ import { renderer } from "../rendererDiagnostics.js";
 import { scene } from "../nodes/scene.js";
 import { colorToLinearRgb } from "../colorUtils.js";
 import type { GltfBounds } from "../nodes/types/runtime.js";
-import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, instancedShadowSegmentScale, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
+import { createPlaneGeometry, createBoxGeometry, createSphereGeometry, createCylinderGeometry, createTorusGeometry, createCapsuleApproxGeometry, createQrPrimitiveMesh, instancedDefaultSegmentScale, instancedShadowSegmentScale, INSTANCED_SHADOW_PROXY_MIN_INSTANCES, qrPrimitiveGeometryKey, qrPrimitiveParamsPoolable, type QrPrimitiveGeometryOptions } from "./geometry.js";
 import { clamp01 } from "../sceneMath.js";
 
 /**
@@ -509,23 +509,54 @@ function withInstancedTessellation(node: AuraPrimitiveNode, qr: QrPrimitiveGeome
 }
 
 /**
- * Coarser stand-in geometry for the shadow depth passes of a dense instanced, shadow-casting node (see `RenderItem.shadowGeometry`).
- * Undefined unless it is strictly coarser than the camera geometry, so nodes that already fit the camera budget keep one geometry.
+ * `globalThis.__A3D_SHADOW_PROXY__ = "off"` (or `?shadowproxy=off`) opts a page out of shadow proxy geometry; the default is on.
+ * Read at mount, like `?shadowfit=`.
  */
-export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): Geometry | undefined {
+export function shadowProxyEnabled(): boolean {
+  const g = globalThis as { __A3D_SHADOW_PROXY__?: string; location?: { search?: string } };
+  let value = g.__A3D_SHADOW_PROXY__;
+  try {
+    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("shadowproxy") : null;
+    if (q === "on" || q === "off") value = q;
+  } catch {
+    // no location (node, workers): fall through to the global
+  }
+  return value !== "off";
+}
+
+const triangleCount = (geometry: Geometry): number => (geometry.indexBuffer?.count ?? geometry.vertexBuffer.vertexCount) / 3;
+
+/**
+ * Coarser stand-in geometry for the shadow depth passes of an instanced, shadow-casting builtin primitive (see `RenderItem.shadowGeometry`).
+ *
+ * Eligibility, all required:
+ * - the node casts shadows, is a builtin primitive (not `custom`, no authored `geometry`), and the quality-rebuild core path is on;
+ * - it carries at least `INSTANCED_SHADOW_PROXY_MIN_INSTANCES` (1,024) instances;
+ * - the page has not opted out (`shadowproxy=off`);
+ * - the proxy is strictly cheaper than the camera geometry (kinds whose tessellation ignores the segment scale, such as boxes, never get one).
+ * Authored segment params always win, exactly as for the camera geometry.
+ */
+export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined, viewGeometry?: Geometry): Geometry | undefined {
   if (!mountQr?.core || node.geometry || node.primitive === "custom" || !node.castShadow) return undefined;
   const count = node.instances?.length;
-  if (count === undefined || count <= 64) return undefined;
+  if (count === undefined || count < INSTANCED_SHADOW_PROXY_MIN_INSTANCES || !shadowProxyEnabled()) return undefined;
   const viewScale = withInstancedTessellation(node, mountQr).defaultSegmentScale ?? 1;
   const qr = withInstancedTessellation(node, mountQr, "shadow");
   if ((qr.defaultSegmentScale ?? 1) >= viewScale) return undefined;
   const size = primitiveSize(node);
   const primitive = qrBuiltinPrimitive(node.primitive);
-  if (!qr.pool || !qrPrimitiveParamsPoolable(node.params)) {
-    return createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params));
+  const proxy = !qr.pool || !qrPrimitiveParamsPoolable(node.params)
+    ? createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params))
+    : qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr, node.params), () =>
+      createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params)));
+  if (viewGeometry && triangleCount(proxy) >= triangleCount(viewGeometry)) {
+    proxy.dispose();
+    return undefined;
   }
-  return qr.pool.acquire(qrPrimitiveGeometryKey(primitive, size, qr, node.params), () =>
-    createProductionGeometryFromPrimitiveMesh(createQrPrimitiveMesh(primitive, size, qr, node.params)));
+  // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): which nodes of a page got a proxy, and how much cheaper it is.
+  const record = (globalThis as { __A3D_SHADOW_PROXIES__?: unknown[] });
+  (record.__A3D_SHADOW_PROXIES__ ??= []).push({ node: node.name ?? node.primitive, primitive: node.primitive, instances: count, cameraTriangles: viewGeometry ? triangleCount(viewGeometry) : null, proxyTriangles: triangleCount(proxy) });
+  return proxy;
 }
 
 export function qrPrimitiveGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined): { readonly geometry: Geometry; readonly bounds: GltfBounds } | undefined {
