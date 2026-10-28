@@ -291,6 +291,35 @@ describe("PRD-01 §15 Phase 6c — VAO eviction on RenderBuffer.dispose (§6.1)"
     expect(host.buffers.has(vertexBuffer)).toBe(true);
   });
 
+  it("per-frame instance buffers do not accumulate eviction-index entries (dense shadow casters make one per node per cascade per frame)", () => {
+    const host = stubHost();
+    const binder = new WebGL2DrawCallBinder(host as never);
+    const vertexBuffer = makeBuffer(host, binder, 1);
+    const shader = stubShader(10);
+    const index = (binder as unknown as { bufferVaoIndex: Map<number, Set<string>> }).bufferVaoIndex;
+    const frame = (n: number) => {
+      const inst = makeBuffer(host, binder, 1000 + n);
+      binder.bindVertexArrayForCommand(
+        {
+          vertexBuffer,
+          vertexCount: 3,
+          vertexFormat: VertexFormat.P3,
+          topology: "triangles",
+          instanceAttributes: [{ buffer: inst, shaderName: "a_instanceMatrix0", components: 4, offset: 0, stride: 64, divisor: 1 }]
+        },
+        shader as never,
+        vertexBuffer
+      );
+      inst.dispose();
+    };
+    frame(0);
+    const afterOne = index.size;
+    for (let n = 1; n < 600; n += 1) frame(n);
+    expect(index.size).toBe(afterOne);
+    expect(binder.vertexArrayCache.size).toBe(0);
+    expect(host.gl.deletedVertexArrays).toBe(600);
+  });
+
   it("disposing the vertex buffer evicts every VAO it keys", () => {
     const host = stubHost();
     const binder = new WebGL2DrawCallBinder(host as never);

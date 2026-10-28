@@ -25,10 +25,13 @@ export function shadowFitMode(): ShadowFitMode {
 export const shadowFitLegacy = (): boolean => shadowFitMode() === "legacy";
 
 /**
- * Dense instanced casters (one node with at least this many instances) draw their depth through a per-instance attribute buffer even
- * in the default (legacy) fit: one draw per node per cascade instead of ceil(n / 64). Same per-node threshold as the engine's
- * instanced shadow proxies, so the scenes it touches are the ones already audited for them (the forest benchmark: 8,000 / 8,000 /
- * 2,000 instances, 282 depth draws per cascade become 3). Nodes below it keep the 4.2.0 uniform-array batches exactly.
+ * Dense instanced casters (one node with at least this many instances AND an engine-assigned instanced shadow proxy,
+ * `RenderItem.shadowGeometry`) draw their depth through a per-instance attribute buffer even in the default (legacy) fit: one draw
+ * per node per cascade instead of ceil(n / 64). The proxy requirement is what bounds the set of nodes this touches: builtin
+ * primitives on the qr core path with a strictly cheaper proxy. Instanced GLB or model nodes, custom or authored geometry, boxes and
+ * every node below the threshold keep the 4.2.0 uniform-array batches exactly. The threshold equals
+ * `INSTANCED_SHADOW_PROXY_MIN_INSTANCES` in the engine (the forest benchmark: 8,000 / 8,000 / 2,000 instances, 282 depth draws per
+ * cascade become 3).
  */
 export const DENSE_DEPTH_INSTANCE_MIN = 1024;
 

@@ -330,7 +330,11 @@ export class WebGL2DrawCallBinder {
    */
   evictVertexArraysForBuffer(bufferId: number): number {
     const keys = this.bufferVaoIndex.get(bufferId);
-    if (!keys || keys.size === 0) return 0;
+    if (!keys) return 0;
+    if (keys.size === 0) {
+      this.bufferVaoIndex.delete(bufferId);
+      return 0;
+    }
     let evicted = 0;
     for (const key of keys) {
       const entry = this.vertexArrayCache.get(key);
@@ -340,6 +344,10 @@ export class WebGL2DrawCallBinder {
       if (entry.handle) this.host.gl.deleteVertexArray(entry.handle);
       for (const set of this.bufferVaoIndex.values()) set.delete(key);
     }
+    // The disposed buffer's own index entry goes too. Per-frame instance buffers (dense shadow casters create and dispose one per
+    // node per cascade per frame) would otherwise leave one empty Set per frame in this map for the life of the page, and the scan
+    // above would walk all of them on every dispose.
+    this.bufferVaoIndex.delete(bufferId);
     return evicted;
   }
 

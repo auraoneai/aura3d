@@ -1,0 +1,197 @@
+{
+ "note": "Three 3-frame runs. The first (run-id w9fix-sky, JSON only in its run log, failed the old 2/255 gate): before 3 draws, after 4 draws, mean diff 5.45/255 on 230311 of 230400 pixels, triangles 22529 -> 19458, no control load. The two below (w9fix2, w9fix3): in w9fix3 the control load of the SAME configuration drew 4 times and differed from the 3-draw load by 5.45/255 mean. So at frame 3 the bench scene draws 3 or 4 times per frame at random (the extra draw coincides with whole-frame differences of about 5.5/255); cause not investigated (bench harness startup, not engine code). With 8 frames (shader-water-sky-density.json) all three loads were stable at 3 draws.",
+ "runs": [
+  {
+   "scene": "bench shader-water (Aura3D), 640x360",
+   "frames": 3,
+   "before": {
+    "skySegments": "64x32",
+    "triangles": 22529,
+    "draws": 3,
+    "drawList": [
+     [
+      4,
+      55296,
+      1
+     ],
+     [
+      4,
+      12288,
+      1
+     ],
+     [
+      4,
+      3,
+      1
+     ]
+    ]
+   },
+   "after": {
+    "skySegments": "32x16",
+    "triangles": 19457,
+    "draws": 3,
+    "drawList": [
+     [
+      4,
+      55296,
+      1
+     ],
+     [
+      4,
+      3072,
+      1
+     ],
+     [
+      4,
+      3,
+      1
+     ]
+    ]
+   },
+   "control": {
+    "triangles": 19457,
+    "draws": 3
+   },
+   "density": {
+    "all": {
+     "pixels": 230400,
+     "meanAbs255": 0.001270254629629633,
+     "maxAbs255": 0.6666666666666666,
+     "over4Share": 0
+    },
+    "skyBand": {
+     "pixels": 46080,
+     "meanAbs255": 0,
+     "maxAbs255": 0,
+     "over4Share": 0
+    },
+    "below": {
+     "pixels": 184320,
+     "meanAbs255": 0.0015878182870370412,
+     "maxAbs255": 0.6666666666666666,
+     "over4Share": 0
+    }
+   },
+   "noise": {
+    "all": {
+     "pixels": 230400,
+     "meanAbs255": 0,
+     "maxAbs255": 0,
+     "over4Share": 0
+    },
+    "skyBand": {
+     "pixels": 46080,
+     "meanAbs255": 0,
+     "maxAbs255": 0,
+     "over4Share": 0
+    },
+    "below": {
+     "pixels": 184320,
+     "meanAbs255": 0,
+     "maxAbs255": 0,
+     "over4Share": 0
+    }
+   },
+   "lumaStd": 36.63214200989591,
+   "errors": [],
+   "environment": "software WebGL2 (SwiftShader); triangle counts are exact GL draw-call sums",
+   "generatedUtc": "2026-10-28T11:43:47.824Z"
+  },
+  {
+   "scene": "bench shader-water (Aura3D), 640x360",
+   "frames": 3,
+   "before": {
+    "skySegments": "64x32",
+    "triangles": 22529,
+    "draws": 3,
+    "drawList": [
+     [
+      4,
+      55296,
+      1
+     ],
+     [
+      4,
+      12288,
+      1
+     ],
+     [
+      4,
+      3,
+      1
+     ]
+    ]
+   },
+   "after": {
+    "skySegments": "32x16",
+    "triangles": 19457,
+    "draws": 3,
+    "drawList": [
+     [
+      4,
+      55296,
+      1
+     ],
+     [
+      4,
+      3072,
+      1
+     ],
+     [
+      4,
+      3,
+      1
+     ]
+    ]
+   },
+   "control": {
+    "triangles": 19458,
+    "draws": 4
+   },
+   "density": {
+    "all": {
+     "pixels": 230400,
+     "meanAbs255": 0.001270254629629633,
+     "maxAbs255": 0.6666666666666666,
+     "over4Share": 0
+    },
+    "skyBand": {
+     "pixels": 46080,
+     "meanAbs255": 0,
+     "maxAbs255": 0,
+     "over4Share": 0
+    },
+    "below": {
+     "pixels": 184320,
+     "meanAbs255": 0.0015878182870370412,
+     "maxAbs255": 0.6666666666666666,
+     "over4Share": 0
+    }
+   },
+   "noise": {
+    "all": {
+     "pixels": 230400,
+     "meanAbs255": 5.453292824072393,
+     "maxAbs255": 43.666666666666664,
+     "over4Share": 0.34770399305555555
+    },
+    "skyBand": {
+     "pixels": 46080,
+     "meanAbs255": 10.841377314814016,
+     "maxAbs255": 43.666666666666664,
+     "over4Share": 0.6588541666666666
+    },
+    "below": {
+     "pixels": 184320,
+     "meanAbs255": 4.106271701388475,
+     "maxAbs255": 42.666666666666664,
+     "over4Share": 0.2699164496527778
+    }
+   },
+   "lumaStd": 36.63214200989591,
+   "errors": [],
+   "environment": "software WebGL2 (SwiftShader); triangle counts are exact GL draw-call sums",
+   "generatedUtc": "2026-10-28T11:49:25.325Z"
+  }
+ ]
+}
