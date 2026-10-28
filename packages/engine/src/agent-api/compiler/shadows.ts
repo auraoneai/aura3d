@@ -139,6 +139,38 @@ const FILTER_BY_TIER: Readonly<Record<"pcf2" | "pcf3" | "pcf5", ShadowSystemConf
 };
 
 /**
+ * Shadow-casting instances at or above which an "auto" cascade count is capped at two. Every cascade redraws every caster, so a scene
+ * that stamps this many shadow-casting instances (the 18,000-instance forest benchmark) pays for the third pass in every frame while
+ * the far cascade's texel density is already coarse; two cascades keep the near range sharp. An explicit `shadow.cascades` is never capped,
+ * and `globalThis.__A3D_DENSE_SHADOWS__ = "off"` (or `?denseshadows=off`, see `denseShadowBudgetEnabled`) restores the tier value.
+ */
+export const DENSE_INSTANCED_CASTER_CASCADE_CAP_INSTANCES = 8192;
+
+export function denseShadowBudgetEnabled(): boolean {
+  const g = globalThis as { __A3D_DENSE_SHADOWS__?: string; location?: { search?: string } };
+  let value = g.__A3D_DENSE_SHADOWS__;
+  try {
+    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("denseshadows") : null;
+    if (q === "on" || q === "off") value = q;
+  } catch {
+    // no location (node, workers): fall through to the global
+  }
+  return value !== "off";
+}
+
+/** Total instances across shadow-casting instanced primitive nodes (nodes parked at y <= -50 excluded, like the scene radius). */
+export function shadowCastingInstanceCount(snapshot: AuraSceneSnapshot): number {
+  let total = 0;
+  for (const node of groups.flatten(snapshot.nodes)) {
+    if (node.kind !== "primitive" || !node.castShadow || !Array.isArray(node.instances)) continue;
+    const position: AuraVec3 = Array.isArray(node.position) ? node.position : [0, 0, 0];
+    if (position[1] <= -50) continue;
+    total += node.instances.length;
+  }
+  return total;
+}
+
+/**
  * Scene-bounds radius for shadow sizing. Nodes parked at y ≤ -50 (the
  * offstage convention) do not count — the map size must not grow because
  * an agent parked something far below the stage (PRD-02 §6.4 test).
@@ -172,8 +204,12 @@ export function resolveShadowSystemConfig(
   const radius = sceneShadowRadius(snapshot);
   const sunOptions = descriptors.find((d) => d.shadowRequested && !d.shadowDisabled)?.shadowOptions;
   const cascadesOpt = sunOptions?.cascades;
+  const casterInstances = (cascadesOpt === undefined || cascadesOpt === "auto") && denseShadowBudgetEnabled() ? shadowCastingInstanceCount(snapshot) : 0;
+  const dense = casterInstances >= DENSE_INSTANCED_CASTER_CASCADE_CAP_INSTANCES && settings.shadow.cascades > 2 && radius > 15;
+  // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): this page's cascade count was capped by the dense-instance budget.
+  if (dense) (globalThis as { __A3D_DENSE_SHADOW_CAP__?: unknown }).__A3D_DENSE_SHADOW_CAP__ = { instances: casterInstances, tierCascades: settings.shadow.cascades, cascades: 2 };
   const cascades = (cascadesOpt === undefined || cascadesOpt === "auto")
-    ? (radius <= 15 ? 1 : settings.shadow.cascades)
+    ? (radius <= 15 ? 1 : (dense ? (Math.min(settings.shadow.cascades, 2) as 1 | 2 | 3 | 4) : settings.shadow.cascades))
     : (cascadesOpt as 1 | 2 | 3 | 4);
   const mapSize = (sunOptions?.mapSize ?? settings.shadow.mapSize) as 1024 | 2048 | 4096;
   const texelWorld = (radius * 2) / mapSize;

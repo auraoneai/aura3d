@@ -31,11 +31,11 @@ const DEFAULT_ROUTES = [
 const ROUTES = (process.env.A3D_SHADOW_PROXY_AB_ROUTES ?? "").split(",").map((r) => r.trim()).filter(Boolean);
 const SETTLE_MS = Number(process.env.A3D_SHADOW_PROXY_AB_SETTLE_MS ?? 3000);
 
-interface Capture { png: Buffer; proxies: unknown[]; errors: string[]; loaded: boolean; drawCalls: unknown }
+interface Capture { png: Buffer; proxies: unknown[]; denseCap: unknown; errors: string[]; loaded: boolean; drawCalls: unknown }
 
 async function capture(browser: Browser, origin: string, route: string, proxyOff: boolean): Promise<Capture> {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 });
-  if (proxyOff) await context.addInitScript('window.__A3D_SHADOW_PROXY__ = "off";');
+  if (proxyOff) await context.addInitScript('window.__A3D_SHADOW_PROXY__ = "off"; window.__A3D_DENSE_SHADOWS__ = "off";');
   const page = await context.newPage();
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(`pageerror: ${String(e.message).slice(0, 200)}`));
@@ -59,12 +59,13 @@ async function capture(browser: Browser, origin: string, route: string, proxyOff
   await page.waitForTimeout(SETTLE_MS);
   const png = await page.screenshot({ fullPage: false }).catch(() => Buffer.alloc(0));
   const proxies = await page.evaluate(() => (window as unknown as { __A3D_SHADOW_PROXIES__?: unknown[] }).__A3D_SHADOW_PROXIES__ ?? []).catch(() => []);
+  const denseCap = await page.evaluate(() => (window as unknown as { __A3D_DENSE_SHADOW_CAP__?: unknown }).__A3D_DENSE_SHADOW_CAP__ ?? null).catch(() => null);
   const drawCalls = await page.evaluate(() => {
     const hit = Object.entries(window).find(([key, value]) => key.startsWith("__") && typeof value === "object" && value !== null && "drawCalls" in value);
     return hit ? (hit[1] as { drawCalls?: unknown }).drawCalls : null;
   }).catch(() => null);
   await context.close();
-  return { png, proxies, errors, loaded, drawCalls };
+  return { png, proxies, denseCap, errors, loaded, drawCalls };
 }
 
 /** Mean absolute channel difference (0..255) and the share of pixels differing by more than 8/255, decoded in a scratch page. */
@@ -102,10 +103,11 @@ test.describe("shadow proxy A/B", () => {
         const noise = await diff(scratch, off1.png, off2.png);
         const effect = await diff(scratch, off1.png, on.png);
         const proxies = on.proxies;
+        const budgets = proxies.length + (on.denseCap ? 1 : 0);
         const measurable = off1.loaded && on.loaded && off1.png.length > 0 && on.png.length > 0;
-        const affected = proxies.length > 0 && effect !== null && noise !== null && (effect.meanAbs > noise.meanAbs * 1.5 + 0.05 || effect.changedShare > noise.changedShare * 1.5 + 0.0005);
-        const verdict = !measurable ? "unmeasurable" : proxies.length === 0 ? "unaffected (no proxy built)" : affected ? "AFFECTED" : "proxy built, difference within noise";
-        const entry = { route, verdict, proxies, noise, effect, errors: [...off1.errors, ...on.errors].slice(0, 6), drawCalls: { off: off1.drawCalls, on: on.drawCalls } };
+        const affected = budgets > 0 && effect !== null && noise !== null && (effect.meanAbs > noise.meanAbs * 1.5 + 0.05 || effect.changedShare > noise.changedShare * 1.5 + 0.0005);
+        const verdict = !measurable ? "unmeasurable" : budgets === 0 ? "unaffected (no proxy, no cascade cap)" : affected ? "AFFECTED" : "budget applied, difference within noise";
+        const entry = { route, verdict, proxies, denseCap: on.denseCap, noise, effect, errors: [...off1.errors, ...on.errors].slice(0, 6), drawCalls: { off: off1.drawCalls, on: on.drawCalls } };
         results.push(entry);
         console.log(`SHADOWPROXY_AB ${JSON.stringify(entry)}`);
       }
