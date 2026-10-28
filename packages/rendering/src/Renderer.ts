@@ -42,6 +42,7 @@ import { prd11LiveQualityTier, type LiveQualityTierSource } from "./quality/live
 import { MaterialInstance } from "./MaterialInstance";
 import { featuresForGeometry, materialRoutesToGeneratedProgram } from "./program/MaterialFeatures";
 import { selectShaderFeatureBits } from "./program/FeatureSelect";
+import { PROGRAM_OUTPUT_SRGB_FEATURE } from "./program/ProgramFeatures";
 import type { ProgramFeatures } from "./contracts/program";
 import { collectWarmupFeatures, ProgramWarmup, type WarmupInput } from "./program/ProgramWarmup";
 import { PRD03_EXPOSURE, rendererQrFlags, setRendererQrFlags, withRendererQrFlags } from "./renderer/FrameGraph";
@@ -634,6 +635,7 @@ export class Renderer {
     const cameraViewProjection = resolvedCamera?.viewProjectionMatrix;
     const collected = collectRenderItemsWithDiagnostics(source, cameraViewProjection, resolvedCamera?.camera);
     const before = this.device.getDiagnostics().programCompileCount ?? 0;
+    this.warmOutputSrgb = this.frameOutputsSrgb(source);
     await this.warmGeneratedPrograms(
       collected.items,
       collectRenderLights(source),
@@ -1021,6 +1023,7 @@ export class Renderer {
     const shadowOptions = collectRendererShadowOptions(source);
     // C-02/T0-06: sync-path warm — kick generated-program compiles for the
     // exact draw feature records before the pass runs (bounded per frame).
+    this.warmOutputSrgb = this.frameOutputsSrgb(source);
     this.warmGeneratedProgramsSync(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
     const sourceCameraPosition = collectSourceCameraPosition(source);
     const explicitRenderTarget = collectRenderTarget(source);
@@ -1408,6 +1411,7 @@ export class Renderer {
     const shadowOptions = collectRendererShadowOptions(source);
     // C-02 (PRD-01 §403): pre-render warm-then-block compile of the generated
     // programs this scene needs. Flag-off: nothing (sync path untouched).
+    this.warmOutputSrgb = this.frameOutputsSrgb(source);
     await this.warmGeneratedPrograms(items, lights, environmentLighting, environmentFog, explicitShadowMap, cameraViewProjection);
     if (this.disposed || this.device.disposed) {
       return withRendererFrameDiagnostics(this.device.getDiagnostics(), collectionDiagnostics);
@@ -1756,6 +1760,16 @@ export class Renderer {
    * generated-program materials need (lights/shadow/environment axes at the
    * current tier). Returns `materials: []` early when nothing generated.
    */
+  /**
+   * Whether the frame being warmed writes straight to the canvas (no postprocess, no OutputPass): its generated programs
+   * carry the sRGB-encode feature bit, so the warmed keys match the draw keys. Set right before each warm call.
+   */
+  private warmOutputSrgb = false;
+
+  private frameOutputsSrgb(source: RenderSource | Iterable<RenderItem> | Scene): boolean {
+    return !collectPostprocess(source) && !qrCoreOutputOn(rendererQrFlags(this.device));
+  }
+
   private collectWarmupInput(
     items: readonly RenderItem[],
     lights: readonly CollectedLight[],
@@ -1782,6 +1796,7 @@ export class Renderer {
       if (selected[PRD02_IBL_FEATURE] !== undefined && !prd02IblEnvironmentAvailable(environmentLighting, item)) {
         delete selected[PRD02_IBL_FEATURE];
       }
+      if (this.warmOutputSrgb) selected[PROGRAM_OUTPUT_SRGB_FEATURE] = true;
       // #867 (games): same geometry-driven feature mask ForwardPass applies.
       const attrs = item.geometry.vertexBuffer.format.attributes;
       const has = (name: string) => attrs.some((a) => a.semantic === name || a.shaderName === name);

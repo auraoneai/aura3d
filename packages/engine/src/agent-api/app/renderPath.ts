@@ -74,17 +74,27 @@ export function renderPathBlockers(snapshot: AuraSceneSnapshot, options: AuraCre
       note(`${node.kind} node`);
       continue;
     }
+    // A visible HDRI background is encoded by the environment-background shader's own (different) filmic curve.
+    if (node.kind === "environment" && node.environment === "hdri") note("hdri environment");
     if (node.kind !== "model" && node.kind !== "primitive") continue;
     const material = node.material;
     if (!material) continue;
     if (material.kind !== undefined) note(`${material.kind} material`);
     if (material.shader !== undefined) note(`shader material "${material.shader}"`);
     if (typeof material.transmission === "number" && material.transmission > 0) note("transmission material");
+    // Blending happens after the in-shader encode on the direct path (display space) but before it on the HDR path (linear).
+    if (material.alphaMode === "blend" || material.blend !== undefined || (typeof material.opacity === "number" && material.opacity < 1)) note("transparent material");
   }
   return blockers;
 }
 
 function requestedQuality(options: AuraCreateAppOptions): AuraQualityMode | undefined {
+  // `?aura3d-render=<mode>` wins over the option (like `?aura3d-quality=`): compare a page's two render paths without a rebuild.
+  const fromUrl = typeof location !== "undefined" ? new URLSearchParams(location.search).get("aura3d-render") : null;
+  if (fromUrl !== null) {
+    if (!isQualityMode(fromUrl)) throw new Error(`QUALITY_OPTION_INVALID:?aura3d-render=${fromUrl} (expected auto|production|safe-basic|cinematic)`);
+    return fromUrl;
+  }
   if (options.quality !== undefined) {
     if (!isQualityMode(options.quality)) {
       throw new Error(`QUALITY_OPTION_INVALID:quality=${String(options.quality)} (expected auto|production|safe-basic|cinematic)`);

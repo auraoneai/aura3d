@@ -27,7 +27,7 @@ import { instanceBufferSlot, type InstanceBufferLike } from "./contracts/geometr
 import { type VertexFormat } from "./VertexFormat";
 import { type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 import { programCacheSlot, type ProgramCacheLike, type ProgramFeatures } from "./contracts/program";
-import { normalizeProgramFeatures } from "./program/ProgramFeatures";
+import { normalizeProgramFeatures, PROGRAM_OUTPUT_SRGB_FEATURE } from "./program/ProgramFeatures";
 import { featuresForGeometry, geometryHasSkin, materialFeatureWarning, materialRoutesToGeneratedProgram } from "./program/MaterialFeatures";
 import { bindShaderFeatureUniforms, selectShaderFeatureBits } from "./program/FeatureSelect";
 import { bindMaterialLobeUniforms } from "./materials/PhysicalFeatures";
@@ -734,8 +734,9 @@ export class ForwardPass extends BaseRenderPass {
     if (selected[PRD02_IBL_FEATURE] !== undefined && !prd02IblEnvironmentAvailable(this.options.environmentLighting, item)) {
       delete selected[PRD02_IBL_FEATURE];
     }
-    // #867 (games): the feature set follows what the geometry carries
-    // (three.js semantics): no uv → no uv maps, no joints/weights → no skin.
+    // Direct render path (frame output colour space is sRGB: no post chain, no OutputPass): the generated program
+    // tone-maps and encodes its own output. Explicit "srgb" only; an unset option keeps the linear program.
+    if (this.options.outputColorSpace === "srgb") selected[PROGRAM_OUTPUT_SRGB_FEATURE] = true;
     const record = item ? featuresForGeometry({ ...mf, features: { ...mf.features, ...selected } }, (a) => geometryHasAttribute(item.geometry, a)) : { ...mf, features: { ...mf.features, ...selected } };
     return normalizeProgramFeatures({
       ...record,

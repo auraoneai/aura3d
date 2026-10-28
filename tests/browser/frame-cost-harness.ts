@@ -34,7 +34,7 @@ const fit = params.get("fit") === "1";
 interface FrameCostEdgeApi {
   readonly app: ReturnType<typeof createAuraApp>;
   readonly canvas: HTMLCanvasElement;
-  makeScene(name: "cube" | "pbr" | "bloom"): ReturnType<typeof scene>;
+  makeScene(name: "cube" | "pbr" | "bloom" | "lit" | "fog"): ReturnType<typeof scene>;
 }
 declare global { interface Window { __FC__?: FrameCostEdgeApi } }
 
@@ -46,6 +46,20 @@ function buildScene(name: string = sceneName) {
       .add(lights.ambient({ color: "#ffffff", intensity: 1 }))
       .add(primitives.box({ name: "cube", size: [1, 1, 1], material: material.pbr({ color: "#d86a3a" }) }).runtime({ id: "cube" }));
     return name === "bloom" ? built.add(effects.bloom({ intensity: 0.4 })) : built;
+  }
+  if (name === "lit" || name === "fog") {
+    // Authored background, hemisphere + coloured sun, rough/metal/emissive materials, optionally forward fog: the direct
+    // path's parity scenes (no post, no HDR output, no transmission).
+    const lit = scene()
+      .background("#1a2030")
+      .camera(view)
+      .add(lights.hemisphere({ skyColor: "#cfe3ff", groundColor: "#3a2f28", intensity: 0.8 }))
+      .add(lights.directional({ position: [4, 6, 3], intensity: 2.4, color: "#fff2dd" }))
+      .add(primitives.plane({ name: "floor", size: [10, 10], material: material.pbr({ color: "#7a8a6a", roughness: 0.95 }) }).rotate(-Math.PI / 2, 0, 0))
+      .add(primitives.box({ name: "cube", size: [1, 1, 1], material: material.pbr({ color: "#d86a3a", roughness: 0.5 }) }).position(-1.2, 0.5, 0).runtime({ id: "cube" }))
+      .add(primitives.sphere({ name: "ball", material: material.pbr({ color: "#4aa3df", metallic: 0.8, roughness: 0.25 }) }).position(0.4, 0.5, 0.6))
+      .add(primitives.cylinder({ name: "post", material: material.pbr({ color: "#e0c040", roughness: 0.7, emissive: "#301800" }) }).position(1.6, 0.6, -0.4).scale(0.5));
+    return name === "fog" ? lit.add(effects.fog({ density: 0.08 })) : lit;
   }
   const grid = scene()
     .camera(view)
