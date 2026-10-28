@@ -122,6 +122,8 @@ export async function createProductionRuntimeSceneRenderer(
   markTiming("a3d:mount:renderer-create:resolved");
   // quality auto / cinematic: allow look-neutral bloom pass fusion (`production` never does).
   if (isFusedBloomPasses(canvas)) (productionRenderer.device as unknown as { bloomFusedPasses?: boolean }).bloomFusedPasses = true;
+  // Same gate, WP-7: sun cascades no receiver can select are not redrawn (pixel-identical; `production` keeps drawing every cascade).
+  if (isFusedBloomPasses(canvas)) (productionRenderer.device as unknown as { skipUnusedShadowCascades?: boolean }).skipUnusedShadowCascades = true;
   // T4.2: a throwing mount (compile handler, HDRI upgrade, C-36 strict)
   // must not leak the created renderer or the HDRI environment.
   let disposeHdriEnvironment: (() => void) | null = null;
