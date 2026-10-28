@@ -337,6 +337,9 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
   const sanitizeMorphWeight = runtimeMorphWeightSanitizer(tags);
   let animationBinding: AuraRuntimeNodeAnimationBindingMetadata | undefined;
   let animationPose: AnimationPose | undefined;
+  // Dense instance store written by `setInstanceMatrices`; `setInstances` clears it so the spec array wins again.
+  let denseInstanceMatrices: Float32Array | undefined;
+  let denseInstanceRgba: Float32Array | undefined;
   let animationPoseBinding: AuraRuntimeNodeAnimationPoseBindingMetadata | undefined;
   let importedAssetEvidence: AuraRuntimeNodeImportedAssetEvidence | undefined;
   let nodeVersion = 0;
@@ -444,6 +447,33 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
         ...(transform.scale !== undefined ? { scale: transform.scale } : {})
       }));
       node.instanceColors = colors ? [...colors] : undefined;
+      denseInstanceMatrices = undefined;
+      denseInstanceRgba = undefined;
+      bumpVersion();
+      return this;
+    },
+    setInstanceMatrices(matrices: Float32Array, count: number, rgba?: Float32Array) {
+      const capacity = (node as { instances?: readonly unknown[] }).instances?.length ?? 0;
+      if (capacity === 0) {
+        throw new Error(`INSTANCE_NODE_REQUIRED: node "${runtime.id}" is not an instanced node (created by instances.*).`);
+      }
+      if (!Number.isInteger(count) || count < 0 || count > capacity) {
+        throw new RangeError(`INSTANCE_CAPACITY_EXCEEDED: count ${count} exceeds capacity ${capacity} (or is not a valid count).`);
+      }
+      if (matrices.length < 16 * count) {
+        throw new RangeError(`setInstanceTransforms expects matrices.length >= ${16 * count}, got ${matrices.length}.`);
+      }
+      if (rgba !== undefined && rgba.length < 4 * count) {
+        throw new RangeError(`setInstanceTransforms expects colors with 4 values per instance (rgba), got ${rgba.length} for ${count} instances.`);
+      }
+      if (denseInstanceMatrices === undefined || denseInstanceMatrices.length !== count * 16) denseInstanceMatrices = new Float32Array(count * 16);
+      denseInstanceMatrices.set(matrices.subarray(0, count * 16));
+      if (rgba !== undefined) {
+        if (denseInstanceRgba === undefined || denseInstanceRgba.length !== count * 4) denseInstanceRgba = new Float32Array(count * 4);
+        denseInstanceRgba.set(rgba.subarray(0, count * 4));
+      } else if (denseInstanceRgba !== undefined && denseInstanceRgba.length !== count * 4) {
+        denseInstanceRgba = undefined;
+      }
       bumpVersion();
       return this;
     },
@@ -764,6 +794,8 @@ export function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runti
         ...("material" in node && node.material ? { material: node.material } : {}),
         ...(node.instances ? { instances: node.instances } : {}),
         ...(node.instanceColors ? { instanceColors: node.instanceColors } : {}),
+        ...(denseInstanceMatrices ? { instanceMatrices: denseInstanceMatrices } : {}),
+        ...(denseInstanceRgba ? { instanceRgba: denseInstanceRgba } : {}),
         animationBinding,
         animationPose: animationPose ? cloneRuntimeAnimationPose(animationPose) : undefined,
         animationPoseBinding,

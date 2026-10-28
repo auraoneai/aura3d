@@ -119,7 +119,7 @@ export class DepthPass extends BaseRenderPass {
     const features = this.options.depthVariantFeatures ?? [];
     const shader = prd02DepthProgram(device, this.shaderLibrary, variant, features);
     const skinning = caster.skinning;
-    const instanceTransforms = caster.instanceTransforms ? Float32Array.from(caster.instanceTransforms) : null;
+    const instanceTransforms = caster.instanceTransforms instanceof Float32Array ? caster.instanceTransforms : caster.instanceTransforms ? Float32Array.from(caster.instanceTransforms) : null;
     const instanceTotal = instanceTransforms ? instanceTransforms.length / 16 : 1;
     // More instances than the uniform array holds ride a per-instance vertex-attribute buffer: one draw for the whole set
     // instead of ceil(n / 64) draws per cascade (a forest of 2,000 trees was 32 draws in every cascade).

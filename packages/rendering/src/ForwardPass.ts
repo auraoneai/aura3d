@@ -1198,13 +1198,30 @@ function renderStateForItem(renderState: RenderState, item: RenderItem): RenderS
 
 function instancedItemNeedsPerInstanceCullState(item: RenderItem): boolean {
   const source = validateInstanceTransformSource(item);
-  const baseModel = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
-  const handedness = new Set<boolean>();
+  const base = toMat4Values(item.modelMatrix ?? identityMatrix(), "modelMatrix", item.label);
+  // Allocation-free: a 10,000-instance draw runs this every pass. Only the upper 3x3 of
+  // `base * instance` feeds the handedness test, so build it from scalars (same sums as
+  // `multiplyMat4`, rows 0..2 / columns 0..2) instead of two arrays per instance.
   for (let offset = 0; offset < source.length; offset += 16) {
-    const instanceMatrix = mat4FromArrayLike(source, offset);
-    handedness.add(hasNegativeHandedness(multiplyMat4(baseModel, instanceMatrix)));
+    if (instanceProductHasNegativeHandedness(base, source, offset)) return true;
   }
-  return handedness.has(true);
+  return false;
+}
+
+function instanceProductHasNegativeHandedness(base: Mat4, source: ArrayLike<number>, offset: number): boolean {
+  const o = offset;
+  const c00 = base[0 * 4 + 0] * source[o]! + base[1 * 4 + 0] * source[o + 1]! + base[2 * 4 + 0] * source[o + 2]! + base[3 * 4 + 0] * source[o + 3]!;
+  const c01 = base[0 * 4 + 1] * source[o]! + base[1 * 4 + 1] * source[o + 1]! + base[2 * 4 + 1] * source[o + 2]! + base[3 * 4 + 1] * source[o + 3]!;
+  const c02 = base[0 * 4 + 2] * source[o]! + base[1 * 4 + 2] * source[o + 1]! + base[2 * 4 + 2] * source[o + 2]! + base[3 * 4 + 2] * source[o + 3]!;
+  const c10 = base[0 * 4 + 0] * source[o + 4]! + base[1 * 4 + 0] * source[o + 5]! + base[2 * 4 + 0] * source[o + 6]! + base[3 * 4 + 0] * source[o + 7]!;
+  const c11 = base[0 * 4 + 1] * source[o + 4]! + base[1 * 4 + 1] * source[o + 5]! + base[2 * 4 + 1] * source[o + 6]! + base[3 * 4 + 1] * source[o + 7]!;
+  const c12 = base[0 * 4 + 2] * source[o + 4]! + base[1 * 4 + 2] * source[o + 5]! + base[2 * 4 + 2] * source[o + 6]! + base[3 * 4 + 2] * source[o + 7]!;
+  const c20 = base[0 * 4 + 0] * source[o + 8]! + base[1 * 4 + 0] * source[o + 9]! + base[2 * 4 + 0] * source[o + 10]! + base[3 * 4 + 0] * source[o + 11]!;
+  const c21 = base[0 * 4 + 1] * source[o + 8]! + base[1 * 4 + 1] * source[o + 9]! + base[2 * 4 + 1] * source[o + 10]! + base[3 * 4 + 1] * source[o + 11]!;
+  const c22 = base[0 * 4 + 2] * source[o + 8]! + base[1 * 4 + 2] * source[o + 9]! + base[2 * 4 + 2] * source[o + 10]! + base[3 * 4 + 2] * source[o + 11]!;
+  // Column-major: matrix[0..2] = c00,c01,c02; [4..6] = c10,c11,c12; [8..10] = c20,c21,c22 (see hasNegativeHandedness).
+  const determinant = c00 * (c11 * c22 - c21 * c12) - c10 * (c01 * c22 - c21 * c02) + c20 * (c01 * c12 - c11 * c02);
+  return Number.isFinite(determinant) && determinant < -1e-8;
 }
 
 function expandInstancedRenderItem(item: RenderItem): readonly RenderItem[] {

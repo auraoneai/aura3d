@@ -128,6 +128,24 @@ export function createProductionInstanceTransforms(transforms: readonly AuraTran
   return matrices;
 }
 
+/**
+ * Dense counterpart of `createProductionInstanceTransforms` for matrices written by `handle.setInstanceMatrices`.
+ * The spec path builds T·R·S(scale ⊙ size) per instance; a dense matrix already is T·R·S(scale), so folding the node
+ * `size` in is a scale of its three basis columns. `out` is reused across frames while the count is unchanged.
+ */
+export function createProductionInstanceTransformsFromMatrices(matrices: Float32Array, node: AuraPrimitiveNode, out?: Float32Array): Float32Array {
+  const size = primitiveSize(node);
+  const target = out !== undefined && out.length === matrices.length ? out : new Float32Array(matrices.length);
+  const sx = size[0], sy = size[1], sz = size[2];
+  for (let o = 0; o < matrices.length; o += 16) {
+    target[o] = matrices[o]! * sx; target[o + 1] = matrices[o + 1]! * sx; target[o + 2] = matrices[o + 2]! * sx; target[o + 3] = matrices[o + 3]!;
+    target[o + 4] = matrices[o + 4]! * sy; target[o + 5] = matrices[o + 5]! * sy; target[o + 6] = matrices[o + 6]! * sy; target[o + 7] = matrices[o + 7]!;
+    target[o + 8] = matrices[o + 8]! * sz; target[o + 9] = matrices[o + 9]! * sz; target[o + 10] = matrices[o + 10]! * sz; target[o + 11] = matrices[o + 11]!;
+    target[o + 12] = matrices[o + 12]!; target[o + 13] = matrices[o + 13]!; target[o + 14] = matrices[o + 14]!; target[o + 15] = matrices[o + 15]!;
+  }
+  return target;
+}
+
 export function createProductionInstanceColors(colors: readonly AuraColor[] | undefined, count: number): Float32Array | undefined {
   if (!colors) return undefined;
   if (colors.length !== count) throw new Error("Aura3D instance color count must match instance transform count.");
@@ -158,6 +176,8 @@ export function resolveProductionPrimitiveRuntimeState(
     readonly material?: AuraPrimitiveNode["material"];
     readonly instances?: AuraPrimitiveNode["instances"];
     readonly instanceColors?: AuraPrimitiveNode["instanceColors"];
+    readonly instanceMatrices?: Float32Array;
+    readonly instanceRgba?: Float32Array;
   }) | undefined;
   // parity:L1 (SH-02): staged `handle.setUniform` writes land on the compiled
   // portable material here — `setParameter` updates uniform state only, never
@@ -185,8 +205,10 @@ export function resolveProductionPrimitiveRuntimeState(
     animation: runtimeSnapshot.animation ?? entry.node.animation,
     ...(runtimeSnapshot.instances ? { instances: runtimeSnapshot.instances } : {}),
     ...(runtimeSnapshot.instanceColors ? { instanceColors: runtimeSnapshot.instanceColors } : {}),
+    ...(runtimeSnapshot.instanceMatrices ? { instanceMatrices: runtimeSnapshot.instanceMatrices } : {}),
+    ...(runtimeSnapshot.instanceRgba ? { instanceRgba: runtimeSnapshot.instanceRgba } : {}),
     ...(runtimeHandle?.__parityL2Geometry !== undefined ? { geometry: runtimeHandle.__parityL2Geometry } : {})
-  } as AuraPrimitiveNode & { __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[] };
+  } as AuraPrimitiveNode & { __parityL2AttributeUpdates?: readonly AuraL2AttributeUpdate[]; instanceMatrices?: Float32Array; instanceRgba?: Float32Array };
   if (pendingAttributes && pendingAttributes.length > 0) {
     resolvedNode.__parityL2AttributeUpdates = pendingAttributes;
   }

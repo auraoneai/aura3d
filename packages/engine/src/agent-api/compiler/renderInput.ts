@@ -20,7 +20,7 @@ import { createProductionRuntimeEnvironmentFog } from "./fog.js";
 import { lodLevelVisible } from "../lodMarkers.js";
 import { createProductionRuntimePostprocess } from "./postprocess.js";
 import { authoredPostContextFor } from "../postBridge.js";
-import { createProductionInstanceColors, createProductionInstanceTransforms, createProductionModelInstanceTransforms, resolveProductionPrimitiveRuntimeState, selectProductionPrimitiveResource } from "./primitives.js";
+import { createProductionInstanceColors, createProductionInstanceTransforms, createProductionInstanceTransformsFromMatrices, createProductionModelInstanceTransforms, resolveProductionPrimitiveRuntimeState, selectProductionPrimitiveResource } from "./primitives.js";
 import { createProductionRuntimeShadowOptions } from "./shadows.js";
 import { camera } from "../nodes/camera.js";
 import { instances } from "../nodes/instances.js";
@@ -109,6 +109,35 @@ function prd01InstanceTransforms(transforms: readonly AuraTransformSpec[], node:
   if (hit && hit.fp === fp && hit.primitive === node.primitive) return hit.result;
   const result = createProductionInstanceTransforms(transforms, node);
   prd01InstanceTransformCache.set(transforms, { fp, primitive: node.primitive, result });
+  return result;
+}
+
+/** Dense matrices (handle.setInstanceMatrices) are node-owned and rewritten in place, so only the output buffer is cached: refolded every frame (a linear multiply), reallocated only when the count changes. */
+const denseInstanceOut = new WeakMap<Float32Array, Float32Array>();
+/** Spec colors reused under a dense matrix write whose count is below capacity. */
+const denseSpecColorCache = new WeakMap<readonly AuraColor[], { count: number; result: Float32Array | undefined }>();
+
+type DenseInstanceNode = AuraPrimitiveNode & { readonly instanceMatrices?: Float32Array; readonly instanceRgba?: Float32Array };
+
+function denseInstanceMatrices(node: AuraPrimitiveNode): Float32Array | undefined {
+  return (node as DenseInstanceNode).instanceMatrices;
+}
+
+function prd01DenseInstanceTransforms(matrices: Float32Array, node: AuraPrimitiveNode): Float32Array {
+  const out = createProductionInstanceTransformsFromMatrices(matrices, node, denseInstanceOut.get(matrices));
+  denseInstanceOut.set(matrices, out);
+  return out;
+}
+
+function prd01DenseInstanceColors(node: AuraPrimitiveNode, count: number): Float32Array | undefined {
+  const rgba = (node as DenseInstanceNode).instanceRgba;
+  if (rgba !== undefined && rgba.length === count * 4) return rgba;
+  const specColors = node.instanceColors;
+  if (specColors === undefined) return undefined;
+  const hit = denseSpecColorCache.get(specColors);
+  if (hit && hit.count === count) return hit.result;
+  const result = createProductionInstanceColors(specColors.slice(0, count), count);
+  denseSpecColorCache.set(specColors, { count, result });
   return result;
 }
 
@@ -291,7 +320,8 @@ export function createProductionRuntimeRendererInput(
     const currentState = resolveProductionPrimitiveRuntimeState(entry, runtimeNodes);
     // threejs-parity L7/SG-11: `groups.lod` — deselected levels skip this frame.
     if (!currentState.visible || !lodLevelVisible(currentState.node, cameraPosition)) continue;
-    if (currentState.node.instances !== undefined && currentState.node.instances.length === 0) {
+    const denseMatrices = currentState.node.instances !== undefined ? denseInstanceMatrices(currentState.node) : undefined;
+    if (currentState.node.instances !== undefined && (currentState.node.instances.length === 0 || denseMatrices?.length === 0)) {
       runtimeWarnings.add(`INSTANCES_EMPTY: instances.${currentState.node.primitive} "${currentState.node.name ?? "unnamed"}" has no instances this frame; nothing is drawn.`);
       continue;
     }
@@ -337,7 +367,12 @@ export function createProductionRuntimeRendererInput(
       ...(currentState.node.material?.envMap?.cubeCamera
         ? { cubeCameraEnvMap: currentState.node.material.envMap.cubeCamera }
         : {}),
-      ...(currentState.node.instances ? { instanceTransforms: prd01InstanceTransforms(currentState.node.instances, currentState.node), instanceColors: prd01InstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
+      ...(denseMatrices && currentState.node.instances
+        ? (() => {
+            const dense = prd01DenseInstanceColors(currentState.node, denseMatrices.length / 16);
+            return { instanceTransforms: prd01DenseInstanceTransforms(denseMatrices, currentState.node), ...(dense ? { instanceColors: dense } : {}) };
+          })()
+        : currentState.node.instances ? { instanceTransforms: prd01InstanceTransforms(currentState.node.instances, currentState.node), instanceColors: prd01InstanceColors(currentState.node.instanceColors, currentState.node.instances.length) } : {})
     });
   }
   const unsupportedTemporal = items.find(item => {

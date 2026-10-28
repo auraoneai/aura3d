@@ -22,6 +22,7 @@
 import type { AuraApp, AuraBatchedNode, AuraPrimitiveNode, AuraRuntimeNodeHandle, AuraSceneNode, AuraTransformSpec } from "../../index.js";
 import type { NodeHandleExtension } from "../../../contracts/runtimeNodes.js";
 import { batchedStateForNode } from "../batchedState.js";
+import { colorToLinearRgba } from "../../colorUtils.js";
 
 export type SceneNodeWithRuntime = AuraSceneNode & {
   instances?: readonly AuraTransformSpec[];
@@ -153,12 +154,10 @@ function setInstanceTransformsMember(
 }
 
 /**
- * C-37 stub member — used when `A3D_QR_GAME` is off (and inside the real
- * extension until Q-15-2 lands the InstanceBufferLike accessor). Rebuilds the
- * scene node's `instances`/`instanceColors`; the existing per-frame instanced
- * update uploads them.
+ * Spec-lowering fallback for handles without `setInstanceMatrices`: rebuilds the
+ * scene node's `instances`/`instanceColors`; the per-frame instanced update uploads them.
  */
-export function stubSetInstanceTransforms(
+function decomposeSetInstanceTransforms(
   handle: AuraRuntimeNodeHandle,
   app: AuraApp,
   matrices: Float32Array,
@@ -198,6 +197,71 @@ export function stubSetInstanceTransforms(
     node.instanceColors = nextColors;
   }
   handle.setInstances?.(next, nextColors ?? node.instanceColors);
+  return handle;
+}
+
+/** 8-bit sRGB channel -> linear, built once through the same parser the spec path uses so both paths agree. */
+let srgbByteToLinear: Float32Array | undefined;
+function srgbLut(): Float32Array {
+  if (srgbByteToLinear) return srgbByteToLinear;
+  const lut = new Float32Array(256);
+  for (let i = 0; i < 256; i += 1) {
+    const h = i.toString(16).padStart(2, "0");
+    lut[i] = colorToLinearRgba(`#${h}${h}${h}`)[0];
+  }
+  srgbByteToLinear = lut;
+  return lut;
+}
+
+let rgbaScratch = new Float32Array(0);
+
+/**
+ * Per-instance RGB (0..1, three values each) -> linear RGBA, quantised to 8 bits exactly like the spec path's
+ * `rgbToHex` round trip. Reuses one scratch array; the runtime handle copies it into node-owned storage.
+ */
+function rgbToLinearRgba(colors: Float32Array, count: number): Float32Array {
+  if (rgbaScratch.length < count * 4) rgbaScratch = new Float32Array(count * 4);
+  const lut = srgbLut();
+  for (let i = 0; i < count; i += 1) {
+    const o = i * 4;
+    const c = i * 3;
+    rgbaScratch[o] = lut[Math.round(Math.min(1, Math.max(0, colors[c]!)) * 255)]!;
+    rgbaScratch[o + 1] = lut[Math.round(Math.min(1, Math.max(0, colors[c + 1]!)) * 255)]!;
+    rgbaScratch[o + 2] = lut[Math.round(Math.min(1, Math.max(0, colors[c + 2]!)) * 255)]!;
+    rgbaScratch[o + 3] = 1;
+  }
+  return rgbaScratch;
+}
+
+/**
+ * C-37 primitive member. Writes the matrices into the runtime node's dense instance store
+ * (`handle.setInstanceMatrices`): one typed-array copy, no per-instance spec decomposition, no
+ * per-instance objects. The compiler folds the node `size` into each matrix and the renderer's
+ * persistent instance buffer uploads only when the contents change. Handles that predate the
+ * dense store fall back to spec lowering.
+ */
+export function stubSetInstanceTransforms(
+  handle: AuraRuntimeNodeHandle,
+  app: AuraApp,
+  matrices: Float32Array,
+  count: number,
+  colors?: Float32Array
+): AuraRuntimeNodeHandle {
+  const node = instancedNodeFor(handle, app) as unknown as SceneNodeWithRuntime & { instances: AuraTransformSpec[] };
+  if (typeof handle.setInstanceMatrices !== "function") {
+    return decomposeSetInstanceTransforms(handle, app, matrices, count, colors);
+  }
+  const capacity = node.instances.length;
+  if (!Number.isInteger(count) || count < 0 || count > capacity) {
+    throw new RangeError(`INSTANCE_CAPACITY_EXCEEDED: count ${count} exceeds capacity ${capacity} (or is not a valid count).`);
+  }
+  if (matrices.length < 16 * count) {
+    throw new RangeError(`setInstanceTransforms expects matrices.length >= ${16 * count}, got ${matrices.length}.`);
+  }
+  if (colors !== undefined && colors.length < 3 * count) {
+    throw new RangeError(`setInstanceTransforms expects colors.length >= ${3 * count}, got ${colors.length}.`);
+  }
+  handle.setInstanceMatrices(matrices, count, colors !== undefined ? rgbToLinearRgba(colors, count) : undefined);
   return handle;
 }
 
