@@ -8,12 +8,15 @@
  * returned unchanged (same object), so scenes whose kernel is already within the cap render
  * byte-identically.
  *
- * Tier selection (`resolveShadowPcfTapTier`):
+ * Tier selection (`resolveShadowPcfTapTier`) is opt-in at every step, so a render that asks for
+ * nothing keeps the authored kernel (tier 32, reason "default", a no-op for every kernel):
  *   - an explicit request wins;
- *   - otherwise the quality tier maps low -> 8, medium -> 16, high / ultra -> 32;
- *   - dense instanced shadow casters (>= DENSE_SHADOW_CASTER_INSTANCES, the same threshold as the
- *     auto-cascade cap) take the lowest tier, never raising the quality tier's own cap. The engine
- *     passes `denseDefault: false` unless the author opted in (see `denseShadowTapTierEnabled`).
+ *   - `qualityDefault: true` maps the quality tier low -> 8, medium -> 16, high / ultra -> 32.
+ *     The flag-path bridge kernel is 9 taps, so only `low` changes pixels (9 -> 8); the engine
+ *     therefore passes it only when the author opted in (`shadowQualityTapTierEnabled`);
+ *   - `denseDefault: true` sends dense instanced shadow casters (>= DENSE_SHADOW_CASTER_INSTANCES,
+ *     the same threshold as the auto-cascade cap) to the lowest tier, never raising the quality
+ *     tier's own cap (`denseShadowTapTierEnabled`).
  */
 import { createPoissonDiskShadowKernel, type ShadowFilterKernel } from "../ShadowMap";
 
@@ -49,7 +52,9 @@ export function resolveShadowPcfTapTier(input: {
   readonly quality?: string;
   readonly casterInstances?: number;
   readonly requested?: number;
-  /** Apply the dense-scene default (true unless the caller says the engine has not opted in). */
+  /** Apply the quality-tier cap (only when true; unset keeps the authored kernel). */
+  readonly qualityDefault?: boolean;
+  /** Apply the dense-scene cap (only when true; unset keeps the authored kernel). */
   readonly denseDefault?: boolean;
 } = {}): ShadowPcfTapTierDecision {
   const casterInstances = input.casterInstances !== undefined && Number.isFinite(input.casterInstances) ? Math.max(0, input.casterInstances) : 0;
@@ -59,10 +64,10 @@ export function resolveShadowPcfTapTier(input: {
     }
     return { tier: input.requested, reason: "explicit", casterInstances };
   }
-  const quality = input.quality !== undefined && input.quality in QUALITY_TIER_SHADOW_PCF_TAPS
+  const quality = input.qualityDefault === true && input.quality !== undefined && input.quality in QUALITY_TIER_SHADOW_PCF_TAPS
     ? QUALITY_TIER_SHADOW_PCF_TAPS[input.quality as keyof typeof QUALITY_TIER_SHADOW_PCF_TAPS]
     : undefined;
-  if (input.denseDefault !== false && casterInstances >= DENSE_SHADOW_CASTER_INSTANCES) {
+  if (input.denseDefault === true && casterInstances >= DENSE_SHADOW_CASTER_INSTANCES) {
     return { tier: Math.min(quality ?? 8, 8) as ShadowPcfTapTier, reason: "dense-instanced-casters", casterInstances };
   }
   if (quality !== undefined) return { tier: quality, reason: "quality-tier", casterInstances };

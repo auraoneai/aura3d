@@ -6,8 +6,8 @@ import { startExampleDevServer } from "./example-dev-server";
 /**
  * PRD-2 WP-3 shadow filter tiers: remote A/B (tools/remote-acr/run.sh; software WebGL2, never a GPU timing).
  *
- *  - forest timing: the forest-10k frame plan (tests/browser/forest-10k.spec.ts) with the PCF tap tier left on its default (dense
- *    instanced casters -> 8 taps, opted in with `?densetaps=on`) and with the tier pinned to 32 (`?shadowtaps=32`, the pre-tier behaviour). One test per line so the
+ *  - forest timing: the forest-10k frame plan (tests/browser/forest-10k.spec.ts) with the dense PCF tap tier opted in (`?densetaps=on`,
+ *    18,000 casters -> 8 taps) and with the tier pinned to 32 (`?shadowtaps=32`, the pre-tier behaviour). One test per line so the
  *    runs are selected as `<spec>:<line>` and run on separate runners.
  *  - visual: shadow-heavy showcase routes and the forest, captured with the tier pinned to 32 twice (noise floor), with the default
  *    tier, and with the tier forced to 8, compared with the visual-regression metric of direct-path-parity.spec.ts (mean abs diff
@@ -77,8 +77,9 @@ async function forestRun(browser: Browser, tag: string, extraQuery: string): Pro
 
 interface Shot { png: Buffer; tapTier: unknown; errors: string[]; loaded: boolean }
 
-async function shoot(browser: Browser, url: string, tapsInit: string | null, forestFrames = 0, denseOptIn = false): Promise<Shot> {
-  const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1 });
+async function shoot(browser: Browser, url: string, tapsInit: string | null, forestFrames = 0, denseOptIn = false, coarsePointer = false): Promise<Shot> {
+  // coarsePointer: a touch context, so `(pointer: coarse)` matches and the flag path resolves its `auto` quality tier to "medium".
+  const context = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1, ...(coarsePointer ? { hasTouch: true, isMobile: true } : {}) });
   if (tapsInit !== null) await context.addInitScript(`window.__A3D_SHADOW_TAPS__ = ${tapsInit};`);
   if (denseOptIn) await context.addInitScript('window.__A3D_DENSE_SHADOW_TAPS__ = "on";');
   const page = await context.newPage();
@@ -174,6 +175,31 @@ async function visualAudit(browser: Browser, routes: readonly string[], tag: str
   emit(`visual-${tag}`, { kind: "visual", generatedUtc: new Date().toISOString(), settleMs: SETTLE_MS, tolerance: { meanAbs: 2, interiorMax: 6 }, results });
 }
 
+/** Default render at the "medium" quality tier (coarse pointer) must equal the tier-pinned-to-32 render: no opt-in, no change. */
+async function mediumDefaultAudit(browser: Browser): Promise<void> {
+  const server = await startExampleDevServer();
+  try {
+    const scratch = await browser.newPage();
+    await scratch.goto("about:blank");
+    const url = `${server.origin}/tests/browser/perf-frame-cost/index.html?${FOREST_QUERY}`;
+    const pin32 = await shoot(browser, url, "32", 3, false, true);
+    const dflt = await shoot(browser, url, null, 3, false, true);
+    const entry = {
+      route: "forest (coarse pointer)",
+      tiers: { pinned32: pin32.tapTier, default: dflt.tapTier },
+      defaultVs32: pin32.png.length > 0 && dflt.png.length > 0 ? await compare(scratch, pin32.png, dflt.png) : null,
+      errors: [...pin32.errors, ...dflt.errors].slice(0, 6)
+    };
+    console.log(`SHADOWTIER_AB ${JSON.stringify(entry)}`);
+    emit("medium-default", { kind: "medium-default", generatedUtc: new Date().toISOString(), result: entry });
+    expect((dflt.tapTier as { quality?: string; tier?: number } | null)?.quality).toBe("medium");
+    expect((dflt.tapTier as { tier?: number } | null)?.tier).toBe(32);
+    expect(entry.defaultVs32).toEqual({ meanAbs: 0, interiorMax: 0, over6Share: 0, edgeMax: 0 });
+  } finally {
+    await server.close();
+  }
+}
+
 test.describe("shadow filter tier A/B", () => {
   test.setTimeout(3_300_000);
   // One test per line on purpose: tools/remote-acr/run.sh selects a group with `<spec>:<line>`, so groups run in parallel on separate runners.
@@ -186,4 +212,5 @@ test.describe("shadow filter tier A/B", () => {
   test("visual group 1", async ({ browser }) => visualAudit(browser, ["forest", "examples/rendering-large-scene", "examples/silt-and-signal-port"], "g1"));
   test("visual group 2", async ({ browser }) => visualAudit(browser, ["examples/roadster-hours-port", "examples/ninja-runner-port", "examples/drift-and-deliver-port"], "g2"));
   test("visual group 3", async ({ browser }) => visualAudit(browser, ["apps/showcase-vault-breakers", "apps/aura-clash-showcase", "apps/showcase-smart-city-control"], "g3"));
+  test("medium default unchanged", async ({ browser }) => mediumDefaultAudit(browser));
 });

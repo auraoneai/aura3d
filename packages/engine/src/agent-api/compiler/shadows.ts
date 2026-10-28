@@ -180,21 +180,34 @@ export function shadowTapTierOverride(): ShadowPcfTapTier | undefined {
   return n === 32 || n === 16 || n === 8 ? n : undefined;
 }
 
-/**
- * Opt-in for the dense-scene PCF default (8 taps from DENSE_SHADOW_CASTER_INSTANCES casters): `globalThis.__A3D_DENSE_SHADOW_TAPS__ = "on"`
- * or `?densetaps=on` (URL wins). Off by default: the 8-tap kernel moved the 18,000-instance forest by 2% (inside run-to-run noise) and
- * changed pixels by up to 9/255 in the interior (evidence/forest-10k/shadow-tier/README.md), so it stays opt-in until a scene needs it.
- */
-export function denseShadowTapTierEnabled(): boolean {
-  const g = globalThis as { __A3D_DENSE_SHADOW_TAPS__?: string; location?: { search?: string } };
-  let value = g.__A3D_DENSE_SHADOW_TAPS__;
+function readOptIn(globalKey: "__A3D_DENSE_SHADOW_TAPS__" | "__A3D_QUALITY_SHADOW_TAPS__", param: string): boolean {
+  const g = globalThis as { location?: { search?: string } } & Partial<Record<typeof globalKey, string>>;
+  let value = g[globalKey];
   try {
-    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get("densetaps") : null;
+    const q = typeof g.location?.search === "string" ? new URLSearchParams(g.location.search).get(param) : null;
     if (q === "on" || q === "off") value = q;
   } catch {
     // no location (node, workers): fall through to the global
   }
   return value === "on";
+}
+
+/**
+ * Opt-in for the dense-scene PCF cap (8 taps from DENSE_SHADOW_CASTER_INSTANCES casters): `globalThis.__A3D_DENSE_SHADOW_TAPS__ = "on"`
+ * or `?densetaps=on` (URL wins). Off by default: the 8-tap kernel moved the 18,000-instance forest by 2% (inside run-to-run noise) and
+ * changed pixels by up to 9/255 in the interior (evidence/forest-10k/shadow-tier/README.md), so it stays opt-in until a scene needs it.
+ */
+export function denseShadowTapTierEnabled(): boolean {
+  return readOptIn("__A3D_DENSE_SHADOW_TAPS__", "densetaps");
+}
+
+/**
+ * Opt-in for the quality-tier PCF cap (low 8, medium 16, high / ultra 32): `__A3D_QUALITY_SHADOW_TAPS__ = "on"` or `?qualitytaps=on`.
+ * Off by default: the flag-path kernel is 9 taps, so `low` would swap the 9-tap grid for an 8-tap Poisson kernel on every default render,
+ * and that swap exceeds the 6/255 visual limit (same evidence). Tiers 16 and 32 never change a 9-tap kernel.
+ */
+export function shadowQualityTapTierEnabled(): boolean {
+  return readOptIn("__A3D_QUALITY_SHADOW_TAPS__", "qualitytaps");
 }
 
 /** Total instances across shadow-casting instanced primitive nodes (nodes parked at y <= -50 excluded, like the scene radius). */
@@ -244,7 +257,8 @@ export function resolveShadowSystemConfig(
   const sunOptions = descriptors.find((d) => d.shadowRequested && !d.shadowDisabled)?.shadowOptions;
   const cascadesOpt = sunOptions?.cascades;
   const denseBudget = denseShadowBudgetEnabled();
-  const allCasterInstances = denseBudget ? shadowCastingInstanceCount(snapshot) : 0;
+  // The cascade-cap kill switch (__A3D_DENSE_SHADOWS__) controls only the cascade cap; the tap tier always sees the real caster count.
+  const allCasterInstances = shadowCastingInstanceCount(snapshot);
   const casterInstances = (cascadesOpt === undefined || cascadesOpt === "auto") && denseBudget ? allCasterInstances : 0;
   const dense = casterInstances >= DENSE_INSTANCED_CASTER_CASCADE_CAP_INSTANCES && settings.shadow.cascades > 2 && radius > 15;
   // Evidence for audits (tests/browser/shadow-proxy-ab.spec.ts): this page's cascade count was capped by the dense-instance budget.
@@ -253,7 +267,7 @@ export function resolveShadowSystemConfig(
     ? (radius <= 15 ? 1 : (dense ? (Math.min(settings.shadow.cascades, 2) as 1 | 2 | 3 | 4) : settings.shadow.cascades))
     : (cascadesOpt as 1 | 2 | 3 | 4);
   const mapSize = (sunOptions?.mapSize ?? settings.shadow.mapSize) as 1024 | 2048 | 4096;
-  const tapTier = resolveShadowPcfTapTier({ quality: tier, casterInstances: allCasterInstances, requested: shadowTapTierOverride(), denseDefault: denseShadowTapTierEnabled() });
+  const tapTier = resolveShadowPcfTapTier({ quality: tier, casterInstances: allCasterInstances, requested: shadowTapTierOverride(), qualityDefault: shadowQualityTapTierEnabled(), denseDefault: denseShadowTapTierEnabled() });
   // Evidence for audits and the remote A/B (tests/browser/shadow-filter-tier-ab.spec.ts): the tap tier this page resolved.
   (globalThis as { __A3D_SHADOW_TAP_TIER__?: unknown }).__A3D_SHADOW_TAP_TIER__ = { tier: tapTier.tier, reason: tapTier.reason, casterInstances: allCasterInstances, quality: tier };
   const texelWorld = (radius * 2) / mapSize;

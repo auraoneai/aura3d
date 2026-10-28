@@ -49,7 +49,7 @@ export interface ShadowSystemConfigInput {
   readonly strength: number;
   readonly bias: number;
   readonly normalBias: number;
-  /** PCF tap-count cap for the legacy forward shader (PRD-2 WP-3); unset keeps the kernel as authored. */
+  /** PCF tap-count cap (PRD-2 WP-3), read by Prd02ShadowBridge and passed to the forward shader; unset keeps the kernel as authored. */
   readonly pcfTapTier?: ShadowPcfTapTier;
 }
 
