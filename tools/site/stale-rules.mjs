@@ -75,7 +75,7 @@ export function scanText(source, { kind, canonical, deprecatedNames }) {
     if (/--browser/.test(m[0])) continue;
     violations.push(`check-deploy claim it does not back (it is a static check): ...${context(m.index, m[0].length)}...`);
   }
-  for (const m of text.matchAll(/where each one wins|where three\.js wins|three\.js wins|when to choose three\.js|wraps a three\.js|three\.js-compatible renderer/gi)) {
+  for (const m of text.matchAll(/where each (?:one )?wins|where three\.js wins|three\.js wins|when to choose three\.js|wraps a three\.js|three\.js-compatible|built on (?:top of )?three\.js|(?:larger|slower|heavier)(?: and (?:larger|slower|heavier))?[^.]{0,30}than three\.js|three\.js (?:still )?has an edge/gi)) {
     violations.push(`comparison framing the site does not use: ...${context(m.index, m[0].length)}...`);
   }
   return [...new Set(violations)];
