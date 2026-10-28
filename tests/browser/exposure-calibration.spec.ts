@@ -21,13 +21,14 @@ test.describe("exposure calibration (Aura3D vs the three r185 light convention)"
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(`${server.origin}/tests/browser/exposure-calibration-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => Boolean((window as { __EXPOSURE__?: unknown }).__EXPOSURE__), undefined, { timeout: 60_000 });
-    const rows: Array<{ id: string; expectedLinear: number[]; expectedAcesLuma: number; linear: Capture; aces: Capture }> = [];
+    const rows: Array<{ id: string; expectedLinear: number[]; expectedAcesLuma: number; linear: Capture; aces: Capture; dflt: Capture }> = [];
     for (const c of EXPOSURE_CASES) {
       const call = (tm: string) => page.evaluate(([cc, t]) => (window as unknown as { __EXPOSURE__: { render(a: unknown, b: string): Promise<unknown> } }).__EXPOSURE__.render(cc, t as string), [c, tm] as const) as Promise<Capture>;
       const linear = await call("linear");
       const aces = await call("aces");
+      const dflt = await call("default");
       const exp = expectedLinear(c);
-      rows.push({ id: c.id, expectedLinear: exp, expectedAcesLuma: threeAcesLuma255(exp), linear, aces });
+      rows.push({ id: c.id, expectedLinear: exp, expectedAcesLuma: threeAcesLuma255(exp), linear, aces, dflt });
       console.log(`EXPOSURE_JSON ${JSON.stringify(rows[rows.length - 1])}`);
     }
     mkdirSync(resolve(reportDir), { recursive: true });
@@ -37,6 +38,8 @@ test.describe("exposure calibration (Aura3D vs the three r185 light convention)"
       expect(row.linear.warnings, `${row.id} console`).toEqual([]);
       // A scene with no lights keeps the category environment on purpose (three renders black there); recorded, not asserted.
       if (row.id.startsWith("none")) continue;
+      // The no-options route (a scene without post takes the quality:auto direct path) must agree with the explicit aces route.
+      expect(Math.abs(row.dflt.meanLuma / Math.max(row.aces.meanLuma, 1e-6) - 1), `${row.id} default-route luma ${row.dflt.meanLuma} vs explicit aces ${row.aces.meanLuma}`).toBeLessThanOrEqual(0.05);
       const ratio = row.linear.meanLinear.map((v, i) => v / Math.max(row.expectedLinear[i]!, 1e-6));
       for (const r of ratio) expect(Math.abs(r - 1), `${row.id} linear ratio ${ratio.map((x) => x.toFixed(3)).join("/")}`).toBeLessThanOrEqual(LINEAR_TOLERANCE);
       expect(Math.abs(row.aces.meanLuma / row.expectedAcesLuma - 1), `${row.id} aces luma ${row.aces.meanLuma} vs ${row.expectedAcesLuma.toFixed(1)}`).toBeLessThanOrEqual(0.1);

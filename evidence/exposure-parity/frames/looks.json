@@ -1,0 +1,186 @@
+{
+ "before": {
+  "outdoor-day": {
+   "id": "outdoor-day",
+   "meanLuma": 214.13,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "golden-hour": {
+   "id": "golden-hour",
+   "meanLuma": 199.17,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "overcast": {
+   "id": "overcast",
+   "meanLuma": 192.06,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "night-city": {
+   "id": "night-city",
+   "meanLuma": 94.98,
+   "nonBlack": 0.7,
+   "warnings": []
+  },
+  "polar-night": {
+   "id": "polar-night",
+   "meanLuma": 109.6,
+   "nonBlack": 0.707,
+   "warnings": []
+  },
+  "alpine-snow": {
+   "id": "alpine-snow",
+   "meanLuma": 217.15,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "interior-warm": {
+   "id": "interior-warm",
+   "meanLuma": 213.51,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "interior-neutral": {
+   "id": "interior-neutral",
+   "meanLuma": 212.47,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "interior-industrial": {
+   "id": "interior-industrial",
+   "meanLuma": 216.64,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "space": {
+   "id": "space",
+   "meanLuma": 156.52,
+   "nonBlack": 0.707,
+   "warnings": []
+  },
+  "underwater": {
+   "id": "underwater",
+   "meanLuma": 25.18,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "product-studio": {
+   "id": "product-studio",
+   "meanLuma": 222.64,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "character-showcase": {
+   "id": "character-showcase",
+   "meanLuma": 211.58,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "arena-fight": {
+   "id": "arena-fight",
+   "meanLuma": 227.06,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "neon-arcade": {
+   "id": "neon-arcade",
+   "meanLuma": 130.61,
+   "nonBlack": 0.707,
+   "warnings": []
+  }
+ },
+ "after": {
+  "outdoor-day": {
+   "id": "outdoor-day",
+   "meanLuma": 214.13,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "golden-hour": {
+   "id": "golden-hour",
+   "meanLuma": 199.17,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "overcast": {
+   "id": "overcast",
+   "meanLuma": 192.06,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "night-city": {
+   "id": "night-city",
+   "meanLuma": 95.26,
+   "nonBlack": 0.7,
+   "warnings": []
+  },
+  "polar-night": {
+   "id": "polar-night",
+   "meanLuma": 109.85,
+   "nonBlack": 0.707,
+   "warnings": []
+  },
+  "alpine-snow": {
+   "id": "alpine-snow",
+   "meanLuma": 217.15,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "interior-warm": {
+   "id": "interior-warm",
+   "meanLuma": 213.51,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "interior-neutral": {
+   "id": "interior-neutral",
+   "meanLuma": 212.47,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "interior-industrial": {
+   "id": "interior-industrial",
+   "meanLuma": 216.64,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "space": {
+   "id": "space",
+   "meanLuma": 148.77,
+   "nonBlack": 0.707,
+   "warnings": []
+  },
+  "underwater": {
+   "id": "underwater",
+   "meanLuma": 25.18,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "product-studio": {
+   "id": "product-studio",
+   "meanLuma": 222.64,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "character-showcase": {
+   "id": "character-showcase",
+   "meanLuma": 211.58,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "arena-fight": {
+   "id": "arena-fight",
+   "meanLuma": 227.06,
+   "nonBlack": 1,
+   "warnings": []
+  },
+  "neon-arcade": {
+   "id": "neon-arcade",
+   "meanLuma": 130.87,
+   "nonBlack": 0.707,
+   "warnings": []
+  }
+ }
+}

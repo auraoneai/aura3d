@@ -57,11 +57,15 @@ function build(sceneId: SceneId, fx: EffectsId) {
   return builder;
 }
 
-async function render(sceneId: SceneId, fx: EffectsId, flags?: string): Promise<Capture> {
+async function render(sceneId: SceneId, fx: EffectsId, requestedFlags?: string): Promise<Capture> {
+  // "linearvig" is not a QR flag: it switches on the opt-in linear-light vignette (LegacyPost `linearVignetteEnabled`).
+  const parts = (requestedFlags ?? "").split("+").filter(Boolean);
+  (globalThis as { __A3D_LINEAR_VIGNETTE__?: boolean }).__A3D_LINEAR_VIGNETTE__ = parts.includes("linearvig");
+  const flags = parts.filter((part) => part !== "linearvig").join(",") || undefined;
   const stage = document.getElementById("post-luma-stage")!;
   stage.replaceChildren();
   warnings.length = 0;
-  const app = createAuraApp(stage, { pixelRatio: 1, resize: false, renderer: { qualityProfile: "production" }, ...(flags ? { qualityRebuild: { flags, allowUrlFlags: false } } : {}), scene: build(sceneId, fx) });
+  const app = createAuraApp(stage, { pixelRatio: 1, resize: false, quality: "production", renderer: { qualityProfile: "production" }, ...(flags ? { qualityRebuild: { flags, allowUrlFlags: false } } : {}), scene: build(sceneId, fx) });
   const started = performance.now();
   while (performance.now() - started < 60_000) {
     const d = app.diagnostics();
@@ -89,7 +93,7 @@ async function render(sceneId: SceneId, fx: EffectsId, flags?: string): Promise<
   const capture: Capture = {
     scene: sceneId,
     effects: fx,
-    flags,
+    flags: requestedFlags,
     meanLuma: Number((l / n).toFixed(3)),
     meanRgb: [Number((r / n).toFixed(2)), Number((g / n).toFixed(2)), Number((b / n).toFixed(2))],
     meanChroma: Number((c / n).toFixed(3)),

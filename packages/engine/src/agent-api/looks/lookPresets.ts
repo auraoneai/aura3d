@@ -15,6 +15,12 @@ export interface AuraLookV0Expansion {
    *  scaffold time. null for the §7.1 background-exception looks. */
   readonly hdri: "studio_small_08_1k" | "autumn_field_puresky_1k" | "kloppenheim_06_puresky_1k" | null;
   readonly environmentIntensity: number;
+  /**
+   * Procedural environment fill for looks with no HDRI. A scene that authors lights and no environment is lit by those
+   * lights alone (three.js r185 convention), so a night or space look that wants a faint ambient says so here instead of
+   * inheriting the scene category's implicit fill.
+   */
+  readonly fill?: { readonly preset: "studio" | "night"; readonly intensity: number };
   readonly key: { readonly position: AuraVec3; readonly intensity: number; readonly color: AuraColor; readonly shadow: true };
   readonly rim?: { readonly position: AuraVec3; readonly intensity: number; readonly color: AuraColor };
   readonly fog?: { readonly color: AuraColor; readonly near: number; readonly far: number };
@@ -158,6 +164,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
+      fill: { preset: "night", intensity: 1.0 },
       key: { position: sunPosition(55, 210), intensity: 0.7, color: "#7d9dd4", shadow: true },
       fog: { color: "#070a12", near: 30, far: 160 },
       background: "#070a12",
@@ -175,6 +182,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
+      fill: { preset: "night", intensity: 1.0 },
       key: { position: sunPosition(38, 340), intensity: 0.5, color: "#8fb0d8", shadow: true },
       fog: { color: "#04070d", near: 35, far: 200 },
       background: "#04070d",
@@ -260,6 +268,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
+      fill: { preset: "studio", intensity: 0.75 },
       key: { position: sunPosition(30, 45), intensity: 3.5, color: "#ffffff", shadow: true },
       background: "#000000",
       grade: { contrast: 1.15, saturation: 1.0, temperature: 0.0 }
@@ -277,6 +286,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
+      fill: { preset: "studio", intensity: 1.0 },
       key: { position: sunPosition(60, 30), intensity: 1.6, color: "#9fd4c8", shadow: true },
       fog: { color: "#05202b", near: 5, far: 60 },
       background: "#05202b",
@@ -345,6 +355,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
+      fill: { preset: "night", intensity: 1.0 },
       key: { position: sunPosition(55, 210), intensity: 0.7, color: "#7d9dd4", shadow: true },
       // night-city fog at half density (§7.1 studio-look definition)
       fog: { color: "#12151c", near: 60, far: 320 },

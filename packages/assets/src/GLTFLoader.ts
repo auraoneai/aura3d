@@ -2002,8 +2002,11 @@ export interface SkinWeightNormalizationStats {
 }
 
 const SKIN_WEIGHT_DEGENERATE_EPSILON = 1e-6;
-/** Sums this close to 1 come from 8/16-bit weight quantization on unmodified assets, not authoring errors. */
-const SKIN_WEIGHT_QUANTIZATION_TOLERANCE = 1e-3;
+/**
+ * Sums within 5% of 1 come from authoring/export rounding on unmodified assets (the three.js Soldier has 52 vertices up to
+ * 2% off, as FLOAT) and rescale the weights by less than that: invisible, so not a warning. Real defects (zero, badly scaled) still warn.
+ */
+const SKIN_WEIGHT_QUANTIZATION_TOLERANCE = 0.05;
 
 /**
  * Normalize a single vertex's 4 skin weights so they sum to 1.
@@ -2055,9 +2058,9 @@ function reportSkinWeightNormalization(
   stats: SkinWeightNormalizationStats
 ): void {
   if (stats.degenerate === 0 && stats.rescaled === 0) {
-    // Quantization noise only (sum within 1e-3 of 1): debug level, never a console warning.
+    // Rounding noise only (sum within 5% of 1): debug level, never a console warning.
     if ((stats.withinTolerance ?? 0) > 0 && typeof console !== "undefined" && typeof console.debug === "function") {
-      console.debug(`glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0: ${stats.withinTolerance} vertex(es) within 1e-3 of sum 1 renormalized`);
+      console.debug(`glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0: ${stats.withinTolerance} vertex(es) within 5% of sum 1 renormalized`);
     }
     return;
   }

@@ -161,9 +161,11 @@ describe("looks.preset v0 expansion (T1.2)", () => {
     expect(nodes.map((n) => n.kind)).toEqual(g.children.map((n) => n.kind));
   });
 
-  it("omits env children for no-hdri looks and fog children for no-fog looks", () => {
+  it("omits hdri children for no-hdri looks (they carry a procedural fill instead) and fog children for no-fog looks", () => {
     const night = presetGroup("night-city");
-    expect(night.children.some((n) => n.kind === "environment")).toBe(false);
+    expect(night.children.some((n) => n.kind === "environment" && (n as AuraEnvironmentNode).environment === "hdri")).toBe(false);
+    // A scene lit only by its authored lights is lit by those alone (three.js r185 convention), so the no-HDRI looks say so.
+    expect(night.children.some((n) => n.kind === "environment" && (n as AuraEnvironmentNode).environment === "preset")).toBe(true);
     const studio = presetGroup("product-studio");
     expect(studio.children.some((n) => n.kind === "effect" && n.effect === "fog")).toBe(false);
     expect(studio.children.some((n) => n.kind === "environment" && (n as AuraEnvironmentNode).environment === "hdri")).toBe(true);
