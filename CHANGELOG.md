@@ -1,8 +1,17 @@
 # Changelog
 
-Version: 4.3.6
+Version: 4.3.7
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
+## 4.3.7 (2026-10-28)
+
+A CLI feature release. `@aura3d/cli` gains a browser pass for `check-deploy`; the engine and the other packages carry no runtime change from 4.3.6 (their version, README and doc-path updates only).
+
+- **`aura3d check-deploy --browser` loads the built site in a headless browser (cli).** It serves `dist` from a local static server with no SPA fallback, opens each route (`/` by default; repeat `--route /play/`), and fails on a 4xx/5xx response, a request that did not complete, an uncaught exception, a console error, or a `data-aura3d-error` boot error on `<body>`. A missing favicon is a warning only. Playwright is resolved from the project being checked (`npm i -D playwright`), so projects without it keep the static check. `--browser-timeout` and `--browser-settle` tune the wait. Tested against real Chromium (clean site, broken site, boot error, multi-route, CLI exit codes).
+- **The four retired V2 game builds are deleted from the repository (site).** `/apps/showcase-{roadster-rush,heatsink,teleoperator,top-tennis}-v2/` keep answering with a permanent redirect to the current game; the folders, the V2-only camera spec and the V2 entries in the smoke tests and stage scripts are gone.
+- **The troubleshooting guide no longer names versions that cannot be installed (docs).** The build-error, plane-subdivision, shader-failure and context-loss entries describe current behaviour only.
+- **Measured comparison and agent-trial records are added under `evidence/` (not shipped).** A complete game written twice (271 authored lines on Aura3D against 373 on plain three.js, one author, one small game, software WebGL2) and a cold-start trial of fresh agents on the same task. They stay internal; the site and READMEs make no agent-speed claim.
 
 ## 4.3.6 (2026-10-27)
 

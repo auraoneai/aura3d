@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/audio",
-  "version": "4.3.6",
+  "version": "4.3.7",
   "type": "module",
   "exports": {
     ".": {

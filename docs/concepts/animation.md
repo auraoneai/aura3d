@@ -1,6 +1,6 @@
 # Animation
 
-Version: 4.3.6
+Version: 4.3.7
 
 > In three.js you build an `AnimationMixer` and a clip action for each clip. In Aura3D a typed GLB node plays clips by name and cross-fades with one call: `app.nodes.require("robot").play("Run", { crossFade: 0.2 })`. Named play, pause, loop, seek and crossfade are checked in rendered pixels ([`docs/rendering/animation.md`](../rendering/animation.md)).
 

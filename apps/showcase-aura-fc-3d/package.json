@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/showcase-aura-fc-3d",
-  "version": "4.3.6",
+  "version": "4.3.7",
   "private": true,
   "type": "module",
   "description": "Aura FC 3D — flagship 3D street-and-stadium soccer on Aura3D: 5v5 ball sim with possession FSM, skinned athletes with baked kick clips and distance-driven run cycles, 6 pitches, Shootout Lab, Touch Lab, 32-team World Circuit, broadcast camera director, juice/VFX pipeline, and runtime evidence.",

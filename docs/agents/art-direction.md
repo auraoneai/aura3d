@@ -1,6 +1,6 @@
 # Art Direction for Aura3D Agents
 
-Version: 4.3.6 (supersedes `cinematic-scene-quality.md`)
+Version: 4.3.7 (supersedes `cinematic-scene-quality.md`)
 
 Every scene an agent ships has a look: environment, key light, shadow, background, fog and grade. This doc owns the values; the `aura3d-art-direction` skill owns the process. Fast path: pick the genre row, apply the preset, run the loop below until the checklist holds.
 
