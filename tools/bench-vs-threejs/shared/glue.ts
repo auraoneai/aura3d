@@ -18,6 +18,10 @@ interface BenchApi {
   firstFrameMs: number;
   errors: string[];
   frame(dt: number): void;
+  /** frame(dt) without the trailing readPixels sync: the CPU profile uses it to see JS cost apart from GPU wait. */
+  frameRaw(dt: number): void;
+  /** Blocks until everything submitted so far has executed. */
+  sync(): void;
   measure(frames: number, dt: number): { cpuMs: number[]; totalMs: number[] };
   capture(dt: number): { luma: number[]; mean: number; std: number; jpeg: string };
   state(): unknown;
@@ -53,6 +57,8 @@ export async function runBench(name: string, start: StartFn): Promise<void> {
       firstFrameMs,
       errors,
       frame: (dt) => { handle.frame(dt); finish(); },
+      frameRaw: (dt) => { handle.frame(dt); },
+      sync: finish,
       measure(frames, dt) {
         for (let i = 0; i < 10; i++) { handle.frame(dt); finish(); }
         const cpuMs: number[] = [];

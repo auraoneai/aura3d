@@ -12,8 +12,9 @@ if (!benchRoot || !workArg || !fixtures) throw new Error("usage: build-all.mjs <
 mkdirSync(workArg, { recursive: true });
 const work = realpathSync(workArg);
 
-const AURA_VERSION = "4.1.2";
-const THREE_VERSION = "0.185.1";
+// Versions are pinned here and overridable for re-runs (the 4.1.2 results in RESULTS.md were taken with BENCH_AURA_VERSION=4.1.2).
+const AURA_VERSION = process.env.BENCH_AURA_VERSION ?? "4.3.7";
+const THREE_VERSION = process.env.BENCH_THREE_VERSION ?? "0.185.1";
 const VITE_VERSION = "7.3.2";
 const ALL_SCENES = ["baseline", "pbr-viewer", "forest", "skinned-character", "game-loop", "shader-water"];
 const SCENES = sceneArg ? sceneArg.split(",") : ALL_SCENES;
@@ -60,7 +61,9 @@ for (const scene of SCENES) {
     }
     const out = join(work, "dist", scene, lib);
     const t0 = Date.now();
-    run(join(work, "node_modules", ".bin", "vite"), ["build", dir, "--outDir", out, "--emptyOutDir", "--base", "./", "--logLevel", "warn"], work);
+    // BENCH_MINIFY=false keeps function names so the CPU profile (group G) is readable; never used for size or timing groups.
+    const minifyArgs = process.env.BENCH_MINIFY === "false" ? ["--minify", "false"] : [];
+    run(join(work, "node_modules", ".bin", "vite"), ["build", dir, "--outDir", out, "--emptyOutDir", "--base", "./", "--logLevel", "warn", ...minifyArgs], work);
     const buildMs = Date.now() - t0;
     const files = walk(out).map((f) => ({ path: relative(out, f), size: statSync(f).size }));
     const js = walk(out).filter((f) => f.endsWith(".js") || f.endsWith(".mjs"));

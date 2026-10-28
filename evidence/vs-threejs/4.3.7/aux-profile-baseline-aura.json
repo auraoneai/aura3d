@@ -1,0 +1,430 @@
+{
+  "scene": "baseline",
+  "lib": "aura",
+  "minified": false,
+  "firstFrame": {
+    "firstFrameMs": 1264.1000000000058,
+    "domContentLoadedMs": 230.70000000001164,
+    "lastJsResponseEndMs": 380.9000000000233,
+    "jsRequests": 29,
+    "allRequests": 29,
+    "afterLastJsMs": 883.1999999999825,
+    "profile": {
+      "totalMs": 1285,
+      "busyMs": 1112,
+      "special": {
+        "idleMs": 173,
+        "programMs": 116,
+        "gcMs": 16
+      },
+      "topSelf": [
+        {
+          "fn": "finish @ index-BV_ybq7v.js:70",
+          "ms": 256.14,
+          "pct": 23
+        },
+        {
+          "fn": "floatToHalf @ Rgb9e5Cube-CWgp9jN0.js:172",
+          "ms": 248.28,
+          "pct": 22.3
+        },
+        {
+          "fn": "(program) @ native:0",
+          "ms": 116.23,
+          "pct": 10.5
+        },
+        {
+          "fn": "halfToFloat @ Rgb9e5Cube-CWgp9jN0.js:446",
+          "ms": 56.68,
+          "pct": 5.1
+        },
+        {
+          "fn": "(anonymous) @ Rgb9e5Cube-CWgp9jN0.js:483",
+          "ms": 45.57,
+          "pct": 4.1
+        },
+        {
+          "fn": "faceToHalf @ Rgb9e5Cube-CWgp9jN0.js:186",
+          "ms": 44.55,
+          "pct": 4
+        },
+        {
+          "fn": "probeToEquirectTexture @ Rgb9e5Cube-CWgp9jN0.js:479",
+          "ms": 35.43,
+          "pct": 3.2
+        },
+        {
+          "fn": "sampleCube @ SphericalHarmonics-BTP6w6ZJ.js:151",
+          "ms": 25.47,
+          "pct": 2.3
+        },
+        {
+          "fn": "finalizeLinkedProgram @ ComputeContext-CUMky0wE.js:12166",
+          "ms": 19.99,
+          "pct": 1.8
+        },
+        {
+          "fn": "downsampleRgba @ Rgb9e5Cube-CWgp9jN0.js:456",
+          "ms": 18.94,
+          "pct": 1.7
+        },
+        {
+          "fn": "(garbage collector) @ native:0",
+          "ms": 15.97,
+          "pct": 1.4
+        },
+        {
+          "fn": "compileShader @ ComputeContext-CUMky0wE.js:12851",
+          "ms": 15.58,
+          "pct": 1.4
+        },
+        {
+          "fn": "uploadCubeTexture @ ComputeContext-CUMky0wE.js:10683",
+          "ms": 11.53,
+          "pct": 1
+        },
+        {
+          "fn": "prepareFullscreenPresentation @ ComputeContext-CUMky0wE.js:14227",
+          "ms": 10.65,
+          "pct": 1
+        },
+        {
+          "fn": "clonePixelData @ Texture-Csyae563.js:354",
+          "ms": 9.75,
+          "pct": 0.9
+        }
+      ],
+      "topInclusive": [
+        {
+          "fn": "(root) @ native:0",
+          "ms": 1112.08,
+          "pct": 100
+        },
+        {
+          "fn": "startProductionRender @ index-BV_ybq7v.js:20399",
+          "ms": 394.11,
+          "pct": 35.4
+        },
+        {
+          "fn": "renderFrame @ index-BV_ybq7v.js:20498",
+          "ms": 392.63,
+          "pct": 35.3
+        },
+        {
+          "fn": "render @ index-BV_ybq7v.js:20233",
+          "ms": 392.04,
+          "pct": 35.3
+        },
+        {
+          "fn": "render @ ComputeContext-CUMky0wE.js:30226",
+          "ms": 389.92,
+          "pct": 35.1
+        },
+        {
+          "fn": "(anonymous) @ ComputeContext-CUMky0wE.js:30243",
+          "ms": 389.62,
+          "pct": 35
+        },
+        {
+          "fn": "adoptExplicitTargetSize @ ComputeContext-CUMky0wE.js:30194",
+          "ms": 389.62,
+          "pct": 35
+        },
+        {
+          "fn": "withRendererQrFlags @ FrameGraph-ClGvZX1I.js:3508",
+          "ms": 389.62,
+          "pct": 35
+        },
+        {
+          "fn": "renderFrame @ ComputeContext-CUMky0wE.js:30276",
+          "ms": 388.72,
+          "pct": 35
+        },
+        {
+          "fn": "runBench @ index-BV_ybq7v.js:57",
+          "ms": 307.59,
+          "pct": 27.7
+        },
+        {
+          "fn": "faceToHalf @ Rgb9e5Cube-CWgp9jN0.js:186",
+          "ms": 292.53,
+          "pct": 26.3
+        },
+        {
+          "fn": "resolvePrd02EnvironmentLighting @ ComputeContext-CUMky0wE.js:6224",
+          "ms": 269.85,
+          "pct": 24.3
+        },
+        {
+          "fn": "collectEnvironmentLighting @ ComputeContext-CUMky0wE.js:6192",
+          "ms": 269.85,
+          "pct": 24.3
+        },
+        {
+          "fn": "probeToEquirectTexture @ Rgb9e5Cube-CWgp9jN0.js:479",
+          "ms": 268.28,
+          "pct": 24.1
+        },
+        {
+          "fn": "finish @ index-BV_ybq7v.js:70",
+          "ms": 256.14,
+          "pct": 23
+        }
+      ],
+      "byFile": [
+        {
+          "fn": "Rgb9e5Cube-CWgp9jN0.js",
+          "ms": 453.64,
+          "pct": 40.8
+        },
+        {
+          "fn": "index-BV_ybq7v.js",
+          "ms": 320.81,
+          "pct": 28.8
+        },
+        {
+          "fn": "native",
+          "ms": 140.58,
+          "pct": 12.6
+        },
+        {
+          "fn": "ComputeContext-CUMky0wE.js",
+          "ms": 119.06,
+          "pct": 10.7
+        },
+        {
+          "fn": "SphericalHarmonics-BTP6w6ZJ.js",
+          "ms": 25.47,
+          "pct": 2.3
+        },
+        {
+          "fn": "ForwardPass-DHWSASrc.js",
+          "ms": 13.69,
+          "pct": 1.2
+        },
+        {
+          "fn": "Texture-Csyae563.js",
+          "ms": 10.81,
+          "pct": 1
+        },
+        {
+          "fn": "TypedGLBActor-DqrQKQ_1.js",
+          "ms": 6.4,
+          "pct": 0.6
+        }
+      ],
+      "sampleCount": 3645
+    }
+  },
+  "steady": {
+    "frames": 60,
+    "wallMsPerFrame": 53.376666666666765,
+    "cpuInsideFrameMsPerFrame": 4.685000000001552,
+    "profile": {
+      "totalMs": 3213,
+      "busyMs": 3213,
+      "special": {
+        "idleMs": 0,
+        "programMs": 14,
+        "gcMs": 5
+      },
+      "topSelf": [
+        {
+          "fn": "readPixels @ native:0",
+          "ms": 2997.35,
+          "pct": 93.3
+        },
+        {
+          "fn": "getParameter @ native:0",
+          "ms": 40.44,
+          "pct": 1.3
+        },
+        {
+          "fn": "getError @ native:0",
+          "ms": 30.43,
+          "pct": 0.9
+        },
+        {
+          "fn": "(program) @ native:0",
+          "ms": 14.15,
+          "pct": 0.4
+        },
+        {
+          "fn": "bufferSubData @ native:0",
+          "ms": 8.35,
+          "pct": 0.3
+        },
+        {
+          "fn": "(garbage collector) @ native:0",
+          "ms": 5.34,
+          "pct": 0.2
+        },
+        {
+          "fn": "updateRouteDiagnostics @ index-BV_ybq7v.js:20377",
+          "ms": 4.16,
+          "pct": 0.1
+        },
+        {
+          "fn": "getShader @ ForwardPass-DHWSASrc.js:6755",
+          "ms": 4.11,
+          "pct": 0.1
+        },
+        {
+          "fn": "stableSerialize @ program-CeT_sToi.js:3173",
+          "ms": 3.6,
+          "pct": 0.1
+        },
+        {
+          "fn": "parseHex @ index-BV_ybq7v.js:22846",
+          "ms": 3.45,
+          "pct": 0.1
+        },
+        {
+          "fn": "presentLdrPostprocess @ ComputeContext-CUMky0wE.js:13219",
+          "ms": 3.41,
+          "pct": 0.1
+        },
+        {
+          "fn": "getDiagnostics @ ComputeContext-CUMky0wE.js:12662",
+          "ms": 2.94,
+          "pct": 0.1
+        },
+        {
+          "fn": "drawItem @ ForwardPass-DHWSASrc.js:6539",
+          "ms": 2.93,
+          "pct": 0.1
+        },
+        {
+          "fn": "matchMedia @ native:0",
+          "ms": 2.89,
+          "pct": 0.1
+        },
+        {
+          "fn": "collectAuraSceneEvidence @ index-BV_ybq7v.js:31741",
+          "ms": 2.89,
+          "pct": 0.1
+        }
+      ],
+      "topInclusive": [
+        {
+          "fn": "(root) @ native:0",
+          "ms": 3212.55,
+          "pct": 100
+        },
+        {
+          "fn": "(anonymous) @ native:1",
+          "ms": 3193.06,
+          "pct": 99.4
+        },
+        {
+          "fn": "evaluate @ native:296",
+          "ms": 3193.06,
+          "pct": 99.4
+        },
+        {
+          "fn": "finish @ index-BV_ybq7v.js:70",
+          "ms": 2997.68,
+          "pct": 93.3
+        },
+        {
+          "fn": "readPixels @ native:0",
+          "ms": 2997.35,
+          "pct": 93.3
+        },
+        {
+          "fn": "frame @ index-BV_ybq7v.js:43148",
+          "ms": 195.38,
+          "pct": 6.1
+        },
+        {
+          "fn": "frameRaw @ index-BV_ybq7v.js:89",
+          "ms": 195.38,
+          "pct": 6.1
+        },
+        {
+          "fn": "step @ index-BV_ybq7v.js:24025",
+          "ms": 195.06,
+          "pct": 6.1
+        },
+        {
+          "fn": "render @ index-BV_ybq7v.js:20621",
+          "ms": 186.32,
+          "pct": 5.8
+        },
+        {
+          "fn": "renderFrame @ index-BV_ybq7v.js:20498",
+          "ms": 186,
+          "pct": 5.8
+        },
+        {
+          "fn": "render @ index-BV_ybq7v.js:20233",
+          "ms": 159.36,
+          "pct": 5
+        },
+        {
+          "fn": "render @ ComputeContext-CUMky0wE.js:30226",
+          "ms": 158.08,
+          "pct": 4.9
+        },
+        {
+          "fn": "(anonymous) @ ComputeContext-CUMky0wE.js:30243",
+          "ms": 157.78,
+          "pct": 4.9
+        },
+        {
+          "fn": "adoptExplicitTargetSize @ ComputeContext-CUMky0wE.js:30194",
+          "ms": 157.78,
+          "pct": 4.9
+        },
+        {
+          "fn": "withRendererQrFlags @ FrameGraph-ClGvZX1I.js:3508",
+          "ms": 157.78,
+          "pct": 4.9
+        }
+      ],
+      "byFile": [
+        {
+          "fn": "native",
+          "ms": 3106.74,
+          "pct": 96.7
+        },
+        {
+          "fn": "ComputeContext-CUMky0wE.js",
+          "ms": 43.11,
+          "pct": 1.3
+        },
+        {
+          "fn": "index-BV_ybq7v.js",
+          "ms": 31.55,
+          "pct": 1
+        },
+        {
+          "fn": "ForwardPass-DHWSASrc.js",
+          "ms": 17.67,
+          "pct": 0.5
+        },
+        {
+          "fn": "program-CeT_sToi.js",
+          "ms": 5.15,
+          "pct": 0.2
+        },
+        {
+          "fn": "FrameGraph-ClGvZX1I.js",
+          "ms": 3.31,
+          "pct": 0.1
+        },
+        {
+          "fn": "v2Entry-PrLerc3e.js",
+          "ms": 1.74,
+          "pct": 0.1
+        },
+        {
+          "fn": "core-BD3D19-u.js",
+          "ms": 1.66,
+          "pct": 0.1
+        }
+      ],
+      "sampleCount": 9281
+    }
+  }
+}
