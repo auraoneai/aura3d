@@ -104,6 +104,19 @@ function pos(app: AuraApp, id: string): Vec3 {
   return [p[0], p[1], p[2]];
 }
 
+/** Diagonal of the axis-aligned box that bounds the samples: how far the point wanders. */
+function spread(samples: readonly Vec3[]): number {
+  const lo = [Infinity, Infinity, Infinity];
+  const hi = [-Infinity, -Infinity, -Infinity];
+  for (const p of samples) {
+    for (let axis = 0; axis < 3; axis += 1) {
+      lo[axis] = Math.min(lo[axis]!, p[axis]!);
+      hi[axis] = Math.max(hi[axis]!, p[axis]!);
+    }
+  }
+  return Math.hypot(hi[0]! - lo[0]!, hi[1]! - lo[1]!, hi[2]! - lo[2]!);
+}
+
 function mean(samples: readonly Vec3[]): Vec3 {
   const n = samples.length;
   return [samples.reduce((s, p) => s + p[0], 0) / n, samples.reduce((s, p) => s + p[1], 0) / n, samples.reduce((s, p) => s + p[2], 0) / n];
@@ -152,13 +165,17 @@ async function layers(refs: Refs): Promise<CapabilityResult> {
 
     const handIdle = mean(idle.mHand!);
     const handLayer = mean(layered.mHand!);
-    const handReleased = mean(released.mHand!);
     const footIdle = mean(idle.mFoot!);
     const footLayer = mean(layered.mFoot!);
     result.measurements = {
-      handShiftWithLayer: round(distance(handIdle, handLayer)),
+      // How far each bone wanders inside a one-second window: Run swings the hand, Idle barely moves it.
+      handRangeIdle: round(spread(idle.mHand!)),
+      handRangeWithLayer: round(spread(layered.mHand!)),
+      handRangeAfterStop: round(spread(released.mHand!)),
+      footRangeIdle: round(spread(idle.mFoot!)),
+      footRangeWithLayer: round(spread(layered.mFoot!)),
       footShiftWithLayer: round(distance(footIdle, footLayer)),
-      handShiftAfterStop: round(distance(handIdle, handReleased)),
+      handShiftWithLayer: round(distance(handIdle, handLayer)),
       handIdleMean: roundVec(handIdle),
       handLayerMean: roundVec(handLayer),
       footIdleMean: roundVec(footIdle),

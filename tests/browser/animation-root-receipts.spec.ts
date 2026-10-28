@@ -89,15 +89,20 @@ test.describe.serial("root animation receipts: layers, root motion, retargeting,
     expect(errors).toEqual([]);
   });
 
-  test("layers: an upper-body Run layer moves the arm and leaves the legs on Idle", () => {
+  test("layers: an upper-body Run layer swings the arm and leaves the legs on Idle", () => {
     const m = measured("animation-layers");
-    expect(m.handShiftWithLayer).toBeGreaterThan(0.12);
+    // The hand wanders under the layer and is near-still on Idle and again after stopLayer.
+    expect(m.handRangeWithLayer).toBeGreaterThan(0.12);
+    expect(m.handRangeWithLayer).toBeGreaterThan(3 * m.handRangeIdle);
+    expect(m.handRangeAfterStop).toBeLessThan(0.06);
+    // The legs stay on Idle: the foot neither wanders more nor sits elsewhere.
     expect(m.footShiftWithLayer).toBeLessThan(0.06);
-    expect(m.handShiftWithLayer).toBeGreaterThan(3 * m.footShiftWithLayer);
-    expect(m.handShiftAfterStop).toBeLessThan(0.08);
+    expect(m.footRangeWithLayer).toBeLessThan(0.06);
     expect(m.changedPixelsIdleVsLayer).toBeGreaterThan(300);
     const actions = m.raw.activeActions as readonly { clip: string; layer: string; weight: number }[];
     expect(actions.some((action) => action.layer === "upper" && action.clip === "Run")).toBe(true);
+    // The layer clip is not also a base action.
+    expect(actions.filter((action) => action.clip === "Run" && action.layer === "")).toEqual([]);
     publish("animation-layers", "Soldier: Idle base + Run on an upper-body masked layer, then stopLayer");
   });
 

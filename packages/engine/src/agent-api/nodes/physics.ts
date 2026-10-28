@@ -527,7 +527,7 @@ export function eulerToQuat(rotation: AuraVec3): readonly [number, number, numbe
   ];
 }
 
-function quatToEuler(rotation: readonly [number, number, number, number]): AuraVec3 {
+export function quatToEuler(rotation: readonly [number, number, number, number]): AuraVec3 {
   const [x, y, z, w] = rotation;
   const sinrCosp = 2 * (w * x + y * z);
   const cosrCosp = 1 - 2 * (x * x + y * y);

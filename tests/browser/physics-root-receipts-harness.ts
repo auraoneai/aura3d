@@ -58,7 +58,11 @@ function buildScene() {
 }
 
 function step(app: AuraApp, count: number): void {
-  for (let i = 0; i < count; i += 1) app.step(DT);
+  // The app does not advance the simulation by itself: a route steps `app.physics` from its frame loop.
+  for (let i = 0; i < count; i += 1) {
+    app.physics.step(DT);
+    app.step(DT);
+  }
 }
 
 async function collisions(): Promise<CapabilityResult> {
@@ -68,7 +72,7 @@ async function collisions(): Promise<CapabilityResult> {
     autoStart: false,
     resize: false,
     pixelRatio: 1,
-    physics: { gravity: [0, -9.81, 0], seed: 1 },
+    physics: { gravity: [0, -9.81, 0], seed: 1, bindNodes: true },
     renderer: { mode: "production", qualityProfile: "production", fallback: "safe-basic" },
     scene: buildScene()
   });

@@ -5,7 +5,7 @@ import type { AuraApp, AuraAppTarget, AuraBackend, AuraCreateAppOptions, AuraFra
 import { declaresWebGLContent, productionRenderErrorMessage } from "../compiler/observations.js";
 import { createDiagnosticsOverlay, renderDiagnosticPreviewToCanvas, shouldRenderOverlay } from "../public/devtools.js";
 import { createInitialDiagnostics, snapshotDiagnostics, validateSceneAssets } from "../diagnostics.js";
-import { createRuntimeScenePhysics, eulerToQuat, physics, resolveNodePhysicsShape } from "../nodes/physics.js";
+import { createRuntimeScenePhysics, eulerToQuat, physics, quatToEuler, resolveNodePhysicsShape } from "../nodes/physics.js";
 import { colorToLinearRgba } from "../colorUtils.js";
 import { scene } from "../nodes/scene.js";
 import { createComputeSurface } from "../nodes/compute.js";
@@ -251,12 +251,44 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     return appPhysicsWorldInstance;
   };
   let appPhysicsInstance: AuraPhysicsRuntime | undefined;
+  /**
+   * `physics: { bindNodes: true }` — dynamic bodies declared on nodes that carry `.runtime({ id })`
+   * write their position and rotation back to that runtime node after every `app.physics.step()`.
+   * Off by default: a route that already moves its own nodes (and steps physics only for events) must
+   * not have them overwritten.
+   */
+  const appPhysicsNodeBindings = new Map<number, string>();
+  const syncBoundNodes = (): void => {
+    const world = appPhysicsWorldInstance;
+    if (world === undefined) return;
+    for (const [bodyId, runtimeId] of appPhysicsNodeBindings) {
+      const body = world.getBody(bodyId);
+      const handle = runtimeNodes.get(runtimeId);
+      if (body === undefined || handle === undefined || body.sleeping) continue;
+      const euler = quatToEuler(body.rotation);
+      handle.setPosition(body.position[0], body.position[1], body.position[2]);
+      handle.setRotation(euler[0], euler[1], euler[2]);
+    }
+  };
   /** Lazy `app.physics`. Identity is stable: the same runtime is returned on every access. */
   const appPhysics = (): AuraPhysicsRuntime => {
-    appPhysicsInstance ??= createPhysicsRuntime(appPhysicsWorld(), {
-      ...(options.physics?.layers ? { layers: options.physics.layers } : {}),
-      nodeNameFor: (bodyId) => appPhysicsNodeNames.get(bodyId)
-    });
+    if (appPhysicsInstance === undefined) {
+      const runtime = createPhysicsRuntime(appPhysicsWorld(), {
+        ...(options.physics?.layers ? { layers: options.physics.layers } : {}),
+        nodeNameFor: (bodyId) => appPhysicsNodeNames.get(bodyId)
+      });
+      if (options.physics?.bindNodes === true) {
+        const bound = Object.create(runtime) as { step: AuraPhysicsRuntime["step"] };
+        bound.step = (dt) => {
+          const events = runtime.step(dt);
+          syncBoundNodes();
+          return events;
+        };
+        appPhysicsInstance = bound as unknown as AuraPhysicsRuntime;
+      } else {
+        appPhysicsInstance = runtime;
+      }
+    }
     return appPhysicsInstance;
   };
   /**
@@ -289,6 +321,10 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         material: { friction: spec.friction ?? 0.5, restitution: spec.restitution ?? 0 }
       });
       if (node.name) appPhysicsNodeNames.set(body.id, node.name);
+      const runtimeId = (node as { readonly runtime?: { readonly id?: string } }).runtime?.id;
+      if (options.physics?.bindNodes === true && runtimeId !== undefined && (spec.type ?? "dynamic") === "dynamic") {
+        appPhysicsNodeBindings.set(body.id, runtimeId);
+      }
     }
   };
   registerDeclaredBodies(renderSnapshot);
@@ -621,6 +657,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       // Only a world that exists can hold stale bodies; `setScene` on a physics-free app is a no-op here.
       for (const id of [...appPhysicsNodeNames.keys()]) appPhysicsWorldInstance?.removeRigidBody(id);
       appPhysicsNodeNames.clear();
+      appPhysicsNodeBindings.clear();
       registerDeclaredBodies(renderSnapshot);
       mountCurrentScene();
     },

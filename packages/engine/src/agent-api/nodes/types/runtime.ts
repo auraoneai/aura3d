@@ -444,6 +444,12 @@ export interface AuraCreateAppOptions {
     readonly seed?: number | undefined;
     /** Continuous-collision selection (H1): without this the app world never enables CCD. */
     readonly continuousCollision?: PhysicsContinuousCollisionDescriptor | undefined;
+    /**
+     * Write each dynamic body's position and rotation back to the runtime node it was declared on
+     * (a node with `.runtime({ id })`) after every `app.physics.step()`. Off by default, so a route that
+     * moves its own nodes is never overwritten. Without it, stepping `app.physics` moves bodies, not meshes.
+     */
+    readonly bindNodes?: boolean | undefined;
   };
   readonly diagnostics?: boolean | AuraDiagnosticsOptions;
   readonly renderer?: AuraCreateAppRendererOptions;
