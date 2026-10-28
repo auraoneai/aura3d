@@ -1,0 +1,1343 @@
+{
+ "before": {
+  "top-tennis": {
+   "slug": "top-tennis",
+   "url": "/apps/showcase-top-tennis/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 33.30997382500129
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "teleoperator": {
+   "slug": "teleoperator",
+   "url": "/apps/showcase-teleoperator/?heal=0",
+   "presets": [
+    "none",
+    "hdri"
+   ],
+   "stats": {
+    "nonBlack": 0.97603125,
+    "mean": 46.52996926249001
+   },
+   "errors": [],
+   "warnings": [
+    "[.WebGL-0x16b400105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x16b400105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x16b400105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x16b400105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  "aura-hoops-3d": {
+   "slug": "aura-hoops-3d",
+   "url": "/apps/showcase-aura-hoops-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.9574375,
+    "mean": 34.80530789686004
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "aura-links-3d": {
+   "slug": "aura-links-3d",
+   "url": "/apps/showcase-aura-links-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.9965,
+    "mean": 42.120871825030115
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "dot-dash-3d": {
+   "slug": "dot-dash-3d",
+   "url": "/apps/showcase-dot-dash-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 32.807023765663814
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "splat-rush-port": {
+   "slug": "splat-rush-port",
+   "url": "/apps/showcase-splat-rush-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 164.73330877189326
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "heatsink-port": {
+   "slug": "heatsink-port",
+   "url": "/apps/showcase-heatsink-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.420234375,
+    "mean": 13.044238175005406
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "roadster-hours-port": {
+   "slug": "roadster-hours-port",
+   "url": "/apps/showcase-roadster-hours-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 19.73709683437412
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "cloud-runner-port": {
+   "slug": "cloud-runner-port",
+   "url": "/apps/showcase-cloud-runner-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 172.2815437219224
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-hello-world-typed-asset": {
+   "slug": "apps-hello-world-typed-asset",
+   "url": "/apps/hello-world-typed-asset/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 0.375828125,
+    "mean": 21.572910337506276
+   },
+   "errors": [],
+   "warnings": [
+    "glTF mesh 12 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 174 rescaled to sum 1",
+    "glTF mesh 12 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 202 rescaled to sum 1",
+    "glTF mesh 13 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 174 rescaled to sum 1",
+    "glTF mesh 13 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 202 rescaled to sum 1"
+   ]
+  },
+  "apps-postprocessing-custom": {
+   "slug": "apps-postprocessing-custom",
+   "url": "/apps/postprocessing-custom/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 0.7976875,
+    "mean": 54.81904494996791
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "examples-aura-slam": {
+   "slug": "examples-aura-slam",
+   "url": "/examples/aura-slam/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 0.9868125,
+    "mean": 60.91074615625368
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-custom-shader-lab": {
+   "slug": "examples-custom-shader-lab",
+   "url": "/examples/custom-shader-lab/?heal=0",
+   "presets": [
+    "none",
+    "studio"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 34.173024425006375
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-parity-runtime-lab": {
+   "slug": "examples-parity-runtime-lab",
+   "url": "/examples/parity-runtime-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 29.47404005314538
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-saiyan-snake-way-port": {
+   "slug": "examples-saiyan-snake-way-port",
+   "url": "/examples/saiyan-snake-way-port/?heal=0",
+   "presets": [
+    "none",
+    "studio"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 73.38430275311816
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-shadow-lab": {
+   "slug": "examples-shadow-lab",
+   "url": "/examples/shadow-lab/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 30.54619999998548
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-xr-lab": {
+   "slug": "examples-xr-lab",
+   "url": "/examples/xr-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 0.073828125,
+    "mean": 9.066630878129986
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "roadster-rush": {
+   "slug": "roadster-rush",
+   "url": "/apps/showcase-roadster-rush/?heal=0",
+   "presets": [
+    "none",
+    "hdri"
+   ],
+   "stats": {
+    "nonBlack": 0.995390625,
+    "mean": 51.12771602500095
+   },
+   "errors": [],
+   "warnings": [
+    "[.WebGL-0x1af40011ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x1af40011ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x1af40011ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x1af40011ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  "iron-crown": {
+   "slug": "iron-crown",
+   "url": "/apps/showcase-iron-crown/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 20.440553134366297
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": [
+    "The resource http://127.0.0.1:37509/apps/showcase-iron-crown/fonts/whitney-medium.woff2 was preloaded using link preload but not used within a few seconds from ",
+    "The resource http://127.0.0.1:37509/apps/showcase-iron-crown/fonts/whitney-regular.woff2 was preloaded using link preload but not used within a few seconds from"
+   ]
+  },
+  "aura-diamond-3d": {
+   "slug": "aura-diamond-3d",
+   "url": "/apps/showcase-aura-diamond-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.999109375,
+    "mean": 40.10753813428921
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "bunker-zero": {
+   "slug": "bunker-zero",
+   "url": "/apps/showcase-bunker-zero/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.342109375,
+    "mean": 38.88141101561935
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "cross-hop": {
+   "slug": "cross-hop",
+   "url": "/apps/showcase-cross-hop/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.998203125,
+    "mean": 44.7336807095132
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "serpentine-sky-run-port": {
+   "slug": "serpentine-sky-run-port",
+   "url": "/apps/showcase-serpentine-sky-run-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 88.80410227814076
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "ninja-runner-port": {
+   "slug": "ninja-runner-port",
+   "url": "/apps/showcase-ninja-runner-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 42.63197426875648
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "where-the-wind-wanders-port": {
+   "slug": "where-the-wind-wanders-port",
+   "url": "/apps/showcase-where-the-wind-wanders-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 188.3238318377351
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-camera-path": {
+   "slug": "apps-camera-path",
+   "url": "/apps/camera-path/?heal=0",
+   "presets": [
+    "depth",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 0.268765625,
+    "mean": 21.694471496868932
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "apps-material-lighting": {
+   "slug": "apps-material-lighting",
+   "url": "/apps/material-lighting/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 0.301359375,
+    "mean": 25.00876244375777
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "apps-showcase-asset-audition": {
+   "slug": "apps-showcase-asset-audition",
+   "url": "/apps/showcase-asset-audition/?heal=0",
+   "presets": [
+    "none"
+   ],
+   "stats": {
+    "nonBlack": 0.08478125,
+    "mean": 15.74481768123155
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/showcaseButterf"
+   ],
+   "warnings": []
+  },
+  "examples-compute-lab": {
+   "slug": "examples-compute-lab",
+   "url": "/examples/compute-lab/?heal=0",
+   "presets": [
+    "none",
+    "studio"
+   ],
+   "stats": {
+    "nonBlack": 0.864890625,
+    "mean": 35.459234028130155
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-heatsink-port": {
+   "slug": "examples-heatsink-port",
+   "url": "/examples/heatsink-port/?heal=0",
+   "presets": [
+    "none",
+    "studio"
+   ],
+   "stats": {
+    "nonBlack": 0.97190625,
+    "mean": 25.653619546872896
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "heatsink": {
+   "slug": "heatsink",
+   "url": "/apps/showcase-heatsink/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 22.904084743751593
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "pips-big-leap": {
+   "slug": "pips-big-leap",
+   "url": "/apps/showcase-pips-big-leap/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.982734375,
+    "mean": 215.56177463125027
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "aura-fc-3d": {
+   "slug": "aura-fc-3d",
+   "url": "/apps/showcase-aura-fc-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 16.463276537506648
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "slingshot-siege": {
+   "slug": "slingshot-siege",
+   "url": "/apps/showcase-slingshot-siege/?heal=0",
+   "presets": [
+    "none",
+    "hdri"
+   ],
+   "stats": {
+    "nonBlack": 0.991671875,
+    "mean": 75.31311786876235
+   },
+   "errors": [],
+   "warnings": [
+    "[.WebGL-0x13dc00105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x13dc00105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x13dc00105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x13dc00105400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  "strange-orbit-port": {
+   "slug": "strange-orbit-port",
+   "url": "/apps/showcase-strange-orbit-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 25.685951771877175
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "drift-and-deliver-port": {
+   "slug": "drift-and-deliver-port",
+   "url": "/apps/showcase-drift-and-deliver-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 40.904805328097495
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "last-train-port": {
+   "slug": "last-train-port",
+   "url": "/apps/showcase-last-train-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 22.636718603137492
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "silt-and-signal-port": {
+   "slug": "silt-and-signal-port",
+   "url": "/apps/showcase-silt-and-signal-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 27.64221377498401
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-context-loss-recovery": {
+   "slug": "apps-context-loss-recovery",
+   "url": "/apps/context-loss-recovery/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 0.103578125,
+    "mean": 11.639007368753203
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-postprocessing-bloom": {
+   "slug": "apps-postprocessing-bloom",
+   "url": "/apps/postprocessing-bloom/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient",
+    "neon-night"
+   ],
+   "stats": {
+    "nonBlack": 0.215578125,
+    "mean": 50.07772622499654
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-showcase-material-asset-inspector": {
+   "slug": "apps-showcase-material-asset-inspector",
+   "url": "/apps/showcase-material-asset-inspector/?heal=0",
+   "presets": [
+    "none"
+   ],
+   "stats": {
+    "nonBlack": 0.407,
+    "mean": 10.228880506246638
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/showcaseHeadpho"
+   ],
+   "warnings": []
+  },
+  "examples-custom-draw-probe": {
+   "slug": "examples-custom-draw-probe",
+   "url": "/examples/custom-draw-probe/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0,
+    "mean": 6.292799999996529
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-instanced-texture-probe": {
+   "slug": "examples-instanced-texture-probe",
+   "url": "/examples/instanced-texture-probe/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0,
+    "mean": 6.292799999996529
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-post-order-lab": {
+   "slug": "examples-post-order-lab",
+   "url": "/examples/post-order-lab/?heal=0",
+   "presets": [
+    "none",
+    "studio"
+   ],
+   "stats": {
+    "nonBlack": 0.0240625,
+    "mean": 7.852525084371526
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-shader-failure-lab": {
+   "slug": "examples-shader-failure-lab",
+   "url": "/examples/shader-failure-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-ambient"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 31.83596040623777
+   },
+   "errors": [
+    "[aura3d] CUSTOM_SHADER_COMPILE_FAILED: material \"primitive-box-broken-box-custom-f9771466\" fragment line 24 (source line 4): 'shade' : redefinition\n  fragment l"
+   ],
+   "warnings": []
+  },
+  "examples-strange-orbit-port": {
+   "slug": "examples-strange-orbit-port",
+   "url": "/examples/strange-orbit-port/?heal=0",
+   "presets": [
+    "none",
+    "studio"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 55.61010933750099
+   },
+   "errors": [],
+   "warnings": []
+  }
+ },
+ "after": {
+  "top-tennis": {
+   "slug": "top-tennis",
+   "url": "/apps/showcase-top-tennis/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 33.30997382500129
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "teleoperator": {
+   "slug": "teleoperator",
+   "url": "/apps/showcase-teleoperator/?heal=0",
+   "presets": [
+    "none",
+    "hdri"
+   ],
+   "stats": {
+    "nonBlack": 0.97603125,
+    "mean": 46.52996926249001
+   },
+   "errors": [],
+   "warnings": [
+    "[.WebGL-0x1cf400114e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x1cf400114e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x1cf400114e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x1cf400114e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  "aura-hoops-3d": {
+   "slug": "aura-hoops-3d",
+   "url": "/apps/showcase-aura-hoops-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.9574375,
+    "mean": 34.80530789686004
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "aura-links-3d": {
+   "slug": "aura-links-3d",
+   "url": "/apps/showcase-aura-links-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.9965,
+    "mean": 42.120871825030115
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "dot-dash-3d": {
+   "slug": "dot-dash-3d",
+   "url": "/apps/showcase-dot-dash-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 32.807023765663814
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "splat-rush-port": {
+   "slug": "splat-rush-port",
+   "url": "/apps/showcase-splat-rush-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 164.73330877189326
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "heatsink-port": {
+   "slug": "heatsink-port",
+   "url": "/apps/showcase-heatsink-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.420234375,
+    "mean": 13.044238175005406
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "roadster-hours-port": {
+   "slug": "roadster-hours-port",
+   "url": "/apps/showcase-roadster-hours-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 19.73709683437412
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "cloud-runner-port": {
+   "slug": "cloud-runner-port",
+   "url": "/apps/showcase-cloud-runner-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 172.2815437219224
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-hello-world-typed-asset": {
+   "slug": "apps-hello-world-typed-asset",
+   "url": "/apps/hello-world-typed-asset/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.375125,
+    "mean": 21.481885846881248
+   },
+   "errors": [],
+   "warnings": [
+    "glTF mesh 12 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 174 rescaled to sum 1",
+    "glTF mesh 12 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 202 rescaled to sum 1",
+    "glTF mesh 13 primitive 0 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 174 rescaled to sum 1",
+    "glTF mesh 13 primitive 1 WEIGHTS_0 normalized: 0 degenerate vertex(es) set to [1,0,0,0], 202 rescaled to sum 1"
+   ]
+  },
+  "apps-postprocessing-custom": {
+   "slug": "apps-postprocessing-custom",
+   "url": "/apps/postprocessing-custom/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.7976875,
+    "mean": 54.81904494996791
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "examples-aura-slam": {
+   "slug": "examples-aura-slam",
+   "url": "/examples/aura-slam/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.993921875,
+    "mean": 61.43439555937731
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-custom-shader-lab": {
+   "slug": "examples-custom-shader-lab",
+   "url": "/examples/custom-shader-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 34.173024425006375
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-parity-runtime-lab": {
+   "slug": "examples-parity-runtime-lab",
+   "url": "/examples/parity-runtime-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 29.47404005314538
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-saiyan-snake-way-port": {
+   "slug": "examples-saiyan-snake-way-port",
+   "url": "/examples/saiyan-snake-way-port/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 73.10468135311496
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "roadster-rush": {
+   "slug": "roadster-rush",
+   "url": "/apps/showcase-roadster-rush/?heal=0",
+   "presets": [
+    "none",
+    "hdri"
+   ],
+   "stats": {
+    "nonBlack": 0.995390625,
+    "mean": 51.098791540625434
+   },
+   "errors": [],
+   "warnings": [
+    "[.WebGL-0x33240012ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x33240012ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x33240012ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x33240012ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  "iron-crown": {
+   "slug": "iron-crown",
+   "url": "/apps/showcase-iron-crown/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 20.440553134366297
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": [
+    "The resource http://127.0.0.1:33813/apps/showcase-iron-crown/fonts/whitney-medium.woff2 was preloaded using link preload but not used within a few seconds from ",
+    "The resource http://127.0.0.1:33813/apps/showcase-iron-crown/fonts/whitney-regular.woff2 was preloaded using link preload but not used within a few seconds from"
+   ]
+  },
+  "aura-diamond-3d": {
+   "slug": "aura-diamond-3d",
+   "url": "/apps/showcase-aura-diamond-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.999109375,
+    "mean": 40.10753813428921
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "bunker-zero": {
+   "slug": "bunker-zero",
+   "url": "/apps/showcase-bunker-zero/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.342109375,
+    "mean": 38.88141101561935
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "cross-hop": {
+   "slug": "cross-hop",
+   "url": "/apps/showcase-cross-hop/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.998203125,
+    "mean": 44.7336807095132
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "serpentine-sky-run-port": {
+   "slug": "serpentine-sky-run-port",
+   "url": "/apps/showcase-serpentine-sky-run-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 88.80410227814076
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "ninja-runner-port": {
+   "slug": "ninja-runner-port",
+   "url": "/apps/showcase-ninja-runner-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 42.63197426875648
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "where-the-wind-wanders-port": {
+   "slug": "where-the-wind-wanders-port",
+   "url": "/apps/showcase-where-the-wind-wanders-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 188.3238318377351
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-camera-path": {
+   "slug": "apps-camera-path",
+   "url": "/apps/camera-path/?heal=0",
+   "presets": [
+    "depth",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.2670625,
+    "mean": 21.609252037493857
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "apps-material-lighting": {
+   "slug": "apps-material-lighting",
+   "url": "/apps/material-lighting/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.30065625,
+    "mean": 24.917737953132743
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "apps-showcase-asset-audition": {
+   "slug": "apps-showcase-asset-audition",
+   "url": "/apps/showcase-asset-audition/?heal=0",
+   "presets": [
+    "none"
+   ],
+   "stats": {
+    "nonBlack": 0.08478125,
+    "mean": 15.74481768123155
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/showcaseButterf"
+   ],
+   "warnings": []
+  },
+  "examples-compute-lab": {
+   "slug": "examples-compute-lab",
+   "url": "/examples/compute-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.864890625,
+    "mean": 14.041503712490375
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-heatsink-port": {
+   "slug": "examples-heatsink-port",
+   "url": "/examples/heatsink-port/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.954921875,
+    "mean": 25.1125793281217
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-parity-texture-lab": {
+   "slug": "examples-parity-texture-lab",
+   "url": "/examples/parity-texture-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 65.88724496247728
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "examples-selfheal-lab": {
+   "slug": "examples-selfheal-lab",
+   "url": "/examples/selfheal-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0,
+    "mean": 6.481360706252705
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-splat-rush-port": {
+   "slug": "examples-splat-rush-port",
+   "url": "/examples/splat-rush-port/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 190.3213220218275
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "heatsink": {
+   "slug": "heatsink",
+   "url": "/apps/showcase-heatsink/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 22.904084743751593
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "pips-big-leap": {
+   "slug": "pips-big-leap",
+   "url": "/apps/showcase-pips-big-leap/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0.982734375,
+    "mean": 215.56177463125027
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "aura-fc-3d": {
+   "slug": "aura-fc-3d",
+   "url": "/apps/showcase-aura-fc-3d/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 16.463276537506648
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+   ],
+   "warnings": []
+  },
+  "slingshot-siege": {
+   "slug": "slingshot-siege",
+   "url": "/apps/showcase-slingshot-siege/?heal=0",
+   "presets": [
+    "none",
+    "hdri"
+   ],
+   "stats": {
+    "nonBlack": 0.991671875,
+    "mean": 75.31223456876239
+   },
+   "errors": [],
+   "warnings": [
+    "[.WebGL-0x2d2c0013ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x2d2c0013ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x2d2c0013ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[.WebGL-0x2d2c0013ce00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+   ]
+  },
+  "strange-orbit-port": {
+   "slug": "strange-orbit-port",
+   "url": "/apps/showcase-strange-orbit-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 25.685951771877175
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "drift-and-deliver-port": {
+   "slug": "drift-and-deliver-port",
+   "url": "/apps/showcase-drift-and-deliver-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 40.904805328097495
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "last-train-port": {
+   "slug": "last-train-port",
+   "url": "/apps/showcase-last-train-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 22.636718603137492
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "silt-and-signal-port": {
+   "slug": "silt-and-signal-port",
+   "url": "/apps/showcase-silt-and-signal-port/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 27.64221377498401
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-context-loss-recovery": {
+   "slug": "apps-context-loss-recovery",
+   "url": "/apps/context-loss-recovery/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.103578125,
+    "mean": 11.639007368753203
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-postprocessing-bloom": {
+   "slug": "apps-postprocessing-bloom",
+   "url": "/apps/postprocessing-bloom/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights",
+    "neon-night"
+   ],
+   "stats": {
+    "nonBlack": 0.21421875,
+    "mean": 50.0708656031216
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+   ],
+   "warnings": []
+  },
+  "apps-showcase-material-asset-inspector": {
+   "slug": "apps-showcase-material-asset-inspector",
+   "url": "/apps/showcase-material-asset-inspector/?heal=0",
+   "presets": [
+    "none"
+   ],
+   "stats": {
+    "nonBlack": 0.407,
+    "mean": 10.228880506246638
+   },
+   "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "[aura3d] RENDERER_MOUNT_FAILED: AuraRuntimeError: Aura3D production renderer failed to mount: Error: glTF extension scan failed for /aura-assets/showcaseHeadpho"
+   ],
+   "warnings": []
+  },
+  "examples-custom-draw-probe": {
+   "slug": "examples-custom-draw-probe",
+   "url": "/examples/custom-draw-probe/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0,
+    "mean": 6.292799999996529
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-instanced-texture-probe": {
+   "slug": "examples-instanced-texture-probe",
+   "url": "/examples/instanced-texture-probe/?heal=0",
+   "presets": [],
+   "stats": {
+    "nonBlack": 0,
+    "mean": 6.292799999996529
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-post-order-lab": {
+   "slug": "examples-post-order-lab",
+   "url": "/examples/post-order-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 0.006984375,
+    "mean": 6.909183590621638
+   },
+   "errors": [],
+   "warnings": []
+  },
+  "examples-shader-failure-lab": {
+   "slug": "examples-shader-failure-lab",
+   "url": "/examples/shader-failure-lab/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 31.83596040623777
+   },
+   "errors": [
+    "[aura3d] CUSTOM_SHADER_COMPILE_FAILED: material \"primitive-box-broken-box-custom-f9771466\" fragment line 24 (source line 4): 'shade' : redefinition\n  fragment l"
+   ],
+   "warnings": []
+  },
+  "examples-strange-orbit-port": {
+   "slug": "examples-strange-orbit-port",
+   "url": "/examples/strange-orbit-port/?heal=0",
+   "presets": [
+    "none",
+    "authored-lights"
+   ],
+   "stats": {
+    "nonBlack": 1,
+    "mean": 54.35831801250156
+   },
+   "errors": [],
+   "warnings": []
+  }
+ }
+}

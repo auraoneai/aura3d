@@ -1,4 +1,4 @@
-import { camera, createAuraApp, lights, material, primitives, scene } from "@aura3d/engine";
+import { camera, createAuraApp, effects, lights, material, primitives, scene } from "@aura3d/engine";
 
 /**
  * Exposure calibration probe (beat-three.js PRD, WP-Q.1). A flat Lambert-like
@@ -16,6 +16,7 @@ export interface CalibrationCase {
   readonly intensity: number;
   readonly albedo: string;
   readonly lightColor?: string;
+  readonly post?: boolean;
 }
 export interface CalibrationCapture {
   readonly id: string;
@@ -62,6 +63,7 @@ function build(c: CalibrationCase) {
   if (c.light.endsWith("+directional")) builder.add(lights.directional({ name: "sun", position: [0, 5, 0], intensity: 2, color: "#ffffff" }));
   if (c.light.startsWith("ambient")) builder.add(lights.ambient({ name: "amb", intensity: c.intensity, color: c.lightColor ?? "#ffffff" }));
   if (c.light.startsWith("hemisphere")) builder.add(lights.hemisphere({ name: "hemi", skyColor: c.lightColor ?? "#ffffff", groundColor: c.lightColor ?? "#ffffff", intensity: c.intensity }));
+  if (c.post) builder.add(effects.bloom({ name: "inert-bloom", intensity: 0.0001, threshold: 50, radius: 0.1 }));
   return builder;
 }
 
@@ -73,7 +75,8 @@ async function render(c: CalibrationCase, toneMapping: string): Promise<Calibrat
     pixelRatio: 1,
     resize: false,
     renderer: { qualityProfile: "production" },
-    output: { toneMapping: toneMapping as never, exposure: 1, dither: false },
+    // "default" authors no output options at all, so a scene without post takes the quality:auto direct path.
+    ...(toneMapping === "default" ? {} : { output: { toneMapping: toneMapping as never, exposure: 1, dither: false } }),
     scene: build(c)
   });
   const started = performance.now();
