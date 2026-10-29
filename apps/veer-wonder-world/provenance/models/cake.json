@@ -1,12 +1,12 @@
 {
   "schema": "wonder-world.model-provenance/1",
   "key": "cake",
-  "file": "src/assets/models/cake.8d32d584.glb",
-  "sha256": "8d32d5841f78be43d6e81c4d38ef5b5c09624f334519c4e9d07188db47e39270",
-  "sizeBytes": 323992,
+  "file": "src/assets/models/cake.f261855c.glb",
+  "sha256": "f261855cb1ea51d2839e11e90a2101556110ccbf73df5654c18ea629dce6bb6c",
+  "sizeBytes": 319312,
   "rigged": false,
   "clips": [],
-  "heightM": 0.45,
+  "heightM": 0.38,
   "role": "prop",
   "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
   "source": {
@@ -50,13 +50,20 @@
     "orientation": {
       "forwardAxis": "+z",
       "upAxis": "+y"
+    },
+    "flameCut": {
+      "tool": "tools/cut-cake-flame.mjs",
+      "cutY": 0.632,
+      "trianglesRemoved": 92,
+      "reason": "The modelled candle flame and wick were cut off so E16 can light and blow out the separate procedural candleFlame prop that rests on the candle (2026-10-29).",
+      "from": "cake.8d32d584.glb (sha256 8d32d5841f78be43d6e81c4d38ef5b5c09624f334519c4e9d07188db47e39270)"
     }
   },
   "inspection": {
-    "vertexCount": 6907,
+    "vertexCount": 6778,
     "bounds": [
       1.687,
-      1.9,
+      1.597,
       1.708
     ],
     "textures": [
@@ -74,7 +81,7 @@
     "status": "approved",
     "reviewer": "agent:claude-opus-5.5",
     "date": "2026-10-29",
-    "notes": "v2: round cake with frosting, sprinkles and exactly one candle (E16: cake, one, blow)."
+    "notes": "v2: round cake with frosting, sprinkles and exactly one candle (E16: cake, one, blow). Flame cut off 2026-10-29; the stage draws the candle flame as a separate prop."
   },
   "admittedAt": "2026-10-29"
 }

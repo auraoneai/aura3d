@@ -94,7 +94,8 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   letterA: trait(0.8, 0.25, "plain", { tintMode: "replace" }),
   apple: trait(1, 1, "plain"),
   banana: trait(1.2, 0.5, "plain"),
-  cake: trait(1.35, 1.35, "plain"),
+  // A surface whose rest height is the candle top: the E16 candle flame (a small prop on the cake's spot) sits on it.
+  cake: trait(1.35, 1.35, "surface", { restAt: 1 }),
   drum: trait(1.15, 1.15, "plain"),
   shaker: trait(0.6, 0.6, "plain"),
   toyPiano: trait(1.45, 0.85, "plain"),
