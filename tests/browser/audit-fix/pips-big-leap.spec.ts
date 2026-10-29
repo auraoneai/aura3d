@@ -374,6 +374,22 @@ test.describe("pips-big-leap audit fixes", () => {
     await context.close();
   });
 
+  test("grpD pbl-ao 1280x720: AO on/off pairs with feet crops (LIGHT-06)", async ({ browser }) => {
+    const T = "o1280";
+    for (const [id, query] of [["ao-on", "?freeze=6000"], ["ao-off", "?freeze=6000&pbl-ao=0"]] as const) {
+      const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+      const p = await prepare(ctx, freshNet());
+      await open(p, query);
+      await p.waitForTimeout(20_000);
+      await shot(p, T, `${id}-20s`);
+      await p.waitForTimeout(15_000);
+      await shot(p, T, `${id}-35s`);
+      await ctx.close();
+    }
+
+    log(`PBL_DONE ${T}`);
+  });
+
   test("grpA pbl-card 1440x900 and bloom fusion vs production chain (RP-05 game side)", async ({ browser }) => {
     const T = "c1440";
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });

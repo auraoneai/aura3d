@@ -79,4 +79,16 @@ describe("pips-big-leap shell", () => {
     expect(main).toContain("const nodeCache = new Map");
     expect(main).toContain("EVIDENCE_INTERVAL_MS = 250");
   });
+
+  it("LIGHT-06 QA knob: ambientOcclusion:false drops only the look AO node", () => {
+    const names = (opts?: { ambientOcclusion?: boolean }) => {
+      const nodes = (buildWorld(worldSpec("w1"), opts).scene.toJSON() as unknown as { nodes: { name?: string; children?: { name?: string }[] }[] }).nodes;
+      const look = nodes.find((n) => (n.name ?? "").startsWith("aura-look:"));
+      return (look?.children ?? []).map((c) => c.name);
+    };
+    expect(names()).toContain("look ambient occlusion");
+    const off = names({ ambientOcclusion: false });
+    expect(off).not.toContain("look ambient occlusion");
+    expect(off.length).toBe(names().length - 1);
+  });
 });

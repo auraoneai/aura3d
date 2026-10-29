@@ -45,12 +45,14 @@ interface WorldRuntime {
   readonly cert: WorldCertification;
 }
 
+// QA: `?pbl-ao=0` drops the look's ambient occlusion (AO on/off capture pairs).
+const AO_OFF = new URLSearchParams(window.location.search).get("pbl-ao") === "0";
 const cache = new Map<WorldId, WorldRuntime>();
 function ensureWorld(id: WorldId): WorldRuntime {
   let w = cache.get(id);
   if (!w) {
     const spec = worldSpec(id);
-    const built = buildWorld(spec);
+    const built = buildWorld(spec, { ambientOcclusion: !AO_OFF });
     w = { spec, built, cert: certifyWorld(spec, built.motion) };
     cache.set(id, w);
   }

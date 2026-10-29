@@ -296,19 +296,31 @@ function cameraObstacleFor(d: DecorSpec): CameraObstacle | null {
   }
 }
 
-export function buildWorld(spec: WorldSpec): BuiltWorld {
+export interface BuildWorldOptions {
+  /**
+   * QA only (`?pbl-ao=0`): drop the look's ambient-occlusion node so a capture
+   * can pair AO on and off at the same frame (LIGHT-06). Default true.
+   */
+  readonly ambientOcclusion?: boolean;
+}
+
+export function buildWorld(spec: WorldSpec, options: BuildWorldOptions = {}): BuiltWorld {
   const motion = deriveWorldMotion(spec);
   const skyColor = spec.background ?? "#1e4d78";
   const builder = scene().background(skyColor);
 
   // Look preset — fog itself is authored below so its color tracks the sky
   // exactly instead of the preset's generic haze tint.
-  builder.add(
-    looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
-      fogDensityScale: 0,
-      background: skyColor
-    })
-  );
+  const look = looks.preset(spec.look as Parameters<typeof looks.preset>[0], {
+    fogDensityScale: 0,
+    background: skyColor
+  });
+  if (options.ambientOcclusion === false) {
+    const group = look.toJSON();
+    builder.add({ ...group, children: group.children.filter((child) => (child as { readonly name?: string }).name !== "look ambient occlusion") });
+  } else {
+    builder.add(look);
+  }
   // Light depth haze: dissolves the course edge into the sky and gives the
   // conifer line aerial perspective without graying the foreground.
   builder.add(effects.fog({ color: skyColor, density: 0.0075 }));
