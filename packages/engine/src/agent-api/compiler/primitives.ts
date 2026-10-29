@@ -524,6 +524,28 @@ export function shadowProxyEnabled(): boolean {
   return value !== "off";
 }
 
+/** Offstage convention shared with `sceneShadowRadius`: anything at world y <= -50 is parked, not drawn. */
+const PARKED_Y = -50;
+
+/**
+ * Instances of a node that are on stage (SI-7): pools park unused slots far below the stage
+ * (dot-dash rails: 900 slots at y -999) or at scale 0, so pool capacity is not the number of
+ * shadow casters. Thresholds compare this count, never `instances.length`.
+ */
+export function liveInstanceCount(node: { readonly position?: readonly number[] | undefined; readonly instances?: readonly { readonly position?: readonly number[] | undefined; readonly scale?: number | readonly number[] | undefined }[] | undefined }): number {
+  const instances = node.instances;
+  if (!Array.isArray(instances)) return 0;
+  const baseY = Array.isArray(node.position) ? (node.position[1] ?? 0) : 0;
+  let live = 0;
+  for (const instance of instances) {
+    if (baseY + (instance.position?.[1] ?? 0) <= PARKED_Y) continue;
+    const scale = instance.scale;
+    if (scale === 0 || (Array.isArray(scale) && scale.some((value) => value === 0))) continue;
+    live += 1;
+  }
+  return live;
+}
+
 const triangleCount = (geometry: Geometry): number => (geometry.indexBuffer?.count ?? geometry.vertexBuffer.vertexCount) / 3;
 
 /**
@@ -531,15 +553,16 @@ const triangleCount = (geometry: Geometry): number => (geometry.indexBuffer?.cou
  *
  * Eligibility, all required:
  * - the node casts shadows, is a builtin primitive (not `custom`, no authored `geometry`), and the quality-rebuild core path is on;
- * - it carries at least `INSTANCED_SHADOW_PROXY_MIN_INSTANCES` (1,024) instances;
+ * - it carries at least `INSTANCED_SHADOW_PROXY_MIN_INSTANCES` (1,024) live instances (parked pool slots do not count, SI-7);
  * - the page has not opted out (`shadowproxy=off`);
  * - the proxy is strictly cheaper than the camera geometry (kinds whose tessellation ignores the segment scale, such as boxes, never get one).
  * Authored segment params always win, exactly as for the camera geometry.
  */
 export function qrPrimitiveShadowGeometryFor(node: AuraPrimitiveNode, mountQr: QrPrimitiveGeometryOptions | undefined, viewGeometry?: Geometry): Geometry | undefined {
   if (!mountQr?.core || node.geometry || node.primitive === "custom" || !node.castShadow) return undefined;
-  const count = node.instances?.length;
-  if (count === undefined || count < INSTANCED_SHADOW_PROXY_MIN_INSTANCES || !shadowProxyEnabled()) return undefined;
+  if (node.instances === undefined) return undefined;
+  const count = liveInstanceCount(node);
+  if (count < INSTANCED_SHADOW_PROXY_MIN_INSTANCES || !shadowProxyEnabled()) return undefined;
   const viewScale = withInstancedTessellation(node, mountQr).defaultSegmentScale ?? 1;
   const qr = withInstancedTessellation(node, mountQr, "shadow");
   if ((qr.defaultSegmentScale ?? 1) >= viewScale) return undefined;

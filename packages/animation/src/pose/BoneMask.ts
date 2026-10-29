@@ -14,6 +14,12 @@
  *
  * `spec.weights` supplies a falloff: `{ "Spine": 0.3, "Spine1": 0.6,
  * "Spine2": 1.0 }` or preset keys like `{ "upper-body": 0.5 }`.
+ *
+ * `spec.exclude` zeroes its selectors last, so it wins. A bare bone name in
+ * `exclude` takes the bone and its subtree (excluding "Spine" also drops the
+ * chest, arms and head under it); `{ bone, descendants: false }` takes one
+ * joint. With `exclude` and no `include`, the mask starts from the full body
+ * (anim-phys-08).
  */
 
 import { inferHumanoidRig } from "../HumanoidBoneInference.js";
@@ -39,6 +45,8 @@ export interface BoneMaskSpec {
   readonly include?: readonly BoneMaskSelector[];
   /** Per-bone-name or per-preset weight falloff. */
   readonly weights?: Readonly<Record<string, number>>;
+  /** Selectors set to weight 0 after `include` and `weights`; bare names take their subtree. */
+  readonly exclude?: readonly BoneMaskSelector[];
 }
 
 export interface BoneMaskSkeleton {
@@ -162,13 +170,22 @@ export function createBoneMask(spec: BoneMaskSpec, skeleton: BoneMaskSkeleton): 
     }
   };
 
-  for (const selector of spec.include ?? []) applySelector(selector, 1);
+  const include = spec.include ?? [];
+  const exclude = spec.exclude ?? [];
+  // Exclude-only: everything but the excluded bones.
+  if (include.length === 0 && exclude.length > 0) mask.fill(1);
+  for (const selector of include) applySelector(selector, 1);
 
   if (spec.weights) {
     for (const [key, weight] of Object.entries(spec.weights)) {
       if (isBoneMaskPreset(key)) applyPreset(key, weight);
       else markNames([key], weight, false);
     }
+  }
+
+  for (const selector of exclude) {
+    if (typeof selector === "string") markNames([selector], 0, true);
+    else applySelector(selector, 0);
   }
 
   return mask;

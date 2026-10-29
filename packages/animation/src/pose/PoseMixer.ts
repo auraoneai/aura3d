@@ -60,6 +60,11 @@ export type PoseCrossFadeOptions = {
 
 export type PoseLayerOptions = PoseActionOptions & {
   readonly mask?: Float32Array;
+  /**
+   * Seconds over which actions already playing on the layer fade out when a new clip
+   * replaces them (anim-phys-03). `0` (default) stops them at once.
+   */
+  readonly fadeOutPrevious?: number;
 };
 
 type FadeState = {
@@ -100,6 +105,13 @@ export class PoseAction {
   private restoreTimeScale: number | null = null;
   effectiveWeight = 0;
   effectiveTimeScale = 0;
+  /**
+   * Per-bone weights this action was started with on a named layer (anim-phys-03): a clip
+   * fading out keeps the mask it played through while its replacement uses the new one.
+   */
+  layerMask: Float32Array | null = null;
+  /** Blend mode of the layer when this action started on it (see `layerMask`). */
+  layerBlendMode: "override" | "additive" | null = null;
 
   constructor(mixer: PoseMixer, clipName: string, clip: CompiledClip, options: PoseActionOptions = {}) {
     this.mixer = mixer;
@@ -188,6 +200,11 @@ export class PoseAction {
     this.warpState = null;
     this.restoreTimeScale = null;
     return this;
+  }
+
+  /** True while a fade towards weight 0 is scheduled (fadeOut, crossFadeFrom, stopLayer). */
+  get fadingOut(): boolean {
+    return this.fade !== null && this.fade.to === 0;
   }
 
   stopFading(): this {
@@ -331,10 +348,22 @@ export class PoseAction {
   }
 }
 
+/** Drop layer actions that stopped or finished fading out, so replaced clips do not pile up. */
+function pruneFinishedLayerActions(layer: PoseLayer): void {
+  for (let i = layer.actions.length - 1; i >= 0; i -= 1) {
+    const action = layer.actions[i]!;
+    if (action.playing && action.enabled) continue;
+    if (action.playing) action.stop();
+    layer.actions.splice(i, 1);
+  }
+}
+
 export type PoseLayer = {
   readonly name: string;
-  readonly blendMode: "override" | "additive";
-  readonly mask: Float32Array | null;
+  blendMode: "override" | "additive";
+  /** Mask of the latest clip played on the layer; each action keeps its own in `layerMask`. */
+  mask: Float32Array | null;
+  /** Layer-wide multiplier (1). The `weight` option of `playLayer` is the action's weight. */
   weight: number;
   readonly actions: PoseAction[];
 };
@@ -530,11 +559,27 @@ export class PoseMixer {
   playLayer(layerName: string, clipName: string, options: PoseLayerOptions & { blendMode?: "override" | "additive"; weight?: number } = {}): PoseAction {
     let layer = this.layerByName.get(layerName);
     if (!layer) {
-      layer = { name: layerName, blendMode: options.blendMode ?? "override", mask: options.mask ?? null, weight: options.weight ?? 1, actions: [] };
+      // `weight` is applied once, on the action (anim-phys-02); the layer multiplier stays 1.
+      layer = { name: layerName, blendMode: options.blendMode ?? "override", mask: options.mask ?? null, weight: 1, actions: [] };
       this.layerByName.set(layerName, layer);
       this.layers.push(layer);
+    } else {
+      // A new clip on an existing layer takes the new mask and blend mode, and replaces the
+      // clips already playing there instead of stacking on top of them (anim-phys-03).
+      if (options.mask !== undefined) layer.mask = options.mask;
+      if (options.blendMode !== undefined) layer.blendMode = options.blendMode;
+      const fade = options.fadeOutPrevious ?? 0;
+      for (const previous of layer.actions) {
+        if (!previous.playing || previous.fadingOut) continue;
+        if (fade > 0) previous.fadeOut(fade);
+        else previous.stop();
+      }
+      pruneFinishedLayerActions(layer);
     }
-    const action = this.clipAction(clipName, options);
+    const { mask: _mask, fadeOutPrevious: _fadeOutPrevious, ...actionOptions } = options;
+    const action = this.clipAction(clipName, actionOptions);
+    action.layerMask = layer.mask;
+    action.layerBlendMode = layer.blendMode;
     action.play();
     // `play()` registers the action with the base layer; a layer action must be evaluated only
     // through its layer (and its mask), or the clip also drives every bone at full weight.
@@ -682,6 +727,8 @@ export class PoseMixer {
         for (const action of layer.actions) action.stop();
         this.layers.splice(i, 1);
         this.layerByName.delete(layer.name);
+      } else {
+        pruneFinishedLayerActions(layer);
       }
     }
     return events;
@@ -778,12 +825,13 @@ export class PoseMixer {
     for (const action of layer.actions) {
       const weight = action.effectiveWeight * layer.weight;
       if (weight <= 0 || !action.enabled) continue;
+      const mask = action.layerMask;
       for (const binding of action.bindings) {
-        const maskWeight = layer.mask === null ? weight : weight * layer.mask[binding.boneIndex]!;
+        const maskWeight = mask === null ? weight : weight * mask[binding.boneIndex]!;
         if (maskWeight <= 0) continue;
         const track = action.clip.tracks[binding.trackIndex]!;
         sampleTrackInto(track, action.time, action.cursors, binding.trackIndex, scratch, 0);
-        if (layer.blendMode === "additive" || action.additive) {
+        if ((action.layerBlendMode ?? layer.blendMode) === "additive" || action.additive) {
           this.accumulateAdditive(out, binding, track, scratch, maskWeight);
         } else {
           this.applyOverride(out, binding, track, scratch, maskWeight);
