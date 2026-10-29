@@ -1,10 +1,18 @@
 // E04 — GoGo's ABC Train (P2). GoGo pulls into the station with one letter
-// carriage. The big A glows, the carriage opens, and an apple rolls gently
-// down to Lulu and Peeko. One featured letter only: the name ("A. Ay.") and
-// the sound ("A says a-a-apple.") are separate lines, each spoken while its
-// object is on screen. The child may tap the train for "go"; GoGo goes by
-// itself when nobody taps, and the friends who speak during a departure stay
-// on the platform. Song beats carry no lines so speech never overlaps the song.
+// carriage. The big A glows, a little a floats in beside it ("Big A, little
+// a.": one clear uppercase and lowercase letter, PRD 05 section 1), the
+// carriage opens, and an apple rolls gently down to Lulu and Peeko. One
+// featured letter only: the name ("A. Ay.") and the sound ("A says
+// a-a-apple.") are separate lines, each spoken while its object is on screen.
+// The child may tap the train for "go"; GoGo goes by itself when nobody taps,
+// and the friends who speak during a departure stay on the platform. Song
+// beats carry no lines so speech never overlaps the song.
+//
+// Staging: both letters ride away with the train and come back with it. The
+// capital drives in from the left to its own spot; the little a always floats
+// in from the top middle (`from: "high"`), so the stage places it on the right
+// of the capital, "A a", every time (a second arrival on a shared spot stands
+// on the side it came from).
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -24,6 +32,8 @@ export const episode: EpisodeSpec = {
   props: [
     { id: "carriage", asset: "gogoCarriage", at: "offLeft", size: 0.7 },
     { id: "letter-a", asset: "letterA", at: "highLeft", hidden: true, size: 0.7 },
+    // Waits above the frame until it floats in beside the capital (see Staging above).
+    { id: "letter-a-lower", asset: "letterALower", at: "offTop", hidden: true, size: 0.45 },
     { id: "apple", asset: "apple", at: "left", hidden: true, size: 0.35 },
     { id: "tunnel", asset: "tunnel", at: "farRight", size: 1.8 }
   ],
@@ -44,7 +54,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 131,
+  estimatedDurationSec: 136,
   beats: [
     {
       id: "greet",
@@ -103,6 +113,22 @@ export const episode: EpisodeSpec = {
       ],
       words: [{ wordId: "a", objectId: "letter-a" }],
       holdMs: 4400
+    },
+    {
+      // The lowercase a floats in beside the capital. Named with it, never quizzed.
+      id: "little-a",
+      kind: "model",
+      camera: "medium",
+      stage: [
+        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
+        { do: "gesture", actor: "gogo", gesture: "nod" },
+        { do: "face", actor: "peeko", toward: "letter-a-lower" },
+        { do: "gesture", actor: "peeko", gesture: "happy" }
+      ],
+      lines: [{ speaker: "gogo", key: "e04.little-a.1" }],
+      words: [{ wordId: "a", objectId: "letter-a-lower" }],
+      holdMs: 3400,
+      caregiverPromptKey: "e04.tip.3"
     },
     {
       id: "open",
@@ -189,6 +215,7 @@ export const episode: EpisodeSpec = {
           { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
           { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
           { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
+          { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
           { do: "gesture", actor: "lulu", gesture: "wave" }
         ],
         lines: [
@@ -206,6 +233,7 @@ export const episode: EpisodeSpec = {
         { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
         { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
         { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
         { do: "object", target: "gogo", action: "stop" },
         { do: "sfx", sound: "whistle" }
       ],
@@ -268,6 +296,7 @@ export const episode: EpisodeSpec = {
           { do: "exit", actor: "gogo", to: "offRight", style: "drive" },
           { do: "exit", actor: "carriage", to: "offRight", style: "drive" },
           { do: "exit", actor: "letter-a", to: "offRight", style: "drive" },
+          { do: "exit", actor: "letter-a-lower", to: "offRight", style: "drive" },
           { do: "exit", actor: "peeko", to: "offRight", style: "drive" },
           { do: "gesture", actor: "lulu", gesture: "wave" }
         ],
@@ -287,6 +316,7 @@ export const episode: EpisodeSpec = {
         { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
         { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
         { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
         { do: "enter", actor: "peeko", at: "left", from: "offLeft", style: "drive" },
         { do: "gesture", actor: "lulu", gesture: "dance", loop: true }
       ],
@@ -295,6 +325,7 @@ export const episode: EpisodeSpec = {
         { do: "enter", actor: "gogo", at: "center", from: "offLeft", style: "drive" },
         { do: "enter", actor: "carriage", at: "left", from: "offLeft", style: "drive" },
         { do: "enter", actor: "letter-a", at: "highLeft", from: "offLeft", style: "drive" },
+        { do: "enter", actor: "letter-a-lower", at: "highLeft", from: "high", style: "float" },
         { do: "enter", actor: "peeko", at: "left", from: "offLeft", style: "drive" },
         { do: "gesture", actor: "lulu", gesture: "sway", loop: true }
       ],

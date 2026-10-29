@@ -1,5 +1,6 @@
 // English text for E05 — Momo's Counting Cookies. Number words appear only in
-// the three counting beats, each with exactly that many cookies on screen.
+// the three counting beats, each with exactly that many cookies on screen
+// ("One more?" asks for the last cookie; it does not count).
 export const lines: Record<string, string> = {
   "e05.greet.1": "Hi! I'm Momo.",
   "e05.greet.2": "Hello, Momo!",
@@ -26,8 +27,9 @@ export const lines: Record<string, string> = {
   "e05.share.2": "Thank you, Momo!",
   "e05.lulu-eats.1": "Lulu takes a little bite too.",
   "e05.lulu-eats.2": "Mmm!",
-  "e05.for-you.1": "And this cookie is for you!",
+  "e05.for-you.1": "One more? This cookie is for you!",
   "e05.for-you.2": "Pretend to take a bite. Mmm!",
+  "e05.for-you.3": "All gone!",
   "e05.outro.1": "All done! My tummy is happy.",
   "e05.outro.2": "Bye-bye!",
   "e05.outro.3": "Bye, Momo. Bye, Lulu!"

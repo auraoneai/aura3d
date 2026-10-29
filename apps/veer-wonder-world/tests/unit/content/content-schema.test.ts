@@ -493,6 +493,23 @@ describe("the content lint catches each rule (synthetic stories)", () => {
     expectProblem(validateStory(unspoken, baseLocale), 'names the word "red" but none of its lines say it');
   });
 
+  it("requires each episode target word in at least two different lines, spoken or sung (PRD 05 section 6)", () => {
+    // "more" is said in "More ball?" and sung in ballRolls ("Let's roll it once more!"); the hello song drops the sung one.
+    const helloSong = editBeat(base, "song", (beat) => ({ ...beat, stage: [{ do: "song", song: "hello" }], reducedMotionStage: [{ do: "song", song: "hello" }] }));
+    expectProblem(validateStory(helloSong, baseLocale), 'target word "more" is heard in one line only ("More ball?")');
+    const unsaid = editBeat(helloSong, "repeat", (beat) => ({ ...beat, lines: [] }));
+    expectProblem(validateStory(unsaid, baseLocale), 'target word "more" is heard in no line');
+    // The same text said twice counts once; a different line is the variation.
+    const again = editBeat(helloSong, "outro", (beat) => ({ ...beat, lines: [...beat.lines, { speaker: "momo", key: "e01.outro.3" }] }));
+    expectProblem(validateStory(again, withLines({ "e01.outro.3": "More ball?" })), 'target word "more" is heard in one line only');
+    expect(validateStory(again, withLines({ "e01.outro.3": "One more roll!" })).join("\n")).not.toContain('target word "more" is heard');
+  });
+
+  it("holds activities to the naming rule only (a round replays one line by design, PRD 05 section 7)", () => {
+    // baseActivity says "more" in one line only ("More bubbles?").
+    expect(validateStory(baseActivity, activityLocale).join("\n")).not.toContain("is heard in");
+  });
+
   it("requires an invite beat with input, a greeting first and an outro last", () => {
     const noInvite = editBeat(base, "invite", (beat) => ({ ...beat, kind: "event" }));
     expectProblem(validateStory(noInvite, baseLocale), "there is no invite beat with input");

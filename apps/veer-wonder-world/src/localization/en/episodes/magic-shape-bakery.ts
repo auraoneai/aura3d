@@ -25,6 +25,8 @@ export const lines: Record<string, string> = {
   "e12.triangle.3": "A triangle!",
   "e12.pointy.1": "Pointy, pointy, pointy!",
   "e12.pointy.2": "A triangle has pointy corners.",
+  "e12.triangle-hat.1": "Look, my party hat!",
+  "e12.triangle-hat.2": "A triangle, like a party hat!",
   "e12.turn-triangle.1": "The triangle. Ready...?",
   "e12.turn-triangle.2": "Wobble, wobble, triangle!",
   "e12.turn-triangle.3": "Silly triangle!",
@@ -45,7 +47,7 @@ export const strings: Record<string, string> = {
   "e12.offline":
     "Find a round plate and a square napkin. Run a finger around each edge and say circle, square. At snack time, cut a sandwich into triangles.",
   "e12.bridge":
-    "Momo and Lumi baked a circle, a square and a triangle, and found a round plate and a square block. Name the shapes of everyday things together: a round plate, a square napkin, a triangle sandwich.",
+    "Momo and Lumi baked a circle, a square and a triangle, and found a round plate, a square block and a party hat. Name the shapes of everyday things together: a round plate, a square napkin, a triangle sandwich.",
   "e12.tip.1": "Wait a moment. Your child can point to a shape, tap it, or just watch it wobble.",
   "e12.tip.2": "Draw a triangle in the air with your finger: up, down and across.",
   "e12.tip.3": "Run your finger around something round near you and say \"circle\"."

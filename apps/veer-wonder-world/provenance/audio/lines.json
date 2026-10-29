@@ -1282,7 +1282,7 @@
   "voice": "Will (bIHbv24MWmeRgasZH58o)",
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "And this cookie is for you!",
+  "prompt": "One more? This cookie is for you!",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -4868,7 +4868,7 @@
   "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "Look! Pretend candles.",
+  "prompt": "Look! A pretend candle.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -4879,7 +4879,7 @@
   "voice": "Laura (FGY2WhTYpPnrIDTdsKH5)",
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "They glow. Let's sing!",
+  "prompt": "One candle! Let's sing.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -4901,7 +4901,7 @@
   "voice": "Will (bIHbv24MWmeRgasZH58o)",
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "The candles are out.",
+  "prompt": "The candle is out.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -4912,7 +4912,7 @@
   "voice": "Will (bIHbv24MWmeRgasZH58o)",
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "Uh-oh! They glow again.",
+  "prompt": "Uh-oh! It glows again.",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -4923,7 +4923,7 @@
   "voice": "Laura (FGY2WhTYpPnrIDTdsKH5)",
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
-  "prompt": "Silly candles!",
+  "prompt": "Silly candle!",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  },
@@ -9082,6 +9082,116 @@
   "prismKey": "elevenlabs-11-216835",
   "tier": "starter",
   "prompt": "Ready...",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e03.little-b.1": {
+  "file": "src/assets/audio/en/lines/e03.little-b.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Matilda (XrExE9yKIg1WjnnlVkGX)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Big Bee, little bee.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e03.little-b.2": {
+  "file": "src/assets/audio/en/lines/e03.little-b.2.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Jessica (cgSgspJ2msm6clMCkdW9)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Hello, little bee!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e04.little-a.1": {
+  "file": "src/assets/audio/en/lines/e04.little-a.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Liam (TX3LPaxmHKxFdv7VOQHJ)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Big Ay, little ay.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e05.for-you.3": {
+  "file": "src/assets/audio/en/lines/e05.for-you.3.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Will (bIHbv24MWmeRgasZH58o)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "All gone!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e12.triangle-hat.1": {
+  "file": "src/assets/audio/en/lines/e12.triangle-hat.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Will (bIHbv24MWmeRgasZH58o)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Look, my party hat!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e12.triangle-hat.2": {
+  "file": "src/assets/audio/en/lines/e12.triangle-hat.2.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Matilda (XrExE9yKIg1WjnnlVkGX)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "A triangle, like a party hat!",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e19.toothbrush.1": {
+  "file": "src/assets/audio/en/lines/e19.toothbrush.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Now the toothbrush.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e19.sunrise.1": {
+  "file": "src/assets/audio/en/lines/e19.sunrise.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Look! The sun is up.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e19.brush.1": {
+  "file": "src/assets/audio/en/lines/e19.brush.1.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Will (bIHbv24MWmeRgasZH58o)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Brush, brush, brush.",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
+ },
+ "e19.brush.2": {
+  "file": "src/assets/audio/en/lines/e19.brush.2.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "text-to-speech/eleven_multilingual_v2",
+  "voice": "Bella (hpp4J3VqNfWAUOO0d1Us)",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "Clean teeth!",
   "date": "2026-10-29",
   "processing": "ffmpeg loudnorm I=-18 LUFS, short-clip mean-volume correction to -21 dB, 64k"
  }

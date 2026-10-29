@@ -147,6 +147,8 @@ export function canonicalStory(kind: StorySpec["kind"], number: number): { reado
 
 export const MIN_TARGET_WORDS = 1;
 export const MAX_TARGET_WORDS = 3;
+/** An episode says each target word in at least this many different lines, spoken or sung (PRD 05 section 6). */
+export const MIN_TARGET_WORD_LINES = 2;
 /** Counting (one, two, three + noun) and animal-sound clusters may list four (PRD 05 section 6). */
 export const MAX_CLUSTER_TARGET_WORDS = 4;
 export const MAX_TAP_TARGETS = 2;
@@ -1197,11 +1199,59 @@ function checkSongTiming(ctx: Ctx): void {
   ctx.errors.push(...errors);
 }
 
+/** What makes two lines the same line: their words, ignoring case and punctuation ("One!" and "One." are one line). */
+function lineIdentity(text: string): string {
+  return normalizeQuotes(text).toLowerCase().replace(/[^a-z0-9']+/g, " ").trim();
+}
+
+/**
+ * The different lines a story lets the child hear, each text once: every
+ * spoken line (beat and response lines) and every lyric line of the songs its
+ * beats start.
+ */
+function heardLines(story: StorySpec, locale: LocalePack): string[] {
+  const byIdentity = new Map<string, string>();
+  const add = (text: string): void => {
+    const identity = lineIdentity(text);
+    if (identity !== "" && !byIdentity.has(identity)) byIdentity.set(identity, text.trim());
+  };
+  for (const ref of beatRefs(story)) {
+    for (const line of [...ref.beat.lines, ...(ref.beat.response?.lines ?? [])]) {
+      const text = locale.lines[line.key];
+      if (text !== undefined) add(text);
+    }
+    for (const song of [...songsIn(ref.beat.stage), ...songsIn(ref.beat.response?.stage ?? [])]) {
+      if (has(SONGS, song)) for (const lyric of SONGS[song].lyrics) add(lyric);
+    }
+  }
+  return [...byIdentity.values()];
+}
+
+/**
+ * Target words (PRD 05 section 6, "target words heard with visible
+ * object/action and at least one meaningful variation"): each is named in a
+ * beat's words with the object that shows it, and an episode says it in at
+ * least two different lines, spoken or sung, so the child meets it in more
+ * than one situation instead of one line looped (PRD 01 section 4.3). The
+ * same text said twice counts once. Activities replay one round by design
+ * (PRD 05 section 7) and are held to the naming rule only.
+ */
 function checkTargetCoverage(ctx: Ctx): void {
   const named = new Set<string>();
   for (const ref of beatRefs(ctx.story)) for (const entry of ref.beat.words ?? []) named.add(entry.wordId);
   for (const w of ctx.story.targetWords) {
     if (!named.has(w)) ctx.errors.push(`target word "${w}" is never named in a beat's words (with the object that shows it)`);
+  }
+  if (ctx.story.kind !== "episode") return;
+  const lines = heardLines(ctx.story, ctx.locale);
+  for (const w of ctx.story.targetWords) {
+    if (!isWordId(w)) continue;
+    const heard = lines.filter((text) => wordSpoken(w, text));
+    if (heard.length >= MIN_TARGET_WORD_LINES) continue;
+    const where = heard.length === 0 ? "in no line" : `in one line only ("${heard[0] ?? ""}")`;
+    ctx.errors.push(
+      `target word "${w}" is heard ${where}; say it in at least ${MIN_TARGET_WORD_LINES} different lines, spoken or sung (a meaningful variation, PRD 05 section 6)`
+    );
   }
 }
 

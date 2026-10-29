@@ -13,6 +13,8 @@ export const lines: Record<string, string> = {
   "e03.letter.1": "This letter is B.",
   "e03.letter.2": "B. Bee.",
   "e03.letter.3": "Bee!",
+  "e03.little-b.1": "Big B, little b.",
+  "e03.little-b.2": "Hello, little b!",
   "e03.ball.1": "Here comes a ball!",
   "e03.ball.2": "Roll, ball, roll!",
   "e03.ball-sound.1": "B says b-b-ball.",
@@ -43,5 +45,6 @@ export const strings: Record<string, string> = {
     "Point to a B in a book and name it: \"Bee.\" Then find a real ball or a teddy bear and stretch the start: \"b-b-ball.\" Name things; no quiz needed.",
   "e03.tip.1": "Wait a moment. Your child can point to the ball, tap it, or just watch.",
   "e03.tip.2": "Name what your child looks at: \"Bear!\" There is nothing to get right.",
-  "e03.tip.3": "The letter's name is \"bee\"; its sound is the start of ball and bear: \"b-b-ball\". Keep the two apart."
+  "e03.tip.3": "The letter's name is \"bee\"; its sound is the start of ball and bear: \"b-b-ball\". Keep the two apart.",
+  "e03.tip.4": "Big B and little b are one letter, called \"bee\". Trace each shape in the air together."
 };

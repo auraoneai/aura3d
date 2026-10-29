@@ -1,18 +1,34 @@
 // E19 — Momo's Day (P2). One short day in the Home Nook in three clear scenes:
-// Momo wakes up, washes sticky hands at the sink (and dries them), eats a
-// banana, sings the original routine song, and goes to bed while Lumi, the
-// soft night star, says goodnight.
+// the morning sun rises in the toy bedroom, Momo wakes up, washes sticky hands
+// at the sink (and dries them), eats a banana, brushes his teeth (a short
+// variant scene), sings the original routine song, and goes to bed while
+// Lumi, the soft night star, says goodnight.
 //
-// Each scene has one tap: the sink (water), the banana (food) and the bed.
-// Watching without touching plays the same day. The ending is calm and final:
-// the music stops, Momo sleeps, Lumi waves, and nothing plays next (no
-// bedtime autoplay). Lumi's glow is soft and never flashes.
+// Each core scene has one tap: the sink (water), the banana (food) and the
+// bed. Watching without touching plays the same day. The ending is calm and
+// final: the music stops, Momo sleeps, Lumi waves, and nothing plays next (no
+// bedtime autoplay). The sun's and Lumi's glows are soft and never flash.
 //
 // Staging: the sink stands on a spot every framing keeps in view (portrait
 // phones included), so the tap target is always on screen; Momo stops beside
 // it. He turns to the viewer while drying, so the towel he puts down lands in
-// front of him rather than in the sink.
-import type { EpisodeSpec } from "../../types.js";
+// front of him rather than in the sink. The sun appears low in the back
+// corner by the window and floats up (`rise`). The toothbrush appears in
+// Momo's hand (shown, then carried) and goes with him to the sink; he keeps
+// it through the song and sets it down there before bed. The song touches one
+// object per lyric line, and on "The moon is up" the sun sinks and fades
+// (the night beat hides it too, so the night never keeps a sun).
+import type { EpisodeSpec, SongCue } from "../../types.js";
+
+/** The routine song's cues, one object per lyric line (the same with reduced motion: no bounce, no travel). */
+const ROUTINE_CUES: readonly SongCue[] = [
+  { line: 0, stage: [{ do: "object", target: "sun", action: "glow" }] },
+  { line: 1, stage: [{ do: "object", target: "sink", action: "wash" }] },
+  { line: 2, stage: [{ do: "object", target: "plate", action: "wobble" }] },
+  { line: 3, stage: [{ do: "object", target: "toothbrush", action: "wobble" }] },
+  { line: 4, stage: [{ do: "object", target: "sun", action: "down" }] },
+  { line: 5, stage: [{ do: "hide", actor: "sun" }] }
+];
 
 export const episode: EpisodeSpec = {
   kind: "episode",
@@ -32,10 +48,14 @@ export const episode: EpisodeSpec = {
     { id: "sink", asset: "sink", at: "left", size: 0.9 },
     { id: "towel", asset: "towel", at: "frontLeft", size: 0.2 },
     { id: "plate", asset: "plate", at: "front", size: 0.08 },
-    { id: "banana", asset: "banana", at: "front", size: 0.3 }
+    { id: "banana", asset: "banana", at: "front", size: 0.3 },
+    // Rises from the back corner by the window: in view in every framing, clear of the sink, bed and Lumi.
+    { id: "sun", asset: "sun", at: "backLeft", hidden: true, size: 0.7 },
+    // Shown straight into Momo's hand, so it waits off stage until then.
+    { id: "toothbrush", asset: "toothbrush", at: "offLeft", hidden: true, size: 0.3 }
   ],
   targetWords: ["wash", "eat", "sleep"],
-  supportWords: ["wake", "hi", "look", "hands", "uh-oh", "water", "dry", "tummy", "banana", "more", "mmm", "hello", "bed", "all-done", "bye"],
+  supportWords: ["sun", "wake", "hi", "look", "hands", "uh-oh", "water", "dry", "tummy", "banana", "more", "mmm", "brush", "hello", "bed", "all-done", "bye"],
   music: "homeBed",
   offlinePlayKey: "e19.offline",
   caregiverBridgeKey: "e19.bridge",
@@ -45,17 +65,32 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 141,
+  estimatedDurationSec: 131,
   beats: [
     {
-      // Morning: Momo wakes up in bed.
-      id: "greet",
+      // Morning (PRD 05 E19 hook): the toy sun rises in the bedroom while Momo still sleeps.
+      id: "sunrise",
       kind: "greeting",
       camera: "wide",
       stage: [
         { do: "music", bed: "homeBed" },
-        { do: "gesture", actor: "momo", gesture: "wake" }
+        { do: "gesture", actor: "momo", gesture: "sleep" },
+        { do: "show", actor: "sun" },
+        { do: "object", target: "sun", action: "rise" }
       ],
+      lines: [{ speaker: "narrator", key: "e19.sunrise.1" }],
+      words: [
+        { wordId: "look", objectId: "sun" },
+        { wordId: "sun", objectId: "sun" }
+      ],
+      holdMs: 1500
+    },
+    {
+      // Momo wakes up in bed.
+      id: "greet",
+      kind: "greeting",
+      camera: "wide",
+      stage: [{ do: "gesture", actor: "momo", gesture: "wake" }],
       lines: [{ speaker: "narrator", key: "e19.greet.1" }],
       words: [{ wordId: "wake", objectId: "momo" }],
       holdMs: 2500
@@ -237,16 +272,48 @@ export const episode: EpisodeSpec = {
       ]
     },
     {
+      // Brush (a variant routine): the toothbrush appears in Momo's hand and he carries it to the sink.
+      id: "toothbrush",
+      kind: "event",
+      camera: "left",
+      stage: [
+        { do: "gesture", actor: "momo", gesture: "pickUp" },
+        { do: "show", actor: "toothbrush" },
+        { do: "carry", actor: "momo", item: "toothbrush" },
+        { do: "move", actor: "momo", to: "left", style: "walk" }
+      ],
+      lines: [{ speaker: "narrator", key: "e19.toothbrush.1" }],
+      holdMs: 1500
+    },
+    {
+      // Gentle brushing: Momo sways a little and the toothbrush wiggles side to side in his hand.
+      id: "brush",
+      kind: "model",
+      camera: "left",
+      stage: [
+        { do: "face", actor: "momo", toward: "viewer" },
+        { do: "gesture", actor: "momo", gesture: "sway" },
+        { do: "object", target: "toothbrush", action: "wobble" }
+      ],
+      lines: [
+        { speaker: "momo", key: "e19.brush.1" },
+        { speaker: "narrator", key: "e19.brush.2" }
+      ],
+      words: [{ wordId: "brush", objectId: "toothbrush" }],
+      holdMs: 2500,
+      caregiverPromptKey: "e19.tip.4"
+    },
+    {
       id: "song",
       kind: "song",
       camera: "wide",
       stage: [
-        { do: "song", song: "routine" },
+        { do: "song", song: "routine", cues: ROUTINE_CUES },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "sway", loop: true }
       ],
       reducedMotionStage: [
-        { do: "song", song: "routine" },
+        { do: "song", song: "routine", cues: ROUTINE_CUES },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "sway" }
       ],
@@ -254,14 +321,17 @@ export const episode: EpisodeSpec = {
       holdMs: 18000
     },
     {
-      // Night: the music rests, Lumi appears softly over the bed, Momo walks to bed.
+      // Night: the music rests, the sun is gone, Lumi appears softly over the bed,
+      // and Momo sets the toothbrush down by the sink and walks to bed.
       id: "sleepy",
       kind: "model",
       stage: [
         { do: "music", bed: null },
         { do: "sfx", sound: "yawn" },
+        { do: "hide", actor: "sun" },
         { do: "show", actor: "lumi" },
         { do: "gesture", actor: "lumi", gesture: "glow" },
+        { do: "carry", actor: "momo", item: null },
         { do: "move", actor: "momo", to: "backRight", style: "walk" }
       ],
       lines: [

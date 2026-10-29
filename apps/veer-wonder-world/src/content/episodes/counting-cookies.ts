@@ -2,10 +2,13 @@
 // empty. Lulu brings a basket and puts out cookies one at a time; each number
 // is spoken in its own beat, in the same beat the new cookie appears, so the
 // visible cookie count always equals the spoken number (1, 2, 3). Number words
-// are only spoken in those three beats. After the counting song Momo asks,
-// eats one cookie gently and says thank you, then shares. Momo is an original
-// purple creature: no imitation of any existing cookie-eating character, its
-// catchphrases, voice or eating style. Song beats carry no lines.
+// are only spoken in those three beats ("One more?" is a request, not a
+// count). After the counting song the cookies are eaten one at a time, gently:
+// Momo eats one and says thank you, shares one with Lulu, then offers the last
+// one to the child ("One more? This cookie is for you!") for a pretend bite,
+// and the plate is "All gone!". Momo is an original purple creature: no
+// imitation of any existing cookie-eating character, its catchphrases, voice
+// or eating style. Song beats carry no lines.
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -40,7 +43,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 130,
+  estimatedDurationSec: 137,
   beats: [
     {
       id: "greet",
@@ -281,8 +284,10 @@ export const episode: EpisodeSpec = {
       holdMs: 3800
     },
     {
+      // One cookie left: "One more?" It is for the child, a pretend bite (tap,
+      // a grown-up's confirm or the quiet timeout), and then every cookie is eaten.
       id: "for-you",
-      kind: "event",
+      kind: "invite",
       camera: "medium",
       stage: [
         { do: "hide", actor: "cookie-2" },
@@ -296,11 +301,24 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e05.for-you.2" }
       ],
       words: [
+        { wordId: "more", objectId: "cookie-1" },
         { wordId: "cookie", objectId: "cookie-1" },
         { wordId: "mmm", objectId: "momo" }
       ],
-      holdMs: 4800,
-      caregiverPromptKey: "e05.tip.3"
+      holdMs: 1500,
+      input: { type: "tap", targets: ["cookie-1"] },
+      waitMs: 5000,
+      caregiverPromptKey: "e05.tip.3",
+      response: {
+        stage: [
+          { do: "object", target: "cookie-1", action: "eat" },
+          { do: "sfx", sound: "munch" },
+          { do: "face", actor: "momo", toward: "plate" },
+          { do: "gesture", actor: "momo", gesture: "happy" }
+        ],
+        lines: [{ speaker: "momo", key: "e05.for-you.3" }],
+        holdMs: 3300
+      }
     },
     {
       id: "outro",

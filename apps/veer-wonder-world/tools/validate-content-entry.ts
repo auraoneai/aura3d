@@ -126,11 +126,14 @@ async function main(): Promise<number> {
   const { SONGS } = await import("../src/content/songs.js");
   const { SFX } = await import("../src/content/sfx.js");
   const { MUSIC_BEDS } = await import("../src/content/music.js");
+  const { SPOKEN_FORMS } = await import("../src/localization/en/spoken-forms.js");
   const recordedFrom = (kind: "lines" | "songs" | "beds" | "sfx", id: string, prompt: string): string | null => {
     if (kind === "lines") {
       const text = en.lines[id];
       if (text === undefined) return "no story speaks this line any more";
-      return prompt === text ? null : `it was recorded from "${prompt}", but the line now reads "${text}"`;
+      // A spoken form (a letter name spelled for the voice) stands in for the caption text.
+      const spoken = SPOKEN_FORMS[id] ?? text;
+      return prompt === spoken ? null : `it was recorded from "${prompt}", but the line now reads "${spoken}"`;
     }
     if (kind === "songs") {
       const song = Object.entries(SONGS).find(([key]) => key === id)?.[1];

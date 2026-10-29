@@ -1,19 +1,25 @@
 // E16 — The Little Birthday Party (P2). Lulu and Momo throw a pretend party for
 // Teddy in the music garden. They decorate with balloons, counted one at a time
-// (each spoken number has exactly that many balloons in view), sing the
-// original "birthday" tune (never "Happy Birthday") while the cake's pretend
-// candles glow, blow them out twice (Lulu first, then the child's turn) and
-// share a pretend bite.
+// (each spoken number has exactly that many balloons in view), light the cake's
+// one pretend candle ("One candle!", a second use of the target word "one"),
+// sing the original "birthday" tune (never "Happy Birthday") while it
+// glows, and blow it out: Lulu first, then it relights by itself (a silly
+// candle), then the child's turn. Then a pretend bite.
 //
 // Staging: each balloon appears on the ground and floats up (a `move`, so it
 // ends at its high spot inside every framing; `rise` would lift a balloon that
 // already sits on a high spot out of the frame). The paths stay clear of Lulu
-// and Momo. Lulu leans in toward the cake (`bow`) as she blows.
+// and Momo. Lulu leans in toward the cake (`bow`) as she blows. The candle's
+// flame is its own small prop on the cake's spot: the cake model has no flame
+// and is a surface whose rest height is its candle top, so the flame sits on
+// the candle. `show` lights it and `hide` blows it out; the song glows it on
+// "a pretend light glows".
 //
-// Safety: the candles are toy candles with a soft pretend glow; nothing invites
+// Safety: the candle is a toy candle with a soft pretend glow; nothing invites
 // play with real flames, and the caregiver bridge says so. Blowing is a tap or
 // a caregiver's pretend blow: there is no microphone and nothing is scored.
-// Number words appear only in the counting lines.
+// Counting lines are the only lines that count balloons; "One candle!" names
+// the one candle in view.
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -30,7 +36,10 @@ export const episode: EpisodeSpec = {
     { id: "momo", at: "offRight" }
   ],
   props: [
-    { id: "cake", asset: "cake", at: "center", size: 0.5 },
+    // The cake model ends at its candle top (no modelled flame); 0.42 m keeps its earlier look.
+    { id: "cake", asset: "cake", at: "center", size: 0.42 },
+    // The pretend flame rests on the candle (a small prop on the cake's spot); unlit until the candle beat.
+    { id: "flame", asset: "candleFlame", at: "center", hidden: true, size: 0.08 },
     { id: "teddy", asset: "teddy", at: "back", size: 0.55 },
     { id: "balloon1", asset: "balloon", at: "backLeft", hidden: true, size: 0.6 },
     { id: "balloon2", asset: "balloon", at: "backRight", hidden: true, size: 0.6 },
@@ -195,12 +204,14 @@ export const episode: EpisodeSpec = {
       ]
     },
     {
-      // The cake's toy candles start a soft pretend glow (never a flash).
+      // The cake's one toy candle lights with a soft pretend glow (never a flash).
       id: "candle",
       kind: "model",
       camera: "medium",
       stage: [
-        { do: "object", target: "cake", action: "glow" },
+        { do: "show", actor: "flame" },
+        { do: "sfx", sound: "sparkle" },
+        { do: "object", target: "flame", action: "glow" },
         { do: "face", actor: "lulu", toward: "cake" },
         { do: "face", actor: "momo", toward: "cake" }
       ],
@@ -208,24 +219,25 @@ export const episode: EpisodeSpec = {
         { speaker: "narrator", key: "e16.candle.1" },
         { speaker: "lulu", key: "e16.candle.2" }
       ],
-      words: [{ wordId: "look", objectId: "cake" }],
+      words: [{ wordId: "look", objectId: "flame" }],
       holdMs: 2000
     },
     {
-      // Resolution song while the pretend candles glow, as at a real party: the
-      // original birthday tune (its words invite a gentle pretend blow), then the blowing.
+      // Resolution song while the pretend candle glows, as at a real party: the
+      // original birthday tune (its words invite a gentle pretend blow), then the
+      // blowing. The flame glows on "a pretend light glows" (lyric line 1).
       id: "song",
       kind: "song",
       camera: "wide",
       stage: [
-        { do: "song", song: "birthday" },
+        { do: "song", song: "birthday", cues: [{ line: 1, stage: [{ do: "object", target: "flame", action: "glow" }] }] },
         { do: "object", target: "cake", action: "glow" },
         { do: "gesture", actor: "lulu", gesture: "dance", loop: true },
         { do: "gesture", actor: "momo", gesture: "sway", loop: true },
         { do: "object", target: "teddy", action: "bounce" }
       ],
       reducedMotionStage: [
-        { do: "song", song: "birthday" },
+        { do: "song", song: "birthday", cues: [{ line: 1, stage: [{ do: "object", target: "flame", action: "glow" }] }] },
         { do: "object", target: "cake", action: "glow" },
         { do: "gesture", actor: "lulu", gesture: "sway" },
         { do: "gesture", actor: "momo", gesture: "sway" }
@@ -235,13 +247,13 @@ export const episode: EpisodeSpec = {
     },
     {
       // First attempt: Lulu leans in and blows (the target word "blow" is
-      // shown, not just heard) and the pretend glow goes out.
+      // shown, not just heard) and the pretend flame goes out.
       id: "blow-model",
       kind: "event",
       camera: "medium",
       stage: [
         { do: "sfx", sound: "blow" },
-        { do: "object", target: "cake", action: "stop" },
+        { do: "hide", actor: "flame" },
         { do: "gesture", actor: "lulu", gesture: "bow" },
         { do: "gesture", actor: "momo", gesture: "happy" }
       ],
@@ -256,13 +268,15 @@ export const episode: EpisodeSpec = {
       holdMs: 2500
     },
     {
-      // Gentle surprise: the silly pretend candles glow again.
+      // Gentle surprise: the silly pretend candle lights again by itself.
       id: "relight",
       kind: "event",
       stage: [
-        { do: "object", target: "cake", action: "glow" },
+        { do: "show", actor: "flame" },
+        { do: "sfx", sound: "sparkle" },
+        { do: "object", target: "flame", action: "glow" },
         { do: "face", actor: "momo", toward: "viewer" },
-        { do: "gesture", actor: "momo", gesture: "shrug" }
+        { do: "gesture", actor: "momo", gesture: "surprise" }
       ],
       lines: [
         { speaker: "momo", key: "e16.relight.1" },
@@ -273,11 +287,11 @@ export const episode: EpisodeSpec = {
     },
     {
       // Second attempt (child turn): tap the cake or blow a pretend candle
-      // together. The candles glow again as the turn is offered.
+      // together. The lit flame glows as the turn is offered and goes out after it.
       id: "blow-invite",
       kind: "invite",
       stage: [
-        { do: "object", target: "cake", action: "glow" },
+        { do: "object", target: "flame", action: "glow" },
         { do: "face", actor: "lulu", toward: "viewer" },
         { do: "gesture", actor: "lulu", gesture: "look" },
         { do: "face", actor: "momo", toward: "cake" }
@@ -290,7 +304,7 @@ export const episode: EpisodeSpec = {
       response: {
         stage: [
           { do: "sfx", sound: "blow" },
-          { do: "object", target: "cake", action: "stop" },
+          { do: "hide", actor: "flame" },
           { do: "gesture", actor: "lulu", gesture: "cheer" },
           { do: "gesture", actor: "momo", gesture: "cheer" }
         ],

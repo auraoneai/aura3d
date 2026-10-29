@@ -105,14 +105,17 @@ const rel = (f: string) => f.slice(app.length + 1);
 const needLines = !only || only === "lines";
 const { STORIES, storyCode } = needLines ? await import("../src/content/catalog.js") : { STORIES: [] as StorySpec[], storyCode: (_: StorySpec) => "" };
 const { en } = needLines ? await import("../src/localization/en/index.js") : { en: { lines: {} as Record<string, string> } };
+// What the voice says when it differs from the caption (lone lowercase letters), shared with the content validator.
+const { SPOKEN_FORMS } = needLines ? await import("../src/localization/en/spoken-forms.js") : { SPOKEN_FORMS: {} as Readonly<Record<string, string>> };
 const seen = new Set<string>();
 for (const story of STORIES) {
   for (const line of allLines(story)) {
     if (seen.has(line.key)) continue;
     seen.add(line.key);
-    const text = en.lines[line.key];
-    if (!text) throw new Error(`no text for ${line.key} (${storyCode(story)})`);
+    const caption = en.lines[line.key];
+    if (!caption) throw new Error(`no text for ${line.key} (${storyCode(story)})`);
     if (line.speaker === "sheru") continue;
+    const text = SPOKEN_FORMS[line.key] ?? caption;
     const v = VOICES[line.speaker];
     const file = join(app, "src", "assets", "audio", "en", "lines", `${line.key}.mp3`);
     jobs.push({ kind: "lines", id: line.key, file, prompt: text, run: async () => {

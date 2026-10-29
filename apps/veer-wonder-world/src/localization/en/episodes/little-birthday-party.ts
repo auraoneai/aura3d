@@ -1,6 +1,6 @@
 // English text for E16 — The Little Birthday Party. The song is the original
 // "birthday" tune (lyrics in src/content/songs.ts), never "Happy Birthday".
-// Candles are always pretend.
+// The cake has one candle, and it is always pretend.
 export const lines: Record<string, string> = {
   "e16.greet.1": "Hi! Hi, friend!",
   "e16.greet.2": "Hello! It's party day!",
@@ -17,12 +17,12 @@ export const lines: Record<string, string> = {
   "e16.count-three.2": "Your turn. Up?",
   "e16.count-three.3": "Up it goes!",
   "e16.count-three.4": "Three! Three balloons.",
-  "e16.candle.1": "Look! Pretend candles.",
-  "e16.candle.2": "They glow. Let's sing!",
+  "e16.candle.1": "Look! A pretend candle.",
+  "e16.candle.2": "One candle! Let's sing.",
   "e16.blow-model.1": "Whoo! Blow!",
-  "e16.blow-model.2": "The candles are out.",
-  "e16.relight.1": "Uh-oh! They glow again.",
-  "e16.relight.2": "Silly candles!",
+  "e16.blow-model.2": "The candle is out.",
+  "e16.relight.1": "Uh-oh! It glows again.",
+  "e16.relight.2": "Silly candle!",
   "e16.blow-invite.1": "Your turn! Blow?",
   "e16.blow-invite.2": "Whoo! All out!",
   "e16.blow-invite.3": "Hooray for Teddy!",

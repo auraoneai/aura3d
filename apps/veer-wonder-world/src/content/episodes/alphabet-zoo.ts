@@ -1,10 +1,12 @@
 // E03 — The Alphabet Zoo (P2). Lumi and Peeko meet one letter: a big friendly
-// B wiggles, the little zoo gate opens, and a ball and a bear come out. The
-// letter name and the letter sound are always separate lines ("B. Bee." /
-// "B says b-b-ball."), each spoken while its object is on screen. The
-// child may tap the ball, then the bear, to make each one act; there is no
-// letter quiz and every turn plays on its own. Song beats carry no lines so
-// speech never overlaps the song.
+// B wiggles, the little zoo gate opens, and a ball and a bear come out. Once
+// the B is named, a little b floats up beside it ("Big B, little b.": one
+// clear uppercase and lowercase letter, PRD 05 section 1); both share the
+// center spot, so they stand side by side, capital first. The letter name and
+// the letter sound are always separate lines ("B. Bee." / "B says b-b-ball."),
+// each spoken while its object is on screen. The child may tap the ball, then
+// the bear, to make each one act; there is no letter quiz and every turn plays
+// on its own. Song beats carry no lines so speech never overlaps the song.
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -22,6 +24,7 @@ export const episode: EpisodeSpec = {
   ],
   props: [
     { id: "letter-b", asset: "letterB", at: "center", hidden: true, size: 0.9 },
+    { id: "letter-b-lower", asset: "letterBLower", at: "center", hidden: true, size: 0.6 },
     { id: "gate", asset: "door", at: "backRight", size: 1.2 },
     { id: "ball", asset: "ball", at: "backRight", hidden: true, size: 0.45 },
     { id: "bear", asset: "teddy", at: "backRight", hidden: true, size: 0.6 }
@@ -43,7 +46,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 130,
+  estimatedDurationSec: 138,
   beats: [
     {
       id: "greet",
@@ -124,6 +127,26 @@ export const episode: EpisodeSpec = {
       ],
       words: [{ wordId: "b", objectId: "letter-b" }],
       holdMs: 4200
+    },
+    {
+      // The lowercase b floats up to stand beside the risen capital (both
+      // `rise` to the same height). It is named with its capital, never quizzed.
+      id: "little-b",
+      kind: "model",
+      camera: "medium",
+      stage: [
+        { do: "show", actor: "letter-b-lower" },
+        { do: "object", target: "letter-b-lower", action: "rise" },
+        { do: "gesture", actor: "lumi", gesture: "point" },
+        { do: "face", actor: "peeko", toward: "letter-b-lower" }
+      ],
+      lines: [
+        { speaker: "lumi", key: "e03.little-b.1" },
+        { speaker: "peeko", key: "e03.little-b.2" }
+      ],
+      words: [{ wordId: "b", objectId: "letter-b-lower" }],
+      holdMs: 3700,
+      caregiverPromptKey: "e03.tip.4"
     },
     {
       id: "ball",

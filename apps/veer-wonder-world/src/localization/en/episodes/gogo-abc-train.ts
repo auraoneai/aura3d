@@ -8,6 +8,7 @@ export const lines: Record<string, string> = {
   "e04.letter.1": "This letter is A.",
   "e04.letter.2": "A. Ay.",
   "e04.letter.3": "Ay!",
+  "e04.little-a.1": "Big A, little a.",
   "e04.open.1": "Open... the carriage opens.",
   "e04.open.2": "An apple!",
   "e04.roll.1": "Roll, apple, roll. Down it comes.",
@@ -40,5 +41,6 @@ export const strings: Record<string, string> = {
   "e04.bridge":
     "Show a real apple and name it: \"Apple.\" Point to an A in a book: the name is \"ay\", the sound is the start of \"apple\". Name things; no quiz needed.",
   "e04.tip.1": "Wait a moment. Your child can tap the train or wave, and GoGo goes either way.",
-  "e04.tip.2": "Say \"Ready...\" and pause. Let your child show you when it is time for \"go!\""
+  "e04.tip.2": "Say \"Ready...\" and pause. Let your child show you when it is time for \"go!\"",
+  "e04.tip.3": "Big A and little a are one letter, called \"ay\". Trace each shape in the air together."
 };

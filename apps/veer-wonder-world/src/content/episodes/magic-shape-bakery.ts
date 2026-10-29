@@ -2,17 +2,20 @@
 //
 // Lumi's magic turns Momo's dough into three big pastry shapes, one at a
 // time: a circle that bounces, a square and a pointy triangle. Each shape is
-// named while it appears or moves, then matched with a familiar object of the
-// same shape (a round plate, a square block). Shapes are told apart by their
+// named while it appears or moves, then matched with a familiar object (a
+// round plate, a square block, and Momo's cone party hat on the table for the
+// triangle, "like a hat" as the song sings). Shapes are told apart by their
 // silhouettes and by what they do, never by colour or text: all three
 // pastries share one golden colour. The child can tap a shape to make it
 // wobble (no timed matching, no quiz); every wait ends by itself. The recap
 // names each shape while that shape alone bounces, then the "shapes" song
-// plays and Momo pretends to eat the circle. The pastries are flat biscuits
-// lying on the floor, so the whole episode uses the fixed "high" framing: from
-// the "wide" camera their tops (the shapes) are seen almost edge-on (about
-// 64 x 18 px on a phone), from "high" about twice as tall, and the cast, plate,
-// block and table all stay in frame.
+// plays: on each of its first three lines that line's pastry bounces and its
+// object glows (the party hat on "Triangle, triangle, like a hat."), then Momo
+// pretends to eat the circle. The pastries are flat biscuits lying on the
+// floor, so the whole episode uses the fixed "high" framing: from the "wide"
+// camera their tops (the shapes) are seen almost edge-on (about 64 x 18 px on
+// a phone), from "high" about twice as tall, and the cast, plate, block, table
+// and hat all stay in frame.
 import type { EpisodeSpec } from "../../types.js";
 
 export const episode: EpisodeSpec = {
@@ -34,10 +37,12 @@ export const episode: EpisodeSpec = {
     { id: "pastry-square", asset: "pastrySquare", at: "frontRight", hidden: true, size: 0.16 },
     { id: "pastry-triangle", asset: "pastryTriangle", at: "front", hidden: true, size: 0.16 },
     { id: "plate", asset: "plate", at: "left", hidden: true },
-    { id: "block", asset: "toyBlock", at: "right", hidden: true }
+    { id: "block", asset: "toyBlock", at: "right", hidden: true },
+    // A cone party hat (a triangle seen from the side), on the table: a small prop on a surface's spot rests on top.
+    { id: "party-hat", asset: "partyHat", at: "backLeft", hidden: true, size: 0.35 }
   ],
   targetWords: ["circle", "square", "triangle"],
-  supportWords: ["look", "oh", "mmm", "plate", "block", "more", "eat", "hi", "hello", "bye", "all-done"],
+  supportWords: ["look", "oh", "mmm", "plate", "block", "hat", "more", "eat", "hi", "hello", "bye", "all-done"],
   music: "homeBed",
   offlinePlayKey: "e12.offline",
   caregiverBridgeKey: "e12.bridge",
@@ -47,7 +52,7 @@ export const episode: EpisodeSpec = {
     reviewer: "agent:claude-opus-5.5 (owner instruction 2026-10-29, no human sign-off)",
     date: "2026-10-29"
   },
-  estimatedDurationSec: 140,
+  estimatedDurationSec: 133,
   beats: [
     {
       id: "greeting",
@@ -266,6 +271,27 @@ export const episode: EpisodeSpec = {
       caregiverPromptKey: "e12.tip.2"
     },
     {
+      // The familiar object for the triangle, as the plate and the block are for the others.
+      id: "triangle-hat",
+      kind: "model",
+      camera: "high",
+      stage: [
+        { do: "show", actor: "party-hat" },
+        { do: "object", target: "party-hat", action: "wobble" },
+        { do: "face", actor: "momo", toward: "party-hat" },
+        { do: "gesture", actor: "momo", gesture: "point" }
+      ],
+      lines: [
+        { speaker: "momo", key: "e12.triangle-hat.1" },
+        { speaker: "lumi", key: "e12.triangle-hat.2" }
+      ],
+      words: [
+        { wordId: "hat", objectId: "party-hat" },
+        { wordId: "triangle", objectId: "party-hat" }
+      ],
+      holdMs: 2500
+    },
+    {
       id: "turn-triangle",
       kind: "invite",
       camera: "high",
@@ -344,20 +370,67 @@ export const episode: EpisodeSpec = {
       holdMs: 1500
     },
     {
+      // Lyric lines 0-2 pair a pastry with its object ("round like a plate",
+      // "like a block", "like a hat"): the pastry bounces and the object glows
+      // as the line starts; line 3 ("Circle, square, triangle,") bounces all
+      // three. Reduced motion wobbles the pastries instead of bouncing them.
       id: "song",
       kind: "song",
       camera: "high",
       stage: [
-        { do: "song", song: "shapes" },
+        {
+          do: "song",
+          song: "shapes",
+          cues: [
+            { line: 0, stage: [{ do: "object", target: "pastry-circle", action: "bounce" }, { do: "object", target: "plate", action: "glow" }] },
+            { line: 1, stage: [{ do: "object", target: "pastry-square", action: "bounce" }, { do: "object", target: "block", action: "glow" }] },
+            {
+              line: 2,
+              stage: [
+                { do: "show", actor: "party-hat" },
+                { do: "object", target: "pastry-triangle", action: "bounce" },
+                { do: "object", target: "party-hat", action: "glow" }
+              ]
+            },
+            {
+              line: 3,
+              stage: [
+                { do: "object", target: "pastry-circle", action: "bounce" },
+                { do: "object", target: "pastry-square", action: "bounce" },
+                { do: "object", target: "pastry-triangle", action: "bounce" }
+              ]
+            }
+          ]
+        },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "dance", loop: true },
-        { do: "gesture", actor: "lumi", gesture: "float", loop: true },
-        { do: "object", target: "pastry-circle", action: "bounce" },
-        { do: "object", target: "pastry-square", action: "bounce" },
-        { do: "object", target: "pastry-triangle", action: "bounce" }
+        { do: "gesture", actor: "lumi", gesture: "float", loop: true }
       ],
       reducedMotionStage: [
-        { do: "song", song: "shapes" },
+        {
+          do: "song",
+          song: "shapes",
+          cues: [
+            { line: 0, stage: [{ do: "object", target: "pastry-circle", action: "wobble" }, { do: "object", target: "plate", action: "glow" }] },
+            { line: 1, stage: [{ do: "object", target: "pastry-square", action: "wobble" }, { do: "object", target: "block", action: "glow" }] },
+            {
+              line: 2,
+              stage: [
+                { do: "show", actor: "party-hat" },
+                { do: "object", target: "pastry-triangle", action: "wobble" },
+                { do: "object", target: "party-hat", action: "glow" }
+              ]
+            },
+            {
+              line: 3,
+              stage: [
+                { do: "object", target: "pastry-circle", action: "wobble" },
+                { do: "object", target: "pastry-square", action: "wobble" },
+                { do: "object", target: "pastry-triangle", action: "wobble" }
+              ]
+            }
+          ]
+        },
         { do: "face", actor: "momo", toward: "viewer" },
         { do: "gesture", actor: "momo", gesture: "sway", loop: true },
         { do: "gesture", actor: "lumi", gesture: "float", loop: true }

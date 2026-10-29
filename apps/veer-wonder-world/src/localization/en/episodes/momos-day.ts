@@ -1,5 +1,7 @@
-// English text for E19 — Momo's Day. Calm routine words: wash, eat, sleep.
+// English text for E19 — Momo's Day. Calm routine words: wash, eat, sleep
+// (and the variants wake and brush).
 export const lines: Record<string, string> = {
+  "e19.sunrise.1": "Look! The sun is up.",
   "e19.greet.1": "Wake up, Momo! It's morning.",
   "e19.hi.1": "Hi! Hi, friend!",
   "e19.hi.2": "Good morning!",
@@ -20,6 +22,9 @@ export const lines: Record<string, string> = {
   "e19.eat-invite.1": "More? Your turn!",
   "e19.eat-invite.2": "Mmm! Eat, eat.",
   "e19.eat-invite.3": "Momo's tummy is happy.",
+  "e19.toothbrush.1": "Now the toothbrush.",
+  "e19.brush.1": "Brush, brush, brush.",
+  "e19.brush.2": "Clean teeth!",
   "e19.sleepy.1": "Momo is sleepy.",
   "e19.sleepy.2": "Hello, Momo. It's night now.",
   "e19.sleepy.3": "Look, the bed.",
@@ -39,5 +44,6 @@ export const strings: Record<string, string> = {
     "Use the same short words during your own day: \"wash\" at the sink, \"eat\" at snack time and \"sleep\" at bedtime. Say the word as you do the action, then pause so your child can join in their own way.",
   "e19.tip.1": "Wait a moment. Let your child point to the water or rub their hands with you.",
   "e19.tip.2": "Pretend to take a bite and say \"Mmm, eat!\" Any look, tap or sound is a fine turn.",
-  "e19.tip.3": "Lay your head on your hands and whisper \"sleep\". Keep it slow and quiet."
+  "e19.tip.3": "Lay your head on your hands and whisper \"sleep\". Keep it slow and quiet.",
+  "e19.tip.4": "Brush teeth side by side and say \"brush, brush\" with each stroke."
 };
