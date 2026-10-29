@@ -400,4 +400,20 @@ test.describe("iron crown audit fixes", () => {
     await settle(page, T, loaded, [30, 60], "crown");
     await context.close();
   });
+  /** IC-07 (software GL only): runtime effects on with ?vfx=on&vfxdebug=1 during an autopilot bout; log live emitters and lingering-particle notes. */
+  test("ic-vfx", async ({ browser }) => {
+    const T = "ic-vfx";
+    const { context, page } = await open(browser, server, T, false, "?vfx=on&vfxdebug=1&autoplay=1");
+    for (let i = 0; i < 6; i++) {
+      await page.waitForTimeout(30_000);
+      const vfx = await page.evaluate(() => {
+        const dbg = (window as any).__AURA_VFX_DEBUG__?.();
+        const s = (window as any).__AURA3D_SHOWCASE_IRON_CROWN__;
+        return dbg ? { time: dbg.time, live: dbg.live, transients: dbg.transients.length, oldest: Math.max(0, ...dbg.transients.map((t: any) => t.age)), notes: (dbg.notes ?? []).map((n: any) => n.code ?? String(n)).slice(0, 8), hits: s?.bout?.stats } : null;
+      });
+      probe(T, `vfx-${i}`, { vfx });
+      if (i === 2 || i === 5) await grab(page, T, `vfx-${i}`);
+    }
+    await context.close();
+  });
 });
