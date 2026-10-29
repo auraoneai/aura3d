@@ -53,6 +53,15 @@ function bodyPoints(spot: SpotId): Vec3[] {
   return [[x, y + 0.05, z], [x, y + 1.0, z]];
 }
 
+/** Half the width of a character with its arms out (Momo's wave), at chest height: both sides must be in frame too. */
+const BODY_HALF_WIDTH = 0.5;
+
+function bodyAndArmPoints(spot: SpotId): Vec3[] {
+  const [x, y, z] = SPOTS[spot];
+  const chest = HIGH_SPOTS.includes(spot) ? y + 0.2 : y + 0.5;
+  return [...bodyPoints(spot), [x - BODY_HALF_WIDTH, chest, z], [x + BODY_HALF_WIDTH, chest, z]];
+}
+
 describe("spots", () => {
   it("defines every SpotId, ground spots on the floor and high spots up in the air", () => {
     expect(SPOT_IDS).toHaveLength(18);
@@ -114,12 +123,12 @@ describe("fixed child camera", () => {
     }
   });
 
-  it("keeps the core of the stage in frame on portrait phones and tablets", () => {
+  it("keeps the core of the stage in frame on portrait phones and tablets, arms included", () => {
     for (const preset of ["wide", "medium"] as const) {
       for (const aspect of PORTRAIT) {
         const pose = frameCamera(preset, aspect);
         for (const spot of CORE_SPOTS) {
-          for (const point of bodyPoints(spot)) {
+          for (const point of bodyAndArmPoints(spot)) {
             expect(isInFrame(point, pose, aspect, 0.01), `${preset} ${aspect.toFixed(2)} ${spot}`).toBe(true);
           }
         }
@@ -387,7 +396,9 @@ describe("worlds and looks", () => {
       const nodes = worldLookNodes(id).map((node) => JSON.stringify(node.toJSON()));
       expect(nodes.join("\n")).not.toMatch(/"effect":"vignette"/);
       expect(nodes.join("\n")).toMatch(/"environment":"hdri"/);
-      expect(WORLD_LOOKS[id].overrides.exposureEv ?? 0).toBeGreaterThanOrEqual(0);
+      // Pastel worlds sit about a stop under the presets (look-dev round 1), never so far that frames go murky.
+      expect(WORLD_LOOKS[id].overrides.exposureEv ?? 0).toBeGreaterThanOrEqual(-1.5);
+      expect(WORLD_LOOKS[id].overrides.exposureEv ?? 0).toBeLessThanOrEqual(0);
     }
     expect(LOOK_HDRI_FILES.length).toBeGreaterThan(0);
   });

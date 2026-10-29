@@ -86,8 +86,8 @@ const NEAR = 0.1;
 const FAR = 120;
 
 export const CAMERA_PRESETS: Readonly<Record<CameraPresetId, CameraPresetSpec>> = {
-  wide: { position: [0, 1.85, 6.2], target: [0, 0.75, -0.3], fov: 46, near: NEAR, far: FAR, halfWidth: 3.4, minHalfWidth: 2.2, maxHalfWidth: 5.0, maxFov: 58 },
-  medium: { position: [0, 1.5, 4.6], target: [0, 0.7, -0.2], fov: 46, near: NEAR, far: FAR, halfWidth: 2.9, minHalfWidth: 1.9, maxHalfWidth: 4.2, maxFov: 58 },
+  wide: { position: [0, 1.7, 5.6], target: [0, 0.72, -0.3], fov: 42, near: NEAR, far: FAR, halfWidth: 3.05, minHalfWidth: 1.95, maxHalfWidth: 4.6, maxFov: 58 },
+  medium: { position: [0, 1.5, 4.4], target: [0, 0.7, -0.2], fov: 44, near: NEAR, far: FAR, halfWidth: 2.7, minHalfWidth: 1.9, maxHalfWidth: 4.2, maxFov: 58 },
   close: { position: [0, 1.15, 3.2], target: [0, 0.65, 0], fov: 40, near: NEAR, far: FAR, halfWidth: 1.6, minHalfWidth: 1.1, maxHalfWidth: 2.6, maxFov: 56 },
   left: { position: [-1.3, 1.35, 4.0], target: [-1.1, 0.65, -0.2], fov: 42, near: NEAR, far: FAR, halfWidth: 1.7, minHalfWidth: 1.15, maxHalfWidth: 2.7, maxFov: 56 },
   right: { position: [1.3, 1.35, 4.0], target: [1.1, 0.65, -0.2], fov: 42, near: NEAR, far: FAR, halfWidth: 1.7, minHalfWidth: 1.15, maxHalfWidth: 2.7, maxFov: 56 },

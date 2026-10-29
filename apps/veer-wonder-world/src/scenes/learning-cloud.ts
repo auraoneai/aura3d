@@ -1,25 +1,26 @@
-// Lumi Learning Cloud (PRD 04 D13): a soft cloud floor under a pastel sky, a
-// gentle pastel rainbow and a few blank floating cards in the distance. The
-// letters, numbers and shapes themselves are story props (letterB, letterA,
-// pastries, balloons), each tied to a visible object and action.
+// Lumi Learning Cloud (PRD 04 D13): a soft periwinkle cloud floor (the white
+// cloud banks read against it) under a pastel sky, a gentle rainbow and a few
+// blank floating cards in the distance. The letters, numbers and shapes
+// themselves are story props (letterB, letterA, pastries, balloons), each tied
+// to a visible object and action.
 
 import type { WorldDefinition } from "./worlds.js";
 
 export const learningCloud: WorldDefinition = {
   id: "learning-cloud",
   workingTitle: "Lumi Learning Cloud",
-  ground: { color: "#F2EFFA", size: 70 },
+  ground: { color: "#B3BDEB", size: 70 },
   musicBed: "cloudBed",
   dressing: [
     // Pastel sky wall far behind (stays bright: a faint self-light, no glare).
-    { kind: "primitive", shape: "box", color: "#CFE1F7", size: [90, 40, 0.2], at: [0, 14, -26], roughness: 1, emissive: { color: "#CFE1F7", intensity: 0.25 } },
+    { kind: "primitive", shape: "box", color: "#AFCBEE", size: [90, 40, 0.2], at: [0, 14, -26], roughness: 1, emissive: { color: "#AFCBEE", intensity: 0.15 } },
     // A soft pastel rainbow, half below the cloud floor. Unit torus: band
     // 0.385-0.475 of the scale, so each scale is about 0.81 of the previous one
     // (bands meet without overlapping) and the inner bands sit a little nearer,
     // so no two bands share a depth (no z-fighting shimmer).
-    { kind: "primitive", shape: "torus", color: "#F7B8D2", size: [12, 12, 0.5], at: [0, -1.0, -14] },
-    { kind: "primitive", shape: "torus", color: "#FBE6A6", size: [9.7, 9.7, 0.5], at: [0, -1.0, -13.9] },
-    { kind: "primitive", shape: "torus", color: "#BFE0F7", size: [7.85, 7.85, 0.5], at: [0, -1.0, -13.8] },
+    { kind: "primitive", shape: "torus", color: "#F49AC0", size: [12, 12, 0.5], at: [0, -1.0, -14] },
+    { kind: "primitive", shape: "torus", color: "#F8D36A", size: [9.7, 9.7, 0.5], at: [0, -1.0, -13.9] },
+    { kind: "primitive", shape: "torus", color: "#8EC5EE", size: [7.85, 7.85, 0.5], at: [0, -1.0, -13.8] },
     // Puffy cloud banks at the edges (one draw call).
     {
       kind: "instances",

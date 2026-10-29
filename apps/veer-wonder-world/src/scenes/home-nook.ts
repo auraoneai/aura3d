@@ -8,7 +8,7 @@ import type { WorldDefinition } from "./worlds.js";
 export const homeNook: WorldDefinition = {
   id: "home-nook",
   workingTitle: "Home Nook",
-  ground: { color: "#E7CDA4", size: 40 },
+  ground: { color: "#D6B07E", size: 40 },
   musicBed: "homeBed",
   dressing: [
     // Walls tall and long enough that every framing (portrait included) stays inside the room.
@@ -17,7 +17,7 @@ export const homeNook: WorldDefinition = {
     { kind: "primitive", shape: "box", color: "#F3E2CB", size: [0.2, 8, 15.5], at: [6.3, 4, 4.25], roughness: 0.95 },
     { kind: "primitive", shape: "box", color: "#E6CBA6", size: [14, 0.16, 0.06], at: [0, 0.08, -3.38] },
     // A soft oval rug under the play area.
-    { kind: "primitive", shape: "cylinder", color: "#F3B8A8", size: [3.8, 0.02, 2.8], at: [0, 0.012, 0.15], roughness: 1 },
+    { kind: "primitive", shape: "cylinder", color: "#EE9F8C", size: [3.8, 0.02, 2.8], at: [0, 0.012, 0.15], roughness: 1 },
     // Window with curtains (daylight, no glare).
     { kind: "primitive", shape: "box", color: "#FFFFFF", size: [1.9, 1.5, 0.05], at: [-2.7, 2.5, -3.38] },
     { kind: "primitive", shape: "box", color: "#BFE3F7", size: [1.6, 1.2, 0.04], at: [-2.7, 2.5, -3.35], emissive: { color: "#DFF1FF", intensity: 0.35 } },

@@ -15,8 +15,11 @@
 //   in LOOK_HDRI_FILES (copied from the repo `public/hdri/`, CC0 Poly Haven).
 //   Until they arrive the engine lights the scene with its procedural studio
 //   fallback, so a missing HDRI never blacks out a frame.
-// Exposure is nudged up slightly for readability on software WebGL2 and small
-// screens; nothing flashes, strobes or shakes.
+// Exposure sits about one stop under the presets: their sun and sky are tuned
+// for mid-tone natural materials, and Wonder World's pastel grounds and
+// characters are much lighter, so at the preset exposure every frame washed
+// out (look-dev round 0: mean luma 225-241 of 255, p5 above 170). Nothing
+// flashes, strobes or shakes.
 
 import { effects, looks, type AuraLookId, type AuraLookOverrides, type AuraNodeBuilder, type AuraSceneNode } from "@aura3d/engine";
 import type { WorldId } from "../types.js";
@@ -35,42 +38,43 @@ export const WORLD_LOOKS: Readonly<Record<WorldId, WorldLook>> = {
   meadow: {
     world: "meadow",
     look: "outdoor-day",
-    overrides: { sun: { azimuthDeg: 35, elevationDeg: 52 }, exposureEv: 0.15, fogDensityScale: 0.25 },
+    overrides: { sun: { azimuthDeg: 35, elevationDeg: 52 }, exposureEv: -1.0, fogDensityScale: 0.25 },
     background: "#A9CCE6",
     contactShadows: { intensity: 0.5, length: 0.3 }
   },
   "music-garden": {
     world: "music-garden",
     look: "outdoor-day",
-    overrides: { sun: { azimuthDeg: -30, elevationDeg: 50 }, exposureEv: 0.2, fogDensityScale: 0.25 },
+    overrides: { sun: { azimuthDeg: -30, elevationDeg: 50 }, exposureEv: -1.0, fogDensityScale: 0.25 },
     background: "#B4D6EA",
     contactShadows: { intensity: 0.5, length: 0.3 }
   },
   "peekaboo-barn": {
     world: "peekaboo-barn",
     look: "outdoor-day",
-    overrides: { sun: { azimuthDeg: 55, elevationDeg: 44 }, exposureEv: 0.15, fogDensityScale: 0.25 },
+    overrides: { sun: { azimuthDeg: 55, elevationDeg: 44 }, exposureEv: -1.0, fogDensityScale: 0.25 },
     background: "#B8D2E4",
     contactShadows: { intensity: 0.5, length: 0.3 }
   },
   station: {
     world: "station",
     look: "outdoor-day",
-    overrides: { sun: { azimuthDeg: 20, elevationDeg: 55 }, exposureEv: 0.12, fogDensityScale: 0.25 },
+    overrides: { sun: { azimuthDeg: 20, elevationDeg: 55 }, exposureEv: -1.0, fogDensityScale: 0.25 },
     background: "#A9CCE6",
     contactShadows: { intensity: 0.5, length: 0.3 }
   },
   "learning-cloud": {
     world: "learning-cloud",
-    look: "alpine-snow",
-    overrides: { sun: { azimuthDeg: 10, elevationDeg: 60 }, exposureEv: 0.1, fogDensityScale: 0.3 },
-    background: "#D3E2F5",
+    // outdoor-day, not alpine-snow: the snow look is white-field glare by design (look-dev round 2).
+    look: "outdoor-day",
+    overrides: { sun: { azimuthDeg: 10, elevationDeg: 60 }, exposureEv: -1.0, fogDensityScale: 0.25 },
+    background: "#B9D2F0",
     contactShadows: { intensity: 0.35, length: 0.25 }
   },
   "home-nook": {
     world: "home-nook",
     look: "interior-warm",
-    overrides: { sun: { azimuthDeg: 25, elevationDeg: 52 }, exposureEv: 0.35, background: "#F4E6D2" },
+    overrides: { sun: { azimuthDeg: 25, elevationDeg: 52 }, exposureEv: -0.8, background: "#F4E6D2" },
     background: "#F4E6D2",
     contactShadows: { intensity: 0.45, length: 0.25 }
   }
