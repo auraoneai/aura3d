@@ -529,12 +529,15 @@ const topLevelKeys = (body) => {
  * work. Flags (1) gameplay read from the keyboard with no touch path: no touch preset or touch-controls API, no touchstart /
  * touchmove / pointermove handler, no on-screen hold button (pointercancel handler), and no pointerdown handler that reads the pointer (a handler that only unlocks audio or
  * starts the title does not count); (2) a `touch: { bindings }` value that names no declared input action or axis.
- * Severity is warn until every live game passes; switch TOUCH_INPUT_SEVERITY to "error" then (lessons-learned.md).
- * 2026-10-29, wave 2 of the audit fixes, with audit-fix/g01..g09 overlaid: still failing are bunker-zero, strange-orbit-port,
- * drift-and-deliver-port, heatsink-port, last-train-port and roadster-hours-port (their lanes had not committed yet), so it stays warn.
+ * A pointerdown handler counts when it reads the pointer or writes game input (`keys[k] = true`, `press(...)`, a held set),
+ * also when it is a named function defined in the same file (Gridlock Courier's `#t-*` buttons in touch.ts).
+ * Severity is error since 2026-10-29 (audit fixes wave 3): with all 25 games merged every live game passes.
  * Escape hatch for a game that is desktop-only on purpose: `// touch-input: ok` on the keyboard listener line.
  */
-export const TOUCH_INPUT_SEVERITY = "warn";
+export const TOUCH_INPUT_SEVERITY = "error";
+const POINTER_READ = /clientX|clientY|offsetX|pageX|pointerType|movementX|getBoundingClientRect/;
+/** A write to game input state: `keys[k] = true`, `input.left = 1`, `press(k, true)`, `held.add(k)`, `setKey(...)`. */
+const INPUT_WRITE = /\b(?:keys|input|inputs|held|pressed|controls|buttons)\b(?:\.\w+|\[[^\]]+\])\s*=(?!=)|\b(?:keys|input|held|pressed)\.(?:add|set)\(|\bpress\w*\(|\bset(?:Key|Input|Action|Held|Steer|Throttle)\w*\(/;
 function checkTouchInput({ game, src }) {
   const out = [];
   const code = src.files.filter((f) => CODE_KIND.test(f.kind));
@@ -544,9 +547,14 @@ function checkTouchInput({ game, src }) {
   let touch = code.some((f) => touchApi.test(f.text));
   if (!touch) {
     for (const f of code) {
-      for (const m of f.text.matchAll(/addEventListener\(\s*["']pointerdown["']|\bonpointerdown\s*=/g)) {
-        const body = f.text.slice(m.index, m.index + 400);
-        if (/clientX|clientY|offsetX|pageX|pointerType|movementX|getBoundingClientRect/.test(body)) { touch = true; break; }
+      for (const m of f.text.matchAll(/addEventListener\(\s*["']pointerdown["']\s*,\s*([A-Za-z_$][\w$]*)?|\bonpointerdown\s*=\s*([A-Za-z_$][\w$]*)?/g)) {
+        let body = f.text.slice(m.index, m.index + 400);
+        const named = m[1] ?? m[2];
+        if (named && !/^(?:async|function|e|ev|event)$/.test(named)) {
+          const def = f.text.match(new RegExp(`(?:const|let|var|function)\\s+${named.replace(/\$/g, "\\$")}\\b`));
+          if (def) body += f.text.slice(def.index, def.index + 400);
+        }
+        if (POINTER_READ.test(body) || INPUT_WRITE.test(body)) { touch = true; break; }
       }
       if (touch) break;
     }
@@ -654,13 +662,16 @@ function checkScreensFresh({ game, root }) {
  * log prefixes and storage keys such as `installQaHooks("kid-goku")` or `"saiyan-snake-way"` reached the live bundles.
  * Flags a real brand, product or lore term (terms.json `brandTerms`; former game names stay with `names`) inside any string literal of shipped code (case-insensitive, `-`/`_`/space folded),
  * import lines excluded. Escape hatch: `// brand-identifier: ok` on the line.
+ * Typed asset catalogues (files that call `defineAuraAssets(`, such as the per-app copies of src/aura-assets.ts) are skipped:
+ * their strings are the licence's source URL and the GLB's own node names ("Sketchfab_model"), which the asset-provenance
+ * check governs, not identifiers the game chose.
  */
 function checkBrandIdentifiers({ game, src, terms }) {
   const out = [];
   const fold = (t) => t.toLowerCase().replace(/[\s_-]+/g, "");
   const brand = terms.brandTerms.filter((t) => fold(t).length >= 4).map((t) => ({ t, f: fold(t) }));
   for (const f of src.files) {
-    if (!CODE_KIND.test(f.kind)) continue;
+    if (!CODE_KIND.test(f.kind) || /\bdefineAuraAssets\s*\(/.test(f.text)) continue;
     const lines = f.text.split("\n");
     for (let i = 0; i < lines.length; i++) {
       if (isImportLine(lines[i]) || /\bimport\(/.test(lines[i]) || okMarker(f, i + 1, "brand-identifier")) continue;
@@ -691,6 +702,50 @@ function checkUpgradeGuide({ game, root }) {
   return open ? [finding("upgrade-guide", "warn", game, rel, 0, `${open} unchecked item(s) in the ${version} upgrade guide: run the listed captures (tests/browser/game-luma-capture.spec.ts) and tick each box with its evidence`)] : [];
 }
 
+/**
+ * Live page and example page out of step (audit C4, Duneglide; WW-1, The Bellkeeper's Walk): a port app whose
+ * apps/<app>/src/main.ts imports examples/<dir>/main serves its own apps/<app>/index.html, so a fix made only in the
+ * example page (results grid, phone layout, touch buttons) never reaches the live game. Compares the first <style> block
+ * and the <body> markup before the first <script>. Escape hatch for an intended difference: `<!-- page-parity: ok -->`
+ * in the app page.
+ */
+function checkPageParity({ game, root }) {
+  const appDir = join(root, "apps", game.appFolder);
+  const mainFile = join(appDir, "src", "main.ts");
+  if (!existsSync(mainFile)) return [];
+  const m = /import\s+["'](?:\.\.\/)+examples\/([^/"']+)\/main(?:\.ts)?["']/.exec(readFileSync(mainFile, "utf8"));
+  if (!m) return [];
+  const exampleHtml = join(root, "examples", m[1], "index.html");
+  const appHtml = join(appDir, "index.html");
+  if (!existsSync(exampleHtml) || !existsSync(appHtml)) return [];
+  const app = readFileSync(appHtml, "utf8");
+  if (/<!--\s*page-parity:\s*ok\b/.test(app)) return [];
+  const block = (html) => ({ style: /<style>\n([\s\S]*?)\n\s*<\/style>/.exec(html)?.[1] ?? null, body: /<body>([\s\S]*?)<script/.exec(html)?.[1] ?? null });
+  const a = block(app);
+  const e = block(readFileSync(exampleHtml, "utf8"));
+  const parts = [a.style !== e.style ? "<style> block" : null, a.body !== e.body ? "<body> markup" : null].filter(Boolean);
+  if (parts.length === 0) return [];
+  const rel = relative(root, appHtml).split(sep).join("/");
+  return [finding("page-parity", "warn", game, rel, 0, `the ${parts.join(" and ")} differ from examples/${m[1]}/index.html, which this app mounts: a fix made in one page does not reach the other. Copy the example's block (or mark an intended difference with <!-- page-parity: ok -->)`)];
+}
+
+/**
+ * Per-app asset subset gone stale (audit RH-06): a game that ships its own subset of the root catalogue keeps a generator at
+ * apps/<app>/scripts/extract-assets.mjs. Runs it with --check, which exits non-zero when the root catalogue changed under it.
+ */
+function checkAppCatalog({ game, root }) {
+  const script = join(root, "apps", game.appFolder, "scripts", "extract-assets.mjs");
+  if (!existsSync(script)) return [];
+  const rel = relative(root, script).split(sep).join("/");
+  try {
+    execFileSync(process.execPath, [script, "--check"], { cwd: root, stdio: ["ignore", "pipe", "pipe"], timeout: 60_000 });
+    return [];
+  } catch (error) {
+    const said = `${error.stdout ?? ""}${error.stderr ?? ""}`.trim().split("\n")[0]?.slice(0, 200) ?? "";
+    return [finding("app-catalog", "warn", game, rel, 0, `the per-app asset subset is out of date with src/aura-assets.ts${said ? ` (${said})` : ""}: run node ${rel}`)];
+  }
+}
+
 function dedupe(list) {
   const seen = new Set();
   return list.filter((f) => { const k = `${f.check}|${f.game}|${f.file}|${f.line}|${f.message}`; if (seen.has(k)) return false; seen.add(k); return true; });
@@ -717,7 +772,9 @@ export const GAME_CHECKS = {
   "shared-catalog": checkSharedCatalog,
   "screens-fresh": checkScreensFresh,
   "brand-identifiers": checkBrandIdentifiers,
-  "upgrade-guide": checkUpgradeGuide
+  "upgrade-guide": checkUpgradeGuide,
+  "page-parity": checkPageParity,
+  "app-catalog": checkAppCatalog
 };
 export const GLOBAL_CHECKS = { vercelignore: checkVercelignore, counts: checkCounts, "meshy-cap": checkMeshyCap, skin: checkSkin };
 

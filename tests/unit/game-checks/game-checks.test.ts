@@ -251,11 +251,11 @@ describe("game-checks", () => {
     expect(run(missing, ["deployable-assets"]).length).toBe(1);
   });
 
-  it("touch-input: warns on keyboard-only gameplay, passes with a touch preset, pointer steering or hold buttons", () => {
+  it("touch-input: errors on keyboard-only gameplay, passes with a touch preset, pointer steering, hold buttons or pointerdown input writes", () => {
     const keysOnly = 'addEventListener("keydown", (e) => { if (e.code === "KeyA") left = true; });\naddEventListener("pointerdown", () => sound.unlock());\n';
     const bad = run(fixture({ "apps/showcase-demo/src/main.ts": keysOnly }), ["touch-input"]);
     expect(bad).toHaveLength(1);
-    expect(bad[0].severity).toBe("warn");
+    expect(bad[0].severity).toBe("error");
     expect(bad[0].message).toMatch(/keyboard-only/);
     const preset = 'createGame({ input: { actions: { left: ["KeyA"], jump: ["Space"] } }, touch: { preset: "dpad-2btn", bindings: { left: "left", jump: "jump" } } });\n';
     expect(run(fixture({ "apps/showcase-demo/src/main.ts": preset }), ["touch-input"])).toEqual([]);
@@ -263,6 +263,13 @@ describe("game-checks", () => {
     expect(run(fixture({ "apps/showcase-demo/src/main.ts": steer }), ["touch-input"])).toEqual([]);
     const hold = keysOnly + 'for (const t of ["pointerup", "pointercancel"]) b.addEventListener(t, () => release());\n';
     expect(run(fixture({ "apps/showcase-demo/src/main.ts": hold }), ["touch-input"])).toEqual([]);
+    // Gridlock Courier's #t-* buttons: a named pointerdown handler that writes game input.
+    const named = keysOnly + 'const down = (e) => { e.preventDefault(); keys[key] = true; el.classList.add("on"); };\nel.addEventListener("pointerdown", down);\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": named }), ["touch-input"])).toEqual([]);
+    const pressCall = keysOnly + 'btn.addEventListener("pointerdown", () => press("left", true));\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": pressCall }), ["touch-input"])).toEqual([]);
+    const namedAudioOnly = keysOnly + 'function unlock() { audio.resume(); }\ncanvas.addEventListener("pointerdown", unlock);\n';
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": namedAudioOnly }), ["touch-input"])).toHaveLength(1);
     const optOut = 'addEventListener("keydown", (e) => {}); // touch-input: ok\n';
     expect(run(fixture({ "apps/showcase-demo/src/main.ts": optOut }), ["touch-input"])).toEqual([]);
   });
@@ -331,6 +338,33 @@ describe("game-checks", () => {
     expect(run(root, ["screens-fresh"])).toEqual([]);
   });
 
+  it("page-parity: warns when the live app page and the example page it mounts drift apart (C4, WW-1)", () => {
+    const page = (style: string, body: string, src: string) => `<html><head><style>\n${style}\n    </style></head><body>${body}<script type="module" src="${src}"></script></body></html>`;
+    const files = (appStyle: string, appBody: string) => ({
+      "apps/showcase-demo/src/main.ts": 'import "../../../examples/demo-port/main";\n',
+      "examples/demo-port/index.html": page(".grid { display: grid; }", '<div id="touch-hold"></div>', "./main.ts"),
+      "apps/showcase-demo/index.html": page(appStyle, appBody, "./src/main.ts")
+    });
+    expect(run(fixture(files(".grid { display: grid; }", '<div id="touch-hold"></div>')), ["page-parity"])).toEqual([]);
+    const drift = run(fixture(files(".grid { display: block; }", "<div></div>")), ["page-parity"]);
+    expect(drift).toHaveLength(1);
+    expect(drift[0].message).toMatch(/<style> block and <body> markup differ from examples\/demo-port\/index\.html/);
+    const marked = files(".grid { display: block; }", "<div></div>");
+    marked["apps/showcase-demo/index.html"] = "<!-- page-parity: ok (own quick bar) -->\n" + marked["apps/showcase-demo/index.html"];
+    expect(run(fixture(marked), ["page-parity"])).toEqual([]);
+    // An app that does not mount an example is not compared.
+    expect(run(fixture({ "apps/showcase-demo/src/main.ts": "createAuraApp();\n", "apps/showcase-demo/index.html": "<body></body>" }), ["page-parity"])).toEqual([]);
+  });
+
+  it("app-catalog: warns when the per-app asset subset generator reports it stale (RH-06)", () => {
+    const script = (code: number) => `if (process.argv.includes("--check")) { console.error("demo subset is stale"); process.exit(${code}); }\n`;
+    expect(run(fixture({ "apps/showcase-demo/scripts/extract-assets.mjs": script(0) }), ["app-catalog"])).toEqual([]);
+    const stale = run(fixture({ "apps/showcase-demo/scripts/extract-assets.mjs": script(1) }), ["app-catalog"]);
+    expect(stale).toHaveLength(1);
+    expect(stale[0].message).toMatch(/demo subset is stale.*run node apps\/showcase-demo\/scripts\/extract-assets\.mjs/);
+    expect(run(fixture({}), ["app-catalog"])).toEqual([]);
+  });
+
   it("brand-identifiers: warns on a real brand term inside a shipped identifier (RH-07)", () => {
     const bad = fixture({ "apps/showcase-demo/src/main.ts": 'installQaHooks("kid-goku", api);\nconsole.log("[saiyan_snake] boot");\n' });
     const f = run(bad, ["brand-identifiers"]);
@@ -338,6 +372,9 @@ describe("game-checks", () => {
     expect(f[0].message).toMatch(/"kid-goku".*"Goku"/);
     const ok = fixture({ "apps/showcase-demo/src/main.ts": 'installQaHooks("cumulus-dash", api);\nimport x from "../../examples/kid-goku-port/main";\n' });
     expect(run(ok, ["brand-identifiers"])).toEqual([]);
+    // A typed asset catalogue carries the licence source URL and the GLB's node names; asset-provenance governs those.
+    const catalog = fixture({ "apps/showcase-demo/src/aura-assets.ts": 'export const assets = defineAuraAssets({ lamp: { url: "/aura-assets/lamp.glb", rootNodeNames: ["Sketchfab_model"], source: "https://sketchfab.com/3d-models/lamp" } });\n' });
+    expect(run(catalog, ["brand-identifiers"])).toEqual([]);
   });
 
   it("upgrade-guide: warns with the count of unchecked items in the latest minor's guide (RH-04)", () => {
