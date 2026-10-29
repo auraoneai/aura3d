@@ -17,6 +17,7 @@ import { Renderer, webGL2MaxTextureSize, type RenderBackendKind, type Production
 import { rendererFeatureReport, rendererInteractiveFeatureReport, validateProductionRendererInput } from "../rendererReports.js";
 import { normalizeTextureBudgetBytes } from "../app/rendererOptions.js";
 import { createProductionRuntimeEnvironment, environmentKnobKey } from "./environment.js";
+import { contactShadowKeyWarning } from "./contactShadowKey.js";
 import { applyModelTintBridge } from "./modelMaterials.js";
 import { createProductionRuntimePrimitiveEntries, upgradeProductionEnvironmentHdri } from "./primitives.js";
 import { qrPrimitiveGeometryOptions } from "./geometry.js";
@@ -158,6 +159,9 @@ export async function createProductionRuntimeSceneRenderer(
     const mountKnobKey = environmentKnobKey(snapshot);
     let liveKnob: { nodes: unknown; lighting: typeof currentEnvironmentLighting | null } = { nodes: null, lighting: null };
     const hdriWarnings = new Set<string>();
+    // LIGHT-09: mount-time lighting warning, kept with the other persistent environment warnings.
+    const contactKeyWarning = contactShadowKeyWarning(snapshot);
+    if (contactKeyWarning) hdriWarnings.add(contactKeyWarning);
     const hdriState: {
       status: "none" | "pending" | "ready" | "fallback";
       maxLinearValue?: number;
