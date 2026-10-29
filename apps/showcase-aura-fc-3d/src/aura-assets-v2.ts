@@ -175,6 +175,24 @@ export const assets = defineAuraAssets({
     url: "/aura-assets/diamondConfirmSfx.70982d28.wav",
     hash: "sha256-70982d2827bd33a15e2ba174d40133aa21bea3b879bcf19e8da5714cb6693843"
   },
+  bankShotFoulWhistleSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/bankShotFoulWhistleSfx.631d142b.wav",
+    hash: "sha256-631d142bd4c4fb0aca6377d96faaaba76c8299fe36a7445334a3db063cb1b869"
+  },
+  diamondCrowdSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondCrowdSfx.d68cf36a.wav",
+    hash: "sha256-d68cf36aa84536dd799c3558c9c7196029dde79866c92da2a60b8b6f96686e85"
+  },
+  diamondCrowdSwelSfx: {
+    type: "audio",
+    format: "wav",
+    url: "/aura-assets/diamondCrowdSwelSfx.6bb15fd5.wav",
+    hash: "sha256-6bb15fd56d8a2ebbd3cf495219366a09ccbdc0e41baedb355a99205d1bb4c4f1"
+  },
   diamondHomerBigSfx: {
     type: "audio",
     format: "wav",

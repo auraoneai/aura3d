@@ -15,18 +15,21 @@ import {
 } from "@aura3d/engine";
 import {
   createJuice, createOverlayDriver, createRumbleDriver, createTweenEngine,
-  createFxParticlePass, mountTouchControls,
+  createFxParticlePass,
   installGameBeacon
 } from "@aura3d/engine/game";
 import "../../showcase-port-shared/quickbar.css";
 import { assets } from "./aura-assets-v2";
-import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R } from "./game/sim";
-import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, LOOK_ID } from "./game/scene";
+import { createSim, PITCH_HX, PITCH_HZ, PEN_X, BALL_R, BALL_VIS_R, SIM_DT } from "./game/sim";
+import { buildFcScene, resolveWorld, applyVenue, tickWorld, ATHLETE_IDS, VENUE_LOOKS } from "./game/scene";
+import { mountFcTouch } from "./game/touch";
+import { fitCameraToAspect } from "./game/camera";
+import { loadSave } from "./game/save";
 import { resolveAthlete, applyAthleteKit, poseAthlete, skinFor, teamKitForId, type AthleteRig } from "./game/rig";
 import { createHud, clubFor } from "./game/hud";
 import { createModes } from "./game/modes";
 import { VENUES, VENUE_ORDER } from "./game/content";
-import type { UserInputFrame, PlayerState, SimEvent } from "./game/types";
+import type { UserInputFrame, PlayerState, SimEvent, VenueId } from "./game/types";
 import { installBlackFrameGuard } from "@aura3d/debug";
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
@@ -43,6 +46,22 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const smooth = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t));
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 
+/** FC-23: the values published in `__AURA3D_GAME_EVIDENCE__.hud` (read from the appState passed each frame). */
+const hudBinding = (binding: string, id: string, label: string, valuePath: string, format: string, extra: Record<string, unknown> = {}) => ({
+  kind: "aura-game-hud-binding", binding, id, label, owner: "app", source: "app-state", valuePath, format,
+  a11yLabel: label, debugOnly: false, interactive: false, ...extra
+});
+const HUD_BINDINGS = [
+  hudBinding("score", "score", "Score", "appState.score", "text"),
+  hudBinding("timer", "clock", "Match clock", "appState.clock", "clock", { maxPath: "appState.clockMax" }),
+  hudBinding("value", "half", "Half", "appState.half", "number"),
+  hudBinding("meter", "stamina", "Sprint stamina", "appState.stamina", "percent", { maxPath: "appState.unit" }),
+  hudBinding("meter", "possession", "Home possession", "appState.possessionHome", "percent", { maxPath: "appState.unit" }),
+  hudBinding("value", "shootout", "Shootout", "appState.shootout", "text"),
+  hudBinding("value", "phase", "Phase", "appState.phase", "text"),
+  hudBinding("value", "paused", "Paused", "appState.paused", "boolean")
+];
+
 /* ------------------------------------------------------------------ */
 
 function boot(): void {
@@ -51,11 +70,20 @@ function boot(): void {
   const errEl = document.getElementById("render-error");
   if (!mount) { if (errEl) errEl.hidden = false; return; }
 
+  // build the first scene for the venue the page will show, so a ?venue= or saved venue does not remount at once
+  const bootParams = new URLSearchParams(window.location.search);
+  const bootVenue: VenueId = ((): VenueId => {
+    const req = bootParams.get("venue");
+    if (req && (VENUES as Record<string, unknown>)[req]) return req as VenueId;
+    return loadSave().venue;
+  })();
+  let sceneVenue: VenueId = bootVenue;
+
   let app: ReturnType<typeof createAuraApp>;
   try {
     app = createAuraApp("#app", {
-      scene: buildFcScene(),
-      ...looks.appOptions(LOOK_ID),
+      scene: buildFcScene(bootVenue),
+      ...looks.appOptions(VENUE_LOOKS[bootVenue].look),
       qualityRebuild: { flags: ["game"] }
     } as any);
   } catch (e) {
@@ -68,9 +96,21 @@ function boot(): void {
   const canvas = app.canvas;
 
   /* -------------------------- handles -------------------------- */
-  const world = resolveWorld(app);
+  let world = resolveWorld(app);
   const rigs = new Map<string, AthleteRig>();
   for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
+  /** FC-21: the look is part of the scene graph, so a venue change rebuilds the scene and re-resolves every handle. */
+  const rebuildForVenue = (venue: VenueId): void => {
+    if (venue === sceneVenue) return;
+    sceneVenue = venue;
+    try {
+      (app as any).setScene(buildFcScene(venue));
+      world = resolveWorld(app);
+      for (const id of ATHLETE_IDS) rigs.set(id, resolveAthlete(app, id));
+    } catch (e) {
+      console.warn("[fc3d] venue rebuild failed", e);
+    }
+  };
 
   const sim = createSim();
   const hud = createHud(shell);  const modes = createModes({
@@ -89,12 +129,12 @@ function boot(): void {
     actions: {
       up: ["KeyW", "ArrowUp"], down: ["KeyS", "ArrowDown"],
       left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"],
-      sprint: ["ShiftLeft", "ShiftRight"],
-      pass: ["KeyE"], driven: ["KeyR"],
-      shoot: ["Space"],
-      skillA: ["KeyJ"], skillB: ["KeyK"],
-      switch: ["KeyQ"],
-      pause: ["KeyP", "Escape"]
+      sprint: ["ShiftLeft", "ShiftRight", "TouchSprint"],
+      pass: ["KeyE", "TouchPass"], driven: ["KeyR", "TouchDriven"],
+      shoot: ["Space", "TouchShoot"],
+      skillA: ["KeyJ", "TouchSkillA"], skillB: ["KeyK", "TouchSkillB"],
+      switch: ["KeyQ", "TouchSwitch"],
+      pause: ["KeyP", "Escape", "TouchPause"]
     },
     axes: {
       moveX: { negative: "left", positive: "right" },
@@ -104,21 +144,11 @@ function boot(): void {
     gamepad: true
   });
 
-  const heldKeys = new Set<string>();
-  const pressedKeys = new Set<string>();
-  const releasedKeys = new Set<string>();
+  // FC-E4: every key, button and touch control reads through `app.input` (one action map, remappable in one place).
+  // This listener only stops Space and the arrows from scrolling the page.
   window.addEventListener("keydown", (e) => {
-    if (!heldKeys.has(e.code)) pressedKeys.add(e.code);
-    heldKeys.add(e.code);
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
   }, { passive: false });
-  window.addEventListener("keyup", (e) => {
-    heldKeys.delete(e.code);
-    releasedKeys.add(e.code);
-  });
-  window.addEventListener("blur", () => {
-    heldKeys.clear();
-  });
 
   /* -------------------------- juice + audio -------------------------- */
   const params = new URLSearchParams(window.location.search);
@@ -160,21 +190,24 @@ function boot(): void {
   const audio = createGameAudio({
     browserContext: false,
     cues: {
+      // FC-16: a referee whistle and a net swish replace the buzzer; a stadium crowd bed loops from kickoff (ducked
+      // in menus and pause) and a crowd swell rises on goals. Kicks and passes use the soft ball thud.
       kick:    { id: "kick", asset: assets.hoopsBoardThudSfx, volume: 0.5 },
-      pass:    { id: "pass", asset: assets.hoopsCheckSfx, volume: 0.42 },
-      goal:    { id: "goal", asset: assets.hoopsFanfareSfx, volume: 0.85 },
-      save:    { id: "save", asset: assets.diamondConfirmSfx, volume: 0.55 },
-      post:    { id: "post", asset: assets.hoopsRimClankSfx, volume: 0.5 },
-      whistle: { id: "whistle", asset: assets.hoopsBuzzerSfx, volume: 0.55 },
-      fulltime:{ id: "fulltime", asset: assets.diamondHomerBigSfx, volume: 0.9 },
+      pass:    { id: "pass", asset: assets.hoopsBoardThudSfx, volume: 0.32 },
+      goal:    { id: "goal", asset: assets.diamondCrowdSwelSfx, volume: 0.85 },
+      net:     { id: "net", asset: assets.hoopsSwishSfx, volume: 0.6 },
+      save:    { id: "save", asset: assets.hoopsBlockSfx, volume: 0.5 },
+      post:    { id: "post", asset: assets.hoopsRimClankSfx, volume: 0.42 },
+      whistle: { id: "whistle", asset: assets.bankShotFoulWhistleSfx, volume: 0.55 },
+      fulltime:{ id: "fulltime", asset: assets.bankShotFoulWhistleSfx, volume: 0.75 },
       lose:    { id: "lose", asset: assets.hoopsBlockSfx, volume: 0.4 },
-      crowd:   { id: "crowd", asset: assets.hoopsCrowdSfx, volume: 0.3, loop: true }
+      crowd:   { id: "crowd", asset: assets.diamondCrowdSfx, volume: 0.32, loop: true }
     },
     buses: [{ id: "sfx" } as any]
   } as any);
   const unlock = () => {
     userInteracted = true;
-    void audio?.unlock();
+    void Promise.resolve(audio?.unlock()).then(() => syncCrowd());
   };
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });
@@ -195,6 +228,7 @@ function boot(): void {
     skill:   { fx: { kind: "spark", count: 5, color: "#7dfcff", speed: 2.4 }, punch: { fovDeg: 0.5, ms: 110 } },
     wall:    { fx: { kind: "dust", count: 4, color: "#ff9a3d", speed: 1.4 } },
     whistle: { cue: "whistle" },
+    net:     { cue: "net" },
     fulltime:{ cue: "fulltime", punch: { fovDeg: 1.6, ms: 300 }, flash: { color: "#ffd76a", peak: 0.18, ms: 240 } }
   };
 
@@ -222,24 +256,10 @@ function boot(): void {
   };
 
   /* -------------------------- touch -------------------------- */
-  let touchControls: any = null;
-  try {
-    touchControls = mountTouchControls(input as any, {
-      preset: "dpad-4btn",
-      bindings: {
-        "stick.left": "left", "stick.right": "right", "stick.up": "up", "stick.down": "down",
-        left: "left", right: "right", up: "up", down: "down",
-        light: "pass", heavy: "shoot", special: "driven", jump: "skillA", block: "skillB"
-      },
-      haptics: { ms: 12 }
-    } as any, {
-      doc: document as any,
-      root: shell as any,
-      coarsePointer: () => window.matchMedia?.("(pointer: coarse)")?.matches ?? false
-    } as any);
-  } catch (e) {
-    console.warn("[fc3d] touch controls unavailable", e);
-  }
+  // FC-06: an analog movement stick plus shoot, pass, long pass, sprint, skill, slide, switch and pause buttons
+  const touchControls = mountFcTouch(input as any, shell, {
+    coarse: () => window.matchMedia?.("(pointer: coarse)")?.matches ?? false
+  });
 
   /* -------------------------- event log -------------------------- */
   const eventLog = game.eventLog({ label: "aura-fc-3d events", maxEvents: 48 });
@@ -254,7 +274,9 @@ function boot(): void {
     modeT: 0,
     orbitA: 0,
     followX: 0,
-    fovKick: 0
+    fovKick: 0,
+    shownEye: [0, 22.5, 38.5] as Vec3,
+    shownFov: 54
   };
   let prevModeTag = "";
 
@@ -328,7 +350,7 @@ function boot(): void {
       // also eases toward the ball across the touchline so near-side play
       // stays inside the frame instead of falling off the bottom edge.
       cam.eye = [cam.followX, 9.5, 20 + clamp(b.z * 0.55, -5.5, 5.5)];
-      cam.target = [b.x * 0.8, 0.9, -1 + clamp(b.z * 0.3, -4, 4)];
+      cam.target = [b.x, 0.9, -1 + clamp(b.z * 0.3, -4, 4)];
       cam.fov = 38;
     }
     const qaP = qaFocus && qaKickerId ? (s.players as PlayerState[]).find((p) => p.id === qaKickerId) : undefined;
@@ -338,7 +360,11 @@ function boot(): void {
       cam.target = [qaP.x, 0.95, qaP.z];
       cam.fov = 36;
     }
-    (app as any).camera?.setPose?.({ position: cam.eye, target: cam.target, fov: cam.fov });
+    // FC-09: portrait phones keep the landscape shot's horizontal coverage (about 20 m of pitch on the broadcast rig)
+    const aspect = canvas && canvas.clientHeight > 0 ? canvas.clientWidth / canvas.clientHeight : window.innerWidth / Math.max(1, window.innerHeight);
+    const fit = fitCameraToAspect(cam.eye, cam.target, cam.fov, aspect);
+    cam.shownEye = fit.eye; cam.shownFov = fit.fov;
+    (app as any).camera?.setPose?.({ position: fit.eye, target: cam.target, fov: fit.fov });
   }
 
   /* -------------------------- kits -------------------------- */
@@ -365,16 +391,45 @@ function boot(): void {
   /* -------------------------- frame loop -------------------------- */
 
   let framesRendered = 0;
+  let goalSide: -1 | 0 | 1 = 0;
+  let lastEvidenceAt = -1;
   let lastVenue = "";
+  let lastPhaseForCrowd = "";
   let appReady = false;
   let autopilot = params.get("autoplay") === "1" || params.get("demo") === "1";
   sim.setAutopilot(autopilot);
+  sim.setAssist(params.get("assist") === "1");
 
   const inputFrame: UserInputFrame = {
     move: [0, 0], sprint: false, passShort: false, passDriven: false,
     shootHeld: false, shootReleased: false,
     skillStepover: false, skillChop: false, switchPlayer: false, pause: false
   };
+  let stepAcc = 0;
+  const clearEdges = () => {
+    inputFrame.passShort = false; inputFrame.passDriven = false; inputFrame.shootReleased = false;
+    inputFrame.skillStepover = false; inputFrame.skillChop = false; inputFrame.switchPlayer = false;
+  };
+
+  /* ---- FC-15: pause holds the sim and the lab clocks, shows a panel until play resumes, and auto-pauses on tab hide ---- */
+  const pausable = () => sim.state.phase !== "idle" && sim.state.phase !== "ended" && modes.mode !== "menu" && modes.mode !== "studio" && modes.mode !== "circuit";
+  function setPaused(on: boolean): void {
+    if (on && !pausable()) return;
+    if (sim.state.paused !== on) sim.togglePause();
+    hud.setPaused(sim.state.paused);
+    syncCrowd();
+  }
+  document.addEventListener("visibilitychange", () => { if (document.hidden && appReady) setPaused(true); });
+
+  /* ---- FC-16 crowd bed: starts with the first match, ducked in menus and pause, swells on goals ---- */
+  let crowdOn = false;
+  function syncCrowd(): void {
+    if (!userInteracted) return;
+    if (!crowdOn) { crowdOn = true; void audio?.cue("crowd"); }
+    const inMatch = modes.mode !== "menu" && modes.mode !== "studio" && modes.mode !== "circuit";
+    const level = sim.state.paused || !inMatch ? 0.25 : sim.state.phase === "goal" ? 1.6 : 1;
+    try { (audio as any)?.setCueLevel?.("crowd", { volume: level }, 400); } catch { /* best effort */ }
+  }
 
   function consumeEvents(events: SimEvent[]): void {
     for (const ev of events) {
@@ -384,8 +439,16 @@ function boot(): void {
       switch (ev.type) {
         case "shot": juiceFire("shot", { position: pos }); break;
         case "pass": juiceFire("kick", { position: pos }); break;
-        case "goal": juiceFire("goal", { position: pos }); hud.banner("GOAL!", 2400, "goal"); void audio?.cue("crowd"); break;
-        case "pen-goal": juiceFire("goal", { position: pos }); hud.banner("SCORES!", 1800, "goal"); break;
+        case "goal":
+          juiceFire("goal", { position: pos }); juiceFire("net"); hud.banner("GOAL!", 2400, "goal");
+          // FC-E2 authored goal feedback: confetti over the net that was scored, plus the net bulge, ring and scoreboard
+          // flash driven from tickWorld
+          goalSide = sim.state.ball.x >= 0 ? 1 : -1;
+          world.confetti?.setPosition(goalSide * (PITCH_HX - 2), 4.2, 0).setVisible(true);
+          window.setTimeout(() => world.confetti?.setVisible(false), 2600);
+          syncCrowd();
+          break;
+        case "pen-goal": juiceFire("goal", { position: pos }); juiceFire("net"); hud.banner("SCORES!", 1800, "goal"); break;
         case "save": juiceFire("save", { position: pos }); break;
         case "pen-save": juiceFire("save", { position: pos }); hud.banner("SAVED!", 1600, "warn"); break;
         case "pen-miss": hud.banner("OFF TARGET", 1600, "warn"); break;
@@ -397,44 +460,51 @@ function boot(): void {
         case "extratime": hud.banner("GOLDEN GOAL — NEXT GOAL WINS", 2800, "gold"); juiceFire("whistle"); break;
         case "shootout-start": hud.banner("PENALTY SHOOTOUT", 2400, "warn"); juiceFire("whistle"); break;
         case "fulltime": juiceFire("fulltime"); if (sim.state.winner !== null) world.confetti?.setVisible(true), window.setTimeout(() => world.confetti?.setVisible(false), 5600); break;
-        case "kickoff": case "throwin": case "corner": case "goalkick": case "penalty": default: break;
+        case "kickoff": syncCrowd(); break;
+        case "throwin": case "corner": case "goalkick": case "penalty": default: break;
       }
     }
   }
 
   function frame() {
     const f = (frame: { dt: number }) => {
-      const dt = clamp(frame.dt || 1 / 60, 0.001, 0.05);
+      const dt = clamp(frame.dt || 1 / 60, 0.001, 0.1);
       framesRendered++;
 
       input.update(dt);
       const now = performance.now() / 1000;
       const frozen = hitStopUntil > now || qaFrozen;
 
-      const keyMoveX = (heldKeys.has("KeyD") || heldKeys.has("ArrowRight") ? 1 : 0) - (heldKeys.has("KeyA") || heldKeys.has("ArrowLeft") ? 1 : 0);
-      const keyMoveZ = (heldKeys.has("KeyS") || heldKeys.has("ArrowDown") ? 1 : 0) - (heldKeys.has("KeyW") || heldKeys.has("ArrowUp") ? 1 : 0);
+      // all input through app.input (keys, gamepad, touch buttons); the touch stick adds an analog vector
+      const stick = touchControls.stick();
       const axX = input.axis("moveX");
       const axZ = input.axis("moveZ");
       inputFrame.move = [
-        Math.abs(keyMoveX) > Math.abs(axX) ? keyMoveX : axX,
-        Math.abs(keyMoveZ) > Math.abs(axZ) ? keyMoveZ : axZ
+        Math.abs(stick[0]) > Math.abs(axX) ? stick[0] : axX,
+        Math.abs(stick[1]) > Math.abs(axZ) ? stick[1] : axZ
       ];
-      inputFrame.sprint = heldKeys.has("ShiftLeft") || heldKeys.has("ShiftRight") || input.held("sprint");
-      inputFrame.passShort = pressedKeys.has("KeyE") || input.pressed("pass");
-      inputFrame.passDriven = pressedKeys.has("KeyR") || input.pressed("driven");
-      inputFrame.shootHeld = heldKeys.has("Space") || input.held("shoot");
-      inputFrame.shootReleased = releasedKeys.has("Space") || input.released("shoot");
-      inputFrame.skillStepover = pressedKeys.has("KeyJ") || input.pressed("skillA");
-      inputFrame.skillChop = pressedKeys.has("KeyK") || input.pressed("skillB");
-      inputFrame.switchPlayer = pressedKeys.has("KeyQ") || input.pressed("switch");
-      if (appReady && (pressedKeys.has("KeyP") || pressedKeys.has("Escape") || input.pressed("pause"))) {
-        const paused = sim.togglePause();
-        hud.banner(paused ? "PAUSED" : "PLAY ON", 1400);
-      }
-      pressedKeys.clear();
-      releasedKeys.clear();
+      inputFrame.sprint = input.held("sprint");
+      inputFrame.shootHeld = input.held("shoot");
+      // edges latch until a sim step consumes them (a frame shorter than one step must not drop a tap)
+      inputFrame.passShort ||= input.pressed("pass");
+      inputFrame.passDriven ||= input.pressed("driven");
+      inputFrame.shootReleased ||= input.released("shoot");
+      inputFrame.skillStepover ||= input.pressed("skillA");
+      inputFrame.skillChop ||= input.pressed("skillB");
+      inputFrame.switchPlayer ||= input.pressed("switch");
+      if (appReady && input.pressed("pause")) setPaused(!sim.state.paused);
 
-      const events = (!appReady || frozen) ? [] : sim.step(dt, inputFrame);
+      // FC-18: fixed 1/60 s sim steps from an accumulator (at most 6 per frame; a long stall drops the rest), so a
+      // 24 m/s strike moves 0.4 m per step at any frame rate and every match replays from (seed, inputs)
+      const events: SimEvent[] = [];
+      if (appReady && !frozen) {
+        stepAcc = Math.min(stepAcc + dt, SIM_DT * 6);
+        while (stepAcc >= SIM_DT - 1e-9) {
+          stepAcc -= SIM_DT;
+          for (const ev of sim.step(SIM_DT, inputFrame)) events.push(ev);
+          clearEdges();
+        }
+      }
       consumeEvents(events);
 
       const s = sim.state;
@@ -447,6 +517,7 @@ function boot(): void {
       // venue retint when it changes
       if (s.venue !== lastVenue) {
         lastVenue = s.venue;
+        rebuildForVenue(s.venue);
         applyVenue(world, VENUES[s.venue]);
         refreshKits();
         if (appReady) hud.banner(VENUES[s.venue].label, 2400);
@@ -503,16 +574,20 @@ function boot(): void {
 
       /* ---- ambient world tick ---- */
       if (appReady) {
+        if (s.goalFlashT <= 0) goalSide = 0;
         tickWorld(world, t, {
           cheering: s.phase === "goal" || s.phase === "ended" && s.winner !== null,
-          ripple: s.goalFlashT
+          ripple: s.goalFlashT,
+          goalSide,
+          accent: VENUES[s.venue].accent,
+          hoarding: VENUES[s.venue].hoarding
         });
+        if (s.phase !== lastPhaseForCrowd) { lastPhaseForCrowd = s.phase; syncCrowd(); }
       }
 
       /* ---- camera ---- */
       updateCamera(dt);
 
-      touchControls?.update?.();
 
       /* ---- HUD ---- */
       const home = clubFor(modes.cfg?.homeClub ?? modes.studio.club);
@@ -521,10 +596,16 @@ function boot(): void {
         home, away,
         tag: !appReady ? "Loading 3D Stadium & Athletes..." : (ctx.tag ?? modes.cfg?.circuitTag),
         labLabel: ctx.labLabel, labScore: ctx.labScore, labBest: ctx.labBest,
-        charge: sim.chargeLevel > 0 ? sim.chargeLevel : null
+        charge: sim.chargeLevel > 0 ? sim.chargeLevel : null,
+        kickoffPrompt: appReady && s.phase === "kickoff" && !autopilot && s.userTeam !== null && s.kickoffTeam === s.userTeam && !s.paused
       });
+      hud.setPaused(s.paused);
 
       /* ---- evidence ---- */
+      // FC-E1: the evidence object (athletes, event log, HUD and juice snapshots) is rebuilt at most every 200 ms, or
+      // at once when the sim emitted events, instead of every frame
+      if (events.length === 0 && now - lastEvidenceAt < 0.2) return;
+      lastEvidenceAt = now;
       const athleteClips: Record<string, string> = {};
       for (const p of s.players as PlayerState[]) {
         athleteClips[p.id] = rigs.get(p.id)?.activeClip ?? "Idle_Loop";
@@ -562,7 +643,7 @@ function boot(): void {
         engine: "@aura3d/engine",
         ready: appReady,
         framesRendered,
-        look: LOOK_ID,
+        look: VENUE_LOOKS[sceneVenue].look,
         mode: modes.mode,
         phase: s.phase,
         half: s.half,
@@ -583,7 +664,7 @@ function boot(): void {
         shootout: s.shootout ? { stage: s.shootout.stage, scores: [...s.shootout.scores], taken: [...s.shootout.taken], round: s.shootout.round } : null,
         winner: s.winner,
         cameraMode: cam.mode,
-        camera: { position: [...cam.eye], target: [...cam.target], fov: cam.fov },
+        camera: { position: [...cam.shownEye], target: [...cam.target], fov: cam.shownFov, authoredFov: cam.fov },
         goalpostsInView: {
           leftGoalWorld: [-PITCH_HX, 0, 0],
           rightGoalWorld: [PITCH_HX, 0, 0]
@@ -624,16 +705,27 @@ function boot(): void {
         modes: ["quick", "demo", "shootout", "touch", "circuit", "studio"],
         venues: VENUE_ORDER,
         clubs: ["aurora", "kings", "iron", "waves", "kites", "stars", "giants", "storm"],
+        // FC-23: real HUD bindings, so capture tooling reads the score bug, clock, stamina and possession
         hud: (game as any).hud?.snapshot?.({
-          bindings: [],
+          bindings: HUD_BINDINGS,
           appState: {
             score: `${s.score[0]}-${s.score[1]}`,
+            homeGoals: s.score[0],
+            awayGoals: s.score[1],
+            clock: Math.floor(s.clock),
+            clockMax: s.half === 3 ? 45 : 90,
+            half: s.half,
+            stamina: (s.players.find((p) => p.id === s.controlledId)?.stamina ?? 0),
+            possessionHome: (() => { const tot = s.possession[0] + s.possession[1]; return tot > 0 ? s.possession[0] / tot : 0.5; })(),
+            shootout: s.shootout ? `${s.shootout.scores[0]}-${s.shootout.scores[1]}` : "",
             venue: s.venue,
             mode: modes.mode,
-            phase: s.phase
+            phase: s.phase,
+            paused: s.paused,
+            unit: 1
           }
         }) ?? null,
-        deterministic: { kickClips: "baked offline by tools/aura-fc/bake-kick.mjs; clip phase = swing progress from sim.ts", ballSim: "sim.ts", seed: "lcg:0xf0a7ba11" }
+        deterministic: { kickClips: "baked offline by tools/aura-fc/bake-kick.mjs; clip phase = swing progress from sim.ts", ballSim: "sim.ts, fixed 1/60 s steps", seed: `lcg:0x${sim.seed.toString(16)}` }
       };
       publishBeacon(evidence);
     };
@@ -725,7 +817,11 @@ function boot(): void {
         hud.banner(VENUES[v].label, 1800);
       });
     }
-    const req = params.get("venue");
+    // phone venue picker (FC-E3) drives the same buttons
+    const venueSelect = document.getElementById("fc-venue-select") as HTMLSelectElement | null;
+    venueSelect?.addEventListener("change", () => venueBtns.find((b) => b.dataset.fcVenue === venueSelect.value)?.click());
+    for (const btn of venueBtns) btn.addEventListener("click", () => { if (venueSelect) venueSelect.value = btn.dataset.fcVenue ?? "munich"; });
+    const req = params.get("venue") ?? modes.venue;
     if (req && (VENUES as Record<string, unknown>)[req]) {
       venueBtns.find((b) => b.dataset.fcVenue === req)?.click();
     }

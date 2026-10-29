@@ -11,6 +11,8 @@ import type { MatchConfig, ClubId, VenueId, UserInputFrame, CircuitMatch } from 
 import { CLUBS, CLUB_ORDER, VENUES, circuitEntrants, type CircuitEntrant } from "./content";
 import { loadSave, persistSave, newCircuit, type FcSave, type CircuitSave, type StudioSave } from "./save";
 import { PITCH_HX, PITCH_HZ } from "./dims";
+import { makeRng } from "./sim";
+import { CELEBRATIONS } from "./locomotion";
 
 export type AppMode = "menu" | "quick" | "demo" | "shootout" | "touch" | "circuit" | "studio";
 
@@ -116,6 +118,10 @@ export function createModes(deps: {
 }): Modes {
   const { sim } = deps;
   const save = loadSave();
+  // seeded: opponent draws, demo fixtures and Touch Lab rings replay from the same seed (FC-18)
+  const rand = makeRng(0x5eed0fc3);
+  const applyCelebration = () => sim.setUserCelebration(Math.max(0, CELEBRATIONS.indexOf(save.studio.celebration)));
+  applyCelebration();
   let mode: AppMode = "menu";
   let cfg: MatchConfig | null = null;
   let panel: HTMLElement | null = null;
@@ -157,7 +163,7 @@ export function createModes(deps: {
   function studioCard(card: HTMLElement) {
     el("h2", "", card).textContent = "PLAYER STUDIO";
     el("h1", "", card).innerHTML = `KIT YOUR <span class="fc3d">CLUB</span>`;
-    el("p", "sub", card).textContent = "Pick a club identity, dial the boots, choose the celebration — it lands on your squad instantly.";
+    el("p", "sub", card).textContent = "Pick your club and your goal celebration. Your club's name leads the scoreboard and your scorers celebrate your way. Your squad always plays in the home red so both sides read apart on the pitch.";
 
     el("h2", "", card).textContent = "CLUB";
     const grid = el("div", "fc-clubs", card);
@@ -176,18 +182,6 @@ export function createModes(deps: {
       };
     }
 
-    el("h2", "", card).textContent = "BOOTS";
-    const boots = el("div", "fc-swatches", card);
-    for (const col of ["#22262e", "#f2f0e2", "#d8ff3e", "#ff5fa2", "#7dfcff", "#ffd76a", "#ff7a2e", "#2e9ac4"]) {
-      const s = el("div", `fc-sw${save.studio.boots === col ? " sel" : ""}`, boots);
-      s.style.background = col;
-      s.onclick = () => {
-        save.studio.boots = col; persist(); api.onKitsChanged?.();
-        boots.querySelectorAll(".fc-sw").forEach((x) => x.classList.remove("sel"));
-        s.classList.add("sel");
-      };
-    }
-
     el("h2", "", card).textContent = "CELEBRATION";
     const cels = el("div", "fc-cel-row", card);
     const CEL_NAMES: [string, string][] = [["knee", "Knee Slide"], ["spin", "Aircraft Spin"], ["leap", "Fist-Leap"], ["heart", "Hands Heart"]];
@@ -195,7 +189,7 @@ export function createModes(deps: {
       const b = el("button", `fc-btn ghost${save.studio.celebration === id ? " primary" : ""}`, cels);
       b.textContent = name;
       b.onclick = () => {
-        save.studio.celebration = id as StudioSave["celebration"]; persist();
+        save.studio.celebration = id as StudioSave["celebration"]; persist(); applyCelebration();
         cels.querySelectorAll(".fc-btn").forEach((x) => { x.classList.remove("primary"); });
         b.classList.add("primary");
       };
@@ -223,8 +217,13 @@ export function createModes(deps: {
     mk("Shootout Lab", "cyan", () => api.startShootoutLab(), "Five penalties — beat the keeper");
     mk("Touch Lab", "cyan", () => api.startTouchLab(), "First-touch control drill");
     mk("World Circuit", "", () => api.openCircuit(), "32 teams · groups → knockouts");
-    mk("Player Studio", "", () => api.openStudio(), "Kit, boots, celebration");
+    mk("Player Studio", "", () => api.openStudio(), "Club and goal celebration");
     mk("CPU vs CPU Demo", "ghost", () => api.startDemo(), "Watch the sim play itself");
+    // FC-11: auto-run is an assist, off by default (with no stick input your player stands; Shift sprints)
+    const assistBtn = mk(`Auto-run assist: ${sim.assist ? "on" : "off"}`, "ghost", () => {
+      sim.setAssist(!sim.assist);
+      assistBtn.textContent = `Auto-run assist: ${sim.assist ? "on" : "off"}`;
+    }, "With no stick input, your player chases loose balls and dribbles at goal");
 
     el("h2", "", card).textContent = "SELECTED CLUB";
     const grid = el("div", "fc-clubs", card);
@@ -416,8 +415,8 @@ export function createModes(deps: {
 
   function nextRing(px: number, pz: number): [number, number] {
     for (let i = 0; i < 20; i++) {
-      const x = -14 + Math.random() * 28;
-      const z = -9 + Math.random() * 18;
+      const x = -14 + rand() * 28;
+      const z = -9 + rand() * 18;
       if (Math.hypot(x - px, z - pz) > 8) return [x, z];
     }
     return [8, 6];
@@ -426,7 +425,7 @@ export function createModes(deps: {
   function feedBall(to: [number, number]) {
     const b = sim.state.ball;
     // feed arrives from the left touchline, lofted to drop in the ring
-    b.x = -PITCH_HX + 0.5; b.z = clamp(to[1] + (Math.random() - 0.5) * 6, -PITCH_HZ + 1, PITCH_HZ - 1); b.y = 0.3;
+    b.x = -PITCH_HX + 0.5; b.z = clamp(to[1] + (rand() - 0.5) * 6, -PITCH_HZ + 1, PITCH_HZ - 1); b.y = 0.3;
     const T = clamp(Math.hypot(to[0] - b.x, to[1] - b.z) / 11, 0.7, 1.9);
     b.vx = (to[0] - b.x) / T; b.vz = (to[1] - b.z) / T;
     b.vy = 4.9 * T * 0.7;
@@ -558,6 +557,8 @@ export function createModes(deps: {
 
     frame(dt, _input) {
       const ctx: ModeFrameCtx = {};
+      // paused: the lab clocks and drills hold too (only the sim step was gated before, FC-15)
+      if (sim.state.paused) dt = 0;
       if (mode === "touch") touchFrame(dt, ctx);
       if (mode === "shootout") shootoutLabFrame(ctx);
       if (mode === "quick" || mode === "demo" || mode === "circuit") matchEndFrame();
@@ -575,7 +576,7 @@ export function createModes(deps: {
     startQuick(opponent) {
       closePanel();
       mode = "quick"; endedHandled = false;
-      const opp = opponent ?? CLUB_ORDER.filter((c) => c !== save.studio.club)[(Math.random() * (CLUB_ORDER.length - 1)) | 0];
+      const opp = opponent ?? CLUB_ORDER.filter((c) => c !== save.studio.club)[(rand() * (CLUB_ORDER.length - 1)) | 0];
       cfg = {
         mode: "quick", venue: venueRef.value,
         homeClub: save.studio.club, awayClub: opp,
@@ -589,7 +590,7 @@ export function createModes(deps: {
     startDemo() {
       closePanel();
       mode = "demo"; endedHandled = false;
-      const [h, a] = [CLUB_ORDER[(Math.random() * 8) | 0], CLUB_ORDER[(Math.random() * 8) | 0]];
+      const [h, a] = [CLUB_ORDER[(rand() * 8) | 0], CLUB_ORDER[(rand() * 8) | 0]];
       const away = a === h ? "iron" : a;
       cfg = {
         mode: "quick", venue: venueRef.value, homeClub: h, awayClub: away,
