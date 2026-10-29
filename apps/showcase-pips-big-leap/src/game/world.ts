@@ -312,7 +312,8 @@ export function buildWorld(spec: WorldSpec): BuiltWorld {
   // Light depth haze: dissolves the course edge into the sky and gives the
   // conifer line aerial perspective without graying the foreground.
   builder.add(effects.fog({ color: skyColor, density: 0.0075 }));
-  // Grounding for Pip, pickups, and the course props (legacy-post safe).
+  // Grounding for Pip, pickups, and the course props: since 4.5.0 a
+  // screen-space mask that darkens the shadow-casting look key light.
   builder.add(effects.contactShadows({ intensity: 0.75, length: 0.3 }));
   if (spec.ambientFx === "embers" || spec.ambientFx === "stars") {
     builder.add(effects.bloom({ intensity: 0.28 }));

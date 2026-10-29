@@ -66,7 +66,20 @@ async function engineInfo(page: Page): Promise<any> {
     if (!app) return { app: false };
     try {
       const dg = app.diagnostics?.();
-      return { app: true, renderPath: dg?.renderPath?.path ?? null, drawCalls: dg?.drawCalls ?? null, triangles: dg?.triangles ?? dg?.frame?.triangles ?? null };
+      const lighting = (() => { try { return app.lighting?.diagnostics?.() ?? dg?.lighting ?? null; } catch { return dg?.lighting ?? null; } })();
+      const cs = lighting?.contactShadows ?? null;
+      const degradations: unknown[] = Array.isArray(dg?.degradations) ? dg.degradations : [];
+      return {
+        app: true,
+        renderPath: dg?.renderPath?.path ?? null,
+        quality: dg?.renderPath?.quality ?? null,
+        bloomFusion: dg?.renderPath?.bloomFusion ?? null,
+        drawCalls: dg?.drawCalls ?? null,
+        triangles: dg?.triangles ?? dg?.frame?.triangles ?? null,
+        contactShadows: cs ? { passExecuted: cs.passExecuted ?? null, unavailable: cs.unavailable ?? null } : null,
+        optionIgnored: degradations.filter((d) => /option-ignored|OPTION_IGNORED/.test(JSON.stringify(d))).length,
+        heal: (globalThis as any).__AURA3D_HEAL__?.rung ?? null
+      };
     } catch (e) { return { app: true, diagErr: String(e) }; }
   });
 }
@@ -332,6 +345,31 @@ test.describe("pips-big-leap audit fixes", () => {
       await page.waitForTimeout(800);
       await shot(page, T, "06-results");
     }
+    log(`PBL_DONE ${T}`);
+    await context.close();
+  });
+
+  test("grpC pbl-worlds 1280x720: every world at steady state with render-path and contact-shadow diagnostics (RH-04, LIGHT-06)", async ({ browser }) => {
+    const T = "w1280";
+    const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const consoleLines: string[] = [];
+    const page = await prepare(context, freshNet());
+    page.on("console", (m) => { if (/prd02\.contactShadows|OPTION_IGNORED/.test(m.text())) consoleLines.push(m.text().slice(0, 200)); });
+    await open(page);
+    for (const world of ["academy", "w1", "w2", "w3", "w4", "w5", "w6"]) {
+      if (world === "academy") {
+        await click(page, "#aura-btn-academy");
+      } else {
+        await click(page, "#aura-btn-atlas");
+        await page.waitForTimeout(600);
+        await click(page, `.pbl-atlas-card[data-world="${world}"]`);
+      }
+      await page.waitForTimeout(15_000);
+      await shot(page, T, `${world}-15s`);
+      await page.waitForTimeout(20_000);
+      await shot(page, T, `${world}-35s`);
+    }
+    log(`PBL_META ${JSON.stringify({ target: T, id: "console-flags", lines: consoleLines })}`);
     log(`PBL_DONE ${T}`);
     await context.close();
   });
