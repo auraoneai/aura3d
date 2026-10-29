@@ -250,6 +250,16 @@ const diagRun = async (page: Page, name: string): Promise<void> => {
   await grab(page, name, "diag-30s");
 };
 
+/** tee framing: where the golfer, caddy, bag, cart and fans stand relative to the ball (night and space courses) */
+const figuresRun = async (page: Page, name: string): Promise<void> => {
+  if (!(await hasQa(page))) { log(`GL_SKIP ${name} no __AURA_LINKS_QA__ (pre-fix build)`); return; }
+  await advanceUntil(page, "e.phase === 'address'", 10, 0.25);
+  await qa(page, "advance", 0.5);
+  log(`GL_STATE ${JSON.stringify({ target: name, probe: "figures-at-address", figures: await qa(page, "figures") })}`);
+  await settleFrames(page, 20_000);
+  await grab(page, name, "address", {}, true);
+};
+
 const COURSE_IDS = ["mapleHollow", "cinderRim", "cloudTerrace", "neonBay", "mareCourse"] as const;
 
 const TARGETS: readonly Target[] = [
@@ -258,21 +268,22 @@ const TARGETS: readonly Target[] = [
   ...COURSE_IDS.map((id) => ({ name: `links-desktop-${id}`, url: `${APP}?course=${id}`, viewport: DESKTOP, tag: id === "neonBay" || id === "mareCourse" ? "@w2" : "@w3" })),
   { name: "links-phone-neonBay", url: `${APP}?course=neonBay`, viewport: PHONE, phone: true, tag: "@w2" },
   { name: "links-phone-mareCourse", url: `${APP}?course=mareCourse`, viewport: PHONE, phone: true, tag: "@w3" },
-  { name: "links-play-holeout-desktop", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: holeOut, tag: "@play" },
+  { name: "links-play-holeout-desktop", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: holeOut, tag: "@play @final" },
   { name: "links-play-holeout-phone", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: PHONE, phone: true, run: holeOut, tag: "@round" },
   { name: "links-play-menu-midshot", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: menuMidShot, tag: "@play" },
   { name: "links-play-reduced-motion", url: `${APP}?menu=1&reducedMotion=1&qa=1`, viewport: DESKTOP, run: reducedMotion, tag: "@play" },
   { name: "links-pond-mapleHollow", url: `${APP}?course=mapleHollow&hole=7&qa=1`, viewport: DESKTOP, run: pondView, tag: "@play" },
   { name: "links-play-roundout-desktop", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: DESKTOP, run: roundOut, tag: "@round" },
   { name: "links-play-roundout-phone", url: `${APP}?course=stAuroras&autoplay=1&qa=1`, viewport: PHONE, phone: true, run: roundOut, tag: "@round" },
-  { name: "links-shots-title-1280x720", url: `${APP}?menu=1`, viewport: DESKTOP, run: titleRun, tag: "@shots" },
-  { name: "links-shots-play-1280x720", url: `${APP}?course=stAuroras&qa=1`, viewport: DESKTOP, run: screensRun, tag: "@shots" },
-  { name: "links-shots-title-390x844", url: `${APP}?menu=1`, viewport: PHONE, phone: true, run: titleRun, tag: "@shots" },
-  { name: "links-shots-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: screensRun, tag: "@shots" },
-  { name: "links-shots-card-1x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, run: cardRun, tag: "@shots" },
+  { name: "links-shots-title-1280x720", url: `${APP}?menu=1`, viewport: DESKTOP, run: titleRun, tag: "@shots @final" },
+  { name: "links-shots-play-1280x720", url: `${APP}?course=stAuroras&qa=1`, viewport: DESKTOP, run: screensRun, tag: "@shots @final" },
+  { name: "links-shots-title-390x844", url: `${APP}?menu=1`, viewport: PHONE, phone: true, run: titleRun, tag: "@shots @final" },
+  { name: "links-shots-play-390x844", url: `${APP}?course=stAuroras&qa=1`, viewport: PHONE, phone: true, run: screensRun, tag: "@shots @final" },
+  { name: "links-shots-card-1x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, run: cardRun, tag: "@shots @final" },
+  { name: "links-figures-neonBay", url: `${APP}?course=neonBay&qa=1`, viewport: DESKTOP, run: figuresRun, tag: "@final" },
   { name: "links-diag-stAuroras", url: `${APP}?course=stAuroras`, viewport: DESKTOP, run: diagRun, tag: "@diag" },
   { name: "links-diag-neonBay", url: `${APP}?course=neonBay`, viewport: DESKTOP, run: diagRun, tag: "@diag" },
-  { name: "links-shots-card-2x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, scale: 2, run: cardRun, tag: "@shots" }
+  { name: "links-shots-card-2x", url: `${APP}?course=stAuroras`, viewport: { width: 720, height: 450 }, scale: 2, run: cardRun, tag: "@shots @final" }
 ];
 
 async function openPage(browser: Browser, target: Target): Promise<Page> {

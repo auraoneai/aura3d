@@ -129,8 +129,11 @@ const smoothstep = (t: number) => (t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t)
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 const HIDDEN_SCALE = 0.0001;
 const TRAIL_COUNT = 16;
-/** drawn ball radius (m): about 1.6x a real 21 mm ball so it reads from the chase camera; the ground ring marks it at range */
-const BALL_R = 0.035;
+/**
+ * drawn ball radius (m): about 2.3x a real 21 mm ball, half the cup's 0.2 m width. At 0.035 the ball hid behind
+ * the 5.5 cm club head in the 1280x720 address frame (remote run g10w3-shots); the ground ring marks it at range.
+ */
+const BALL_R = 0.05;
 /** drawn cup radius (m), matching the sim capture radius so a ball that looks in drops in */
 const CUP_R = 0.1;
 
