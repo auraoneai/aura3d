@@ -1,77 +1,77 @@
 {
   "meta": {
     "dot-dash-3d": {
-      "390": {
-        "notes": [
-          "ready 22s",
-          "shot 01-title",
-          "play: clicked #dd-btn-play",
-          "shot 02-early",
-          "shot 03-action",
-          "ready 23s",
-          "play2: clicked #dd-btn-play",
-          "shot 04-mid",
-          "modes:circuit: clicked #dd-btn-circuit",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-dot-dash-3d/",
-          "/apps/showcase-dot-dash-3d/?autoplay=1"
-        ],
-        "beacon": {
-          "route": "/apps/showcase-dot-dash-3d/",
-          "state": "playing",
-          "rung": 0
+      "run": "g13w3-screens-final",
+      "branch": "audit-fix/g13 + audit-fix/e2",
+      "runner": "remote ACR, headless Chromium, SwiftShader",
+      "tool": "tests/browser/audit-fix/dot-dash-3d.spec.ts g13-screens",
+      "frames": {
+        "1280-01-title": {
+          "w": 1280,
+          "h": 720,
+          "meanLuma": 13.38,
+          "mode": "title"
         },
-        "proxied": 12
-      },
-      "1280": {
-        "notes": [
-          "ready 4s",
-          "shot 01-title",
-          "play: dom-clicked #dd-btn-play",
-          "shot 02-early",
-          "shot 03-action",
-          "ready 4s",
-          "play2: dom-clicked #dd-btn-play",
-          "shot 04-mid",
-          "modes:circuit: dom-clicked #dd-btn-circuit",
-          "shot 05-modes",
-          "results: not reached"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-dot-dash-3d/",
-          "/apps/showcase-dot-dash-3d/?autoplay=1"
-        ],
-        "beacon": {
-          "route": "/apps/showcase-dot-dash-3d/",
-          "state": "playing",
-          "rung": 0
+        "1280-02-early": {
+          "w": 1280,
+          "h": 720,
+          "meanLuma": 29.15,
+          "mode": "play"
         },
-        "proxied": 12
-      },
-      "card": {
-        "notes": [
-          "ready 4s",
-          "play: dom-clicked #dd-btn-play",
-          "shot 04-mid"
-        ],
-        "errors": [],
-        "bad": [],
-        "navs": [
-          "/apps/showcase-dot-dash-3d/"
-        ],
-        "beacon": {
-          "route": "/apps/showcase-dot-dash-3d/",
-          "state": "playing",
-          "rung": 0
+        "1280-03-action": {
+          "w": 1280,
+          "h": 720,
+          "meanLuma": 28.37,
+          "mode": "play"
         },
-        "proxied": 12
+        "1280-04-mid": {
+          "w": 1280,
+          "h": 720,
+          "meanLuma": 27.64,
+          "mode": "play"
+        },
+        "1280-05-modes": {
+          "w": 1280,
+          "h": 720,
+          "meanLuma": 19.74,
+          "mode": "play"
+        },
+        "390-01-title": {
+          "w": 390,
+          "h": 844,
+          "meanLuma": 14.62,
+          "mode": "title"
+        },
+        "390-02-early": {
+          "w": 390,
+          "h": 844,
+          "meanLuma": 27.4,
+          "mode": "play"
+        },
+        "390-03-action": {
+          "w": 390,
+          "h": 844,
+          "meanLuma": 25.83,
+          "mode": "play"
+        },
+        "390-04-mid": {
+          "w": 390,
+          "h": 844,
+          "meanLuma": 25.48,
+          "mode": "play"
+        },
+        "390-05-modes": {
+          "w": 390,
+          "h": 844,
+          "meanLuma": 23.82,
+          "mode": "play"
+        },
+        "card-04-mid": {
+          "w": 1440,
+          "h": 900,
+          "meanLuma": 28.18,
+          "mode": "play"
+        }
       }
     }
   },
