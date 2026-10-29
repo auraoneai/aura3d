@@ -269,7 +269,10 @@ test.describe("grid dispatch audit-fix capture", () => {
       log(`GL_TOUCH ${T} ${pad} ${JSON.stringify({ before, during: during.ev?.player })}`);
     }
     await shot(page, T, "03-action");
+    // mid-play: the self-driving level drives 45 s of the shift (a manual car with no input ends up stuck behind traffic)
+    await qa(page, "setAutopilotLevel", "L5");
     log(`GL_NOTE ${T} simulate ${JSON.stringify(await qa(page, "simulate", 45, {})).slice(0, 200)}`);
+    await qa(page, "setAutopilotLevel", "MAN");
     await runFrames(page, 3);
     await shot(page, T, "04-mid");
     await click(page, "#mpChip");
