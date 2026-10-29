@@ -426,3 +426,13 @@ describe("FC-16 football sounds", () => {
     }
   });
 });
+
+describe("HUD possession bar layout", () => {
+  it("the bar sits in its wrapper's flow, so the bar offset is applied once and the label stays under it", async () => {
+    const { readFileSync } = await import("node:fs");
+    const css = readFileSync("apps/showcase-aura-fc-3d/src/game/hud.ts", "utf8");
+    const bar = /\.fc-poss \{([^}]*)\}/.exec(css)?.[1] ?? "";
+    expect(bar).toMatch(/position:\s*relative/);
+    expect(bar).not.toMatch(/top:/);
+  });
+});
