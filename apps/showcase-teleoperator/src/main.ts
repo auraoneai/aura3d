@@ -559,7 +559,8 @@ async function bootGridDispatch(): Promise<void> {
     shakeNow = shake;
     const size = carSizes[S.car];
     const camOff = cameraOffsets(size)[camMode];
-    const follow = viewFollowFor((window.innerWidth || 1280) / Math.max(1, window.innerHeight || 720));
+    // Roof and bumper cameras ride on the car, so they follow it fully across lanes.
+    const follow = camMode >= 2 ? 1 : viewFollowFor((window.innerWidth || 1280) / Math.max(1, window.innerHeight || 720));
     const rx = (wx: number) => viewX(wx, pose.px, shake.x, follow);
     const ry = (wy: number) => wy + camOff.y + shake.y;
     const rz = (wz: number) => wz - pose.pz + camOff.z;
@@ -703,7 +704,7 @@ async function bootGridDispatch(): Promise<void> {
     if (gearEl) gearEl.textContent = spec.isIce ? (p.speed < 0.3 ? "N" : String(clamp(Math.ceil(displaySpeed / 18), 1, 8))) : p.speed < 0.3 ? "P" : "D";
     if (rpmPath) rpmPath.style.strokeDashoffset = (100 - clamp(p.power * 100, 3, 98)).toFixed(1);
     if (nosPath) nosPath.style.strokeDashoffset = (100 - clamp(p.regen * 100, 6, 98)).toFixed(1);
-    brakeCueEl?.classList.toggle("on", S.brakeCue);
+    brakeCueEl?.classList.toggle("on", S.brakeCue && S.phase === "driving" && !isAutonomous(S.level));
     wrongWayEl?.classList.toggle("on", S.wrongWay && S.phase === "driving");
     audio?.update(p.speed, spec.maxSpeedMps, S.phase === "driving");
 
