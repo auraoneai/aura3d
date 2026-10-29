@@ -488,8 +488,10 @@ async function bootGridDispatch(): Promise<void> {
   const loop = createFixedStepLoop({
     stepSeconds: STEP,
     maxFrameSeconds: 0.1,
-    isActive: () => ready && !remounting,
+    isActive: () => ready,
     step: () => {
+      // While a sky change remounts the scene the world holds still, but frames keep presenting so warmPrograms sees the street.
+      if (remounting) return;
       const events = sim.step(STEP * hitStop.timeScale(), qaInput ?? currentInput());
       applyEvents(events);
       presenter.afterStep();
@@ -899,6 +901,8 @@ async function bootGridDispatch(): Promise<void> {
     console.error("[grid-dispatch] scene assets failed to load; continuing with what rendered", error);
   }
   // Settle every shader program before the boot screen goes (a draw whose program is still compiling is skipped).
+  // Place the street first so the settle pass draws what the first game frame shows.
+  present(0);
   try {
     await warmPrograms(auraApp);
   } catch (error) {
