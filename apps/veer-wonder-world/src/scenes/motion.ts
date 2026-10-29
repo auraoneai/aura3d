@@ -170,6 +170,19 @@ export function dampPose(p: PoseOffset, k: number): PoseOffset {
   return { dx: p.dx * k, dy: p.dy * k, dz: p.dz * k, rx: p.rx * k, ry: p.ry * k, rz: p.rz * k, sx: s(p.sx), sy: s(p.sy), sz: s(p.sz) };
 }
 
+/**
+ * The left-right mirror image of an offset, as a mirror facing the viewer shows it: a step or a rock to one side
+ * goes to the other side, and a turn goes the other way. Up, down, leaning toward the viewer and scales are kept.
+ */
+export function mirrorPoseOffset(p: PoseOffset): PoseOffset {
+  return { ...p, dx: -p.dx, ry: -p.ry, rz: -p.rz };
+}
+
+/** The same offset for a copy drawn `k` times as large: translations scale by k; rotations and scales stay. */
+export function scalePoseTranslation(p: PoseOffset, k: number): PoseOffset {
+  return { ...p, dx: p.dx * k, dy: p.dy * k, dz: p.dz * k };
+}
+
 export function isNeutral(p: PoseOffset, epsilon = 1e-6): boolean {
   return Math.abs(p.dx) < epsilon && Math.abs(p.dy) < epsilon && Math.abs(p.dz) < epsilon
     && Math.abs(p.rx) < epsilon && Math.abs(p.ry) < epsilon && Math.abs(p.rz) < epsilon

@@ -717,9 +717,28 @@ function checkActions(ctx: Ctx, label: string, actions: readonly StageAction[]):
       case "sfx":
         if (!has(SFX, action.sound)) errors.push(`${label}: sound effect "${action.sound}" does not exist (src/content/sfx.ts)`);
         break;
-      case "song":
-        if (!has(SONGS, action.song)) errors.push(`${label}: song "${action.song}" does not exist (src/content/songs.ts)`);
+      case "song": {
+        if (!has(SONGS, action.song)) {
+          errors.push(`${label}: song "${action.song}" does not exist (src/content/songs.ts)`);
+          break;
+        }
+        // Performers and line cues (07 B20): what the stage would only warn about at runtime is an error here.
+        for (const performer of action.performers ?? []) {
+          if (!ctx.castIds.has(performer)) errors.push(`${label}: song performer "${performer}" is not in the cast`);
+        }
+        const lyricLines = SONGS[action.song].lyrics.length;
+        const cueLines = new Set<number>();
+        for (const cue of action.cues ?? []) {
+          if (!Number.isInteger(cue.line) || cue.line < 0 || cue.line >= lyricLines) {
+            errors.push(`${label}: song "${action.song}" cue line ${cue.line} is outside its ${lyricLines} lyric lines`);
+          }
+          if (cueLines.has(cue.line)) errors.push(`${label}: song "${action.song}" has two cues for line ${cue.line}; merge them`);
+          cueLines.add(cue.line);
+          if (cue.stage.some((nested) => nested.do === "song")) errors.push(`${label}: song "${action.song}" cue line ${cue.line} starts another song`);
+          checkActions(ctx, `${label} song cue ${cue.line}`, cue.stage.filter((nested) => nested.do !== "song"));
+        }
         break;
+      }
       case "music":
         if (action.bed !== null && !has(MUSIC_BEDS, action.bed)) errors.push(`${label}: music bed "${action.bed}" does not exist (src/content/music.ts)`);
         break;

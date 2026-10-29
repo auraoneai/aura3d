@@ -16,6 +16,25 @@
 // - Every motion is driven by `update(dt)` from the app clock (deterministic);
 //   reduced motion drops secondary motion and keeps the semantic action.
 // - "Talking" is a gentle squash/bob pulse while a line plays, never lip sync.
+//
+// Songs (PRD 04 C06; 07 B20). A `song` action starts a choreography on the
+// same story clock: lyric line i starts at `songCueTimesMs(song, recorded
+// duration)[i]`, and then every performer plays the line's motion (a
+// non-looping gesture; its calm variant in reduced motion), and the line's
+// `cues` are applied in order. Line 0 starts with the action itself, so actions
+// after it in the same list come after line 0. Performers default to the cast
+// characters on stage and shown when the song starts; `performers` overrides
+// that, and `[]` leaves the beat's own gestures alone. A new song, a story load
+// and dispose cancel it. A cue never starts a song, and cues naming unknown
+// nodes are reported as warnings and skipped; `onSongCue` hands each applied
+// cue to the app (its `sfx` and `music` actions are the mixer's to play).
+//
+// Mirror (PRD 05 E01). When a story has a `mirror` prop and Momo in its cast,
+// the mirror's glass shows Momo's reflection: a smaller, flattened copy of her
+// model (or her stand-in), tinted cooler and dimmer, facing out of the mirror,
+// playing Momo's gestures as a mirror image, sized to stay inside the frame,
+// and shown only while both the mirror and Momo are shown. It costs one draw
+// call as a model (her stand-in's pieces as a stand-in) and casts no shadow.
 
 import {
   camera,
@@ -33,15 +52,19 @@ import {
   type SceneQueryTarget
 } from "@aura3d/engine";
 import { createGame, warmPrograms, type Prd09Game } from "@aura3d/engine/game";
+import { AUDIO_MANIFEST } from "../audio-manifest.js";
 import { modelRef, type ModelKey } from "../aura-assets.js";
-import { CHARACTERS, type CharacterProfile } from "../characters/character-registry.js";
-import { createAnimationDirector, propAnimationProfile, type AnimationDirector } from "../runtime/animation-director.js";
+import { CHARACTERS, isGesture, type CharacterProfile } from "../characters/character-registry.js";
+import { SONGS, songCueTimesMs, songLengthSec } from "../content/songs.js";
+import { calmGesture, createAnimationDirector, propAnimationProfile, type AnimationDirector } from "../runtime/animation-director.js";
 import { createAssetPreloader, storyModelKeys, type AssetPreloader, type ModelSummaryStatus } from "../runtime/asset-preloader.js";
 import type {
   CameraPresetId,
   CharacterId,
+  Gesture,
   MoveStyle,
   ObjectAction,
+  SongId,
   SpotId,
   StageAction,
   StageAdapter,
@@ -63,6 +86,7 @@ import {
   distance3,
   ease,
   hingeSwingOffset,
+  mirrorPoseOffset,
   moveDurationSec,
   placePiece,
   planObjectAction,
@@ -71,6 +95,7 @@ import {
   runningPose,
   sampleMove,
   sampleTransient,
+  scalePoseTranslation,
   tipEdgeOffset,
   wrapAngle,
   yawTowards,
@@ -100,7 +125,18 @@ import {
   type LayoutEntry,
   type Occupant
 } from "./spots.js";
-import { ASSET_TRAITS, buildStandIn, defaultHeightM, footprintM, standInPieceMaterial, type AssetTraits, type StageAssetKey } from "./stand-ins.js";
+import {
+  ASSET_TRAITS,
+  STAND_INS,
+  buildStandIn,
+  defaultHeightM,
+  footprintM,
+  primitiveParams,
+  standInPieceMaterial,
+  type AssetTraits,
+  type StageAssetKey,
+  type StandInPiece
+} from "./stand-ins.js";
 import { buildWorldNodes, worldDressingKeys, type BuiltWorld } from "./worlds.js";
 
 // ---------------------------------------------------------------- public types
@@ -120,6 +156,20 @@ export interface StageOptions {
   readonly models?: boolean;
   /** Bound on each wait for a scene mount or a first drawn frame. Default 20000 ms. */
   readonly mountTimeoutMs?: number;
+  /**
+   * Called once each time a song line's cues have been applied (07 B20), with the actions applied. The stage
+   * plays no sound itself: the app routes the cue's `sfx` and `music` actions to the mixer, as it does for a
+   * beat's own actions.
+   */
+  readonly onSongCue?: (cue: SongCueEvent) => void;
+}
+
+/** A song line's cues, as applied by the stage. */
+export interface SongCueEvent {
+  readonly song: SongId;
+  /** The lyric line (0-based). */
+  readonly line: number;
+  readonly actions: readonly StageAction[];
 }
 
 export interface StageDiagnostics {
@@ -157,6 +207,31 @@ export interface StageNodeSnapshot {
   readonly moving: boolean;
 }
 
+/** The song choreography running on the stage clock. */
+export interface StageSongSnapshot {
+  readonly id: SongId;
+  /** The lyric line that started last (0-based). */
+  readonly line: number;
+  /** Lyric lines in the song. */
+  readonly lines: number;
+  readonly performers: readonly string[];
+}
+
+/** A character's reflection drawn in a mirror's glass. */
+export interface StageReflectionSnapshot {
+  /** Runtime id of the reflection (`<mirror id>~reflection`). */
+  readonly id: string;
+  /** The character it reflects. */
+  readonly of: string;
+  /** The mirror it is drawn in. */
+  readonly in: string;
+  /** Shown: the mirror and the character are both shown. */
+  readonly visible: boolean;
+  readonly drawnAs: "model" | "stand-in";
+  /** The reflected character's gesture, which the reflection plays as a mirror image. */
+  readonly gesture: string | null;
+}
+
 /** Plain data for QA hooks and tests. No child data. */
 export interface StageSnapshot {
   readonly storyId: string | null;
@@ -166,6 +241,9 @@ export interface StageSnapshot {
   readonly targets: readonly string[];
   readonly talking: string | null;
   readonly nodes: readonly StageNodeSnapshot[];
+  /** The running song choreography, until the song's length has passed; null when none runs. */
+  readonly song: StageSongSnapshot | null;
+  readonly reflections: readonly StageReflectionSnapshot[];
 }
 
 export interface WonderStage extends StageAdapter {
@@ -174,7 +252,7 @@ export interface WonderStage extends StageAdapter {
   diagnostics(): StageDiagnostics;
   /** CSS-px rectangles (relative to the canvas) of the active, visible touch targets: the generous hit areas. */
   targetRects(): TargetRect[];
-  /** Viewport CSS-px rectangles of the drawn bounds of the given nodes (shown ones only): QA region captures. */
+  /** Viewport CSS-px rectangles of the drawn bounds of the given nodes and reflections (shown ones only): QA region captures. */
   nodeRects(ids: readonly string[]): TargetRect[];
   /** The mounted `createGame` handle. */
   game(): Prd09Game<string, string>;
@@ -208,6 +286,18 @@ const HALO_FADE_SEC = 0.6;
 /** A raised object that topples lands this many times its old height sideways, clear of the stack it fell from. */
 const TUMBLE_SPREAD = 1.25;
 const VEIL_COLOR = "#FBF6EC";
+/** The character a mirror reflects (E01, "Mirror Momo"). */
+const REFLECTED_CHARACTER: CharacterId = "momo";
+/** The reflection's height over the glass radius: small enough to stay inside the frame while it moves. */
+const REFLECTION_FILL = 1.0;
+/** The reflection keeps this fraction of its depth, so it lies on the glass like an image instead of standing out of it. */
+const REFLECTION_DEPTH = 0.25;
+/** Gap between the glass and the back of the reflection, as a fraction of the mirror's height. */
+const REFLECTION_GAP = 0.006;
+/** Multiplied into the reflection's colours: a little cooler and dimmer than the character, so it reads as a reflection. */
+export const REFLECTION_TINT = "#B4C2E2";
+/** Squash and stretch the gesture shift bound leaves room for (Momo's gestures stretch or widen her by at most 15%). */
+const REFLECTION_SCALE_HEADROOM = 1.15;
 
 // ---------------------------------------------------------------- internal state
 
@@ -244,6 +334,26 @@ interface AppearRun {
   readonly showing: boolean;
   readonly duration: number;
   elapsed: number;
+}
+
+/** One lyric line of a running song: what its performers play and the cue actions applied when it starts. */
+interface SongLineRun {
+  readonly motion: Gesture | null;
+  readonly cues: readonly StageAction[];
+}
+
+/** A song choreography on the stage clock (07 B20). */
+interface SongRun {
+  readonly song: SongId;
+  readonly performers: readonly string[];
+  /** Start of each lyric line (ms after the song action). */
+  readonly startsMs: readonly number[];
+  readonly lines: readonly SongLineRun[];
+  /** The song's length: the recorded duration, else the generated length. */
+  readonly totalMs: number;
+  /** The next line to start. */
+  next: number;
+  elapsedMs: number;
 }
 
 interface StageNode {
@@ -291,10 +401,22 @@ interface StageNode {
   center: Vec3;
 }
 
+/** A character's reflection in a mirror's glass: drawn every frame from the mirror's pose and the character's gesture. */
+interface Reflection extends ReflectionLayout {
+  readonly id: string;
+  readonly mirrorId: string;
+  readonly actorId: string;
+  readonly drawnAs: "model" | "stand-in";
+  readonly pieces: readonly Piece[];
+  /** The pose drawn last frame (null before the first). */
+  drawn: StagePose | null;
+}
+
 interface BuiltStory {
   readonly story: StorySpec;
   readonly builder: AuraSceneBuilder;
   readonly nodes: readonly StageNode[];
+  readonly reflections: readonly Reflection[];
   readonly world: BuiltWorld;
   readonly modelKeys: readonly ModelKey[];
   readonly clipInitial: ReadonlyMap<string, string | null>;
@@ -357,6 +479,180 @@ function mountFailureMessage(app: AuraApp): string | null {
 
 function idleProfileFor(traits: AssetTraits): ReturnType<typeof propAnimationProfile> {
   return propAnimationProfile(traits.idle);
+}
+
+// ---------------------------------------------------------------- mirror reflection (pure)
+
+/** Where a mirror's glass is, in units of the mirror's height, in its own frame (+Z is its front). */
+export interface MirrorGlass {
+  /** Height of the middle of the glass. */
+  readonly centerY: number;
+  /** Depth of the front of the glass. */
+  readonly frontZ: number;
+  /** Radius of the glass inside the frame. */
+  readonly radius: number;
+}
+
+/**
+ * The admitted mirror GLB, a round frame on a stand, measured from its vertices (height 1, base at 0): a slightly
+ * domed glass disc centred 0.627 up, its front at most 0.118 forward, and no frame vertex nearer the centre than
+ * 0.31 (tests/unit/stage/mirror-reflection.test.ts measures the file again).
+ */
+export const MODEL_MIRROR_GLASS: MirrorGlass = { centerY: 0.627, frontZ: 0.118, radius: 0.3 };
+
+/** The stand-in mirror (`STAND_INS.mirror`): a glass disc at 0.62 whose face is 0.025 forward, framed by a torus whose inner edge is 0.231 from its middle. */
+export const STAND_IN_MIRROR_GLASS: MirrorGlass = { centerY: 0.62, frontZ: 0.025, radius: 0.231 };
+
+/** Size and place of a reflection, in metres, in the mirror's own frame (unscaled). */
+export interface ReflectionLayout {
+  /** Drawn height at rest. */
+  readonly heightM: number;
+  /** Width, height and depth at rest, before the depth is flattened. */
+  readonly size: Vec3;
+  /** Reflection height over the character's: the character's gesture moves scale by this. */
+  readonly k: number;
+  readonly glassCenterY: number;
+  readonly glassRadius: number;
+  /** Depth of the reflection's feet: its back just clears the glass. */
+  readonly baseZ: number;
+  /** The largest gesture shift that keeps it inside the glass. */
+  readonly maxShift: number;
+}
+
+/** Lays out the reflection of a character (asset and fitted height) in a mirror drawn as a model or a stand-in. */
+export function reflectionLayout(
+  mirror: { readonly drawnAs: "model" | "stand-in"; readonly heightM: number },
+  actor: { readonly asset: StageAssetKey; readonly heightM: number }
+): ReflectionLayout {
+  const glass = mirror.drawnAs === "model" ? MODEL_MIRROR_GLASS : STAND_IN_MIRROR_GLASS;
+  const glassRadius = glass.radius * mirror.heightM;
+  const heightM = REFLECTION_FILL * glassRadius;
+  const size = footprintM(actor.asset, heightM);
+  const halfDiagonal = Math.hypot(size[0] / 2, size[1] / 2) * REFLECTION_SCALE_HEADROOM;
+  return {
+    heightM,
+    size,
+    k: heightM / Math.max(0.01, actor.heightM),
+    glassCenterY: glass.centerY * mirror.heightM,
+    glassRadius,
+    baseZ: (glass.frontZ + REFLECTION_GAP) * mirror.heightM + (size[2] / 2) * REFLECTION_DEPTH,
+    maxShift: Math.max(0, glassRadius - halfDiagonal)
+  };
+}
+
+/**
+ * Where a reflection draws: inside the glass of a mirror drawn at `mirror`, facing out of it, moved by the
+ * character's gesture `offset` as a mirror image scaled to the reflection's size (the shift kept inside the
+ * glass), flattened onto the glass, and shrunk by `presence` (the character's own soft show and hide).
+ */
+export function reflectionPose(mirror: StagePose, layout: ReflectionLayout, offset: PoseOffset, presence = 1): StagePose {
+  const p = scalePoseTranslation(mirrorPoseOffset(offset), layout.k);
+  const grow = clamp(presence, 0, 1);
+  let dx = p.dx;
+  let dy = p.dy;
+  const shift = Math.hypot(dx, dy);
+  if (shift > layout.maxShift) {
+    const keep = shift > 0 ? layout.maxShift / shift : 0;
+    dx *= keep;
+    dy *= keep;
+  }
+  // The middle of its body stays on the middle of the glass as it grows or shrinks.
+  const local: Vec3 = [dx, layout.glassCenterY - (layout.heightM / 2) * grow + dy, layout.baseZ];
+  return {
+    base: placePiece(mirror, local),
+    rotation: composeRotation(mirror.rotation, [p.rx, p.ry, p.rz]),
+    scale: [mirror.scale[0] * p.sx * grow, mirror.scale[1] * p.sy * grow, mirror.scale[2] * p.sz * grow * REFLECTION_DEPTH],
+    pivot: "base",
+    centerHeight: layout.heightM / 2
+  };
+}
+
+/** Channel-wise product of two `#RRGGBB` colours (the model's multiply tint, applied to a stand-in's own colours). */
+export function multiplyColor(color: string, tint: string): string {
+  const parse = (hex: string): readonly [number, number, number] => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+    const v = m?.[1] ? Number.parseInt(m[1], 16) : 0xffffff;
+    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+  };
+  const a = parse(color);
+  const b = parse(tint);
+  const channel = (i: 0 | 1 | 2): string => Math.round((a[i] * b[i]) / 255).toString(16).padStart(2, "0");
+  return `#${channel(0)}${channel(1)}${channel(2)}`.toUpperCase();
+}
+
+/** One stand-in piece as a primitive node (the recipe's shape and size at height `h`) with the given material. */
+function reflectionPrimitive(p: StandInPiece, h: number, pieceMaterial: ReturnType<typeof standInPieceMaterial>, name: string) {
+  const params = primitiveParams(p.shape, p.segments, p.tube);
+  const size: Vec3 = [p.size[0] * h, p.size[1] * h, p.size[2] * h];
+  const options = {
+    name,
+    size,
+    material: pieceMaterial,
+    castShadow: false,
+    receiveShadow: false,
+    ...(params ? { params } : {})
+  };
+  switch (p.shape) {
+    case "sphere":
+      return primitives.sphere(options);
+    case "capsule":
+      return primitives.capsule(options);
+    case "box":
+      return primitives.box(options);
+    case "cylinder":
+      return primitives.cylinder(options);
+    case "torus":
+      return primitives.torus(options);
+    case "cone":
+      return primitives.cone(options);
+  }
+}
+
+/**
+ * Builds the reflection of `actor` in `mirror`: a copy of the actor's model (or of its stand-in when the actor is
+ * drawn as one), fitted to the reflection's height, tinted cooler and dimmer, casting no shadow.
+ */
+function buildReflection(mirror: StageNode, actor: StageNode): { readonly nodes: readonly AuraNodeBuilder<AuraSceneNode>[]; readonly reflection: Reflection } {
+  const id = `${mirror.id}~reflection`;
+  const layout = reflectionLayout(mirror, actor);
+  const rest = reflectionPose({ base: mirror.base, rotation: [0, 0, 0], scale: [1, 1, 1], pivot: "base", centerHeight: mirror.heightM / 2 }, layout, NEUTRAL_POSE);
+  const tags = ["reflection", actor.asset];
+  const ref = actor.drawnAs === "model" && actor.modelKey ? modelRef(actor.modelKey) : undefined;
+  if (ref) {
+    const node = model(ref, {
+      name: id,
+      targetHeight: layout.heightM,
+      scaleMode: "fit",
+      castShadow: false,
+      receiveShadow: false,
+      visible: true,
+      materialOverrides: [{ color: REFLECTION_TINT, colorMode: "multiply" }]
+    })
+      .position(rest.base)
+      .rotate(0, 0, 0)
+      .runtime({ id, tags: [...tags, "model"], mutable: true });
+    const pieces: Piece[] = [{ id, center: [0, 0, 0], rotation: [0, 0, 0], index: 0, tinted: false }];
+    return { nodes: [node], reflection: { ...layout, id, mirrorId: mirror.id, actorId: actor.id, drawnAs: "model", pieces, drawn: null } };
+  }
+  const recipe = STAND_INS[actor.asset];
+  const h = layout.heightM;
+  const nodes: AuraNodeBuilder<AuraSceneNode>[] = [];
+  const pieces: Piece[] = [];
+  [recipe.main, ...recipe.parts].forEach((p, index) => {
+    const pieceId = index === 0 ? id : `${id}~${index}`;
+    const center: Vec3 = [p.center[0] * h, p.center[1] * h, p.center[2] * h];
+    const rotation: Vec3 = p.rotation ?? [0, 0, 0];
+    const placed = composeRotation(rest.rotation, rotation);
+    const pieceMaterial = standInPieceMaterial(actor.asset, index, multiplyColor(p.color, REFLECTION_TINT));
+    nodes.push(
+      reflectionPrimitive(p, h, pieceMaterial, pieceId)
+        .position(placePiece(rest, center))
+        .rotate(placed[0], placed[1], placed[2])
+        .runtime({ id: pieceId, tags: [...tags, index === 0 ? "stand-in" : "stand-in-part"], mutable: true })
+    );
+    pieces.push({ id: pieceId, center, rotation, index, tinted: false });
+  });
+  return { nodes, reflection: { ...layout, id, mirrorId: mirror.id, actorId: actor.id, drawnAs: "stand-in", pieces, drawn: null } };
 }
 
 // ---------------------------------------------------------------- scene building
@@ -549,6 +845,17 @@ function buildStory(story: StorySpec, available: (key: ModelKey) => boolean, cam
       nodes.push(newNode(seed, base, "stand-in", built.pieces));
     }
   }
+  // E01's mirror shows Momo's reflection (a cast member, never a prop that happens to share the asset).
+  const reflections: Reflection[] = [];
+  const reflected = nodes.find((n) => n.role === "actor" && n.characterId === REFLECTED_CHARACTER);
+  if (reflected) {
+    for (const mirror of nodes) {
+      if (mirror.role !== "prop" || mirror.asset !== "mirror") continue;
+      const built = buildReflection(mirror, reflected);
+      builder.addMany(built.nodes);
+      reflections.push(built.reflection);
+    }
+  }
   for (const id of RING_IDS) builder.add(ringNode(id));
   for (const id of HALO_IDS) builder.add(haloNode(id));
   builder.camera(camera.perspective({
@@ -558,7 +865,19 @@ function buildStory(story: StorySpec, available: (key: ModelKey) => boolean, cam
     near: cameraPose.near,
     far: cameraPose.far
   }));
-  return { story, builder, nodes, world, modelKeys, clipInitial };
+  return { story, builder, nodes, reflections, world, modelKeys, clipInitial };
+}
+
+/** A reflection a story's scene draws (QA and tests). */
+export interface StorySceneReflection {
+  readonly id: string;
+  /** The character it reflects and the mirror it is drawn in. */
+  readonly of: string;
+  readonly in: string;
+  readonly drawnAs: "model" | "stand-in";
+  /** Runtime ids of its drawn pieces (one for a model). */
+  readonly pieceIds: readonly string[];
+  readonly layout: ReflectionLayout;
 }
 
 /** Scene build of one story for QA and tests: the snapshot, plus which nodes draw as models or stand-ins. */
@@ -566,11 +885,12 @@ export interface StorySceneBuild {
   readonly builder: AuraSceneBuilder;
   /** Runtime ids of the story's actors and props, in build order. */
   readonly nodeIds: readonly string[];
-  /** Every runtime id the stage moves (stand-in parts, highlight rings and halos included). */
+  /** Every runtime id the stage moves (stand-in parts, reflections, highlight rings and halos included). */
   readonly runtimeIds: readonly string[];
   readonly drawnAs: ReadonlyMap<string, "model" | "stand-in">;
   /** Rest positions after shared-spot layout. */
   readonly positions: ReadonlyMap<string, Vec3>;
+  readonly reflections: readonly StorySceneReflection[];
   readonly dressing: { readonly models: number; readonly standIns: number };
 }
 
@@ -580,9 +900,22 @@ export function buildStoryScene(story: StorySpec, options: { readonly modelAvail
   return {
     builder: built.builder,
     nodeIds: built.nodes.map((n) => n.id),
-    runtimeIds: [...built.nodes.flatMap((n) => n.pieces.map((p) => p.id)), ...RING_IDS, ...HALO_IDS],
+    runtimeIds: [
+      ...built.nodes.flatMap((n) => n.pieces.map((p) => p.id)),
+      ...built.reflections.flatMap((r) => r.pieces.map((p) => p.id)),
+      ...RING_IDS,
+      ...HALO_IDS
+    ],
     drawnAs: new Map(built.nodes.map((n) => [n.id, n.drawnAs])),
     positions: new Map(built.nodes.map((n) => [n.id, n.base])),
+    reflections: built.reflections.map((r) => ({
+      id: r.id,
+      of: r.actorId,
+      in: r.mirrorId,
+      drawnAs: r.drawnAs,
+      pieceIds: r.pieces.map((p) => p.id),
+      layout: { heightM: r.heightM, size: r.size, k: r.k, glassCenterY: r.glassCenterY, glassRadius: r.glassRadius, baseZ: r.baseZ, maxShift: r.maxShift }
+    })),
     dressing: { models: built.world.models, standIns: built.world.standIns }
   };
 }
@@ -739,6 +1072,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   let worldId: WorldId | null = null;
   let nodes = new Map<string, StageNode>();
   let order: StageNode[] = [];
+  let reflections: Reflection[] = [];
+  let songRun: SongRun | null = null;
   let activeTargets: string[] = [];
   let time = 0;
   let cameraPreset: CameraPresetId = DEFAULT_CAMERA_PRESET;
@@ -1068,8 +1403,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const applyOne = (action: StageAction): void => {
     switch (action.do) {
       case "sfx":
-      case "song":
       case "music":
+        return;
+      case "song":
+        startSong(action);
         return;
       case "camera":
         setCameraPreset(action.preset);
@@ -1128,6 +1465,137 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
+  /** Applies one action; a failure is a warning, never a throw. */
+  const applySafely = (action: StageAction): void => {
+    try {
+      applyOne(action);
+    } catch (error) {
+      warn(`apply ${action.do}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
+
+  // ---- songs (PRD 04 C06; 07 B20): lyric lines start on the story clock
+
+  /** The node ids an action names (none for sounds, music, the camera and songs). */
+  const namedNodes = (action: StageAction): string[] => {
+    switch (action.do) {
+      case "enter":
+      case "exit":
+      case "move":
+      case "gesture":
+      case "show":
+      case "hide":
+        return [action.actor];
+      case "face":
+        return action.toward === "viewer" ? [action.actor] : [action.actor, action.toward];
+      case "carry":
+        return action.item === null ? [action.actor] : [action.actor, action.item];
+      case "object":
+        return [action.target];
+      case "sfx":
+      case "music":
+      case "camera":
+      case "song":
+        return [];
+    }
+  };
+
+  /** Who performs a song that names no performers: the cast characters on stage and shown (not fading out). */
+  const defaultPerformers = (): string[] =>
+    order
+      .filter((n) => n.role === "actor" && n.characterId !== null && isShown(n) && !(n.appear !== null && !n.appear.showing) && !isOffStage(n.home))
+      .map((n) => n.id);
+
+  /** Lyric line `index` starts: every performer plays its motion (the calm variant in reduced motion), then its cues apply in order. */
+  const startSongLine = (run: SongRun, index: number): void => {
+    const line = run.lines[index];
+    if (!line) return;
+    if (line.motion !== null) {
+      const gesture = reducedMotion ? calmGesture(line.motion) : line.motion;
+      for (const id of run.performers) director.gesture(id, gesture, false);
+    }
+    if (line.cues.length === 0) return;
+    for (const action of line.cues) applySafely(action);
+    if (options.onSongCue) {
+      try {
+        options.onSongCue({ song: run.song, line: index, actions: line.cues });
+      } catch (error) {
+        warn(`onSongCue: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  };
+
+  /** Moves the running song on by `dtMs` of story time, starting each line whose time has come, once and in order. */
+  const advanceSong = (dtMs: number): void => {
+    const run = songRun;
+    if (!run) return;
+    run.elapsedMs += dtMs;
+    while (songRun === run && run.next < run.lines.length && (run.startsMs[run.next] ?? Infinity) <= run.elapsedMs) {
+      const index = run.next;
+      run.next += 1;
+      startSongLine(run, index);
+    }
+    if (songRun === run && run.next >= run.lines.length && run.elapsedMs >= run.totalMs) songRun = null;
+  };
+
+  /** A `song` action: cancels any running song and starts this one's choreography; line 0 starts now. */
+  const startSong = (action: Extract<StageAction, { do: "song" }>): void => {
+    songRun = null;
+    const tag = `song ${action.song}`;
+    if (!Object.prototype.hasOwnProperty.call(SONGS, action.song)) {
+      warn(`song: no song "${action.song}"`);
+      return;
+    }
+    const spec = SONGS[action.song];
+    const recorded = AUDIO_MANIFEST.songs[action.song]?.durationMs;
+    const startsMs = songCueTimesMs(action.song, recorded);
+    const totalMs = recorded !== undefined && Number.isFinite(recorded) && recorded > 0 ? recorded : songLengthSec(spec) * 1000;
+    const motions: (Gesture | null)[] = spec.lyrics.map((_, index) => {
+      const motion = spec.motions[index];
+      if (motion !== undefined && isGesture(motion)) return motion;
+      warn(`${tag}: line ${index} has no motion that is a gesture (${motion ?? "none"})`);
+      return null;
+    });
+    const cues: StageAction[][] = spec.lyrics.map(() => []);
+    for (const cue of action.cues ?? []) {
+      const list = Number.isInteger(cue.line) ? cues[cue.line] : undefined;
+      if (!list) {
+        warn(`${tag}: cue line ${cue.line} is not one of its ${spec.lyrics.length} lyric lines`);
+        continue;
+      }
+      for (const cueAction of cue.stage) {
+        if (cueAction.do === "song") {
+          warn(`${tag}: a cue on line ${cue.line} starts song "${cueAction.song}"; a cue never starts a song (skipped)`);
+          continue;
+        }
+        const unknown = namedNodes(cueAction).filter((id) => !nodes.has(id));
+        for (const id of unknown) warn(`${tag}: a cue on line ${cue.line} (${cueAction.do}) names no node "${id}"`);
+        if (unknown.length > 0) continue;
+        list.push(cueAction);
+      }
+    }
+    let performers: string[];
+    if (action.performers === undefined) {
+      performers = defaultPerformers();
+    } else {
+      performers = [];
+      for (const id of action.performers) {
+        if (!nodes.has(id)) warn(`${tag}: no performer node "${id}"`);
+        else if (!performers.includes(id)) performers.push(id);
+      }
+    }
+    songRun = {
+      song: action.song,
+      performers,
+      startsMs,
+      lines: motions.map((motion, index) => ({ motion, cues: cues[index] ?? [] })),
+      totalMs,
+      next: 0,
+      elapsedMs: 0
+    };
+    advanceSong(0);
+  };
+
   // ---- per-frame
   const targetYawFor = (n: StageNode, position: Vec3): number => {
     if (n.traits.round) return n.heading;
@@ -1184,6 +1652,13 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     }
   };
 
+  /** The soft pop of a show (0.6 to 1, a little past) or the shrink of a hide (1 to 0.6); 1 otherwise. */
+  const appearScaleOf = (n: StageNode): number => {
+    if (!n.appear) return 1;
+    const u = n.appear.elapsed / Math.max(0.01, n.appear.duration);
+    return n.appear.showing ? 0.6 + 0.4 * ease("outBackSoft", u) : 1 - 0.4 * ease("inOutSine", u);
+  };
+
   const poseOf = (n: StageNode): { pose: StagePose; visible: boolean } => {
     let position: Vec3;
     let moveOffset: PoseOffset = NEUTRAL_POSE;
@@ -1213,11 +1688,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     const running = n.object.running ? runningPose(time, reducedMotion) : NEUTRAL_POSE;
     const highlighted = activeTargets.slice(0, MAX_HIGHLIGHTS).includes(n.id);
     const breathing = highlighted && !reducedMotion ? breathe(time, 0.045) : 1;
-    let appearScale = 1;
-    if (n.appear) {
-      const u = n.appear.elapsed / Math.max(0.01, n.appear.duration);
-      appearScale = n.appear.showing ? 0.6 + 0.4 * ease("outBackSoft", u) : 1 - 0.4 * ease("inOutSine", u);
-    }
+    const appearScale = appearScaleOf(n);
     const p = addPose(gesture, transient, moveOffset, running);
     const yaw = carrierYaw ?? n.yaw;
     const mul = n.scaleMul.value * breathing * appearScale;
@@ -1282,6 +1753,29 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const rotation = composeRotation(pose.rotation, piece.rotation);
       write(piece.id, position, rotation, pose.scale, visible);
     }
+  };
+
+  // ---- reflections: drawn after their mirror and character, from this frame's poses
+  const reflectionShown = (r: Reflection): boolean => {
+    const mirror = nodes.get(r.mirrorId);
+    const actor = nodes.get(r.actorId);
+    return mirror !== undefined && actor !== undefined && isShown(mirror) && isShown(actor);
+  };
+
+  const writeReflection = (r: Reflection, pose: StagePose): void => {
+    r.drawn = pose;
+    for (const piece of r.pieces) write(piece.id, placePiece(pose, piece.center), composeRotation(pose.rotation, piece.rotation), pose.scale, true);
+  };
+
+  const renderReflection = (r: Reflection): void => {
+    const mirror = nodes.get(r.mirrorId);
+    const actor = nodes.get(r.actorId);
+    if (!mirror || !actor || !reflectionShown(r)) {
+      for (const piece of r.pieces) write(piece.id, [0, -10, 0], [0, 0, 0], [1, 1, 1], false);
+      return;
+    }
+    // Momo's gesture, idle and talking pulse as a mirror image; it shrinks with her own soft hide.
+    writeReflection(r, reflectionPose(mirror.drawn, r, director.pose(actor.id), appearScaleOf(actor) * actor.scaleMul.value));
   };
 
   /** Height of the bottom of a node's body as drawn last frame. */
@@ -1367,6 +1861,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
 
   const frame = (dt: number): void => {
     time += dt;
+    // Song lines whose time has come start first, as if their motions and cues were applied just before this frame.
+    advanceSong(dt * 1000);
     director.update(dt);
     // Carriers first so carried items follow this frame's pose.
     const carriers = order.filter((n) => !n.carriedBy);
@@ -1381,6 +1877,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
         render(n, pose, visible);
       }
     }
+    for (const r of reflections) renderReflection(r);
     renderHighlights(dt);
     if (cameraElapsed < cameraDuration) cameraElapsed = Math.min(cameraDuration, cameraElapsed + dt);
     applyCamera(cameraPoseNow(), false);
@@ -1397,6 +1894,10 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       n.center = placePiece(pose, [0, n.heightM / 2, 0]);
       for (const piece of n.pieces) write(piece.id, placePiece(pose, piece.center), piece.rotation, [1, 1, 1], true);
     }
+    for (const r of reflections) {
+      const mirror = nodes.get(r.mirrorId);
+      if (mirror) writeReflection(r, reflectionPose(mirror.drawn, r, NEUTRAL_POSE));
+    }
     RING_IDS.forEach((id, index) => write(id, [index === 0 ? -0.6 : 0.6, 0.02, 0.4], [Math.PI / 2, 0, 0], [1, 1, 1], true));
     HALO_IDS.forEach((id, index) => write(id, [index === 0 ? -0.6 : 0.6, 0.8, -0.5], [0, 0, 0], [0.8, 0.8, 0.8], true));
   };
@@ -1407,6 +1908,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     ringOwner.fill(null);
     nodes = new Map(built.nodes.map((n) => [n.id, n]));
     order = [...built.nodes];
+    reflections = [...built.reflections];
+    songRun = null;
     activeTargets = [];
     modelNodeCount = built.nodes.filter((n) => n.drawnAs === "model").length;
     standInNodeCount = built.nodes.length - modelNodeCount;
@@ -1514,6 +2017,8 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
   const stage: WonderStage = {
     load(next) {
       if (disposed) return Promise.resolve();
+      // A new story is coming: the old one's song stops starting lines and cues now.
+      songRun = null;
       const seq = ++loadSeq;
       const run = loadChain
         .then(() => load(next, seq))
@@ -1527,13 +2032,7 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
     },
     apply(actions) {
       if (disposed) return;
-      for (const action of actions) {
-        try {
-          applyOne(action);
-        } catch (error) {
-          warn(`apply ${action.do}: ${error instanceof Error ? error.message : String(error)}`);
-        }
-      }
+      for (const action of actions) applySafely(action);
     },
     setTalking(actor) {
       director.setTalking(actor !== null && nodes.has(actor) ? actor : null);
@@ -1574,10 +2073,12 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       disposed = true;
       loadSeq += 1;
       mounted = false;
+      songRun = null;
       director.clear();
       preloader.dispose();
       nodes.clear();
       order = [];
+      reflections = [];
       activeTargets = [];
       written.clear();
       veil?.remove();
@@ -1640,9 +2141,21 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
       const out: TargetRect[] = [];
       for (const id of ids) {
         const n = nodes.get(id);
-        if (!n || !isShown(n)) continue;
-        const c = candidateOf(n);
-        const rect = boxToCssRect(standingBox(c.base, c.size), pose, width / height, width, height);
+        let box: Box3;
+        if (n) {
+          if (!isShown(n)) continue;
+          const c = candidateOf(n);
+          box = standingBox(c.base, c.size);
+        } else {
+          // A reflection: its drawn body in the glass.
+          const r = reflections.find((candidate) => candidate.id === id);
+          if (!r || !r.drawn || !reflectionShown(r)) continue;
+          const s = r.drawn.scale;
+          const size: Vec3 = [r.size[0] * Math.abs(s[0]), r.size[1] * Math.abs(s[1]), r.size[2] * Math.abs(s[2])];
+          const middle = placePiece(r.drawn, [0, r.heightM / 2, 0]);
+          box = standingBox([middle[0], middle[1] - size[1] / 2, middle[2]], size);
+        }
+        const rect = boxToCssRect(box, pose, width / height, width, height);
         if (rect) out.push({ id, x: rect.x, y: rect.y, w: rect.w, h: rect.h });
       }
       return out;
@@ -1670,7 +2183,18 @@ export async function createStage(options: StageOptions): Promise<WonderStage> {
             gesture: anim?.gesture ?? null,
             moving: n.move !== null
           };
-        })
+        }),
+        song: songRun
+          ? { id: songRun.song, line: songRun.next - 1, lines: songRun.lines.length, performers: [...songRun.performers] }
+          : null,
+        reflections: reflections.map((r) => ({
+          id: r.id,
+          of: r.actorId,
+          in: r.mirrorId,
+          visible: reflectionShown(r),
+          drawnAs: r.drawnAs,
+          gesture: director.snapshot(r.actorId)?.gesture ?? null
+        }))
       };
     },
     prefetch(next) {

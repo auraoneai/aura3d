@@ -592,6 +592,18 @@ describe("the content lint catches each rule (synthetic stories)", () => {
     expectProblem(errors, 'music bed "forestBed" does not exist');
   });
 
+  it("checks a song's performers and line cues (07 B20)", () => {
+    const withSong = (song: Record<string, unknown>): StorySpec =>
+      untrusted(editBeat(base, "song", (beat) => ({ ...beat, stage: beat.stage.map((action) => (action.do === "song" ? { ...action, ...song } : action)) })));
+    const cue = (line: number, stage: readonly unknown[]): Record<string, unknown> => ({ line, stage });
+    expect(validateStory(withSong({ performers: ["momo"], cues: [cue(1, [{ do: "sfx", sound: "woof" }])] }), baseLocale)).toEqual([]);
+    expectProblem(validateStory(withSong({ performers: ["lulu"] }), baseLocale), 'song performer "lulu" is not in the cast');
+    expectProblem(validateStory(withSong({ cues: [cue(4, [])] }), baseLocale), 'song "ballRolls" cue line 4 is outside its 4 lyric lines');
+    expectProblem(validateStory(withSong({ cues: [cue(1, []), cue(1, [])] }), baseLocale), 'song "ballRolls" has two cues for line 1');
+    expectProblem(validateStory(withSong({ cues: [cue(2, [{ do: "song", song: "hello" }])] }), baseLocale), "cue line 2 starts another song");
+    expectProblem(validateStory(withSong({ cues: [cue(0, [{ do: "sfx", sound: "roar" }])] }), baseLocale), 'song cue 0: sound effect "roar" does not exist');
+  });
+
   it("never lets a song play under speech or get cut off", () => {
     const underSpeech = editBeat(base, "greet", (beat) => ({ ...beat, stage: [...beat.stage, { do: "song", song: "goStop" }] }));
     expectProblem(validateStory(underSpeech, baseLocale), "would play under the beat's own spoken lines");

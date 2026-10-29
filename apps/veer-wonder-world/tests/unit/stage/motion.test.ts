@@ -21,12 +21,15 @@ import {
   hingeSwingOffset,
   hopArc,
   isNeutral,
+  mirrorPoseOffset,
   moveDurationSec,
   phaseOf,
   placePiece,
   planObjectAction,
   popScale,
+  pose,
   proc,
+  reducedMotionSpec,
   rollAngle,
   rotateYaw,
   rotateZYX,
@@ -36,6 +39,7 @@ import {
   sampleLayer,
   sampleMove,
   sampleTransient,
+  scalePoseTranslation,
   squashStretch,
   talkPulse,
   tipEdgeOffset,
@@ -165,6 +169,25 @@ describe("building blocks", () => {
     close(d.dy, 0.15);
     close(d.sy, 1.16);
     expect(isNeutral(dampPose(a, 0))).toBe(true);
+  });
+
+  it("mirrors an offset left to right (sideways steps, rocks and turns flip; up, lean and scale stay)", () => {
+    const p = pose({ dx: 0.1, dy: 0.2, dz: 0.05, rx: 0.3, ry: 0.4, rz: -0.25, sx: 1.1, sy: 0.9, sz: 1.05 });
+    expect(mirrorPoseOffset(p)).toEqual({ ...p, dx: -0.1, ry: -0.4, rz: 0.25 });
+    expect(mirrorPoseOffset(mirrorPoseOffset(p))).toEqual(p);
+    expect(isNeutral(mirrorPoseOffset(NEUTRAL_POSE))).toBe(true);
+    expect(scalePoseTranslation(p, 0.5)).toEqual({ ...p, dx: 0.05, dy: 0.1, dz: 0.025 });
+  });
+
+  it("reduced motion leaves out spins and keeps the rest of the gesture and its timing", () => {
+    const happy = gestureMotion([proc("spin", 1.8, 1), proc("float", 1.8, 0.08)]);
+    const calm = reducedMotionSpec(happy);
+    expect(calm.layers.map((layer) => layer.kind)).toEqual(["float"]);
+    expect(calm.durationSec).toBe(happy.durationSec);
+    const glow = gestureMotion([proc("pulse", 2.0, 0.05)], { halo: true });
+    expect(reducedMotionSpec(glow)).toBe(glow);
+    const hold = gestureMotion([proc("spin", 1, 1), proc("duck", 1, 0.3)], { hold: true });
+    expect(reducedMotionSpec(hold).hold).toBe(true);
   });
 });
 

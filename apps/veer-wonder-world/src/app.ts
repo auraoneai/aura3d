@@ -231,6 +231,8 @@ export function storyMusic(story: StorySpec): { readonly songs: readonly SongId[
     for (const action of actions ?? []) {
       if (action.do === "song" && !songs.includes(action.song)) songs.push(action.song);
       if (action.do === "music" && action.bed !== null && !beds.includes(action.bed)) beds.push(action.bed);
+      // A song's line cues can change the bed too (07 B20).
+      if (action.do === "song") for (const cue of action.cues ?? []) scan(cue.stage);
     }
   };
   for (const beat of beats) {
@@ -1153,7 +1155,15 @@ export function createApp(options: WonderAppOptions): WonderApp {
     reducedMotion: reducedMotionNow(),
     models: flags.models,
     ...(flags.modelWaitMs !== null ? { modelTimeoutMs: flags.modelWaitMs } : {}),
-    ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {})
+    ...(flags.audio ? { sound: mixer.gameSoundOptions() } : {}),
+    // A song line's cues are applied by the stage; their sounds are the mixer's (07 B20).
+    onSongCue: (cue) => {
+      if (disposed || !runningStory()) return;
+      for (const action of cue.actions) {
+        if (action.do === "sfx") mixer.playSfx(action.sound);
+        else if (action.do === "music") mixer.setBed(action.bed);
+      }
+    }
   }).then((created) => {
     if (disposed) {
       created.dispose();
