@@ -33,10 +33,10 @@ describe("pips-big-leap shell", () => {
     expect(css).toContain("@media (prefers-reduced-motion: reduce)");
   });
 
-  it("C7: no cap row (Pip's GLB has one baked material); the cape shows at rest", () => {
+  it("C7: no cap row (Pip's GLB has one baked material); the cape shows whenever Pip moves", () => {
     expect(html).not.toContain("pbl-cap-swatches");
     expect(Object.keys(nodeName)).not.toContain("heroCap");
-    expect(main).toContain('cape?.setVisible(p.state !== "dead")');
+    expect(main).toContain('cape?.setVisible(p.state === "glide" || (moving && p.state !== "dead"))');
   });
 
   it("C10: a failed world swap restores the previous run and tells the player", () => {

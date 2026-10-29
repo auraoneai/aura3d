@@ -858,14 +858,17 @@ function driveAnimation(p: PlayerState, dt: number): void {
     hero.setAnimation({ clip: spec.clip, loop: spec.loop ?? true, speed: spec.speed ?? 1 });
   }
 
-  // Studio cape tracks the 1.25 m hero: it hangs on his back at rest and
-  // spreads out while he glides.
+  // Studio cape tracks the 1.25 m hero: it hangs low on his back while he
+  // moves and spreads out above him while he glides. Standing still it is
+  // hidden (the idle clip turns Pip toward the lens, where a back panel would
+  // cover his face).
   const cape = node(nodeName.heroCape);
   const fwdX = Math.sin(p.yaw), fwdZ = Math.cos(p.yaw);
-  cape?.setVisible(p.state !== "dead");
-  const capeLift = p.state === "glide" ? 0.24 : 0;
-  cape?.setPosition(p.x - fwdX * 0.22, p.y + 0.72 + capeLift, p.z - fwdZ * 0.22);
-  cape?.setRotation(p.state === "glide" ? 1.1 : 0.35, p.yaw, 0);
+  const moving = Math.hypot(p.vx, p.vz) > 0.4 || !p.grounded;
+  cape?.setVisible(p.state === "glide" || (moving && p.state !== "dead"));
+  const gliding = p.state === "glide";
+  cape?.setPosition(p.x - fwdX * (gliding ? 0.22 : 0.2), p.y + (gliding ? 0.96 : 0.42), p.z - fwdZ * (gliding ? 0.22 : 0.2));
+  cape?.setRotation(gliding ? 1.1 : 0.2, p.yaw, 0);
 
   // Smooth third-person follow camera behind Pip looking down the platformer
   // path. A trunk/boulder between Pip and the lens shortens the boom instead
