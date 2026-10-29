@@ -120,21 +120,16 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
     }
     log(`RH_META ${JSON.stringify({ name: "textures-settled", waitedMs: Date.now() - texStart, ...(await probe(page)) })}`);
 
-    const cdp = await page.context().newCDPSession(page);
-    const phone = async (): Promise<void> => {
-      await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
-      await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 });
-      // The page picks touch controls from (pointer: coarse) at load; a phone frame shows them (no effect on the base build).
-      await page.evaluate(() => { document.body.classList.add("touch"); window.dispatchEvent(new Event("resize")); });
+    // Viewport changes on the same page (the texture upgrade takes minutes per page load on software GL). Playwright's own
+    // viewport wins over CDP metrics overrides, so phone and card frames use setViewportSize. The phone frame adds the
+    // `touch` class the page sets from (pointer: coarse) at load (no effect on the base build).
+    const size = async (width: number, height: number, touch: boolean): Promise<void> => {
+      await page.setViewportSize({ width, height });
+      await page.evaluate((t) => { document.body.classList.toggle("touch", t); window.dispatchEvent(new Event("resize")); }, touch);
       await page.waitForTimeout(800);
     };
-    const desktop = async (): Promise<void> => {
-      await cdp.send("Emulation.setTouchEmulationEnabled", { enabled: false });
-      await cdp.send("Emulation.clearDeviceMetricsOverride");
-      await page.setViewportSize({ width: 1280, height: 720 });
-      await page.evaluate(() => { document.body.classList.remove("touch"); window.dispatchEvent(new Event("resize")); });
-      await page.waitForTimeout(800);
-    };
+    const phone = (): Promise<void> => size(390, 844, true);
+    const desktop = (): Promise<void> => size(1280, 720, false);
 
     await shot(page, "title.1280x720");
     await phone();
@@ -153,11 +148,10 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
     await shot(page, "key-drive.390x844");
     await desktop();
 
-    // Card frame: 720x450 at 2x, 1.29 s into the run.
+    // Card state: 1.29 s into the run.
     await beginAndStep(page, 324 + 155);
-    await cdp.send("Emulation.setDeviceMetricsOverride", { width: 720, height: 450, deviceScaleFactor: 2, mobile: false });
-    await page.evaluate(() => window.dispatchEvent(new Event("resize")));
-    await page.waitForTimeout(800);
+    // Card frame: the published card is 1440x900 (16:10); taken at a 1440x900 viewport (device scale 1 on this page).
+    await size(1440, 900, false);
     await shot(page, "card.2x.1440x900");
     await desktop();
 
@@ -180,6 +174,25 @@ test.describe("roadster-hours-port audit fix (G22)", () => {
     const tap = await recoverTap(page);
     log(`RH_META ${JSON.stringify({ name: "c1-recover-tap", ...tap })}`);
     log("RH_DONE screens");
+  });
+
+  test("card", async ({ page }) => {
+    // The card frame loads at 1440x900 from the start: growing the window after load leaves the old backing size on screen
+    // (handoff to E1 in docs/audits/lanes/g22.md).
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`${server.origin}/examples/roadster-hours-port/?manual=1&level=0`, { waitUntil: "domcontentloaded" });
+    await waitReady(page);
+    const texStart = Date.now();
+    while (Date.now() - texStart < TEXTURE_WAIT_MS) {
+      const t = await page.evaluate(() => (window as unknown as { __AURA_ROADSTER_HOURS__: Hooks }).__AURA_ROADSTER_HOURS__.textures?.() ?? null);
+      if (!t || (t.pending === 0 && t.textured > 0)) break;
+      await api(page, "renderNow");
+      await page.waitForTimeout(5000);
+    }
+    await beginAndStep(page, 324 + 155);
+    await page.waitForTimeout(20_000);
+    await shot(page, "card.2x.1440x900", { waitedMs: Date.now() - texStart });
+    log("RH_DONE card");
   });
 
   for (const level of [0, 2]) {
