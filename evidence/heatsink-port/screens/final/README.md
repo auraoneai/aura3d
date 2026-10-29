@@ -1,40 +1,21 @@
-# Ion Circuit: final screenshots (after the UI and render fixes)
+# Ion Circuit: final screenshots (audit-fix retake, 2026-10-29)
 
-- **Build:** head of `origin/game-rework` at `0d965903c` (fetched at the start of this capture; includes the group B UI fixes, the Gridlock first-frame fix and the athlete repaint). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts` (unchanged from the earlier retake).
-- **Runner:** remote Azure ACR task `finb-circuit` (tools/remote-acr/run.sh), headless Chromium on SwiftShader: software WebGL2, not a GPU. Nothing here is real-GPU evidence; the owner should confirm the look on the Mac.
-- **Viewports:** 640x360 reduced low-quality canvas and 390x844 (HEATSINK never finishes under software GL at 1280x720; labelled reduced). Card images: `card.jpg` is 720x450 (downscaled from `card@2x.jpg`, 1440x900 captured at 1x device scale).
-- **Method:** states are driven through the game QA hooks (manual stepping) so frames are deterministic; the title frame is taken from the normal page. `capture-log.txt` has the per-frame state, the visible overlays and the console errors (empty for every pass).
+- **Build:** branch `audit-fix/g19` (4.5.0 engine plus the lane G19 fixes: GO banner, HUD, touch controls, contact shadow, strip bounds, LIGHT-01 environment). Capture code: `tests/browser/shotsb-lib.ts` and `tests/browser/shotsb-circuit.spec.ts`.
+- **Runner:** remote Azure ACR task `g19-w3-screens` (`tools/remote-acr/run.sh`), headless Chromium on SwiftShader: software WebGL2, not a GPU. The owner should confirm the look on real hardware.
+- **Viewports:** 640x360 reduced low-quality canvas and 390x844 (touch device, so the touch controls show). Card: `card@2x.jpg` is the strike state at 1440x900, `card.jpg` is it downscaled to 720x450. Same file names and sizes as the previous set.
+- **Method:** states are driven through the game QA hooks (manual stepping), so frames are deterministic; the title frame is the normal page. `capture-log.txt` has the per-frame state, the visible overlays and the console errors.
 
 ## Frames
 
-- `card.jpg`
-- `card@2x.jpg`
-- `early-390.jpg`
-- `early-640.jpg`
-- `mid-action-390.jpg`
-- `mid-action-640.jpg`
-- `results-390.jpg`
-- `results-640.jpg`
-- `start-390.jpg`
-- `start-640.jpg`
-- `strike-390.jpg`
-- `strike-640.jpg`
-- `title-390.jpg`
-- `title-640.jpg`
+- `title-640.jpg`, `title-390.jpg`: menu over the countdown.
+- `early-*`, `start-*`: countdown (3 and 2).
+- `strike-*`: step 323 of the strike replay, the first kill, 2.2 s into the race: the GO banner has cleared and the next-target line is visible.
+- `mid-action-*`: step 1148, a barrel shot at 170 m/s.
+- `results-*`: a real finished race (lane-follow bot at 80 m/s, `autopilot` hook): GOLD, 42 of 48 kills, finish time 4:49.233, with the medal rules under the stats.
+- `card.jpg`, `card@2x.jpg`: the strike state.
 
-## States reached and not reached
+## Changes against the previous set (2026-10-25)
 
-Reached: title, start (countdown), early, strike (deterministic strike replay, gun held), mid-action. Card: strike (1440x900 at the reduced quality setting). Not reached: a finished-race results card. The strike replay has no finish, so the `results` frames (`results-640`, `results-390`) show the race in progress.
-
-## Checked against the fixed list (frames opened and read: title 640 and 390, early 640, strike 640, mid-action 390 and 640, strike card)
-
-- Old names or "port" text: none in the frames.
-- Black frames: none.
-- Brand marks or lettering: none seen.
-
-## Problems still visible (severity)
-
-- **Low:** in the countdown frame the large "3" overlaps the objective text and the drone.
-- **Low:** the `results` frames are not results (see above).
-- **Note (not a defect):** the dark bar across the top of the 390 frames is a checkpoint gate crossbar seen close in a narrow view.
-- Fixed since the first retake: the title menu no longer overlaps the objective text; the top HUD row wraps inside the viewport on 390.
+- The countdown banner is no longer hidden by the capture code; it clears by itself (HP-01).
+- The `results` frames used to show a race in progress; they now show a finished card (audit "Tests and evidence gaps").
+- HUD: KILLS / RACE, HULL pips, best lap under TIME (HP-06, HP-15). The 390 frames show the touch buttons (HP-03).
