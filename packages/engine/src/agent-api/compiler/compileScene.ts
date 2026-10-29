@@ -42,7 +42,7 @@ import type { CollectedLight, EnvironmentLightingOptions, ProductionRendererInpu
 import type { EnvironmentProbe } from "@aura3d/rendering/contracts";
 import { environmentProbeFactorySlot, isEnvironmentProbeFactoryPending } from "@aura3d/rendering/contracts";
 import { EnvironmentCache, defaultProbeLoader } from "../../../../rendering/src/environment/EnvironmentCache.js";
-import { bindPrd02EnvironmentProbe, prd02ProbeBindIntensities } from "./environment.js";
+import { bindPrd02EnvironmentProbe, prd02ProbeBindIntensities, runtimeEnvironmentIntensity, scaleEnvironmentLighting } from "./environment.js";
 import { resolveEnvironment, type AuraEnvironmentSourceResolution } from "../../contracts/environment.js";
 import { prd02LightingOn } from "./lights.js";
 import { colorToLinearRgb } from "../colorUtils.js";
@@ -454,6 +454,10 @@ function updateCompiledSceneReal(
   }
 
   const liveSnapshot = impl.liveNodes === undefined ? snapshot : { ...snapshot, nodes: impl.liveNodes };
+  // app.lighting.setEnvironmentIntensity: a live scale on the environment term (legacy map path here, probe bind below).
+  const environmentScale = runtimeEnvironmentIntensity(runtime);
+  const knobLightingBase = ctx.environmentLighting(liveSnapshot);
+  const knobLightingScaled = scaleEnvironmentLighting(knobLightingBase, environmentScale);
   const input = createProductionRuntimeRendererInput(
     liveSnapshot,
     ctx.canvas,
@@ -462,7 +466,7 @@ function updateCompiledSceneReal(
     timeSeconds,
     runtime,
     ctx.runtimeWarnings,
-    ctx.environmentLighting(liveSnapshot),
+    knobLightingScaled,
     ctx.collectedLights,
     // T4.1: the mounted ctx's C-36 degrade handler owns pose/foot/morph
     // failures on the flag-on path (strict throws; non-strict warns once).
@@ -531,7 +535,8 @@ function updateCompiledSceneReal(
         // is the single IBL intensity source the probe bind carries (see
         // prd02ProbeBindIntensities). This block already runs only under
         // prd02LightingOn, so COMPILER completes the conjunction.
-        const knobLighting = probed.environmentLighting;
+        // The knob is read unscaled; the runtime environment scale multiplies the bound intensities once, below.
+        const knobLighting = probed.environmentLighting === knobLightingScaled ? knobLightingBase : probed.environmentLighting;
         // Flag-on the C-09 probe owns environment lighting — the legacy studio
         // procedural object would early-return `collectEnvironmentLighting`.
         probed.environmentLighting = undefined;
@@ -541,8 +546,8 @@ function updateCompiledSceneReal(
         // paint a grey room over the authored `scene().background(colour)`.
         probed.environmentProbeBackground = resolution.background !== false && resolution.background.visible;
         const probeIntensities = prd02ProbeBindIntensities(knobLighting, resolution, ctx.flags.on("A3D_QR_COMPILER"));
-        probed.environmentProbeDiffuseIntensity = probeIntensities.diffuseIntensity;
-        probed.environmentProbeSpecularIntensity = probeIntensities.specularIntensity;
+        probed.environmentProbeDiffuseIntensity = probeIntensities.diffuseIntensity * environmentScale;
+        probed.environmentProbeSpecularIntensity = probeIntensities.specularIntensity * environmentScale;
         probed.environmentProbeAmbient = resolution.ambient
           ? { color: colorToLinearRgb(resolution.ambient.color), intensity: resolution.ambient.intensity }
           : null;

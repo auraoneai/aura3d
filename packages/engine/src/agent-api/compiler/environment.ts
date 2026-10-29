@@ -474,6 +474,38 @@ export function explicitEnvironmentResolution(
   }
 }
 
+// ---------- app.lighting.setEnvironmentIntensity (runtime scale) ----------
+
+/**
+ * Runtime environment-intensity scale per app, keyed by the app's runtime node registry (`app.nodes`, the
+ * object the mounted scene's per-frame update receives). `app.lighting.setEnvironmentIntensity(v)` writes
+ * it; the update multiplies the environment term (image-based diffuse and specular) by it every frame, on
+ * the PRD-02 probe bind and on the legacy environment-map path. Lights, the ambient term and the
+ * background are not scaled (three.js `scene.environmentIntensity` semantics). Default 1.
+ */
+const runtimeEnvironmentIntensities = new WeakMap<object, number>();
+
+export function setRuntimeEnvironmentIntensity(owner: object, value: number): void {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new RangeError(`setEnvironmentIntensity expects a finite number >= 0, got ${String(value)}.`);
+  }
+  runtimeEnvironmentIntensities.set(owner, value);
+}
+
+export function runtimeEnvironmentIntensity(owner: object | null | undefined): number {
+  return owner ? runtimeEnvironmentIntensities.get(owner) ?? 1 : 1;
+}
+
+/** The environment-map terms of a legacy knob object times `scale`; the ambient colour/intensity is untouched. */
+export function scaleEnvironmentLighting(lighting: EnvironmentLightingOptions, scale: number): EnvironmentLightingOptions {
+  if (scale === 1) return lighting;
+  return {
+    ...lighting,
+    ...(lighting.environmentMapIntensity !== undefined ? { environmentMapIntensity: lighting.environmentMapIntensity * scale } : {}),
+    ...(lighting.environmentMapSpecularIntensity !== undefined ? { environmentMapSpecularIntensity: lighting.environmentMapSpecularIntensity * scale } : {})
+  };
+}
+
 /**
  * E3 stage-2b (step 3): intensities the C-09 probe bind carries to the
  * renderer. Under the conjunction with an explicit (authored-environment)
