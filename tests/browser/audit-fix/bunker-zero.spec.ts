@@ -118,7 +118,8 @@ async function open(page: Page, server: ExampleDevServer, name: string, url: str
   // the onboarding card (C27) pauses a first visit; close it so before and after builds both run the sim
   await page.evaluate(() => (globalThis as any).__AURA_BUNKER_ZERO_QA__?.dismissIntro?.());
   // phones: a first touch shows the touch layer even where (pointer: coarse) does not match in the emulated context
-  if (viewport.width < 500) await page.evaluate(() => window.dispatchEvent(new Event("touchstart")));
+  // (a synthetic event carries an empty `touches` list, as the engine's touch handler reads touches[0])
+  if (viewport.width < 500) await page.evaluate(() => { const e = new Event("touchstart"); Object.defineProperty(e, "touches", { value: [] }); window.dispatchEvent(e); });
   return Date.now();
 }
 
