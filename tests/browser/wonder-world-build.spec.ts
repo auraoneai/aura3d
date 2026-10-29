@@ -99,9 +99,11 @@ test("wonder world passes its content lint, builds with Vite and passes check-de
 
   // The settle covers the whole stage boot. check-deploy closes the page when the settle ends, and the close aborts any
   // request still in flight, which it reports as a failed request: run wonder-A-20261029T135132Z failed that way with a
-  // 4 s settle (a model request of the idle scene, ERR_ABORTED). On this runner's software WebGL2 the boot (GLB decode
-  // and shader warm-up) takes minutes, so the page stays open for 5 minutes after the network first goes idle.
-  const check = run("npx", ["-y", "@aura3d/cli@4.5.0", "check-deploy", "--dist", "dist", "--no-assets", "--browser", "--route", "/", "--browser-timeout", "180000", "--browser-settle", "300000"], app, 20 * 60_000);
+  // 4 s settle (a model request of the idle scene, ERR_ABORTED), and run wonder-first-frame-build-20261029T172337Z once
+  // with a 5-minute one. On this runner's software WebGL2 the boot (GLB decode and shader warm-up) holds the page's
+  // main thread for minutes, which also stalls the idle scene's model downloads, so the page stays open for 10 minutes
+  // after the network first goes idle.
+  const check = run("npx", ["-y", "@aura3d/cli@4.5.0", "check-deploy", "--dist", "dist", "--no-assets", "--browser", "--route", "/", "--browser-timeout", "180000", "--browser-settle", "600000"], app, 25 * 60_000);
   const tail = check.out.split("\n").slice(-60).join("\n");
   console.log(tail);
   emitJson("check-deploy", { status: check.status, tail: tail.slice(-4000) });
