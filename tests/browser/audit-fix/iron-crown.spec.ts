@@ -115,6 +115,29 @@ async function grab(page: Page, target: string, id: string, extra: Record<string
   for (let i = 0; i < n; i++) log(`GL_JPG ${target} ${id} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
 }
 
+/** Mean RGB and luma spread inside a canvas-relative rect (fighter region checks for the Player Studio tints). */
+async function regionStats(page: Page, png: Buffer, rect: { x: number; y: number; w: number; h: number }) {
+  return page.evaluate(async ({ b64, rect }) => {
+    const bmp = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
+    const c = document.createElement("canvas");
+    c.width = bmp.width; c.height = bmp.height;
+    const ctx = c.getContext("2d")!;
+    ctx.drawImage(bmp, 0, 0);
+    const x0 = Math.round(rect.x * c.width), y0 = Math.round(rect.y * c.height);
+    const w = Math.round(rect.w * c.width), h = Math.round(rect.h * c.height);
+    const d = ctx.getImageData(x0, y0, w, h).data;
+    let r = 0, g = 0, b = 0, s = 0, s2 = 0;
+    const n = d.length / 4;
+    for (let i = 0; i < d.length; i += 4) {
+      r += d[i]!; g += d[i + 1]!; b += d[i + 2]!;
+      const y = 0.2126 * d[i]! + 0.7152 * d[i + 1]! + 0.0722 * d[i + 2]!;
+      s += y; s2 += y * y;
+    }
+    const mean = s / n;
+    return { r: +(r / n).toFixed(1), g: +(g / n).toFixed(1), b: +(b / n).toFixed(1), lumaMean: +mean.toFixed(2), lumaStd: +Math.sqrt(Math.max(0, s2 / n - mean * mean)).toFixed(2) };
+  }, { b64: png.toString("base64"), rect });
+}
+
 const probe = (target: string, name: string, data: Record<string, unknown>): void => log(`GL_PROBE ${JSON.stringify({ target, name, ...data })}`);
 
 async function open(browser: Browser, server: ExampleDevServer, target: string, phone: boolean, query = ""): Promise<{ context: BrowserContext; page: Page; loaded: number }> {
@@ -260,6 +283,122 @@ test.describe("iron crown audit fixes", () => {
       await page.waitForTimeout(40_000);
       await grab(page, T, stage);
     }
+    await context.close();
+  });
+  // ---- AFTER-only checks (added after the BEFORE run; each compares states inside the lane build) ----
+
+  /** RH-05: the evidence screens, same names and sizes as evidence/iron-crown/screens/final (UI visible). */
+  for (const vp of [{ name: "1280", phone: false }, { name: "390", phone: true }] as const) {
+    test(`ic-screens-${vp.name}`, async ({ browser }) => {
+      const T = `ic-screens-${vp.name}`;
+      const { context, page, loaded } = await open(browser, server, T, vp.phone, "?icdebug=1");
+      await page.waitForTimeout(3000);
+      await grab(page, T, "01-title", {}, false);
+      await page.waitForTimeout(Math.max(0, 40_000 - (Date.now() - loaded)));
+      await grab(page, T, "02-early", {}, false);
+      if (vp.phone) {
+        await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(new Event("touchstart", { bubbles: true })));
+        await page.waitForTimeout(12_000);
+        await page.evaluate(() => document.querySelector("[data-control='right']")?.dispatchEvent(new Event("touchend", { bubbles: true })));
+        await page.evaluate(() => document.querySelector("[data-control='light']")?.dispatchEvent(new Event("touchstart", { bubbles: true })));
+        await page.waitForTimeout(400);
+        await page.evaluate(() => document.querySelector("[data-control='light']")?.dispatchEvent(new Event("touchend", { bubbles: true })));
+      } else {
+        await page.keyboard.down("KeyD");
+        await page.waitForTimeout(12_000);
+        await page.keyboard.up("KeyD");
+        await page.keyboard.press("KeyJ");
+      }
+      await page.waitForTimeout(8000);
+      await grab(page, T, "03-action", {}, false);
+      await page.evaluate(() => (document.getElementById("ic-autopilot") as HTMLElement | null)?.click());
+      await page.waitForTimeout(40_000);
+      await grab(page, T, "04-mid", {}, false);
+      await page.evaluate(() => (document.getElementById("ic-autopilot") as HTMLElement | null)?.click());
+      await page.evaluate(() => (document.querySelector("#ic-modes button[data-mode='versus']") as HTMLElement | null)?.click());
+      await page.waitForTimeout(4000);
+      await grab(page, T, "05-modes", {}, false);
+      await page.evaluate(() => (document.querySelector("#menu-versus [data-menu-close]") as HTMLElement | null)?.click());
+      await page.waitForTimeout(3000);
+      await page.evaluate(() => (window as any).__IRON_CROWN_DEBUG__?.finishBout(true));
+      await page.waitForFunction("!document.getElementById('menu-result').hidden", undefined, { timeout: 240_000, polling: 500 }).catch(() => undefined);
+      await page.waitForTimeout(6000);
+      await grab(page, T, "06-results", {}, false);
+      await context.close();
+    });
+  }
+
+  test("ic-card", async ({ browser }) => {
+    const T = "ic-card";
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+    await routeAppAssets(context);
+    const page = await context.newPage();
+    await page.goto(`${server.origin}${ROUTE}`, { waitUntil: "domcontentloaded" });
+    await page.waitForFunction(READY, undefined, { timeout: 600_000, polling: 500 });
+    await page.evaluate(() => (document.getElementById("ic-autopilot") as HTMLElement | null)?.click());
+    await page.waitForTimeout(50_000);
+    await grab(page, T, "card-2x", {}, false);
+    await context.close();
+  });
+
+  /** IC-09: one frame per Player Studio swatch; a multiply tint keeps the texture detail (luma spread) in the fighter region. */
+  test("ic-studio", async ({ browser }) => {
+    const T = "ic-studio";
+    const { context, page } = await open(browser, server, T, false);
+    const P1_RECT = { x: 0.26, y: 0.3, w: 0.2, h: 0.62 };
+    for (const swatch of ["default", "crimson", "azure", "jade", "royal", "gilded"]) {
+      await page.evaluate(() => (document.querySelector("#ic-modes button[data-mode='studio']") as HTMLElement | null)?.click());
+      await page.waitForTimeout(1500);
+      await page.evaluate((s) => (document.querySelector(`[data-grid="palette"] button[data-pick="${s}"]`) as HTMLElement | null)?.click(), swatch);
+      await page.evaluate(() => (document.getElementById("studio-apply") as HTMLElement | null)?.click());
+      await page.waitForTimeout(35_000);
+      const handle = await page.addStyleTag({ content: CANVAS_ONLY });
+      await page.waitForTimeout(250);
+      const png = await page.screenshot({ type: "png" });
+      await handle.evaluate((el) => el.remove());
+      probe(T, `swatch-${swatch}`, { region: await regionStats(page, png, P1_RECT), tint: (await page.evaluate(() => (window as any).__AURA3D_SHOWCASE_IRON_CROWN__?.fighters?.p1?.tint)) });
+      await grab(page, T, `swatch-${swatch}`);
+    }
+    await context.close();
+  });
+
+  /** IC-15 (opt-in ?iclayer=1): the attack plays on the upper-body layer and the feet stay where the locomotion clip puts them. */
+  test("ic-layer", async ({ browser }) => {
+    const T = "ic-layer";
+    const { context, page } = await open(browser, server, T, false, "?iclayer=1");
+    await page.waitForTimeout(20_000);
+    const feet = () => page.evaluate(() => {
+      const app = (globalThis as any).__AURA3D_LIVE_APPS__?.all()[0];
+      const anim = app?.nodes?.get("player")?.animation;
+      const at = (bone: string) => { try { const s = anim?.socket?.(bone); if (!s?.valid) return null; const m = s.worldMatrix(); return [+m[12].toFixed(3), +m[13].toFixed(3), +m[14].toFixed(3)]; } catch { return null; } };
+      return { leftFoot: at("LeftFoot"), rightFoot: at("RightFoot"), rightHand: at("RightHand"), leftHand: at("LeftHand"), state: anim?.animationState?.() ?? null, layer: (window as any).__AURA3D_SHOWCASE_IRON_CROWN__?.attackLayer };
+    });
+    const idle = await feet();
+    await page.keyboard.press("KeyJ");
+    await page.waitForTimeout(2500);
+    const during = await feet();
+    await grab(page, T, "attack");
+    await page.waitForTimeout(6000);
+    const after = await feet();
+    probe(T, "upper-body-layer", { idle, during, after });
+    await context.close();
+  });
+
+  /** Contact shadows on the night stage: Neo-Tokyo with and without the effect (compare with ic-neo-tokyo). */
+  test("ic-neo-no-contact", async ({ browser }) => {
+    const T = "ic-neo-no-contact";
+    const { context, page } = await open(browser, server, T, false, "?iccontact=0");
+    await pickStage(page, "neo-tokyo-rooftop");
+    await page.waitForFunction("window.__AURA3D_SHOWCASE_IRON_CROWN__?.stage?.id === 'neo-tokyo-rooftop'", undefined, { timeout: 300_000, polling: 500 });
+    await settle(page, T, Date.now(), [40, 75], "neo");
+    await context.close();
+  });
+
+  /** Fused bloom (default auto path) against ?aura3d-render=production on the Crown Arena (compare with ic-desktop crown-60s). */
+  test("ic-bloom-production", async ({ browser }) => {
+    const T = "ic-bloom-production";
+    const { context, page, loaded } = await open(browser, server, T, false, "?aura3d-render=production");
+    await settle(page, T, loaded, [30, 60], "crown");
     await context.close();
   });
 });

@@ -1,0 +1,88 @@
+{
+  "row": "IC-10",
+  "tool": "apps/showcase-iron-crown/scripts/webp-atlases.mjs",
+  "quality": 90,
+  "extension": "EXT_texture_webp (required)",
+  "assets": [
+    {
+      "id": "ironcrownKenji",
+      "from": "ironcrownKenji.b210a2e7.glb",
+      "to": "ironcrownKenji.bd4d2025.glb",
+      "converted": 1,
+      "bytesBefore": 5882112,
+      "bytesAfter": 3580244,
+      "hash": "sha256-bd4d20251ef6a81d9ee8c3e683733748c40fa112503aee49b409945c75c553d4",
+      "positionsBefore": "afc90cbfe0e6a535",
+      "positionsAfter": "afc90cbfe0e6a535",
+      "animations": 10,
+      "joints": 24
+    },
+    {
+      "id": "ironcrownVolt",
+      "from": "ironcrownVolt.78649874.glb",
+      "to": "ironcrownVolt.3318e498.glb",
+      "converted": 1,
+      "bytesBefore": 5353556,
+      "bytesAfter": 3467976,
+      "hash": "sha256-3318e49815ab0feda3d604ad978318fa4182a8289e91e13b24125153f1b0ad86",
+      "positionsBefore": "3d162e8799da854e",
+      "positionsAfter": "3d162e8799da854e",
+      "animations": 10,
+      "joints": 24
+    },
+    {
+      "id": "ironcrownBoulder",
+      "from": "ironcrownBoulder.61c77a85.glb",
+      "to": "ironcrownBoulder.96f0aa08.glb",
+      "converted": 1,
+      "bytesBefore": 4724428,
+      "bytesAfter": 2018704,
+      "hash": "sha256-96f0aa08c72dc3eee3dd768f72c19acf59286267c52f799faa7c24f3b5096f2b",
+      "positionsBefore": "f5eb8ff984c5eea9",
+      "positionsAfter": "f5eb8ff984c5eea9",
+      "animations": 10,
+      "joints": 24
+    },
+    {
+      "id": "ironcrownSeraph",
+      "from": "ironcrownSeraph.59a8fff4.glb",
+      "to": "ironcrownSeraph.c6feb949.glb",
+      "converted": 1,
+      "bytesBefore": 6793572,
+      "bytesAfter": 2409624,
+      "hash": "sha256-c6feb949c69be12dee9796e1af6775475a1bbb00c9ce4e2988af169e6960e261",
+      "positionsBefore": "eb4e22e35ae0dac9",
+      "positionsAfter": "eb4e22e35ae0dac9",
+      "animations": 10,
+      "joints": 24
+    },
+    {
+      "id": "ironcrownJinx",
+      "from": "ironcrownJinx.e5e3604a.glb",
+      "to": "ironcrownJinx.729361f1.glb",
+      "converted": 1,
+      "bytesBefore": 5833024,
+      "bytesAfter": 2058444,
+      "hash": "sha256-729361f1ee3a8f1a665713538d24484961fcc8fbc86786fd3c827e26cfaece38",
+      "positionsBefore": "4554a748ea9b7983",
+      "positionsAfter": "4554a748ea9b7983",
+      "animations": 10,
+      "joints": 24
+    },
+    {
+      "id": "ironcrownSovereign",
+      "from": "ironcrownSovereign.5805a846.glb",
+      "to": "ironcrownSovereign.3f0c20b1.glb",
+      "converted": 1,
+      "bytesBefore": 7585400,
+      "bytesAfter": 2984852,
+      "hash": "sha256-3f0c20b11bfee92e999b65aa10cafc18abd864a348349667fbc39d11e8ae8fdd",
+      "positionsBefore": "f7438239c4723597",
+      "positionsAfter": "f7438239c4723597",
+      "animations": 10,
+      "joints": 24
+    }
+  ],
+  "totalBefore": 36172092,
+  "totalAfter": 16519844
+}
