@@ -1,6 +1,18 @@
 # Grid Dispatch (`teleoperator`): upgrading to Aura3D 4.5.0
 
-**Verdict:** No change needed. The game uses post effects and an HDRI look (`looks.preset("outdoor-day")`), so it stays on the HDR chain and has an environment node. It makes no canvas read-backs and no animation, physics, instancing or interaction calls. The only 4.5.0 changes it picks up are rendering-internal. Re-capture it once to confirm the look.
+**Verdict:** No change needed. The game uses post effects and an HDRI look (`looks.preset("outdoor-day")`), so it stays on the HDR chain and has an environment node. It makes no canvas read-backs and no animation, physics, interaction or (before the audit fixes) instancing calls. The only 4.5.0 changes it picks up are rendering-internal. Re-capture it once to confirm the look.
+
+## Update after the 2026-10-29 audit fixes (lane G04)
+
+The audit-fix branch `audit-fix/g04` restructured the game. The analysis below describes the code before that work (one 3027-line `src/main.ts`); its 4.5.0 conclusions still hold, with these differences:
+
+- Source: `src/main.ts` (boot, presentation, QA hooks), `src/sim.ts` and `src/rules.ts` (fixed-step simulation, no DOM), `src/scene.ts` (scene builder), `src/hud.ts`, `src/touch.ts`, `src/audio.ts`, `src/collision.ts`, and `src/aura-assets.ts` (the game's own asset manifest; the root `src/aura-assets.ts` catalog is no longer imported).
+- Each sky preset builds its own scene: `outdoor-day` (noon), `golden-hour`, `overcast` (fog) or `night-city` (night). Changing the sky calls `app.setScene` and `warmPrograms`. Only `night-city` has no HDRI; it uses the look's neutral fill.
+- `lights.ambient` is gone (it blew out the white car). `lights.hemisphere`, the shadowed directional and the point light remain, with values per sky. The hemisphere is still dropped by the engine next to an environment (LIGHT-05, engine lane E2); when E2 feeds it into the explicit path the game gets brighter and needs a recapture.
+- Repeated street furniture (lane dashes, crossings, signal masts and lights, lamps, trees, route ribbon, impact sparks) is now `instances.*` nodes driven with `setInstances`. GL draw calls in the chase view at steady state: 610 before, 411 after (remote runs `g04b-desktop` and `g04a-desktop`, `app.diagnostics().drawCalls`).
+- The game now uses `createFixedStepLoop`, `createFixedStepPresenter`, `warmPrograms` (before the boot screen goes), `installQaHooks("grid-dispatch")` and `installSafetyNet` (panel on `?diag=1` only).
+
+The checklist below was run on the audit-fix branch. All captures are software WebGL2 (SwiftShader) on the remote ACR runner, not a real GPU.
 
 ## What this game uses
 
@@ -93,12 +105,15 @@
 
 ## Checklist
 
-- [ ] Run `node tools/game-checks/run.mjs teleoperator` and confirm 0 errors (0 errors and 0 warnings on `beat3js2/integration` when checked).
-- [ ] Load the built game and run `window.__AURA3D_SHOWCASE_TELEOPERATOR__.app.diagnostics().renderPath`. Expect `path: "hdr-msaa"`, `quality: "auto"`, `bloomFusion: "separable"`, and a reason starting `scene needs the HDR target:`.
-- [ ] Check `app.diagnostics()` for any `option-ignored` degradation. Expect none.
-- [ ] Capture a `?capture=1` frame at spawn and compare it with a 4.3.7 frame. Expect at most 1/255 on bloom pixels and no other change.
-- [ ] Re-run `tools/real-gpu/scenarios.json` scenario `teleoperator` (`chase`, `far`, `bumper`) on the remote runner, and compare against the previous receipt.
-- [ ] On a device where `getExtension("OES_texture_float_linear")` is `null`, check that the AO darkening looks acceptable.
-- [ ] Do not add `quality: "production"` or `preserveDrawingBuffer` unless a measured reason appears.
-- [ ] Optional: decide whether to drop the unused `lights.ambient` and `lights.hemisphere` (`main.ts:559-566`) or keep them as-is.
-- [ ] Run `typecheck` and `build` for `@aura3d/showcase-teleoperator` on the remote runner (`tools/remote-acr/run.sh`) before release.
+Results from the 2026-10-29 audit-fix branch (`audit-fix/g04`). Captures are remote software WebGL2, not a real GPU.
+
+- [x] Run `node tools/game-checks/run.mjs teleoperator` and confirm 0 errors. Result: 0 errors, 0 warnings.
+- [x] Load the built game and read `app.diagnostics().renderPath`. Result in every remote run (`g04c-desktop`, `g04c-weather`, `g04d-phone`): `path: "hdr-msaa"`, `bloomFusion: "separable"`. The `quality` and `reason` fields were not logged.
+- [x] Check for `option-ignored`. Result: no `OPTION_IGNORED` note on any node in any of the four sky scenes (`tests/unit/teleoperator/scene.test.ts`).
+- [ ] Compare a spawn frame with a 4.3.7 frame. Not done: no 4.3.7 build was captured. The base-vs-fixed pair on 4.5.0 is in `evidence/teleoperator/audit-fix-2026-10-29/`, and the bloom-fusion-vs-production pair (RP-05) is below.
+- [x] Bloom fusion against `?aura3d-render=production` on the same frozen street (run `g04a-bloom`): mean absolute difference 0.69/255 per channel, 7.2% of pixels differ by more than 2/255, largest difference 11/255 (JPEG q95 frames, so part of it is compression).
+- [ ] Re-run `tools/real-gpu/scenarios.json` scenario `teleoperator` on a real GPU. Not done: needs real-GPU hardware.
+- [ ] Check the AO darkening on a device without `OES_texture_float_linear`. Not done: needs such a device.
+- [x] Do not add `quality: "production"` or `preserveDrawingBuffer`. Neither is set.
+- [x] Decide about `lights.ambient` and `lights.hemisphere`. `lights.ambient` is removed (it blew out the white car); the hemisphere stays and is tuned per sky, ready for the LIGHT-05 engine fix.
+- [ ] Run `typecheck` and `build` for `@aura3d/showcase-teleoperator` on the remote runner. Typecheck passes locally (`tsc -p apps/showcase-teleoperator/tsconfig.json`, 0 errors); the production build was not run in this lane (it is part of the integration gate).

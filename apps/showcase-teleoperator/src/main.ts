@@ -1,29 +1,69 @@
+import { createAuraApp, createFixedStepLoop, installQaHooks, material, type AuraRuntimeNodeHandle, type AuraTransformSpec } from "@aura3d/engine";
+import { installBlackFrameGuard, installSafetyNet } from "@aura3d/debug";
+import { createCameraShake, createFixedStepPresenter, createHitStop, installGameBeacon, warmPrograms } from "@aura3d/engine/game";
+import { createGridAudio } from "./audio";
+import { createTrafficContacts } from "./collision";
+import { createHud, drawMinimap, formatClock } from "./hud";
 import {
-  camera,
-  createAuraApp,
-  defineAuraAssets,
-  effects,
-  game,
-  lights,
-  looks,
-  material,
-  model,
-  primitives,
-  scene,
-  type AuraRuntimeNodeHandle
-} from "@aura3d/engine";
-import { assets as rootAssets } from "../../../src/aura-assets";
-import { installBlackFrameGuard } from "@aura3d/debug";
-import { installGameBeacon, createCameraShake, createHitStop } from "@aura3d/engine/game";
-import { createCueBank, type CueSpec, type NoiseLayer, type ToneLayer } from "@aura3d/engine/audio";
-import { applyCollisionPenalty, createTrafficContacts, createTrafficRecovery, type PlayerBody, type TrafficBody } from "./collision";
+  ASSIST,
+  CAR_DRAW_Z,
+  CURB_BEACON_X,
+  INTERSECTION_STRIDE_Z,
+  KERB_STOP_X,
+  PLAYABLE_FLEET,
+  PLAYABLE_IDS,
+  SCENE_CAM_FOV_DEG,
+  SCENE_CAM_POS,
+  SCENE_CAM_TARGET,
+  cameraClearance,
+  cameraOffsets,
+  clamp,
+  fittedSize,
+  gmodeLabel,
+  isAutonomous,
+  isTextEntryTarget,
+  kerbHint,
+  lerp,
+  loadCareer,
+  nearestIndices,
+  nextAssist,
+  saveCareer,
+  viewX,
+  viewFollowFor,
+  DRIVING_CODES,
+  type AutopilotLevel,
+  type CameraMode,
+  type PlayableCarId,
+  type Vec3,
+  type WeatherPreset
+} from "./rules";
+import {
+  BUILDING_PAIRS,
+  BUILDING_STRIDE_Z,
+  DASH_LINES_X,
+  DASH_ROWS,
+  DASH_STRIDE_Z,
+  GRID_DISPATCH_RENDERER,
+  HIDDEN_POS,
+  HIDDEN_SCALE,
+  IMPACT_SPARK_COUNT,
+  INTERSECTION_COUNT,
+  LAMP_PAIRS,
+  LAMP_STRIDE_Z,
+  PATH_RIBBON_COUNT,
+  ROAD_STRIPS,
+  WEATHER,
+  buildGridDispatchScene,
+  buildingLayoutLeft,
+  buildingLayoutRight,
+  probeBuildingModels
+} from "./scene";
+import { NO_INPUT, RIVALS, ROAD_USER_COUNT, TRAFFIC_COUNT, createSim, fareOf, roadUserFootprints, type DriveInput, type SimEvent } from "./sim";
+import { mountTouchPads } from "./touch";
 
-const IMPACT_SPARK_COUNT = 12;
-const HIT_TONE = (freq: number, to: number, dur: number, gain: number): ToneLayer => ({ freq, slideTo: to, dur, type: "sawtooth", gain, delay: 0, attack: 0.008 });
-const HIT_NOISE = (dur: number, from: number, to: number, gain: number): NoiseLayer => ({ kind: "noise", dur, freq: from, slideTo: to, gain, delay: 0, q: 0.9, type: "bandpass", attack: dur * 0.2 });
-const COLLISION_CUES: Readonly<Record<"collision", CueSpec>> = {
-  collision: { layers: [HIT_TONE(150, 48, 0.26, 0.11), HIT_NOISE(0.2, 1500, 220, 0.12)], cooldownMs: 60 }
-};
+export type { AutopilotLevel, PlayableCarId, WeatherPreset } from "./rules";
+
+installBlackFrameGuard();
 
 let gameBeacon: ReturnType<typeof installGameBeacon> | undefined;
 const publishBeacon = (evidence: object): void => {
@@ -31,1345 +71,29 @@ const publishBeacon = (evidence: object): void => {
   gameBeacon.publishEvidence(evidence);
 };
 
-installBlackFrameGuard();
+const STEP = 1 / 60;
+const $ = <T extends HTMLElement = HTMLElement>(id: string): T | null => document.getElementById(id) as T | null;
 
-type Vec3 = [number, number, number];
-
-export type PlayableCarId = "waymo" | "cybercab" | "cybertruck" | "corvette" | "roadster";
-export type AutopilotLevel = "MAN" | "L3" | "L4" | "L5" | "L5 MAX";
-export type WeatherPreset = "noon" | "golden" | "fog" | "night";
-export type RideLifecycleState = "offer" | "boarding" | "ride" | "alighting" | "summary";
-export type RideStyle = "comfort" | "street";
-
-const HIDDEN_SCALE: Vec3 = [0.0001, 0.0001, 0.0001];
-const HIDDEN_POS: Vec3 = [0, -90, 140];
-
-// Merge admitted Grid Dispatch & skyline GLBs with root src/aura-assets.ts so typechecking and runtime
-// resolve 100% of assets whether src/aura-assets.ts has been regenerated yet or not.
-const teleopAdmittedAssets = defineAuraAssets({
-  teleopWaymoHero: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
-    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
-    bounds: [0.8921, 1.4132, 1.9017]
-  },
-  teleopWaymoTraffic: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehRobotaxi.f1726137.glb",
-    hash: "sha256-f17261376159d4c4e3603879a1505f891780b7835f0656b957fe56b3d4c3e95c",
-    bounds: [0.8921, 1.4132, 1.9017]
-  },
-  teleopCybercab: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehHatch.53933015.glb",
-    hash: "sha256-539330153115bc87e3174152b2a9bae64315536a6813e3ad1f26246e6e5584ae",
-    bounds: [1.2939, 1.1513, 1.9016]
-  },
-  teleopCybertruck: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
-    hash: "sha256-aaee30b6487d0b33f436eec2885f9c39a258a31259569a60084a48f67a4a3fd1",
-    bounds: [0.7774, 0.7276, 1.9027]
-  },
-  teleopCorvette: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehCoupe.83b731ca.glb",
-    hash: "sha256-83b731ca6b1fd5d63f81d5fa2308dfc071a9ec07d744c03e3790c3f4fbb34631",
-    bounds: [0.9245, 0.5271, 1.9061]
-  },
-  teleopMissions: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehRoadster.35a1e8b7.glb",
-    hash: "sha256-35a1e8b73a975c9d6d8f4b4b4ae5bcf59feae133dec059d128cfb1b0f60255f1",
-    bounds: [0.8736, 0.5225, 1.9019]
-  },
-  teleopCablecar: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopCablecar.6412a9ca.glb",
-    hash: "sha256-6412a9cac8abcb7b26156602dde013b87af5d8d7127cca6606f714fc18df16de",
-    bounds: [2.8885, 4.093, 8.3975]
-  },
-  teleopSedan: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehSedan.431efea6.glb",
-    hash: "sha256-431efea6742402eacb7aa4543c9223391a87fe7d66aee20e356a63f2d4af9596",
-    bounds: [0.8144, 0.6568, 1.9007]
-  },
-  teleopSuv: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehHatch.53933015.glb",
-    hash: "sha256-539330153115bc87e3174152b2a9bae64315536a6813e3ad1f26246e6e5584ae",
-    bounds: [1.2939, 1.1513, 1.9016]
-  },
-  teleopTaxi: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehSedan.431efea6.glb",
-    hash: "sha256-431efea6742402eacb7aa4543c9223391a87fe7d66aee20e356a63f2d4af9596",
-    bounds: [0.8144, 0.6568, 1.9007]
-  },
-  teleopVan: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehVan.6e9c71d7.glb",
-    hash: "sha256-6e9c71d779c64bc31fe74c6f02376e3c7e809efefa113f1b7f46426be1863e37",
-    bounds: [0.895, 1.1164, 1.9004]
-  },
-  teleopPickup: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehPickup.aaee30b6.glb",
-    hash: "sha256-aaee30b6487d0b33f436eec2885f9c39a258a31259569a60084a48f67a4a3fd1",
-    bounds: [0.7774, 0.7276, 1.9027]
-  },
-  teleopBus: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopVehBoxTruck.de4b81d4.glb",
-    hash: "sha256-de4b81d45d5203751d7872ebde6c437ef1348d71495d8fe77442100f0422d920",
-    bounds: [0.9023, 1.0833, 1.9004]
-  },
-  teleopBldg_victorian: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopBldg_victorian.39183fbd.glb",
-    hash: "sha256-39183fbdb70ed181352c097a0fbdf6ceaa3bceb21481f22b48e57b3509513aa0",
-    bounds: [0.912, 1.737, 1.918]
-  },
-  teleopBldg_midrise: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopBldg_midrise.900faa17.glb",
-    hash: "sha256-900faa17b4ef1e68ade58153dd5276b66d9adf1cdb34e52b2ea4c5a19e4dec12",
-    bounds: [1.85, 1.893, 1.641]
-  },
-  teleopBldg_glasstower: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopBldg_glasstower.6338509c.glb",
-    hash: "sha256-6338509cd5bdf322c977c3c3999cc4f7dd7da1f9821beac6c8dbcc44f87d448a",
-    bounds: [0.844, 1.902, 0.87]
-  },
-  teleopBldg_artdeco: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/teleopBldg_artdeco.9b8dc08f.glb",
-    hash: "sha256-9b8dc08f5391bb79295dff5807225448e84876aa9c515439429b951218495771",
-    bounds: [0.952, 1.902, 0.951]
-  },
-  heatsinkTowerL: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkTowerL.48cef1cc.glb",
-    hash: "sha256-48cef1cc6f54ab2e2f2d3a57c51279101b90b0364b4ae57fe7aba0bde6a6d1de",
-    bounds: [40, 202.8, 40]
-  },
-  heatsinkTowerT: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkTowerT.3e5f0a0c.glb",
-    hash: "sha256-3e5f0a0cbf4bbef5e8b0f7cfdb028fd1f18c4044efc079f44f1a3d943cf9c452",
-    bounds: [51, 177.4632, 19.3]
-  },
-  heatsinkTowerX: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkTowerX.69d0e56e.glb",
-    hash: "sha256-69d0e56ed3fec36848c16ddfec4f3953d52a27fab19eefaa5995cb64639d816c",
-    bounds: [29.8922, 183.9244, 20.1828]
-  },
-  heatsinkOverpass: {
-    type: "model",
-    format: "glb",
-    url: "/aura-assets/heatsinkOverpass.c6bb161f.glb",
-    hash: "sha256-c6bb161fecdc3f00f006903a20433d1905804ce99277686cbcfe9a5ff867687b",
-    bounds: [80, 26.2, 12.2]
-  }
-});
-
-const assets = {
-  ...teleopAdmittedAssets,
-  ...(rootAssets as Record<string, unknown>)
-} as typeof rootAssets & typeof teleopAdmittedAssets;
-
-function clamp(v: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, v));
+/** Project a view-space point to viewport pixels (the scene camera is fixed; see rules.ts). */
+function projectViewPointToScreen(pt: Vec3, vw: number, vh: number): { x: number; y: number; visible: boolean } {
+  const f = [SCENE_CAM_TARGET[0] - SCENE_CAM_POS[0], SCENE_CAM_TARGET[1] - SCENE_CAM_POS[1], SCENE_CAM_TARGET[2] - SCENE_CAM_POS[2]];
+  const fl = Math.hypot(f[0]!, f[1]!, f[2]!) || 1;
+  const fwd = [f[0]! / fl, f[1]! / fl, f[2]! / fl];
+  const rl = Math.hypot(fwd[2]!, fwd[0]!) || 1;
+  const right = [-fwd[2]! / rl, 0, fwd[0]! / rl];
+  const up = [right[1]! * fwd[2]! - right[2]! * fwd[1]!, right[2]! * fwd[0]! - right[0]! * fwd[2]!, right[0]! * fwd[1]! - right[1]! * fwd[0]!];
+  const d = [pt[0] - SCENE_CAM_POS[0], pt[1] - SCENE_CAM_POS[1], pt[2] - SCENE_CAM_POS[2]];
+  const cx = d[0]! * right[0]! + d[2]! * right[2]!;
+  const cy = d[0]! * up[0]! + d[1]! * up[1]! + d[2]! * up[2]!;
+  const cz = d[0]! * fwd[0]! + d[1]! * fwd[1]! + d[2]! * fwd[2]!;
+  if (cz <= 1.2 || cz > 240) return { x: -999, y: -999, visible: false };
+  const t = Math.tan((SCENE_CAM_FOV_DEG * 0.5 * Math.PI) / 180);
+  const ndcX = cx / (cz * t * (Math.max(1, vw) / Math.max(1, vh)));
+  const ndcY = cy / (cz * t);
+  if (Math.abs(ndcX) > 1.12 || Math.abs(ndcY) > 1.12) return { x: -999, y: -999, visible: false };
+  return { x: (ndcX * 0.5 + 0.5) * vw, y: (-ndcY * 0.5 + 0.5) * vh, visible: true };
 }
 
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t;
-}
-
-export function rotateLocalOffset(
-  root: Vec3,
-  pitch: number,
-  yaw: number,
-  roll: number,
-  local: Vec3
-): Vec3 {
-  const cr = Math.cos(roll);
-  const sr = Math.sin(roll);
-  const x1 = local[0] * cr - local[1] * sr;
-  const y1 = local[0] * sr + local[1] * cr;
-  const z1 = local[2];
-
-  const cp = Math.cos(pitch);
-  const sp = Math.sin(pitch);
-  const x2 = x1;
-  const y2 = y1 * cp - z1 * sp;
-  const z2 = y1 * sp + z1 * cp;
-
-  const cy = Math.cos(yaw);
-  const sy = Math.sin(yaw);
-  const x3 = x2 * cy + z2 * sy;
-  const y3 = y2;
-  const z3 = -x2 * sy + z2 * cy;
-
-  return [root[0] + x3, root[1] + y3, root[2] + z3];
-}
-
-interface FleetSpec {
-  id: PlayableCarId;
-  name: string;
-  maker: string;
-  maxDim: number;
-  rideY: number;
-  maxSpeedMps: number;
-  accel: number;
-  isIce: boolean;
-  accent: string;
-  hasRoofLidar: boolean;
-  hasThrusters: boolean;
-  modeLabel: string;
-  /** world offsets for the Roof LiDAR and Bumper cameras when the default (sized for a 4.6 m crossover) would put the camera inside the body */
-  cams?: { roof: { y: number; z: number }; bumper: { y: number; z: number } };
-}
-
-const PLAYABLE_FLEET: Record<PlayableCarId, FleetSpec> = {
-  waymo: {
-    id: "waymo",
-    name: "Apex Lidar Cruiser",
-    maker: "Apex Autonomous",
-    maxDim: 3.9,
-    rideY: 0,
-    maxSpeedMps: 38,
-    accel: 18,
-    isIce: false,
-    accent: "#3fd6c6",
-    hasRoofLidar: false,
-    hasThrusters: false,
-    modeLabel: "AUTO · APEX L5 AUTOPILOT",
-    cams: { roof: { y: 0.25, z: 8.4 }, bumper: { y: 2.6, z: 9.6 } }
-  },
-  cybercab: {
-    id: "cybercab",
-    name: "Cyber Coupe",
-    maker: "Aura Autonomous",
-    maxDim: 4.0,
-    rideY: 0,
-    maxSpeedMps: 40,
-    accel: 20,
-    isIce: false,
-    accent: "#e8c27a",
-    hasRoofLidar: false,
-    hasThrusters: false,
-    modeLabel: "AUTO · NEURAL AUTOPILOT"
-  },
-  cybertruck: {
-    id: "cybertruck",
-    name: "Titan EV Truck",
-    maker: "Aura Heavy Industries",
-    maxDim: 5.55,
-    rideY: 0,
-    maxSpeedMps: 43,
-    accel: 22,
-    isIce: false,
-    accent: "#cbd5e1",
-    hasRoofLidar: false,
-    hasThrusters: false,
-    modeLabel: "AUTO · TRI-MOTOR AWD"
-  },
-  corvette: {
-    id: "corvette",
-    name: "Vortex GT",
-    maker: "Manual Override",
-    maxDim: 4.66,
-    rideY: 0,
-    maxSpeedMps: 54,
-    accel: 29,
-    isIce: true,
-    accent: "#ffc61a",
-    hasRoofLidar: false,
-    hasThrusters: false,
-    modeLabel: "8-DCT · 1,250 HP V8"
-  },
-  roadster: {
-    id: "roadster",
-    name: "Apex Interceptor",
-    maker: "Aura Aero Division",
-    maxDim: 4.5,
-    rideY: 0,
-    maxSpeedMps: 58,
-    accel: 34,
-    isIce: false,
-    accent: "#38bdf8",
-    hasRoofLidar: false,
-    hasThrusters: false,
-    modeLabel: "COLD-GAS THRUSTERS"
-  }
-};
-
-const PLAYABLE_IDS: readonly PlayableCarId[] = [
-  "waymo",
-  "cybercab",
-  "cybertruck",
-  "corvette",
-  "roadster"
-];
-
-interface SanFranciscoDistrict {
-  hood: string;
-  street: string;
-  cross: string;
-  coords: string;
-}
-
-const SF_DISTRICTS: readonly SanFranciscoDistrict[] = [
-  {
-    hood: "Nob Hill",
-    street: "California Street",
-    cross: "→ Mason St · Fairmont & Grace Cathedral",
-    coords: "37.7919° N · 122.4102° W"
-  },
-  {
-    hood: "Chinatown",
-    street: "California Street",
-    cross: "→ Grant Ave · Dragon Gate",
-    coords: "37.7924° N · 122.4058° W"
-  },
-  {
-    hood: "Financial District",
-    street: "California Street",
-    cross: "→ Montgomery St · Transamerica Pyramid",
-    coords: "37.7931° N · 122.4026° W"
-  },
-  {
-    hood: "SoMa · Transit Center",
-    street: "Market Street",
-    cross: "→ Fremont St · Salesforce Tower",
-    coords: "37.7897° N · 122.3972° W"
-  },
-  {
-    hood: "The Embarcadero",
-    street: "The Embarcadero",
-    cross: "→ Washington St · Ferry Building & Bay Bridge",
-    coords: "37.7955° N · 122.3937° W"
-  },
-  {
-    hood: "North Beach",
-    street: "Columbus Avenue",
-    cross: "→ Broadway · Telegraph Hill & Coit Tower",
-    coords: "37.7992° N · 122.4076° W"
-  }
-];
-
-interface FareScenario {
-  passenger: string;
-  avatarColor: string;
-  quote: string;
-  pickupName: string;
-  pickupStreet: string;
-  dropoffName: string;
-  dropoffStreet: string;
-  tripMiles: number;
-  fareUsd: number;
-  parSec: number;
-}
-
-const WAYMO_FARES: readonly FareScenario[] = [
-  {
-    passenger: "Maya Lin",
-    avatarColor: "#2596be",
-    quote: "Heading to the Transamerica Pyramid — glad a Apex caught my hail!",
-    pickupName: "Nob Hill · Fairmont",
-    pickupStreet: "California St & Mason St",
-    dropoffName: "Financial District · Transamerica",
-    dropoffStreet: "Montgomery St & Washington St",
-    tripMiles: 0.8,
-    fareUsd: 28.5,
-    parSec: 52
-  },
-  {
-    passenger: "Marcus Chen",
-    avatarColor: "#d97706",
-    quote: "Late for a pitch deck at Salesforce Tower — smooth and steady please!",
-    pickupName: "Chinatown · Grant Ave",
-    pickupStreet: "California St & Grant Ave",
-    dropoffName: "SoMa · Salesforce Tower",
-    dropoffStreet: "Mission St & Fremont St",
-    tripMiles: 0.9,
-    fareUsd: 32.0,
-    parSec: 56
-  },
-  {
-    passenger: "Elena Rostova",
-    avatarColor: "#8b5cf6",
-    quote: "Catching the Sausalito ferry at the Embarcadero terminal!",
-    pickupName: "Financial District · 555 California",
-    pickupStreet: "California St & Kearny St",
-    dropoffName: "Embarcadero · Ferry Building",
-    dropoffStreet: "The Embarcadero & Market St",
-    tripMiles: 1.1,
-    fareUsd: 36.75,
-    parSec: 60
-  },
-  {
-    passenger: "Liam O'Connor",
-    avatarColor: "#10b981",
-    quote: "Espresso run in North Beach — love watching the roof LiDAR spin!",
-    pickupName: "Embarcadero · Pier 7",
-    pickupStreet: "The Embarcadero & Broadway",
-    dropoffName: "North Beach · Washington Sq",
-    dropoffStreet: "Columbus Ave & Union St",
-    tripMiles: 0.7,
-    fareUsd: 24.25,
-    parSec: 48
-  }
-];
-
-interface PeerDriverState {
-  id: string;
-  handle: string;
-  carLabel: string;
-  piClass: string;
-  piColor: string;
-  accent: string;
-  laneX: number;
-  targetLaneX: number;
-  zOffset: number;
-  speed: number;
-  baseSpeed: number;
-  rideY: number;
-  yawOffset: number;
-  isCableCar: boolean;
-  worldX: number;
-  worldZ: number;
-  distanceMeters: number;
-}
-
-interface TrafficCarState {
-  slotIdx: number;
-  laneX: number;
-  z: number;
-  speed: number;
-  direction: 1 | -1;
-  phase: number;
-}
-
-// 4-Lane SF Avenue layout:
-// Lanes 0 & 1: Westbound / Oncoming (-7.6m, -3.2m)
-// Center Cable Car tracks at -1.2m and +1.2m
-// Lanes 2 & 3: Eastbound / Player direction (+3.4m, +7.4m), Curb pickup lane at +8.5m
-const AVENUE_LANES_X = [-7.6, -3.2, 3.4, 7.4] as const;
-const CURB_BEACON_X = 8.55;
-
-const DASH_ROWS = 14;
-const DASH_STRIDE_Z = 14;
-const INTERSECTION_COUNT = 3;
-const INTERSECTION_STRIDE_Z = 92;
-const BUILDING_PAIRS = 8;
-const BUILDING_STRIDE_Z = 34;
-
-// Street-front building models (facade on +Z in the file). Left blocks are yawed +90 degrees and right blocks -90 degrees so
-// the facade faces the road; "depth" runs along the file's z axis (away from the road) and "frontage" along its x axis.
-const BUILDING_SPECS = [
-  { key: "teleopBldg_victorian", x: 0.912, y: 1.737, z: 1.918 },
-  { key: "teleopBldg_glasstower", x: 0.844, y: 1.902, z: 0.87 },
-  { key: "teleopBldg_midrise", x: 1.85, y: 1.893, z: 1.641 },
-  { key: "teleopBldg_artdeco", x: 0.952, y: 1.902, z: 0.951 }
-] as const;
-const BUILDING_ROAD_EDGE_X = 19.5;
-const BUILDING_MAX_DEPTH = 24;
-const BUILDING_MAX_FRONTAGE = 30;
-
-// A missing building GLB must never take the whole scene down: the production build only copies manifest-admitted assets, and
-// a 404 here rejects auraApp.ready() (4.3.0 shipped a black canvas that way). Unreachable models get a plain box instead.
-const buildingModelReachable: Record<string, boolean> = {};
-async function probeBuildingModels(): Promise<void> {
-  await Promise.all(
-    BUILDING_SPECS.map(async (spec) => {
-      try {
-        const res = await fetch(assets[spec.key].url, { method: "HEAD", cache: "force-cache" });
-        buildingModelReachable[spec.key] = res.ok && !/text\/html/i.test(res.headers.get("content-type") ?? "");
-      } catch {
-        buildingModelReachable[spec.key] = false;
-      }
-    })
-  );
-  const missing = BUILDING_SPECS.filter((spec) => buildingModelReachable[spec.key] === false).map((spec) => spec.key);
-  if (missing.length) console.error(`[teleoperator] building models unreachable, using box fallbacks: ${missing.join(", ")}`);
-}
-
-function buildingLayout(spec: (typeof BUILDING_SPECS)[number], targetHeight: number): { scale: number; maxDim: number; centerX: number; height: number } {
-  const scale = Math.min(targetHeight / spec.y, BUILDING_MAX_DEPTH / spec.z, BUILDING_MAX_FRONTAGE / spec.x);
-  return { scale, maxDim: Math.max(spec.x, spec.y, spec.z) * scale, centerX: BUILDING_ROAD_EDGE_X + (spec.z * scale) / 2, height: spec.y * scale };
-}
-const LAMP_PAIRS = 6;
-const LAMP_STRIDE_Z = 38;
-const PATH_RIBBON_COUNT = 9;
-
-// Camera view configuration matching buildGridDispatchScene()
-const SCENE_CAM_POS: Vec3 = [0, 3.4, 6.5];
-const SCENE_CAM_TARGET: Vec3 = [0, 1.0, -7.2];
-const SCENE_CAM_FOV_DEG = 56;
-
-const buildingFallbackMat = material.pbr({ color: "#94a3b8", roughness: 0.82, metalness: 0.05 });
-function buildingNode(spec: (typeof BUILDING_SPECS)[number], name: string, lay: ReturnType<typeof buildingLayout>, x: number, z: number) {
-  if (buildingModelReachable[spec.key] === false) {
-    const k = lay.maxDim / Math.max(spec.x, spec.y, spec.z);
-    return primitives
-      .box({ name, size: [spec.z * k, spec.y * k, spec.x * k], material: buildingFallbackMat })
-      .position(x, (spec.y * k) / 2, z);
-  }
-  return model(assets[spec.key], { name, role: "setDressing", scaleMode: "fit", targetMaxDimension: lay.maxDim }).position(x, 0, z);
-}
-
-function buildGridDispatchScene(): ReturnType<typeof scene> {
-  const s = scene()
-    .add(looks.preset("outdoor-day", { fogDensityScale: 0, exposureEv: 0.1 }))
-    .background("#69abe0")
-    .camera(
-      camera.perspective({
-        fov: SCENE_CAM_FOV_DEG,
-        near: 0.25,
-        far: 620,
-        position: SCENE_CAM_POS,
-        target: SCENE_CAM_TARGET
-      })
-    )
-    .add(lights.ambient({ color: "#fff6eb", intensity: 0.78 }))
-    .add(
-      lights.hemisphere({
-        skyColor: "#8ed0ff",
-        groundColor: "#2d3748",
-        intensity: 0.92
-      })
-    )
-    .add(
-      lights.directional({
-        color: "#fff1d6",
-        intensity: 2.45,
-        position: [36, 62, -48],
-        shadow: true
-      })
-    )
-    .add(
-      lights.point({
-        color: "#3fd6c6",
-        intensity: 1.65,
-        position: [6, 5, -18],
-        distance: 65
-      })
-    )
-    .add(effects.bloom({ intensity: 0.24, threshold: 0.78, radius: 0.45 }))
-    .add(effects.vignette({ intensity: 0.16, smoothness: 0.65 }))
-    .add(effects.colorGrade({ contrast: 1.06, saturation: 1.1 }));
-
-  // 1. San Francisco Peninsula Ground, Bay Water Vista, California Street Asphalt, Cable Car Tracks & Sidewalks
-  const brassRailMat = material.pbr({ color: "#b59449", metalness: 0.82, roughness: 0.28 });
-  const graniteCurbMat = material.pbr({ color: "#94a3b8", roughness: 0.72, metalness: 0.08 });
-  const sidewalkMat = material.pbr({ color: "#475569", roughness: 0.85, metalness: 0.05 });
-
-  s.addMany([
-    primitives
-      .box({
-        name: "sf-peninsula-ground",
-        size: [1400, 0.2, 620],
-        material: material.pbr({ color: "#1e293b", roughness: 0.94 })
-      })
-      .position(0, -0.25, -180)
-      .runtime(game.runtimeNode("sf-peninsula-ground")),
-    primitives
-      .box({
-        name: "sf-bay-water",
-        size: [1400, 0.08, 220],
-        material: material.pbr({ color: "#0c4a6e", roughness: 0.22, metalness: 0.45 })
-      })
-      .position(0, -0.1, -330)
-      .runtime(game.runtimeNode("sf-bay-water")),
-    primitives
-      .box({
-        name: "sf-avenue-asphalt",
-        size: [21.6, 0.12, 420],
-        material: material.pbr({ color: "#1e232d", roughness: 0.82, metalness: 0.08 })
-      })
-      .position(0, -0.06, -160)
-      .runtime(game.runtimeNode("sf-avenue-asphalt")),
-    // Double yellow center line & California St Cable Car steel/brass slot rails
-    primitives
-      .box({
-        name: "sf-center-yellow-l",
-        size: [0.12, 0.02, 420],
-        material: material.emissive({ color: "#fbbf24", emissive: "#f59e0b", emissiveIntensity: 0.42 })
-      })
-      .position(-0.18, 0.014, -160)
-      .runtime(game.runtimeNode("sf-center-yellow-l")),
-    primitives
-      .box({
-        name: "sf-center-yellow-r",
-        size: [0.12, 0.02, 420],
-        material: material.emissive({ color: "#fbbf24", emissive: "#f59e0b", emissiveIntensity: 0.42 })
-      })
-      .position(0.18, 0.014, -160)
-      .runtime(game.runtimeNode("sf-center-yellow-r")),
-    primitives
-      .box({
-        name: "sf-cable-rail-1",
-        size: [0.09, 0.025, 420],
-        material: brassRailMat
-      })
-      .position(-3.8, 0.016, -160)
-      .runtime(game.runtimeNode("sf-cable-rail-1")),
-    primitives
-      .box({
-        name: "sf-cable-rail-2",
-        size: [0.09, 0.025, 420],
-        material: brassRailMat
-      })
-      .position(-2.6, 0.016, -160)
-      .runtime(game.runtimeNode("sf-cable-rail-2")),
-    primitives
-      .box({
-        name: "sf-cable-rail-3",
-        size: [0.09, 0.025, 420],
-        material: brassRailMat
-      })
-      .position(2.8, 0.016, -160)
-      .runtime(game.runtimeNode("sf-cable-rail-3")),
-    primitives
-      .box({
-        name: "sf-cable-rail-4",
-        size: [0.09, 0.025, 420],
-        material: brassRailMat
-      })
-      .position(4.0, 0.016, -160)
-      .runtime(game.runtimeNode("sf-cable-rail-4")),
-    // Raised Granite Curbs & Wide Sidewalks
-    primitives
-      .box({
-        name: "sf-curb-left",
-        size: [0.45, 0.22, 420],
-        material: graniteCurbMat
-      })
-      .position(-10.8, 0.11, -160)
-      .runtime(game.runtimeNode("sf-curb-left")),
-    primitives
-      .box({
-        name: "sf-curb-right",
-        size: [0.45, 0.22, 420],
-        material: graniteCurbMat
-      })
-      .position(10.8, 0.11, -160)
-      .runtime(game.runtimeNode("sf-curb-right")),
-    primitives
-      .box({
-        name: "sf-sidewalk-left",
-        size: [8.5, 0.18, 420],
-        material: sidewalkMat
-      })
-      .position(-15.2, 0.09, -160)
-      .runtime(game.runtimeNode("sf-sidewalk-left")),
-    primitives
-      .box({
-        name: "sf-sidewalk-right",
-        size: [8.5, 0.18, 420],
-        material: sidewalkMat
-      })
-      .position(15.2, 0.09, -160)
-      .runtime(game.runtimeNode("sf-sidewalk-right")),
-    // Horizon Sky Backdrop & California Sun / Golden Gate Towers
-    primitives
-      .box({
-        name: "sf-horizon-sky",
-        size: [1400, 340, 2],
-        material: material.emissive({ color: "#7ec8ff", emissive: "#bae6fd", emissiveIntensity: 0.35 })
-      })
-      .position(0, 72, -350)
-      .runtime(game.runtimeNode("sf-horizon-sky")),
-    primitives
-      .sphere({
-        name: "sf-sun-disc",
-        size: [26, 26, 4],
-        material: material.emissive({ color: "#fff4cc", emissive: "#fde047", emissiveIntensity: 1.65 })
-      })
-      .position(42, 58, -320)
-      .runtime(game.runtimeNode("sf-sun-disc"))
-  ]);
-
-  // 2. Iconic San Francisco Landmarks: Transamerica Pyramid, Salesforce Tower & Golden Gate / Bay Bridge Suspension Towers
-  const pyramidMat = material.pbr({ color: "#f1f5f9", roughness: 0.42, metalness: 0.18 });
-  const salesforceGlassMat = material.pbr({ color: "#38bdf8", roughness: 0.18, metalness: 0.72 });
-  const ggOrangeMat = material.pbr({ color: "#c0362c", roughness: 0.48, metalness: 0.35 });
-
-  s.addMany([
-    // Transamerica Pyramid (tapered white tower + east/west elevator shaft wings + glowing crown jewel)
-    primitives
-      .cylinder({
-        name: "sf-transamerica-spire",
-        size: [22, 145, 22],
-        material: pyramidMat
-      })
-      .position(44, 72, -210)
-      .runtime(game.runtimeNode("sf-transamerica-spire")),
-    primitives
-      .box({
-        name: "sf-transamerica-wing",
-        size: [28, 78, 8],
-        material: pyramidMat
-      })
-      .position(44, 39, -210)
-      .runtime(game.runtimeNode("sf-transamerica-wing")),
-    primitives
-      .sphere({
-        name: "sf-transamerica-crown",
-        size: [3.2, 5.5, 3.2],
-        material: material.emissive({ color: "#e0f2fe", emissive: "#3fd6c6", emissiveIntensity: 2.2 })
-      })
-      .position(44, 145, -210)
-      .runtime(game.runtimeNode("sf-transamerica-crown")),
-
-    // Salesforce Tower (sculpted glass obelisk + glowing crown)
-    primitives
-      .cylinder({
-        name: "sf-salesforce-tower",
-        size: [22, 158, 22],
-        material: salesforceGlassMat
-      })
-      .position(-48, 79, -235)
-      .runtime(game.runtimeNode("sf-salesforce-tower")),
-    primitives
-      .cylinder({
-        name: "sf-salesforce-crown",
-        size: [18.5, 16, 18.5],
-        material: material.emissive({ color: "#7dd3fc", emissive: "#38bdf8", emissiveIntensity: 1.65 })
-      })
-      .position(-48, 162, -235)
-      .runtime(game.runtimeNode("sf-salesforce-crown")),
-
-    // Golden Gate / Bay Bridge Suspension Towers on the Bay Horizon
-    primitives
-      .box({
-        name: "sf-gg-tower-w-l",
-        size: [3.5, 118, 3.5],
-        material: ggOrangeMat
-      })
-      .position(-96, 59, -315)
-      .runtime(game.runtimeNode("sf-gg-tower-w-l")),
-    primitives
-      .box({
-        name: "sf-gg-tower-w-r",
-        size: [3.5, 118, 3.5],
-        material: ggOrangeMat
-      })
-      .position(-78, 59, -315)
-      .runtime(game.runtimeNode("sf-gg-tower-w-r")),
-    primitives
-      .box({
-        name: "sf-gg-strut-w-1",
-        size: [21, 3.2, 3.8],
-        material: ggOrangeMat
-      })
-      .position(-87, 108, -315)
-      .runtime(game.runtimeNode("sf-gg-strut-w-1")),
-    primitives
-      .box({
-        name: "sf-gg-strut-w-2",
-        size: [21, 3.2, 3.8],
-        material: ggOrangeMat
-      })
-      .position(-87, 78, -315)
-      .runtime(game.runtimeNode("sf-gg-strut-w-2")),
-    primitives
-      .box({
-        name: "sf-gg-tower-e-l",
-        size: [3.5, 118, 3.5],
-        material: ggOrangeMat
-      })
-      .position(78, 59, -315)
-      .runtime(game.runtimeNode("sf-gg-tower-e-l")),
-    primitives
-      .box({
-        name: "sf-gg-tower-e-r",
-        size: [3.5, 118, 3.5],
-        material: ggOrangeMat
-      })
-      .position(96, 59, -315)
-      .runtime(game.runtimeNode("sf-gg-tower-e-r")),
-    primitives
-      .box({
-        name: "sf-gg-strut-e-1",
-        size: [21, 3.2, 3.8],
-        material: ggOrangeMat
-      })
-      .position(87, 108, -315)
-      .runtime(game.runtimeNode("sf-gg-strut-e-1")),
-    primitives
-      .box({
-        name: "sf-gg-deck",
-        size: [260, 2.2, 12],
-        material: ggOrangeMat
-      })
-      .position(0, 36, -315)
-      .runtime(game.runtimeNode("sf-gg-deck"))
-  ]);
-
-  // 3. 4 Admitted Skyline & Overpass 3D Models (heatsinkTowerL, heatsinkTowerT, heatsinkTowerX, heatsinkOverpass)
-  s.addMany([
-    model(assets.heatsinkTowerL, {
-      name: "sf-skyline-tower-l",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 72
-    })
-      .position(-58, 0, -145)
-      .runtime(game.runtimeNode("sf-skyline-tower-l")),
-    model(assets.heatsinkTowerT, {
-      name: "sf-skyline-tower-t",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 68
-    })
-      .position(58, 0, -135)
-      .runtime(game.runtimeNode("sf-skyline-tower-t")),
-    model(assets.heatsinkTowerX, {
-      name: "sf-skyline-tower-x",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 74
-    })
-      .position(-62, 0, -255)
-      .runtime(game.runtimeNode("sf-skyline-tower-x")),
-    model(assets.heatsinkOverpass, {
-      name: "sf-bay-overpass",
-      role: "setDressing",
-      scaleMode: "fit",
-      targetMaxDimension: 64
-    })
-      .position(0, 0, -275)
-      .runtime(game.runtimeNode("sf-bay-overpass"))
-  ]);
-
-  // 4. White Lane Divider Dashes (2 dividers: x = -5.4m and x = +5.4m)
-  const dashMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.45 });
-  for (let d = 0; d < 2; d++) {
-    const lx = d === 0 ? -5.4 : 5.4;
-    for (let i = 0; i < DASH_ROWS; i++) {
-      const id = `sf-dash-${d}-${i}`;
-      s.add(
-        primitives
-          .box({
-            name: id,
-            size: [0.14, 0.02, 4.2],
-            material: dashMat
-          })
-          .position(lx, 0.018, -i * DASH_STRIDE_Z)
-          .runtime(game.runtimeNode(id))
-      );
-    }
-  }
-
-  // 5. Signalized Cross-Street Intersections (Cross Asphalt + Zebra Crosswalks + Traffic Signal Masts + Red/Yellow/Green Signal Heads)
-  const crossRoadMat = material.pbr({ color: "#222834", roughness: 0.84 });
-  const zebraMat = material.emissive({ color: "#f8fafc", emissive: "#e2e8f0", emissiveIntensity: 0.4 });
-  const signalPoleMat = material.pbr({ color: "#334155", metalness: 0.72, roughness: 0.32 });
-  const signalHeadMat = material.emissive({ color: "#43d17a", emissive: "#43d17a", emissiveIntensity: 2.1 });
-
-  for (let i = 0; i < INTERSECTION_COUNT; i++) {
-    const iz = -(i + 1) * INTERSECTION_STRIDE_Z;
-    s.addMany([
-      primitives
-        .box({
-          name: `sf-cross-road-${i}`,
-          size: [140, 0.03, 14],
-          material: crossRoadMat
-        })
-        .position(0, 0.01, iz)
-        .runtime(game.runtimeNode(`sf-cross-road-${i}`)),
-      primitives
-        .box({
-          name: `sf-crosswalk-n-${i}`,
-          size: [19.6, 0.035, 2.2],
-          material: zebraMat
-        })
-        .position(0, 0.022, iz - 8.2)
-        .runtime(game.runtimeNode(`sf-crosswalk-n-${i}`)),
-      primitives
-        .box({
-          name: `sf-crosswalk-s-${i}`,
-          size: [19.6, 0.035, 2.2],
-          material: zebraMat
-        })
-        .position(0, 0.022, iz + 8.2)
-        .runtime(game.runtimeNode(`sf-crosswalk-s-${i}`)),
-      primitives
-        .cylinder({
-          name: `sf-sig-pole-r-${i}`,
-          size: [0.24, 6.8, 0.24],
-          material: signalPoleMat
-        })
-        .position(11.4, 3.4, iz - 9.2)
-        .runtime(game.runtimeNode(`sf-sig-pole-r-${i}`)),
-      primitives
-        .box({
-          name: `sf-sig-arm-r-${i}`,
-          size: [5.6, 0.16, 0.16],
-          material: signalPoleMat
-        })
-        .position(8.6, 6.5, iz - 9.2)
-        .runtime(game.runtimeNode(`sf-sig-arm-r-${i}`)),
-      primitives
-        .sphere({
-          name: `sf-sig-light-r-${i}`,
-          size: [0.52, 0.52, 0.52],
-          material: signalHeadMat
-        })
-        .position(6.4, 6.25, iz - 9.1)
-        .runtime(game.runtimeNode(`sf-sig-light-r-${i}`)),
-      primitives
-        .cylinder({
-          name: `sf-sig-pole-l-${i}`,
-          size: [0.24, 6.8, 0.24],
-          material: signalPoleMat
-        })
-        .position(-11.4, 3.4, iz - 9.2)
-        .runtime(game.runtimeNode(`sf-sig-pole-l-${i}`)),
-      primitives
-        .box({
-          name: `sf-sig-arm-l-${i}`,
-          size: [5.6, 0.16, 0.16],
-          material: signalPoleMat
-        })
-        .position(-8.6, 6.5, iz - 9.2)
-        .runtime(game.runtimeNode(`sf-sig-arm-l-${i}`)),
-      primitives
-        .sphere({
-          name: `sf-sig-light-l-${i}`,
-          size: [0.52, 0.52, 0.52],
-          material: signalHeadMat
-        })
-        .position(-6.4, 6.25, iz - 9.1)
-        .runtime(game.runtimeNode(`sf-sig-light-l-${i}`))
-    ]);
-  }
-
-  // 6. San Francisco Street-Front Buildings (Victorian, Edwardian, Chinatown & FiDi Mid-Rises) & Streetlamps/Trees
-  for (let i = 0; i < BUILDING_PAIRS; i++) {
-    const bz = -18 - i * BUILDING_STRIDE_Z;
-    const spec = BUILDING_SPECS[i % BUILDING_SPECS.length]!;
-    const specR = BUILDING_SPECS[(i + 1) % BUILDING_SPECS.length]!;
-    const lay = buildingLayout(spec, 18 + ((i * 7) % 22));
-    const layR = buildingLayout(specR, 20 + ((i * 11) % 24));
-    s.addMany([
-      buildingNode(spec, `sf-bldg-l-${i}`, lay, -lay.centerX, bz)
-        .runtime(game.runtimeNode(`sf-bldg-l-${i}`)),
-      buildingNode(specR, `sf-bldg-r-${i}`, layR, layR.centerX, bz)
-        .runtime(game.runtimeNode(`sf-bldg-r-${i}`))
-    ]);
-  }
-
-  const lampMat = material.emissive({ color: "#fef3c7", emissive: "#fbbf24", emissiveIntensity: 1.55 });
-  const treeFoliageMat = material.pbr({ color: "#15803d", roughness: 0.78 });
-  const treeTrunkMat = material.pbr({ color: "#5c4033", roughness: 0.88 });
-  for (let i = 0; i < LAMP_PAIRS; i++) {
-    const lz = -10 - i * LAMP_STRIDE_Z;
-    s.addMany([
-      primitives
-        .cylinder({ name: `sf-lamp-l-${i}`, size: [0.16, 6.2, 0.16], material: signalPoleMat })
-        .position(-11.2, 3.1, lz)
-        .runtime(game.runtimeNode(`sf-lamp-l-${i}`)),
-      primitives
-        .sphere({ name: `sf-globe-l-${i}`, size: [0.42, 0.42, 0.42], material: lampMat })
-        .position(-10.8, 6.25, lz)
-        .runtime(game.runtimeNode(`sf-globe-l-${i}`)),
-      primitives
-        .cylinder({ name: `sf-lamp-r-${i}`, size: [0.16, 6.2, 0.16], material: signalPoleMat })
-        .position(11.2, 3.1, lz)
-        .runtime(game.runtimeNode(`sf-lamp-r-${i}`)),
-      primitives
-        .sphere({ name: `sf-globe-r-${i}`, size: [0.42, 0.42, 0.42], material: lampMat })
-        .position(10.8, 6.25, lz)
-        .runtime(game.runtimeNode(`sf-globe-r-${i}`)),
-      primitives
-        .cylinder({ name: `sf-tree-trunk-r-${i}`, size: [0.28, 3.2, 0.28], material: treeTrunkMat })
-        .position(12.2, 1.6, lz - 14)
-        .runtime(game.runtimeNode(`sf-tree-trunk-r-${i}`)),
-      primitives
-        .sphere({ name: `sf-tree-crown-r-${i}`, size: [2.6, 3.1, 2.6], material: treeFoliageMat })
-        .position(12.2, 4.1, lz - 14)
-        .runtime(game.runtimeNode(`sf-tree-crown-r-${i}`))
-    ]);
-  }
-
-  // 7. 3D Glowing Apex Kerb Beacon (TaxiBeacon: Ring + Floor Disc + 36m Vertical Beam + Core + Waiting Passenger)
-  const beaconTealMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.1 });
-  const beaconBeamMat = material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.35 });
-  for (let i = 0; i < PATH_RIBBON_COUNT; i++) {
-    s.add(
-      primitives
-        .box({
-          name: `waymo-path-ribbon-${i}`,
-          size: [1.35, 0.03, 3.2],
-          material: beaconTealMat
-        })
-        .position(3.4, 0.03, -6 - i * 5.2)
-        .runtime(game.runtimeNode(`waymo-path-ribbon-${i}`))
-    );
-  }
-
-  s.addMany([
-    primitives
-      .torus({
-        name: "taxi-beacon-ring",
-        size: [2.1, 2.1, 0.14],
-        material: beaconTealMat
-      })
-      .position(CURB_BEACON_X, 0.08, -38)
-      .runtime(game.runtimeNode("taxi-beacon-ring")),
-    primitives
-      .cylinder({
-        name: "taxi-beacon-disc",
-        size: [1.85, 0.04, 1.85],
-        material: beaconBeamMat
-      })
-      .position(CURB_BEACON_X, 0.04, -38)
-      .runtime(game.runtimeNode("taxi-beacon-disc")),
-    primitives
-      .cylinder({
-        name: "taxi-beacon-beam",
-        size: [0.42, 34, 0.42],
-        material: beaconBeamMat
-      })
-      .position(CURB_BEACON_X, 17, -38)
-      .runtime(game.runtimeNode("taxi-beacon-beam")),
-    primitives
-      .cylinder({
-        name: "taxi-beacon-core",
-        size: [0.16, 36, 0.16],
-        material: material.emissive({ color: "#ffffff", emissive: "#8ff0e6", emissiveIntensity: 2.4 })
-      })
-      .position(CURB_BEACON_X, 18, -38)
-      .runtime(game.runtimeNode("taxi-beacon-core")),
-    // 3D Waiting Passenger on Sidewalk beside Beacon
-    primitives
-      .cylinder({
-        name: "taxi-passenger-body",
-        size: [0.44, 1.35, 0.34],
-        material: material.pbr({ color: "#38bdf8", roughness: 0.55 })
-      })
-      .position(11.35, 0.88, -38)
-      .runtime(game.runtimeNode("taxi-passenger-body")),
-    primitives
-      .sphere({
-        name: "taxi-passenger-head",
-        size: [0.34, 0.36, 0.34],
-        material: material.pbr({ color: "#fde68a", roughness: 0.6 })
-      })
-      .position(11.35, 1.76, -38)
-      .runtime(game.runtimeNode("taxi-passenger-head")),
-    primitives
-      .box({
-        name: "taxi-passenger-arm",
-        size: [0.14, 0.58, 0.14],
-        material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 1.2 })
-      })
-      .position(11.05, 1.55, -38)
-      .runtime(game.runtimeNode("taxi-passenger-arm"))
-  ]);
-
-  // 8. 5 Playable Hero Vehicles (Apex I-PACE active by default; others swapped via Fleet Switcher)
-  s.addMany([
-    model(assets.teleopWaymoHero, {
-      name: "player-car-waymo",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: PLAYABLE_FLEET.waymo.maxDim
-    })
-      .position(0, PLAYABLE_FLEET.waymo.rideY, -0.8)
-      .runtime(game.runtimeNode("player-car-waymo", { tags: ["primarySubject", "primaryVehicle", "player"] })),
-
-    model(assets.teleopCybercab, {
-      name: "player-car-cybercab",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: PLAYABLE_FLEET.cybercab.maxDim
-    })
-      .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-car-cybercab")),
-
-    model(assets.teleopCybertruck, {
-      name: "player-car-cybertruck",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: PLAYABLE_FLEET.cybertruck.maxDim
-    })
-      .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-car-cybertruck")),
-
-    model(assets.teleopCorvette, {
-      name: "player-car-corvette",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: PLAYABLE_FLEET.corvette.maxDim
-    })
-      .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-car-corvette")),
-
-    model(assets.teleopMissions, {
-      name: "player-car-roadster",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: PLAYABLE_FLEET.roadster.maxDim
-    })
-      .position(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-car-roadster")),
-
-    // Auxiliary primitive nodes kept hidden (vehicles have baked PBR wheels, lamps, and LiDAR domes)
-    primitives
-      .cylinder({
-        name: "player-lidar-dome",
-        size: [0.46, 0.24, 0.46],
-        material: material.pbr({ color: "#0f172a", metalness: 0.85, roughness: 0.14 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-lidar-dome")),
-    primitives
-      .torus({
-        name: "player-lidar-ring",
-        size: [0.28, 0.28, 0.045],
-        material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.35 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-lidar-ring")),
-    primitives
-      .box({
-        name: "player-lidar-fin",
-        size: [0.38, 0.06, 0.08],
-        material: material.emissive({ color: "#a5f3fc", emissive: "#38bdf8", emissiveIntensity: 2.1 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-lidar-fin")),
-    primitives
-      .sphere({
-        name: "player-headlight-l",
-        size: [0.24, 0.1, 0.16],
-        material: material.emissive({ color: "#f0f9ff", emissive: "#bae6fd", emissiveIntensity: 1.8 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-headlight-l")),
-    primitives
-      .sphere({
-        name: "player-headlight-r",
-        size: [0.24, 0.1, 0.16],
-        material: material.emissive({ color: "#f0f9ff", emissive: "#bae6fd", emissiveIntensity: 1.8 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-headlight-r")),
-    ...Array.from({ length: IMPACT_SPARK_COUNT }, (_, i) =>
-      primitives
-        .sphere({
-          name: `impact-spark-${i}`,
-          size: [0.16, 0.16, 0.16],
-          material: material.emissive({ color: "#fff3c4", emissive: "#ffb347", emissiveIntensity: 3.2 })
-        })
-        .scale(HIDDEN_SCALE)
-        .runtime(game.runtimeNode(`impact-spark-${i}`))
-    ),
-    primitives
-      .box({
-        name: "player-tailbar",
-        size: [1.62, 0.08, 0.08],
-        material: material.emissive({ color: "#ff1e27", emissive: "#ff1e27", emissiveIntensity: 1.95 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-tailbar")),
-    primitives
-      .cylinder({
-        name: "player-thruster-l",
-        size: [0.3, 1.35, 0.3],
-        material: material.emissive({ color: "#67f3ff", emissive: "#38bdf8", emissiveIntensity: 2.0 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-thruster-l")),
-    primitives
-      .cylinder({
-        name: "player-thruster-r",
-        size: [0.3, 1.35, 0.3],
-        material: material.emissive({ color: "#67f3ff", emissive: "#38bdf8", emissiveIntensity: 2.0 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-thruster-r")),
-    primitives
-      .cylinder({
-        name: "player-contact-shadow",
-        size: [2.25, 0.014, 4.55],
-        material: material.pbr({ color: "#05070b", roughness: 0.96 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("player-contact-shadow"))
-  ]);
-
-  // 9. 5 Multiplayer Peer Vehicles (Textured GLBs + projected .mpTag nameplates)
-  s.addMany([
-    model(assets.teleopWaymoTraffic, {
-      name: "peer-car-0",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: 3.9
-    })
-      .position(-3.2, 0, -24)
-      .runtime(game.runtimeNode("peer-car-0")),
-    primitives
-      .torus({
-        name: "peer-waymo-lidar-ring",
-        size: [0.28, 0.28, 0.045],
-        material: material.emissive({ color: "#3fd6c6", emissive: "#3fd6c6", emissiveIntensity: 2.1 })
-      })
-      .scale(HIDDEN_SCALE)
-      .runtime(game.runtimeNode("peer-waymo-lidar-ring")),
-
-    model(assets.teleopCybercab, {
-      name: "peer-car-1",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: 4.0
-    })
-      .position(7.4, 0, -32)
-      .runtime(game.runtimeNode("peer-car-1")),
-
-    model(assets.teleopMissions, {
-      name: "peer-car-2",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: 4.5
-    })
-      .position(3.4, 0, -48)
-      .runtime(game.runtimeNode("peer-car-2")),
-
-    model(assets.teleopCablecar, {
-      name: "peer-car-3",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: 8.2
-    })
-      .position(-3.2, 0, -42)
-      .runtime(game.runtimeNode("peer-car-3")),
-
-    model(assets.teleopCorvette, {
-      name: "peer-car-4",
-      role: "primaryVehicle",
-      scaleMode: "fit",
-      targetMaxDimension: 4.66
-    })
-      .position(-7.6, 0, -56)
-      .runtime(game.runtimeNode("peer-car-4"))
-  ]);
-
-  // 10. 10 AI City Traffic Vehicles (2 sedan, 2 taxi, 2 compact hatch, 1 delivery van, 2 pickup, 1 box truck)
-  const trafficSpecs = [
-    { id: "traffic-0", asset: assets.teleopSedan, maxDim: 4.75 },
-    { id: "traffic-1", asset: assets.teleopTaxi, maxDim: 4.6 },
-    { id: "traffic-2", asset: assets.teleopSedan, maxDim: 4.75 },
-    { id: "traffic-3", asset: assets.teleopSuv, maxDim: 3.9 },
-    { id: "traffic-4", asset: assets.teleopSuv, maxDim: 3.9 },
-    { id: "traffic-5", asset: assets.teleopTaxi, maxDim: 4.6 },
-    { id: "traffic-6", asset: assets.teleopVan, maxDim: 4.7 },
-    { id: "traffic-7", asset: assets.teleopPickup, maxDim: 5.25 },
-    { id: "traffic-8", asset: assets.teleopPickup, maxDim: 5.25 },
-    { id: "traffic-9", asset: assets.teleopBus, maxDim: 7.6 }
-  ];
-
-  for (const spec of trafficSpecs) {
-    s.add(
-      model(spec.asset, {
-        name: spec.id,
-        role: "setDressing",
-        scaleMode: "fit",
-        targetMaxDimension: spec.maxDim
-      })
-        .position(0, 0, -80)
-        .runtime(game.runtimeNode(spec.id))
-    );
-  }
-
-  return s;
-}
-
-// Project 3D view-space point [vx, vy, vz] to 2D viewport pixel coordinates [sx, sy, visible]
-function projectViewPointToScreen(
-  pt: Vec3,
-  viewportW: number,
-  viewportH: number
-): { x: number; y: number; visible: boolean } {
-  const fx = SCENE_CAM_TARGET[0] - SCENE_CAM_POS[0];
-  const fy = SCENE_CAM_TARGET[1] - SCENE_CAM_POS[1];
-  const fz = SCENE_CAM_TARGET[2] - SCENE_CAM_POS[2];
-  const fLen = Math.hypot(fx, fy, fz) || 1;
-  const fwd: Vec3 = [fx / fLen, fy / fLen, fz / fLen];
-
-  // Right = normalize(cross(fwd, [0, 1, 0]))
-  const rxRaw = -fwd[2];
-  const rzRaw = fwd[0];
-  const rLen = Math.hypot(rxRaw, rzRaw) || 1;
-  const right: Vec3 = [rxRaw / rLen, 0, rzRaw / rLen];
-
-  // Up = cross(right, fwd)
-  const up: Vec3 = [
-    right[1] * fwd[2] - right[2] * fwd[1],
-    right[2] * fwd[0] - right[0] * fwd[2],
-    right[0] * fwd[1] - right[1] * fwd[0]
-  ];
-
-  const dx = pt[0] - SCENE_CAM_POS[0];
-  const dy = pt[1] - SCENE_CAM_POS[1];
-  const dz = pt[2] - SCENE_CAM_POS[2];
-
-  const cx = dx * right[0] + dy * right[1] + dz * right[2];
-  const cy = dx * up[0] + dy * up[1] + dz * up[2];
-  const cz = dx * fwd[0] + dy * fwd[1] + dz * fwd[2];
-
-  if (cz <= 1.2 || cz > 240) {
-    return { x: -999, y: -999, visible: false };
-  }
-
-  const tanHalfFov = Math.tan((SCENE_CAM_FOV_DEG * 0.5 * Math.PI) / 180);
-  const aspect = Math.max(1, viewportW) / Math.max(1, viewportH);
-
-  const ndcX = cx / (cz * tanHalfFov * aspect);
-  const ndcY = cy / (cz * tanHalfFov);
-
-  if (Math.abs(ndcX) > 1.12 || Math.abs(ndcY) > 1.12) {
-    return { x: -999, y: -999, visible: false };
-  }
-
-  const sx = (ndcX * 0.5 + 0.5) * viewportW;
-  const sy = (-ndcY * 0.5 + 0.5) * viewportH;
-  return { x: sx, y: sy, visible: true };
-}
-
-// Initialize Grid Dispatch SVG Speedometer Dial (#dial)
 function initSpeedometerDial(isIce: boolean): void {
   const startDeg = -135;
   const endDeg = 135;
@@ -1380,43 +104,27 @@ function initSpeedometerDial(isIce: boolean): void {
   const arcPath = (r: number, a0: number, a1: number): string => {
     const p0 = polar(r, a0);
     const p1 = polar(r, a1);
-    const largeArc = a1 - a0 > 180 ? 1 : 0;
-    return `M${p0[0]} ${p0[1]}A${r} ${r} 0 ${largeArc} 1 ${p1[0]} ${p1[1]}`;
+    return `M${p0[0]} ${p0[1]}A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${p1[0]} ${p1[1]}`;
   };
-
-  document.getElementById("rpmT")?.setAttribute("d", arcPath(86, startDeg, endDeg));
-  document.getElementById("rpm")?.setAttribute("d", arcPath(86, startDeg, endDeg));
-  document.getElementById("red")?.setAttribute("d", arcPath(86, startDeg + ((endDeg - startDeg) * 8) / 9, endDeg));
-  document.getElementById("nosT")?.setAttribute("d", arcPath(110, -160, -95));
-  document.getElementById("nos")?.setAttribute("d", arcPath(110, -160, -95));
-
-  const ticksEl = document.getElementById("ticks");
+  $("rpmT")?.setAttribute("d", arcPath(86, startDeg, endDeg));
+  $("rpm")?.setAttribute("d", arcPath(86, startDeg, endDeg));
+  $("red")?.setAttribute("d", arcPath(86, startDeg + ((endDeg - startDeg) * 8) / 9, endDeg));
+  $("nosT")?.setAttribute("d", arcPath(110, -160, -95));
+  $("nos")?.setAttribute("d", arcPath(110, -160, -95));
+  const ticksEl = $("ticks");
   if (!ticksEl) return;
-
   let svg = "";
-  if (!isIce) {
-    for (let pct = 0; pct <= 100; pct += 5) {
-      const deg = startDeg + ((endDeg - startDeg) * pct) / 100;
-      const major = pct % 25 === 0;
-      const pInner = polar(major ? 74 : 78, deg);
-      const pOuter = polar(81, deg);
-      svg += `<line class="tick${major ? "" : " min"}" x1="${pInner[0]}" y1="${pInner[1]}" x2="${pOuter[0]}" y2="${pOuter[1]}"/>`;
-      if (major) {
-        const pNum = polar(63, deg);
-        svg += `<text class="num" x="${pNum[0]}" y="${pNum[1]}">${pct}</text>`;
-      }
-    }
-  } else {
-    for (let rpm = 0; rpm <= 9000; rpm += 500) {
-      const deg = startDeg + ((endDeg - startDeg) * rpm) / 9000;
-      const major = rpm % 1000 === 0;
-      const pInner = polar(major ? 74 : 77, deg);
-      const pOuter = polar(81, deg);
-      svg += `<line class="tick${major ? "" : " min"}" x1="${pInner[0]}" y1="${pInner[1]}" x2="${pOuter[0]}" y2="${pOuter[1]}"/>`;
-      if (major) {
-        const pNum = polar(64, deg);
-        svg += `<text class="num${rpm >= 8000 ? " r" : ""}" x="${pNum[0]}" y="${pNum[1]}">${rpm / 1000}</text>`;
-      }
+  const max = isIce ? 9000 : 100;
+  const stepV = isIce ? 500 : 5;
+  for (let v = 0; v <= max; v += stepV) {
+    const deg = startDeg + ((endDeg - startDeg) * v) / max;
+    const major = isIce ? v % 1000 === 0 : v % 25 === 0;
+    const pInner = polar(major ? 74 : isIce ? 77 : 78, deg);
+    const pOuter = polar(81, deg);
+    svg += `<line class="tick${major ? "" : " min"}" x1="${pInner[0]}" y1="${pInner[1]}" x2="${pOuter[0]}" y2="${pOuter[1]}"/>`;
+    if (major) {
+      const pNum = polar(isIce ? 64 : 63, deg);
+      svg += `<text class="num${isIce && v >= 8000 ? " r" : ""}" x="${pNum[0]}" y="${pNum[1]}">${isIce ? v / 1000 : v}</text>`;
     }
   }
   const nosDot = polar(110, -165);
@@ -1425,1603 +133,817 @@ function initSpeedometerDial(isIce: boolean): void {
   document.body.classList.toggle("ice", isIce);
 }
 
-async function bootGridDispatchAura3D(): Promise<void> {
-  const canvas = document.getElementById("c") as HTMLCanvasElement | null;
-  if (!canvas) {
-    throw new Error("Missing #c canvas element for Grid Dispatch.");
-  }
+/** Every runtime handle the presentation writes, looked up once per scene mount (weather changes remount the scene). */
+function bindNodes(app: ReturnType<typeof createAuraApp>) {
+  const req = (id: string): AuraRuntimeNodeHandle => app.nodes.require(id);
+  const nodes = {
+    cars: Object.fromEntries(PLAYABLE_IDS.map((id) => [id, req(`player-car-${id}`)])) as Record<PlayableCarId, AuraRuntimeNodeHandle>,
+    strips: ROAD_STRIPS.map((strip) => ({ ...strip, h: req(strip.id) })),
+    dashes: req("sf-dashes"),
+    crossRoads: req("sf-cross-roads"),
+    crosswalks: req("sf-crosswalks"),
+    signalPoles: req("sf-signal-poles"),
+    signalArms: req("sf-signal-arms"),
+    signalLights: req("sf-signal-lights"),
+    lampPoles: req("sf-lamp-poles"),
+    lampGlobes: req("sf-lamp-globes"),
+    trunks: req("sf-tree-trunks"),
+    crowns: req("sf-tree-crowns"),
+    ribbons: req("route-ribbons"),
+    sparks: req("impact-sparks"),
+    buildings: Array.from({ length: BUILDING_PAIRS }, (_, i) => {
+      const left = req(`sf-bldg-l-${i}`).setRotation(0, Math.PI / 2, 0);
+      const right = req(`sf-bldg-r-${i}`).setRotation(0, -Math.PI / 2, 0);
+      return { left, right, xL: buildingLayoutLeft(i).centerX, xR: buildingLayoutRight(i).centerX };
+    }),
+    beaconRing: req("taxi-beacon-ring"),
+    beaconDisc: req("taxi-beacon-disc"),
+    beaconBeam: req("taxi-beacon-beam"),
+    beaconCore: req("taxi-beacon-core"),
+    passengerBody: req("taxi-passenger-body"),
+    passengerHead: req("taxi-passenger-head"),
+    passengerArm: req("taxi-passenger-arm"),
+    users: [...Array.from({ length: TRAFFIC_COUNT }, (_, i) => req(`traffic-${i}`)), ...RIVALS.map((_, k) => req(`rival-car-${k}`))]
+  };
+  return nodes;
+}
+
+async function bootGridDispatch(): Promise<void> {
+  const canvas = $<HTMLCanvasElement>("c");
+  if (!canvas) throw new Error("Missing #c canvas element for Grid Dispatch.");
+  const params = new URLSearchParams(window.location.search);
+  const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  const motionOk = (): boolean => !(reducedMotion?.matches ?? false);
+  let weather: WeatherPreset = "noon";
 
   await probeBuildingModels();
-  const builtScene = buildGridDispatchScene();
-  const auraApp = createAuraApp(canvas, {
-    scene: builtScene,
-    renderer: { quality: "high" },
-    qualityRebuild: { flags: ["game"] }
-  });
+  const auraApp = createAuraApp(canvas, { scene: buildGridDispatchScene(weather), renderer: GRID_DISPATCH_RENDERER, qualityRebuild: { flags: ["game"] } });
+  installSafetyNet({ safety: { selfHeal: false, panel: "query" }, app: auraApp });
+  let N = bindNodes(auraApp);
 
-  const req = (id: string) => auraApp.nodes.require(id);
-
-  // Resolve Player Fleet Handles
-  const playerCarHandles: Record<PlayableCarId, AuraRuntimeNodeHandle> = {
-    waymo: req("player-car-waymo"),
-    cybercab: req("player-car-cybercab"),
-    cybertruck: req("player-car-cybertruck"),
-    corvette: req("player-car-corvette"),
-    roadster: req("player-car-roadster")
-  };
-
-  const playerLidarDome = req("player-lidar-dome");
-  const playerLidarRing = req("player-lidar-ring");
-  const playerLidarFin = req("player-lidar-fin");
-  const playerHeadlightL = req("player-headlight-l");
-  const playerHeadlightR = req("player-headlight-r");
-  const playerTailbar = req("player-tailbar");
-  const playerThrusterL = req("player-thruster-l");
-  const playerThrusterR = req("player-thruster-r");
-  const playerShadow = req("player-contact-shadow");
-
-  // Resolve Environment & Landmark Handles
-  const groundHandle = req("sf-peninsula-ground");
-  const bayWaterHandle = req("sf-bay-water");
-  const horizonSkyHandle = req("sf-horizon-sky");
-  const sunDiscHandle = req("sf-sun-disc");
-
-  const dashHandles: AuraRuntimeNodeHandle[][] = [0, 1].map((d) =>
-    Array.from({ length: DASH_ROWS }, (_, i) => req(`sf-dash-${d}-${i}`))
-  );
-
-  const intersectionHandles = Array.from({ length: INTERSECTION_COUNT }, (_, i) => ({
-    crossRoad: req(`sf-cross-road-${i}`),
-    crosswalkN: req(`sf-crosswalk-n-${i}`),
-    crosswalkS: req(`sf-crosswalk-s-${i}`),
-    poleR: req(`sf-sig-pole-r-${i}`),
-    armR: req(`sf-sig-arm-r-${i}`),
-    lightR: req(`sf-sig-light-r-${i}`),
-    poleL: req(`sf-sig-pole-l-${i}`),
-    armL: req(`sf-sig-arm-l-${i}`),
-    lightL: req(`sf-sig-light-l-${i}`)
-  }));
-
-  const buildingHandles = Array.from({ length: BUILDING_PAIRS }, (_, i) => {
-    const lay = buildingLayout(BUILDING_SPECS[i % BUILDING_SPECS.length]!, 18 + ((i * 7) % 22));
-    const layR = buildingLayout(BUILDING_SPECS[(i + 1) % BUILDING_SPECS.length]!, 20 + ((i * 11) % 24));
-    const left = req(`sf-bldg-l-${i}`);
-    const right = req(`sf-bldg-r-${i}`);
-    left.setRotation(0, Math.PI / 2, 0);
-    right.setRotation(0, -Math.PI / 2, 0);
-    return { left, right, xL: lay.centerX, xR: layR.centerX };
-  });
-
-
-  const lampHandles = Array.from({ length: LAMP_PAIRS }, (_, i) => ({
-    lampL: req(`sf-lamp-l-${i}`),
-    globeL: req(`sf-globe-l-${i}`),
-    lampR: req(`sf-lamp-r-${i}`),
-    globeR: req(`sf-globe-r-${i}`),
-    trunkR: req(`sf-tree-trunk-r-${i}`),
-    crownR: req(`sf-tree-crown-r-${i}`)
-  }));
-
-  // Resolve Apex Beacon, Passenger & Path Ribbon Handles
-  const pathRibbonHandles = Array.from({ length: PATH_RIBBON_COUNT }, (_, i) =>
-    req(`waymo-path-ribbon-${i}`)
-  );
-  const beaconRingHandle = req("taxi-beacon-ring");
-  const beaconDiscHandle = req("taxi-beacon-disc");
-  const beaconBeamHandle = req("taxi-beacon-beam");
-  const beaconCoreHandle = req("taxi-beacon-core");
-  const passengerBodyHandle = req("taxi-passenger-body");
-  const passengerHeadHandle = req("taxi-passenger-head");
-  const passengerArmHandle = req("taxi-passenger-arm");
-
-  // Resolve 5 Multiplayer Peer Handles
-  const peerCarHandles = Array.from({ length: 5 }, (_, i) => req(`peer-car-${i}`));
-  const peerApexLidarRing = req("peer-waymo-lidar-ring");
-
-  // Resolve 10 AI Traffic Handles
-  const trafficHandles = Array.from({ length: 10 }, (_, i) => req(`traffic-${i}`));
-
-  // Live Simulation State
-  const urlParams = new URLSearchParams(window.location.search);
-  let framesRendered = 0;
-  let simTime = 0;
-  let activeCarId: PlayableCarId = "waymo";
-  let autopilotLevel: AutopilotLevel =
-    urlParams.get("autoplay") === "1" || urlParams.get("demo") === "1" ? "L5" : "MAN";
-  let weatherPreset: WeatherPreset = "noon";
-  let camMode: 0 | 1 | 2 | 3 = 0;
-  let useMph = true;
-  let absOn = true;
-  let tcsOn = true;
-  let espOn = true;
-
-  // Player Kinematics (World Z decreases as we drive forward down California St)
-  let playerX = 3.4;
-  let playerY = 0;
-  let playerZ = 0;
-  let playerSpeedMps = 11.5; // Starts cruising smoothly in manual or L5
-  let playerSteer = 0;
-  let playerYaw = 0;
-  let qaYawAdd = 0;
-  let playerPitch = 0;
-  let playerRoll = 0;
-  let regenRatio = 0.22;
-  let powerRatio = 0.44;
-  let lastManualInputTime = -99;
-
-  // Apex Robotaxi Fare State
-  let fareIndex = 0;
-  let rideState: RideLifecycleState = "offer";
-  let rideStyle: RideStyle = "comfort";
-  let totalEarningsUsd = 1420;
-  let completedRides = 14;
-  let ratingAvg = 4.96;
-  let comfortScore = 98;
-  let streetBounty = 4250;
-  let streetMultiplier = 3.0;
-  let beaconWorldZ = -115; // First Pickup (P) beacon 115m ahead on the right curb
-  let stateTimerSec = 0;
-  let rideElapsedSec = 0;
-  let lastBeaconColorMode: "pickup" | "dropoff" = "pickup";
-
-  // 5 Multiplayer Peers State
-  const peers: PeerDriverState[] = [
-    {
-      id: "peer-0",
-      handle: "devon_ai",
-      carLabel: "Apex Cruiser",
-      piClass: "S 918",
-      piColor: "#3fd6c6",
-      accent: "#3fd6c6",
-      laneX: 7.4,
-      targetLaneX: 7.4,
-      zOffset: -22,
-      speed: 14.8,
-      baseSpeed: 14.8,
-      rideY: 0,
-      yawOffset: 0,
-      isCableCar: false,
-      worldX: 7.4,
-      worldZ: -22,
-      distanceMeters: 23
-    },
-    {
-      id: "peer-1",
-      handle: "kaya_sf",
-      carLabel: "Cyber Coupe",
-      piClass: "A 742",
-      piColor: "#ffb347",
-      accent: "#ffb347",
-      laneX: -3.2,
-      targetLaneX: -3.2,
-      zOffset: -38,
-      speed: 15.1,
-      baseSpeed: 15.1,
-      rideY: 0,
-      yawOffset: 0,
-      isCableCar: false,
-      worldX: -3.2,
-      worldZ: -38,
-      distanceMeters: 38
-    },
-    {
-      id: "peer-2",
-      handle: "elena_x",
-      carLabel: "Apex Interceptor",
-      piClass: "X 999",
-      piColor: "#c45bff",
-      accent: "#c45bff",
-      laneX: 3.4,
-      targetLaneX: 3.4,
-      zOffset: -46,
-      speed: 15.8,
-      baseSpeed: 15.8,
-      rideY: 0,
-      yawOffset: 0,
-      isCableCar: false,
-      worldX: 3.4,
-      worldZ: -46,
-      distanceMeters: 46
-    },
-    {
-      id: "peer-3",
-      handle: "sf_muni",
-      carLabel: "Cable Car",
-      piClass: "C 104",
-      piColor: "#43d17a",
-      accent: "#43d17a",
-      laneX: -3.2,
-      targetLaneX: -3.2,
-      zOffset: -19,
-      speed: 11.5,
-      baseSpeed: 11.5,
-      rideY: 0,
-      yawOffset: Math.PI,
-      isCableCar: true,
-      worldX: -3.2,
-      worldZ: -19,
-      distanceMeters: 19
-    },
-    {
-      id: "peer-4",
-      handle: "marcus_v8",
-      carLabel: "Vortex GT",
-      piClass: "S 990",
-      piColor: "#ff5a1f",
-      accent: "#ff5a1f",
-      laneX: -7.6,
-      targetLaneX: -7.6,
-      zOffset: -31,
-      speed: 15.6,
-      baseSpeed: 15.6,
-      rideY: 0,
-      yawOffset: 0,
-      isCableCar: false,
-      worldX: -7.6,
-      worldZ: -31,
-      distanceMeters: 32
-    }
-  ];
-
-  // Keeps a projected nameplate clear of the fare card, the earnings cluster and the location pill:
-  // when its box would overlap one, it moves below that panel and a leader line points back at the car.
-  const NAMEPLATE_AVOID_IDS = ["taxiCard", "taxiTrip", "taxiPen", "topRightCluster", "where"];
-  let placedNameplates: Array<{ l: number; r: number; t: number; b: number }> = [];
-  function placeNameplate(el: HTMLElement, ax: number, ay: number, vw: number, vh: number): { x: number; y: number; leader: number } {
-    const w = el.offsetWidth || 120;
-    const h = el.offsetHeight || 40;
-    const margin = 6;
-    const x = Math.min(Math.max(ax, w / 2 + margin), vw - w / 2 - margin);
-    let y = Math.min(Math.max(ay, h + margin), vh - margin);
-    let leader = 0;
-    for (let pass = 0; pass < 3; pass++) {
-      let moved = false;
-      for (const id of NAMEPLATE_AVOID_IDS) {
-        const panel = document.getElementById(id);
-        if (!panel) continue;
-        const cs = getComputedStyle(panel);
-        if (cs.display === "none" || cs.visibility === "hidden" || Number(cs.opacity) < 0.05) continue;
-        const r = panel.getBoundingClientRect();
-        if (r.width < 4 || r.height < 4) continue;
-        const left = x - w / 2, right = x + w / 2, top = y - h, bottom = y;
-        if (right > r.left - 4 && left < r.right + 4 && bottom > r.top - 4 && top < r.bottom + 4) {
-          const below = r.bottom + 8 + h;
-          const above = r.top - 8;
-          const useAbove = above - h >= margin && Math.abs(above - y) <= Math.abs(below - y);
-          const ny = useAbove ? above : Math.min(below, vh - margin);
-          leader += Math.abs(ny - y);
-          y = ny;
-          moved = true;
-        }
-      }
-      if (!moved) break;
-    }
-    // stack below any nameplate already placed this frame that this one would cover
-    for (let pass = 0; pass < 6; pass++) {
-      const hit = placedNameplates.find((q) => x + w / 2 > q.l - 3 && x - w / 2 < q.r + 3 && y > q.t - 3 && y - h < q.b + 3);
-      if (!hit) break;
-      const ny = Math.min(hit.b + 4 + h, vh - margin);
-      if (ny === y) break;
-      leader += Math.abs(ny - y);
-      y = ny;
-    }
-    placedNameplates.push({ l: x - w / 2, r: x + w / 2, t: y - h, b: y });
-    return { x, y, leader: Math.min(leader, 160) };
-  }
-
-  // Create Floating Peer Nameplate DOM Elements (#mpTags > .mpTag)
-  const mpTagsContainer = document.getElementById("mpTags");
-  const peerTagEls: HTMLElement[] = peers.map((peer, idx) => {
-    const el = document.createElement("div");
-    el.className = "mpTag";
-    el.style.borderColor = peer.accent;
-    el.style.color = peer.accent;
-    el.innerHTML = `<b>@${peer.handle}</b><small>${peer.carLabel} · <span style="color:${peer.piColor}">${peer.piClass}</span></small><i id="mp-dist-${idx}">${peer.distanceMeters} m</i>`;
-    el.addEventListener("click", () => teleportToPeer(idx));
-    mpTagsContainer?.appendChild(el);
-    return el;
-  });
-
-  // 10 AI City Traffic Cars State
-  const trafficCars: TrafficCarState[] = Array.from({ length: 10 }, (_, i) => {
-    const oncoming = i < 4;
-    const laneX = oncoming
-      ? AVENUE_LANES_X[i % 2]!
-      : AVENUE_LANES_X[2 + (i % 2)]!;
-    return {
-      slotIdx: i,
-      laneX,
-      z: -22 - i * 24,
-      speed: oncoming ? 13 + (i % 3) * 2.2 : 10.5 + (i % 4) * 1.8,
-      direction: oncoming ? -1 : 1,
-      phase: i * 1.3
-    };
-  });
-
-  // Player-vs-traffic contact: impact kit (hit-stop, shake, cue, sparks) plus the Teleoperator comfort/bounty rule.
-  const sparkHandles = Array.from({ length: IMPACT_SPARK_COUNT }, (_, i) => req(`impact-spark-${i}`));
-  const sparks = Array.from({ length: IMPACT_SPARK_COUNT }, () => ({ life: 0, p: [0, 0, 0] as Vec3, v: [0, 0, 0] as Vec3 }));
-  let sparkCursor = 0;
+  // ---------------------------------------------------------------- simulation
   const hitStop = createHitStop();
   const cameraShake = createCameraShake({ maxOffset: 0.4 });
-  const collisionCues = createCueBank({ cues: COLLISION_CUES, masterGain: 0.5, muteKey: false, noiseSeed: 424242 });
-  collisionCues.install(window);
-  const collisionLog: Array<{ slot: number; speed: number; point: [number, number, number]; time: number }> = [];
-  let collisionCount = 0;
-  const trafficContacts = createTrafficContacts(trafficCars.length, {
-    hitStop,
-    shake: cameraShake,
-    cue: (name, gain) => {
-      collisionCues.play(name as "collision", { gain });
+  const sparks = Array.from({ length: IMPACT_SPARK_COUNT }, () => ({ life: 0, p: [0, 0, 0] as Vec3, v: [0, 0, 0] as Vec3 }));
+  let sparkCursor = 0;
+  let audio: ReturnType<typeof createGridAudio> | null = null;
+  const contacts = createTrafficContacts(
+    ROAD_USER_COUNT,
+    {
+      hitStop,
+      // Reduced motion: the shake still runs but its offset is never applied (see present()).
+      shake: cameraShake,
+      cue: (_name, gain) => audio?.play("collision", gain),
+      cueName: "collision",
+      particles: (burst) => {
+        const n = Math.min(burst.count, IMPACT_SPARK_COUNT);
+        for (let k = 0; k < n; k++) {
+          const s = sparks[sparkCursor++ % IMPACT_SPARK_COUNT]!;
+          const a = (k / n) * Math.PI * 2;
+          const speed = 2 + burst.speed * 0.18;
+          s.life = 0.45;
+          s.p = [burst.point[0], 0.6 + 0.9 * ((k % 3) / 2), burst.point[2]];
+          s.v = [burst.normal[0] * speed + Math.cos(a) * speed * 0.6, 2.2 + (k % 4) * 0.9, burst.normal[2] * speed + Math.sin(a) * speed * 0.6];
+        }
+      },
+      fullSpeed: 20
     },
-    cueName: "collision",
-    particles: (burst) => {
-      const n = Math.min(burst.count, IMPACT_SPARK_COUNT);
-      for (let k = 0; k < n; k++) {
-        const s = sparks[sparkCursor++ % IMPACT_SPARK_COUNT]!;
-        const a = (k / n) * Math.PI * 2;
-        const speed = 2 + burst.speed * 0.18;
-        s.life = 0.45;
-        s.p = [burst.point[0], 0.6 + 0.9 * ((k % 3) / 2), burst.point[2]];
-        s.v = [
-          burst.normal[0] * speed + Math.cos(a) * speed * 0.6,
-          2.2 + (k % 4) * 0.9,
-          burst.normal[2] * speed + Math.sin(a) * speed * 0.6
-        ];
-      }
-    },
-    fullSpeed: 20
-  });
-  let lastPenaltyAtSec = -10;
-  const trafficRecovery = createTrafficRecovery(trafficCars.map((c) => c.speed));
+    { footprints: roadUserFootprints() }
+  );
+  const storage = (() => { try { return window.localStorage; } catch { return null; } })();
+  const autoplay = params.get("autoplay") === "1" || params.get("demo") === "1";
+  const sim = createSim(contacts, { level: autoplay ? "L5" : "MAN", career: loadCareer(storage) });
+  sim.onCareer = (c) => saveCareer(storage, c);
+  const S = sim.state;
+  // Portrait phones start in the far chase camera so the car does not fill the screen.
+  let camMode: CameraMode = window.innerWidth < window.innerHeight * 0.8 ? 1 : 0;
+  let useMph = true;
+  let ready = false;
+  let remounting = false;
+  let framesRendered = 0;
 
-  // Keyboard Controls
+  // ---------------------------------------------------------------- input (C3, C9)
   const keysHeld = new Set<string>();
-  window.addEventListener("keydown", (ev) => {
-    keysHeld.add(ev.code);
-    if (
-      ev.code === "KeyW" ||
-      ev.code === "KeyA" ||
-      ev.code === "KeyS" ||
-      ev.code === "KeyD" ||
-      ev.code === "ArrowUp" ||
-      ev.code === "ArrowDown" ||
-      ev.code === "ArrowLeft" ||
-      ev.code === "ArrowRight" ||
-      ev.code === "Space"
-    ) {
-      lastManualInputTime = simTime;
-    }
-    if (ev.code === "KeyI") {
-      cycleAutopilotLevel();
-    } else if (ev.code === "KeyC") {
-      setCameraMode(((camMode + 1) % 4) as 0 | 1 | 2 | 3);
-    } else if (ev.code === "KeyT") {
-      const order: WeatherPreset[] = ["noon", "golden", "fog", "night"];
-      const next = order[(order.indexOf(weatherPreset) + 1) % order.length]!;
-      setWeatherPreset(next);
-    } else if (ev.code === "KeyU") {
-      useMph = !useMph;
-      const unitEl = document.getElementById("unit");
-      if (unitEl) unitEl.textContent = useMph ? "MPH" : "KM/H";
-    } else if (ev.code === "KeyF") {
-      advanceApexFareStage();
-    } else if (ev.code === "Digit1") {
-      selectPlayableVehicle("waymo");
-    } else if (ev.code === "Digit2") {
-      selectPlayableVehicle("cybercab");
-    } else if (ev.code === "Digit3") {
-      selectPlayableVehicle("cybertruck");
-    } else if (ev.code === "Digit4") {
-      selectPlayableVehicle("corvette");
-    } else if (ev.code === "Digit5") {
-      selectPlayableVehicle("roadster");
-    }
+  const touch = mountTouchPads(document, { coarsePointer: window.matchMedia?.("(pointer: coarse)")?.matches ?? false });
+  const currentInput = (): DriveInput => ({
+    throttle: keysHeld.has("KeyW") || keysHeld.has("ArrowUp") || touch.held("throttle"),
+    brake: keysHeld.has("KeyS") || keysHeld.has("ArrowDown") || keysHeld.has("Space") || touch.held("brake"),
+    left: keysHeld.has("KeyA") || keysHeld.has("ArrowLeft") || touch.held("left"),
+    right: keysHeld.has("KeyD") || keysHeld.has("ArrowRight") || touch.held("right"),
+    boost: keysHeld.has("ShiftLeft") || keysHeld.has("ShiftRight")
   });
-
+  let qaInput: DriveInput | null = null;
+  window.addEventListener("keydown", (ev) => {
+    if (isTextEntryTarget(ev.target as HTMLElement | null)) return;
+    if (DRIVING_CODES.has(ev.code)) {
+      // A focused dock button must not be "clicked" by Space or the arrows while driving.
+      ev.preventDefault();
+      keysHeld.add(ev.code);
+      return;
+    }
+    if (ev.repeat || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    const carKeys: Record<string, PlayableCarId> = { Digit1: "cruiser", Digit2: "coupe", Digit3: "truck", Digit4: "gt", Digit5: "interceptor" };
+    if (ev.code === "KeyI") setAutopilotLevel(nextAssist(S.level));
+    else if (ev.code === "KeyC") setCameraMode(((camMode + 1) % 4) as CameraMode);
+    else if (ev.code === "KeyT") void setWeather((["noon", "golden", "fog", "night"] as const)[(["noon", "golden", "fog", "night"].indexOf(weather) + 1) % 4]!);
+    else if (ev.code === "KeyU") toggleUnits();
+    else if (ev.code === "KeyF") applyEvents(sim.skipFare());
+    else if (ev.code === "KeyR" && S.phase === "results") retry();
+    else if (ev.code === "Escape") $("mpPanel")?.classList.remove("on");
+    else if (carKeys[ev.code]) selectPlayableVehicle(carKeys[ev.code]!);
+  });
   window.addEventListener("keyup", (ev) => {
+    if (DRIVING_CODES.has(ev.code)) ev.preventDefault();
     keysHeld.delete(ev.code);
   });
+  const releaseAll = (): void => keysHeld.clear();
+  window.addEventListener("blur", releaseAll);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); });
 
-  let toastTimeout = 0;
-  function showToast(title: string, subtitle: string): void {
-    const toastEl = document.getElementById("toast");
-    if (!toastEl) return;
-    toastEl.innerHTML = `<span>${title}</span><small>${subtitle}</small>`;
-    toastEl.classList.add("on");
-    window.clearTimeout(toastTimeout);
-    toastTimeout = window.setTimeout(() => {
-      toastEl.classList.remove("on");
-    }, 2600);
-  }
-
-  function pushPenaltyOrBonusPopup(title: string, detail: string, kind: "good" | "bad" | "nfs"): void {
-    const penEl = document.getElementById("taxiPen");
-    if (!penEl) return;
-    const pop = document.createElement("div");
-    pop.className = `pop ${kind}`;
-    pop.innerHTML = `<b>${title}</b><small>${detail}</small>`;
-    penEl.appendChild(pop);
-    while (penEl.children.length > 2) {
-      penEl.firstElementChild?.remove();
+  audio = createGridAudio(window, (muted) => {
+    const btn = $("muteBtn");
+    if (btn) {
+      btn.setAttribute("aria-pressed", muted ? "true" : "false");
+      btn.textContent = muted ? "Sound off" : "Sound on";
     }
-    window.setTimeout(() => {
-      pop.remove();
-    }, 2400);
-  }
+  });
 
-  function updateBeaconColors(mode: "pickup" | "dropoff"): void {
-    if (mode === lastBeaconColorMode) return;
-    lastBeaconColorMode = mode;
-    const col = mode === "pickup" ? "#3fd6c6" : "#ffb347";
-    const coreCol = mode === "pickup" ? "#a5f3fc" : "#fde68a";
-    beaconRingHandle.setMaterial(
-      material.emissive({ color: col, emissive: col, emissiveIntensity: 2.2 })
-    );
-    beaconDiscHandle.setMaterial(
-      material.emissive({ color: col, emissive: col, emissiveIntensity: 1.45 })
-    );
-    beaconBeamHandle.setMaterial(
-      material.emissive({ color: col, emissive: col, emissiveIntensity: 1.35 })
-    );
-    beaconCoreHandle.setMaterial(
-      material.emissive({ color: "#ffffff", emissive: coreCol, emissiveIntensity: 2.4 })
-    );
-    for (const h of pathRibbonHandles) {
-      h.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.9 }));
-    }
-  }
-
-  function formatDist(meters: number): string {
+  // ---------------------------------------------------------------- HUD
+  const formatDist = (meters: number): string => {
     const d = Math.max(0, meters);
     if (useMph) {
       const feet = d * 3.28084;
-      if (feet >= 528) return `${(d / 1609.34).toFixed(1)} mi`;
-      return `${Math.max(10, Math.round(feet / 10) * 10)} ft`;
+      return feet >= 528 ? `${(d / 1609.34).toFixed(1)} mi` : `${Math.max(10, Math.round(feet / 10) * 10)} ft`;
     }
-    if (d >= 1000) return `${(d / 1000).toFixed(1)} km`;
-    return `${Math.max(10, Math.round(d / 10) * 10)} m`;
+    return d >= 1000 ? `${(d / 1000).toFixed(1)} km` : `${Math.max(10, Math.round(d / 10) * 10)} m`;
+  };
+  const hud = createHud({
+    formatDist,
+    onToggleStyle: () => {
+      if (S.ride.state !== "offer") return;
+      S.style = S.style === "comfort" ? "street" : "comfort";
+      hud.popup(S.style === "street" ? "Street bounty" : "Comfort ride", S.style === "street" ? "Tip grows with the multiplier: near misses raise it, hits lower it" : "Tip grows with comfort: drive smoothly, no hits", S.style === "street" ? "nfs" : "good");
+    },
+    onRetry: () => retry()
+  });
+
+  function applyEvents(events: readonly SimEvent[]): void {
+    for (const e of events) {
+      if (e.kind === "popup") hud.popup(e.title, e.detail, e.tone);
+      else if (e.kind === "cue") audio?.play(e.name, e.gain);
+      else if (e.kind === "fare") {
+        hud.showSummary(S.ride.fareIndex, e.style, e.outcome, S.ride.comfort, S.ride.multiplier);
+        saveCareer(storage, S.career);
+      } else if (e.kind === "shiftOver") hud.showResults(S.shift, e.score, e.best, e.newBest);
+    }
   }
 
-  function formatClock(sec: number): string {
-    const s = Math.max(0, Math.ceil(Math.abs(sec)));
-    const m = Math.floor(s / 60);
-    const rem = s % 60;
-    return `${String(m).padStart(2, "0")}:${String(rem).padStart(2, "0")}`;
+  function retry(): void {
+    sim.restart();
+    presenter.reset();
+    hud.hideResults();
+    hud.toast("New shift", `${5} fares · ${formatClock(420)} on the clock`);
   }
 
-  function renderTaxiTotalDom(): void {
-    const totalEl = document.getElementById("taxiTotal");
-    if (!totalEl) return;
-    totalEl.innerHTML = `<b>$${totalEarningsUsd.toLocaleString("en-US")}</b><small>${completedRides} rides · ★ ${ratingAvg.toFixed(2)} · Teleop Room #SF-401</small>`;
+  function toggleUnits(): void {
+    useMph = !useMph;
+    const unitEl = $("unit");
+    if (unitEl) unitEl.textContent = useMph ? "MPH" : "KM/H";
   }
 
-  let fareSheetCollapsed = false;
-  for (const id of ["taxiCard", "taxiTrip"]) {
-    document.getElementById(id)?.addEventListener("click", (e) => {
-      if ((e.target as HTMLElement).closest(".tx-head .tg")) {
-        fareSheetCollapsed = !fareSheetCollapsed;
-        document.getElementById("taxiCard")?.classList.toggle("min", fareSheetCollapsed);
-        document.getElementById("taxiTrip")?.classList.toggle("min", fareSheetCollapsed);
-      }
-    });
+  /** Brushed-steel truck body and a champagne rival coupe (the generated paints read as plastic); reapplied after a remount. */
+  function applyMaterialOverrides(): void {
+    N.cars.truck.setMaterial(material.pbr({ color: "#cbd5e1", metalness: 0.8, roughness: 0.22 }));
+    N.users[TRAFFIC_COUNT + 1]?.setMaterial(material.pbr({ color: "#e8c27a", metalness: 0.65, roughness: 0.26 }));
   }
 
-  function renderApexFareCards(distToBeacon: number): void {
-    const fare = WAYMO_FARES[fareIndex % WAYMO_FARES.length]!;
-    const cardEl = document.getElementById("taxiCard");
-    const tripEl = document.getElementById("taxiTrip");
-    const sumEl = document.getElementById("taxiSum");
-    const hintEl = document.getElementById("taxiHint");
-
-    const isOfferOrBoard = rideState === "offer" || rideState === "boarding";
-    const isRideOrAlight = rideState === "ride" || rideState === "alighting";
-
-    cardEl?.classList.toggle("on", isOfferOrBoard);
-    tripEl?.classList.toggle("on", isRideOrAlight);
-    cardEl?.classList.toggle("min", fareSheetCollapsed);
-    tripEl?.classList.toggle("min", fareSheetCollapsed);
-    tripEl?.classList.toggle("arc", rideStyle === "street");
-    sumEl?.classList.toggle("on", rideState === "summary");
-
-    if (hintEl) {
-      const showHint = (isOfferOrBoard || isRideOrAlight) && distToBeacon < 36;
-      hintEl.classList.toggle("on", showHint);
-      if (showHint) {
-        hintEl.textContent =
-          rideState === "boarding"
-            ? `Boarding ${fare.passenger} at kerb…`
-            : rideState === "alighting"
-              ? `Dropping off ${fare.passenger} at kerb…`
-              : `${autopilotLevel.startsWith("L5") ? "L5 Autonomous Approach" : "Pull up to the glowing kerb"} · ${formatDist(distToBeacon)}`;
-      }
+  let appliedCar: PlayableCarId | null = null;
+  function applyCarVisibility(): void {
+    for (const id of PLAYABLE_IDS) {
+      if (id !== S.car) N.cars[id].setPosition(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2]).setScale(HIDDEN_SCALE).setVisible(false);
     }
-
-    if (isOfferOrBoard && cardEl) {
-      const tagText = rideState === "boarding" ? "PICKING UP · KERB LOCKED" : "NEW APEX FARE · PICKUP → DROPOFF";
-      const distText = rideState === "boarding" ? "boarding…" : formatDist(distToBeacon);
-      cardEl.innerHTML = `
-        <div class="tx-head">
-          <div class="tg">${tagText}</div>
-          <button type="button" class="style-toggle ${rideStyle === "street" ? "street" : ""}" data-toggle-style="1">
-            ${rideStyle === "comfort" ? `Comfort ${Math.round(comfortScore)}%` : `Street Bounty ×${streetMultiplier.toFixed(1)}`}
-          </button>
-        </div>
-        <div class="who">
-          <i style="background:${fare.avatarColor}">${fare.passenger[0]}</i>
-          <div>
-            <b>${fare.passenger}</b>
-            <small>“${fare.quote}”</small>
-          </div>
-        </div>
-        <div class="leg">
-          <span class="dot p"></span>
-          <div>
-            <b>${fare.pickupName}</b>
-            <small>${fare.pickupStreet}</small>
-          </div>
-          <em>${distText}</em>
-        </div>
-        <div class="leg">
-          <span class="dot d"></span>
-          <div>
-            <b>${fare.dropoffName}</b>
-            <small>${fare.tripMiles.toFixed(1)} mi · Fare $${fare.fareUsd.toFixed(2)}</small>
-          </div>
-          <em style="color:#ffb347">DROPOFF</em>
-        </div>
-      `;
-    }
-
-    if (isRideOrAlight && tripEl) {
-      const timeLeft = Math.max(0, fare.parSec - rideElapsedSec);
-      const distText = rideState === "alighting" ? "arrived" : formatDist(distToBeacon);
-      const barRatio =
-        rideStyle === "comfort"
-          ? clamp(comfortScore / 100, 0.1, 1)
-          : clamp((streetMultiplier - 1) / 4, 0.25, 1);
-
-      tripEl.innerHTML = `
-        <div class="tx-head">
-          <div class="tg">ACTIVE TRIP · PICKUP → DROPOFF</div>
-          <button type="button" class="style-toggle ${rideStyle === "street" ? "street" : ""}" data-toggle-style="1">
-            ${rideStyle === "comfort" ? "Comfort Mode" : `Street Bounty ×${streetMultiplier.toFixed(1)}`}
-          </button>
-        </div>
-        <div class="dst">
-          <span class="dot d"></span>
-          <div>
-            <b>${fare.dropoffName}</b>
-            <small>${fare.dropoffStreet} · Passenger: ${fare.passenger}</small>
-          </div>
-          <em style="font-family:var(--font-code);font-size:11px;color:#3fd6c6;font-style:normal">${fare.pickupName.split("·")[0]?.trim()} →</em>
-        </div>
-        <div class="row">
-          <div>
-            <small>DISTANCE</small>
-            <b>${distText}</b>
-          </div>
-          <div>
-            <small>TIME LEFT</small>
-            <b>${formatClock(timeLeft)}</b>
-          </div>
-          <div>
-            <small>FARE</small>
-            <b>$${fare.fareUsd.toFixed(2)}</b>
-          </div>
-        </div>
-        <div class="cf">
-          <small>${rideStyle === "comfort" ? `${fare.passenger.toUpperCase()} · COMFORT` : "STREET BOUNTY"}</small>
-          <div class="bar"><i style="transform:scaleX(${barRatio.toFixed(3)})"></i></div>
-          <b>${rideStyle === "comfort" ? `${Math.round(comfortScore)}%` : `${streetBounty.toLocaleString()} ×${streetMultiplier.toFixed(1)}`}</b>
-        </div>
-      `;
-    }
-
-    if (rideState === "summary" && sumEl) {
-      const tipUsd = rideStyle === "comfort" ? 6.5 : 9.0;
-      const earned = Math.round(fare.fareUsd + tipUsd);
-      sumEl.innerHTML = `
-        <div class="tg">RIDE COMPLETE · APEX TELEOP</div>
-        <div class="st">★★★★★</div>
-        <div class="who2">${fare.passenger} · ${fare.pickupName} → ${fare.dropoffName}</div>
-        <div class="ln"><span>Base Fare</span><b>$${fare.fareUsd.toFixed(2)}</b></div>
-        <div class="ln"><span>${rideStyle === "comfort" ? `Comfort Tip (${Math.round(comfortScore)}%)` : `Street Bounty Bonus (×${streetMultiplier.toFixed(1)})`}</span><b style="color:#43d17a">+$${tipUsd.toFixed(2)}</b></div>
-        <div class="tot"><span>EARNED</span><b>$${earned.toFixed(2)}</b></div>
-      `;
-    }
-
-    // Bind dynamic Ride Style toggle button inside #taxiCard / #taxiTrip
-    document.querySelectorAll<HTMLButtonElement>("[data-toggle-style]").forEach((btn) => {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        rideStyle = rideStyle === "comfort" ? "street" : "comfort";
-        if (rideStyle === "street") {
-          pushPenaltyOrBonusPopup("STREET BOUNTY ×3.0", "Near-miss & speed multiplier active", "nfs");
-        } else {
-          pushPenaltyOrBonusPopup("COMFORT 98% MODE", "Smooth autonomous deceleration & tip bonus", "good");
-        }
-        renderApexFareCards(distToBeacon);
-      };
-    });
-  }
-
-  function advanceApexFareStage(): void {
-    const fare = WAYMO_FARES[fareIndex % WAYMO_FARES.length]!;
-    if (rideState === "offer" || rideState === "boarding") {
-      rideState = "ride";
-      rideElapsedSec = 0;
-      beaconWorldZ = playerZ - 145;
-      updateBeaconColors("dropoff");
-      pushPenaltyOrBonusPopup(`${fare.passenger} Aboard`, `En route to ${fare.dropoffName}`, "good");
-    } else if (rideState === "ride" || rideState === "alighting") {
-      const earned = Math.round(fare.fareUsd + (rideStyle === "comfort" ? 6.5 : 9.0));
-      totalEarningsUsd += earned;
-      completedRides += 1;
-      ratingAvg = Math.min(5.0, Number((ratingAvg + 0.003).toFixed(2)));
-      renderTaxiTotalDom();
-      fareIndex = (fareIndex + 1) % WAYMO_FARES.length;
-      rideState = "offer";
-      beaconWorldZ = playerZ - 115;
-      updateBeaconColors("pickup");
-      const nextFare = WAYMO_FARES[fareIndex]!;
-      showToast(`Earned +$${earned} · Next Fare`, `${nextFare.passenger} at ${nextFare.pickupName}`);
-    } else {
-      rideState = "offer";
-      beaconWorldZ = playerZ - 110;
-      updateBeaconColors("pickup");
-    }
-    renderApexFareCards(Math.max(0, playerZ - beaconWorldZ));
+    N.cars[S.car].setScale([1, 1, 1]).setVisible(true);
+    appliedCar = S.car;
   }
 
   function selectPlayableVehicle(carId: PlayableCarId): void {
-    activeCarId = carId;
+    sim.setCar(carId);
     const spec = PLAYABLE_FLEET[carId];
     initSpeedometerDial(spec.isIce);
-
-    const gmodeEl = document.getElementById("gmode");
-    if (gmodeEl) gmodeEl.textContent = spec.modeLabel;
-
+    applyCarVisibility();
+    updateModeLabels();
     document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-car]").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.car === carId);
+      btn.setAttribute("aria-pressed", btn.dataset.car === carId ? "true" : "false");
     });
-
-    showToast(`Switched Vehicle: ${spec.name}`, `${spec.maker} · ${spec.modeLabel}`);
+    hud.toast(`Vehicle: ${spec.name}`, `${spec.maker} · ${spec.drive}`);
   }
 
-  function cycleAutopilotLevel(): void {
-    const order: AutopilotLevel[] = ["L5", "L5 MAX", "MAN", "L3", "L4"];
-    const next = order[(order.indexOf(autopilotLevel) + 1) % order.length]!;
-    setAutopilotLevel(next);
+  function updateModeLabels(): void {
+    const level = S.level;
+    const label = $("aDAl");
+    if (label) label.textContent = level;
+    const chip = $("aDA");
+    chip?.classList.toggle("drive", isAutonomous(level));
+    chip?.classList.toggle("boost", level === "L5 MAX");
+    chip?.classList.toggle("take", level === "MAN");
+    chip?.setAttribute("aria-label", `Driver assist ${ASSIST[level].dock}. Press to change.`);
+    const dockBtn = $("dockAutopilotBtn");
+    if (dockBtn) {
+      dockBtn.textContent = ASSIST[level].dock;
+      dockBtn.classList.toggle("active", level !== "MAN");
+    }
+    const gmode = $("gmode");
+    if (gmode) gmode.textContent = gmodeLabel(level, S.car);
   }
 
   function setAutopilotLevel(level: AutopilotLevel): void {
-    autopilotLevel = level;
-    const aDA = document.getElementById("aDA");
-    const aDAl = document.getElementById("aDAl");
-    const dockBtn = document.getElementById("dockAutopilotBtn");
-
-    if (aDAl) aDAl.textContent = level;
-    if (aDA) {
-      aDA.classList.toggle("drive", level === "L5" || level === "L5 MAX" || level === "L4");
-      aDA.classList.toggle("boost", level === "L5 MAX");
-      aDA.classList.toggle("take", level === "MAN");
-    }
-    if (dockBtn) {
-      dockBtn.textContent =
-        level === "L5"
-          ? "L5 Self-Driving"
-          : level === "L5 MAX"
-            ? "L5 Mad Max"
-            : level === "L4"
-              ? "L4 Lane Cruise"
-              : level === "L3"
-                ? "L3 Guidance"
-                : "Manual Override";
-      dockBtn.classList.toggle("active", level !== "MAN");
-    }
-    showToast(`Driver Assist: ${level}`, level.startsWith("L5") ? "Autonomous Apex route & kerb stops active" : "Use W/A/S/D or Arrows to drive");
+    S.level = level;
+    S.player.holdLane = S.player.x > 5.4 ? 7.4 : 3.4;
+    updateModeLabels();
+    hud.toast(`Driver assist: ${ASSIST[level].dock}`, ASSIST[level].hint);
   }
 
-  function setCameraMode(mode: 0 | 1 | 2 | 3): void {
+  function setCameraMode(mode: CameraMode): void {
     camMode = mode;
-    const names = ["Chase Cam", "Far Chase Cam", "Roof LiDAR Sensor Cam", "Front Bumper Cam"];
     document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-cam]").forEach((btn) => {
       btn.classList.toggle("active", Number(btn.dataset.cam) === mode);
+      btn.setAttribute("aria-pressed", Number(btn.dataset.cam) === mode ? "true" : "false");
     });
-    showToast(names[mode]!, "Press C to cycle camera views");
+    hud.toast(["Chase camera", "Far chase camera", "Roof sensor camera", "Front bumper camera"][mode]!, "Press C to cycle cameras");
   }
 
-  function setWeatherPreset(preset: WeatherPreset): void {
-    weatherPreset = preset;
+  /** A sky preset brings its own look, lights and fog, so changing it remounts the scene (C8). */
+  async function setWeather(next: WeatherPreset): Promise<void> {
+    if (next === weather || remounting) return;
+    weather = next;
+    remounting = true;
     document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-tod]").forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.tod === preset);
+      btn.classList.toggle("active", btn.dataset.tod === next);
+      btn.setAttribute("aria-pressed", btn.dataset.tod === next ? "true" : "false");
     });
-
-    const presets: Record<
-      WeatherPreset,
-      { sky: string; horizonEmissive: string; sunColor: string; sunY: number; ground: string; water: string; label: string }
-    > = {
-      noon: {
-        sky: "#69abe0",
-        horizonEmissive: "#bae6fd",
-        sunColor: "#fde047",
-        sunY: 58,
-        ground: "#1e293b",
-        water: "#0c4a6e",
-        label: "Sunny San Francisco Noon"
-      },
-      golden: {
-        sky: "#d97757",
-        horizonEmissive: "#fb923c",
-        sunColor: "#f97316",
-        sunY: 28,
-        ground: "#271c24",
-        water: "#1e3a5f",
-        label: "California Golden Hour"
-      },
-      fog: {
-        sky: "#94a3b8",
-        horizonEmissive: "#cbd5e1",
-        sunColor: "#e2e8f0",
-        sunY: 46,
-        ground: "#334155",
-        water: "#3b5266",
-        label: "Karl the Fog · Marine Layer"
-      },
-      night: {
-        sky: "#090d16",
-        horizonEmissive: "#1e293b",
-        sunColor: "#38bdf8",
-        sunY: 64,
-        ground: "#0b0f19",
-        water: "#081c2e",
-        label: "San Francisco Neon Night"
-      }
-    };
-
-    const cfg = presets[preset];
-    (auraApp.scene as unknown as { background: string }).background = cfg.sky;
-    horizonSkyHandle.setMaterial(
-      material.emissive({ color: cfg.sky, emissive: cfg.horizonEmissive, emissiveIntensity: 0.35 })
-    );
-    sunDiscHandle
-      .setPosition(42, cfg.sunY, -320)
-      .setMaterial(material.emissive({ color: cfg.sunColor, emissive: cfg.sunColor, emissiveIntensity: 1.65 }));
-    groundHandle.setMaterial(material.pbr({ color: cfg.ground, roughness: 0.94 }));
-    bayWaterHandle.setMaterial(material.pbr({ color: cfg.water, roughness: 0.22, metalness: 0.45 }));
-
-    showToast(cfg.label, "Shared with Teleop Room #SF-401");
+    $("skyChange")?.classList.add("on");
+    auraApp.setScene(buildGridDispatchScene(next));
+    N = bindNodes(auraApp);
+    applyMaterialOverrides();
+    appliedCar = null;
+    lastSignalPhase = -1;
+    lastBeaconMode = null;
+    try {
+      await Promise.race([auraApp.ready().then(() => warmPrograms(auraApp)), new Promise((resolve) => setTimeout(resolve, 60_000))]);
+    } catch (error) {
+      console.error("[grid-dispatch] sky change remount failed; continuing with what rendered", error);
+    }
+    remounting = false;
+    $("skyChange")?.classList.remove("on");
+    hud.toast(WEATHER[next].label, "Lights, fog and sky changed together");
   }
 
-  function teleportToPeer(peerIdx: number): void {
-    const peer = peers[peerIdx];
-    if (!peer) return;
-    playerX = clamp(peer.laneX, -7.6, 7.6);
-    peer.zOffset = -18;
-    showToast(`Driving with @${peer.handle}`, `${peer.carLabel} · ${peer.piClass} in Room #SF-401`);
+  function teleportToRival(k: number): void {
+    const u = S.users[TRAFFIC_COUNT + k];
+    if (!u) return;
+    u.z = S.player.z - 18;
+    if (u.direction === 1) S.player.x = u.laneX;
+    presenter.reset();
+    hud.toast(`Driving with ${RIVALS[k]!.handle}`, `${RIVALS[k]!.carLabel} · AI rival`);
   }
 
-  function renderMultiplayerRoomList(): void {
-    const listEl = document.getElementById("mpPeerList");
+  function renderRivalList(): void {
+    const listEl = $("mpPeerList");
     if (!listEl) return;
-    const spec = PLAYABLE_FLEET[activeCarId];
-    let html = `<li class="me"><b style="color:#3fd6c6">@you_teleop (You)</b><small>${spec.name}</small></li>`;
-    peers.forEach((peer, idx) => {
-      html += `<li>
-        <b>@${peer.handle}</b>
-        <small>${peer.carLabel} · ${peer.distanceMeters} m</small>
-        <button type="button" data-goto-peer="${idx}">Go to</button>
-      </li>`;
-    });
-    listEl.innerHTML = html;
-    listEl.querySelectorAll<HTMLButtonElement>("[data-goto-peer]").forEach((btn) => {
-      btn.onclick = () => {
-        const idx = Number(btn.dataset.gotoPeer ?? 0);
-        teleportToPeer(idx);
-      };
-    });
+    const p = S.player;
+    listEl.innerHTML = RIVALS.map((r, k) => {
+      const u = S.users[TRAFFIC_COUNT + k]!;
+      const d = Math.round(Math.hypot(u.laneX - p.x, u.z - p.z));
+      return `<li><b style="color:${r.accent}">${r.handle}</b><small>${r.carLabel} · ${d} m</small><button type="button" data-goto-rival="${k}">Drive here</button></li>`;
+    }).join("");
   }
 
-  // Bind UI Controls
-  function bindGridDispatchUI(): void {
-    document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-car]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const carId = (btn.dataset.car as PlayableCarId) || "waymo";
-        selectPlayableVehicle(carId);
-      });
-    });
+  // Dock, panel and HUD buttons
+  document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-car]").forEach((btn) =>
+    btn.addEventListener("click", () => selectPlayableVehicle((btn.dataset.car as PlayableCarId) || "cruiser"))
+  );
+  document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-cam]").forEach((btn) =>
+    btn.addEventListener("click", () => setCameraMode(clamp(Number(btn.dataset.cam ?? 0), 0, 3) as CameraMode))
+  );
+  document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-tod]").forEach((btn) =>
+    btn.addEventListener("click", () => void setWeather((btn.dataset.tod as WeatherPreset) || "noon"))
+  );
+  $("dockAutopilotBtn")?.addEventListener("click", () => setAutopilotLevel(nextAssist(S.level)));
+  $("aDA")?.addEventListener("click", () => setAutopilotLevel(nextAssist(S.level)));
+  $("bNextFare")?.addEventListener("click", () => applyEvents(sim.skipFare()));
+  $("unit")?.addEventListener("click", toggleUnits);
+  $("muteBtn")?.addEventListener("click", () => audio?.toggleMute());
+  const mpPanel = $("mpPanel");
+  $("mpChip")?.addEventListener("click", () => {
+    renderRivalList();
+    mpPanel?.classList.toggle("on");
+  });
+  $("mpCloseBtn")?.addEventListener("click", () => mpPanel?.classList.remove("on"));
+  $("mpPeerList")?.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>("[data-goto-rival]");
+    if (btn) teleportToRival(Number(btn.dataset.gotoRival ?? 0));
+  });
+  const shareUrl = `${window.location.origin}${window.location.pathname}`;
+  const shareInput = $<HTMLInputElement>("mpInviteInput");
+  if (shareInput) shareInput.value = shareUrl;
+  $("mpCopyBtn")?.addEventListener("click", async () => {
+    let copied = false;
+    try {
+      await navigator.clipboard?.writeText(shareUrl);
+      copied = Boolean(navigator.clipboard);
+    } catch { /* clipboard blocked */ }
+    if (!copied) shareInput?.select();
+    hud.toast(copied ? "Game link copied" : "Copy the selected link", shareUrl);
+  });
+  // Floating rival tags: click drives next to that rival
+  const tagsContainer = $("mpTags");
+  const tagEls = RIVALS.map((r, k) => {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "mpTag";
+    el.style.borderColor = r.accent;
+    el.style.color = r.accent;
+    el.innerHTML = `<b>${r.handle}</b><small>${r.carLabel} · <span>${r.piClass}</span></small><i></i>`;
+    el.setAttribute("aria-label", `AI rival ${r.handle}, ${r.carLabel}. Drive next to it.`);
+    el.addEventListener("click", () => teleportToRival(k));
+    tagsContainer?.appendChild(el);
+    return { el, dist: el.querySelector("i") as HTMLElement, chip: false, w: 0, h: 0, shown: false };
+  });
 
-    document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-cam]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const mode = clamp(Number(btn.dataset.cam ?? 0), 0, 3) as 0 | 1 | 2 | 3;
-        setCameraMode(mode);
-      });
-    });
+  // ---------------------------------------------------------------- presentation
+  interface Pose { px: number; pz: number; yaw: number; roll: number; pitch: number; uz: number[]; ux: number[] }
+  const snapshot = (): Pose => ({ px: S.player.x, pz: S.player.z, yaw: S.player.yaw, roll: S.player.roll, pitch: S.player.pitch, uz: S.users.map((u) => u.z), ux: S.users.map((u) => u.laneX) });
+  const presenter = createFixedStepPresenter<Pose>({
+    snapshot,
+    blend: (a, b, t) => ({
+      px: lerp(a.px, b.px, t),
+      pz: lerp(a.pz, b.pz, t),
+      yaw: lerp(a.yaw, b.yaw, t),
+      roll: lerp(a.roll, b.roll, t),
+      pitch: lerp(a.pitch, b.pitch, t),
+      // a respawn jumps tens of metres: show the new place instead of sliding through the street
+      uz: b.uz.map((z, i) => (Math.abs(z - (a.uz[i] ?? z)) > 30 ? z : lerp(a.uz[i] ?? z, z, t))),
+      ux: b.ux
+    })
+  });
 
-    document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-tod]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const tod = (btn.dataset.tod as WeatherPreset) || "noon";
-        setWeatherPreset(tod);
-      });
-    });
+  const loop = createFixedStepLoop({
+    stepSeconds: STEP,
+    maxFrameSeconds: 0.1,
+    isActive: () => ready,
+    step: () => {
+      // While a sky change remounts the scene the world holds still, but frames keep presenting so warmPrograms sees the street.
+      if (remounting) return;
+      // QA runs advance many steps between two presented frames: run the hit-stop clock per step so a contact cannot freeze them
+      if (qaInput) hitStop.update(STEP);
+      const events = sim.step(STEP * hitStop.timeScale(), qaInput ?? currentInput());
+      applyEvents(events);
+      presenter.afterStep();
+    },
+    render: (frameSeconds) => present(frameSeconds)
+  });
 
-    document.getElementById("dockAutopilotBtn")?.addEventListener("click", () => cycleAutopilotLevel());
-    document.getElementById("aDA")?.addEventListener("click", () => cycleAutopilotLevel());
-    document.getElementById("bNextFare")?.addEventListener("click", () => advanceApexFareStage());
-
-    document.getElementById("unit")?.addEventListener("click", () => {
-      useMph = !useMph;
-      const unitEl = document.getElementById("unit");
-      if (unitEl) unitEl.textContent = useMph ? "MPH" : "KM/H";
-    });
-
-    document.getElementById("aABS")?.addEventListener("click", (e) => {
-      absOn = !absOn;
-      (e.currentTarget as HTMLElement).classList.toggle("act", absOn);
-      (e.currentTarget as HTMLElement).classList.toggle("off", !absOn);
-    });
-    document.getElementById("aTCS")?.addEventListener("click", (e) => {
-      tcsOn = !tcsOn;
-      (e.currentTarget as HTMLElement).classList.toggle("act", tcsOn);
-      (e.currentTarget as HTMLElement).classList.toggle("off", !tcsOn);
-    });
-    document.getElementById("aESP")?.addEventListener("click", (e) => {
-      espOn = !espOn;
-      (e.currentTarget as HTMLElement).classList.toggle("act", espOn);
-      (e.currentTarget as HTMLElement).classList.toggle("off", !espOn);
-    });
-
-    const mpPanel = document.getElementById("mpPanel");
-    document.getElementById("mpChip")?.addEventListener("click", () => {
-      renderMultiplayerRoomList();
-      mpPanel?.classList.toggle("on");
-    });
-    document.getElementById("mpCloseBtn")?.addEventListener("click", () => {
-      mpPanel?.classList.remove("on");
-    });
-    document.getElementById("mpCopyBtn")?.addEventListener("click", () => {
-      showToast("Invite Link Copied", "https://teleoperator.mindblown.ai/?room=SF-401");
-    });
-    let nextPeerFocus = 0;
-    document.getElementById("mpCyclePeerBtn")?.addEventListener("click", () => {
-      teleportToPeer(nextPeerFocus % peers.length);
-      nextPeerFocus += 1;
-    });
-    document.getElementById("mini")?.addEventListener("click", () => {
-      teleportToPeer(nextPeerFocus % peers.length);
-      nextPeerFocus += 1;
-    });
-  }
-
-  // Render Bottom-Left 2D Vector Minimap (#miniC)
-  const miniCanvas = document.getElementById("miniC") as HTMLCanvasElement | null;
+  let lastSignalPhase = -1;
+  let lastBeaconMode: "pickup" | "dropoff" | null = null;
+  let hudClock = 0;
+  let avoidRects: Array<{ l: number; r: number; t: number; b: number }> = [];
+  const spdEl = $("spd");
+  const gearEl = $("gear");
+  const rpmPath = $("rpm");
+  const nosPath = $("nos");
+  const brakeCueEl = $("brakeCue");
+  const wrongWayEl = $("wrongWay");
+  const miniCanvas = $<HTMLCanvasElement>("miniC");
   const miniCtx = miniCanvas?.getContext("2d") ?? null;
+  const rivalAccents = RIVALS.map((r) => r.accent);
+  const carSizes = Object.fromEntries(PLAYABLE_IDS.map((id) => [id, fittedSize(PLAYABLE_FLEET[id].bounds, PLAYABLE_FLEET[id].maxDim)])) as Record<PlayableCarId, ReturnType<typeof fittedSize>>;
+  let shakeNow = { x: 0, y: 0 };
+  /** QA review only: extra yaw on the player car and every road user so each side of a model can be framed. */
+  let qaYawAdd = 0;
 
-  function renderVectorMinimap(distToBeacon: number): void {
-    if (!miniCtx || !miniCanvas) return;
-    const w = miniCanvas.width;
-    const h = miniCanvas.height;
-    const cx = w * 0.5;
-    const cy = h * 0.58;
-    const scale = 2.1; // pixels per world meter
-
-    miniCtx.clearRect(0, 0, w, h);
-
-    // 1. Dark SF Peninsula background + Bay Water at top right
-    miniCtx.fillStyle = "#0b1017";
-    miniCtx.fillRect(0, 0, w, h);
-
-    miniCtx.fillStyle = "#0c2d48";
-    miniCtx.beginPath();
-    miniCtx.moveTo(w * 0.72, 0);
-    miniCtx.lineTo(w, 0);
-    miniCtx.lineTo(w, h * 0.48);
-    miniCtx.closePath();
-    miniCtx.fill();
-
-    // 2. SF City Blocks & Parks (Huntington Park / Portsmouth Sq)
-    const scrollOffsetPx = ((-playerZ * scale) % 96 + 96) % 96;
-    for (let row = -3; row <= 4; row++) {
-      const by = cy + row * 96 + scrollOffsetPx - 42;
-      for (let col = -3; col <= 3; col++) {
-        if (col === 0) continue;
-        const bx = cx + col * 68 - (col > 0 ? 22 : 42) - playerX * scale;
-        const isPark = (row + col) % 4 === 0;
-        miniCtx.fillStyle = isPark ? "#143326" : "#161f2c";
-        miniCtx.strokeStyle = "rgba(255,255,255,0.08)";
-        miniCtx.lineWidth = 1;
-        miniCtx.fillRect(bx, by, 54, 72);
-        miniCtx.strokeRect(bx, by, 54, 72);
-      }
-    }
-
-    // 3. Orthogonal SF Street Grid (California St vertical corridor + cross streets)
-    const roadCenterX = cx - playerX * scale;
-    miniCtx.fillStyle = "#263244";
-    miniCtx.fillRect(roadCenterX - 22, 0, 44, h);
-
-    for (let row = -3; row <= 4; row++) {
-      const iy = cy + row * 96 + scrollOffsetPx;
-      miniCtx.fillStyle = "#222c3c";
-      miniCtx.fillRect(0, iy - 12, w, 24);
-    }
-
-    // 4. Glowing Autonomous Route Line from Player to Active Pickup (P) or Dropoff (D) Beacon
-    const beaconScreenX = roadCenterX + CURB_BEACON_X * scale;
-    const beaconScreenY = clamp(cy - distToBeacon * scale, 26, h - 26);
-    const routeColor = rideState === "offer" || rideState === "boarding" ? "#3fd6c6" : "#ffb347";
-
-    miniCtx.strokeStyle = routeColor;
-    miniCtx.lineWidth = 4.5;
-    miniCtx.beginPath();
-    miniCtx.moveTo(cx, cy);
-    miniCtx.quadraticCurveTo(cx, (cy + beaconScreenY) * 0.5, beaconScreenX, beaconScreenY);
-    miniCtx.stroke();
-
-    // 5. Pickup (P) / Dropoff (D) Badge on Minimap
-    miniCtx.fillStyle = routeColor;
-    miniCtx.beginPath();
-    miniCtx.arc(beaconScreenX, beaconScreenY, 11, 0, Math.PI * 2);
-    miniCtx.fill();
-    miniCtx.fillStyle = "#061412";
-    miniCtx.font = '600 12px "DIN Pro", sans-serif';
-    miniCtx.textAlign = "center";
-    miniCtx.textBaseline = "middle";
-    miniCtx.fillText(rideState === "offer" || rideState === "boarding" ? "P" : "D", beaconScreenX, beaconScreenY + 0.5);
-
-    // 6. AI Traffic Dots
-    for (const tc of trafficCars) {
-      const tx = roadCenterX + tc.laneX * scale;
-      const ty = cy + (tc.z - playerZ) * scale;
-      if (ty < 8 || ty > h - 8) continue;
-      miniCtx.fillStyle = "#94a3b8";
-      miniCtx.beginPath();
-      miniCtx.arc(tx, ty, 3.5, 0, Math.PI * 2);
-      miniCtx.fill();
-    }
-
-    // 7. Multiplayer Peer Arrows
-    for (const peer of peers) {
-      const px = roadCenterX + peer.laneX * scale;
-      const py = cy + peer.zOffset * scale;
-      if (py < 12 || py > h - 12) continue;
-      miniCtx.save();
-      miniCtx.translate(px, py);
-      miniCtx.fillStyle = peer.accent;
-      miniCtx.beginPath();
-      miniCtx.moveTo(0, -7);
-      miniCtx.lineTo(5.5, 6);
-      miniCtx.lineTo(0, 3.5);
-      miniCtx.lineTo(-5.5, 6);
-      miniCtx.closePath();
-      miniCtx.fill();
-      miniCtx.restore();
-    }
-
-    // 8. Player Vehicle Arrow at Center
-    miniCtx.save();
-    miniCtx.translate(cx, cy);
-    miniCtx.rotate(-playerYaw);
-    miniCtx.fillStyle = "rgba(63, 214, 198, 0.28)";
-    miniCtx.beginPath();
-    miniCtx.arc(0, 0, 14, 0, Math.PI * 2);
-    miniCtx.fill();
-    miniCtx.fillStyle = "#ffffff";
-    miniCtx.strokeStyle = "#071018";
-    miniCtx.lineWidth = 2;
-    miniCtx.beginPath();
-    miniCtx.moveTo(0, -10);
-    miniCtx.lineTo(7.5, 8);
-    miniCtx.lineTo(0, 4.5);
-    miniCtx.lineTo(-7.5, 8);
-    miniCtx.closePath();
-    miniCtx.fill();
-    miniCtx.stroke();
-    miniCtx.restore();
+  function beaconMaterials(mode: "pickup" | "dropoff"): void {
+    if (mode === lastBeaconMode) return;
+    lastBeaconMode = mode;
+    const col = mode === "pickup" ? "#3fd6c6" : "#ffb347";
+    const coreCol = mode === "pickup" ? "#a5f3fc" : "#fde68a";
+    N.beaconRing.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 2.2 }));
+    N.beaconDisc.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.45 }));
+    N.beaconBeam.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.35 }));
+    N.beaconCore.setMaterial(material.emissive({ color: "#ffffff", emissive: coreCol, emissiveIntensity: 2.4 }));
+    N.ribbons.setMaterial(material.emissive({ color: col, emissive: col, emissiveIntensity: 1.9 }));
   }
 
-  // Initialize Speedometer Dial & Initial UI
+  /** Read phase of the nameplate layout: panel rectangles, refreshed with the 10 Hz HUD tick (no reads in the write loop). */
+  function readAvoidRects(): void {
+    avoidRects = [];
+    for (const id of ["taxiCard", "taxiTrip", "taxiPen", "taxiHint", "topRightCluster", "where", "taxiSum", "wrongWay"]) {
+      const el = $(id);
+      if (!el) continue;
+      const cs = getComputedStyle(el);
+      if (cs.display === "none" || cs.visibility === "hidden" || Number(cs.opacity) < 0.05) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width >= 4 && r.height >= 4) avoidRects.push({ l: r.left, r: r.right, t: r.top, b: r.bottom });
+    }
+    for (const t of tagEls) {
+      if (!t.shown) continue;
+      t.w = t.el.offsetWidth || t.w;
+      t.h = t.el.offsetHeight || t.h;
+    }
+  }
+
+  function present(frameSeconds: number): void {
+    framesRendered += 1;
+    hitStop.update(frameSeconds);
+    if (appliedCar !== S.car) applyCarVisibility();
+    const live = S.phase === "driving" && !loop.manual;
+    const pose = presenter.present(loop, live);
+    const shake = motionOk() ? cameraShake.update(frameSeconds) : { x: 0, y: 0 };
+    shakeNow = shake;
+    const size = carSizes[S.car];
+    const camOff = cameraOffsets(size)[camMode];
+    // Roof and bumper cameras ride on the car, so they follow it fully across lanes.
+    const follow = camMode >= 2 ? 1 : viewFollowFor((window.innerWidth || 1280) / Math.max(1, window.innerHeight || 720));
+    const rx = (wx: number) => viewX(wx, pose.px, shake.x, follow);
+    const ry = (wy: number) => wy + camOff.y + shake.y;
+    const rz = (wz: number) => wz - pose.pz + camOff.z;
+    const pos = (x: number, y: number, z: number): AuraTransformSpec => ({ position: [x, y, z] });
+
+    N.cars[S.car].setPosition(rx(pose.px), ry(0), CAR_DRAW_Z + camOff.z).setRotation(pose.pitch, pose.yaw + qaYawAdd, pose.roll);
+    // Road strips follow the same lateral shift as everything else, so the car stays in its lane (C2).
+    for (const strip of N.strips) strip.h.setPosition(rx(strip.x), ry(strip.y), -160 + camOff.z);
+
+    const dashBaseZ = Math.floor(pose.pz / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;
+    N.dashes.setInstances(DASH_LINES_X.flatMap((lx) => Array.from({ length: DASH_ROWS }, (_, i) => pos(rx(lx), ry(0.018), rz(dashBaseZ - i * DASH_STRIDE_Z)))));
+
+    if (S.signal !== lastSignalPhase) {
+      lastSignalPhase = S.signal;
+      const c = S.signal === 0 ? "#43d17a" : S.signal === 1 ? "#ffb347" : "#ff4a3d";
+      N.signalLights.setMaterial(material.emissive({ color: c, emissive: c, emissiveIntensity: 2.2 }));
+    }
+    const interBaseZ = Math.floor(pose.pz / INTERSECTION_STRIDE_Z) * INTERSECTION_STRIDE_Z;
+    const iz = Array.from({ length: INTERSECTION_COUNT }, (_, i) => rz(interBaseZ - i * INTERSECTION_STRIDE_Z));
+    N.crossRoads.setInstances(iz.map((z) => pos(rx(0), ry(0.01), z)));
+    N.crosswalks.setInstances(iz.flatMap((z) => [pos(rx(0), ry(0.022), z - 8.2), pos(rx(0), ry(0.022), z + 8.2)]));
+    N.signalPoles.setInstances(iz.flatMap((z) => [pos(rx(11.4), ry(3.4), z - 9.2), pos(rx(-11.4), ry(3.4), z - 9.2)]));
+    N.signalArms.setInstances(iz.flatMap((z) => [pos(rx(8.6), ry(6.5), z - 9.2), pos(rx(-8.6), ry(6.5), z - 9.2)]));
+    N.signalLights.setInstances(iz.flatMap((z) => [pos(rx(6.4), ry(6.25), z - 9.1), pos(rx(-6.4), ry(6.25), z - 9.1)]));
+
+    const bldgBaseZ = Math.floor(pose.pz / BUILDING_STRIDE_Z) * BUILDING_STRIDE_Z + BUILDING_STRIDE_Z;
+    N.buildings.forEach((b, i) => {
+      const bz = rz(bldgBaseZ - i * BUILDING_STRIDE_Z);
+      b.left.setPosition(rx(-b.xL), ry(0), bz);
+      b.right.setPosition(rx(b.xR), ry(0), bz);
+    });
+    const lampBaseZ = Math.floor(pose.pz / LAMP_STRIDE_Z) * LAMP_STRIDE_Z + LAMP_STRIDE_Z;
+    const lz = Array.from({ length: LAMP_PAIRS }, (_, i) => rz(lampBaseZ - i * LAMP_STRIDE_Z));
+    N.lampPoles.setInstances(lz.flatMap((z) => [pos(rx(-11.2), ry(3.1), z), pos(rx(11.2), ry(3.1), z)]));
+    N.lampGlobes.setInstances(lz.flatMap((z) => [pos(rx(-10.8), ry(6.25), z), pos(rx(10.8), ry(6.25), z)]));
+    N.trunks.setInstances(lz.map((z) => pos(rx(12.2), ry(1.6), z - 14)));
+    N.crowns.setInstances(lz.map((z) => pos(rx(12.2), ry(4.1), z - 14)));
+
+    // Beacon, passenger and route ribbon
+    const r = S.ride;
+    beaconMaterials(r.state === "offer" || r.state === "boarding" ? "pickup" : "dropoff");
+    const t = S.time;
+    const pulse = motionOk() ? 0.5 + 0.5 * Math.sin(t * 3.8) : 0.5;
+    const bx = rx(CURB_BEACON_X);
+    const bz = rz(r.beaconZ);
+    const beaconOn = r.state !== "summary" && S.phase === "driving";
+    const ringScale = beaconOn ? 1 + 0.08 * pulse : 0.0001;
+    N.beaconRing.setPosition(bx, ry(0.08), bz).setRotation(Math.PI * 0.5, motionOk() ? t * 1.4 : 0, 0).setScale([ringScale, ringScale, 1]).setVisible(beaconOn);
+    N.beaconDisc.setPosition(bx, ry(0.04), bz).setVisible(beaconOn);
+    N.beaconBeam.setPosition(bx, ry(17), bz).setScale([0.92 + pulse * 0.14, 1, 0.92 + pulse * 0.14]).setVisible(beaconOn);
+    N.beaconCore.setPosition(bx, ry(18), bz).setVisible(beaconOn);
+    const showPassenger = r.state === "offer" || r.state === "boarding" || r.state === "alighting";
+    if (showPassenger) {
+      const walk = r.state === "boarding" ? clamp(r.timer / 1.5, 0, 1) : 0;
+      const pvX = rx(lerp(11.35, CURB_BEACON_X + 0.85, walk));
+      const wave = motionOk() ? Math.sin(t * 8.5) * 0.45 : 0;
+      N.passengerBody.setPosition(pvX, ry(0.88), bz).setScale([1, 1, 1]).setVisible(true);
+      N.passengerHead.setPosition(pvX, ry(1.76), bz).setScale([1, 1, 1]).setVisible(true);
+      N.passengerArm.setPosition(pvX - 0.28, ry(1.55), bz).setRotation(0, 0, 0.55 + wave).setScale([1, 1, 1]).setVisible(true);
+    } else {
+      N.passengerBody.setScale(HIDDEN_SCALE).setVisible(false);
+      N.passengerHead.setScale(HIDDEN_SCALE).setVisible(false);
+      N.passengerArm.setScale(HIDDEN_SCALE).setVisible(false);
+    }
+    const dzBeacon = pose.pz - r.beaconZ;
+    const targetX = r.state === "ride" || r.state === "offer" ? (dzBeacon < 58 ? KERB_STOP_X : S.player.holdLane) : S.player.holdLane;
+    N.ribbons.setInstances(
+      Array.from({ length: PATH_RIBBON_COUNT }, (_, i) => {
+        const frac = (i + 1) / PATH_RIBBON_COUNT;
+        // on-car cameras sit at the nose: start the ribbon ahead of it so the first slab does not fill the view
+        const segZ = pose.pz - 5.5 - i * 5.4 - (camMode >= 2 ? size.length / 2 + 6 : 0);
+        const segX = lerp(pose.px, targetX, frac * 0.85);
+        const nextX = lerp(pose.px, targetX, Math.min(1, (i + 2) / PATH_RIBBON_COUNT));
+        const shimmer = motionOk() ? 0.82 + 0.24 * Math.sin(t * 7 - i * 0.7) : 1;
+        return { position: [rx(segX), ry(0.032), rz(segZ)], rotation: [0, Math.atan2(-(nextX - segX), 5.4), 0], scale: [shimmer, 1, 1] } as AuraTransformSpec;
+      })
+    );
+
+    // Traffic and rivals
+    S.users.forEach((u, i) => {
+      const vz = rz(pose.uz[i] ?? u.z);
+      const visible = vz < 18 && vz > -220;
+      N.users[i]!.setPosition(rx(u.laneX), ry(0), vz).setRotation(0, (u.direction === 1 ? 0 : Math.PI) + qaYawAdd, 0).setScale(visible ? [1, 1, 1] : HIDDEN_SCALE).setVisible(visible);
+    });
+
+    // Impact sparks
+    N.sparks.setInstances(
+      sparks.map((s, i) => {
+        if (s.life <= 0) return { position: [0, -50, 200 + i], scale: 0.0001 } as AuraTransformSpec;
+        s.life -= frameSeconds;
+        s.v[1] -= 9.8 * frameSeconds;
+        s.p = [s.p[0] + s.v[0] * frameSeconds, Math.max(0.05, s.p[1] + s.v[1] * frameSeconds), s.p[2] + s.v[2] * frameSeconds];
+        const k = clamp(s.life / 0.45, 0.0001, 1);
+        return { position: [rx(s.p[0]), ry(s.p[1]), rz(s.p[2])], scale: k } as AuraTransformSpec;
+      })
+    );
+
+    // Rival tags (C15): the two nearest rivals get a full tag, the rest a small chip; layout reads happen at 10 Hz only (C11).
+    const vw = window.innerWidth || 1280;
+    const vh = window.innerHeight || 800;
+    const rivalUsers = S.users.slice(TRAFFIC_COUNT);
+    const dists = rivalUsers.map((u) => Math.hypot(u.laneX - S.player.x, u.z - S.player.z));
+    const nearest = new Set(nearestIndices(dists, 2));
+    const placed: Array<{ l: number; r: number; t: number; b: number }> = [];
+    rivalUsers.forEach((u, k) => {
+      const tag = tagEls[k]!;
+      const vz = rz(pose.uz[TRAFFIC_COUNT + k] ?? u.z);
+      const proj = projectViewPointToScreen([rx(u.laneX), ry(RIVALS[k]!.isCableCar ? 3.9 : 2.3), vz], vw, vh);
+      if (!proj.visible || S.phase !== "driving") {
+        if (tag.shown) { tag.el.style.display = "none"; tag.shown = false; }
+        return;
+      }
+      const chip = !nearest.has(k);
+      if (!tag.shown) { tag.el.style.display = "flex"; tag.shown = true; }
+      if (chip !== tag.chip) { tag.el.classList.toggle("chip", chip); tag.chip = chip; tag.w = 0; }
+      const w = tag.w || (chip ? 64 : 120);
+      const h = tag.h || (chip ? 22 : 44);
+      const x = clamp(proj.x, w / 2 + 6, vw - w / 2 - 6);
+      let y = clamp(proj.y, h + 6, vh - 6);
+      let leader = 0;
+      for (let pass = 0; pass < 3; pass++) {
+        const hit = [...avoidRects, ...placed].find((q) => x + w / 2 > q.l - 4 && x - w / 2 < q.r + 4 && y > q.t - 4 && y - h < q.b + 4);
+        if (!hit) break;
+        const ny = Math.min(hit.b + 8 + h, vh - 6);
+        if (ny === y) break;
+        leader += Math.abs(ny - y);
+        y = ny;
+      }
+      placed.push({ l: x - w / 2, r: x + w / 2, t: y - h, b: y });
+      tag.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -100%)`;
+      if (leader > 2) {
+        tag.el.dataset.leader = y > proj.y ? "up" : "down";
+        tag.el.style.setProperty("--leader-h", `${Math.min(leader, 160).toFixed(0)}px`);
+      } else delete tag.el.dataset.leader;
+    });
+
+    // Dial, every frame
+    const p = S.player;
+    const spec = PLAYABLE_FLEET[S.car];
+    const displaySpeed = Math.round(p.speed * (useMph ? 2.23694 : 3.6));
+    if (spdEl) spdEl.textContent = String(displaySpeed).padStart(3, "0");
+    if (gearEl) gearEl.textContent = spec.isIce ? (p.speed < 0.3 ? "N" : String(clamp(Math.ceil(displaySpeed / 18), 1, 8))) : p.speed < 0.3 ? "P" : "D";
+    if (rpmPath) rpmPath.style.strokeDashoffset = (100 - clamp(p.power * 100, 3, 98)).toFixed(1);
+    if (nosPath) nosPath.style.strokeDashoffset = (100 - clamp(p.regen * 100, 6, 98)).toFixed(1);
+    brakeCueEl?.classList.toggle("on", S.brakeCue && S.phase === "driving" && !isAutonomous(S.level));
+    wrongWayEl?.classList.toggle("on", S.wrongWay && S.phase === "driving");
+    audio?.update(p.speed, spec.maxSpeedMps, S.phase === "driving");
+
+    // HUD text and the evidence beacon at 10 Hz
+    hudClock += frameSeconds;
+    if (hudClock >= 0.1 || framesRendered < 3) {
+      hudClock = 0;
+      const drives = !isAutonomous(S.level);
+      const dz = p.z - r.beaconZ;
+      let hint: string | null = null;
+      if ((r.state === "offer" || r.state === "ride") && dz > -6 && dz < 40) {
+        if (!drives) hint = `${ASSIST[S.level].dock}: pulling up to the kerb · ${formatDist(dz)}`;
+        else {
+          const k = kerbHint({ playerX: p.x, dz, speed: p.speed });
+          hint = k === "move-to-kerb" ? `Move right to the glowing kerb · ${formatDist(Math.max(0, dz))}` : k === "slow-down" ? "Slow down: stop at the beacon (S or Brake)" : `Stop at the beacon · ${formatDist(Math.max(0, dz))}`;
+        }
+      } else if (r.state === "boarding") hint = `Boarding ${fareOf(S).passenger}…`;
+      else if (r.state === "alighting") hint = `Dropping off ${fareOf(S).passenger}…`;
+      hud.update(S, drives, hint);
+      readAvoidRects();
+      const distIdx = Math.abs(Math.floor(-p.z / 160)) % DISTRICTS.length;
+      const di = DISTRICTS[distIdx]!;
+      setText("wHood", di[0]);
+      setText("wSt", di[1]);
+      setText("wX", di[2]);
+      setText("wCoords", di[3]);
+      if (miniCtx && miniCanvas) drawMinimap(miniCtx, miniCanvas.width, miniCanvas.height, S, rivalAccents);
+      publishBeacon(evidence());
+    }
+  }
+
+  const DISTRICTS: ReadonlyArray<readonly [string, string, string, string]> = [
+    ["Nob Hill", "California Street", "→ Mason St", "37.7919° N · 122.4102° W"],
+    ["Chinatown", "California Street", "→ Grant Ave", "37.7924° N · 122.4058° W"],
+    ["Financial District", "California Street", "→ Montgomery St", "37.7931° N · 122.4026° W"],
+    ["SoMa", "Market Street", "→ Fremont St", "37.7897° N · 122.3972° W"],
+    ["The Embarcadero", "The Embarcadero", "→ Washington St · Ferry Terminal", "37.7955° N · 122.3937° W"],
+    ["North Beach", "Columbus Avenue", "→ Broadway", "37.7992° N · 122.4076° W"]
+  ];
+  const textCache = new Map<string, string>();
+  function setText(id: string, text: string): void {
+    if (textCache.get(id) === text) return;
+    textCache.set(id, text);
+    const el = $(id);
+    if (el) el.textContent = text;
+  }
+
+  function evidence() {
+    const p = S.player;
+    return {
+      route: "showcase-teleoperator",
+      engine: "@aura3d/engine",
+      ready,
+      framesRendered,
+      steps: loop.steps,
+      phase: S.phase,
+      vehicle: S.car,
+      autopilotLevel: S.level,
+      weatherPreset: weather,
+      remounting,
+      cameraMode: camMode,
+      rideState: S.ride.state,
+      rideStyle: S.style,
+      fareIndex: S.ride.fareIndex,
+      totalEarningsUsd: S.career.earningsUsd,
+      completedRides: S.career.rides,
+      ratingAvg: S.career.rides > 0 ? Math.round((S.career.starsSum / S.career.rides) * 100) / 100 : null,
+      comfortScore: Math.round(S.ride.comfort * 10) / 10,
+      streetBounty: S.ride.bounty,
+      streetMultiplier: S.ride.multiplier,
+      shift: { ...S.shift, score: S.lastScore },
+      collisions: { count: S.collisionCount },
+      signal: S.signal,
+      wrongWay: S.wrongWay,
+      touchControls: touch.visible,
+      muted: audio?.muted ?? false,
+      player: { position: [Number(p.x.toFixed(2)), 0, Number(p.z.toFixed(2))], speedMps: Number(p.speed.toFixed(2)), speedMph: Math.round(p.speed * 2.23694) },
+      peers: RIVALS.map((rv, k) => {
+        const u = S.users[TRAFFIC_COUNT + k]!;
+        return { handle: rv.handle, car: rv.carLabel, ai: true, distanceMeters: Math.round(Math.hypot(u.laneX - p.x, u.z - p.z)) };
+      })
+    };
+  }
+
+  // ---------------------------------------------------------------- QA hooks (C20)
+  const simulate = (seconds: number, input: Partial<DriveInput> = {}): ReturnType<typeof evidence> => {
+    const steps = Math.max(0, Math.round(seconds / STEP));
+    qaInput = { ...NO_INPUT, ...input };
+    loop.advance(steps);
+    qaInput = null;
+    presenter.reset();
+    return evidence();
+  };
+  const checks: Record<string, () => unknown> = {
+    // C1: with no input in manual mode the car rolls past the beacon; the fare must not complete.
+    "manual-idle": () => {
+      retry();
+      setAutopilotLevel("MAN");
+      const before = S.career.rides;
+      const e = simulate(40);
+      return { pass: S.career.rides === before && S.shift.faresDone === 0 && S.shift.missed >= 1, ridesAdded: S.career.rides - before, missed: S.shift.missed, rideState: e.rideState };
+    },
+    // C1: stopped in the kerb lane at the beacon, the passenger boards.
+    "kerb-stop": () => {
+      retry();
+      setAutopilotLevel("MAN");
+      S.player.x = KERB_STOP_X;
+      S.player.z = S.ride.beaconZ + 1;
+      for (const u of S.users) if (Math.abs(u.z - S.player.z) < 30) u.z = S.player.z - 120 - u.slot * 9;
+      S.player.speed = 0;
+      const e = simulate(2.5, { brake: true });
+      return { pass: e.rideState === "ride", rideState: e.rideState };
+    },
+    // C7: a skipped fare pays nothing.
+    "skip-pays-nothing": () => {
+      const before = { usd: S.shift.earnedUsd, rides: S.career.rides };
+      applyEvents(sim.skipFare());
+      return { pass: S.shift.earnedUsd === before.usd && S.career.rides === before.rides, skipped: S.shift.skipped };
+    },
+    // C7: an L5 shift reaches the results screen.
+    "shift-results": () => {
+      retry();
+      setAutopilotLevel("L5");
+      let guard = 0;
+      while (S.phase !== "results" && guard++ < 60) simulate(10);
+      setAutopilotLevel("MAN");
+      return { pass: S.phase === "results", shift: S.shift, score: S.lastScore, best: S.career.bestShiftScore, resultsVisible: $("results")?.classList.contains("on") ?? false };
+    }
+  };
+  const extras = {
+    simulate,
+    check: (name: string) => checks[name]?.() ?? { pass: false, error: `unknown check ${name}` },
+    selectPlayableVehicle,
+    setAutopilotLevel,
+    setCameraMode,
+    setWeatherPreset: (w: WeatherPreset) => setWeather(w),
+    skipFare: () => applyEvents(sim.skipFare()),
+    teleportToPeer: teleportToRival,
+    retry,
+    cameraView: () => {
+      const size = carSizes[S.car];
+      const off = cameraOffsets(size)[camMode];
+      return { position: [SCENE_CAM_POS[0] + shakeNow.x * 0, SCENE_CAM_POS[1], SCENE_CAM_POS[2]], mode: camMode, car: S.car, offset: off, clearance: cameraClearance(size, off, viewX(S.player.x, S.player.x)) };
+    },
+    settle: () => warmPrograms(auraApp),
+    /** Deterministic still frame for A/B captures: a fresh shift, the sim stopped, the street placed once. */
+    freeze: () => {
+      retry();
+      loop.manual = true;
+      present(0);
+      return evidence();
+    },
+    evidence
+  };
+  const qa = installQaHooks("grid-dispatch", {
+    ready: () => ready,
+    state: () => evidence(),
+    app: () => auraApp,
+    stepFrames: (n: number, input?: Partial<DriveInput>) => {
+      qaInput = { ...NO_INPUT, ...(input ?? {}) };
+      loop.advance(n);
+      qaInput = null;
+    },
+    reset: () => retry(),
+    begin: () => retry(),
+    extras
+  });
+  // Legacy global kept for older specs and route-health tooling; built once (C11).
+  const legacy = {
+    app: auraApp,
+    get evidence() { return evidence(); },
+    selectPlayableVehicle,
+    setAutopilotLevel,
+    setCameraMode,
+    setWeatherPreset: extras.setWeatherPreset,
+    advanceApexFareStage: extras.skipFare,
+    teleportToPeer: teleportToRival,
+    qaPlaceTrafficCar(slot: number, state: { laneX: number; zAhead: number; speed: number; direction: 1 | -1 }) {
+      const u = S.users[slot];
+      if (!u) return false;
+      u.laneX = state.laneX;
+      u.z = S.player.z - state.zAhead;
+      u.speed = state.speed;
+      u.cruise = state.speed;
+      u.direction = state.direction;
+      return true;
+    },
+    qaSetYaw(yaw: number) {
+      qaYawAdd = yaw;
+    },
+    qaSetPlayer(state: { x?: number; speed?: number }) {
+      if (state.x !== undefined) S.player.x = state.x;
+      if (state.speed !== undefined) S.player.speed = state.speed;
+    },
+    qaCollisions: () => ({ count: S.collisionCount, player: { x: S.player.x, z: S.player.z, speed: S.player.speed }, cars: S.users.map((c) => ({ laneX: c.laneX, z: c.z, speed: c.speed, direction: c.direction })) })
+  };
+  (window as unknown as Record<string, unknown>).__AURA3D_SHOWCASE_TELEOPERATOR__ = legacy;
+
+  // ---------------------------------------------------------------- start
   initSpeedometerDial(false);
-  bindGridDispatchUI();
-  renderTaxiTotalDom();
-  renderApexFareCards(115);
-  renderMultiplayerRoomList();
+  updateModeLabels();
+  document.querySelectorAll<HTMLButtonElement>("#teleopDock button[data-cam]").forEach((btn) => {
+    btn.classList.toggle("active", Number(btn.dataset.cam) === camMode);
+    btn.setAttribute("aria-pressed", Number(btn.dataset.cam) === camMode ? "true" : "false");
+  });
+  hud.update(S, true, null);
+  const careerEl = $("careerLine");
+  if (careerEl) careerEl.textContent = hud.career(S.career);
+  if (S.career.rides > 0) hud.toast("Welcome back", hud.career(S.career));
+  applyMaterialOverrides();
 
-  // Style Titan EV stainless steel and Apex pearl white body
-  playerCarHandles.cybertruck.setMaterial(
-    material.pbr({ color: "#cbd5e1", metalness: 0.8, roughness: 0.22 })
-  );
-  peerCarHandles[1]?.setMaterial(
-    material.pbr({ color: "#e8c27a", metalness: 0.65, roughness: 0.26 })
-  );
-
-  // Wait for all GLB assets & scene nodes to finish loading before starting simulation or setting ready flags
   try {
     await auraApp.ready();
   } catch (error) {
-    console.error("[teleoperator] scene assets failed to load; continuing with what rendered", error);
+    qa.reportError(error);
+    console.error("[grid-dispatch] scene assets failed to load; continuing with what rendered", error);
   }
-  setAutopilotLevel(autopilotLevel);
-
-  // Main 60 FPS Simulation & Render Sync Loop (Required by @aura3d/engine)
-  let lastHudDomUpdateSec = -1;
-  let lastSignalPhase = -1;
-
-  auraApp.onFrame(({ dt }) => {
-    const realDt = clamp(dt || 1 / 60, 0.001, 0.05);
-    const safeDt = realDt * hitStop.timeScale();
-    hitStop.update(realDt);
-    framesRendered += 1;
-    simTime += safeDt;
-
-    const spec = PLAYABLE_FLEET[activeCarId];
-    const manualActive = autopilotLevel === "MAN";
-
-    // 1. Update Apex Fare Lifecycle & L5 Autonomous Navigation
-    const distToBeacon = Math.max(0, playerZ - beaconWorldZ);
-    let targetSpeedMps = autopilotLevel === "L5 MAX" ? 21.5 : 15.2;
-    let targetLaneX = 3.4;
-    let brakeCueActive = false;
-
-    if (rideState === "offer") {
-      updateBeaconColors("pickup");
-      if (distToBeacon < 46) {
-        targetLaneX = CURB_BEACON_X - 0.9; // Pull smoothly toward the pickup curb
-      }
-      if (distToBeacon < 24) {
-        targetSpeedMps = clamp(distToBeacon * 0.55, 2.2, 12.0);
-      }
-      if (distToBeacon < 4.2) {
-        rideState = "boarding";
-        stateTimerSec = 0;
-        targetSpeedMps = 0;
-        const fare = WAYMO_FARES[fareIndex % WAYMO_FARES.length]!;
-        pushPenaltyOrBonusPopup(`Picking up ${fare.passenger}`, fare.pickupName, "good");
-      }
-    } else if (rideState === "boarding") {
-      targetLaneX = CURB_BEACON_X - 0.9;
-      targetSpeedMps = 0;
-      stateTimerSec += safeDt;
-      if (stateTimerSec >= 1.6) {
-        rideState = "ride";
-        rideElapsedSec = 0;
-        beaconWorldZ = playerZ - 165;
-        updateBeaconColors("dropoff");
-        const fare = WAYMO_FARES[fareIndex % WAYMO_FARES.length]!;
-        pushPenaltyOrBonusPopup(`${fare.passenger} Aboard`, `Destination: ${fare.dropoffName}`, "good");
-      }
-    } else if (rideState === "ride") {
-      updateBeaconColors("dropoff");
-      rideElapsedSec += safeDt;
-      if (distToBeacon < 46) {
-        targetLaneX = CURB_BEACON_X - 0.9;
-      } else {
-        // Weave smoothly between Eastbound lanes 3.4m and 7.4m around slower traffic
-        targetLaneX = Math.sin(simTime * 0.35) > 0.35 ? 7.4 : 3.4;
-      }
-      if (distToBeacon < 24) {
-        targetSpeedMps = clamp(distToBeacon * 0.55, 2.2, 12.5);
-      }
-      if (distToBeacon < 4.2) {
-        rideState = "alighting";
-        stateTimerSec = 0;
-        targetSpeedMps = 0;
-      }
-    } else if (rideState === "alighting") {
-      targetLaneX = CURB_BEACON_X - 0.9;
-      targetSpeedMps = 0;
-      stateTimerSec += safeDt;
-      if (stateTimerSec >= 1.4) {
-        const fare = WAYMO_FARES[fareIndex % WAYMO_FARES.length]!;
-        const earned = Math.round(fare.fareUsd + (rideStyle === "comfort" ? 6.5 : 9.0));
-        totalEarningsUsd += earned;
-        completedRides += 1;
-        renderTaxiTotalDom();
-        rideState = "summary";
-        stateTimerSec = 0;
-      }
-    } else if (rideState === "summary") {
-      stateTimerSec += safeDt;
-      targetSpeedMps = 13.5;
-      targetLaneX = 3.4;
-      if (stateTimerSec >= 2.6) {
-        fareIndex = (fareIndex + 1) % WAYMO_FARES.length;
-        rideState = "offer";
-        beaconWorldZ = playerZ - 135;
-        updateBeaconColors("pickup");
-      }
-    }
-
-    // Obstacle avoidance in Player's lane for L3 / L4 / L5
-    for (const tc of trafficCars) {
-      if (tc.direction === 1) {
-        const dz = playerZ - tc.z;
-        if (dz > 0 && dz < 22 && Math.abs(tc.laneX - playerX) < 2.1) {
-          if (autopilotLevel === "L3") {
-            brakeCueActive = true;
-          }
-          if (!manualActive && distToBeacon > 38) {
-            targetLaneX = tc.laneX > 5 ? 3.4 : 7.4;
-          }
-        }
-      }
-    }
-
-    // 2. Apply Manual Input or Autonomous Control
-    const throttleHeld = keysHeld.has("KeyW") || keysHeld.has("ArrowUp");
-    const brakeHeld = keysHeld.has("KeyS") || keysHeld.has("ArrowDown");
-    const leftHeld = keysHeld.has("KeyA") || keysHeld.has("ArrowLeft");
-    const rightHeld = keysHeld.has("KeyD") || keysHeld.has("ArrowRight");
-    const boostHeld = keysHeld.has("ShiftLeft") || keysHeld.has("ShiftRight");
-    const driftHeld = keysHeld.has("Space");
-
-    const xBeforeDrive = playerX;
-    if (manualActive) {
-      const steerInput = (rightHeld ? 1 : 0) - (leftHeld ? 1 : 0);
-      playerSteer = lerp(playerSteer, steerInput, safeDt * 7.5);
-      playerX = clamp(playerX + playerSteer * Math.max(4, playerSpeedMps * 0.55) * safeDt, -9.2, 9.2);
-
-      if (throttleHeld) {
-        const top = boostHeld ? spec.maxSpeedMps * 1.18 : spec.maxSpeedMps;
-        playerSpeedMps = Math.min(top, playerSpeedMps + spec.accel * safeDt);
-        powerRatio = clamp(playerSpeedMps / spec.maxSpeedMps + (boostHeld ? 0.25 : 0.12), 0.15, 1);
-        regenRatio = boostHeld ? 0.92 : 0.08;
-      } else if (brakeHeld) {
-        playerSpeedMps = Math.max(0, playerSpeedMps - 26 * safeDt);
-        powerRatio = 0.05;
-        regenRatio = 0.88;
-      } else {
-        // EV urban cruise coasting floor so the vehicle keeps rolling until S/ArrowDown is pressed
-        playerSpeedMps =
-          playerSpeedMps > 9.5
-            ? Math.max(9.5, playerSpeedMps - 3.2 * safeDt)
-            : Math.min(9.5, playerSpeedMps + 4.0 * safeDt);
-        powerRatio = clamp((playerSpeedMps / spec.maxSpeedMps) * 0.6, 0.18, 0.7);
-        regenRatio = 0.22;
-      }
-      // Keep beacon ahead if player passes it in manual mode without stopping
-      if (playerZ < beaconWorldZ - 12) {
-        beaconWorldZ = playerZ - 125;
-      }
-    } else {
-      const dx = targetLaneX - playerX;
-      playerSteer = clamp(dx * 0.35, -0.65, 0.65);
-      playerX = lerp(playerX, targetLaneX, safeDt * 3.1);
-      const speedDiff = targetSpeedMps - playerSpeedMps;
-      playerSpeedMps = clamp(
-        playerSpeedMps + clamp(speedDiff * 2.6, -16, spec.accel) * safeDt,
-        0,
-        spec.maxSpeedMps
-      );
-      powerRatio = clamp(
-        (playerSpeedMps / spec.maxSpeedMps) * 0.85 + Math.max(0, speedDiff * 0.04),
-        0.04,
-        0.96
-      );
-      regenRatio = speedDiff < -0.6 ? clamp(-speedDiff * 0.16, 0.25, 0.95) : 0.22;
-    }
-
-    // Advance Player World Z along California Street
-    playerZ -= playerSpeedMps * safeDt;
-
-    // Advance AI traffic (positions only; handles are synced in step 7), then resolve player-vs-traffic contact.
-    trafficRecovery.update(trafficCars, simTime, safeDt);
-    for (let i = 0; i < trafficCars.length; i++) {
-      const tc = trafficCars[i]!;
-      if (tc.direction === 1) {
-        tc.z -= tc.speed * safeDt;
-        if (tc.z > playerZ + 18) tc.z = playerZ - 195;
-        if (tc.z < playerZ - 205) tc.z = playerZ + 12;
-      } else {
-        tc.z += tc.speed * safeDt;
-        if (tc.z > playerZ + 22) tc.z = playerZ - 210 - (i % 3) * 18;
-      }
-    }
-    {
-      const body: PlayerBody = {
-        x: playerX,
-        z: playerZ,
-        speed: playerSpeedMps,
-        lateral: (playerX - xBeforeDrive) / Math.max(safeDt, 1e-4)
-      };
-      const hits = trafficContacts.step(body, trafficCars as readonly TrafficBody[], safeDt);
-      playerX = clamp(body.x, -9.2, 9.2);
-      playerZ = body.z;
-      playerSpeedMps = body.speed;
-      if (hits.length > 0) playerSteer = clamp(body.lateral / Math.max(4, playerSpeedMps * 0.55), -1, 1);
-      for (const h of hits) {
-        collisionCount += 1;
-        // An oncoming car that is struck head-on stops dead and recovers; a same-direction car keeps its speed.
-        if (h.impact.speed >= 1.5 && trafficCars[h.slot]!.direction === -1) {
-          trafficCars[h.slot]!.speed = 0;
-          trafficRecovery.onHit(h.slot, simTime);
-        }
-        collisionLog.push({ slot: h.slot, speed: Number(h.impact.speed.toFixed(2)), point: [...h.impact.point] as [number, number, number], time: Number(simTime.toFixed(3)) });
-        if (collisionLog.length > 64) collisionLog.shift();
-        if (h.impact.speed >= 1.5 && simTime - lastPenaltyAtSec > 0.5) {
-          lastPenaltyAtSec = simTime;
-          const pen = { comfortScore, streetBounty, streetMultiplier };
-          const result = applyCollisionPenalty(pen, rideStyle, h.impact.speed);
-          comfortScore = pen.comfortScore;
-          streetBounty = pen.streetBounty;
-          streetMultiplier = pen.streetMultiplier;
-          pushPenaltyOrBonusPopup(result.label, result.detail, "bad");
-        }
-      }
-    }
-    playerYaw = clamp(-playerSteer * 0.16, -0.28, 0.28) + qaYawAdd;
-    playerRoll = clamp(playerSteer * 0.045, -0.08, 0.08);
-    playerPitch = clamp((targetSpeedMps - playerSpeedMps) * 0.004, -0.03, 0.03);
-
-    // Drift & Brake Cue Overlays
-    document.getElementById("drift")?.classList.toggle("on", driftHeld && playerSpeedMps > 10);
-    document.getElementById("brakeCue")?.classList.toggle("on", brakeCueActive);
-
-    // Camera Mode Offsets (Chase, Far Chase, Roof LiDAR Cam, Bumper)
-    const camOffsets: Record<0 | 1 | 2 | 3, { y: number; z: number }> = {
-      0: { y: 0, z: 0 },
-      1: { y: -0.55, z: -2.4 },
-      2: spec.cams?.roof ?? { y: 1.45, z: 5.2 },
-      3: spec.cams?.bumper ?? { y: 2.15, z: 7.4 }
-    };
-    const camOff = camOffsets[camMode];
-    const shakeOffset = cameraShake.update(realDt);
-    const rx = (wx: number) => wx - playerX * 0.72 + shakeOffset.x;
-    const ry = (wy: number) => wy - playerY + camOff.y + shakeOffset.y;
-    const rz = (wz: number) => wz - playerZ + camOff.z;
-
-    // 3. Sync Player Hero Vehicle & Spinning Apex Roof LiDAR Sensor Suite
-    const pRoot: Vec3 = [rx(playerX), ry(playerY + spec.rideY), -0.8 + camOff.z];
-    for (const id of PLAYABLE_IDS) {
-      const h = playerCarHandles[id];
-      if (id === activeCarId) {
-        h.setPosition(pRoot[0], pRoot[1], pRoot[2])
-          .setRotation(playerPitch, playerYaw, playerRoll)
-          .setScale([1, 1, 1])
-          .setVisible(true);
-      } else {
-        h.setPosition(HIDDEN_POS[0], HIDDEN_POS[1], HIDDEN_POS[2])
-          .setScale(HIDDEN_SCALE)
-          .setVisible(false);
-      }
-    }
-
-    // Keep auxiliary primitive attachments hidden so baked 3D vehicle GLBs render cleanly
-    playerLidarDome.setScale(HIDDEN_SCALE).setVisible(false);
-    playerLidarRing.setScale(HIDDEN_SCALE).setVisible(false);
-    playerLidarFin.setScale(HIDDEN_SCALE).setVisible(false);
-    playerHeadlightL.setScale(HIDDEN_SCALE).setVisible(false);
-    playerHeadlightR.setScale(HIDDEN_SCALE).setVisible(false);
-    playerTailbar.setScale(HIDDEN_SCALE).setVisible(false);
-    playerThrusterL.setScale(HIDDEN_SCALE).setVisible(false);
-    playerThrusterR.setScale(HIDDEN_SCALE).setVisible(false);
-    playerShadow.setScale(HIDDEN_SCALE).setVisible(false);
-
-    // 4. Sync Scrolling SF Lane Dashes, Signalized Intersections, Buildings & Streetlamps
-    const dashBaseZ = Math.floor(playerZ / DASH_STRIDE_Z) * DASH_STRIDE_Z + DASH_STRIDE_Z;
-    for (let d = 0; d < 2; d++) {
-      const lx = rx(d === 0 ? -5.4 : 5.4);
-      const col = dashHandles[d]!;
-      for (let i = 0; i < DASH_ROWS; i++) {
-        col[i]!.setPosition(lx, ry(0.018), rz(dashBaseZ - i * DASH_STRIDE_Z));
-      }
-    }
-
-    // Signal Phasing: Green wave (10s Green, 2.5s Yellow, 3.5s Red cycle)
-    const sigCycle = simTime % 16;
-    const sigPhase = sigCycle < 10.5 ? 0 : sigCycle < 13.0 ? 1 : 2;
-    if (sigPhase !== lastSignalPhase) {
-      lastSignalPhase = sigPhase;
-      const sigColor = sigPhase === 0 ? "#43d17a" : sigPhase === 1 ? "#ffb347" : "#ff4a3d";
-      const sigMat = material.emissive({ color: sigColor, emissive: sigColor, emissiveIntensity: 2.2 });
-      for (const inter of intersectionHandles) {
-        inter.lightL.setMaterial(sigMat);
-        inter.lightR.setMaterial(sigMat);
-      }
-    }
-
-    const interBaseZ = Math.floor(playerZ / INTERSECTION_STRIDE_Z) * INTERSECTION_STRIDE_Z;
-    for (let i = 0; i < INTERSECTION_COUNT; i++) {
-      const iz = rz(interBaseZ - i * INTERSECTION_STRIDE_Z);
-      const slot = intersectionHandles[i]!;
-      slot.crossRoad.setPosition(rx(0), ry(0.01), iz);
-      slot.crosswalkN.setPosition(rx(0), ry(0.022), iz - 8.2);
-      slot.crosswalkS.setPosition(rx(0), ry(0.022), iz + 8.2);
-      slot.poleR.setPosition(rx(11.4), ry(3.4), iz - 9.2);
-      slot.armR.setPosition(rx(8.6), ry(6.5), iz - 9.2);
-      slot.lightR.setPosition(rx(6.4), ry(6.25), iz - 9.1);
-      slot.poleL.setPosition(rx(-11.4), ry(3.4), iz - 9.2);
-      slot.armL.setPosition(rx(-8.6), ry(6.5), iz - 9.2);
-      slot.lightL.setPosition(rx(-6.4), ry(6.25), iz - 9.1);
-    }
-
-    const bldgBaseZ = Math.floor(playerZ / BUILDING_STRIDE_Z) * BUILDING_STRIDE_Z + BUILDING_STRIDE_Z;
-    for (let i = 0; i < BUILDING_PAIRS; i++) {
-      const bz = rz(bldgBaseZ - i * BUILDING_STRIDE_Z);
-      const b = buildingHandles[i]!;
-      b.left.setPosition(rx(-b.xL), ry(0), bz);
-      b.right.setPosition(rx(b.xR), ry(0), bz);
-    }
-
-    const lampBaseZ = Math.floor(playerZ / LAMP_STRIDE_Z) * LAMP_STRIDE_Z + LAMP_STRIDE_Z;
-    for (let i = 0; i < LAMP_PAIRS; i++) {
-      const lz = rz(lampBaseZ - i * LAMP_STRIDE_Z);
-      const l = lampHandles[i]!;
-      l.lampL.setPosition(rx(-11.2), ry(3.1), lz);
-      l.globeL.setPosition(rx(-10.8), ry(6.25), lz);
-      l.lampR.setPosition(rx(11.2), ry(3.1), lz);
-      l.globeR.setPosition(rx(10.8), ry(6.25), lz);
-      l.trunkR.setPosition(rx(12.2), ry(1.6), lz - 14);
-      l.crownR.setPosition(rx(12.2), ry(4.1), lz - 14);
-    }
-
-    // 5. Sync 3D Apex Kerb Beacon, Waiting Passenger & Autonomous Path Ribbon
-    const pulse = 0.5 + 0.5 * Math.sin(simTime * 3.8);
-    const bViewX = rx(CURB_BEACON_X);
-    const bViewZ = rz(beaconWorldZ);
-    const ringScale = 1 + 0.08 * pulse;
-    beaconRingHandle
-      .setPosition(bViewX, ry(0.08), bViewZ)
-      .setRotation(Math.PI * 0.5, simTime * 1.4, 0)
-      .setScale([ringScale, ringScale, 1])
-      .setVisible(true);
-    beaconDiscHandle
-      .setPosition(bViewX, ry(0.04), bViewZ)
-      .setScale([1, 1, 1])
-      .setVisible(true);
-    beaconBeamHandle
-      .setPosition(bViewX, ry(17), bViewZ)
-      .setScale([0.92 + pulse * 0.14, 1, 0.92 + pulse * 0.14])
-      .setVisible(true);
-    beaconCoreHandle
-      .setPosition(bViewX, ry(18), bViewZ)
-      .setScale([1, 1, 1])
-      .setVisible(true);
-
-    // Waiting / waving passenger at Pickup or Alighting
-    const showPassenger = rideState === "offer" || rideState === "boarding" || rideState === "alighting";
-    if (showPassenger) {
-      const walkProgress = rideState === "boarding" ? clamp(stateTimerSec / 1.5, 0, 1) : 0;
-      const pedWorldX = lerp(11.35, CURB_BEACON_X + 0.85, walkProgress);
-      const pvX = rx(pedWorldX);
-      const waveAngle = Math.sin(simTime * 8.5) * 0.45;
-      passengerBodyHandle.setPosition(pvX, ry(0.88), bViewZ).setScale([1, 1, 1]).setVisible(true);
-      passengerHeadHandle.setPosition(pvX, ry(1.76), bViewZ).setScale([1, 1, 1]).setVisible(true);
-      passengerArmHandle
-        .setPosition(pvX - 0.28, ry(1.55), bViewZ)
-        .setRotation(0, 0, 0.55 + waveAngle)
-        .setScale([1, 1, 1])
-        .setVisible(true);
-    } else {
-      passengerBodyHandle.setScale(HIDDEN_SCALE).setVisible(false);
-      passengerHeadHandle.setScale(HIDDEN_SCALE).setVisible(false);
-      passengerArmHandle.setScale(HIDDEN_SCALE).setVisible(false);
-    }
-
-    // 9-Segment Glowing Autonomous Telemetry Path Ribbon ahead of Player
-    for (let i = 0; i < PATH_RIBBON_COUNT; i++) {
-      const frac = (i + 1) / PATH_RIBBON_COUNT;
-      const segWorldZ = playerZ - 5.5 - i * 5.4;
-      const pullToCurb = distToBeacon < 58 ? clamp(1 - Math.abs(segWorldZ - beaconWorldZ) / 52, 0, 1) : 0;
-      const segWorldX = lerp(playerX, pullToCurb > 0.2 ? CURB_BEACON_X - 0.8 : targetLaneX, frac * 0.85);
-      const nextWorldX = lerp(playerX, pullToCurb > 0.2 ? CURB_BEACON_X - 0.8 : targetLaneX, Math.min(1, (i + 2) / PATH_RIBBON_COUNT));
-      const ribbonYaw = Math.atan2(-(nextWorldX - segWorldX), 5.4);
-      const waveBrightness = 0.82 + 0.24 * Math.sin(simTime * 7 - i * 0.7);
-      pathRibbonHandles[i]!
-        .setPosition(rx(segWorldX), ry(0.032), rz(segWorldZ))
-        .setRotation(0, ribbonYaw, 0)
-        .setScale([waveBrightness, 1, 1])
-        .setVisible(true);
-    }
-
-    // 6. Sync 5 Multiplayer Peer Vehicles & Project 3D-to-2D Floating Nameplates (.mpTag)
-    const vw = window.innerWidth || 1280;
-    const vh = window.innerHeight || 800;
-
-    placedNameplates = [];
-    for (let i = 0; i < peers.length; i++) {
-      const peer = peers[i]!;
-      const handle = peerCarHandles[i]!;
-
-      // Relative longitudinal motion so peers stay within visible range (-68m to -14m) in front of the camera
-      const relSpeed = peer.baseSpeed + Math.sin(simTime * 0.7 + i * 1.4) * 2.2 - playerSpeedMps;
-      peer.zOffset += relSpeed * safeDt * 0.35;
-      if (peer.zOffset > -13) peer.zOffset = -64;
-      if (peer.zOffset < -68) peer.zOffset = -16;
-
-      if (!peer.isCableCar) {
-        const laneWave = Math.sin(simTime * 0.42 + i * 2.1);
-        peer.laneX = lerp(peer.laneX, peer.targetLaneX + laneWave * 0.55, safeDt * 2.0);
-      }
-
-      peer.worldX = peer.laneX;
-      peer.worldZ = playerZ + peer.zOffset;
-      peer.distanceMeters = Math.max(8, Math.round(Math.hypot(peer.worldX - playerX, peer.zOffset)));
-
-      const pvx = rx(peer.worldX);
-      const pvy = ry(peer.rideY);
-      const pvz = peer.zOffset + camOff.z;
-
-      handle
-        .setPosition(pvx, pvy, pvz)
-        .setRotation(0, peer.yawOffset, 0)
-        .setScale([1, 1, 1])
-        .setVisible(true);
-
-      if (i === 0) {
-        peerApexLidarRing.setScale(HIDDEN_SCALE).setVisible(false);
-      }
-
-      // Project 3D Roof Anchor to 2D Screen for .mpTag
-      const proj = projectViewPointToScreen([pvx, pvy + (peer.isCableCar ? 3.55 : 2.15), pvz], vw, vh);
-      const tagEl = peerTagEls[i];
-      if (tagEl) {
-        if (proj.visible) {
-          tagEl.style.display = "flex";
-          const place = placeNameplate(tagEl, proj.x, proj.y, vw, vh);
-          tagEl.style.transform = `translate3d(${place.x.toFixed(1)}px, ${place.y.toFixed(1)}px, 0) translate(-50%, -100%)`;
-          if (place.leader > 2) {
-            tagEl.dataset.leader = place.y > proj.y ? "up" : "down";
-            tagEl.style.setProperty("--leader-h", `${place.leader.toFixed(0)}px`);
-          } else {
-            delete tagEl.dataset.leader;
-          }
-          const distEl = document.getElementById(`mp-dist-${i}`);
-          if (distEl) distEl.textContent = `${peer.distanceMeters} m`;
-        } else {
-          tagEl.style.display = "none";
-        }
-      }
-    }
-
-    // 7. Sync 10 AI City Traffic Vehicles
-    for (let i = 0; i < trafficCars.length; i++) {
-      const tc = trafficCars[i]!;
-      const th = trafficHandles[i]!;
-
-      const tvx = rx(tc.laneX);
-      const tvy = ry(0);
-      const tvz = rz(tc.z);
-      const tyaw = (tc.direction === 1 ? 0 : Math.PI) + qaYawAdd;
-
-      th.setPosition(tvx, tvy, tvz)
-        .setRotation(0, tyaw, 0)
-        .setScale([1, 1, 1])
-        .setVisible(tvz < 18 && tvz > -220);
-    }
-
-    // Impact sparks: short ballistic burst from the contact point
-    for (let i = 0; i < sparks.length; i++) {
-      const s = sparks[i]!;
-      const handle = sparkHandles[i]!;
-      if (s.life <= 0) {
-        handle.setScale(HIDDEN_SCALE).setVisible(false);
-        continue;
-      }
-      s.life -= realDt;
-      s.v[1] -= 9.8 * realDt;
-      s.p = [s.p[0] + s.v[0] * realDt, Math.max(0.05, s.p[1] + s.v[1] * realDt), s.p[2] + s.v[2] * realDt];
-      const k = clamp(s.life / 0.45, 0, 1);
-      handle.setPosition(rx(s.p[0]), ry(s.p[1]), rz(s.p[2])).setScale([k, k, k]).setVisible(k > 0.02);
-    }
-
-    // 8. Update Speedometer Dial (#hud / #dial), District (#where), Apex Cards & Vector Minimap
-    const displaySpeed = Math.round(playerSpeedMps * (useMph ? 2.23694 : 3.6));
-    const spdEl = document.getElementById("spd");
-    if (spdEl) spdEl.textContent = String(displaySpeed).padStart(3, "0");
-
-    const gearEl = document.getElementById("gear");
-    if (gearEl) {
-      gearEl.textContent = spec.isIce
-        ? String(clamp(Math.ceil(displaySpeed / 18), 1, 8))
-        : brakeHeld && playerSpeedMps < 0.5
-          ? "R"
-          : "D";
-    }
-
-    const rpmPath = document.getElementById("rpm");
-    if (rpmPath) {
-      rpmPath.style.strokeDashoffset = (100 - clamp(powerRatio * 100, 3, 98)).toFixed(1);
-    }
-    const nosPath = document.getElementById("nos");
-    if (nosPath) {
-      nosPath.style.strokeDashoffset = (100 - clamp(regenRatio * 100, 6, 98)).toFixed(1);
-    }
-
-    // Update District (#where) & Fare Card DOM at 10 Hz
-    if (simTime - lastHudDomUpdateSec >= 0.1) {
-      lastHudDomUpdateSec = simTime;
-      const distIdx = Math.abs(Math.floor(-playerZ / 160)) % SF_DISTRICTS.length;
-      const distInfo = SF_DISTRICTS[distIdx]!;
-      const hoodEl = document.getElementById("wHood");
-      const stEl = document.getElementById("wSt");
-      const xEl = document.getElementById("wX");
-      const coordsEl = document.getElementById("wCoords");
-      if (hoodEl) hoodEl.textContent = distInfo.hood;
-      if (stEl) stEl.textContent = distInfo.street;
-      if (xEl) xEl.textContent = distInfo.cross;
-      if (coordsEl) coordsEl.textContent = distInfo.coords;
-
-      renderApexFareCards(distToBeacon);
-    }
-
-    renderVectorMinimap(distToBeacon);
-
-    // 9. Expose Aura3D Runtime Evidence & Grid Dispatch Telemetry
-    const evidence = {
-      route: "showcase-teleoperator",
-      engine: "@aura3d/engine",
-      ready: true,
-      framesRendered,
-      vehicle: activeCarId,
-      autopilotLevel,
-      weatherPreset,
-      cameraMode: camMode,
-      rideState,
-      rideStyle,
-      totalEarningsUsd,
-      completedRides,
-      ratingAvg,
-      comfortScore,
-      streetBounty,
-      streetMultiplier,
-      collisions: { count: collisionCount, last: collisionLog[collisionLog.length - 1] ?? null },
-      player: {
-        position: [Number(playerX.toFixed(2)), Number(playerY.toFixed(2)), Number(playerZ.toFixed(2))],
-        speedMps: Number(playerSpeedMps.toFixed(2)),
-        speedMph: displaySpeed
-      },
-      peers: peers.map((p) => ({
-        handle: p.handle,
-        car: p.carLabel,
-        distanceMeters: p.distanceMeters
-      }))
-    };
-
-    publishBeacon(evidence);
-    (window as unknown as Record<string, unknown>).__AURA3D_SHOWCASE_TELEOPERATOR__ = {
-      app: auraApp,
-      evidence,
-      selectPlayableVehicle,
-      setAutopilotLevel,
-      setCameraMode,
-      setWeatherPreset,
-      advanceApexFareStage,
-      teleportToPeer,
-      // QA drive: stage a traffic car and the player so a contact can be reproduced without live traffic timing.
-      qaPlaceTrafficCar(slot: number, state: { laneX: number; zAhead: number; speed: number; direction: 1 | -1 }) {
-        const tc = trafficCars[slot];
-        if (!tc) return false;
-        tc.laneX = state.laneX;
-        tc.z = playerZ - state.zAhead;
-        tc.speed = state.speed;
-        trafficRecovery.setBaseSpeed(slot, state.speed);
-        tc.direction = state.direction;
-        return true;
-      },
-      // QA review: turn the player car and every traffic car by `yaw` radians so each side of a model can be framed.
-      qaSetYaw(yaw: number) {
-        qaYawAdd = yaw;
-      },
-      qaSetPlayer(state: { x?: number; speed?: number }) {
-        if (state.x !== undefined) playerX = state.x;
-        if (state.speed !== undefined) playerSpeedMps = state.speed;
-      },
-      qaCollisions: () => ({
-        count: collisionCount,
-        log: collisionLog.slice(),
-        player: { x: playerX, z: playerZ, speed: playerSpeedMps },
-        cars: trafficCars.map((c) => ({ laneX: c.laneX, z: c.z, speed: c.speed, direction: c.direction }))
-      })
-    };
+  // Settle every shader program before the boot screen goes (a draw whose program is still compiling is skipped).
+  // Place the street first so the settle pass draws what the first game frame shows.
+  present(0);
+  try {
+    await warmPrograms(auraApp);
+  } catch (error) {
+    console.error("[grid-dispatch] warmPrograms failed", error);
+  }
+  auraApp.onFrame(() => {
+    loop.tick(performance.now());
   });
-
-  auraApp.step(1 / 60);
-  document.getElementById("boot")?.classList.add("done");
+  ready = true;
+  presenter.reset();
+  $("boot")?.classList.add("done");
   document.body.dataset.aura3dReady = "true";
   canvas.dataset.ready = "true";
   auraApp.resume();
+  if (autoplay) setAutopilotLevel("L5");
 }
 
-void bootGridDispatchAura3D();
+void bootGridDispatch();

@@ -1,50 +1,41 @@
-# Teleoperator: final screenshots after the UI and content fixes
+# Grid Dispatch (`teleoperator`): final screenshots
 
-**Recaptured 2026-10-25 after the art pass** (`evidence/teleoperator/art-pass/README.md`): the frames, `card-1x.jpg`, `card-2x.jpg` and `meta.json` in this folder are the new capture (run `p1tele-shots9`, `tests/browser/p1tele-shots.spec.ts`, 0 console errors, 0 proxied responses). The text below describes the 2026-10-24 capture; its hero-vehicle and flat-scenery problem is fixed, the name-tag overlap and the 390 portrait stacking are not.
+**Retaken 2026-10-29 on the audit-fix build** (lane G04, branch `audit-fix/g04`, Aura3D 4.5.0 engine). Same file names and sizes as the 2026-10-25 set. Spec: `tests/browser/audit-fix/teleoperator.spec.ts`; runs `g04c-desktop` (1280x720), `g04d-phone` (390x844, touch), `g04c-card` (1440x900). Frames are decoded from the run log with `tools/teleoperator/decode-gl-log.mjs`.
 
-Route: `apps/showcase-teleoperator`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
-
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/shotsd-teleoperator.spec.ts` with `tests/browser/shotsd-lib.ts`, decoded with `tools/shots/decode-shotsd.mjs`. Frames come from clicking the game's own buttons and holding keys, not from the QA hooks.
-
-Staging: the dist was built with `tools/shots/vite.shotsd.config.ts`; every asset the route references was copied from this repo into the dist (so new and changed files are the repository's, not production's). Files the repository does not carry (shared decoders, HDRI, previews) fall back to production.
+**Runner:** remote Azure ACR Task, headless Chromium, software WebGL2 (SwiftShader). This shows layout and content, not GPU look or frame rate. The app is paused for each capture (the canvas keeps its last presented frame), because software GL presents about one frame every 10 to 15 s.
 
 ## Frames
 
 | Viewport | State | Meaning | Status |
 |---|---|---|---|
-| 1280 | 01-title | first loaded frame | captured |
-| 1280 | 02-early | early gameplay | captured |
-| 1280 | 03-action | after key input | captured |
-| 1280 | 04-mid | mid-play (autoplay or driving) | captured |
-| 1280 | 05-modes | modes / menu panel | captured |
-| 1280 | 06-results | results | not reached |
-| 390 | 01-title | first loaded frame | captured |
-| 390 | 02-early | early gameplay | captured |
-| 390 | 03-action | after key input | captured |
-| 390 | 04-mid | mid-play (autoplay or driving) | captured |
-| 390 | 05-modes | modes / menu panel | captured |
-| 390 | 06-results | results | not reached |
+| 1280 | 01-title | first frame after ready | captured |
+| 1280 | 02-early | after 60 s and 6 frames (steady state) | captured |
+| 1280 | 03-action | after holding W and D | captured |
+| 1280 | 04-mid | after 45 s of manual driving | captured |
+| 1280 | 05-modes | AI rivals panel | captured |
+| 1280 | 06-results | shift results after five fares | captured |
+| 390 | 01-title | first frame, touch pads shown | captured |
+| 390 | 02-early | steady state | captured |
+| 390 | 03-action | after touch Throttle and Right | captured |
+| 390 | 04-mid | after 45 s of self-driving | captured |
+| 390 | 05-modes | AI rivals panel | captured |
+| 390 | 06-results | shift results | captured |
 
-Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture). Card aspect from `apps/showcase-index/index.html`.
+Card images: `card-2x.jpg` (1440x900, captured) and `card-1x.jpg` (720x450, downscaled from it).
 
 ## Capture health
 
-- 1280: console errors 0, bad responses 0, ready 235s (never lit), proxied from production 1
-- 390: console errors 0, bad responses 0, ready 219s (never lit), proxied from production 1
-- card: console errors 0, bad responses 0, ready 206s (never lit), proxied from production 1
+- 1280 and 390: 0 page errors and 0 console errors in the run logs.
+- `app.diagnostics()`: `renderPath.path` is `hdr-msaa`, `bloomFusion` is `separable`; GL draw calls 411 in the chase view at steady state (610 on the base build, run `g04b-desktop`).
 
 ## Checked in the frames
 
-- No brand lettering ('JAGUAR', 'WAYMO') in the frames; the loading text is no longer 'LOADING AURA3D'.
-- The vehicles are the new generic models (robotaxi, hatch, tram in traffic); the old Corvette, Cybercab and Cybertruck shapes are not visible in these frames.
+- The car sits in its lane: in the chase view the car's view-space x is 3.58 m right of the inner yellow line (base build: 1.13 m, the car drawn on the centre line).
+- 390: the fare card sits under the earnings row, the dial is centred between the touch pads, and nothing overlaps the speedometer.
+- Two nearest AI rivals get a full tag; the others a small chip.
+- Results: Fares 5/5, earned $193.12, average 5.0 stars, 0 collisions and 0 red lights, score 218, Retry button.
 
-## Problems still visible (not fixed in this lane)
+## Still open
 
-- [medium] The hero robotaxi (white compact crossover with a roof sensor pod) still reads as a real-world robotaxi in silhouette, and its texture is noisy and smudged; some traffic (a silver hatch, a wagon-style sedan) also resemble familiar real cars. The lettering and red smears are gone.
-- [medium] 1280: the name tags (@marcus_v8, @elena_x, @devon_ai) overlap the bottom of the fare card and each other.
-- [medium] 390 portrait: the location pill, wallet and fare card stack over roughly the top third of the screen and the fare card text is cut at the right edge; the fleet dock is collapsed to a 'Fleet . Cam . Sky' chip.
-- [low] The capture probe reports 'never lit' (the page was rendering; the probe threshold is the cause) and results were not reached.
-
-## Review coverage
-
-Frames opened and checked by eye: 1280 early, mid and modes; 390 mid (4 of 11). The remaining frames were captured but not individually inspected; the problems above come from the frames listed here.
+- The hero pod and some traffic models still read as generic shapes with soft, generated textures (art, not code).
+- On 390 the rival chips can still touch each other near the horizon.

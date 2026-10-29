@@ -9,7 +9,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * `TELEART_FRAME name i n payload` chunks that tools/teleoperator-vehicles/decode.mjs turns back into JPEGs.
  */
 const ROUTE = "/apps/showcase-teleoperator/";
-const PLAYER_IDS = ["waymo", "cybercab", "cybertruck", "corvette", "roadster"] as const;
+const PLAYER_IDS = ["cruiser", "coupe", "truck", "gt", "interceptor"] as const;
 const TRAFFIC_VIEWS: Array<{ name: string; slot: number }> = [
   { name: "sedan", slot: 0 },
   { name: "suv-hatch", slot: 3 },
