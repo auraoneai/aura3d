@@ -39,12 +39,19 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
 #menu .meta { font-size: 12px; margin: 0; }
 @media (max-height: 640px) { .orbit-brand { display: none; } #menu h1 { font-size: 60px; } #menu .tagline { font-size: 14px; } }
 #order, #banner { top: 104px; }
+#hud-tools { position: absolute; top: 104px; left: 12px; display: flex; gap: 8px; pointer-events: auto; }
+#hud-tools button { min-width: 44px; min-height: 44px; padding: 0 12px; font-size: 13px; background: var(--panel); }
+.menu-row-label { font-size: 12px; color: var(--muted); min-width: 52px; }
+#menu .row button { min-height: 40px; }
+#best-time, #result-best { margin: 0; }
 @media (max-width: 720px) {
   #hud .top { top: max(8px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); gap: 6px; }
   #hud .top .block { min-width: 0; flex: 1 1 0; padding: 6px 8px; }
   #hud .top .value { font-size: 18px; white-space: nowrap; }
   #hud .meta { font-size: 11px; }
   #order, #banner { top: 96px; }
+  #hud-tools { top: 96px; left: max(8px, env(safe-area-inset-left)); }
+  #banner { top: 150px; }
   #order { right: max(8px, env(safe-area-inset-right)); min-width: 128px; padding: 6px 8px; }
   #banner { left: max(8px, env(safe-area-inset-left)); transform: none; max-width: calc(100% - 148px); font-size: 16px; }
   #hud .bottom { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); gap: 8px; }
@@ -54,6 +61,13 @@ button[aria-pressed="true"] { border-color: var(--warm); background: rgba(243, 2
   #menu .panel { background: linear-gradient(180deg, rgba(7, 11, 18, 0.62), rgba(7, 11, 18, 0.5)); border-radius: 14px; padding: 14px; width: min(480px, calc(100vw - 24px)); backdrop-filter: blur(6px); }
   .orbit-tag { left: max(14px, env(safe-area-inset-left)); right: auto; bottom: max(16px, env(safe-area-inset-bottom)); font-size: 20px; }
   .orbit-brand { left: max(14px, env(safe-area-inset-left)); }
+}
+/* Portrait phones (SO-5): the menu sits at the top and the menu camera frames the riders in the lower third. */
+@media (max-aspect-ratio: 17/20) {
+  #menu { place-items: start center; padding: max(44px, env(safe-area-inset-top)) 12px 0; }
+  #menu .panel { gap: 8px; }
+  #menu h1 { font-size: 44px; }
+  .orbit-brand { top: max(14px, env(safe-area-inset-top)); }
 }
 `;
 
@@ -65,7 +79,53 @@ const DIFFICULTIES: readonly { id: string; label: string; blurb: string }[] = [
 
 const byId = (id: string): HTMLElement | null => document.getElementById(id);
 
-export function installOrbitUi(params: URLSearchParams, difficulty: string): void {
+const RIDER_CHOICES: readonly { id: string; label: string }[] = [{ id: "0", label: "Sol" }, { id: "1", label: "Ciel" }, { id: "2", label: "Ember" }];
+const MODE_CHOICES: readonly { id: string; label: string; blurb: string }[] = [
+  { id: "cup", label: "Cup", blurb: "Seven laps against five rivals" },
+  { id: "trial", label: "Time trial", blurb: "Five laps alone against your best ghost" },
+  { id: "free", label: "Free ride", blurb: "No finish line, no rivals' clock" }
+];
+
+export interface OrbitUiChoices {
+  readonly difficulty: string;
+  readonly rider: number;
+  readonly mode: string;
+}
+
+function choiceRow(doc: Document, id: string, label: string, choices: readonly { id: string; label: string; blurb?: string }[], current: string, onPick: (value: string) => void): HTMLElement {
+  const row = doc.createElement("div");
+  row.className = "row";
+  row.id = id;
+  const tag = doc.createElement("span");
+  tag.className = "menu-row-label";
+  tag.textContent = label;
+  row.appendChild(tag);
+  for (const c of choices) {
+    const button = doc.createElement("button");
+    button.type = "button";
+    button.textContent = c.label;
+    if (c.blurb) button.title = c.blurb;
+    button.dataset.choice = c.id;
+    button.setAttribute("aria-pressed", String(c.id === current));
+    button.addEventListener("click", () => onPick(c.id));
+    row.appendChild(button);
+  }
+  return row;
+}
+
+/** Append a button to the row that holds `anchorId`. */
+function addButton(doc: Document, anchorId: string, id: string, label: string): void {
+  const row = doc.getElementById(anchorId)?.parentElement;
+  if (!row || doc.getElementById(id)) return;
+  const button = doc.createElement("button");
+  button.type = "button";
+  button.id = id;
+  button.textContent = label;
+  row.appendChild(button);
+}
+
+export function installOrbitUi(params: URLSearchParams, choices: OrbitUiChoices): void {
+  const { difficulty } = choices;
   const style = document.createElement("style");
   style.id = "orbit-ui-style";
   style.textContent = CSS;
@@ -106,12 +166,19 @@ export function installOrbitUi(params: URLSearchParams, difficulty: string): voi
         button.addEventListener("click", () => { params.set("difficulty", d.id); location.search = params.toString(); });
         row.appendChild(button);
       }
-      if (startRow) panel.insertBefore(row, startRow); else panel.appendChild(row);
+      const reload = (key: string) => (value: string) => { params.set(key, value); location.search = params.toString(); };
+      const riderRow = choiceRow(document, "rider-row", "Rider", RIDER_CHOICES, String(choices.rider), reload("rider"));
+      const modeRow = choiceRow(document, "mode-row", "Mode", MODE_CHOICES, choices.mode, reload("mode"));
+      for (const r of [riderRow, modeRow, row]) { if (startRow) panel.insertBefore(r, startRow); else panel.appendChild(r); }
       const hint = document.createElement("p");
       hint.className = "orbit-hint";
       hint.id = "difficulty-hint";
       hint.textContent = DIFFICULTIES.find((d) => d.id === difficulty)?.blurb ?? "";
       panel.insertBefore(hint, startRow);
+      const best = document.createElement("p");
+      best.className = "orbit-hint";
+      best.id = "best-time";
+      panel.insertBefore(best, startRow);
     }
   }
   const start = byId("start");
@@ -120,6 +187,31 @@ export function installOrbitUi(params: URLSearchParams, difficulty: string): voi
   const current = params.get("vehicle") === "skate" ? "skate" : "bike";
   vehicle("vehicle-bike", current === "bike");
   vehicle("vehicle-skate", current === "skate");
+  // Results and Lost panels: a way back to the menu next to "Race again" (SO-E3); the pause panel gets the sound switch (SO-9).
+  addButton(document, "again", "results-menu", "Menu");
+  addButton(document, "again-lost", "lost-menu", "Menu");
+  addButton(document, "resume", "pause-mute", "Sound on");
+  const results = byId("results")?.querySelector("#result-goals");
+  if (results && !byId("result-best")) {
+    const best = document.createElement("p");
+    best.className = "meta";
+    best.id = "result-best";
+    results.insertAdjacentElement("afterend", best);
+  }
+  // HUD tools: pause and sound buttons for mouse and touch players.
+  const hud = byId("hud");
+  if (hud && !byId("hud-tools")) {
+    const tools = document.createElement("div");
+    tools.id = "hud-tools";
+    for (const [id, label] of [["hud-pause", "Pause"], ["hud-mute", "Sound on"]] as const) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.id = id;
+      b.textContent = label;
+      tools.appendChild(b);
+    }
+    hud.appendChild(tools);
+  }
   const keys = menu?.querySelector("p.meta:last-of-type");
   if (keys && /accelerate/i.test(keys.textContent ?? "")) keys.textContent = `${keys.textContent!.replace(/\.$/, "")}, M mute.`;
 }

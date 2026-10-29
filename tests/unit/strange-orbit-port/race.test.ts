@@ -190,8 +190,8 @@ describe("laps, gates and finish", () => {
     expect(laps.filter((ev) => ev.text === "Final orbit. Make it beautiful.")).toHaveLength(1);
   });
 
-  it("finish time at the fixed step is stable (regression pin for the capture comparison)", () => {
-    const e = createRace();
+  it("finish time at the fixed step is stable with the original rivals (regression pin for the capture comparison)", () => {
+    const e = createRace({ balance: "original" });
     startCountdown(e);
     runFixed(e, autopilot, (s) => s.phase === "finished", 60 * 60 * 6);
     const raceSteps = Math.round(e.time / STEP);

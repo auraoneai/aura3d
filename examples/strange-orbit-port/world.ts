@@ -5,7 +5,7 @@
  * points (`topology: "points"`), six riders and the chase camera. Visual assets
  * the original fetched as remote GLB/PNG files are re-created procedurally.
  */
-import { camera, defineAuraAssets, effects, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
+import { camera, defineAuraAssets, effects, environments, geometry, lights, material, model, primitives, scene, type AuraApp } from "@aura3d/engine";
 import {
   COURSE_LENGTH,
   GATES,
@@ -27,6 +27,7 @@ import { MESHY, MESHY_ENABLED, MESHY_SIZE } from "./models";
 import { dressingPlan, lehmer } from "./obstacles";
 import { hexLinear } from "./palette";
 import { loopFrame, type RaceState } from "./race";
+import type { GhostPose } from "./progress";
 import { atmosphereSpec, mineralSpec, pointsSpec, skySpec, solidSpec, trackSpec, veilSpec, type SolidExtra } from "./materials";
 import { mainFrame, routeFrame, surfaceNoise } from "./track";
 import { Vec3 } from "./vec3";
@@ -40,7 +41,16 @@ export interface WorldOptions {
   readonly vehicle: Vehicle;
   readonly rider: number;
   readonly quality: "high" | "low";
+  /** Time trial: add a translucent ghost rider for the saved best run (SO-E3). */
+  readonly ghost?: boolean;
+  /** `prefers-reduced-motion`: damp the zero-G spin and bank (SO-E2). */
+  readonly reducedMotion?: boolean;
 }
+
+/** Seconds and metres of the rebound after a zero-G crash, so the rider never rests inside the scenery it hit (SO-E5). */
+export const IMPACT_REBOUND = { seconds: 0.2, metres: 0.6 } as const;
+/** Zero-G spin and bank are scaled by this under reduced motion. */
+export const REDUCED_MOTION_SPIN = 0.25;
 
 const f32 = (a: readonly number[]): Float32Array => Float32Array.from(a);
 
@@ -163,14 +173,27 @@ function riderRig(index: number, vehicle: Vehicle): Riderrig {
 }
 
 export interface WorldRuntime {
-  update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }): void;
+  update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }, ghost?: GhostPose | null): void;
   resetCamera(): void;
+  /** A zero-G crash along `normal`: push the drawn rider out along it for `IMPACT_REBOUND.seconds`. */
+  impact(normal: readonly [number, number, number]): void;
+  /** QA: where the rider at `index` (6 = trial ghost) would land on screen with the last camera pose (x, y in 0..1 from top left). */
+  projectRider(index: number, aspect: number): { x: number; y: number; depth: number } | null;
   readonly nodeCount: number;
 }
 
 export interface World {
   readonly scene: Scene;
   bind(app: AuraApp): WorldRuntime;
+}
+
+/** Neutral-room environment intensity, calibrated on the remote runner against the 4.3.7 rider-region luma (docs/audits/lanes/g15.md). */
+export const ENVIRONMENT_INTENSITY = 0.9;
+
+function environmentIntensity(): number {
+  const raw = typeof location !== "undefined" ? new URLSearchParams(location.search).get("env") : null;
+  const parsed = raw === null ? Number.NaN : Number(raw);
+  return Number.isFinite(parsed) && parsed >= 0 && parsed <= 4 ? parsed : ENVIRONMENT_INTENSITY;
 }
 
 export function buildWorld(options: WorldOptions): World {
@@ -185,9 +208,14 @@ export function buildWorld(options: WorldOptions): World {
   if (!off.has("lights")) {
     builder
       .add(lights.hemisphere({ name: "hemisphere", skyColor: "#f8d4a0", groundColor: "#2f3957", intensity: 1.1 }))
-      .add(lights.directional({ name: "key", position: [150, 280, -150], target: [0, 0, 0], intensity: 2.6, color: "#ffd09a", shadow: (typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } as never) }))
+      .add(lights.directional({ name: "key", position: [150, 280, -150], target: [0, 0, 0], intensity: 2.6, color: "#ffd09a", shadow: typeof location !== "undefined" && new URLSearchParams(location.search).get("shadow") === "0" ? false : { cascades: 2, maxDistance: 160 } }))
       .add(lights.directional({ name: "fill", position: [-140, 80, 210], target: [0, 0, 0], intensity: 1.0, color: "#8195bc", shadow: false }));
   }
+  // Image-based fill for the lit GLBs (riders, pylons, boulders, props). Since 4.5.0 a lights-only scene gets no implicit
+  // environment, so without this the models lose their diffuse and specular fill (LIGHT-01). The hemisphere above keeps
+  // contributing next to it and is evaluated per normal (LIGHT-05/08), so the intensity is calibrated with it on.
+  // `?env=<n>` overrides the intensity for calibration captures; `?off=env` removes it.
+  if (!off.has("env")) builder.add(environments.neutral({ name: "fill-environment", intensity: environmentIntensity(), background: false }));
   if (!off.has("bloom")) builder.add(effects.bloom({ name: "bloom", intensity: 0.5, threshold: 0.78, radius: 0.55 }));
   if (!off.has("grade")) builder.add(effects.colorGrade({ name: "grade", contrast: 1.06, saturation: 1.14 }));
   if (!off.has("vignette")) builder.add(effects.vignette({ name: "vignette", intensity: 0.22, smoothness: 0.7 }));
@@ -334,10 +362,13 @@ export function buildWorld(options: WorldOptions): World {
 
   /* ---- stardust ---- */
   const dustItems = collectibles("painted").filter((c) => c.kind === "dust");
-  const dustBase = dustItems.map((c) => {
-    const f = routeFrame(c.s, c.route);
-    return f.p.addScaledVector(f.side, c.lane).addScaledVector(f.up, 1 + (islandHeight(c.s, c.route) ?? 0));
+  const dustFrames = dustItems.map((c) => routeFrame(c.s, c.route));
+  const dustBase = dustItems.map((c, i) => {
+    const f = dustFrames[i]!;
+    return f.p.clone().addScaledVector(f.side, c.lane).addScaledVector(f.up, 1 + (islandHeight(c.s, c.route) ?? 0));
   });
+  /** Each item's bob axis, computed once here instead of a `routeFrame` per item per frame (SO-E1). */
+  const dustUp = Float32Array.from(dustFrames.flatMap((f) => [f.up.x, f.up.y, f.up.z]));
   builder.add(geometry.custom(geometry.dynamic({
     positions: f32(dustBase.flatMap((p) => [p.x, p.y, p.z])),
     topology: "points",
@@ -415,6 +446,19 @@ export function buildWorld(options: WorldOptions): World {
     }
   });
 
+  /* ---- time-trial ghost: the player's model, translucent and cyan ---- */
+  if (options.ghost) {
+    builder.add(MESHY_ENABLED
+      ? model(vehicle === "skate" ? MESHY.skateRider : MESHY.bikeRider, {
+        name: "ghost-rider",
+        targetMaxDimension: vehicle === "skate" ? MESHY_SIZE.skate.target : MESHY_SIZE.bike.target,
+        castShadow: false,
+        receiveShadow: false,
+        materialOverrides: [{ color: "#9fe8ff", colorMode: "replace", opacity: 0.38, emissive: "#5fd8ff", emissiveIntensity: 0.6 }]
+      }).runtime({ id: "ghost-rider" })
+      : primitives.capsule({ name: "ghost-rider", size: [0.5, 1.5, 0.5], material: solidMaterial(hexLinear("#9fe8ff"), hexLinear("#5fd8ff"), 0.8, 0, { transparent: true, blending: "additive", depthWrite: false }) }).runtime({ id: "ghost-rider" }));
+  }
+
   /* ---- gravity halo ---- */
   builder.add(primitives.ring({
     name: "gravity-halo",
@@ -425,7 +469,7 @@ export function buildWorld(options: WorldOptions): World {
   return {
     scene: builder,
     bind(app: AuraApp): WorldRuntime {
-      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustItems, exhaust: EXHAUST });
+      return bindRuntime(app, { vehicle, riders, meteors, dustBase, dustUp, dustItems, exhaust: EXHAUST, ghost: Boolean(options.ghost), reducedMotion: Boolean(options.reducedMotion) });
     }
   };
 }
@@ -435,6 +479,9 @@ interface BindInput {
   readonly riders: readonly Riderrig[];
   readonly meteors: ReturnType<typeof collectibles>;
   readonly dustBase: readonly Vec3[];
+  readonly dustUp: Float32Array;
+  readonly ghost: boolean;
+  readonly reducedMotion: boolean;
   readonly dustItems: ReturnType<typeof collectibles>;
   readonly exhaust: number;
 }
@@ -464,7 +511,11 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
   const rng = lehmer(4242);
   let dustLap = -1;
   const dustSize = new Float32Array(input.dustItems.length);
+  const dustPositions = new Float32Array(input.dustBase.length * 3);
   let lastSizeKey = "";
+  const rebound = { t: 0, x: 0, y: 0, z: 0 };
+  let lastCamera: { eye: Vec3; look: Vec3; up: Vec3; fov: number } | null = null;
+  const riderAt: Vec3[] = Array.from({ length: 7 }, () => new Vec3()); // 0 player, 1..5 rivals, 6 ghost
 
   /** Group pose for a rider standing at (`s`, `lane`) on `route`. */
   const poseAt = (s: number, lane: number, route: Route, height: number, heading: number, lean: number): Pose => {
@@ -483,6 +534,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     let base = basisMatrix(pose.forward, up, side);
     if (extraPitch) base = multiplyMat3(base, axisRotation("z", extraPitch));
     if (extraRoll) base = multiplyMat3(base, axisRotation("x", extraRoll));
+    riderAt[index]!.copy(pose.position).addScaledVector(up, 0.8 * scale);
     const rigDef = input.riders[index]!;
     for (const part of rigDef.parts) {
       const [dx, dy, dz] = part.offset;
@@ -505,7 +557,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     for (const part of input.riders[index]!.parts) node(part.id).setVisible(true);
   };
 
-  function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }): void {
+  function update(state: RaceState, dt: number, time: number, view: "chase" | "wide", aspect: number, shake?: { readonly x: number; readonly y: number; readonly roll: number }, ghost?: GhostPose | null): void {
     const menu = state.phase === "menu";
     const sForPlayer = menu ? 35 : state.s;
     const scale = menu ? 1.3 : 1.15;
@@ -531,12 +583,36 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       if (state.air) roll = Math.sin(state.air.age * 3) * 0.22;
     }
     if (state.flight) {
-      const spin = state.flight.mode === "drift" ? Math.sin(state.flight.age * 0.5) * 0.45 : 0;
-      const bank = state.flight.mode === "drift" ? Math.sin(state.flight.age * 0.3) * 0.3 : 0;
+      const damp = input.reducedMotion ? REDUCED_MOTION_SPIN : 1;
+      const spin = state.flight.mode === "drift" ? Math.sin(state.flight.age * 0.5) * 0.45 * damp : 0;
+      const bank = state.flight.mode === "drift" ? Math.sin(state.flight.age * 0.3) * 0.3 * damp : 0;
       roll = spin;
       pitch = bank;
     }
+    if (rebound.t > 0) {
+      const k = (rebound.t / IMPACT_REBOUND.seconds) * IMPACT_REBOUND.metres;
+      playerPose.position.x += rebound.x * k;
+      playerPose.position.y += rebound.y * k;
+      playerPose.position.z += rebound.z * k;
+      rebound.t = Math.max(0, rebound.t - dt);
+    }
     placeRider(0, playerPose, scale, pitch, roll);
+
+    /* time-trial ghost */
+    if (input.ghost) {
+      const g = node("ghost-rider");
+      g.setVisible(Boolean(ghost) && !menu);
+      if (ghost && !menu) {
+        const pose = poseAt(ghost.s, ghost.lane, ghost.route, ghost.height, 0, 0);
+        const side = new Vec3().crossVectors(pose.forward, pose.up).normalize();
+        const up = new Vec3().crossVectors(side, pose.forward).normalize();
+        const e = euler(multiplyMat3(basisMatrix(pose.forward, up, side), MESHY_ENABLED ? MODEL_YAW[input.vehicle] : IDENTITY));
+        g.setPosition(pose.position.x, pose.position.y, pose.position.z);
+        riderAt[6]!.copy(pose.position).addScaledVector(up, 0.8 * scale);
+        g.setRotation(e[0], e[1], e[2]);
+        g.setScale(scale);
+      }
+    }
 
     /* rivals */
     for (let i = 0; i < 5; i++) {
@@ -566,7 +642,14 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
     const params = view === "wide" ? { back: 4.5, height: 4, fov: 82, portraitFov: 82 } : { back: 4.5, height: 3, fov: 72, portraitFov: 76 };
     const origin = playerPose.position;
     let eye: Vec3, look: Vec3, fov: number;
-    if (menu) {
+    if (menu && aspect < 0.85) {
+      // Portrait (SO-5): the menu panel takes the top of the screen, so the camera stands further back and aims above
+      // the riders, which puts them in the lower third.
+      const m = menuPortraitCamera(aspect);
+      eye = frame.p.clone().addScaledVector(fwd, m.forward).addScaledVector(frame.side, m.side).addScaledVector(frame.up, m.height);
+      look = frame.p.clone().addScaledVector(fwd, m.lookForward).addScaledVector(frame.side, m.lookSide).addScaledVector(frame.up, m.lookHeight);
+      fov = m.fov;
+    } else if (menu) {
       eye = frame.p.clone().addScaledVector(fwd, 4.5).addScaledVector(frame.side, -7).addScaledVector(frame.up, 2.7);
       look = frame.p.clone().addScaledVector(frame.side, 3.8).addScaledVector(frame.up, 1.1);
       fov = 48;
@@ -576,6 +659,7 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
       look = origin.clone().addScaledVector(rig.forward, 3).addScaledVector(cu, 1.4);
       fov = aspect < 0.85 ? params.portraitFov : params.fov;
     }
+    lastCamera = { eye: eye.clone(), look: look.clone(), up: menu ? frame.up.clone() : cu.clone(), fov };
     cameraController.setPose({
       position: [eye.x, eye.y, eye.z],
       target: [look.x, look.y, look.z],
@@ -600,15 +684,15 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
 
     /* stardust: hide collected, bob the rest */
     const dust = node("stardust");
-    const positions = new Float32Array(input.dustBase.length * 3);
+    const positions = dustPositions;
+    const ups = input.dustUp;
     for (let i = 0; i < input.dustBase.length; i++) {
       const c = input.dustItems[i]!;
-      const f = routeFrame(c.s, c.route);
       const p = input.dustBase[i]!;
       const bob = Math.sin(time * 2 + c.id) * 0.22;
-      positions[i * 3] = p.x + f.up.x * bob;
-      positions[i * 3 + 1] = p.y + f.up.y * bob;
-      positions[i * 3 + 2] = p.z + f.up.z * bob;
+      positions[i * 3] = p.x + ups[i * 3]! * bob;
+      positions[i * 3 + 1] = p.y + ups[i * 3 + 1]! * bob;
+      positions[i * 3 + 2] = p.z + ups[i * 3 + 2]! * bob;
       dustSize[i] = state.collected.has(lap + ":" + c.id) ? 0 : 9;
     }
     dust.updateAttribute?.("position", { array: positions, offset: 0 });
@@ -678,9 +762,37 @@ function bindRuntime(app: AuraApp, input: BindInput): WorldRuntime {
 
   return {
     update,
-    resetCamera() { rig = null; },
+    resetCamera() { rig = null; rebound.t = 0; },
+    projectRider(index, aspect) {
+      const c = lastCamera;
+      const p = riderAt[index];
+      if (!c || !p) return null;
+      const f = c.look.clone().sub(c.eye).normalize();
+      const r = new Vec3().crossVectors(f, c.up).normalize();
+      const u = new Vec3().crossVectors(r, f).normalize();
+      const d = p.clone().sub(c.eye);
+      const depth = d.dot(f);
+      if (depth <= 0) return null;
+      const t = Math.tan((c.fov * Math.PI) / 360);
+      return { x: 0.5 + (d.dot(r) / (depth * t * aspect)) / 2, y: 0.5 - (d.dot(u) / (depth * t)) / 2, depth };
+    },
+    impact(normal) {
+      const len = Math.hypot(normal[0], normal[1], normal[2]) || 1;
+      rebound.x = normal[0] / len; rebound.y = normal[1] / len; rebound.z = normal[2] / len;
+      rebound.t = IMPACT_REBOUND.seconds;
+    },
     get nodeCount() { return handles.size; }
   };
+}
+
+/**
+ * Menu camera for portrait screens, in the menu frame's axes (metres along the track, across it and up from it).
+ * Chosen by projecting the rider positions for a 390x844 screen; the remote capture checks it (`riderScreen`).
+ */
+export function menuPortraitCamera(_aspect: number): { forward: number; side: number; height: number; lookForward: number; lookSide: number; lookHeight: number; fov: number } {
+  // Behind the grid, aimed 8 m above the track 14 m ahead: at 390x844 this projects the player to (0.50, 0.84) and the
+  // rivals to y 0.71 to 0.75 (fractions of the screen from the top left), below the menu panel.
+  return { forward: -12, side: 0, height: 3.4, lookForward: 14, lookSide: 0, lookHeight: 8, fov: 60 };
 }
 
 function loopFramePose(state: RaceState): Pose {

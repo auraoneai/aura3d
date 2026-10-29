@@ -1,6 +1,7 @@
 /**
  * Presentation-only audio for the port: a catalog space-ambient loop plus synthesized engine hum, wind and event
- * cues, driven from race events and speed. It never touches the simulation. Press M to mute.
+ * cues, driven from race events and speed. It never touches the simulation. M or the HUD sound button mutes; the
+ * caller saves the choice. While the page is hidden the audio context is suspended.
  */
 import { AudioContextManager, createCueBank, type CueSpec, type ToneLayer } from "@aura3d/engine/audio";
 
@@ -15,6 +16,10 @@ export interface AudioFrame {
 export interface OrbitAudio {
   unlock(): void;
   toggleMute(): boolean;
+  setMuted(muted: boolean): void;
+  isMuted(): boolean;
+  /** Suspend the audio context while the tab is hidden; resume when it is shown again. */
+  setHidden(hidden: boolean): void;
   update(frame: AudioFrame, dt: number): void;
   cue(type: string, mult?: number): void;
 }
@@ -39,6 +44,8 @@ export const TONE_CUES = {
   stunt: { layers: [tl(988, 0, 0.12, "triangle", 0.08), tl(1318, 0.08, 0.2, "triangle", 0.08)] },
   sling: { layers: [tl(220, 0, 0.55, "sine", 0.1, 880)] },
   route: { layers: [tl(660, 0, 0.18, "triangle", 0.07)] },
+  /** Skate loop entry (not in the original, which played the checkpoint cue): a rising sine sweep. */
+  loop: { layers: [tl(392, 0, 0.42, "sine", 0.09, 784), tl(588, 0.06, 0.36, "triangle", 0.05)] },
   resonance: { layers: [tl(587, 0, 0.5, "sine", 0.08), tl(880, 0, 0.6, "sine", 0.06)] },
   finish: { layers: [523, 659, 784, 1047].map((f, i) => tl(f, i * 0.11, 0.5, "triangle", 0.1)) }
 } satisfies Record<string, CueSpec>;
@@ -47,8 +54,11 @@ export type ToneCue = keyof typeof TONE_CUES;
 /** Cue name -> the bank cue that plays it. */
 export const TONE_EVENTS: Readonly<Record<string, ToneCue>> = {
   dust: "dust", gate: "gate", countdown: "tick", tick: "tick", go: "go", jump: "jump", stunt: "stunt", sling: "sling", gravity: "sling",
-  route: "route", resonance: "resonance", lap: "finish", finish: "finish"
+  route: "route", resonance: "resonance", lap: "finish", finish: "finish", loop: "loop"
 };
+
+/** Cues added by the port; they have no counterpart in the original's audio. */
+export const PORT_ONLY_CUES: readonly string[] = ["loop"];
 
 const AMBIENT_URL = new URL("./assets/space-ambient.wav", import.meta.url).href;
 
@@ -65,7 +75,8 @@ function noiseBuffer(ctx: AudioContext, seconds: number): AudioBuffer {
 
 export function createOrbitAudio(): OrbitAudio {
   if (typeof window === "undefined" || typeof AudioContext === "undefined") {
-    return { unlock() {}, toggleMute: () => true, update() {}, cue() {} };
+    let silentMuted = false;
+    return { unlock() {}, toggleMute: () => (silentMuted = !silentMuted), setMuted(m) { silentMuted = m; }, isMuted: () => silentMuted, setHidden() {}, update() {}, cue() {} };
   }
   const manager = new AudioContextManager();
   const bank = createCueBank({ cues: TONE_CUES, manager, masterGain: 0.7, sfxGain: 1, muteKey: false });
@@ -184,18 +195,29 @@ export function createOrbitAudio(): OrbitAudio {
     src.start(start);
   }
 
+  function setMuted(next: boolean): void {
+    muted = next;
+    bank.setMuted(muted);
+    if (master) master.gain.value = muted ? 0 : 0.7;
+  }
+
   return {
     unlock() {
       build();
+      if (master) master.gain.value = muted ? 0 : 0.7;
       bank.setMuted(muted);
       void bank.unlock();
       void manager.unlock().catch(() => undefined);
     },
     toggleMute() {
-      muted = !muted;
-      bank.setMuted(muted);
-      if (master) master.gain.value = muted ? 0 : 0.7;
+      setMuted(!muted);
       return muted;
+    },
+    setMuted,
+    isMuted: () => muted,
+    setHidden(hidden) {
+      if (!built) return;
+      void (hidden ? manager.suspend() : manager.resume()).catch(() => undefined);
     },
     update(frame, dt) {
       if (!ctx || !humGain || !humFilter || !windGain || !windFilter || !boostGain || ctx.state !== "running") return;

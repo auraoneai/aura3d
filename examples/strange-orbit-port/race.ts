@@ -47,6 +47,7 @@ import {
   type LoopDef,
   type Mode,
   type Ramp,
+  type Collectible,
   type Route,
   type Vehicle
 } from "./course";
@@ -119,17 +120,35 @@ export interface Rival {
   lean?: number;
   finishTime?: number;
   recoveries?: number;
+  /** Seconds of landing surge left (balance "cup" only; the original's rivals never surge). */
+  surge?: number;
 }
 
 export interface RaceEnd {
-  medal: "gold" | "silver" | "bronze";
+  /** Cup: 1st gold, 2nd silver, 3rd bronze, 4th to 6th none. Time trial: by finish time. */
+  medal: "gold" | "silver" | "bronze" | null;
   goals: boolean[];
   place: number;
   time: number;
   score: number;
 }
 
+/**
+ * `"cup"` (default) is the shipped rival tuning: faster rivals per difficulty, a landing surge at the resonance
+ * crystals and a catch-up when the player leads by more than 120 m. `"original"` keeps the original game's rivals
+ * bit for bit; the recorded-race replay (`evidence/crayon-capture/strange-orbit-reference.json`) uses it.
+ */
+export type RivalBalance = "cup" | "original";
+
+/** Rival pace multiplier per difficulty under the `"cup"` balance (the original's `rules.ai` is 0.86 / 0.96 / 1.0). */
+export const CUP_RIVAL_PACE: Readonly<Record<Difficulty, number>> = { explorer: 0.98, racer: 1.12, expert: 1.25 };
+/** Catch-up: a rival more than `start` metres behind the player gains `rate` m/s per metre over it, up to `max` m/s. */
+export const RIVAL_CATCH_UP = { start: 120, rate: 0.06, max: 10 } as const;
+/** Free mode keeps this many recent lap times and checkpoints; older collected-item keys are pruned at each lap. */
+export const FREE_MODE_HISTORY = 20;
+
 export interface RaceState {
+  balance: RivalBalance;
   groundedS: number | null;
   groundedRoute: Route | null;
   gravityRescueReady: boolean;
@@ -216,16 +235,19 @@ export interface RaceOptions {
   courseId?: string;
   equipment?: string;
   round?: number;
+  /** Rival tuning; default `"cup"`. */
+  balance?: RivalBalance;
 }
 
 /** Fresh race state in the `menu` phase (the original's `lp`). */
 export function createRace(options: RaceOptions = {}): RaceState {
-  const { rider = 0, mode = "cup", difficulty = "racer", vehicle = "bike", courseId = "painted", equipment = "balanced", round = 0 } = options;
+  const { rider = 0, mode = "cup", difficulty = "racer", vehicle = "bike", courseId = "painted", equipment = "balanced", round = 0, balance = "cup" } = options;
   const course = courseById(courseId);
   setActiveCourse(course.id);
   const level = normalizeDifficulty(difficulty);
   const rules = DIFFICULTY[level];
   return {
+    balance: balance === "original" ? "original" : "cup",
     groundedS: null,
     groundedRoute: null,
     gravityRescueReady: false,
@@ -410,7 +432,7 @@ function enterFlight(e: RaceState, t: number = e.s): void {
   e.surge = 0;
   e.combo = 0;
   e.resonanceChain = 0;
-  e.events.push({ type: "launch", text: "ZERO G · steer · hold Rise / Brake to change height · gravity to rescue" });
+  e.events.push({ type: "launch", text: "ZERO G · steer · hold Space to rise, S to sink · G to sling back" });
 }
 
 /** True when an island rider has dropped below the platform plane (falling between tiles). */
@@ -609,7 +631,7 @@ function tryEnterLoop(e: RaceState, prevS: number): boolean {
     if (prevS < at && e.s >= at && Math.abs(e.lane - def.lane) < def.width / 2 && e.speed >= 20) {
       e.loop = { def, t: 0, lane: e.lane - def.lane, startS: at };
       e.s = at;
-      e.events.push({ type: "gate", text: "LOOP LOCK · keep your momentum" });
+      e.events.push({ type: "loop", text: "LOOP LOCK · keep your momentum" });
       return true;
     }
   }
@@ -828,12 +850,24 @@ function stepAir(e: RaceState, prevS: number, dt: number, prevLane: number): voi
 
 /* ------------------------------------------------------------------ rivals */
 
+/** True when `x` rides just ahead of rival `r` in its lane (the same test, in the same order, as the original). */
+const blocks = (x: Rival | RaceState, r: Rival): boolean => x.route === r.route && x.s > r.s && x.s - r.s < 18 && Math.abs(x.lane - r.lane) < 2.1;
+
+/** Collectibles per course and route, filtered once instead of per rival per step (SO-E1). */
+const routeCollectibles = new Map<string, readonly Collectible[]>();
+function collectiblesOn(courseId: string, route: Route): readonly Collectible[] {
+  const key = `${courseId}:${route}`;
+  let list = routeCollectibles.get(key);
+  if (!list) routeCollectibles.set(key, list = collectibles(courseId).filter((c) => c.route === route));
+  return list;
+}
+
 function stepRivals(e: RaceState, dt: number, allowContact: boolean): void {
   for (const r of e.rivals) {
     if (r.finished) continue;
     const here = wrapS(r.s);
     const half = routeOffset(r.s, r.route).half;
-    const onRoute = collectibles(e.courseId).filter((c) => c.route === r.route);
+    const onRoute = collectiblesOn(e.courseId, r.route);
     const meteor = onRoute.find((c) => c.kind === "meteor" && c.s - here > 0 && c.s - here < 28);
     const dust = onRoute.find((c) => c.kind === "dust" && c.s - here > 0 && c.s - here < 24);
     const nearRamp = BIKE_RAMPS.some((ramp) => here > ramp.s - 25 && here < ramp.s + ramp.length + 8);
@@ -843,7 +877,9 @@ function stepRivals(e: RaceState, dt: number, allowContact: boolean): void {
     if (forced === null && meteor && Math.abs(targetLane - meteorLane(meteor, e.time)) < 2.8 && !mistake) {
       targetLane = clamp(meteorLane(meteor, e.time) + (r.seed % 2 ? 3.1 : -3.1), -half + 0.7, half - 0.7);
     }
-    const blocker = [...e.rivals.filter((x) => x !== r), e].find((x) => x.route === r.route && x.s > r.s && x.s - r.s < 18 && Math.abs(x.lane - r.lane) < 2.1);
+    let blocker: Rival | RaceState | undefined;
+    for (const x of e.rivals) if (x !== r && blocks(x, r)) { blocker = x; break; }
+    if (!blocker && blocks(e, r)) blocker = e;
     const slipstream = !!blocker;
     if (forced === null && blocker && blocker.s - r.s < 4) {
       targetLane = clamp(blocker.lane + (r.seed % 2 ? 2.4 : -2.4), -half + 0.6, half - 0.6);
@@ -852,12 +888,15 @@ function stepRivals(e: RaceState, dt: number, allowContact: boolean): void {
     r.hitCooldown = Math.max(0, (r.hitCooldown || 0) - dt);
     r.boosting = !r.air && !mistake && r.speed > 5 && r.energy > (r.boosting ? 1 : 25) && !nearRamp && r.route !== "islands";
     const crawl = r.route === "islands" || (here > OPAL.start - 35 && here < OPAL.start && r.seed % 3 !== 0);
+    const cup = e.balance === "cup";
+    if (cup) r.surge = Math.max(0, (r.surge ?? 0) - dt);
     let cruise = crawl
       ? 28.5
-      : (34 + (e.vehicle === "bike" ? 1.4 : -0.5) + (r.seed % 3 - 1)) * e.rules.ai
+      : (34 + (e.vehicle === "bike" ? 1.4 : -0.5) + (r.seed % 3 - 1)) * (cup ? CUP_RIVAL_PACE[e.difficulty] : e.rules.ai)
         + (r.route === "upper" ? 9 : r.route === "lower" ? 6 : 0)
         + (slipstream ? (e.vehicle === "bike" ? 6.5 : 4) : 0)
-        + (r.boosting ? 20 : 0);
+        + (r.boosting ? 20 : 0)
+        + (cup && (r.surge ?? 0) > 0 ? 12 : 0);
     r.cornerClock = (r.cornerClock || 0) - dt;
     if (r.cornerClock <= 0) {
       r.cornerClock = 0.25;
@@ -869,7 +908,7 @@ function stepRivals(e: RaceState, dt: number, allowContact: boolean): void {
       }
       r.cornerSpeed = Math.max(14, 0.8 / Math.max(0.001, curve));
     }
-    cruise = Math.min(cruise, r.cornerSpeed as number);
+    cruise = Math.min(cruise, r.cornerSpeed as number) + (cup && e.mode === "cup" && !crawl ? rivalCatchUp(e.s - r.s) : 0);
     if (r.speed > (r.cornerSpeed as number) + 1) r.speed = Math.max(0, r.speed - 18 * dt);
     r.speed += (cruise - r.speed) * Math.min(1, dt * 0.55) - (crawl && r.speed > 29 ? 23 * dt : 0);
     r.energy = clamp(r.energy + (r.boosting ? -20 : slipstream ? 9 : 1.1) * dt, 0, 100);
@@ -932,6 +971,12 @@ function stepRivals(e: RaceState, dt: number, allowContact: boolean): void {
       const at = Math.floor(prevS / 1450) * 1450 + gate.s;
       if (prevS < at && r.s >= at) r.energy = clamp(r.energy + 10, 0, 100);
     }
+    if (cup && r.route === "main" && !r.air) {
+      for (const crystal of RESONANCE_GATES) {
+        const at = Math.floor(prevS / COURSE_LENGTH) * COURSE_LENGTH + crystal.s;
+        if (prevS < at && r.s >= at && Math.abs(r.lane - crystal.lane) < 2.7) r.surge = 2.6;
+      }
+    }
     if (allowContact && !r.air && r.route === e.route && Math.abs(r.s - e.s) < 1.35 && Math.abs(r.lane - e.lane) < 0.72 && e.hitCooldown <= 0) {
       e.hits++;
       e.speed *= 0.8;
@@ -941,6 +986,24 @@ function stepRivals(e: RaceState, dt: number, allowContact: boolean): void {
       e.events.push({ type: "hit", text: "Contact · recover your line" });
     }
   }
+}
+
+/** Extra rival cruise speed (m/s) when the player leads the rival by `lead` metres (cup balance only). */
+export function rivalCatchUp(lead: number): number {
+  return lead > RIVAL_CATCH_UP.start ? Math.min(RIVAL_CATCH_UP.max, (lead - RIVAL_CATCH_UP.start) * RIVAL_CATCH_UP.rate) : 0;
+}
+
+/** Medal for a cup finishing place: 1st gold, 2nd silver, 3rd bronze, otherwise none. */
+export function medalForPlace(place: number): RaceEnd["medal"] {
+  return place === 1 ? "gold" : place === 2 ? "silver" : place === 3 ? "bronze" : null;
+}
+
+/** Free mode: drop collected-item keys of laps before `lap - 1` and keep the last `FREE_MODE_HISTORY` lap times. */
+export function pruneFreeModeHistory(e: RaceState, lap: number): void {
+  for (const key of e.collected) {
+    if (Number(key.slice(0, key.indexOf(":"))) < lap - 1) e.collected.delete(key);
+  }
+  if (e.lapTimes.length > FREE_MODE_HISTORY) e.lapTimes.splice(0, e.lapTimes.length - FREE_MODE_HISTORY);
 }
 
 /* ------------------------------------------------------------------ lap / finish */
@@ -956,6 +1019,7 @@ function checkLapsAndFinish(e: RaceState, prevS: number): void {
     e.lapStart = e.time;
     e.lap = lap + 1;
     e.events.push({ type: "lap", text: lap === e.laps - 1 ? "Final orbit. Make it beautiful." : "One orbit closer." });
+    if (e.mode === "free") pruneFreeModeHistory(e, lap);
   }
   e.place = e.mode === "trial" ? 1 : placeOf(e);
   if (e.mode !== "free" && e.s >= e.laps * COURSE_LENGTH) {
@@ -967,7 +1031,7 @@ function checkLapsAndFinish(e: RaceState, prevS: number): void {
     const distance = e.laps * COURSE_LENGTH;
     const medal: RaceEnd["medal"] = e.mode === "trial"
       ? e.time < distance / 37 ? "gold" : e.time < distance / 31 ? "silver" : "bronze"
-      : e.place === 1 ? "gold" : e.place <= 3 ? "silver" : "bronze";
+      : medalForPlace(e.place);
     const goals = [e.dust >= 25, e.draftTime >= 8, e.boostTime >= 10];
     e.score = Math.round(e.score + goals.filter(Boolean).length * 750 + (7 - e.place) * 400);
     e.end = { medal, goals, place: e.place, time: e.time, score: e.score };

@@ -106,14 +106,16 @@ How to check: run `tests/browser/strange-orbit-port.spec.ts`, `tests/browser/str
 
 ## Checklist
 
-- [ ] Run `pnpm typecheck` (root `tsc -p tsconfig.check.json --noEmit`) and the unit tests `tests/unit/strange-orbit-port` (e.g. `pnpm exec vitest run tests/unit/strange-orbit-port`). I did not run them.
-- [ ] Run `node tools/game-checks/run.mjs strange-orbit-port`.
-- [ ] Decide the pipeline: add `quality: "production"` to `createAuraApp` at `main.ts:475` to keep the 4.3.7 pipeline, or leave `quality` unset to accept `auto`. Remove `renderer: { mode, qualityProfile, fallback }` either way (safe because `pixelRatio: 1` is explicit).
-- [ ] Add `environments.studio({ intensity: 0.6 })` to the scene builder at `world.ts:181-183` (or `exposure` in `output`), and step the intensity by 0.2 until the bike/skate riders, gate pylons and boulders match the 4.3.7 screenshots.
-- [ ] Log `app.diagnostics().renderPath` and confirm `path: "hdr-msaa"`, and `quality`/`bloomFusion` of `auto`/`separable` (or `production`/`off`).
-- [ ] Confirm `app.diagnostics()` shows no `OPTION_IGNORED` entries and no unexpected degradations.
-- [ ] Capture the menu and a racing frame with `?manual=1&autostart=1&mode=trial` in `quality=high` and `quality=low` (the game's own URL parameter), and compare against 4.3.7 (bloom should match within 1/255 per the notes).
-- [ ] Run `tests/browser/strange-orbit-port.spec.ts`, `tests/browser/strange-orbit-rework.spec.ts`, `tests/browser/port-sun-shadows-strange-orbit.spec.ts` and `tests/browser/live-ports-smoke.spec.ts` on the remote runner (`tools/remote-acr/run.sh`); never local Playwright. If the pixel-statistics assertions in `strange-orbit-port.spec.ts` fail after the exposure change, tune the environment first, and change thresholds only if the new look is intended.
-- [ ] Re-run the replay test (`tests/unit/strange-orbit-port/reference-replay.test.ts`) to confirm the 283.683 s, 7-lap, 35-checkpoint result is unchanged (simulation code is not touched by 4.5.0, so a failure here would be unexpected).
-- [ ] If any external capture script reads the WebGL canvas after an `await`, add `?capture=1` or switch it to `__AURA_STRANGE_ORBIT__.frame()/pixels()`.
-- [ ] If screenshots change, regenerate `apps/showcase-strange-orbit-port/route-health.json` through the route-health tooling (`scripts/check-route-health.mjs`, `tools/current-routes-route-health/index.ts`). I did not confirm which of these writes the file.
+Closed by audit lane G15 on 2026-10-29 (`docs/audits/lanes/g15.md`). Remote runs are on `tools/remote-acr/run.sh` (SwiftShader software GL); numbers and frames are in `evidence/strange-orbit-port/audit-fix-2026-10-29/`.
+
+- [x] `tsc -p tsconfig.check.json --noEmit`: 58 errors, the repo baseline, none in strange-orbit-port. `pnpm exec vitest run tests/unit/strange-orbit-port`: 14 files, 153 tests pass.
+- [x] `node tools/game-checks/run.mjs strange-orbit-port`: 0 errors, 0 warnings.
+- [x] Pipeline: `quality` is left unset, so the game runs on `auto` (the lighting below was calibrated there). The three `renderer` keys are removed (`pixelRatio: 1` stays explicit).
+- [x] Environment: the guide's `environments.studio({ intensity: 0.6 })` was not used. The world authors `environments.neutral({ intensity: 0.9, background: false })` next to the hemisphere, key and fill (`world.ts`), calibrated against 4.3.7 captures: menu bike, race rider and gate pylon regions within 1% of 4.3.7 with lane E2's hemisphere change, within 3.2% without it.
+- [x] `renderPath`: the lane's lighting spec logs `app.diagnostics().renderPath` per shot (`meta.jsonl`, `info.renderPath`); the path is `hdr-msaa`.
+- [x] `OPTION_IGNORED`: the game has no `primitives.*` option outside the allowed keys and no `instances.*` or `interactions.*` call; the remote runs logged no page errors.
+- [x] Menu and racing frames on 4.3.7 and 4.5.0 at steady state, plus `?aura3d-render=production` against the default `auto` chain (`tests/browser/audit-fix/strange-orbit-port.spec.ts`, target `so-production`). `quality=low` was not captured separately: it changes the star count and track tessellation, not the lighting.
+- [x] Browser specs: the lane's own specs (`tests/browser/audit-fix/strange-orbit-port.spec.ts`, `tests/browser/audit-fix/strange-orbit-port-play.spec.ts`) and the inventory screens spec (`tests/browser/shotsb-orbit.spec.ts`) ran remotely. `strange-orbit-port.spec.ts`, `strange-orbit-rework.spec.ts`, `port-sun-shadows-strange-orbit.spec.ts` and `live-ports-smoke.spec.ts` were not rerun by this lane; they go to the integration gate's remote sweep.
+- [x] Replay test: `tests/unit/strange-orbit-port/reference-replay.test.ts` still reproduces the 283.683 s, 7-lap, 35-checkpoint race. Since the audit fix it runs with `balance: "original"`, because the shipped cup now uses faster rivals.
+- [x] Canvas read-back: no capture script for this game reads the WebGL canvas after an `await`; the lane specs use `page.screenshot`.
+- [x] `route-health.json`: the claim text now says the replay uses the original rivals. `scripts/check-route-health.mjs` fails on this file at base too (`qualityGate.status` is missing); that gate belongs to the route-health tooling, not this guide.
