@@ -66,6 +66,14 @@ const PARENT_HOLD_MS = 2_600;
  * it, so a step gets two minutes.
  */
 const UI_TIMEOUT_MS = 120_000;
+/**
+ * The real-time story clock moves only as fast as frames are drawn (the fixed-step loop caps the time one frame can
+ * catch up), and software WebGL2 draws this scene slowly: at 1024x768 the story moved two seconds in a minute (remote
+ * run wonder-audio-and-pausing-20261029T161422Z). A smaller canvas draws faster, and a wait for the story to reach
+ * its next line gets three minutes.
+ */
+const VIEWPORT = { width: 640, height: 480 } as const;
+const NEXT_LINE_TIMEOUT_MS = 180_000;
 
 async function waitForPhase(page: Page, log: PageLog, label: string, accept: (state: WonderQaState) => boolean, timeoutMs = SETTLE_MS): Promise<WonderQaState> {
   return waitFor(page, log, label, timeoutMs, async () => {
@@ -115,7 +123,7 @@ async function replayWord(page: Page, log: PageLog): Promise<Record<string, unkn
     log,
     "a new line starts before Replay word is pressed",
     (state) => (state.spoken.length > before.spoken.length && state.speaking !== null) || state.screen === "offline",
-    60_000
+    NEXT_LINE_TIMEOUT_MS
   );
   expect(fresh.screen, "the story is still playing when Replay word is pressed").toBe("story");
   const from = fresh.spoken.length;
@@ -169,7 +177,7 @@ async function muteThroughParentPanel(page: Page, log: PageLog): Promise<Record<
     log,
     "the story carries on to a new line while muted",
     (state) => (state.speaking !== null && state.speaking !== lineAtMute) || state.screen === "offline",
-    60_000
+    NEXT_LINE_TIMEOUT_MS
   );
   // Long enough for a clip that must not play to have been fetched, decoded and started.
   await sleep(1_500);
@@ -326,7 +334,7 @@ test.describe("Wonder World J11 audio and pausing", () => {
 
   test("start gesture unlocks audio; pause, hide, skip and All done stop speech; one voice at a time", async ({ page }) => {
     await page.addInitScript(voiceProbeInitScript);
-    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.setViewportSize(VIEWPORT);
     const log = attachPageLog(page, server.origin);
     const steps: Record<string, unknown> = {};
     let passed = false;
