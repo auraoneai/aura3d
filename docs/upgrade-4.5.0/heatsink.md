@@ -79,13 +79,28 @@ Nothing needs editing. These four changes touch this game's pixels or cost, so t
 
 ## Checklist
 
-- [ ] Confirm `apps/showcase-heatsink/package.json` still says `"version": "4.5.0"` and `@aura3d/engine` is `workspace:*`.
-- [ ] Run `node tools/game-checks/run.mjs heatsink` and confirm 0 errors.
-- [ ] Run the package typecheck (`pnpm --filter @aura3d/showcase-heatsink build`, which is `tsc --noEmit`) on the remote runner (`tools/remote-acr/run.sh`), not locally.
-- [ ] On the remote runner, load `/apps/showcase-heatsink/?capture=1&autoplay=1` and take a screenshot at the same camera state as 4.3.7. Compare the road, drones and bloom glow; expect differences of at most 1/255 from bloom fusion.
-- [ ] Temporarily expose `auraApp` and confirm `app.diagnostics().renderPath` is `hdr-msaa`, `auto`, `separable`. If `path` is `direct`, read `reason` to tell the legacy LDR route apart. Remove the debug line afterwards.
-- [ ] Confirm `app.diagnostics().warnings` and `errors` contain no `OPTION_IGNORED` entry and no new warning.
-- [ ] Optional tuning review (not an upgrade regression): decide whether the look's bloom and colour grade (which win under `find`) are what you want, or whether the authored bloom and colour-grade values at `src/main.ts:618,620` should take effect.
-- [ ] Repeat the screenshot on a device or browser without float linear filtering and check that the AO now visible does not darken the road too much. If it does, decide whether to accept it or stop using `looks.preset` for this scene (no look option disables its AO).
-- [ ] Optional: compare `?aura3d-render=production` against the default to isolate any visual difference to the render path.
-- [ ] Confirm `route-health.json` budgets still hold (30 FPS minimum, 8000 ms boot, at most 32 model nodes; the scene has 30).
+Closed on 2026-10-29 by audit lane G03 against the rebuilt game (branch `audit-fix/g03`). Remote runs use the ACR runner
+with software WebGL2 (SwiftShader); they show layout, behaviour and relative luma, not real-GPU look or frame rate.
+
+- [x] `apps/showcase-heatsink/package.json` says `"version": "4.5.0"` and `@aura3d/engine` is `workspace:*`.
+- [x] `node tools/game-checks/run.mjs heatsink`: 0 errors, 0 warnings.
+- [x] Package typecheck: `pnpm exec tsc -p apps/showcase-heatsink/tsconfig.json --noEmit`, 0 errors. Run locally: it is a
+  `tsc --noEmit` of one app, which the lane rules allow; no browser is involved.
+- [x] Remote screenshot with `?autoplay=1` at 1280x720 and 390x844: runs `g03w3-before` (base 4.5.0 game) and `g03w3-after`
+  (rebuilt game), frames in `evidence/thermal-drift/audit-fix/{before,after}-g03w3/`. The 4.3.7 build was captured in wave 1
+  (`evidence/thermal-drift/audit-fix/v437/`). The rebuilt game uses the `night-city` look, so it is meant to be darker than
+  the 4.5.0 `outdoor-day` frames (1280 mean canvas luma about 84 before, 34 to 55 after).
+- [x] `diagnostics().renderPath` read from the live-apps registry in every remote shot: `hdr-msaa` with
+  `bloomFusion: "separable"` on both the base and the rebuilt game. No debug line was added to the game.
+- [x] `diagnostics().warnings`: the only warning is "Scene has no interactions" (a hint for viewer scenes); no
+  `OPTION_IGNORED` and no new warning, on both builds.
+- [x] Bloom and colour grade tuning: resolved by audit row heatsink-C12. The scene now has one look (`night-city`) and no
+  authored bloom or colour grade, so nothing is shadowed by `find` (`tests/unit/heatsink/scene.test.ts`).
+- [ ] Repeat on a device without float linear filtering: not done. It needs real hardware without
+  `OES_texture_float_linear`; the remote runner is SwiftShader. The `?qaAo=off` switch (scene.ts) gives an AO on/off
+  pair at the same sim state instead (run `g03w3-after2`, `@lane pairs`).
+- [x] `?aura3d-render=production` against the default at the same sim state: run `g03w3-after2`, `@lane pairs`
+  (`pair-default` and `pair-production-render` frames in `evidence/thermal-drift/audit-fix/after2-g03w3/`).
+- [x] `route-health.json` budgets: 30 model nodes against the cap of 32 (`tests/unit/heatsink/scene.test.ts`). The 30 FPS and
+  8000 ms boot budgets cannot be judged on SwiftShader (0.22 fps; ready in 13 to 39 s on both builds); they need a
+  real-GPU run.

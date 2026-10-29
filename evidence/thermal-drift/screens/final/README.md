@@ -1,47 +1,43 @@
-# Thermal Drift: final screenshots after the UI and content fixes
+# Thermal Drift: final screenshots
 
-Route: `apps/showcase-heatsink`. Built from `origin/game-rework` at `0d965903c` (includes the shared quick bar, the content fixes and the new Teleoperator vehicles).
+Retaken on 2026-10-29 for audit row RH-05 (lane G03) from the rebuilt game on branch `audit-fix/g03`, which runs on the
+4.5.0 engine. Same file names and sizes as the 2026-10-25 set they replace.
 
-**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**. This is not real-GPU evidence: it shows layout and content, not GPU look or frame rate. Tool: `tests/browser/shotsd-heatsink.spec.ts` with `tests/browser/shotsd-lib.ts`, decoded with `tools/shots/decode-shotsd.mjs`. Frames come from clicking the game's own buttons and holding keys, not from the QA hooks.
+**Runner:** remote Azure ACR Task, headless Chromium, **software WebGL2 (SwiftShader)**, about 0.22 frames per second. This
+is not real-GPU evidence: it shows layout, content and relative brightness, not GPU look or frame rate.
 
-Staging: the dist was built with `tools/shots/vite.shotsd.config.ts`; every asset the route references was copied from this repo into the dist (so new and changed files are the repository's, not production's). Files the repository does not carry (shared decoders, HDRI, previews) fall back to production.
+**Tool:** `tests/browser/audit-fix/heatsink.spec.ts` (`@base` tests), decoded with
+`evidence/thermal-drift/audit-fix/decode.mjs`. Desktop and card from run `g03w3-final-desk`, phone from run
+`g03w3-final-phone`. The race is driven by the in-game demo pilot (`?autoplay=1`) and the fixed-step sim is advanced
+through the page's QA hook between shots, so later shots are deeper into the race. The phone run starts with a tap on
+the start prompt and uses `reducedMotion: "reduce"`, `hasTouch` and `isMobile`.
 
 ## Frames
 
-| Viewport | State | Meaning | Status |
-|---|---|---|---|
-| 1280 | 01-title | first loaded frame | captured |
-| 1280 | 02-early | early gameplay | captured |
-| 1280 | 03-action | after key input | captured |
-| 1280 | 04-mid | mid-play (autoplay or driving) | captured |
-| 1280 | 05-modes | modes / menu panel | captured |
-| 1280 | 06-results | results | not reached |
-| 390 | 01-title | first loaded frame | captured |
-| 390 | 02-early | early gameplay | captured |
-| 390 | 03-action | after key input | captured |
-| 390 | 04-mid | mid-play (autoplay or driving) | captured |
-| 390 | 05-modes | modes / menu panel | captured |
-| 390 | 06-results | results | not reached |
+| Viewport | State | What it shows |
+|---|---|---|
+| 1280 | 01-title | countdown at the start line, P6/12, no invented stats |
+| 1280 | 02-early | early in lap 1 |
+| 1280 | 03-action | manual input: fire, boost and steer held |
+| 1280 | 04-mid | lap 2, steady state |
+| 1280 | 05-modes | after choosing the VOLT drone and ELIMINATION |
+| 390 | 01-title | tap-to-start prompt over the countdown |
+| 390 | 02-early | touch controls (steer pad, FIRE, BOOST, ROLL, ITEM, AUTO, SOUND) |
+| 390 | 03-action | after holding FIRE and steering right on the pad |
+| 390 | 04-mid | lap 2, steady state |
+| 390 | 05-modes | TIME TRIAL: no rivals, field of one |
 
-Card images: `card-2x.jpg` (1440x900, captured natively) and `card-1x.jpg` (720x450, downscaled from the 2x capture). Card aspect from `apps/showcase-index/index.html`.
+The results screen is reached in both runs (`06-results` frames in `evidence/thermal-drift/audit-fix/final-g03w3/`); it
+is not part of this inventory set.
+
+Card images: `card-2x.jpg` (720x450 viewport at device scale 2, so 1440x900) and `card-1x.jpg` (720x450, downscaled
+from the 2x capture).
 
 ## Capture health
 
-- 1280: console errors 0, bad responses 0, ready 83s, proxied from production 1
-- 390: console errors 0, bad responses 0, ready 41s, proxied from production 1
-- card: console errors 0, bad responses 0, ready 99s, proxied from production 1
-
-## Checked in the frames
-
-- The top selector bar is a single row at 1280 and 390; HUD blocks sit below it and the radar no longer overlaps the bar.
-- No stale version text and no engine chip in the frames I read.
-
-## Problems still visible (not fixed in this lane)
-
-- [low] 1280: the bottom control-hint panel overlaps the speedometer by about 20 px.
-- [low] 390 portrait: the 'LOCK . OLD MOTT' label is clipped at the left edge.
-- [low] Results were not reached (race and results were out of reach in the capture window).
-
-## Review coverage
-
-Frames opened and checked by eye: 1280 title, mid and modes; 390 mid (4 of 11). The remaining frames were captured but not individually inspected; the problems above come from the frames listed here.
+- 1280: ready in 22.4 s, no page errors; the only failed request is `/fonts/aura-fonts.css` (404 on the dev server, the
+  licensed font CSS is served by the deployed site).
+- 390: ready in 16.4 s, same single 404.
+- card: ready in 24.1 s, same single 404.
+- Mean canvas luma (HUD hidden) at 1280: 31.5 to 46.8 across the racing shots. The game now uses the `night-city` look,
+  so it is meant to be darker than the old `outdoor-day` frames (about 84).

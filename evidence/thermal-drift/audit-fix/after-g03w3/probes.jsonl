@@ -1,0 +1,8 @@
+{"target":"1280","probe":"boot","readyMs":25634,"sharedCatalogRequests":[]}
+{"target":"1280","probe":"space-reclick","elimClicksAfterOneClickAndThreeSpaces":1,"focusedAfterClick":"BODY"}
+{"target":"1280","probe":"blur","input":null}
+{"target":"1280","probe":"restart","state":{"route":"showcase-heatsink","engine":"@aura3d/engine","ready":true,"phase":"countdown","autopilot":true,"drone":"volt","circuit":"grand","mode":"race","lap":1,"lapsDone":0,"position":6,"field":12,"speedKmh":0,"hull":100,"shield":78,"heat":24,"takedowns":0,"result":null,"modelNodeCount":30,"admittedAssetKeyCount":26,"started":true,"countdown":2.6000000000000014,"time":0,"progress":-39,"x":2.6,"item":null,"drawn":[4,3,2,1,0],"locked":4,"incoming":false,"reducedMotion":false,"input":null}}
+{"target":"390","probe":"boot","readyMs":13014,"sharedCatalogRequests":[]}
+{"target":"390","probe":"touch","available":true,"held":{"steer":1,"pitch":0,"boost":false,"fire":true},"released":{"steer":0,"pitch":0,"boost":false,"fire":false}}
+{"target":"390","probe":"reduced-motion","matches":true,"state":true}
+{"target":"card","probe":"boot","readyMs":38750,"sharedCatalogRequests":[]}

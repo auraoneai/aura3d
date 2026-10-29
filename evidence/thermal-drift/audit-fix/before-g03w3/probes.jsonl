@@ -1,0 +1,7 @@
+{"target":"1280","probe":"boot","readyMs":35391,"sharedCatalogRequests":[]}
+{"target":"1280","probe":"space-reclick","elimClicksAfterOneClickAndThreeSpaces":4,"focusedAfterClick":"elim"}
+{"target":"1280","probe":"blur","input":null}
+{"target":"390","probe":"boot","readyMs":19019,"sharedCatalogRequests":[]}
+{"target":"390","probe":"touch","available":false}
+{"target":"390","probe":"reduced-motion","matches":true,"state":null}
+{"target":"card","probe":"boot","readyMs":38132,"sharedCatalogRequests":[]}
