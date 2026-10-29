@@ -64,8 +64,10 @@ const reducedMotion = (): boolean => media("(prefers-reduced-motion: reduce)");
 /** The brake ramps to 70% (3.5 m/s^2) over 0.4 s, below the 3.8 m/s^2 harsh-braking limit, so Space slows the tram without the comfort penalty (D-10). */
 const BRAKE_MAX = 0.7, BRAKE_RAMP = 0.4;
 let brakeSteps = 0;
-/** Second press of R within this time abandons the running service. */
-let abandonUntil = 0;
+/** After one R during a service, a second R within this many rendered frames (3 s at 60 fps) abandons it. Counted in frames, not
+ * wall time, so a slow device that takes seconds per frame still sees the second press as the confirmation; any other key disarms it. */
+const ABANDON_FRAMES = 180;
+let abandonFrames = 0;
 const TEMPERAMENT_LABEL: Record<Temperament, string> = { easy: "easy", sightseer: "sightseer", rushed: "rushed", sleeper: "sleeper" };
 const TEMPERAMENT_GLYPH: Record<Temperament, string> = { easy: "\u25cf", sightseer: "\u25b2", rushed: "\u25c6", sleeper: "\u25a0" };
 let ridersKey = "";
@@ -258,8 +260,8 @@ function updateResults(): void {
 /** R: a new service. While one is running, the first press asks and a second press within 3 s abandons it (D-05). */
 function requestNewService(goal?: number): void {
   if (sim.attempt.status === "active") {
-    if (performance.now() < abandonUntil) { abandonUntil = 0; actionNewService(sim, { force: true, ...(goal ? { goal } : {}) }); presenter.reset(); toast("New service from Mango Tide", 1800); }
-    else { abandonUntil = performance.now() + 3000; toast("Press R again to abandon this service", 3000); }
+    if (abandonFrames > 0) { abandonFrames = 0; actionNewService(sim, { force: true, ...(goal ? { goal } : {}) }); presenter.reset(); toast("New service from Mango Tide", 1800); }
+    else { abandonFrames = ABANDON_FRAMES; toast("Press R again to abandon this service", 3000); }
     return;
   }
   actionNewService(sim, goal ? { goal } : {}); presenter.reset(); $("results").classList.add("hidden");
@@ -302,6 +304,7 @@ const loop = createFixedStepLoop({
   render: (dt) => {
     if (titleMode || !flag("manual")) seconds += dt;
     render(!titleMode && !flag("manual"));
+    if (abandonFrames > 0) abandonFrames--;
     updateHud();
     updateAudio(dt);
   }
@@ -310,6 +313,7 @@ const loop = createFixedStepLoop({
 /** One press of a game key, from the keyboard or a touch button. */
 function press(code: string, repeat = false): void {
   void sound.unlock();
+  if (code !== "KeyR") abandonFrames = 0;
   if (code === "Enter") keepRiding();
   if (code === "KeyM") { sound.setMuted(!sound.muted); writeStore(MUTE_KEY, sound.muted ? "1" : "0"); toast(sound.muted ? "Sound off" : "Sound on", 1200); }
   if (code === "KeyU") { const large = document.documentElement.classList.toggle("hud-large"); writeStore(HUD_KEY, large ? "large" : "normal"); toast(large ? "Large HUD" : "Normal HUD", 1200); }
