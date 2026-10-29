@@ -1,0 +1,207 @@
+{
+  "code": "g10",
+  "id": "bears-little-band",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 35862,
+  "runMs": 42209,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "bears-little-band",
+    "director": {
+      "storyId": "bears-little-band",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "g10.hello.1",
+    "speaker": "lulu",
+    "spoken": [
+      "g10.hello.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 72,
+      "nodes": 18,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 17,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 400
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "drum",
+      "bear"
+    ],
+    "waitSamples": 4,
+    "maxRound": 1,
+    "beatIds": [
+      "hello",
+      "drum",
+      "your-turn",
+      "bear-turn",
+      "my-turn",
+      "again",
+      "home",
+      "all-done"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 9,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "bears-little-band",
+    "director": {
+      "storyId": "bears-little-band",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 7,
+      "beatId": "all-done",
+      "round": 1,
+      "lineIndex": 2,
+      "elapsedMs": 40354,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "g10.hello.1",
+      "g10.hello.2",
+      "g10.drum.1",
+      "g10.drum.2",
+      "g10.your-turn.1",
+      "g10.your-turn.2",
+      "g10.your-turn.3",
+      "g10.bear-turn.1",
+      "g10.bear-turn.2",
+      "g10.my-turn.1",
+      "g10.my-turn.2",
+      "g10.again.1",
+      "g10.home.1",
+      "g10.all-done.1",
+      "g10.all-done.2"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 68,
+      "nodes": 18,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "bears-little-band",
+    "directorStoryId": "bears-little-band",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "g10.hello.1",
+    "g10.hello.2",
+    "g10.drum.1",
+    "g10.drum.2",
+    "g10.your-turn.1",
+    "g10.your-turn.2",
+    "g10.your-turn.3",
+    "g10.bear-turn.1",
+    "g10.bear-turn.2",
+    "g10.my-turn.1",
+    "g10.my-turn.2",
+    "g10.again.1",
+    "g10.home.1",
+    "g10.all-done.1",
+    "g10.all-done.2"
+  ],
+  "spokenOrder": {
+    "spoken": 15,
+    "authored": 15,
+    "rounds": 1,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 16,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-activities-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

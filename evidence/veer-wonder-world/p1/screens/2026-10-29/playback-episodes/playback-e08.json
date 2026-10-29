@@ -1,0 +1,252 @@
+{
+  "code": "e08",
+  "id": "wheres-sheru",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 31714,
+  "runMs": 82830,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "wheres-sheru",
+    "director": {
+      "storyId": "wheres-sheru",
+      "phase": "holding",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 40,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 2200
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "table",
+      "sheru"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "hello",
+      "greet",
+      "where",
+      "woof",
+      "clue",
+      "box",
+      "bench",
+      "woof-2",
+      "invite",
+      "found",
+      "sheru-woof",
+      "hi-sheru",
+      "eyes",
+      "sneak",
+      "invite-2",
+      "come",
+      "in-box",
+      "behind-box",
+      "peekaboo",
+      "song",
+      "outro"
+    ],
+    "phases": [
+      "holding",
+      "speaking",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 16,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "wheres-sheru",
+    "director": {
+      "storyId": "wheres-sheru",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 21,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 124693,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e08.greet.1",
+      "e08.greet.2",
+      "e08.where.1",
+      "e08.where.2",
+      "e08.clue.1",
+      "e08.clue.2",
+      "e08.box.1",
+      "e08.box.2",
+      "e08.bench.1",
+      "e08.bench.2",
+      "e08.invite.1",
+      "e08.invite.2",
+      "e08.found.1",
+      "e08.found.2",
+      "e08.hi-sheru.1",
+      "e08.hi-sheru.2",
+      "e08.eyes.1",
+      "e08.eyes.2",
+      "e08.sneak.1",
+      "e08.sneak.2",
+      "e08.invite-2.1",
+      "e08.invite-2.2",
+      "e08.come.1",
+      "e08.come.2",
+      "e08.in-box.1",
+      "e08.in-box.2",
+      "e08.behind-box.1",
+      "e08.behind-box.2",
+      "e08.peekaboo.1",
+      "e08.outro.1",
+      "e08.outro.2",
+      "e08.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 49,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "wheres-sheru",
+    "directorStoryId": "wheres-sheru",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e08.greet.1",
+    "e08.greet.2",
+    "e08.where.1",
+    "e08.where.2",
+    "e08.clue.1",
+    "e08.clue.2",
+    "e08.box.1",
+    "e08.box.2",
+    "e08.bench.1",
+    "e08.bench.2",
+    "e08.invite.1",
+    "e08.invite.2",
+    "e08.found.1",
+    "e08.found.2",
+    "e08.hi-sheru.1",
+    "e08.hi-sheru.2",
+    "e08.eyes.1",
+    "e08.eyes.2",
+    "e08.sneak.1",
+    "e08.sneak.2",
+    "e08.invite-2.1",
+    "e08.invite-2.2",
+    "e08.come.1",
+    "e08.come.2",
+    "e08.in-box.1",
+    "e08.in-box.2",
+    "e08.behind-box.1",
+    "e08.behind-box.2",
+    "e08.peekaboo.1",
+    "e08.outro.1",
+    "e08.outro.2",
+    "e08.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 32,
+    "authored": 32,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 18,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

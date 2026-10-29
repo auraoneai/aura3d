@@ -1,0 +1,246 @@
+{
+  "code": "e09",
+  "id": "baby-animal-orchestra",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 35216,
+  "runMs": 90720,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "baby-animal-orchestra",
+    "director": {
+      "storyId": "baby-animal-orchestra",
+      "phase": "holding",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 66,
+      "nodes": 23,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1950
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "cow",
+      "duck"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "hello",
+      "greet",
+      "peeko",
+      "cow",
+      "moo",
+      "cow-says",
+      "sheep",
+      "baa",
+      "sheep-says",
+      "duck",
+      "quack",
+      "duck-says",
+      "ready",
+      "rhythm",
+      "rhythm-2",
+      "invite-cow",
+      "cow-again",
+      "invite-duck",
+      "duck-again",
+      "sheru",
+      "woof",
+      "sheru-says",
+      "song-intro",
+      "song",
+      "outro"
+    ],
+    "phases": [
+      "holding",
+      "speaking",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 18,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "baby-animal-orchestra",
+    "director": {
+      "storyId": "baby-animal-orchestra",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 24,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 124448,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e09.greet.1",
+      "e09.greet.2",
+      "e09.peeko.1",
+      "e09.peeko.2",
+      "e09.peeko.3",
+      "e09.cow.1",
+      "e09.cow-says.1",
+      "e09.sheep.1",
+      "e09.sheep-says.1",
+      "e09.duck.1",
+      "e09.duck-says.1",
+      "e09.ready.1",
+      "e09.ready.2",
+      "e09.rhythm.1",
+      "e09.rhythm-2.1",
+      "e09.invite-cow.1",
+      "e09.cow-again.1",
+      "e09.invite-duck.1",
+      "e09.duck-again.1",
+      "e09.sheru.1",
+      "e09.sheru.2",
+      "e09.sheru-says.1",
+      "e09.sheru-says.2",
+      "e09.song-intro.1",
+      "e09.outro.1",
+      "e09.outro.2",
+      "e09.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 88,
+      "nodes": 23,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "baby-animal-orchestra",
+    "directorStoryId": "baby-animal-orchestra",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e09.greet.1",
+    "e09.greet.2",
+    "e09.peeko.1",
+    "e09.peeko.2",
+    "e09.peeko.3",
+    "e09.cow.1",
+    "e09.cow-says.1",
+    "e09.sheep.1",
+    "e09.sheep-says.1",
+    "e09.duck.1",
+    "e09.duck-says.1",
+    "e09.ready.1",
+    "e09.ready.2",
+    "e09.rhythm.1",
+    "e09.rhythm-2.1",
+    "e09.invite-cow.1",
+    "e09.cow-again.1",
+    "e09.invite-duck.1",
+    "e09.duck-again.1",
+    "e09.sheru.1",
+    "e09.sheru.2",
+    "e09.sheru-says.1",
+    "e09.sheru-says.2",
+    "e09.song-intro.1",
+    "e09.outro.1",
+    "e09.outro.2",
+    "e09.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 27,
+    "authored": 27,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 29,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

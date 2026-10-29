@@ -1,0 +1,300 @@
+{
+  "label": "parent-panel",
+  "runId": "wonder-parent-panel-20261029T172337Z",
+  "commit": {
+    "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 800,
+    "height": 600
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "passed": true,
+  "chosen": {
+    "captions": false,
+    "music": false,
+    "highContrast": true,
+    "waitMs": 7000,
+    "wordList": [
+      "ball",
+      "more"
+    ],
+    "sfxVolume": "soft"
+  },
+  "defaults": {
+    "captions": true,
+    "music": true,
+    "highContrast": false,
+    "waitMs": 5000,
+    "wordList": [],
+    "sfxVolume": "normal"
+  },
+  "steps": {
+    "boot": {
+      "screen": "menu",
+      "settings": {
+        "mode": "play-together",
+        "reducedMotion": false,
+        "captions": true,
+        "music": true,
+        "sound": true
+      },
+      "storage": {
+        "localKeys": [],
+        "settingsFields": null,
+        "settings": null,
+        "settingsUnparsable": false,
+        "sessionKeys": [],
+        "hasCookies": false
+      },
+      "highContrast": false
+    },
+    "menu": {
+      "cards": 32,
+      "portraits": 32,
+      "loaded": 32,
+      "failed": [],
+      "files": [
+        "gogo.webp",
+        "lulu.webp",
+        "lumi.webp",
+        "momo.webp",
+        "peeko.webp",
+        "sheru.webp"
+      ]
+    },
+    "changed": {
+      "settings": {
+        "mode": "play-together",
+        "reducedMotion": false,
+        "captions": false,
+        "music": false,
+        "sound": true
+      },
+      "controls": {
+        "captions": false,
+        "music": false,
+        "highContrast": true,
+        "wait7": true,
+        "wait5": false,
+        "ball": true,
+        "more": true,
+        "sfxOff": false,
+        "sfxSoft": true,
+        "sfxNormal": false
+      },
+      "storage": {
+        "localKeys": [
+          "wonder-world.parent-settings.v1"
+        ],
+        "settingsFields": [
+          "captions",
+          "highContrast",
+          "locale",
+          "mode",
+          "music",
+          "reducedMotion",
+          "sfxVolume",
+          "sound",
+          "waitMs",
+          "wordList"
+        ],
+        "settings": {
+          "mode": "play-together",
+          "music": false,
+          "sound": true,
+          "sfxVolume": "soft",
+          "captions": false,
+          "reducedMotion": false,
+          "highContrast": true,
+          "locale": "en",
+          "waitMs": 7000,
+          "wordList": [
+            "ball",
+            "more"
+          ]
+        },
+        "settingsUnparsable": false,
+        "sessionKeys": [],
+        "hasCookies": false
+      },
+      "highContrast": true
+    },
+    "reloaded": {
+      "screen": "menu",
+      "settings": {
+        "mode": "play-together",
+        "reducedMotion": false,
+        "captions": false,
+        "music": false,
+        "sound": true
+      },
+      "storage": {
+        "localKeys": [
+          "wonder-world.parent-settings.v1"
+        ],
+        "settingsFields": [
+          "captions",
+          "highContrast",
+          "locale",
+          "mode",
+          "music",
+          "reducedMotion",
+          "sfxVolume",
+          "sound",
+          "waitMs",
+          "wordList"
+        ],
+        "settings": {
+          "mode": "play-together",
+          "music": false,
+          "sound": true,
+          "sfxVolume": "soft",
+          "captions": false,
+          "reducedMotion": false,
+          "highContrast": true,
+          "locale": "en",
+          "waitMs": 7000,
+          "wordList": [
+            "ball",
+            "more"
+          ]
+        },
+        "settingsUnparsable": false,
+        "sessionKeys": [],
+        "hasCookies": false
+      },
+      "highContrast": true
+    },
+    "persistedControls": {
+      "captions": false,
+      "music": false,
+      "highContrast": true,
+      "wait7": true,
+      "wait5": false,
+      "ball": true,
+      "more": true,
+      "sfxOff": false,
+      "sfxSoft": true,
+      "sfxNormal": false
+    },
+    "cleared": {
+      "settings": {
+        "mode": "play-together",
+        "reducedMotion": false,
+        "captions": true,
+        "music": true,
+        "sound": true
+      },
+      "controls": {
+        "captions": true,
+        "music": true,
+        "highContrast": false,
+        "wait7": false,
+        "wait5": true,
+        "ball": false,
+        "more": false,
+        "sfxOff": false,
+        "sfxSoft": false,
+        "sfxNormal": true
+      },
+      "storage": {
+        "localKeys": [],
+        "settingsFields": null,
+        "settings": null,
+        "settingsUnparsable": false,
+        "sessionKeys": [],
+        "hasCookies": false
+      },
+      "highContrast": false
+    },
+    "privacy": {
+      "storage": {
+        "localKeys": [],
+        "settingsFields": null,
+        "sessionKeys": [],
+        "hasCookies": false,
+        "problems": []
+      },
+      "requests": {
+        "count": 30,
+        "byType": {
+          "document": 2,
+          "stylesheet": 4,
+          "script": 2,
+          "font": 6,
+          "image": 12,
+          "fetch": 4
+        },
+        "foreign": [],
+        "all": [
+          "GET document /<app>/index.html?autostart=1&manual=1&models=0",
+          "GET stylesheet /fonts/local.css",
+          "GET stylesheet /<app>/src/ui/styles.css",
+          "GET script /<app>/src/main.ts",
+          "GET font /fonts/graphik/Graphik-Semibold-Web.woff2",
+          "GET font /fonts/graphik/Graphik-Medium-Web.woff2",
+          "GET font /fonts/graphik/Graphik-Regular-Web.woff2",
+          "GET image /<app>/src/assets/portraits/momo.webp",
+          "GET image /<app>/src/assets/portraits/peeko.webp",
+          "GET image /<app>/src/assets/portraits/lulu.webp",
+          "GET image /<app>/src/assets/portraits/sheru.webp",
+          "GET image /<app>/src/assets/portraits/lumi.webp",
+          "GET image /<app>/src/assets/portraits/gogo.webp",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+          "GET document /<app>/index.html?autostart=1&manual=1&models=0",
+          "GET stylesheet /fonts/local.css",
+          "GET stylesheet /<app>/src/ui/styles.css",
+          "GET script /<app>/src/main.ts",
+          "GET image /<app>/src/assets/portraits/momo.webp",
+          "GET image /<app>/src/assets/portraits/peeko.webp",
+          "GET image /<app>/src/assets/portraits/lulu.webp",
+          "GET image /<app>/src/assets/portraits/sheru.webp",
+          "GET image /<app>/src/assets/portraits/lumi.webp",
+          "GET image /<app>/src/assets/portraits/gogo.webp",
+          "GET font /fonts/graphik/Graphik-Semibold-Web.woff2",
+          "GET font /fonts/graphik/Graphik-Medium-Web.woff2",
+          "GET font /fonts/graphik/Graphik-Regular-Web.woff2",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr"
+        ],
+        "truncated": false
+      },
+      "consoleLogs": [
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x26c400119a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&manual=1&models=0:0",
+          "api": false
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x26c400119a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&manual=1&models=0:0",
+          "api": false
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x26c400119a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&manual=1&models=0:0",
+          "api": false
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x26c400119a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ /<app>/index.html?autostart=1&manual=1&models=0:0",
+          "api": false
+        }
+      ],
+      "appConsoleLogs": []
+    }
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": []
+}

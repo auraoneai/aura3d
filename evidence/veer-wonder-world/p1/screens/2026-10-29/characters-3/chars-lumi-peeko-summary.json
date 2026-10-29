@@ -1,0 +1,243 @@
+{
+  "label": "chars-lumi-peeko",
+  "runId": "wonder-characters-3-20261029T182623Z",
+  "commit": {
+    "commit": "498c32f63c44f90def67bc1c6a155c9263162e20",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "characters": [
+    {
+      "character": "lumi",
+      "story": "alphabet-zoo",
+      "errors": [],
+      "model": true,
+      "phoneHeight": 53,
+      "silhouette": {
+        "lumaDiff": 8.15,
+        "colourDistance": 44.471,
+        "separatedShare": 0.759
+      },
+      "frontBack": {
+        "meanAbsLumaDiff": 2.104,
+        "meanLumaDelta": 0.075,
+        "changedRatio": 0.034
+      },
+      "mostUnlikeFront": {
+        "view": "left",
+        "delta": {
+          "meanAbsLumaDiff": 4.69,
+          "meanLumaDelta": -0.559,
+          "changedRatio": 0.086
+        }
+      },
+      "poses": 6,
+      "talking": {
+        "meanAbsLumaDiff": 1.648,
+        "meanLumaDelta": -0.019,
+        "changedRatio": 0.026
+      },
+      "silent": {
+        "meanAbsLumaDiff": 0.031,
+        "meanLumaDelta": -0.002,
+        "changedRatio": 0
+      },
+      "normal": {
+        "meanAbsLumaDiff": 4.504,
+        "meanLumaDelta": -1.684,
+        "changedRatio": 0.075
+      },
+      "reduced": {
+        "meanAbsLumaDiff": 1.074,
+        "meanLumaDelta": -0.007,
+        "changedRatio": 0.015
+      },
+      "travelPx": {
+        "normal": 3.5,
+        "reduced": 1.1
+      },
+      "stageWarnings": 0
+    },
+    {
+      "character": "peeko",
+      "story": "peekaboo-animal-barn",
+      "errors": [],
+      "model": true,
+      "phoneHeight": 68,
+      "silhouette": {
+        "lumaDiff": 25.812,
+        "colourDistance": 63.367,
+        "separatedShare": 0.577
+      },
+      "frontBack": {
+        "meanAbsLumaDiff": 2.293,
+        "meanLumaDelta": 0.008,
+        "changedRatio": 0.041
+      },
+      "mostUnlikeFront": {
+        "view": "right",
+        "delta": {
+          "meanAbsLumaDiff": 3.601,
+          "meanLumaDelta": -0.106,
+          "changedRatio": 0.06
+        }
+      },
+      "poses": 6,
+      "talking": {
+        "meanAbsLumaDiff": 1.766,
+        "meanLumaDelta": -0.097,
+        "changedRatio": 0.029
+      },
+      "silent": {
+        "meanAbsLumaDiff": 0.022,
+        "meanLumaDelta": 0.006,
+        "changedRatio": 0
+      },
+      "normal": {
+        "meanAbsLumaDiff": 7.961,
+        "meanLumaDelta": -0.435,
+        "changedRatio": 0.118
+      },
+      "reduced": {
+        "meanAbsLumaDiff": 5.784,
+        "meanLumaDelta": -0.138,
+        "changedRatio": 0.091
+      },
+      "travelPx": {
+        "normal": 31.8,
+        "reduced": 16.3
+      },
+      "stageWarnings": 0
+    }
+  ],
+  "storage": {
+    "localKeys": [
+      "wonder-world.parent-settings.v1"
+    ],
+    "settingsFields": [
+      "captions",
+      "highContrast",
+      "locale",
+      "mode",
+      "music",
+      "reducedMotion",
+      "sfxVolume",
+      "sound",
+      "waitMs",
+      "wordList"
+    ],
+    "sessionKeys": [],
+    "hasCookies": false,
+    "problems": []
+  },
+  "requests": {
+    "count": 62,
+    "byType": {
+      "document": 1,
+      "stylesheet": 2,
+      "script": 1,
+      "fetch": 56,
+      "font": 2
+    },
+    "foreign": [],
+    "all": [
+      "GET document /<app>/index.html?autostart=1&story=alphabet-zoo&manual=1&mode=watch-sing&models=1&modelWaitMs=180000",
+      "GET stylesheet /fonts/local.css",
+      "GET stylesheet /<app>/src/ui/styles.css",
+      "GET script /<app>/src/main.ts",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET font /fonts/graphik/Graphik-Medium-Web.woff2",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/letterB.6783674a.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/letterB.6783674a.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/lumi.d65cb9e6.glb",
+      "GET fetch /<app>/src/assets/models/letterB.6783674a.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET font /fonts/graphik/Graphik-Regular-Web.woff2",
+      "GET fetch /<app>/src/assets/models/gogo.a229380d.glb",
+      "GET fetch /<app>/src/assets/models/lulu.95ef56f6.glb",
+      "GET fetch /<app>/src/assets/models/gogoCarriage.f4165978.glb",
+      "GET fetch /<app>/src/assets/models/letterA.7c4e68e2.glb",
+      "GET fetch /<app>/src/assets/models/apple.4c797628.glb",
+      "GET fetch /<app>/src/assets/models/tunnel.2ce4550c.glb",
+      "GET fetch /<app>/src/assets/models/station.5442f8e0.glb",
+      "GET fetch /<app>/src/assets/models/cow.133d9ae8.glb",
+      "GET fetch /<app>/src/assets/models/duck.3f6eb24c.glb",
+      "GET fetch /<app>/src/assets/models/horse.0767181a.glb",
+      "GET fetch /<app>/src/assets/models/barn.4e64b520.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/barn.4e64b520.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/cow.133d9ae8.glb",
+      "GET fetch /<app>/src/assets/models/duck.3f6eb24c.glb",
+      "GET fetch /<app>/src/assets/models/horse.0767181a.glb",
+      "GET fetch /<app>/src/assets/models/barn.4e64b520.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/cow.133d9ae8.glb",
+      "GET fetch /<app>/src/assets/models/duck.3f6eb24c.glb",
+      "GET fetch /<app>/src/assets/models/horse.0767181a.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/plate.cbafe298.glb",
+      "GET fetch /<app>/src/assets/models/picnicBasket.355d9cf2.glb",
+      "GET fetch /<app>/src/assets/models/banana.576faff2.glb"
+    ],
+    "truncated": false
+  },
+  "consoleLogs": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x9dc00141400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=alphabet-zoo&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x9dc00141400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=alphabet-zoo&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x9dc00141400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=alphabet-zoo&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x9dc00141400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ /<app>/index.html?autostart=1&story=alphabet-zoo&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    }
+  ],
+  "appConsoleLogs": []
+}

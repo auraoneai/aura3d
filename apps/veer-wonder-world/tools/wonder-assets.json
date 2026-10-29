@@ -1,0 +1,601 @@
+{
+ "assets": [
+  {
+   "key": "momo",
+   "role": "character",
+   "rig": false,
+   "height": 1.0,
+   "poly": 12000,
+   "prompt": "an original cute small round purple monster for toddlers, soft lavender-purple plush fur all over the body, round egg-shaped body, two big round friendly eyes with small black pupils, a tiny closed smile with the lips together, no visible teeth, no tongue, no eyebrows, no horns, two short stubby arms, tiny round purple feet, like a soft plush toy, standing upright in an A-pose",
+   "heightM": 0.9,
+   "face": true,
+   "rigNote": "Meshy humanoid auto-rig evaluated on Lulu and rejected: aura3d assets validate --skin fails in every clip (895-1465 of 12356 triangles stretch past 1.6x, worst 8.5-11.2x, flaps, foot bind mismatch); after baking the 0.01 armature scale (tools/bake-armature-scale.mjs, lossless) and repair-skin --refit-skeleton, 297 triangles still stretch, worst 142.9x, knees bend forward. Round, non-humanoid bodies on a humanoid skeleton tear; all characters move procedurally."
+  },
+  {
+   "key": "lulu",
+   "role": "character",
+   "rig": false,
+   "height": 1.0,
+   "poly": 12000,
+   "prompt": "an original cute mint green baby dinosaur character for toddlers, standing upright on two big soft feet, short arms, small rounded tail, big friendly eyes, gentle smile, rounded soft body, standing in an A-pose",
+   "heightM": 1.0,
+   "face": true,
+   "rigNote": "Meshy humanoid auto-rig evaluated on Lulu and rejected: aura3d assets validate --skin fails in every clip (895-1465 of 12356 triangles stretch past 1.6x, worst 8.5-11.2x, flaps, foot bind mismatch); after baking the 0.01 armature scale (tools/bake-armature-scale.mjs, lossless) and repair-skin --refit-skeleton, 297 triangles still stretch, worst 142.9x, knees bend forward. Round, non-humanoid bodies on a humanoid skeleton tear; all characters move procedurally."
+  },
+  {
+   "key": "sheru",
+   "role": "character",
+   "rig": false,
+   "poly": 12000,
+   "prompt": "an original cartoon puppy dog character for toddlers, standing on four legs, soft cream and light brown fur, big gentle floppy ears, round friendly eyes, small black nose, happy expression, short wagging tail, chunky rounded proportions",
+   "heightM": 0.7,
+   "face": true
+  },
+  {
+   "key": "gogo",
+   "role": "vehicle",
+   "rig": false,
+   "poly": 12000,
+   "prompt": "an original chunky toy steam train engine for toddlers painted BRIGHT RED all over, with a big friendly cartoon face (two big round eyes and a wide smile) on the round front of the boiler, round black wheels, short black chimney, yellow trim, no letters, no numbers, no text",
+   "heightM": 0.9,
+   "face": true
+  },
+  {
+   "key": "gogoCarriage",
+   "role": "vehicle",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a chunky toy train passenger carriage for toddlers, bright yellow with round windows, round black wheels, open top so small toy passengers can sit inside, rounded edges",
+   "heightM": 0.7,
+   "face": false
+  },
+  {
+   "key": "lumi",
+   "role": "character",
+   "rig": false,
+   "poly": 8000,
+   "prompt": "an original warm yellow five-pointed star character for toddlers, puffy rounded star points, big friendly eyes, small smile, soft glowing look, chubby and cute",
+   "heightM": 0.65,
+   "face": true
+  },
+  {
+   "key": "peeko",
+   "role": "character",
+   "rig": false,
+   "poly": 8000,
+   "prompt": "an original round little BRIGHT YELLOW baby chick character for toddlers, ball-shaped fluffy yellow body, small orange beak, tiny yellow wings, small tuft of yellow feathers on top of the head, big friendly eyes, little orange feet",
+   "heightM": 0.55,
+   "face": true
+  },
+  {
+   "key": "teddy",
+   "role": "character",
+   "rig": false,
+   "poly": 8000,
+   "prompt": "a soft brown teddy bear plush toy sitting down, round ears, friendly stitched smile, button eyes, chunky arms and legs",
+   "heightM": 0.55,
+   "face": true
+  },
+  {
+   "key": "robot",
+   "role": "character",
+   "rig": false,
+   "poly": 8000,
+   "prompt": "an original friendly baby toy robot for toddlers, rounded boxy body in light blue and white, big round screen eyes, small antenna with a ball on top, stubby arms and legs, cute and harmless",
+   "heightM": 0.8,
+   "face": true
+  },
+  {
+   "key": "cow",
+   "role": "character",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a cute toddler toy cow standing on four legs, black and white patches, pink nose, little horns, big friendly eyes, chunky rounded proportions",
+   "heightM": 0.9,
+   "face": true
+  },
+  {
+   "key": "sheep",
+   "role": "character",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a cute toddler toy sheep standing on four legs, fluffy white woolly body, gentle face, big friendly eyes, chunky rounded proportions",
+   "heightM": 0.7,
+   "face": true
+  },
+  {
+   "key": "duck",
+   "role": "character",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a cute toddler toy yellow duck standing, orange beak and feet, round body, big friendly eyes",
+   "heightM": 0.45,
+   "face": true
+  },
+  {
+   "key": "horse",
+   "role": "character",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a cute toddler toy pony standing on four legs, light brown with a soft dark mane, big friendly eyes, chunky rounded proportions",
+   "heightM": 1.0,
+   "face": true
+  },
+  {
+   "key": "bird",
+   "role": "character",
+   "rig": false,
+   "poly": 5000,
+   "prompt": "a cute toddler toy little BRIGHT BLUE bird sitting, round blue body, small blue wings, tiny orange beak, big friendly eyes",
+   "heightM": 0.3,
+   "face": true
+  },
+  {
+   "key": "butterfly",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a toy butterfly seen from above with its four wings spread wide open flat, bright pink and orange wings with round yellow spots, small round body in the middle, two short antennae, no arms, no legs",
+   "heightM": 0.3,
+   "face": true
+  },
+  {
+   "key": "ball",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a plain solid bright red rubber toy ball, a perfectly round smooth sphere, one single color, no seams, no bands, no stripes, no buttons, no face",
+   "heightM": 0.35,
+   "face": false
+  },
+  {
+   "key": "bubbleWand",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a toddler bubble wand toy, long purple handle with a big round ring at the top",
+   "heightM": 0.5,
+   "face": false
+  },
+  {
+   "key": "cookie",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a single flat round baked cookie in light golden-brown dough color with small dark brown chocolate pieces on top, thick and soft looking, seen from a three-quarter angle",
+   "heightM": 0.18,
+   "face": false
+  },
+  {
+   "key": "plate",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a simple round pale blue toy plate, shallow and wide",
+   "heightM": 0.08,
+   "face": false
+  },
+  {
+   "key": "mirror",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a toddler toy hand mirror standing on a little stand, round frame in pastel pink, plain silver mirror surface",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "door",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a big colorful rounded toy door in a frame for a play palace, arched top, bright teal door with a round yellow knob, standing upright",
+   "heightM": 1.6,
+   "face": false
+  },
+  {
+   "key": "letterB",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a big chunky toy capital letter B block shape, bright blue, rounded edges, standing upright, the shape of the letter B only",
+   "heightM": 0.8,
+   "face": false
+  },
+  {
+   "key": "letterA",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a big chunky toy capital letter A block shape, bright red, rounded edges, standing upright, the shape of the letter A only",
+   "heightM": 0.8,
+   "face": false
+  },
+  {
+   "key": "apple",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a shiny red apple with a short brown stem and one green leaf, toddler toy style",
+   "heightM": 0.25,
+   "face": false
+  },
+  {
+   "key": "banana",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a single bright yellow banana, toddler toy style",
+   "heightM": 0.25,
+   "face": false
+  },
+  {
+   "key": "cake",
+   "role": "prop",
+   "rig": false,
+   "poly": 5000,
+   "prompt": "a small round birthday cake with bright pink frosting and colorful sprinkles and exactly one short striped candle on top with a small flame",
+   "heightM": 0.38,
+   "face": false
+  },
+  {
+   "key": "drum",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a chunky toy drum for toddlers shaped like a short upright cylinder, bright red sides, yellow rims on top and bottom, flat white drum skin on top",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "shaker",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a toddler maraca shaker toy, round head in bright orange with a short green handle",
+   "heightM": 0.35,
+   "face": false
+  },
+  {
+   "key": "toyPiano",
+   "role": "prop",
+   "rig": false,
+   "poly": 5000,
+   "prompt": "a small chunky toddler toy piano with big oversized white and black keys, pastel pink body",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "picnicBasket",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a woven toy picnic basket with a handle and a red and white checked cloth peeking out",
+   "heightM": 0.45,
+   "face": false
+  },
+  {
+   "key": "car",
+   "role": "vehicle",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a chunky toddler toy car, rounded bright blue body, big round wheels, friendly headlight eyes, no driver",
+   "heightM": 0.6,
+   "face": true
+  },
+  {
+   "key": "sponge",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a soft yellow toy sponge block with rounded edges",
+   "heightM": 0.15,
+   "face": false
+  },
+  {
+   "key": "towel",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a folded soft pastel green toy towel",
+   "heightM": 0.12,
+   "face": false
+  },
+  {
+   "key": "toyBlock",
+   "role": "prop",
+   "rig": false,
+   "poly": 1500,
+   "prompt": "a single big chunky wooden toy building block cube with rounded edges, plain light wood color, no letters",
+   "heightM": 0.35,
+   "face": false
+  },
+  {
+   "key": "lift",
+   "role": "prop",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a toddler toy elevator tower with two floors, an open-front lift cabin with a sliding door, pastel colors, rounded corners",
+   "heightM": 1.8,
+   "face": false
+  },
+  {
+   "key": "flower",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a big toy flower with round pink petals and a yellow center on a thick green stem with two leaves",
+   "heightM": 0.9,
+   "face": false
+  },
+  {
+   "key": "flowerBud",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a big closed toy flower bud, pink petals wrapped shut, on a thick green stem with two leaves",
+   "heightM": 0.8,
+   "face": false
+  },
+  {
+   "key": "tree",
+   "role": "background",
+   "rig": false,
+   "poly": 5000,
+   "prompt": "a round soft toddler toy tree with a fluffy round BRIGHT GREEN crown and a short BROWN trunk",
+   "heightM": 2.4,
+   "face": false
+  },
+  {
+   "key": "bush",
+   "role": "background",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a small round fluffy green toy bush",
+   "heightM": 0.8,
+   "face": false
+  },
+  {
+   "key": "barn",
+   "role": "background",
+   "rig": false,
+   "poly": 10000,
+   "prompt": "a chunky red toy barn with a white trimmed roof and two big front barn doors, rounded edges, toddler play set",
+   "heightM": 3.2,
+   "face": false
+  },
+  {
+   "key": "station",
+   "role": "background",
+   "rig": false,
+   "poly": 10000,
+   "prompt": "a small chunky toy train station platform building with a little roof and round clock with no numbers, pastel blue and cream, toddler play set",
+   "heightM": 2.6,
+   "face": false
+  },
+  {
+   "key": "tunnel",
+   "role": "background",
+   "rig": false,
+   "poly": 6000,
+   "prompt": "a toy train tunnel shaped like a small grassy green hill with a round arch opening, toddler play set",
+   "heightM": 1.8,
+   "face": false
+  },
+  {
+   "key": "house",
+   "role": "background",
+   "rig": false,
+   "poly": 8000,
+   "prompt": "a cozy small toy house front with a round door and a doorbell, two round windows, pastel yellow walls and a soft red roof",
+   "heightM": 3.0,
+   "face": false
+  },
+  {
+   "key": "bed",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a small toddler toy bed with a soft blue blanket and a round pillow",
+   "heightM": 0.7,
+   "face": false
+  },
+  {
+   "key": "sink",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a small toddler toy bathroom sink with a round basin and a simple tap, pastel white and mint",
+   "heightM": 0.9,
+   "face": false
+  },
+  {
+   "key": "table",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a small round toddler toy table with four chunky legs, light wood",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "chair",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a small chunky toddler toy chair, soft pastel orange, rounded back",
+   "heightM": 0.7,
+   "face": false
+  },
+  {
+   "key": "cushion",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a soft square purple floor cushion, puffy",
+   "heightM": 0.25,
+   "face": false
+  },
+  {
+   "key": "toyBox",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a toddler toy box with an open lid, pastel green with rounded corners, empty inside",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "bench",
+   "role": "prop",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a small chunky toy garden bench, light wood, rounded",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "colourMachine",
+   "role": "prop",
+   "rig": false,
+   "poly": 8000,
+   "prompt": "a magical toy machine for toddlers with a round funnel on top, a chute at the front, big round buttons, pastel rainbow panels, rounded and soft",
+   "heightM": 1.6,
+   "face": false
+  },
+  {
+   "key": "storyBox",
+   "role": "prop",
+   "rig": false,
+   "poly": 4000,
+   "prompt": "a toddler magic toy box with an open lid, pastel purple with little gold stars painted on the sides",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "pastryCircle",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a round flat golden pastry biscuit in a perfect circle shape",
+   "heightM": 0.08,
+   "face": false
+  },
+  {
+   "key": "pastrySquare",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a flat golden pastry biscuit in a perfect square shape with rounded corners",
+   "heightM": 0.08,
+   "face": false
+  },
+  {
+   "key": "pastryTriangle",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a flat golden pastry biscuit in a perfect triangle shape with rounded corners",
+   "heightM": 0.08,
+   "face": false
+  },
+  {
+   "key": "hat",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a small soft red toddler sun hat",
+   "heightM": 0.2,
+   "face": false
+  },
+  {
+   "key": "stompStone",
+   "role": "background",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a big flat round pastel stepping stone for a play garden, smooth and soft",
+   "heightM": 0.15,
+   "face": false
+  },
+  {
+   "key": "cloud",
+   "role": "background",
+   "rig": false,
+   "poly": 3000,
+   "prompt": "a fluffy puffy white cartoon cloud, soft round shapes",
+   "heightM": 1.2,
+   "face": false
+  },
+  {
+   "key": "balloon",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a single round shiny toy balloon with a short curly string, bright red",
+   "heightM": 0.6,
+   "face": false
+  },
+  {
+   "key": "letterBLower",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a chunky rounded lowercase letter b toy, bright blue",
+   "heightM": 0.6,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "letterALower",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a chunky rounded lowercase letter a toy, bright red",
+   "heightM": 0.5,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "toothbrush",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a small toddler toothbrush with a mint green handle and white bristles",
+   "heightM": 0.4,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "sun",
+   "role": "prop",
+   "rig": false,
+   "poly": 2000,
+   "prompt": "a round warm yellow toy sun with short soft rays, no face",
+   "heightM": 0.8,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "candleFlame",
+   "role": "prop",
+   "rig": false,
+   "poly": 500,
+   "prompt": "a small soft warm candle flame",
+   "heightM": 0.07,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "partyHat",
+   "role": "prop",
+   "rig": false,
+   "poly": 500,
+   "prompt": "a small cone-shaped toddler party hat with a soft pompom",
+   "heightM": 0.3,
+   "face": false,
+   "procedural": true
+  }
+ ],
+ "characterStyle": "cute preschool cartoon character, soft rounded shapes, smooth matte clay-like material, bright saturated colors, simple chunky readable shapes, big friendly eyes, closed gentle smile, no teeth, no text, no logos, no brand marks",
+ "propStyle": "preschool toy prop, soft rounded shapes, smooth matte clay-like material, bright clear saturated colors, simple chunky readable shapes, no face, no eyes, no text, no logos, no brand marks"
+}

@@ -1,0 +1,246 @@
+{
+  "code": "e18",
+  "id": "whos-at-the-door",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 45288,
+  "runMs": 94205,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "whos-at-the-door",
+    "director": {
+      "storyId": "whos-at-the-door",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greet",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e18.greet.1",
+    "speaker": "momo",
+    "spoken": [
+      "e18.greet.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 34,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1250
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "door",
+      "lulu",
+      "sheru"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greet",
+      "bell",
+      "who",
+      "open-lulu",
+      "lulu-in",
+      "lulu-hi",
+      "bell-2",
+      "door-invite",
+      "sheru-in",
+      "sniff",
+      "song",
+      "bye-invite",
+      "leave",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 20,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "whos-at-the-door",
+    "director": {
+      "storyId": "whos-at-the-door",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 13,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 123725,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e18.greet.1",
+      "e18.greet.2",
+      "e18.who.1",
+      "e18.who.2",
+      "e18.who.3",
+      "e18.who.4",
+      "e18.open-lulu.1",
+      "e18.open-lulu.2",
+      "e18.open-lulu.3",
+      "e18.lulu-in.1",
+      "e18.lulu-in.2",
+      "e18.lulu-hi.1",
+      "e18.lulu-hi.2",
+      "e18.door-invite.1",
+      "e18.door-invite.2",
+      "e18.door-invite.3",
+      "e18.door-invite.4",
+      "e18.sheru-in.1",
+      "e18.sheru-in.2",
+      "e18.sniff.1",
+      "e18.sniff.2",
+      "e18.sniff.3",
+      "e18.bye-invite.1",
+      "e18.bye-invite.2",
+      "e18.bye-invite.3",
+      "e18.bye-invite.4",
+      "e18.leave.1",
+      "e18.leave.2",
+      "e18.outro.1",
+      "e18.outro.2",
+      "e18.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 43,
+      "nodes": 19,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "whos-at-the-door",
+    "directorStoryId": "whos-at-the-door",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e18.greet.1",
+    "e18.greet.2",
+    "e18.who.1",
+    "e18.who.2",
+    "e18.who.3",
+    "e18.who.4",
+    "e18.open-lulu.1",
+    "e18.open-lulu.2",
+    "e18.open-lulu.3",
+    "e18.lulu-in.1",
+    "e18.lulu-in.2",
+    "e18.lulu-hi.1",
+    "e18.lulu-hi.2",
+    "e18.door-invite.1",
+    "e18.door-invite.2",
+    "e18.door-invite.3",
+    "e18.door-invite.4",
+    "e18.sheru-in.1",
+    "e18.sheru-in.2",
+    "e18.sniff.1",
+    "e18.sniff.2",
+    "e18.sniff.3",
+    "e18.bye-invite.1",
+    "e18.bye-invite.2",
+    "e18.bye-invite.3",
+    "e18.bye-invite.4",
+    "e18.leave.1",
+    "e18.leave.2",
+    "e18.outro.1",
+    "e18.outro.2",
+    "e18.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 31,
+    "authored": 31,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 19,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

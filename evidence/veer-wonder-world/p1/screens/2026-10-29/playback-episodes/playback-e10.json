@@ -1,0 +1,245 @@
+{
+  "code": "e10",
+  "id": "momos-hungry-belly",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 38087,
+  "runMs": 106003,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "momos-hungry-belly",
+    "director": {
+      "storyId": "momos-hungry-belly",
+      "phase": "holding",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "hello",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 72,
+      "nodes": 18,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1850
+    },
+    "maxTargets": 2,
+    "targetIds": [
+      "apple",
+      "banana"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "hello",
+      "greet",
+      "rumble",
+      "tummy",
+      "basket",
+      "sniff",
+      "open",
+      "apple",
+      "eat-apple",
+      "banana",
+      "eat-banana",
+      "yum",
+      "both",
+      "invite",
+      "more",
+      "full",
+      "song",
+      "outro"
+    ],
+    "phases": [
+      "holding",
+      "speaking",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 20,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "momos-hungry-belly",
+    "director": {
+      "storyId": "momos-hungry-belly",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 17,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 124319,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e10.greet.1",
+      "e10.greet.2",
+      "e10.tummy.1",
+      "e10.tummy.2",
+      "e10.basket.1",
+      "e10.basket.2",
+      "e10.sniff.1",
+      "e10.sniff.2",
+      "e10.open.1",
+      "e10.open.2",
+      "e10.apple.1",
+      "e10.apple.2",
+      "e10.eat-apple.1",
+      "e10.eat-apple.2",
+      "e10.banana.1",
+      "e10.banana.2",
+      "e10.eat-banana.1",
+      "e10.eat-banana.2",
+      "e10.yum.1",
+      "e10.both.1",
+      "e10.invite.1",
+      "e10.invite.2",
+      "e10.invite.3",
+      "e10.more.1",
+      "e10.more.2",
+      "e10.full.1",
+      "e10.full.2",
+      "e10.outro.1",
+      "e10.outro.2",
+      "e10.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 84,
+      "nodes": 18,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "momos-hungry-belly",
+    "directorStoryId": "momos-hungry-belly",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e10.greet.1",
+    "e10.greet.2",
+    "e10.tummy.1",
+    "e10.tummy.2",
+    "e10.basket.1",
+    "e10.basket.2",
+    "e10.sniff.1",
+    "e10.sniff.2",
+    "e10.open.1",
+    "e10.open.2",
+    "e10.apple.1",
+    "e10.apple.2",
+    "e10.eat-apple.1",
+    "e10.eat-apple.2",
+    "e10.banana.1",
+    "e10.banana.2",
+    "e10.eat-banana.1",
+    "e10.eat-banana.2",
+    "e10.yum.1",
+    "e10.both.1",
+    "e10.invite.1",
+    "e10.invite.2",
+    "e10.invite.3",
+    "e10.more.1",
+    "e10.more.2",
+    "e10.full.1",
+    "e10.full.2",
+    "e10.outro.1",
+    "e10.outro.2",
+    "e10.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 30,
+    "authored": 30,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 14,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

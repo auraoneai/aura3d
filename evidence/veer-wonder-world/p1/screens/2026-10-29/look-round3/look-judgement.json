@@ -1,0 +1,94 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 4,
+  "shots": [
+    {
+      "path": "look-home-nook-desktop.jpg",
+      "sha256": "09bd018caafd4e54bf20787e16f988b993842e5c2e893b95a9cd458c609f6c96"
+    },
+    {
+      "path": "look-home-nook-phone.jpg",
+      "sha256": "3f9551bf7a44dd3e6b2c9462f84708338a3bb7a1f1aeefb37496f9ec7d3c3a4b"
+    },
+    {
+      "path": "look-learning-cloud-desktop.jpg",
+      "sha256": "917d04458c0aab3806dd96bd2bf0e0d0296b206366016a1d2a0df9ec6c9cbc90"
+    },
+    {
+      "path": "look-learning-cloud-phone.jpg",
+      "sha256": "434a6ec732c71ee44bccd34263fda304fd7529508f4580d4844ab32e693f2ffb"
+    },
+    {
+      "path": "look-meadow-desktop.jpg",
+      "sha256": "b2b941c9b7cc1c9cbec89ba320d46e39580992809121765fe36db0af88d2971f"
+    },
+    {
+      "path": "look-meadow-phone.jpg",
+      "sha256": "d105e747281aea51cc18058e6a68644950b35523526875541ca94c4438080148"
+    },
+    {
+      "path": "look-music-garden-desktop.jpg",
+      "sha256": "dc0e2c48a321deda48c572aea0c7b35f90700b60ddaca632949f81557f7bf7f8"
+    },
+    {
+      "path": "look-music-garden-phone.jpg",
+      "sha256": "3d676cc9cbde5268f0d44fff5f8e2f395932ae0ed7e98757585e306b11958937"
+    },
+    {
+      "path": "look-peekaboo-barn-desktop.jpg",
+      "sha256": "2789bac91b75fa0ba25db356065d7bc9e01151df3e9d5bc743446a22036c12b7"
+    },
+    {
+      "path": "look-peekaboo-barn-phone.jpg",
+      "sha256": "cdfbb3b5cfedaa699bc0a0d7f256879a437aa5acf4a52cba2b2135c39a04bc75"
+    },
+    {
+      "path": "look-station-desktop.jpg",
+      "sha256": "6f9a42dbd0b8b0b1a7b4765cac0d5808c350f4a8bd77d8e2a051f60a43122480"
+    },
+    {
+      "path": "look-station-phone.jpg",
+      "sha256": "465a959afa4bcb7a6966e4b08491e940ee11bd66589f99b27e99a1d450290296"
+    }
+  ],
+  "references": [
+    "webgl_shaders_sky",
+    "webgl_animation_skinning_morph"
+  ],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6,
+    "ibl_reflections": 6,
+    "environment_world": 7.5,
+    "atmospheric_effects": 6.5,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 6.5,
+    "camera": 7,
+    "postprocessing": 7
+  },
+  "observations": [
+    {
+      "category": "shadows",
+      "seen": "Soft contact shadows by design for the calm look; faint on phones."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Matte clay materials by design; specular response stays low."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A light haze for depth; unchanged."
+    },
+    {
+      "category": "composition",
+      "seen": "The closer portrait framing (wide minHalfWidth 1.7) cuts Momo's raised arm at the frame edge on a 390 px phone; reverted to 1.95 (and medium to 1.9) in the final looks, with a spots test that keeps arms in frame. Learning cloud floor now reads periwinkle against white cloud banks (colourfulness 6 at round 0 to 24-26); home nook floor and rug carry the frame (colourfulness 34 to 48)."
+    }
+  ],
+  "nextChange": {
+    "category": "composition",
+    "change": "Portrait phones: a portrait-only camera rule (lower and closer) would fill the empty foreground; left for after device runs",
+    "api": "camera.perspective fov + target (CAMERA_PRESETS)"
+  },
+  "judge": "self"
+}

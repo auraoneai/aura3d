@@ -1,0 +1,245 @@
+{
+  "code": "e03",
+  "id": "alphabet-zoo",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 34505,
+  "runMs": 103409,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "alphabet-zoo",
+    "director": {
+      "storyId": "alphabet-zoo",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greet",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e03.greet.1",
+    "speaker": "lumi",
+    "spoken": [
+      "e03.greet.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 48,
+      "nodes": 22,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 55,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 1150
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "ball",
+      "bear"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greet",
+      "hook",
+      "gate",
+      "letter",
+      "little-b",
+      "ball",
+      "ball-sound",
+      "bear",
+      "bear-sound",
+      "turn-ball",
+      "turn-bear",
+      "song",
+      "recap",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 21,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "alphabet-zoo",
+    "director": {
+      "storyId": "alphabet-zoo",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 13,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 136128,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e03.greet.1",
+      "e03.greet.2",
+      "e03.hook.1",
+      "e03.hook.2",
+      "e03.gate.1",
+      "e03.gate.2",
+      "e03.letter.1",
+      "e03.letter.2",
+      "e03.letter.3",
+      "e03.little-b.1",
+      "e03.little-b.2",
+      "e03.ball.1",
+      "e03.ball.2",
+      "e03.ball-sound.1",
+      "e03.ball-sound.2",
+      "e03.bear.1",
+      "e03.bear.2",
+      "e03.bear.3",
+      "e03.bear-sound.1",
+      "e03.bear-sound.2",
+      "e03.turn-ball.1",
+      "e03.turn-ball.2",
+      "e03.turn-ball.3",
+      "e03.turn-bear.1",
+      "e03.turn-bear.2",
+      "e03.turn-bear.3",
+      "e03.recap.1",
+      "e03.recap.2",
+      "e03.outro.1",
+      "e03.outro.2",
+      "e03.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 72,
+      "nodes": 22,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "alphabet-zoo",
+    "directorStoryId": "alphabet-zoo",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e03.greet.1",
+    "e03.greet.2",
+    "e03.hook.1",
+    "e03.hook.2",
+    "e03.gate.1",
+    "e03.gate.2",
+    "e03.letter.1",
+    "e03.letter.2",
+    "e03.letter.3",
+    "e03.little-b.1",
+    "e03.little-b.2",
+    "e03.ball.1",
+    "e03.ball.2",
+    "e03.ball-sound.1",
+    "e03.ball-sound.2",
+    "e03.bear.1",
+    "e03.bear.2",
+    "e03.bear.3",
+    "e03.bear-sound.1",
+    "e03.bear-sound.2",
+    "e03.turn-ball.1",
+    "e03.turn-ball.2",
+    "e03.turn-ball.3",
+    "e03.turn-bear.1",
+    "e03.turn-bear.2",
+    "e03.turn-bear.3",
+    "e03.recap.1",
+    "e03.recap.2",
+    "e03.outro.1",
+    "e03.outro.2",
+    "e03.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 31,
+    "authored": 31,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 19,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

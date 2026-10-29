@@ -1,0 +1,77 @@
+{
+  "label": "look-meadow",
+  "runId": "wonder-look-20261029T172337Z",
+  "commit": {
+    "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "world": "meadow",
+  "story": "sheru-big-adventure",
+  "openingMs": 4000,
+  "firstMount": null,
+  "director": {
+    "storyId": "sheru-big-adventure",
+    "phase": "speaking",
+    "mode": "watch-sing",
+    "beatIndex": 0,
+    "beatId": "greet",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 4100,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frames": {
+    "desktop": {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "luma": {
+        "meanLuma": 190.877,
+        "lumaStdDev": 37.558,
+        "nonBlackRatio": 1,
+        "coarseColours": 556
+      },
+      "colour": {
+        "meanSaturation": 0.232,
+        "colourfulness": 44.95,
+        "clippedRatio": 0,
+        "p5Luma": 128,
+        "p95Luma": 221
+      }
+    },
+    "phone": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "luma": {
+        "meanLuma": 189.101,
+        "lumaStdDev": 39.146,
+        "nonBlackRatio": 1,
+        "coarseColours": 338
+      },
+      "colour": {
+        "meanSaturation": 0.245,
+        "colourfulness": 48.506,
+        "clippedRatio": 0,
+        "p5Luma": 112,
+        "p95Luma": 222
+      }
+    }
+  }
+}

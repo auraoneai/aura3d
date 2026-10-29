@@ -1,0 +1,94 @@
+{
+  "schema": "aura3d.look-judgement/1",
+  "round": 3,
+  "shots": [
+    {
+      "path": "look-home-nook-desktop.jpg",
+      "sha256": "da681b2246463015d6026a03a01029fcf15a6806ad40ab793dde33260eb7919f"
+    },
+    {
+      "path": "look-home-nook-phone.jpg",
+      "sha256": "99f11734867b4b059f0b0f0ceb5b02e947933dcf84a162aa176bbeaad38dc02a"
+    },
+    {
+      "path": "look-learning-cloud-desktop.jpg",
+      "sha256": "8d28f4eaf6035588dc4d8e62ead6d35470bc7d6d76a72df505a0108bb608ac5f"
+    },
+    {
+      "path": "look-learning-cloud-phone.jpg",
+      "sha256": "63066e99f7ca48d1f13019e9072db46024e0533b2b75a3f59998278c3c662f3a"
+    },
+    {
+      "path": "look-meadow-desktop.jpg",
+      "sha256": "b2b941c9b7cc1c9cbec89ba320d46e39580992809121765fe36db0af88d2971f"
+    },
+    {
+      "path": "look-meadow-phone.jpg",
+      "sha256": "1db5e50a4ee8eb65760d59ff3e41a4ec0866c912deb0206d5f554498a05ffe6a"
+    },
+    {
+      "path": "look-music-garden-desktop.jpg",
+      "sha256": "81715bbe3028c39852b27aebe9f67810d2bec8a80501693fa2d17a719ba50a63"
+    },
+    {
+      "path": "look-music-garden-phone.jpg",
+      "sha256": "e19876c5099cbb9e173abdbed595e2943e3c6777c0d8e0af717405d652bf6fc5"
+    },
+    {
+      "path": "look-peekaboo-barn-desktop.jpg",
+      "sha256": "2789bac91b75fa0ba25db356065d7bc9e01151df3e9d5bc743446a22036c12b7"
+    },
+    {
+      "path": "look-peekaboo-barn-phone.jpg",
+      "sha256": "c1570407ee1afa4b873a0d9fadba336658267d00ace3502c30d564815b79f61b"
+    },
+    {
+      "path": "look-station-desktop.jpg",
+      "sha256": "f87724e5d4d21231891ec6f3349efbcfd612c4f55313f9194b44efbdd730b67d"
+    },
+    {
+      "path": "look-station-phone.jpg",
+      "sha256": "850efef74dc266d60d6fec1f3ae78a7b1acda86ff0d63cfbe3bbc2cd56af185d"
+    }
+  ],
+  "references": [
+    "webgl_shaders_sky",
+    "webgl_animation_skinning_morph"
+  ],
+  "scores": {
+    "lighting": 7,
+    "shadows": 6,
+    "ibl_reflections": 6,
+    "environment_world": 7,
+    "atmospheric_effects": 6.5,
+    "material_quality": 7,
+    "modeling_assets": 7,
+    "composition": 6.5,
+    "camera": 7,
+    "postprocessing": 7
+  },
+  "observations": [
+    {
+      "category": "shadows",
+      "seen": "Soft contact shadows, readable at desktop size, faint on phones."
+    },
+    {
+      "category": "ibl_reflections",
+      "seen": "Matte materials by design; specular response stays low."
+    },
+    {
+      "category": "atmospheric_effects",
+      "seen": "A light haze gives depth; no change needed for the calm look."
+    },
+    {
+      "category": "composition",
+      "seen": "Desktop framing is tighter (the cast reads larger), but portrait phones still show a small cast over a large empty foreground; the learning cloud floor is still close to white and the home nook floor and rug are low in contrast (p5 luma 169)."
+    }
+  ],
+  "nextChange": {
+    "category": "composition",
+    "change": "Tighten the portrait framing further and deepen the learning-cloud floor and the home-nook floor and rug",
+    "api": "camera.perspective fov + target (CAMERA_PRESETS minHalfWidth)"
+  },
+  "judge": "self"
+}

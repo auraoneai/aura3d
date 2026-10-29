@@ -1,0 +1,43 @@
+# Wonder World P2 evidence
+
+**Status: prototype.** The other 14 episodes and 9 activities (`05`), built in the same run as P1 (owner decision 2026-10-29). The runs are the same as P1's; this page lists their results story by story, with links into the P1 run folders. Every result here comes from headless Chromium (HeadlessChrome 147 on Linux x86_64) on the remote runner with software WebGL2, renderer `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)`. That is **not real-GPU or physical-device evidence**: times are wall-clock times on a software renderer, not performance numbers. No real child's image, audio or name is in any file here; the specs redact what they print and `apps/<app>/tools/extract-remote-evidence.mjs` redacts again (`<app>` is the app's folder name).
+
+| | |
+| --- | --- |
+| Commit under test | `7e1986801` (tree clean) for `audio-and-pausing`, `consumer-smoke`, `look`, `low-motion`, `low-motion-2`, `no-speech-required`, `no-speech-required-2`, `parent-panel`, `playback-activities`, `playback-episodes`, `playback-episodes-2`, `stills`, `stills-2`, `stills-3`, `stills-4`, `touch-and-layout`; `498c32f63` (tree clean) for `characters`, `characters-2`, `characters-3`; `2ae4125d1` (tree clean) for `first-frame-build` (the three commits differ only in tests/browser spec files; the app is the same), from each record's `commit` field (written by `apps/<app>/tools/remote-run.sh` into `.run-commit`) |
+| Engine | `@aura3d/engine` 4.5.0 (`engineVersion` in each record) |
+| Renderer | `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)` |
+| Date | 2026-10-29, fan-out stamp `20261029T172337Z`; `first-frame-build` from `20261029T174544Z`; `characters`, `characters-2`, `characters-3` from `20261029T182623Z` (one ACR run per line of the run list in `tests/browser/wonder-world-lib.ts`, one shared image, deleted after the runs) |
+
+## Stories
+| Story | Watch & Sing, no input (`playback-*`) | Play Together, no input, microphone stubs (`no-speech-required*`) | Still (`stills*`) |
+| --- | --- | --- | --- |
+| E03 `alphabet-zoo` | complete, 136 s story time, 31/31 lines, 4 waits, 0 errors | complete, 136 s story time, 31/31 lines, 0 waits, 0 errors | [letter](../p1/screens/2026-10-29/stills/still-e03.jpg) (learning-cloud, 5 model nodes, luma 203, problems 0) |
+| E04 `gogo-abc-train` | complete, 136 s story time, 31/31 lines, 4 waits, 0 errors | complete, 136 s story time, 31/31 lines, 0 waits, 0 errors | [letter](../p1/screens/2026-10-29/stills/still-e04.jpg) (station, 7 model nodes, luma 186, problems 0) |
+| E07 `magic-colour-machine` | complete, 124 s story time, 29/29 lines, 4 waits, 0 errors | complete, 124 s story time, 29/29 lines, 0 waits, 0 errors | [red](../p1/screens/2026-10-29/stills/still-e07.jpg) (learning-cloud, 3 model nodes, luma 201, problems 0) |
+| E08 `wheres-sheru` | complete, 125 s story time, 32/32 lines, 4 waits, 0 errors | complete, 125 s story time, 32/32 lines, 0 waits, 0 errors | [box](../p1/screens/2026-10-29/stills/still-e08.jpg) (home-nook, 5 model nodes, luma 186, problems 0) |
+| E10 `momos-hungry-belly` | complete, 124 s story time, 30/30 lines, 4 waits, 0 errors | complete, 124 s story time, 30/30 lines, 0 waits, 0 errors | [apple](../p1/screens/2026-10-29/stills-2/still-e10.jpg) (meadow, 4 model nodes, luma 189, problems 0) |
+| E11 `number-balloon-rescue` | complete, 124 s story time, 35/35 lines, 4 waits, 0 errors | complete, 124 s story time, 35/35 lines, 0 waits, 0 errors | [balloon-one](../p1/screens/2026-10-29/stills-2/still-e11.jpg) (meadow, 2 model nodes, luma 191, problems 0) |
+| E12 `magic-shape-bakery` | complete, 131 s story time, 39/39 lines, 4 waits, 0 errors | complete, 131 s story time, 39/39 lines, 0 waits, 0 errors | [circle-plate](../p1/screens/2026-10-29/stills-2/still-e12.jpg) (home-nook, 8 model nodes, luma 180, problems 0) |
+| E13 `silly-robot-factory` | complete, 122 s story time, 34/34 lines, 6 waits, 0 errors | complete, 122 s story time, 34/34 lines, 0 waits, 0 errors | [help-hat](../p1/screens/2026-10-29/stills-2/still-e13.jpg) (home-nook, 4 model nodes, luma 188, problems 0) |
+| E14 `lost-teddy-adventure` | complete, 123 s story time, 36/36 lines, 6 waits, 0 errors | complete, 123 s story time, 36/36 lines, 0 waits, 0 errors | [under-table](../p1/screens/2026-10-29/stills-2/still-e14.jpg) (home-nook, 7 model nodes, luma 189, problems 0) |
+| E15 `momo-bubble-universe` | complete, 123 s story time, 35/35 lines, 6 waits, 0 errors | complete, 123 s story time, 35/35 lines, 0 waits, 0 errors | [inside-1](../p1/screens/2026-10-29/stills-2/still-e15.jpg) (meadow, 5 model nodes, luma 192, problems 0) |
+| E16 `little-birthday-party` | complete, 125 s story time, 29/29 lines, 4 waits, 0 errors | complete, 125 s story time, 29/29 lines, 0 waits, 0 errors | [count-one](../p1/screens/2026-10-29/stills-2/still-e16.jpg) (music-garden, 4 model nodes, luma 197, problems 0) |
+| E18 `whos-at-the-door` | complete, 124 s story time, 31/31 lines, 4 waits, 0 errors | complete, 124 s story time, 31/31 lines, 0 waits, 0 errors | [open-lulu](../p1/screens/2026-10-29/stills-3/still-e18.jpg) (home-nook, 5 model nodes, luma 188, problems 0) |
+| E19 `momos-day` | complete, 129 s story time, 33/33 lines, 6 waits, 0 errors | complete, 129 s story time, 33/33 lines, 0 waits, 0 errors | [wash-model](../p1/screens/2026-10-29/stills-3/still-e19.jpg) (home-nook, 7 model nodes, luma 188, problems 0) |
+| E20 `little-story-machine` | complete, 124 s story time, 30/30 lines, 4 waits, 0 errors | complete, 124 s story time, 30/30 lines, 0 waits, 0 errors | [toy-teddy](../p1/screens/2026-10-29/stills-3/still-e20.jpg) (learning-cloud, 5 model nodes, luma 202, problems 0) |
+| G04 `peekaboo-animal-barn` | complete, 65 s story time, 21/21 lines, 8 waits, 0 errors | complete, 65 s story time, 21/21 lines, 0 waits, 0 errors | [cow](../p1/screens/2026-10-29/stills-3/still-g04.jpg) (peekaboo-barn, 5 model nodes, luma 198, problems 0) |
+| G05 `teddy-snack-picnic` | complete, 64 s story time, 21/21 lines, 8 waits, 0 errors | complete, 64 s story time, 21/21 lines, 0 waits, 0 errors | [apple](../p1/screens/2026-10-29/stills-4/still-g05.jpg) (home-nook, 6 model nodes, luma 189, problems 0) |
+| G06 `splashy-car-wash` | complete, 63 s story time, 19/19 lines, 8 waits, 0 errors | complete, 63 s story time, 19/19 lines, 0 waits, 0 errors | [water](../p1/screens/2026-10-29/stills-4/still-g06.jpg) (home-nook, 5 model nodes, luma 188, problems 0) |
+| G07 `little-lift` | complete, 58 s story time, 20/20 lines, 8 waits, 0 errors | complete, 58 s story time, 20/20 lines, 0 waits, 0 errors | [in](../p1/screens/2026-10-29/stills-4/still-g07.jpg) (home-nook, 3 model nodes, luma 188, problems 0) |
+| G08 `build-and-tumble` | complete, 56 s story time, 19/19 lines, 8 waits, 0 errors | complete, 56 s story time, 19/19 lines, 0 waits, 0 errors | [one](../p1/screens/2026-10-29/stills-4/still-g08.jpg) (learning-cloud, 4 model nodes, luma 204, problems 0) |
+| G09 `family-doorbells` | complete, 44 s story time, 16/16 lines, 4 waits, 0 errors | complete, 44 s story time, 16/16 lines, 0 waits, 0 errors | [ring](../p1/screens/2026-10-29/stills-4/still-g09.jpg) (home-nook, 3 model nodes, luma 188, problems 0) |
+| G10 `bears-little-band` | complete, 40 s story time, 15/15 lines, 4 waits, 0 errors | complete, 40 s story time, 15/15 lines, 0 waits, 0 errors | [drum](../p1/screens/2026-10-29/stills-4/still-g10.jpg) (music-garden, 4 model nodes, luma 196, problems 0) |
+| G11 `magic-sound-garden` | complete, 50 s story time, 15/15 lines, 6 waits, 0 errors | complete, 50 s story time, 15/15 lines, 0 waits, 0 errors | [hello-one](../p1/screens/2026-10-29/stills-4/still-g11.jpg) (meadow, 5 model nodes, luma 189, problems 0) |
+| G12 `find-my-real-toy` | complete, 57 s story time, 16/16 lines, 4 waits, 0 errors | complete, 57 s story time, 16/16 lines, 0 waits, 0 errors | [ball](../p1/screens/2026-10-29/stills-4/still-g12.jpg) (peekaboo-barn, 3 model nodes, luma 196, problems 0) |
+
+In the no-speech runs the microphone and speech-recognition stubs, installed before the app loads, were live in 4 of 4 shards and counted 0 calls. Run IDs and pass or fail per run are in [`../p1/README.md`](../p1/README.md#runs).
+
+## Known gaps
+- Software WebGL2 only; no device runs (`07` §4.3 item 1).
+- Story time is the story's own clock, driven through the QA hooks with each line as long as its recorded clip, not wall time on the software renderer. Each episode runs at least 120 s of it, as `src/content/schema.ts` requires with recorded audio.

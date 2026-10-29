@@ -1,0 +1,139 @@
+{
+  "beat": "repeat",
+  "canvas": {
+    "x": 0,
+    "y": 0,
+    "width": 1024,
+    "height": 768
+  },
+  "rects": [
+    {
+      "id": "ball",
+      "x": 448,
+      "y": 390.0075918721551,
+      "w": 128,
+      "h": 134.1151391062474
+    }
+  ],
+  "target": {
+    "x": 448,
+    "y": 390.0075918721551,
+    "width": 128,
+    "height": 134.1151391062474
+  },
+  "tap": {
+    "x": 512,
+    "y": 457.0651614252788
+  },
+  "topAtTap": {
+    "isCanvas": true,
+    "tag": "canvas",
+    "id": "",
+    "className": "",
+    "data": "data-aura3d-canvas=true"
+  },
+  "controls": [
+    {
+      "control": "all-done",
+      "x": 10,
+      "y": 10,
+      "width": 128,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "confirm",
+      "x": 798,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "pause",
+      "x": 854,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "replay",
+      "x": 910,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    },
+    {
+      "control": "parent",
+      "x": 966,
+      "y": 10,
+      "width": 48,
+      "height": 48,
+      "visible": true,
+      "disabled": false
+    }
+  ],
+  "controlCover": [
+    {
+      "control": "all-done",
+      "fraction": 0
+    },
+    {
+      "control": "confirm",
+      "fraction": 0
+    },
+    {
+      "control": "pause",
+      "fraction": 0
+    },
+    {
+      "control": "replay",
+      "fraction": 0
+    },
+    {
+      "control": "parent",
+      "fraction": 0
+    }
+  ],
+  "captions": {
+    "x": 192,
+    "y": 714,
+    "width": 640,
+    "height": 38
+  },
+  "captionCoversTap": false,
+  "scrollOverflow": {
+    "x": 0,
+    "y": 0
+  },
+  "director": {
+    "storyId": "sheru-big-adventure",
+    "phase": "waiting",
+    "mode": "play-together",
+    "beatIndex": 5,
+    "beatId": "repeat",
+    "round": 0,
+    "lineIndex": 3,
+    "elapsedMs": 76000,
+    "waitedMs": 715,
+    "taps": 1,
+    "finishedReason": null
+  },
+  "targets": [
+    "ball"
+  ],
+  "speaking": null,
+  "settings": {
+    "mode": "play-together",
+    "reducedMotion": false,
+    "captions": true,
+    "music": true,
+    "sound": true
+  }
+}

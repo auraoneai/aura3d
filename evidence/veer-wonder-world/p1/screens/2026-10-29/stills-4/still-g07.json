@@ -1,0 +1,119 @@
+{
+  "context": {
+    "runId": "wonder-stills-4-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "g07",
+  "id": "little-lift",
+  "title": "The Little Lift",
+  "kind": "activity",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 67584,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "in",
+    "kind": "invite",
+    "t": 8200,
+    "rule": "600 ms into the beat's wait",
+    "camera": {
+      "preset": "medium",
+      "since": 4500
+    }
+  },
+  "director": {
+    "storyId": "little-lift",
+    "phase": "waiting",
+    "mode": "watch-sing",
+    "beatIndex": 1,
+    "beatId": "in",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 8200,
+    "waitedMs": 605,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 188.246,
+      "lumaStdDev": 31.651,
+      "nonBlackRatio": 1,
+      "coarseColours": 249
+    },
+    "colour": {
+      "meanSaturation": 0.24,
+      "colourfulness": 47.084,
+      "clippedRatio": 0,
+      "p5Luma": 151,
+      "p95Luma": 226
+    }
+  },
+  "nodes": [
+    {
+      "id": "peeko",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "peeko",
+        "model"
+      ]
+    },
+    {
+      "id": "lift",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "lift",
+        "model"
+      ]
+    },
+    {
+      "id": "teddy",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "teddy",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 42,
+    "nodes": 17,
+    "world": "home-nook",
+    "modelNodes": 3,
+    "standInNodes": 0,
+    "modelStatus": {
+      "procedural": 2,
+      "ready": 16
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

@@ -1,0 +1,413 @@
+{
+  "context": {
+    "runId": "wonder-characters-2-20261029T182623Z",
+    "commit": {
+      "commit": "498c32f63c44f90def67bc1c6a155c9263162e20",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "character": "sheru",
+  "story": "sheru-big-adventure",
+  "code": "e17",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 25617,
+    "firstMount": null
+  },
+  "drawnAs": [
+    "actor",
+    "sheru",
+    "model"
+  ],
+  "phone": {
+    "viewport": {
+      "width": 320,
+      "height": 568
+    },
+    "storyMs": 4000,
+    "camera": {
+      "preset": "wide",
+      "since": 0
+    },
+    "shownForShot": false,
+    "nodeRect": {
+      "id": "sheru",
+      "x": 136.7393181261764,
+      "y": 293.0469872657784,
+      "w": 46.52136374764717,
+      "h": 61.917600126590344
+    },
+    "canvas": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 568
+    },
+    "visibleHeight": 62,
+    "silhouette": {
+      "box": {
+        "x": 137,
+        "y": 293,
+        "width": 47,
+        "height": 62
+      },
+      "core": {
+        "r": 193.216,
+        "g": 179.437,
+        "b": 139.477,
+        "luma": 179.481,
+        "pixels": 950
+      },
+      "ground": {
+        "r": 206.401,
+        "g": 223.138,
+        "b": 183.626,
+        "luma": 216.727,
+        "pixels": 10602
+      },
+      "lumaDiff": 37.246,
+      "colourDistance": 63.504,
+      "separatedShare": 0.534
+    },
+    "frame": {
+      "meanLuma": 189.749,
+      "lumaStdDev": 38.347,
+      "nonBlackRatio": 1,
+      "coarseColours": 326
+    }
+  },
+  "turnaround": {
+    "storyMs": 4400,
+    "reducedMotion": true,
+    "anchor": "momo",
+    "nodeRect": {
+      "id": "sheru",
+      "x": 327.98627002288333,
+      "y": 275.1121791241451,
+      "w": 144.0274599542334,
+      "h": 218.77293621764989
+    },
+    "crop": {
+      "x": 284,
+      "y": 198,
+      "width": 232,
+      "height": 323
+    },
+    "views": [
+      {
+        "view": "front",
+        "toward": "viewer",
+        "frame": {
+          "meanLuma": 207.288,
+          "lumaStdDev": 27.665,
+          "nonBlackRatio": 1,
+          "coarseColours": 147
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 0,
+          "meanLumaDelta": 0,
+          "changedRatio": 0
+        }
+      },
+      {
+        "view": "left",
+        "toward": "offLeft",
+        "frame": {
+          "meanLuma": 208.079,
+          "lumaStdDev": 26.286,
+          "nonBlackRatio": 1,
+          "coarseColours": 136
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 10.266,
+          "meanLumaDelta": 0.791,
+          "changedRatio": 0.153
+        }
+      },
+      {
+        "view": "back",
+        "toward": "back",
+        "frame": {
+          "meanLuma": 208.188,
+          "lumaStdDev": 25.909,
+          "nonBlackRatio": 1,
+          "coarseColours": 127
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 7.853,
+          "meanLumaDelta": 0.9,
+          "changedRatio": 0.133
+        }
+      },
+      {
+        "view": "right",
+        "toward": "offRight",
+        "frame": {
+          "meanLuma": 207.699,
+          "lumaStdDev": 26.535,
+          "nonBlackRatio": 1,
+          "coarseColours": 143
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 10.71,
+          "meanLumaDelta": 0.411,
+          "changedRatio": 0.153
+        }
+      }
+    ],
+    "frontBack": {
+      "meanAbsLumaDiff": 7.853,
+      "meanLumaDelta": 0.9,
+      "changedRatio": 0.133
+    },
+    "mostUnlikeFront": {
+      "view": "right",
+      "delta": {
+        "meanAbsLumaDiff": 10.71,
+        "meanLumaDelta": 0.411,
+        "changedRatio": 0.153
+      }
+    },
+    "warningsAdded": []
+  },
+  "poses": {
+    "storyMs": 4900,
+    "nodeRect": {
+      "id": "sheru",
+      "x": 327.98627002288333,
+      "y": 275.1121791241451,
+      "w": 144.0274599542334,
+      "h": 218.77293621764989
+    },
+    "crop": {
+      "x": 284,
+      "y": 198,
+      "width": 232,
+      "height": 323
+    },
+    "states": [
+      {
+        "state": "neutral",
+        "gesture": "idle",
+        "atMs": 400,
+        "frame": {
+          "meanLuma": 207.158,
+          "lumaStdDev": 27.842,
+          "nonBlackRatio": 1,
+          "coarseColours": 153
+        },
+        "vsNeutral": null
+      },
+      {
+        "state": "delighted",
+        "gesture": "happy",
+        "atMs": 450,
+        "frame": {
+          "meanLuma": 207.088,
+          "lumaStdDev": 27.204,
+          "nonBlackRatio": 1,
+          "coarseColours": 146
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 9.727,
+          "meanLumaDelta": -0.07,
+          "changedRatio": 0.148
+        }
+      },
+      {
+        "state": "curious",
+        "gesture": "look",
+        "atMs": 800,
+        "frame": {
+          "meanLuma": 207.31,
+          "lumaStdDev": 27.321,
+          "nonBlackRatio": 1,
+          "coarseColours": 148
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 7.995,
+          "meanLumaDelta": 0.153,
+          "changedRatio": 0.127
+        }
+      },
+      {
+        "state": "surprised",
+        "gesture": "surprise",
+        "atMs": 350,
+        "frame": {
+          "meanLuma": 206.298,
+          "lumaStdDev": 29.096,
+          "nonBlackRatio": 1,
+          "coarseColours": 148
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 9.6,
+          "meanLumaDelta": -0.86,
+          "changedRatio": 0.151
+        }
+      },
+      {
+        "state": "waiting",
+        "gesture": "wait",
+        "atMs": 500,
+        "frame": {
+          "meanLuma": 208.066,
+          "lumaStdDev": 26.324,
+          "nonBlackRatio": 1,
+          "coarseColours": 146
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 4.542,
+          "meanLumaDelta": 0.909,
+          "changedRatio": 0.077
+        }
+      },
+      {
+        "state": "good-bye",
+        "gesture": "wave",
+        "atMs": 600,
+        "frame": {
+          "meanLuma": 207.031,
+          "lumaStdDev": 27.447,
+          "nonBlackRatio": 1,
+          "coarseColours": 148
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 9.122,
+          "meanLumaDelta": -0.126,
+          "changedRatio": 0.143
+        }
+      }
+    ]
+  },
+  "talking": {
+    "storyMs": 8100,
+    "reducedMotion": true,
+    "crop": {
+      "x": 284,
+      "y": 198,
+      "width": 232,
+      "height": 323
+    },
+    "talking": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 2.884,
+          "meanLumaDelta": -0.082,
+          "changedRatio": 0.046
+        },
+        {
+          "meanAbsLumaDiff": 2.322,
+          "meanLumaDelta": -0.05,
+          "changedRatio": 0.035
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 2.884,
+        "meanLumaDelta": -0.082,
+        "changedRatio": 0.046
+      }
+    },
+    "silent": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 0.034,
+          "meanLumaDelta": -0.004,
+          "changedRatio": 0
+        },
+        {
+          "meanAbsLumaDiff": 0.034,
+          "meanLumaDelta": 0.016,
+          "changedRatio": 0
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 0.034,
+        "meanLumaDelta": -0.004,
+        "changedRatio": 0
+      }
+    },
+    "silentShare": 0.012
+  },
+  "reducedMotion": {
+    "storyMs": 9100,
+    "gesture": "happy",
+    "crop": {
+      "x": 284,
+      "y": 198,
+      "width": 232,
+      "height": 323
+    },
+    "normalTravelPx": 30.8,
+    "reducedTravelPx": 15.3,
+    "normal": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 8.725,
+          "meanLumaDelta": 0.584,
+          "changedRatio": 0.139
+        },
+        {
+          "meanAbsLumaDiff": 9.879,
+          "meanLumaDelta": 0.286,
+          "changedRatio": 0.146
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 9.879,
+        "meanLumaDelta": 0.286,
+        "changedRatio": 0.146
+      }
+    },
+    "reduced": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 6.054,
+          "meanLumaDelta": 0.298,
+          "changedRatio": 0.105
+        },
+        {
+          "meanAbsLumaDiff": 7.614,
+          "meanLumaDelta": 0.041,
+          "changedRatio": 0.124
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 7.614,
+        "meanLumaDelta": 0.041,
+        "changedRatio": 0.124
+      }
+    },
+    "reducedShare": 0.771
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "director": {
+    "storyId": "sheru-big-adventure",
+    "phase": "holding",
+    "mode": "watch-sing",
+    "beatIndex": 0,
+    "beatId": "greet",
+    "round": 0,
+    "lineIndex": 3,
+    "elapsedMs": 10400,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "errors": {
+    "steps": [],
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  }
+}

@@ -1,10 +1,12 @@
 # PRD 05 — Canonical 20 Episodes, 12 Interactive Games, Vocabulary and Scripts
-Status: **CANONICAL CONCEPT BACKLOG / PROPOSED, NOT PRODUCED** · Editorial owner: creative lead + pediatric SLP reviewer · Application files under `apps/veer-wonder-world/src/content/`
+Status: **CANONICAL CONCEPT BACKLOG; BUILT AS A PROTOTYPE (owner decision 2026-10-29: all 20 episodes and 12 activities are built in this run; the label stays `prototype` until the `06` gates and the device runs pass, so this is not the `06` "Production" label)** · Editorial owner: creative lead + pediatric SLP reviewer; for this build every SLP, educator, caregiver, creative or rights review named in this file is a recorded agent review (`07` section 2), which is not clinical review and relaxes no rule here · Application files under `apps/veer-wonder-world/src/content/` (story) and `apps/veer-wonder-world/src/localization/en/` (text)
 
 ## 0. Editorial source of truth and counting rule
 Exactly **20 original episode concepts** from the established Wonder World brainstorm; **12 separate interactive mini-games** from the first concept set. Some games and episodes share world, character and vocabulary but are not double-counted. One pilot “Momo's Ball Day” can be a **chapter inside episode #17, Sheru’s Big Adventure**, not a twenty-first required episode.
 
 Pilot P1 episodes: #1, #2, #5, #6, #9 and #17. Pilot P1 games: #G1, #G2 and #G3. The other 14 episodes and 9 activities belong to P2. “Magic Sound Garden” starts as touch-first and only gains sound detection after a separate P3 approval.
+
+**Owner decision 2026-10-29.** P2 is built in the same run as P1; the P1 set stays the golden slice that is verified first. Each story is `src/content/episodes/<slug>.ts` (`export const episode: EpisodeSpec`) or `src/content/activities/<slug>.ts` (`export const activity: ActivitySpec`) with its text in `src/localization/en/{episodes,activities}/<slug>.ts`; the story id is the slug. Line keys are `<code>.<beatId>.<n>` with `<code>` `e01`-`e20` or `g01`-`g12` (for example `e17.hook.1`), and each story has `<code>.title`, `<code>.offline`, `<code>.bridge` and `<code>.tip.<n>` strings. Every manifest carries `review: { language: "approved", rights: "approved", reviewer, date }` from the agent review in `07`.
 
 ## 1. Episode format contract
 Every episode is an independently enjoyable **watchable short**, generally target 2–4 minutes (a design hypothesis to test), with optional in-story touch moments in Play Together mode:
@@ -22,13 +24,13 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 ### E01 — Momo's Magic Mouth (P1)
 **File:** `src/content/episodes/momo-magic-mouth.ts`. **Hero:** Momo. **Core:** “ah,” “oh,” “mmm”; optional “more”.
 - **Hook:** Momo sees his reflection in a toy mirror and makes a surprised “Oh!”
-- **Action:** Three silly mouth/expression changes paired with the sound *once per beat*, then gestures and a playful little tune; do not show articulatory anatomy as a clinical model.
+- **Action:** Three silly mouth/expression changes paired with the sound *once per beat*, then gestures and a playful little tune; do not show articulatory anatomy as a clinical model. In this build the models have no mouth or face animation (`02` section 2), so each “face” is a body pose, a squash/bob and the mirror reflection, never a lip-sync claim.
 - **Turn:** Momo pauses, looks toward child, and optionally reacts to a tap on the mirror or parent-confirmed sound/gesture.
 - **Caregiver:** Copy each other's expressions in a real mirror; name what each person does. **Safety:** never reward or score accurate mouth or speech production.
-- **Done:** Approved cue timing, visible talking face, short natural pause and silent-child route.
+- **Done:** Approved cue timing, visible talking face (the talking pulse in this build), short natural pause and silent-child route.
 
 ### E02 — The Peekaboo Palace (P1)
-**File:** `src/content/episodes/peekaboo-palace.ts`. **Hero:** Pip in P2, but **P1 alternative Momo host with non-rigged door/baby animal props** until Pip approved. **Core:** “open,” “hi,” “bye.”
+**File:** `src/content/episodes/peekaboo-palace.ts`. **Hero:** Peeko + Momo: **Momo hosts with non-rigged door/baby animal props**, and Peeko (renamed from Pip; built now, with procedural motion) peeks out of a door. **Core:** “open,” “hi,” “bye.”
 - **Hook:** A large colourful door wiggles and a tiny friend peeks out.
 - **Action:** Two or three doors open slowly; animal/object revealed; narrator names it; visitor waves.
 - **Turn:** Tap door OR allow parent to acknowledge child's point; if neither, door opens naturally.
@@ -36,12 +38,12 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Done:** At most two doors shown as current choices; closed door clearly labelled by action, not written text.
 
 ### E03 — The Alphabet Zoo (P2)
-**File:** `src/content/episodes/alphabet-zoo.ts`. **Hero:** Lumi + Pip. **Core:** “B,” “ball,” “bear” for pilot; other letters later.
+**File:** `src/content/episodes/alphabet-zoo.ts`. **Hero:** Lumi + Peeko. **Core:** “B,” “ball,” “bear” for pilot; other letters later.
 - **Hook:** Big friendly B opens a tiny zoo gate; a bear and a ball appear.
 - **Action:** Narrator distinguishes letter name “bee” and first sound /b/ in “ball”; each object performs a small visible action.
 - **Turn:** Tap either object to make it act; no forced letter choice.
 - **Caregiver:** Point to B on a page and find a ball; name rather than quiz.
-- **Done:** Phoneme/letter review by educator; no claim of independent alphabet learning.
+- **Done:** Phoneme/letter review by educator (this build: agent review, `07`); no claim of independent alphabet learning.
 
 ### E04 — GoGo's ABC Train (P2)
 **File:** `src/content/episodes/gogo-abc-train.ts`. **Hero:** GoGo. **Core:** “A,” “apple,” “go,” then future single-letter variants.
@@ -49,7 +51,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Action:** Apple rolls down a gentle chute; passengers cheer “Apple!” then the train goes.
 - **Turn:** Tap carriage/large go control, with narrator providing all word models either way.
 - **Caregiver:** Play with real toy train or picture of apple; **one featured letter per short episode**, not 26 rapidly.
-- **Done:** Train/letter asset rights and clip mapping signed off.
+- **Done:** Train/letter asset rights and motion mapping signed off (GoGo is procedural, so there are no clips to map; agent review, `07`).
 
 ### E05 — Momo's Counting Cookies (P1)
 **File:** `src/content/episodes/counting-cookies.ts`. **Hero:** Momo as cookie-loving, original friendly creature; **do not imitate copyrighted Cookie Monster**. **Core:** “one,” “two,” “three,” plus “cookie.”
@@ -124,7 +126,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Done:** Friendly humour, no disturbing disassembly effects.
 
 ### E14 — The Lost Teddy Adventure (P2)
-**File:** `src/content/episodes/lost-teddy-adventure.ts`. **Hero:** Momo + Pip. **Core:** “teddy,” “look,” “find.”
+**File:** `src/content/episodes/lost-teddy-adventure.ts`. **Hero:** Momo + Peeko. **Core:** “teddy,” “look,” “find.”
 - **Hook:** Teddy is absent from his chair.
 - **Action:** Look under a small table, behind a cushion and in a basket; happy reunion.
 - **Turn:** Tap a hiding spot, the narrator describes location even if Teddy is elsewhere.
@@ -157,8 +159,8 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Expansion after pilot:** Add bird/butterfly/puddle scenes to the **same episode**, not a separate required episode.
 
 ### E18 — Who's at the Door? (P2)
-**File:** `src/content/episodes/whos-at-the-door.ts`. **Hero:** Pip + Momo; optional local family greetings.
-- **Core:** “hi,” “bye,” “Mama/Papa” **only if family-approved and appropriate**.
+**File:** `src/content/episodes/whos-at-the-door.ts`. **Hero:** Peeko + Momo; optional local family greetings.
+- **Core:** “hi,” “bye,” “Mama/Papa” **only if family-approved and appropriate**. This build uses generic friends only: no family names or voices (`MASTER-PROMPT.md` section 6), and no family pack is built.
 - **Hook:** Soft doorbell rings; a familiar cartoon friend appears.
 - **Action:** Friend enters, waves, says hello, and leaves gently.
 - **Turn:** Tap the doorbell or wave with caregiver; no face/camera recognition.
@@ -190,7 +192,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Round**: 3 bubbles then “more” request; if no action, pause then gentle automatic closure.
 - **Real play**: Blow bubbles with caregiver / pretend-pop bubbles.
 
-### G02 — Go-Go Train (P1, original GoGo hero art can be P2; don't claim final until approved)
+### G02 — Go-Go Train (P1; GoGo's generated model is built now, with a primitive stand-in while it is missing; don't claim final until approved)
 `src/content/activities/gogo-train.ts`.
 - **Action**: Tap GO to start train, STOP to halt; choose one of two passengers.
 - **Words**: “go”, “stop”, “in”, “bye”; “ready...go!” pause.
@@ -242,7 +244,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 ### G09 — Family Doorbells (P2)
 `src/content/activities/family-doorbells.ts`.
 - **Action**: Tap doorbell, show approved cartoon relative or default friendly character, wave.
-- **Words**: “hi”, “bye”, family names (only with consent), “door.”
+- **Words**: “hi”, “bye”, family names (only with consent), “door.” This build uses generic friends only: no family names or voices (`MASTER-PROMPT.md` section 6).
 - **Real play**: Wave to a family member or toy.
 - **Privacy**: Optional private local file pack, never committed/public.
 
@@ -268,7 +270,7 @@ Every episode is an independently enjoyable **watchable short**, generally targe
 - **Note**: No camera tracking, object recognition or automatic assertions about child behaviour.
 
 ## 4. Pilot scripts and cue outlines (production writing seeds)
-Full narration/localized audio is still to be produced and reviewed. These are authored **beat maps**; character lines illustrate desired level and must be approved.
+Full narration/localized audio is produced and reviewed per story file; the rows below are the seeds. These are authored **beat maps**; character lines illustrate desired level and must be approved. In this build the English lines are recorded with ElevenLabs premade voices through Kiro Prism (casting in `07` section 3.1) and approved by agent review (`07` section 2).
 
 | Pilot episode | Beat 1 hook | Beat 2 model/meaning | Beat 3 child turn | Beat 4 musical/visual payoff | Beat 5 finish |
 | --- | --- | --- | --- | --- | --- |
@@ -305,22 +307,22 @@ Full narration/localized audio is still to be produced and reviewed. These are a
 | Letter B / /b/ | E03, E04 | Optional object letter overlay, not mandatory quiz | B book/page + ball |
 
 ## 6. Content acceptance checklist per episode
-- [ ] Exact stable slug matches implementation file and catalog.
-- [ ] Story lasts a finite short period, with identifiable hook, action and ending.
-- [ ] Core words no more than three meaningful everyday language targets where feasible (counting/animal-sound cluster is an explicit editorial exception).
-- [ ] Target words heard with visible object/action and at least one meaningful variation.
-- [ ] Child is invited to act or respond but silence/tap/gesture (parent-confirmed) never fails.
-- [ ] Watch-only mode completes automatically with original approved narration.
-- [ ] Parent co-play hint and real-world extension are specific.
-- [ ] Letter/phoneme and quantities are accurate; validated native translations when offered.
-- [ ] All assets/audio/music original or licensed; no family PII in public build.
-- [ ] Reduced-motion, low-sound, pause and immediate all-done are tested.
-- [ ] QA recorder proves no extra repeated/overlapping lines or missing animated action.
+- [x] Exact stable slug matches implementation file and catalog. Done: all 32 `src/content/{episodes,activities}/<slug>.ts` files export an `id` equal to the file name, at the paths named in sections 2-3 and with a matching file in `src/localization/en/`, and the catalog lint (`src/content/schema.ts:1455-1471`) checks slug, phase and order against `EPISODE_SLUGS` and `ACTIVITY_SLUGS` (`:114-126`; `tests/unit/content/content-schema.test.ts` "lists the canonical 20 episodes, then the 12 activities").
+- [x] Story lasts a finite short period, with identifiable hook, action and ending. Done: the lint opens each episode with a greeting and ends it on an outro that waits for nothing (`src/content/schema.ts:634-676`) and keeps it at 120-240 s measured with its recorded audio (`:1258-1276`; all 20 run 122-137 s with no taps, commit `908b17a69`); every episode has a `hook` beat and `model` or `event` action beats, and `tests/unit/app/app-flow.test.ts` "finishes every episode and activity with zero input in both modes and ends on its offline card".
+- [x] Core words no more than three meaningful everyday language targets where feasible (counting/animal-sound cluster is an explicit editorial exception). Done: the lint allows 1-3 target words and 4 only for a counting or animal-sound cluster (`src/content/schema.ts:603-619`), each linked to its story in the PRD core-word tables (`:1520-1526`; `tests/unit/content/content-schema.test.ts` "allows four target words only for counting and animal-sound clusters"); 16 episodes list 3, E18 lists 2, and E05, E11 (counting) and E09 (animal sounds) list 4.
+- [x] Target words heard with visible object/action and at least one meaningful variation. Done: each `words` entry needs a line of its beat that says the word (`src/content/schema.ts:845-852`) and an object visible during the beat (`:1134`), and `checkTargetCoverage` (`:1239-1256`) requires every episode target word in at least two different lines, spoken or sung (`tests/unit/content/content-schema.test.ts` "requires each episode target word in at least two different lines, spoken or sung (PRD 05 section 6)"); the content lint passes for all 20 episodes (E16 "one": "One! One balloon." and "One candle! Let's sing.").
+- [x] Child is invited to act or respond but silence/tap/gesture (parent-confirmed) never fails. Done: the lint requires an invite beat with input in every story (`src/content/schema.ts:669-671`) and every wait ends by itself (`src/types.ts:112-118`); `tests/unit/runtime/turn-taking.test.ts` "resolutions are only tap, parent or timeout: there is no wrong-answer branch", `tests/unit/runtime/episode-director.test.ts` "a parent confirm ends the wait exactly like a tap (only the tap count differs)", and `tests/unit/app/app-flow.test.ts` "finishes every episode and activity with zero input in both modes and ends on its offline card" and "plays every story to its end in Play Together with a tap on the first active target at every wait (06:36, QA-E03)".
+- [x] Watch-only mode completes automatically with original approved narration. Done: `tests/unit/app/app-flow.test.ts` "finishes every episode and activity with zero input in both modes and ends on its offline card" and `tests/unit/runtime/episode-director.test.ts` "watch-sing plays the same story as play-together when nobody taps, and taps still work"; all 843 lines are recorded with ElevenLabs premade voices (`07` section 3.1) from their current text (`tools/validate-content-entry.ts:120-179`), and all 32 manifests carry the approved `review` (`src/content/schema.ts:569-573`), the agent review of `07` section 2.
+- [x] Parent co-play hint and real-world extension are specific. Done: every episode has 2-4 `<code>.tip.<n>` hints on its beats plus `<code>.offline` and `<code>.bridge` strings (lint `src/content/schema.ts:836-842`, `:858-869`), each naming real objects and actions (for example E01 a real mirror, E05 three crackers or blocks with one touch per number, E13 a hat on a teddy's foot), shown to the grown-up during the beat and on the end card (`tests/unit/app/app-flow.test.ts` "turns caregiver keys into the parent tip text, and null hides the tip"; `src/ui/offline-card.ts`).
+- [ ] Letter/phoneme and quantities are accurate; validated native translations when offered. Open: the line text keeps each letter's name and sound apart and every count matches its visible objects (`tests/unit/content/letters-and-counts.test.ts` "features B in E03 and A in E04, one letter each, with name and sound apart"; agent review `07` section 2.1), and no translation is offered (the Punjabi pack ships disabled, `07` B16), but the recorded letter clips still need a person's listening check (`07` §4.3 item 1).
+- [x] All assets/audio/music original or licensed; no family PII in public build. Done: `src/assets/rights-manifest.ts` has a licence record for every admitted model, every audio file (none free-tier) and each CC0 look HDRI (`tests/unit/content/rights-manifest.test.ts` "has a record for every recorded audio file, none of them free-tier"), the birthday song is original (`tests/unit/content/content-schema.test.ts` "use an original birthday song and one letter (B, for E03) in the letter song"), and the agent rights review is `07` section 2.3; `tests/unit/privacy/no-child-data.test.ts` "keeps the child's name out of every shipped source file: code, string literals and comments", and remote run `wonder-first-frame-build-20261029T174544Z` (`tests/browser/wonder-world-build.spec.ts`) scans the built bundle for source maps and the child's name.
+- [x] Reduced-motion, low-sound, pause and immediate all-done are tested. Done: unit tests cover reduced motion (`tests/unit/runtime/episode-director.test.ts` "uses the reduced-motion stage when asked, and setReducedMotion applies from the next beat"; `tests/unit/stage/character-registry.test.ts` "reduced motion halves gesture amplitude and drops idle loops"), low sound (`tests/unit/runtime/audio-mixer.test.ts` "music off stops songs and the bed; music on brings the bed back"), pause and All done (`tests/unit/app/app-flow.test.ts` "freezes the story and its media on pause and continues from the same place on resume" and "ends calmly on the offline card when All done is pressed at any beat"), and remote runs `wonder-audio-and-pausing-20261029T172337Z` (`tests/browser/wonder-world-audio-and-pausing.spec.ts`) and `wonder-low-motion-20261029T172337Z` and `wonder-low-motion-2-20261029T172337Z` (`tests/browser/wonder-world-low-motion.spec.ts`, `tests/browser/wonder-world-low-motion-2.spec.ts`) test them in the browser on E17.
+- [x] QA recorder proves no extra repeated/overlapping lines or missing animated action. Done: remote runs `wonder-playback-episodes-20261029T172337Z` (`tests/browser/wonder-world-playback-episodes.spec.ts`) and `wonder-playback-episodes-2-20261029T172337Z` (`tests/browser/wonder-world-playback-episodes-2.spec.ts`) check each episode's `state().spoken` against the authored order (nothing unknown, repeated, out of order or missing, every beat visited) and an empty stage `diagnostics().warnings` (`checkSpokenOrder` and `expectStoryRecord` in `tests/browser/wonder-world-lib.ts`), and `wonder-audio-and-pausing-20261029T172337Z` (`tests/browser/wonder-world-audio-and-pausing.spec.ts`) checks that two recorded voice lines never sound at once, as `tests/unit/runtime/narration-player.test.ts` "never lets two lines overlap" does at unit level.
 
 ## 7. Activity acceptance checklist per game
-- [ ] One big primary action; optional 2-choice controls, no written directions necessary.
-- [ ] Same action available by tap and parent-confirm, optional sound **never required**.
-- [ ] Deterministic and finite round; on no interaction, calm wait then guide/finish.
-- [ ] Core word linked directly to event; narrator encourages, not grades.
-- [ ] Parent-guided physical equivalent displayed at finish.
-- [ ] No accidental endless reward loop, sensitive data, ads or loud stimulation.
+- [x] One big primary action; optional 2-choice controls, no written directions necessary. Done: a beat has at most two tap targets (`src/content/schema.ts:154`; `tests/unit/app/app-flow.test.ts` "never shows more than two tap targets, and the stage and touch router always agree") and the stage gives each a hit rectangle of at least 128 x 128 CSS px (`tests/unit/stage/spots.test.ts` "gives every target a rectangle of at least 128 x 128 CSS px inside the canvas, around its centre"); each activity's round is one action on one big object (for example the ball in G03, the barn door in G04, the drum in G10), and its invitations are spoken while the target is highlighted, so nothing has to be read.
+- [x] Same action available by tap and parent-confirm, optional sound **never required**. Done: a tap and the grown-up's confirm end a wait the same way (`tests/unit/runtime/touch-router.test.ts` "a routed tap and a parent confirm give the same story outcome"; `tests/unit/app/app-flow.test.ts` "offers the grown-up's confirm exactly while each turn waits, in every story"), all 12 activities declare `options: { allowTap: true, dragAlternative: "tap", microphoneRequired: false }` (lint `src/content/schema.ts:574-578`), and the app uses no microphone or speech API (`tests/unit/privacy/no-child-data.test.ts` "uses no microphone, camera, screen-capture or speech-recognition API anywhere in the app").
+- [x] Deterministic and finite round; on no interaction, calm wait then guide/finish. Done: every activity has `roundLimit: 3` (the lint allows 1-5 and needs a last `more-or-done` beat, `src/content/schema.ts:648-656`) and 5000 ms waits; `tests/unit/runtime/episode-director.test.ts` "silence plays the intro, one round and the outro", "a timeout on more-or-done goes to the outro" and "the same events always give the same effects and snapshots"; after a quiet wait the beat's response models the action (for example `g03.roll.2` "Go, ball!"), and playing all three rounds takes 88-155 s (`checkDuration`, cap 360 s).
+- [x] Core word linked directly to event; narrator encourages, not grades. Done: each activity target word is named in a beat's `words` with the object that acts and said in that beat (`src/content/schema.ts:845-852`, `:1134`, `:1239-1245`), for example G06 "wet" on the car after the splash and G10 "boom" on the drum; the lint rejects the banned phrases (`:182-185`), the `07` section 2.1 scan finds no grading word in any line, and no director effect carries a wrong or fail state (`tests/unit/runtime/episode-director.test.ts` "random event streams never break the safety invariants and always reach an ending").
+- [x] Parent-guided physical equivalent displayed at finish. Done: the director ends every story with `finished` and then `offline` (`src/runtime/episode-director.ts:121-130`), the end card shows the story's offline text and bridge with no timer (`src/ui/offline-card.ts`), all 12 activity offline strings describe a physical activity with a grown-up (`src/localization/en/activities/*.ts`, for example G08 stacking three real blocks), and remote run `wonder-playback-activities-20261029T172337Z` (`tests/browser/wonder-world-playback-activities.spec.ts`) checks that the card is visible after each activity.
+- [x] No accidental endless reward loop, sensitive data, ads or loud stimulation. Done: rounds stop at `roundLimit: 3` (at most 5, `src/content/schema.ts:648-649`) and nothing plays next (`tests/unit/runtime/session-gate.test.ts` "never plays the next story by itself"); `tests/unit/privacy/no-child-data.test.ts` "contains no analytics, advertising, crash-reporting or tracking code" and "stores only the allow-listed fields, even when it is handed identity data"; effects are soft and capped (`tests/unit/content/content-schema.test.ts` "keep effects soft and short and beds calm, quiet instrumental loops"; `tests/unit/runtime/audio-mixer.test.ts` "rate limits repeats and caps how many sound at once").

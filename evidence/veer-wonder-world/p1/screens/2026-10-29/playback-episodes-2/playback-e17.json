@@ -1,0 +1,226 @@
+{
+  "code": "e17",
+  "id": "sheru-big-adventure",
+  "mode": "watch-sing",
+  "style": "sampled",
+  "loadMs": 42926,
+  "runMs": 124968,
+  "loadError": null,
+  "started": {
+    "screen": "story",
+    "storyId": "sheru-big-adventure",
+    "director": {
+      "storyId": "sheru-big-adventure",
+      "phase": "speaking",
+      "mode": "watch-sing",
+      "beatIndex": 0,
+      "beatId": "greet",
+      "round": 0,
+      "lineIndex": 0,
+      "elapsedMs": 0,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "targets": [],
+    "speaking": "e17.greet.1",
+    "speaker": "momo",
+    "spoken": [
+      "e17.greet.1"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 76,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "run": {
+    "style": "sampled",
+    "chunks": 50,
+    "fallbacks": 0,
+    "finalCallUsed": false,
+    "result": {
+      "finished": true,
+      "reason": "complete",
+      "elapsedMs": 900
+    },
+    "maxTargets": 1,
+    "targetIds": [
+      "ball"
+    ],
+    "waitSamples": 4,
+    "maxRound": 0,
+    "beatIds": [
+      "greet",
+      "hook",
+      "model",
+      "invite",
+      "event",
+      "repeat",
+      "song",
+      "outro"
+    ],
+    "phases": [
+      "speaking",
+      "holding",
+      "waiting",
+      "responding",
+      "finished"
+    ],
+    "screens": [
+      "story",
+      "offline"
+    ],
+    "speakingKeys": 15,
+    "malformedSpeaking": [],
+    "foreignSpeaking": []
+  },
+  "runError": null,
+  "ended": {
+    "screen": "offline",
+    "storyId": "sheru-big-adventure",
+    "director": {
+      "storyId": "sheru-big-adventure",
+      "phase": "finished",
+      "mode": "watch-sing",
+      "beatIndex": 7,
+      "beatId": "outro",
+      "round": 0,
+      "lineIndex": 3,
+      "elapsedMs": 123372,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": "complete"
+    },
+    "targets": [],
+    "speaking": null,
+    "speaker": null,
+    "spoken": [
+      "e17.greet.1",
+      "e17.greet.2",
+      "e17.greet.3",
+      "e17.hook.1",
+      "e17.hook.2",
+      "e17.hook.3",
+      "e17.hook.4",
+      "e17.model.1",
+      "e17.model.2",
+      "e17.model.3",
+      "e17.model.4",
+      "e17.invite.1",
+      "e17.invite.2",
+      "e17.event.1",
+      "e17.event.2",
+      "e17.event.3",
+      "e17.event.4",
+      "e17.repeat.1",
+      "e17.repeat.2",
+      "e17.repeat.3",
+      "e17.repeat.4",
+      "e17.repeat.5",
+      "e17.outro.1",
+      "e17.outro.2",
+      "e17.outro.3"
+    ],
+    "audio": {
+      "unlocked": false,
+      "available": true
+    },
+    "settings": {
+      "mode": "play-together",
+      "reducedMotion": false,
+      "captions": true,
+      "music": true,
+      "sound": true
+    },
+    "stage": {
+      "drawCalls": 80,
+      "nodes": 17,
+      "modelsEnabled": true
+    },
+    "micRequested": false,
+    "errors": []
+  },
+  "offlineCardVisible": true,
+  "afterEnd": {
+    "stayedOffline": true,
+    "screen": "offline",
+    "storyId": "sheru-big-adventure",
+    "directorStoryId": "sheru-big-adventure",
+    "directorPhase": "finished",
+    "advanceError": null
+  },
+  "mic": null,
+  "newAppErrors": [],
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "spoken": [
+    "e17.greet.1",
+    "e17.greet.2",
+    "e17.greet.3",
+    "e17.hook.1",
+    "e17.hook.2",
+    "e17.hook.3",
+    "e17.hook.4",
+    "e17.model.1",
+    "e17.model.2",
+    "e17.model.3",
+    "e17.model.4",
+    "e17.invite.1",
+    "e17.invite.2",
+    "e17.event.1",
+    "e17.event.2",
+    "e17.event.3",
+    "e17.event.4",
+    "e17.repeat.1",
+    "e17.repeat.2",
+    "e17.repeat.3",
+    "e17.repeat.4",
+    "e17.repeat.5",
+    "e17.outro.1",
+    "e17.outro.2",
+    "e17.outro.3"
+  ],
+  "spokenOrder": {
+    "spoken": 25,
+    "authored": 25,
+    "rounds": 0,
+    "unknown": [],
+    "outOfOrder": [],
+    "repeats": [],
+    "missing": [],
+    "unvisited": [],
+    "extraRounds": 0
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "requests": {
+    "count": 12,
+    "foreign": []
+  },
+  "appConsoleLogs": [],
+  "context": {
+    "runId": "wonder-playback-episodes-2-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0"
+  }
+}

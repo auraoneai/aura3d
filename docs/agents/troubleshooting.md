@@ -76,7 +76,7 @@ How to read diagnostics at run time: `app.diagnostics()` returns `warnings`, `er
 
 **`POSTPROCESS_V2_UNMIGRATED:<reason>`** (warning, removed in 4.3.0)
 - Cause (4.2.x and earlier): any configured postprocess chain was labelled "unmigrated" under core output, although the PostGraph v2 route already tone-maps and encodes once. It could appear even when you authored no post effect.
-- Effect: none by itself. The 25 to 40% darkening people saw with it came from `effects.vignette()`, which darkened display-referred bytes after the tone map. 4.3.0 applies it in linear light before the tone map (about 6% to 18% mean luma at `intensity: 0.16`, `smoothness: 0.65`).
+- Effect: none by itself. The 25 to 40% darkening people saw with it came from `effects.vignette()`, which darkened display-referred bytes after the tone map. 4.3.0 moved the vignette into linear light before the tone map (about 6% to 18% mean luma at `intensity: 0.16`, `smoothness: 0.65`), but since 4.3.2 that fix is opt-in only (`globalThis.__A3D_LINEAR_VIGNETTE__ = true` or `?linearvig=1`; `linearVignetteEnabled()` in `packages/rendering/src/webgl2/LegacyPost.ts`). By default the 4.2.0 display-space vignette runs and `effects.vignette()` still darkens the frame; leave it out where brightness matters.
 - 4.3.0 and later: the warning is gone. A chain PostGraph v2 cannot run (`compat.post: "3.0"`, `-post`, WebGPU, `cpu-deterministic`) is reported as `post-legacy-route:<reason>` in `diagnostics().output.postSkipped`, not in the console.
 
 **`WEIGHTS_0 normalized: ... degenerate vertex(es) set to [1,0,0,0]`** - the glTF loader repaired skin weights. Informational.

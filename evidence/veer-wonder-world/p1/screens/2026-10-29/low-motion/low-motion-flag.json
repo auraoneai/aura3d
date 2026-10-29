@@ -1,0 +1,119 @@
+{
+  "label": "low-motion-flag",
+  "runId": "wonder-low-motion-20261029T172337Z",
+  "commit": {
+    "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 640,
+    "height": 480
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "settings": {
+    "mode": "play-together",
+    "reducedMotion": true,
+    "captions": true,
+    "music": true,
+    "sound": true
+  },
+  "flashes": {
+    "frames": 60,
+    "meanLuma": [
+      192.2,
+      192.2,
+      192.2,
+      192.2,
+      192,
+      191.6,
+      191.6,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.4,
+      191.5,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      191.3,
+      189.7,
+      189.8,
+      189.8,
+      189.8,
+      189.8,
+      189.8
+    ],
+    "maxJump": 1.539,
+    "spikes": [],
+    "darkestMean": 189.747
+  },
+  "idle": {
+    "beatId": "invite",
+    "phase": "waiting",
+    "delta": {
+      "meanAbsLumaDiff": 0.024,
+      "meanLumaDelta": 0.002,
+      "changedRatio": 0
+    },
+    "firstFrame": {
+      "meanLuma": 189.637,
+      "lumaStdDev": 39.37,
+      "nonBlackRatio": 1,
+      "coarseColours": 536
+    }
+  },
+  "thresholds": {
+    "MAX_FRAME_JUMP": 40,
+    "SPIKE_DELTA": 15,
+    "IDLE_GAP_MS": 200,
+    "IDLE_MAX_MEAN_ABS_DIFF": 2.5,
+    "IDLE_MAX_CHANGED_RATIO": 0.04
+  },
+  "consoleErrors": [],
+  "pageErrors": []
+}

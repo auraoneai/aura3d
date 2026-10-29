@@ -1,0 +1,413 @@
+{
+  "context": {
+    "runId": "wonder-characters-20261029T182623Z",
+    "commit": {
+      "commit": "498c32f63c44f90def67bc1c6a155c9263162e20",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "character": "lulu",
+  "story": "lulu-dino-dance",
+  "code": "e06",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 26895,
+    "firstMount": null
+  },
+  "drawnAs": [
+    "actor",
+    "lulu",
+    "model"
+  ],
+  "phone": {
+    "viewport": {
+      "width": 320,
+      "height": 568
+    },
+    "storyMs": 4000,
+    "camera": {
+      "preset": "wide",
+      "since": 0
+    },
+    "shownForShot": false,
+    "nodeRect": {
+      "id": "lulu",
+      "x": 130.58078963377622,
+      "y": 257.61114133060994,
+      "w": 58.83842073244753,
+      "h": 87.68562324399471
+    },
+    "canvas": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 568
+    },
+    "visibleHeight": 88,
+    "silhouette": {
+      "box": {
+        "x": 131,
+        "y": 258,
+        "width": 59,
+        "height": 88
+      },
+      "core": {
+        "r": 157.751,
+        "g": 194.333,
+        "b": 157.76,
+        "luma": 183.915,
+        "pixels": 1674
+      },
+      "ground": {
+        "r": 203.364,
+        "g": 217.749,
+        "b": 208.809,
+        "luma": 214.045,
+        "pixels": 20680
+      },
+      "lumaDiff": 30.13,
+      "colourDistance": 72.352,
+      "separatedShare": 0.604
+    },
+    "frame": {
+      "meanLuma": 192.477,
+      "lumaStdDev": 39.973,
+      "nonBlackRatio": 1,
+      "coarseColours": 322
+    }
+  },
+  "turnaround": {
+    "storyMs": 14450,
+    "reducedMotion": true,
+    "anchor": "momo",
+    "nodeRect": {
+      "id": "lulu",
+      "x": 307.1731202402661,
+      "y": 208.6958441921173,
+      "w": 185.65375951946783,
+      "h": 275.5344884225023
+    },
+    "crop": {
+      "x": 251,
+      "y": 112,
+      "width": 298,
+      "height": 406
+    },
+    "views": [
+      {
+        "view": "front",
+        "toward": "viewer",
+        "frame": {
+          "meanLuma": 201.129,
+          "lumaStdDev": 30.656,
+          "nonBlackRatio": 1,
+          "coarseColours": 181
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 0,
+          "meanLumaDelta": 0,
+          "changedRatio": 0
+        }
+      },
+      {
+        "view": "left",
+        "toward": "offLeft",
+        "frame": {
+          "meanLuma": 200.958,
+          "lumaStdDev": 29.974,
+          "nonBlackRatio": 1,
+          "coarseColours": 175
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 9.811,
+          "meanLumaDelta": -0.171,
+          "changedRatio": 0.174
+        }
+      },
+      {
+        "view": "back",
+        "toward": "back",
+        "frame": {
+          "meanLuma": 201.389,
+          "lumaStdDev": 29.766,
+          "nonBlackRatio": 1,
+          "coarseColours": 133
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 5.831,
+          "meanLumaDelta": 0.261,
+          "changedRatio": 0.113
+        }
+      },
+      {
+        "view": "right",
+        "toward": "offRight",
+        "frame": {
+          "meanLuma": 199.617,
+          "lumaStdDev": 30.758,
+          "nonBlackRatio": 1,
+          "coarseColours": 185
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 10.509,
+          "meanLumaDelta": -1.512,
+          "changedRatio": 0.19
+        }
+      }
+    ],
+    "frontBack": {
+      "meanAbsLumaDiff": 5.831,
+      "meanLumaDelta": 0.261,
+      "changedRatio": 0.113
+    },
+    "mostUnlikeFront": {
+      "view": "right",
+      "delta": {
+        "meanAbsLumaDiff": 10.509,
+        "meanLumaDelta": -1.512,
+        "changedRatio": 0.19
+      }
+    },
+    "warningsAdded": []
+  },
+  "poses": {
+    "storyMs": 71150,
+    "nodeRect": {
+      "id": "lulu",
+      "x": 307.1731202402661,
+      "y": 208.6958441921173,
+      "w": 185.65375951946783,
+      "h": 275.5344884225023
+    },
+    "crop": {
+      "x": 251,
+      "y": 112,
+      "width": 298,
+      "height": 406
+    },
+    "states": [
+      {
+        "state": "neutral",
+        "gesture": "idle",
+        "atMs": 400,
+        "frame": {
+          "meanLuma": 201.125,
+          "lumaStdDev": 30.635,
+          "nonBlackRatio": 1,
+          "coarseColours": 174
+        },
+        "vsNeutral": null
+      },
+      {
+        "state": "delighted",
+        "gesture": "happy",
+        "atMs": 450,
+        "frame": {
+          "meanLuma": 200.667,
+          "lumaStdDev": 30.84,
+          "nonBlackRatio": 1,
+          "coarseColours": 188
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 9.607,
+          "meanLumaDelta": -0.458,
+          "changedRatio": 0.169
+        }
+      },
+      {
+        "state": "curious",
+        "gesture": "look",
+        "atMs": 800,
+        "frame": {
+          "meanLuma": 200.177,
+          "lumaStdDev": 31.824,
+          "nonBlackRatio": 1,
+          "coarseColours": 183
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 6.942,
+          "meanLumaDelta": -0.948,
+          "changedRatio": 0.121
+        }
+      },
+      {
+        "state": "surprised",
+        "gesture": "surprise",
+        "atMs": 350,
+        "frame": {
+          "meanLuma": 199.736,
+          "lumaStdDev": 32.404,
+          "nonBlackRatio": 1,
+          "coarseColours": 202
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 9.802,
+          "meanLumaDelta": -1.389,
+          "changedRatio": 0.171
+        }
+      },
+      {
+        "state": "waiting",
+        "gesture": "wait",
+        "atMs": 500,
+        "frame": {
+          "meanLuma": 200.659,
+          "lumaStdDev": 31.175,
+          "nonBlackRatio": 1,
+          "coarseColours": 177
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 4.422,
+          "meanLumaDelta": -0.466,
+          "changedRatio": 0.078
+        }
+      },
+      {
+        "state": "good-bye",
+        "gesture": "wave",
+        "atMs": 600,
+        "frame": {
+          "meanLuma": 200.786,
+          "lumaStdDev": 30.909,
+          "nonBlackRatio": 1,
+          "coarseColours": 183
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 6.854,
+          "meanLumaDelta": -0.339,
+          "changedRatio": 0.12
+        }
+      }
+    ]
+  },
+  "talking": {
+    "storyMs": 74350,
+    "reducedMotion": true,
+    "crop": {
+      "x": 251,
+      "y": 112,
+      "width": 298,
+      "height": 406
+    },
+    "talking": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 0.561,
+          "meanLumaDelta": 0,
+          "changedRatio": 0.006
+        },
+        {
+          "meanAbsLumaDiff": 2.621,
+          "meanLumaDelta": 0.097,
+          "changedRatio": 0.044
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 2.621,
+        "meanLumaDelta": 0.097,
+        "changedRatio": 0.044
+      }
+    },
+    "silent": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 0.02,
+          "meanLumaDelta": 0.005,
+          "changedRatio": 0
+        },
+        {
+          "meanAbsLumaDiff": 0.019,
+          "meanLumaDelta": -0.002,
+          "changedRatio": 0
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 0.02,
+        "meanLumaDelta": 0.005,
+        "changedRatio": 0
+      }
+    },
+    "silentShare": 0.008
+  },
+  "reducedMotion": {
+    "storyMs": 80200,
+    "gesture": "happy",
+    "crop": {
+      "x": 251,
+      "y": 112,
+      "width": 298,
+      "height": 406
+    },
+    "normalTravelPx": 49.2,
+    "reducedTravelPx": 23.6,
+    "normal": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 8.822,
+          "meanLumaDelta": 0.356,
+          "changedRatio": 0.15
+        },
+        {
+          "meanAbsLumaDiff": 9.539,
+          "meanLumaDelta": 0.31,
+          "changedRatio": 0.165
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 9.539,
+        "meanLumaDelta": 0.31,
+        "changedRatio": 0.165
+      }
+    },
+    "reduced": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 6.006,
+          "meanLumaDelta": 0.345,
+          "changedRatio": 0.105
+        },
+        {
+          "meanAbsLumaDiff": 7.311,
+          "meanLumaDelta": 0.303,
+          "changedRatio": 0.126
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 7.311,
+        "meanLumaDelta": 0.303,
+        "changedRatio": 0.126
+      }
+    },
+    "reducedShare": 0.766
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "director": {
+    "storyId": "lulu-dino-dance",
+    "phase": "responding",
+    "mode": "watch-sing",
+    "beatIndex": 14,
+    "beatId": "invite-go",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 81500,
+    "waitedMs": 5000,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "errors": {
+    "steps": [],
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  }
+}

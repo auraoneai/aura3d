@@ -1,0 +1,159 @@
+{
+  "context": {
+    "runId": "wonder-stills-20261029T172337Z",
+    "commit": {
+      "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "code": "e05",
+  "id": "counting-cookies",
+  "title": "Momo's Counting Cookies",
+  "kind": "episode",
+  "viewport": {
+    "width": 1024,
+    "height": 768
+  },
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 68888,
+    "firstMount": null
+  },
+  "moment": {
+    "beatId": "count-one",
+    "kind": "model",
+    "t": 31700,
+    "rule": "3 s after the beat starts",
+    "camera": {
+      "preset": "medium",
+      "since": 28700
+    }
+  },
+  "director": {
+    "storyId": "counting-cookies",
+    "phase": "holding",
+    "mode": "watch-sing",
+    "beatIndex": 4,
+    "beatId": "count-one",
+    "round": 0,
+    "lineIndex": 2,
+    "elapsedMs": 31700,
+    "waitedMs": 0,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "frame": {
+    "width": 1024,
+    "height": 768,
+    "luma": {
+      "meanLuma": 187.072,
+      "lumaStdDev": 34.043,
+      "nonBlackRatio": 1,
+      "coarseColours": 474
+    },
+    "colour": {
+      "meanSaturation": 0.236,
+      "colourfulness": 49.023,
+      "clippedRatio": 0,
+      "p5Luma": 151,
+      "p95Luma": 226
+    }
+  },
+  "nodes": [
+    {
+      "id": "momo",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "momo",
+        "model"
+      ]
+    },
+    {
+      "id": "lulu",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "actor",
+        "lulu",
+        "model"
+      ]
+    },
+    {
+      "id": "plate",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "plate",
+        "model"
+      ]
+    },
+    {
+      "id": "basket",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "picnicBasket",
+        "model"
+      ]
+    },
+    {
+      "id": "cookie-1",
+      "exists": true,
+      "visible": true,
+      "tags": [
+        "prop",
+        "cookie",
+        "model"
+      ]
+    },
+    {
+      "id": "cookie-2",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "cookie",
+        "model"
+      ]
+    },
+    {
+      "id": "cookie-3",
+      "exists": true,
+      "visible": false,
+      "tags": [
+        "prop",
+        "cookie",
+        "model"
+      ]
+    }
+  ],
+  "stage": {
+    "drawCalls": 46,
+    "nodes": 21,
+    "world": "home-nook",
+    "modelNodes": 7,
+    "standInNodes": 0,
+    "modelStatus": {
+      "procedural": 6,
+      "ready": 24
+    }
+  },
+  "stageWarnings": [],
+  "errors": {
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  },
+  "problems": []
+}

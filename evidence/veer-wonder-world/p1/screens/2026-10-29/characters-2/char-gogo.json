@@ -1,0 +1,413 @@
+{
+  "context": {
+    "runId": "wonder-characters-2-20261029T182623Z",
+    "commit": {
+      "commit": "498c32f63c44f90def67bc1c6a155c9263162e20",
+      "tree": "clean"
+    },
+    "engineVersion": "4.5.0",
+    "renderer": {
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+    }
+  },
+  "character": "gogo",
+  "story": "gogo-train",
+  "code": "g02",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "load": {
+    "loadMs": 28405,
+    "firstMount": null
+  },
+  "drawnAs": [
+    "actor",
+    "gogo",
+    "model"
+  ],
+  "phone": {
+    "viewport": {
+      "width": 320,
+      "height": 568
+    },
+    "storyMs": 4000,
+    "camera": {
+      "preset": "wide",
+      "since": 0
+    },
+    "shownForShot": false,
+    "nodeRect": {
+      "id": "gogo",
+      "x": 130.4665676298556,
+      "y": 267.0401297547014,
+      "w": 59.066864740288764,
+      "h": 92.92785081479957
+    },
+    "canvas": {
+      "x": 0,
+      "y": 0,
+      "width": 320,
+      "height": 568
+    },
+    "visibleHeight": 93,
+    "silhouette": {
+      "box": {
+        "x": 130,
+        "y": 267,
+        "width": 59,
+        "height": 93
+      },
+      "core": {
+        "r": 218.421,
+        "g": 98.875,
+        "b": 83.705,
+        "luma": 123.195,
+        "pixels": 1767
+      },
+      "ground": {
+        "r": 206.674,
+        "g": 217.499,
+        "b": 198.825,
+        "luma": 213.849,
+        "pixels": 23124
+      },
+      "lumaDiff": 90.654,
+      "colourDistance": 165.717,
+      "separatedShare": 0.943
+    },
+    "frame": {
+      "meanLuma": 190.198,
+      "lumaStdDev": 40.904,
+      "nonBlackRatio": 1,
+      "coarseColours": 421
+    }
+  },
+  "turnaround": {
+    "storyMs": 7350,
+    "reducedMotion": true,
+    "anchor": "peeko",
+    "nodeRect": {
+      "id": "gogo",
+      "x": 299.9540798304487,
+      "y": 227.7106635441017,
+      "w": 200.09184033910265,
+      "h": 287.0974806598268
+    },
+    "crop": {
+      "x": 239,
+      "y": 127,
+      "width": 322,
+      "height": 423
+    },
+    "views": [
+      {
+        "view": "front",
+        "toward": "viewer",
+        "frame": {
+          "meanLuma": 181.043,
+          "lumaStdDev": 50.405,
+          "nonBlackRatio": 1,
+          "coarseColours": 407
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 0,
+          "meanLumaDelta": 0,
+          "changedRatio": 0
+        }
+      },
+      {
+        "view": "left",
+        "toward": "offLeft",
+        "frame": {
+          "meanLuma": 153.39,
+          "lumaStdDev": 61.611,
+          "nonBlackRatio": 1,
+          "coarseColours": 535
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 44.377,
+          "meanLumaDelta": -27.653,
+          "changedRatio": 0.47
+        }
+      },
+      {
+        "view": "back",
+        "toward": "back",
+        "frame": {
+          "meanLuma": 177.958,
+          "lumaStdDev": 49.988,
+          "nonBlackRatio": 1,
+          "coarseColours": 364
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 12.871,
+          "meanLumaDelta": -3.085,
+          "changedRatio": 0.199
+        }
+      },
+      {
+        "view": "right",
+        "toward": "offRight",
+        "frame": {
+          "meanLuma": 153.596,
+          "lumaStdDev": 61.323,
+          "nonBlackRatio": 1,
+          "coarseColours": 560
+        },
+        "vsFront": {
+          "meanAbsLumaDiff": 43.175,
+          "meanLumaDelta": -27.447,
+          "changedRatio": 0.46
+        }
+      }
+    ],
+    "frontBack": {
+      "meanAbsLumaDiff": 12.871,
+      "meanLumaDelta": -3.085,
+      "changedRatio": 0.199
+    },
+    "mostUnlikeFront": {
+      "view": "left",
+      "delta": {
+        "meanAbsLumaDiff": 44.377,
+        "meanLumaDelta": -27.653,
+        "changedRatio": 0.47
+      }
+    },
+    "warningsAdded": []
+  },
+  "poses": {
+    "storyMs": 10000,
+    "nodeRect": {
+      "id": "gogo",
+      "x": 299.9540798304487,
+      "y": 227.7106635441017,
+      "w": 200.09184033910265,
+      "h": 287.0974806598268
+    },
+    "crop": {
+      "x": 239,
+      "y": 127,
+      "width": 322,
+      "height": 423
+    },
+    "states": [
+      {
+        "state": "neutral",
+        "gesture": "idle",
+        "atMs": 400,
+        "frame": {
+          "meanLuma": 181.043,
+          "lumaStdDev": 50.405,
+          "nonBlackRatio": 1,
+          "coarseColours": 408
+        },
+        "vsNeutral": null
+      },
+      {
+        "state": "delighted",
+        "gesture": "happy",
+        "atMs": 450,
+        "frame": {
+          "meanLuma": 181.011,
+          "lumaStdDev": 50.326,
+          "nonBlackRatio": 1,
+          "coarseColours": 421
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 9.378,
+          "meanLumaDelta": -0.032,
+          "changedRatio": 0.147
+        }
+      },
+      {
+        "state": "curious",
+        "gesture": "look",
+        "atMs": 800,
+        "frame": {
+          "meanLuma": 177.526,
+          "lumaStdDev": 52.563,
+          "nonBlackRatio": 1,
+          "coarseColours": 453
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 13.703,
+          "meanLumaDelta": -3.517,
+          "changedRatio": 0.205
+        }
+      },
+      {
+        "state": "surprised",
+        "gesture": "surprise",
+        "atMs": 350,
+        "frame": {
+          "meanLuma": 180.04,
+          "lumaStdDev": 50.527,
+          "nonBlackRatio": 1,
+          "coarseColours": 413
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 9.704,
+          "meanLumaDelta": -1.004,
+          "changedRatio": 0.15
+        }
+      },
+      {
+        "state": "waiting",
+        "gesture": "wait",
+        "atMs": 500,
+        "frame": {
+          "meanLuma": 181.406,
+          "lumaStdDev": 50.139,
+          "nonBlackRatio": 1,
+          "coarseColours": 415
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 6.892,
+          "meanLumaDelta": 0.363,
+          "changedRatio": 0.116
+        }
+      },
+      {
+        "state": "good-bye",
+        "gesture": "wave",
+        "atMs": 600,
+        "frame": {
+          "meanLuma": 180.925,
+          "lumaStdDev": 50.546,
+          "nonBlackRatio": 1,
+          "coarseColours": 432
+        },
+        "vsNeutral": {
+          "meanAbsLumaDiff": 7.967,
+          "meanLumaDelta": -0.118,
+          "changedRatio": 0.125
+        }
+      }
+    ]
+  },
+  "talking": {
+    "storyMs": 13200,
+    "reducedMotion": true,
+    "crop": {
+      "x": 239,
+      "y": 127,
+      "width": 322,
+      "height": 423
+    },
+    "talking": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 4.753,
+          "meanLumaDelta": 0.163,
+          "changedRatio": 0.082
+        },
+        {
+          "meanAbsLumaDiff": 3.78,
+          "meanLumaDelta": -0.113,
+          "changedRatio": 0.066
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 4.753,
+        "meanLumaDelta": 0.163,
+        "changedRatio": 0.082
+      }
+    },
+    "silent": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 0.026,
+          "meanLumaDelta": 0.001,
+          "changedRatio": 0
+        },
+        {
+          "meanAbsLumaDiff": 0.026,
+          "meanLumaDelta": 0.008,
+          "changedRatio": 0
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 0.026,
+        "meanLumaDelta": 0.001,
+        "changedRatio": 0
+      }
+    },
+    "silentShare": 0.005
+  },
+  "reducedMotion": {
+    "storyMs": 14200,
+    "gesture": "happy",
+    "crop": {
+      "x": 239,
+      "y": 127,
+      "width": 322,
+      "height": 423
+    },
+    "normalTravelPx": 28.5,
+    "reducedTravelPx": 14.2,
+    "normal": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 11.598,
+          "meanLumaDelta": 0.438,
+          "changedRatio": 0.17
+        },
+        {
+          "meanAbsLumaDiff": 11.041,
+          "meanLumaDelta": 0.11,
+          "changedRatio": 0.164
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 11.598,
+        "meanLumaDelta": 0.438,
+        "changedRatio": 0.17
+      }
+    },
+    "reduced": {
+      "pairs": [
+        {
+          "meanAbsLumaDiff": 8.449,
+          "meanLumaDelta": 0.228,
+          "changedRatio": 0.134
+        },
+        {
+          "meanAbsLumaDiff": 7.73,
+          "meanLumaDelta": 0.053,
+          "changedRatio": 0.127
+        }
+      ],
+      "best": {
+        "meanAbsLumaDiff": 8.449,
+        "meanLumaDelta": 0.228,
+        "changedRatio": 0.134
+      }
+    },
+    "reducedShare": 0.728
+  },
+  "stageWarnings": {
+    "added": [],
+    "total": 0
+  },
+  "director": {
+    "storyId": "gogo-train",
+    "phase": "waiting",
+    "mode": "watch-sing",
+    "beatIndex": 2,
+    "beatId": "board",
+    "round": 1,
+    "lineIndex": 1,
+    "elapsedMs": 15500,
+    "waitedMs": 4863,
+    "taps": 0,
+    "finishedReason": null
+  },
+  "errors": {
+    "steps": [],
+    "app": [],
+    "console": [],
+    "page": [],
+    "badResponses": []
+  }
+}

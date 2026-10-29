@@ -1,0 +1,434 @@
+{
+  "label": "audio-and-pausing",
+  "runId": "wonder-audio-and-pausing-20261029T172337Z",
+  "commit": {
+    "commit": "7e19868015c6880cd1233821e86ababd1660a90f",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 640,
+    "height": 480
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "passed": true,
+  "steps": {
+    "beforeStart": {
+      "screen": "start",
+      "audio": {
+        "unlocked": false,
+        "available": true
+      },
+      "speaking": null
+    },
+    "audio": {
+      "unlocked": true,
+      "available": true
+    },
+    "firstLine": "e17.greet.3",
+    "pauseControl": {
+      "director": {
+        "storyId": "sheru-big-adventure",
+        "phase": "paused",
+        "mode": "play-together",
+        "beatIndex": 0,
+        "beatId": "greet",
+        "round": 0,
+        "lineIndex": 3,
+        "elapsedMs": 1700,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "frozen": {
+        "from": 1700,
+        "to": 1700
+      },
+      "voicesWhilePaused": 0
+    },
+    "resumeControl": {
+      "director": {
+        "storyId": "sheru-big-adventure",
+        "phase": "holding",
+        "mode": "play-together",
+        "beatIndex": 0,
+        "beatId": "greet",
+        "round": 0,
+        "lineIndex": 3,
+        "elapsedMs": 2100,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "running": {
+        "from": 2200,
+        "to": 2400
+      }
+    },
+    "replay": {
+      "lineAtPress": "e17.hook.1",
+      "spokenAtPress": 4,
+      "replayed": {
+        "key": "e17.hook.4",
+        "index": 7
+      },
+      "spokenAfter": [
+        "e17.hook.2",
+        "e17.hook.3",
+        "e17.hook.4",
+        "e17.hook.4"
+      ],
+      "audioUnlocked": true,
+      "clipRestarted": true
+    },
+    "visibility": {
+      "hidden": {
+        "storyId": "sheru-big-adventure",
+        "phase": "paused",
+        "mode": "play-together",
+        "beatIndex": 1,
+        "beatId": "hook",
+        "round": 0,
+        "lineIndex": 4,
+        "elapsedMs": 9000,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "shown": {
+        "storyId": "sheru-big-adventure",
+        "phase": "paused",
+        "mode": "play-together",
+        "beatIndex": 1,
+        "beatId": "hook",
+        "round": 0,
+        "lineIndex": 4,
+        "elapsedMs": 9000,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "voicesWhileHidden": 0
+    },
+    "visibilityResumed": {
+      "storyId": "sheru-big-adventure",
+      "phase": "holding",
+      "mode": "play-together",
+      "beatIndex": 1,
+      "beatId": "hook",
+      "round": 0,
+      "lineIndex": 4,
+      "elapsedMs": 9200,
+      "waitedMs": 0,
+      "taps": 0,
+      "finishedReason": null
+    },
+    "hooks": {
+      "paused": {
+        "storyId": "sheru-big-adventure",
+        "phase": "paused",
+        "mode": "play-together",
+        "beatIndex": 1,
+        "beatId": "hook",
+        "round": 0,
+        "lineIndex": 4,
+        "elapsedMs": 9300,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "resumed": {
+        "storyId": "sheru-big-adventure",
+        "phase": "holding",
+        "mode": "play-together",
+        "beatIndex": 1,
+        "beatId": "hook",
+        "round": 0,
+        "lineIndex": 4,
+        "elapsedMs": 9500,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      }
+    },
+    "skip": {
+      "from": {
+        "storyId": "sheru-big-adventure",
+        "phase": "holding",
+        "mode": "play-together",
+        "beatIndex": 1,
+        "beatId": "hook",
+        "round": 0,
+        "lineIndex": 4,
+        "elapsedMs": 9600,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "to": {
+        "storyId": "sheru-big-adventure",
+        "phase": "speaking",
+        "mode": "play-together",
+        "beatIndex": 3,
+        "beatId": "invite",
+        "round": 0,
+        "lineIndex": 0,
+        "elapsedMs": 10000,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      }
+    },
+    "mute": {
+      "gate": {
+        "storyId": "sheru-big-adventure",
+        "phase": "paused",
+        "mode": "play-together",
+        "beatIndex": 3,
+        "beatId": "invite",
+        "round": 0,
+        "lineIndex": 1,
+        "elapsedMs": 11000,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "soundOff": {
+        "mode": "play-together",
+        "reducedMotion": false,
+        "captions": true,
+        "music": true,
+        "sound": false
+      },
+      "resumed": {
+        "storyId": "sheru-big-adventure",
+        "phase": "holding",
+        "mode": "play-together",
+        "beatIndex": 3,
+        "beatId": "invite",
+        "round": 0,
+        "lineIndex": 1,
+        "elapsedMs": 11600,
+        "waitedMs": 0,
+        "taps": 0,
+        "finishedReason": null
+      },
+      "lineAtMute": null,
+      "nextLine": "e17.invite.2",
+      "startsAtMute": 10,
+      "startsAfter": 10
+    },
+    "done": {
+      "screen": "offline",
+      "director": {
+        "storyId": "sheru-big-adventure",
+        "phase": "finished",
+        "mode": "play-together",
+        "beatIndex": 3,
+        "beatId": "invite",
+        "round": 0,
+        "lineIndex": 1,
+        "elapsedMs": 19400,
+        "waitedMs": 5000,
+        "taps": 0,
+        "finishedReason": "all-done"
+      },
+      "speaking": null
+    },
+    "monitor": {
+      "samples": 143,
+      "transitions": 12,
+      "malformed": [],
+      "maxTargets": 1,
+      "errors": [],
+      "keys": [
+        "e17.greet.3",
+        "e17.hook.2",
+        "e17.hook.3",
+        "e17.hook.4",
+        "e17.hook.4",
+        "e17.invite.1",
+        "e17.invite.2"
+      ]
+    },
+    "voices": {
+      "fetched": 14,
+      "decoded": 14,
+      "starts": 10,
+      "activeNow": 0,
+      "overlap": {
+        "seconds": 0,
+        "pair": []
+      },
+      "records": [
+        {
+          "key": "e17.greet.1",
+          "start": 104.35047619047619,
+          "end": 105.65079365079364
+        },
+        {
+          "key": "e17.greet.2",
+          "start": 106.50122448979592,
+          "end": 107.61578231292516
+        },
+        {
+          "key": "e17.greet.3",
+          "start": 108.61133786848073,
+          "end": 110.42249433106576
+        },
+        {
+          "key": "e17.hook.1",
+          "start": 290.59192743764174,
+          "end": 292.26376417233564
+        },
+        {
+          "key": "e17.hook.2",
+          "start": 292.8703854875283,
+          "end": 294.77442176870744
+        },
+        {
+          "key": "e17.hook.3",
+          "start": 299.740589569161,
+          "end": 301.3195464852608
+        },
+        {
+          "key": "e17.hook.4",
+          "start": 302.0306575963719,
+          "end": 303.6560544217687
+        },
+        {
+          "key": "e17.hook.4",
+          "start": 315.74204081632655,
+          "end": 317.36743764172337
+        },
+        {
+          "key": "e17.model.1",
+          "start": 368.5616326530612,
+          "end": 369.3975510204082
+        },
+        {
+          "key": "e17.invite.1",
+          "start": 377.9308843537415,
+          "end": 378.6739229024943
+        }
+      ]
+    },
+    "appErrors": [],
+    "privacy": {
+      "storage": {
+        "localKeys": [
+          "wonder-world.parent-settings.v1"
+        ],
+        "settingsFields": [
+          "captions",
+          "highContrast",
+          "locale",
+          "mode",
+          "music",
+          "reducedMotion",
+          "sfxVolume",
+          "sound",
+          "waitMs",
+          "wordList"
+        ],
+        "sessionKeys": [],
+        "hasCookies": false,
+        "problems": []
+      },
+      "requests": {
+        "count": 47,
+        "byType": {
+          "document": 1,
+          "stylesheet": 2,
+          "script": 1,
+          "fetch": 40,
+          "font": 3
+        },
+        "foreign": [],
+        "all": [
+          "GET document /<app>/index.html?story=sheru-big-adventure&mode=play-together",
+          "GET stylesheet /fonts/local.css",
+          "GET stylesheet /<app>/src/ui/styles.css",
+          "GET script /<app>/src/main.ts",
+          "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+          "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+          "GET font /fonts/graphik/Graphik-Semibold-Web.woff2",
+          "GET font /fonts/graphik/Graphik-Medium-Web.woff2",
+          "GET font /fonts/graphik/Graphik-Regular-Web.woff2",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+          "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+          "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+          "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+          "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+          "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+          "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+          "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+          "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+          "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+          "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+          "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+          "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+          "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+          "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+          "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+          "GET fetch /<app>/src/assets/audio/songs/ballRolls.mp3",
+          "GET fetch /<app>/src/assets/audio/music/meadowBed.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.greet.1.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.greet.2.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.greet.3.mp3",
+          "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+          "GET fetch /<app>/src/assets/models/lulu.95ef56f6.glb",
+          "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.hook.1.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.hook.2.mp3",
+          "GET fetch /<app>/src/assets/audio/sfx/woofSoft.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.hook.3.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.hook.4.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.model.1.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.model.2.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.model.3.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.invite.2.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.event.1.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.invite.1.mp3",
+          "GET fetch /<app>/src/assets/audio/en/lines/e17.event.2.mp3"
+        ],
+        "truncated": false
+      },
+      "consoleLogs": [
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x169c0011da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?story=sheru-big-adventure&mode=play-together:0",
+          "api": false
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x169c0011da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?story=sheru-big-adventure&mode=play-together:0",
+          "api": false
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x169c0011da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?story=sheru-big-adventure&mode=play-together:0",
+          "api": false
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x169c0011da00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ /<app>/index.html?story=sheru-big-adventure&mode=play-together:0",
+          "api": false
+        }
+      ],
+      "appConsoleLogs": []
+    }
+  },
+  "last": null,
+  "consoleErrors": [],
+  "pageErrors": [],
+  "badResponses": []
+}

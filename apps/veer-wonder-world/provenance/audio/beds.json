@@ -1,0 +1,62 @@
+{
+ "gardenBed": {
+  "file": "src/assets/audio/music/gardenBed.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "calm, quiet instrumental background loop for a playful little music garden, soft marimba, gentle ukulele and light hand shaker, 76 bpm, low dynamic range, no drum kit, seamless loop",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-28 LUFS, 128k"
+ },
+ "meadowBed": {
+  "file": "src/assets/audio/music/meadowBed.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "calm, quiet instrumental background loop for a sunny toy meadow, soft acoustic guitar, gentle glockenspiel and light pizzicato strings, 72 bpm, warm and simple, low dynamic range, no drums, seamless loop",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-28 LUFS, 128k"
+ },
+ "cloudBed": {
+  "file": "src/assets/audio/music/cloudBed.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "calm, quiet, dreamy instrumental background loop for a soft learning cloud in the sky, gentle celesta, warm pad and light harp, 66 bpm, low dynamic range, no percussion, seamless loop",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-28 LUFS, 128k"
+ },
+ "homeBed": {
+  "file": "src/assets/audio/music/homeBed.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "calm, quiet, cosy instrumental background loop for a toy home, soft felt piano, gentle music box and warm strings, 68 bpm, low dynamic range, no drums, seamless loop",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-28 LUFS, 128k"
+ },
+ "stationBed": {
+  "file": "src/assets/audio/music/stationBed.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "calm, quiet instrumental background loop for a toy train station, soft xylophone, gentle brushed shaker and warm bass with a slow chugging rhythm, 74 bpm, low dynamic range, no whistles, seamless loop",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-28 LUFS, 128k"
+ },
+ "barnBed": {
+  "file": "src/assets/audio/music/barnBed.mp3",
+  "provider": "elevenlabs",
+  "endpoint": "music",
+  "prismKey": "elevenlabs-11-216835",
+  "tier": "starter",
+  "prompt": "calm, quiet instrumental background loop for a friendly toy barn, soft finger-picked acoustic guitar and gentle upright bass, 70 bpm, warm and cosy, low dynamic range, no drums, seamless loop",
+  "date": "2026-10-29",
+  "processing": "ffmpeg loudnorm I=-28 LUFS, 128k"
+ }
+}

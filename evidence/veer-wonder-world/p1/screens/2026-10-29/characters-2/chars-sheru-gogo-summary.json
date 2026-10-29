@@ -1,0 +1,228 @@
+{
+  "label": "chars-sheru-gogo",
+  "runId": "wonder-characters-2-20261029T182623Z",
+  "commit": {
+    "commit": "498c32f63c44f90def67bc1c6a155c9263162e20",
+    "tree": "clean"
+  },
+  "engineVersion": "4.5.0",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "renderer": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)"
+  },
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36",
+  "note": "Remote runner, headless Chromium, software WebGL2: not real-GPU or physical-device evidence.",
+  "characters": [
+    {
+      "character": "sheru",
+      "story": "sheru-big-adventure",
+      "errors": [],
+      "model": true,
+      "phoneHeight": 62,
+      "silhouette": {
+        "lumaDiff": 37.246,
+        "colourDistance": 63.504,
+        "separatedShare": 0.534
+      },
+      "frontBack": {
+        "meanAbsLumaDiff": 7.853,
+        "meanLumaDelta": 0.9,
+        "changedRatio": 0.133
+      },
+      "mostUnlikeFront": {
+        "view": "right",
+        "delta": {
+          "meanAbsLumaDiff": 10.71,
+          "meanLumaDelta": 0.411,
+          "changedRatio": 0.153
+        }
+      },
+      "poses": 6,
+      "talking": {
+        "meanAbsLumaDiff": 2.884,
+        "meanLumaDelta": -0.082,
+        "changedRatio": 0.046
+      },
+      "silent": {
+        "meanAbsLumaDiff": 0.034,
+        "meanLumaDelta": -0.004,
+        "changedRatio": 0
+      },
+      "normal": {
+        "meanAbsLumaDiff": 9.879,
+        "meanLumaDelta": 0.286,
+        "changedRatio": 0.146
+      },
+      "reduced": {
+        "meanAbsLumaDiff": 7.614,
+        "meanLumaDelta": 0.041,
+        "changedRatio": 0.124
+      },
+      "travelPx": {
+        "normal": 30.8,
+        "reduced": 15.3
+      },
+      "stageWarnings": 0
+    },
+    {
+      "character": "gogo",
+      "story": "gogo-train",
+      "errors": [],
+      "model": true,
+      "phoneHeight": 93,
+      "silhouette": {
+        "lumaDiff": 90.654,
+        "colourDistance": 165.717,
+        "separatedShare": 0.943
+      },
+      "frontBack": {
+        "meanAbsLumaDiff": 12.871,
+        "meanLumaDelta": -3.085,
+        "changedRatio": 0.199
+      },
+      "mostUnlikeFront": {
+        "view": "left",
+        "delta": {
+          "meanAbsLumaDiff": 44.377,
+          "meanLumaDelta": -27.653,
+          "changedRatio": 0.47
+        }
+      },
+      "poses": 6,
+      "talking": {
+        "meanAbsLumaDiff": 4.753,
+        "meanLumaDelta": 0.163,
+        "changedRatio": 0.082
+      },
+      "silent": {
+        "meanAbsLumaDiff": 0.026,
+        "meanLumaDelta": 0.001,
+        "changedRatio": 0
+      },
+      "normal": {
+        "meanAbsLumaDiff": 11.598,
+        "meanLumaDelta": 0.438,
+        "changedRatio": 0.17
+      },
+      "reduced": {
+        "meanAbsLumaDiff": 8.449,
+        "meanLumaDelta": 0.228,
+        "changedRatio": 0.134
+      },
+      "travelPx": {
+        "normal": 28.5,
+        "reduced": 14.2
+      },
+      "stageWarnings": 0
+    }
+  ],
+  "storage": {
+    "localKeys": [
+      "wonder-world.parent-settings.v1"
+    ],
+    "settingsFields": [
+      "captions",
+      "highContrast",
+      "locale",
+      "mode",
+      "music",
+      "reducedMotion",
+      "sfxVolume",
+      "sound",
+      "waitMs",
+      "wordList"
+    ],
+    "sessionKeys": [],
+    "hasCookies": false,
+    "problems": []
+  },
+  "requests": {
+    "count": 47,
+    "byType": {
+      "document": 1,
+      "stylesheet": 2,
+      "script": 1,
+      "fetch": 41,
+      "font": 2
+    },
+    "foreign": [],
+    "all": [
+      "GET document /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000",
+      "GET stylesheet /fonts/local.css",
+      "GET stylesheet /<app>/src/ui/styles.css",
+      "GET script /<app>/src/main.ts",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET font /fonts/graphik/Graphik-Medium-Web.woff2",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/flower.1d94ca02.glb",
+      "GET fetch /<app>/src/assets/models/momo.3b7a02aa.glb",
+      "GET fetch /<app>/src/assets/models/sheru.e0e039ec.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET font /fonts/graphik/Graphik-Regular-Web.woff2",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/lulu.95ef56f6.glb",
+      "GET fetch /<app>/src/assets/models/door.780b4b6e.glb",
+      "GET fetch /<app>/src/assets/models/gogo.a229380d.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/station.5442f8e0.glb",
+      "GET fetch /<app>/src/assets/models/tunnel.2ce4550c.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr",
+      "GET fetch /<app>/src/assets/models/station.5442f8e0.glb",
+      "GET fetch /<app>/src/assets/models/tunnel.2ce4550c.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/gogo.a229380d.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/station.5442f8e0.glb",
+      "GET fetch /<app>/src/assets/models/tunnel.2ce4550c.glb",
+      "GET fetch /<app>/src/assets/models/tree.54e5fabe.glb",
+      "GET fetch /<app>/src/assets/models/gogo.a229380d.glb",
+      "GET fetch /<app>/src/assets/models/teddy.49af2add.glb",
+      "GET fetch /<app>/src/assets/models/peeko.016097bc.glb",
+      "GET fetch /hdri/autumn_field_puresky_1k.hdr"
+    ],
+    "truncated": false
+  },
+  "consoleLogs": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x32a400145400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x32a400145400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x32a400145400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x32a400145400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ /<app>/index.html?autostart=1&story=sheru-big-adventure&manual=1&mode=watch-sing&models=1&modelWaitMs=180000:0",
+      "api": false
+    }
+  ],
+  "appConsoleLogs": []
+}
