@@ -32,6 +32,8 @@ const SCREENS: Cfg = {
 };
 
 finc([SCREENS], ["desktop", "dsf2", "card"], { settleBudgetMs: 1_500_000, dsf2Size: [640, 360] });
+/** Result cards only (`--grep "final cloudres desktop"`), for a retake after a result-panel layout change. */
+finc([{ ...SCREENS, id: "cloudres", steps: SCREENS.steps.filter((s) => s.name.startsWith("results")) }], ["desktop"], { settleBudgetMs: 600_000 });
 
 test.describe("screens mobile", () => {
   test.setTimeout(3_300_000);

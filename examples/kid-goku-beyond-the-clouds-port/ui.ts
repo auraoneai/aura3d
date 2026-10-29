@@ -128,6 +128,8 @@ const CSS = `
 #cr-ui .touch button{position:absolute;width:64px;height:64px;border-radius:50%;padding:0;background:rgba(255,250,240,.28);color:#fff;border:2px solid rgba(255,255,255,.5);box-shadow:none;font-size:13px;touch-action:none}
 #cr-ui .loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#78b4e8,#cfe3f0);font-size:15px;color:#fff;letter-spacing:.14em;text-transform:uppercase;transition:opacity .5s}
 @media (max-height:520px){#cr-ui .title{top:5vh}#cr-ui .menu{bottom:16vh}}
+#cr-ui .panel{max-height:calc(100% - 16px);overflow-y:auto;box-sizing:border-box}
+@media (max-height:420px){#cr-ui .panel{padding:10px 18px}#cr-ui .panel h2{font-size:20px;margin:0}#cr-ui .panel .sub{margin-bottom:6px}#cr-ui .stats{gap:4px;margin:6px 0 8px}#cr-ui .stats div{padding:3px 4px}#cr-ui .stats b{font-size:15px}#cr-ui .stats small{font-size:10px}#cr-ui .panel .btns{margin-top:8px}}
 `;
 
 const HEART = '<svg class="heart" viewBox="0 0 24 22"><path fill="#ff5a4a" d="M12 21s-9-5.6-9-12.2C3 5.2 5.3 3 8 3c1.8 0 3.4 1 4 2.4C12.6 4 14.2 3 16 3c2.7 0 5 2.2 5 5.8C21 15.4 12 21 12 21z"/></svg>';
