@@ -255,4 +255,66 @@ test.describe("slingshot-siege audit fix", () => {
     await boot(page, server, "desktop-ao-off", 1280, 720, "&ao=0");
     await settleShots(page, "desktop-ao-off");
   });
+
+  // Evidence screens (RH-05): same file names and sizes as evidence/slingshot-siege/screens/final, plus a results frame.
+  // Full-page JPEGs (HUD included), logged as SS_SHOT <set> <file> <i>/<n> <b64>.
+  async function shoot(page: Page, set: string, file: string): Promise<void> {
+    const jpg = await page.screenshot({ type: "jpeg", quality: 82 });
+    const b64 = jpg.toString("base64");
+    const n = Math.ceil(b64.length / CHUNK);
+    for (let i = 0; i < n; i++) log(`SS_SHOT ${set} ${file} ${i + 1}/${n} ${b64.slice(i * CHUNK, (i + 1) * CHUNK)}`);
+    const s = await state(page).catch(() => null);
+    log(`SS_SHOTMETA ${JSON.stringify({ set, file, info: await engineInfo(page), cameraState: s?.cameraState, shotsUsed: s?.shotsUsed, resultOpen: s?.resultOpen })}`);
+  }
+
+  async function playToResult(page: Page): Promise<void> {
+    for (let shot = 0; shot < 4; shot++) {
+      const s = await state(page);
+      if (s.resultOpen) break;
+      await holdKey(page, "Space");
+      await pump(page, 600);
+    }
+    await pump(page, 200);
+  }
+
+  for (const [set, width, height] of [["1280x720", 1280, 720], ["390x844", 390, 844]] as const) {
+    test(`screens ${set}`, async ({ page }) => {
+      await boot(page, server, `screens-${set}`, width, height);
+      const loaded = Date.now();
+      await shoot(page, set, "01-title.jpg");
+      await page.waitForTimeout(Math.max(0, 8_000 - (Date.now() - loaded)));
+      await shoot(page, set, "02-early.jpg");
+      await page.waitForTimeout(Math.max(0, 30_000 - (Date.now() - loaded)));
+      await shoot(page, set, "03-action-01-state-aiming-backend-webgl2-backgrou.jpg");
+      if (set === "390x844") {
+        await holdKey(page, "Space");
+        await pump(page, 24);
+        await page.waitForTimeout(10_000);
+        await shoot(page, set, "03-action-02-state-shot-in-flight-backend-webgl2.jpg");
+        await pump(page, 14);
+        await page.waitForTimeout(8_000);
+        await shoot(page, set, "03-action-03-state-shot-in-flight-backend-webgl2.jpg");
+        await pump(page, 600);
+      } else {
+        await holdKey(page, "Space");
+        await pump(page, 600);
+      }
+      await page.waitForTimeout(10_000);
+      await shoot(page, set, "04-mid.jpg");
+      await playToResult(page);
+      await page.waitForTimeout(12_000);
+      await shoot(page, set, "05-results.jpg");
+    });
+  }
+
+  test("screens card", async ({ browser }) => {
+    for (const [file, scale] of [["card-1x.jpg", 1], ["card-2x.jpg", 2]] as const) {
+      const context = await browser.newContext({ viewport: { width: 720, height: 450 }, deviceScaleFactor: scale });
+      const page = await context.newPage();
+      await boot(page, server, `card-${scale}x`, 720, 450);
+      await page.waitForTimeout(30_000);
+      await shoot(page, "card", file);
+      await context.close();
+    }
+  });
 });
