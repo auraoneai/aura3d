@@ -253,7 +253,7 @@ The `03` §3 states map to beat kinds. `intro` is `greeting`, `problem` is `hook
 ### 4.1 Build, models and audio
 | Item | Source or command | Result |
 | --- | --- | --- |
-| Branch and commits | `git log --oneline origin/main..HEAD` on `feat/wonder-world-foundation-20261029` (base `31f8945ad`) | PARENT-FILL: commit SHAs and PR link |
+| Branch and commits | `git log --oneline origin/main..HEAD` on `feat/wonder-world-foundation-20261029` (base `31f8945ad`) | `feat/wonder-world-foundation-20261029` from base `31f8945ad`, starting at `d863e8eb0`; every commit is a Conventional Commit, and the PR lists them all: https://github.com/auraoneai/aura3d/pull/1398 (open, not merged). The app last changed in `f7eab10f7` (the menu portraits); later commits change only the browser specs, docs and evidence |
 | Scaffold (`04` F0.1) | `npx -y create-aura3d@4.5.0 mg --template mini-game --no-agent` and `npx -y create-aura3d@4.5.0 eb --template episode-builder --no-agent` in a scratch directory outside the repo (`/tmp`), 2026-10-29 | Run and compared; nothing was written into the repo by the scaffold and no root manifest changed. Adapted from `mini-game`: the `index.html` shell (charset, viewport, one module entry `./src/main.ts`; the app adds `noindex`, `no-referrer`, the licensed fonts and the overlay roots) and the `aura.assets.json` fields (`schema`, `assetBasePath`, `outputDir`, `typegen`; the app lists no entries, B19). Not taken: its sample GLBs, its Playwright specs (the remote specs replace them), its GitHub look-dev workflow (no GitHub Actions in this repo), its `vite.config.ts` and `tsconfig.json` (the app extends the repo root config and `tsconfig.base.json`, B14). From `episode-builder` the app follows the safety defaults: captions on by default (`src/ui/settings-store.ts:70`), a high-contrast caption plate at the bottom (`src/ui/styles.css`), reduced motion from `prefers-reduced-motion`, and no flashes (glows are steady). Not copied: its mouth cards, `primitiveMouthNodeId` and viseme sampling (the models have no mouth morphs, `02` §2), and its dubbing and video-review pipeline |
 | Engine version | `apps/veer-wonder-world/node_modules/@aura3d/engine/package.json`; workspace `packages/engine/package.json` | 4.5.0 (published install used for the fast typecheck) and 4.5.0 (workspace `packages/engine`) |
 | `noindex` and title | `apps/veer-wonder-world/index.html` | `<meta name="robots" content="noindex" />` present (line 6) and title "Wonder World (prototype)" (line 11). No listing: `rg -i 'wonder.world\|veer-wonder'` over `tools/site/games.catalog.json`, `docs/workflows/game-inventory.json`, `docs/workflows/game-names.md`, `marketing/scripts/build-showcase-routes.mjs` and `marketing/scripts/gen-seo.mjs` finds nothing |
@@ -273,16 +273,16 @@ The `03` §3 states map to beat kinds. `intro` is `greeting`, `problem` is `hook
 | --- | --- | --- |
 | Typecheck (workspace) | `pnpm exec tsc -p apps/veer-wonder-world/tsconfig.json --noEmit` | 0 errors (2026-10-29, `apps/veer-wonder-world/tools/check-all.sh --workspace`) |
 | Typecheck (published 4.5.0) | `(cd apps/veer-wonder-world && ./node_modules/.bin/tsc -p tsconfig.published.json --noEmit)` | 0 errors (same run) |
-| Unit tests (J01-J07, content tests) | `(cd apps/veer-wonder-world && ../../node_modules/.bin/vitest run --config vitest.config.ts)` | 23 files, 514 passed, 0 failed (same run) |
+| Unit tests (J01-J07, content tests) | `(cd apps/veer-wonder-world && ../../node_modules/.bin/vitest run --config vitest.config.ts)` | 24 files, 522 passed, 0 failed (same run) |
 | Content validation (J14) | `node apps/veer-wonder-world/tools/validate-wonder-world-content.mjs` | 32 stories validated (20 episodes + 12 activities), 843 lines, 277 strings, 54 admitted models, 907 recorded clips with recorded audio required: 0 errors ("OK: content lint passed") |
 | Story-level review scans (2.1, 2.4) | The `rg` commands in 2.1 and 2.4, re-run on the final tree and the built bundle | 2.1 pattern over `src/localization`: 3 hits, none in a line, string or lyric (two source comments that forbid the phrase, `little-birthday-party.ts:2` and `whos-at-the-door.ts:2`, and the parent note in `en/ui.ts` that the app does not "test, score or diagnose"); the same pattern over `src/content/songs.ts`, `sfx.ts` and `music.ts`: 1 hit, a comment (`songs.ts:9`). No number word above "three" in any line. 2.4 microphone pattern over `src`: 0 hits. The built bundle is scanned for the child name and source maps by the build spec (`build-privacy-scan`, 4.2 below) |
-| Game checks (B13) | `node apps/veer-wonder-world/tools/game-checks.mjs` | PARENT-FILL: errors, warnings |
-| Remote browser specs (J08-J13) | `EXTRA_DIRS="apps/veer-wonder-world" SPECS="tests/browser/wonder-world-*.spec.ts" tools/remote-acr/run.sh`, or `apps/veer-wonder-world/tools/remote-run.sh` | PARENT-FILL: RUN_ID(s), passed/failed, `tests/reports/remote-acr/<RUN_ID>/` |
-| Build and deploy check | `tests/browser/wonder-world-build.spec.ts` on the remote runner (`apps/veer-wonder-world/tools/remote-run.sh build`): Vite build, then `aura3d check-deploy --dist dist --no-assets --browser --route /` | PARENT-FILL: RUN_ID, result |
-| Renderer string | Remote run report | PARENT-FILL: renderer string. A software WebGL2 result is not real-GPU or device evidence |
-| Evidence folders | `evidence/veer-wonder-world/{p0,p1,p2}/` | PARENT-FILL: paths; confirm no child image or audio |
-| Temporary cloud resources | ACR image tags and anything else created | PARENT-FILL: created and deleted (`tools/remote-acr/run.sh` keeps the pushed tag by default, `KEEP_IMAGE=1`; `apps/veer-wonder-world/tools/remote-run.sh` sets `KEEP_IMAGE=0`) |
-| Task IDs done | `04` A, F0, B, C, D, E, F, G, H, I, J | PARENT-FILL: done list with evidence; anything not done with the reason and command output |
+| Game checks (B13) | `node apps/veer-wonder-world/tools/game-checks.mjs` (also the last step of `tools/check-all.sh`) | 0 errors, 0 warnings, 15 checks (2026-10-29, after the evidence screenshots were committed; before that `screens-tracked` reported the one expected error, "no screenshots tracked in git") |
+| Remote browser specs (J08-J13) | `EXTRA_DIRS="apps/veer-wonder-world" SPECS="tests/browser/wonder-world-*.spec.ts" tools/remote-acr/run.sh`, or `apps/veer-wonder-world/tools/remote-run.sh` | 20 of 20 runs passed: one run per line of the run list in `tests/browser/wonder-world-lib.ts` (21 spec files in 20 runs). Sixteen ran at `7e1986801` (fan-out `20261029T172337Z`), `first-frame-build` again at `2ae4125d1` (`20261029T174544Z`) and the three character sheets at `498c32f63` (`20261029T182623Z`), each with a clean tree. Those three commits differ only in browser spec files (`git diff --stat 7e1986801 498c32f63`), so every run tested the same app; the runs of one fan-out share one image. Run IDs: `wonder-audio-and-pausing-20261029T172337Z`, `wonder-characters-20261029T182623Z`, `wonder-characters-2-20261029T182623Z`, `wonder-characters-3-20261029T182623Z`, `wonder-consumer-smoke-20261029T172337Z`, `wonder-first-frame-build-20261029T174544Z`, `wonder-look-20261029T172337Z`, `wonder-low-motion-20261029T172337Z`, `wonder-low-motion-2-20261029T172337Z`, `wonder-no-speech-required-20261029T172337Z`, `wonder-no-speech-required-2-20261029T172337Z`, `wonder-parent-panel-20261029T172337Z`, `wonder-playback-activities-20261029T172337Z`, `wonder-playback-episodes-20261029T172337Z`, `wonder-playback-episodes-2-20261029T172337Z`, `wonder-stills-20261029T172337Z`, `wonder-stills-2-20261029T172337Z`, `wonder-stills-3-20261029T172337Z`, `wonder-stills-4-20261029T172337Z`, `wonder-touch-and-layout-20261029T172337Z`. Each run's `summary.json` and `acr-run.log` are in `tests/reports/remote-acr/<RUN_ID>/` (local, gitignored); the kept records and screenshots are in `evidence/veer-wonder-world/` (see Evidence folders). The issues the earlier runs found, and their fixes, are the issue log in `evidence/veer-wonder-world/p1/README.md` |
+| Build and deploy check | `tests/browser/wonder-world-build.spec.ts` on the remote runner (`apps/veer-wonder-world/tools/remote-run.sh build`): Vite build, then `aura3d check-deploy --dist dist --no-assets --browser --route /` | `wonder-first-frame-build-20261029T174544Z`: content lint exit 0; Vite build 1002 files, 56.5 MB; privacy scan of the served `dist`: 25 text files, 0 source maps, 0 hits; `check-deploy --browser` exit 0: "Deploy check passed. Browser pass: 1 route(s) loaded with no HTTP errors, failed requests or console errors." (records in `evidence/veer-wonder-world/p0/`) |
+| Renderer string | Remote run report | `ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)`, HeadlessChrome 147.0.7727.15 on Linux x86_64 (every record's `renderer`). A software WebGL2 result is not real-GPU or device evidence |
+| Evidence folders | `evidence/veer-wonder-world/{p0,p1,p2}/` | `evidence/veer-wonder-world/README.md`, `p0/README.md` (build, deploy check, first frame, consumer smoke), `p1/README.md` (J15: runs, route health, pilot stories, touch, audio, low motion, grown-up panel, character sheets, look, issue log; `p1/look-dev.md`) and `p2/README.md` (the other 14 episodes and 9 activities), with the screenshots and JSON records under `<phase>/screens/2026-10-29/<run>/`. No child image or audio: every screenshot is the app's own 3D scene or UI, and no recording is kept. The records name no child: the specs and `tools/extract-remote-evidence.mjs` redact the app folder to `<app>` (a search of the evidence for the name the folder carries finds none) |
+| Temporary cloud resources | ACR image tags and anything else created | One ACR image tag per fan-out (`aura3d-playwright:wonder-suite-<stamp>` in `picassostagingacr`, az-auraone-gurbaksh), shared by that fan-out's runs and deleted with `az acr repository delete` once they finished, for every fan-out of 2026-10-29. Afterwards `az acr repository show-tags -n picassostagingacr --repository aura3d-playwright` lists no `wonder-` tag (0, checked after the last run), and none of this build's ACR task runs is still running. Nothing else was created |
+| Task IDs done | `04` A, F0, B, C, D, E, F, G, H, I, J | Section 4.4: every task ID with its evidence; PR #1398 lists them (M1). Open: J15 and the art/media device box (device runs, 4.3 item 1); K01-K06 out of scope (P3, off) |
 
 ### 4.3 Open acceptance items (the two an agent cannot do, `MASTER-PROMPT.md` §9)
 1. **Physical-device runs** (`06` G9, §5 and §8; `03` §10 "phone + tablet"; `04` art/media acceptance). Steps for the owner:
@@ -325,3 +325,158 @@ The `03` §3 states map to beat kinds. `intro` is `greeting`, `problem` is `hook
    - the sitemap route manifest in `marketing/scripts/gen-seo.mjs`.
 
    Then run `node marketing/scripts/check-site.mjs` and `aura3d check-deploy --release`.
+
+### 4.4 Task IDs (`04`)
+Checked against the final tree. A run ID `wonder-<stem>-<stamp>` is the final remote run of `tests/browser/wonder-world-<stem>.spec.ts` (section 4.2; `first-frame` and `build` share the run `wonder-first-frame-build-<stamp>`). Open: J15 and the art/media device box (both need the device runs, section 4.3 item 1); K01-K06 are P3, out of scope and off (`MASTER-PROMPT.md` §0.1, `04` §L step 5).
+
+**A, F0 (P0 foundation)**
+- A01 done: `package.json` scripts and `workspace:*`; `tools/published-deps.json` pins 4.5.0.
+- A02 done: strict `tsconfig.json` and `tsconfig.published.json` (both `tsc --noEmit` exit 0); `tests/unit/privacy/source-guards.test.ts` (no casts outside four reviewed).
+- A03 done: `vite.config.ts` extends the root config (`base: "./"`, no inlining, no source maps); smoke build `wonder-first-frame-build-20261029T174544Z`.
+- A04 done: `index.html` roots, `src/ui/start-screen.ts`; nothing audible before the tap (`tests/unit/runtime/audio-mixer.test.ts`, `wonder-audio-and-pausing-20261029T172337Z`).
+- A05 done: `src/main.ts` thin bootstrap; `createGame` from `@aura3d/engine/game` in `src/scenes/stage.ts`.
+- A06 done: `createApp` in `src/app.ts` composes everything; `dispose()` on `pagehide`.
+- A07 done: `src/types.ts` id and tagged unions; `ParentSettings` has no identity field.
+- A08 done: generated `src/aura-assets.ts` (`tools/gen-aura-assets.mjs`); regenerate-and-diff in `tools/check-all.sh` (§4.1).
+- A09 done: 54 GLBs with sha256, licence and optimize provenance; module-relative URLs; raw Meshy output in ignored `/artifacts/`.
+- A10 done: HDRI looks, no vignette, runtime effects off, `warmPrograms`, `renderPath`; captures `wonder-look-20261029T172337Z`, `wonder-first-frame-build-20261029T174544Z`.
+- A11 done: `apps/veer-wonder-world/README.md` (install script c2888a2f6, commands, flow, status, known gaps).
+- F0.1 done: §4.1 row "Scaffold (`04` F0.1)"; `wonder-consumer-smoke-20261029T172337Z`.
+- F0.2 done: engine 4.5.0 in §4.1; `wonder-first-frame-build-20261029T174544Z` and `wonder-consumer-smoke-20261029T172337Z` with the commit under test in each record (e3a87adab).
+- F0.3 done: published typecheck exit 0; imported names in `docs/api/` or `docs/agents/`; `createGame` only from `@aura3d/engine/game`.
+- F0.4 done: `wonder-first-frame-build-20261029T174544Z` draws E17's admitted Momo and Sheru GLBs and records the route-health capture.
+- F0.5 done: unlock and silent-fallback unit tests; `wonder-audio-and-pausing-20261029T172337Z`, `wonder-no-speech-required-20261029T172337Z`.
+- F0.6 done: `evidence/veer-wonder-world/p0/README.md` (build, check-deploy, first-frame, consumer smoke); prototype label.
+
+**B, F1 (runtime)**
+- B01 done: `src/runtime/episode-director.ts` pure machine; `tests/unit/runtime/episode-director.test.ts`.
+- B02 done: `src/runtime/beat-runner.ts` timing from content; skip test.
+- B03 done: 5 s default, 3-8 s setting, no wrong-answer branch; SLP review = §2.1.
+- B04 done: 1.4x hit boxes, 128 px rects, shared 400 ms debounce, pointerdown only; `wonder-touch-and-layout-20261029T172337Z`.
+- B05 done: `src/runtime/narration-player.ts` play/stop/pause/resume/replay/timing on the shared context.
+- B06 done: one `AudioContextManager` lent to `createGame`; SFX through the mixer, not a cue bank (B23).
+- B07 done: clips only from `MODEL_INFO` (none, C6); procedural fallback; talking pulse; wait and surprise gestures (B20).
+- B08 done: `src/runtime/session-gate.ts`, `src/runtime/pause-reasons.ts`; All done; no auto-next; `wonder-audio-and-pausing-20261029T172337Z`.
+- B09 done: current and next story preload; timeouts fall back to stand-ins or caption timing.
+- B10 done: `src/runtime/locale.ts` keyed packs with English fallback.
+- B11 done: `src/runtime/feature-flags.ts` locked-off flags; `wonder-no-speech-required-20261029T172337Z`.
+- B12 done: `src/qa/install-hooks.ts` standard hooks; no private data in `state()`.
+- F1.1 done: one tap/confirm dispatcher; per-beat targets replace the fixed verb set (B24).
+- F1.2 done: golden director tests; context loss in `tests/unit/runtime/pause-reasons.test.ts`.
+- F1.3 done: Aura3D loop, presenter, `createGame`, QA hooks and safety net; SFX via the mixer (B23); no black-frame guard by design.
+- F1.4 done: only public `@aura3d/*` imports; `.glb` names only in generated or never-imported files.
+- F1.5 done: one key per caption and clip; stale-clip lint; no overlapping lines; `wonder-audio-and-pausing-20261029T172337Z`.
+- F1.6 done: no speech, score or correctness event; no microphone or recognition API.
+
+**C (content)**
+- C01 done: `validateStory` in `src/content/schema.ts`.
+- C02 done: static 20 + 12 catalog; `review: "approved"`; lint before build.
+- C03 done: `WordInfo` in `src/content/words.ts`.
+- C04 done: `src/content/letters.ts` names, sounds, objects; name never equals sound.
+- C05 done: counting fixed at 1-3 in `src/content/numbers.ts`.
+- C06 done: `src/content/songs.ts` (ids, lyrics, motions, `SONG_RIGHTS`); song choreography in `src/scenes/stage.ts` (B20).
+- C07 done: `src/localization/en/**` holds every line and string.
+- C08 done: `src/localization/pa.ts` ships empty and disabled until native review (B16).
+
+**D (characters, worlds, media)**
+- D01 done: `src/characters/momo.ts` procedural actor; clips only from `MODEL_INFO`.
+- D02 done: `src/characters/lulu.ts` procedural actor; talking pulse, no lip sync.
+- D03 done: `src/characters/sheru.ts` unrigged GLB with walk bob, wag, sniff, fetch, carry and bark bank; rights and privacy agent-reviewed (§2.3, §2.4); the family's OK before any release is §4.3 item 2.
+- D04 done: `src/characters/peeko.ts` hide, pop and wave.
+- D05 done: `src/characters/lumi.ts` float and soft glow, steady in reduced motion; letter and object cues in E03.
+- D06 done: `src/characters/gogo.ts` with the admitted `gogo` and `gogoCarriage`; no turning wheels or doors (B25).
+- D07 done: `src/characters/character-registry.ts` typed models, permitted clips, procedural fallback (tested).
+- D08 done: `src/scenes/meadow.ts`; fixed camera presets; `wonder-first-frame-build-20261029T174544Z`, `wonder-touch-and-layout-20261029T172337Z`.
+- D09 done: `src/scenes/music-garden.ts` with the quiet `gardenBed`; `wonder-look-20261029T172337Z`.
+- D10 done: `src/scenes/home-nook.ts` generic room; `wonder-look-20261029T172337Z`.
+- D11 done: `src/scenes/station.ts` track, station, tunnel; passengers are separate props; `wonder-look-20261029T172337Z`.
+- D12 done: `src/scenes/peekaboo-barn.ts` with E02's two doors and slow reveals; `wonder-look-20261029T172337Z`.
+- D13 done: `src/scenes/learning-cloud.ts` with E03's letter objects and G08's counted blocks; `wonder-look-20261029T172337Z`.
+- D14 done: generated `src/assets/rights-manifest.ts` (B27; `tests/unit/content/rights-manifest.test.ts`).
+- D15 done: 907 MP3s from ElevenLabs premade voices via Kiro Prism, loudness-normalised, paid tier, indexed in `src/audio-manifest.ts`.
+- D16 done: 54 model and 907 audio provenance records, enforced by the content lint.
+
+**E (UI)**
+- E01 done: big highlighted scene targets (1.4x hit box, 128 px minimum); only grown-up controls in corners; `wonder-touch-and-layout-20261029T172337Z`.
+- E02 done: the finite, P1-first menu of all 32 stories with no recommendations, each card with its host's portrait (six WebP crops of the remote character sheets `wonder-characters-20261029T163852Z`, `wonder-characters-2-20261029T163852Z` and `wonder-characters-3-20261029T163852Z`; `src/portrait-assets.ts`, `provenance/portraits.json`); `wonder-parent-panel-20261029T172337Z` checks all 32 portraits loaded.
+- E03 done: `src/ui/parent-panel.ts` switches, exit, language; `wonder-parent-panel-20261029T172337Z`.
+- E04 done: `src/ui/parent-gate.ts` 2 s hold, "not a lock", back-out paths; `wonder-parent-panel-20261029T172337Z`.
+- E05 done: `src/ui/offline-card.ts`, no timer, no auto-next; `wonder-audio-and-pausing-20261029T172337Z`.
+- E06 done: `src/ui/styles.css` safe areas, large taps, contrast, both orientations, calm motion; `wonder-touch-and-layout-20261029T172337Z`.
+- E07 done: `src/ui/parent-wordlist.ts` five catalog words on the device, no claims; `wonder-parent-panel-20261029T172337Z`.
+- E08 done: `src/ui/accessibility.ts` labels, focus, live regions; captions live region; `wonder-parent-panel-20261029T172337Z`.
+
+**F, G (P1 stories)**
+- F01 done: E01 ah/oh/mmm with gestures and the mirror reflection (B31); `wonder-playback-episodes-20261029T172337Z`, `wonder-stills-20261029T172337Z`.
+- F02 done: E02 gentle door reveal, hi/open/bye, point-or-tap tip; `wonder-playback-episodes-20261029T172337Z`.
+- F03 done: E09 one animal sound per beat, slow rhythm; `wonder-playback-episodes-20261029T172337Z`.
+- F04 done: E17 golden beats, two song rolls on cues, real-ball card; `wonder-first-frame-build-20261029T174544Z`, `wonder-touch-and-layout-20261029T172337Z`, `wonder-playback-episodes-2-20261029T172337Z`.
+- F05 done: E06 clap/stomp/go/stop, cued freeze, dance-break tip; `wonder-playback-episodes-20261029T172337Z`.
+- F06 done: E05 1-3 count, "One more?", "All gone!", no quiz; `wonder-playback-episodes-20261029T172337Z`.
+- G01 done: bubble taps, three in view, finite outro; tap test for all stories; `wonder-no-speech-required-2-20261029T172337Z`.
+- G02 done: tap to go and stop, no speech, finite; `wonder-playback-activities-20261029T172337Z`.
+- G03 done: tap, roll, fetch, return, more or end, real-ball bridge; `wonder-playback-activities-20261029T172337Z`.
+
+**H, I (P2 stories)**
+- H01 done: E03 big B and little b, name apart from sound; `wonder-playback-episodes-20261029T172337Z`.
+- H02 done: E04 letter carriage, big A and little a, apple reveal, finite; `wonder-playback-episodes-20261029T172337Z`.
+- H03 done: E07 red and blue with a ball each; `wonder-playback-episodes-20261029T172337Z`.
+- H04 done: E08 under, out, in and behind; `wonder-playback-episodes-20261029T172337Z`.
+- H05 done: E10 apple, banana, eat, more, all done; `wonder-playback-episodes-20261029T172337Z`.
+- H06 done: E11 one balloon per spoken number; `wonder-playback-episodes-2-20261029T172337Z`.
+- H07 done: E12 circle-plate, square-block, triangle-party hat (B26); `wonder-playback-episodes-2-20261029T172337Z`.
+- H08 done: E13 harmless mix-ups, hat, hands, feet; `wonder-playback-episodes-2-20261029T172337Z`.
+- H09 done: E14 look and find under, behind, in; `wonder-playback-episodes-2-20261029T172337Z`.
+- H10 done: E15 separate episode, three bubbles, three animals; `wonder-playback-episodes-2-20261029T172337Z`.
+- H11 done: E16 count three, one candle flame that goes out and relights (B22); `wonder-playback-episodes-2-20261029T172337Z`.
+- H12 done: E18 generic friends, no family voices (B17); `wonder-playback-episodes-2-20261029T172337Z`.
+- H13 done: E19 wake (sun), wash, eat, brush (toothbrush), sleep; `wonder-playback-episodes-2-20261029T172337Z`.
+- H14 done: E20 fixed two-toy micro-stories, no generated speech; `wonder-playback-episodes-2-20261029T172337Z`.
+- I01 done: G04 door, three animals with sounds, finite rounds; `wonder-playback-activities-20261029T172337Z`.
+- I02 done: G05 both foods offered at once, more, all done; `wonder-playback-activities-20261029T172337Z`.
+- I03 done: G06 water, wash, dry by taps; `wonder-playback-activities-20261029T172337Z`.
+- I04 done: G07 into the lift, one floor per tap, out; `wonder-playback-activities-20261029T172337Z`.
+- I05 done: G08 count three blocks, tumble, repeat; `wonder-playback-activities-20261029T172337Z`.
+- I06 done: G09 generic friend at the door, no family pack (B17); `wonder-playback-activities-20261029T172337Z`.
+- I07 done: G10 drum, shaker and clap turns; `wonder-playback-activities-20261029T172337Z`.
+- I08 done: G11 tap-to-open flowers, no microphone; `wonder-playback-activities-20261029T172337Z`, `wonder-no-speech-required-2-20261029T172337Z`.
+- I09 done: G12 show a toy, pause, grown-up confirm, real-toy end; `wonder-playback-activities-20261029T172337Z`.
+
+**J (tests and evidence)**
+- J01 done: `tests/unit/runtime/episode-director.test.ts`.
+- J02 done: `tests/unit/runtime/turn-taking.test.ts`.
+- J03 done: `tests/unit/runtime/touch-router.test.ts`; visible-target lint test.
+- J04 done: `tests/unit/runtime/narration-player.test.ts`.
+- J05 done: `tests/unit/content/content-schema.test.ts`.
+- J06 done: `tests/unit/content/letters-and-counts.test.ts`.
+- J07 done: `tests/unit/privacy/no-child-data.test.ts`; bundle scan in `wonder-first-frame-build-20261029T174544Z`.
+- J08 done: `wonder-first-frame-build-20261029T174544Z`.
+- J09 done: `wonder-playback-episodes-20261029T172337Z`, `wonder-playback-episodes-2-20261029T172337Z`, `wonder-playback-activities-20261029T172337Z`.
+- J10 done: `wonder-touch-and-layout-20261029T172337Z`; safe-area CSS unit test (device notches: §4.3 item 1).
+- J11 done: `wonder-audio-and-pausing-20261029T172337Z`.
+- J12 done: `wonder-no-speech-required-20261029T172337Z`, `wonder-no-speech-required-2-20261029T172337Z`.
+- J13 done: `wonder-low-motion-20261029T172337Z`, `wonder-low-motion-2-20261029T172337Z`; SFX guard in `tests/unit/runtime/audio-mixer.test.ts`.
+- J14 done: `tools/validate-wonder-world-content.mjs` passes; runs before every build and in `tools/check-all.sh`.
+- J15 open: `evidence/veer-wonder-world/p1/README.md` holds the remote evidence, but actual device reports need the physical-device runs (§4.3 item 1).
+- J16 done: `apps/veer-wonder-world/DEPLOYMENT.md` (owner, build, checks, hosting, caching, rollback, no-PII logging).
+
+**K (P3 voice, out of scope and off)**
+- K01-K06 open: not in this build. `src/runtime/voice-input.ts`, `sound-presence-detector.ts`, `src/ui/voice-permission-dialog.ts` and `tests/browser/voice-permissions.spec.ts` do not exist, `08-optional-voice-validation.md` is not created (as planned), `src/runtime/feature-flags.ts` locks `voiceInput` and `soundPresence` off, and no ASR ships (`tests/unit/privacy/no-child-data.test.ts`).
+
+**Unlabelled boxes** (content lint, art and media, definition of done; numbered in file order)
+- Lint-1 done: the content lint resolves beat, word, line, clip, gesture and song-cue references for all 32 stories.
+- Lint-2 done: `src/content/schema.ts` target-word, invite, greeting/outro and offline/bridge checks.
+- Lint-3 done: letter and counting checks; no translated script ships (B16).
+- Lint-4 done: `npm run build` runs the content lint first (b7d081afc); `wonder-first-frame-build-20261029T174544Z`.
+- Art-1 done: characters and 48 other models are typed GLBs; the ball, balloon, B20 props and party hat are scene geometry, not production art (B26).
+- Art-2 done: `wonder-characters-20261029T182623Z`, `wonder-characters-2-20261029T182623Z`, `wonder-characters-3-20261029T182623Z` (320x568 silhouettes, six poses), `wonder-touch-and-layout-20261029T172337Z` (ball at 390x844).
+- Art-3 done: reduced motion, neutral settle, SFX lint and caps; `wonder-low-motion-20261029T172337Z`, `wonder-low-motion-2-20261029T172337Z`.
+- Art-4 open: inspection on a physical tablet and phone is §4.3 item 1.
+- Art-5 done: owner, licence and provenance records for every shipped file (`src/assets/rights-manifest.ts`, `provenance/`), agent rights review §2.3; the legal check of provider terms for public release is §4.3 item 2.
+- M1 done: every file 04 names exists on `feat/wonder-world-foundation-20261029` (the K files aside), and PR https://github.com/auraoneai/aura3d/pull/1398 (open, not merged) lists the task IDs, with this section as the map to files and evidence.
+- M2 done: both typechecks exit 0; no casts outside the reviewed list; hashes checked by the lint.
+- M3 done: 522 unit tests in 24 files pass; the content lint passes.
+- M4 done: `wonder-first-frame-build-20261029T174544Z`, `wonder-stills-20261029T172337Z` to `wonder-stills-4-20261029T172337Z`, `wonder-touch-and-layout-20261029T172337Z`, `wonder-audio-and-pausing-20261029T172337Z`.
+- M5 done: unit tests plus `wonder-no-speech-required-20261029T172337Z`, `wonder-no-speech-required-2-20261029T172337Z`, `wonder-low-motion-20261029T172337Z`, `wonder-low-motion-2-20261029T172337Z`, `wonder-parent-panel-20261029T172337Z`.
+- M6 done: redacted records in `evidence/veer-wonder-world/{p0,p1,p2}/README.md`; sign-off is the agent review in §2; device proof is J15 and §4.3 item 1.
+- M7 done: every status line says in build or prototype (`05` line 2 "BUILT AS A PROTOTYPE"); labels in `06` §1.
