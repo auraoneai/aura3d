@@ -4,6 +4,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 import { NodeIO } from "@gltf-transform/core";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 
 const require = createRequire(import.meta.url);
 const sharp = require("sharp");
@@ -25,7 +26,7 @@ function hsv(r: number, g: number, b: number): [number, number, number] {
 }
 
 async function textureFractions(glb: string): Promise<{ red: number; white: number }> {
-  const doc = await new NodeIO().read(glb);
+  const doc = await new NodeIO().registerExtensions(ALL_EXTENSIONS).read(glb);
   const image = Buffer.from(doc.getRoot().listTextures()[0]!.getImage()!);
   const { data } = await sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   let red = 0, white = 0, lit = 0;

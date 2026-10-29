@@ -19,6 +19,8 @@ export interface Intent {
   readonly jump: boolean;
   readonly dash: -1 | 0 | 1;
   readonly attack?: AttackKind;
+  /** Holding away from the foe: guard, but keep walking back (player only; audit IC-06). */
+  readonly walkBack?: boolean;
 }
 
 export const IDLE_INTENT: Intent = { axis: 0, crouch: false, guard: false, jump: false, dash: 0 };
@@ -70,7 +72,7 @@ export interface AiContext {
 
 export interface CpuBrain {
   think(ctx: AiContext, dt: number): Intent;
-  /** Called by the app when a throw lands on the CPU — returns true if teched. */
+  /** Called by the app once per player throw that becomes active on the CPU; returns true if the CPU techs it. */
   tryTech(): boolean;
 }
 
@@ -80,6 +82,16 @@ export function createCpuBrain(fighter: FighterDef, difficulty: Difficulty, seed
   let cooldown = 0;
   let held: Intent = IDLE_INTENT;
   let holdT = 0;
+  // One decision triggers its attack, jump or dash once; the rest of the think cooldown only keeps the movement part
+  // (audit IC-13: returning the attack every frame turned one decision into two or three jabs).
+  let triggerSpent = false;
+  const movementOnly = (intent: Intent): Intent =>
+    intent.attack === undefined && !intent.jump && intent.dash === 0 ? intent : { ...intent, attack: undefined, jump: false, dash: 0 };
+  const emit = (): Intent => {
+    if (triggerSpent) return movementOnly(held);
+    triggerSpent = true;
+    return held;
+  };
 
   const MIN_STRIKE_RANGE = 1.5;
   const MAX_STRIKE_RANGE = 2.2;
@@ -158,15 +170,16 @@ export function createCpuBrain(fighter: FighterDef, difficulty: Difficulty, seed
         holdT = 0;
         cooldown = 0;
       }
-      if (holdT > 0 && cooldown > 0) return held;
+      if (holdT > 0 && cooldown > 0) return emit();
       holdT = 0;
       if (cooldown <= 0) {
         cooldown = profile.thinkMs * (0.65 + rng() * 0.7);
         held = decide(ctx);
+        triggerSpent = false;
         // Hold movement decisions briefly so the walk doesn't strobe.
         if (!held.attack && !held.jump && !held.dash) holdT = 0.12 + rng() * 0.18;
       }
-      return held;
+      return emit();
     },
     tryTech() {
       return rng() < profile.techChance;

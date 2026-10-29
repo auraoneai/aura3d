@@ -46,6 +46,28 @@ import {
   type PaletteId
 } from "./game/fighters";
 import { frameDataLine, moveFor, specialChip, type AttackKind } from "./game/moves";
+import {
+  awardRound,
+  BACK_WALK_SCALE,
+  canUseSpecial,
+  createBoutResultTimer,
+  hitCueFor,
+  koSlowMo,
+  METER_MAX,
+  moveAgainst,
+  nextComboCount,
+  resolveHoldBack,
+  ROUNDS_TO_WIN,
+  timeUpWinner
+} from "./game/rules";
+import {
+  controlsHint,
+  EXTRA_TOUCH_BUTTONS,
+  loadBindings,
+  TOUCH_BINDINGS
+} from "./game/controls";
+import { mountControlsSheet } from "./game/controlsSheet";
+import { mountExtraTouchButtons } from "./game/touchExtras";
 import { DEFAULT_STAGE, stageById, type IronStage, type StageId } from "./game/stages";
 import { advanceLadder, createLadder, currentRung, type LadderState } from "./game/ladder";
 import { createHud, type MenuId, type ModeId } from "./game/hud";
@@ -69,8 +91,6 @@ const gameWindow = window as IronCrownWindow;
 /* ================================================================ */
 
 const ROUND_SECONDS = 60;
-const ROUNDS_TO_WIN = 2;
-const METER_MAX = 100;
 const THROW_TECH_FRAMES = 9;
 const MIN_FIGHTER_SEPARATION = 1.45;
 const PLAYER_START: readonly [number, number, number] = [-2.2, 0, 0];
@@ -91,26 +111,42 @@ let appReady = false;
 let userEngaged = false;
 
 const fightingControls = games.fighting.controls();
+const safeStorage = (): Storage | undefined => {
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+};
 
+// Bindings come from localStorage when the player rebound them in the controls sheet (audit IC-14). The input controller
+// keeps this object and reads it on every lookup, so the sheet rebinds by replacing entries on `input.actions`.
 const inputOptions = {
-  actions: {
-    ...fightingControls.actions,
-    moveLeft: ["KeyA", "ArrowLeft", "GamepadDPadLeft"],
-    moveRight: ["KeyD", "ArrowRight", "GamepadDPadRight"],
-    jump: ["KeyW", "ArrowUp", "GamepadDPadUp", "GamepadA"],
-    crouch: ["KeyS", "ArrowDown", "GamepadDPadDown"],
-    guard: ["KeyQ", "GamepadLB"],
-    light: ["KeyJ", "Space", "KeyZ", "GamepadX"],
-    heavy: ["KeyK", "KeyX", "GamepadY"],
-    special: ["KeyL", "KeyC", "GamepadB"],
-    throw: ["KeyU", "GamepadLT"],
-    dash: ["ShiftLeft", "ShiftRight", "GamepadRB"],
-    pause: ["Escape", "GamepadStart"]
-  },
+  actions: loadBindings(safeStorage()) as Record<string, string[]>,
   axes: fightingControls.axes,
   bufferMs: 160,
   gamepad: true
-} as const;
+};
+
+/** Stage → ambience loop cue (audit IC-17). */
+const STAGE_AMBIENCE: Record<StageId, "amb-city-night" | "amb-city-day" | "amb-crowd-sports" | "amb-wind-open" | "amb-wind-high" | "amb-crowd-arena"> = {
+  "neo-tokyo-rooftop": "amb-city-night",
+  "bangkok-dock": "amb-city-day",
+  "colosseum-ruins": "amb-crowd-sports",
+  "desert-airbase": "amb-wind-open",
+  "himalayan-monastery": "amb-wind-high",
+  "crown-arena": "amb-crowd-arena"
+};
+/** `?icdebug=1` exposes a small bout hook for the remote capture spec (a results frame without a 60 s software-GL bout). */
+const debugHooks = params.get("icdebug") === "1";
+/** `?iccontact=0` drops the contact-shadow effect, to measure what the 4.5.0 mask adds on a stage. */
+const contactShadowsOn = params.get("iccontact") !== "0";
+/**
+ * `?iclayer=1` plays attacks on the declared upper-body layer over the locomotion clip (audit IC-15). It is opt-in until
+ * the node `playLayer` forwards a playback speed: the attack clips run 1.0 to 4.3 s at 1x, while the moves' hit frames
+ * expect them at 1.85x to 2.8x (clipPlaybackSpec), so a 1x layered jab would land long after its hitbox.
+ */
+const attackLayerWanted = params.get("iclayer") === "1";
 
 /* ================================================================ */
 /* state                                                             */
@@ -147,6 +183,8 @@ interface FighterRuntime {
   lastTapAt: number;
   crouching: boolean;
   tint?: FighterPalette;
+  /** Upper-body attack layer state (audit IC-15 / anim-phys-11). */
+  layer: { mode: "off" | "layered" | "fallback"; active: string | null; timer: number };
 }
 
 interface BoutState {
@@ -236,7 +274,7 @@ function buildArena(cfg: BoutConfig) {
     .add(createFighterNode("player", cfg.p1, `${cfg.p1.name} (P1)`, PLAYER_START, 1, typedFighterAssets, cfg.p1Tint))
     .add(createFighterNode("rival", cfg.cpu, `${cfg.cpu.name} (CPU)`, RIVAL_START, -1, typedFighterAssets, cfg.cpuTint))
     .addMany([
-      effects.contactShadows({ intensity: 0.75, length: 0.3 }),
+      ...(contactShadowsOn ? [effects.contactShadows({ intensity: 0.75, length: 0.3 })] : []),
       effects.vignette({ intensity: 0.16, smoothness: 0.65 }),
       effects.bloom({ intensity: 0.24, threshold: 0.86 }),
       effects.lightCone({
@@ -309,19 +347,21 @@ const fightingGame = createGame({
   hud: { theme: "fighting", widgets: [] },
   touch: {
     preset: "dpad-4btn",
-    bindings: {
-      left: "left",
-      right: "right",
-      block: "guard",
-      light: "light",
-      heavy: "heavy",
-      special: "special",
-      jump: "jump"
-    }
+    bindings: TOUCH_BINDINGS
   },
   sound: {
     cues: {
       hit: { id: "hit", asset: { url: sfxUrl("impact.flesh.medium.00") }, volume: 0.72 },
+      "hit-light": { id: "hit-light", asset: { url: sfxUrl("impact.flesh.light.00") }, volume: 0.66 },
+      "hit-heavy": { id: "hit-heavy", asset: { url: sfxUrl("impact.flesh.heavy.01") }, volume: 0.8 },
+      "hit-special": { id: "hit-special", asset: { url: sfxUrl("impact.energy.medium.00") }, volume: 0.82 },
+      lose: { id: "lose", asset: { url: sfxUrl("stinger.lose.00") }, volume: 0.75 },
+      "amb-city-night": { id: "amb-city-night", bus: "ambience", loop: true, asset: { url: sfxUrl("ambience.city-night") }, volume: 0.32 },
+      "amb-city-day": { id: "amb-city-day", bus: "ambience", loop: true, asset: { url: sfxUrl("ambience.city-day") }, volume: 0.3 },
+      "amb-crowd-sports": { id: "amb-crowd-sports", bus: "ambience", loop: true, asset: { url: sfxUrl("ambience.crowd-sports") }, volume: 0.3 },
+      "amb-wind-open": { id: "amb-wind-open", bus: "ambience", loop: true, asset: { url: sfxUrl("ambience.wind-open") }, volume: 0.3 },
+      "amb-wind-high": { id: "amb-wind-high", bus: "ambience", loop: true, asset: { url: sfxUrl("ambience.wind-high") }, volume: 0.3 },
+      "amb-crowd-arena": { id: "amb-crowd-arena", bus: "ambience", loop: true, asset: { url: sfxUrl("ambience.crowd-arena") }, volume: 0.34 },
       blocked: { id: "blocked", asset: { url: sfxUrl("impact.metal.light.00") }, volume: 0.6 },
       special: { id: "special", asset: { url: sfxUrl("impact.energy.heavy.00") }, volume: 0.85 },
       dash: { id: "dash", asset: { url: sfxUrl("whoosh.dash.00") }, volume: 0.5 },
@@ -360,6 +400,9 @@ const app = fightingGame.app;
 fightingGame.start();
 const input = fightingGame.input as GameInputController;
 if (!input) throw new Error("Iron Crown: createGame failed to create runtime-owned input.");
+// createGame mounts the touch layer hidden until the first touch; on a coarse pointer (phones, tablets) show it at once
+// so players see the controls before they tap (audit IC-01).
+if (mediaMatches("(pointer: coarse)")) fightingGame.touch?.setVisible(true);
 
 // The live renderer canvas adopts id="game" (the static placeholder is removed).
 document.getElementById("game")?.remove();
@@ -391,11 +434,22 @@ app.camera?.use({
   ...baseFightingRig,
   update(ctx) {
     const pose = baseFightingRig.update(ctx);
-    return {
-      ...pose,
-      position: [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15],
-      target: [pose.target[0], pose.target[1] + 0.72, pose.target[2]]
-    };
+    const position: [number, number, number] = [pose.position[0], pose.position[1] + 0.82, pose.position[2] - 0.15];
+    const target: [number, number, number] = [pose.target[0], pose.target[1] + 0.72, pose.target[2]];
+    // Portrait phones: the rig frames by vertical FOV, so at 390x844 the fighters' start marks (x ±2.2) sat outside the
+    // frame. Pull the camera back along its view line until both fighters plus a margin fit the horizontal FOV.
+    const aspect = window.innerWidth / Math.max(1, window.innerHeight);
+    if (aspect < 1.2 && P1 && CPU) {
+      const halfWidth = Math.abs(CPU.body.position[0] - P1.body.position[0]) / 2 + 0.9;
+      const need = halfWidth / (Math.tan(((pose.fov ?? 40) * Math.PI) / 360) * aspect);
+      const off = [position[0] - target[0], position[1] - target[1], position[2] - target[2]];
+      const dist = Math.hypot(off[0]!, off[1]!, off[2]!);
+      if (dist > 0 && need > dist) {
+        const k = Math.min(need, 16) / dist;
+        return { ...pose, position: [target[0] + off[0]! * k, target[1] + off[1]! * k, target[2] + off[2]! * k], target };
+      }
+    }
+    return { ...pose, position, target };
   }
 });
 const feel = gameFeel.create({ app, time: app.time });
@@ -434,6 +488,8 @@ const hud = createHud(document, {
     void configureBout(state.config);
   },
   onPauseQuit: () => toMainMenu(),
+  onMenuBack: () => closeSheet(),
+  onPauseControls: () => openSheet("controls"),
   onLabStance: (stance) => {
     lab.stance = stance as DummyStance;
   },
@@ -452,21 +508,43 @@ function setAutopilot(next: boolean): void {
   }
 }
 
-const MANUAL_FIGHT_KEYS = new Set([
-  "KeyA", "KeyD", "ArrowLeft", "ArrowRight",
-  "KeyW", "ArrowUp",
-  "KeyS", "ArrowDown",
-  "KeyJ", "Space", "KeyZ",
-  "KeyK", "KeyX",
-  "KeyL", "KeyC",
-  "KeyU", "KeyQ",
-  "ShiftLeft", "ShiftRight"
-]);
+/** Keyboard codes bound to any fight action (rebuilt when the player rebinds). */
+let MANUAL_FIGHT_KEYS = new Set<string>();
+function refreshManualFightKeys(): void {
+  MANUAL_FIGHT_KEYS = new Set(
+    Object.entries(input.actions)
+      .filter(([action]) => action !== "pause")
+      .flatMap(([, codes]) => codes.filter((c) => !c.startsWith("Gamepad")))
+  );
+}
+refreshManualFightKeys();
+
+const controlsSheet = mountControlsSheet(document, {
+  actions: input.actions as Record<string, string[]>,
+  storage: safeStorage(),
+  onChange: () => {
+    refreshManualFightKeys();
+    if (state && state.config.mode !== "lab") hud.setHint(controlsHint(input.actions));
+  },
+  onBack: () => setPaused(true)
+});
+const touchExtras = mountExtraTouchButtons(document, input, EXTRA_TOUCH_BUTTONS, () => fightingGame.touch?.visible ?? false);
+app.onFrame(() => touchExtras.sync());
+
+let ambienceCue: (typeof STAGE_AMBIENCE)[StageId] | null = null;
+function playStageAmbience(stage: StageId): void {
+  const next = STAGE_AMBIENCE[stage];
+  if (next === ambienceCue) return;
+  if (ambienceCue) fightingGame.sound?.stopCue(ambienceCue, 400);
+  ambienceCue = next;
+  void fightingGame.sound?.cue(next);
+}
 
 // Escape resumes from the pause/sheet layer even while the app loop is paused.
 // Any gameplay key disengages AI autopilot immediately so Player 1 has full control.
 window.addEventListener("keydown", (ev) => {
   if (ev.key === "Escape" && paused) {
+    if (controlsSheet.listening) return; // the sheet takes the key (Escape cancels the rebind)
     setPaused(false);
     return;
   }
@@ -520,7 +598,8 @@ function makeFighter(side: "p1" | "cpu", def: FighterDef, position: readonly [nu
     lastTapDir: 0,
     lastTapAt: -1,
     crouching: false,
-    tint
+    tint,
+    layer: { mode: attackLayerWanted ? "layered" : "off", active: null, timer: 0 }
   };
 }
 
@@ -600,7 +679,11 @@ function arenaSignature(cfg: BoutConfig): string {
 
 async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<void> {
   if (paused) setPaused(false);
+  boutResultTimer.cancel();
+  input.clearReplay();
+  replayCursor = 0;
   newBout(config);
+  playStageAmbience(config.stage.id);
   currentStageId = config.stage.id;
   studioSelection.fighter = config.p1.id;
   const sig = arenaSignature(config);
@@ -615,6 +698,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   combat.reset();
   combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: config.p1.stats.maxHealth, ...actorDefaults(P1) });
   combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: config.cpu.stats.maxHealth, ...actorDefaults(CPU) });
+  snap();
   director.update(0, [
     { id: "player", position: [...PLAYER_START] },
     { id: "rival", position: [...RIVAL_START] }
@@ -629,11 +713,7 @@ async function configureBout(config: BoutConfig, postPhase?: Phase): Promise<voi
   hud.setAutopilotButton(autoDemo);
   hud.showMenu(null);
   hud.showLab(config.mode === "lab");
-  hud.setHint(
-    config.mode === "lab"
-      ? "Dummy stance panel is live — land LIGHT → HEAVY → SPECIAL."
-      : "A/D move · W jump · S crouch-block · J/Space light · K heavy · L special · U throw"
-  );
+  hud.setHint(config.mode === "lab" ? "Dummy stance panel is live — land LIGHT → HEAVY → SPECIAL." : controlsHint(input.actions));
   if (postPhase === "attract") {
     state.phase = "attract";
     hud.setModeLabel("IRON CROWN · ATTRACT");
@@ -692,9 +772,11 @@ function modeLabel(mode: ModeId): string {
 
 function openSheet(menu: MenuId): void {
   hud.showMenu(menu);
+  if (menu === "controls") controlsSheet.render();
   if (!paused) {
     paused = true;
     app.pause();
+    startPausedGamepadPoll();
   }
 }
 
@@ -730,25 +812,16 @@ function selectMode(mode: ModeId): void {
       difficulty: "novice",
       p1Tint: studioPaletteFor(studioSelection.fighter)
     });
-  } else if (mode === "versus") {
-    const rivalPool = FIGHTERS.filter((f) => f.id !== studioSelection.fighter);
-    const curIdx = rivalPool.findIndex((f) => f.id === state.config.cpu.id);
-    const nextCpu = rivalPool[(curIdx + 1) % rivalPool.length] ?? randomCpu(studioSelection.fighter);
-    void configureBout({
-      mode: "versus",
-      p1: fighterById(studioSelection.fighter),
-      cpu: nextCpu,
-      stage: stageById(currentStageId),
-      difficulty: "champion",
-      p1Tint: studioPaletteFor(studioSelection.fighter)
-    });
-  } else if (mode === "ladder") {
-    startLadder(studioSelection.fighter);
-  } else if (mode === "studio") {
-    const curIdx = PALETTE_SWATCHES.findIndex((p) => p.id === studioSelection.palette);
-    const nextPalette = PALETTE_SWATCHES[(curIdx + 1) % PALETTE_SWATCHES.length]?.id ?? "default";
-    applyStudioPalette(studioSelection.fighter, nextPalette);
+  } else {
+    // Versus, Crown Ladder and Player Studio open their setup sheets (audit IC-14); the sheet's own buttons start the
+    // bout, so a click no longer restarts the fight or cycles a palette blind.
+    openSheet(mode);
   }
+}
+
+function closeSheet(): void {
+  hud.setModeButtons(state.config.mode === "studio" ? "quick" : state.config.mode);
+  setPaused(false);
 }
 
 function selectStage(id: StageId): void {
@@ -810,10 +883,45 @@ function setPaused(next: boolean): void {
   if (next) {
     hud.showMenu("pause");
     app.pause();
+    (document.getElementById("pause-resume") as HTMLButtonElement | null)?.focus({ preventScroll: true });
+    startPausedGamepadPoll();
   } else {
+    controlsSheet.cancelListening();
     hud.showMenu(null);
     app.resume();
   }
+}
+
+/**
+ * The app loop (and with it the engine's gamepad polling) stops while paused, so a small rAF loop reads the pad directly
+ * and resumes on a fresh Start or B press (audit IC-05). Buttons held when the pause opened must be released first, and
+ * the resume fires on the release so the press does not reach the fight as a new Start (pause) or B (special) edge.
+ */
+let padPollActive = false;
+function startPausedGamepadPoll(): void {
+  if (padPollActive || typeof navigator.getGamepads !== "function") return;
+  padPollActive = true;
+  const RESUME_BUTTONS = [9, 1]; // standard mapping: Start, B
+  let phase: "wait-release" | "armed" | "pressed" = "wait-release";
+  const tick = (): void => {
+    if (!paused) {
+      padPollActive = false;
+      return;
+    }
+    let down = false;
+    for (const pad of navigator.getGamepads()) {
+      if (pad && RESUME_BUTTONS.some((i) => pad.buttons[i]?.pressed)) down = true;
+    }
+    if (phase === "wait-release" && !down) phase = "armed";
+    else if (phase === "armed" && down) phase = "pressed";
+    else if (phase === "pressed" && !down) {
+      padPollActive = false;
+      setPaused(false);
+      return;
+    }
+    window.requestAnimationFrame(tick);
+  };
+  window.requestAnimationFrame(tick);
 }
 
 /* ================================================================ */
@@ -824,18 +932,27 @@ function facingTo(self: FighterRuntime, foe: FighterRuntime): 1 | -1 {
   return foe.body.position[0] >= self.body.position[0] ? 1 : -1;
 }
 
+// One combat snapshot per sim stage instead of one per query (audit IC-11: `snap()` used to run about 15 full snapshots a
+// step). `snap()` refreshes the cache at the points where the combat world changed (step start, after the combat update,
+// after a reset); every other read goes through `cur()`.
 let combatSnapCache: ReturnType<typeof combat.snapshot> | null = null;
+let snapshotsThisFrame = 0;
+let lastFrameSnapshots = 0;
 function snap() {
+  snapshotsThisFrame += 1;
   combatSnapCache = combat.snapshot();
   return combatSnapCache;
 }
+function cur() {
+  return combatSnapCache ?? snap();
+}
 
 function actorSnap(id: string): GameCombatWorldSnapshot["actors"][number] | undefined {
-  return combatSnapCache?.actors.find((a) => a.id === id) ?? combat.snapshot().actors.find((a) => a.id === id);
+  return cur().actors.find((a) => a.id === id);
 }
 
 function isAttacking(f: FighterRuntime): boolean {
-  return snap().activeAttacks.some((a) => a.attackerId === f.nodeId);
+  return cur().activeAttacks.some((a) => a.attackerId === f.nodeId);
 }
 
 const TIER: Record<AttackKind, number> = { light: 1, throw: 1.5, heavy: 2, special: 3 };
@@ -850,7 +967,12 @@ function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): vo
     if (!last || !last.connected || TIER[kind] <= TIER[last.kind]) return;
   }
   if (kind === "special") {
-    if (f.side === "cpu" && asnap.meter < METER_MAX) {
+    // A special costs the full SUPER meter for both sides (audit IC-02).
+    if (!canUseSpecial(asnap.meter)) {
+      if (f.side === "p1") {
+        void fightingGame.sound?.cue("denied");
+        hud.announce("NEED FULL SUPER", "", "pop");
+      }
       return;
     }
     combat.setActor(f.nodeId, { meter: 0 });
@@ -865,11 +987,13 @@ function tryAttack(f: FighterRuntime, foe: FighterRuntime, kind: AttackKind): vo
     app.feel?.emit("special", { strength: 0.7 });
   }
   if (kind === "throw") {
-    f.lastThrowFrame = snap().frame;
+    f.lastThrowFrame = cur().frame;
     state.stats.throws += 1;
     void fightingGame.sound?.cue("throw");
   }
-  combat.beginAttack(f.nodeId, moveFor(kind, f.def));
+  // Damage is scaled by the target's defense before the engine applies it (audit IC-03).
+  combat.beginAttack(f.nodeId, moveAgainst(kind, f.def, foe.def));
+  startAttackLayer(f, kind);
   f.attack = { kind, connected: false };
   const holdDuration = kind === "special" ? 0.85 : kind === "heavy" || kind === "throw" ? 0.62 : 0.52;
   f.attackAnim = { kind, timer: holdDuration };
@@ -895,7 +1019,7 @@ function syncActors(force = false): void {
     });
     if (asnap.meter > METER_MAX) combat.setActor(f.nodeId, { meter: METER_MAX });
     // clear attack bookkeeping once the engine's attack expires
-    if (f.attack && !snap().activeAttacks.some((a) => a.attackerId === f.nodeId)) f.attack = null;
+    if (f.attack && !cur().activeAttacks.some((a) => a.attackerId === f.nodeId)) f.attack = null;
   }
 }
 
@@ -918,13 +1042,14 @@ function syncBodiesFromActors(): void {
 function playerIntent(): Intent {
   const axis = input.axis("moveX");
   const foeDir = facingTo(P1, CPU);
-  const holdingAway = axis !== 0 && Math.sign(axis) === -foeDir;
   const crouch = input.held("crouch");
-  // Block = dedicated guard key OR holding away (away+crouch = low block).
-  const guard = input.held("guard") || holdingAway;
+  // Block = guard key (stand still) OR holding away, which guards while walking back (away+crouch = low block).
+  // Shift while holding away is a back-dash (audit IC-06).
+  const hold = resolveHoldBack(axis, foeDir, input.held("guard"));
+  const guard = hold.guard;
 
   let dash: -1 | 0 | 1 = 0;
-  if (input.pressed("dash")) dash = foeDir;
+  if (input.pressed("dash")) dash = hold.dashDir;
   const tapNow = input.pressed("moveLeft") ? -1 : input.pressed("moveRight") ? 1 : 0;
   if (tapNow !== 0) {
     const now = performance.now() / 1000;
@@ -942,7 +1067,7 @@ function playerIntent(): Intent {
 
   const jump = input.pressed("jump") || input.buffered("jump", 140);
 
-  return { axis, crouch, guard, jump, dash, attack };
+  return { axis, crouch, guard, jump, dash, attack, walkBack: hold.walkBack };
 }
 
 function aiCtx(self: FighterRuntime, foe: FighterRuntime) {
@@ -984,8 +1109,10 @@ function driveFighter(f: FighterRuntime, foe: FighterRuntime, intent: Intent, dt
   const foeDir = facingTo(f, foe);
   const dist = Math.abs(foe.body.position[0] - f.body.position[0]);
   const movingTowardFoe = intent.axis * foeDir > 0;
-  const canMove = !ko && !stunned && !busy && !f.crouching && !f.guardIntent;
-  const effectiveAxis = canMove && !(movingTowardFoe && dist <= MIN_FIGHTER_SEPARATION + 0.04) ? intent.axis : 0;
+  const walkBack = intent.walkBack === true && !movingTowardFoe;
+  const canMove = !ko && !stunned && !busy && !f.crouching && (!f.guardIntent || walkBack);
+  const axisScale = f.guardIntent && walkBack ? BACK_WALK_SCALE : 1;
+  const effectiveAxis = canMove && !(movingTowardFoe && dist <= MIN_FIGHTER_SEPARATION + 0.04) ? intent.axis * axisScale : 0;
   f.body.move(effectiveAxis);
 
   if (!ko && !stunned && !busy && !f.guardIntent && !f.crouching && intent.jump && f.body.grounded) {
@@ -993,7 +1120,7 @@ function driveFighter(f: FighterRuntime, foe: FighterRuntime, intent: Intent, dt
   }
 
   const dashingTowardFoe = intent.dash * foeDir > 0;
-  if (!ko && !stunned && !f.guardIntent && intent.dash !== 0 && f.dashT <= 0 && !(dashingTowardFoe && dist <= MIN_FIGHTER_SEPARATION + 0.22)) {
+  if (!ko && !stunned && (!f.guardIntent || walkBack) && intent.dash !== 0 && f.dashT <= 0 && !(dashingTowardFoe && dist <= MIN_FIGHTER_SEPARATION + 0.22)) {
     f.dashT = 0.34;
     f.body.dash([intent.dash, 0, 0], f.def.stats.dashSpeed);
     runtimeEffects.dashTrail([f.body.position[0], f.body.position[1] + 0.7, 0], { ownerId: f.nodeId, intensity: 0.5 });
@@ -1002,7 +1129,7 @@ function driveFighter(f: FighterRuntime, foe: FighterRuntime, intent: Intent, dt
   }
   f.dashT = Math.max(0, f.dashT - dt);
 
-  if (!ko && !stunned && !f.guardIntent && intent.attack) {
+  if (!ko && !stunned && (!f.guardIntent || walkBack) && intent.attack) {
     tryAttack(f, foe, intent.attack);
   }
 }
@@ -1012,45 +1139,50 @@ const combo = {
   cpu: { count: 0, timer: 0 }
 };
 
+/** Target stun (frames) before this step's combat update: a hit only extends a combo while the target was still in hitstun. */
+const stunBeforeUpdate = { player: 0, rival: 0 };
+function recordStunBeforeUpdate(): void {
+  // combat.update decrements stun by one before resolving hits, so "still in hitstun" means more than one frame left.
+  stunBeforeUpdate.player = actorSnap("player")?.stun ?? 0;
+  stunBeforeUpdate.rival = actorSnap("rival")?.stun ?? 0;
+}
+/** Whether the last stun on each fighter came from a hit (blockstun does not keep a combo alive). */
+const lastStunFromHit = { player: false, rival: false };
+
 function handleEvents(): void {
   for (const ev of combat.consumeEvents()) {
     const attacker = ev.attackerId === "player" ? P1 : CPU;
     const target = ev.targetId === "player" ? P1 : ev.targetId === "rival" ? CPU : undefined;
     if (ev.type === "hit" && target) {
-      const tSnap = actorSnap(target.nodeId);
+      // Damage already carries the target's defense (moveAgainst), so the engine's own knockout check is the truth.
       const raw = ev.damage ?? 0;
-      const effective = raw * target.def.stats.defense;
-      if (tSnap && Math.abs(effective - raw) > 0.01) {
-        const corrected = tSnap.health - (effective - raw);
-        combat.setActor(target.nodeId, { health: Math.max(0, corrected) });
-        if (corrected <= 0) {
-          combat.setActor(target.nodeId, { knockedOut: true });
-          onKnockout(target.side === "p1" ? "cpu" : "p1");
-        }
-      }
+      const tKey = target.nodeId;
+      const inHitstun = stunBeforeUpdate[tKey] > 1 && lastStunFromHit[tKey];
+      lastStunFromHit[tKey] = true;
       if (attacker.attack) attacker.attack.connected = true;
       runtimeEffects.hitSpark(ev.position, { ownerId: ev.attackerId, intensity: 1.05 });
       director.impact(0.42, 0.16);
       fightingGame.juice.fire("hit");
-      void fightingGame.sound?.cue("hit");
+      void fightingGame.sound?.cue(hitCueFor(ev.moveId));
       app.feel?.emit(ev.moveId?.includes("special") ? "hit-special" : ev.moveId?.includes("heavy") ? "hit-heavy" : "hit-light", { strength: 0.6 });
       if (ev.knockback) {
         target.body.applyKnockback([ev.knockback[0] * 3.0, Math.abs(ev.knockback[1]) * 2.4, 0]);
       }
       const tMeter = (actorSnap(target.nodeId)?.meter ?? 0) + raw * 0.45 * target.def.stats.meterGain;
       combat.setActor(target.nodeId, { meter: Math.min(METER_MAX, tMeter) });
-      combo[attacker.side].count += 1;
+      combo[attacker.side].count = nextComboCount(combo[attacker.side].count, inHitstun);
       combo[attacker.side].timer = 1.35;
       combo[target.side].count = 0;
       state.stats.maxCombo = Math.max(state.stats.maxCombo, combo[attacker.side].count);
       if (attacker.side === "p1") state.stats.p1Hits += 1;
       else state.stats.cpuHits += 1;
-      if (state.config.mode === "lab" && attacker.side === "p1" && attacker.attack?.kind === "special" && snap().frame - lastCancelFlashFrame > 90) {
-        lastCancelFlashFrame = snap().frame;
+      if (state.config.mode === "lab" && attacker.side === "p1" && attacker.attack?.kind === "special" && cur().frame - lastCancelFlashFrame > 90) {
+        lastCancelFlashFrame = cur().frame;
         hud.cancelFlash();
       }
     }
     if (ev.type === "blocked" && target) {
+      lastStunFromHit[target.nodeId] = false;
       runtimeEffects.blockSpark(ev.position, { ownerId: ev.attackerId, intensity: 0.7 });
       director.impact(0.16, 0.12);
       fightingGame.juice.fire("blocked");
@@ -1061,6 +1193,7 @@ function handleEvents(): void {
         const tSnap = actorSnap(target.nodeId);
         if (tSnap) {
           const chip = specialChip(moveFor("special", attacker.def)) * target.def.stats.defense;
+          // Chip never kills (floored at 1 HP), so it cannot reach the engine's knockout latch.
           combat.setActor(target.nodeId, { health: Math.max(1, tSnap.health - chip) });
         }
       }
@@ -1076,8 +1209,9 @@ function onKnockout(winner: "p1" | "cpu"): void {
   state.phase = "ko";
   state.koTimer = 0;
   state.roundWinner = winner;
-  state.slowmo = reducedMotion ? 1 : 0.28;
-  fightingGame.session.slowMo(0.28, 1400);
+  // One time-scale source (the session), none under reduced motion (audit IC-08).
+  const slow = koSlowMo(reducedMotion);
+  if (slow) fightingGame.session.slowMo(slow.scale, slow.ms);
   hud.announce("K.O.", "", "hold");
   void fightingGame.sound?.cue("ko");
   void fightingGame.sound?.cue("ko-voice");
@@ -1087,18 +1221,23 @@ function onKnockout(winner: "p1" | "cpu"): void {
   app.feel?.emit("ko", { strength: 1 });
 }
 
+// The result card shows 1.6 s after the bout ends. A new bout cancels it (audit IC-04).
+const boutResultTimer = createBoutResultTimer();
+
 function endRound(winner: "p1" | "cpu" | "draw"): void {
-  if (winner === "p1") state.pipsP1 += 1;
-  if (winner === "cpu") state.pipsCpu += 1;
+  const award = awardRound({ p1: state.pipsP1, cpu: state.pipsCpu }, winner);
+  state.pipsP1 = award.p1;
+  state.pipsCpu = award.cpu;
   hud.setPips(state.pipsP1, state.pipsCpu);
-  const boutOver = state.pipsP1 >= ROUNDS_TO_WIN || state.pipsCpu >= ROUNDS_TO_WIN;
-  if (boutOver) {
+  if (award.boutOver) {
     state.phase = "boutEnd";
     state.phaseT = 0;
-    const p1Won = state.pipsP1 >= ROUNDS_TO_WIN;
-    void fightingGame.sound?.cue(p1Won ? "win" : "ko");
+    const p1Won = award.p1Won;
+    void fightingGame.sound?.cue(p1Won ? "win" : "lose");
     hud.announce(p1Won ? "YOU WIN" : "YOU LOSE", state.config.mode === "ladder" ? "the crown waits" : "", "hold");
-    window.setTimeout(() => showBoutResult(p1Won), 1600);
+    boutResultTimer.schedule(() => {
+      if (state.phase === "boutEnd") showBoutResult(p1Won);
+    }, 1600);
   } else {
     state.phase = "roundEnd";
     state.phaseT = 0;
@@ -1225,8 +1364,10 @@ function desiredClip(f: FighterRuntime): FighterClip {
   if (!asnap) return "idle";
   if (asnap.knockedOut) return "ko";
   if (asnap.stun > 0) return "hitstun";
-  if (f.attack && snap().activeAttacks.some((a) => a.attackerId === f.nodeId)) return f.attack.kind;
-  if (f.attackAnim && f.attackAnim.timer > 0) {
+  // With the upper-body layer live, the attack plays on the layer and the base keeps the locomotion clip.
+  const layered = f.layer.mode === "layered" && f.layer.active !== null;
+  if (!layered && f.attack && cur().activeAttacks.some((a) => a.attackerId === f.nodeId)) return f.attack.kind;
+  if (!layered && f.attackAnim && f.attackAnim.timer > 0) {
     const moving = Math.abs(f.body.velocity?.[0] ?? 0) > 0.45;
     if (!moving && f.body.grounded && !f.crouching) {
       return f.attackAnim.kind;
@@ -1235,7 +1376,8 @@ function desiredClip(f: FighterRuntime): FighterClip {
   if (!f.body.grounded) return "jump";
   if (f.dashT > 0.12) return "dash";
   if (f.crouching) return "crouch";
-  if (asnap.guarding) return "guard";
+  // Walking back while guarding shows the back-walk clip, not a frozen block (audit IC-06).
+  if (asnap.guarding && !(f.guardIntent && Math.abs(f.body.velocity?.[0] ?? 0) > 0.25)) return "guard";
   if (state.phase === "boutEnd") {
     const winner = state.pipsP1 >= ROUNDS_TO_WIN ? "p1" : state.pipsCpu >= ROUNDS_TO_WIN ? "cpu" : null;
     if (winner === f.side) return "win";
@@ -1311,6 +1453,52 @@ function syncAnim(f: FighterRuntime, clip: FighterClip, dt: number): void {
   }
 }
 
+type LayerApi = {
+  playLayer?(layer: string, clip: string, options?: Record<string, unknown>): unknown;
+  stopLayer?(layer: string, fadeOut?: number): unknown;
+  animationState?(): { activeActions?: readonly { clip: string; layer: string }[] } | undefined;
+};
+const ATTACK_LAYER = "upper-body";
+const ATTACK_LAYER_SPEED: Record<AttackKind, number> = { light: 2.6, heavy: 1.85, special: 2.8, throw: 2.4 };
+const ATTACK_LAYER_HOLD: Record<AttackKind, number> = { light: 0.52, heavy: 0.62, special: 0.85, throw: 0.62 };
+
+function layerApi(f: FighterRuntime): LayerApi | undefined {
+  return (app.nodes.get(f.nodeId) as unknown as { animation?: LayerApi } | undefined)?.animation;
+}
+
+function startAttackLayer(f: FighterRuntime, kind: AttackKind): void {
+  if (f.layer.mode !== "layered") return;
+  const api = layerApi(f);
+  if (!api?.playLayer || !api.stopLayer) {
+    f.layer.mode = "fallback";
+    return;
+  }
+  const clip = embeddedClipFor(kind).clip;
+  // A second playLayer on a live layer keeps its first clip (audit anim-phys-03), so clear the layer first.
+  api.stopLayer(ATTACK_LAYER, 0);
+  api.playLayer(ATTACK_LAYER, clip, { weight: 1, fadeIn: 0.04, mask: { humanoid: "upper-body" }, speed: ATTACK_LAYER_SPEED[kind] });
+  const live = api.animationState?.()?.activeActions?.some((a) => a.layer === ATTACK_LAYER && a.clip === clip);
+  if (live === false) {
+    // The runtime has no pose mixer for this node: fall back to the full-body attack clip.
+    f.layer.mode = "fallback";
+    f.layer.active = null;
+    return;
+  }
+  f.layer.active = clip;
+  f.layer.timer = ATTACK_LAYER_HOLD[kind];
+}
+
+function updateAttackLayer(f: FighterRuntime, dt: number): void {
+  if (f.layer.active === null) return;
+  f.layer.timer -= dt;
+  const asnap = actorSnap(f.nodeId);
+  const interrupted = (asnap?.stun ?? 0) > 0 || asnap?.knockedOut === true;
+  if (f.layer.timer <= 0 || interrupted) {
+    layerApi(f)?.stopLayer?.(ATTACK_LAYER, interrupted ? 0 : 0.1);
+    f.layer.active = null;
+  }
+}
+
 function syncNodes(): void {
   for (const f of [P1, CPU]) {
     const asnap = actorSnap(f.nodeId);
@@ -1327,7 +1515,9 @@ function syncNodes(): void {
 /* ================================================================ */
 
 const inputTrail: { label: string; attack?: boolean }[] = [];
-const seenInput = new Set<string>();
+/** Read position in `input.recorded()`; the log is cleared between bouts and whenever it passes REPLAY_LOG_CAP (audit IC-11). */
+let replayCursor = 0;
+const REPLAY_LOG_CAP = 512;
 
 const BINDING_LABELS: Record<string, { label: string; attack?: boolean }> = {
   KeyA: { label: "◀" }, ArrowLeft: { label: "◀" }, GamepadDPadLeft: { label: "◀" }, "Touch:left": { label: "◀" }, TouchLeft: { label: "◀" },
@@ -1339,7 +1529,11 @@ const BINDING_LABELS: Record<string, { label: string; attack?: boolean }> = {
   KeyL: { label: "SP", attack: true }, KeyC: { label: "SP", attack: true }, GamepadB: { label: "SP", attack: true }, "Touch:special": { label: "SP", attack: true }, TouchSpecial: { label: "SP", attack: true },
   KeyU: { label: "TH", attack: true }, GamepadLT: { label: "TH", attack: true },
   KeyQ: { label: "BLK" }, GamepadLB: { label: "BLK" }, "Touch:guard": { label: "BLK" }, TouchGuard: { label: "BLK" },
-  ShiftLeft: { label: "DSH" }, ShiftRight: { label: "DSH" }, GamepadRB: { label: "DSH" }
+  ShiftLeft: { label: "DSH" }, ShiftRight: { label: "DSH" }, GamepadRB: { label: "DSH" },
+  // Touch buttons record the action name itself (input.setAction).
+  moveLeft: { label: "◀" }, moveRight: { label: "▶" }, jump: { label: "▲" }, crouch: { label: "▼" }, guard: { label: "BLK" },
+  light: { label: "L", attack: true }, heavy: { label: "H", attack: true }, special: { label: "SP", attack: true },
+  throw: { label: "TH", attack: true }, dash: { label: "DSH" }
 };
 
 function playerHasManualInput(): boolean {
@@ -1363,6 +1557,9 @@ function playerHasManualInput(): boolean {
 
 app.onFrame(({ dt }) => {
   if (!P1 || !CPU || !state) return;
+  lastFrameSnapshots = snapshotsThisFrame;
+  snapshotsThisFrame = 0;
+  combatSnapCache = null;
   if (!appReady) {
     syncAnim(P1, "idle", 0);
     syncAnim(CPU, "idle", 0);
@@ -1425,21 +1622,25 @@ app.onFrame(({ dt }) => {
     }
   }
 
-  const simDt = dt * s.slowmo;
-  s.slowmo = Math.min(1, s.slowmo + dt * 1.4);
+  // KO slow motion runs through fightingGame.session.slowMo only (audit IC-08), so dt already carries it.
+  const simDt = dt;
 
-  // input trail (throttled DOM writes)
-  for (const ev of input.recorded().slice(-8)) {
-    const key = `${ev.frame}:${ev.binding}:${ev.type}`;
-    if (ev.type === "press" && !seenInput.has(key)) {
-      if (seenInput.size > 500) seenInput.clear();
-      seenInput.add(key);
-      const mapped = BINDING_LABELS[ev.binding];
-      if (mapped) {
-        inputTrail.push(mapped);
-        if (inputTrail.length > 10) inputTrail.shift();
-      }
+  // input trail (throttled DOM writes): read only the events recorded since the last frame.
+  const recorded = input.recorded();
+  if (recorded.length < replayCursor) replayCursor = 0;
+  for (let i = replayCursor; i < recorded.length; i += 1) {
+    const ev = recorded[i]!;
+    if (ev.type !== "press") continue;
+    const mapped = BINDING_LABELS[ev.binding];
+    if (mapped) {
+      inputTrail.push(mapped);
+      if (inputTrail.length > 10) inputTrail.shift();
     }
+  }
+  replayCursor = recorded.length;
+  if (recorded.length > REPLAY_LOG_CAP) {
+    input.clearReplay();
+    replayCursor = 0;
   }
   if (inputTrail.length !== lastTrailLen) {
     lastTrailLen = inputTrail.length;
@@ -1466,6 +1667,7 @@ app.onFrame(({ dt }) => {
       combat.reset();
       combat.addActor({ id: "player", team: "p1", position: [...PLAYER_START], facing: 1, health: P1.def.stats.maxHealth, ...actorDefaults(P1) });
       combat.addActor({ id: "rival", team: "cpu", position: [...RIVAL_START], facing: -1, health: CPU.def.stats.maxHealth, ...actorDefaults(CPU) });
+      snap();
       resetPositions();
       P1.attack = null;
       CPU.attack = null;
@@ -1480,7 +1682,7 @@ app.onFrame(({ dt }) => {
         const cSnap = actorSnap("rival");
         const pPct = pSnap ? pSnap.health / P1.def.stats.maxHealth : 0;
         const cPct = cSnap ? cSnap.health / CPU.def.stats.maxHealth : 0;
-        const winner = Math.abs(pPct - cPct) < 0.001 ? "draw" : pPct > cPct ? "p1" : "cpu";
+        const winner = timeUpWinner(pPct, cPct);
         hud.announce("TIME UP", "", "pop");
         endRound(winner);
       }
@@ -1527,6 +1729,7 @@ app.onFrame(({ dt }) => {
     enforceFighterSeparation();
     snap();
     syncActors();
+    recordStunBeforeUpdate();
     combat.update(simDt);
     snap();
     handleEvents();
@@ -1547,6 +1750,8 @@ app.onFrame(({ dt }) => {
   const cClip = desiredClip(CPU);
   syncAnim(P1, pClip, simDt);
   syncAnim(CPU, cClip, simDt);
+  updateAttackLayer(P1, simDt);
+  updateAttackLayer(CPU, simDt);
   syncNodes();
 
   for (const side of ["p1", "cpu"] as const) {
@@ -1566,11 +1771,23 @@ app.onFrame(({ dt }) => {
   publishEvidence(pSnap, cSnap, pClip, cClip);
 });
 
+/** The player throw (by its start frame) the CPU already rolled a tech for, so it rolls once per throw. */
+let techRolledForThrow = -1;
+
 function resolveThrowTech(): void {
   const csnap = snap();
   const pThrow = csnap.activeAttacks.find((a) => a.attackerId === "player" && a.moveId.includes("throw"));
   const cThrow = csnap.activeAttacks.find((a) => a.attackerId === "rival" && a.moveId.includes("throw"));
-  if (!pThrow || !cThrow || Math.abs(pThrow.frame - cThrow.frame) > THROW_TECH_FRAMES) return;
+  const mutual = Boolean(pThrow && cThrow && Math.abs(pThrow.frame - cThrow.frame) <= THROW_TECH_FRAMES);
+  // The CPU techs a player throw by its difficulty's techChance, rolled once per throw inside the tech window
+  // (audit IC-13: tryTech was defined but never called).
+  let cpuTech = false;
+  if (!mutual && pThrow && !cThrow && CPU.brain && pThrow.frame <= THROW_TECH_FRAMES && techRolledForThrow !== P1.lastThrowFrame) {
+    techRolledForThrow = P1.lastThrowFrame;
+    const dummy = state.config.mode === "lab" && lab.stance !== "cpu";
+    cpuTech = !dummy && state.phase === "fight" && CPU.brain.tryTech();
+  }
+  if (!mutual && !cpuTech) return;
   const pHealth = actorSnap("player")?.health ?? P1.def.stats.maxHealth;
   const cHealth = actorSnap("rival")?.health ?? CPU.def.stats.maxHealth;
   const pMeter = actorSnap("player")?.meter ?? 0;
@@ -1596,14 +1813,42 @@ function resolveThrowTech(): void {
 /* evidence                                                          */
 /* ================================================================ */
 
+/**
+ * Evidence is built on demand (audit IC-11): the frame loop only records the two clips, and the window globals are getters
+ * that build the objects when a probe reads them. Before, every 60 Hz step allocated all four objects.
+ */
+let evidenceClips: { p: FighterClip; c: FighterClip } = { p: "idle", c: "idle" };
+let evidenceInstalled = false;
+
 function publishEvidence(
-  pSnap: GameCombatWorldSnapshot["actors"][number] | undefined,
-  cSnap: GameCombatWorldSnapshot["actors"][number] | undefined,
+  _pSnap: GameCombatWorldSnapshot["actors"][number] | undefined,
+  _cSnap: GameCombatWorldSnapshot["actors"][number] | undefined,
   pClip: FighterClip,
   cClip: FighterClip
 ): void {
+  evidenceClips = { p: pClip, c: cClip };
+  if (evidenceInstalled) return;
+  evidenceInstalled = true;
+  const lazy = (name: keyof IronCrownWindow, build: () => unknown) =>
+    Object.defineProperty(window, name, { configurable: true, enumerable: true, get: build, set: () => undefined });
+  lazy("__AURA3D_SHOWCASE_IRON_CROWN__", buildShowcaseEvidence);
+  lazy("__AURA3D_GAME_RUNTIME__", () => ({
+    kind: "createGame",
+    beacon: gameWindow.__AURA3D_GAME__ ?? { state: "unbound" },
+    frame: app.runtime.frame,
+    showcase: "iron-crown"
+  }));
+  lazy("__AURA3D_GAME_DEBUG__", buildDebugEvidence);
+  lazy("__AURA3D_GAME_EVIDENCE__", buildGameEvidence);
+}
+
+function buildShowcaseEvidence(): unknown {
   const s = state;
-  gameWindow.__AURA3D_SHOWCASE_IRON_CROWN__ = {
+  const pClip = evidenceClips.p;
+  const cClip = evidenceClips.c;
+  const pSnap = actorSnap("player");
+  const cSnap = actorSnap("rival");
+  return {
     schema: "iron-crown/1.0",
     app: "showcase-iron-crown",
     route: "/apps/showcase-iron-crown/",
@@ -1653,7 +1898,9 @@ function publishEvidence(
         brain: s.config.difficulty
       }
     },
-    combat: snap(),
+    combat: cur(),
+    perf: { combatSnapshotsLastFrame: lastFrameSnapshots, replayLogLength: input.recorded().length },
+    attackLayer: { p1: P1.layer, cpu: CPU.layer },
     ladder: ladder ? { rung: ladder.cursor + 1, cleared: ladder.cleared } : null,
     lab: s.config.mode === "lab" ? { stance: lab.stance, frameData: lab.frameData } : null,
     studio: { fighter: studioSelection.fighter, palette: studioSelection.palette },
@@ -1665,13 +1912,11 @@ function publishEvidence(
     a11y: { reducedMotion, reducedFlash, highContrast },
     ready: appReady
   };
-  gameWindow.__AURA3D_GAME_RUNTIME__ = {
-    kind: "createGame",
-    beacon: gameWindow.__AURA3D_GAME__ ?? { state: "unbound" },
-    frame: app.runtime.frame,
-    showcase: "iron-crown"
-  };
-  gameWindow.__AURA3D_GAME_DEBUG__ = game.debug.overlay({
+}
+
+function buildDebugEvidence(): unknown {
+  const s = state;
+  return game.debug.overlay({
     runtime: app.runtime,
     input,
     bodies: [P1.body, CPU.body],
@@ -1684,7 +1929,13 @@ function publishEvidence(
     ],
     warnings: s.config.stage.issues.map((i) => i.message)
   });
-  gameWindow.__AURA3D_GAME_EVIDENCE__ = app.evidence({
+}
+
+function buildGameEvidence(): unknown {
+  const s = state;
+  const pClip = evidenceClips.p;
+  const cClip = evidenceClips.c;
+  return app.evidence({
     input,
     bodies: [P1.body, CPU.body],
     combat,
@@ -1745,5 +1996,39 @@ void app.ready().then(async () => {
   appReady = true;
   document.body.dataset.aura3dReady = "true";
   hud.announce("ROUND 1", "FIGHT!", "pop");
+  playStageAmbience(currentStageId);
 });
+
+// A loop cued before the first gesture is dropped by the browser's autoplay rule; restart it once audio unlocks.
+const unlockAmbience = (): void => {
+  window.removeEventListener("pointerdown", unlockAmbience);
+  window.removeEventListener("keydown", unlockAmbience);
+  window.removeEventListener("touchstart", unlockAmbience);
+  void fightingGame.sound?.unlock().then(() => {
+    if (!ambienceCue) return;
+    fightingGame.sound?.stopCue(ambienceCue, 0);
+    void fightingGame.sound?.cue(ambienceCue);
+  });
+};
+window.addEventListener("pointerdown", unlockAmbience);
+window.addEventListener("keydown", unlockAmbience);
+window.addEventListener("touchstart", unlockAmbience);
+
+hud.setHint(controlsHint(input.actions));
+
+if (debugHooks) {
+  (window as unknown as { __IRON_CROWN_DEBUG__?: unknown }).__IRON_CROWN_DEBUG__ = {
+    /** Put the bout at match point and knock the loser out, so the result card follows on the normal path. */
+    finishBout(p1Won: boolean): void {
+      if (state.phase !== "fight") state.phase = "fight";
+      state.pipsP1 = p1Won ? ROUNDS_TO_WIN - 1 : 0;
+      state.pipsCpu = p1Won ? 0 : ROUNDS_TO_WIN - 1;
+      combat.setActor(p1Won ? "rival" : "player", { health: 0 });
+      snap();
+      onKnockout(p1Won ? "p1" : "cpu");
+      // Skip the 1.7 s (sim time) K.O. beat: on software GL it is minutes of wall time.
+      state.koTimer = 1.7;
+    }
+  };
+}
 
