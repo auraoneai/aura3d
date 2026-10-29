@@ -6,6 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
  * LOOK_JSON per id plus LOOK_FRAME (a small JPEG) so before/after can be compared from the ACR log. The floor only
  * guards against a preset rendering black; the before/after judgement is in evidence/exposure-parity/.
  */
+const SETTLE_MS = Number(process.env.LOOK_SETTLE_MS ?? "15000");
 const MIN_NON_BLACK = Number(process.env.LOOK_MIN_NON_BLACK ?? "0.05");
 
 test.describe("look preset exposure", () => {
@@ -22,8 +23,8 @@ test.describe("look preset exposure", () => {
     const ids = await page.evaluate(() => (window as unknown as { __LOOKS__: { ids: string[] } }).__LOOKS__.ids);
     const dark: string[] = [];
     for (const id of ids) {
-      const c = await page.evaluate((i) => (window as unknown as { __LOOKS__: { render(i: string): Promise<{ id: string; meanLuma: number; nonBlack: number; jpeg: string; warnings: string[] }> } }).__LOOKS__.render(i), id);
-      console.log(`LOOK_JSON ${JSON.stringify({ id: c.id, meanLuma: c.meanLuma, nonBlack: c.nonBlack, warnings: c.warnings })}`);
+      const c = await page.evaluate(([i, ms]) => (window as unknown as { __LOOKS__: { render(i: string, settleMs: number): Promise<{ id: string; meanLuma: number; firstFrameLuma: number; nonBlack: number; jpeg: string; warnings: string[] }> } }).__LOOKS__.render(i, ms), [id, SETTLE_MS] as const);
+      console.log(`LOOK_JSON ${JSON.stringify({ id: c.id, meanLuma: c.meanLuma, firstFrameLuma: c.firstFrameLuma, nonBlack: c.nonBlack, warnings: c.warnings })}`);
       console.log(`LOOK_FRAME ${c.id} ${c.jpeg}`);
       if (c.nonBlack < MIN_NON_BLACK) dark.push(`${c.id} (${c.nonBlack})`);
     }

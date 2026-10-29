@@ -20,7 +20,9 @@ export interface AuraLookV0Expansion {
    * lights alone (three.js r185 convention), so a night or space look that wants a faint ambient says so here instead of
    * inheriting the scene category's implicit fill. The five no-HDRI looks use "neutral": on 4.3.7 they were lit by the
    * neutral room probe, and the baked "night" probe is about 30x dimmer than that room (SH9 DC term 0.11 to 0.16 against
-   * 3.76), so a night or studio fill made them near black once the baked probe replaced the analytic floor.
+   * 3.76), so a night or studio fill made them near black once the baked probe replaced the analytic floor. The intensity is
+   * calibrated on the steady-state look scene (tests/browser/exposure-looks-fill-sweep.spec.ts) to land at the 4.3.7 mean
+   * luma plus the ~4% every HDRI look also gains from the other 4.5.0 changes.
    */
   readonly fill?: { readonly preset: "neutral" | "studio" | "night"; readonly intensity: number };
   readonly key: { readonly position: AuraVec3; readonly intensity: number; readonly color: AuraColor; readonly shadow: true };
@@ -166,7 +168,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
-      fill: { preset: "neutral", intensity: 1.0 },
+      fill: { preset: "neutral", intensity: 0.85 },
       key: { position: sunPosition(55, 210), intensity: 0.7, color: "#7d9dd4", shadow: true },
       fog: { color: "#070a12", near: 30, far: 160 },
       background: "#070a12",
@@ -184,7 +186,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
-      fill: { preset: "neutral", intensity: 1.0 },
+      fill: { preset: "neutral", intensity: 0.85 },
       key: { position: sunPosition(38, 340), intensity: 0.5, color: "#8fb0d8", shadow: true },
       fog: { color: "#04070d", near: 35, far: 200 },
       background: "#04070d",
@@ -288,7 +290,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
-      fill: { preset: "neutral", intensity: 1.0 },
+      fill: { preset: "neutral", intensity: 0.65 },
       key: { position: sunPosition(60, 30), intensity: 1.6, color: "#9fd4c8", shadow: true },
       fog: { color: "#05202b", near: 5, far: 60 },
       background: "#05202b",
@@ -357,7 +359,7 @@ export const lookPresets = {
     v0: {
       hdri: null,
       environmentIntensity: 0.0,
-      fill: { preset: "neutral", intensity: 1.0 },
+      fill: { preset: "neutral", intensity: 0.85 },
       key: { position: sunPosition(55, 210), intensity: 0.7, color: "#7d9dd4", shadow: true },
       // night-city fog at half density (§7.1 studio-look definition)
       fog: { color: "#12151c", near: 60, far: 320 },

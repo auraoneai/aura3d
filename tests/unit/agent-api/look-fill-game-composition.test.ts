@@ -45,12 +45,12 @@ function gameSnapshot(look: (typeof NO_HDRI_LOOKS)[number]): AuraSceneSnapshot {
 describe("looks.preset fill inside a game-style scene", () => {
   const neutralDc = sh9Dc("neutral");
   for (const id of NO_HDRI_LOOKS) {
-    it(`${id} + authored lights binds a fill about as bright as the neutral room`, () => {
+    it(`${id} + authored lights binds a fill in the neutral room's range, not the 0.03x night probe`, () => {
       const resolution = resolveEnvironment(gameSnapshot(id), "high", FLAGS);
       expect(resolution.kind, `${id} resolution kind`).toBe("explicit");
       const probe = resolution.probe === "neutral" ? "neutral" : "preset" in (resolution.probe as object) ? (resolution.probe as { preset: string }).preset : "other";
       const irradiance = sh9Dc(probe) * resolution.diffuseIntensity;
-      expect(irradiance / neutralDc, `${id} bound probe "${probe}" at diffuse ${resolution.diffuseIntensity}`).toBeGreaterThan(0.85);
+      expect(irradiance / neutralDc, `${id} bound probe "${probe}" at diffuse ${resolution.diffuseIntensity}`).toBeGreaterThan(0.6);
       expect(irradiance / neutralDc, `${id} must not overshoot the 4.3.7 neutral room`).toBeLessThan(1.15);
     });
   }
