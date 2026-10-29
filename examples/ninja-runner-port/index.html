@@ -26,7 +26,7 @@
       #progress { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: min(46vw, 560px); height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.18); overflow: visible; }
       #progress > i { display: block; height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, #ffd27a, var(--warm-deep)); }
       #progress > b { position: absolute; top: -3px; width: 2px; height: 12px; background: rgba(255, 240, 204, 0.7); }
-      #progress > span { position: absolute; top: 12px; transform: translateX(-50%); font-size: 11px; color: var(--muted); white-space: nowrap; }
+      #progress > span { position: absolute; top: 12px; transform: translateX(-50%); font-size: 12px; color: var(--ink); white-space: nowrap; padding: 1px 6px; border-radius: 5px; background: var(--panel); border: 1px solid var(--line); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
       #stats { position: fixed; top: 14px; right: 14px; text-align: right; display: grid; gap: 6px; padding: 10px 14px; }
       #stats strong { font-size: 22px; font-weight: 500; }
       #combo { color: var(--warm); font-size: 15px; min-height: 18px; }
@@ -37,12 +37,14 @@
       #district { margin-top: 6px; }
       #forms { position: fixed; left: 14px; bottom: 14px; display: flex; gap: 6px; padding: 8px; }
       #forms button { min-width: 92px; text-align: left; display: grid; gap: 3px; }
-      #forms button small { font-size: 11px; color: var(--muted); }
+      #forms button small { font-size: 12px; color: var(--muted); }
       #forms button.selected { background: linear-gradient(180deg, var(--warm), var(--warm-deep)); color: #1d1a17; border-color: transparent; }
       #forms button.selected small { color: #3a2a18; }
       #abilities { position: fixed; right: 14px; bottom: 14px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 8px; }
       #abilities button { position: relative; overflow: hidden; min-width: 128px; text-align: left; display: grid; gap: 3px; }
-      #abilities button small { font-size: 11px; color: var(--muted); }
+      #abilities button small { font-size: 12px; color: var(--muted); }
+      #abilities button.phone-only { display: none; }
+      #abilities .short { display: none; }
       #abilities button::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: calc(var(--cd, 0) * 100%); background: var(--cyan); }
       #abilities button.poor { opacity: 0.55; }
       #abilities button.live { border-color: var(--cyan); box-shadow: 0 0 12px rgba(131, 235, 255, 0.45); }
@@ -52,6 +54,9 @@
       #district-banner.show { opacity: 0.95; }
       #hurt { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 140px 30px rgba(255, 60, 40, 0.75); opacity: 0; transition: opacity 0.5s ease-out; }
       #hurt.on { opacity: 1; transition: none; }
+      .reduced-motion #hurt { transition: opacity 0.2s ease-out; }
+      .reduced-motion #hurt.on { opacity: 0.4; }
+      .reduced-motion #district-banner { transition: none; }
       #countdown { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; font-size: 120px; font-weight: 500; text-shadow: 0 4px 24px #000c; }
       .overlay { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at center, rgba(8, 16, 22, 0.35), rgba(8, 16, 22, 0.75)); }
       .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 24px 28px; max-width: 460px; display: grid; gap: 14px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
@@ -59,18 +64,27 @@
       .keys dt { color: var(--warm); font-weight: 500; white-space: nowrap; }
       .keys dd { margin: 0; color: var(--muted); }
       .row { display: flex; gap: 8px; flex-wrap: wrap; }
-      #mute { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); margin-left: calc(min(25vw, 300px) + 28px); padding: 6px 10px; font-size: 12px; }
+      #controls { position: fixed; z-index: 5; top: 6px; left: calc(50% + min(23vw, 280px) + 16px); display: flex; gap: 6px; }
+      #controls button { min-width: 44px; min-height: 44px; padding: 0 12px; font-size: 13px; }
+      #intro-card .goal { color: var(--ink); font-size: 14px; }
+      #intro-card a { color: var(--cyan); text-decoration: none; }
+      #intro-card a:hover { text-decoration: underline; }
+      #result-best:empty, #best:empty { display: none; }
       @media (max-width: 760px) {
         #progress { top: 168px; width: calc(100vw - 32px); }
+        #progress > span { top: 10px; }
         #stats { top: max(10px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); padding: 6px 10px; gap: 2px; }
         #stats strong { font-size: 17px; }
         #vitals { top: max(10px, env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); width: 150px; padding: 6px 8px; }
-        #forms { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); }
-        #forms button { flex: 1 1 0; min-width: 0; }
-        #abilities { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: calc(72px + env(safe-area-inset-bottom)); grid-template-columns: repeat(4, 1fr); }
-        #abilities button { min-width: 0; padding-inline: 6px; font-size: 12px; }
-        #abilities button small { font-size: 10px; }
-        #mute { top: auto; left: max(8px, env(safe-area-inset-left)); transform: none; margin-left: 0; bottom: calc(142px + env(safe-area-inset-bottom)); }
+        /* one bottom row on phones: the four abilities plus a form button (Space on desktop); the form row is hidden */
+        #forms { display: none; }
+        #abilities { left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 4px; }
+        #abilities button { min-width: 0; min-height: 44px; padding: 4px 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #abilities button small { font-size: 12px; }
+        #abilities button.phone-only { display: grid; }
+        #abilities .full { display: none; }
+        #abilities .short { display: inline; }
+        #controls { top: auto; left: auto; right: max(8px, env(safe-area-inset-right)); bottom: calc(66px + env(safe-area-inset-bottom)); }
       }
     </style>
   </head>
@@ -80,15 +94,15 @@
     <div id="stats" class="hidden glass"><div><span class="meta">DISTANCE</span><strong class="num"><span id="distance">0</span> m</strong></div><div><span class="meta">DEFEATED</span><strong class="num" id="kills">00</strong></div><div><span class="meta">SCORE</span><strong class="num" id="score">0</strong></div><div id="combo" class="num"></div></div>
     <div id="vitals" class="hidden glass"><span class="meta">SPIRIT</span><div class="bar"><i id="spirit-bar"></i></div><span class="num" id="spirit">300 / 300</span><div class="meta" style="margin-top:8px">HEALTH</div><div id="hearts">&#9829;&#9829;&#9829;&#9829;&#9829;</div><div class="meta" id="district">Lantern Village</div></div>
     <div id="forms" class="hidden glass"><button data-form="base" class="selected">Runner<small>Space cycles</small></button><button data-form="sage">Sunfire<small>from 600 m</small></button><button data-form="beast">Ember<small>from 1,620 m</small></button></div>
-    <div id="abilities" class="hidden glass"><button data-action="clones">Echo clones<small>1 &middot; 60</small></button><button data-action="spiralorb">Spiral orb<small>2 &middot; 14</small></button><button data-action="dash">Surge dash<small>Shift &middot; 38</small></button><button data-action="spiralstar">Gale star<small>3 &middot; 75</small></button></div>
+    <div id="abilities" class="hidden glass"><button data-action="clones"><span class="full">Echo clones</span><span class="short">Clones</span><small>1 &middot; 60</small></button><button data-action="spiralorb"><span class="full">Spiral orb</span><span class="short">Orb</span><small>2 &middot; 14</small></button><button data-action="dash"><span class="full">Surge dash</span><span class="short">Dash</span><small>Shift &middot; 38</small></button><button data-action="spiralstar"><span class="full">Gale star</span><span class="short">Gale</span><small>3 &middot; 75</small></button><button data-action="cycleForm" class="phone-only" title="Cycle form (Space)"><span id="form-cycle">Runner</span><small>form</small></button></div>
     <div id="announce"><strong id="announce-title"></strong><span class="meta" id="announce-small"></span></div>
     <div id="hurt"></div>
     <div id="district-banner"></div>
     <div id="countdown" class="hidden"></div>
-    <button id="mute" class="hidden glass" title="Mute (M)">Sound on</button>
-    <div id="overlay" class="overlay"><div class="card" id="intro-card"><h1>SHADOWSTEP GAUNTLET</h1><p class="meta" id="loading-status">Loading the village&hellip;</p><button class="primary" id="start" disabled>Run the Village &rarr;</button><dl class="keys"><dt>A / D</dt><dd>change lane</dd><dt>W</dt><dd>jump</dd><dt>S</dt><dd>slide</dd><dt>1</dt><dd>echo clones</dd><dt>2</dt><dd>spiral orb</dd><dt>3</dt><dd>gale star</dd><dt>Shift</dt><dd>surge dash</dd><dt>Space</dt><dd>cycle form</dd><dt>Esc / M</dt><dd>pause / mute</dd></dl><p class="meta">Touch: swipe to move, jump and slide; tap for the spiral orb.</p></div></div>
+    <div id="controls" class="hidden"><button id="pause-btn" class="glass" title="Pause (Esc)" aria-label="Pause">Pause</button><button id="mute" class="glass" title="Mute (M)" aria-pressed="false">Sound on</button></div>
+    <div id="overlay" class="overlay"><div class="card" id="intro-card"><h1>SHADOWSTEP GAUNTLET</h1><p class="goal">Reach the Valley Gate, 2,640 m.</p><p class="meta" id="loading-status">Loading the village&hellip;</p><button class="primary" id="start" disabled>Run the Village &rarr;</button><dl class="keys"><dt>A / D</dt><dd>change lane</dd><dt>W</dt><dd>jump</dd><dt>S</dt><dd>slide</dd><dt>1</dt><dd>echo clones</dd><dt>2</dt><dd>spiral orb</dd><dt>3</dt><dd>gale star</dd><dt>Shift</dt><dd>surge dash</dd><dt>Space</dt><dd>cycle form</dd><dt>Esc / M</dt><dd>pause / mute</dd></dl><p class="meta">Touch: swipe to move, jump and slide; tap for the spiral orb.</p><p class="meta num" id="best"></p><p class="meta"><a id="daily" href="?daily=1">Play today's course</a><a id="lowq" class="hidden" href="?quality=low"> &middot; This device draws slowly: switch to low quality</a></p></div></div>
     <div id="pause" class="overlay hidden"><div class="card"><h2>Paused</h2><p class="meta">The run is held. Everything is where you left it.</p><div class="row"><button class="primary" id="resume">Resume</button></div></div></div>
-    <div id="result" class="overlay hidden"><div class="card"><span class="meta" id="result-label">RUN REPORT</span><h2 id="result-title"></h2><p id="result-copy" class="meta"></p><div class="meta num" id="result-stats"></div><div class="row"><button class="primary" id="again">Run again</button></div></div></div>
+    <div id="result" class="overlay hidden"><div class="card"><span class="meta" id="result-label">RUN REPORT</span><h2 id="result-title"></h2><p id="result-copy" class="meta"></p><div class="meta num" id="result-stats"></div><div class="meta num" id="result-best"></div><div class="row"><button class="primary" id="again">Run again</button></div></div></div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

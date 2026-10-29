@@ -1,9 +1,9 @@
 {
   "appId": "showcase-ninja-runner-port",
-  "route": "/apps/showcase-ninja-runner-port/",
+  "route": "/apps/shadowstep-gauntlet/",
   "classification": "prototype",
   "publicShowcase": true,
-  "generatedAt": "2026-10-23T08:56:30.375Z",
+  "generatedAt": "2026-10-29T19:00:00.000Z",
   "ok": true,
   "claimLabel": "Prototype",
   "claimStatus": "bounded",
@@ -23,8 +23,9 @@
   "sourceExample": "examples/ninja-runner-port/",
   "evidence": "12,759-step run, 102 kills, score 39,735 and 513 events reproduced with trace delta 0; 12 clones with independent bone transforms.",
   "limits": [
-    "A single soldier model tinted per form, procedural environment, no audio.",
-    "Procedural art; independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "Four generated rigged characters (hero, soldier, brute, sage) and seventeen generated scenery models, plus procedural ground, sky, river and effects; procedural Web Audio (no sample files).",
+    "Independent reconstruction of the mechanics, not a pixel-parity or 1:1 port.",
+    "First load is about 26.8 MB (character and scenery GLBs are not mesh- or texture-compressed).",
     "Verified in remote software WebGL2 (SwiftShader), not on a hardware GPU."
   ],
   "checks": [
