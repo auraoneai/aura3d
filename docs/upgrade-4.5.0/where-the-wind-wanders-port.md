@@ -31,7 +31,7 @@
 - **What happens now:**
   - Quality defaults to `"auto"`, and `bloomFusionAllowed("auto")` is true (`packages/engine/src/agent-api/app/renderPath.ts:24-26`).
   - The game has a bloom effect (`world.ts:376`) and runs on the HDR path, so the fused bloom chain is used with the default mode `"separable"` (`renderPath.ts:33-39`).
-  - The 4.5.0 notes say frames stay within 1/255 of the unfused result, measured on the PBR viewer. Measured on this scene on 2026-10-29 (remote run g23-after2, letter-glow frame at 640x360, default against `?aura3d-render=production`, two frames 60 steps apart): mean absolute difference 0.0001 to 0.0002 per channel, maximum 1/255, no channel more than 2/255 apart.
+  - The 4.5.0 notes say frames stay within 1/255 of the unfused result, measured on the PBR viewer. Measured on this scene on 2026-10-29 (remote run g23-after3-10292046, letter-glow frame at 640x360, default against `?aura3d-render=production`, two frames 60 steps apart): mean absolute difference 0.0001 to 0.0002 per channel, maximum 1/255, no channel more than 2/255 apart.
   - The code behind the difference is the new bloom prefilter-downsample and composite programs in `packages/rendering/src/webgl2/LegacyPost.ts` and `packages/rendering/src/webgl2/BloomFusion.ts`.
 - **Evidence:** `main.ts:302-309` sets no `quality`. `world.ts:376` adds the bloom. `renderPath.ts:33-39` reports `bloomFusion` only when the path is `hdr-msaa` and the scene has a bloom effect.
 - **What to do:** nothing is required. To keep the 4.3.7 pass sequence exactly, add `quality: "production"` to the `createAuraApp` options at `main.ts:302`:
