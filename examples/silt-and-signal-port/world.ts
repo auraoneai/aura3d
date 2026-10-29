@@ -211,7 +211,8 @@ export function buildWorld(chapter: number, buildOptions: BuildOptions = {}): Wo
     }))
     .add(effects.fog({ density: rig.fogDensity, color: rig.fog }))
     // threshold at HDR white (1.0) so only the emissive beacons, thrusters and lamps bloom; `radius` is a deprecated post field
-    .add(effects.bloom({ intensity: rig.night ? 0.7 : 0.38, threshold: 1 }))
+    // night 0.6 (was 0.7): the renderer flags bloom intensity above 0.62 as a noise risk
+    .add(effects.bloom({ intensity: rig.night ? 0.6 : 0.38, threshold: 1 }))
     .add(effects.colorGrade({ contrast: 1.06, saturation: 1.08, exposure: rig.night ? 1.05 : 1 }));
 
   builder.add(primitives.sphere({ name: "sky", position: [0, 0, 0], size: 4200, material: material.custom(skySpec(chapter)) }).runtime({ id: "sky" }));

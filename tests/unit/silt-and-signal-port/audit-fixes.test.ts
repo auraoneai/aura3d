@@ -7,6 +7,7 @@ import { IDLE, STEP, createSim, stepSim, targetOf, type Input, type Sim } from "
 import { createTerrain } from "../../../examples/silt-and-signal-port/terrain";
 import { chaseEyeBlocked, clearChaseEye, createChaseClearance } from "../../../examples/silt-and-signal-port/camera";
 import { buildWorld, MAX_RINGS } from "../../../examples/silt-and-signal-port/world";
+import { mapBloomOptionsV2, validatePostEffectNode } from "../../../packages/engine/src/agent-api/postBridge";
 
 /** Regression tests for the live-games audit rows of Duneglide (docs/audits/sections/game-24-silt-and-signal-port.md). */
 
@@ -197,10 +198,16 @@ describe("rendered world (C8, C10, C12, PROBE-2)", () => {
     expect(list.find((n) => n.light === "directional")?.shadow.mapSize).toBe(2048);
     expect(nodes(0).find((n) => n.light === "directional")?.shadow.mapSize).toBe(4096);
   });
-  it("bloom authors no deprecated radius and a threshold at HDR white", () => {
-    const bloom = nodes(0).find((n) => n.effect === "bloom")!;
-    expect(bloom.threshold).toBeGreaterThanOrEqual(1);
-    expect(bloom.postAuthored).not.toContain("radius");
+  it("bloom raises none of the PROBE-2 warnings in any chapter (deprecated radius, threshold below HDR white, noise risk)", () => {
+    for (let chapter = 0; chapter <= 6; chapter++) {
+      const bloom = nodes(chapter).find((n) => n.effect === "bloom")!;
+      expect(bloom.postAuthored).not.toContain("radius");
+      const codes = [...(validatePostEffectNode(bloom) ?? []), ...mapBloomOptionsV2(bloom, 5).diagnostics].map((d) => d.code);
+      expect(codes, `chapter ${chapter}`).toEqual([]);
+      // RendererPostprocessPlan's bloom-noise-risk rule: threshold < 0.48 or intensity > 0.62
+      expect(bloom.threshold).toBeGreaterThanOrEqual(0.48);
+      expect(bloom.intensity).toBeLessThanOrEqual(0.62);
+    }
   });
 });
 

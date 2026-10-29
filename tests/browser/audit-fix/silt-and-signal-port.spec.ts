@@ -193,14 +193,16 @@ test.describe("g24 duneglide", () => {
       // PROBE-1: when the loading overlay leaves and how the title frame moves after that
       const t0 = Date.now();
       const timeline: unknown[] = [];
-      for (const sec of [2, 10, 25, 45]) {
+      for (const sec of [2, 10, 25, 45, 70]) {
         const wait = sec * 1000 - (Date.now() - t0);
         if (wait > 0) await page.waitForTimeout(wait);
         const loadingHidden = await page.evaluate(() => document.getElementById("loading")?.classList.contains("hidden") ?? null);
+        // what the player sees (loading screen or title card over the canvas), then the canvas alone
+        const page_ = await lumaStats(page, await page.screenshot({ type: "png" }));
         const handle = await page.addStyleTag({ content: CANVAS_ONLY });
         const png = await page.screenshot({ type: "png" });
         await handle.evaluate((el) => el.remove());
-        timeline.push({ sec, loadingHidden, ...(await lumaStats(page, png)), tex: (await diag(page)).tex });
+        timeline.push({ sec, loadingHidden, page: { mean: page_.mean, p50: page_.p50 }, ...(await lumaStats(page, png)), tex: (await diag(page)).tex });
       }
       meta("title-desktop", { kind: "probe1-timeline", timeline, loadedAt: await page.evaluate(() => (window as unknown as { __DUNEGLIDE_LOADED_MS__?: number }).__DUNEGLIDE_LOADED_MS__ ?? null) });
       meta("title-desktop", { kind: "layout", layout: await layout(page) });

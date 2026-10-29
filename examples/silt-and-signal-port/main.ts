@@ -462,14 +462,15 @@ function wireScreens(): void {
 }
 
 /**
- * The loading screen stays up until the textured materials have swapped in (or LOADING_CAP_MS passes), so a slow device
- * does not show the untextured first frames as the title. The loop already runs behind it.
+ * The loading screen stays up until the textured materials have swapped in (or LOADING_CAP_MS of wall time passes), so a
+ * slow device does not show the untextured first frames as the title. The loop already runs behind it. On the software-GL
+ * runner the frame settles about 45 s after mount while one material stays pending for minutes, hence the cap.
  */
-const LOADING_CAP_MS = 20_000;
+const LOADING_CAP_MS = 45_000;
 function hideLoadingWhenSettled(started: number): void {
   const rows = (app?.diagnostics() as { renderer?: { runtime?: { texturedMaterials?: readonly { status: string }[] } } } | undefined)?.renderer?.runtime?.texturedMaterials ?? [];
   const pending = rows.filter((r) => r.status === "pending").length;
-  const elapsed = performance.now() - started;
+  const elapsed = Date.now() - started;
   if ((rows.length > 0 && pending === 0) || elapsed > LOADING_CAP_MS) {
     $("loading").classList.add("hidden");
     (window as unknown as { __DUNEGLIDE_LOADED_MS__?: number }).__DUNEGLIDE_LOADED_MS__ = Math.round(elapsed);
@@ -513,7 +514,7 @@ async function boot(): Promise<void> {
   loop.start();
   // QA pages keep the old behaviour (no wait); players get the settled frame first
   if (qa) $("loading").classList.add("hidden");
-  else hideLoadingWhenSettled(performance.now());
+  else hideLoadingWhenSettled(Date.now());
 }
 
 boot().catch((error) => {
