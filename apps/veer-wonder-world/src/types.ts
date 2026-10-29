@@ -27,7 +27,7 @@ export type PropAssetId =
   | "colourMachine" | "storyBox" | "pastryCircle" | "pastrySquare" | "pastryTriangle" | "hat"
   | "stompStone" | "cloud" | "balloon"
   // 2026-10-29 (07 B20): drawn from scene geometry like the other procedural props.
-  | "letterBLower" | "letterALower" | "toothbrush" | "sun" | "candleFlame";
+  | "letterBLower" | "letterALower" | "toothbrush" | "sun" | "candleFlame" | "partyHat";
 
 /**
  * Named positions every world defines (the scene layer maps them to

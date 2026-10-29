@@ -134,6 +134,7 @@ export const ASSET_TRAITS: Readonly<Record<StageAssetKey, AssetTraits>> = {
   toothbrush: trait(0.5, 0.4, "plain"),
   sun: trait(1.0, 0.35, "plain", { floats: true, defaultStyle: "float" }),
   candleFlame: trait(0.55, 0.55, "plain"),
+  partyHat: trait(0.75, 0.75, "plain", { tintMode: "replace" }),
   bubble: trait(1, 1, "plain", { round: true, floats: true, idle: "float", defaultStyle: "float" })
 };
 
@@ -519,6 +520,11 @@ export const STAND_INS: Readonly<Record<StageAssetKey, StandInRecipe>> = {
   candleFlame: r(piece("sphere", "#FFB347", [0.55, 0.62, 0.55], [0, 0.3, 0], { roughness: 0.4, emissive: { color: "#FFB347", intensity: 0.45 } }), [
     piece("cone", "#FFC864", [0.42, 0.62, 0.42], [0, 0.68, 0], { roughness: 0.4, emissive: { color: "#FFC864", intensity: 0.45 } }),
     piece("sphere", "#FFF1C4", [0.26, 0.3, 0.26], [0, 0.3, 0.12], { roughness: 0.3, emissive: { color: "#FFF1C4", intensity: 0.5 } })
+  ]),
+  // A cone party hat with a soft pompom: the familiar triangle shape (E12).
+  partyHat: r(piece("cone", "#4FA3E0", [0.72, 0.9, 0.72], [0, 0.45, 0], { roughness: 0.55 }), [
+    piece("torus", "#F7D24A", [0.32, 0.32, 0.5], [0, 0.04, 0], { rotation: [Math.PI / 2, 0, 0], tube: 0.12 }),
+    piece("sphere", "#F7D24A", [0.2, 0.2, 0.2], [0, 0.94, 0], { roughness: 0.8 })
   ]),
   // A warm sun with eight soft rays (no face; the glow is steady and never flashes).
   sun: r(piece("sphere", "#FFC94A", [0.62, 0.62, 0.4], [0, 0.5, 0], { roughness: 0.6, emissive: { color: "#FFD36B", intensity: 0.25 } }), [

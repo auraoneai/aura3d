@@ -3,12 +3,12 @@
 import { defineModelAssets, type AuraAssetRef } from "@aura3d/engine";
 
 /** Every model key the app knows about, admitted or not. */
-export const MODEL_KEYS = ["momo","lulu","sheru","gogo","gogoCarriage","lumi","peeko","teddy","robot","cow","sheep","duck","horse","bird","butterfly","ball","bubbleWand","cookie","plate","mirror","door","letterB","letterA","apple","banana","cake","drum","shaker","toyPiano","picnicBasket","car","sponge","towel","toyBlock","lift","flower","flowerBud","tree","bush","barn","station","tunnel","house","bed","sink","table","chair","cushion","toyBox","bench","colourMachine","storyBox","pastryCircle","pastrySquare","pastryTriangle","hat","stompStone","cloud","balloon","letterBLower","letterALower","toothbrush","sun","candleFlame"] as const;
+export const MODEL_KEYS = ["momo","lulu","sheru","gogo","gogoCarriage","lumi","peeko","teddy","robot","cow","sheep","duck","horse","bird","butterfly","ball","bubbleWand","cookie","plate","mirror","door","letterB","letterA","apple","banana","cake","drum","shaker","toyPiano","picnicBasket","car","sponge","towel","toyBlock","lift","flower","flowerBud","tree","bush","barn","station","tunnel","house","bed","sink","table","chair","cushion","toyBox","bench","colourMachine","storyBox","pastryCircle","pastrySquare","pastryTriangle","hat","stompStone","cloud","balloon","letterBLower","letterALower","toothbrush","sun","candleFlame","partyHat"] as const;
 export type ModelKey = (typeof MODEL_KEYS)[number];
 
 export const models = defineModelAssets(
   {
-    momo: { url: new URL("./assets/models/momo.da5f5b4e.glb", import.meta.url).pathname, sha256: "da5f5b4eabb008457b0c6e9d854380f270808b4946ae5029b6ff6fe3cfa9fb18", sizeBytes: 1520480 },
+    momo: { url: new URL("./assets/models/momo.3b7a02aa.glb", import.meta.url).pathname, sha256: "3b7a02aa5a5be628f2c939e9faf77ad9490c8db5b0ad7c12b7b43874b6599799", sizeBytes: 1937816 },
     lulu: { url: new URL("./assets/models/lulu.95ef56f6.glb", import.meta.url).pathname, sha256: "95ef56f602f6d888317469c253770962c81542d81cc936a73535b901830f78c0", sizeBytes: 2060128 },
     sheru: { url: new URL("./assets/models/sheru.e0e039ec.glb", import.meta.url).pathname, sha256: "e0e039ecf1bc16922040f3bb5a33cb638c410d172741d656541b00d3888bc13d", sizeBytes: 2157616 },
     gogo: { url: new URL("./assets/models/gogo.a229380d.glb", import.meta.url).pathname, sha256: "a229380d1a9a9fede2a56ba3c4be44156b8e27cf37fcf5485d744cf8b0656cb8", sizeBytes: 984984 },
@@ -61,6 +61,7 @@ export const models = defineModelAssets(
     pastryCircle: { url: new URL("./assets/models/pastryCircle.6a3b108c.glb", import.meta.url).pathname, sha256: "6a3b108c709cac5f79727b763a10493e1c125a535c267256ff9a1700123529fb", sizeBytes: 148920 },
     pastrySquare: { url: new URL("./assets/models/pastrySquare.cff9df45.glb", import.meta.url).pathname, sha256: "cff9df45812423f8f0a7bc24974fa141637b8f29fe6cac219f6c1296036b18ca", sizeBytes: 205340 },
     pastryTriangle: { url: new URL("./assets/models/pastryTriangle.bef10726.glb", import.meta.url).pathname, sha256: "bef10726598e8d8861105e674f639b89f82ada0ee3dd660ee033e39534740b01", sizeBytes: 206456 },
+    hat: { url: new URL("./assets/models/hat.6199c545.glb", import.meta.url).pathname, sha256: "6199c545ecada9c854d9cdeaaa97dcef96a1f6a066da50c645c7adfc73bfbac6", sizeBytes: 173348 },
   },
   { license: "Meshy-generated output under the AuraOne account plan terms at generation time; original prompts; exclusivity not claimed" }
 );
@@ -131,7 +132,7 @@ export const MODEL_INFO: Readonly<Record<ModelKey, ModelInfo>> = {
   pastryCircle: { admitted: true, rigged: false, clips: [], heightM: 0.08, procedural: false },
   pastrySquare: { admitted: true, rigged: false, clips: [], heightM: 0.08, procedural: false },
   pastryTriangle: { admitted: true, rigged: false, clips: [], heightM: 0.08, procedural: false },
-  hat: { admitted: false, rigged: false, clips: [], heightM: 0.2, procedural: true },
+  hat: { admitted: true, rigged: false, clips: [], heightM: 0.2, procedural: false },
   stompStone: { admitted: false, rigged: false, clips: [], heightM: 0.15, procedural: true },
   cloud: { admitted: false, rigged: false, clips: [], heightM: 1.2, procedural: true },
   balloon: { admitted: false, rigged: false, clips: [], heightM: 0.6, procedural: true },
@@ -140,10 +141,11 @@ export const MODEL_INFO: Readonly<Record<ModelKey, ModelInfo>> = {
   toothbrush: { admitted: false, rigged: false, clips: [], heightM: 0.4, procedural: true },
   sun: { admitted: false, rigged: false, clips: [], heightM: 0.8, procedural: true },
   candleFlame: { admitted: false, rigged: false, clips: [], heightM: 0.07, procedural: true },
+  partyHat: { admitted: false, rigged: false, clips: [], heightM: 0.3, procedural: true },
 };
 
 /** Keys drawn procedurally by design (see tools/model-review.json). */
-export const PROCEDURAL_MODELS: readonly ModelKey[] = ["ball","bush","hat","stompStone","cloud","balloon","letterBLower","letterALower","toothbrush","sun","candleFlame"];
+export const PROCEDURAL_MODELS: readonly ModelKey[] = ["ball","bush","stompStone","cloud","balloon","letterBLower","letterALower","toothbrush","sun","candleFlame","partyHat"];
 
 /** The typed ref of an admitted model, or undefined when the file is not admitted (the scene draws a stand-in). */
 export function modelRef(key: ModelKey): AuraAssetRef<"model"> | undefined {

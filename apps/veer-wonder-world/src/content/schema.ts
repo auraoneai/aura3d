@@ -72,7 +72,7 @@ export const PROP_ASSET_IDS = complete<PropAssetId>()([
   "picnicBasket", "car", "sponge", "towel", "toyBlock", "lift", "flower", "flowerBud", "tree", "bush", "barn", "station",
   "tunnel", "house", "bed", "sink", "table", "chair", "cushion", "toyBox", "bench", "colourMachine", "storyBox",
   "pastryCircle", "pastrySquare", "pastryTriangle", "hat", "stompStone", "cloud", "balloon", "letterBLower", "letterALower",
-  "toothbrush", "sun", "candleFlame"
+  "toothbrush", "sun", "candleFlame", "partyHat"
 ]);
 export const SPOT_IDS = complete<SpotId>()([
   "center", "left", "right", "farLeft", "farRight", "front", "frontLeft", "frontRight", "back", "backLeft", "backRight",

@@ -6,7 +6,7 @@
    "rig": false,
    "height": 1.0,
    "poly": 12000,
-   "prompt": "an original small round fuzzy monster character for toddlers covered in short BRIGHT PURPLE fur, egg-shaped purple body, two big round friendly eyes, small closed smiling mouth with no teeth, no horns, two short stubby arms, tiny round purple feet, standing upright in an A-pose",
+   "prompt": "an original cute small round purple monster for toddlers, soft lavender-purple plush fur all over the body, round egg-shaped body, two big round friendly eyes with small black pupils, a tiny closed smile with the lips together, no visible teeth, no tongue, no eyebrows, no horns, two short stubby arms, tiny round purple feet, like a soft plush toy, standing upright in an A-pose",
    "heightM": 0.9,
    "face": true,
    "rigNote": "Meshy humanoid auto-rig evaluated on Lulu and rejected: aura3d assets validate --skin fails in every clip (895-1465 of 12356 triangles stretch past 1.6x, worst 8.5-11.2x, flaps, foot bind mismatch); after baking the 0.01 armature scale (tools/bake-armature-scale.mjs, lossless) and repair-skin --refit-skeleton, 297 triangles still stretch, worst 142.9x, knees bend forward. Round, non-humanoid bodies on a humanoid skeleton tear; all characters move procedurally."
@@ -582,6 +582,16 @@
    "poly": 500,
    "prompt": "a small soft warm candle flame",
    "heightM": 0.07,
+   "face": false,
+   "procedural": true
+  },
+  {
+   "key": "partyHat",
+   "role": "prop",
+   "rig": false,
+   "poly": 500,
+   "prompt": "a small cone-shaped toddler party hat with a soft pompom",
+   "heightM": 0.3,
    "face": false,
    "procedural": true
   }

@@ -197,12 +197,7 @@
   "status": "approved",
   "reviewer": "agent:claude-opus-5.5",
   "date": "2026-10-29",
-  "notes": "v2: fuzzy monster with big round eyes and a goofy open grin with two blunt buck teeth (not sharp); came out beige, recoloured to periwinkle purple with a hue shift so the eyes and teeth stay white. A v3 could not be generated: the API-usable Meshy keys hold 8-17 credits (26 pooled keys return HTTP 402). Recorded as a known deviation from the 'small closed smile' wording.",
-  "recolor": {
-   "hue": 218,
-   "saturation": 2.9,
-   "brightness": 0.9
-  }
+  "notes": "v3: a round, soft lavender-purple plush monster with big friendly eyes, pink cheeks and a small closed smile; no teeth, no eyebrows, no horns. Purple as generated (no recolour). Replaces v2 (beige fur recoloured purple, open grin with two buck teeth, artifacts/meshy/wonder-world/_versions/momo-v2), whose brows read as cross at small size. Smooth plush rather than fuzzy fur."
  },
  "gogo": {
   "status": "approved",
@@ -375,10 +370,10 @@
   "notes": "Not generated (capacity); a tinted sphere with a string is drawn procedurally."
  },
  "hat": {
-  "status": "procedural",
+  "status": "approved",
   "reviewer": "agent:claude-opus-5.5",
   "date": "2026-10-29",
-  "notes": "Not generated (capacity); a simple red sun hat is drawn procedurally."
+  "notes": "v2: a plain soft red sun hat with a wide brim; no face, text or logo. Reads clearly at small size (E13 robot hat)."
  },
  "letterBLower": {
   "status": "procedural",
@@ -409,5 +404,11 @@
   "reviewer": "agent:claude-opus-5.5",
   "date": "2026-10-29",
   "notes": "Drawn procedurally by design: a small warm teardrop flame that sits on the cake's candle (the flame was cut from the cake model), so E16 can show the pretend candle lit and blown out. Its glow is steady and never flashes."
+ },
+ "partyHat": {
+  "status": "procedural",
+  "reviewer": "agent:claude-opus-5.5",
+  "date": "2026-10-29",
+  "notes": "Drawn procedurally by design: a cone party hat with a pompom, the familiar triangle that E12 pairs with the triangle pastry (the round sun hat is not a triangle)."
  }
 }

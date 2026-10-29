@@ -24,8 +24,8 @@ export interface AudioRightsGroup {
 export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
   {
     "key": "momo",
-    "file": "src/assets/models/momo.da5f5b4e.glb",
-    "sha256": "da5f5b4eabb008457b0c6e9d854380f270808b4946ae5029b6ff6fe3cfa9fb18",
+    "file": "src/assets/models/momo.3b7a02aa.glb",
+    "sha256": "3b7a02aa5a5be628f2c939e9faf77ad9490c8db5b0ad7c12b7b43874b6599799",
     "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",
@@ -498,6 +498,15 @@ export const MODEL_RIGHTS: readonly ModelRightsRecord[] = [
     "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
     "owner": "AuraOne (project owner)",
     "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
+  },
+  {
+    "key": "hat",
+    "file": "src/assets/models/hat.6199c545.glb",
+    "sha256": "6199c545ecada9c854d9cdeaaa97dcef96a1f6a066da50c645c7adfc73bfbac6",
+    "license": "Meshy-generated output under the AuraOne account plan terms at generation time; original text prompt; not CC0; exclusivity not claimed",
+    "generator": "Meshy text-to-3d (preview, refine 2k, remesh) via Kiro Prism",
+    "owner": "AuraOne (project owner)",
+    "review": "approved by agent:claude-opus-5.5 on 2026-10-29"
   }
 ];
 
@@ -508,10 +517,6 @@ export const PROCEDURAL_RIGHTS: readonly { readonly key: string; readonly note: 
   },
   {
     "key": "bush",
-    "note": "Drawn from scene geometry by design (src/scenes/stand-ins.ts); no external asset."
-  },
-  {
-    "key": "hat",
     "note": "Drawn from scene geometry by design (src/scenes/stand-ins.ts); no external asset."
   },
   {
@@ -544,6 +549,10 @@ export const PROCEDURAL_RIGHTS: readonly { readonly key: string; readonly note: 
   },
   {
     "key": "candleFlame",
+    "note": "Drawn from scene geometry by design (src/scenes/stand-ins.ts); no external asset."
+  },
+  {
+    "key": "partyHat",
     "note": "Drawn from scene geometry by design (src/scenes/stand-ins.ts); no external asset."
   }
 ];
