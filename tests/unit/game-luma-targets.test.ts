@@ -39,7 +39,7 @@ describe("game luma capture targets (audit LIGHT-02)", () => {
     };
     const variants = (slug: string) => GAME_LUMA_TARGETS.filter((t) => t.slug === slug).map((t) => t.variant);
     expect(variants("aura-hoops-3d").sort()).toEqual(ids(src("apps/showcase-aura-hoops-3d/src/main.ts"), "VenueId").sort());
-    expect(variants("aura-diamond-3d").sort()).toEqual(ids(src("apps/showcase-aura-diamond-3d/src/main.ts"), "ParkId").sort());
+    expect(variants("aura-diamond-3d").sort()).toEqual(ids(src("apps/showcase-aura-diamond-3d/src/rules.ts"), "ParkId").sort());
     expect(variants("aura-fc-3d").sort()).toEqual(ids(src("apps/showcase-aura-fc-3d/src/game/types.ts"), "VenueId").sort());
     expect(variants("aura-links-3d").sort()).toEqual(ids(src("apps/showcase-aura-links-3d/src/game/types.ts"), "CourseId").sort());
     expect(variants("iron-crown").sort()).toEqual(ids(src("apps/showcase-iron-crown/src/game/stages.ts"), "StageId").sort());
