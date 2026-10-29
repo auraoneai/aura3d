@@ -51,20 +51,32 @@ export function assertUnitPrimitiveParams(primitiveName: string, params: unknown
 }
 
 /**
- * Every top-level option `primitive()` reads: `AuraPrimitiveOptions` plus the
- * `transforms` / `colors` pair `instancedPrimitive` spreads in. Anything else
- * (for example `segments`, `radius`, `color`) used to be dropped silently.
+ * Every top-level option `primitive()` reads (`AuraPrimitiveOptions`). Anything else
+ * (for example `segments`, `radius`, `color`, or the `instances.*`-only `transforms`)
+ * used to be dropped silently; it is now reported as OPTION_IGNORED.
  */
-const PRIMITIVE_OPTION_KEYS: readonly string[] = [
+export const PRIMITIVE_OPTION_KEYS: readonly string[] = [
   "name", "position", "rotation", "scale", "lookAt", "rotationOrder", "quaternion",
   "renderOrder", "frustumCulled", "layers", "userData",
   "material", "size", "castShadow", "receiveShadow", "physics",
-  "instances", "instanceColors", "geometry", "text3D", "lod", "params",
-  "transforms", "colors"
+  "instances", "instanceColors", "geometry", "text3D", "lod", "params"
 ];
 
-export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions = {}): AuraNodeBuilder<AuraPrimitiveNode> {
-  const ignored = ignoredOptionsNote(`primitives.${primitiveName}`, options, PRIMITIVE_OPTION_KEYS);
+/** `instances.<kind>` reads the primitive options plus its `transforms` / `colors` pair (anim-phys-07). */
+export const INSTANCED_PRIMITIVE_OPTION_KEYS: readonly string[] = [...PRIMITIVE_OPTION_KEYS, "transforms", "colors"];
+
+/** Builder label and readable keys for the OPTION_IGNORED note; `instances.*` passes its own. */
+export interface PrimitiveOptionGuard {
+  readonly builder: string;
+  readonly validKeys: readonly string[];
+  /** The options as the caller wrote them, before the builder mapped any key. */
+  readonly options: unknown;
+}
+
+export function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions = {}, guard?: PrimitiveOptionGuard): AuraNodeBuilder<AuraPrimitiveNode> {
+  const ignored = guard
+    ? ignoredOptionsNote(guard.builder, guard.options, guard.validKeys)
+    : ignoredOptionsNote(`primitives.${primitiveName}`, options, PRIMITIVE_OPTION_KEYS);
   assertUnitPrimitiveParams(primitiveName, options.params);
   return new AuraNodeBuilder({
     kind: "primitive",

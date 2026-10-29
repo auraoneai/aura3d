@@ -9,8 +9,8 @@ import type { AuraAssetRef, AuraColor, AuraMaterialSpec, AuraModelNode, AuraMode
 import { AuraNodeBuilder } from "../nodes/builder.js";
 import { colorToRgba } from "../colorUtils.js";
 import { geometry } from "../nodes/geometry.js";
-import { model } from "../nodes/model.js";
-import { primitive } from "../nodes/primitives.js";
+import { buildModel, MODEL_OPTION_KEYS } from "../nodes/model.js";
+import { INSTANCED_PRIMITIVE_OPTION_KEYS, primitive } from "../nodes/primitives.js";
 import { createInstancedModelNode, type InstancedModelVec3 } from "../../instances-model/InstancedModel.js";
 import { defineAuraCustomGeometry, type AuraCustomGeometrySpec } from "../RootGeometry.js";
 import { material } from "./material.js";
@@ -93,7 +93,7 @@ export const instances = lazyNamespace(() => ({
       ...(options.maxInstancesPerDraw !== undefined ? { maxInstancesPerDraw: options.maxInstancesPerDraw } : {}),
       ...(options.material?.name !== undefined ? { materialName: options.material.name } : {})
     });
-    const base = model(asset, options).toJSON();
+    const base = buildModel(asset, options, { builder: "instances.model", validKeys: INSTANCED_MODEL_OPTION_KEYS }).toJSON();
     // PRD-10 T3.8: world options present ⇒ stamp the §7.1.5 placements block
     // (structural extension of the model node; promoted to `kind:"scatter"` by
     // the C-36 world handler under A3D_QR_WORLD — see compiler/world.ts).
@@ -121,6 +121,13 @@ export const instances = lazyNamespace(() => ({
     return new AuraNodeBuilder<AuraModelNode>(node);
   }
 } as const));
+
+/** `instances.model` reads the `model()` options plus these (anim-phys-06). */
+const INSTANCED_MODEL_OPTION_KEYS: readonly string[] = [
+  ...MODEL_OPTION_KEYS,
+  "transforms", "colors", "lod", "instancingAware", "maxInstancesPerDraw",
+  "static", "chunkSize", "shadowLod", "wind", "impostor"
+];
 
 /** §7.1.5 scatter placements block carried on a model node pending promotion. */
 export interface AuraScatterPlacement {
@@ -179,5 +186,11 @@ function packScatterPlacements(
 export function instancedPrimitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraPrimitiveOptions & { readonly transforms: readonly AuraTransformSpec[]; readonly colors?: readonly AuraColor[] }): AuraNodeBuilder<AuraPrimitiveNode> {
   // Zero transforms is valid (a pool that is empty this frame): the compiler skips the node with INSTANCES_EMPTY.
   if (options.colors && options.colors.length !== options.transforms.length) throw new Error("Aura3D instance color count must match transform count.");
-  return primitive(primitiveName, { ...options, instances: options.transforms, instanceColors: options.colors });
+  const { transforms, colors, ...primitiveOptions } = options;
+  // The OPTION_IGNORED note names `instances.<kind>` and accepts `transforms` / `colors` (anim-phys-07).
+  return primitive(primitiveName, { ...primitiveOptions, instances: transforms, instanceColors: colors }, {
+    builder: `instances.${primitiveName}`,
+    validKeys: INSTANCED_PRIMITIVE_OPTION_KEYS,
+    options
+  });
 }
