@@ -39,7 +39,7 @@ No visual baseline was refreshed in this lane. Scenes affected: those with autho
 
 Rule: a `createAuraApp` scene that authors lights and no `environments.*` node (and no light probe) is lit by those lights only. Enumerated by source scan (`apps/`, `examples/`, `packages/create-aura3d/templates`, `packages/aura3d-cli/templates`) and by the engine's own report (`app.diagnostics()` carries `preset: "authored-lights"`), then rendered before (4.3.7 behaviour toggled back on) and after on the remote runner (`tests/browser/exposure-scenes-*.spec.ts`, 320x200, software WebGL2, 9 s boot, whole-frame mean luma 0 to 255). Frames (`frames/before/<slug>.jpg`, `frames/after/<slug>.jpg`) were not committed; the raw rows are: `frames/scenes.json`, `frames/looks.json`.
 
-Scan result: 24 of 65 scene units author lights without an environment; none is a template. All 26 showcase games, and all templates, bring an environment (`looks.*`, `environments.*`, sky/city kits) and their luma moves by 0%.
+Scan result: 24 of 65 scene units author lights without an environment; none is a template. All templates and 25 of the 26 showcase games bring an environment (`looks.*`, `environments.*`, sky/city kits). Aura Slam 3D (`top-tennis`) authors ambient, hemisphere, directional and point lights and no environment; its live route measured 44.4 mean luma on 4.3.7 and 50.4 on 4.5.0 at steady state (+13.6%, `evidence/aura-slam/audit-2026-10-29/`, runs `g01-v437b-122136` and `g01-before-121740`).
 
 | Scene | before | after | change |
 | --- | --- | --- | --- |
@@ -52,6 +52,19 @@ Scan result: 24 of 65 scene units author lights without an environment; none is 
 | examples/shadow-lab, xr-lab | 30.5, 9.1 | n/a (no frame after) | not comparable (lab pages that need a feature the container lacks) |
 
 Their luma barely moves because these scenes are mostly background at this size; the calibration table above is the per-pixel evidence.
+
+### Aura Hoops 3D, six courts at steady state
+
+The `aura-hoops-3d` rows in `frames/scenes.json` read 34.805 before and after because that capture never reached a court: the page logged a 404 and a 500 and the frame is the Rucker loading state, so it says nothing about the change. The replacement is the six-court steady-state sweep from `docs/upgrade-4.5.0/aura-hoops-3d.md` (remote software WebGL2, 1280x720, `tests/browser/game-luma-capture.spec.ts`; 4.3.7 run `g07-v437b-134932`, 4.5.0 run `g07-before4-135927`; mean luma 0 to 255, 0% clipped pixels on every court):
+
+| Court (look) | 4.3.7 | 4.5.0 | change |
+| --- | --- | --- | --- |
+| Rucker (golden-hour) | 74.44 | 80.48 | +8.1% |
+| Venice (golden-hour) | 115.41 | 123.63 | +7.1% |
+| Athens (outdoor-day) | 105.82 | 111.82 | +5.7% |
+| Manila (interior-warm) | 89.26 | 94.30 | +5.6% |
+| Shanghai (night-city) | 53.49 | 55.63 | +4.0% |
+| Orbit (neon-arcade) | 109.46 | 113.27 | +3.5% |
 
 ### Look presets
 
