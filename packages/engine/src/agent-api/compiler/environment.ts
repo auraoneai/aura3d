@@ -550,6 +550,13 @@ export function registerPrd02EnvironmentSources(): void {
     flag: "A3D_QR_LIGHTING",
     priority: 0,
     resolve(snapshot) {
+      // Same rule as the compiler-off bridge (createProductionRuntimeEnvironment
+      // marks only light-less scenes as neutral-room fallbacks): a scene with
+      // authored lights and no environment gets no implicit IBL, as in three.js.
+      // Resolving the room under authored lights over-lit every promote scene
+      // (L4 promote 38212153613: mean LPIPS vs three 0.043 -> 0.259, 19/19
+      // regressed; 11-multiple-lights 0.002 -> 0.330).
+      if (groups.flatten(snapshot.nodes).some((node) => node.kind === "light")) return undefined;
       return {
         kind: "neutral-room",
         probe: "neutral",
