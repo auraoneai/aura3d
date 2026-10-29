@@ -1116,12 +1116,14 @@ function updateCardHud(): void {
   $("h-strokes")!.textContent = String(r.strokes);
   const dist = Math.max(0, state.terrain.cupDistance(r.ballPos[0], r.ballPos[2]));
   $("h-dist")!.textContent = `${dist.toFixed(0)}M TO PIN`;
-  const tp = state.card ? state.card.toPar + Math.max(0, r.strokes - hole.par) : 0;
+  // once the round is over the card is final (the last hole is already recorded)
+  const over = state.phase === "roundover";
+  const tp = state.card ? state.card.toPar + (over ? 0 : Math.max(0, r.strokes - hole.par)) : 0;
   const el = $("h-topar")!;
   el.textContent = tp === 0 ? "E" : tp > 0 ? `+${tp}` : `${tp}`;
   el.classList.toggle("good", tp <= 0);
   el.classList.toggle("bad", tp > 0);
-  $("h-thru")!.textContent = `THRU ${r.holeIndex}`;
+  $("h-thru")!.textContent = over ? "FINAL" : `THRU ${r.holeIndex}`;
   // wind
   const arrow = $("h-wind-arrow");
   if (arrow) arrow.style.transform = `rotate(${(state.wind.yaw * 180) / Math.PI + 90}deg)`;
@@ -1891,6 +1893,7 @@ function hideFinalCard(): void {
 
 function finishRound(): void {
   state.phase = "roundover";
+  updateCardHud();
   const card = state.card!;
   const toPar = card.toPar;
   if (state.mode === "tour" && state.tour) {
